@@ -91,9 +91,17 @@ to the public view, while the response bound only sees coefficients in
 `{-1, 0, 1}` instead of a large scalar challenge.
 
 This does not complete the signature proof.  The remaining blockers are now the
-rejection-sampling theorem, the noisy/high-bit verifier equation, Fiat-Shamir
-soundness, concrete challenge serialization, and key-generation cryptanalysis
-for the structured view.  See `product_block_challenge_action.md`.
+rejection-sampling theorem, the serialized/high-bit verifier equation,
+Fiat-Shamir soundness, concrete challenge serialization, and key-generation
+cryptanalysis for the structured view.  See
+`product_block_challenge_action.md`.
+
+`Descender/ProductBlockSignature.lean` also proves the first correctness-side
+lemma for this route: sparse signed block challenges preserve the centered
+coordinate noise bound, and a noisy systematic public relation remains noisy
+systematic after challenge application with the same `eta`.  The theorem also
+has a serialized-error form that preserves the combined `eta + roundingEta`
+bound when rounding is represented as an additional bounded error term.
 
 ## Pay-To-Hash
 
@@ -134,5 +142,7 @@ The 172-byte row remains the leading compact KEM/public-view candidate.  It is
 not yet a safe signature primitive.  The smallest plausible reusable-signature
 route is now a product-block Fiat-Shamir-with-aborts design.  The
 verifier-computable block challenge action is formalized for block-diagonal
-systematic views, so the next signature-specific work is the distributional
-and noisy-verifier proof rather than another parameter-search filter.
+systematic views, and the basic signed-challenge noise bound is formalized.
+The next signature-specific work is the distributional rejection-sampling proof
+and serialized Fiat-Shamir verifier equation rather than another
+parameter-search filter.

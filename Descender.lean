@@ -3,6 +3,7 @@ import Descender.LinearCode
 import Descender.Residue
 import Descender.QLattice
 import Descender.SystematicLee
+import Descender.ProductBlockSignature
 import Descender.MomentLee
 import Descender.SharedRowProductBlock
 import Descender.PTND

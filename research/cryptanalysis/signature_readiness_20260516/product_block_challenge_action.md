@@ -31,6 +31,30 @@ The scalar `chi b` is arbitrary in `ZMod q`.  For signatures, the intended
 challenge coefficients are sparse signed values in `{-1, 0, 1}`, but the proof
 is stronger than that.
 
+## Formalized Noise Preservation
+
+`Descender/ProductBlockSignature.lean` adds the verifier-error side for the
+signature setting.  It defines:
+
+- `SignedUnitOrZero`: a challenge scalar is `0`, `1`, or `-1`;
+- `BlockSignedUnitOrZero`: every block challenge scalar is signed-or-zero.
+
+Lean then proves:
+
+- `centeredResidueNoiseSupport_blockScaleFree`
+- `centeredResidueNoiseSupport_blockScalePivot`
+- `centeredResidueNoiseSupport_blockScaleView`
+- `blockScaleView_systematicRelation_add_error`
+- `blockScaleView_noisySystematicRelation_preserves_error`
+- `blockScaleView_noisySerializedSystematicRelation_preserves_error`
+
+Together these show that a noisy public systematic relation with coordinate
+error bounded by `eta` remains a noisy systematic relation with the same
+coordinate error bound after applying a sparse signed product-block challenge.
+The serialized version also handles a separate rounding-error term and preserves
+the combined `eta + roundingEta` bound.  This is the correctness-side reason
+the product-block response bound does not pay for a large scalar challenge.
+
 ## Signature Meaning
 
 The proof discharges the main algebraic objection to a product-block sparse
@@ -51,8 +75,8 @@ are:
 
 - a rejection-sampling theorem showing that accepted responses are statistically
   independent of the secret;
-- a verifier equation for the noisy/high-bit public view, including the exact
-  error budget after block scaling;
+- the exact bit-level serialized/high-bit transcript equation, including how
+  rounding errors are encoded and decoded;
 - a Fiat-Shamir proof/game with challenge derivation, rewinding or forking
   analysis, and transcript binding;
 - concrete challenge encoding and canonical serialization for the block subset
@@ -65,4 +89,4 @@ are:
 The `212 B` to `248 B` rows in `aborts_size_search.md` should no longer be
 described as blocked by a missing equivariance lemma.  They are still
 research candidates, but the next blocker has moved to the signature proof
-itself: rejection sampling plus the noisy verifier equation.
+itself: rejection sampling plus the serialized Fiat-Shamir verifier equation.
