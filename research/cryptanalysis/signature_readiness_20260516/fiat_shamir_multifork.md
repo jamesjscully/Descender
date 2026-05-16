@@ -105,6 +105,41 @@ Pr[extractable] >=
 
 This is `RandomOracleForkingBounds.extractableProb_ge`.
 
+## Six-Draw Replay Certificate
+
+The six-draw candidate now has its own certificate wrapper,
+`SixDrawForkingBounds`, specialized to `Draw = Fin 6`.
+
+Instead of treating replay failure as one opaque number, the theorem asks for
+seven transcript-local inputs:
+
+- one `queryGuess` event;
+- six per-draw `drawFailure d` events;
+- upper bounds for those seven events;
+- the compact coverage-failure bound from the sampler report.
+
+The required implications are simple:
+
+```text
+queryMiss       => queryGuess
+replayFailure   => exists d : Fin 6, drawFailure d
+```
+
+Lean then proves the concrete union-bound certificate:
+
+```text
+Pr[extractable] >=
+  Pr[forgery]
+  - challengeGuessBound
+  - sum_{d : Fin 6} drawFailureBound[d]
+  - coverageFailureBound.
+```
+
+This is `SixDrawForkingBounds.extractableProb_ge`.  The point of this theorem
+is that the next transcript proof does not need to manipulate the global
+forking theorem directly.  It only has to show that each failed replay draw has
+one named reason, and that each reason has a concrete probability bound.
+
 ## Concrete Meaning
 
 For the current `n = 32`, `255 B` row, the sampler-side compact coverage
@@ -112,22 +147,31 @@ failure is about `2^-27.33` when the forking procedure obtains six accepting
 challenge draws for each repeated commitment.  That term is no longer vague:
 it plugs directly into `coverageFailureBound`.
 
-The remaining unproved quantities are now more precise than a single
-`forkingLoss`: concrete `queryMissBound` and `replayFailureBound` for the
-eventual transcript implementation.
+For this row, a canonical product-block challenge has
 
-For the six-draw candidate, instantiate the replay model with `Draw = Fin 6`.
-The transcript proof must bind those six accepting draws to the same public
-key, message, round commitment vector, and repetition indices.
+```text
+(binom(16,15) * 2^15)^7 = (16 * 2^15)^7 = 2^133
+```
+
+possible challenge vectors.  Once the transcript has a canonical challenge
+serializer and the verifier recomputes the challenge from one random-oracle
+point, the query-miss term should therefore be the blind challenge guess term
+`2^-133` for one forgery attempt.
+
+The remaining uninstantiated quantity is now the replay schedule, not a generic
+forking loss.  For the six-draw candidate, instantiate the replay model with
+`Draw = Fin 6`; prove that each failed replay draw is covered by its
+corresponding `drawFailure d`; then bound those six events for the actual
+rewinding/programming schedule.
 
 ## Next Proof Target
 
-The next theorem should instantiate `RandomOracleForkingBounds` for the actual
+The next theorem should instantiate `SixDrawForkingBounds` for the actual
 signature transcript:
 
 ```text
-Pr[queryMiss] <= queryMissBound
-Pr[replayFailure] <= replayFailureBound
+Pr[queryMiss] <= 2^-133
+Pr[drawFailure d] <= drawFailureBound[d]   for each d : Fin 6
 ```
 
 The transcript proof must ensure:
@@ -141,5 +185,5 @@ The transcript proof must ensure:
 - abort/rejection behavior is already absorbed into the observed accepting
   transcript event;
 - the final loss expression is small enough that
-  `forgerSuccess - forkingLoss - coverageFailureBound` remains non-negligible
-  for any successful forger.
+  `forgerSuccess - 2^-133 - sum drawFailureBound -
+  coverageFailureBound` remains non-negligible for any successful forger.

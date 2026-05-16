@@ -104,6 +104,60 @@ theorem acceptProb_or_le_add
         (Finset.univ.sum fun ω => D.mass ω * boolIndicator (B ω)) := by
           simp [mul_add, Finset.sum_add_distrib]
 
+theorem boolIndicator_le_sum_of_exists
+    {I : Type*} [Fintype I] [DecidableEq I]
+    (A : Bool) (E : I -> Bool)
+    (h : A = true -> ∃ i, E i = true) :
+    boolIndicator A <= Finset.univ.sum fun i => boolIndicator (E i) := by
+  cases hA : A
+  · simp [boolIndicator]
+  · rcases h hA with ⟨i, hi⟩
+    have hsingle :
+        boolIndicator (E i) <=
+          Finset.univ.sum fun j => boolIndicator (E j) :=
+      Finset.single_le_sum
+        (by intro j _hj; exact boolIndicator_nonneg (E j))
+        (Finset.mem_univ i)
+    have honeE : boolIndicator (E i) = 1 := by
+      simp [hi]
+    have hsingle_one :
+        (1 : ℝ) <= Finset.univ.sum fun j => boolIndicator (E j) := by
+      simpa [honeE] using hsingle
+    simpa [boolIndicator] using hsingle_one
+
+theorem acceptProb_le_sum_of_exists
+    {I : Type*} [Fintype I] [DecidableEq I]
+    (D : FiniteProbability Ω) (A : Ω -> Bool) (E : I -> Ω -> Bool)
+    (h : ∀ ω, A ω = true -> ∃ i, E i ω = true) :
+    D.acceptProb A <=
+      Finset.univ.sum fun i => D.acceptProb (E i) := by
+  unfold FiniteProbability.acceptProb
+  calc
+    (Finset.univ.sum fun ω => D.mass ω * boolIndicator (A ω)) <=
+        Finset.univ.sum fun ω =>
+          D.mass ω * (Finset.univ.sum fun i => boolIndicator (E i ω)) := by
+          exact Finset.sum_le_sum (by
+            intro ω _hω
+            exact mul_le_mul_of_nonneg_left
+              (boolIndicator_le_sum_of_exists (A ω)
+                (fun i => E i ω) (h ω))
+              (D.nonnegative ω))
+    _ =
+        Finset.univ.sum fun ω =>
+          Finset.univ.sum fun i =>
+            D.mass ω * boolIndicator (E i ω) := by
+          congr 1
+          ext ω
+          simpa using
+            (Finset.mul_sum
+              (s := Finset.univ)
+              (a := D.mass ω)
+              (f := fun i => boolIndicator (E i ω)))
+    _ =
+        Finset.univ.sum fun i =>
+          Finset.univ.sum fun ω => D.mass ω * boolIndicator (E i ω) := by
+          exact Finset.sum_comm
+
 /--
 Finite Fiat-Shamir multi-fork game boundary.
 
@@ -433,6 +487,104 @@ theorem extractableProb_ge
   linarith
 
 end RandomOracleForkingBounds
+
+/--
+Concrete six-draw replay bounds.
+
+For the leading compact candidate the replay target is six accepting draws for
+one commitment, modeled by `Draw = Fin 6`.  This certificate reduces query miss
+to a blind challenge-guess event and replay failure to a union bound over six
+per-draw replay failures.
+-/
+structure SixDrawForkingBounds
+    {q : Nat} [NeZero q]
+    {Trace Round Block LocalFree : Type*}
+    [Fintype Trace]
+    {secret : Block × LocalFree -> ZMod q}
+    {G : MultiForkFiatShamirGame Trace Round (Fin 6) Block LocalFree secret}
+    (R : RandomOracleMultiForkReplay G) where
+  queryGuess : Trace -> Bool
+  drawFailure : Fin 6 -> Trace -> Bool
+  challengeGuessBound : ℝ
+  drawFailureBound : Fin 6 -> ℝ
+  coverageFailureBound : ℝ
+  queryMiss_implies_guess :
+    ∀ τ, R.queryMiss τ = true -> queryGuess τ = true
+  replayFailure_implies_drawFailure :
+    ∀ τ, R.replayFailure τ = true -> ∃ d : Fin 6, drawFailure d τ = true
+  queryGuess_upper :
+    G.traceDist.acceptProb queryGuess <= challengeGuessBound
+  drawFailure_upper :
+    ∀ d, G.traceDist.acceptProb (drawFailure d) <= drawFailureBound d
+  coverageFailure_upper :
+    G.coverageFailureProb <= coverageFailureBound
+
+namespace SixDrawForkingBounds
+
+variable {q : Nat} [NeZero q]
+variable {Trace Round Block LocalFree : Type*}
+variable [Fintype Trace]
+variable {secret : Block × LocalFree -> ZMod q}
+variable {G : MultiForkFiatShamirGame Trace Round (Fin 6) Block LocalFree secret}
+variable {R : RandomOracleMultiForkReplay G}
+
+def replayFailureBound (B : SixDrawForkingBounds R) : ℝ :=
+  Finset.univ.sum B.drawFailureBound
+
+theorem queryMiss_upper
+    (B : SixDrawForkingBounds R) :
+    R.queryMissProb <= B.challengeGuessBound := by
+  unfold queryMissProb
+  have hmono :
+      G.traceDist.acceptProb R.queryMiss <=
+        G.traceDist.acceptProb B.queryGuess :=
+    acceptProb_mono G.traceDist B.queryMiss_implies_guess
+  have hguess := B.queryGuess_upper
+  linarith
+
+theorem replayFailure_upper
+    (B : SixDrawForkingBounds R) :
+    R.replayFailureProb <= B.replayFailureBound := by
+  unfold replayFailureProb replayFailureBound
+  have hunion :
+      G.traceDist.acceptProb R.replayFailure <=
+        Finset.univ.sum fun d =>
+          G.traceDist.acceptProb (B.drawFailure d) :=
+    acceptProb_le_sum_of_exists G.traceDist
+      R.replayFailure B.drawFailure
+      B.replayFailure_implies_drawFailure
+  have hbounds :
+      (Finset.univ.sum fun d =>
+          G.traceDist.acceptProb (B.drawFailure d)) <=
+        Finset.univ.sum B.drawFailureBound :=
+    Finset.sum_le_sum (by
+      intro d _hd
+      exact B.drawFailure_upper d)
+  exact le_trans hunion hbounds
+
+def toRandomOracleForkingBounds
+    (B : SixDrawForkingBounds R) :
+    R.RandomOracleForkingBounds where
+  queryMissBound := B.challengeGuessBound
+  replayFailureBound := B.replayFailureBound
+  coverageFailureBound := B.coverageFailureBound
+  queryMiss_upper := B.queryMiss_upper
+  replayFailure_upper := B.replayFailure_upper
+  coverageFailure_upper := B.coverageFailure_upper
+
+/--
+Six-draw concrete extraction bound.  The only remaining transcript-specific
+inputs are the blind challenge-guess bound, the six per-draw replay-failure
+bounds, and the compact coverage-failure bound.
+-/
+theorem extractableProb_ge
+    (B : SixDrawForkingBounds R) :
+    R.forgerSuccessProb - B.challengeGuessBound -
+        B.replayFailureBound - B.coverageFailureBound <=
+      G.extractableProb := by
+  exact B.toRandomOracleForkingBounds.extractableProb_ge
+
+end SixDrawForkingBounds
 
 end RandomOracleMultiForkReplay
 

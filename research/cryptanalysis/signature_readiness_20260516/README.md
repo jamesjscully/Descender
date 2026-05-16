@@ -205,6 +205,14 @@ accepting same-commitment draws.  Lean proves
 Pr[acceptingForks] >= Pr[forgery] - Pr[queryMiss] - Pr[replayFailure].
 ```
 
+For the six-draw candidate, Lean also provides a transcript-facing wrapper:
+`SixDrawForkingBounds` reduces the open loss terms to one blind challenge-guess
+event and six per-draw replay-failure events.  For the `n = 32`, `255 B` row,
+the canonical challenge space is `(binom(16,15) * 2^15)^7 = 2^133`, so the
+query-miss target is `2^-133` once the challenge serializer/verifier is fixed.
+The remaining proof work is to instantiate the six draw-failure bounds for the
+actual random-oracle replay schedule.
+
 See `fiat_shamir_multifork.md`.
 
 ## Pay-To-Hash

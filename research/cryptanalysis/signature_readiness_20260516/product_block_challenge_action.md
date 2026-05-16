@@ -126,6 +126,8 @@ targets of about `255 B` for `n = 32` and `415 B` for `n = 48` above the
 The finite-probability forking shell also matches that metric by proving
 extractor success at least `forgerSuccess - forkingLoss -
 coverageFailureBound`.  The random-oracle replay refinement splits
-`forkingLoss` into `queryMissBound + replayFailureBound`.  The next blocker is
-the concrete transcript-specific bounds for those two terms plus the serialized
-verifier equation.
+`forkingLoss` into `queryMissBound + replayFailureBound`; the six-draw wrapper
+then specializes this to a `2^-133` challenge-guess target for the `n = 32`,
+`255 B` canonical challenge space plus six per-draw replay-failure bounds.  The
+next blocker is the concrete transcript-specific proof of those draw-failure
+terms plus the serialized verifier equation.

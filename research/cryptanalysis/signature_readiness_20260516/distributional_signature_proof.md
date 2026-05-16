@@ -101,8 +101,14 @@ The product-block route now has three formal layers:
 8. a random-oracle replay refinement proving
    `Pr[acceptingForks] >= Pr[forgery] - Pr[queryMiss] -
    Pr[replayFailure]`.
+9. a six-draw replay certificate reducing the open replay loss to one
+   challenge-guess bound and six per-draw replay-failure bounds:
+   `Pr[extractable] >= Pr[forgery] - challengeGuessBound -
+   sum drawFailureBound - coverageFailureBound`.
 
 The remaining blocker is no longer the sampler distribution.  It is whether an
 intermediate compact fork-delta row can be connected to concrete
-`queryMiss` and `replayFailure` bounds for six accepting draws, or whether we
-must pay for full-block responses.
+`drawFailure` bounds for six accepting draws, or whether we must pay for
+full-block responses.  For the current `n = 32`, `255 B` row, the query-miss
+target is already structurally identified as the `2^-133` blind challenge
+guess term once the canonical challenge serializer is fixed.
