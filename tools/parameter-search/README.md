@@ -196,6 +196,31 @@ The current concrete 128-bit row is wired as
 `roundingEta = 5`, `effectiveEta = 13`, `encodedSampleBytes = 204`,
 `publicKeyBytes = 268`, and `ciphertextBytes = 236`.
 
+Executable search output now mirrors this proof object in
+`metrics.public_sample_serialization`.  Canonical public-key and ciphertext
+byte counts are derived from that object:
+
+```text
+encodedSampleBytes = packedBytes(viewCoordinateCount, sampleBits)
+publicKeyBytes = seedBytes + encodedSampleBytes
+ciphertextBytes = encodedSampleBytes + ciphertextOverheadBytes
+```
+
+The search rejects compressed rows whose recorded rounding profile does not
+satisfy the same arithmetic bound used by the Lean profile.
+
+To emit a concrete size/layout artifact for the current canonical row:
+
+```bash
+cargo run --manifest-path tools/parameter-search/Cargo.toml \
+  --bin canonical_serialization_vector
+```
+
+This writes JSON/Markdown layout metadata and zero-filled PK/CT skeleton files
+under `research/parameter_search/canonical_serialization_vectors/`.  The
+skeleton binaries are for byte-size and layout benchmarking only; they are not
+cryptographic known-answer tests.
+
 ## Proof Strategy Comparison
 
 The `--proof-strategies` flag makes the proof route an explicit search axis:

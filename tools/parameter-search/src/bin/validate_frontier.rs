@@ -96,6 +96,8 @@ struct Metrics {
     #[serde(default)]
     effective_eta: u64,
     #[serde(default)]
+    public_sample_serialization: Option<PublicSampleSerializationProfile>,
+    #[serde(default)]
     qary_amplitude_l1_required: Option<u64>,
     #[serde(default)]
     qary_amplitude_l1_certified: Option<u64>,
@@ -121,6 +123,22 @@ struct Metrics {
     lossy_diagonal_slack_bits: f64,
     security_proxy_bits: f64,
     average_to_worst_slack: f64,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct PublicSampleSerializationProfile {
+    q: u64,
+    coordinate_count: u64,
+    sample_bits: u64,
+    rounding_eta: u64,
+    seed_bytes: u64,
+    ciphertext_overhead_bytes: u64,
+    encoded_sample_bytes: u64,
+    public_key_bytes: u64,
+    ciphertext_bytes: u64,
+    rounding_bound_pass: bool,
+    #[serde(default)]
+    proof_profile: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -252,6 +270,11 @@ struct ExactDiagnostics {
     lossy_budget_candidate_pass: bool,
     view_certificate_route: String,
     view_reduction_certificate_pass: bool,
+    public_sample_serialization_present: bool,
+    public_sample_serialization_matches: bool,
+    public_sample_rounding_bound_pass: bool,
+    public_sample_proof_profile: String,
+    public_sample_proof_profile_matches: bool,
     average_to_worst_pass: bool,
     security_proxy_pass: bool,
     reported_guard_distance_matches: bool,
@@ -469,6 +492,58 @@ fn qary_amplitude_l1_required(q: u64, effective_eta: u64) -> u64 {
     } else {
         (q.saturating_sub(1)).div_ceil(2 * effective_eta)
     }
+}
+
+fn field_element_bits(q: u64) -> u64 {
+    (u64::BITS as u64 - q.leading_zeros() as u64).max(1)
+}
+
+fn encoded_sample_bits(c: &Candidate) -> u64 {
+    if c.sample_bits == 0 {
+        field_element_bits(c.q)
+    } else {
+        c.sample_bits
+    }
+}
+
+fn packed_bytes(entries: u64, bits_per_entry: u64) -> u64 {
+    entries.saturating_mul(bits_per_entry).saturating_add(7) / 8
+}
+
+fn sample_compression_error(q: u64, sample_bits: u64) -> u64 {
+    let full_bits = field_element_bits(q);
+    if sample_bits == 0 || sample_bits >= full_bits {
+        return 0;
+    }
+    let denominator_bits = sample_bits.saturating_add(1).min(62);
+    let denominator = 1_u64 << denominator_bits;
+    q.saturating_add(denominator - 1) / denominator
+}
+
+fn sample_rounding_bound_pass(q: u64, sample_bits: u64, rounding_eta: u64) -> bool {
+    let full_bits = field_element_bits(q);
+    if sample_bits == 0 || sample_bits >= full_bits {
+        return true;
+    }
+    let shift = sample_bits.saturating_add(1).min(127);
+    let rhs = (rounding_eta as u128).saturating_mul(1_u128 << shift);
+    q as u128 <= rhs
+}
+
+fn is_descender128_product_block_compressed_profile(
+    c: &Candidate,
+    serialization: &PublicSampleSerializationProfile,
+) -> bool {
+    c.q == 32771
+        && c.n == 64
+        && c.m0 == 104
+        && c.m1 == 32
+        && c.eta == 8
+        && c.sample_bits == 12
+        && c.view_len() == 136
+        && serialization.encoded_sample_bytes == 204
+        && serialization.public_key_bytes == 268
+        && serialization.ciphertext_bytes == 236
 }
 
 fn log_factorial(n: u64) -> f64 {
@@ -996,32 +1071,43 @@ fn validate_row(profile: &Profile, source: &str, row: &Row, cfg: &Config) -> Val
         .metrics
         .qary_amplitude_keygen_mul_ops
         .unwrap_or_else(|| qary_amplitude_keygen_mul_ops(c));
-    let qary_amplitude_product_block_group_size =
-        row.metrics.qary_amplitude_product_block_group_size.max(product_block_group_size(c));
-    let qary_amplitude_product_block_group_count =
-        row.metrics.qary_amplitude_product_block_group_count.max(product_block_group_count(c));
+    let qary_amplitude_product_block_group_size = row
+        .metrics
+        .qary_amplitude_product_block_group_size
+        .max(product_block_group_size(c));
+    let qary_amplitude_product_block_group_count = row
+        .metrics
+        .qary_amplitude_product_block_group_count
+        .max(product_block_group_count(c));
     let qary_amplitude_product_block_rows_per_group = row
         .metrics
         .qary_amplitude_product_block_rows_per_group
-        .max(if is_product_block_lee(c) { c.lee_rows_per_group } else { 0 });
-    let qary_amplitude_product_block_used_rows =
-        row.metrics.qary_amplitude_product_block_used_rows.max(product_block_used_rows(c));
-    let qary_amplitude_certificate_route = if row.metrics.qary_amplitude_certificate_route.is_empty() {
-        qary_amplitude_certificate_route(c)
-    } else {
-        row.metrics.qary_amplitude_certificate_route.clone()
-    };
+        .max(if is_product_block_lee(c) {
+            c.lee_rows_per_group
+        } else {
+            0
+        });
+    let qary_amplitude_product_block_used_rows = row
+        .metrics
+        .qary_amplitude_product_block_used_rows
+        .max(product_block_used_rows(c));
+    let qary_amplitude_certificate_route =
+        if row.metrics.qary_amplitude_certificate_route.is_empty() {
+            qary_amplitude_certificate_route(c)
+        } else {
+            row.metrics.qary_amplitude_certificate_route.clone()
+        };
     let shared_pair_cert = matching_shared_lee_cert(c, cfg);
     let shared_pair_global_certificate_pass = !matches!(
         c.qary_amplitude_strategy.as_str(),
         "shared-pair-lee" | "product-block-lee"
-    )
-        || shared_pair_cert.is_some();
+    ) || shared_pair_cert.is_some();
     let shared_pair_certificate_source = shared_pair_cert
         .map(|cert| cert.source.clone())
         .unwrap_or_default();
-    let shared_pair_certificate_used_rows =
-        shared_pair_cert.map(|cert| cert.used_rows).unwrap_or_default();
+    let shared_pair_certificate_used_rows = shared_pair_cert
+        .map(|cert| cert.used_rows)
+        .unwrap_or_default();
     let shared_pair_certificate_checked_pairs = shared_pair_cert
         .and_then(|cert| cert.pair_block.as_ref())
         .map(|pair| pair.checked_centered_pair_count)
@@ -1092,15 +1178,14 @@ fn validate_row(profile: &Profile, source: &str, row: &Row, cfg: &Config) -> Val
         view_pair_coordinate_min_support,
         lossy_diagonal_required_distance,
     );
-    let coordinate_subview_lee_dual_restriction_pass =
-        coordinate_subview_lee_dual_restriction_pass(
-            c,
-            full_view,
-            view_coordinate_bound_pass,
-            view_contains_guard_block,
-            correctness_distance_pass,
-            shared_pair_global_certificate_pass,
-        );
+    let coordinate_subview_lee_dual_restriction_pass = coordinate_subview_lee_dual_restriction_pass(
+        c,
+        full_view,
+        view_coordinate_bound_pass,
+        view_contains_guard_block,
+        correctness_distance_pass,
+        shared_pair_global_certificate_pass,
+    );
     let view_certificate_route = if full_view {
         "full-view".to_string()
     } else if coordinate_subview_lee_dual_restriction_pass {
@@ -1130,6 +1215,33 @@ fn validate_row(profile: &Profile, source: &str, row: &Row, cfg: &Config) -> Val
     let view_reduction_certificate_pass = full_view
         || view_pair_coordinate_certificate_pass
         || coordinate_subview_lee_dual_restriction_pass;
+    let expected_sample_bits = encoded_sample_bits(c);
+    let expected_rounding_eta = sample_compression_error(c.q, c.sample_bits);
+    let expected_encoded_sample_bytes = packed_bytes(c.view_len(), expected_sample_bits);
+    let serialization = row.metrics.public_sample_serialization.as_ref();
+    let public_sample_serialization_present = serialization.is_some();
+    let public_sample_serialization_matches = serialization.is_some_and(|s| {
+        s.q == c.q
+            && s.coordinate_count == c.view_len()
+            && s.sample_bits == expected_sample_bits
+            && s.rounding_eta == expected_rounding_eta
+            && s.encoded_sample_bytes == expected_encoded_sample_bytes
+            && s.public_key_bytes == s.seed_bytes.saturating_add(s.encoded_sample_bytes)
+            && s.ciphertext_bytes
+                == s.encoded_sample_bytes
+                    .saturating_add(s.ciphertext_overhead_bytes)
+    });
+    let public_sample_rounding_bound_pass = serialization.is_none_or(|s| {
+        s.rounding_bound_pass && sample_rounding_bound_pass(c.q, c.sample_bits, s.rounding_eta)
+    });
+    let public_sample_proof_profile = serialization
+        .and_then(|s| s.proof_profile.clone())
+        .unwrap_or_default();
+    let public_sample_proof_profile_matches = serialization.is_none_or(|s| {
+        !is_descender128_product_block_compressed_profile(c, s)
+            || s.proof_profile.as_deref()
+                == Some("Descender128ProductBlockCompressedProfile.serialization")
+    });
 
     let exact = ExactDiagnostics {
         q_is_prime,
@@ -1186,6 +1298,11 @@ fn validate_row(profile: &Profile, source: &str, row: &Row, cfg: &Config) -> Val
         lossy_budget_candidate_pass,
         view_certificate_route,
         view_reduction_certificate_pass,
+        public_sample_serialization_present,
+        public_sample_serialization_matches,
+        public_sample_rounding_bound_pass,
+        public_sample_proof_profile,
+        public_sample_proof_profile_matches,
         average_to_worst_pass: row.metrics.average_to_worst_slack
             >= profile.min_average_to_worst_slack as f64,
         security_proxy_pass: row.metrics.security_proxy_bits >= profile.target_security_bits as f64,
@@ -1238,6 +1355,27 @@ fn validate_row(profile: &Profile, source: &str, row: &Row, cfg: &Config) -> Val
         } else {
             failures.push("view_reduction_certificate_missing".to_string());
         }
+    }
+    let expects_descender128_serialization_profile = c.q == 32771
+        && c.n == 64
+        && c.m0 == 104
+        && c.m1 == 32
+        && c.eta == 8
+        && c.sample_bits == 12
+        && c.view_len() == 136
+        && row.metrics.compact_public_key_bytes == 268
+        && row.metrics.ciphertext_bytes == 236;
+    if expects_descender128_serialization_profile && !exact.public_sample_serialization_present {
+        failures.push("public_sample_serialization_missing".to_string());
+    }
+    if exact.public_sample_serialization_present && !exact.public_sample_serialization_matches {
+        failures.push("public_sample_serialization_mismatch".to_string());
+    }
+    if !exact.public_sample_rounding_bound_pass {
+        failures.push("public_sample_rounding_bound".to_string());
+    }
+    if !exact.public_sample_proof_profile_matches {
+        failures.push("public_sample_proof_profile_mismatch".to_string());
     }
     if !exact.average_to_worst_pass {
         failures.push("average_to_worst_proxy".to_string());

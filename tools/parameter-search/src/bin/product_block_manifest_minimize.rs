@@ -57,8 +57,12 @@ fn parse_args() -> Config {
     let mut args = std::env::args().skip(1);
     let mut cfg = Config {
         input_jsons: Vec::new(),
-        output_json: PathBuf::from("research/parameter_search/product_block_lee_sidecars_broad_20260516/manifest_minimal.json"),
-        output_md: PathBuf::from("research/parameter_search/product_block_lee_sidecars_broad_20260516/manifest_minimal.md"),
+        output_json: PathBuf::from(
+            "research/parameter_search/product_block_lee_sidecars_broad_20260516/manifest_minimal.json",
+        ),
+        output_md: PathBuf::from(
+            "research/parameter_search/product_block_lee_sidecars_broad_20260516/manifest_minimal.md",
+        ),
     };
     while let Some(arg) = args.next() {
         match arg.as_str() {
@@ -92,13 +96,26 @@ fn entry_key(entry: &Entry) -> (u64, Option<u64>, usize) {
 }
 
 fn better(a: &Entry, b: &Entry) -> bool {
-    (a.rows_per_group, a.used_rows, a.keygen_mul_ops, a.selected_trial)
-        < (b.rows_per_group, b.used_rows, b.keygen_mul_ops, b.selected_trial)
+    (
+        a.rows_per_group,
+        a.used_rows,
+        a.keygen_mul_ops,
+        a.selected_trial,
+    ) < (
+        b.rows_per_group,
+        b.used_rows,
+        b.keygen_mul_ops,
+        b.selected_trial,
+    )
 }
 
 fn minimize(mut manifest: Manifest) -> Manifest {
     let mut best_by_key: BTreeMap<(u64, Option<u64>, usize), Entry> = BTreeMap::new();
-    for entry in manifest.entries.into_iter().filter(|entry| entry.passes_target) {
+    for entry in manifest
+        .entries
+        .into_iter()
+        .filter(|entry| entry.passes_target)
+    {
         let key = entry_key(&entry);
         match best_by_key.get(&key) {
             Some(current) if !better(&entry, current) => {}
@@ -111,10 +128,18 @@ fn minimize(mut manifest: Manifest) -> Manifest {
     manifest.q_values = manifest.entries.iter().map(|entry| entry.q).collect();
     manifest.q_values.sort_unstable();
     manifest.q_values.dedup();
-    manifest.eta_values = manifest.entries.iter().filter_map(|entry| entry.eta).collect();
+    manifest.eta_values = manifest
+        .entries
+        .iter()
+        .filter_map(|entry| entry.eta)
+        .collect();
     manifest.eta_values.sort_unstable();
     manifest.eta_values.dedup();
-    manifest.target_l1_values = manifest.entries.iter().map(|entry| entry.target_l1).collect();
+    manifest.target_l1_values = manifest
+        .entries
+        .iter()
+        .map(|entry| entry.target_l1)
+        .collect();
     manifest.target_l1_values.sort_unstable();
     manifest.target_l1_values.dedup();
     manifest.rows_per_group_values = manifest
@@ -124,9 +149,9 @@ fn minimize(mut manifest: Manifest) -> Manifest {
         .collect();
     manifest.rows_per_group_values.sort_unstable();
     manifest.rows_per_group_values.dedup();
-    manifest.notes.push(
-        "Minimized to the cheapest passing sidecar per (q, eta, m1).".to_string(),
-    );
+    manifest
+        .notes
+        .push("Minimized to the cheapest passing sidecar per (q, eta, m1).".to_string());
     manifest
 }
 

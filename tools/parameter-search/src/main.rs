@@ -76,6 +76,7 @@ struct Metrics {
     coefficient_public_bytes: u64,
     incidence_public_bytes: u64,
     diagonal_public_bytes: u64,
+    public_sample_serialization: PublicSampleSerializationProfile,
     sample_encoding_bits: u64,
     sample_compression_error: u64,
     effective_eta: u64,
@@ -113,6 +114,21 @@ struct Metrics {
     lossy_diagonal_slack_bits: f64,
     security_proxy_bits: f64,
     average_to_worst_slack: f64,
+}
+
+#[derive(Clone, Debug, Serialize)]
+struct PublicSampleSerializationProfile {
+    q: u64,
+    coordinate_count: u64,
+    sample_bits: u64,
+    rounding_eta: u64,
+    seed_bytes: u64,
+    ciphertext_overhead_bytes: u64,
+    encoded_sample_bytes: u64,
+    public_key_bytes: u64,
+    ciphertext_bytes: u64,
+    rounding_bound_pass: bool,
+    proof_profile: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -680,6 +696,66 @@ fn sample_compression_error(q: u64, sample_bits: u64) -> u64 {
     q.saturating_add(denominator - 1) / denominator
 }
 
+fn sample_rounding_bound_pass(q: u64, sample_bits: u64, rounding_eta: u64) -> bool {
+    let full_bits = field_element_bits(q);
+    if sample_bits == 0 || sample_bits >= full_bits {
+        return true;
+    }
+    let shift = sample_bits.saturating_add(1).min(127);
+    let rhs = (rounding_eta as u128).saturating_mul(1_u128 << shift);
+    q as u128 <= rhs
+}
+
+fn proof_profile_name(
+    c: &Candidate,
+    encoded_sample_bytes: u64,
+    public_key_bytes: u64,
+    ciphertext_bytes: u64,
+) -> Option<String> {
+    let matches_descender128_product_block_compressed = c.q == 32771
+        && c.n == 64
+        && c.m0 == 104
+        && c.m1 == 32
+        && c.eta == 8
+        && c.sample_bits == 12
+        && c.view_len() == 136
+        && encoded_sample_bytes == 204
+        && public_key_bytes == 268
+        && ciphertext_bytes == 236;
+    matches_descender128_product_block_compressed
+        .then(|| "Descender128ProductBlockCompressedProfile.serialization".to_string())
+}
+
+fn public_sample_serialization(
+    c: &Candidate,
+    seed_bytes: u64,
+    ciphertext_overhead_bytes: u64,
+) -> PublicSampleSerializationProfile {
+    let sample_bits = encoded_sample_bits(c);
+    let rounding_eta = sample_compression_error(c.q, c.sample_bits);
+    let encoded_sample_bytes = packed_bytes(c.view_len(), sample_bits);
+    let public_key_bytes = seed_bytes.saturating_add(encoded_sample_bytes);
+    let ciphertext_bytes = encoded_sample_bytes.saturating_add(ciphertext_overhead_bytes);
+    PublicSampleSerializationProfile {
+        q: c.q,
+        coordinate_count: c.view_len(),
+        sample_bits,
+        rounding_eta,
+        seed_bytes,
+        ciphertext_overhead_bytes,
+        encoded_sample_bytes,
+        public_key_bytes,
+        ciphertext_bytes,
+        rounding_bound_pass: sample_rounding_bound_pass(c.q, c.sample_bits, rounding_eta),
+        proof_profile: proof_profile_name(
+            c,
+            encoded_sample_bytes,
+            public_key_bytes,
+            ciphertext_bytes,
+        ),
+    }
+}
+
 fn lossy_diagonal_required_distance(q: u64, n: u64, effective_eta: u64) -> u64 {
     let logq = (q as f64).log2();
     let bad_scale_width = (4 * effective_eta + 1).max(1) as f64;
@@ -795,8 +871,10 @@ fn lee_choices_for(
     eta: u64,
     cfg: &Config,
 ) -> Vec<(u64, u64)> {
-    if matches!(qary_amplitude_strategy, "shared-pair-lee" | "product-block-lee")
-        && !cfg.product_block_choices.is_empty()
+    if matches!(
+        qary_amplitude_strategy,
+        "shared-pair-lee" | "product-block-lee"
+    ) && !cfg.product_block_choices.is_empty()
     {
         let mut choices: Vec<_> = cfg
             .product_block_choices
@@ -879,7 +957,7 @@ struct PublicKeyAccounting {
     coefficient_public_bytes: u64,
     incidence_public_bytes: u64,
     diagonal_public_bytes: u64,
-    public_sample_bytes: u64,
+    public_sample_serialization: PublicSampleSerializationProfile,
 }
 
 fn public_key_accounting(
@@ -889,7 +967,6 @@ fn public_key_accounting(
     incidence_model: &str,
     public_key_model: &str,
 ) -> PublicKeyAccounting {
-    let public_sample_bytes = packed_bytes(c.view_len(), encoded_sample_bits(c));
     let component_seed_bytes = if c.pk_seed_bytes == 0 {
         96
     } else {
@@ -901,22 +978,34 @@ fn public_key_accounting(
         c.pk_seed_bytes
     };
     match public_key_model {
-        "component" => PublicKeyAccounting {
-            setup_seed_bytes: component_seed_bytes,
-            cauchy_public_bytes: (c.n + c.m()) * elem_bytes,
-            coefficient_public_bytes: coefficient_public_bytes(c, elem_bytes, coefficient_model),
-            incidence_public_bytes: incidence_public_bytes(c, incidence_model),
-            diagonal_public_bytes: diagonal_public_bytes(c, elem_bytes, incidence_model),
-            public_sample_bytes,
-        },
-        "canonical" => PublicKeyAccounting {
-            setup_seed_bytes: canonical_seed_bytes,
-            cauchy_public_bytes: 0,
-            coefficient_public_bytes: 0,
-            incidence_public_bytes: 0,
-            diagonal_public_bytes: 0,
-            public_sample_bytes,
-        },
+        "component" => {
+            let public_sample_serialization =
+                public_sample_serialization(c, component_seed_bytes, 32);
+            PublicKeyAccounting {
+                setup_seed_bytes: component_seed_bytes,
+                cauchy_public_bytes: (c.n + c.m()) * elem_bytes,
+                coefficient_public_bytes: coefficient_public_bytes(
+                    c,
+                    elem_bytes,
+                    coefficient_model,
+                ),
+                incidence_public_bytes: incidence_public_bytes(c, incidence_model),
+                diagonal_public_bytes: diagonal_public_bytes(c, elem_bytes, incidence_model),
+                public_sample_serialization,
+            }
+        }
+        "canonical" => {
+            let public_sample_serialization =
+                public_sample_serialization(c, canonical_seed_bytes, 32);
+            PublicKeyAccounting {
+                setup_seed_bytes: canonical_seed_bytes,
+                cauchy_public_bytes: 0,
+                coefficient_public_bytes: 0,
+                incidence_public_bytes: 0,
+                diagonal_public_bytes: 0,
+                public_sample_serialization,
+            }
+        }
         other => panic!("unknown public key model {other:?}"),
     }
 }
@@ -938,13 +1027,13 @@ fn evaluate(
         + accounting.coefficient_public_bytes
         + accounting.incidence_public_bytes
         + accounting.diagonal_public_bytes
-        + accounting.public_sample_bytes;
+        + accounting.public_sample_serialization.encoded_sample_bytes;
 
-    let sample_bits = encoded_sample_bits(c);
-    let sample_error = sample_compression_error(c.q, c.sample_bits);
+    let sample_bits = accounting.public_sample_serialization.sample_bits;
+    let sample_error = accounting.public_sample_serialization.rounding_eta;
     let effective_eta = c.eta.saturating_add(sample_error);
 
-    let ct = packed_bytes(c.view_len(), sample_bits) + 32;
+    let ct = accounting.public_sample_serialization.ciphertext_bytes;
     let sk = c.n * eb + 64;
 
     let guard_distance = c.m0 as i64 - c.n as i64 + 1;
@@ -1025,10 +1114,11 @@ fn evaluate(
         coefficient_public_bytes: accounting.coefficient_public_bytes,
         incidence_public_bytes: accounting.incidence_public_bytes,
         diagonal_public_bytes: accounting.diagonal_public_bytes,
+        public_sample_serialization: accounting.public_sample_serialization.clone(),
         sample_encoding_bits: sample_bits,
         sample_compression_error: sample_error,
         effective_eta,
-        public_sample_bytes: accounting.public_sample_bytes,
+        public_sample_bytes: accounting.public_sample_serialization.encoded_sample_bytes,
         compact_public_key_bytes: compact_pk,
         ciphertext_bytes: ct,
         secret_key_bytes: sk,
@@ -1133,6 +1223,9 @@ fn hard_failures(c: &Candidate, m: &Metrics, p: &Profile) -> Vec<&'static str> {
     }
     if m.noise_headroom <= 0 {
         failures.push("centered_noise_headroom");
+    }
+    if !m.public_sample_serialization.rounding_bound_pass {
+        failures.push("public_sample_rounding_bound");
     }
     if !m.qary_amplitude_at_noise_pass {
         failures.push("qary_amplitude_at_noise");
@@ -1346,13 +1439,14 @@ struct Indices {
 impl Indices {
     fn candidate(self, cfg: &Config) -> Candidate {
         let n = cfg.n_values[self.n];
-        let qary_amplitude_strategy = cfg.qary_amplitude_strategies[self.qary_amplitude_strategy]
-            .clone();
+        let qary_amplitude_strategy =
+            cfg.qary_amplitude_strategies[self.qary_amplitude_strategy].clone();
         let q = cfg.q_values[self.q];
         let m1 = m1_choice(cfg, n, self.m1);
         let eta = cfg.eta_values[self.eta];
-        let manifest_lee_choice =
-            lee_choices_for(&qary_amplitude_strategy, q, m1, eta, cfg).into_iter().next();
+        let manifest_lee_choice = lee_choices_for(&qary_amplitude_strategy, q, m1, eta, cfg)
+            .into_iter()
+            .next();
         let (lee_repetition, lee_rows_per_group) = manifest_lee_choice.unwrap_or((
             cfg.lee_repetition_values[self.lee_repetition],
             cfg.lee_rows_per_group_values[self.lee_rows_per_group],
@@ -1514,11 +1608,11 @@ fn run_grid_search(
                         (cfg.proof_strategies.len()
                             * cfg.primal_distance_models.len()
                             * m0_choice_count(cfg)
-        * cfg.fiber_dims.len()
-        * cfg.sample_bits_values.len()
-        * cfg.view_coord_values.len()
-        * cfg.pk_seed_byte_values.len()
-        * lee_choices.len()) as u64,
+                            * cfg.fiber_dims.len()
+                            * cfg.sample_bits_values.len()
+                            * cfg.view_coord_values.len()
+                            * cfg.pk_seed_byte_values.len()
+                            * lee_choices.len()) as u64,
                     );
                 }
             }
@@ -1558,7 +1652,8 @@ fn run_grid_search(
                                                             )
                                                         {
                                                             let candidate = Candidate {
-                                                                proof_strategy: proof_strategy.clone(),
+                                                                proof_strategy: proof_strategy
+                                                                    .clone(),
                                                                 primal_distance_model:
                                                                     primal_distance_model.clone(),
                                                                 qary_amplitude_strategy:
@@ -2040,4 +2135,60 @@ fn main() -> Result<(), String> {
         total_candidates
     );
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn descender128_product_block_compressed_candidate() -> Candidate {
+        Candidate {
+            proof_strategy: "lossy-budget".to_string(),
+            primal_distance_model: "guard-only".to_string(),
+            q: 32771,
+            n: 64,
+            m0: 104,
+            m1: 32,
+            fiber_dim: 8,
+            eta: 8,
+            sample_bits: 12,
+            view_coords: 0,
+            pk_seed_bytes: 0,
+            qary_amplitude_strategy: "product-block-lee".to_string(),
+            lee_repetition: 2049,
+            lee_rows_per_group: 4,
+        }
+    }
+
+    #[test]
+    fn executable_serialization_matches_lean_descender128_profile() {
+        let c = descender128_product_block_compressed_candidate();
+        let serialization = public_sample_serialization(&c, 64, 32);
+        assert_eq!(serialization.coordinate_count, 136);
+        assert_eq!(serialization.sample_bits, 12);
+        assert_eq!(serialization.rounding_eta, 5);
+        assert_eq!(serialization.encoded_sample_bytes, 204);
+        assert_eq!(serialization.public_key_bytes, 268);
+        assert_eq!(serialization.ciphertext_bytes, 236);
+        assert!(serialization.rounding_bound_pass);
+        assert_eq!(
+            serialization.proof_profile.as_deref(),
+            Some("Descender128ProductBlockCompressedProfile.serialization")
+        );
+    }
+
+    #[test]
+    fn canonical_pk_and_ct_accounting_use_public_sample_serialization() {
+        let c = descender128_product_block_compressed_candidate();
+        let metrics = evaluate(&c, "seeded", "seeded", "canonical");
+        assert_eq!(metrics.public_sample_bytes, 204);
+        assert_eq!(metrics.compact_public_key_bytes, 268);
+        assert_eq!(metrics.ciphertext_bytes, 236);
+        assert_eq!(metrics.sample_compression_error, 5);
+        assert_eq!(metrics.effective_eta, 13);
+        assert_eq!(
+            metrics.public_sample_serialization.proof_profile.as_deref(),
+            Some("Descender128ProductBlockCompressedProfile.serialization")
+        );
+    }
 }

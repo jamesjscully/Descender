@@ -200,6 +200,27 @@ composableSystematicLeeDualCertificate
 blockDiagonalCheckedLeeDualCertificate
 ```
 
+For the current compressed public view, the concrete 128-bit profile is also
+named in Lean:
+
+```text
+PublicSampleSerializationProfile
+Descender128ProductBlockCompressedProfile.serialization
+Descender128ProductBlockCompressedProfile.viewBudget
+Descender128ProductBlockCompressedProfile.rounding_bound
+Descender128ProductBlockCompressedProfile.effective_amplitude_bound
+Descender128ProductBlockCompressedProfile.publicKeyBytes_eq
+Descender128ProductBlockCompressedProfile.ciphertextBytes_eq
+```
+
+This records the deployed arithmetic bridge for the best row found so far:
+`q = 32771`, `eta = 8`, 12-bit public-sample coordinates, `roundingEta = 5`,
+effective eta `13`, 204 encoded sample bytes, 268 public-key bytes, and 236
+ciphertext bytes.  The parameter-search executable now emits the corresponding
+`metrics.public_sample_serialization` object and derives canonical public-key
+and ciphertext sizes from it, with a Rust regression test checking this row
+against the Lean profile name.
+
 This is the route that makes an efficient construction proof-carrying.  Instead
 of trying to certify an arbitrary dense `P` by bounded search, build `P` from
 local blocks.  For each block, prove an exact local Lee lower bound over all

@@ -80,11 +80,7 @@ fn signed_to_mod(x: i64, q: u64) -> u64 {
         (x as u64) % q
     } else {
         let y = ((-x) as u64) % q;
-        if y == 0 {
-            0
-        } else {
-            q - y
-        }
+        if y == 0 { 0 } else { q - y }
     }
 }
 

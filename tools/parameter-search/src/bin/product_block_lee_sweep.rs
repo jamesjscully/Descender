@@ -282,7 +282,10 @@ fn certify_point(
     seed: u64,
 ) -> CertificateOutput {
     assert!(q > 2, "q must be greater than 2");
-    assert!(m1 > 0 && m1.is_multiple_of(2), "m1 must be positive and even");
+    assert!(
+        m1 > 0 && m1.is_multiple_of(2),
+        "m1 must be positive and even"
+    );
     assert!(rows_per_group > 0, "rows per group must be positive");
     let group_size = 2;
     let group_count = m1 / group_size;
@@ -418,7 +421,9 @@ fn parse_args() -> Config {
                 cfg.rows_per_group_values = parse_csv_usize(&args.next().unwrap())
             }
             "--trials" => cfg.trials = args.next().unwrap().parse().unwrap(),
-            "--local-search-steps" => cfg.local_search_steps = args.next().unwrap().parse().unwrap(),
+            "--local-search-steps" => {
+                cfg.local_search_steps = args.next().unwrap().parse().unwrap()
+            }
             "--seed" => cfg.seed = args.next().unwrap().parse().unwrap(),
             "--output-dir" => cfg.output_dir = PathBuf::from(args.next().unwrap()),
             "--emit-failures" => cfg.emit_failures = true,
@@ -452,7 +457,10 @@ fn print_help() {
 
 fn main() {
     let cfg = parse_args();
-    assert!(cfg.m1 > 0 && cfg.m1.is_multiple_of(2), "m1 must be positive and even");
+    assert!(
+        cfg.m1 > 0 && cfg.m1.is_multiple_of(2),
+        "m1 must be positive and even"
+    );
     fs::create_dir_all(&cfg.output_dir).expect("create output dir");
     let mut entries = Vec::new();
     for &q in &cfg.q_values {
@@ -538,8 +546,11 @@ fn main() {
     };
     let json_path = cfg.output_dir.join("manifest.json");
     let md_path = cfg.output_dir.join("manifest.md");
-    fs::write(&json_path, serde_json::to_string_pretty(&manifest).unwrap() + "\n")
-        .expect("write manifest json");
+    fs::write(
+        &json_path,
+        serde_json::to_string_pretty(&manifest).unwrap() + "\n",
+    )
+    .expect("write manifest json");
     fs::write(&md_path, manifest_markdown(&manifest)).expect("write manifest md");
     println!("wrote {}", json_path.display());
     println!("wrote {}", md_path.display());

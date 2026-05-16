@@ -1,0 +1,53 @@
+{
+  "profile_name": "Descender128ProductBlockCompressedProfile.serialization",
+  "q": 32771,
+  "n": 64,
+  "m0": 104,
+  "m1": 32,
+  "eta": 8,
+  "coordinate_count": 136,
+  "sample_bits": 12,
+  "rounding_eta": 5,
+  "effective_eta": 13,
+  "seed_bytes": 64,
+  "ciphertext_overhead_bytes": 32,
+  "encoded_sample_bytes": 204,
+  "public_key_bytes": 268,
+  "ciphertext_bytes": 236,
+  "rounding_bound_pass": true,
+  "public_key_layout": [
+    {
+      "name": "seed",
+      "offset": 0,
+      "length": 64,
+      "description": "Domain-separated canonical setup seed."
+    },
+    {
+      "name": "packed_public_sample",
+      "offset": 64,
+      "length": 204,
+      "description": "Bit-packed public sample coordinates."
+    }
+  ],
+  "ciphertext_layout": [
+    {
+      "name": "packed_ciphertext_sample",
+      "offset": 0,
+      "length": 204,
+      "description": "Bit-packed ciphertext coordinate vector."
+    },
+    {
+      "name": "ciphertext_overhead",
+      "offset": 204,
+      "length": 32,
+      "description": "Fixed KEM overhead carried outside the coordinate vector."
+    }
+  ],
+  "public_key_skeleton_file": "descender128_product_block_compressed.pk.bin",
+  "ciphertext_skeleton_file": "descender128_product_block_compressed.ct.bin",
+  "notes": [
+    "Skeleton binaries are zero-filled size/layout artifacts, not cryptographic test vectors.",
+    "Byte counts are the canonical public sample profile consumed by the parameter search accounting.",
+    "The rounding bound mirrors PublicSampleSerializationProfile.hRoundingBound."
+  ]
+}

@@ -223,6 +223,19 @@ research/parameter_search/product_block_sidecar_compressed_samples_search
 research/parameter_search/product_block_sidecar_compressed_samples_search_validated
 ```
 
+After wiring the executable serialization profile, the same candidate was
+regenerated as a focused one-row witness:
+
+```text
+research/parameter_search/product_block_compressed_profile_witness
+research/parameter_search/product_block_compressed_profile_witness_validated
+```
+
+That regenerated artifact includes
+`metrics.public_sample_serialization.proof_profile =
+Descender128ProductBlockCompressedProfile.serialization`, and validation passes
+with `public_sample_serialization_matches = true`.
+
 The search model was updated to treat public-sample compression as deterministic
 post-processing of the uncompressed public sample.  Security should follow by
 data processing from the uncompressed proof, while correctness and amplitude
@@ -282,6 +295,7 @@ facts: deterministic serialization cannot increase distinguishing advantage,
 and correctness may replace `eta` by `eta + roundingEta` when the decoded
 sample contributes a bounded rounding vector.  The concrete 12-bit profile is
 now instantiated in Lean with `roundingEta = 5`, `effectiveEta = 13`, `pk = 268
-B`, and `ct = 236 B`.  The remaining implementation work for this row is to
-make the executable KEM serializer use the same `PublicSampleSerializationProfile`
-constants.
+B`, and `ct = 236 B`.  The executable parameter-search path now mirrors this as
+`metrics.public_sample_serialization`, derives canonical `pk`/`ct` byte counts
+from that profile, and has a regression test pinning the 128-bit row to the
+Lean profile name.

@@ -516,7 +516,11 @@ fn dual_qary_basis(matrix: &[Vec<u64>], q: u64) -> Vec<Vec<i64>> {
 }
 
 fn basis_stem(index: usize, descriptor: &MatrixDescriptor) -> String {
-    format!("{index:04}_{}_{}", descriptor.family.replace('-', "_"), descriptor.seed)
+    format!(
+        "{index:04}_{}_{}",
+        descriptor.family.replace('-', "_"),
+        descriptor.seed
+    )
 }
 
 fn markdown(out: &CertificateOutput) -> String {
@@ -611,8 +615,10 @@ fn main() {
                 .basis_dir
                 .as_ref()
                 .map(|basis_dir| {
-                    let file_name =
-                        format!("{}.dual_qary_basis.txt", basis_stem(index, &candidate.descriptor));
+                    let file_name = format!(
+                        "{}.dual_qary_basis.txt",
+                        basis_stem(index, &candidate.descriptor)
+                    );
                     let path = basis_dir.join(&file_name);
                     (Some(path), Some(file_name))
                 })
