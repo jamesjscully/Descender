@@ -125,5 +125,7 @@ targets of about `255 B` for `n = 32` and `415 B` for `n = 48` above the
 `24`-bit line.  The deterministic multi-fork extractor now matches that metric.
 The finite-probability forking shell also matches that metric by proving
 extractor success at least `forgerSuccess - forkingLoss -
-coverageFailureBound`.  The next blocker is the concrete random-oracle
-forking-loss bound plus the serialized verifier equation.
+coverageFailureBound`.  The random-oracle replay refinement splits
+`forkingLoss` into `queryMissBound + replayFailureBound`.  The next blocker is
+the concrete transcript-specific bounds for those two terms plus the serialized
+verifier equation.

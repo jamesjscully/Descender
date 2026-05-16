@@ -196,8 +196,16 @@ Pr[extractable] >= forgerSuccess - forkingLoss - coverageFailureBound.
 
 Thus the `2^-27.33` compact coverage-failure term for the `255 B`, `n = 32`
 row now plugs into a formal theorem.  The still-open part is the concrete
-random-oracle forking lemma that bounds `forkingLoss` for six accepting
-same-commitment challenge draws.  See `fiat_shamir_multifork.md`.
+random-oracle replay analysis.  This is now split into two events:
+`queryMiss`, where the forger did not expose the challenge hash point needed
+for replay, and `replayFailure`, where replaying that point fails to obtain six
+accepting same-commitment draws.  Lean proves
+
+```text
+Pr[acceptingForks] >= Pr[forgery] - Pr[queryMiss] - Pr[replayFailure].
+```
+
+See `fiat_shamir_multifork.md`.
 
 ## Pay-To-Hash
 
@@ -241,7 +249,7 @@ verifier-computable block challenge action is formalized for block-diagonal
 systematic views, and the basic signed-challenge noise bound is formalized.
 The distributional rejection-sampling theorem is also formalized as a generic
 finite-probability proof.  The exact-box sampler, compact fork-delta coverage
-analysis, deterministic multi-fork extractor, and finite-probability forking
-loss shell are now concrete.  The next signature-specific work is deriving the
-actual random-oracle `forkingLoss` bound for six accepting draws, plus the
-serialized verifier equation.
+analysis, deterministic multi-fork extractor, and finite-probability
+random-oracle replay shell are now concrete.  The next signature-specific work
+is deriving concrete `queryMissBound` and `replayFailureBound` values for six
+accepting draws, plus the serialized verifier equation.

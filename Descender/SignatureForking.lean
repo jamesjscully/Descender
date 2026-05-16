@@ -35,6 +35,26 @@ theorem boolIndicator_le_and_not_add
     boolIndicator A <= boolIndicator (A && !B) + boolIndicator B := by
   cases A <;> cases B <;> simp [boolIndicator]
 
+theorem boolIndicator_mono {A B : Bool}
+    (h : A = true -> B = true) :
+    boolIndicator A <= boolIndicator B := by
+  cases A <;> cases B <;> simp [boolIndicator] at h ⊢
+
+theorem boolIndicator_or_le_add
+    (A B : Bool) :
+    boolIndicator (A || B) <= boolIndicator A + boolIndicator B := by
+  cases A <;> cases B <;> simp [boolIndicator]
+
+theorem acceptProb_mono
+    (D : FiniteProbability Ω) {A B : Ω -> Bool}
+    (h : ∀ ω, A ω = true -> B ω = true) :
+    D.acceptProb A <= D.acceptProb B := by
+  unfold FiniteProbability.acceptProb
+  exact Finset.sum_le_sum (by
+    intro ω _hω
+    exact mul_le_mul_of_nonneg_left
+      (boolIndicator_mono (h ω)) (D.nonnegative ω))
+
 theorem acceptProb_le_and_not_add
     (D : FiniteProbability Ω) (A B : Ω -> Bool) :
     D.acceptProb A <=
@@ -63,6 +83,26 @@ theorem sub_acceptProb_le_and_not
       D.acceptProb (fun ω => A ω && !B ω) := by
   have h := acceptProb_le_and_not_add D A B
   linarith
+
+theorem acceptProb_or_le_add
+    (D : FiniteProbability Ω) (A B : Ω -> Bool) :
+    D.acceptProb (fun ω => A ω || B ω) <=
+      D.acceptProb A + D.acceptProb B := by
+  unfold FiniteProbability.acceptProb
+  calc
+    (Finset.univ.sum fun ω =>
+        D.mass ω * boolIndicator (A ω || B ω)) <=
+        Finset.univ.sum fun ω =>
+          D.mass ω * (boolIndicator (A ω) + boolIndicator (B ω)) := by
+          exact Finset.sum_le_sum (by
+            intro ω _hω
+            exact mul_le_mul_of_nonneg_left
+              (boolIndicator_or_le_add (A ω) (B ω))
+              (D.nonnegative ω))
+    _ =
+        (Finset.univ.sum fun ω => D.mass ω * boolIndicator (A ω)) +
+        (Finset.univ.sum fun ω => D.mass ω * boolIndicator (B ω)) := by
+          simp [mul_add, Finset.sum_add_distrib]
 
 /--
 Finite Fiat-Shamir multi-fork game boundary.
@@ -224,6 +264,177 @@ theorem extractableProb_ge
 end MultiForkForkingCertificate
 
 end MultiForkFiatShamirGame
+
+/--
+Random-oracle replay layer for the multi-fork game.
+
+The event `forgery` is the original successful forgery event.  The event
+`queryMiss` covers successful forgeries where the reduction did not obtain the
+challenge random-oracle point it has to replay.  The event `replayFailure`
+covers all failures after that point is available: bad replay schedule,
+insufficient accepting replays, or transcript-binding failure.  The final field
+is the standard random-oracle replay invariant: a forgery with neither loss
+event gives accepting same-commitment forks.
+-/
+structure RandomOracleMultiForkReplay
+    {q : Nat} [NeZero q]
+    {Trace Round Draw Block LocalFree : Type*}
+    [Fintype Trace]
+    {secret : Block × LocalFree -> ZMod q}
+    (G : MultiForkFiatShamirGame Trace Round Draw Block LocalFree secret)
+    where
+  forgery : Trace -> Bool
+  queryMiss : Trace -> Bool
+  replayFailure : Trace -> Bool
+  acceptingForks_of_good :
+    ∀ τ,
+      forgery τ = true ->
+      queryMiss τ = false ->
+      replayFailure τ = false ->
+      G.acceptingForks τ = true
+
+namespace RandomOracleMultiForkReplay
+
+variable {q : Nat} [NeZero q]
+variable {Trace Round Draw Block LocalFree : Type*}
+variable [Fintype Trace]
+variable {secret : Block × LocalFree -> ZMod q}
+variable {G : MultiForkFiatShamirGame Trace Round Draw Block LocalFree secret}
+
+def forkingFailure (R : RandomOracleMultiForkReplay G) (τ : Trace) : Bool :=
+  R.queryMiss τ || R.replayFailure τ
+
+def goodReplayEvent (R : RandomOracleMultiForkReplay G) (τ : Trace) : Bool :=
+  R.forgery τ && !R.forkingFailure τ
+
+def forgerSuccessProb (R : RandomOracleMultiForkReplay G) : ℝ :=
+  G.traceDist.acceptProb R.forgery
+
+def queryMissProb (R : RandomOracleMultiForkReplay G) : ℝ :=
+  G.traceDist.acceptProb R.queryMiss
+
+def replayFailureProb (R : RandomOracleMultiForkReplay G) : ℝ :=
+  G.traceDist.acceptProb R.replayFailure
+
+def forkingFailureProb (R : RandomOracleMultiForkReplay G) : ℝ :=
+  G.traceDist.acceptProb R.forkingFailure
+
+def goodReplayProb (R : RandomOracleMultiForkReplay G) : ℝ :=
+  G.traceDist.acceptProb R.goodReplayEvent
+
+theorem queryMiss_false_of_not_failure
+    (R : RandomOracleMultiForkReplay G) {τ : Trace}
+    (h : R.forkingFailure τ = false) :
+    R.queryMiss τ = false := by
+  cases hq : R.queryMiss τ <;>
+    cases hr : R.replayFailure τ <;>
+    simp [forkingFailure, hq, hr] at h ⊢
+
+theorem replayFailure_false_of_not_failure
+    (R : RandomOracleMultiForkReplay G) {τ : Trace}
+    (h : R.forkingFailure τ = false) :
+    R.replayFailure τ = false := by
+  cases hq : R.queryMiss τ <;>
+    cases hr : R.replayFailure τ <;>
+    simp [forkingFailure, hq, hr] at h ⊢
+
+theorem acceptingForks_of_goodReplayEvent
+    (R : RandomOracleMultiForkReplay G) {τ : Trace}
+    (hgood : R.goodReplayEvent τ = true) :
+    G.acceptingForks τ = true := by
+  have hforge : R.forgery τ = true := by
+    cases hf : R.forgery τ <;>
+      cases hfail : R.forkingFailure τ <;>
+      simp [goodReplayEvent, hf, hfail] at hgood ⊢
+  have hnotFailure : R.forkingFailure τ = false := by
+    cases hf : R.forgery τ <;>
+      cases hfail : R.forkingFailure τ <;>
+      simp [goodReplayEvent, hf, hfail] at hgood ⊢
+  exact R.acceptingForks_of_good τ hforge
+    (R.queryMiss_false_of_not_failure hnotFailure)
+    (R.replayFailure_false_of_not_failure hnotFailure)
+
+theorem goodReplayProb_le_forkSuccessProb
+    (R : RandomOracleMultiForkReplay G) :
+    R.goodReplayProb <= G.forkSuccessProb := by
+  unfold goodReplayProb MultiForkFiatShamirGame.forkSuccessProb
+  exact acceptProb_mono G.traceDist
+    (fun τ h => R.acceptingForks_of_goodReplayEvent h)
+
+theorem forkingFailureProb_le_losses
+    (R : RandomOracleMultiForkReplay G) :
+    R.forkingFailureProb <= R.queryMissProb + R.replayFailureProb := by
+  unfold forkingFailureProb queryMissProb replayFailureProb forkingFailure
+  exact acceptProb_or_le_add G.traceDist R.queryMiss R.replayFailure
+
+/--
+Concrete random-oracle replay loss.  A successful forgery becomes accepting
+same-commitment multi-forks except for the query-miss and replay-failure
+events.
+-/
+theorem forkSuccessProb_lower_bound
+    (R : RandomOracleMultiForkReplay G) :
+    R.forgerSuccessProb - R.queryMissProb - R.replayFailureProb <=
+      G.forkSuccessProb := by
+  have hgoodLower :
+      R.forgerSuccessProb - R.forkingFailureProb <= R.goodReplayProb := by
+    simpa [forgerSuccessProb, forkingFailureProb, goodReplayProb,
+      goodReplayEvent] using
+      sub_acceptProb_le_and_not G.traceDist R.forgery R.forkingFailure
+  have hgoodUpper := R.goodReplayProb_le_forkSuccessProb
+  have hfailureUpper := R.forkingFailureProb_le_losses
+  linarith
+
+/--
+External concrete bounds for the two random-oracle replay losses and the
+sampler coverage loss.  For the six-draw candidate, instantiate `Draw` as
+`Fin 6`; `queryMissBound` and `replayFailureBound` are the transcript-specific
+random-oracle bounds.
+-/
+structure RandomOracleForkingBounds
+    (R : RandomOracleMultiForkReplay G) where
+  queryMissBound : ℝ
+  replayFailureBound : ℝ
+  coverageFailureBound : ℝ
+  queryMiss_upper : R.queryMissProb <= queryMissBound
+  replayFailure_upper : R.replayFailureProb <= replayFailureBound
+  coverageFailure_upper :
+    G.coverageFailureProb <= coverageFailureBound
+
+namespace RandomOracleForkingBounds
+
+variable {R : RandomOracleMultiForkReplay G}
+
+def forkingLoss (B : RandomOracleForkingBounds R) : ℝ :=
+  B.queryMissBound + B.replayFailureBound
+
+def toMultiForkForkingCertificate
+    (B : RandomOracleForkingBounds R) :
+    G.MultiForkForkingCertificate where
+  forgerSuccess := R.forgerSuccessProb
+  forkingLoss := B.forkingLoss
+  coverageFailureBound := B.coverageFailureBound
+  forkSuccess_lower := by
+    unfold forkingLoss
+    have hbase := R.forkSuccessProb_lower_bound
+    have hquery := B.queryMiss_upper
+    have hreplay := B.replayFailure_upper
+    linarith
+  coverageFailure_upper := B.coverageFailure_upper
+
+theorem extractableProb_ge
+    (B : RandomOracleForkingBounds R) :
+    R.forgerSuccessProb - B.queryMissBound - B.replayFailureBound -
+        B.coverageFailureBound <= G.extractableProb := by
+  have h :=
+    B.toMultiForkForkingCertificate.extractableProb_ge
+  unfold MultiForkFiatShamirGame.MultiForkForkingCertificate.extractionLowerBound
+    toMultiForkForkingCertificate forkingLoss at h
+  linarith
+
+end RandomOracleForkingBounds
+
+end RandomOracleMultiForkReplay
 
 end
 

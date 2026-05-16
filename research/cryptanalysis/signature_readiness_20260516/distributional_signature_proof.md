@@ -98,8 +98,11 @@ The product-block route now has three formal layers:
    `Pr[extractable] >= forgerSuccess - forkingLoss -
    coverageFailureBound`, conditional on an external bound for producing
    accepting same-commitment forks.
+8. a random-oracle replay refinement proving
+   `Pr[acceptingForks] >= Pr[forgery] - Pr[queryMiss] -
+   Pr[replayFailure]`.
 
 The remaining blocker is no longer the sampler distribution.  It is whether an
-intermediate compact fork-delta row can be connected to a concrete
-random-oracle forking-loss bound for six accepting draws, or whether we must
-pay for full-block responses.
+intermediate compact fork-delta row can be connected to concrete
+`queryMiss` and `replayFailure` bounds for six accepting draws, or whether we
+must pay for full-block responses.
