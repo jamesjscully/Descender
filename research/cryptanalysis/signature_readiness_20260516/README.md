@@ -103,6 +103,22 @@ systematic after challenge application with the same `eta`.  The theorem also
 has a serialized-error form that preserves the combined `eta + roundingEta`
 bound when rounding is represented as an additional bounded error term.
 
+## Distributional Rejection Proof
+
+`Descender/SignatureDistribution.lean` now factors the Fiat-Shamir-with-aborts
+distributional proof.  A `RejectionSamplingCertificate` states that every
+accepted-response test has unnormalized mass
+`acceptance * target.acceptProb test`; Lean proves from this that:
+
+- the acceptance mass is independent of the secret and challenge;
+- the conditional accepted-response distribution equals the target distribution;
+- accepted responses, and any deterministic compact encoding of them, are
+  secret-independent.
+
+For product-block signatures this is specialized to the response
+`z = y + chi * s` via `productBlockLinearResponse` and
+`productBlockRejectionSampler`.  See `distributional_signature_proof.md`.
+
 ## Pay-To-Hash
 
 Hash-only authorization can be tiny, but it is not a reusable signature scheme.
@@ -143,6 +159,7 @@ not yet a safe signature primitive.  The smallest plausible reusable-signature
 route is now a product-block Fiat-Shamir-with-aborts design.  The
 verifier-computable block challenge action is formalized for block-diagonal
 systematic views, and the basic signed-challenge noise bound is formalized.
-The next signature-specific work is the distributional rejection-sampling proof
-and serialized Fiat-Shamir verifier equation rather than another
-parameter-search filter.
+The distributional rejection-sampling theorem is also formalized as a generic
+finite-probability proof.  The next signature-specific work is the concrete
+sampler analysis and serialized Fiat-Shamir verifier equation rather than
+another parameter-search filter.

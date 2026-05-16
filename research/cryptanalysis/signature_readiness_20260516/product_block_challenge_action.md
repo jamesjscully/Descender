@@ -55,6 +55,21 @@ The serialized version also handles a separate rounding-error term and preserves
 the combined `eta + roundingEta` bound.  This is the correctness-side reason
 the product-block response bound does not pay for a large scalar challenge.
 
+## Formalized Distributional Proof
+
+`Descender/SignatureDistribution.lean` adds the rejection-sampling
+distributional theorem.  Given a `RejectionSamplingCertificate` saying that
+every accepted-response test has mass
+`acceptance * target.acceptProb test`, Lean proves that the conditional
+accepted-response distribution equals the target distribution and is
+secret-independent.  The product-block specialization applies this theorem to
+the linear response `z = y + chi * s`.
+
+This completes the abstract distributional proof shape.  The remaining work is
+to instantiate the certificate for a concrete mask distribution and rejection
+predicate, or to replace the exact certificate with an explicit statistical
+distance bound.
+
 ## Signature Meaning
 
 The proof discharges the main algebraic objection to a product-block sparse
@@ -73,10 +88,10 @@ inflates the response bound.
 This is not yet a complete signature scheme.  The still-open proof obligations
 are:
 
-- a rejection-sampling theorem showing that accepted responses are statistically
-  independent of the secret;
 - the exact bit-level serialized/high-bit transcript equation, including how
   rounding errors are encoded and decoded;
+- a concrete product-block rejection sampler satisfying the exact accepted-mass
+  certificate, or a statistically close approximate version;
 - a Fiat-Shamir proof/game with challenge derivation, rewinding or forking
   analysis, and transcript binding;
 - concrete challenge encoding and canonical serialization for the block subset
@@ -89,4 +104,5 @@ are:
 The `212 B` to `248 B` rows in `aborts_size_search.md` should no longer be
 described as blocked by a missing equivariance lemma.  They are still
 research candidates, but the next blocker has moved to the signature proof
-itself: rejection sampling plus the serialized Fiat-Shamir verifier equation.
+itself: concrete sampler analysis plus the serialized Fiat-Shamir verifier
+equation.
