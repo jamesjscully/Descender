@@ -1,0 +1,158 @@
+{
+  "generated_at": "2026-05-16T01:29:51Z",
+  "profile": {
+    "id": "descender-128",
+    "target_security_bits": 128,
+    "max_public_key_bytes": 32768,
+    "max_ciphertext_bytes": 8192,
+    "max_secret_key_bytes": 8192,
+    "min_guard_slack": 8,
+    "min_average_to_worst_slack": 16,
+    "description": "Baseline practical target for early concrete-family screening."
+  },
+  "search_space": {
+    "mode": "grid",
+    "objective": "bandwidth",
+    "proof_strategies": [
+      "full-surjective"
+    ],
+    "primal_distance_models": [
+      "guard-only"
+    ],
+    "qary_amplitude_strategies": [
+      "product-block-lee"
+    ],
+    "lee_repetition_values": [
+      1
+    ],
+    "lee_rows_per_group_values": [
+      1
+    ],
+    "product_block_sidecar_manifests": [
+      "research/parameter_search/product_block_lee_sidecars_q32771_eta5_m32_r3_5_try1/manifest.json",
+      "research/parameter_search/product_block_lee_sidecars_q32771_eta6_8_m32_r3_4/manifest.json"
+    ],
+    "product_block_sidecar_choices": [
+      {
+        "q": 32771,
+        "eta": 5,
+        "m1": 32,
+        "lee_repetition": 3277,
+        "lee_rows_per_group": 5
+      },
+      {
+        "q": 32771,
+        "eta": 8,
+        "m1": 32,
+        "lee_repetition": 2049,
+        "lee_rows_per_group": 4
+      }
+    ],
+    "public_key_model": "canonical",
+    "coefficient_model": "seeded",
+    "incidence_model": "seeded",
+    "q_values": [
+      32771
+    ],
+    "n_values": [
+      48,
+      56,
+      64,
+      72,
+      80,
+      88,
+      96,
+      104,
+      112
+    ],
+    "m0_overheads": [
+      8,
+      16,
+      32,
+      64,
+      128,
+      256
+    ],
+    "m0_values": [
+      80,
+      88,
+      96,
+      104,
+      112,
+      120,
+      128,
+      136,
+      144,
+      152,
+      160
+    ],
+    "m1_multipliers": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "m1_values": [
+      32
+    ],
+    "fiber_dims": [
+      64,
+      80,
+      96,
+      112,
+      128,
+      160,
+      192
+    ],
+    "eta_values": [
+      5,
+      6,
+      8
+    ],
+    "sample_bits_values": [
+      16
+    ],
+    "view_coord_values": [
+      0
+    ],
+    "total_candidates": 1386,
+    "threads": 8,
+    "anneal_iterations": null,
+    "anneal_restarts": null,
+    "seed": null,
+    "security_extra_cap": 16.0,
+    "guard_slack_target": 8,
+    "combined_certification_weight": 0.25
+  },
+  "rejected_by_reason": {
+    "average_to_worst_slack_proxy": 21,
+    "correctness_distance_slack": 392,
+    "exact_strategy_requires_full_width_samples": 1386,
+    "guard_only_requires_m0_ge_n": 140,
+    "qary_amplitude_minkowski_obstruction": 224,
+    "security_proxy_bits": 399,
+    "shared_pair_requires_group_rows": 462
+  },
+  "accepted_total": 0,
+  "accepted_top": [],
+  "pareto_frontier": [],
+  "notes": [
+    "security_proxy_bits and objective_score are screening scores, not cryptanalytic estimates",
+    "objective mode \"bandwidth\" caps excess security credit at 16 bits",
+    "proof strategies searched: full-surjective",
+    "primal distance models searched: guard-only",
+    "q-ary amplitude strategies searched: product-block-lee",
+    "solved-repetition certificates require lee_repetition * m1 <= n and certify only lee_repetition + 1, so they expose the direct-coordinate repetition tradeoff rather than assuming it is viable",
+    "direct-solved-lee treats lee_repetition as a hypothetical proof-carrying systematic graph Lee distance and prices dense solved-map keygen as n*m1 multiply-adds",
+    "moment-lee treats lee_repetition as a proof-carrying shifted/scaled moment graph-code Lee distance and prices evaluation keygen as n*m1 multiply-adds",
+    "combined-proxy rows are ranked with certification pressure penalty weight 0.25",
+    "sample_bits=0 means full-width public samples; smaller sample_bits applies bit-packing plus a conservative centered rounding-error penalty",
+    "view_coords=0 means all m0+m1 coordinates; smaller values model public-sample coordinate views that require support-covered or lossy-budget proof obligations",
+    "guard-only uses the proven guard-block distance and requires m0>=n; combined-proxy prices distance from the viewed combined matrix and requires a later combined-distance certificate",
+    "combined_certification_pressure is a cheap proxy for how much rank/distance work the later combined certificate must do; lower is easier to certify",
+    "lossy_diagonal_slack_bits is a screening proxy for the multi-coordinate diagonal amplification proof route; positive slack is not a Lean certificate by itself",
+    "full-surjective and support-covered are exact-sample proof strategies; lossy-budget is the only route that accepts nonzero sample_bits in this engine",
+    "hard filters encode current proof-side constraints such as q > n + m0 + m1 and m0 >= n",
+    "top candidates require exact finite-field and lattice/coding follow-up before any security claim"
+  ]
+}

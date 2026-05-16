@@ -1,0 +1,4 @@
+    Finished `release` profile [optimized] target(s) in 0.01s
+     Running `tools/parameter-search/target/release/lee_random_code_bound --q 40961 --target-l1 4096 --m1 32 --group-sizes 2,4,8,16,32 --max-rows 80 --failure-bits 80 --output-json research/parameter_search/product_block_larger_blocks_20260516/q40961_eta5.json --output-md research/parameter_search/product_block_larger_blocks_20260516/q40961_eta5.md`
+wrote research/parameter_search/product_block_larger_blocks_20260516/q40961_eta5.json
+wrote research/parameter_search/product_block_larger_blocks_20260516/q40961_eta5.md

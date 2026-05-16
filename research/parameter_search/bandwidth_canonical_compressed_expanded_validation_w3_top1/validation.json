@@ -1,0 +1,212 @@
+{
+  "generated_at": "2026-05-15T05:20:37Z",
+  "validation_model": "seeded_sparse_tilt_v1",
+  "source_files": [
+    "research/parameter_search/bandwidth_canonical_compressed/descender-128.json",
+    "research/parameter_search/bandwidth_canonical_compressed/descender-192.json",
+    "research/parameter_search/bandwidth_canonical_compressed/descender-256.json"
+  ],
+  "top_per_profile": 1,
+  "rows_checked": 3,
+  "summary": {
+    "by_profile": {
+      "descender-128": {
+        "rows_checked": 1,
+        "rows_passed": 1,
+        "min_ciphertext_bytes": 169,
+        "min_public_key_bytes": 201
+      },
+      "descender-192": {
+        "rows_checked": 1,
+        "rows_passed": 1,
+        "min_ciphertext_bytes": 230,
+        "min_public_key_bytes": 262
+      },
+      "descender-256": {
+        "rows_checked": 1,
+        "rows_passed": 1,
+        "min_ciphertext_bytes": 284,
+        "min_public_key_bytes": 316
+      }
+    },
+    "failures_by_reason": {}
+  },
+  "rows": [
+    {
+      "profile": "descender-128",
+      "source": "accepted_top",
+      "candidate": {
+        "q": 32771,
+        "n": 32,
+        "m0": 52,
+        "m1": 32,
+        "fiber_dim": 24,
+        "eta": 2,
+        "sample_bits": 13
+      },
+      "reported": {
+        "compact_public_key_bytes": 201,
+        "ciphertext_bytes": 169,
+        "guard_distance": 21,
+        "guard_slack": 10,
+        "cauchy_field_slack": 32655,
+        "sample_compression_error": 3,
+        "effective_eta": 5,
+        "security_proxy_bits": 129.2558451295179,
+        "average_to_worst_slack": 185.411970486626
+      },
+      "generated_setup": {
+        "coefficient_seed": 7104123304599309183,
+        "incidence_seed": 12262213164123258495,
+        "diagonal_seed": 16911408555223032355,
+        "tilt_columns": 32,
+        "tilt_max_column_weight": 3,
+        "tilt_min_column_weight": 3,
+        "tilt_rank": 27,
+        "tilted_adjoint_rank": 32,
+        "dual_search_weight": 3,
+        "no_dual_witness_up_to": 3
+      },
+      "exact": {
+        "q_is_prime": true,
+        "field_size_pass": true,
+        "cauchy_full_rank": 32,
+        "cauchy_guard_rank": 32,
+        "full_column_rank": true,
+        "guard_column_rank": true,
+        "tilted_adjoint_full_rank": true,
+        "tilt_column_support_pass": true,
+        "bounded_dual_witness_pass": true,
+        "guard_distance_exact": 21,
+        "measurement_distance_exact": 53,
+        "dual_distance_exact": 33,
+        "correctness_required_distance": 11,
+        "guard_distance_pass": true,
+        "average_to_worst_pass": true,
+        "security_proxy_pass": true,
+        "reported_guard_distance_matches": true
+      },
+      "verdict": "pass",
+      "failures": []
+    },
+    {
+      "profile": "descender-192",
+      "source": "accepted_top",
+      "candidate": {
+        "q": 16411,
+        "n": 56,
+        "m0": 88,
+        "m1": 56,
+        "fiber_dim": 32,
+        "eta": 2,
+        "sample_bits": 11
+      },
+      "reported": {
+        "compact_public_key_bytes": 262,
+        "ciphertext_bytes": 230,
+        "guard_distance": 33,
+        "guard_slack": 18,
+        "cauchy_field_slack": 16211,
+        "sample_compression_error": 5,
+        "effective_eta": 7,
+        "security_proxy_bits": 197.8715047400469,
+        "average_to_worst_slack": 214.54078398658453
+      },
+      "generated_setup": {
+        "coefficient_seed": 4242614198540855784,
+        "incidence_seed": 7227138354364716596,
+        "diagonal_seed": 11613936865379553509,
+        "tilt_columns": 56,
+        "tilt_max_column_weight": 3,
+        "tilt_min_column_weight": 3,
+        "tilt_rank": 52,
+        "tilted_adjoint_rank": 56,
+        "dual_search_weight": 3,
+        "no_dual_witness_up_to": 3
+      },
+      "exact": {
+        "q_is_prime": true,
+        "field_size_pass": true,
+        "cauchy_full_rank": 56,
+        "cauchy_guard_rank": 56,
+        "full_column_rank": true,
+        "guard_column_rank": true,
+        "tilted_adjoint_full_rank": true,
+        "tilt_column_support_pass": true,
+        "bounded_dual_witness_pass": true,
+        "guard_distance_exact": 33,
+        "measurement_distance_exact": 89,
+        "dual_distance_exact": 57,
+        "correctness_required_distance": 15,
+        "guard_distance_pass": true,
+        "average_to_worst_pass": true,
+        "security_proxy_pass": true,
+        "reported_guard_distance_matches": true
+      },
+      "verdict": "pass",
+      "failures": []
+    },
+    {
+      "profile": "descender-256",
+      "source": "accepted_top",
+      "candidate": {
+        "q": 65537,
+        "n": 64,
+        "m0": 104,
+        "m1": 64,
+        "fiber_dim": 48,
+        "eta": 2,
+        "sample_bits": 12
+      },
+      "reported": {
+        "compact_public_key_bytes": 316,
+        "ciphertext_bytes": 284,
+        "guard_distance": 41,
+        "guard_slack": 18,
+        "cauchy_field_slack": 65305,
+        "sample_compression_error": 9,
+        "effective_eta": 11,
+        "security_proxy_bits": 257.07270528921737,
+        "average_to_worst_slack": 256.0430002535488
+      },
+      "generated_setup": {
+        "coefficient_seed": 1358285965228757975,
+        "incidence_seed": 15527439601841345216,
+        "diagonal_seed": 14291330937673952793,
+        "tilt_columns": 64,
+        "tilt_max_column_weight": 3,
+        "tilt_min_column_weight": 3,
+        "tilt_rank": 56,
+        "tilted_adjoint_rank": 64,
+        "dual_search_weight": 3,
+        "no_dual_witness_up_to": 3
+      },
+      "exact": {
+        "q_is_prime": true,
+        "field_size_pass": true,
+        "cauchy_full_rank": 64,
+        "cauchy_guard_rank": 64,
+        "full_column_rank": true,
+        "guard_column_rank": true,
+        "tilted_adjoint_full_rank": true,
+        "tilt_column_support_pass": true,
+        "bounded_dual_witness_pass": true,
+        "guard_distance_exact": 41,
+        "measurement_distance_exact": 105,
+        "dual_distance_exact": 65,
+        "correctness_required_distance": 23,
+        "guard_distance_pass": true,
+        "average_to_worst_pass": true,
+        "security_proxy_pass": true,
+        "reported_guard_distance_matches": true
+      },
+      "verdict": "pass",
+      "failures": []
+    }
+  ],
+  "notes": [
+    "This materializes deterministic public coefficient, incidence, and diagonal seeds for each row.",
+    "The generated tilt has exactly three nonzero row entries per tilt column and is combined with Cauchy guard/base blocks over the row's prime field.",
+    "Passing rows should still be treated as candidates for deeper bounded dual-witness search and estimator work, not as deployed parameters."
+  ]
+}

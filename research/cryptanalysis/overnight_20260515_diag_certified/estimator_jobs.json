@@ -1,0 +1,362 @@
+[
+  {
+    "id": "0000_descender-128_q65537_n32_m080_m132_k24_eta1_bits12_view80",
+    "status": "mapping_requires_review",
+    "lwe_like": {
+      "n": 32,
+      "m": 112,
+      "q": 65537,
+      "secret_distribution": "uniform_mod_q_or_projected_secret",
+      "error_distribution_proxy": {
+        "kind": "centered_uniform_radius",
+        "eta": 10,
+        "sigma_proxy": 5.773502691896258
+      },
+      "caveat": "Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy."
+    },
+    "dual_qary_lattice": {
+      "dimension": 112,
+      "modulus": 65537,
+      "constraint_rank": 32,
+      "basis_file": "fplll/0000_descender-128_q65537_n32_m080_m132_k24_eta1_bits12_view80.dual_qary_basis.txt",
+      "caveat": "Basis represents the integer lattice {x : A^T x = 0 mod q} for the regenerated public adjoint matrix."
+    },
+    "code_like": {
+      "length": 112,
+      "dimension_proxy": 80,
+      "weight_target": 4,
+      "status": "candidate_mapping_only",
+      "caveat": "Use syndrome-decoding estimators only after confirming the relevant attack is Hamming/Lee decoding for this row."
+    }
+  },
+  {
+    "id": "0001_descender-128_q65537_n32_m080_m132_k32_eta1_bits12_view80",
+    "status": "mapping_requires_review",
+    "lwe_like": {
+      "n": 32,
+      "m": 112,
+      "q": 65537,
+      "secret_distribution": "uniform_mod_q_or_projected_secret",
+      "error_distribution_proxy": {
+        "kind": "centered_uniform_radius",
+        "eta": 10,
+        "sigma_proxy": 5.773502691896258
+      },
+      "caveat": "Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy."
+    },
+    "dual_qary_lattice": {
+      "dimension": 112,
+      "modulus": 65537,
+      "constraint_rank": 32,
+      "basis_file": "fplll/0001_descender-128_q65537_n32_m080_m132_k32_eta1_bits12_view80.dual_qary_basis.txt",
+      "caveat": "Basis represents the integer lattice {x : A^T x = 0 mod q} for the regenerated public adjoint matrix."
+    },
+    "code_like": {
+      "length": 112,
+      "dimension_proxy": 80,
+      "weight_target": 4,
+      "status": "candidate_mapping_only",
+      "caveat": "Use syndrome-decoding estimators only after confirming the relevant attack is Hamming/Lee decoding for this row."
+    }
+  },
+  {
+    "id": "0002_descender-128_q65537_n32_m080_m132_k48_eta1_bits12_view80",
+    "status": "mapping_requires_review",
+    "lwe_like": {
+      "n": 32,
+      "m": 112,
+      "q": 65537,
+      "secret_distribution": "uniform_mod_q_or_projected_secret",
+      "error_distribution_proxy": {
+        "kind": "centered_uniform_radius",
+        "eta": 10,
+        "sigma_proxy": 5.773502691896258
+      },
+      "caveat": "Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy."
+    },
+    "dual_qary_lattice": {
+      "dimension": 112,
+      "modulus": 65537,
+      "constraint_rank": 32,
+      "basis_file": "fplll/0002_descender-128_q65537_n32_m080_m132_k48_eta1_bits12_view80.dual_qary_basis.txt",
+      "caveat": "Basis represents the integer lattice {x : A^T x = 0 mod q} for the regenerated public adjoint matrix."
+    },
+    "code_like": {
+      "length": 112,
+      "dimension_proxy": 80,
+      "weight_target": 4,
+      "status": "candidate_mapping_only",
+      "caveat": "Use syndrome-decoding estimators only after confirming the relevant attack is Hamming/Lee decoding for this row."
+    }
+  },
+  {
+    "id": "0003_descender-128_q65537_n32_m080_m132_k64_eta1_bits12_view80",
+    "status": "mapping_requires_review",
+    "lwe_like": {
+      "n": 32,
+      "m": 112,
+      "q": 65537,
+      "secret_distribution": "uniform_mod_q_or_projected_secret",
+      "error_distribution_proxy": {
+        "kind": "centered_uniform_radius",
+        "eta": 10,
+        "sigma_proxy": 5.773502691896258
+      },
+      "caveat": "Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy."
+    },
+    "dual_qary_lattice": {
+      "dimension": 112,
+      "modulus": 65537,
+      "constraint_rank": 32,
+      "basis_file": "fplll/0003_descender-128_q65537_n32_m080_m132_k64_eta1_bits12_view80.dual_qary_basis.txt",
+      "caveat": "Basis represents the integer lattice {x : A^T x = 0 mod q} for the regenerated public adjoint matrix."
+    },
+    "code_like": {
+      "length": 112,
+      "dimension_proxy": 80,
+      "weight_target": 4,
+      "status": "candidate_mapping_only",
+      "caveat": "Use syndrome-decoding estimators only after confirming the relevant attack is Hamming/Lee decoding for this row."
+    }
+  },
+  {
+    "id": "0004_descender-192_q131071_n40_m096_m140_k24_eta1_bits15_view96",
+    "status": "mapping_requires_review",
+    "lwe_like": {
+      "n": 40,
+      "m": 136,
+      "q": 131071,
+      "secret_distribution": "uniform_mod_q_or_projected_secret",
+      "error_distribution_proxy": {
+        "kind": "centered_uniform_radius",
+        "eta": 3,
+        "sigma_proxy": 1.7320508075688774
+      },
+      "caveat": "Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy."
+    },
+    "dual_qary_lattice": {
+      "dimension": 136,
+      "modulus": 131071,
+      "constraint_rank": 40,
+      "basis_file": "fplll/0004_descender-192_q131071_n40_m096_m140_k24_eta1_bits15_view96.dual_qary_basis.txt",
+      "caveat": "Basis represents the integer lattice {x : A^T x = 0 mod q} for the regenerated public adjoint matrix."
+    },
+    "code_like": {
+      "length": 136,
+      "dimension_proxy": 96,
+      "weight_target": 4,
+      "status": "candidate_mapping_only",
+      "caveat": "Use syndrome-decoding estimators only after confirming the relevant attack is Hamming/Lee decoding for this row."
+    }
+  },
+  {
+    "id": "0005_descender-192_q131071_n40_m096_m140_k32_eta1_bits15_view96",
+    "status": "mapping_requires_review",
+    "lwe_like": {
+      "n": 40,
+      "m": 136,
+      "q": 131071,
+      "secret_distribution": "uniform_mod_q_or_projected_secret",
+      "error_distribution_proxy": {
+        "kind": "centered_uniform_radius",
+        "eta": 3,
+        "sigma_proxy": 1.7320508075688774
+      },
+      "caveat": "Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy."
+    },
+    "dual_qary_lattice": {
+      "dimension": 136,
+      "modulus": 131071,
+      "constraint_rank": 40,
+      "basis_file": "fplll/0005_descender-192_q131071_n40_m096_m140_k32_eta1_bits15_view96.dual_qary_basis.txt",
+      "caveat": "Basis represents the integer lattice {x : A^T x = 0 mod q} for the regenerated public adjoint matrix."
+    },
+    "code_like": {
+      "length": 136,
+      "dimension_proxy": 96,
+      "weight_target": 4,
+      "status": "candidate_mapping_only",
+      "caveat": "Use syndrome-decoding estimators only after confirming the relevant attack is Hamming/Lee decoding for this row."
+    }
+  },
+  {
+    "id": "0006_descender-192_q131071_n40_m096_m140_k48_eta1_bits15_view96",
+    "status": "mapping_requires_review",
+    "lwe_like": {
+      "n": 40,
+      "m": 136,
+      "q": 131071,
+      "secret_distribution": "uniform_mod_q_or_projected_secret",
+      "error_distribution_proxy": {
+        "kind": "centered_uniform_radius",
+        "eta": 3,
+        "sigma_proxy": 1.7320508075688774
+      },
+      "caveat": "Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy."
+    },
+    "dual_qary_lattice": {
+      "dimension": 136,
+      "modulus": 131071,
+      "constraint_rank": 40,
+      "basis_file": "fplll/0006_descender-192_q131071_n40_m096_m140_k48_eta1_bits15_view96.dual_qary_basis.txt",
+      "caveat": "Basis represents the integer lattice {x : A^T x = 0 mod q} for the regenerated public adjoint matrix."
+    },
+    "code_like": {
+      "length": 136,
+      "dimension_proxy": 96,
+      "weight_target": 4,
+      "status": "candidate_mapping_only",
+      "caveat": "Use syndrome-decoding estimators only after confirming the relevant attack is Hamming/Lee decoding for this row."
+    }
+  },
+  {
+    "id": "0007_descender-192_q131071_n40_m096_m140_k64_eta1_bits15_view96",
+    "status": "mapping_requires_review",
+    "lwe_like": {
+      "n": 40,
+      "m": 136,
+      "q": 131071,
+      "secret_distribution": "uniform_mod_q_or_projected_secret",
+      "error_distribution_proxy": {
+        "kind": "centered_uniform_radius",
+        "eta": 3,
+        "sigma_proxy": 1.7320508075688774
+      },
+      "caveat": "Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy."
+    },
+    "dual_qary_lattice": {
+      "dimension": 136,
+      "modulus": 131071,
+      "constraint_rank": 40,
+      "basis_file": "fplll/0007_descender-192_q131071_n40_m096_m140_k64_eta1_bits15_view96.dual_qary_basis.txt",
+      "caveat": "Basis represents the integer lattice {x : A^T x = 0 mod q} for the regenerated public adjoint matrix."
+    },
+    "code_like": {
+      "length": 136,
+      "dimension_proxy": 96,
+      "weight_target": 4,
+      "status": "candidate_mapping_only",
+      "caveat": "Use syndrome-decoding estimators only after confirming the relevant attack is Hamming/Lee decoding for this row."
+    }
+  },
+  {
+    "id": "0008_descender-256_q524309_n48_m0112_m148_k32_eta1_bits16_view112",
+    "status": "mapping_requires_review",
+    "lwe_like": {
+      "n": 48,
+      "m": 160,
+      "q": 524309,
+      "secret_distribution": "uniform_mod_q_or_projected_secret",
+      "error_distribution_proxy": {
+        "kind": "centered_uniform_radius",
+        "eta": 6,
+        "sigma_proxy": 3.464101615137755
+      },
+      "caveat": "Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy."
+    },
+    "dual_qary_lattice": {
+      "dimension": 160,
+      "modulus": 524309,
+      "constraint_rank": 48,
+      "basis_file": "fplll/0008_descender-256_q524309_n48_m0112_m148_k32_eta1_bits16_view112.dual_qary_basis.txt",
+      "caveat": "Basis represents the integer lattice {x : A^T x = 0 mod q} for the regenerated public adjoint matrix."
+    },
+    "code_like": {
+      "length": 160,
+      "dimension_proxy": 112,
+      "weight_target": 4,
+      "status": "candidate_mapping_only",
+      "caveat": "Use syndrome-decoding estimators only after confirming the relevant attack is Hamming/Lee decoding for this row."
+    }
+  },
+  {
+    "id": "0009_descender-256_q524309_n48_m0112_m148_k48_eta1_bits16_view112",
+    "status": "mapping_requires_review",
+    "lwe_like": {
+      "n": 48,
+      "m": 160,
+      "q": 524309,
+      "secret_distribution": "uniform_mod_q_or_projected_secret",
+      "error_distribution_proxy": {
+        "kind": "centered_uniform_radius",
+        "eta": 6,
+        "sigma_proxy": 3.464101615137755
+      },
+      "caveat": "Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy."
+    },
+    "dual_qary_lattice": {
+      "dimension": 160,
+      "modulus": 524309,
+      "constraint_rank": 48,
+      "basis_file": "fplll/0009_descender-256_q524309_n48_m0112_m148_k48_eta1_bits16_view112.dual_qary_basis.txt",
+      "caveat": "Basis represents the integer lattice {x : A^T x = 0 mod q} for the regenerated public adjoint matrix."
+    },
+    "code_like": {
+      "length": 160,
+      "dimension_proxy": 112,
+      "weight_target": 4,
+      "status": "candidate_mapping_only",
+      "caveat": "Use syndrome-decoding estimators only after confirming the relevant attack is Hamming/Lee decoding for this row."
+    }
+  },
+  {
+    "id": "0010_descender-256_q524309_n48_m0112_m148_k64_eta1_bits16_view112",
+    "status": "mapping_requires_review",
+    "lwe_like": {
+      "n": 48,
+      "m": 160,
+      "q": 524309,
+      "secret_distribution": "uniform_mod_q_or_projected_secret",
+      "error_distribution_proxy": {
+        "kind": "centered_uniform_radius",
+        "eta": 6,
+        "sigma_proxy": 3.464101615137755
+      },
+      "caveat": "Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy."
+    },
+    "dual_qary_lattice": {
+      "dimension": 160,
+      "modulus": 524309,
+      "constraint_rank": 48,
+      "basis_file": "fplll/0010_descender-256_q524309_n48_m0112_m148_k64_eta1_bits16_view112.dual_qary_basis.txt",
+      "caveat": "Basis represents the integer lattice {x : A^T x = 0 mod q} for the regenerated public adjoint matrix."
+    },
+    "code_like": {
+      "length": 160,
+      "dimension_proxy": 112,
+      "weight_target": 4,
+      "status": "candidate_mapping_only",
+      "caveat": "Use syndrome-decoding estimators only after confirming the relevant attack is Hamming/Lee decoding for this row."
+    }
+  },
+  {
+    "id": "0011_descender-256_q131071_n56_m0128_m156_k32_eta1_bits15_view128",
+    "status": "mapping_requires_review",
+    "lwe_like": {
+      "n": 56,
+      "m": 184,
+      "q": 131071,
+      "secret_distribution": "uniform_mod_q_or_projected_secret",
+      "error_distribution_proxy": {
+        "kind": "centered_uniform_radius",
+        "eta": 3,
+        "sigma_proxy": 1.7320508075688774
+      },
+      "caveat": "Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy."
+    },
+    "dual_qary_lattice": {
+      "dimension": 184,
+      "modulus": 131071,
+      "constraint_rank": 56,
+      "basis_file": "fplll/0011_descender-256_q131071_n56_m0128_m156_k32_eta1_bits15_view128.dual_qary_basis.txt",
+      "caveat": "Basis represents the integer lattice {x : A^T x = 0 mod q} for the regenerated public adjoint matrix."
+    },
+    "code_like": {
+      "length": 184,
+      "dimension_proxy": 128,
+      "weight_target": 4,
+      "status": "candidate_mapping_only",
+      "caveat": "Use syndrome-decoding estimators only after confirming the relevant attack is Hamming/Lee decoding for this row."
+    }
+  }
+]

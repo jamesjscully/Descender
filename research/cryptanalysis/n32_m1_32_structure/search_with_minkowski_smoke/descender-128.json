@@ -1,0 +1,104 @@
+{
+  "generated_at": "2026-05-15T20:40:27Z",
+  "profile": {
+    "id": "descender-128",
+    "target_security_bits": 128,
+    "max_public_key_bytes": 32768,
+    "max_ciphertext_bytes": 8192,
+    "max_secret_key_bytes": 8192,
+    "min_guard_slack": 8,
+    "min_average_to_worst_slack": 16,
+    "description": "Baseline practical target for early concrete-family screening."
+  },
+  "search_space": {
+    "mode": "grid",
+    "objective": "screening",
+    "proof_strategies": [
+      "lossy-budget"
+    ],
+    "primal_distance_models": [
+      "guard-only"
+    ],
+    "qary_amplitude_strategies": [
+      "fallback-support"
+    ],
+    "lee_repetition_values": [
+      1
+    ],
+    "public_key_model": "component",
+    "coefficient_model": "explicit",
+    "incidence_model": "explicit",
+    "q_values": [
+      65537
+    ],
+    "n_values": [
+      32
+    ],
+    "m0_overheads": [
+      8,
+      16,
+      32,
+      64,
+      128,
+      256
+    ],
+    "m0_values": [
+      80
+    ],
+    "m1_multipliers": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "m1_values": [
+      32
+    ],
+    "fiber_dims": [
+      24
+    ],
+    "eta_values": [
+      1
+    ],
+    "sample_bits_values": [
+      12
+    ],
+    "view_coord_values": [
+      80
+    ],
+    "total_candidates": 1,
+    "threads": 1,
+    "anneal_iterations": null,
+    "anneal_restarts": null,
+    "seed": null,
+    "security_extra_cap": 32.0,
+    "guard_slack_target": null,
+    "combined_certification_weight": 0.25
+  },
+  "rejected_by_reason": {
+    "qary_amplitude_at_noise": 1,
+    "qary_amplitude_minkowski_obstruction": 1
+  },
+  "accepted_total": 0,
+  "accepted_top": [],
+  "pareto_frontier": [],
+  "notes": [
+    "security_proxy_bits and objective_score are screening scores, not cryptanalytic estimates",
+    "objective mode \"screening\" caps excess security credit at 32 bits",
+    "proof strategies searched: lossy-budget",
+    "primal distance models searched: guard-only",
+    "q-ary amplitude strategies searched: fallback-support",
+    "solved-repetition certificates require lee_repetition * m1 <= n and certify only lee_repetition + 1, so they expose the direct-coordinate repetition tradeoff rather than assuming it is viable",
+    "direct-solved-lee treats lee_repetition as a hypothetical proof-carrying systematic graph Lee distance and prices dense solved-map keygen as n*m1 multiply-adds",
+    "moment-lee treats lee_repetition as a proof-carrying shifted/scaled moment graph-code Lee distance and prices evaluation keygen as n*m1 multiply-adds",
+    "combined-proxy rows are ranked with certification pressure penalty weight 0.25",
+    "sample_bits=0 means full-width public samples; smaller sample_bits applies bit-packing plus a conservative centered rounding-error penalty",
+    "view_coords=0 means all m0+m1 coordinates; smaller values model public-sample coordinate views that require support-covered or lossy-budget proof obligations",
+    "guard-only uses the proven guard-block distance and requires m0>=n; combined-proxy prices distance from the viewed combined matrix and requires a later combined-distance certificate",
+    "combined_certification_pressure is a cheap proxy for how much rank/distance work the later combined certificate must do; lower is easier to certify",
+    "lossy_diagonal_slack_bits is a screening proxy for the multi-coordinate diagonal amplification proof route; positive slack is not a Lean certificate by itself",
+    "full-surjective and support-covered are exact-sample proof strategies; lossy-budget is the only route that accepts nonzero sample_bits in this engine",
+    "hard filters encode current proof-side constraints such as q > n + m0 + m1 and m0 >= n",
+    "top candidates require exact finite-field and lattice/coding follow-up before any security claim"
+  ]
+}

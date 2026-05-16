@@ -1,0 +1,203 @@
+{
+  "generated_at": "2026-05-15T05:01:08Z",
+  "validation_model": "seeded_sparse_tilt_v1",
+  "source_files": [
+    "research/parameter_search/bandwidth_seeded/descender-128.json",
+    "research/parameter_search/bandwidth_seeded/descender-192.json",
+    "research/parameter_search/bandwidth_seeded/descender-256.json"
+  ],
+  "top_per_profile": 1,
+  "rows_checked": 3,
+  "summary": {
+    "by_profile": {
+      "descender-128": {
+        "rows_checked": 1,
+        "rows_passed": 1,
+        "min_ciphertext_bytes": 192,
+        "min_public_key_bytes": 704
+      },
+      "descender-192": {
+        "rows_checked": 1,
+        "rows_passed": 1,
+        "min_ciphertext_bytes": 272,
+        "min_public_key_bytes": 848
+      },
+      "descender-256": {
+        "rows_checked": 1,
+        "rows_passed": 1,
+        "min_ciphertext_bytes": 352,
+        "min_public_key_bytes": 1024
+      }
+    },
+    "failures_by_reason": {}
+  },
+  "rows": [
+    {
+      "profile": "descender-128",
+      "source": "accepted_top",
+      "candidate": {
+        "q": 32771,
+        "n": 32,
+        "m0": 48,
+        "m1": 32,
+        "fiber_dim": 24,
+        "eta": 4
+      },
+      "reported": {
+        "compact_public_key_bytes": 704,
+        "ciphertext_bytes": 192,
+        "guard_distance": 17,
+        "guard_slack": 8,
+        "cauchy_field_slack": 32659,
+        "security_proxy_bits": 128.8030677056295,
+        "average_to_worst_slack": 222.41022633677397
+      },
+      "generated_setup": {
+        "coefficient_seed": 15709304021670485560,
+        "incidence_seed": 15420312371620258022,
+        "diagonal_seed": 8984311287518505532,
+        "tilt_columns": 32,
+        "tilt_max_column_weight": 3,
+        "tilt_min_column_weight": 3,
+        "tilt_rank": 30,
+        "tilted_adjoint_rank": 32,
+        "dual_search_weight": 3,
+        "no_dual_witness_up_to": 3
+      },
+      "exact": {
+        "q_is_prime": true,
+        "field_size_pass": true,
+        "cauchy_full_rank": 32,
+        "cauchy_guard_rank": 32,
+        "full_column_rank": true,
+        "guard_column_rank": true,
+        "tilted_adjoint_full_rank": true,
+        "tilt_column_support_pass": true,
+        "bounded_dual_witness_pass": true,
+        "guard_distance_exact": 17,
+        "measurement_distance_exact": 49,
+        "dual_distance_exact": 33,
+        "correctness_required_distance": 9,
+        "guard_distance_pass": true,
+        "average_to_worst_pass": true,
+        "security_proxy_pass": true,
+        "reported_guard_distance_matches": true
+      },
+      "verdict": "pass",
+      "failures": []
+    },
+    {
+      "profile": "descender-192",
+      "source": "accepted_top",
+      "candidate": {
+        "q": 32771,
+        "n": 48,
+        "m0": 72,
+        "m1": 48,
+        "fiber_dim": 32,
+        "eta": 3
+      },
+      "reported": {
+        "compact_public_key_bytes": 848,
+        "ciphertext_bytes": 272,
+        "guard_distance": 25,
+        "guard_slack": 18,
+        "cauchy_field_slack": 32603,
+        "security_proxy_bits": 194.96248956943293,
+        "average_to_worst_slack": 377.12374903132593
+      },
+      "generated_setup": {
+        "coefficient_seed": 10803333380768380874,
+        "incidence_seed": 12221550923108384889,
+        "diagonal_seed": 9644894468195352135,
+        "tilt_columns": 48,
+        "tilt_max_column_weight": 3,
+        "tilt_min_column_weight": 3,
+        "tilt_rank": 45,
+        "tilted_adjoint_rank": 48,
+        "dual_search_weight": 3,
+        "no_dual_witness_up_to": 3
+      },
+      "exact": {
+        "q_is_prime": true,
+        "field_size_pass": true,
+        "cauchy_full_rank": 48,
+        "cauchy_guard_rank": 48,
+        "full_column_rank": true,
+        "guard_column_rank": true,
+        "tilted_adjoint_full_rank": true,
+        "tilt_column_support_pass": true,
+        "bounded_dual_witness_pass": true,
+        "guard_distance_exact": 25,
+        "measurement_distance_exact": 73,
+        "dual_distance_exact": 49,
+        "correctness_required_distance": 7,
+        "guard_distance_pass": true,
+        "average_to_worst_pass": true,
+        "security_proxy_pass": true,
+        "reported_guard_distance_matches": true
+      },
+      "verdict": "pass",
+      "failures": []
+    },
+    {
+      "profile": "descender-256",
+      "source": "accepted_top",
+      "candidate": {
+        "q": 32771,
+        "n": 64,
+        "m0": 96,
+        "m1": 64,
+        "fiber_dim": 48,
+        "eta": 3
+      },
+      "reported": {
+        "compact_public_key_bytes": 1024,
+        "ciphertext_bytes": 352,
+        "guard_distance": 33,
+        "guard_slack": 26,
+        "cauchy_field_slack": 32547,
+        "security_proxy_bits": 258.0756034698831,
+        "average_to_worst_slack": 502.8316653751013
+      },
+      "generated_setup": {
+        "coefficient_seed": 2429937419060207253,
+        "incidence_seed": 4879833186578368269,
+        "diagonal_seed": 3968611300134768437,
+        "tilt_columns": 64,
+        "tilt_max_column_weight": 3,
+        "tilt_min_column_weight": 3,
+        "tilt_rank": 59,
+        "tilted_adjoint_rank": 64,
+        "dual_search_weight": 3,
+        "no_dual_witness_up_to": 3
+      },
+      "exact": {
+        "q_is_prime": true,
+        "field_size_pass": true,
+        "cauchy_full_rank": 64,
+        "cauchy_guard_rank": 64,
+        "full_column_rank": true,
+        "guard_column_rank": true,
+        "tilted_adjoint_full_rank": true,
+        "tilt_column_support_pass": true,
+        "bounded_dual_witness_pass": true,
+        "guard_distance_exact": 33,
+        "measurement_distance_exact": 97,
+        "dual_distance_exact": 65,
+        "correctness_required_distance": 7,
+        "guard_distance_pass": true,
+        "average_to_worst_pass": true,
+        "security_proxy_pass": true,
+        "reported_guard_distance_matches": true
+      },
+      "verdict": "pass",
+      "failures": []
+    }
+  ],
+  "notes": [
+    "This materializes deterministic public coefficient, incidence, and diagonal seeds for each row.",
+    "The generated tilt has exactly three nonzero row entries per tilt column and is combined with Cauchy guard/base blocks over the row's prime field.",
+    "Passing rows should still be treated as candidates for deeper bounded dual-witness search and estimator work, not as deployed parameters."
+  ]
+}

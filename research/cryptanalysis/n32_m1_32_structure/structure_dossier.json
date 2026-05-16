@@ -1,0 +1,918 @@
+[
+  {
+    "id": "0000_descender-128_q65537_n32_m080_m132_k24_eta1_bits12_view80",
+    "candidate": {
+      "proof_strategy": "lossy-budget",
+      "primal_distance_model": "guard-only",
+      "q": 65537,
+      "n": 32,
+      "m0": 80,
+      "m1": 32,
+      "fiber_dim": 24,
+      "eta": 1,
+      "sample_bits": 12,
+      "view_coords": 80
+    },
+    "effective_eta": 10,
+    "required_centered_l1": 3277,
+    "full_matrix": {
+      "columns": 112,
+      "rank": 32,
+      "prefix_rank_profile": {
+        "first_full_rank_prefix": 32,
+        "sampled_prefix_ranks": [
+          {
+            "prefix": 0,
+            "rank": 0
+          },
+          {
+            "prefix": 1,
+            "rank": 1
+          },
+          {
+            "prefix": 2,
+            "rank": 2
+          },
+          {
+            "prefix": 4,
+            "rank": 4
+          },
+          {
+            "prefix": 8,
+            "rank": 8
+          },
+          {
+            "prefix": 16,
+            "rank": 16
+          },
+          {
+            "prefix": 24,
+            "rank": 24
+          },
+          {
+            "prefix": 32,
+            "rank": 32
+          },
+          {
+            "prefix": 40,
+            "rank": 32
+          },
+          {
+            "prefix": 48,
+            "rank": 32
+          },
+          {
+            "prefix": 56,
+            "rank": 32
+          },
+          {
+            "prefix": 64,
+            "rank": 32
+          },
+          {
+            "prefix": 72,
+            "rank": 32
+          },
+          {
+            "prefix": 80,
+            "rank": 32
+          },
+          {
+            "prefix": 96,
+            "rank": 32
+          },
+          {
+            "prefix": 112,
+            "rank": 32
+          }
+        ]
+      },
+      "qary_l1_probe": {
+        "kernel_free_dimension": 80,
+        "coeff_bound": 4,
+        "random_samples": 5000,
+        "anneal_restarts": 16,
+        "anneal_steps": 1000,
+        "best_method": "free-pair-exact",
+        "best_free_sparsity": 2,
+        "centered_l1": 309656,
+        "support": 34,
+        "linf": 32368,
+        "guard_support": 34,
+        "non_guard_support": 0,
+        "guard_l1": 309656,
+        "non_guard_l1": 0,
+        "witness_prefix": [
+          -4979,
+          1011,
+          23192,
+          -3103,
+          11558,
+          10259,
+          -17463,
+          8841,
+          167,
+          -8758,
+          -10391,
+          615,
+          -7858,
+          2169,
+          -22526,
+          15260
+        ]
+      }
+    },
+    "view_matrix": {
+      "columns": 80,
+      "rank": 32,
+      "prefix_rank_profile": {
+        "first_full_rank_prefix": 32,
+        "sampled_prefix_ranks": [
+          {
+            "prefix": 0,
+            "rank": 0
+          },
+          {
+            "prefix": 1,
+            "rank": 1
+          },
+          {
+            "prefix": 2,
+            "rank": 2
+          },
+          {
+            "prefix": 4,
+            "rank": 4
+          },
+          {
+            "prefix": 8,
+            "rank": 8
+          },
+          {
+            "prefix": 16,
+            "rank": 16
+          },
+          {
+            "prefix": 24,
+            "rank": 24
+          },
+          {
+            "prefix": 32,
+            "rank": 32
+          },
+          {
+            "prefix": 40,
+            "rank": 32
+          },
+          {
+            "prefix": 48,
+            "rank": 32
+          },
+          {
+            "prefix": 56,
+            "rank": 32
+          },
+          {
+            "prefix": 64,
+            "rank": 32
+          },
+          {
+            "prefix": 72,
+            "rank": 32
+          },
+          {
+            "prefix": 80,
+            "rank": 32
+          }
+        ]
+      },
+      "qary_l1_probe": {
+        "kernel_free_dimension": 48,
+        "coeff_bound": 4,
+        "random_samples": 5000,
+        "anneal_restarts": 16,
+        "anneal_steps": 1000,
+        "best_method": "free-pair-exact",
+        "best_free_sparsity": 2,
+        "centered_l1": 309656,
+        "support": 34,
+        "linf": 32368,
+        "guard_support": 34,
+        "non_guard_support": 0,
+        "guard_l1": 309656,
+        "non_guard_l1": 0,
+        "witness_prefix": [
+          -4979,
+          1011,
+          23192,
+          -3103,
+          11558,
+          10259,
+          -17463,
+          8841,
+          167,
+          -8758,
+          -10391,
+          615,
+          -7858,
+          2169,
+          -22526,
+          15260
+        ]
+      }
+    },
+    "interpretation": {
+      "view_hides_tilt_coordinates": true,
+      "full_probe_publicly_available": false,
+      "view_probe_counterexample": false,
+      "full_probe_counterexample": false
+    }
+  },
+  {
+    "id": "0001_descender-128_q65537_n32_m080_m132_k32_eta1_bits12_view80",
+    "candidate": {
+      "proof_strategy": "lossy-budget",
+      "primal_distance_model": "guard-only",
+      "q": 65537,
+      "n": 32,
+      "m0": 80,
+      "m1": 32,
+      "fiber_dim": 32,
+      "eta": 1,
+      "sample_bits": 12,
+      "view_coords": 80
+    },
+    "effective_eta": 10,
+    "required_centered_l1": 3277,
+    "full_matrix": {
+      "columns": 112,
+      "rank": 32,
+      "prefix_rank_profile": {
+        "first_full_rank_prefix": 32,
+        "sampled_prefix_ranks": [
+          {
+            "prefix": 0,
+            "rank": 0
+          },
+          {
+            "prefix": 1,
+            "rank": 1
+          },
+          {
+            "prefix": 2,
+            "rank": 2
+          },
+          {
+            "prefix": 4,
+            "rank": 4
+          },
+          {
+            "prefix": 8,
+            "rank": 8
+          },
+          {
+            "prefix": 16,
+            "rank": 16
+          },
+          {
+            "prefix": 24,
+            "rank": 24
+          },
+          {
+            "prefix": 32,
+            "rank": 32
+          },
+          {
+            "prefix": 40,
+            "rank": 32
+          },
+          {
+            "prefix": 48,
+            "rank": 32
+          },
+          {
+            "prefix": 56,
+            "rank": 32
+          },
+          {
+            "prefix": 64,
+            "rank": 32
+          },
+          {
+            "prefix": 72,
+            "rank": 32
+          },
+          {
+            "prefix": 80,
+            "rank": 32
+          },
+          {
+            "prefix": 96,
+            "rank": 32
+          },
+          {
+            "prefix": 112,
+            "rank": 32
+          }
+        ]
+      },
+      "qary_l1_probe": {
+        "kernel_free_dimension": 80,
+        "coeff_bound": 4,
+        "random_samples": 5000,
+        "anneal_restarts": 16,
+        "anneal_steps": 1000,
+        "best_method": "free-pair-exact",
+        "best_free_sparsity": 2,
+        "centered_l1": 300885,
+        "support": 34,
+        "linf": 24709,
+        "guard_support": 33,
+        "non_guard_support": 1,
+        "guard_l1": 300884,
+        "non_guard_l1": 1,
+        "witness_prefix": [
+          8882,
+          7202,
+          -9594,
+          2467,
+          3141,
+          -4773,
+          952,
+          2217,
+          136,
+          -4722,
+          7489,
+          -10359,
+          24709,
+          22831,
+          15511,
+          3022
+        ]
+      }
+    },
+    "view_matrix": {
+      "columns": 80,
+      "rank": 32,
+      "prefix_rank_profile": {
+        "first_full_rank_prefix": 32,
+        "sampled_prefix_ranks": [
+          {
+            "prefix": 0,
+            "rank": 0
+          },
+          {
+            "prefix": 1,
+            "rank": 1
+          },
+          {
+            "prefix": 2,
+            "rank": 2
+          },
+          {
+            "prefix": 4,
+            "rank": 4
+          },
+          {
+            "prefix": 8,
+            "rank": 8
+          },
+          {
+            "prefix": 16,
+            "rank": 16
+          },
+          {
+            "prefix": 24,
+            "rank": 24
+          },
+          {
+            "prefix": 32,
+            "rank": 32
+          },
+          {
+            "prefix": 40,
+            "rank": 32
+          },
+          {
+            "prefix": 48,
+            "rank": 32
+          },
+          {
+            "prefix": 56,
+            "rank": 32
+          },
+          {
+            "prefix": 64,
+            "rank": 32
+          },
+          {
+            "prefix": 72,
+            "rank": 32
+          },
+          {
+            "prefix": 80,
+            "rank": 32
+          }
+        ]
+      },
+      "qary_l1_probe": {
+        "kernel_free_dimension": 48,
+        "coeff_bound": 4,
+        "random_samples": 5000,
+        "anneal_restarts": 16,
+        "anneal_steps": 1000,
+        "best_method": "free-pair-exact",
+        "best_free_sparsity": 2,
+        "centered_l1": 309656,
+        "support": 34,
+        "linf": 32368,
+        "guard_support": 34,
+        "non_guard_support": 0,
+        "guard_l1": 309656,
+        "non_guard_l1": 0,
+        "witness_prefix": [
+          -4979,
+          1011,
+          23192,
+          -3103,
+          11558,
+          10259,
+          -17463,
+          8841,
+          167,
+          -8758,
+          -10391,
+          615,
+          -7858,
+          2169,
+          -22526,
+          15260
+        ]
+      }
+    },
+    "interpretation": {
+      "view_hides_tilt_coordinates": true,
+      "full_probe_publicly_available": false,
+      "view_probe_counterexample": false,
+      "full_probe_counterexample": false
+    }
+  },
+  {
+    "id": "0002_descender-128_q65537_n32_m080_m132_k48_eta1_bits12_view80",
+    "candidate": {
+      "proof_strategy": "lossy-budget",
+      "primal_distance_model": "guard-only",
+      "q": 65537,
+      "n": 32,
+      "m0": 80,
+      "m1": 32,
+      "fiber_dim": 48,
+      "eta": 1,
+      "sample_bits": 12,
+      "view_coords": 80
+    },
+    "effective_eta": 10,
+    "required_centered_l1": 3277,
+    "full_matrix": {
+      "columns": 112,
+      "rank": 32,
+      "prefix_rank_profile": {
+        "first_full_rank_prefix": 32,
+        "sampled_prefix_ranks": [
+          {
+            "prefix": 0,
+            "rank": 0
+          },
+          {
+            "prefix": 1,
+            "rank": 1
+          },
+          {
+            "prefix": 2,
+            "rank": 2
+          },
+          {
+            "prefix": 4,
+            "rank": 4
+          },
+          {
+            "prefix": 8,
+            "rank": 8
+          },
+          {
+            "prefix": 16,
+            "rank": 16
+          },
+          {
+            "prefix": 24,
+            "rank": 24
+          },
+          {
+            "prefix": 32,
+            "rank": 32
+          },
+          {
+            "prefix": 40,
+            "rank": 32
+          },
+          {
+            "prefix": 48,
+            "rank": 32
+          },
+          {
+            "prefix": 56,
+            "rank": 32
+          },
+          {
+            "prefix": 64,
+            "rank": 32
+          },
+          {
+            "prefix": 72,
+            "rank": 32
+          },
+          {
+            "prefix": 80,
+            "rank": 32
+          },
+          {
+            "prefix": 96,
+            "rank": 32
+          },
+          {
+            "prefix": 112,
+            "rank": 32
+          }
+        ]
+      },
+      "qary_l1_probe": {
+        "kernel_free_dimension": 80,
+        "coeff_bound": 4,
+        "random_samples": 5000,
+        "anneal_restarts": 16,
+        "anneal_steps": 1000,
+        "best_method": "free-pair-exact",
+        "best_free_sparsity": 2,
+        "centered_l1": 274267,
+        "support": 34,
+        "linf": 30104,
+        "guard_support": 33,
+        "non_guard_support": 1,
+        "guard_l1": 274263,
+        "non_guard_l1": 4,
+        "witness_prefix": [
+          8067,
+          -1109,
+          -23072,
+          30104,
+          2792,
+          2887,
+          -6671,
+          -7050,
+          3081,
+          3835,
+          -780,
+          -4050,
+          2832,
+          -24109,
+          24172,
+          -473
+        ]
+      }
+    },
+    "view_matrix": {
+      "columns": 80,
+      "rank": 32,
+      "prefix_rank_profile": {
+        "first_full_rank_prefix": 32,
+        "sampled_prefix_ranks": [
+          {
+            "prefix": 0,
+            "rank": 0
+          },
+          {
+            "prefix": 1,
+            "rank": 1
+          },
+          {
+            "prefix": 2,
+            "rank": 2
+          },
+          {
+            "prefix": 4,
+            "rank": 4
+          },
+          {
+            "prefix": 8,
+            "rank": 8
+          },
+          {
+            "prefix": 16,
+            "rank": 16
+          },
+          {
+            "prefix": 24,
+            "rank": 24
+          },
+          {
+            "prefix": 32,
+            "rank": 32
+          },
+          {
+            "prefix": 40,
+            "rank": 32
+          },
+          {
+            "prefix": 48,
+            "rank": 32
+          },
+          {
+            "prefix": 56,
+            "rank": 32
+          },
+          {
+            "prefix": 64,
+            "rank": 32
+          },
+          {
+            "prefix": 72,
+            "rank": 32
+          },
+          {
+            "prefix": 80,
+            "rank": 32
+          }
+        ]
+      },
+      "qary_l1_probe": {
+        "kernel_free_dimension": 48,
+        "coeff_bound": 4,
+        "random_samples": 5000,
+        "anneal_restarts": 16,
+        "anneal_steps": 1000,
+        "best_method": "free-pair-exact",
+        "best_free_sparsity": 2,
+        "centered_l1": 309656,
+        "support": 34,
+        "linf": 32368,
+        "guard_support": 34,
+        "non_guard_support": 0,
+        "guard_l1": 309656,
+        "non_guard_l1": 0,
+        "witness_prefix": [
+          -4979,
+          1011,
+          23192,
+          -3103,
+          11558,
+          10259,
+          -17463,
+          8841,
+          167,
+          -8758,
+          -10391,
+          615,
+          -7858,
+          2169,
+          -22526,
+          15260
+        ]
+      }
+    },
+    "interpretation": {
+      "view_hides_tilt_coordinates": true,
+      "full_probe_publicly_available": false,
+      "view_probe_counterexample": false,
+      "full_probe_counterexample": false
+    }
+  },
+  {
+    "id": "0003_descender-128_q65537_n32_m080_m132_k64_eta1_bits12_view80",
+    "candidate": {
+      "proof_strategy": "lossy-budget",
+      "primal_distance_model": "guard-only",
+      "q": 65537,
+      "n": 32,
+      "m0": 80,
+      "m1": 32,
+      "fiber_dim": 64,
+      "eta": 1,
+      "sample_bits": 12,
+      "view_coords": 80
+    },
+    "effective_eta": 10,
+    "required_centered_l1": 3277,
+    "full_matrix": {
+      "columns": 112,
+      "rank": 32,
+      "prefix_rank_profile": {
+        "first_full_rank_prefix": 32,
+        "sampled_prefix_ranks": [
+          {
+            "prefix": 0,
+            "rank": 0
+          },
+          {
+            "prefix": 1,
+            "rank": 1
+          },
+          {
+            "prefix": 2,
+            "rank": 2
+          },
+          {
+            "prefix": 4,
+            "rank": 4
+          },
+          {
+            "prefix": 8,
+            "rank": 8
+          },
+          {
+            "prefix": 16,
+            "rank": 16
+          },
+          {
+            "prefix": 24,
+            "rank": 24
+          },
+          {
+            "prefix": 32,
+            "rank": 32
+          },
+          {
+            "prefix": 40,
+            "rank": 32
+          },
+          {
+            "prefix": 48,
+            "rank": 32
+          },
+          {
+            "prefix": 56,
+            "rank": 32
+          },
+          {
+            "prefix": 64,
+            "rank": 32
+          },
+          {
+            "prefix": 72,
+            "rank": 32
+          },
+          {
+            "prefix": 80,
+            "rank": 32
+          },
+          {
+            "prefix": 96,
+            "rank": 32
+          },
+          {
+            "prefix": 112,
+            "rank": 32
+          }
+        ]
+      },
+      "qary_l1_probe": {
+        "kernel_free_dimension": 80,
+        "coeff_bound": 4,
+        "random_samples": 5000,
+        "anneal_restarts": 16,
+        "anneal_steps": 1000,
+        "best_method": "free-pair-exact",
+        "best_free_sparsity": 2,
+        "centered_l1": 309656,
+        "support": 34,
+        "linf": 32368,
+        "guard_support": 34,
+        "non_guard_support": 0,
+        "guard_l1": 309656,
+        "non_guard_l1": 0,
+        "witness_prefix": [
+          -4979,
+          1011,
+          23192,
+          -3103,
+          11558,
+          10259,
+          -17463,
+          8841,
+          167,
+          -8758,
+          -10391,
+          615,
+          -7858,
+          2169,
+          -22526,
+          15260
+        ]
+      }
+    },
+    "view_matrix": {
+      "columns": 80,
+      "rank": 32,
+      "prefix_rank_profile": {
+        "first_full_rank_prefix": 32,
+        "sampled_prefix_ranks": [
+          {
+            "prefix": 0,
+            "rank": 0
+          },
+          {
+            "prefix": 1,
+            "rank": 1
+          },
+          {
+            "prefix": 2,
+            "rank": 2
+          },
+          {
+            "prefix": 4,
+            "rank": 4
+          },
+          {
+            "prefix": 8,
+            "rank": 8
+          },
+          {
+            "prefix": 16,
+            "rank": 16
+          },
+          {
+            "prefix": 24,
+            "rank": 24
+          },
+          {
+            "prefix": 32,
+            "rank": 32
+          },
+          {
+            "prefix": 40,
+            "rank": 32
+          },
+          {
+            "prefix": 48,
+            "rank": 32
+          },
+          {
+            "prefix": 56,
+            "rank": 32
+          },
+          {
+            "prefix": 64,
+            "rank": 32
+          },
+          {
+            "prefix": 72,
+            "rank": 32
+          },
+          {
+            "prefix": 80,
+            "rank": 32
+          }
+        ]
+      },
+      "qary_l1_probe": {
+        "kernel_free_dimension": 48,
+        "coeff_bound": 4,
+        "random_samples": 5000,
+        "anneal_restarts": 16,
+        "anneal_steps": 1000,
+        "best_method": "free-pair-exact",
+        "best_free_sparsity": 2,
+        "centered_l1": 309656,
+        "support": 34,
+        "linf": 32368,
+        "guard_support": 34,
+        "non_guard_support": 0,
+        "guard_l1": 309656,
+        "non_guard_l1": 0,
+        "witness_prefix": [
+          -4979,
+          1011,
+          23192,
+          -3103,
+          11558,
+          10259,
+          -17463,
+          8841,
+          167,
+          -8758,
+          -10391,
+          615,
+          -7858,
+          2169,
+          -22526,
+          15260
+        ]
+      }
+    },
+    "interpretation": {
+      "view_hides_tilt_coordinates": true,
+      "full_probe_publicly_available": false,
+      "view_probe_counterexample": false,
+      "full_probe_counterexample": false
+    }
+  }
+]

@@ -1,0 +1,20 @@
+.lake/
+*.olean
+*.ilean
+*.c
+*.o
+*.so
+*.a
+target/
+__pycache__/
+*.py[cod]
+.venv-cryptanalysis/
+tools/external/
+
+# Armature/Paseo research runtime output.
+research/artifacts/**
+!research/artifacts/.gitkeep
+research/state/.state.lock
+research/state/*.json
+research/state/*.jsonl
+research/worktrees/

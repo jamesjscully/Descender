@@ -1,0 +1,251 @@
+{
+  "family": "optimized-scalar-block",
+  "q": 32771,
+  "n": 64,
+  "m1": 32,
+  "rows_per_free": 2,
+  "used_rows": 64,
+  "unused_rows": 0,
+  "target_l1": 3277,
+  "certified_l1": 1705,
+  "passes_target": false,
+  "keygen_mul_ops": 64,
+  "exact_check": "block_diagonal_scalar_exact_over_all_nonzero_free_values",
+  "scalars_per_free_coordinate": [
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ],
+    [
+      18645,
+      2461
+    ]
+  ],
+  "worst_coordinate": 0,
+  "worst_free_value_mod_q": 413,
+  "worst_relation_centered_l1": 1705,
+  "worst_relation_support": 3,
+  "worst_relation_centered": [
+    -800,
+    492,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    413,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "notes": [
+    "Certificate covers only block-diagonal solved maps P where each pivot row reads one free coordinate with the recorded scalar.",
+    "The exact lower bound is min_j min_{x != 0 mod q} Lee(x) + sum_t Lee(a_{j,t} x).",
+    "This is a rigorous deployable sidecar for this family, but not a certificate for arbitrary dense solved maps."
+  ]
+}

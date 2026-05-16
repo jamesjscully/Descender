@@ -1,0 +1,5 @@
+    Finished `release` profile [optimized] target(s) in 0.01s
+     Running `tools/parameter-search/target/release/validate_frontier --input-dir research/parameter_search/canonical_pk_sample_compression_forced_20260516/search_bits10 --output-dir research/parameter_search/canonical_pk_sample_compression_forced_20260516/validation_bits10 --shared-lee-cert-manifest research/parameter_search/product_block_lee_sidecars_combined_20260516/manifest_minimal.json --top 80`
+wrote research/parameter_search/canonical_pk_sample_compression_forced_20260516/validation_bits10/validation.json
+wrote research/parameter_search/canonical_pk_sample_compression_forced_20260516/validation_bits10/validation.md
+rows_checked=0

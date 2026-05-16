@@ -1,0 +1,5 @@
+    Finished `release` profile [optimized] target(s) in 0.01s
+     Running `tools/parameter-search/target/release/validate_frontier --input-dir research/parameter_search/canonical_pk_compression_seed_sweep_20260516/search_descender-256 --output-dir research/parameter_search/canonical_pk_compression_seed_sweep_20260516/validation_descender-256_schema_fixed --shared-lee-cert-manifest research/parameter_search/product_block_lee_sidecars_combined_20260516/manifest_minimal.json --top 160`
+wrote research/parameter_search/canonical_pk_compression_seed_sweep_20260516/validation_descender-256_schema_fixed/validation.json
+wrote research/parameter_search/canonical_pk_compression_seed_sweep_20260516/validation_descender-256_schema_fixed/validation.md
+rows_checked=160

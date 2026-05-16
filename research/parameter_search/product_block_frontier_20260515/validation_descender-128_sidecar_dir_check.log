@@ -1,0 +1,5 @@
+    Finished `release` profile [optimized] target(s) in 0.01s
+     Running `tools/parameter-search/target/release/validate_frontier --input-dir research/parameter_search/product_block_frontier_20260515/search_descender-128 --output-dir research/parameter_search/product_block_frontier_20260515/validation_descender-128_sidecar_dir_check --shared-lee-cert-dir research/parameter_search/product_block_lee_sidecars_20260515 --top 20`
+wrote research/parameter_search/product_block_frontier_20260515/validation_descender-128_sidecar_dir_check/validation.json
+wrote research/parameter_search/product_block_frontier_20260515/validation_descender-128_sidecar_dir_check/validation.md
+rows_checked=27

@@ -1,0 +1,5 @@
+    Finished `release` profile [optimized] target(s) in 0.01s
+     Running `tools/parameter-search/target/release/descender-parameter-search --profile descender-192 --output-dir research/parameter_search/product_block_manifest_frontier_20260516/search_descender-192 --mode grid --objective bandwidth --q-values 12289,32771,40961,65537 --n-values 48,64,80,96,112,128,160,192,224,256,320,384 --m0-values 64,80,96,104,112,128,160,192,224,256,320,384,448 --m1-values 32 --fiber-dims 32,48,64,96,128,192,256 --eta-values 5,6,8,10,12,16 --sample-bits 0 --view-coords 0 --proof-strategies full-surjective --primal-distance-models guard-only --qary-amplitude-strategies product-block-lee --product-block-sidecar-manifest research/parameter_search/product_block_lee_sidecars_broad_20260516/manifest.json --coefficient-model seeded --incidence-model seeded --public-key-model component --top 120`
+wrote research/parameter_search/product_block_manifest_frontier_20260516/search_descender-192/descender-192.json
+wrote research/parameter_search/product_block_manifest_frontier_20260516/search_descender-192/descender-192.md
+accepted_total=6028 accepted_top=120 pareto=9 total=70980

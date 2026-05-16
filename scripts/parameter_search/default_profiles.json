@@ -1,0 +1,34 @@
+{
+  "profiles": [
+    {
+      "id": "descender-128",
+      "target_security_bits": 128,
+      "max_public_key_bytes": 32768,
+      "max_ciphertext_bytes": 8192,
+      "max_secret_key_bytes": 8192,
+      "min_guard_slack": 8,
+      "min_average_to_worst_slack": 16,
+      "description": "Baseline practical target for early concrete-family screening."
+    },
+    {
+      "id": "descender-192",
+      "target_security_bits": 192,
+      "max_public_key_bytes": 65536,
+      "max_ciphertext_bytes": 12288,
+      "max_secret_key_bytes": 12288,
+      "min_guard_slack": 12,
+      "min_average_to_worst_slack": 24,
+      "description": "Conservative default target for the first serious candidate family."
+    },
+    {
+      "id": "descender-256",
+      "target_security_bits": 256,
+      "max_public_key_bytes": 131072,
+      "max_ciphertext_bytes": 16384,
+      "max_secret_key_bytes": 16384,
+      "min_guard_slack": 16,
+      "min_average_to_worst_slack": 32,
+      "description": "High-assurance target with extra reduction slack and larger size budget."
+    }
+  ]
+}

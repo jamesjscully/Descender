@@ -1,0 +1,96 @@
+{
+  "generated_at": "2026-05-15T19:20:00Z",
+  "profile": {
+    "id": "descender-128",
+    "target_security_bits": 128,
+    "max_public_key_bytes": 32768,
+    "max_ciphertext_bytes": 8192,
+    "max_secret_key_bytes": 8192,
+    "min_guard_slack": 8,
+    "min_average_to_worst_slack": 16,
+    "description": "Baseline practical target for early concrete-family screening."
+  },
+  "search_space": {
+    "mode": "grid",
+    "objective": "screening",
+    "proof_strategies": [
+      "lossy-budget"
+    ],
+    "primal_distance_models": [
+      "guard-only"
+    ],
+    "qary_amplitude_strategies": [
+      "fallback-support",
+      "solved-repetition"
+    ],
+    "lee_repetition_values": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "public_key_model": "canonical",
+    "coefficient_model": "seeded",
+    "incidence_model": "seeded",
+    "q_values": [
+      3329
+    ],
+    "n_values": [
+      64
+    ],
+    "m0_overheads": [
+      8
+    ],
+    "m0_values": [],
+    "m1_multipliers": [
+      1
+    ],
+    "fiber_dims": [
+      4
+    ],
+    "eta_values": [
+      1,
+      2
+    ],
+    "sample_bits_values": [
+      0
+    ],
+    "view_coord_values": [
+      0
+    ],
+    "total_candidates": 16,
+    "threads": 20,
+    "anneal_iterations": null,
+    "anneal_restarts": null,
+    "seed": null,
+    "security_extra_cap": 32.0,
+    "guard_slack_target": null,
+    "combined_certification_weight": 0.25
+  },
+  "rejected_by_reason": {
+    "correctness_distance_slack": 16,
+    "qary_amplitude_at_noise": 16,
+    "security_proxy_bits": 16,
+    "solved_repetition_requires_pivot_capacity": 6
+  },
+  "accepted_total": 0,
+  "accepted_top": [],
+  "pareto_frontier": [],
+  "notes": [
+    "security_proxy_bits and objective_score are screening scores, not cryptanalytic estimates",
+    "objective mode \"screening\" caps excess security credit at 32 bits",
+    "proof strategies searched: lossy-budget",
+    "primal distance models searched: guard-only",
+    "q-ary amplitude strategies searched: fallback-support, solved-repetition",
+    "solved-repetition certificates require lee_repetition * m1 <= n and certify only lee_repetition + 1, so they expose the direct-coordinate repetition tradeoff rather than assuming it is viable",
+    "combined-proxy rows are ranked with certification pressure penalty weight 0.25",
+    "sample_bits=0 means full-width public samples; smaller sample_bits applies bit-packing plus a conservative centered rounding-error penalty",
+    "view_coords=0 means all m0+m1 coordinates; smaller values model public-sample coordinate views that require support-covered or lossy-budget proof obligations",
+    "guard-only uses the proven guard-block distance and requires m0>=n; combined-proxy prices distance from the viewed combined matrix and requires a later combined-distance certificate",
+    "combined_certification_pressure is a cheap proxy for how much rank/distance work the later combined certificate must do; lower is easier to certify",
+    "lossy_diagonal_slack_bits is a screening proxy for the multi-coordinate diagonal amplification proof route; positive slack is not a Lean certificate by itself",
+    "full-surjective and support-covered are exact-sample proof strategies; lossy-budget is the only route that accepts nonzero sample_bits in this engine",
+    "hard filters encode current proof-side constraints such as q > n + m0 + m1 and m0 >= n",
+    "top candidates require exact finite-field and lattice/coding follow-up before any security claim"
+  ]
+}

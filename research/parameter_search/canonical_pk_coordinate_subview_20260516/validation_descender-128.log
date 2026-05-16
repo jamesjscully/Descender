@@ -1,0 +1,6 @@
+   Compiling descender-parameter-search v0.1.0 (/home/jack/code/Descender/tools/parameter-search)
+    Finished `release` profile [optimized] target(s) in 1.48s
+     Running `tools/parameter-search/target/release/validate_frontier --input-dir research/parameter_search/canonical_pk_coordinate_subview_20260516/search_descender-128 --output-dir research/parameter_search/canonical_pk_coordinate_subview_20260516/validation_descender-128 --shared-lee-cert-manifest research/parameter_search/product_block_lee_sidecars_combined_20260516/manifest_minimal.json --top 200`
+wrote research/parameter_search/canonical_pk_coordinate_subview_20260516/validation_descender-128/validation.json
+wrote research/parameter_search/canonical_pk_coordinate_subview_20260516/validation_descender-128/validation.md
+rows_checked=200

@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-05-15T07:10:25Z",
+  "validation_model": "seeded_sparse_tilt_v1",
+  "source_files": [
+    "research/parameter_search/anneal_combined_m0_lt_n_128/descender-128.json"
+  ],
+  "top_per_profile": 100,
+  "rows_checked": 0,
+  "summary": {
+    "by_profile": {},
+    "failures_by_reason": {}
+  },
+  "rows": [],
+  "notes": [
+    "This materializes deterministic public coefficient, incidence, and diagonal seeds for each row.",
+    "The generated tilt has exactly three nonzero row entries per tilt column and is combined with Cauchy guard/base blocks over the row's prime field.",
+    "Passing rows should still be treated as candidates for deeper bounded dual-witness search and estimator work, not as deployed parameters."
+  ]
+}

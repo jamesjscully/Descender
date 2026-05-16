@@ -1,0 +1,22 @@
+[
+  {
+    "profile": "descender-128",
+    "source": "accepted_top",
+    "verdict": "fail",
+    "public_key_bytes": 172,
+    "ciphertext_bytes": 140,
+    "q": 65537,
+    "n": 32,
+    "m0": 72,
+    "m1": 32,
+    "view_coords": 72,
+    "eta": 1,
+    "required_centered_l1": 3277,
+    "checked_counterexample_l1_at_most": 3276,
+    "z3_result": "unknown",
+    "timeout_ms": 300000,
+    "found_counterexample": null,
+    "certificate": "unknown_not_a_certificate",
+    "reason": "timeout"
+  }
+]

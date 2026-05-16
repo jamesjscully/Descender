@@ -1,0 +1,6 @@
+   Compiling descender-parameter-search v0.1.0 (/home/jack/code/Descender/tools/parameter-search)
+    Finished `release` profile [optimized] target(s) in 1.17s
+     Running `tools/parameter-search/target/release/validate_frontier --input-dir research/parameter_search/product_block_lee_sidecars_20260515/frontier_rows4_eta10_smoke/search --output-dir research/parameter_search/product_block_lee_sidecars_20260515/frontier_rows4_eta10_smoke/validation --shared-lee-cert-dir research/parameter_search/product_block_lee_sidecars_20260515 --top 20`
+wrote research/parameter_search/product_block_lee_sidecars_20260515/frontier_rows4_eta10_smoke/validation/validation.json
+wrote research/parameter_search/product_block_lee_sidecars_20260515/frontier_rows4_eta10_smoke/validation/validation.md
+rows_checked=6

@@ -1,0 +1,68 @@
+[[task]]
+name = "research-director"
+on = "descender.director.kick"
+run = "./scripts/research/director.py"
+
+[task.admission]
+when_busy = "queue_one"
+
+[[task]]
+name = "research-director-after-quality"
+on = "descender.quality.completed"
+run = "./scripts/research/director.py"
+
+[task.admission]
+when_busy = "queue_one"
+
+[[task]]
+name = "research-director-after-agent-failed"
+on = "descender.agent.failed"
+run = "./scripts/research/director.py"
+
+[task.admission]
+when_busy = "queue_one"
+
+[[task]]
+name = "lean-check"
+watch = ["Descender/**/*.lean", "Descender.lean", "lakefile.lean", "lean-toolchain"]
+settle = "1s"
+run = "./scripts/research/evaluate_lean.py"
+
+[task.admission]
+when_busy = "queue_one"
+
+[[task]]
+name = "launch-agent"
+on = "descender.agent.requested"
+run = "./scripts/research/launch_agent.py"
+
+[task.admission]
+when_busy = "queue_all"
+
+[[task]]
+name = "quality-check"
+on = "descender.agent.completed"
+run = "./scripts/research/quality_check.py"
+
+[task.admission]
+when_busy = "queue_all"
+
+[[service]]
+name = "research-idle-monitor"
+run = "./scripts/research/watchdog.py --loop"
+
+[service.supervision]
+restart = "always"
+start_delay = "5s"
+max_restarts = 10
+within = "10m"
+
+[[service]]
+name = "research-agent-monitor"
+run = "./scripts/research/monitor_agents.py --loop"
+
+[service.supervision]
+restart = "always"
+start_delay = "5s"
+max_restarts = 10
+within = "10m"

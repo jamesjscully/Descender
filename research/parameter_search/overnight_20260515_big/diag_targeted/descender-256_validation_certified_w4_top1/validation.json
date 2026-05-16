@@ -1,0 +1,112 @@
+{
+  "generated_at": "2026-05-15T13:10:24Z",
+  "validation_model": "seeded_sparse_tilt_v1",
+  "source_files": [
+    "research/parameter_search/overnight_20260515_big/diag_targeted/descender-256/descender-256.json"
+  ],
+  "top_per_profile": 1,
+  "rows_checked": 1,
+  "summary": {
+    "by_profile": {
+      "descender-256": {
+        "rows_checked": 1,
+        "rows_passed": 1,
+        "min_ciphertext_bytes": 272,
+        "min_public_key_bytes": 304
+      }
+    },
+    "failures_by_reason": {}
+  },
+  "rows": [
+    {
+      "profile": "descender-256",
+      "source": "accepted_top",
+      "candidate": {
+        "proof_strategy": "lossy-budget",
+        "primal_distance_model": "guard-only",
+        "q": 65537,
+        "n": 64,
+        "m0": 160,
+        "m1": 64,
+        "fiber_dim": 48,
+        "eta": 1,
+        "sample_bits": 12,
+        "view_coords": 160
+      },
+      "reported": {
+        "compact_public_key_bytes": 304,
+        "ciphertext_bytes": 272,
+        "guard_distance": 97,
+        "guard_slack": 76,
+        "cauchy_field_slack": 65249,
+        "sample_compression_error": 9,
+        "effective_eta": 10,
+        "lossy_diagonal_required_distance": 97,
+        "lossy_diagonal_slack_bits": 8.318182001220748,
+        "security_proxy_bits": 260.01258283465023,
+        "average_to_worst_slack": 313.2306212265254
+      },
+      "generated_setup": {
+        "coefficient_seed": 15047126166386538340,
+        "incidence_seed": 18192714717233668336,
+        "diagonal_seed": 10232952665547459445,
+        "tilt_columns": 64,
+        "tilt_max_column_weight": 3,
+        "tilt_min_column_weight": 3,
+        "tilt_rank": 61,
+        "tilted_adjoint_rank": 64,
+        "dual_search_weight": 4,
+        "no_dual_witness_up_to": 4
+      },
+      "exact": {
+        "q_is_prime": true,
+        "field_size_pass": true,
+        "cauchy_full_rank": 64,
+        "cauchy_guard_rank": 64,
+        "full_column_rank": true,
+        "guard_column_rank": true,
+        "tilted_adjoint_full_rank": true,
+        "tilt_column_support_pass": true,
+        "bounded_dual_witness_pass": true,
+        "guard_distance_exact": 97,
+        "measurement_distance_exact": 161,
+        "dual_distance_exact": 65,
+        "correctness_required_distance": 21,
+        "correctness_distance_exact": 97,
+        "guard_distance_pass": true,
+        "correctness_distance_pass": true,
+        "combined_primal_distance_certificate_pass": true,
+        "full_view": false,
+        "view_coordinate_count": 160,
+        "view_coordinate_bound_pass": true,
+        "proof_strategy_view_pass": true,
+        "view_contains_guard_block": true,
+        "primal_distance_view_pass": true,
+        "view_compression_ratio": 0.7142857142857143,
+        "support_covered_candidate_pass": false,
+        "lossy_budget_noise_budget_pass": true,
+        "lossy_budget_separation_proxy_pass": true,
+        "lossy_diagonal_required_distance": 97,
+        "lossy_diagonal_slack_bits": 8.318182001220748,
+        "lossy_diagonal_proxy_pass": true,
+        "view_pair_coordinate_min_support": 97,
+        "view_pair_coordinate_certificate_pass": true,
+        "lossy_budget_candidate_pass": true,
+        "view_certificate_route": "guard-block-lossy-diagonal-certified",
+        "view_reduction_certificate_pass": true,
+        "average_to_worst_pass": true,
+        "security_proxy_pass": true,
+        "reported_guard_distance_matches": true
+      },
+      "verdict": "pass",
+      "failures": []
+    }
+  ],
+  "notes": [
+    "This materializes deterministic public coefficient, incidence, and diagonal seeds for each row.",
+    "The generated tilt has exactly three nonzero row entries per tilt column and is combined with Cauchy guard/base blocks over the row's prime field.",
+    "Compressed view rows now report route diagnostics: support-covered rows need a concrete hitting-set certificate, while lossy-budget rows report viewed-noise, viewed-separation, and multi-coordinate diagonal-amplification checks.",
+    "A guard-block lossy diagonal view is accepted when the selected prefix contains the full Cauchy guard block, the field is prime, the guard-block support distance meets the diagonal bad-seed bound, and the lossy noise/separation budget passes.",
+    "Passing rows should still be treated as candidates for deeper bounded dual-witness search and estimator work, not as deployed parameters."
+  ]
+}

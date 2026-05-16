@@ -1,0 +1,69 @@
+{
+  "family": "shared-random-pair-block",
+  "q": 32771,
+  "n": 80,
+  "m1": 32,
+  "group_size": 2,
+  "group_count": 16,
+  "rows_per_group": 5,
+  "used_rows": 80,
+  "unused_rows": 0,
+  "target_l1": 3277,
+  "passes_target": true,
+  "certified_l1": 3277,
+  "keygen_mul_ops": 160,
+  "selected_trial": 2,
+  "exact_check": "enumerated_all_centered_pairs_with_free_l1_below_target",
+  "lean_route": "productBlockComposableSystematicLeeCertificate -> composableSystematicLeeDualCertificate",
+  "global_systematic_lee_distance_certified": true,
+  "local_certificate_scope": "all nonzero centered local pairs with local free l1 below target_l1",
+  "global_certificate_statement": "For the direct sum of 16 identical certified pair blocks, every nonzero global free vector activates a certified local slice; therefore SystematicLeeDistanceAtLeast q P target_l1 holds globally when passes_target is true.",
+  "pair_block": {
+    "coefficients": [
+      [
+        3604,
+        19764
+      ],
+      [
+        17179,
+        2683
+      ],
+      [
+        26747,
+        13757
+      ],
+      [
+        5265,
+        17244
+      ],
+      [
+        27751,
+        30589
+      ]
+    ],
+    "passes_target": true,
+    "certified_l1": 3277,
+    "checked_centered_pair_count": 21470904,
+    "worst_pair_centered": [
+      -614,
+      -14
+    ],
+    "worst_relation_centered": [
+      1044,
+      -435,
+      -359,
+      -400,
+      -417,
+      -614,
+      -14
+    ],
+    "worst_relation_support": 7
+  },
+  "notes": [
+    "Certificate covers a block-diagonal direct sum of identical two-coordinate shared-row blocks.",
+    "Each local pivot row reads both local free coordinates, so rows are shared within a pair but not across blocks.",
+    "Pass means every centered local pair with free l1 below target was checked and none had total Lee l1 below target.",
+    "For the direct-sum global matrix, nonzero global y activates at least one local block and the local Lee norm is a sub-sum of the global Lee norm.",
+    "That local-to-global step is represented in Lean by productBlockComposableSystematicLeeCertificate."
+  ]
+}

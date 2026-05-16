@@ -1,0 +1,60 @@
+
+== 0000_descender-128_q65537_n32_m080_m132_k24_eta1_bits12_view80 ==
+dimension 112 x 112
+lll_first_norm2 59699.0
+bkz20_first_norm2 7939.0
+
+== 0001_descender-128_q65537_n32_m080_m132_k32_eta1_bits12_view80 ==
+dimension 112 x 112
+lll_first_norm2 54864.0
+bkz20_first_norm2 8217.0
+
+== 0002_descender-128_q65537_n32_m080_m132_k48_eta1_bits12_view80 ==
+dimension 112 x 112
+lll_first_norm2 105935.0
+bkz20_first_norm2 9137.0
+
+== 0003_descender-128_q65537_n32_m080_m132_k64_eta1_bits12_view80 ==
+dimension 112 x 112
+lll_first_norm2 37941.0
+bkz20_first_norm2 10115.0
+
+== 0004_descender-192_q131071_n40_m096_m140_k24_eta1_bits15_view96 ==
+dimension 136 x 136
+lll_first_norm2 365807.0
+bkz20_first_norm2 32897.0
+
+== 0005_descender-192_q131071_n40_m096_m140_k32_eta1_bits15_view96 ==
+dimension 136 x 136
+lll_first_norm2 406804.0
+bkz20_first_norm2 32643.0
+
+== 0006_descender-192_q131071_n40_m096_m140_k48_eta1_bits15_view96 ==
+dimension 136 x 136
+lll_first_norm2 311978.0
+bkz20_first_norm2 35860.0
+
+== 0007_descender-192_q131071_n40_m096_m140_k64_eta1_bits15_view96 ==
+dimension 136 x 136
+lll_first_norm2 221239.0
+bkz20_first_norm2 32961.0
+
+== 0008_descender-256_q524309_n48_m0112_m148_k32_eta1_bits16_view112 ==
+dimension 160 x 160
+lll_first_norm2 2402854.0
+bkz20_first_norm2 149447.0
+
+== 0009_descender-256_q524309_n48_m0112_m148_k48_eta1_bits16_view112 ==
+dimension 160 x 160
+lll_first_norm2 1999733.0
+bkz20_first_norm2 145963.0
+
+== 0010_descender-256_q524309_n48_m0112_m148_k64_eta1_bits16_view112 ==
+dimension 160 x 160
+lll_first_norm2 2046493.0
+bkz20_first_norm2 166847.0
+
+== 0011_descender-256_q131071_n56_m0128_m156_k32_eta1_bits15_view128 ==
+dimension 184 x 184
+lll_first_norm2 2671627.0
+bkz20_first_norm2 138583.0

@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-05-16T01:05:11Z",
+  "validation_model": "seeded_sparse_tilt_v1",
+  "source_files": [
+    "research/cryptanalysis/n32_m1_32_structure/product_block_search_smoke/descender-128.json"
+  ],
+  "top_per_profile": 8,
+  "rows_checked": 0,
+  "summary": {
+    "by_profile": {},
+    "failures_by_reason": {}
+  },
+  "rows": [],
+  "notes": [
+    "This materializes deterministic public coefficient, incidence, and diagonal seeds for each row.",
+    "The generated tilt has exactly three nonzero row entries per tilt column and is combined with Cauchy guard/base blocks over the row's prime field.",
+    "Compressed view rows now report route diagnostics: support-covered rows need a concrete hitting-set certificate, while lossy-budget rows report viewed-noise, viewed-separation, and multi-coordinate diagonal-amplification checks.",
+    "A guard-block lossy diagonal view is accepted when the selected prefix contains the full Cauchy guard block, the field is prime, the guard-block support distance meets the diagonal bad-seed bound, and the lossy noise/separation budget passes.",
+    "Rows using product-block-lee/shared-pair-lee require a matching --shared-lee-cert-json sidecar that globally certifies the product-block Lee distance.",
+    "Passing rows should still be treated as candidates for deeper bounded dual-witness search and estimator work, not as deployed parameters."
+  ]
+}

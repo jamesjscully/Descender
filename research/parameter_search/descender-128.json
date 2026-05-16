@@ -1,0 +1,1588 @@
+{
+  "generated_at": "2026-05-15T03:57:00Z",
+  "profile": {
+    "id": "descender-128",
+    "target_security_bits": 128,
+    "max_public_key_bytes": 32768,
+    "max_ciphertext_bytes": 8192,
+    "max_secret_key_bytes": 8192,
+    "min_guard_slack": 8,
+    "min_average_to_worst_slack": 16,
+    "description": "Baseline practical target for early concrete-family screening."
+  },
+  "search_space": {
+    "q_values": [
+      3329,
+      7681,
+      12289,
+      40961,
+      65537
+    ],
+    "n_values": [
+      64,
+      96,
+      128,
+      192,
+      256,
+      384,
+      512
+    ],
+    "m0_overheads": [
+      8,
+      16,
+      32,
+      64,
+      128,
+      256
+    ],
+    "m1_multipliers": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "fiber_dims": [
+      4,
+      8,
+      16
+    ],
+    "eta_values": [
+      1,
+      2,
+      3,
+      4,
+      6,
+      8
+    ],
+    "total_candidates": 15120
+  },
+  "rejected_by_reason": {
+    "average_to_worst_slack_proxy": 5304,
+    "ciphertext_budget": 18,
+    "guard_correctness_slack": 3360,
+    "public_key_budget": 4830,
+    "security_proxy_bits": 11097
+  },
+  "accepted_total": 1874,
+  "accepted_top": [
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 96,
+        "m0": 352,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 184320,
+        "compact_public_key_bytes": 32544,
+        "ciphertext_bytes": 1952,
+        "secret_key_bytes": 352,
+        "guard_distance": 257,
+        "guard_slack": 254,
+        "cauchy_field_slack": 64801,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 484.3459996331108,
+        "dual_proxy_bits": 466.90780985629834,
+        "self_randomization_proxy_bits": 521.6261128451508,
+        "security_proxy_bits": 466.90780985629834,
+        "average_to_worst_slack": 509.62611284515083
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 96,
+        "m0": 160,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 104448,
+        "compact_public_key_bytes": 29024,
+        "ciphertext_bytes": 1120,
+        "secret_key_bytes": 256,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 40321,
+        "noise_headroom": 20479,
+        "primal_proxy_bits": 461.56322741031386,
+        "dual_proxy_bits": 579.5992368168089,
+        "self_randomization_proxy_bits": 608.6888779921048,
+        "security_proxy_bits": 461.56322741031386,
+        "average_to_worst_slack": 596.6888779921048
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 96,
+        "m0": 224,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 116736,
+        "compact_public_key_bytes": 29152,
+        "ciphertext_bytes": 1248,
+        "secret_key_bytes": 256,
+        "guard_distance": 129,
+        "guard_slack": 126,
+        "cauchy_field_slack": 40257,
+        "noise_headroom": 20479,
+        "primal_proxy_bits": 461.56322741031386,
+        "dual_proxy_bits": 585.038134417924,
+        "self_randomization_proxy_bits": 507.25127794595073,
+        "security_proxy_bits": 461.56322741031386,
+        "average_to_worst_slack": 495.25127794595073
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 96,
+        "m0": 224,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 147456,
+        "compact_public_key_bytes": 32160,
+        "ciphertext_bytes": 1568,
+        "secret_key_bytes": 352,
+        "guard_distance": 129,
+        "guard_slack": 126,
+        "cauchy_field_slack": 64929,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 484.3459996331108,
+        "dual_proxy_bits": 458.8448063878658,
+        "self_randomization_proxy_bits": 724.5013129374588,
+        "security_proxy_bits": 458.8448063878658,
+        "average_to_worst_slack": 712.5013129374588
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 128,
+        "m0": 384,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 196608,
+        "compact_public_key_bytes": 29536,
+        "ciphertext_bytes": 1568,
+        "secret_key_bytes": 320,
+        "guard_distance": 257,
+        "guard_slack": 254,
+        "cauchy_field_slack": 40065,
+        "noise_headroom": 20479,
+        "primal_proxy_bits": 615.4176365470852,
+        "dual_proxy_bits": 457.16861965561793,
+        "self_randomization_proxy_bits": 743.9601039587037,
+        "security_proxy_bits": 457.16861965561793,
+        "average_to_worst_slack": 727.9601039587037
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 96,
+        "m0": 160,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 129024,
+        "compact_public_key_bytes": 31968,
+        "ciphertext_bytes": 1376,
+        "secret_key_bytes": 352,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 64993,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 484.3459996331108,
+        "dual_proxy_bits": 453.9780278193037,
+        "self_randomization_proxy_bits": 825.9389129836128,
+        "security_proxy_bits": 453.9780278193037,
+        "average_to_worst_slack": 813.9389129836128
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 96,
+        "m0": 352,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 122880,
+        "compact_public_key_bytes": 22304,
+        "ciphertext_bytes": 1312,
+        "secret_key_bytes": 256,
+        "guard_distance": 257,
+        "guard_slack": 254,
+        "cauchy_field_slack": 40225,
+        "noise_headroom": 20479,
+        "primal_proxy_bits": 461.56322741031386,
+        "dual_proxy_bits": 450.6337671288847,
+        "self_randomization_proxy_bits": 456.5324779228738,
+        "security_proxy_bits": 450.6337671288847,
+        "average_to_worst_slack": 444.5324779228738
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 128,
+        "m0": 256,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 163840,
+        "compact_public_key_bytes": 29280,
+        "ciphertext_bytes": 1312,
+        "secret_key_bytes": 320,
+        "guard_distance": 129,
+        "guard_slack": 126,
+        "cauchy_field_slack": 40193,
+        "noise_headroom": 20479,
+        "primal_proxy_bits": 615.4176365470852,
+        "dual_proxy_bits": 450.6337671288847,
+        "self_randomization_proxy_bits": 946.8353040510117,
+        "security_proxy_bits": 450.6337671288847,
+        "average_to_worst_slack": 930.8353040510117
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 128,
+        "m0": 192,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 147456,
+        "compact_public_key_bytes": 29152,
+        "ciphertext_bytes": 1184,
+        "secret_key_bytes": 320,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 40257,
+        "noise_headroom": 20479,
+        "primal_proxy_bits": 615.4176365470852,
+        "dual_proxy_bits": 446.8365880622173,
+        "self_randomization_proxy_bits": 1048.2729040971658,
+        "security_proxy_bits": 446.8365880622173,
+        "average_to_worst_slack": 1032.2729040971658
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 96,
+        "m0": 224,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 98304,
+        "compact_public_key_bytes": 22048,
+        "ciphertext_bytes": 1056,
+        "secret_key_bytes": 256,
+        "guard_distance": 129,
+        "guard_slack": 126,
+        "cauchy_field_slack": 40353,
+        "noise_headroom": 20479,
+        "primal_proxy_bits": 461.56322741031386,
+        "dual_proxy_bits": 442.57076366045214,
+        "self_randomization_proxy_bits": 659.4076780151818,
+        "security_proxy_bits": 442.57076366045214,
+        "average_to_worst_slack": 647.4076780151818
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 96,
+        "m0": 160,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 86016,
+        "compact_public_key_bytes": 21920,
+        "ciphertext_bytes": 928,
+        "secret_key_bytes": 256,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 40417,
+        "noise_headroom": 20479,
+        "primal_proxy_bits": 461.56322741031386,
+        "dual_proxy_bits": 437.70398509189005,
+        "self_randomization_proxy_bits": 760.8452780613358,
+        "security_proxy_bits": 437.70398509189005,
+        "average_to_worst_slack": 748.8452780613358
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 96,
+        "m0": 160,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 2
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 129024,
+        "compact_public_key_bytes": 31968,
+        "ciphertext_bytes": 1376,
+        "secret_key_bytes": 352,
+        "guard_distance": 65,
+        "guard_slack": 60,
+        "cauchy_field_slack": 64993,
+        "noise_headroom": 32766,
+        "primal_proxy_bits": 459.5839556691263,
+        "dual_proxy_bits": 436.29085355931477,
+        "self_randomization_proxy_bits": 495.77832679715243,
+        "security_proxy_bits": 436.29085355931477,
+        "average_to_worst_slack": 483.77832679715243
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 128,
+        "m0": 256,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 2
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 163840,
+        "compact_public_key_bytes": 29280,
+        "ciphertext_bytes": 1312,
+        "secret_key_bytes": 320,
+        "guard_distance": 129,
+        "guard_slack": 124,
+        "cauchy_field_slack": 40193,
+        "noise_headroom": 20478,
+        "primal_proxy_bits": 582.4015779284392,
+        "dual_proxy_bits": 432.94743820834043,
+        "self_randomization_proxy_bits": 475.17732378463984,
+        "security_proxy_bits": 432.94743820834043,
+        "average_to_worst_slack": 459.17732378463984
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 128,
+        "m0": 192,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 2
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 147456,
+        "compact_public_key_bytes": 29152,
+        "ciphertext_bytes": 1184,
+        "secret_key_bytes": 320,
+        "guard_distance": 65,
+        "guard_slack": 60,
+        "cauchy_field_slack": 40257,
+        "noise_headroom": 20478,
+        "primal_proxy_bits": 582.4015779284392,
+        "dual_proxy_bits": 429.150259141673,
+        "self_randomization_proxy_bits": 623.780721857431,
+        "security_proxy_bits": 429.150259141673,
+        "average_to_worst_slack": 607.780721857431
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 96,
+        "m0": 160,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 2
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 86016,
+        "compact_public_key_bytes": 21920,
+        "ciphertext_bytes": 928,
+        "secret_key_bytes": 256,
+        "guard_distance": 65,
+        "guard_slack": 60,
+        "cauchy_field_slack": 40417,
+        "noise_headroom": 20478,
+        "primal_proxy_bits": 436.80118344632933,
+        "dual_proxy_bits": 420.0176561713458,
+        "self_randomization_proxy_bits": 430.6846918748754,
+        "security_proxy_bits": 420.0176561713458,
+        "average_to_worst_slack": 418.6846918748754
+      }
+    },
+    {
+      "candidate": {
+        "q": 12289,
+        "n": 128,
+        "m0": 384,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 13.585079902767108,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 196608,
+        "compact_public_key_bytes": 29536,
+        "ciphertext_bytes": 1568,
+        "secret_key_bytes": 320,
+        "guard_distance": 257,
+        "guard_slack": 254,
+        "cauchy_field_slack": 11393,
+        "noise_headroom": 6143,
+        "primal_proxy_bits": 537.6052596116585,
+        "dual_proxy_bits": 415.48229073507366,
+        "self_randomization_proxy_bits": 521.6390270003419,
+        "security_proxy_bits": 415.48229073507366,
+        "average_to_worst_slack": 505.6390270003419
+      }
+    },
+    {
+      "candidate": {
+        "q": 12289,
+        "n": 128,
+        "m0": 256,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 13.585079902767108,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 163840,
+        "compact_public_key_bytes": 29280,
+        "ciphertext_bytes": 1312,
+        "secret_key_bytes": 320,
+        "guard_distance": 129,
+        "guard_slack": 126,
+        "cauchy_field_slack": 11521,
+        "noise_headroom": 6143,
+        "primal_proxy_bits": 537.6052596116585,
+        "dual_proxy_bits": 408.94743820834043,
+        "self_randomization_proxy_bits": 724.5142270926499,
+        "security_proxy_bits": 408.94743820834043,
+        "average_to_worst_slack": 708.5142270926499
+      }
+    },
+    {
+      "candidate": {
+        "q": 12289,
+        "n": 128,
+        "m0": 192,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 13.585079902767108,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 147456,
+        "compact_public_key_bytes": 29152,
+        "ciphertext_bytes": 1184,
+        "secret_key_bytes": 320,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 11585,
+        "noise_headroom": 6143,
+        "primal_proxy_bits": 537.6052596116585,
+        "dual_proxy_bits": 405.150259141673,
+        "self_randomization_proxy_bits": 825.9518271388039,
+        "security_proxy_bits": 405.150259141673,
+        "average_to_worst_slack": 809.9518271388039
+      }
+    },
+    {
+      "candidate": {
+        "q": 12289,
+        "n": 96,
+        "m0": 160,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 13.585079902767108,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 104448,
+        "compact_public_key_bytes": 29024,
+        "ciphertext_bytes": 1120,
+        "secret_key_bytes": 256,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 11649,
+        "noise_headroom": 6143,
+        "primal_proxy_bits": 403.2039447087439,
+        "dual_proxy_bits": 524.0174649227499,
+        "self_randomization_proxy_bits": 441.94807027333354,
+        "security_proxy_bits": 403.2039447087439,
+        "average_to_worst_slack": 429.94807027333354
+      }
+    },
+    {
+      "candidate": {
+        "q": 12289,
+        "n": 96,
+        "m0": 224,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 13.585079902767108,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 98304,
+        "compact_public_key_bytes": 22048,
+        "ciphertext_bytes": 1056,
+        "secret_key_bytes": 256,
+        "guard_distance": 129,
+        "guard_slack": 126,
+        "cauchy_field_slack": 11681,
+        "noise_headroom": 6143,
+        "primal_proxy_bits": 403.2039447087439,
+        "dual_proxy_bits": 400.8844347399079,
+        "self_randomization_proxy_bits": 492.6668702964105,
+        "security_proxy_bits": 400.8844347399079,
+        "average_to_worst_slack": 480.6668702964105
+      }
+    },
+    {
+      "candidate": {
+        "q": 7681,
+        "n": 128,
+        "m0": 384,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 12.907078434296485,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 196608,
+        "compact_public_key_bytes": 29536,
+        "ciphertext_bytes": 1568,
+        "secret_key_bytes": 320,
+        "guard_distance": 257,
+        "guard_slack": 254,
+        "cauchy_field_slack": 6785,
+        "noise_headroom": 3839,
+        "primal_proxy_bits": 507.2307938241747,
+        "dual_proxy_bits": 399.2085650123703,
+        "self_randomization_proxy_bits": 434.85483903610225,
+        "security_proxy_bits": 399.2085650123703,
+        "average_to_worst_slack": 418.85483903610225
+      }
+    },
+    {
+      "candidate": {
+        "q": 12289,
+        "n": 96,
+        "m0": 160,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 13.585079902767108,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 86016,
+        "compact_public_key_bytes": 21920,
+        "ciphertext_bytes": 928,
+        "secret_key_bytes": 256,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 11745,
+        "noise_headroom": 6143,
+        "primal_proxy_bits": 403.2039447087439,
+        "dual_proxy_bits": 396.0176561713458,
+        "self_randomization_proxy_bits": 594.1044703425645,
+        "security_proxy_bits": 396.0176561713458,
+        "average_to_worst_slack": 582.1044703425645
+      }
+    },
+    {
+      "candidate": {
+        "q": 7681,
+        "n": 128,
+        "m0": 256,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 12.907078434296485,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 163840,
+        "compact_public_key_bytes": 29280,
+        "ciphertext_bytes": 1312,
+        "secret_key_bytes": 320,
+        "guard_distance": 129,
+        "guard_slack": 126,
+        "cauchy_field_slack": 6913,
+        "noise_headroom": 3839,
+        "primal_proxy_bits": 507.2307938241747,
+        "dual_proxy_bits": 392.6737124856371,
+        "self_randomization_proxy_bits": 637.7300391284102,
+        "security_proxy_bits": 392.6737124856371,
+        "average_to_worst_slack": 621.7300391284102
+      }
+    },
+    {
+      "candidate": {
+        "q": 7681,
+        "n": 128,
+        "m0": 192,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 12.907078434296485,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 147456,
+        "compact_public_key_bytes": 29152,
+        "ciphertext_bytes": 1184,
+        "secret_key_bytes": 320,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 6977,
+        "noise_headroom": 3839,
+        "primal_proxy_bits": 507.2307938241747,
+        "dual_proxy_bits": 388.87653341896976,
+        "self_randomization_proxy_bits": 739.1676391745642,
+        "security_proxy_bits": 388.87653341896976,
+        "average_to_worst_slack": 723.1676391745642
+      }
+    },
+    {
+      "candidate": {
+        "q": 12289,
+        "n": 128,
+        "m0": 192,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 2
+      },
+      "metrics": {
+        "logq_bits": 13.585079902767108,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 147456,
+        "compact_public_key_bytes": 29152,
+        "ciphertext_bytes": 1184,
+        "secret_key_bytes": 320,
+        "guard_distance": 65,
+        "guard_slack": 60,
+        "cauchy_field_slack": 11585,
+        "noise_headroom": 6142,
+        "primal_proxy_bits": 504.5892009930126,
+        "dual_proxy_bits": 387.454630558365,
+        "self_randomization_proxy_bits": 401.4596448990692,
+        "security_proxy_bits": 387.454630558365,
+        "average_to_worst_slack": 385.4596448990692
+      }
+    },
+    {
+      "candidate": {
+        "q": 7681,
+        "n": 96,
+        "m0": 224,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 12.907078434296485,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 98304,
+        "compact_public_key_bytes": 22048,
+        "ciphertext_bytes": 1056,
+        "secret_key_bytes": 256,
+        "guard_distance": 129,
+        "guard_slack": 126,
+        "cauchy_field_slack": 7073,
+        "noise_headroom": 3839,
+        "primal_proxy_bits": 380.423095368131,
+        "dual_proxy_bits": 384.61070901720456,
+        "self_randomization_proxy_bits": 427.5787293232306,
+        "security_proxy_bits": 380.423095368131,
+        "average_to_worst_slack": 415.5787293232306
+      }
+    },
+    {
+      "candidate": {
+        "q": 7681,
+        "n": 96,
+        "m0": 160,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 12.907078434296485,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 86016,
+        "compact_public_key_bytes": 21920,
+        "ciphertext_bytes": 928,
+        "secret_key_bytes": 256,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 7137,
+        "noise_headroom": 3839,
+        "primal_proxy_bits": 380.423095368131,
+        "dual_proxy_bits": 379.74393044864246,
+        "self_randomization_proxy_bits": 529.0163293693846,
+        "security_proxy_bits": 379.74393044864246,
+        "average_to_worst_slack": 517.0163293693846
+      }
+    },
+    {
+      "candidate": {
+        "q": 7681,
+        "n": 96,
+        "m0": 160,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 12.907078434296485,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 104448,
+        "compact_public_key_bytes": 29024,
+        "ciphertext_bytes": 1120,
+        "secret_key_bytes": 256,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 7041,
+        "noise_headroom": 3839,
+        "primal_proxy_bits": 380.423095368131,
+        "dual_proxy_bits": 502.31916395914544,
+        "self_randomization_proxy_bits": 376.8599293001537,
+        "security_proxy_bits": 376.8599293001537,
+        "average_to_worst_slack": 364.8599293001537
+      }
+    },
+    {
+      "candidate": {
+        "q": 3329,
+        "n": 128,
+        "m0": 256,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 11.700873155140263,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 163840,
+        "compact_public_key_bytes": 29280,
+        "ciphertext_bytes": 1312,
+        "secret_key_bytes": 320,
+        "guard_distance": 129,
+        "guard_slack": 126,
+        "cauchy_field_slack": 2561,
+        "noise_headroom": 1663,
+        "primal_proxy_bits": 453.19279731797593,
+        "dual_proxy_bits": 363.70848581222145,
+        "self_randomization_proxy_bits": 483.33576339641377,
+        "security_proxy_bits": 363.70848581222145,
+        "average_to_worst_slack": 467.33576339641377
+      }
+    },
+    {
+      "candidate": {
+        "q": 3329,
+        "n": 128,
+        "m0": 192,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 11.700873155140263,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 147456,
+        "compact_public_key_bytes": 29152,
+        "ciphertext_bytes": 1184,
+        "secret_key_bytes": 320,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 2625,
+        "noise_headroom": 1663,
+        "primal_proxy_bits": 453.19279731797593,
+        "dual_proxy_bits": 359.91130674555404,
+        "self_randomization_proxy_bits": 584.7733634425678,
+        "security_proxy_bits": 359.91130674555404,
+        "average_to_worst_slack": 568.7733634425678
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 96,
+        "m0": 224,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 2
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 147456,
+        "compact_public_key_bytes": 32160,
+        "ciphertext_bytes": 1568,
+        "secret_key_bytes": 352,
+        "guard_distance": 129,
+        "guard_slack": 124,
+        "cauchy_field_slack": 64929,
+        "noise_headroom": 32766,
+        "primal_proxy_bits": 459.5839556691263,
+        "dual_proxy_bits": 441.15763212787687,
+        "self_randomization_proxy_bits": 347.1749287243613,
+        "security_proxy_bits": 347.1749287243613,
+        "average_to_worst_slack": 335.1749287243613
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 128,
+        "m0": 192,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 3
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 147456,
+        "compact_public_key_bytes": 29152,
+        "ciphertext_bytes": 1184,
+        "secret_key_bytes": 320,
+        "guard_distance": 65,
+        "guard_slack": 58,
+        "cauchy_field_slack": 40257,
+        "noise_headroom": 20477,
+        "primal_proxy_bits": 560.6544560712124,
+        "dual_proxy_bits": 417.49747920933544,
+        "self_randomization_proxy_bits": 344.1748694073715,
+        "security_proxy_bits": 344.1748694073715,
+        "average_to_worst_slack": 328.1748694073715
+      }
+    },
+    {
+      "candidate": {
+        "q": 12289,
+        "n": 96,
+        "m0": 224,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 13.585079902767108,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 116736,
+        "compact_public_key_bytes": 29152,
+        "ciphertext_bytes": 1248,
+        "secret_key_bytes": 256,
+        "guard_distance": 129,
+        "guard_slack": 126,
+        "cauchy_field_slack": 11585,
+        "noise_headroom": 6143,
+        "primal_proxy_bits": 403.2039447087439,
+        "dual_proxy_bits": 529.4563625238649,
+        "self_randomization_proxy_bits": 340.51047022717944,
+        "security_proxy_bits": 340.51047022717944,
+        "average_to_worst_slack": 328.51047022717944
+      }
+    },
+    {
+      "candidate": {
+        "q": 3329,
+        "n": 96,
+        "m0": 160,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 11.700873155140263,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 86016,
+        "compact_public_key_bytes": 21920,
+        "ciphertext_bytes": 928,
+        "secret_key_bytes": 256,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 2785,
+        "noise_headroom": 1663,
+        "primal_proxy_bits": 339.8945979884819,
+        "dual_proxy_bits": 350.7787037752268,
+        "self_randomization_proxy_bits": 413.22062257038726,
+        "security_proxy_bits": 339.8945979884819,
+        "average_to_worst_slack": 401.22062257038726
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 128,
+        "m0": 384,
+        "m1": 512,
+        "fiber_dim": 8,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 344064,
+        "compact_public_key_bytes": 32352,
+        "ciphertext_bytes": 2720,
+        "secret_key_bytes": 448,
+        "guard_distance": 257,
+        "guard_slack": 254,
+        "cauchy_field_slack": 64513,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 645.7946661774811,
+        "dual_proxy_bits": 328.3222138022633,
+        "self_randomization_proxy_bits": 627.8764170960983,
+        "security_proxy_bits": 328.3222138022633,
+        "average_to_worst_slack": 611.8764170960983
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 128,
+        "m0": 256,
+        "m1": 512,
+        "fiber_dim": 8,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 294912,
+        "compact_public_key_bytes": 31968,
+        "ciphertext_bytes": 2336,
+        "secret_key_bytes": 448,
+        "guard_distance": 129,
+        "guard_slack": 126,
+        "cauchy_field_slack": 64641,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 645.7946661774811,
+        "dual_proxy_bits": 324.6956424659153,
+        "self_randomization_proxy_bits": 830.7516171884063,
+        "security_proxy_bits": 324.6956424659153,
+        "average_to_worst_slack": 814.7516171884063
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 96,
+        "m0": 352,
+        "m1": 384,
+        "fiber_dim": 8,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 211968,
+        "compact_public_key_bytes": 24480,
+        "ciphertext_bytes": 2240,
+        "secret_key_bytes": 352,
+        "guard_distance": 257,
+        "guard_slack": 254,
+        "cauchy_field_slack": 64705,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 484.3459996331108,
+        "dual_proxy_bits": 323.69239422544075,
+        "self_randomization_proxy_bits": 369.4697127759198,
+        "security_proxy_bits": 323.69239422544075,
+        "average_to_worst_slack": 357.4697127759198
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 64,
+        "m0": 128,
+        "m1": 192,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 61440,
+        "compact_public_key_bytes": 21408,
+        "ciphertext_bytes": 992,
+        "secret_key_bytes": 256,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 65153,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 322.89733308874054,
+        "dual_proxy_bits": 441.53303658699036,
+        "self_randomization_proxy_bits": 516.8134086403571,
+        "security_proxy_bits": 322.89733308874054,
+        "average_to_worst_slack": 508.8134086403571
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 64,
+        "m0": 192,
+        "m1": 192,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 73728,
+        "compact_public_key_bytes": 21600,
+        "ciphertext_bytes": 1184,
+        "secret_key_bytes": 256,
+        "guard_distance": 129,
+        "guard_slack": 126,
+        "cauchy_field_slack": 65089,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 322.89733308874054,
+        "dual_proxy_bits": 448.3125166697016,
+        "self_randomization_proxy_bits": 415.37580859420314,
+        "security_proxy_bits": 322.89733308874054,
+        "average_to_worst_slack": 407.37580859420314
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 64,
+        "m0": 128,
+        "m1": 256,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 73728,
+        "compact_public_key_bytes": 28320,
+        "ciphertext_bytes": 1184,
+        "secret_key_bytes": 256,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 65089,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 322.89733308874054,
+        "dual_proxy_bits": 583.9867145007838,
+        "self_randomization_proxy_bits": 415.37580859420314,
+        "security_proxy_bits": 322.89733308874054,
+        "average_to_worst_slack": 407.37580859420314
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 128,
+        "m0": 192,
+        "m1": 512,
+        "fiber_dim": 8,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 270336,
+        "compact_public_key_bytes": 31776,
+        "ciphertext_bytes": 2144,
+        "secret_key_bytes": 448,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 64705,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 645.7946661774811,
+        "dual_proxy_bits": 322.6435454744952,
+        "self_randomization_proxy_bits": 932.1892172345601,
+        "security_proxy_bits": 322.6435454744952,
+        "average_to_worst_slack": 916.1892172345601
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 128,
+        "m0": 160,
+        "m1": 512,
+        "fiber_dim": 8,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 258048,
+        "compact_public_key_bytes": 31680,
+        "ciphertext_bytes": 2048,
+        "secret_key_bytes": 448,
+        "guard_distance": 33,
+        "guard_slack": 30,
+        "cauchy_field_slack": 64737,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 645.7946661774811,
+        "dual_proxy_bits": 321.54475183394226,
+        "self_randomization_proxy_bits": 982.9080172576373,
+        "security_proxy_bits": 321.54475183394226,
+        "average_to_worst_slack": 966.9080172576373
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 128,
+        "m0": 384,
+        "m1": 256,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 245760,
+        "compact_public_key_bytes": 29280,
+        "ciphertext_bytes": 1952,
+        "secret_key_bytes": 448,
+        "guard_distance": 257,
+        "guard_slack": 254,
+        "cauchy_field_slack": 64769,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 645.7946661774811,
+        "dual_proxy_bits": 320.39101676392465,
+        "self_randomization_proxy_bits": 1033.6268172807142,
+        "security_proxy_bits": 320.39101676392465,
+        "average_to_worst_slack": 1017.6268172807142
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 96,
+        "m0": 224,
+        "m1": 384,
+        "fiber_dim": 8,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 175104,
+        "compact_public_key_bytes": 24096,
+        "ciphertext_bytes": 1856,
+        "secret_key_bytes": 352,
+        "guard_distance": 129,
+        "guard_slack": 126,
+        "cauchy_field_slack": 64833,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 484.3459996331108,
+        "dual_proxy_bits": 319.1765540916507,
+        "self_randomization_proxy_bits": 572.3449128682278,
+        "security_proxy_bits": 319.1765540916507,
+        "average_to_worst_slack": 560.3449128682278
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 96,
+        "m0": 128,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 119808,
+        "compact_public_key_bytes": 31872,
+        "ciphertext_bytes": 1280,
+        "secret_key_bytes": 352,
+        "guard_distance": 33,
+        "guard_slack": 30,
+        "cauchy_field_slack": 65025,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 484.3459996331108,
+        "dual_proxy_bits": 319.1108057157711,
+        "self_randomization_proxy_bits": 876.6577130066898,
+        "security_proxy_bits": 319.1108057157711,
+        "average_to_worst_slack": 864.6577130066898
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 128,
+        "m0": 384,
+        "m1": 512,
+        "fiber_dim": 8,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 229376,
+        "compact_public_key_bytes": 22624,
+        "ciphertext_bytes": 1824,
+        "secret_key_bytes": 320,
+        "guard_distance": 257,
+        "guard_slack": 254,
+        "cauchy_field_slack": 39937,
+        "noise_headroom": 20479,
+        "primal_proxy_bits": 615.4176365470852,
+        "dual_proxy_bits": 317.47285198398754,
+        "self_randomization_proxy_bits": 541.0849038663957,
+        "security_proxy_bits": 317.47285198398754,
+        "average_to_worst_slack": 525.0849038663957
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 96,
+        "m0": 352,
+        "m1": 192,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 156672,
+        "compact_public_key_bytes": 22176,
+        "ciphertext_bytes": 1664,
+        "secret_key_bytes": 352,
+        "guard_distance": 257,
+        "guard_slack": 254,
+        "cauchy_field_slack": 64897,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 484.3459996331108,
+        "dual_proxy_bits": 316.5372469090254,
+        "self_randomization_proxy_bits": 673.7825129143819,
+        "security_proxy_bits": 316.5372469090254,
+        "average_to_worst_slack": 661.7825129143819
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 96,
+        "m0": 160,
+        "m1": 384,
+        "fiber_dim": 8,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 156672,
+        "compact_public_key_bytes": 23904,
+        "ciphertext_bytes": 1664,
+        "secret_key_bytes": 352,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 64897,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 484.3459996331108,
+        "dual_proxy_bits": 316.5372469090254,
+        "self_randomization_proxy_bits": 673.7825129143819,
+        "security_proxy_bits": 316.5372469090254,
+        "average_to_worst_slack": 661.7825129143819
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 192,
+        "m0": 448,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 319488,
+        "compact_public_key_bytes": 29792,
+        "ciphertext_bytes": 1696,
+        "secret_key_bytes": 448,
+        "guard_distance": 257,
+        "guard_slack": 254,
+        "cauchy_field_slack": 39937,
+        "noise_headroom": 20479,
+        "primal_proxy_bits": 923.1264548206277,
+        "dual_proxy_bits": 315.7307232955083,
+        "self_randomization_proxy_bits": 1623.1281561688256,
+        "security_proxy_bits": 315.7307232955083,
+        "average_to_worst_slack": 1599.1281561688256
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 96,
+        "m0": 128,
+        "m1": 384,
+        "fiber_dim": 8,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 147456,
+        "compact_public_key_bytes": 23808,
+        "ciphertext_bytes": 1568,
+        "secret_key_bytes": 352,
+        "guard_distance": 33,
+        "guard_slack": 30,
+        "cauchy_field_slack": 64929,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 484.3459996331108,
+        "dual_proxy_bits": 315.0950218628368,
+        "self_randomization_proxy_bits": 724.5013129374588,
+        "security_proxy_bits": 315.0950218628368,
+        "average_to_worst_slack": 712.5013129374588
+      }
+    }
+  ],
+  "pareto_frontier": [
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 96,
+        "m0": 352,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 184320,
+        "compact_public_key_bytes": 32544,
+        "ciphertext_bytes": 1952,
+        "secret_key_bytes": 352,
+        "guard_distance": 257,
+        "guard_slack": 254,
+        "cauchy_field_slack": 64801,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 484.3459996331108,
+        "dual_proxy_bits": 466.90780985629834,
+        "self_randomization_proxy_bits": 521.6261128451508,
+        "security_proxy_bits": 466.90780985629834,
+        "average_to_worst_slack": 509.62611284515083
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 96,
+        "m0": 160,
+        "m1": 384,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 104448,
+        "compact_public_key_bytes": 29024,
+        "ciphertext_bytes": 1120,
+        "secret_key_bytes": 256,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 40321,
+        "noise_headroom": 20479,
+        "primal_proxy_bits": 461.56322741031386,
+        "dual_proxy_bits": 579.5992368168089,
+        "self_randomization_proxy_bits": 608.6888779921048,
+        "security_proxy_bits": 461.56322741031386,
+        "average_to_worst_slack": 596.6888779921048
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 96,
+        "m0": 352,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 122880,
+        "compact_public_key_bytes": 22304,
+        "ciphertext_bytes": 1312,
+        "secret_key_bytes": 256,
+        "guard_distance": 257,
+        "guard_slack": 254,
+        "cauchy_field_slack": 40225,
+        "noise_headroom": 20479,
+        "primal_proxy_bits": 461.56322741031386,
+        "dual_proxy_bits": 450.6337671288847,
+        "self_randomization_proxy_bits": 456.5324779228738,
+        "security_proxy_bits": 450.6337671288847,
+        "average_to_worst_slack": 444.5324779228738
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 96,
+        "m0": 224,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 98304,
+        "compact_public_key_bytes": 22048,
+        "ciphertext_bytes": 1056,
+        "secret_key_bytes": 256,
+        "guard_distance": 129,
+        "guard_slack": 126,
+        "cauchy_field_slack": 40353,
+        "noise_headroom": 20479,
+        "primal_proxy_bits": 461.56322741031386,
+        "dual_proxy_bits": 442.57076366045214,
+        "self_randomization_proxy_bits": 659.4076780151818,
+        "security_proxy_bits": 442.57076366045214,
+        "average_to_worst_slack": 647.4076780151818
+      }
+    },
+    {
+      "candidate": {
+        "q": 40961,
+        "n": 96,
+        "m0": 160,
+        "m1": 288,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 15.32196331650431,
+        "elem_bytes": 2,
+        "dense_public_key_bytes": 86016,
+        "compact_public_key_bytes": 21920,
+        "ciphertext_bytes": 928,
+        "secret_key_bytes": 256,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 40417,
+        "noise_headroom": 20479,
+        "primal_proxy_bits": 461.56322741031386,
+        "dual_proxy_bits": 437.70398509189005,
+        "self_randomization_proxy_bits": 760.8452780613358,
+        "security_proxy_bits": 437.70398509189005,
+        "average_to_worst_slack": 748.8452780613358
+      }
+    },
+    {
+      "candidate": {
+        "q": 65537,
+        "n": 64,
+        "m0": 128,
+        "m1": 192,
+        "fiber_dim": 16,
+        "eta": 1
+      },
+      "metrics": {
+        "logq_bits": 16.00002201361136,
+        "elem_bytes": 3,
+        "dense_public_key_bytes": 61440,
+        "compact_public_key_bytes": 21408,
+        "ciphertext_bytes": 992,
+        "secret_key_bytes": 256,
+        "guard_distance": 65,
+        "guard_slack": 62,
+        "cauchy_field_slack": 65153,
+        "noise_headroom": 32767,
+        "primal_proxy_bits": 322.89733308874054,
+        "dual_proxy_bits": 441.53303658699036,
+        "self_randomization_proxy_bits": 516.8134086403571,
+        "security_proxy_bits": 322.89733308874054,
+        "average_to_worst_slack": 508.8134086403571
+      }
+    }
+  ],
+  "notes": [
+    "security_proxy_bits is a screening score, not a cryptanalytic estimate",
+    "hard filters encode current proof-side constraints such as q > n + m0 + m1 and m0 >= n",
+    "top candidates require exact finite-field and lattice/coding follow-up before any security claim"
+  ]
+}

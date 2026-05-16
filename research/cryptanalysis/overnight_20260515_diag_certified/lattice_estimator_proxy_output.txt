@@ -1,0 +1,120 @@
+
+== 0000_descender-128_q65537_n32_m080_m132_k24_eta1_bits12_view80 ==
+CAVEAT: Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy.
+bkw                  :: rop: ≈2^41.4, m: ≈2^34.0, mem: ≈2^35.0, b: 2, t1: 0, t2: 8, ℓ: 1, #cod: 31, #top: 0, #test: 3, tag: coded-bkw
+usvp                 :: rop: ≈2^34.6, red: ≈2^34.6, δ: 1.012335, β: 45, d: 46, tag: usvp
+bdd                  :: rop: ≈2^36.5, red: ≈2^36.5, svp: ≈2^20.6, β: 40, η: 2, d: 51, tag: bdd
+bdd_mitm_hybrid      :: rop: ≈2^39.3, red: ≈2^39.3, svp: ≈2^13.6, β: 40, η: 2, ζ: 0, |S|: 1, d: 112, prob: 1.0, ↻: 1, tag: hybrid
+dual                 :: rop: ≈2^39.3, mem: 41, m: 80, β: 40, d: 112, ↻: 1, tag: dual
+dual_hybrid          :: rop: ≈2^40.4, red: ≈2^40.4, guess: ≈2^15.0, β: 64, p: 3, ζ: 0, t: 0, β': 51, N: 0.766, m: 32
+{'arora-gb': rop: ≈2^inf, dreg: ≈2^inf, tag: arora-gb, 'bkw': rop: ≈2^41.4, m: ≈2^34.0, mem: ≈2^35.0, b: 2, t1: 0, t2: 8, ℓ: 1, #cod: 31, #top: 0, #test: 3, tag: coded-bkw, 'usvp': rop: ≈2^34.6, red: ≈2^34.6, δ: 1.012335, β: 45, d: 46, tag: usvp, 'bdd': rop: ≈2^36.5, red: ≈2^36.5, svp: ≈2^20.6, β: 40, η: 2, d: 51, tag: bdd, 'bdd_hybrid': rop: ≈2^39.3, red: ≈2^39.3, svp: ≈2^21.1, β: 40, η: 1, ζ: 0, |S|: 1, d: 112, prob: 1.0, ↻: 1, tag: hybrid, 'bdd_mitm_hybrid': rop: ≈2^39.3, red: ≈2^39.3, svp: ≈2^13.6, β: 40, η: 2, ζ: 0, |S|: 1, d: 112, prob: 1.0, ↻: 1, tag: hybrid, 'dual': rop: ≈2^39.3, mem: 41, m: 80, β: 40, d: 112, ↻: 1, tag: dual, 'dual_hybrid': rop: ≈2^40.4, red: ≈2^40.4, guess: ≈2^15.0, β: 64, p: 3, ζ: 0, t: 0, β': 51, N: 0.766, m: 32}
+
+== 0001_descender-128_q65537_n32_m080_m132_k32_eta1_bits12_view80 ==
+CAVEAT: Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy.
+bkw                  :: rop: ≈2^41.4, m: ≈2^34.0, mem: ≈2^35.0, b: 2, t1: 0, t2: 8, ℓ: 1, #cod: 31, #top: 0, #test: 3, tag: coded-bkw
+usvp                 :: rop: ≈2^34.6, red: ≈2^34.6, δ: 1.012335, β: 45, d: 46, tag: usvp
+bdd                  :: rop: ≈2^36.5, red: ≈2^36.5, svp: ≈2^20.6, β: 40, η: 2, d: 51, tag: bdd
+bdd_mitm_hybrid      :: rop: ≈2^39.3, red: ≈2^39.3, svp: ≈2^13.6, β: 40, η: 2, ζ: 0, |S|: 1, d: 112, prob: 1.0, ↻: 1, tag: hybrid
+dual                 :: rop: ≈2^39.3, mem: 41, m: 80, β: 40, d: 112, ↻: 1, tag: dual
+dual_hybrid          :: rop: ≈2^40.4, red: ≈2^40.4, guess: ≈2^15.0, β: 64, p: 3, ζ: 0, t: 0, β': 51, N: 0.766, m: 32
+{'arora-gb': rop: ≈2^inf, dreg: ≈2^inf, tag: arora-gb, 'bkw': rop: ≈2^41.4, m: ≈2^34.0, mem: ≈2^35.0, b: 2, t1: 0, t2: 8, ℓ: 1, #cod: 31, #top: 0, #test: 3, tag: coded-bkw, 'usvp': rop: ≈2^34.6, red: ≈2^34.6, δ: 1.012335, β: 45, d: 46, tag: usvp, 'bdd': rop: ≈2^36.5, red: ≈2^36.5, svp: ≈2^20.6, β: 40, η: 2, d: 51, tag: bdd, 'bdd_hybrid': rop: ≈2^39.3, red: ≈2^39.3, svp: ≈2^21.1, β: 40, η: 1, ζ: 0, |S|: 1, d: 112, prob: 1.0, ↻: 1, tag: hybrid, 'bdd_mitm_hybrid': rop: ≈2^39.3, red: ≈2^39.3, svp: ≈2^13.6, β: 40, η: 2, ζ: 0, |S|: 1, d: 112, prob: 1.0, ↻: 1, tag: hybrid, 'dual': rop: ≈2^39.3, mem: 41, m: 80, β: 40, d: 112, ↻: 1, tag: dual, 'dual_hybrid': rop: ≈2^40.4, red: ≈2^40.4, guess: ≈2^15.0, β: 64, p: 3, ζ: 0, t: 0, β': 51, N: 0.766, m: 32}
+
+== 0002_descender-128_q65537_n32_m080_m132_k48_eta1_bits12_view80 ==
+CAVEAT: Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy.
+bkw                  :: rop: ≈2^41.4, m: ≈2^34.0, mem: ≈2^35.0, b: 2, t1: 0, t2: 8, ℓ: 1, #cod: 31, #top: 0, #test: 3, tag: coded-bkw
+usvp                 :: rop: ≈2^34.6, red: ≈2^34.6, δ: 1.012335, β: 45, d: 46, tag: usvp
+bdd                  :: rop: ≈2^36.5, red: ≈2^36.5, svp: ≈2^20.6, β: 40, η: 2, d: 51, tag: bdd
+bdd_mitm_hybrid      :: rop: ≈2^39.3, red: ≈2^39.3, svp: ≈2^13.6, β: 40, η: 2, ζ: 0, |S|: 1, d: 112, prob: 1.0, ↻: 1, tag: hybrid
+dual                 :: rop: ≈2^39.3, mem: 41, m: 80, β: 40, d: 112, ↻: 1, tag: dual
+dual_hybrid          :: rop: ≈2^40.4, red: ≈2^40.4, guess: ≈2^15.0, β: 64, p: 3, ζ: 0, t: 0, β': 51, N: 0.766, m: 32
+{'arora-gb': rop: ≈2^inf, dreg: ≈2^inf, tag: arora-gb, 'bkw': rop: ≈2^41.4, m: ≈2^34.0, mem: ≈2^35.0, b: 2, t1: 0, t2: 8, ℓ: 1, #cod: 31, #top: 0, #test: 3, tag: coded-bkw, 'usvp': rop: ≈2^34.6, red: ≈2^34.6, δ: 1.012335, β: 45, d: 46, tag: usvp, 'bdd': rop: ≈2^36.5, red: ≈2^36.5, svp: ≈2^20.6, β: 40, η: 2, d: 51, tag: bdd, 'bdd_hybrid': rop: ≈2^39.3, red: ≈2^39.3, svp: ≈2^21.1, β: 40, η: 1, ζ: 0, |S|: 1, d: 112, prob: 1.0, ↻: 1, tag: hybrid, 'bdd_mitm_hybrid': rop: ≈2^39.3, red: ≈2^39.3, svp: ≈2^13.6, β: 40, η: 2, ζ: 0, |S|: 1, d: 112, prob: 1.0, ↻: 1, tag: hybrid, 'dual': rop: ≈2^39.3, mem: 41, m: 80, β: 40, d: 112, ↻: 1, tag: dual, 'dual_hybrid': rop: ≈2^40.4, red: ≈2^40.4, guess: ≈2^15.0, β: 64, p: 3, ζ: 0, t: 0, β': 51, N: 0.766, m: 32}
+
+== 0003_descender-128_q65537_n32_m080_m132_k64_eta1_bits12_view80 ==
+CAVEAT: Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy.
+bkw                  :: rop: ≈2^41.4, m: ≈2^34.0, mem: ≈2^35.0, b: 2, t1: 0, t2: 8, ℓ: 1, #cod: 31, #top: 0, #test: 3, tag: coded-bkw
+usvp                 :: rop: ≈2^34.6, red: ≈2^34.6, δ: 1.012335, β: 45, d: 46, tag: usvp
+bdd                  :: rop: ≈2^36.5, red: ≈2^36.5, svp: ≈2^20.6, β: 40, η: 2, d: 51, tag: bdd
+bdd_mitm_hybrid      :: rop: ≈2^39.3, red: ≈2^39.3, svp: ≈2^13.6, β: 40, η: 2, ζ: 0, |S|: 1, d: 112, prob: 1.0, ↻: 1, tag: hybrid
+dual                 :: rop: ≈2^39.3, mem: 41, m: 80, β: 40, d: 112, ↻: 1, tag: dual
+dual_hybrid          :: rop: ≈2^40.4, red: ≈2^40.4, guess: ≈2^15.0, β: 64, p: 3, ζ: 0, t: 0, β': 51, N: 0.766, m: 32
+{'arora-gb': rop: ≈2^inf, dreg: ≈2^inf, tag: arora-gb, 'bkw': rop: ≈2^41.4, m: ≈2^34.0, mem: ≈2^35.0, b: 2, t1: 0, t2: 8, ℓ: 1, #cod: 31, #top: 0, #test: 3, tag: coded-bkw, 'usvp': rop: ≈2^34.6, red: ≈2^34.6, δ: 1.012335, β: 45, d: 46, tag: usvp, 'bdd': rop: ≈2^36.5, red: ≈2^36.5, svp: ≈2^20.6, β: 40, η: 2, d: 51, tag: bdd, 'bdd_hybrid': rop: ≈2^39.3, red: ≈2^39.3, svp: ≈2^21.1, β: 40, η: 1, ζ: 0, |S|: 1, d: 112, prob: 1.0, ↻: 1, tag: hybrid, 'bdd_mitm_hybrid': rop: ≈2^39.3, red: ≈2^39.3, svp: ≈2^13.6, β: 40, η: 2, ζ: 0, |S|: 1, d: 112, prob: 1.0, ↻: 1, tag: hybrid, 'dual': rop: ≈2^39.3, mem: 41, m: 80, β: 40, d: 112, ↻: 1, tag: dual, 'dual_hybrid': rop: ≈2^40.4, red: ≈2^40.4, guess: ≈2^15.0, β: 64, p: 3, ζ: 0, t: 0, β': 51, N: 0.766, m: 32}
+
+== 0004_descender-192_q131071_n40_m096_m140_k24_eta1_bits15_view96 ==
+CAVEAT: Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy.
+bkw                  :: rop: ≈2^43.1, m: ≈2^35.6, mem: ≈2^36.6, b: 2, t1: 0, t2: 6, ℓ: 1, #cod: 37, #top: 0, #test: 5, tag: coded-bkw
+usvp                 :: rop: ≈2^35.5, red: ≈2^35.5, δ: 1.012178, β: 48, d: 49, tag: usvp
+bdd                  :: rop: ≈2^36.9, red: ≈2^36.9, svp: ≈2^20.6, β: 40, η: 2, d: 54, tag: bdd
+bdd_mitm_hybrid      :: rop: ≈2^39.7, red: ≈2^39.7, svp: ≈2^14.2, β: 40, η: 2, ζ: 0, |S|: 1, d: 136, prob: 1.0, ↻: 1, tag: hybrid
+dual                 :: rop: ≈2^39.7, mem: 41, m: 96, β: 40, d: 136, ↻: 1, tag: dual
+dual_hybrid          :: rop: ≈2^39.5, red: ≈2^39.5, guess: ≈2^11.5, β: 40, p: 3, ζ: 0, t: 0, β': 53, N: 0.699, m: 40
+{'arora-gb': rop: ≈2^inf, dreg: ≈2^inf, tag: arora-gb, 'bkw': rop: ≈2^43.1, m: ≈2^35.6, mem: ≈2^36.6, b: 2, t1: 0, t2: 6, ℓ: 1, #cod: 37, #top: 0, #test: 5, tag: coded-bkw, 'usvp': rop: ≈2^35.5, red: ≈2^35.5, δ: 1.012178, β: 48, d: 49, tag: usvp, 'bdd': rop: ≈2^36.9, red: ≈2^36.9, svp: ≈2^20.6, β: 40, η: 2, d: 54, tag: bdd, 'bdd_hybrid': rop: ≈2^39.7, red: ≈2^39.7, svp: ≈2^21.1, β: 40, η: 1, ζ: 0, |S|: 1, d: 136, prob: 1.0, ↻: 1, tag: hybrid, 'bdd_mitm_hybrid': rop: ≈2^39.7, red: ≈2^39.7, svp: ≈2^14.2, β: 40, η: 2, ζ: 0, |S|: 1, d: 136, prob: 1.0, ↻: 1, tag: hybrid, 'dual': rop: ≈2^39.7, mem: 41, m: 96, β: 40, d: 136, ↻: 1, tag: dual, 'dual_hybrid': rop: ≈2^39.5, red: ≈2^39.5, guess: ≈2^11.5, β: 40, p: 3, ζ: 0, t: 0, β': 53, N: 0.699, m: 40}
+
+== 0005_descender-192_q131071_n40_m096_m140_k32_eta1_bits15_view96 ==
+CAVEAT: Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy.
+bkw                  :: rop: ≈2^43.1, m: ≈2^35.6, mem: ≈2^36.6, b: 2, t1: 0, t2: 6, ℓ: 1, #cod: 37, #top: 0, #test: 5, tag: coded-bkw
+usvp                 :: rop: ≈2^35.5, red: ≈2^35.5, δ: 1.012178, β: 48, d: 49, tag: usvp
+bdd                  :: rop: ≈2^36.9, red: ≈2^36.9, svp: ≈2^20.6, β: 40, η: 2, d: 54, tag: bdd
+bdd_mitm_hybrid      :: rop: ≈2^39.7, red: ≈2^39.7, svp: ≈2^14.2, β: 40, η: 2, ζ: 0, |S|: 1, d: 136, prob: 1.0, ↻: 1, tag: hybrid
+dual                 :: rop: ≈2^39.7, mem: 41, m: 96, β: 40, d: 136, ↻: 1, tag: dual
+dual_hybrid          :: rop: ≈2^39.5, red: ≈2^39.5, guess: ≈2^11.5, β: 40, p: 3, ζ: 0, t: 0, β': 53, N: 0.699, m: 40
+{'arora-gb': rop: ≈2^inf, dreg: ≈2^inf, tag: arora-gb, 'bkw': rop: ≈2^43.1, m: ≈2^35.6, mem: ≈2^36.6, b: 2, t1: 0, t2: 6, ℓ: 1, #cod: 37, #top: 0, #test: 5, tag: coded-bkw, 'usvp': rop: ≈2^35.5, red: ≈2^35.5, δ: 1.012178, β: 48, d: 49, tag: usvp, 'bdd': rop: ≈2^36.9, red: ≈2^36.9, svp: ≈2^20.6, β: 40, η: 2, d: 54, tag: bdd, 'bdd_hybrid': rop: ≈2^39.7, red: ≈2^39.7, svp: ≈2^21.1, β: 40, η: 1, ζ: 0, |S|: 1, d: 136, prob: 1.0, ↻: 1, tag: hybrid, 'bdd_mitm_hybrid': rop: ≈2^39.7, red: ≈2^39.7, svp: ≈2^14.2, β: 40, η: 2, ζ: 0, |S|: 1, d: 136, prob: 1.0, ↻: 1, tag: hybrid, 'dual': rop: ≈2^39.7, mem: 41, m: 96, β: 40, d: 136, ↻: 1, tag: dual, 'dual_hybrid': rop: ≈2^39.5, red: ≈2^39.5, guess: ≈2^11.5, β: 40, p: 3, ζ: 0, t: 0, β': 53, N: 0.699, m: 40}
+
+== 0006_descender-192_q131071_n40_m096_m140_k48_eta1_bits15_view96 ==
+CAVEAT: Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy.
+bkw                  :: rop: ≈2^43.1, m: ≈2^35.6, mem: ≈2^36.6, b: 2, t1: 0, t2: 6, ℓ: 1, #cod: 37, #top: 0, #test: 5, tag: coded-bkw
+usvp                 :: rop: ≈2^35.5, red: ≈2^35.5, δ: 1.012178, β: 48, d: 49, tag: usvp
+bdd                  :: rop: ≈2^36.9, red: ≈2^36.9, svp: ≈2^20.6, β: 40, η: 2, d: 54, tag: bdd
+bdd_mitm_hybrid      :: rop: ≈2^39.7, red: ≈2^39.7, svp: ≈2^14.2, β: 40, η: 2, ζ: 0, |S|: 1, d: 136, prob: 1.0, ↻: 1, tag: hybrid
+dual                 :: rop: ≈2^39.7, mem: 41, m: 96, β: 40, d: 136, ↻: 1, tag: dual
+dual_hybrid          :: rop: ≈2^39.5, red: ≈2^39.5, guess: ≈2^11.5, β: 40, p: 3, ζ: 0, t: 0, β': 53, N: 0.699, m: 40
+{'arora-gb': rop: ≈2^inf, dreg: ≈2^inf, tag: arora-gb, 'bkw': rop: ≈2^43.1, m: ≈2^35.6, mem: ≈2^36.6, b: 2, t1: 0, t2: 6, ℓ: 1, #cod: 37, #top: 0, #test: 5, tag: coded-bkw, 'usvp': rop: ≈2^35.5, red: ≈2^35.5, δ: 1.012178, β: 48, d: 49, tag: usvp, 'bdd': rop: ≈2^36.9, red: ≈2^36.9, svp: ≈2^20.6, β: 40, η: 2, d: 54, tag: bdd, 'bdd_hybrid': rop: ≈2^39.7, red: ≈2^39.7, svp: ≈2^21.1, β: 40, η: 1, ζ: 0, |S|: 1, d: 136, prob: 1.0, ↻: 1, tag: hybrid, 'bdd_mitm_hybrid': rop: ≈2^39.7, red: ≈2^39.7, svp: ≈2^14.2, β: 40, η: 2, ζ: 0, |S|: 1, d: 136, prob: 1.0, ↻: 1, tag: hybrid, 'dual': rop: ≈2^39.7, mem: 41, m: 96, β: 40, d: 136, ↻: 1, tag: dual, 'dual_hybrid': rop: ≈2^39.5, red: ≈2^39.5, guess: ≈2^11.5, β: 40, p: 3, ζ: 0, t: 0, β': 53, N: 0.699, m: 40}
+
+== 0007_descender-192_q131071_n40_m096_m140_k64_eta1_bits15_view96 ==
+CAVEAT: Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy.
+bkw                  :: rop: ≈2^43.1, m: ≈2^35.6, mem: ≈2^36.6, b: 2, t1: 0, t2: 6, ℓ: 1, #cod: 37, #top: 0, #test: 5, tag: coded-bkw
+usvp                 :: rop: ≈2^35.5, red: ≈2^35.5, δ: 1.012178, β: 48, d: 49, tag: usvp
+bdd                  :: rop: ≈2^36.9, red: ≈2^36.9, svp: ≈2^20.6, β: 40, η: 2, d: 54, tag: bdd
+bdd_mitm_hybrid      :: rop: ≈2^39.7, red: ≈2^39.7, svp: ≈2^14.2, β: 40, η: 2, ζ: 0, |S|: 1, d: 136, prob: 1.0, ↻: 1, tag: hybrid
+dual                 :: rop: ≈2^39.7, mem: 41, m: 96, β: 40, d: 136, ↻: 1, tag: dual
+dual_hybrid          :: rop: ≈2^39.5, red: ≈2^39.5, guess: ≈2^11.5, β: 40, p: 3, ζ: 0, t: 0, β': 53, N: 0.699, m: 40
+{'arora-gb': rop: ≈2^inf, dreg: ≈2^inf, tag: arora-gb, 'bkw': rop: ≈2^43.1, m: ≈2^35.6, mem: ≈2^36.6, b: 2, t1: 0, t2: 6, ℓ: 1, #cod: 37, #top: 0, #test: 5, tag: coded-bkw, 'usvp': rop: ≈2^35.5, red: ≈2^35.5, δ: 1.012178, β: 48, d: 49, tag: usvp, 'bdd': rop: ≈2^36.9, red: ≈2^36.9, svp: ≈2^20.6, β: 40, η: 2, d: 54, tag: bdd, 'bdd_hybrid': rop: ≈2^39.7, red: ≈2^39.7, svp: ≈2^21.1, β: 40, η: 1, ζ: 0, |S|: 1, d: 136, prob: 1.0, ↻: 1, tag: hybrid, 'bdd_mitm_hybrid': rop: ≈2^39.7, red: ≈2^39.7, svp: ≈2^14.2, β: 40, η: 2, ζ: 0, |S|: 1, d: 136, prob: 1.0, ↻: 1, tag: hybrid, 'dual': rop: ≈2^39.7, mem: 41, m: 96, β: 40, d: 136, ↻: 1, tag: dual, 'dual_hybrid': rop: ≈2^39.5, red: ≈2^39.5, guess: ≈2^11.5, β: 40, p: 3, ζ: 0, t: 0, β': 53, N: 0.699, m: 40}
+
+== 0008_descender-256_q524309_n48_m0112_m148_k32_eta1_bits16_view112 ==
+CAVEAT: Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy.
+bkw                  :: rop: ≈2^49.0, m: ≈2^40.7, mem: ≈2^41.7, b: 2, t1: 1, t2: 12, ℓ: 1, #cod: 44, #top: 0, #test: 3, tag: coded-bkw
+usvp                 :: rop: ≈2^37.6, red: ≈2^37.6, δ: 1.012950, β: 40, d: 63, tag: usvp
+bdd                  :: rop: ≈2^37.6, red: ≈2^37.5, svp: ≈2^32.1, β: 40, η: 36, d: 62, tag: bdd
+bdd_mitm_hybrid      :: rop: ≈2^40.0, red: ≈2^40.0, svp: ≈2^14.6, β: 40, η: 2, ζ: 0, |S|: 1, d: 160, prob: 1.0, ↻: 1, tag: hybrid
+dual                 :: rop: ≈2^40.0, mem: 41, m: 112, β: 40, d: 160, ↻: 1, tag: dual
+dual_hybrid          :: rop: ≈2^40.1, red: ≈2^40.1, guess: ≈2^13.4, β: 41, p: 3, ζ: 0, t: 0, β': 55, N: 0.701, m: 48
+{'arora-gb': rop: ≈2^inf, dreg: ≈2^inf, tag: arora-gb, 'bkw': rop: ≈2^49.0, m: ≈2^40.7, mem: ≈2^41.7, b: 2, t1: 1, t2: 12, ℓ: 1, #cod: 44, #top: 0, #test: 3, tag: coded-bkw, 'usvp': rop: ≈2^37.6, red: ≈2^37.6, δ: 1.012950, β: 40, d: 63, tag: usvp, 'bdd': rop: ≈2^37.6, red: ≈2^37.5, svp: ≈2^32.1, β: 40, η: 36, d: 62, tag: bdd, 'bdd_hybrid': rop: ≈2^40.0, red: ≈2^40.0, svp: ≈2^21.1, β: 40, η: 1, ζ: 0, |S|: 1, d: 160, prob: 1.0, ↻: 1, tag: hybrid, 'bdd_mitm_hybrid': rop: ≈2^40.0, red: ≈2^40.0, svp: ≈2^14.6, β: 40, η: 2, ζ: 0, |S|: 1, d: 160, prob: 1.0, ↻: 1, tag: hybrid, 'dual': rop: ≈2^40.0, mem: 41, m: 112, β: 40, d: 160, ↻: 1, tag: dual, 'dual_hybrid': rop: ≈2^40.1, red: ≈2^40.1, guess: ≈2^13.4, β: 41, p: 3, ζ: 0, t: 0, β': 55, N: 0.701, m: 48}
+
+== 0009_descender-256_q524309_n48_m0112_m148_k48_eta1_bits16_view112 ==
+CAVEAT: Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy.
+bkw                  :: rop: ≈2^49.0, m: ≈2^40.7, mem: ≈2^41.7, b: 2, t1: 1, t2: 12, ℓ: 1, #cod: 44, #top: 0, #test: 3, tag: coded-bkw
+usvp                 :: rop: ≈2^37.6, red: ≈2^37.6, δ: 1.012950, β: 40, d: 63, tag: usvp
+bdd                  :: rop: ≈2^37.6, red: ≈2^37.5, svp: ≈2^32.1, β: 40, η: 36, d: 62, tag: bdd
+bdd_mitm_hybrid      :: rop: ≈2^40.0, red: ≈2^40.0, svp: ≈2^14.6, β: 40, η: 2, ζ: 0, |S|: 1, d: 160, prob: 1.0, ↻: 1, tag: hybrid
+dual                 :: rop: ≈2^40.0, mem: 41, m: 112, β: 40, d: 160, ↻: 1, tag: dual
+dual_hybrid          :: rop: ≈2^40.1, red: ≈2^40.1, guess: ≈2^13.4, β: 41, p: 3, ζ: 0, t: 0, β': 55, N: 0.701, m: 48
+{'arora-gb': rop: ≈2^inf, dreg: ≈2^inf, tag: arora-gb, 'bkw': rop: ≈2^49.0, m: ≈2^40.7, mem: ≈2^41.7, b: 2, t1: 1, t2: 12, ℓ: 1, #cod: 44, #top: 0, #test: 3, tag: coded-bkw, 'usvp': rop: ≈2^37.6, red: ≈2^37.6, δ: 1.012950, β: 40, d: 63, tag: usvp, 'bdd': rop: ≈2^37.6, red: ≈2^37.5, svp: ≈2^32.1, β: 40, η: 36, d: 62, tag: bdd, 'bdd_hybrid': rop: ≈2^40.0, red: ≈2^40.0, svp: ≈2^21.1, β: 40, η: 1, ζ: 0, |S|: 1, d: 160, prob: 1.0, ↻: 1, tag: hybrid, 'bdd_mitm_hybrid': rop: ≈2^40.0, red: ≈2^40.0, svp: ≈2^14.6, β: 40, η: 2, ζ: 0, |S|: 1, d: 160, prob: 1.0, ↻: 1, tag: hybrid, 'dual': rop: ≈2^40.0, mem: 41, m: 112, β: 40, d: 160, ↻: 1, tag: dual, 'dual_hybrid': rop: ≈2^40.1, red: ≈2^40.1, guess: ≈2^13.4, β: 41, p: 3, ζ: 0, t: 0, β': 55, N: 0.701, m: 48}
+
+== 0010_descender-256_q524309_n48_m0112_m148_k64_eta1_bits16_view112 ==
+CAVEAT: Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy.
+bkw                  :: rop: ≈2^49.0, m: ≈2^40.7, mem: ≈2^41.7, b: 2, t1: 1, t2: 12, ℓ: 1, #cod: 44, #top: 0, #test: 3, tag: coded-bkw
+usvp                 :: rop: ≈2^37.6, red: ≈2^37.6, δ: 1.012950, β: 40, d: 63, tag: usvp
+bdd                  :: rop: ≈2^37.6, red: ≈2^37.5, svp: ≈2^32.1, β: 40, η: 36, d: 62, tag: bdd
+bdd_mitm_hybrid      :: rop: ≈2^40.0, red: ≈2^40.0, svp: ≈2^14.6, β: 40, η: 2, ζ: 0, |S|: 1, d: 160, prob: 1.0, ↻: 1, tag: hybrid
+dual                 :: rop: ≈2^40.0, mem: 41, m: 112, β: 40, d: 160, ↻: 1, tag: dual
+dual_hybrid          :: rop: ≈2^40.1, red: ≈2^40.1, guess: ≈2^13.4, β: 41, p: 3, ζ: 0, t: 0, β': 55, N: 0.701, m: 48
+{'arora-gb': rop: ≈2^inf, dreg: ≈2^inf, tag: arora-gb, 'bkw': rop: ≈2^49.0, m: ≈2^40.7, mem: ≈2^41.7, b: 2, t1: 1, t2: 12, ℓ: 1, #cod: 44, #top: 0, #test: 3, tag: coded-bkw, 'usvp': rop: ≈2^37.6, red: ≈2^37.6, δ: 1.012950, β: 40, d: 63, tag: usvp, 'bdd': rop: ≈2^37.6, red: ≈2^37.5, svp: ≈2^32.1, β: 40, η: 36, d: 62, tag: bdd, 'bdd_hybrid': rop: ≈2^40.0, red: ≈2^40.0, svp: ≈2^21.1, β: 40, η: 1, ζ: 0, |S|: 1, d: 160, prob: 1.0, ↻: 1, tag: hybrid, 'bdd_mitm_hybrid': rop: ≈2^40.0, red: ≈2^40.0, svp: ≈2^14.6, β: 40, η: 2, ζ: 0, |S|: 1, d: 160, prob: 1.0, ↻: 1, tag: hybrid, 'dual': rop: ≈2^40.0, mem: 41, m: 112, β: 40, d: 160, ↻: 1, tag: dual, 'dual_hybrid': rop: ≈2^40.1, red: ≈2^40.1, guess: ≈2^13.4, β: 41, p: 3, ζ: 0, t: 0, β': 55, N: 0.701, m: 48}
+
+== 0011_descender-256_q131071_n56_m0128_m156_k32_eta1_bits15_view128 ==
+CAVEAT: Descender's projected coboundary problem is not vanilla LWE; use this only as a first-pass attack-cost proxy.
+bkw                  :: rop: ≈2^46.7, m: ≈2^37.6, mem: ≈2^38.6, b: 2, t1: 19, t2: 5, ℓ: 1, #cod: 15, #top: 1, #test: 2, tag: coded-bkw
+usvp                 :: rop: ≈2^38.0, red: ≈2^38.0, δ: 1.012950, β: 40, d: 71, tag: usvp
+bdd                  :: rop: ≈2^38.3, red: ≈2^38.3, svp: ≈2^20.6, β: 40, η: 2, d: 78, tag: bdd
+bdd_mitm_hybrid      :: rop: ≈2^40.3, red: ≈2^40.3, svp: ≈2^15.0, β: 40, η: 2, ζ: 0, |S|: 1, d: 184, prob: 1.0, ↻: 1, tag: hybrid
+dual                 :: rop: ≈2^40.3, mem: 41, m: 128, β: 40, d: 184, ↻: 1, tag: dual
+dual_hybrid          :: rop: ≈2^40.5, red: ≈2^40.5, guess: ≈2^11.5, β: 41, p: 3, ζ: 0, t: 0, β': 56, N: 0.705, m: 56
+{'arora-gb': rop: ≈2^inf, dreg: ≈2^inf, tag: arora-gb, 'bkw': rop: ≈2^46.7, m: ≈2^37.6, mem: ≈2^38.6, b: 2, t1: 19, t2: 5, ℓ: 1, #cod: 15, #top: 1, #test: 2, tag: coded-bkw, 'usvp': rop: ≈2^38.0, red: ≈2^38.0, δ: 1.012950, β: 40, d: 71, tag: usvp, 'bdd': rop: ≈2^38.3, red: ≈2^38.3, svp: ≈2^20.6, β: 40, η: 2, d: 78, tag: bdd, 'bdd_hybrid': rop: ≈2^40.3, red: ≈2^40.3, svp: ≈2^21.1, β: 40, η: 1, ζ: 0, |S|: 1, d: 184, prob: 1.0, ↻: 1, tag: hybrid, 'bdd_mitm_hybrid': rop: ≈2^40.3, red: ≈2^40.3, svp: ≈2^15.0, β: 40, η: 2, ζ: 0, |S|: 1, d: 184, prob: 1.0, ↻: 1, tag: hybrid, 'dual': rop: ≈2^40.3, mem: 41, m: 128, β: 40, d: 184, ↻: 1, tag: dual, 'dual_hybrid': rop: ≈2^40.5, red: ≈2^40.5, guess: ≈2^11.5, β: 41, p: 3, ζ: 0, t: 0, β': 56, N: 0.705, m: 56}

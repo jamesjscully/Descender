@@ -1,0 +1,29 @@
+{
+  "source": "research/parameter_search/vandermonde_lee_probe_g32_r42_shift1_random_seed1_128.json",
+  "family": "vandermonde-moment-graph-code",
+  "q": 32771,
+  "group_size": 32,
+  "rows": 42,
+  "target_l1": 3277,
+  "alpha_start": 1,
+  "exponent_start": 1,
+  "column_scale": "random",
+  "source_seed": 1,
+  "threads": 12,
+  "complete_support2": true,
+  "found_counterexample": false,
+  "checked_assignments": 10643068800,
+  "best_pair": {
+    "j0": 0,
+    "j1": 8,
+    "best_l1": 3277,
+    "x0": 0,
+    "x1": 0,
+    "row_vector_centered": [],
+    "checked_assignments": 21457800
+  },
+  "notes": [
+    "Support exactly 2 is exhaustive for centered coefficient l1 below target_l1.",
+    "Support 1 is handled by moment_lee_stratified exact-column enumeration."
+  ]
+}

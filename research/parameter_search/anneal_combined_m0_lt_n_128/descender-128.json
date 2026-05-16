@@ -1,0 +1,135 @@
+{
+  "generated_at": "2026-05-15T07:10:25Z",
+  "profile": {
+    "id": "descender-128",
+    "target_security_bits": 128,
+    "max_public_key_bytes": 32768,
+    "max_ciphertext_bytes": 8192,
+    "max_secret_key_bytes": 8192,
+    "min_guard_slack": 8,
+    "min_average_to_worst_slack": 16,
+    "description": "Baseline practical target for early concrete-family screening."
+  },
+  "search_space": {
+    "mode": "anneal",
+    "objective": "bandwidth",
+    "proof_strategies": [
+      "full-surjective"
+    ],
+    "primal_distance_models": [
+      "combined-proxy"
+    ],
+    "public_key_model": "canonical",
+    "coefficient_model": "seeded",
+    "incidence_model": "seeded",
+    "q_values": [
+      12289,
+      32771,
+      40961,
+      65537,
+      131071,
+      262147,
+      524309
+    ],
+    "n_values": [
+      32,
+      40,
+      48,
+      56,
+      64,
+      80,
+      96,
+      112,
+      128,
+      160,
+      192
+    ],
+    "m0_overheads": [
+      8,
+      16,
+      32,
+      64,
+      128,
+      256
+    ],
+    "m0_values": [
+      8,
+      12,
+      16,
+      20,
+      24,
+      28
+    ],
+    "m1_multipliers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      10,
+      12,
+      16
+    ],
+    "fiber_dims": [
+      4,
+      6,
+      8,
+      12,
+      16,
+      24,
+      32,
+      48,
+      64
+    ],
+    "eta_values": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      10,
+      12,
+      16
+    ],
+    "sample_bits_values": [
+      0
+    ],
+    "view_coord_values": [
+      0
+    ],
+    "total_candidates": 7680000,
+    "threads": 12,
+    "anneal_iterations": 80000,
+    "anneal_restarts": 96,
+    "seed": 20260518,
+    "security_extra_cap": 16.0,
+    "guard_slack_target": 8,
+    "combined_certification_weight": 0.1
+  },
+  "rejected_by_reason": {
+    "average_to_worst_slack_proxy": 4555863,
+    "correctness_distance_slack": 422973,
+    "security_proxy_bits": 7680096
+  },
+  "accepted_total": 0,
+  "accepted_top": [],
+  "pareto_frontier": [],
+  "notes": [
+    "security_proxy_bits and objective_score are screening scores, not cryptanalytic estimates",
+    "objective mode \"bandwidth\" caps excess security credit at 16 bits",
+    "proof strategies searched: full-surjective",
+    "primal distance models searched: combined-proxy",
+    "combined-proxy rows are ranked with certification pressure penalty weight 0.1",
+    "sample_bits=0 means full-width public samples; smaller sample_bits applies bit-packing plus a conservative centered rounding-error penalty",
+    "view_coords=0 means all m0+m1 coordinates; smaller values model public-sample coordinate views that require support-covered or lossy-budget proof obligations",
+    "guard-only uses the proven guard-block distance and requires m0>=n; combined-proxy prices distance from the viewed combined matrix and requires a later combined-distance certificate",
+    "combined_certification_pressure is a cheap proxy for how much rank/distance work the later combined certificate must do; lower is easier to certify",
+    "full-surjective and support-covered are exact-sample proof strategies; lossy-budget is the only route that accepts nonzero sample_bits in this engine",
+    "hard filters encode current proof-side constraints such as q > n + m0 + m1 and m0 >= n",
+    "top candidates require exact finite-field and lattice/coding follow-up before any security claim"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "family": "shared-random-pair-block",
+  "q": 32771,
+  "n": 64,
+  "m1": 32,
+  "group_size": 2,
+  "group_count": 16,
+  "rows_per_group": 4,
+  "used_rows": 64,
+  "unused_rows": 0,
+  "target_l1": 3277,
+  "passes_target": false,
+  "certified_l1": 3276,
+  "keygen_mul_ops": 128,
+  "selected_trial": 3,
+  "exact_check": "enumerated_all_centered_pairs_with_free_l1_below_target",
+  "pair_block": {
+    "coefficients": [
+      [
+        23085,
+        6660
+      ],
+      [
+        10568,
+        2753
+      ],
+      [
+        22148,
+        27562
+      ],
+      [
+        5453,
+        2702
+      ]
+    ],
+    "passes_target": false,
+    "certified_l1": 3276,
+    "checked_centered_pair_count": 626382,
+    "worst_pair_centered": [
+      -2485,
+      -91
+    ],
+    "worst_relation_centered": [
+      -386,
+      -264,
+      -46,
+      4,
+      -2485,
+      -91
+    ],
+    "worst_relation_support": 6
+  },
+  "notes": [
+    "Certificate covers direct sums of identical two-coordinate shared-row blocks.",
+    "Each pivot row in a block reads both free coordinates, so rows are shared within a pair.",
+    "Pass means every centered pair with free l1 below target was checked and none had total Lee l1 below target.",
+    "This does not yet certify cancellations across larger mixed groups; it is a first shared-row construction boundary."
+  ]
+}

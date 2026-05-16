@@ -1,0 +1,4291 @@
+{
+  "q": 65537,
+  "target_l1": 2979,
+  "m1": 64,
+  "failure_bits": 80.0,
+  "family": "random_shared_linear_block_union_bound",
+  "groups": [
+    {
+      "group_size": 1,
+      "group_count": 64,
+      "min_rows_per_group": 16,
+      "total_rows": 1024,
+      "keygen_mul_ops": 1024,
+      "log2_expected_bad_per_group": -91.15572356328914,
+      "log2_expected_bad_all_groups": -85.15572356328914,
+      "rows": [
+        {
+          "rows_per_group": 1,
+          "log2_expected_bad_per_group": 8.080234063552833,
+          "log2_expected_bad_all_groups": 14.080234063552833,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 2,
+          "log2_expected_bad_per_group": 3.035377669140738,
+          "log2_expected_bad_all_groups": 9.035377669140738,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 3,
+          "log2_expected_bad_per_group": -2.4245160618736143,
+          "log2_expected_bad_all_groups": 3.5754839381263857,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 4,
+          "log2_expected_bad_per_group": -8.206337643760529,
+          "log2_expected_bad_all_groups": -2.206337643760529,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 5,
+          "log2_expected_bad_per_group": -14.251193306128322,
+          "log2_expected_bad_all_groups": -8.251193306128322,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 6,
+          "log2_expected_bad_per_group": -20.51844098314171,
+          "log2_expected_bad_all_groups": -14.518440983141709,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 7,
+          "log2_expected_bad_per_group": -26.978333250068868,
+          "log2_expected_bad_all_groups": -20.978333250068868,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 8,
+          "log2_expected_bad_per_group": -33.608149949072185,
+          "log2_expected_bad_all_groups": -27.608149949072185,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 9,
+          "log2_expected_bad_per_group": -40.389969090817175,
+          "log2_expected_bad_all_groups": -34.389969090817175,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 10,
+          "log2_expected_bad_per_group": -47.30929102427176,
+          "log2_expected_bad_all_groups": -41.30929102427176,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 11,
+          "log2_expected_bad_per_group": -54.35414302643328,
+          "log2_expected_bad_all_groups": -48.35414302643328,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 12,
+          "log2_expected_bad_per_group": -61.514471351301665,
+          "log2_expected_bad_all_groups": -55.514471351301665,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 13,
+          "log2_expected_bad_per_group": -68.78171390403773,
+          "log2_expected_bad_all_groups": -62.78171390403773,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 14,
+          "log2_expected_bad_per_group": -76.14849107294064,
+          "log2_expected_bad_all_groups": -70.14849107294064,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 15,
+          "log2_expected_bad_per_group": -83.60837650751621,
+          "log2_expected_bad_all_groups": -77.60837650751621,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 16,
+          "log2_expected_bad_per_group": -91.15572356328914,
+          "log2_expected_bad_all_groups": -85.15572356328914,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 17,
+          "log2_expected_bad_per_group": -98.78553147786751,
+          "log2_expected_bad_all_groups": -92.78553147786751,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 18,
+          "log2_expected_bad_per_group": -106.49334052172767,
+          "log2_expected_bad_all_groups": -100.49334052172767,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 19,
+          "log2_expected_bad_per_group": -114.27514868297995,
+          "log2_expected_bad_all_groups": -108.27514868297995,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 20,
+          "log2_expected_bad_per_group": -122.1273446267404,
+          "log2_expected_bad_all_groups": -116.1273446267404,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 21,
+          "log2_expected_bad_per_group": -130.04665313964549,
+          "log2_expected_bad_all_groups": -124.04665313964549,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 22,
+          "log2_expected_bad_per_group": -138.03009028192645,
+          "log2_expected_bad_all_groups": -132.03009028192645,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 23,
+          "log2_expected_bad_per_group": -146.07492617949862,
+          "log2_expected_bad_all_groups": -140.07492617949862,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 24,
+          "log2_expected_bad_per_group": -154.1786538954233,
+          "log2_expected_bad_all_groups": -148.1786538954233,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 25,
+          "log2_expected_bad_per_group": -162.33896318768603,
+          "log2_expected_bad_all_groups": -156.33896318768603,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 26,
+          "log2_expected_bad_per_group": -170.55371823061657,
+          "log2_expected_bad_all_groups": -164.55371823061657,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 27,
+          "log2_expected_bad_per_group": -178.82093857876143,
+          "log2_expected_bad_all_groups": -172.82093857876143,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 28,
+          "log2_expected_bad_per_group": -187.13878280397228,
+          "log2_expected_bad_all_groups": -181.13878280397228,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 29,
+          "log2_expected_bad_per_group": -195.50553435233695,
+          "log2_expected_bad_all_groups": -189.50553435233695,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 30,
+          "log2_expected_bad_per_group": -203.91958925683102,
+          "log2_expected_bad_all_groups": -197.91958925683102,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 31,
+          "log2_expected_bad_per_group": -212.37944541096837,
+          "log2_expected_bad_all_groups": -206.37944541096837,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 32,
+          "log2_expected_bad_per_group": -220.8836931631749,
+          "log2_expected_bad_all_groups": -214.8836931631749,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 33,
+          "log2_expected_bad_per_group": -229.43100703466575,
+          "log2_expected_bad_all_groups": -223.43100703466575,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 34,
+          "log2_expected_bad_per_group": -238.02013839792664,
+          "log2_expected_bad_all_groups": -232.02013839792664,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 35,
+          "log2_expected_bad_per_group": -246.64990898044476,
+          "log2_expected_bad_all_groups": -240.64990898044476,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 36,
+          "log2_expected_bad_per_group": -255.31920508059514,
+          "log2_expected_bad_all_groups": -249.31920508059514,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 37,
+          "log2_expected_bad_per_group": -264.02697240069296,
+          "log2_expected_bad_all_groups": -258.02697240069296,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 38,
+          "log2_expected_bad_per_group": -272.772211417031,
+          "log2_expected_bad_all_groups": -266.772211417031,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 39,
+          "log2_expected_bad_per_group": -281.55397321890575,
+          "log2_expected_bad_all_groups": -275.55397321890575,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 40,
+          "log2_expected_bad_per_group": -290.3713557587147,
+          "log2_expected_bad_all_groups": -284.3713557587147,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 41,
+          "log2_expected_bad_per_group": -299.2235004635811,
+          "log2_expected_bad_all_groups": -293.2235004635811,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 42,
+          "log2_expected_bad_per_group": -308.1095891659626,
+          "log2_expected_bad_all_groups": -302.1095891659626,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 43,
+          "log2_expected_bad_per_group": -317.02884131656765,
+          "log2_expected_bad_all_groups": -311.02884131656765,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 44,
+          "log2_expected_bad_per_group": -325.9805114478519,
+          "log2_expected_bad_all_groups": -319.9805114478519,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 45,
+          "log2_expected_bad_per_group": -334.96388686055036,
+          "log2_expected_bad_all_groups": -328.96388686055036,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 46,
+          "log2_expected_bad_per_group": -343.97828550925834,
+          "log2_expected_bad_all_groups": -337.97828550925834,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 47,
+          "log2_expected_bad_per_group": -353.0230540661024,
+          "log2_expected_bad_all_groups": -347.0230540661024,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 48,
+          "log2_expected_bad_per_group": -362.0975661441388,
+          "log2_expected_bad_all_groups": -356.0975661441388,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 49,
+          "log2_expected_bad_per_group": -371.20122066434055,
+          "log2_expected_bad_all_groups": -365.20122066434055,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 50,
+          "log2_expected_bad_per_group": -380.33344035195444,
+          "log2_expected_bad_all_groups": -374.33344035195444,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 51,
+          "log2_expected_bad_per_group": -389.4936703496649,
+          "log2_expected_bad_all_groups": -383.4936703496649,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 52,
+          "log2_expected_bad_per_group": -398.6813769364381,
+          "log2_expected_bad_all_groups": -392.6813769364381,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 53,
+          "log2_expected_bad_per_group": -407.8960463421677,
+          "log2_expected_bad_all_groups": -401.8960463421677,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 54,
+          "log2_expected_bad_per_group": -417.1371836493327,
+          "log2_expected_bad_all_groups": -411.1371836493327,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 55,
+          "log2_expected_bad_per_group": -426.40431177382465,
+          "log2_expected_bad_all_groups": -420.40431177382465,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 56,
+          "log2_expected_bad_per_group": -435.69697051794003,
+          "log2_expected_bad_all_groups": -429.69697051794003,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 57,
+          "log2_expected_bad_per_group": -445.014715689259,
+          "log2_expected_bad_all_groups": -439.014715689259,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 58,
+          "log2_expected_bad_per_group": -454.3571182797797,
+          "log2_expected_bad_all_groups": -448.3571182797797,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 59,
+          "log2_expected_bad_per_group": -463.7237637002437,
+          "log2_expected_bad_all_groups": -457.7237637002437,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 60,
+          "log2_expected_bad_per_group": -473.1142510650902,
+          "log2_expected_bad_all_groups": -467.1142510650902,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 61,
+          "log2_expected_bad_per_group": -482.5281925239226,
+          "log2_expected_bad_all_groups": -476.5281925239226,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 62,
+          "log2_expected_bad_per_group": -491.9652126357663,
+          "log2_expected_bad_all_groups": -485.9652126357663,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 63,
+          "log2_expected_bad_per_group": -501.4249477827473,
+          "log2_expected_bad_all_groups": -495.4249477827473,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 64,
+          "log2_expected_bad_per_group": -510.90704562013536,
+          "log2_expected_bad_all_groups": -504.90704562013536,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 65,
+          "log2_expected_bad_per_group": -520.411164559976,
+          "log2_expected_bad_all_groups": -514.411164559976,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 66,
+          "log2_expected_bad_per_group": -529.936973285785,
+          "log2_expected_bad_all_groups": -523.936973285785,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 67,
+          "log2_expected_bad_per_group": -539.4841502960049,
+          "log2_expected_bad_all_groups": -533.4841502960049,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 68,
+          "log2_expected_bad_per_group": -549.0523834741232,
+          "log2_expected_bad_all_groups": -543.0523834741232,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 69,
+          "log2_expected_bad_per_group": -558.6413696835333,
+          "log2_expected_bad_all_groups": -552.6413696835333,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 70,
+          "log2_expected_bad_per_group": -568.2508143853858,
+          "log2_expected_bad_all_groups": -562.2508143853858,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 71,
+          "log2_expected_bad_per_group": -577.8804312778188,
+          "log2_expected_bad_all_groups": -571.8804312778188,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 72,
+          "log2_expected_bad_per_group": -587.5299419550958,
+          "log2_expected_bad_all_groups": -581.5299419550958,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 73,
+          "log2_expected_bad_per_group": -597.1990755852939,
+          "log2_expected_bad_all_groups": -591.1990755852939,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 74,
+          "log2_expected_bad_per_group": -606.8875686053003,
+          "log2_expected_bad_all_groups": -600.8875686053003,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 75,
+          "log2_expected_bad_per_group": -616.595164431968,
+          "log2_expected_bad_all_groups": -610.595164431968,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 76,
+          "log2_expected_bad_per_group": -626.3216131883754,
+          "log2_expected_bad_all_groups": -620.3216131883754,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 77,
+          "log2_expected_bad_per_group": -636.0666714442169,
+          "log2_expected_bad_all_groups": -630.0666714442169,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 78,
+          "log2_expected_bad_per_group": -645.8301019694213,
+          "log2_expected_bad_all_groups": -639.8301019694213,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 79,
+          "log2_expected_bad_per_group": -655.6116735001685,
+          "log2_expected_bad_all_groups": -649.6116735001685,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 80,
+          "log2_expected_bad_per_group": -665.4111605165331,
+          "log2_expected_bad_all_groups": -659.4111605165331,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 81,
+          "log2_expected_bad_per_group": -675.2283430310422,
+          "log2_expected_bad_all_groups": -669.2283430310422,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 82,
+          "log2_expected_bad_per_group": -685.0630063874853,
+          "log2_expected_bad_all_groups": -679.0630063874853,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 83,
+          "log2_expected_bad_per_group": -694.914941069363,
+          "log2_expected_bad_all_groups": -688.914941069363,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 84,
+          "log2_expected_bad_per_group": -704.7839425174033,
+          "log2_expected_bad_all_groups": -698.7839425174033,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 85,
+          "log2_expected_bad_per_group": -714.6698109556157,
+          "log2_expected_bad_all_groups": -708.6698109556157,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 86,
+          "log2_expected_bad_per_group": -724.5723512253904,
+          "log2_expected_bad_all_groups": -718.5723512253904,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 87,
+          "log2_expected_bad_per_group": -734.4913726271805,
+          "log2_expected_bad_all_groups": -728.4913726271805,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 88,
+          "log2_expected_bad_per_group": -744.4266887693411,
+          "log2_expected_bad_all_groups": -738.4266887693411,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 89,
+          "log2_expected_bad_per_group": -754.3781174237249,
+          "log2_expected_bad_all_groups": -748.3781174237249,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 90,
+          "log2_expected_bad_per_group": -764.3454803876593,
+          "log2_expected_bad_all_groups": -758.3454803876593,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 91,
+          "log2_expected_bad_per_group": -774.3286033519595,
+          "log2_expected_bad_all_groups": -768.3286033519595,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 92,
+          "log2_expected_bad_per_group": -784.3273157746471,
+          "log2_expected_bad_all_groups": -778.3273157746471,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 93,
+          "log2_expected_bad_per_group": -794.3414507600739,
+          "log2_expected_bad_all_groups": -788.3414507600739,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 94,
+          "log2_expected_bad_per_group": -804.3708449431603,
+          "log2_expected_bad_all_groups": -798.3708449431603,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 95,
+          "log2_expected_bad_per_group": -814.4153383784836,
+          "log2_expected_bad_all_groups": -808.4153383784836,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 96,
+          "log2_expected_bad_per_group": -824.4747744339643,
+          "log2_expected_bad_all_groups": -818.4747744339643,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 97,
+          "log2_expected_bad_per_group": -834.5489996889125,
+          "log2_expected_bad_all_groups": -828.5489996889125,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 98,
+          "log2_expected_bad_per_group": -844.6378638362172,
+          "log2_expected_bad_all_groups": -838.6378638362172,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 99,
+          "log2_expected_bad_per_group": -854.7412195884649,
+          "log2_expected_bad_all_groups": -848.7412195884649,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 100,
+          "log2_expected_bad_per_group": -864.8589225877981,
+          "log2_expected_bad_all_groups": -858.8589225877981,
+          "passes_failure_budget": true
+        }
+      ]
+    },
+    {
+      "group_size": 2,
+      "group_count": 32,
+      "min_rows_per_group": 17,
+      "total_rows": 544,
+      "keygen_mul_ops": 1088,
+      "log2_expected_bad_per_group": -90.48872358851561,
+      "log2_expected_bad_all_groups": -85.48872358851561,
+      "rows": [
+        {
+          "rows_per_group": 1,
+          "log2_expected_bad_per_group": 19.036126176242682,
+          "log2_expected_bad_all_groups": 24.036126176242682,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 2,
+          "log2_expected_bad_per_group": 13.5764745283414,
+          "log2_expected_bad_all_groups": 18.5764745283414,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 3,
+          "log2_expected_bad_per_group": 7.794894988830208,
+          "log2_expected_bad_all_groups": 12.794894988830208,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 4,
+          "log2_expected_bad_per_group": 1.750281328073541,
+          "log2_expected_bad_all_groups": 6.750281328073541,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 5,
+          "log2_expected_bad_per_group": -4.5167243881205295,
+          "log2_expected_bad_all_groups": 0.48327561187947055,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 6,
+          "log2_expected_bad_per_group": -10.976374735047383,
+          "log2_expected_bad_all_groups": -5.976374735047383,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 7,
+          "log2_expected_bad_per_group": -17.60594955489659,
+          "log2_expected_bad_all_groups": -12.60594955489659,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 8,
+          "log2_expected_bad_per_group": -24.387526858360786,
+          "log2_expected_bad_all_groups": -19.387526858360786,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 9,
+          "log2_expected_bad_per_group": -31.30660699443508,
+          "log2_expected_bad_all_groups": -26.30660699443508,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 10,
+          "log2_expected_bad_per_group": -38.35121724014392,
+          "log2_expected_bad_all_groups": -33.35121724014392,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 11,
+          "log2_expected_bad_per_group": -45.51130384951431,
+          "log2_expected_bad_all_groups": -40.51130384951431,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 12,
+          "log2_expected_bad_per_group": -52.77830472773415,
+          "log2_expected_bad_all_groups": -47.77830472773415,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 13,
+          "log2_expected_bad_per_group": -60.144840263129645,
+          "log2_expected_bad_all_groups": -55.144840263129645,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 14,
+          "log2_expected_bad_per_group": -67.60448410523367,
+          "log2_expected_bad_all_groups": -62.60448410523367,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 15,
+          "log2_expected_bad_per_group": -75.1515896095979,
+          "log2_expected_bad_all_groups": -70.1515896095979,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 16,
+          "log2_expected_bad_per_group": -82.78115601385744,
+          "log2_expected_bad_all_groups": -77.78115601385744,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 17,
+          "log2_expected_bad_per_group": -90.48872358851561,
+          "log2_expected_bad_all_groups": -85.48872358851561,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 18,
+          "log2_expected_bad_per_group": -98.27029032170962,
+          "log2_expected_bad_all_groups": -93.27029032170962,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 19,
+          "log2_expected_bad_per_group": -106.12224487858255,
+          "log2_expected_bad_all_groups": -101.12224487858255,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 20,
+          "log2_expected_bad_per_group": -114.0413120457977,
+          "log2_expected_bad_all_groups": -109.0413120457977,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 21,
+          "log2_expected_bad_per_group": -122.02450788361321,
+          "log2_expected_bad_all_groups": -117.02450788361321,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 22,
+          "log2_expected_bad_per_group": -130.06910251797132,
+          "log2_expected_bad_all_groups": -125.06910251797132,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 23,
+          "log2_expected_bad_per_group": -138.1725890119601,
+          "log2_expected_bad_all_groups": -133.1725890119601,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 24,
+          "log2_expected_bad_per_group": -146.33265712359196,
+          "log2_expected_bad_all_groups": -141.33265712359196,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 25,
+          "log2_expected_bad_per_group": -154.54717102722344,
+          "log2_expected_bad_all_groups": -149.54717102722344,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 26,
+          "log2_expected_bad_per_group": -162.81415027742784,
+          "log2_expected_bad_all_groups": -157.81415027742784,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 27,
+          "log2_expected_bad_per_group": -171.13175344608356,
+          "log2_expected_bad_all_groups": -166.13175344608356,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 28,
+          "log2_expected_bad_per_group": -179.49826397930525,
+          "log2_expected_bad_all_groups": -174.49826397930525,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 29,
+          "log2_expected_bad_per_group": -187.91207791009506,
+          "log2_expected_bad_all_groups": -182.91207791009506,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 30,
+          "log2_expected_bad_per_group": -196.37169313199374,
+          "log2_expected_bad_all_groups": -191.37169313199374,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 31,
+          "log2_expected_bad_per_group": -204.8756999934537,
+          "log2_expected_bad_all_groups": -199.8756999934537,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 32,
+          "log2_expected_bad_per_group": -213.42277301571679,
+          "log2_expected_bad_all_groups": -208.42277301571679,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 33,
+          "log2_expected_bad_per_group": -222.01166357129543,
+          "log2_expected_bad_all_groups": -217.01166357129543,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 34,
+          "log2_expected_bad_per_group": -230.64119338770328,
+          "log2_expected_bad_all_groups": -225.64119338770328,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 35,
+          "log2_expected_bad_per_group": -239.31024876334206,
+          "log2_expected_bad_all_groups": -234.31024876334206,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 36,
+          "log2_expected_bad_per_group": -248.0177754005535,
+          "log2_expected_bad_all_groups": -243.0177754005535,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 37,
+          "log2_expected_bad_per_group": -256.76277377565685,
+          "log2_expected_bad_all_groups": -251.76277377565685,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 38,
+          "log2_expected_bad_per_group": -265.54429497797526,
+          "log2_expected_bad_all_groups": -260.54429497797526,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 39,
+          "log2_expected_bad_per_group": -274.3614369599326,
+          "log2_expected_bad_all_groups": -269.3614369599326,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 40,
+          "log2_expected_bad_per_group": -283.21334114867864,
+          "log2_expected_bad_all_groups": -278.21334114867864,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 41,
+          "log2_expected_bad_per_group": -292.09918937669744,
+          "log2_expected_bad_all_groups": -287.09918937669744,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 42,
+          "log2_expected_bad_per_group": -301.018201094724,
+          "log2_expected_bad_all_groups": -296.018201094724,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 43,
+          "log2_expected_bad_per_group": -309.96963083524025,
+          "log2_expected_bad_all_groups": -304.96963083524025,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 44,
+          "log2_expected_bad_per_group": -318.9527658990077,
+          "log2_expected_bad_all_groups": -313.9527658990077,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 45,
+          "log2_expected_bad_per_group": -327.96692424064787,
+          "log2_expected_bad_all_groups": -322.96692424064787,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 46,
+          "log2_expected_bad_per_group": -337.01145253231385,
+          "log2_expected_bad_all_groups": -332.01145253231385,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 47,
+          "log2_expected_bad_per_group": -346.08572438708813,
+          "log2_expected_bad_all_groups": -341.08572438708813,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 48,
+          "log2_expected_bad_per_group": -355.18913872597005,
+          "log2_expected_bad_all_groups": -350.18913872597005,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 49,
+          "log2_expected_bad_per_group": -364.32111827423273,
+          "log2_expected_bad_all_groups": -359.32111827423273,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 50,
+          "log2_expected_bad_per_group": -373.4811081745868,
+          "log2_expected_bad_all_groups": -368.4811081745868,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 51,
+          "log2_expected_bad_per_group": -382.6685747060245,
+          "log2_expected_bad_all_groups": -377.6685747060245,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 52,
+          "log2_expected_bad_per_group": -391.8830040984661,
+          "log2_expected_bad_all_groups": -386.8830040984661,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 53,
+          "log2_expected_bad_per_group": -401.1239014344164,
+          "log2_expected_bad_all_groups": -396.1239014344164,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 54,
+          "log2_expected_bad_per_group": -410.39078962979335,
+          "log2_expected_bad_all_groups": -405.39078962979335,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 55,
+          "log2_expected_bad_per_group": -419.6832084869195,
+          "log2_expected_bad_all_groups": -414.6832084869195,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 56,
+          "log2_expected_bad_per_group": -429.0007138134012,
+          "log2_expected_bad_all_groups": -424.0007138134012,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 57,
+          "log2_expected_bad_per_group": -438.3428766012626,
+          "log2_expected_bad_all_groups": -433.3428766012626,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 58,
+          "log2_expected_bad_per_group": -447.7092822612715,
+          "log2_expected_bad_all_groups": -442.7092822612715,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 59,
+          "log2_expected_bad_per_group": -457.09952990789293,
+          "log2_expected_bad_all_groups": -452.09952990789293,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 60,
+          "log2_expected_bad_per_group": -466.5132316907566,
+          "log2_expected_bad_all_groups": -461.5132316907566,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 61,
+          "log2_expected_bad_per_group": -475.95001216891376,
+          "log2_expected_bad_all_groups": -470.95001216891376,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 62,
+          "log2_expected_bad_per_group": -485.40950772451646,
+          "log2_expected_bad_all_groups": -480.40950772451646,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 63,
+          "log2_expected_bad_per_group": -494.8913660128603,
+          "log2_expected_bad_all_groups": -489.8913660128603,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 64,
+          "log2_expected_bad_per_group": -504.3952454460169,
+          "log2_expected_bad_all_groups": -499.3952454460169,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 65,
+          "log2_expected_bad_per_group": -513.9208147075279,
+          "log2_expected_bad_all_groups": -508.92081470752794,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 66,
+          "log2_expected_bad_per_group": -523.467752295862,
+          "log2_expected_bad_all_groups": -518.467752295862,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 67,
+          "log2_expected_bad_per_group": -533.0357460945321,
+          "log2_expected_bad_all_groups": -528.0357460945321,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 68,
+          "log2_expected_bad_per_group": -542.6244929669579,
+          "log2_expected_bad_all_groups": -537.6244929669579,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 69,
+          "log2_expected_bad_per_group": -552.2336983743155,
+          "log2_expected_bad_all_groups": -547.2336983743155,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 70,
+          "log2_expected_bad_per_group": -561.863076014769,
+          "log2_expected_bad_all_groups": -556.863076014769,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 71,
+          "log2_expected_bad_per_group": -571.5123474826077,
+          "log2_expected_bad_all_groups": -566.5123474826077,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 72,
+          "log2_expected_bad_per_group": -581.1812419459344,
+          "log2_expected_bad_all_groups": -576.1812419459344,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 73,
+          "log2_expected_bad_per_group": -590.8694958416622,
+          "log2_expected_bad_all_groups": -585.8694958416622,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 74,
+          "log2_expected_bad_per_group": -600.5768525866695,
+          "log2_expected_bad_all_groups": -595.5768525866695,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 75,
+          "log2_expected_bad_per_group": -610.3030623040607,
+          "log2_expected_bad_all_groups": -605.3030623040607,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 76,
+          "log2_expected_bad_per_group": -620.047881563556,
+          "log2_expected_bad_all_groups": -615.047881563556,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 77,
+          "log2_expected_bad_per_group": -629.8110731351094,
+          "log2_expected_bad_all_groups": -624.8110731351094,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 78,
+          "log2_expected_bad_per_group": -639.5924057549267,
+          "log2_expected_bad_all_groups": -634.5924057549267,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 79,
+          "log2_expected_bad_per_group": -649.3916539031081,
+          "log2_expected_bad_all_groups": -644.3916539031081,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 80,
+          "log2_expected_bad_per_group": -659.2085975922064,
+          "log2_expected_bad_all_groups": -654.2085975922064,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 81,
+          "log2_expected_bad_per_group": -669.0430221660365,
+          "log2_expected_bad_all_groups": -664.0430221660365,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 82,
+          "log2_expected_bad_per_group": -678.8947181081246,
+          "log2_expected_bad_all_groups": -673.8947181081246,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 83,
+          "log2_expected_bad_per_group": -688.7634808592242,
+          "log2_expected_bad_all_groups": -683.7634808592242,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 84,
+          "log2_expected_bad_per_group": -698.6491106433704,
+          "log2_expected_bad_all_groups": -693.6491106433704,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 85,
+          "log2_expected_bad_per_group": -708.5514123019788,
+          "log2_expected_bad_all_groups": -703.5514123019788,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 86,
+          "log2_expected_bad_per_group": -718.4701951355278,
+          "log2_expected_bad_all_groups": -713.4701951355278,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 87,
+          "log2_expected_bad_per_group": -728.4052727523982,
+          "log2_expected_bad_all_groups": -723.4052727523982,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 88,
+          "log2_expected_bad_per_group": -738.3564629244679,
+          "log2_expected_bad_all_groups": -733.3564629244679,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 89,
+          "log2_expected_bad_per_group": -748.3235874490899,
+          "log2_expected_bad_all_groups": -743.3235874490899,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 90,
+          "log2_expected_bad_per_group": -758.3064720171045,
+          "log2_expected_bad_all_groups": -753.3064720171045,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 91,
+          "log2_expected_bad_per_group": -768.304946086559,
+          "log2_expected_bad_all_groups": -763.304946086559,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 92,
+          "log2_expected_bad_per_group": -778.3188427618301,
+          "log2_expected_bad_all_groups": -773.3188427618301,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 93,
+          "log2_expected_bad_per_group": -788.3479986778636,
+          "log2_expected_bad_all_groups": -783.3479986778636,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 94,
+          "log2_expected_bad_per_group": -798.3922538892624,
+          "log2_expected_bad_all_groups": -793.3922538892624,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 95,
+          "log2_expected_bad_per_group": -808.4514517639718,
+          "log2_expected_bad_all_groups": -803.4514517639718,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 96,
+          "log2_expected_bad_per_group": -818.5254388813275,
+          "log2_expected_bad_all_groups": -813.5254388813275,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 97,
+          "log2_expected_bad_per_group": -828.6140649342433,
+          "log2_expected_bad_all_groups": -823.6140649342433,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 98,
+          "log2_expected_bad_per_group": -838.7171826353314,
+          "log2_expected_bad_all_groups": -833.7171826353314,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 99,
+          "log2_expected_bad_per_group": -848.834647626759,
+          "log2_expected_bad_all_groups": -843.834647626759,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 100,
+          "log2_expected_bad_per_group": -858.9663183936582,
+          "log2_expected_bad_all_groups": -853.9663183936582,
+          "passes_failure_budget": true
+        }
+      ]
+    },
+    {
+      "group_size": 4,
+      "group_count": 16,
+      "min_rows_per_group": 19,
+      "total_rows": 304,
+      "keygen_mul_ops": 1216,
+      "log2_expected_bad_per_group": -90.024443285339,
+      "log2_expected_bad_all_groups": -86.024443285339,
+      "rows": [
+        {
+          "rows_per_group": 1,
+          "log2_expected_bad_per_group": 39.7949398291625,
+          "log2_expected_bad_all_groups": 43.7949398291625,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 2,
+          "log2_expected_bad_per_group": 33.75032657496005,
+          "log2_expected_bad_all_groups": 37.75032657496005,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 3,
+          "log2_expected_bad_per_group": 27.483321346630433,
+          "log2_expected_bad_all_groups": 31.483321346630433,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 4,
+          "log2_expected_bad_per_group": 21.023671568877926,
+          "log2_expected_bad_all_groups": 25.023671568877926,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 5,
+          "log2_expected_bad_per_group": 14.394097399512535,
+          "log2_expected_bad_all_groups": 18.394097399512535,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 6,
+          "log2_expected_bad_per_group": 7.612520827841111,
+          "log2_expected_bad_all_groups": 11.612520827841111,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 7,
+          "log2_expected_bad_per_group": 0.6934415048680123,
+          "log2_expected_bad_all_groups": 4.693441504868012,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 8,
+          "log2_expected_bad_per_group": -6.351167846431856,
+          "log2_expected_bad_all_groups": -2.3511678464318564,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 9,
+          "log2_expected_bad_per_group": -13.511253480086197,
+          "log2_expected_bad_all_groups": -9.511253480086197,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 10,
+          "log2_expected_bad_per_group": -20.77825330128369,
+          "log2_expected_bad_all_groups": -16.77825330128369,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 11,
+          "log2_expected_bad_per_group": -28.14478769835138,
+          "log2_expected_bad_all_groups": -24.14478769835138,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 12,
+          "log2_expected_bad_per_group": -35.60443032082303,
+          "log2_expected_bad_all_groups": -31.604430320823028,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 13,
+          "log2_expected_bad_per_group": -43.15153452425132,
+          "log2_expected_bad_all_groups": -39.15153452425132,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 14,
+          "log2_expected_bad_per_group": -50.78109954627236,
+          "log2_expected_bad_all_groups": -46.78109954627236,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 15,
+          "log2_expected_bad_per_group": -58.48866565739061,
+          "log2_expected_bad_all_groups": -54.48866565739061,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 16,
+          "log2_expected_bad_per_group": -66.27023084574448,
+          "log2_expected_bad_all_groups": -62.27023084574448,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 17,
+          "log2_expected_bad_per_group": -74.12218377647825,
+          "log2_expected_bad_all_groups": -70.12218377647825,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 18,
+          "log2_expected_bad_per_group": -82.04124923625659,
+          "log2_expected_bad_all_groups": -78.04124923625659,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 19,
+          "log2_expected_bad_per_group": -90.024443285339,
+          "log2_expected_bad_all_groups": -86.024443285339,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 20,
+          "log2_expected_bad_per_group": -98.06903604966917,
+          "log2_expected_bad_all_groups": -94.06903604966917,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 21,
+          "log2_expected_bad_per_group": -106.17252059233674,
+          "log2_expected_bad_all_groups": -102.17252059233674,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 22,
+          "log2_expected_bad_per_group": -114.33258667135566,
+          "log2_expected_bad_all_groups": -110.33258667135566,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 23,
+          "log2_expected_bad_per_group": -122.54709846108416,
+          "log2_expected_bad_all_groups": -118.54709846108416,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 24,
+          "log2_expected_bad_per_group": -130.8140755160973,
+          "log2_expected_bad_all_groups": -126.81407551609729,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 25,
+          "log2_expected_bad_per_group": -139.1316764082752,
+          "log2_expected_bad_all_groups": -135.1316764082752,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 26,
+          "log2_expected_bad_per_group": -147.49818458373443,
+          "log2_expected_bad_all_groups": -143.49818458373443,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 27,
+          "log2_expected_bad_per_group": -155.91199607547912,
+          "log2_expected_bad_all_groups": -151.91199607547912,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 28,
+          "log2_expected_bad_per_group": -164.37160877705196,
+          "log2_expected_bad_all_groups": -160.37160877705196,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 29,
+          "log2_expected_bad_per_group": -172.87561303690745,
+          "log2_expected_bad_all_groups": -168.87561303690745,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 30,
+          "log2_expected_bad_per_group": -181.42268337628963,
+          "log2_expected_bad_all_groups": -177.42268337628963,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 31,
+          "log2_expected_bad_per_group": -190.01157116771304,
+          "log2_expected_bad_all_groups": -186.01157116771304,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 32,
+          "log2_expected_bad_per_group": -198.64109813869374,
+          "log2_expected_bad_all_groups": -194.64109813869374,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 33,
+          "log2_expected_bad_per_group": -207.3101505876357,
+          "log2_expected_bad_all_groups": -203.3101505876357,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 34,
+          "log2_expected_bad_per_group": -216.0176742168831,
+          "log2_expected_bad_all_groups": -212.0176742168831,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 35,
+          "log2_expected_bad_per_group": -224.7626695027577,
+          "log2_expected_bad_all_groups": -220.7626695027577,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 36,
+          "log2_expected_bad_per_group": -233.54418753458515,
+          "log2_expected_bad_all_groups": -229.54418753458515,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 37,
+          "log2_expected_bad_per_group": -242.361326264792,
+          "log2_expected_bad_all_groups": -238.361326264792,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 38,
+          "log2_expected_bad_per_group": -251.21322712053072,
+          "log2_expected_bad_all_groups": -247.21322712053072,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 39,
+          "log2_expected_bad_per_group": -260.0990719342881,
+          "log2_expected_bad_all_groups": -256.0990719342881,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 40,
+          "log2_expected_bad_per_group": -269.01808015680194,
+          "log2_expected_bad_all_groups": -265.01808015680194,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 41,
+          "log2_expected_bad_per_group": -277.9695063205572,
+          "log2_expected_bad_all_groups": -273.9695063205572,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 42,
+          "log2_expected_bad_per_group": -286.95263772631813,
+          "log2_expected_bad_all_groups": -282.95263772631813,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 43,
+          "log2_expected_bad_per_group": -295.9667923287095,
+          "log2_expected_bad_all_groups": -291.9667923287095,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 44,
+          "log2_expected_bad_per_group": -305.0113167998874,
+          "log2_expected_bad_all_groups": -301.0113167998874,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 45,
+          "log2_expected_bad_per_group": -314.0855847529375,
+          "log2_expected_bad_all_groups": -310.0855847529375,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 46,
+          "log2_expected_bad_per_group": -323.18899510886246,
+          "log2_expected_bad_all_groups": -319.18899510886246,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 47,
+          "log2_expected_bad_per_group": -332.3209705929386,
+          "log2_expected_bad_all_groups": -328.3209705929386,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 48,
+          "log2_expected_bad_per_group": -341.4809563478799,
+          "log2_expected_bad_all_groups": -337.4809563478799,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 49,
+          "log2_expected_bad_per_group": -350.6684186526823,
+          "log2_expected_bad_all_groups": -346.6684186526823,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 50,
+          "log2_expected_bad_per_group": -359.8828437372693,
+          "log2_expected_bad_all_groups": -355.8828437372693,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 51,
+          "log2_expected_bad_per_group": -369.1237366841494,
+          "log2_expected_bad_all_groups": -365.1237366841494,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 52,
+          "log2_expected_bad_per_group": -378.3906204092442,
+          "log2_expected_bad_all_groups": -374.3906204092442,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 53,
+          "log2_expected_bad_per_group": -387.68303471488,
+          "log2_expected_bad_all_groups": -383.68303471488,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 54,
+          "log2_expected_bad_per_group": -397.00053540866685,
+          "log2_expected_bad_all_groups": -393.00053540866685,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 55,
+          "log2_expected_bad_per_group": -406.34269348263297,
+          "log2_expected_bad_all_groups": -402.34269348263297,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 56,
+          "log2_expected_bad_per_group": -415.70909434754975,
+          "log2_expected_bad_all_groups": -411.70909434754975,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 57,
+          "log2_expected_bad_per_group": -425.0993371178865,
+          "log2_expected_bad_all_groups": -421.0993371178865,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 58,
+          "log2_expected_bad_per_group": -434.5130339432768,
+          "log2_expected_bad_all_groups": -430.5130339432768,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 59,
+          "log2_expected_bad_per_group": -443.94980938277627,
+          "log2_expected_bad_all_groups": -439.94980938277627,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 60,
+          "log2_expected_bad_per_group": -453.4092998185409,
+          "log2_expected_bad_all_groups": -449.4092998185409,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 61,
+          "log2_expected_bad_per_group": -462.89115290587074,
+          "log2_expected_bad_all_groups": -458.89115290587074,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 62,
+          "log2_expected_bad_per_group": -472.39502705684157,
+          "log2_expected_bad_all_groups": -468.39502705684157,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 63,
+          "log2_expected_bad_per_group": -481.92059095499974,
+          "log2_expected_bad_all_groups": -477.92059095499974,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 64,
+          "log2_expected_bad_per_group": -491.46752309881805,
+          "log2_expected_bad_all_groups": -487.46752309881805,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 65,
+          "log2_expected_bad_per_group": -501.0355113718142,
+          "log2_expected_bad_all_groups": -497.0355113718142,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 66,
+          "log2_expected_bad_per_group": -510.6242526374123,
+          "log2_expected_bad_all_groups": -506.6242526374123,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 67,
+          "log2_expected_bad_per_group": -520.2334523567935,
+          "log2_expected_bad_all_groups": -516.2334523567935,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 68,
+          "log2_expected_bad_per_group": -529.8628242281262,
+          "log2_expected_bad_all_groups": -525.8628242281262,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 69,
+          "log2_expected_bad_per_group": -539.5120898457047,
+          "log2_expected_bad_all_groups": -535.5120898457047,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 70,
+          "log2_expected_bad_per_group": -549.180978377637,
+          "log2_expected_bad_all_groups": -545.180978377637,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 71,
+          "log2_expected_bad_per_group": -558.8692262608405,
+          "log2_expected_bad_all_groups": -554.8692262608405,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 72,
+          "log2_expected_bad_per_group": -568.5765769121991,
+          "log2_expected_bad_all_groups": -564.5765769121991,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 73,
+          "log2_expected_bad_per_group": -578.3027804548224,
+          "log2_expected_bad_all_groups": -574.3027804548224,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 74,
+          "log2_expected_bad_per_group": -588.0475934584351,
+          "log2_expected_bad_all_groups": -584.0475934584351,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 75,
+          "log2_expected_bad_per_group": -597.8107786929971,
+          "log2_expected_bad_all_groups": -593.8107786929971,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 76,
+          "log2_expected_bad_per_group": -607.5921048947192,
+          "log2_expected_bad_all_groups": -603.5921048947192,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 77,
+          "log2_expected_bad_per_group": -617.3913465437071,
+          "log2_expected_bad_all_groups": -613.3913465437071,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 78,
+          "log2_expected_bad_per_group": -627.2082836525187,
+          "log2_expected_bad_all_groups": -623.2082836525187,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 79,
+          "log2_expected_bad_per_group": -637.0427015649748,
+          "log2_expected_bad_all_groups": -633.0427015649748,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 80,
+          "log2_expected_bad_per_group": -646.8943907646069,
+          "log2_expected_bad_all_groups": -642.8943907646069,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 81,
+          "log2_expected_bad_per_group": -656.7631466921744,
+          "log2_expected_bad_all_groups": -652.7631466921744,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 82,
+          "log2_expected_bad_per_group": -666.6487695717178,
+          "log2_expected_bad_all_groups": -662.6487695717178,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 83,
+          "log2_expected_bad_per_group": -676.5510642446586,
+          "log2_expected_bad_all_groups": -672.5510642446586,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 84,
+          "log2_expected_bad_per_group": -686.4698400114811,
+          "log2_expected_bad_all_groups": -682.4698400114811,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 85,
+          "log2_expected_bad_per_group": -696.404910480572,
+          "log2_expected_bad_all_groups": -692.404910480572,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 86,
+          "log2_expected_bad_per_group": -706.3560934238151,
+          "log2_expected_bad_all_groups": -702.3560934238151,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 87,
+          "log2_expected_bad_per_group": -716.3232106385694,
+          "log2_expected_bad_all_groups": -712.3232106385694,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 88,
+          "log2_expected_bad_per_group": -726.3060878156815,
+          "log2_expected_bad_all_groups": -722.3060878156815,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 89,
+          "log2_expected_bad_per_group": -736.3045544132046,
+          "log2_expected_bad_all_groups": -732.3045544132046,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 90,
+          "log2_expected_bad_per_group": -746.318443535522,
+          "log2_expected_bad_all_groups": -742.318443535522,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 91,
+          "log2_expected_bad_per_group": -756.3475918175856,
+          "log2_expected_bad_all_groups": -752.3475918175856,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 92,
+          "log2_expected_bad_per_group": -766.3918393140046,
+          "log2_expected_bad_all_groups": -762.3918393140046,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 93,
+          "log2_expected_bad_per_group": -776.451029392731,
+          "log2_expected_bad_all_groups": -772.451029392731,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 94,
+          "log2_expected_bad_per_group": -786.5250086331068,
+          "log2_expected_bad_all_groups": -782.5250086331068,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 95,
+          "log2_expected_bad_per_group": -796.6136267280526,
+          "log2_expected_bad_all_groups": -792.6136267280526,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 96,
+          "log2_expected_bad_per_group": -806.716736390187,
+          "log2_expected_bad_all_groups": -802.716736390187,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 97,
+          "log2_expected_bad_per_group": -816.8341932616839,
+          "log2_expected_bad_all_groups": -812.8341932616839,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 98,
+          "log2_expected_bad_per_group": -826.9658558276826,
+          "log2_expected_bad_all_groups": -822.9658558276826,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 99,
+          "log2_expected_bad_per_group": -837.1115853330754,
+          "log2_expected_bad_all_groups": -833.1115853330754,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 100,
+          "log2_expected_bad_per_group": -847.2712457025128,
+          "log2_expected_bad_all_groups": -843.2712457025128,
+          "passes_failure_budget": true
+        }
+      ]
+    },
+    {
+      "group_size": 8,
+      "group_count": 8,
+      "min_rows_per_group": 22,
+      "total_rows": 176,
+      "keygen_mul_ops": 1408,
+      "log2_expected_bad_per_group": -83.49809652853554,
+      "log2_expected_bad_all_groups": -80.49809652853554,
+      "rows": [
+        {
+          "rows_per_group": 1,
+          "log2_expected_bad_per_group": 78.39418545396143,
+          "log2_expected_bad_all_groups": 81.39418545396143,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 2,
+          "log2_expected_bad_per_group": 71.61260888229234,
+          "log2_expected_bad_all_groups": 74.61260888229234,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 3,
+          "log2_expected_bad_per_group": 64.69352955932253,
+          "log2_expected_bad_all_groups": 67.69352955932253,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 4,
+          "log2_expected_bad_per_group": 57.64892020802719,
+          "log2_expected_bad_all_groups": 60.64892020802719,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 5,
+          "log2_expected_bad_per_group": 50.4888345743789,
+          "log2_expected_bad_all_groups": 53.4888345743789,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 6,
+          "log2_expected_bad_per_group": 43.22183475318928,
+          "log2_expected_bad_all_groups": 46.22183475318928,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 7,
+          "log2_expected_bad_per_group": 35.85530035613159,
+          "log2_expected_bad_all_groups": 38.85530035613159,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 8,
+          "log2_expected_bad_per_group": 28.39565773367245,
+          "log2_expected_bad_all_groups": 31.39565773367245,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 9,
+          "log2_expected_bad_per_group": 20.848553530259558,
+          "log2_expected_bad_all_groups": 23.848553530259558,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 10,
+          "log2_expected_bad_per_group": 13.218988508257215,
+          "log2_expected_bad_all_groups": 16.218988508257215,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 11,
+          "log2_expected_bad_per_group": 5.511422397161402,
+          "log2_expected_bad_all_groups": 8.511422397161402,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 12,
+          "log2_expected_bad_per_group": -2.270142791165819,
+          "log2_expected_bad_all_groups": 0.729857208834181,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 13,
+          "log2_expected_bad_per_group": -10.122095721868252,
+          "log2_expected_bad_all_groups": -7.122095721868252,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 14,
+          "log2_expected_bad_per_group": -18.041161181610015,
+          "log2_expected_bad_all_groups": -15.041161181610015,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 15,
+          "log2_expected_bad_per_group": -26.024355230650087,
+          "log2_expected_bad_all_groups": -23.024355230650087,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 16,
+          "log2_expected_bad_per_group": -34.06894799493157,
+          "log2_expected_bad_all_groups": -31.06894799493157,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 17,
+          "log2_expected_bad_per_group": -42.172432537543486,
+          "log2_expected_bad_all_groups": -39.172432537543486,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 18,
+          "log2_expected_bad_per_group": -50.332498616499166,
+          "log2_expected_bad_all_groups": -47.332498616499166,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 19,
+          "log2_expected_bad_per_group": -58.547010406156204,
+          "log2_expected_bad_all_groups": -55.547010406156204,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 20,
+          "log2_expected_bad_per_group": -66.81398746108889,
+          "log2_expected_bad_all_groups": -63.813987461088885,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 21,
+          "log2_expected_bad_per_group": -75.13158835317675,
+          "log2_expected_bad_all_groups": -72.13158835317675,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 22,
+          "log2_expected_bad_per_group": -83.49809652853554,
+          "log2_expected_bad_all_groups": -80.49809652853554,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 23,
+          "log2_expected_bad_per_group": -91.91190802016858,
+          "log2_expected_bad_all_groups": -88.91190802016858,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 24,
+          "log2_expected_bad_per_group": -100.37152072161783,
+          "log2_expected_bad_all_groups": -97.37152072161783,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 25,
+          "log2_expected_bad_per_group": -108.875524981337,
+          "log2_expected_bad_all_groups": -105.875524981337,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 26,
+          "log2_expected_bad_per_group": -117.42259532056914,
+          "log2_expected_bad_all_groups": -114.42259532056914,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 27,
+          "log2_expected_bad_per_group": -126.01148311182807,
+          "log2_expected_bad_all_groups": -123.01148311182807,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 28,
+          "log2_expected_bad_per_group": -134.64101008262884,
+          "log2_expected_bad_all_groups": -131.64101008262884,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 29,
+          "log2_expected_bad_per_group": -143.3100625313745,
+          "log2_expected_bad_all_groups": -140.3100625313745,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 30,
+          "log2_expected_bad_per_group": -152.01758616040829,
+          "log2_expected_bad_all_groups": -149.01758616040829,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 31,
+          "log2_expected_bad_per_group": -160.76258144605097,
+          "log2_expected_bad_all_groups": -157.76258144605097,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 32,
+          "log2_expected_bad_per_group": -169.5440994776272,
+          "log2_expected_bad_all_groups": -166.5440994776272,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 33,
+          "log2_expected_bad_per_group": -178.36123820756248,
+          "log2_expected_bad_all_groups": -175.36123820756248,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 34,
+          "log2_expected_bad_per_group": -187.21313906300816,
+          "log2_expected_bad_all_groups": -184.21313906300816,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 35,
+          "log2_expected_bad_per_group": -196.09898387644995,
+          "log2_expected_bad_all_groups": -193.09898387644995,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 36,
+          "log2_expected_bad_per_group": -205.0179920986246,
+          "log2_expected_bad_all_groups": -202.0179920986246,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 37,
+          "log2_expected_bad_per_group": -213.96941826201572,
+          "log2_expected_bad_all_groups": -210.96941826201572,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 38,
+          "log2_expected_bad_per_group": -222.95254966738665,
+          "log2_expected_bad_all_groups": -219.95254966738665,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 39,
+          "log2_expected_bad_per_group": -231.96670426936078,
+          "log2_expected_bad_all_groups": -228.96670426936078,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 40,
+          "log2_expected_bad_per_group": -241.01122874009297,
+          "log2_expected_bad_all_groups": -238.01122874009297,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 41,
+          "log2_expected_bad_per_group": -250.08549669266768,
+          "log2_expected_bad_all_groups": -247.08549669266768,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 42,
+          "log2_expected_bad_per_group": -259.1889070480862,
+          "log2_expected_bad_all_groups": -256.1889070480862,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 43,
+          "log2_expected_bad_per_group": -268.3208825316236,
+          "log2_expected_bad_all_groups": -265.3208825316236,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 44,
+          "log2_expected_bad_per_group": -277.4808682859926,
+          "log2_expected_bad_all_groups": -274.4808682859926,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 45,
+          "log2_expected_bad_per_group": -286.66833059018757,
+          "log2_expected_bad_all_groups": -283.66833059018757,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 46,
+          "log2_expected_bad_per_group": -295.8827556741307,
+          "log2_expected_bad_all_groups": -292.8827556741307,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 47,
+          "log2_expected_bad_per_group": -305.1236486203291,
+          "log2_expected_bad_all_groups": -302.1236486203291,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 48,
+          "log2_expected_bad_per_group": -314.3905323447029,
+          "log2_expected_bad_all_groups": -311.3905323447029,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 49,
+          "log2_expected_bad_per_group": -323.6829466495769,
+          "log2_expected_bad_all_groups": -320.6829466495769,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 50,
+          "log2_expected_bad_per_group": -333.0004473425596,
+          "log2_expected_bad_all_groups": -330.0004473425596,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 51,
+          "log2_expected_bad_per_group": -342.34260541567767,
+          "log2_expected_bad_all_groups": -339.34260541567767,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 52,
+          "log2_expected_bad_per_group": -351.7090062797011,
+          "log2_expected_bad_all_groups": -348.7090062797011,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 53,
+          "log2_expected_bad_per_group": -361.09924904909747,
+          "log2_expected_bad_all_groups": -358.09924904909747,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 54,
+          "log2_expected_bad_per_group": -370.5129458734988,
+          "log2_expected_bad_all_groups": -367.5129458734988,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 55,
+          "log2_expected_bad_per_group": -379.9497213119589,
+          "log2_expected_bad_all_groups": -376.9497213119589,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 56,
+          "log2_expected_bad_per_group": -389.40921174663237,
+          "log2_expected_bad_all_groups": -386.40921174663237,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 57,
+          "log2_expected_bad_per_group": -398.89106483281734,
+          "log2_expected_bad_all_groups": -395.89106483281734,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 58,
+          "log2_expected_bad_per_group": -408.394938982588,
+          "log2_expected_bad_all_groups": -405.394938982588,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 59,
+          "log2_expected_bad_per_group": -417.92050287948877,
+          "log2_expected_bad_all_groups": -414.92050287948877,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 60,
+          "log2_expected_bad_per_group": -427.4674350219908,
+          "log2_expected_bad_all_groups": -424.4674350219908,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 61,
+          "log2_expected_bad_per_group": -437.03542329360994,
+          "log2_expected_bad_all_groups": -434.03542329360994,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 62,
+          "log2_expected_bad_per_group": -446.62416455776855,
+          "log2_expected_bad_all_groups": -443.62416455776855,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 63,
+          "log2_expected_bad_per_group": -456.23336427564567,
+          "log2_expected_bad_all_groups": -453.23336427564567,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 64,
+          "log2_expected_bad_per_group": -465.86273614540823,
+          "log2_expected_bad_all_groups": -462.86273614540823,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 65,
+          "log2_expected_bad_per_group": -475.5120017613482,
+          "log2_expected_bad_all_groups": -472.5120017613482,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 66,
+          "log2_expected_bad_per_group": -485.18089029157164,
+          "log2_expected_bad_all_groups": -482.18089029157164,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 67,
+          "log2_expected_bad_per_group": -494.8691381729944,
+          "log2_expected_bad_all_groups": -491.8691381729944,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 68,
+          "log2_expected_bad_per_group": -504.57648882249805,
+          "log2_expected_bad_all_groups": -501.57648882249805,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 69,
+          "log2_expected_bad_per_group": -514.30269236319,
+          "log2_expected_bad_all_groups": -511.30269236319,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 70,
+          "log2_expected_bad_per_group": -524.0475053647933,
+          "log2_expected_bad_all_groups": -521.0475053647933,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 71,
+          "log2_expected_bad_per_group": -533.8106905972655,
+          "log2_expected_bad_all_groups": -530.8106905972655,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 72,
+          "log2_expected_bad_per_group": -543.5920167968155,
+          "log2_expected_bad_all_groups": -540.5920167968155,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 73,
+          "log2_expected_bad_per_group": -553.3912584435466,
+          "log2_expected_bad_all_groups": -550.3912584435466,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 74,
+          "log2_expected_bad_per_group": -563.2081955500147,
+          "log2_expected_bad_all_groups": -560.2081955500147,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 75,
+          "log2_expected_bad_per_group": -573.0426134600383,
+          "log2_expected_bad_all_groups": -570.0426134600383,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 76,
+          "log2_expected_bad_per_group": -582.8943026571469,
+          "log2_expected_bad_all_groups": -579.8943026571469,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 77,
+          "log2_expected_bad_per_group": -592.7630585820973,
+          "log2_expected_bad_all_groups": -589.7630585820973,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 78,
+          "log2_expected_bad_per_group": -602.6486814589282,
+          "log2_expected_bad_all_groups": -599.6486814589282,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 79,
+          "log2_expected_bad_per_group": -612.5509761290583,
+          "log2_expected_bad_all_groups": -609.5509761290583,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 80,
+          "log2_expected_bad_per_group": -622.46975189297,
+          "log2_expected_bad_all_groups": -619.46975189297,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 81,
+          "log2_expected_bad_per_group": -632.4048223590473,
+          "log2_expected_bad_all_groups": -629.4048223590473,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 82,
+          "log2_expected_bad_per_group": -642.3560052991718,
+          "log2_expected_bad_all_groups": -639.3560052991718,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 83,
+          "log2_expected_bad_per_group": -652.3231225107002,
+          "log2_expected_bad_all_groups": -649.3231225107002,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 84,
+          "log2_expected_bad_per_group": -662.3059996844763,
+          "log2_expected_bad_all_groups": -659.3059996844763,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 85,
+          "log2_expected_bad_per_group": -672.3044662785511,
+          "log2_expected_bad_all_groups": -669.3044662785511,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 86,
+          "log2_expected_bad_per_group": -682.3183553973054,
+          "log2_expected_bad_all_groups": -679.3183553973054,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 87,
+          "log2_expected_bad_per_group": -692.3475036756886,
+          "log2_expected_bad_all_groups": -689.3475036756886,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 88,
+          "log2_expected_bad_per_group": -702.3917511683073,
+          "log2_expected_bad_all_groups": -699.3917511683073,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 89,
+          "log2_expected_bad_per_group": -712.4509412431108,
+          "log2_expected_bad_all_groups": -709.4509412431108,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 90,
+          "log2_expected_bad_per_group": -722.5249204794388,
+          "log2_expected_bad_all_groups": -719.5249204794388,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 91,
+          "log2_expected_bad_per_group": -732.613538570209,
+          "log2_expected_bad_all_groups": -729.613538570209,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 92,
+          "log2_expected_bad_per_group": -742.7166482280375,
+          "log2_expected_bad_all_groups": -739.7166482280375,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 93,
+          "log2_expected_bad_per_group": -752.8341050950957,
+          "log2_expected_bad_all_groups": -749.8341050950957,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 94,
+          "log2_expected_bad_per_group": -762.9657676565196,
+          "log2_expected_bad_all_groups": -759.9657676565196,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 95,
+          "log2_expected_bad_per_group": -773.1114971571992,
+          "log2_expected_bad_all_groups": -770.1114971571992,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 96,
+          "log2_expected_bad_per_group": -783.2711575217822,
+          "log2_expected_bad_all_groups": -780.2711575217822,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 97,
+          "log2_expected_bad_per_group": -793.444615277742,
+          "log2_expected_bad_all_groups": -790.444615277742,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 98,
+          "log2_expected_bad_per_group": -803.6317394813607,
+          "log2_expected_bad_all_groups": -800.6317394813607,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 99,
+          "log2_expected_bad_per_group": -813.8324016464937,
+          "log2_expected_bad_all_groups": -810.8324016464937,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 100,
+          "log2_expected_bad_per_group": -824.0464756759844,
+          "log2_expected_bad_all_groups": -821.0464756759844,
+          "passes_failure_budget": true
+        }
+      ]
+    },
+    {
+      "group_size": 16,
+      "group_count": 4,
+      "min_rows_per_group": 29,
+      "total_rows": 116,
+      "keygen_mul_ops": 1856,
+      "log2_expected_bad_per_group": -85.96924215312484,
+      "log2_expected_bad_all_groups": -83.96924215312484,
+      "rows": [
+        {
+          "rows_per_group": 1,
+          "log2_expected_bad_per_group": 148.84872963915043,
+          "log2_expected_bad_all_groups": 150.84872963915043,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 2,
+          "log2_expected_bad_per_group": 141.2191646171481,
+          "log2_expected_bad_all_groups": 143.2191646171481,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 3,
+          "log2_expected_bad_per_group": 133.51159850605228,
+          "log2_expected_bad_all_groups": 135.51159850605228,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 4,
+          "log2_expected_bad_per_group": 125.73003331772506,
+          "log2_expected_bad_all_groups": 127.73003331772506,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 5,
+          "log2_expected_bad_per_group": 117.87808038702264,
+          "log2_expected_bad_all_groups": 119.87808038702264,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 6,
+          "log2_expected_bad_per_group": 109.95901492728088,
+          "log2_expected_bad_all_groups": 111.95901492728088,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 7,
+          "log2_expected_bad_per_group": 101.9758208782408,
+          "log2_expected_bad_all_groups": 103.9758208782408,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 8,
+          "log2_expected_bad_per_group": 93.93122811395932,
+          "log2_expected_bad_all_groups": 95.93122811395932,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 9,
+          "log2_expected_bad_per_group": 85.8277435713474,
+          "log2_expected_bad_all_groups": 87.8277435713474,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 10,
+          "log2_expected_bad_per_group": 77.6676774923917,
+          "log2_expected_bad_all_groups": 79.6676774923917,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 11,
+          "log2_expected_bad_per_group": 69.4531657027347,
+          "log2_expected_bad_all_groups": 71.4531657027347,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 12,
+          "log2_expected_bad_per_group": 61.18618864780199,
+          "log2_expected_bad_all_groups": 63.18618864780199,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 13,
+          "log2_expected_bad_per_group": 52.86858775571413,
+          "log2_expected_bad_all_groups": 54.86858775571413,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 14,
+          "log2_expected_bad_per_group": 44.50207958035535,
+          "log2_expected_bad_all_groups": 46.50207958035535,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 15,
+          "log2_expected_bad_per_group": 36.088268088722295,
+          "log2_expected_bad_all_groups": 38.088268088722295,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 16,
+          "log2_expected_bad_per_group": 27.62865538727305,
+          "log2_expected_bad_all_groups": 29.62865538727305,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 17,
+          "log2_expected_bad_per_group": 19.124651127553896,
+          "log2_expected_bad_all_groups": 21.124651127553896,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 18,
+          "log2_expected_bad_per_group": 10.577580788321734,
+          "log2_expected_bad_all_groups": 12.577580788321734,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 19,
+          "log2_expected_bad_per_group": 1.9886929970628149,
+          "log2_expected_bad_all_groups": 3.988692997062815,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 20,
+          "log2_expected_bad_per_group": -6.64083397373795,
+          "log2_expected_bad_all_groups": -4.64083397373795,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 21,
+          "log2_expected_bad_per_group": -15.309886422483608,
+          "log2_expected_bad_all_groups": -13.309886422483608,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 22,
+          "log2_expected_bad_per_group": -24.01741005151741,
+          "log2_expected_bad_all_groups": -22.01741005151741,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 23,
+          "log2_expected_bad_per_group": -32.76240533716008,
+          "log2_expected_bad_all_groups": -30.762405337160082,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 24,
+          "log2_expected_bad_per_group": -41.54392336873634,
+          "log2_expected_bad_all_groups": -39.54392336873634,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 25,
+          "log2_expected_bad_per_group": -50.361062098671596,
+          "log2_expected_bad_all_groups": -48.361062098671596,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 26,
+          "log2_expected_bad_per_group": -59.21296295411726,
+          "log2_expected_bad_all_groups": -57.21296295411726,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 27,
+          "log2_expected_bad_per_group": -68.09880776755908,
+          "log2_expected_bad_all_groups": -66.09880776755908,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 28,
+          "log2_expected_bad_per_group": -77.0178159897337,
+          "log2_expected_bad_all_groups": -75.0178159897337,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 29,
+          "log2_expected_bad_per_group": -85.96924215312484,
+          "log2_expected_bad_all_groups": -83.96924215312484,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 30,
+          "log2_expected_bad_per_group": -94.95237355849576,
+          "log2_expected_bad_all_groups": -92.95237355849576,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 31,
+          "log2_expected_bad_per_group": -103.96652816046989,
+          "log2_expected_bad_all_groups": -101.96652816046989,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 32,
+          "log2_expected_bad_per_group": -113.01105263120209,
+          "log2_expected_bad_all_groups": -111.01105263120209,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 33,
+          "log2_expected_bad_per_group": -122.08532058377679,
+          "log2_expected_bad_all_groups": -120.08532058377679,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 34,
+          "log2_expected_bad_per_group": -131.18873093919532,
+          "log2_expected_bad_all_groups": -129.18873093919532,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 35,
+          "log2_expected_bad_per_group": -140.32070642273274,
+          "log2_expected_bad_all_groups": -138.32070642273274,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 36,
+          "log2_expected_bad_per_group": -149.4806921771017,
+          "log2_expected_bad_all_groups": -147.4806921771017,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 37,
+          "log2_expected_bad_per_group": -158.66815448129665,
+          "log2_expected_bad_all_groups": -156.66815448129665,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 38,
+          "log2_expected_bad_per_group": -167.8825795652398,
+          "log2_expected_bad_all_groups": -165.8825795652398,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 39,
+          "log2_expected_bad_per_group": -177.1234725114382,
+          "log2_expected_bad_all_groups": -175.1234725114382,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 40,
+          "log2_expected_bad_per_group": -186.390356235812,
+          "log2_expected_bad_all_groups": -184.390356235812,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 41,
+          "log2_expected_bad_per_group": -195.682770540686,
+          "log2_expected_bad_all_groups": -193.682770540686,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 42,
+          "log2_expected_bad_per_group": -205.0002712336687,
+          "log2_expected_bad_all_groups": -203.0002712336687,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 43,
+          "log2_expected_bad_per_group": -214.3424293067868,
+          "log2_expected_bad_all_groups": -212.3424293067868,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 44,
+          "log2_expected_bad_per_group": -223.70883017081022,
+          "log2_expected_bad_all_groups": -221.70883017081022,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 45,
+          "log2_expected_bad_per_group": -233.09907294020658,
+          "log2_expected_bad_all_groups": -231.09907294020658,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 46,
+          "log2_expected_bad_per_group": -242.5127697646079,
+          "log2_expected_bad_all_groups": -240.5127697646079,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 47,
+          "log2_expected_bad_per_group": -251.94954520306806,
+          "log2_expected_bad_all_groups": -249.94954520306806,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 48,
+          "log2_expected_bad_per_group": -261.40903563774145,
+          "log2_expected_bad_all_groups": -259.40903563774145,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 49,
+          "log2_expected_bad_per_group": -270.8908887239264,
+          "log2_expected_bad_all_groups": -268.8908887239264,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 50,
+          "log2_expected_bad_per_group": -280.39476287369706,
+          "log2_expected_bad_all_groups": -278.39476287369706,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 51,
+          "log2_expected_bad_per_group": -289.92032677059785,
+          "log2_expected_bad_all_groups": -287.92032677059785,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 52,
+          "log2_expected_bad_per_group": -299.4672589130999,
+          "log2_expected_bad_all_groups": -297.4672589130999,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 53,
+          "log2_expected_bad_per_group": -309.0352471847191,
+          "log2_expected_bad_all_groups": -307.0352471847191,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 54,
+          "log2_expected_bad_per_group": -318.6239884488777,
+          "log2_expected_bad_all_groups": -316.6239884488777,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 55,
+          "log2_expected_bad_per_group": -328.23318816675476,
+          "log2_expected_bad_all_groups": -326.23318816675476,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 56,
+          "log2_expected_bad_per_group": -337.8625600365173,
+          "log2_expected_bad_all_groups": -335.8625600365173,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 57,
+          "log2_expected_bad_per_group": -347.51182565245733,
+          "log2_expected_bad_all_groups": -345.51182565245733,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 58,
+          "log2_expected_bad_per_group": -357.1807141826808,
+          "log2_expected_bad_all_groups": -355.1807141826808,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 59,
+          "log2_expected_bad_per_group": -366.8689620641035,
+          "log2_expected_bad_all_groups": -364.8689620641035,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 60,
+          "log2_expected_bad_per_group": -376.57631271360714,
+          "log2_expected_bad_all_groups": -374.57631271360714,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 61,
+          "log2_expected_bad_per_group": -386.3025162542991,
+          "log2_expected_bad_all_groups": -384.3025162542991,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 62,
+          "log2_expected_bad_per_group": -396.0473292559024,
+          "log2_expected_bad_all_groups": -394.0473292559024,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 63,
+          "log2_expected_bad_per_group": -405.8105144883747,
+          "log2_expected_bad_all_groups": -403.8105144883747,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 64,
+          "log2_expected_bad_per_group": -415.5918406879246,
+          "log2_expected_bad_all_groups": -413.5918406879246,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 65,
+          "log2_expected_bad_per_group": -425.39108233465566,
+          "log2_expected_bad_all_groups": -423.39108233465566,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 66,
+          "log2_expected_bad_per_group": -435.2080194411238,
+          "log2_expected_bad_all_groups": -433.2080194411238,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 67,
+          "log2_expected_bad_per_group": -445.0424373511475,
+          "log2_expected_bad_all_groups": -443.0424373511475,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 68,
+          "log2_expected_bad_per_group": -454.89412654825605,
+          "log2_expected_bad_all_groups": -452.89412654825605,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 69,
+          "log2_expected_bad_per_group": -464.76288247320645,
+          "log2_expected_bad_all_groups": -462.76288247320645,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 70,
+          "log2_expected_bad_per_group": -474.6485053500372,
+          "log2_expected_bad_all_groups": -472.6485053500372,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 71,
+          "log2_expected_bad_per_group": -484.55080002016746,
+          "log2_expected_bad_all_groups": -482.55080002016746,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 72,
+          "log2_expected_bad_per_group": -494.4695757840791,
+          "log2_expected_bad_all_groups": -492.4695757840791,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 73,
+          "log2_expected_bad_per_group": -504.4046462501564,
+          "log2_expected_bad_all_groups": -502.4046462501564,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 74,
+          "log2_expected_bad_per_group": -514.3558291902809,
+          "log2_expected_bad_all_groups": -512.3558291902809,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 75,
+          "log2_expected_bad_per_group": -524.3229464018093,
+          "log2_expected_bad_all_groups": -522.3229464018093,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 76,
+          "log2_expected_bad_per_group": -534.3058235755854,
+          "log2_expected_bad_all_groups": -532.3058235755854,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 77,
+          "log2_expected_bad_per_group": -544.3042901696602,
+          "log2_expected_bad_all_groups": -542.3042901696602,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 78,
+          "log2_expected_bad_per_group": -554.3181792884145,
+          "log2_expected_bad_all_groups": -552.3181792884145,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 79,
+          "log2_expected_bad_per_group": -564.3473275667977,
+          "log2_expected_bad_all_groups": -562.3473275667977,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 80,
+          "log2_expected_bad_per_group": -574.3915750594164,
+          "log2_expected_bad_all_groups": -572.3915750594164,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 81,
+          "log2_expected_bad_per_group": -584.45076513422,
+          "log2_expected_bad_all_groups": -582.45076513422,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 82,
+          "log2_expected_bad_per_group": -594.524744370548,
+          "log2_expected_bad_all_groups": -592.524744370548,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 83,
+          "log2_expected_bad_per_group": -604.6133624613182,
+          "log2_expected_bad_all_groups": -602.6133624613182,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 84,
+          "log2_expected_bad_per_group": -614.7164721191466,
+          "log2_expected_bad_all_groups": -612.7164721191466,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 85,
+          "log2_expected_bad_per_group": -624.8339289862047,
+          "log2_expected_bad_all_groups": -622.8339289862047,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 86,
+          "log2_expected_bad_per_group": -634.9655915476287,
+          "log2_expected_bad_all_groups": -632.9655915476287,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 87,
+          "log2_expected_bad_per_group": -645.1113210483082,
+          "log2_expected_bad_all_groups": -643.1113210483082,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 88,
+          "log2_expected_bad_per_group": -655.2709814128914,
+          "log2_expected_bad_all_groups": -653.2709814128914,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 89,
+          "log2_expected_bad_per_group": -665.4444391688511,
+          "log2_expected_bad_all_groups": -663.4444391688511,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 90,
+          "log2_expected_bad_per_group": -675.6315633724698,
+          "log2_expected_bad_all_groups": -673.6315633724698,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 91,
+          "log2_expected_bad_per_group": -685.8322255376029,
+          "log2_expected_bad_all_groups": -683.8322255376029,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 92,
+          "log2_expected_bad_per_group": -696.0462995670936,
+          "log2_expected_bad_all_groups": -694.0462995670936,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 93,
+          "log2_expected_bad_per_group": -706.2736616867162,
+          "log2_expected_bad_all_groups": -704.2736616867162,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 94,
+          "log2_expected_bad_per_group": -716.5141903815327,
+          "log2_expected_bad_all_groups": -714.5141903815327,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 95,
+          "log2_expected_bad_per_group": -726.7677663345529,
+          "log2_expected_bad_all_groups": -724.7677663345529,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 96,
+          "log2_expected_bad_per_group": -737.0342723675952,
+          "log2_expected_bad_all_groups": -735.0342723675952,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 97,
+          "log2_expected_bad_per_group": -747.3135933842511,
+          "log2_expected_bad_all_groups": -745.3135933842511,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 98,
+          "log2_expected_bad_per_group": -757.6056163148579,
+          "log2_expected_bad_all_groups": -755.6056163148579,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 99,
+          "log2_expected_bad_per_group": -767.9102300633962,
+          "log2_expected_bad_all_groups": -765.9102300633962,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 100,
+          "log2_expected_bad_per_group": -778.2273254562242,
+          "log2_expected_bad_all_groups": -776.2273254562242,
+          "passes_failure_budget": true
+        }
+      ]
+    },
+    {
+      "group_size": 32,
+      "group_count": 2,
+      "min_rows_per_group": 40,
+      "total_rows": 80,
+      "keygen_mul_ops": 2560,
+      "log2_expected_bad_per_group": -81.86220781873558,
+      "log2_expected_bad_all_groups": -80.86220781873558,
+      "rows": [
+        {
+          "rows_per_group": 1,
+          "log2_expected_bad_per_group": 275.12500334533564,
+          "log2_expected_bad_all_groups": 276.12500334533564,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 2,
+          "log2_expected_bad_per_group": 266.5779330061035,
+          "log2_expected_bad_all_groups": 267.5779330061035,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 3,
+          "log2_expected_bad_per_group": 257.98904521484457,
+          "log2_expected_bad_all_groups": 258.98904521484457,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 4,
+          "log2_expected_bad_per_group": 249.3595182440438,
+          "log2_expected_bad_all_groups": 250.3595182440438,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 5,
+          "log2_expected_bad_per_group": 240.69046579529817,
+          "log2_expected_bad_all_groups": 241.69046579529817,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 6,
+          "log2_expected_bad_per_group": 231.98294216626437,
+          "log2_expected_bad_all_groups": 232.98294216626437,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 7,
+          "log2_expected_bad_per_group": 223.23794688062168,
+          "log2_expected_bad_all_groups": 224.23794688062168,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 8,
+          "log2_expected_bad_per_group": 214.45642884904544,
+          "log2_expected_bad_all_groups": 215.45642884904544,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 9,
+          "log2_expected_bad_per_group": 205.63929011911017,
+          "log2_expected_bad_all_groups": 206.63929011911017,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 10,
+          "log2_expected_bad_per_group": 196.78738926366452,
+          "log2_expected_bad_all_groups": 197.78738926366452,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 11,
+          "log2_expected_bad_per_group": 187.9015444502227,
+          "log2_expected_bad_all_groups": 188.9015444502227,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 12,
+          "log2_expected_bad_per_group": 178.98253622804805,
+          "log2_expected_bad_all_groups": 179.98253622804805,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 13,
+          "log2_expected_bad_per_group": 170.03111006465693,
+          "log2_expected_bad_all_groups": 171.03111006465693,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 14,
+          "log2_expected_bad_per_group": 161.047978659286,
+          "log2_expected_bad_all_groups": 162.047978659286,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 15,
+          "log2_expected_bad_per_group": 152.03382405731188,
+          "log2_expected_bad_all_groups": 153.03382405731188,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 16,
+          "log2_expected_bad_per_group": 142.98929958657968,
+          "log2_expected_bad_all_groups": 143.98929958657968,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 17,
+          "log2_expected_bad_per_group": 133.91503163400498,
+          "log2_expected_bad_all_groups": 134.91503163400498,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 18,
+          "log2_expected_bad_per_group": 124.81162127858644,
+          "log2_expected_bad_all_groups": 125.81162127858644,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 19,
+          "log2_expected_bad_per_group": 115.67964579504904,
+          "log2_expected_bad_all_groups": 116.67964579504904,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 20,
+          "log2_expected_bad_per_group": 106.51966004068007,
+          "log2_expected_bad_all_groups": 107.51966004068007,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 21,
+          "log2_expected_bad_per_group": 97.3321977364851,
+          "log2_expected_bad_all_groups": 98.3321977364851,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 22,
+          "log2_expected_bad_per_group": 88.11777265254197,
+          "log2_expected_bad_all_groups": 89.11777265254197,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 23,
+          "log2_expected_bad_per_group": 78.87687970634356,
+          "log2_expected_bad_all_groups": 79.87687970634356,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 24,
+          "log2_expected_bad_per_group": 69.60999598196976,
+          "log2_expected_bad_all_groups": 70.60999598196976,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 25,
+          "log2_expected_bad_per_group": 60.31758167709578,
+          "log2_expected_bad_all_groups": 61.31758167709578,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 26,
+          "log2_expected_bad_per_group": 51.000080984113055,
+          "log2_expected_bad_all_groups": 52.000080984113055,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 27,
+          "log2_expected_bad_per_group": 41.657922910994955,
+          "log2_expected_bad_all_groups": 42.657922910994955,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 28,
+          "log2_expected_bad_per_group": 32.291522046971544,
+          "log2_expected_bad_all_groups": 33.291522046971544,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 29,
+          "log2_expected_bad_per_group": 22.901279277575178,
+          "log2_expected_bad_all_groups": 23.901279277575178,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 30,
+          "log2_expected_bad_per_group": 13.487582453173873,
+          "log2_expected_bad_all_groups": 14.487582453173873,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 31,
+          "log2_expected_bad_per_group": 4.050807014713724,
+          "log2_expected_bad_all_groups": 5.050807014713724,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 32,
+          "log2_expected_bad_per_group": -5.408683419959692,
+          "log2_expected_bad_all_groups": -4.408683419959692,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 33,
+          "log2_expected_bad_per_group": -14.89053650614468,
+          "log2_expected_bad_all_groups": -13.89053650614468,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 34,
+          "log2_expected_bad_per_group": -24.394410655915312,
+          "log2_expected_bad_all_groups": -23.394410655915312,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 35,
+          "log2_expected_bad_per_group": -33.9199745528161,
+          "log2_expected_bad_all_groups": -32.9199745528161,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 36,
+          "log2_expected_bad_per_group": -43.466906695318144,
+          "log2_expected_bad_all_groups": -42.466906695318144,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 37,
+          "log2_expected_bad_per_group": -53.03489496693731,
+          "log2_expected_bad_all_groups": -52.03489496693731,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 38,
+          "log2_expected_bad_per_group": -62.623636231095894,
+          "log2_expected_bad_all_groups": -61.623636231095894,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 39,
+          "log2_expected_bad_per_group": -72.23283594897302,
+          "log2_expected_bad_all_groups": -71.23283594897302,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 40,
+          "log2_expected_bad_per_group": -81.86220781873558,
+          "log2_expected_bad_all_groups": -80.86220781873558,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 41,
+          "log2_expected_bad_per_group": -91.51147343467555,
+          "log2_expected_bad_all_groups": -90.51147343467555,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 42,
+          "log2_expected_bad_per_group": -101.18036196489902,
+          "log2_expected_bad_all_groups": -100.18036196489902,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 43,
+          "log2_expected_bad_per_group": -110.86860984632176,
+          "log2_expected_bad_all_groups": -109.86860984632176,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 44,
+          "log2_expected_bad_per_group": -120.57596049582537,
+          "log2_expected_bad_all_groups": -119.57596049582537,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 45,
+          "log2_expected_bad_per_group": -130.30216403651735,
+          "log2_expected_bad_all_groups": -129.30216403651735,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 46,
+          "log2_expected_bad_per_group": -140.04697703812067,
+          "log2_expected_bad_all_groups": -139.04697703812067,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 47,
+          "log2_expected_bad_per_group": -149.81016227059294,
+          "log2_expected_bad_all_groups": -148.81016227059294,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 48,
+          "log2_expected_bad_per_group": -159.59148847014285,
+          "log2_expected_bad_all_groups": -158.59148847014285,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 49,
+          "log2_expected_bad_per_group": -169.3907301168739,
+          "log2_expected_bad_all_groups": -168.3907301168739,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 50,
+          "log2_expected_bad_per_group": -179.20766722334204,
+          "log2_expected_bad_all_groups": -178.20766722334204,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 51,
+          "log2_expected_bad_per_group": -189.0420851333657,
+          "log2_expected_bad_all_groups": -188.0420851333657,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 52,
+          "log2_expected_bad_per_group": -198.8937743304743,
+          "log2_expected_bad_all_groups": -197.8937743304743,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 53,
+          "log2_expected_bad_per_group": -208.76253025542468,
+          "log2_expected_bad_all_groups": -207.76253025542468,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 54,
+          "log2_expected_bad_per_group": -218.6481531322555,
+          "log2_expected_bad_all_groups": -217.6481531322555,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 55,
+          "log2_expected_bad_per_group": -228.55044780238566,
+          "log2_expected_bad_all_groups": -227.55044780238566,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 56,
+          "log2_expected_bad_per_group": -238.4692235662973,
+          "log2_expected_bad_all_groups": -237.4692235662973,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 57,
+          "log2_expected_bad_per_group": -248.40429403237465,
+          "log2_expected_bad_all_groups": -247.40429403237465,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 58,
+          "log2_expected_bad_per_group": -258.35547697249916,
+          "log2_expected_bad_all_groups": -257.35547697249916,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 59,
+          "log2_expected_bad_per_group": -268.3225941840275,
+          "log2_expected_bad_all_groups": -267.3225941840275,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 60,
+          "log2_expected_bad_per_group": -278.30547135780364,
+          "log2_expected_bad_all_groups": -277.30547135780364,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 61,
+          "log2_expected_bad_per_group": -288.3039379518785,
+          "log2_expected_bad_all_groups": -287.3039379518785,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 62,
+          "log2_expected_bad_per_group": -298.31782707063275,
+          "log2_expected_bad_all_groups": -297.31782707063275,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 63,
+          "log2_expected_bad_per_group": -308.3469753490159,
+          "log2_expected_bad_all_groups": -307.3469753490159,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 64,
+          "log2_expected_bad_per_group": -318.39122284163466,
+          "log2_expected_bad_all_groups": -317.39122284163466,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 65,
+          "log2_expected_bad_per_group": -328.4504129164382,
+          "log2_expected_bad_all_groups": -327.4504129164382,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 66,
+          "log2_expected_bad_per_group": -338.5243921527662,
+          "log2_expected_bad_all_groups": -337.5243921527662,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 67,
+          "log2_expected_bad_per_group": -348.61301024353634,
+          "log2_expected_bad_all_groups": -347.61301024353634,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 68,
+          "log2_expected_bad_per_group": -358.7161199013648,
+          "log2_expected_bad_all_groups": -357.7161199013648,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 69,
+          "log2_expected_bad_per_group": -368.8335767684229,
+          "log2_expected_bad_all_groups": -367.8335767684229,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 70,
+          "log2_expected_bad_per_group": -378.96523932984695,
+          "log2_expected_bad_all_groups": -377.96523932984695,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 71,
+          "log2_expected_bad_per_group": -389.11096883052653,
+          "log2_expected_bad_all_groups": -388.11096883052653,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 72,
+          "log2_expected_bad_per_group": -399.27062919510956,
+          "log2_expected_bad_all_groups": -398.27062919510956,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 73,
+          "log2_expected_bad_per_group": -409.4440869510693,
+          "log2_expected_bad_all_groups": -408.4440869510693,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 74,
+          "log2_expected_bad_per_group": -419.631211154688,
+          "log2_expected_bad_all_groups": -418.631211154688,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 75,
+          "log2_expected_bad_per_group": -429.8318733198211,
+          "log2_expected_bad_all_groups": -428.8318733198211,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 76,
+          "log2_expected_bad_per_group": -440.0459473493118,
+          "log2_expected_bad_all_groups": -439.0459473493118,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 77,
+          "log2_expected_bad_per_group": -450.27330946893443,
+          "log2_expected_bad_all_groups": -449.27330946893443,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 78,
+          "log2_expected_bad_per_group": -460.51383816375096,
+          "log2_expected_bad_all_groups": -459.51383816375096,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 79,
+          "log2_expected_bad_per_group": -470.7674141167711,
+          "log2_expected_bad_all_groups": -469.7674141167711,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 80,
+          "log2_expected_bad_per_group": -481.0339201498135,
+          "log2_expected_bad_all_groups": -480.0339201498135,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 81,
+          "log2_expected_bad_per_group": -491.3132411664693,
+          "log2_expected_bad_all_groups": -490.3132411664693,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 82,
+          "log2_expected_bad_per_group": -501.6052640970762,
+          "log2_expected_bad_all_groups": -500.6052640970762,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 83,
+          "log2_expected_bad_per_group": -511.9098778456144,
+          "log2_expected_bad_all_groups": -510.9098778456144,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 84,
+          "log2_expected_bad_per_group": -522.2269732384425,
+          "log2_expected_bad_all_groups": -521.2269732384425,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 85,
+          "log2_expected_bad_per_group": -532.5564429747926,
+          "log2_expected_bad_all_groups": -531.5564429747926,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 86,
+          "log2_expected_bad_per_group": -542.8981815789517,
+          "log2_expected_bad_all_groups": -541.8981815789517,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 87,
+          "log2_expected_bad_per_group": -553.2520853540567,
+          "log2_expected_bad_all_groups": -552.2520853540567,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 88,
+          "log2_expected_bad_per_group": -563.6180523374358,
+          "log2_expected_bad_all_groups": -562.6180523374358,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 89,
+          "log2_expected_bad_per_group": -573.9959822574333,
+          "log2_expected_bad_all_groups": -572.9959822574333,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 90,
+          "log2_expected_bad_per_group": -584.3857764916551,
+          "log2_expected_bad_all_groups": -583.3857764916551,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 91,
+          "log2_expected_bad_per_group": -594.7873380265778,
+          "log2_expected_bad_all_groups": -593.7873380265778,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 92,
+          "log2_expected_bad_per_group": -605.2005714184663,
+          "log2_expected_bad_all_groups": -604.2005714184663,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 93,
+          "log2_expected_bad_per_group": -615.6253827555468,
+          "log2_expected_bad_all_groups": -614.6253827555468,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 94,
+          "log2_expected_bad_per_group": -626.0616796213853,
+          "log2_expected_bad_all_groups": -625.0616796213853,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 95,
+          "log2_expected_bad_per_group": -636.5093710594253,
+          "log2_expected_bad_all_groups": -635.5093710594253,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 96,
+          "log2_expected_bad_per_group": -646.9683675386361,
+          "log2_expected_bad_all_groups": -645.9683675386361,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 97,
+          "log2_expected_bad_per_group": -657.4385809202322,
+          "log2_expected_bad_all_groups": -656.4385809202322,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 98,
+          "log2_expected_bad_per_group": -667.9199244254198,
+          "log2_expected_bad_all_groups": -666.9199244254198,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 99,
+          "log2_expected_bad_per_group": -678.4123126041321,
+          "log2_expected_bad_all_groups": -677.4123126041321,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 100,
+          "log2_expected_bad_per_group": -688.9156613047161,
+          "log2_expected_bad_all_groups": -687.9156613047161,
+          "passes_failure_budget": true
+        }
+      ]
+    },
+    {
+      "group_size": 64,
+      "group_count": 1,
+      "min_rows_per_group": 59,
+      "total_rows": 59,
+      "keygen_mul_ops": 3776,
+      "log2_expected_bad_per_group": -82.78663359101424,
+      "log2_expected_bad_all_groups": -82.78663359101424,
+      "rows": [
+        {
+          "rows_per_group": 1,
+          "log2_expected_bad_per_group": 497.1101679294189,
+          "log2_expected_bad_all_groups": 497.1101679294189,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 2,
+          "log2_expected_bad_per_group": 487.60629377964824,
+          "log2_expected_bad_all_groups": 487.60629377964824,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 3,
+          "log2_expected_bad_per_group": 478.08072988274745,
+          "log2_expected_bad_all_groups": 478.08072988274745,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 4,
+          "log2_expected_bad_per_group": 468.5337977402454,
+          "log2_expected_bad_all_groups": 468.5337977402454,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 5,
+          "log2_expected_bad_per_group": 458.9658094686262,
+          "log2_expected_bad_all_groups": 458.9658094686262,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 6,
+          "log2_expected_bad_per_group": 449.3770682044676,
+          "log2_expected_bad_all_groups": 449.3770682044676,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 7,
+          "log2_expected_bad_per_group": 439.76786848659054,
+          "log2_expected_bad_all_groups": 439.76786848659054,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 8,
+          "log2_expected_bad_per_group": 430.138496616828,
+          "log2_expected_bad_all_groups": 430.138496616828,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 9,
+          "log2_expected_bad_per_group": 420.48923100088797,
+          "log2_expected_bad_all_groups": 420.48923100088797,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 10,
+          "log2_expected_bad_per_group": 410.8203424706645,
+          "log2_expected_bad_all_groups": 410.8203424706645,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 11,
+          "log2_expected_bad_per_group": 401.1320945892418,
+          "log2_expected_bad_all_groups": 401.1320945892418,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 12,
+          "log2_expected_bad_per_group": 391.42474393973816,
+          "log2_expected_bad_all_groups": 391.42474393973816,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 13,
+          "log2_expected_bad_per_group": 381.6985403990462,
+          "log2_expected_bad_all_groups": 381.6985403990462,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 14,
+          "log2_expected_bad_per_group": 371.9537273974429,
+          "log2_expected_bad_all_groups": 371.9537273974429,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 15,
+          "log2_expected_bad_per_group": 362.1905421649706,
+          "log2_expected_bad_all_groups": 362.1905421649706,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 16,
+          "log2_expected_bad_per_group": 352.4092159654207,
+          "log2_expected_bad_all_groups": 352.4092159654207,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 17,
+          "log2_expected_bad_per_group": 342.60997431868964,
+          "log2_expected_bad_all_groups": 342.60997431868964,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 18,
+          "log2_expected_bad_per_group": 332.7930372122215,
+          "log2_expected_bad_all_groups": 332.7930372122215,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 19,
+          "log2_expected_bad_per_group": 322.9586193021978,
+          "log2_expected_bad_all_groups": 322.9586193021978,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 20,
+          "log2_expected_bad_per_group": 313.10693010508925,
+          "log2_expected_bad_all_groups": 313.10693010508925,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 21,
+          "log2_expected_bad_per_group": 303.23817418013886,
+          "log2_expected_bad_all_groups": 303.23817418013886,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 22,
+          "log2_expected_bad_per_group": 293.352551303308,
+          "log2_expected_bad_all_groups": 293.352551303308,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 23,
+          "log2_expected_bad_per_group": 283.45025663317784,
+          "log2_expected_bad_all_groups": 283.45025663317784,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 24,
+          "log2_expected_bad_per_group": 273.5314808692662,
+          "log2_expected_bad_all_groups": 273.5314808692662,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 25,
+          "log2_expected_bad_per_group": 263.5964104031889,
+          "log2_expected_bad_all_groups": 263.5964104031889,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 26,
+          "log2_expected_bad_per_group": 253.64522746306437,
+          "log2_expected_bad_all_groups": 253.64522746306437,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 27,
+          "log2_expected_bad_per_group": 243.67811025153603,
+          "log2_expected_bad_all_groups": 243.67811025153603,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 28,
+          "log2_expected_bad_per_group": 233.69523307775992,
+          "log2_expected_bad_all_groups": 233.69523307775992,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 29,
+          "log2_expected_bad_per_group": 223.69676648368505,
+          "log2_expected_bad_all_groups": 223.69676648368505,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 30,
+          "log2_expected_bad_per_group": 213.68287736493082,
+          "log2_expected_bad_all_groups": 213.68287736493082,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 31,
+          "log2_expected_bad_per_group": 203.6537290865476,
+          "log2_expected_bad_all_groups": 203.6537290865476,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 32,
+          "log2_expected_bad_per_group": 193.60948159392888,
+          "log2_expected_bad_all_groups": 193.60948159392888,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 33,
+          "log2_expected_bad_per_group": 183.55029151912532,
+          "log2_expected_bad_all_groups": 183.55029151912532,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 34,
+          "log2_expected_bad_per_group": 173.47631228279732,
+          "log2_expected_bad_all_groups": 173.47631228279732,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 35,
+          "log2_expected_bad_per_group": 163.3876941920272,
+          "log2_expected_bad_all_groups": 163.3876941920272,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 36,
+          "log2_expected_bad_per_group": 153.28458453419873,
+          "log2_expected_bad_all_groups": 153.28458453419873,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 37,
+          "log2_expected_bad_per_group": 143.1671276671406,
+          "log2_expected_bad_all_groups": 143.1671276671406,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 38,
+          "log2_expected_bad_per_group": 133.03546510571658,
+          "log2_expected_bad_all_groups": 133.03546510571658,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 39,
+          "log2_expected_bad_per_group": 122.889735605037,
+          "log2_expected_bad_all_groups": 122.889735605037,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 40,
+          "log2_expected_bad_per_group": 112.73007524045394,
+          "log2_expected_bad_all_groups": 112.73007524045394,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 41,
+          "log2_expected_bad_per_group": 102.55661748449421,
+          "log2_expected_bad_all_groups": 102.55661748449421,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 42,
+          "log2_expected_bad_per_group": 92.3694932808755,
+          "log2_expected_bad_all_groups": 92.3694932808755,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 43,
+          "log2_expected_bad_per_group": 82.16883111574242,
+          "log2_expected_bad_all_groups": 82.16883111574242,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 44,
+          "log2_expected_bad_per_group": 71.95475708625173,
+          "log2_expected_bad_all_groups": 71.95475708625173,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 45,
+          "log2_expected_bad_per_group": 61.727394966629085,
+          "log2_expected_bad_all_groups": 61.727394966629085,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 46,
+          "log2_expected_bad_per_group": 51.48686627181258,
+          "log2_expected_bad_all_groups": 51.48686627181258,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 47,
+          "log2_expected_bad_per_group": 41.23329031879243,
+          "log2_expected_bad_all_groups": 41.23329031879243,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 48,
+          "log2_expected_bad_per_group": 30.96678428575003,
+          "log2_expected_bad_all_groups": 30.96678428575003,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 49,
+          "log2_expected_bad_per_group": 20.687463269094216,
+          "log2_expected_bad_all_groups": 20.687463269094216,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 50,
+          "log2_expected_bad_per_group": 10.395440338487361,
+          "log2_expected_bad_all_groups": 10.395440338487361,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 51,
+          "log2_expected_bad_per_group": 0.09082658994913295,
+          "log2_expected_bad_all_groups": 0.09082658994913295,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 52,
+          "log2_expected_bad_per_group": -10.226268802878941,
+          "log2_expected_bad_all_groups": -10.226268802878941,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 53,
+          "log2_expected_bad_per_group": -20.55573853922909,
+          "log2_expected_bad_all_groups": -20.55573853922909,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 54,
+          "log2_expected_bad_per_group": -30.89747714338824,
+          "log2_expected_bad_all_groups": -30.89747714338824,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 55,
+          "log2_expected_bad_per_group": -41.25138091849317,
+          "log2_expected_bad_all_groups": -41.25138091849317,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 56,
+          "log2_expected_bad_per_group": -51.61734790187225,
+          "log2_expected_bad_all_groups": -51.61734790187225,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 57,
+          "log2_expected_bad_per_group": -61.99527782186974,
+          "log2_expected_bad_all_groups": -61.99527782186974,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 58,
+          "log2_expected_bad_per_group": -72.38507205609152,
+          "log2_expected_bad_all_groups": -72.38507205609152,
+          "passes_failure_budget": false
+        },
+        {
+          "rows_per_group": 59,
+          "log2_expected_bad_per_group": -82.78663359101424,
+          "log2_expected_bad_all_groups": -82.78663359101424,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 60,
+          "log2_expected_bad_per_group": -93.19986698290275,
+          "log2_expected_bad_all_groups": -93.19986698290275,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 61,
+          "log2_expected_bad_per_group": -103.62467831998319,
+          "log2_expected_bad_all_groups": -103.62467831998319,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 62,
+          "log2_expected_bad_per_group": -114.06097518582183,
+          "log2_expected_bad_all_groups": -114.06097518582183,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 63,
+          "log2_expected_bad_per_group": -124.50866662386183,
+          "log2_expected_bad_all_groups": -124.50866662386183,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 64,
+          "log2_expected_bad_per_group": -134.96766310307262,
+          "log2_expected_bad_all_groups": -134.96766310307262,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 65,
+          "log2_expected_bad_per_group": -145.4378764846687,
+          "log2_expected_bad_all_groups": -145.4378764846687,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 66,
+          "log2_expected_bad_per_group": -155.91921998985623,
+          "log2_expected_bad_all_groups": -155.91921998985623,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 67,
+          "log2_expected_bad_per_group": -166.4116081685686,
+          "log2_expected_bad_all_groups": -166.4116081685686,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 68,
+          "log2_expected_bad_per_group": -176.91495686915258,
+          "log2_expected_bad_all_groups": -176.91495686915258,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 69,
+          "log2_expected_bad_per_group": -187.42918320897013,
+          "log2_expected_bad_all_groups": -187.42918320897013,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 70,
+          "log2_expected_bad_per_group": -197.95420554588057,
+          "log2_expected_bad_all_groups": -197.95420554588057,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 71,
+          "log2_expected_bad_per_group": -208.48994345057142,
+          "log2_expected_bad_all_groups": -208.48994345057142,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 72,
+          "log2_expected_bad_per_group": -219.03631767970552,
+          "log2_expected_bad_all_groups": -219.03631767970552,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 73,
+          "log2_expected_bad_per_group": -229.59325014985546,
+          "log2_expected_bad_all_groups": -229.59325014985546,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 74,
+          "log2_expected_bad_per_group": -240.16066391219624,
+          "log2_expected_bad_all_groups": -240.16066391219624,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 75,
+          "log2_expected_bad_per_group": -250.73848312792856,
+          "log2_expected_bad_all_groups": -250.73848312792856,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 76,
+          "log2_expected_bad_per_group": -261.32663304440723,
+          "log2_expected_bad_all_groups": -261.32663304440723,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 77,
+          "log2_expected_bad_per_group": -271.92503997194905,
+          "log2_expected_bad_all_groups": -271.92503997194905,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 78,
+          "log2_expected_bad_per_group": -282.53363126129597,
+          "log2_expected_bad_all_groups": -282.53363126129597,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 79,
+          "log2_expected_bad_per_group": -293.15233528171177,
+          "log2_expected_bad_all_groups": -293.15233528171177,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 80,
+          "log2_expected_bad_per_group": -303.7810813996882,
+          "log2_expected_bad_all_groups": -303.7810813996882,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 81,
+          "log2_expected_bad_per_group": -314.41979995824136,
+          "log2_expected_bad_all_groups": -314.41979995824136,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 82,
+          "log2_expected_bad_per_group": -325.068422256777,
+          "log2_expected_bad_all_groups": -325.068422256777,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 83,
+          "log2_expected_bad_per_group": -335.72688053150557,
+          "log2_expected_bad_all_groups": -335.72688053150557,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 84,
+          "log2_expected_bad_per_group": -346.39510793638846,
+          "log2_expected_bad_all_groups": -346.39510793638846,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 85,
+          "log2_expected_bad_per_group": -357.0730385245974,
+          "log2_expected_bad_all_groups": -357.0730385245974,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 86,
+          "log2_expected_bad_per_group": -367.76060723047004,
+          "log2_expected_bad_all_groups": -367.76060723047004,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 87,
+          "log2_expected_bad_per_group": -378.45774985194515,
+          "log2_expected_bad_all_groups": -378.45774985194515,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 88,
+          "log2_expected_bad_per_group": -389.1644030334613,
+          "log2_expected_bad_all_groups": -389.1644030334613,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 89,
+          "log2_expected_bad_per_group": -399.88050424930464,
+          "log2_expected_bad_all_groups": -399.88050424930464,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 90,
+          "log2_expected_bad_per_group": -410.6059917873899,
+          "log2_expected_bad_all_groups": -410.6059917873899,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 91,
+          "log2_expected_bad_per_group": -421.34080473346216,
+          "log2_expected_bad_all_groups": -421.34080473346216,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 92,
+          "log2_expected_bad_per_group": -432.0848829557042,
+          "log2_expected_bad_all_groups": -432.0848829557042,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 93,
+          "log2_expected_bad_per_group": -442.83816708973796,
+          "log2_expected_bad_all_groups": -442.83816708973796,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 94,
+          "log2_expected_bad_per_group": -453.60059852400633,
+          "log2_expected_bad_all_groups": -453.60059852400633,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 95,
+          "log2_expected_bad_per_group": -464.37211938552434,
+          "log2_expected_bad_all_groups": -464.37211938552434,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 96,
+          "log2_expected_bad_per_group": -475.15267252598744,
+          "log2_expected_bad_all_groups": -475.15267252598744,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 97,
+          "log2_expected_bad_per_group": -485.94220150822593,
+          "log2_expected_bad_all_groups": -485.94220150822593,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 98,
+          "log2_expected_bad_per_group": -496.7406505929953,
+          "log2_expected_bad_all_groups": -496.7406505929953,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 99,
+          "log2_expected_bad_per_group": -507.54796472609115,
+          "log2_expected_bad_all_groups": -507.54796472609115,
+          "passes_failure_budget": true
+        },
+        {
+          "rows_per_group": 100,
+          "log2_expected_bad_per_group": -518.3640895257798,
+          "log2_expected_bad_all_groups": -518.3640895257798,
+          "passes_failure_budget": true
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "For any fixed nonzero free vector, one random row dot product is uniform over F_q.",
+    "The bound sums Lee-ball volume by free l1 weight times the exact lower-tail probability for row Lee sums.",
+    "Expected bad count below one proves existence of a good random block; below 2^-lambda supports rejection-sampling with lambda bits of margin."
+  ]
+}

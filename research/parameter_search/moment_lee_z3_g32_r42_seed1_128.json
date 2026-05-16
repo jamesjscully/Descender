@@ -1,0 +1,18 @@
+{
+  "source_family": "vandermonde-moment-graph-code",
+  "source_q": 32771,
+  "group_size": 32,
+  "rows": 42,
+  "target_l1": 3277,
+  "checked_counterexample_l1_at_most": 3276,
+  "alpha_start": 1,
+  "exponent_start": 1,
+  "column_scale": "random",
+  "seed": 1,
+  "solver": "z3",
+  "status": "unknown",
+  "timeout_ms": 120000,
+  "found_counterexample": null,
+  "certificate": "unknown_not_a_certificate",
+  "reason": "timeout"
+}

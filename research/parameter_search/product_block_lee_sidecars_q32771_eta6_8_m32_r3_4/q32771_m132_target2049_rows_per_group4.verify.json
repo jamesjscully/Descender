@@ -1,0 +1,46 @@
+{
+  "input_json": "research/parameter_search/product_block_lee_sidecars_q32771_eta6_8_m32_r3_4/q32771_m132_target2049_rows_per_group4.json",
+  "family": "shared-random-pair-block",
+  "q": 32771,
+  "n": 64,
+  "m1": 32,
+  "group_size": 2,
+  "group_count": 16,
+  "rows_per_group": 4,
+  "used_rows": 64,
+  "target_l1": 2049,
+  "selected_trial": 1,
+  "artifact_passes_target": true,
+  "verifier_passes_target": true,
+  "checked_centered_pair_count": 8392704,
+  "artifact_checked_centered_pair_count": 8392704,
+  "min_l1": 2136,
+  "worst_pair_centered": [
+    -94,
+    500
+  ],
+  "worst_relation_centered": [
+    43,
+    -88,
+    683,
+    -728,
+    -94,
+    500
+  ],
+  "worst_relation_support": 6,
+  "artifact_worst_pair_centered": [
+    -94,
+    500
+  ],
+  "artifact_worst_relation_centered": [
+    43,
+    -88,
+    683,
+    -728,
+    -94,
+    500
+  ],
+  "artifact_worst_relation_support": 6,
+  "artifact_consistent": true,
+  "errors": []
+}

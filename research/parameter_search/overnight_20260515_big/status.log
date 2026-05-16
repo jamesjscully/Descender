@@ -1,0 +1,28 @@
+started 2026-05-15T07:59:05Z
+threads=12 iterations=350000 restarts=768 top=1200
+
+=== compressed lossy/diagonal descender-128 2026-05-15T07:59:05Z ===
+compressed descender-128 rc=0 2026-05-15T07:59:31Z
+validated compressed descender-128 rc=0 2026-05-15T08:03:46Z
+
+=== exact/full-view validated lane descender-128 2026-05-15T08:03:46Z ===
+exact descender-128 rc=0 2026-05-15T08:03:54Z
+validated exact descender-128 rc=0 2026-05-15T08:04:44Z
+
+=== compressed lossy/diagonal descender-192 2026-05-15T08:04:44Z ===
+compressed descender-192 rc=0 2026-05-15T08:05:12Z
+validated compressed descender-192 rc=0 2026-05-15T08:16:20Z
+
+=== exact/full-view validated lane descender-192 2026-05-15T08:16:20Z ===
+exact descender-192 rc=0 2026-05-15T08:16:30Z
+validated exact descender-192 rc=0 2026-05-15T08:20:21Z
+
+=== compressed lossy/diagonal descender-256 2026-05-15T08:20:21Z ===
+compressed descender-256 rc=0 2026-05-15T08:20:52Z
+validated compressed descender-256 rc=0 2026-05-15T08:55:12Z
+
+=== exact/full-view validated lane descender-256 2026-05-15T08:55:12Z ===
+exact descender-256 rc=0 2026-05-15T08:55:22Z
+validated exact descender-256 rc=0 2026-05-15T09:06:04Z
+
+finished 2026-05-15T09:06:04Z

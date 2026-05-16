@@ -1,0 +1,77 @@
+{
+  "family": "shared-random-pair-block",
+  "m1": 32,
+  "group_size": 2,
+  "trials_per_point": 64,
+  "local_search_steps": 16,
+  "seed": 20260515,
+  "q_values": [
+    32771
+  ],
+  "target_l1_values": [
+    3277
+  ],
+  "eta_values": [
+    5
+  ],
+  "rows_per_group_values": [
+    3,
+    4,
+    5
+  ],
+  "entries": [
+    {
+      "q": 32771,
+      "target_l1": 3277,
+      "eta": 5,
+      "m1": 32,
+      "rows_per_group": 3,
+      "n": 48,
+      "used_rows": 48,
+      "keygen_mul_ops": 96,
+      "passes_target": false,
+      "certified_l1": 3276,
+      "selected_trial": 22,
+      "checked_centered_pair_count": 262659,
+      "sidecar_json": "research/parameter_search/product_block_lee_sidecars_q32771_eta5_m32_r3_5_try1/q32771_m132_target3277_rows_per_group3.json",
+      "validator_args": null
+    },
+    {
+      "q": 32771,
+      "target_l1": 3277,
+      "eta": 5,
+      "m1": 32,
+      "rows_per_group": 4,
+      "n": 64,
+      "used_rows": 64,
+      "keygen_mul_ops": 128,
+      "passes_target": false,
+      "certified_l1": 3276,
+      "selected_trial": 2,
+      "checked_centered_pair_count": 2260566,
+      "sidecar_json": "research/parameter_search/product_block_lee_sidecars_q32771_eta5_m32_r3_5_try1/q32771_m132_target3277_rows_per_group4.json",
+      "validator_args": null
+    },
+    {
+      "q": 32771,
+      "target_l1": 3277,
+      "eta": 5,
+      "m1": 32,
+      "rows_per_group": 5,
+      "n": 80,
+      "used_rows": 80,
+      "keygen_mul_ops": 160,
+      "passes_target": true,
+      "certified_l1": 3277,
+      "selected_trial": 0,
+      "checked_centered_pair_count": 21470904,
+      "sidecar_json": "research/parameter_search/product_block_lee_sidecars_q32771_eta5_m32_r3_5_try1/q32771_m132_target3277_rows_per_group5.json",
+      "validator_args": "--shared-lee-cert-json research/parameter_search/product_block_lee_sidecars_q32771_eta5_m32_r3_5_try1/q32771_m132_target3277_rows_per_group5.json"
+    }
+  ],
+  "notes": [
+    "Passing entries are exact sidecars for product-block-lee validation.",
+    "The local check enumerates every nonzero centered pair whose free l1 is below target_l1.",
+    "Rows/group controls the proof-object cost: used_rows = rows_per_group * (m1 / 2)."
+  ]
+}

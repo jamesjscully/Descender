@@ -1,0 +1,5 @@
+    Finished `release` profile [optimized] target(s) in 0.01s
+     Running `tools/parameter-search/target/release/descender-parameter-search --profile descender-128 --output-dir research/parameter_search/product_block_lee_sidecars_20260515/frontier_rows4_eta10_smoke/search --mode grid --objective bandwidth --q-values 32771 --n-values 80 --m0-values 104,112,128 --m1-values 32 --fiber-dims 48,64,96 --eta-values 10 --sample-bits 0 --view-coords 0 --proof-strategies full-surjective --primal-distance-models guard-only --qary-amplitude-strategies product-block-lee --lee-repetitions 1639 --lee-rows-per-group 4 --coefficient-model seeded --incidence-model seeded --public-key-model component --top 20`
+wrote research/parameter_search/product_block_lee_sidecars_20260515/frontier_rows4_eta10_smoke/search/descender-128.json
+wrote research/parameter_search/product_block_lee_sidecars_20260515/frontier_rows4_eta10_smoke/search/descender-128.md
+accepted_total=6 accepted_top=6 pareto=5 total=9
