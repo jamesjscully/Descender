@@ -5,6 +5,7 @@ import Descender.QLattice
 import Descender.SystematicLee
 import Descender.ProductBlockSignature
 import Descender.SignatureDistribution
+import Descender.BlockChallengeSoundness
 import Descender.MomentLee
 import Descender.SharedRowProductBlock
 import Descender.PTND

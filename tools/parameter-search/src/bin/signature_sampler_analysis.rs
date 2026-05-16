@@ -12,6 +12,7 @@ struct Config {
     target_bits: f64,
     digest_bytes: u64,
     max_log2_retries: f64,
+    max_extra_repetitions: u64,
     block_weights: Vec<u64>,
     z_bounds: Vec<u64>,
     output_json: PathBuf,
@@ -28,10 +29,11 @@ impl Default for Config {
             target_bits: 128.0,
             digest_bytes: 32,
             max_log2_retries: 20.0,
+            max_extra_repetitions: 4,
             block_weights: (1..=16).collect(),
             z_bounds: vec![
-                12, 16, 24, 32, 48, 64, 80, 96, 128, 160, 192, 224, 256, 320, 384, 448, 512,
-                640, 768, 1024,
+                12, 16, 24, 32, 48, 64, 80, 96, 128, 160, 192, 224, 256, 320, 384, 448, 512, 640,
+                768, 1024,
             ],
             output_json: PathBuf::from(
                 "research/cryptanalysis/signature_readiness_20260516/sampler_analysis_n48.json",
@@ -53,8 +55,10 @@ struct SamplerOutput {
     target_bits: f64,
     digest_bytes: u64,
     max_log2_retries: f64,
+    max_extra_repetitions: u64,
     best_entropy_retry_rows: Vec<SamplerRow>,
     best_coverage_16_rows: Vec<SamplerRow>,
+    best_coverage_24_rows: Vec<SamplerRow>,
     best_coverage_32_rows: Vec<SamplerRow>,
     best_full_coverage_rows: Vec<SamplerRow>,
     conclusions: Vec<String>,
@@ -81,7 +85,8 @@ struct SamplerRow {
     coordinate_accept_probability: f64,
     log2_retry_per_repetition: f64,
     log2_expected_retries: f64,
-    missing_one_block_soundness_bits: Option<f64>,
+    single_block_miss_bits: Option<f64>,
+    any_block_miss_bits: Option<f64>,
     full_block_coverage: bool,
     verdict: String,
 }
@@ -125,6 +130,11 @@ fn parse_args() -> Result<Config, String> {
                     .parse()
                     .map_err(|_| "invalid --max-log2-retries")?
             }
+            "--max-extra-repetitions" => {
+                cfg.max_extra_repetitions = value("--max-extra-repetitions")?
+                    .parse()
+                    .map_err(|_| "invalid --max-extra-repetitions")?
+            }
             "--block-weights" => cfg.block_weights = parse_csv_u64(&value("--block-weights")?),
             "--z-bounds" => cfg.z_bounds = parse_csv_u64(&value("--z-bounds")?),
             "--output-json" => cfg.output_json = PathBuf::from(value("--output-json")?),
@@ -155,6 +165,7 @@ fn print_help() {
            --target-bits FLOAT\n\
            --digest-bytes N\n\
            --max-log2-retries FLOAT\n\
+           --max-extra-repetitions N\n\
            --block-weights CSV\n\
            --z-bounds CSV\n\
            --output-json PATH\n\
@@ -188,11 +199,19 @@ fn log2_binomial(n: u64, k: u64) -> f64 {
         .sum()
 }
 
+fn binomial_f64(n: u64, k: u64) -> f64 {
+    if k > n {
+        return 0.0;
+    }
+    let k = k.min(n - k);
+    (0..k).fold(1.0, |acc, i| acc * (n - i) as f64 / (i + 1) as f64)
+}
+
 fn coordinate_accept_probability(z_bound: u64, eta: u64) -> f64 {
     (2 * z_bound + 1) as f64 / (2 * (z_bound + eta) + 1) as f64
 }
 
-fn missing_one_block_bits(groups: u64, weight: u64, repetitions: u64) -> Option<f64> {
+fn single_block_miss_bits(groups: u64, weight: u64, repetitions: u64) -> Option<f64> {
     if weight >= groups {
         None
     } else {
@@ -201,10 +220,41 @@ fn missing_one_block_bits(groups: u64, weight: u64, repetitions: u64) -> Option<
     }
 }
 
+fn any_block_miss_probability(groups: u64, weight: u64, repetitions: u64) -> f64 {
+    if weight >= groups {
+        return 0.0;
+    }
+    let denom = binomial_f64(groups, weight);
+    let mut probability = 0.0;
+    for missed in 1..=groups {
+        if weight > groups - missed {
+            continue;
+        }
+        let choices = binomial_f64(groups, missed);
+        let avoid = binomial_f64(groups - missed, weight) / denom;
+        let term = choices * avoid.powf(repetitions as f64);
+        if missed % 2 == 1 {
+            probability += term;
+        } else {
+            probability -= term;
+        }
+    }
+    probability.clamp(0.0, 1.0)
+}
+
+fn probability_bits(probability: f64) -> Option<f64> {
+    if probability <= 0.0 {
+        None
+    } else {
+        Some(-probability.log2())
+    }
+}
+
 fn build_row(
     cfg: &Config,
     local_free: u64,
     weight: u64,
+    repetitions: u64,
     z_bound: u64,
 ) -> Option<SamplerRow> {
     if weight == 0 || weight > cfg.product_block_groups {
@@ -214,7 +264,6 @@ fn build_row(
     if challenge_entropy_bits <= 0.0 {
         return None;
     }
-    let repetitions = (cfg.target_bits / challenge_entropy_bits).ceil() as u64;
     let active_response_coordinates = weight.saturating_mul(local_free);
     let coordinate_accept_probability = coordinate_accept_probability(z_bound, cfg.eta);
     let log2_retry_per_repetition =
@@ -227,19 +276,24 @@ fn build_row(
     let challenge_encoding_bytes =
         packed_bits_as_bytes(repetitions as f64 * challenge_entropy_bits);
     let estimated_signature_bytes = challenge_encoding_bytes.saturating_add(total_response_bytes);
-    let signature_bytes_with_digest = cfg
-        .digest_bytes
-        .saturating_add(total_response_bytes);
-    let missing_one_block_soundness_bits =
-        missing_one_block_bits(cfg.product_block_groups, weight, repetitions);
+    let signature_bytes_with_digest = cfg.digest_bytes.saturating_add(total_response_bytes);
+    let single_block_miss_bits =
+        single_block_miss_bits(cfg.product_block_groups, weight, repetitions);
+    let any_block_miss_bits = probability_bits(any_block_miss_probability(
+        cfg.product_block_groups,
+        weight,
+        repetitions,
+    ));
     let full_block_coverage = weight == cfg.product_block_groups;
     let verdict = if log2_expected_retries > cfg.max_log2_retries {
         "retry-cost-too-high"
     } else if full_block_coverage {
         "candidate-full-block-coverage"
-    } else if missing_one_block_soundness_bits.unwrap_or(0.0) >= 32.0 {
+    } else if any_block_miss_bits.unwrap_or(0.0) >= 32.0 {
         "candidate-coverage-32"
-    } else if missing_one_block_soundness_bits.unwrap_or(0.0) >= 16.0 {
+    } else if any_block_miss_bits.unwrap_or(0.0) >= 24.0 {
+        "candidate-coverage-24"
+    } else if any_block_miss_bits.unwrap_or(0.0) >= 16.0 {
         "candidate-coverage-16"
     } else {
         "entropy-retry-pass-weak-block-coverage"
@@ -268,7 +322,8 @@ fn build_row(
         coordinate_accept_probability,
         log2_retry_per_repetition,
         log2_expected_retries,
-        missing_one_block_soundness_bits,
+        single_block_miss_bits,
+        any_block_miss_bits,
         full_block_coverage,
         verdict,
     })
@@ -306,22 +361,34 @@ fn run_analysis(cfg: &Config) -> Result<SamplerOutput, String> {
     let local_free = cfg.n / cfg.product_block_groups;
     let mut retry_pass = Vec::new();
     for &weight in &cfg.block_weights {
+        if weight == 0 || weight > cfg.product_block_groups {
+            continue;
+        }
+        let entropy = log2_binomial(cfg.product_block_groups, weight) + weight as f64;
+        let min_repetitions = (cfg.target_bits / entropy).ceil() as u64;
         for &z_bound in &cfg.z_bounds {
-            if let Some(row) = build_row(cfg, local_free, weight, z_bound) {
-                if row.log2_expected_retries <= cfg.max_log2_retries {
-                    retry_pass.push(row);
+            for repetitions in min_repetitions..=min_repetitions + cfg.max_extra_repetitions {
+                if let Some(row) = build_row(cfg, local_free, weight, repetitions, z_bound) {
+                    if row.log2_expected_retries <= cfg.max_log2_retries {
+                        retry_pass.push(row);
+                    }
                 }
             }
         }
     }
     let coverage_16 = retry_pass
         .iter()
-        .filter(|row| row.missing_one_block_soundness_bits.unwrap_or(f64::INFINITY) >= 16.0)
+        .filter(|row| row.any_block_miss_bits.unwrap_or(f64::INFINITY) >= 16.0)
+        .cloned()
+        .collect();
+    let coverage_24 = retry_pass
+        .iter()
+        .filter(|row| row.any_block_miss_bits.unwrap_or(f64::INFINITY) >= 24.0)
         .cloned()
         .collect();
     let coverage_32 = retry_pass
         .iter()
-        .filter(|row| row.missing_one_block_soundness_bits.unwrap_or(f64::INFINITY) >= 32.0)
+        .filter(|row| row.any_block_miss_bits.unwrap_or(f64::INFINITY) >= 32.0)
         .cloned()
         .collect();
     let full_coverage = retry_pass
@@ -338,8 +405,10 @@ fn run_analysis(cfg: &Config) -> Result<SamplerOutput, String> {
         target_bits: cfg.target_bits,
         digest_bytes: cfg.digest_bytes,
         max_log2_retries: cfg.max_log2_retries,
+        max_extra_repetitions: cfg.max_extra_repetitions,
         best_entropy_retry_rows: keep_best(retry_pass, 20),
         best_coverage_16_rows: keep_best(coverage_16, 12),
+        best_coverage_24_rows: keep_best(coverage_24, 12),
         best_coverage_32_rows: keep_best(coverage_32, 12),
         best_full_coverage_rows: keep_best(full_coverage, 12),
         conclusions: conclusions(cfg, local_free),
@@ -355,6 +424,7 @@ fn conclusions(cfg: &Config, local_free: u64) -> Vec<String> {
             "The rejection exponent is active coordinates, not one scalar.  For this profile each active product block contributes {local_free} free response coordinates."
         ),
         "Signature sizes are reported with canonical challenge encoding.  Carrying a fixed 32-byte hash/digest instead adds the difference shown in the digest-size column.".to_string(),
+        "Coverage bits are exact any-block-missed probabilities computed by inclusion-exclusion over the product blocks.  They are sharper than a union-bound-only diagnostic while still charging the real failure event.".to_string(),
         "The smallest rows pass challenge-entropy and retry accounting by using very low block weight, but their block-coverage diagnostic is weak: a prover missing one block can hope the challenge avoids it too often.".to_string(),
         format!(
             "Full-block challenges remove the coverage caveat at the cost of responding on all {} coordinates; these rows are the cleanest conservative targets if proof-of-knowledge extraction must touch every block in each repetition.",
@@ -379,6 +449,10 @@ fn markdown(out: &SamplerOutput) -> String {
         format!("- target challenge bits: `{:.1}`", out.target_bits),
         format!("- digest bytes: `{}`", out.digest_bytes),
         format!("- max log2 expected retries: `{:.1}`", out.max_log2_retries),
+        format!(
+            "- max extra repetitions searched: `{}`",
+            out.max_extra_repetitions
+        ),
         String::new(),
         "## Exact Sampler".to_string(),
         String::new(),
@@ -392,13 +466,19 @@ fn markdown(out: &SamplerOutput) -> String {
     append_table(&mut lines, &out.best_entropy_retry_rows);
     lines.extend([
         String::new(),
-        "## Best Rows With >=16 Bits Missing-One-Block Coverage".to_string(),
+        "## Best Rows With >=16 Bits Any-Block Coverage".to_string(),
         String::new(),
     ]);
     append_table(&mut lines, &out.best_coverage_16_rows);
     lines.extend([
         String::new(),
-        "## Best Rows With >=32 Bits Missing-One-Block Coverage".to_string(),
+        "## Best Rows With >=24 Bits Any-Block Coverage".to_string(),
+        String::new(),
+    ]);
+    append_table(&mut lines, &out.best_coverage_24_rows);
+    lines.extend([
+        String::new(),
+        "## Best Rows With >=32 Bits Any-Block Coverage".to_string(),
         String::new(),
     ]);
     append_table(&mut lines, &out.best_coverage_32_rows);
@@ -424,11 +504,12 @@ fn fmt_optional_bits(bits: Option<f64>) -> String {
 }
 
 fn append_table(lines: &mut Vec<String>, rows: &[SamplerRow]) {
-    lines.push("| weight | entropy | reps | active coords | z bound | z bits | response/rep | challenge bytes | sig bytes | sig bytes w/32B hash | log2 retries | missing-one-block bits | verdict |".to_string());
-    lines.push("|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|".to_string());
+    lines.push("| weight | entropy | reps | active coords | z bound | z bits | response/rep | challenge bytes | sig bytes | sig bytes w/32B hash | log2 retries | any-block miss bits | one-block miss bits | verdict |".to_string());
+    lines
+        .push("|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|".to_string());
     for row in rows {
         lines.push(format!(
-            "| {} | {:.2} | {} | {} | {} | {} | {} | {} | {} | {} | {:.2} | {} | {} |",
+            "| {} | {:.2} | {} | {} | {} | {} | {} | {} | {} | {} | {:.2} | {} | {} | {} |",
             row.block_weight,
             row.challenge_entropy_bits,
             row.repetitions,
@@ -440,7 +521,8 @@ fn append_table(lines: &mut Vec<String>, rows: &[SamplerRow]) {
             row.estimated_signature_bytes,
             row.signature_bytes_with_digest,
             row.log2_expected_retries,
-            fmt_optional_bits(row.missing_one_block_soundness_bits),
+            fmt_optional_bits(row.any_block_miss_bits),
+            fmt_optional_bits(row.single_block_miss_bits),
             row.verdict
         ));
     }
@@ -479,10 +561,11 @@ mod tests {
     #[test]
     fn default_profile_has_subkilobyte_full_coverage_row() {
         let out = run_analysis(&Config::default()).unwrap();
-        assert!(out
-            .best_full_coverage_rows
-            .iter()
-            .any(|row| row.estimated_signature_bytes < 600));
+        assert!(
+            out.best_full_coverage_rows
+                .iter()
+                .any(|row| row.estimated_signature_bytes < 600)
+        );
     }
 
     #[test]
@@ -494,9 +577,19 @@ mod tests {
             ..Config::default()
         };
         let out = run_analysis(&cfg).unwrap();
-        assert!(out
-            .best_full_coverage_rows
-            .iter()
-            .any(|row| row.estimated_signature_bytes < 400));
+        assert!(
+            out.best_full_coverage_rows
+                .iter()
+                .any(|row| row.estimated_signature_bytes < 400)
+        );
+    }
+
+    #[test]
+    fn inclusion_exclusion_charges_any_missed_block() {
+        let one_block = single_block_miss_bits(16, 14, 7).unwrap();
+        let any_block = probability_bits(any_block_miss_probability(16, 14, 7)).unwrap();
+        assert!(one_block > 20.9);
+        assert!(any_block > 16.9);
+        assert!(any_block < one_block);
     }
 }

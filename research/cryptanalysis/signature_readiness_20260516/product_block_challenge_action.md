@@ -75,6 +75,12 @@ enlarged uniform-box mask with exact target-box rejection.  It shows that the
 accepted-test-mass equation is achievable, but also corrects the earlier size
 screen by charging rejection over every active response coordinate.
 
+`Descender/BlockChallengeSoundness.lean` adds the deterministic extraction
+target for sparse block challenges.  If the repeated challenges cover every
+needed block, local active-block extractors assemble a globally valid block
+witness; the file also proves the response-difference identity used by a future
+forking extractor.
+
 ## Signature Meaning
 
 The proof discharges the main algebraic objection to a product-block sparse
@@ -111,5 +117,7 @@ The `212 B` to `248 B` rows in `aborts_size_search.md` should no longer be
 described as blocked by a missing equivariance lemma.  They should also not be
 treated as final concrete sampler sizes: the exact sampler reports move the
 conservative full-block targets to about `304 B` for `n = 32` and `496 B` for
-`n = 48`.  The next blocker is block-soundness/extraction for smaller
-intermediate rows plus the serialized Fiat-Shamir verifier equation.
+`n = 48`.  Exact any-block coverage accounting gives intermediate targets of
+about `255 B` for `n = 32` and `416 B` for `n = 48` at `24` coverage bits.  The
+next blocker is the full Fiat-Shamir forking game plus the serialized verifier
+equation.

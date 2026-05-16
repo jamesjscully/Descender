@@ -135,12 +135,30 @@ coordinate.  This makes very sparse challenges look tiny but weak in
 block-coverage soundness.  The current reports are:
 
 - `sampler_analysis_n48.md`: best full-block row `496 B` with log2 retry
-  `14.63`; best `>=16` coverage row `390 B`.
+  `14.63`; best `>=24` exact any-block coverage row `416 B`; best `>=16`
+  row `390 B`.
 - `sampler_analysis_n32.md`: best full-block row `304 B` with log2 retry
-  `19.23`; best `>=16` coverage row `243 B`.
+  `19.23`; best `>=24` exact any-block coverage row `255 B`; best `>=16`
+  row `243 B`.
 
 Sizes use canonical challenge encoding.  Carrying a fixed 32-byte challenge
 digest instead adds about `13 B` to `16 B` in these rows.
+
+## Block-Challenge Soundness
+
+`Descender/BlockChallengeSoundness.lean` now formalizes the deterministic
+extraction target behind those coverage rows.  It proves that if repeated
+challenges cover every needed block, local active-block extractors assemble a
+globally valid block witness.  It also proves the response-difference identity
+needed for future forking extraction:
+
+```text
+(y + chi0 * s) - (y + chi1 * s) = (chi0 - chi1) * s.
+```
+
+The sampler reports now compute exact any-block-missed probabilities by
+inclusion-exclusion over the 16 blocks, not only the probability that one fixed
+block is missed.  See `block_challenge_soundness.md`.
 
 ## Pay-To-Hash
 
@@ -184,6 +202,6 @@ verifier-computable block challenge action is formalized for block-diagonal
 systematic views, and the basic signed-challenge noise bound is formalized.
 The distributional rejection-sampling theorem is also formalized as a generic
 finite-probability proof.  The exact-box sampler is now concrete; the next
-signature-specific work is a sharper block-soundness/extraction theorem and
-the serialized Fiat-Shamir verifier equation rather than another broad
-parameter-search filter.
+signature-specific work is turning the block-coverage extractor into the full
+Fiat-Shamir forking game and writing the serialized verifier equation rather
+than another broad parameter-search filter.

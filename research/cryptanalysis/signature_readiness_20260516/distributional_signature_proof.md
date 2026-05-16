@@ -68,7 +68,8 @@ hope the challenge avoids that block.  The concrete reports therefore separate:
 
 - entropy-and-retry rows, which can be extremely small but have weak block
   coverage diagnostics;
-- intermediate coverage rows, such as `243 B` for the `n = 32` profile;
+- intermediate coverage rows, such as `255 B` for the `n = 32` profile at
+  `24` exact any-block coverage bits;
 - full-block rows, such as `304 B` for the `n = 32` profile and `496 B` for
   the `n = 48` profile.
 
@@ -84,7 +85,9 @@ The product-block route now has three formal layers:
 3. rejection-sampling distributional secrecy, conditional on the accepted mass
    matching a secret-independent target law;
 4. a concrete exact-box sampler analysis that instantiates the target law and
-   quantifies response size versus retry cost.
+   quantifies response size versus retry cost;
+5. a deterministic block-coverage extraction theorem, plus exact
+   inclusion-exclusion accounting for any-block-missed challenge failure.
 
 The remaining blocker is no longer the sampler distribution.  It is whether an
 intermediate block-coverage row can be given a sound Fiat-Shamir extraction
