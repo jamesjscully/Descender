@@ -1,4 +1,5 @@
 import Mathlib.Data.Fintype.Sum
+import Mathlib.Algebra.BigOperators.Ring.Finset
 import Descender.QLattice
 
 namespace Descender
@@ -357,6 +358,33 @@ def blockDiagonalSystematicMatrix
     Block × LocalPivot -> Block × LocalFree -> ZMod q :=
   fun bp bf => if bp.1 = bf.1 then Plocal bp.1 bp.2 bf.2 else 0
 
+/--
+Block-local challenge action on free coordinates.  For signature applications,
+`chi b` is intended to be `0`, `1`, or `-1`, but the algebraic equivariance
+works for any scalar in `ZMod q`.
+-/
+def blockScaleFree
+    {Block LocalFree : Type*}
+    (chi : Block -> ZMod q) (y : Block × LocalFree -> ZMod q) :
+    Block × LocalFree -> ZMod q :=
+  fun bf => chi bf.1 * y bf
+
+/-- Block-local challenge action on pivot coordinates. -/
+def blockScalePivot
+    {Block LocalPivot : Type*}
+    (chi : Block -> ZMod q) (x : Block × LocalPivot -> ZMod q) :
+    Block × LocalPivot -> ZMod q :=
+  fun bp => chi bp.1 * x bp
+
+/-- Block-local challenge action on the full systematic public-coordinate view. -/
+def blockScaleView
+    {Block LocalPivot LocalFree : Type*}
+    (chi : Block -> ZMod q)
+    (r : Sum (Block × LocalPivot) (Block × LocalFree) -> ZMod q) :
+    Sum (Block × LocalPivot) (Block × LocalFree) -> ZMod q
+  | Sum.inl bp => chi bp.1 * r (Sum.inl bp)
+  | Sum.inr bf => chi bf.1 * r (Sum.inr bf)
+
 theorem blockDiagonalSystematicPivotImage_eq
     (q : Nat) [NeZero q]
     {Block LocalPivot LocalFree : Type*} [DecidableEq Block]
@@ -369,6 +397,75 @@ theorem blockDiagonalSystematicPivotImage_eq
   unfold systematicPivotImage blockDiagonalSystematicMatrix productFreeSlice
   rw [Fintype.sum_prod_type]
   simp
+
+theorem blockDiagonalSystematicPivotImage_blockScale
+    (q : Nat) [NeZero q]
+    {Block LocalPivot LocalFree : Type*} [DecidableEq Block]
+    [Fintype Block] [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (chi : Block -> ZMod q)
+    (b : Block) (p : LocalPivot) (y : Block × LocalFree -> ZMod q) :
+    systematicPivotImage q (blockDiagonalSystematicMatrix Plocal)
+        (blockScaleFree chi y) (b, p) =
+      chi b *
+        systematicPivotImage q (blockDiagonalSystematicMatrix Plocal) y (b, p) := by
+  classical
+  unfold systematicPivotImage blockDiagonalSystematicMatrix blockScaleFree
+  rw [Fintype.sum_prod_type, Fintype.sum_prod_type]
+  simp
+  calc
+    ∑ x, Plocal b p x * (chi b * y (b, x)) =
+        ∑ x, chi b * (Plocal b p x * y (b, x)) := by
+          apply Finset.sum_congr rfl
+          intro x _hx
+          simp [mul_left_comm]
+    _ = chi b * ∑ x, Plocal b p x * y (b, x) := by
+          rw [Finset.mul_sum]
+
+theorem blockScaleView_systematicRelation
+    (q : Nat) [NeZero q]
+    {Block LocalPivot LocalFree : Type*} [DecidableEq Block]
+    [Fintype Block] [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (chi : Block -> ZMod q)
+    (y : Block × LocalFree -> ZMod q) :
+    blockScaleView chi
+        (systematicRelation q (blockDiagonalSystematicMatrix Plocal) y) =
+      systematicRelation q (blockDiagonalSystematicMatrix Plocal)
+        (blockScaleFree chi y) := by
+  funext x
+  cases x with
+  | inl bp =>
+      rcases bp with ⟨b, p⟩
+      simp [blockScaleView, systematicRelation,
+        blockDiagonalSystematicPivotImage_blockScale]
+  | inr bf =>
+      simp [blockScaleView, systematicRelation, blockScaleFree]
+
+theorem blockScalePivot_systematicDualMap
+    (q : Nat) [NeZero q]
+    {Block LocalPivot LocalFree : Type*} [DecidableEq Block]
+    [Fintype Block] [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (chi : Block -> ZMod q)
+    (r : Sum (Block × LocalPivot) (Block × LocalFree) -> ZMod q) :
+    systematicDualMap q (blockDiagonalSystematicMatrix Plocal)
+        (blockScaleView chi r) =
+      blockScalePivot chi
+        (systematicDualMap q (blockDiagonalSystematicMatrix Plocal) r) := by
+  classical
+  funext bp
+  rcases bp with ⟨b, p⟩
+  unfold systematicDualMap blockScaleView blockScalePivot blockDiagonalSystematicMatrix
+  simp [Fintype.sum_prod_type, mul_add]
+  calc
+    ∑ x, Plocal b p x * (chi b * r (Sum.inr (b, x))) =
+      ∑ x, chi b * (Plocal b p x * r (Sum.inr (b, x))) := by
+        apply Finset.sum_congr rfl
+        intro x _hx
+        simp [mul_left_comm]
+    _ = chi b * ∑ x, Plocal b p x * r (Sum.inr (b, x)) := by
+        rw [Finset.mul_sum]
 
 /--
 For a block-diagonal systematic matrix, every local systematic relation embeds

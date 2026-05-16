@@ -68,11 +68,32 @@ signatures are the main goal.
 
 The hypothetical product-block challenge route is much more interesting.  The
 size model finds rows around `212 B` to `248 B` with practical retry cost, but
-these are not yet schemes.  They require a new algebraic/proof result: the
-public viewed relation must support a block-local challenge action that the
-verifier can apply to the public sample without knowing the secret.
+these are not yet schemes.  They require the public viewed relation to support
+a block-local challenge action that the verifier can apply to the public sample
+without knowing the secret.
 
 This is the most promising small-signature research target found so far.
+
+## Product-Block Challenge Action
+
+The first algebraic blocker for the product-block route is now discharged for
+block-diagonal systematic views.  `Descender/SystematicLee.lean` defines
+`blockScaleFree`, `blockScalePivot`, and `blockScaleView`, then proves:
+
+- `blockDiagonalSystematicPivotImage_blockScale`
+- `blockScaleView_systematicRelation`
+- `blockScalePivot_systematicDualMap`
+
+Together these say that block-local challenge scaling commutes with the
+systematic public relation and with the verifier-facing dual map.  In signature
+terms, the verifier can apply a sparse signed product-block challenge directly
+to the public view, while the response bound only sees coefficients in
+`{-1, 0, 1}` instead of a large scalar challenge.
+
+This does not complete the signature proof.  The remaining blockers are now the
+rejection-sampling theorem, the noisy/high-bit verifier equation, Fiat-Shamir
+soundness, concrete challenge serialization, and key-generation cryptanalysis
+for the structured view.  See `product_block_challenge_action.md`.
 
 ## Pay-To-Hash
 
@@ -111,8 +132,7 @@ More promising directions:
 
 The 172-byte row remains the leading compact KEM/public-view candidate.  It is
 not yet a safe signature primitive.  The smallest plausible reusable-signature
-route is now a product-block Fiat-Shamir-with-aborts design.  The next
-signature-specific work is to determine whether the product-block setup admits
-a verifier-computable block challenge action; without that theorem, we fall
-back to scalar challenges around the kilobyte scale or to larger ZK/MPC proof
-systems.
+route is now a product-block Fiat-Shamir-with-aborts design.  The
+verifier-computable block challenge action is formalized for block-diagonal
+systematic views, so the next signature-specific work is the distributional
+and noisy-verifier proof rather than another parameter-search filter.
