@@ -63,18 +63,20 @@ accepted-test-mass equation coordinatewise.
 
 The remaining proof obligation is not distributional secrecy.  It is
 block-soundness and extraction for sparse product-block challenges.  Low-weight
-challenges produce very small signatures, but a prover missing one block can
-hope the challenge avoids that block.  The concrete reports therefore separate:
+challenges produce very small signatures, but the extractor needs opposite
+signed active forks for each block when the transcript omits inactive response
+coordinates.  The concrete reports therefore separate:
 
-- entropy-and-retry rows, which can be extremely small but have weak block
-  coverage diagnostics;
-- intermediate coverage rows, such as `255 B` for the `n = 32` profile at
-  `24` exact any-block coverage bits;
+- entropy-and-retry rows, which can be extremely small but have weak compact
+  fork-delta diagnostics;
+- intermediate compact fork-delta rows, such as `255 B` for the `n = 32`
+  profile at `27.33` exact any-block compact fork-delta bits;
 - full-block rows, such as `304 B` for the `n = 32` profile and `496 B` for
-  the `n = 48` profile.
+  the `n = 48` profile, both at `36` compact fork-delta bits with six
+  challenge draws per repeated commitment.
 
 For further size reductions, the likely route is a sharper soundness theorem
-for intermediate block coverage, not a more conservative sampler.
+for multi-fork compact extraction, not a more conservative sampler.
 
 ## Current State
 
@@ -86,9 +88,11 @@ The product-block route now has three formal layers:
    matching a secret-independent target law;
 4. a concrete exact-box sampler analysis that instantiates the target law and
    quantifies response size versus retry cost;
-5. a deterministic block-coverage extraction theorem, plus exact
-   inclusion-exclusion accounting for any-block-missed challenge failure.
+5. a deterministic forked block-extraction theorem, plus exact
+   inclusion-exclusion accounting for active coverage and compact fork-delta
+   failure.
 
 The remaining blocker is no longer the sampler distribution.  It is whether an
-intermediate block-coverage row can be given a sound Fiat-Shamir extraction
-argument, or whether we must pay for full-block challenges.
+intermediate compact fork-delta row can be given a sound multi-fork
+Fiat-Shamir extraction argument, or whether we must pay for full-block
+responses.

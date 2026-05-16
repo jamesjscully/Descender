@@ -70,10 +70,12 @@ The product-block challenge route is much more interesting.  The original
 size model found rows around `212 B` to `248 B`, but that was a proof-shape
 screen: it did not charge the rejection exponent over every active response
 coordinate.  The concrete exact-box sampler analysis gives a sharper picture:
-for `n = 48`, full-block coverage starts around `496 B`; for the `n = 32`
-candidate, full-block coverage starts around `304 B`.  Intermediate rows with
-weaker block-coverage diagnostics are smaller, for example `390 B` at `n = 48`
-and `243 B` at `n = 32` for the best `>=16` missing-one-block coverage rows.
+for `n = 48`, the clean full-block target is around `496 B`; for the `n = 32`
+candidate, the clean full-block target is around `304 B`.  Intermediate rows
+are smaller, but they must now be judged by fork-delta coverage, not just by
+whether a single challenge touches each block.  With six challenge draws per
+repeated commitment, the compact active-only transcript has a `255 B` `n = 32`
+row above `24` bits of exact any-block fork-delta coverage.
 
 This is the most promising small-signature research target found so far.
 
@@ -132,14 +134,25 @@ secret-independent uniform target law on `[-z,z]`.
 
 The key correction is that rejection cost is paid per active response
 coordinate.  This makes very sparse challenges look tiny but weak in
-block-coverage soundness.  The current reports are:
+block-coverage soundness.  The current reports distinguish three coverage
+notions:
+
+- active challenge coverage: a single challenge touches a block;
+- full-response fork-delta coverage: an idealized transcript exposes all
+  response coordinates, so zero-vs-nonzero forks can extract;
+- compact fork-delta coverage: the actual small transcript exposes only active
+  coordinates, so extraction only counts opposite signed active openings.
+
+The compact fork-delta metric is the relevant one for small signatures.  The
+current reports use six challenge draws for the same commitment per repeated
+round:
 
 - `sampler_analysis_n48.md`: best full-block row `496 B` with log2 retry
-  `14.63`; best `>=24` exact any-block coverage row `416 B`; best `>=16`
-  row `390 B`.
+  `14.63`; best compact fork-delta `>=24` row `415 B`; best compact
+  fork-delta `>=16` row `281 B`.
 - `sampler_analysis_n32.md`: best full-block row `304 B` with log2 retry
-  `19.23`; best `>=24` exact any-block coverage row `255 B`; best `>=16`
-  row `243 B`.
+  `19.23`; best compact fork-delta `>=24` row `255 B`; best compact
+  fork-delta `>=16` row `197 B`.
 
 Sizes use canonical challenge encoding.  Carrying a fixed 32-byte challenge
 digest instead adds about `13 B` to `16 B` in these rows.
@@ -150,15 +163,17 @@ digest instead adds about `13 B` to `16 B` in these rows.
 extraction target behind those coverage rows.  It proves that if repeated
 challenges cover every needed block, local active-block extractors assemble a
 globally valid block witness.  It also proves the response-difference identity
-needed for future forking extraction:
+and forked extraction theorem needed for Fiat-Shamir analysis:
 
 ```text
 (y + chi0 * s) - (y + chi1 * s) = (chi0 - chi1) * s.
 ```
 
-The sampler reports now compute exact any-block-missed probabilities by
-inclusion-exclusion over the 16 blocks, not only the probability that one fixed
-block is missed.  See `block_challenge_soundness.md`.
+For compact active-only transcripts, the formal boundary also records that
+opposite signed active challenges give an extractable delta when `2` is
+invertible.  The sampler reports compute exact any-block-missed probabilities
+for both active coverage and compact fork-delta coverage.  See
+`block_challenge_soundness.md`.
 
 ## Pay-To-Hash
 
@@ -201,7 +216,7 @@ route is now a product-block Fiat-Shamir-with-aborts design.  The
 verifier-computable block challenge action is formalized for block-diagonal
 systematic views, and the basic signed-challenge noise bound is formalized.
 The distributional rejection-sampling theorem is also formalized as a generic
-finite-probability proof.  The exact-box sampler is now concrete; the next
-signature-specific work is turning the block-coverage extractor into the full
-Fiat-Shamir forking game and writing the serialized verifier equation rather
-than another broad parameter-search filter.
+finite-probability proof.  The exact-box sampler and compact fork-delta
+coverage analysis are now concrete.  The next signature-specific work is the
+multi-fork Fiat-Shamir theorem that justifies six challenge draws per repeated
+commitment, plus the serialized verifier equation.

@@ -27,12 +27,24 @@ The theorem is `productBlockLinearResponse_sub`.  If the block-local challenge
 delta has a left inverse, `extract_coordinate_of_deltaExtractable` recovers the
 secret coordinate.
 
+The file now also packages the forked linear extraction boundary:
+
+- `ForkedLinearRound`: two accepting responses for the same mask and two block
+  challenges;
+- `DeltaActive`: the block-local challenge delta has a left inverse;
+- `extractCoordinate_eq_secret`: a delta-active fork extracts the coordinate;
+- `extractedSecret_eq`: if forked deltas cover all blocks, the extracted
+  product-block secret equals the real secret;
+- `OppositeSignedActive` and `deltaExtractable_of_oppositeSignedActive`: for
+  compact active-only transcripts, opposite signs are enough when `2` is
+  invertible.
+
 ## Exact Coverage Accounting
 
-`signature_sampler_analysis.rs` now computes the exact probability that any
-block is missed after repeated sparse challenges.  For `B` blocks, challenge
-weight `w`, and `R` repetitions, the failure probability is computed by
-inclusion-exclusion:
+`signature_sampler_analysis.rs` now computes exact any-block miss probabilities
+by inclusion-exclusion.  The old active-coverage diagnostic asks only whether a
+single challenge touches each block.  For `B` blocks, challenge weight `w`, and
+`R` repetitions, that failure probability is:
 
 ```text
 Pr[any missed] =
@@ -40,28 +52,45 @@ Pr[any missed] =
     (binom(B-j,w) / binom(B,w))^R.
 ```
 
-This is the right event for block extraction.  It is sharper than treating a
-fixed missing block as the soundness event, but it still charges the real
-failure condition.
+This is useful, but it is not the extraction event for compact signatures.
+Forked extraction needs a usable challenge delta.  The report therefore also
+computes:
+
+- full-response fork-delta coverage, where zero-vs-nonzero forks can count
+  because all response coordinates are available;
+- compact fork-delta coverage, where only opposite signed active openings
+  count because inactive response coordinates are omitted from the small
+  signature.
+
+The compact fork-delta probability is exact.  For each candidate missed block
+set, the dynamic program tracks how many fixed blocks are still unseen,
+plus-only, and minus-only across the challenge draws for one commitment; the
+outer inclusion-exclusion then charges the probability that any block has no
+opposite-sign fork in any repetition.
 
 ## Current Rows
 
 For the `n = 32`, 16-block profile:
 
-- `243 B`: weight 14, 7 repetitions, exact any-block miss cost `17` bits;
-- `255 B`: weight 15, 7 repetitions, exact any-block miss cost `24` bits;
-- `304 B`: full-block challenge, no block-coverage failure.
+- `197 B`: weight 13, 6 repetitions, compact fork-delta cost `17.08` bits;
+- `255 B`: weight 15, 7 repetitions, compact fork-delta cost `27.33` bits;
+- `304 B`: full-block response, compact fork-delta cost `36.00` bits.
 
 For the `n = 48`, 16-block profile:
 
-- `390 B`: weight 14, 7 repetitions, exact any-block miss cost `17` bits;
-- `416 B`: weight 15, 7 repetitions, exact any-block miss cost `24` bits;
-- `496 B`: full-block challenge, no block-coverage failure.
+- `281 B`: weight 13, 6 repetitions, compact fork-delta cost `17.08` bits;
+- `415 B`: weight 13, 8 repetitions, compact fork-delta cost `24.11` bits;
+- `496 B`: full-block response, compact fork-delta cost `36.00` bits.
+
+These rows assume six challenge draws for the same commitment per repeated
+round.  A single ordinary fork is much weaker: the `n = 32`, `255 B` row has
+only `2.02` bits of compact one-fork delta coverage.
 
 ## Consequence
 
 The best small-signature target is now explicit.  If the Fiat-Shamir extraction
-argument can tolerate an additional exact block-coverage failure term around
-`2^-24`, the `n = 32` row at about `255 B` is the leading reusable-signature
-candidate.  If the proof must eliminate block-coverage failure entirely, the
+argument can justify six challenge draws per repeated commitment, the `n = 32`
+row at about `255 B` is the leading reusable-signature candidate above the
+`24`-bit compact fork-delta line.  If we want a cleaner `32`-bit compact
+fork-delta line without relying on sparse intermediate coverage, the
 conservative `n = 32` target is about `304 B`.

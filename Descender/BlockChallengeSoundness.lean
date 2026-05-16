@@ -114,6 +114,39 @@ def DeltaExtractable {q : Nat} [NeZero q] {Block : Type*}
     (chi₀ chi₁ : Block -> ZMod q) (b : Block) : Prop :=
   ∃ inv : ZMod q, inv * (chi₀ b - chi₁ b) = 1
 
+/--
+For compact active-only transcripts, a block is exposed by both forked
+responses only when both challenges are active.  Opposite signs give delta
+`±2`, so extraction only needs an inverse for `2`.
+-/
+def OppositeSignedActive {q : Nat} [NeZero q] {Block : Type*}
+    (chi₀ chi₁ : Block -> ZMod q) (b : Block) : Prop :=
+  (chi₀ b = 1 ∧ chi₁ b = -1) ∨ (chi₀ b = -1 ∧ chi₁ b = 1)
+
+theorem deltaExtractable_of_oppositeSignedActive
+    {q : Nat} [NeZero q] {Block : Type*}
+    {chi₀ chi₁ : Block -> ZMod q} {b : Block}
+    {invTwo : ZMod q}
+    (hinvTwo : invTwo * (2 : ZMod q) = 1)
+    (hopp : OppositeSignedActive chi₀ chi₁ b) :
+    DeltaExtractable chi₀ chi₁ b := by
+  rcases hopp with ⟨h₀, h₁⟩ | ⟨h₀, h₁⟩
+  · refine ⟨invTwo, ?_⟩
+    rw [h₀, h₁]
+    have hdelta : (1 : ZMod q) - (-1) = 2 := by
+      ring
+    rw [hdelta]
+    exact hinvTwo
+  · refine ⟨-invTwo, ?_⟩
+    rw [h₀, h₁]
+    have hdelta : (-1 : ZMod q) - 1 = -2 := by
+      ring
+    rw [hdelta]
+    have h : (-invTwo) * (-(2 : ZMod q)) = invTwo * (2 : ZMod q) := by
+      ring
+    rw [h]
+    exact hinvTwo
+
 theorem extract_coordinate_of_deltaExtractable
     {q : Nat} [NeZero q]
     {Block LocalFree : Type*}
@@ -133,6 +166,72 @@ theorem extract_coordinate_of_deltaExtractable
           ring
     _ = secret bf := by
           simp [hinv]
+
+/--
+A forked linear round consists of two accepting responses for the same mask and
+two block challenges.  The `hz₀` and `hz₁` fields are the special-soundness
+idealization supplied by a future Fiat-Shamir forking game.
+-/
+structure ForkedLinearRound
+    {q : Nat} [NeZero q] (Block LocalFree : Type*)
+    (secret : Block × LocalFree -> ZMod q) where
+  chi₀ : Block -> ZMod q
+  chi₁ : Block -> ZMod q
+  mask : Block × LocalFree -> ZMod q
+  z₀ : Block × LocalFree -> ZMod q
+  z₁ : Block × LocalFree -> ZMod q
+  hz₀ : z₀ = productBlockLinearResponse chi₀ mask secret
+  hz₁ : z₁ = productBlockLinearResponse chi₁ mask secret
+
+namespace ForkedLinearRound
+
+variable {q : Nat} [NeZero q]
+variable {Block LocalFree : Type*}
+variable {secret : Block × LocalFree -> ZMod q}
+
+def DeltaActive (R : ForkedLinearRound Block LocalFree secret)
+    (b : Block) : Prop :=
+  DeltaExtractable R.chi₀ R.chi₁ b
+
+noncomputable def extractCoordinate
+    (R : ForkedLinearRound Block LocalFree secret)
+    (b : Block) (hdelta : R.DeltaActive b) (f : LocalFree) : ZMod q :=
+  Classical.choose hdelta * (R.z₀ (b, f) - R.z₁ (b, f))
+
+theorem extractCoordinate_eq_secret
+    (R : ForkedLinearRound Block LocalFree secret)
+    (b : Block) (hdelta : R.DeltaActive b) (f : LocalFree) :
+    R.extractCoordinate b hdelta f = secret (b, f) := by
+  unfold extractCoordinate
+  rw [R.hz₀, R.hz₁]
+  exact extract_coordinate_of_deltaExtractable
+    (q := q) (bf := (b, f)) (Classical.choose_spec hdelta)
+
+/--
+If forked response pairs have extractable challenge deltas covering every
+block, they recover the whole product-block secret.
+-/
+noncomputable def extractedSecret
+    {Round : Type*}
+    (round : Round -> ForkedLinearRound Block LocalFree secret)
+    (hcover : CoversBlocks fun r b => (round r).DeltaActive b) :
+    Block × LocalFree -> ZMod q :=
+  fun bf =>
+    let r := Classical.choose (hcover bf.1)
+    (round r).extractCoordinate bf.1
+      (Classical.choose_spec (hcover bf.1)) bf.2
+
+theorem extractedSecret_eq
+    {Round : Type*}
+    (round : Round -> ForkedLinearRound Block LocalFree secret)
+    (hcover : CoversBlocks fun r b => (round r).DeltaActive b) :
+    extractedSecret round hcover = secret := by
+  funext bf
+  unfold extractedSecret
+  exact (round (Classical.choose (hcover bf.1))).extractCoordinate_eq_secret
+    bf.1 (Classical.choose_spec (hcover bf.1)) bf.2
+
+end ForkedLinearRound
 
 end BlockChallengeSoundness
 
