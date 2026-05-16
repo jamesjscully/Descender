@@ -271,6 +271,19 @@ Pr[extractable] >= Pr[forgery]
 For deterministic transcript binding, `pointFailureBound[d]` should be zero;
 the remaining replay work is bounding each accepting-replay failure.
 
+The byte-level binding proof is now in Lean.  `N32ChallengePointByteCodec`
+models a fixed-layout domain-separated byte frame for the public key, message,
+and seven commitments, and proves that equal challenge-point bytes imply equal
+semantic challenge points.  `N32SixDrawByteBindingInputs` uses this to set all
+same-point replay terms to zero:
+
+```text
+Pr[extractable] >= Pr[forgery]
+  - 2^-133
+  - sum_d acceptFailureBound[d]
+  - coverageFailureBound.
+```
+
 See `canonical_transcript.md`.
 
 ## Pay-To-Hash

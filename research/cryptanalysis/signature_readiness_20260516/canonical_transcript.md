@@ -40,6 +40,50 @@ N32SixDrawReplay PublicKey Message Commitment Response
 commitments.  `N32SixDrawReplay` records six accepting transcripts sharing that
 same challenge point.
 
+## Byte-Level Binding
+
+The byte-level binding boundary is now formalized as a fixed-layout
+domain-separated frame:
+
+```text
+N32ChallengePointByteFrame
+```
+
+The frame contains:
+
+- a domain tag;
+- public-key bytes;
+- message bytes;
+- seven commitment byte strings in `Fin 7` repetition order.
+
+`N32ChallengePointByteCodec` supplies the concrete component encoders and their
+injectivity proofs.  Lean proves:
+
+```text
+encodePoint p = encodePoint q => p = q.
+```
+
+This is the byte-level transcript binding theorem: equality of the verifier's
+challenge-point bytes implies equality of the semantic public key, message, and
+commitment vector.
+
+`N32ByteReplayBinding` applies this to replay draws.  If an accepting replay
+draw has byte equality with the expected challenge point, then the draw is
+semantically same-point:
+
+```text
+drawAccepts d => sameChallengePoint d.
+```
+
+Therefore:
+
+```text
+Pr[pointFailure d] <= 0.
+```
+
+This removes the same-point replay-loss term, once the concrete implementation
+instantiates the byte codec.
+
 ## Query-Miss Bound
 
 The file adds a reusable uniform finite distribution and proves the exact
@@ -128,7 +172,7 @@ The draw-failure probability is now split into two concrete component events:
 
 ```text
 acceptFailure d = not drawAccepts d
-pointFailure d = not sameChallengePoint d
+pointFailure d = drawAccepts d and not sameChallengePoint d
 drawFailure d <= acceptFailure d + pointFailure d.
 ```
 
@@ -144,7 +188,7 @@ There are also zero-bound lemmas for deterministic cases:
 
 ```text
 always drawAccepts d        => Pr[acceptFailure d] <= 0
-always sameChallengePoint d => Pr[pointFailure d] <= 0
+drawAccepts d => samePoint d => Pr[pointFailure d] <= 0
 ```
 
 This matters for the actual transcript.  If the byte-level verifier binds the
@@ -176,6 +220,16 @@ Pr[extractable] >=
   - coverageFailureBound.
 ```
 
+With byte-level binding, `N32SixDrawByteBindingInputs` is sharper:
+
+```text
+Pr[extractable] >=
+  Pr[forgery]
+  - 2^-133
+  - sum_{d : Fin 6} acceptFailureBound[d]
+  - coverageFailureBound.
+```
+
 ## Remaining Work
 
 The abstract forking layer and the canonical challenge-count layer now meet at
@@ -184,12 +238,12 @@ probabilities:
 
 ```text
 Pr[acceptFailure d] <= acceptFailureBound[d]
-Pr[pointFailure d] <= 0
 ```
 
 That requires the serialized verifier model:
 
-- concrete byte encoding for the public key, message, and seven commitments;
+- concrete instantiation of the byte codec for the public key, message, and
+  seven commitments;
 - canonical encoding/decoding for `N32CanonicalChallenge`;
 - compact active-only response encoding;
 - verifier recomputation of the random-oracle challenge point;

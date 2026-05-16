@@ -203,7 +203,7 @@ drawFailure d <= acceptFailure d + pointFailure d
 
 where `acceptFailure d` means the programmed replay did not produce an
 accepting transcript, and `pointFailure d` means it did not bind to the same
-public key/message/commitment challenge point.  The component interface
+public key/message/commitment challenge point after accepting.  The component interface
 `N32SixDrawComponentInputs` proves:
 
 ```text
@@ -217,6 +217,25 @@ Pr[extractable] >=
 For a deterministic byte-level transcript binding proof, the expected
 `pointFailureBound[d]` is zero.  The real remaining forking loss is therefore
 the six accepting-replay failure probabilities.
+
+That byte-level binding proof is now formalized.  `N32ChallengePointByteCodec`
+uses a fixed-layout domain-separated frame containing the public key, message,
+and seven commitments, and proves:
+
+```text
+encodePoint p = encodePoint q => p = q.
+```
+
+`N32ByteReplayBinding` applies this to accepting replay draws, and
+`N32SixDrawByteBindingInputs` gives the byte-bound final form:
+
+```text
+Pr[extractable] >=
+  Pr[forgery]
+  - 2^-133
+  - sum_d acceptFailureBound[d]
+  - coverageFailureBound.
+```
 
 The transcript proof must ensure:
 

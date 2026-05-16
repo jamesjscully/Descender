@@ -269,6 +269,80 @@ structure N32SixDrawReplay
     N32AcceptingTranscript PublicKey Message Commitment Response
   same_point : ∀ d, (draw d).point = point
 
+/-- One serialized byte. -/
+abbrev Byte := Fin 256
+
+/-- Fixed-length byte vector. -/
+abbrev ByteVector (n : Nat) :=
+  Fin n -> Byte
+
+/--
+Structured fixed-layout bytes for the challenge point.
+
+The frame records a domain tag, public-key bytes, message bytes, and the seven
+commitment byte strings in repetition order.  A concrete implementation can
+flatten this frame into a byte string with fixed offsets.
+-/
+structure N32ChallengePointByteFrame
+    (domainLen publicKeyLen messageLen commitmentLen : Nat) where
+  domainTag : ByteVector domainLen
+  publicKey : ByteVector publicKeyLen
+  message : ByteVector messageLen
+  commitments : N32Repetition -> ByteVector commitmentLen
+
+/--
+Byte codec for the challenge point.
+
+The proof obligation is exactly the byte-level binding property: the byte
+encodings of public keys, messages, and commitments are injective inside this
+fixed-layout, domain-separated frame.
+-/
+structure N32ChallengePointByteCodec
+    (PublicKey Message Commitment : Type*) where
+  domainLen : Nat
+  publicKeyLen : Nat
+  messageLen : Nat
+  commitmentLen : Nat
+  domainTag : ByteVector domainLen
+  encodePublicKey : PublicKey -> ByteVector publicKeyLen
+  encodeMessage : Message -> ByteVector messageLen
+  encodeCommitment : Commitment -> ByteVector commitmentLen
+  encodePublicKey_injective : Function.Injective encodePublicKey
+  encodeMessage_injective : Function.Injective encodeMessage
+  encodeCommitment_injective : Function.Injective encodeCommitment
+
+namespace N32ChallengePointByteCodec
+
+def encodePoint
+    {PublicKey Message Commitment : Type*}
+    (C : N32ChallengePointByteCodec PublicKey Message Commitment)
+    (p : N32ChallengePoint PublicKey Message Commitment) :
+    N32ChallengePointByteFrame C.domainLen C.publicKeyLen
+      C.messageLen C.commitmentLen where
+  domainTag := C.domainTag
+  publicKey := C.encodePublicKey p.publicKey
+  message := C.encodeMessage p.message
+  commitments := fun r => C.encodeCommitment (p.commitments r)
+
+theorem encodePoint_injective
+    {PublicKey Message Commitment : Type*}
+    (C : N32ChallengePointByteCodec PublicKey Message Commitment) :
+    Function.Injective C.encodePoint := by
+  intro p q h
+  cases p with
+  | mk ppk pmsg pcom =>
+  cases q with
+  | mk qpk qmsg qcom =>
+    simp [encodePoint] at h ⊢
+    constructor
+    · exact C.encodePublicKey_injective h.1
+    · constructor
+      · exact C.encodeMessage_injective h.2.1
+      · funext r
+        exact C.encodeCommitment_injective (congrFun h.2.2 r)
+
+end N32ChallengePointByteCodec
+
 /-- The transcript sample space for query-miss analysis. -/
 abbrev N32QueryTrace (State : Type*) :=
   State × N32CanonicalChallenge
@@ -397,7 +471,7 @@ def acceptFailure (S : N32ReplaySchedule Trace) (d : N32ReplayDraw) (τ : Trace)
 
 def pointFailure (S : N32ReplaySchedule Trace) (d : N32ReplayDraw) (τ : Trace) :
     Bool :=
-  !(S.sameChallengePoint d τ)
+  S.drawAccepts d τ && !(S.sameChallengePoint d τ)
 
 def replayFailure (S : N32ReplaySchedule Trace) (τ : Trace) : Bool :=
   decide (∃ d, S.drawFailure d τ = true)
@@ -470,16 +544,73 @@ theorem pointFailure_upper_zero_of_always
     (D : FiniteProbability Trace)
     (S : N32ReplaySchedule Trace)
     (d : N32ReplayDraw)
-    (hSamePoint : ∀ τ, S.sameChallengePoint d τ = true) :
+    (hSamePoint : ∀ τ, S.drawAccepts d τ = true ->
+      S.sameChallengePoint d τ = true) :
     D.acceptProb (S.pointFailure d) <= 0 := by
   have hzero : D.acceptProb (S.pointFailure d) = 0 := by
     unfold FiniteProbability.acceptProb
     apply Finset.sum_eq_zero
     intro τ _hτ
-    simp [pointFailure, hSamePoint τ]
+    cases hacc : S.drawAccepts d τ
+    · simp [pointFailure, hacc]
+    · simp [pointFailure, hacc, hSamePoint τ hacc]
   exact le_of_eq hzero
 
 end N32ReplaySchedule
+
+/--
+Byte-level replay binding.
+
+An accepting replay draw is bound to the same challenge point when the verifier
+checks equality of the fixed-layout byte encodings.  Injectivity of the byte
+codec then converts byte equality into semantic equality of the public key,
+message, and seven commitments.
+-/
+structure N32ByteReplayBinding
+    (Trace PublicKey Message Commitment : Type*) where
+  codec : N32ChallengePointByteCodec PublicKey Message Commitment
+  expectedPoint : Trace -> N32ChallengePoint PublicKey Message Commitment
+  drawPoint : N32ReplayDraw -> Trace ->
+    N32ChallengePoint PublicKey Message Commitment
+  drawAccepts : N32ReplayDraw -> Trace -> Bool
+  bytes_match_on_accept :
+    ∀ d τ,
+      drawAccepts d τ = true ->
+      codec.encodePoint (drawPoint d τ) = codec.encodePoint (expectedPoint τ)
+
+namespace N32ByteReplayBinding
+
+variable {Trace PublicKey Message Commitment : Type*}
+
+def toReplaySchedule
+    [DecidableEq (N32ChallengePoint PublicKey Message Commitment)]
+    (B : N32ByteReplayBinding Trace PublicKey Message Commitment) :
+    N32ReplaySchedule Trace where
+  drawAccepts := B.drawAccepts
+  sameChallengePoint := fun d τ =>
+    decide (B.drawPoint d τ = B.expectedPoint τ)
+
+theorem sameChallengePoint_of_accepts
+    [DecidableEq (N32ChallengePoint PublicKey Message Commitment)]
+    (B : N32ByteReplayBinding Trace PublicKey Message Commitment)
+    (d : N32ReplayDraw) (τ : Trace)
+    (hAccepts : (B.toReplaySchedule).drawAccepts d τ = true) :
+    (B.toReplaySchedule).sameChallengePoint d τ = true := by
+  have hbytes := B.bytes_match_on_accept d τ hAccepts
+  have hpoint := B.codec.encodePoint_injective hbytes
+  simp [toReplaySchedule, hpoint]
+
+theorem pointFailure_upper_zero
+    [Fintype Trace]
+    [DecidableEq (N32ChallengePoint PublicKey Message Commitment)]
+    (D : FiniteProbability Trace)
+    (B : N32ByteReplayBinding Trace PublicKey Message Commitment)
+    (d : N32ReplayDraw) :
+    D.acceptProb ((B.toReplaySchedule).pointFailure d) <= 0 :=
+  N32ReplaySchedule.pointFailure_upper_zero_of_always D B.toReplaySchedule d
+    (B.sameChallengePoint_of_accepts d)
+
+end N32ByteReplayBinding
 
 /--
 Per-draw replay bounds split into the two concrete failure mechanisms:
@@ -700,6 +831,88 @@ theorem extractableProb_ge
       (I.toSixDrawForkingInputs))
 
 end N32SixDrawComponentInputs
+
+/--
+Six-draw transcript certificate with byte-level same-point binding.
+
+The byte binding proof discharges every `pointFailureBound[d]` with zero, so
+the only replay terms left are the six accepting-replay failure bounds.
+-/
+structure N32SixDrawByteBindingInputs
+    {q : Nat} [NeZero q]
+    {State QueryIdx PublicKey Message Commitment Round Block LocalFree : Type*}
+    [Fintype State]
+    [Fintype QueryIdx]
+    [DecidableEq (N32ChallengePoint PublicKey Message Commitment)]
+    {secret : Block × LocalFree -> ZMod q}
+    (E : N32QueryLogExperiment State QueryIdx PublicKey Message Commitment)
+    (G :
+      MultiForkFiatShamirGame
+        (N32QueryTrace State) Round N32ReplayDraw Block LocalFree secret)
+    (R : RandomOracleMultiForkReplay G) where
+  traceDist_eq : G.traceDist = E.traceDist
+  queryMiss_not_queried :
+    ∀ τ, R.queryMiss τ = true -> E.pointQueried τ = false
+  queryMiss_outputs_blind :
+    ∀ τ, R.queryMiss τ = true -> E.actualChallenge τ = E.blindChallenge τ
+  binding :
+    N32ByteReplayBinding
+      (N32QueryTrace State) PublicKey Message Commitment
+  replayFailure_implies_schedule :
+    ∀ τ, R.replayFailure τ = true ->
+      binding.toReplaySchedule.replayFailure τ = true
+  acceptFailureBound : N32ReplayDraw -> ℝ
+  acceptFailure_upper :
+    ∀ d,
+      G.traceDist.acceptProb
+          (binding.toReplaySchedule.acceptFailure d) <=
+        acceptFailureBound d
+  coverageFailureBound : ℝ
+  coverageFailure_upper :
+    G.coverageFailureProb <= coverageFailureBound
+
+namespace N32SixDrawByteBindingInputs
+
+variable {q : Nat} [NeZero q]
+variable {State QueryIdx PublicKey Message Commitment Round Block LocalFree : Type*}
+variable [Fintype State]
+variable [Fintype QueryIdx]
+variable [DecidableEq (N32ChallengePoint PublicKey Message Commitment)]
+variable {secret : Block × LocalFree -> ZMod q}
+variable {E : N32QueryLogExperiment State QueryIdx PublicKey Message Commitment}
+variable {G :
+  MultiForkFiatShamirGame
+    (N32QueryTrace State) Round N32ReplayDraw Block LocalFree secret}
+variable {R : RandomOracleMultiForkReplay G}
+
+def toComponentInputs
+    (I : N32SixDrawByteBindingInputs E G R) :
+    N32SixDrawComponentInputs E G R where
+  traceDist_eq := I.traceDist_eq
+  queryMiss_not_queried := I.queryMiss_not_queried
+  queryMiss_outputs_blind := I.queryMiss_outputs_blind
+  schedule := I.binding.toReplaySchedule
+  replayFailure_implies_schedule := I.replayFailure_implies_schedule
+  acceptFailureBound := I.acceptFailureBound
+  pointFailureBound := fun _ => 0
+  acceptFailure_upper := I.acceptFailure_upper
+  pointFailure_upper := by
+    intro d
+    exact I.binding.pointFailure_upper_zero G.traceDist d
+  coverageFailureBound := I.coverageFailureBound
+  coverageFailure_upper := I.coverageFailure_upper
+
+theorem extractableProb_ge
+    (I : N32SixDrawByteBindingInputs E G R) :
+    R.forgerSuccessProb - n32ChallengeGuessBound -
+        (Finset.univ.sum I.acceptFailureBound) -
+        I.coverageFailureBound <=
+      G.extractableProb := by
+  simpa [toComponentInputs] using
+    (N32SixDrawComponentInputs.extractableProb_ge
+      (I.toComponentInputs))
+
+end N32SixDrawByteBindingInputs
 
 end
 
