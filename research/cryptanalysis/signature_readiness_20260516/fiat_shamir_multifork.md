@@ -237,6 +237,25 @@ Pr[extractable] >=
   - coverageFailureBound.
 ```
 
+The accepting-replay term is now reduced to a density lower bound.  For each
+draw `d`, `N32ReplayAcceptanceProfile` records a value `alpha[d]` such that
+every adversary-side state accepts at least an `alpha[d]` fraction of the
+canonical challenge space.  Lean proves the miss bound:
+
+```text
+Pr[acceptFailure d] <= 1 - alpha[d].
+```
+
+The resulting final form is:
+
+```text
+Pr[extractable] >=
+  Pr[forgery]
+  - 2^-133
+  - sum_d (1 - alpha[d])
+  - coverageFailureBound.
+```
+
 The transcript proof must ensure:
 
 - all six accepting draws are bound to the same public key, message, round

@@ -234,6 +234,86 @@ theorem n32_product_blind_guess_acceptProb
           rw [Dσ.total_mass]
           ring
 
+theorem boolIndicator_add_not (A : Bool) :
+    boolIndicator A + boolIndicator (!A) = 1 := by
+  cases A <;> simp [boolIndicator]
+
+theorem acceptProb_add_not
+    {Ω : Type*} [Fintype Ω]
+    (D : FiniteProbability Ω) (A : Ω -> Bool) :
+    D.acceptProb A + D.acceptProb (fun ω => !(A ω)) = 1 := by
+  unfold FiniteProbability.acceptProb
+  calc
+    (Finset.univ.sum fun ω => D.mass ω * boolIndicator (A ω)) +
+        (Finset.univ.sum fun ω => D.mass ω * boolIndicator (!A ω)) =
+        Finset.univ.sum fun ω =>
+          D.mass ω * boolIndicator (A ω) +
+            D.mass ω * boolIndicator (!A ω) := by
+          rw [Finset.sum_add_distrib]
+    _ = Finset.univ.sum fun ω => D.mass ω := by
+          apply Finset.sum_congr rfl
+          intro ω _hω
+          rw [← mul_add, boolIndicator_add_not, mul_one]
+    _ = 1 := D.total_mass
+
+theorem acceptProb_not_eq_one_sub
+    {Ω : Type*} [Fintype Ω]
+    (D : FiniteProbability Ω) (A : Ω -> Bool) :
+    D.acceptProb (fun ω => !(A ω)) = 1 - D.acceptProb A := by
+  have h := acceptProb_add_not D A
+  linarith
+
+set_option linter.constructorNameAsVariable false in
+/--
+If every adversary-side state accepts at least an `alpha` fraction of canonical
+challenges, then an independently sampled programmed challenge misses the
+state's accepting set with probability at most `1 - alpha`.
+-/
+theorem n32_product_acceptFailure_le_one_sub_lower
+    {σ : Type*} [Fintype σ]
+    (Dσ : FiniteProbability σ)
+    (accepts : σ -> N32CanonicalChallenge -> Bool)
+    (alpha : ℝ)
+    (hα : ∀ state,
+      alpha <= (uniformFiniteProbability N32CanonicalChallenge).acceptProb
+        (accepts state)) :
+    (productFiniteProbability Dσ
+        (uniformFiniteProbability N32CanonicalChallenge)).acceptProb
+        (fun trace => !(accepts trace.1 trace.2)) <= 1 - alpha := by
+  unfold FiniteProbability.acceptProb productFiniteProbability
+  rw [Fintype.sum_prod_type]
+  calc
+    (Finset.univ.sum fun state =>
+        Finset.univ.sum fun actual =>
+          Dσ.mass state *
+              (uniformFiniteProbability N32CanonicalChallenge).mass actual *
+            boolIndicator (!(accepts state actual))) =
+        Finset.univ.sum fun state =>
+          Dσ.mass state *
+            ((uniformFiniteProbability N32CanonicalChallenge).acceptProb
+              (fun actual => !(accepts state actual))) := by
+          apply Finset.sum_congr rfl
+          intro state _hstate
+          unfold FiniteProbability.acceptProb
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro actual _hactual
+          ring
+    _ <= Finset.univ.sum fun state => Dσ.mass state * (1 - alpha) := by
+          apply Finset.sum_le_sum
+          intro state _hstate
+          have hnot :
+              (uniformFiniteProbability N32CanonicalChallenge).acceptProb
+                  (fun actual => !(accepts state actual)) <= 1 - alpha := by
+            rw [acceptProb_not_eq_one_sub]
+            linarith [hα state]
+          exact mul_le_mul_of_nonneg_left hnot (Dσ.nonnegative state)
+    _ = (Finset.univ.sum fun state => Dσ.mass state) * (1 - alpha) := by
+          rw [Finset.sum_mul]
+    _ = 1 - alpha := by
+          rw [Dσ.total_mass]
+          ring
+
 /--
 The byte-level challenge point that must be hashed before sampling the
 canonical product-block challenge.
@@ -613,6 +693,66 @@ theorem pointFailure_upper_zero
 end N32ByteReplayBinding
 
 /--
+Accepting-replay density profile.
+
+For draw `d` and adversary-side state `state`, `acceptingChallenge d state`
+is the set of programmed canonical challenges that make the replay accept.
+The field `acceptProbabilityLower d` is a per-draw lower bound on that set's
+uniform density for every state.
+-/
+structure N32ReplayAcceptanceProfile
+    {State QueryIdx PublicKey Message Commitment : Type*}
+    [Fintype State]
+    (E : N32QueryLogExperiment State QueryIdx PublicKey Message Commitment)
+    (B :
+      N32ByteReplayBinding
+        (N32QueryTrace State) PublicKey Message Commitment) where
+  acceptingChallenge :
+    N32ReplayDraw -> State -> N32CanonicalChallenge -> Bool
+  drawAccepts_eq :
+    ∀ d τ, B.drawAccepts d τ = acceptingChallenge d τ.1 τ.2
+  acceptProbabilityLower : N32ReplayDraw -> ℝ
+  acceptProbability_lower :
+    ∀ d state,
+      acceptProbabilityLower d <=
+        (uniformFiniteProbability N32CanonicalChallenge).acceptProb
+          (acceptingChallenge d state)
+
+namespace N32ReplayAcceptanceProfile
+
+variable {State QueryIdx PublicKey Message Commitment : Type*}
+variable [Fintype State]
+variable {E : N32QueryLogExperiment State QueryIdx PublicKey Message Commitment}
+variable {B :
+  N32ByteReplayBinding
+    (N32QueryTrace State) PublicKey Message Commitment}
+
+theorem acceptFailure_upper
+    [DecidableEq (N32ChallengePoint PublicKey Message Commitment)]
+    (P : N32ReplayAcceptanceProfile E B)
+    (d : N32ReplayDraw) :
+    E.traceDist.acceptProb ((B.toReplaySchedule).acceptFailure d) <=
+      1 - P.acceptProbabilityLower d := by
+  have hbase :=
+    n32_product_acceptFailure_le_one_sub_lower
+      E.stateDist (P.acceptingChallenge d)
+      (P.acceptProbabilityLower d)
+      (P.acceptProbability_lower d)
+  have hp :
+      (fun τ => (B.toReplaySchedule).acceptFailure d τ) =
+        (fun τ => !(P.acceptingChallenge d τ.1 τ.2)) := by
+    funext τ
+    simp [N32ByteReplayBinding.toReplaySchedule,
+      N32ReplaySchedule.acceptFailure, P.drawAccepts_eq]
+  change E.traceDist.acceptProb
+      (fun τ => (B.toReplaySchedule).acceptFailure d τ) <=
+    1 - P.acceptProbabilityLower d
+  rw [hp]
+  simpa [N32QueryLogExperiment.traceDist] using hbase
+
+end N32ReplayAcceptanceProfile
+
+/--
 Per-draw replay bounds split into the two concrete failure mechanisms:
 the draw does not accept, or it accepts but is not bound to the same challenge
 point.
@@ -913,6 +1053,87 @@ theorem extractableProb_ge
       (I.toComponentInputs))
 
 end N32SixDrawByteBindingInputs
+
+/--
+Six-draw transcript certificate where accepting-replay failures are bounded by
+per-state accepting-challenge densities.
+-/
+structure N32SixDrawAcceptanceDensityInputs
+    {q : Nat} [NeZero q]
+    {State QueryIdx PublicKey Message Commitment Round Block LocalFree : Type*}
+    [Fintype State]
+    [Fintype QueryIdx]
+    [DecidableEq (N32ChallengePoint PublicKey Message Commitment)]
+    {secret : Block × LocalFree -> ZMod q}
+    (E : N32QueryLogExperiment State QueryIdx PublicKey Message Commitment)
+    (G :
+      MultiForkFiatShamirGame
+        (N32QueryTrace State) Round N32ReplayDraw Block LocalFree secret)
+    (R : RandomOracleMultiForkReplay G) where
+  traceDist_eq : G.traceDist = E.traceDist
+  queryMiss_not_queried :
+    ∀ τ, R.queryMiss τ = true -> E.pointQueried τ = false
+  queryMiss_outputs_blind :
+    ∀ τ, R.queryMiss τ = true -> E.actualChallenge τ = E.blindChallenge τ
+  binding :
+    N32ByteReplayBinding
+      (N32QueryTrace State) PublicKey Message Commitment
+  replayFailure_implies_schedule :
+    ∀ τ, R.replayFailure τ = true ->
+      binding.toReplaySchedule.replayFailure τ = true
+  acceptance :
+    N32ReplayAcceptanceProfile E binding
+  coverageFailureBound : ℝ
+  coverageFailure_upper :
+    G.coverageFailureProb <= coverageFailureBound
+
+namespace N32SixDrawAcceptanceDensityInputs
+
+variable {q : Nat} [NeZero q]
+variable {State QueryIdx PublicKey Message Commitment Round Block LocalFree : Type*}
+variable [Fintype State]
+variable [Fintype QueryIdx]
+variable [DecidableEq (N32ChallengePoint PublicKey Message Commitment)]
+variable {secret : Block × LocalFree -> ZMod q}
+variable {E : N32QueryLogExperiment State QueryIdx PublicKey Message Commitment}
+variable {G :
+  MultiForkFiatShamirGame
+    (N32QueryTrace State) Round N32ReplayDraw Block LocalFree secret}
+variable {R : RandomOracleMultiForkReplay G}
+
+def acceptFailureBound
+    (I : N32SixDrawAcceptanceDensityInputs E G R)
+    (d : N32ReplayDraw) : ℝ :=
+  1 - I.acceptance.acceptProbabilityLower d
+
+def toByteBindingInputs
+    (I : N32SixDrawAcceptanceDensityInputs E G R) :
+    N32SixDrawByteBindingInputs E G R where
+  traceDist_eq := I.traceDist_eq
+  queryMiss_not_queried := I.queryMiss_not_queried
+  queryMiss_outputs_blind := I.queryMiss_outputs_blind
+  binding := I.binding
+  replayFailure_implies_schedule := I.replayFailure_implies_schedule
+  acceptFailureBound := I.acceptFailureBound
+  acceptFailure_upper := by
+    intro d
+    rw [I.traceDist_eq]
+    exact I.acceptance.acceptFailure_upper d
+  coverageFailureBound := I.coverageFailureBound
+  coverageFailure_upper := I.coverageFailure_upper
+
+theorem extractableProb_ge
+    (I : N32SixDrawAcceptanceDensityInputs E G R) :
+    R.forgerSuccessProb - n32ChallengeGuessBound -
+        (Finset.univ.sum fun d =>
+          (1 : ℝ) - I.acceptance.acceptProbabilityLower d) -
+        I.coverageFailureBound <=
+      G.extractableProb := by
+  simpa [acceptFailureBound, toByteBindingInputs] using
+    (N32SixDrawByteBindingInputs.extractableProb_ge
+      (I.toByteBindingInputs))
+
+end N32SixDrawAcceptanceDensityInputs
 
 end
 

@@ -230,14 +230,52 @@ Pr[extractable] >=
   - coverageFailureBound.
 ```
 
+## Accepting Replay Density
+
+The accepting-replay loss is now connected to a concrete density statement.
+For each replay draw `d` and adversary-side state, define the set of programmed
+canonical challenges that make that replay accept:
+
+```text
+acceptingChallenge[d, state] : N32CanonicalChallenge -> Bool
+```
+
+`N32ReplayAcceptanceProfile` records a lower bound `alpha[d]` such that every
+state accepts at least that fraction of the canonical challenge space:
+
+```text
+alpha[d] <= Pr_{c uniform}[acceptingChallenge[d, state](c)]
+```
+
+Lean proves:
+
+```text
+Pr[acceptFailure d] <= 1 - alpha[d].
+```
+
+Combining this with byte-level binding gives
+`N32SixDrawAcceptanceDensityInputs`:
+
+```text
+Pr[extractable] >=
+  Pr[forgery]
+  - 2^-133
+  - sum_{d : Fin 6} (1 - alpha[d])
+  - coverageFailureBound.
+```
+
+This is the current sharp formal boundary.  The remaining replay task is to
+prove useful lower bounds on `alpha[d]` for the concrete replay/programming
+schedule.
+
 ## Remaining Work
 
 The abstract forking layer and the canonical challenge-count layer now meet at
 the right boundary.  The next proof should instantiate the accepting replay
-probabilities:
+density:
 
 ```text
-Pr[acceptFailure d] <= acceptFailureBound[d]
+alpha[d] <= Pr_{c uniform}[acceptingChallenge[d, state](c)]
 ```
 
 That requires the serialized verifier model:

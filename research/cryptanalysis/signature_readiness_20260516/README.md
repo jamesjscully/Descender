@@ -284,6 +284,17 @@ Pr[extractable] >= Pr[forgery]
   - coverageFailureBound.
 ```
 
+The accepting-replay term is now density-based.  If `alpha[d]` lower-bounds,
+for every adversary-side state, the fraction of canonical challenges that make
+replay draw `d` accept, then Lean proves:
+
+```text
+Pr[extractable] >= Pr[forgery]
+  - 2^-133
+  - sum_d (1 - alpha[d])
+  - coverageFailureBound.
+```
+
 See `canonical_transcript.md`.
 
 ## Pay-To-Hash
