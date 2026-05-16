@@ -153,10 +153,20 @@ For this row, a canonical product-block challenge has
 (binom(16,15) * 2^15)^7 = (16 * 2^15)^7 = 2^133
 ```
 
-possible challenge vectors.  Once the transcript has a canonical challenge
-serializer and the verifier recomputes the challenge from one random-oracle
-point, the query-miss term should therefore be the blind challenge guess term
-`2^-133` for one forgery attempt.
+possible challenge vectors.  `Descender/SignatureTranscript.lean` now
+formalizes this exact challenge space as `N32CanonicalChallenge` and proves
+`Fintype.card N32CanonicalChallenge = 2^133`.
+
+The same file proves the uniform blind-guess bound:
+
+```text
+Pr[actual_challenge = guess] = 2^-133
+Pr[exists g, guess[g] = actual_challenge] <= #Guess / 2^133.
+```
+
+So the query-miss term is no longer just an intended value.  The remaining
+query-miss work is to connect a concrete forger transcript to this uniform
+challenge experiment and account for the number of blind guesses.
 
 The remaining uninstantiated quantity is now the replay schedule, not a generic
 forking loss.  For the six-draw candidate, instantiate the replay model with
@@ -170,7 +180,7 @@ The next theorem should instantiate `SixDrawForkingBounds` for the actual
 signature transcript:
 
 ```text
-Pr[queryMiss] <= 2^-133
+Pr[queryMiss] <= #BlindGuesses / 2^133
 Pr[drawFailure d] <= drawFailureBound[d]   for each d : Fin 6
 ```
 

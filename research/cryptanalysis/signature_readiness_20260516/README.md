@@ -215,6 +215,27 @@ actual random-oracle replay schedule.
 
 See `fiat_shamir_multifork.md`.
 
+## Canonical Transcript
+
+`Descender/SignatureTranscript.lean` now fixes the first concrete transcript
+surface for the `n = 32`, `255 B` row.  A round challenge is represented by the
+one omitted block among sixteen plus signs on the remaining fifteen active
+blocks, and a full challenge is seven such round challenges.  Lean proves:
+
+```text
+Fintype.card N32CanonicalChallenge = 2^133.
+```
+
+It also proves the exact blind challenge-guess loss and its finite
+union-bound form:
+
+```text
+Pr[actual_challenge = guess] = 2^-133
+Pr[exists g, guess[g] = actual_challenge] <= #Guess / 2^133.
+```
+
+See `canonical_transcript.md`.
+
 ## Pay-To-Hash
 
 Hash-only authorization can be tiny, but it is not a reusable signature scheme.

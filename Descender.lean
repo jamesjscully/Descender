@@ -7,6 +7,7 @@ import Descender.ProductBlockSignature
 import Descender.SignatureDistribution
 import Descender.BlockChallengeSoundness
 import Descender.SignatureForking
+import Descender.SignatureTranscript
 import Descender.MomentLee
 import Descender.SharedRowProductBlock
 import Descender.PTND
