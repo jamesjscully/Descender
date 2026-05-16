@@ -165,8 +165,12 @@ Pr[exists g, guess[g] = actual_challenge] <= #Guess / 2^133.
 ```
 
 So the query-miss term is no longer just an intended value.  The remaining
-query-miss work is to connect a concrete forger transcript to this uniform
-challenge experiment and account for the number of blind guesses.
+query-miss work was to connect a concrete forger transcript to this uniform
+challenge experiment.  That bridge is now formalized by
+`N32QueryLogExperiment`: the trace factors as adversary state times an
+independent uniform challenge, and `QueryMissCertificate` proves
+`Pr[queryMiss] <= 2^-133` whenever a query-miss transcript both missed the
+challenge point and accepted only by outputting the hidden challenge.
 
 The remaining uninstantiated quantity is now the replay schedule, not a generic
 forking loss.  For the six-draw candidate, instantiate the replay model with
@@ -180,8 +184,15 @@ The next theorem should instantiate `SixDrawForkingBounds` for the actual
 signature transcript:
 
 ```text
-Pr[queryMiss] <= #BlindGuesses / 2^133
 Pr[drawFailure d] <= drawFailureBound[d]   for each d : Fin 6
+```
+
+`N32SixDrawForkingInputs` already packages the query-log proof and replay
+decomposition into the final extraction bound:
+
+```text
+Pr[extractable] >=
+  Pr[forgery] - 2^-133 - sum drawFailureBound - coverageFailureBound.
 ```
 
 The transcript proof must ensure:

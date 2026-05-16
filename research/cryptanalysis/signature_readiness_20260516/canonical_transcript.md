@@ -72,13 +72,76 @@ This is the concrete target for `queryMiss`: if the adversary outputs a valid
 forgery without querying the random-oracle challenge point, the output
 challenge must be one of its blind guesses in a `2^133` challenge space.
 
+The next layer is now formalized too.  `N32QueryLogExperiment` factors a trace
+as:
+
+```text
+adversary_state × actual_challenge
+```
+
+where the challenge is sampled independently and uniformly after the
+adversary-side state is fixed.  The query log records which challenge points
+the adversary queried, and the output challenge is a function only of the
+adversary state when the challenge point was not queried.
+
+Lean proves:
+
+```text
+Pr[actual_challenge = outputChallenge(state)] = 2^-133.
+```
+
+`QueryMissCertificate.queryMiss_acceptProb_le` then turns the verifier-side
+condition
+
+```text
+queryMiss => challenge point was not queried
+queryMiss => actual_challenge = outputChallenge(state)
+```
+
+into the concrete bound:
+
+```text
+Pr[queryMiss] <= 2^-133.
+```
+
+This is the first transcript-specific loss term connected to the abstract
+Fiat-Shamir theorem.
+
+## Replay Boundary
+
+`N32ReplaySchedule` defines the six replay-draw diagnostics.  A draw is good
+when it both accepts and is bound to the same challenge point:
+
+```text
+drawGood d = drawAccepts d && sameChallengePoint d
+drawFailure d = not drawGood d
+replayFailure = exists d : Fin 6, drawFailure d
+```
+
+Lean proves:
+
+```text
+replayFailure => exists d : Fin 6, drawFailure d.
+```
+
+Finally, `N32SixDrawForkingInputs` packages the query-log proof, the six replay
+draw failures, their probability bounds, and the compact coverage-failure
+bound.  It produces the existing `SixDrawForkingBounds` certificate and proves:
+
+```text
+Pr[extractable] >=
+  Pr[forgery]
+  - 2^-133
+  - sum_{d : Fin 6} drawFailureBound[d]
+  - coverageFailureBound.
+```
+
 ## Remaining Work
 
 The abstract forking layer and the canonical challenge-count layer now meet at
-the right boundary.  The next proof should instantiate the replay side:
+the right boundary.  The next proof should instantiate the replay probabilities:
 
 ```text
-replayFailure => exists d : Fin 6, drawFailure d
 Pr[drawFailure d] <= drawFailureBound[d]
 ```
 

@@ -234,6 +234,24 @@ Pr[actual_challenge = guess] = 2^-133
 Pr[exists g, guess[g] = actual_challenge] <= #Guess / 2^133.
 ```
 
+The query-log layer now factors the transcript as adversary state times an
+independent uniform challenge and proves the concrete query-miss bound:
+
+```text
+Pr[queryMiss] <= 2^-133.
+```
+
+The replay adapter defines six per-draw failures as failed acceptance or failed
+same-point binding, then packages everything into the existing
+`SixDrawForkingBounds` theorem:
+
+```text
+Pr[extractable] >= Pr[forgery]
+  - 2^-133
+  - sum drawFailureBound
+  - coverageFailureBound.
+```
+
 See `canonical_transcript.md`.
 
 ## Pay-To-Hash
