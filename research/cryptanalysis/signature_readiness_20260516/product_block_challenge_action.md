@@ -80,7 +80,10 @@ target for sparse block challenges.  If forked challenge deltas cover every
 needed block, the extracted product-block secret equals the real secret.  The
 file also proves the response-difference identity used by the extractor and
 records the compact active-only condition: opposite signed active challenges
-give an extractable delta when `2` is invertible.
+give an extractable delta when `2` is invertible.  The deterministic multi-fork
+version is now included: several accepting challenge/response draws sharing one
+commitment/mask recover the whole secret when compact opposite-sign coverage
+holds.
 
 ## Signature Meaning
 
@@ -102,8 +105,9 @@ are:
 
 - the exact bit-level serialized/high-bit transcript equation, including how
   rounding errors are encoded and decoded;
-- a multi-fork Fiat-Shamir proof/game that justifies enough challenge draws per
-  repeated commitment for compact fork-delta coverage;
+- a probabilistic multi-fork Fiat-Shamir proof/game that justifies enough
+  accepting challenge draws per repeated commitment for compact fork-delta
+  coverage;
 - transcript binding for the challenge derivation and repeated commitments;
 - concrete challenge encoding and canonical serialization for the block subset
   and signs;
@@ -118,5 +122,6 @@ treated as final concrete sampler sizes: the exact sampler reports move the
 full-block targets to about `304 B` for `n = 32` and `496 B` for `n = 48`.
 Compact fork-delta accounting with six challenge draws gives intermediate
 targets of about `255 B` for `n = 32` and `415 B` for `n = 48` above the
-`24`-bit line.  The next blocker is the multi-fork Fiat-Shamir theorem plus the
-serialized verifier equation.
+`24`-bit line.  The deterministic multi-fork extractor now matches that metric.
+The next blocker is the probabilistic forking theorem plus the serialized
+verifier equation.

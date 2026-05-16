@@ -39,6 +39,24 @@ The file now also packages the forked linear extraction boundary:
   compact active-only transcripts, opposite signs are enough when `2` is
   invertible.
 
+The multi-fork deterministic layer is also formalized:
+
+- `MultiForkLinearRound`: several accepting challenge/response draws for one
+  fixed commitment/mask;
+- `MultiDeltaActive`: a block has two draws with an extractable challenge
+  delta;
+- `CompactOppositeActive`: a block has opposite signed active openings among
+  the draws;
+- `coversMultiDelta_of_coversCompactOpposite`: compact opposite-sign coverage
+  implies delta coverage when `2` is invertible;
+- `extractedSecret_eq`: multi-fork delta coverage across repetitions recovers
+  the whole secret;
+- `extractedSecret_eq_of_coversCompactOpposite`: compact active-only multi-fork
+  coverage recovers the whole secret.
+
+For the concrete modulus used by the current reports, Lean records
+`invTwo_zmod12289`, namely `(6145 : ZMod 12289) * 2 = 1`.
+
 ## Exact Coverage Accounting
 
 `signature_sampler_analysis.rs` now computes exact any-block miss probabilities
@@ -82,15 +100,18 @@ For the `n = 48`, 16-block profile:
 - `415 B`: weight 13, 8 repetitions, compact fork-delta cost `24.11` bits;
 - `496 B`: full-block response, compact fork-delta cost `36.00` bits.
 
-These rows assume six challenge draws for the same commitment per repeated
-round.  A single ordinary fork is much weaker: the `n = 32`, `255 B` row has
-only `2.02` bits of compact one-fork delta coverage.
+These rows assume six accepting challenge draws for the same commitment per
+repeated round.  A single ordinary fork is much weaker: the `n = 32`, `255 B`
+row has only `2.02` bits of compact one-fork delta coverage.
 
 ## Consequence
 
-The best small-signature target is now explicit.  If the Fiat-Shamir extraction
-argument can justify six challenge draws per repeated commitment, the `n = 32`
-row at about `255 B` is the leading reusable-signature candidate above the
-`24`-bit compact fork-delta line.  If we want a cleaner `32`-bit compact
-fork-delta line without relying on sparse intermediate coverage, the
-conservative `n = 32` target is about `304 B`.
+The best small-signature target is now explicit.  The deterministic multi-fork
+extractor is formalized: six accepting draws are enough whenever they give
+compact opposite-sign coverage.  The remaining question is probabilistic, not
+algebraic: prove that the Fiat-Shamir/forking game can obtain those accepting
+draws with a tolerable loss and bind them to the same commitment.  Under that
+game, the `n = 32` row at about `255 B` is the leading reusable-signature
+candidate above the `24`-bit compact fork-delta line.  If we want a cleaner
+`32`-bit compact fork-delta line without relying on sparse intermediate
+coverage, the conservative `n = 32` target is about `304 B`.

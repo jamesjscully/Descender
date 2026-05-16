@@ -147,6 +147,11 @@ theorem deltaExtractable_of_oppositeSignedActive
     rw [h]
     exact hinvTwo
 
+/-- Concrete inverse of `2` for the parameter-search modulus `q = 12289`. -/
+theorem invTwo_zmod12289 :
+    (6145 : ZMod 12289) * (2 : ZMod 12289) = 1 := by
+  native_decide
+
 theorem extract_coordinate_of_deltaExtractable
     {q : Nat} [NeZero q]
     {Block LocalFree : Type*}
@@ -232,6 +237,151 @@ theorem extractedSecret_eq
     bf.1 (Classical.choose_spec (hcover bf.1)) bf.2
 
 end ForkedLinearRound
+
+/--
+A multi-fork linear round packages several accepting responses for one fixed
+commitment/mask.  The Fiat-Shamir forking game is responsible for producing
+the draws; this deterministic layer only uses the accepting transcript
+equations.
+-/
+structure MultiForkLinearRound
+    {q : Nat} [NeZero q] (Draw Block LocalFree : Type*)
+    (secret : Block × LocalFree -> ZMod q) where
+  chi : Draw -> Block -> ZMod q
+  mask : Block × LocalFree -> ZMod q
+  z : Draw -> Block × LocalFree -> ZMod q
+  hz : ∀ d, z d = productBlockLinearResponse (chi d) mask secret
+
+namespace MultiForkLinearRound
+
+variable {q : Nat} [NeZero q]
+variable {Draw Block LocalFree : Type*}
+variable {secret : Block × LocalFree -> ZMod q}
+
+def PairDeltaActive (R : MultiForkLinearRound Draw Block LocalFree secret)
+    (d₀ d₁ : Draw) (b : Block) : Prop :=
+  DeltaExtractable (R.chi d₀) (R.chi d₁) b
+
+def MultiDeltaActive (R : MultiForkLinearRound Draw Block LocalFree secret)
+    (b : Block) : Prop :=
+  ∃ d₀ d₁, R.PairDeltaActive d₀ d₁ b
+
+def CompactOppositeActive
+    (R : MultiForkLinearRound Draw Block LocalFree secret) (b : Block) :
+    Prop :=
+  ∃ d₀ d₁, OppositeSignedActive (R.chi d₀) (R.chi d₁) b
+
+noncomputable def deltaLeft
+    (R : MultiForkLinearRound Draw Block LocalFree secret)
+    (b : Block) (hdelta : R.MultiDeltaActive b) : Draw :=
+  Classical.choose hdelta
+
+noncomputable def deltaRight
+    (R : MultiForkLinearRound Draw Block LocalFree secret)
+    (b : Block) (hdelta : R.MultiDeltaActive b) : Draw :=
+  Classical.choose (Classical.choose_spec hdelta)
+
+theorem deltaWitness_spec
+    (R : MultiForkLinearRound Draw Block LocalFree secret)
+    (b : Block) (hdelta : R.MultiDeltaActive b) :
+    R.PairDeltaActive (R.deltaLeft b hdelta)
+      (R.deltaRight b hdelta) b := by
+  unfold deltaLeft deltaRight
+  exact Classical.choose_spec (Classical.choose_spec hdelta)
+
+theorem multiDeltaActive_of_compactOppositeActive
+    (R : MultiForkLinearRound Draw Block LocalFree secret)
+    {invTwo : ZMod q}
+    (hinvTwo : invTwo * (2 : ZMod q) = 1)
+    {b : Block}
+    (hcompact : R.CompactOppositeActive b) :
+    R.MultiDeltaActive b := by
+  rcases hcompact with ⟨d₀, d₁, hopp⟩
+  exact ⟨d₀, d₁,
+    deltaExtractable_of_oppositeSignedActive hinvTwo hopp⟩
+
+noncomputable def forkedPair
+    (R : MultiForkLinearRound Draw Block LocalFree secret)
+    (d₀ d₁ : Draw) : ForkedLinearRound Block LocalFree secret where
+  chi₀ := R.chi d₀
+  chi₁ := R.chi d₁
+  mask := R.mask
+  z₀ := R.z d₀
+  z₁ := R.z d₁
+  hz₀ := R.hz d₀
+  hz₁ := R.hz d₁
+
+noncomputable def extractCoordinate
+    (R : MultiForkLinearRound Draw Block LocalFree secret)
+    (b : Block) (hdelta : R.MultiDeltaActive b) (f : LocalFree) :
+    ZMod q :=
+  ForkedLinearRound.extractCoordinate
+    (R.forkedPair (R.deltaLeft b hdelta) (R.deltaRight b hdelta))
+    b (R.deltaWitness_spec b hdelta) f
+
+theorem extractCoordinate_eq_secret
+    (R : MultiForkLinearRound Draw Block LocalFree secret)
+    (b : Block) (hdelta : R.MultiDeltaActive b) (f : LocalFree) :
+    R.extractCoordinate b hdelta f = secret (b, f) := by
+  unfold extractCoordinate
+  exact ForkedLinearRound.extractCoordinate_eq_secret
+    (R.forkedPair (R.deltaLeft b hdelta) (R.deltaRight b hdelta))
+    b (R.deltaWitness_spec b hdelta) f
+
+theorem coversMultiDelta_of_coversCompactOpposite
+    {Round : Type*}
+    (round : Round -> MultiForkLinearRound Draw Block LocalFree secret)
+    {invTwo : ZMod q}
+    (hinvTwo : invTwo * (2 : ZMod q) = 1)
+    (hcover : CoversBlocks fun r b => (round r).CompactOppositeActive b) :
+    CoversBlocks fun r b => (round r).MultiDeltaActive b := by
+  intro b
+  rcases hcover b with ⟨r, hr⟩
+  exact ⟨r, (round r).multiDeltaActive_of_compactOppositeActive
+    hinvTwo hr⟩
+
+/--
+If the multi-fork draws give an extractable challenge delta for every block
+across the repeated commitments, the extractor recovers the whole secret.
+-/
+noncomputable def extractedSecret
+    {Round : Type*}
+    (round : Round -> MultiForkLinearRound Draw Block LocalFree secret)
+    (hcover : CoversBlocks fun r b => (round r).MultiDeltaActive b) :
+    Block × LocalFree -> ZMod q :=
+  fun bf =>
+    let r := Classical.choose (hcover bf.1)
+    (round r).extractCoordinate bf.1
+      (Classical.choose_spec (hcover bf.1)) bf.2
+
+theorem extractedSecret_eq
+    {Round : Type*}
+    (round : Round -> MultiForkLinearRound Draw Block LocalFree secret)
+    (hcover : CoversBlocks fun r b => (round r).MultiDeltaActive b) :
+    extractedSecret round hcover = secret := by
+  funext bf
+  unfold extractedSecret
+  exact (round (Classical.choose (hcover bf.1))).extractCoordinate_eq_secret
+    bf.1 (Classical.choose_spec (hcover bf.1)) bf.2
+
+/--
+Compact active-only multi-fork extraction: if every block has two accepting
+draws with opposite signed active challenges in some repeated commitment, then
+the extracted product-block secret is the real secret.
+-/
+theorem extractedSecret_eq_of_coversCompactOpposite
+    {Round : Type*}
+    (round : Round -> MultiForkLinearRound Draw Block LocalFree secret)
+    {invTwo : ZMod q}
+    (hinvTwo : invTwo * (2 : ZMod q) = 1)
+    (hcover : CoversBlocks fun r b => (round r).CompactOppositeActive b) :
+    extractedSecret round
+      (coversMultiDelta_of_coversCompactOpposite round hinvTwo hcover) =
+        secret :=
+  extractedSecret_eq round
+    (coversMultiDelta_of_coversCompactOpposite round hinvTwo hcover)
+
+end MultiForkLinearRound
 
 end BlockChallengeSoundness
 

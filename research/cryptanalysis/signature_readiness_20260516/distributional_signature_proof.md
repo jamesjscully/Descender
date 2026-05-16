@@ -91,8 +91,11 @@ The product-block route now has three formal layers:
 5. a deterministic forked block-extraction theorem, plus exact
    inclusion-exclusion accounting for active coverage and compact fork-delta
    failure.
+6. a deterministic multi-fork extraction theorem: several accepting draws for
+   one commitment/mask recover the whole product-block secret when compact
+   opposite-sign coverage holds.
 
 The remaining blocker is no longer the sampler distribution.  It is whether an
-intermediate compact fork-delta row can be given a sound multi-fork
-Fiat-Shamir extraction argument, or whether we must pay for full-block
-responses.
+intermediate compact fork-delta row can be connected to a probabilistic
+Fiat-Shamir forking lemma with acceptable loss, or whether we must pay for
+full-block responses.

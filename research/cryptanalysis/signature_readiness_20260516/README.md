@@ -171,9 +171,12 @@ and forked extraction theorem needed for Fiat-Shamir analysis:
 
 For compact active-only transcripts, the formal boundary also records that
 opposite signed active challenges give an extractable delta when `2` is
-invertible.  The sampler reports compute exact any-block-missed probabilities
-for both active coverage and compact fork-delta coverage.  See
-`block_challenge_soundness.md`.
+invertible.  The multi-fork boundary is now formalized too: several accepting
+draws for the same commitment/mask recover the whole product-block secret if
+their compact opposite-sign deltas cover every block.  For the concrete report
+modulus, Lean records `(6145 : ZMod 12289) * 2 = 1`.  The sampler reports
+compute exact any-block-missed probabilities for both active coverage and
+compact fork-delta coverage.  See `block_challenge_soundness.md`.
 
 ## Pay-To-Hash
 
@@ -216,7 +219,8 @@ route is now a product-block Fiat-Shamir-with-aborts design.  The
 verifier-computable block challenge action is formalized for block-diagonal
 systematic views, and the basic signed-challenge noise bound is formalized.
 The distributional rejection-sampling theorem is also formalized as a generic
-finite-probability proof.  The exact-box sampler and compact fork-delta
-coverage analysis are now concrete.  The next signature-specific work is the
-multi-fork Fiat-Shamir theorem that justifies six challenge draws per repeated
-commitment, plus the serialized verifier equation.
+finite-probability proof.  The exact-box sampler, compact fork-delta coverage
+analysis, and deterministic multi-fork extractor are now concrete.  The next
+signature-specific work is the probabilistic Fiat-Shamir forking lemma that
+produces six accepting draws for one commitment with a quantified loss, plus
+the serialized verifier equation.
