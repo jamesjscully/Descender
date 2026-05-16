@@ -391,6 +391,14 @@ def drawFailure (S : N32ReplaySchedule Trace) (d : N32ReplayDraw) (τ : Trace) :
     Bool :=
   !(S.drawGood d τ)
 
+def acceptFailure (S : N32ReplaySchedule Trace) (d : N32ReplayDraw) (τ : Trace) :
+    Bool :=
+  !(S.drawAccepts d τ)
+
+def pointFailure (S : N32ReplaySchedule Trace) (d : N32ReplayDraw) (τ : Trace) :
+    Bool :=
+  !(S.sameChallengePoint d τ)
+
 def replayFailure (S : N32ReplaySchedule Trace) (τ : Trace) : Bool :=
   decide (∃ d, S.drawFailure d τ = true)
 
@@ -416,7 +424,100 @@ theorem sameChallengePoint_of_not_drawFailure
     cases hp : S.sameChallengePoint d τ <;>
     simp [drawFailure, drawGood, ha, hp] at h ⊢
 
+theorem drawFailure_implies_accept_or_pointFailure
+    (S : N32ReplaySchedule Trace) (d : N32ReplayDraw) :
+    ∀ τ,
+      S.drawFailure d τ = true ->
+      (S.acceptFailure d τ || S.pointFailure d τ) = true := by
+  intro τ h
+  cases ha : S.drawAccepts d τ <;>
+    cases hp : S.sameChallengePoint d τ <;>
+    simp [drawFailure, drawGood, acceptFailure, pointFailure, ha, hp] at h ⊢
+
+theorem drawFailureProb_le_components
+    [Fintype Trace]
+    (D : FiniteProbability Trace)
+    (S : N32ReplaySchedule Trace)
+    (d : N32ReplayDraw) :
+    D.acceptProb (S.drawFailure d) <=
+      D.acceptProb (S.acceptFailure d) +
+        D.acceptProb (S.pointFailure d) := by
+  have hmono :
+      D.acceptProb (S.drawFailure d) <=
+        D.acceptProb
+          (fun τ => S.acceptFailure d τ || S.pointFailure d τ) :=
+    acceptProb_mono D (S.drawFailure_implies_accept_or_pointFailure d)
+  have hunion :=
+    acceptProb_or_le_add D (S.acceptFailure d) (S.pointFailure d)
+  exact le_trans hmono hunion
+
+theorem acceptFailure_upper_zero_of_always
+    [Fintype Trace]
+    (D : FiniteProbability Trace)
+    (S : N32ReplaySchedule Trace)
+    (d : N32ReplayDraw)
+    (hAccepts : ∀ τ, S.drawAccepts d τ = true) :
+    D.acceptProb (S.acceptFailure d) <= 0 := by
+  have hzero : D.acceptProb (S.acceptFailure d) = 0 := by
+    unfold FiniteProbability.acceptProb
+    apply Finset.sum_eq_zero
+    intro τ _hτ
+    simp [acceptFailure, hAccepts τ]
+  exact le_of_eq hzero
+
+theorem pointFailure_upper_zero_of_always
+    [Fintype Trace]
+    (D : FiniteProbability Trace)
+    (S : N32ReplaySchedule Trace)
+    (d : N32ReplayDraw)
+    (hSamePoint : ∀ τ, S.sameChallengePoint d τ = true) :
+    D.acceptProb (S.pointFailure d) <= 0 := by
+  have hzero : D.acceptProb (S.pointFailure d) = 0 := by
+    unfold FiniteProbability.acceptProb
+    apply Finset.sum_eq_zero
+    intro τ _hτ
+    simp [pointFailure, hSamePoint τ]
+  exact le_of_eq hzero
+
 end N32ReplaySchedule
+
+/--
+Per-draw replay bounds split into the two concrete failure mechanisms:
+the draw does not accept, or it accepts but is not bound to the same challenge
+point.
+-/
+structure N32ReplayScheduleBounds
+    {Trace : Type*} [Fintype Trace]
+    (D : FiniteProbability Trace)
+    (S : N32ReplaySchedule Trace) where
+  acceptFailureBound : N32ReplayDraw -> ℝ
+  pointFailureBound : N32ReplayDraw -> ℝ
+  acceptFailure_upper :
+    ∀ d, D.acceptProb (S.acceptFailure d) <= acceptFailureBound d
+  pointFailure_upper :
+    ∀ d, D.acceptProb (S.pointFailure d) <= pointFailureBound d
+
+namespace N32ReplayScheduleBounds
+
+variable {Trace : Type*} [Fintype Trace]
+variable {D : FiniteProbability Trace}
+variable {S : N32ReplaySchedule Trace}
+
+def drawFailureBound (B : N32ReplayScheduleBounds D S) (d : N32ReplayDraw) :
+    ℝ :=
+  B.acceptFailureBound d + B.pointFailureBound d
+
+theorem drawFailure_upper
+    (B : N32ReplayScheduleBounds D S) :
+    ∀ d, D.acceptProb (S.drawFailure d) <= B.drawFailureBound d := by
+  intro d
+  have hbase := S.drawFailureProb_le_components D d
+  have ha := B.acceptFailure_upper d
+  have hp := B.pointFailure_upper d
+  unfold drawFailureBound
+  linarith
+
+end N32ReplayScheduleBounds
 
 /--
 Concrete transcript inputs needed to instantiate the abstract six-draw forking
@@ -508,6 +609,97 @@ theorem extractableProb_ge
       (I.toSixDrawForkingBounds))
 
 end N32SixDrawForkingInputs
+
+/--
+Version of the six-draw transcript certificate that asks for component replay
+bounds instead of a precombined `drawFailureBound`.
+-/
+structure N32SixDrawComponentInputs
+    {q : Nat} [NeZero q]
+    {State QueryIdx PublicKey Message Commitment Round Block LocalFree : Type*}
+    [Fintype State]
+    [Fintype QueryIdx]
+    [DecidableEq (N32ChallengePoint PublicKey Message Commitment)]
+    {secret : Block × LocalFree -> ZMod q}
+    (E : N32QueryLogExperiment State QueryIdx PublicKey Message Commitment)
+    (G :
+      MultiForkFiatShamirGame
+        (N32QueryTrace State) Round N32ReplayDraw Block LocalFree secret)
+    (R : RandomOracleMultiForkReplay G) where
+  traceDist_eq : G.traceDist = E.traceDist
+  queryMiss_not_queried :
+    ∀ τ, R.queryMiss τ = true -> E.pointQueried τ = false
+  queryMiss_outputs_blind :
+    ∀ τ, R.queryMiss τ = true -> E.actualChallenge τ = E.blindChallenge τ
+  schedule : N32ReplaySchedule (N32QueryTrace State)
+  replayFailure_implies_schedule :
+    ∀ τ, R.replayFailure τ = true -> schedule.replayFailure τ = true
+  acceptFailureBound : N32ReplayDraw -> ℝ
+  pointFailureBound : N32ReplayDraw -> ℝ
+  acceptFailure_upper :
+    ∀ d, G.traceDist.acceptProb (schedule.acceptFailure d) <=
+      acceptFailureBound d
+  pointFailure_upper :
+    ∀ d, G.traceDist.acceptProb (schedule.pointFailure d) <=
+      pointFailureBound d
+  coverageFailureBound : ℝ
+  coverageFailure_upper :
+    G.coverageFailureProb <= coverageFailureBound
+
+namespace N32SixDrawComponentInputs
+
+variable {q : Nat} [NeZero q]
+variable {State QueryIdx PublicKey Message Commitment Round Block LocalFree : Type*}
+variable [Fintype State]
+variable [Fintype QueryIdx]
+variable [DecidableEq (N32ChallengePoint PublicKey Message Commitment)]
+variable {secret : Block × LocalFree -> ZMod q}
+variable {E : N32QueryLogExperiment State QueryIdx PublicKey Message Commitment}
+variable {G :
+  MultiForkFiatShamirGame
+    (N32QueryTrace State) Round N32ReplayDraw Block LocalFree secret}
+variable {R : RandomOracleMultiForkReplay G}
+
+def drawFailureBound
+    (I : N32SixDrawComponentInputs E G R)
+    (d : N32ReplayDraw) : ℝ :=
+  I.acceptFailureBound d + I.pointFailureBound d
+
+def replayScheduleBounds
+    (I : N32SixDrawComponentInputs E G R) :
+    N32ReplayScheduleBounds G.traceDist I.schedule where
+  acceptFailureBound := I.acceptFailureBound
+  pointFailureBound := I.pointFailureBound
+  acceptFailure_upper := I.acceptFailure_upper
+  pointFailure_upper := I.pointFailure_upper
+
+def toSixDrawForkingInputs
+    (I : N32SixDrawComponentInputs E G R) :
+    N32SixDrawForkingInputs E G R where
+  traceDist_eq := I.traceDist_eq
+  queryMiss_not_queried := I.queryMiss_not_queried
+  queryMiss_outputs_blind := I.queryMiss_outputs_blind
+  schedule := I.schedule
+  replayFailure_implies_schedule := I.replayFailure_implies_schedule
+  drawFailureBound := I.drawFailureBound
+  drawFailure_upper := by
+    intro d
+    exact I.replayScheduleBounds.drawFailure_upper d
+  coverageFailureBound := I.coverageFailureBound
+  coverageFailure_upper := I.coverageFailure_upper
+
+theorem extractableProb_ge
+    (I : N32SixDrawComponentInputs E G R) :
+    R.forgerSuccessProb - n32ChallengeGuessBound -
+        (Finset.univ.sum fun d =>
+          I.acceptFailureBound d + I.pointFailureBound d) -
+        I.coverageFailureBound <=
+      G.extractableProb := by
+  simpa [drawFailureBound, toSixDrawForkingInputs] using
+    (N32SixDrawForkingInputs.extractableProb_ge
+      (I.toSixDrawForkingInputs))
+
+end N32SixDrawComponentInputs
 
 end
 

@@ -124,6 +124,34 @@ Lean proves:
 replayFailure => exists d : Fin 6, drawFailure d.
 ```
 
+The draw-failure probability is now split into two concrete component events:
+
+```text
+acceptFailure d = not drawAccepts d
+pointFailure d = not sameChallengePoint d
+drawFailure d <= acceptFailure d + pointFailure d.
+```
+
+`N32ReplayScheduleBounds` packages per-draw upper bounds for those two
+components and proves:
+
+```text
+Pr[drawFailure d]
+  <= acceptFailureBound[d] + pointFailureBound[d].
+```
+
+There are also zero-bound lemmas for deterministic cases:
+
+```text
+always drawAccepts d        => Pr[acceptFailure d] <= 0
+always sameChallengePoint d => Pr[pointFailure d] <= 0
+```
+
+This matters for the actual transcript.  If the byte-level verifier binds the
+public key, message, commitment vector, and repetition indices into the
+challenge point deterministically, the `pointFailureBound` term should be zero.
+The nontrivial replay loss is then the accepting-replay term.
+
 Finally, `N32SixDrawForkingInputs` packages the query-log proof, the six replay
 draw failures, their probability bounds, and the compact coverage-failure
 bound.  It produces the existing `SixDrawForkingBounds` certificate and proves:
@@ -136,13 +164,27 @@ Pr[extractable] >=
   - coverageFailureBound.
 ```
 
+`N32SixDrawComponentInputs` is the preferred interface for the next
+instantiation.  It takes the component bounds directly and proves:
+
+```text
+Pr[extractable] >=
+  Pr[forgery]
+  - 2^-133
+  - sum_{d : Fin 6}
+      (acceptFailureBound[d] + pointFailureBound[d])
+  - coverageFailureBound.
+```
+
 ## Remaining Work
 
 The abstract forking layer and the canonical challenge-count layer now meet at
-the right boundary.  The next proof should instantiate the replay probabilities:
+the right boundary.  The next proof should instantiate the accepting replay
+probabilities:
 
 ```text
-Pr[drawFailure d] <= drawFailureBound[d]
+Pr[acceptFailure d] <= acceptFailureBound[d]
+Pr[pointFailure d] <= 0
 ```
 
 That requires the serialized verifier model:

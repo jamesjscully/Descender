@@ -195,6 +195,29 @@ Pr[extractable] >=
   Pr[forgery] - 2^-133 - sum drawFailureBound - coverageFailureBound.
 ```
 
+The replay decomposition has now been sharpened again.  For each draw:
+
+```text
+drawFailure d <= acceptFailure d + pointFailure d
+```
+
+where `acceptFailure d` means the programmed replay did not produce an
+accepting transcript, and `pointFailure d` means it did not bind to the same
+public key/message/commitment challenge point.  The component interface
+`N32SixDrawComponentInputs` proves:
+
+```text
+Pr[extractable] >=
+  Pr[forgery]
+  - 2^-133
+  - sum_d (acceptFailureBound[d] + pointFailureBound[d])
+  - coverageFailureBound.
+```
+
+For a deterministic byte-level transcript binding proof, the expected
+`pointFailureBound[d]` is zero.  The real remaining forking loss is therefore
+the six accepting-replay failure probabilities.
+
 The transcript proof must ensure:
 
 - all six accepting draws are bound to the same public key, message, round

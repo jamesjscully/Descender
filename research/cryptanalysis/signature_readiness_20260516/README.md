@@ -252,6 +252,25 @@ Pr[extractable] >= Pr[forgery]
   - coverageFailureBound.
 ```
 
+The replay loss is now split one step further:
+
+```text
+Pr[drawFailure d]
+  <= Pr[acceptFailure d] + Pr[pointFailure d].
+```
+
+`N32SixDrawComponentInputs` therefore gives the transcript-facing bound:
+
+```text
+Pr[extractable] >= Pr[forgery]
+  - 2^-133
+  - sum_d (acceptFailureBound[d] + pointFailureBound[d])
+  - coverageFailureBound.
+```
+
+For deterministic transcript binding, `pointFailureBound[d]` should be zero;
+the remaining replay work is bounding each accepting-replay failure.
+
 See `canonical_transcript.md`.
 
 ## Pay-To-Hash
