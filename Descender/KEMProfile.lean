@@ -403,7 +403,7 @@ theorem rounding_bound (S : PublicSampleSerializationProfile) :
 
 end PublicSampleSerializationProfile
 
-/--
+/-!
 Current proof-carrying 128-bit candidate:
 
 * `q = 32771`;

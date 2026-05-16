@@ -267,11 +267,21 @@ PTNDCorrectnessCertificate.withRoundingNoise
 SampleView.restrictExperiment
 SampleView.restrictExperiment_advantage_eq_pullback
 SampleView.restrictExperiment_secureAgainst_of_full
+PublicSampleSerializationProfile
+Descender128ProductBlockCompressedProfile.serialization
+Descender128ProductBlockCompressedProfile.viewBudget
+Descender128ProductBlockCompressedProfile.rounding_bound
+Descender128ProductBlockCompressedProfile.effectiveEta_eq
+Descender128ProductBlockCompressedProfile.publicKeyBytes_eq
+Descender128ProductBlockCompressedProfile.ciphertextBytes_eq
+Descender128ProductBlockCompressedProfile.correctness_slack_eq
 ```
 
 So the prior hand-wavy compression assumption has been split into two checked
 facts: deterministic serialization cannot increase distinguishing advantage,
 and correctness may replace `eta` by `eta + roundingEta` when the decoded
-sample contributes a bounded rounding vector.  The remaining work for this row
-is to instantiate the concrete 12-bit decoder/rounding bound and connect it to
-the final KEM serialization code.
+sample contributes a bounded rounding vector.  The concrete 12-bit profile is
+now instantiated in Lean with `roundingEta = 5`, `effectiveEta = 13`, `pk = 268
+B`, and `ct = 236 B`.  The remaining implementation work for this row is to
+make the executable KEM serializer use the same `PublicSampleSerializationProfile`
+constants.

@@ -183,7 +183,18 @@ Advantage.DistinguishingGame.advantage_map_eq
 SampleView.restrictExperiment_advantage_eq_pullback
 P_TND_Decision.withRoundingNoise_noiseSupport_of_bounds
 PTNDCorrectnessCertificate.withRoundingNoise
+PublicSampleSerializationProfile
+Descender128ProductBlockCompressedProfile.serialization
+Descender128ProductBlockCompressedProfile.rounding_bound
+Descender128ProductBlockCompressedProfile.publicKeyBytes_eq
+Descender128ProductBlockCompressedProfile.ciphertextBytes_eq
 ```
+
+The current concrete 128-bit row is wired as
+`Descender128ProductBlockCompressedProfile.serialization`: `q = 32771`,
+`m0 + m1 = 136` public-sample coordinates, `sampleBits = 12`,
+`roundingEta = 5`, `effectiveEta = 13`, `encodedSampleBytes = 204`,
+`publicKeyBytes = 268`, and `ciphertextBytes = 236`.
 
 ## Proof Strategy Comparison
 
