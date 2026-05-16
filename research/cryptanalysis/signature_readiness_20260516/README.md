@@ -66,11 +66,14 @@ screened rows are around `1124 B` with roughly `2^13` to `2^18` expected retry
 cost, depending on the scalar bound.  This is likely above the target if small
 signatures are the main goal.
 
-The hypothetical product-block challenge route is much more interesting.  The
-size model finds rows around `212 B` to `248 B` with practical retry cost, but
-these are not yet schemes.  They require the public viewed relation to support
-a block-local challenge action that the verifier can apply to the public sample
-without knowing the secret.
+The product-block challenge route is much more interesting.  The original
+size model found rows around `212 B` to `248 B`, but that was a proof-shape
+screen: it did not charge the rejection exponent over every active response
+coordinate.  The concrete exact-box sampler analysis gives a sharper picture:
+for `n = 48`, full-block coverage starts around `496 B`; for the `n = 32`
+candidate, full-block coverage starts around `304 B`.  Intermediate rows with
+weaker block-coverage diagnostics are smaller, for example `390 B` at `n = 48`
+and `243 B` at `n = 32` for the best `>=16` missing-one-block coverage rows.
 
 This is the most promising small-signature research target found so far.
 
@@ -119,6 +122,26 @@ For product-block signatures this is specialized to the response
 `z = y + chi * s` via `productBlockLinearResponse` and
 `productBlockRejectionSampler`.  See `distributional_signature_proof.md`.
 
+## Concrete Sampler Analysis
+
+`tools/parameter-search/src/bin/signature_sampler_analysis.rs` analyzes an
+exact finite sampler: for each active coordinate with shift `|v| <= eta`, it
+samples `y` uniformly from `[-z-eta,z+eta]`, emits `y + v`, and accepts exactly
+when the response lies in `[-z,z]`.  This exactly realizes a
+secret-independent uniform target law on `[-z,z]`.
+
+The key correction is that rejection cost is paid per active response
+coordinate.  This makes very sparse challenges look tiny but weak in
+block-coverage soundness.  The current reports are:
+
+- `sampler_analysis_n48.md`: best full-block row `496 B` with log2 retry
+  `14.63`; best `>=16` coverage row `390 B`.
+- `sampler_analysis_n32.md`: best full-block row `304 B` with log2 retry
+  `19.23`; best `>=16` coverage row `243 B`.
+
+Sizes use canonical challenge encoding.  Carrying a fixed 32-byte challenge
+digest instead adds about `13 B` to `16 B` in these rows.
+
 ## Pay-To-Hash
 
 Hash-only authorization can be tiny, but it is not a reusable signature scheme.
@@ -160,6 +183,7 @@ route is now a product-block Fiat-Shamir-with-aborts design.  The
 verifier-computable block challenge action is formalized for block-diagonal
 systematic views, and the basic signed-challenge noise bound is formalized.
 The distributional rejection-sampling theorem is also formalized as a generic
-finite-probability proof.  The next signature-specific work is the concrete
-sampler analysis and serialized Fiat-Shamir verifier equation rather than
-another parameter-search filter.
+finite-probability proof.  The exact-box sampler is now concrete; the next
+signature-specific work is a sharper block-soundness/extraction theorem and
+the serialized Fiat-Shamir verifier equation rather than another broad
+parameter-search filter.

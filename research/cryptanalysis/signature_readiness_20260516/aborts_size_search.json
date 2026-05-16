@@ -692,7 +692,8 @@
   "conclusions": [
     "Scalar Fiat-Shamir-with-aborts is the conservative algebraic route because the verifier can multiply the public relation by a scalar challenge, but its best small-signature rows are still around the kilobyte scale under practical retry limits.",
     "A high-entropy product-block challenge with coefficients in {-1,0,1} would be dramatically smaller, because it keeps the secret/noise multiplier at one while extracting many challenge bits per repetition.",
-    "The product-block challenge rows are not currently schemes: they require a new proof/algebraic design showing that the public view supports the corresponding block-local challenge action.",
-    "If sub-kilobyte signatures are mandatory, the research target should be an endomorphism/equivariance theorem for product-block challenges, not a generic ZK proof of the KEM relation."
+    "The product-block challenge rows are not currently schemes, but the first algebraic, correctness, and abstract distributional blockers are now resolved for block-diagonal systematic views.",
+    "This table is an optimistic proof-shape screen.  The concrete exact-box sampler analysis supersedes its retry estimates by charging rejection over every active response coordinate.",
+    "If sub-kilobyte signatures are mandatory, the research target should now move from proof shape to concrete instantiation: block-soundness/extraction, the serialized/high-bit verifier equation, and Fiat-Shamir soundness for sparse signed product-block challenges."
   ]
 }

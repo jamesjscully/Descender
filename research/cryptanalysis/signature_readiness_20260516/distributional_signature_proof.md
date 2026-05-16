@@ -55,20 +55,25 @@ framework.
 
 ## What Remains
 
-The proof is now factored correctly, but the concrete analytic sampler
-instantiation is still open.  The next proof obligation is to exhibit a
-practical product-block mask distribution and rejection predicate satisfying
-the exact accepted-test-mass equation, or a statistically close variant with an
-explicit distance bound.
+The proof is now factored correctly, and the first concrete exact sampler is
+analyzed in `sampler_analysis_n48.md` and `sampler_analysis_n32.md`.  The
+sampler uses an enlarged uniform box for the mask and accepts exactly when the
+shifted response falls in the target box.  This satisfies the exact
+accepted-test-mass equation coordinatewise.
 
-The exact certificate is idealized.  For deployed parameters, we probably need
-one of:
+The remaining proof obligation is not distributional secrecy.  It is
+block-soundness and extraction for sparse product-block challenges.  Low-weight
+challenges produce very small signatures, but a prover missing one block can
+hope the challenge avoids that block.  The concrete reports therefore separate:
 
-- an exact finite distribution where the accepted response is literally a fixed
-  target law;
-- a bounded statistical-distance theorem with rejection loss;
-- a computationally generated certificate for the finite distribution at the
-  target parameter sizes.
+- entropy-and-retry rows, which can be extremely small but have weak block
+  coverage diagnostics;
+- intermediate coverage rows, such as `243 B` for the `n = 32` profile;
+- full-block rows, such as `304 B` for the `n = 32` profile and `496 B` for
+  the `n = 48` profile.
+
+For further size reductions, the likely route is a sharper soundness theorem
+for intermediate block coverage, not a more conservative sampler.
 
 ## Current State
 
@@ -77,8 +82,10 @@ The product-block route now has three formal layers:
 1. block-local challenge equivariance for the public systematic relation;
 2. signed-challenge error preservation for noisy and serialized views;
 3. rejection-sampling distributional secrecy, conditional on the accepted mass
-   matching a secret-independent target law.
+   matching a secret-independent target law;
+4. a concrete exact-box sampler analysis that instantiates the target law and
+   quantifies response size versus retry cost.
 
-The remaining blocker is no longer the shape of the proof.  It is the concrete
-sampler analysis: can we make the accepted-test-mass equation true, or close
-enough, for the small `212 B` to `248 B` signature rows?
+The remaining blocker is no longer the sampler distribution.  It is whether an
+intermediate block-coverage row can be given a sound Fiat-Shamir extraction
+argument, or whether we must pay for full-block challenges.

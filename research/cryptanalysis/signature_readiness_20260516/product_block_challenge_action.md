@@ -70,6 +70,11 @@ to instantiate the certificate for a concrete mask distribution and rejection
 predicate, or to replace the exact certificate with an explicit statistical
 distance bound.
 
+`signature_sampler_analysis.rs` now gives the first concrete instantiation: an
+enlarged uniform-box mask with exact target-box rejection.  It shows that the
+accepted-test-mass equation is achievable, but also corrects the earlier size
+screen by charging rejection over every active response coordinate.
+
 ## Signature Meaning
 
 The proof discharges the main algebraic objection to a product-block sparse
@@ -90,8 +95,9 @@ are:
 
 - the exact bit-level serialized/high-bit transcript equation, including how
   rounding errors are encoded and decoded;
-- a concrete product-block rejection sampler satisfying the exact accepted-mass
-  certificate, or a statistically close approximate version;
+- a sharper block-soundness/extraction theorem for intermediate-coverage rows,
+  or acceptance that the first conservative scheme should use full-block
+  challenges;
 - a Fiat-Shamir proof/game with challenge derivation, rewinding or forking
   analysis, and transcript binding;
 - concrete challenge encoding and canonical serialization for the block subset
@@ -102,7 +108,8 @@ are:
 ## Consequence
 
 The `212 B` to `248 B` rows in `aborts_size_search.md` should no longer be
-described as blocked by a missing equivariance lemma.  They are still
-research candidates, but the next blocker has moved to the signature proof
-itself: concrete sampler analysis plus the serialized Fiat-Shamir verifier
-equation.
+described as blocked by a missing equivariance lemma.  They should also not be
+treated as final concrete sampler sizes: the exact sampler reports move the
+conservative full-block targets to about `304 B` for `n = 32` and `496 B` for
+`n = 48`.  The next blocker is block-soundness/extraction for smaller
+intermediate rows plus the serialized Fiat-Shamir verifier equation.

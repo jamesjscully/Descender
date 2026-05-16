@@ -1,0 +1,502 @@
+use serde::Serialize;
+use std::env;
+use std::fs;
+use std::path::PathBuf;
+
+#[derive(Clone, Debug)]
+struct Config {
+    q: u64,
+    n: u64,
+    eta: u64,
+    product_block_groups: u64,
+    target_bits: f64,
+    digest_bytes: u64,
+    max_log2_retries: f64,
+    block_weights: Vec<u64>,
+    z_bounds: Vec<u64>,
+    output_json: PathBuf,
+    output_md: PathBuf,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            q: 12289,
+            n: 48,
+            eta: 12,
+            product_block_groups: 16,
+            target_bits: 128.0,
+            digest_bytes: 32,
+            max_log2_retries: 20.0,
+            block_weights: (1..=16).collect(),
+            z_bounds: vec![
+                12, 16, 24, 32, 48, 64, 80, 96, 128, 160, 192, 224, 256, 320, 384, 448, 512,
+                640, 768, 1024,
+            ],
+            output_json: PathBuf::from(
+                "research/cryptanalysis/signature_readiness_20260516/sampler_analysis_n48.json",
+            ),
+            output_md: PathBuf::from(
+                "research/cryptanalysis/signature_readiness_20260516/sampler_analysis_n48.md",
+            ),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize)]
+struct SamplerOutput {
+    q: u64,
+    n: u64,
+    eta: u64,
+    product_block_groups: u64,
+    local_free_coordinates_per_block: u64,
+    target_bits: f64,
+    digest_bytes: u64,
+    max_log2_retries: f64,
+    best_entropy_retry_rows: Vec<SamplerRow>,
+    best_coverage_16_rows: Vec<SamplerRow>,
+    best_coverage_32_rows: Vec<SamplerRow>,
+    best_full_coverage_rows: Vec<SamplerRow>,
+    conclusions: Vec<String>,
+}
+
+#[derive(Clone, Debug, Serialize)]
+struct SamplerRow {
+    model: String,
+    proof_status: String,
+    block_weight: u64,
+    challenge_description: String,
+    challenge_entropy_bits: f64,
+    repetitions: u64,
+    local_free_coordinates_per_block: u64,
+    active_response_coordinates: u64,
+    accepted_z_bound: u64,
+    mask_bound: u64,
+    z_bits_per_coordinate: u64,
+    response_bytes_per_repetition: u64,
+    total_response_bytes: u64,
+    challenge_encoding_bytes: u64,
+    estimated_signature_bytes: u64,
+    signature_bytes_with_digest: u64,
+    coordinate_accept_probability: f64,
+    log2_retry_per_repetition: f64,
+    log2_expected_retries: f64,
+    missing_one_block_soundness_bits: Option<f64>,
+    full_block_coverage: bool,
+    verdict: String,
+}
+
+fn parse_csv_u64(s: &str) -> Vec<u64> {
+    s.split(',')
+        .filter(|part| !part.is_empty())
+        .map(|part| part.parse().expect("invalid integer CSV"))
+        .collect()
+}
+
+fn parse_args() -> Result<Config, String> {
+    let mut cfg = Config::default();
+    let mut args = env::args().skip(1);
+    while let Some(arg) = args.next() {
+        let mut value = |flag: &str| {
+            args.next()
+                .ok_or_else(|| format!("{flag} requires a value"))
+        };
+        match arg.as_str() {
+            "--q" => cfg.q = value("--q")?.parse().map_err(|_| "invalid --q")?,
+            "--n" => cfg.n = value("--n")?.parse().map_err(|_| "invalid --n")?,
+            "--eta" => cfg.eta = value("--eta")?.parse().map_err(|_| "invalid --eta")?,
+            "--product-block-groups" => {
+                cfg.product_block_groups = value("--product-block-groups")?
+                    .parse()
+                    .map_err(|_| "invalid --product-block-groups")?
+            }
+            "--target-bits" => {
+                cfg.target_bits = value("--target-bits")?
+                    .parse()
+                    .map_err(|_| "invalid --target-bits")?
+            }
+            "--digest-bytes" => {
+                cfg.digest_bytes = value("--digest-bytes")?
+                    .parse()
+                    .map_err(|_| "invalid --digest-bytes")?
+            }
+            "--max-log2-retries" => {
+                cfg.max_log2_retries = value("--max-log2-retries")?
+                    .parse()
+                    .map_err(|_| "invalid --max-log2-retries")?
+            }
+            "--block-weights" => cfg.block_weights = parse_csv_u64(&value("--block-weights")?),
+            "--z-bounds" => cfg.z_bounds = parse_csv_u64(&value("--z-bounds")?),
+            "--output-json" => cfg.output_json = PathBuf::from(value("--output-json")?),
+            "--output-md" => cfg.output_md = PathBuf::from(value("--output-md")?),
+            "--help" | "-h" => {
+                print_help();
+                std::process::exit(0);
+            }
+            other => return Err(format!("unknown argument {other}")),
+        }
+    }
+    Ok(cfg)
+}
+
+fn print_help() {
+    println!(
+        "Analyze exact-box product-block rejection samplers\n\
+         \n\
+         The sampler uses y uniform in [-z-eta,z+eta]^d, response z=y+shift,\n\
+         and accepts iff z lies in [-z,z]^d.  This exactly realizes a uniform\n\
+         target response distribution for every shift with |shift_i| <= eta.\n\
+         \n\
+         Options:\n\
+           --q N\n\
+           --n N\n\
+           --eta N\n\
+           --product-block-groups N\n\
+           --target-bits FLOAT\n\
+           --digest-bytes N\n\
+           --max-log2-retries FLOAT\n\
+           --block-weights CSV\n\
+           --z-bounds CSV\n\
+           --output-json PATH\n\
+           --output-md PATH"
+    );
+}
+
+fn ceil_log2(n: u64) -> u64 {
+    if n <= 1 {
+        0
+    } else {
+        u64::BITS as u64 - (n - 1).leading_zeros() as u64
+    }
+}
+
+fn packed_bytes(entries: u64, bits_per_entry: u64) -> u64 {
+    entries.saturating_mul(bits_per_entry).saturating_add(7) / 8
+}
+
+fn packed_bits_as_bytes(bits: f64) -> u64 {
+    ((bits.ceil() as u64).saturating_add(7)) / 8
+}
+
+fn log2_binomial(n: u64, k: u64) -> f64 {
+    if k > n {
+        return f64::NEG_INFINITY;
+    }
+    let k = k.min(n - k);
+    (0..k)
+        .map(|i| ((n - i) as f64).log2() - ((i + 1) as f64).log2())
+        .sum()
+}
+
+fn coordinate_accept_probability(z_bound: u64, eta: u64) -> f64 {
+    (2 * z_bound + 1) as f64 / (2 * (z_bound + eta) + 1) as f64
+}
+
+fn missing_one_block_bits(groups: u64, weight: u64, repetitions: u64) -> Option<f64> {
+    if weight >= groups {
+        None
+    } else {
+        let avoid_probability = (groups - weight) as f64 / groups as f64;
+        Some(repetitions as f64 * (-avoid_probability.log2()))
+    }
+}
+
+fn build_row(
+    cfg: &Config,
+    local_free: u64,
+    weight: u64,
+    z_bound: u64,
+) -> Option<SamplerRow> {
+    if weight == 0 || weight > cfg.product_block_groups {
+        return None;
+    }
+    let challenge_entropy_bits = log2_binomial(cfg.product_block_groups, weight) + weight as f64;
+    if challenge_entropy_bits <= 0.0 {
+        return None;
+    }
+    let repetitions = (cfg.target_bits / challenge_entropy_bits).ceil() as u64;
+    let active_response_coordinates = weight.saturating_mul(local_free);
+    let coordinate_accept_probability = coordinate_accept_probability(z_bound, cfg.eta);
+    let log2_retry_per_repetition =
+        active_response_coordinates as f64 * (-coordinate_accept_probability.log2());
+    let log2_expected_retries = repetitions as f64 * log2_retry_per_repetition;
+    let z_bits_per_coordinate = ceil_log2(2 * z_bound + 1);
+    let response_bytes_per_repetition =
+        packed_bytes(active_response_coordinates, z_bits_per_coordinate);
+    let total_response_bytes = repetitions.saturating_mul(response_bytes_per_repetition);
+    let challenge_encoding_bytes =
+        packed_bits_as_bytes(repetitions as f64 * challenge_entropy_bits);
+    let estimated_signature_bytes = challenge_encoding_bytes.saturating_add(total_response_bytes);
+    let signature_bytes_with_digest = cfg
+        .digest_bytes
+        .saturating_add(total_response_bytes);
+    let missing_one_block_soundness_bits =
+        missing_one_block_bits(cfg.product_block_groups, weight, repetitions);
+    let full_block_coverage = weight == cfg.product_block_groups;
+    let verdict = if log2_expected_retries > cfg.max_log2_retries {
+        "retry-cost-too-high"
+    } else if full_block_coverage {
+        "candidate-full-block-coverage"
+    } else if missing_one_block_soundness_bits.unwrap_or(0.0) >= 32.0 {
+        "candidate-coverage-32"
+    } else if missing_one_block_soundness_bits.unwrap_or(0.0) >= 16.0 {
+        "candidate-coverage-16"
+    } else {
+        "entropy-retry-pass-weak-block-coverage"
+    }
+    .to_string();
+    Some(SamplerRow {
+        model: "exact-box-active-product-block-response".to_string(),
+        proof_status: "exact-uniform-target-if-rejection-certificate-instantiated".to_string(),
+        block_weight: weight,
+        challenge_description: format!(
+            "choose {weight} signed product blocks among {}",
+            cfg.product_block_groups
+        ),
+        challenge_entropy_bits,
+        repetitions,
+        local_free_coordinates_per_block: local_free,
+        active_response_coordinates,
+        accepted_z_bound: z_bound,
+        mask_bound: z_bound + cfg.eta,
+        z_bits_per_coordinate,
+        response_bytes_per_repetition,
+        total_response_bytes,
+        challenge_encoding_bytes,
+        estimated_signature_bytes,
+        signature_bytes_with_digest,
+        coordinate_accept_probability,
+        log2_retry_per_repetition,
+        log2_expected_retries,
+        missing_one_block_soundness_bits,
+        full_block_coverage,
+        verdict,
+    })
+}
+
+fn keep_best(mut rows: Vec<SamplerRow>, limit: usize) -> Vec<SamplerRow> {
+    rows.sort_by(|a, b| {
+        a.estimated_signature_bytes
+            .cmp(&b.estimated_signature_bytes)
+            .then_with(|| {
+                a.log2_expected_retries
+                    .partial_cmp(&b.log2_expected_retries)
+                    .unwrap()
+            })
+            .then_with(|| {
+                b.challenge_entropy_bits
+                    .partial_cmp(&a.challenge_entropy_bits)
+                    .unwrap()
+            })
+    });
+    rows.truncate(limit);
+    rows
+}
+
+fn run_analysis(cfg: &Config) -> Result<SamplerOutput, String> {
+    if cfg.product_block_groups == 0 {
+        return Err("--product-block-groups must be positive".to_string());
+    }
+    if cfg.n % cfg.product_block_groups != 0 {
+        return Err(format!(
+            "n={} must be divisible by product_block_groups={}",
+            cfg.n, cfg.product_block_groups
+        ));
+    }
+    let local_free = cfg.n / cfg.product_block_groups;
+    let mut retry_pass = Vec::new();
+    for &weight in &cfg.block_weights {
+        for &z_bound in &cfg.z_bounds {
+            if let Some(row) = build_row(cfg, local_free, weight, z_bound) {
+                if row.log2_expected_retries <= cfg.max_log2_retries {
+                    retry_pass.push(row);
+                }
+            }
+        }
+    }
+    let coverage_16 = retry_pass
+        .iter()
+        .filter(|row| row.missing_one_block_soundness_bits.unwrap_or(f64::INFINITY) >= 16.0)
+        .cloned()
+        .collect();
+    let coverage_32 = retry_pass
+        .iter()
+        .filter(|row| row.missing_one_block_soundness_bits.unwrap_or(f64::INFINITY) >= 32.0)
+        .cloned()
+        .collect();
+    let full_coverage = retry_pass
+        .iter()
+        .filter(|row| row.full_block_coverage)
+        .cloned()
+        .collect();
+    Ok(SamplerOutput {
+        q: cfg.q,
+        n: cfg.n,
+        eta: cfg.eta,
+        product_block_groups: cfg.product_block_groups,
+        local_free_coordinates_per_block: local_free,
+        target_bits: cfg.target_bits,
+        digest_bytes: cfg.digest_bytes,
+        max_log2_retries: cfg.max_log2_retries,
+        best_entropy_retry_rows: keep_best(retry_pass, 20),
+        best_coverage_16_rows: keep_best(coverage_16, 12),
+        best_coverage_32_rows: keep_best(coverage_32, 12),
+        best_full_coverage_rows: keep_best(full_coverage, 12),
+        conclusions: conclusions(cfg, local_free),
+    })
+}
+
+fn conclusions(cfg: &Config, local_free: u64) -> Vec<String> {
+    vec![
+        format!(
+            "The exact-box sampler is concrete: for each active coordinate, sample y uniformly from [-z-eta,z+eta], output y+shift, and accept iff the response lies in [-z,z].  This exactly realizes the target law with per-coordinate acceptance (2z+1)/(2(z+eta)+1)."
+        ),
+        format!(
+            "The rejection exponent is active coordinates, not one scalar.  For this profile each active product block contributes {local_free} free response coordinates."
+        ),
+        "Signature sizes are reported with canonical challenge encoding.  Carrying a fixed 32-byte hash/digest instead adds the difference shown in the digest-size column.".to_string(),
+        "The smallest rows pass challenge-entropy and retry accounting by using very low block weight, but their block-coverage diagnostic is weak: a prover missing one block can hope the challenge avoids it too often.".to_string(),
+        format!(
+            "Full-block challenges remove the coverage caveat at the cost of responding on all {} coordinates; these rows are the cleanest conservative targets if proof-of-knowledge extraction must touch every block in each repetition.",
+            cfg.n
+        ),
+        "The most promising small-signature route is likely an intermediate coverage row plus a sharper soundness/extraction theorem, not a return to scalar challenges.".to_string(),
+    ]
+}
+
+fn markdown(out: &SamplerOutput) -> String {
+    let mut lines = vec![
+        "# Product-Block Signature Sampler Analysis".to_string(),
+        String::new(),
+        format!("- q: `{}`", out.q),
+        format!("- n: `{}`", out.n),
+        format!("- eta: `{}`", out.eta),
+        format!("- product blocks: `{}`", out.product_block_groups),
+        format!(
+            "- local free coordinates per block: `{}`",
+            out.local_free_coordinates_per_block
+        ),
+        format!("- target challenge bits: `{:.1}`", out.target_bits),
+        format!("- digest bytes: `{}`", out.digest_bytes),
+        format!("- max log2 expected retries: `{:.1}`", out.max_log2_retries),
+        String::new(),
+        "## Exact Sampler".to_string(),
+        String::new(),
+        "For each active response coordinate with shift `|v| <= eta`, sample `y` uniformly from `[-z-eta,z+eta]`, output `r = y + v`, and accept iff `r in [-z,z]`.  For every allowed shift, the accepted response is exactly uniform on `[-z,z]`.".to_string(),
+        String::new(),
+        "The per-coordinate acceptance probability is `(2z+1)/(2(z+eta)+1)`.  The total retry exponent is charged over active response coordinates only.".to_string(),
+        String::new(),
+        "## Best Entropy + Retry Rows".to_string(),
+        String::new(),
+    ];
+    append_table(&mut lines, &out.best_entropy_retry_rows);
+    lines.extend([
+        String::new(),
+        "## Best Rows With >=16 Bits Missing-One-Block Coverage".to_string(),
+        String::new(),
+    ]);
+    append_table(&mut lines, &out.best_coverage_16_rows);
+    lines.extend([
+        String::new(),
+        "## Best Rows With >=32 Bits Missing-One-Block Coverage".to_string(),
+        String::new(),
+    ]);
+    append_table(&mut lines, &out.best_coverage_32_rows);
+    lines.extend([
+        String::new(),
+        "## Best Full-Block Coverage Rows".to_string(),
+        String::new(),
+    ]);
+    append_table(&mut lines, &out.best_full_coverage_rows);
+    lines.extend([String::new(), "## Conclusions".to_string(), String::new()]);
+    for conclusion in &out.conclusions {
+        lines.push(format!("- {conclusion}"));
+    }
+    lines.push(String::new());
+    lines.join("\n")
+}
+
+fn fmt_optional_bits(bits: Option<f64>) -> String {
+    match bits {
+        Some(bits) => format!("{bits:.2}"),
+        None => "full".to_string(),
+    }
+}
+
+fn append_table(lines: &mut Vec<String>, rows: &[SamplerRow]) {
+    lines.push("| weight | entropy | reps | active coords | z bound | z bits | response/rep | challenge bytes | sig bytes | sig bytes w/32B hash | log2 retries | missing-one-block bits | verdict |".to_string());
+    lines.push("|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|".to_string());
+    for row in rows {
+        lines.push(format!(
+            "| {} | {:.2} | {} | {} | {} | {} | {} | {} | {} | {} | {:.2} | {} | {} |",
+            row.block_weight,
+            row.challenge_entropy_bits,
+            row.repetitions,
+            row.active_response_coordinates,
+            row.accepted_z_bound,
+            row.z_bits_per_coordinate,
+            row.response_bytes_per_repetition,
+            row.challenge_encoding_bytes,
+            row.estimated_signature_bytes,
+            row.signature_bytes_with_digest,
+            row.log2_expected_retries,
+            fmt_optional_bits(row.missing_one_block_soundness_bits),
+            row.verdict
+        ));
+    }
+}
+
+fn main() -> Result<(), String> {
+    let cfg = parse_args()?;
+    let out = run_analysis(&cfg)?;
+    if let Some(parent) = cfg.output_json.parent() {
+        fs::create_dir_all(parent).map_err(|e| format!("create {}: {e}", parent.display()))?;
+    }
+    if let Some(parent) = cfg.output_md.parent() {
+        fs::create_dir_all(parent).map_err(|e| format!("create {}: {e}", parent.display()))?;
+    }
+    let json = serde_json::to_string_pretty(&out).map_err(|e| format!("serialize json: {e}"))?;
+    fs::write(&cfg.output_json, format!("{json}\n"))
+        .map_err(|e| format!("write {}: {e}", cfg.output_json.display()))?;
+    fs::write(&cfg.output_md, markdown(&out))
+        .map_err(|e| format!("write {}: {e}", cfg.output_md.display()))?;
+    println!("wrote {}", cfg.output_json.display());
+    println!("wrote {}", cfg.output_md.display());
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn coordinate_acceptance_matches_exact_box_count() {
+        let p = coordinate_accept_probability(128, 12);
+        let expected = 257.0 / 281.0;
+        assert!((p - expected).abs() < 1e-12);
+    }
+
+    #[test]
+    fn default_profile_has_subkilobyte_full_coverage_row() {
+        let out = run_analysis(&Config::default()).unwrap();
+        assert!(out
+            .best_full_coverage_rows
+            .iter()
+            .any(|row| row.estimated_signature_bytes < 600));
+    }
+
+    #[test]
+    fn n32_profile_has_smaller_full_coverage_row() {
+        let cfg = Config {
+            n: 32,
+            output_json: PathBuf::from("/tmp/unused.json"),
+            output_md: PathBuf::from("/tmp/unused.md"),
+            ..Config::default()
+        };
+        let out = run_analysis(&cfg).unwrap();
+        assert!(out
+            .best_full_coverage_rows
+            .iter()
+            .any(|row| row.estimated_signature_bytes < 400));
+    }
+}
