@@ -57,6 +57,21 @@ The multi-fork deterministic layer is also formalized:
 For the concrete modulus used by the current reports, Lean records
 `invTwo_zmod12289`, namely `(6145 : ZMod 12289) * 2 = 1`.
 
+`Descender/SignatureForking.lean` builds on this deterministic layer with the
+finite-probability accounting for Fiat-Shamir multi-forks.  It proves
+
+```text
+Pr[extractable] >= Pr[accepting same-commitment forks]
+                  - Pr[compact fork-delta coverage failure].
+```
+
+The certificate wrapper then turns an external forking loss into the final
+bound:
+
+```text
+Pr[extractable] >= forgerSuccess - forkingLoss - coverageFailureBound.
+```
+
 ## Exact Coverage Accounting
 
 `signature_sampler_analysis.rs` now computes exact any-block miss probabilities
@@ -108,10 +123,11 @@ row has only `2.02` bits of compact one-fork delta coverage.
 
 The best small-signature target is now explicit.  The deterministic multi-fork
 extractor is formalized: six accepting draws are enough whenever they give
-compact opposite-sign coverage.  The remaining question is probabilistic, not
-algebraic: prove that the Fiat-Shamir/forking game can obtain those accepting
-draws with a tolerable loss and bind them to the same commitment.  Under that
-game, the `n = 32` row at about `255 B` is the leading reusable-signature
+compact opposite-sign coverage.  The finite-probability shell around that
+extractor is also formalized.  The remaining question is the concrete
+random-oracle bound for `forkingLoss`: prove that the Fiat-Shamir/forking game
+can obtain six accepting same-commitment draws with a tolerable loss.  Under
+that game, the `n = 32` row at about `255 B` is the leading reusable-signature
 candidate above the `24`-bit compact fork-delta line.  If we want a cleaner
 `32`-bit compact fork-delta line without relying on sparse intermediate
 coverage, the conservative `n = 32` target is about `304 B`.

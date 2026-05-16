@@ -94,8 +94,12 @@ The product-block route now has three formal layers:
 6. a deterministic multi-fork extraction theorem: several accepting draws for
    one commitment/mask recover the whole product-block secret when compact
    opposite-sign coverage holds.
+7. a finite-probability Fiat-Shamir multi-fork shell proving
+   `Pr[extractable] >= forgerSuccess - forkingLoss -
+   coverageFailureBound`, conditional on an external bound for producing
+   accepting same-commitment forks.
 
 The remaining blocker is no longer the sampler distribution.  It is whether an
-intermediate compact fork-delta row can be connected to a probabilistic
-Fiat-Shamir forking lemma with acceptable loss, or whether we must pay for
-full-block responses.
+intermediate compact fork-delta row can be connected to a concrete
+random-oracle forking-loss bound for six accepting draws, or whether we must
+pay for full-block responses.

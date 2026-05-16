@@ -178,6 +178,27 @@ modulus, Lean records `(6145 : ZMod 12289) * 2 = 1`.  The sampler reports
 compute exact any-block-missed probabilities for both active coverage and
 compact fork-delta coverage.  See `block_challenge_soundness.md`.
 
+## Fiat-Shamir Forking
+
+`Descender/SignatureForking.lean` now adds the finite-probability shell around
+the deterministic multi-fork extractor.  The main loss statement is:
+
+```text
+Pr[extractable] >= Pr[accepting same-commitment forks]
+                  - Pr[compact fork-delta coverage failure].
+```
+
+The wrapper `MultiForkForkingCertificate` packages the end-to-end accounting:
+
+```text
+Pr[extractable] >= forgerSuccess - forkingLoss - coverageFailureBound.
+```
+
+Thus the `2^-27.33` compact coverage-failure term for the `255 B`, `n = 32`
+row now plugs into a formal theorem.  The still-open part is the concrete
+random-oracle forking lemma that bounds `forkingLoss` for six accepting
+same-commitment challenge draws.  See `fiat_shamir_multifork.md`.
+
 ## Pay-To-Hash
 
 Hash-only authorization can be tiny, but it is not a reusable signature scheme.
@@ -220,7 +241,7 @@ verifier-computable block challenge action is formalized for block-diagonal
 systematic views, and the basic signed-challenge noise bound is formalized.
 The distributional rejection-sampling theorem is also formalized as a generic
 finite-probability proof.  The exact-box sampler, compact fork-delta coverage
-analysis, and deterministic multi-fork extractor are now concrete.  The next
-signature-specific work is the probabilistic Fiat-Shamir forking lemma that
-produces six accepting draws for one commitment with a quantified loss, plus
-the serialized verifier equation.
+analysis, deterministic multi-fork extractor, and finite-probability forking
+loss shell are now concrete.  The next signature-specific work is deriving the
+actual random-oracle `forkingLoss` bound for six accepting draws, plus the
+serialized verifier equation.

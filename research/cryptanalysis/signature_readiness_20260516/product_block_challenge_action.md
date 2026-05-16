@@ -123,5 +123,7 @@ full-block targets to about `304 B` for `n = 32` and `496 B` for `n = 48`.
 Compact fork-delta accounting with six challenge draws gives intermediate
 targets of about `255 B` for `n = 32` and `415 B` for `n = 48` above the
 `24`-bit line.  The deterministic multi-fork extractor now matches that metric.
-The next blocker is the probabilistic forking theorem plus the serialized
-verifier equation.
+The finite-probability forking shell also matches that metric by proving
+extractor success at least `forgerSuccess - forkingLoss -
+coverageFailureBound`.  The next blocker is the concrete random-oracle
+forking-loss bound plus the serialized verifier equation.
