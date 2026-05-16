@@ -48,6 +48,6 @@
   "notes": [
     "Skeleton binaries are zero-filled size/layout artifacts, not cryptographic test vectors.",
     "Byte counts are the canonical public sample profile consumed by the parameter search accounting.",
-    "The rounding bound mirrors PublicSampleSerializationProfile.hRoundingBound."
+    "The rounding check mirrors PublicSampleSerializationProfile.hRoundingSound."
   ]
 }

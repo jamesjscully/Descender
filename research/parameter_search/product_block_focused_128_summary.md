@@ -288,6 +288,12 @@ Descender128ProductBlockCompressedProfile.effectiveEta_eq
 Descender128ProductBlockCompressedProfile.publicKeyBytes_eq
 Descender128ProductBlockCompressedProfile.ciphertextBytes_eq
 Descender128ProductBlockCompressedProfile.correctness_slack_eq
+Descender128CoordinateSubviewProfile.serialization
+Descender128CoordinateSubviewProfile.viewBudget
+Descender128CoordinateSubviewProfile.exact_encoding
+Descender128CoordinateSubviewProfile.publicKeyBytes_eq
+Descender128CoordinateSubviewProfile.ciphertextBytes_eq
+Descender128CoordinateSubviewProfile.correctness_slack_eq
 ```
 
 So the prior hand-wavy compression assumption has been split into two checked
@@ -295,7 +301,9 @@ facts: deterministic serialization cannot increase distinguishing advantage,
 and correctness may replace `eta` by `eta + roundingEta` when the decoded
 sample contributes a bounded rounding vector.  The concrete 12-bit profile is
 now instantiated in Lean with `roundingEta = 5`, `effectiveEta = 13`, `pk = 268
-B`, and `ct = 236 B`.  The executable parameter-search path now mirrors this as
+B`, and `ct = 236 B`.  The coordinate-subview profile is also instantiated with
+exact 14-bit sample encoding, `roundingEta = 0`, `pk = 172 B`, and `ct = 172 B`.
+The executable parameter-search path now mirrors both as
 `metrics.public_sample_serialization`, derives canonical `pk`/`ct` byte counts
-from that profile, and has a regression test pinning the 128-bit row to the
-Lean profile name.
+from those profiles, and has regression tests pinning both 128-bit rows to
+their Lean profile names.

@@ -186,15 +186,25 @@ PTNDCorrectnessCertificate.withRoundingNoise
 PublicSampleSerializationProfile
 Descender128ProductBlockCompressedProfile.serialization
 Descender128ProductBlockCompressedProfile.rounding_bound
+Descender128CoordinateSubviewProfile.serialization
+Descender128CoordinateSubviewProfile.exact_encoding
 Descender128ProductBlockCompressedProfile.publicKeyBytes_eq
 Descender128ProductBlockCompressedProfile.ciphertextBytes_eq
+Descender128CoordinateSubviewProfile.publicKeyBytes_eq
+Descender128CoordinateSubviewProfile.ciphertextBytes_eq
 ```
 
-The current concrete 128-bit row is wired as
+The compressed full-sample 128-bit row is wired as
 `Descender128ProductBlockCompressedProfile.serialization`: `q = 32771`,
 `m0 + m1 = 136` public-sample coordinates, `sampleBits = 12`,
 `roundingEta = 5`, `effectiveEta = 13`, `encodedSampleBytes = 204`,
 `publicKeyBytes = 268`, and `ciphertextBytes = 236`.
+
+The smaller coordinate-subview 128-bit row is wired as
+`Descender128CoordinateSubviewProfile.serialization`: `q = 12289`,
+`n = 48`, `m0 = 80`, `m1 = 32`, `viewCoords = 80`, exact 14-bit sample
+encoding with `roundingEta = 0`, `encodedSampleBytes = 140`,
+`publicKeyBytes = 172`, and `ciphertextBytes = 172`.
 
 Executable search output now mirrors this proof object in
 `metrics.public_sample_serialization`.  Canonical public-key and ciphertext
@@ -216,10 +226,26 @@ cargo run --manifest-path tools/parameter-search/Cargo.toml \
   --bin canonical_serialization_vector
 ```
 
+For the 172-byte coordinate-subview row:
+
+```bash
+cargo run --manifest-path tools/parameter-search/Cargo.toml \
+  --bin canonical_serialization_vector -- \
+  --preset descender128-coordinate-subview
+```
+
 This writes JSON/Markdown layout metadata and zero-filled PK/CT skeleton files
 under `research/parameter_search/canonical_serialization_vectors/`.  The
 skeleton binaries are for byte-size and layout benchmarking only; they are not
 cryptographic known-answer tests.
+
+The focused 172-byte witness is recorded in
+`research/parameter_search/coordinate_subview_profile_172_witness/`, with
+validation in
+`research/parameter_search/coordinate_subview_profile_172_witness_validated/`.
+That validation passes through the `coordinate-subview-lee-dual-restricted`
+route and checks that the emitted proof profile is
+`Descender128CoordinateSubviewProfile.serialization`.
 
 ## Proof Strategy Comparison
 

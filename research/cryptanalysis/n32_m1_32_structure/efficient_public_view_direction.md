@@ -211,15 +211,25 @@ Descender128ProductBlockCompressedProfile.rounding_bound
 Descender128ProductBlockCompressedProfile.effective_amplitude_bound
 Descender128ProductBlockCompressedProfile.publicKeyBytes_eq
 Descender128ProductBlockCompressedProfile.ciphertextBytes_eq
+Descender128CoordinateSubviewProfile.serialization
+Descender128CoordinateSubviewProfile.viewBudget
+Descender128CoordinateSubviewProfile.exact_encoding
+Descender128CoordinateSubviewProfile.effective_amplitude_bound
+Descender128CoordinateSubviewProfile.publicKeyBytes_eq
+Descender128CoordinateSubviewProfile.ciphertextBytes_eq
 ```
 
-This records the deployed arithmetic bridge for the best row found so far:
+This records the deployed arithmetic bridge for both leading 128-bit rows.  The
+safer compressed full-sample profile has
 `q = 32771`, `eta = 8`, 12-bit public-sample coordinates, `roundingEta = 5`,
 effective eta `13`, 204 encoded sample bytes, 268 public-key bytes, and 236
+ciphertext bytes.  The coordinate-subview profile has `q = 12289`, `n = 48`,
+`m0 = 80`, `m1 = 32`, `viewCoords = 80`, exact 14-bit sample coordinates,
+`roundingEta = 0`, 140 encoded sample bytes, 172 public-key bytes, and 172
 ciphertext bytes.  The parameter-search executable now emits the corresponding
 `metrics.public_sample_serialization` object and derives canonical public-key
-and ciphertext sizes from it, with a Rust regression test checking this row
-against the Lean profile name.
+and ciphertext sizes from it, with Rust regression tests checking both rows
+against their Lean profile names.
 
 This is the route that makes an efficient construction proof-carrying.  Instead
 of trying to certify an arbitrary dense `P` by bounded search, build `P` from

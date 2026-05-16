@@ -722,8 +722,23 @@ fn proof_profile_name(
         && encoded_sample_bytes == 204
         && public_key_bytes == 268
         && ciphertext_bytes == 236;
-    matches_descender128_product_block_compressed
-        .then(|| "Descender128ProductBlockCompressedProfile.serialization".to_string())
+    let matches_descender128_coordinate_subview = c.q == 12289
+        && c.n == 48
+        && c.m0 == 80
+        && c.m1 == 32
+        && c.eta == 12
+        && c.sample_bits == 0
+        && c.view_len() == 80
+        && encoded_sample_bytes == 140
+        && public_key_bytes == 172
+        && ciphertext_bytes == 172;
+    if matches_descender128_product_block_compressed {
+        Some("Descender128ProductBlockCompressedProfile.serialization".to_string())
+    } else if matches_descender128_coordinate_subview {
+        Some("Descender128CoordinateSubviewProfile.serialization".to_string())
+    } else {
+        None
+    }
 }
 
 fn public_sample_serialization(
@@ -2160,6 +2175,25 @@ mod tests {
         }
     }
 
+    fn descender128_coordinate_subview_candidate() -> Candidate {
+        Candidate {
+            proof_strategy: "lossy-budget".to_string(),
+            primal_distance_model: "guard-only".to_string(),
+            q: 12289,
+            n: 48,
+            m0: 80,
+            m1: 32,
+            fiber_dim: 128,
+            eta: 12,
+            sample_bits: 0,
+            view_coords: 80,
+            pk_seed_bytes: 32,
+            qary_amplitude_strategy: "product-block-lee".to_string(),
+            lee_repetition: 512,
+            lee_rows_per_group: 3,
+        }
+    }
+
     #[test]
     fn executable_serialization_matches_lean_descender128_profile() {
         let c = descender128_product_block_compressed_candidate();
@@ -2189,6 +2223,22 @@ mod tests {
         assert_eq!(
             metrics.public_sample_serialization.proof_profile.as_deref(),
             Some("Descender128ProductBlockCompressedProfile.serialization")
+        );
+    }
+
+    #[test]
+    fn executable_serialization_matches_lean_coordinate_subview_profile() {
+        let c = descender128_coordinate_subview_candidate();
+        let metrics = evaluate(&c, "seeded", "seeded", "canonical");
+        assert_eq!(metrics.public_sample_bytes, 140);
+        assert_eq!(metrics.compact_public_key_bytes, 172);
+        assert_eq!(metrics.ciphertext_bytes, 172);
+        assert_eq!(metrics.sample_encoding_bits, 14);
+        assert_eq!(metrics.sample_compression_error, 0);
+        assert_eq!(metrics.effective_eta, 12);
+        assert_eq!(
+            metrics.public_sample_serialization.proof_profile.as_deref(),
+            Some("Descender128CoordinateSubviewProfile.serialization")
         );
     }
 }

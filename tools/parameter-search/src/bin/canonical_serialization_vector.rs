@@ -9,6 +9,7 @@ struct Config {
     n: u64,
     m0: u64,
     m1: u64,
+    view_coords: u64,
     eta: u64,
     sample_bits: u64,
     seed_bytes: u64,
@@ -25,6 +26,7 @@ impl Default for Config {
             n: 64,
             m0: 104,
             m1: 32,
+            view_coords: 0,
             eta: 8,
             sample_bits: 12,
             seed_bytes: 64,
@@ -110,6 +112,11 @@ fn parse_args() -> Result<Config, String> {
             "--n" => cfg.n = value("--n")?.parse().map_err(|_| "invalid --n")?,
             "--m0" => cfg.m0 = value("--m0")?.parse().map_err(|_| "invalid --m0")?,
             "--m1" => cfg.m1 = value("--m1")?.parse().map_err(|_| "invalid --m1")?,
+            "--view-coords" => {
+                cfg.view_coords = value("--view-coords")?
+                    .parse()
+                    .map_err(|_| "invalid --view-coords")?
+            }
             "--eta" => cfg.eta = value("--eta")?.parse().map_err(|_| "invalid --eta")?,
             "--sample-bits" => {
                 cfg.sample_bits = value("--sample-bits")?
@@ -127,6 +134,7 @@ fn parse_args() -> Result<Config, String> {
                     .map_err(|_| "invalid --ciphertext-overhead-bytes")?
             }
             "--profile-name" => cfg.profile_name = value("--profile-name")?,
+            "--preset" => apply_preset(&mut cfg, &value("--preset")?)?,
             "--output-dir" => cfg.output_dir = PathBuf::from(value("--output-dir")?),
             "--stem" => cfg.stem = value("--stem")?,
             "--help" | "-h" => {
@@ -148,18 +156,48 @@ fn print_help() {
            --n N\n\
            --m0 N\n\
            --m1 N\n\
+           --view-coords N       0 means m0 + m1\n\
            --eta N\n\
            --sample-bits N\n\
            --seed-bytes N\n\
            --ciphertext-overhead-bytes N\n\
            --profile-name NAME\n\
+           --preset descender128-product-block-compressed|descender128-coordinate-subview\n\
            --output-dir PATH\n\
            --stem NAME"
     );
 }
 
+fn apply_preset(cfg: &mut Config, preset: &str) -> Result<(), String> {
+    match preset {
+        "descender128-product-block-compressed" => {
+            *cfg = Config::default();
+            Ok(())
+        }
+        "descender128-coordinate-subview" => {
+            cfg.q = 12289;
+            cfg.n = 48;
+            cfg.m0 = 80;
+            cfg.m1 = 32;
+            cfg.view_coords = 80;
+            cfg.eta = 12;
+            cfg.sample_bits = 14;
+            cfg.seed_bytes = 32;
+            cfg.ciphertext_overhead_bytes = 32;
+            cfg.profile_name = "Descender128CoordinateSubviewProfile.serialization".to_string();
+            cfg.stem = "descender128_coordinate_subview".to_string();
+            Ok(())
+        }
+        other => Err(format!("unknown --preset {other:?}")),
+    }
+}
+
 fn build_vector(cfg: &Config) -> SerializationVector {
-    let coordinate_count = cfg.m0.saturating_add(cfg.m1);
+    let coordinate_count = if cfg.view_coords == 0 {
+        cfg.m0.saturating_add(cfg.m1)
+    } else {
+        cfg.view_coords
+    };
     let sample_bits = if cfg.sample_bits == 0 {
         field_element_bits(cfg.q)
     } else {
@@ -222,7 +260,7 @@ fn build_vector(cfg: &Config) -> SerializationVector {
         notes: vec![
             "Skeleton binaries are zero-filled size/layout artifacts, not cryptographic test vectors.".to_string(),
             "Byte counts are the canonical public sample profile consumed by the parameter search accounting.".to_string(),
-            "The rounding bound mirrors PublicSampleSerializationProfile.hRoundingBound.".to_string(),
+            "The rounding check mirrors PublicSampleSerializationProfile.hRoundingSound.".to_string(),
         ],
     }
 }
@@ -349,5 +387,28 @@ mod tests {
             vector.ciphertext_layout[1].offset + vector.ciphertext_layout[1].length,
             vector.ciphertext_bytes
         );
+    }
+
+    #[test]
+    fn coordinate_subview_preset_matches_lean_profile() {
+        let mut cfg = Config::default();
+        apply_preset(&mut cfg, "descender128-coordinate-subview").unwrap();
+        let vector = build_vector(&cfg);
+        assert_eq!(
+            vector.profile_name,
+            "Descender128CoordinateSubviewProfile.serialization"
+        );
+        assert_eq!(vector.q, 12289);
+        assert_eq!(vector.n, 48);
+        assert_eq!(vector.m0, 80);
+        assert_eq!(vector.m1, 32);
+        assert_eq!(vector.coordinate_count, 80);
+        assert_eq!(vector.sample_bits, 14);
+        assert_eq!(vector.rounding_eta, 0);
+        assert_eq!(vector.effective_eta, 12);
+        assert_eq!(vector.encoded_sample_bytes, 140);
+        assert_eq!(vector.public_key_bytes, 172);
+        assert_eq!(vector.ciphertext_bytes, 172);
+        assert!(vector.rounding_bound_pass);
     }
 }

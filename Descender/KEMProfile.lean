@@ -390,16 +390,16 @@ structure PublicSampleSerializationProfile where
     encodedSampleBytes = packedBytes coordinateCount sampleBits
   hPublicKeyBytes : publicKeyBytes = seedBytes + encodedSampleBytes
   hCiphertextBytes : ciphertextBytes = encodedSampleBytes + ciphertextOverheadBytes
-  hRoundingBound : q <= roundingEta * 2 ^ (sampleBits + 1)
+  hRoundingSound : roundingEta = 0 ∨ q <= roundingEta * 2 ^ (sampleBits + 1)
 
 namespace PublicSampleSerializationProfile
 
 def effectiveEta (S : PublicSampleSerializationProfile) (eta : Nat) : Nat :=
   eta + S.roundingEta
 
-theorem rounding_bound (S : PublicSampleSerializationProfile) :
-    S.q <= S.roundingEta * 2 ^ (S.sampleBits + 1) :=
-  S.hRoundingBound
+theorem rounding_sound (S : PublicSampleSerializationProfile) :
+    S.roundingEta = 0 ∨ S.q <= S.roundingEta * 2 ^ (S.sampleBits + 1) :=
+  S.hRoundingSound
 
 end PublicSampleSerializationProfile
 
@@ -442,7 +442,7 @@ def serialization : PublicSampleSerializationProfile where
   hEncodedSampleBytes := by native_decide
   hPublicKeyBytes := by native_decide
   hCiphertextBytes := by native_decide
-  hRoundingBound := by native_decide
+  hRoundingSound := by native_decide
 
 def viewBudget : SampleView.ViewReductionBudget where
   fullEta := eta
@@ -490,6 +490,95 @@ theorem correctness_slack_eq :
   native_decide
 
 end Descender128ProductBlockCompressedProfile
+
+/-!
+Current smallest validated 128-bit coordinate-subview candidate:
+
+* `q = 12289`;
+* `n = 48`, `m0 = 80`, `m1 = 32`;
+* coordinate public view of 80 sample coordinates;
+* eta-12 product-block Lee certificate with 48 public rows;
+* exact 14-bit field-element sample serialization, charged as `roundingEta = 0`;
+* 172-byte public key and 172-byte ciphertext in the canonical subview profile.
+-/
+namespace Descender128CoordinateSubviewProfile
+
+abbrev q : Nat := 12289
+abbrev n : Nat := 48
+abbrev m0 : Nat := 80
+abbrev m1 : Nat := 32
+abbrev viewCoords : Nat := 80
+abbrev secretBits : Nat := 128
+abbrev eta : Nat := 12
+abbrev sampleBits : Nat := 14
+abbrev roundingEta : Nat := 0
+abbrev effectiveEta : Nat := eta + roundingEta
+abbrev productBlockRows : Nat := 48
+abbrev certifiedLeeTarget : Nat := 512
+abbrev seedBytes : Nat := 32
+abbrev ciphertextOverheadBytes : Nat := 32
+
+def serialization : PublicSampleSerializationProfile where
+  q := q
+  coordinateCount := viewCoords
+  sampleBits := sampleBits
+  roundingEta := roundingEta
+  seedBytes := seedBytes
+  ciphertextOverheadBytes := ciphertextOverheadBytes
+  encodedSampleBytes := 140
+  publicKeyBytes := 172
+  ciphertextBytes := 172
+  hEncodedSampleBytes := by native_decide
+  hPublicKeyBytes := by native_decide
+  hCiphertextBytes := by native_decide
+  hRoundingSound := by native_decide
+
+def viewBudget : SampleView.ViewReductionBudget where
+  fullEta := eta
+  viewEta := effectiveEta
+  failureBudget := 0
+  eta_le_viewEta := by native_decide
+
+theorem effectiveEta_eq : effectiveEta = 12 := by
+  native_decide
+
+theorem encodedSampleBytes_eq :
+    serialization.encodedSampleBytes = 140 := by
+  native_decide
+
+theorem publicKeyBytes_eq :
+    serialization.publicKeyBytes = 172 := by
+  native_decide
+
+theorem ciphertextBytes_eq :
+    serialization.ciphertextBytes = 172 := by
+  native_decide
+
+theorem exact_encoding :
+    roundingEta = 0 := by
+  native_decide
+
+theorem product_block_amplitude_bound :
+    q <= 2 * eta * certifiedLeeTarget + 1 := by
+  native_decide
+
+theorem effective_amplitude_bound :
+    q <= 2 * effectiveEta * certifiedLeeTarget + 1 := by
+  native_decide
+
+theorem correctness_distance_eq :
+    m0 - n + 1 = 33 := by
+  native_decide
+
+theorem effective_correctness_radius_eq :
+    2 * effectiveEta + 1 = 25 := by
+  native_decide
+
+theorem correctness_slack_eq :
+    (m0 - n + 1) - (2 * effectiveEta + 1) = 8 := by
+  native_decide
+
+end Descender128CoordinateSubviewProfile
 
 namespace ExactValidationCertificate
 

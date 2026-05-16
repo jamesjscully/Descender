@@ -546,6 +546,22 @@ fn is_descender128_product_block_compressed_profile(
         && serialization.ciphertext_bytes == 236
 }
 
+fn is_descender128_coordinate_subview_profile(
+    c: &Candidate,
+    serialization: &PublicSampleSerializationProfile,
+) -> bool {
+    c.q == 12289
+        && c.n == 48
+        && c.m0 == 80
+        && c.m1 == 32
+        && c.eta == 12
+        && c.sample_bits == 0
+        && c.view_len() == 80
+        && serialization.encoded_sample_bytes == 140
+        && serialization.public_key_bytes == 172
+        && serialization.ciphertext_bytes == 172
+}
+
 fn log_factorial(n: u64) -> f64 {
     (1..=n).map(|i| (i as f64).ln()).sum()
 }
@@ -1238,9 +1254,14 @@ fn validate_row(profile: &Profile, source: &str, row: &Row, cfg: &Config) -> Val
         .and_then(|s| s.proof_profile.clone())
         .unwrap_or_default();
     let public_sample_proof_profile_matches = serialization.is_none_or(|s| {
-        !is_descender128_product_block_compressed_profile(c, s)
-            || s.proof_profile.as_deref()
+        if is_descender128_product_block_compressed_profile(c, s) {
+            s.proof_profile.as_deref()
                 == Some("Descender128ProductBlockCompressedProfile.serialization")
+        } else if is_descender128_coordinate_subview_profile(c, s) {
+            s.proof_profile.as_deref() == Some("Descender128CoordinateSubviewProfile.serialization")
+        } else {
+            true
+        }
     });
 
     let exact = ExactDiagnostics {
@@ -1365,7 +1386,19 @@ fn validate_row(profile: &Profile, source: &str, row: &Row, cfg: &Config) -> Val
         && c.view_len() == 136
         && row.metrics.compact_public_key_bytes == 268
         && row.metrics.ciphertext_bytes == 236;
-    if expects_descender128_serialization_profile && !exact.public_sample_serialization_present {
+    let expects_descender128_coordinate_subview_profile = c.q == 12289
+        && c.n == 48
+        && c.m0 == 80
+        && c.m1 == 32
+        && c.eta == 12
+        && c.sample_bits == 0
+        && c.view_len() == 80
+        && row.metrics.compact_public_key_bytes == 172
+        && row.metrics.ciphertext_bytes == 172;
+    if (expects_descender128_serialization_profile
+        || expects_descender128_coordinate_subview_profile)
+        && !exact.public_sample_serialization_present
+    {
         failures.push("public_sample_serialization_missing".to_string());
     }
     if exact.public_sample_serialization_present && !exact.public_sample_serialization_matches {
