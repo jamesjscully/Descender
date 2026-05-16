@@ -1,0 +1,446 @@
+{
+  "model": "scalar Fiat-Shamir leakage probe: z = y + c*s mod q, with bounded y and small centered s",
+  "q": 12289,
+  "n": 48,
+  "secret_eta": 12,
+  "trials": 64,
+  "rows": [
+    {
+      "mask_bound": 12,
+      "transcripts": 1,
+      "recovered_trials": 56,
+      "full_recovery_rate": 0.875,
+      "average_coordinate_recovery_rate": 0.9583333333333334,
+      "average_candidate_gap": 0.9264322916666666,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 12,
+      "transcripts": 2,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 1.9759114583333337,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 12,
+      "transcripts": 4,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 3.8190104166666665,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 12,
+      "transcripts": 8,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 7.815755208333334,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 12,
+      "transcripts": 16,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 15.68229166666666,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 12,
+      "transcripts": 32,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 31.391927083333336,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 32,
+      "transcripts": 1,
+      "recovered_trials": 58,
+      "full_recovery_rate": 0.90625,
+      "average_coordinate_recovery_rate": 0.978515625,
+      "average_candidate_gap": 0.94921875,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 32,
+      "transcripts": 2,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 1.87890625,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 32,
+      "transcripts": 4,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 3.7910156249999996,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 32,
+      "transcripts": 8,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 7.516276041666666,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 32,
+      "transcripts": 16,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 15.194010416666666,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 32,
+      "transcripts": 32,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 30.76757812500001,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 64,
+      "transcripts": 1,
+      "recovered_trials": 56,
+      "full_recovery_rate": 0.875,
+      "average_coordinate_recovery_rate": 0.955078125,
+      "average_candidate_gap": 0.9244791666666667,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 64,
+      "transcripts": 2,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 1.5957031250000007,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 64,
+      "transcripts": 4,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 3.6132812500000013,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 64,
+      "transcripts": 8,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 7.263671874999997,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 64,
+      "transcripts": 16,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 14.921874999999998,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 64,
+      "transcripts": 32,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 30.25520833333333,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 128,
+      "transcripts": 1,
+      "recovered_trials": 26,
+      "full_recovery_rate": 0.40625,
+      "average_coordinate_recovery_rate": 0.8014322916666666,
+      "average_candidate_gap": 0.6725260416666666,
+      "verdict": "partial-leak"
+    },
+    {
+      "mask_bound": 128,
+      "transcripts": 2,
+      "recovered_trials": 62,
+      "full_recovery_rate": 0.96875,
+      "average_coordinate_recovery_rate": 0.99609375,
+      "average_candidate_gap": 1.5546874999999998,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 128,
+      "transcripts": 4,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 3.1705729166666665,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 128,
+      "transcripts": 8,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 6.9674479166666625,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 128,
+      "transcripts": 16,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 14.474609374999996,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 128,
+      "transcripts": 32,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 29.411458333333336,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 256,
+      "transcripts": 1,
+      "recovered_trials": 0,
+      "full_recovery_rate": 0.0,
+      "average_coordinate_recovery_rate": 0.671875,
+      "average_candidate_gap": 0.4309895833333334,
+      "verdict": "partial-leak"
+    },
+    {
+      "mask_bound": 256,
+      "transcripts": 2,
+      "recovered_trials": 62,
+      "full_recovery_rate": 0.96875,
+      "average_coordinate_recovery_rate": 0.9993489583333334,
+      "average_candidate_gap": 1.250651041666666,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 256,
+      "transcripts": 4,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 2.831380208333334,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 256,
+      "transcripts": 8,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 6.472005208333336,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 256,
+      "transcripts": 16,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 13.638671875,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 256,
+      "transcripts": 32,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 28.13411458333334,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 512,
+      "transcripts": 1,
+      "recovered_trials": 0,
+      "full_recovery_rate": 0.0,
+      "average_coordinate_recovery_rate": 0.4485677083333333,
+      "average_candidate_gap": 0.06445312499999999,
+      "verdict": "inconclusive"
+    },
+    {
+      "mask_bound": 512,
+      "transcripts": 2,
+      "recovered_trials": 38,
+      "full_recovery_rate": 0.59375,
+      "average_coordinate_recovery_rate": 0.9264322916666666,
+      "average_candidate_gap": 0.8580729166666664,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 512,
+      "transcripts": 4,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 2.284505208333332,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 512,
+      "transcripts": 8,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 5.7024739583333295,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 512,
+      "transcripts": 16,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 12.447265625000002,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 512,
+      "transcripts": 32,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 26.134765625000004,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 1024,
+      "transcripts": 1,
+      "recovered_trials": 0,
+      "full_recovery_rate": 0.0,
+      "average_coordinate_recovery_rate": 0.22981770833333334,
+      "average_candidate_gap": 0.003255208333333333,
+      "verdict": "inconclusive"
+    },
+    {
+      "mask_bound": 1024,
+      "transcripts": 2,
+      "recovered_trials": 4,
+      "full_recovery_rate": 0.0625,
+      "average_coordinate_recovery_rate": 0.7708333333333334,
+      "average_candidate_gap": 0.5774739583333333,
+      "verdict": "partial-leak"
+    },
+    {
+      "mask_bound": 1024,
+      "transcripts": 4,
+      "recovered_trials": 50,
+      "full_recovery_rate": 0.78125,
+      "average_coordinate_recovery_rate": 0.9869791666666666,
+      "average_candidate_gap": 1.645833333333333,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 1024,
+      "transcripts": 8,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 4.393880208333333,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 1024,
+      "transcripts": 16,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 10.472005208333336,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 1024,
+      "transcripts": 32,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 22.417317708333343,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 2048,
+      "transcripts": 1,
+      "recovered_trials": 0,
+      "full_recovery_rate": 0.0,
+      "average_coordinate_recovery_rate": 0.130859375,
+      "average_candidate_gap": 0.0,
+      "verdict": "inconclusive"
+    },
+    {
+      "mask_bound": 2048,
+      "transcripts": 2,
+      "recovered_trials": 0,
+      "full_recovery_rate": 0.0,
+      "average_coordinate_recovery_rate": 0.3502604166666667,
+      "average_candidate_gap": 0.031901041666666664,
+      "verdict": "inconclusive"
+    },
+    {
+      "mask_bound": 2048,
+      "transcripts": 4,
+      "recovered_trials": 2,
+      "full_recovery_rate": 0.03125,
+      "average_coordinate_recovery_rate": 0.8190104166666666,
+      "average_candidate_gap": 0.7233072916666667,
+      "verdict": "partial-leak"
+    },
+    {
+      "mask_bound": 2048,
+      "transcripts": 8,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 2.810546875,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 2048,
+      "transcripts": 16,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 6.92643229166667,
+      "verdict": "break"
+    },
+    {
+      "mask_bound": 2048,
+      "transcripts": 32,
+      "recovered_trials": 64,
+      "full_recovery_rate": 1.0,
+      "average_coordinate_recovery_rate": 1.0,
+      "average_candidate_gap": 16.059895833333336,
+      "verdict": "break"
+    }
+  ],
+  "conclusions": [
+    "Direct linear responses with bounded masks are unsafe when the secret has small coordinate support; each coordinate can be attacked independently by maximum-likelihood enumeration.",
+    "This probe is not an attack on the KEM/public-view candidate; it is a warning against naive Schnorr/Lyubashevsky-style signing without a masking and rejection proof sized for transcript leakage.",
+    "Signature work should start from a transcript relation whose responses are statistically independent of the secret, or from a proof system that does not expose linear masked secrets."
+  ]
+}
