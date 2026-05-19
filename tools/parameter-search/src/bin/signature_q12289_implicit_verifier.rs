@@ -731,6 +731,10 @@ fn conformance_vector_bundle() -> ConformanceVectorBundle {
     let public_key = hex_decode(&positive.public_key_hex).unwrap();
     let message = hex_decode(&positive.message_hex).unwrap();
     let signature = hex_decode(&positive.signature_hex).unwrap();
+    let mut short_public_key = public_key.clone();
+    short_public_key.pop();
+    let mut long_public_key = public_key.clone();
+    long_public_key.push(0);
 
     let mut bad_challenge_high_bits = signature.clone();
     bad_challenge_high_bits[CHALLENGE_BYTES - 1] |= 0x80;
@@ -757,10 +761,6 @@ fn conformance_vector_bundle() -> ConformanceVectorBundle {
 
     let mut short_signature = signature.clone();
     short_signature.pop();
-
-    let mut short_public_key = public_key.clone();
-    short_public_key.pop();
-
     let mut long_signature = signature.clone();
     long_signature.push(0);
 
@@ -778,6 +778,18 @@ fn conformance_vector_bundle() -> ConformanceVectorBundle {
     modified_public_key[0] ^= 0x01;
 
     let negative = vec![
+        negative_vector(
+            "public-key-too-short",
+            short_public_key,
+            &message,
+            signature.clone(),
+        ),
+        negative_vector(
+            "public-key-too-long",
+            long_public_key,
+            &message,
+            signature.clone(),
+        ),
         negative_vector(
             "challenge-high-bits-set",
             public_key.clone(),
@@ -809,12 +821,6 @@ fn conformance_vector_bundle() -> ConformanceVectorBundle {
             signature.clone(),
         ),
         negative_vector(
-            "public-key-too-short",
-            short_public_key,
-            &message,
-            signature.clone(),
-        ),
-        negative_vector(
             "response-coordinate-negative-out-of-range",
             public_key.clone(),
             &message,
@@ -839,7 +845,7 @@ fn conformance_vector_bundle() -> ConformanceVectorBundle {
             short_signature,
         ),
         negative_vector(
-            "response-payload-length-mismatch",
+            "signature-too-long",
             public_key.clone(),
             &message,
             long_signature,
@@ -905,8 +911,8 @@ fn conformance_vector_bundle() -> ConformanceVectorBundle {
         response_bound: RESPONSE_BOUND,
         lean_challenge_codec_endpoint: "N32CanonicalChallengeByteCodec.productionBitLayout17"
             .to_string(),
-        lean_hash_frame_endpoint:
-            "N32Q12289ImplicitCommitmentByteVerifier.q12289HashFrame".to_string(),
+        lean_hash_frame_endpoint: "N32Q12289ImplicitCommitmentByteVerifier.q12289HashFrame"
+            .to_string(),
         lean_hash_frame_length_endpoint:
             "N32Q12289ImplicitCommitmentByteVerifier.q12289HashFrame_length".to_string(),
         positive,
@@ -935,8 +941,8 @@ fn write_conformance_bundle_file(path: &Path) -> Result<(), String> {
 
 fn verify_conformance_bundle_file(path: &Path) -> Result<(), String> {
     let expected_bundle = conformance_vector_bundle();
-    let actual_text =
-        fs::read_to_string(path).map_err(|err| format!("failed to read {}: {err}", path.display()))?;
+    let actual_text = fs::read_to_string(path)
+        .map_err(|err| format!("failed to read {}: {err}", path.display()))?;
     let actual_bundle: ConformanceVectorBundle = serde_json::from_str(&actual_text)
         .map_err(|err| format!("failed to parse {}: {err}", path.display()))?;
     if actual_bundle != expected_bundle {
@@ -959,7 +965,11 @@ fn verify_conformance_bundle_file(path: &Path) -> Result<(), String> {
     independent_verify_bundle(&actual_bundle)
 }
 
-fn independent_read_fixed_le(bytes: &[u8], bit_width: usize, count: usize) -> Result<Vec<u16>, String> {
+fn independent_read_fixed_le(
+    bytes: &[u8],
+    bit_width: usize,
+    count: usize,
+) -> Result<Vec<u16>, String> {
     let expected_len = count * bit_width / 8;
     if count * bit_width % 8 != 0 {
         return Err("independent fixed-width decode requires byte alignment".to_string());
@@ -1064,7 +1074,9 @@ fn independent_decode_public_view(bytes: &[u8]) -> Result<PublicView, String> {
     let mut free = [[0_u16; LOCAL_FREE]; GROUPS];
     for (idx, &value) in coords.iter().enumerate() {
         if value >= Q {
-            return Err(format!("non-canonical q-coordinate at index {idx}: {value}"));
+            return Err(format!(
+                "non-canonical q-coordinate at index {idx}: {value}"
+            ));
         }
         if idx < PIVOT_COORDS {
             pivot[idx / LOCAL_PIVOT][idx % LOCAL_PIVOT] = value;
@@ -1203,7 +1215,9 @@ fn independent_verify_positive_vector(bundle: &ConformanceVectorBundle) -> Resul
     if signature[..CHALLENGE_BYTES] != challenge_bytes
         || signature[CHALLENGE_BYTES..] != response_bytes
     {
-        return Err("positive vector signature split does not match challenge/response fields".to_string());
+        return Err(
+            "positive vector signature split does not match challenge/response fields".to_string(),
+        );
     }
 
     let fields = parse_frame_fields(&frame_bytes)?;
@@ -1247,11 +1261,16 @@ fn independent_verify_positive_vector(bundle: &ConformanceVectorBundle) -> Resul
     ] {
         let data = field(name);
         if data.len() != 8 {
-            return Err(format!("frame scalar field {name} has {} bytes, expected 8", data.len()));
+            return Err(format!(
+                "frame scalar field {name} has {} bytes, expected 8",
+                data.len()
+            ));
         }
         let actual = u64::from_le_bytes(data.try_into().expect("u64 field"));
         if actual != expected {
-            return Err(format!("frame scalar field {name} drifted: {actual} != {expected}"));
+            return Err(format!(
+                "frame scalar field {name} drifted: {actual} != {expected}"
+            ));
         }
     }
     if field("public_key") != public_key.as_slice() {
@@ -1280,7 +1299,9 @@ fn independent_verify_positive_vector(bundle: &ConformanceVectorBundle) -> Resul
     .enumerate()
     {
         if value >= Q {
-            return Err(format!("non-canonical q-coordinate at index {idx}: {value}"));
+            return Err(format!(
+                "non-canonical q-coordinate at index {idx}: {value}"
+            ));
         }
     }
 
@@ -1320,9 +1341,18 @@ fn independent_verify_frame_negative_vector(
         )
     } else {
         let coords = independent_read_fixed_le(reconstructed, FIELD_BITS, REPS * VIEW_COORDS)?;
-        match coords.into_iter().enumerate().find(|(_, value)| *value >= Q) {
+        match coords
+            .into_iter()
+            .enumerate()
+            .find(|(_, value)| *value >= Q)
+        {
             Some((idx, value)) => format!("non-canonical q-coordinate at index {idx}: {value}"),
-            None => return Err(format!("frame negative vector {} unexpectedly accepted", vector.name)),
+            None => {
+                return Err(format!(
+                    "frame negative vector {} unexpectedly accepted",
+                    vector.name
+                ));
+            }
         }
     };
     if actual_reason != vector.expected_reason {
@@ -1343,7 +1373,10 @@ fn independent_verify_bundle(bundle: &ConformanceVectorBundle) -> Result<(), Str
             &hex_decode(&negative.signature_hex)?,
         );
         if report.accepted {
-            return Err(format!("negative vector {} unexpectedly accepted", negative.name));
+            return Err(format!(
+                "negative vector {} unexpectedly accepted",
+                negative.name
+            ));
         }
         if report.reason != negative.expected_reason {
             return Err(format!(
@@ -1641,6 +1674,76 @@ mod tests {
     }
 
     #[test]
+    fn canonical_length_checks_reject_short_and_long_inputs() {
+        let positive = zero_public_key_positive_vector();
+        let public_key = hex_decode(&positive.public_key_hex).unwrap();
+        let signature = hex_decode(&positive.signature_hex).unwrap();
+        let message = hex_decode(&positive.message_hex).unwrap();
+
+        let report = verify_signature(&public_key[..public_key.len() - 1], &message, &signature);
+        assert_eq!(
+            report.reason,
+            format!("public key has {} bytes, expected {PK_BYTES}", PK_BYTES - 1)
+        );
+
+        let mut long_public_key = public_key.clone();
+        long_public_key.push(0);
+        let report = verify_signature(&long_public_key, &message, &signature);
+        assert_eq!(
+            report.reason,
+            format!("public key has {} bytes, expected {PK_BYTES}", PK_BYTES + 1)
+        );
+
+        let report = verify_signature(&public_key, &message, &signature[..signature.len() - 1]);
+        assert_eq!(
+            report.reason,
+            format!(
+                "signature has {} bytes, expected {SIGNATURE_BYTES}",
+                SIGNATURE_BYTES - 1
+            )
+        );
+
+        let mut long_signature = signature;
+        long_signature.push(0);
+        let report = verify_signature(&public_key, &message, &long_signature);
+        assert_eq!(
+            report.reason,
+            format!(
+                "signature has {} bytes, expected {SIGNATURE_BYTES}",
+                SIGNATURE_BYTES + 1
+            )
+        );
+    }
+
+    #[test]
+    fn every_single_byte_mutation_of_positive_fixture_rejects() {
+        let positive = zero_public_key_positive_vector();
+        let public_key = hex_decode(&positive.public_key_hex).unwrap();
+        let signature = hex_decode(&positive.signature_hex).unwrap();
+        let message = hex_decode(&positive.message_hex).unwrap();
+
+        for idx in 0..public_key.len() {
+            let mut mutated = public_key.clone();
+            mutated[idx] ^= 0x01;
+            let report = verify_signature(&mutated, &message, &signature);
+            assert!(
+                !report.accepted,
+                "public key byte mutation at index {idx} unexpectedly accepted"
+            );
+        }
+
+        for idx in 0..signature.len() {
+            let mut mutated = signature.clone();
+            mutated[idx] ^= 0x01;
+            let report = verify_signature(&public_key, &message, &mutated);
+            assert!(
+                !report.accepted,
+                "signature byte mutation at index {idx} unexpectedly accepted"
+            );
+        }
+    }
+
+    #[test]
     fn conformance_vector_bundle_has_expected_shape() {
         let bundle = conformance_vector_bundle();
         assert_eq!(bundle.positive.hash_frame_bytes, 1_540);
@@ -1648,7 +1751,7 @@ mod tests {
             bundle.positive.hash_frame_sha256,
             "500b7e675f1970875c294ccb0d00eee386910b1a37c8ecf5b78d97e0af51993c"
         );
-        assert_eq!(bundle.negative.len(), 11);
+        assert_eq!(bundle.negative.len(), 12);
         assert_eq!(bundle.frame_negative.len(), 2);
         assert!(bundle.negative.iter().all(|case| !case.report.accepted));
     }
