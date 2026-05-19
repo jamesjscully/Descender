@@ -3,7 +3,29 @@
 The goal of this ledger is to prevent implicit assumptions from entering the
 review package.  Every remaining nontrivial premise must be classified here.
 The detailed review with risk analysis and closure criteria is
-[assumption_review.md](assumption_review.md).
+[assumption_review.md](assumption_review.md).  The endpoint-by-endpoint theorem
+classification annex is [dependency_audit.md](dependency_audit.md).
+
+## Endpoint Coverage
+
+The checklist item "Every theorem dependency classified in
+`assumption_ledger.md`" is satisfied by this ledger together with
+[dependency_audit.md](dependency_audit.md).  That audit classifies every
+q12289 proof endpoint named in [theorem_map.md](theorem_map.md) into the five
+review categories required for the frozen package:
+
+| theorem-map area | proved-in-Lean | cryptographic assumption | implementation/conformance assumption | generated artifact/toolchain assumption | out-of-scope |
+|---|---|---|---|---|---|
+| byte profile and verifier boundary | yes | only when instantiated through `ProductionHashFrameOracleAgreement` | yes | yes | yes |
+| concrete parsing and reconstruction | yes | no | yes | yes | yes |
+| q14 commitment encoder | yes | no | yes | yes | yes |
+| canonical challenge codec | yes | no | yes | yes | yes |
+| hash frame and Fiat-Shamir boundary | yes | `A1` | yes | yes | yes |
+| algebraic verifier equation | yes | `A1`, `A2` at the concrete q12289 route | yes | yes | yes |
+| local Lee certificate and global bound | yes | `A1`, `A2` at the deployment reading | `A5`, `A7` at the deployment reading | `A0` | `A6`, `A8`, `A9` |
+
+Reviewer note: `dependency_audit.md` is the normative place to answer "what
+does this specific theorem endpoint still depend on?"
 
 ## Proved In Lean
 
@@ -18,6 +40,18 @@ The detailed review with risk analysis and closure criteria is
 - The chosen q12289 `3 x 2` local block has an internal Lee certificate for
   the current proof boundary.
 - The generated profile records the current public key and signature sizes.
+
+## Generated Artifact / Toolchain Assumptions
+
+`A0: Lean toolchain and frozen artifact integrity`
+
+- Meaning: the reviewed theorem names, generated profiles, fixture outputs, and
+  matrix constants are trusted only for the exact checked Lean source tree and
+  the exact toolchain/artifact pipeline used to build them.
+- Status: acceptable for review once the exact commit, `lake build` output, and
+  frozen generated artifacts are archived together.
+- Review risk: if reviewers cannot reproduce the same theorem endpoints and
+  frozen generated constants, the proof boundary is ambiguous.
 
 ## Cryptographic Assumptions
 
@@ -91,6 +125,15 @@ The detailed review with risk analysis and closure criteria is
 - Signing and keygen must avoid secret-dependent timing or memory access where
   practical.
 - Randomness generation must be reviewed and testable.
+
+## Out Of Scope For The Current Formal Core
+
+- `A6` signer distribution and rejection-sampling behavior are not closed by
+  the theorem-map verifier endpoints.
+- `A8` side-channel, RNG, and secret-handling properties are not Lean-proof
+  obligations in the current verifier-side package.
+- `A9` archived cryptanalysis and concrete attack cost are not part of the
+  theorem-map endpoint chain.
 
 ## Not Yet Claimed
 

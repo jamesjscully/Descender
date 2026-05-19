@@ -29,7 +29,7 @@ Details: [theorem_map.md](theorem_map.md),
 - [x] production certificate derived from `ProductionHashFrameOracleAgreement`.
 - [x] Detailed assumption review written for the frozen target.
 - [x] Final theorem statement written in deployable EUF-CMA-style language.
-- [ ] Every theorem dependency classified in `assumption_ledger.md`.
+- [x] Every theorem dependency classified in `assumption_ledger.md`.
 
 ## Conformance Gate
 
