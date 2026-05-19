@@ -172,6 +172,343 @@ def productBlockLinearResponse
   fun bf => mask bf + blockScaleFree chi secret bf
 
 /--
+The public systematic view corresponding to a product-block free vector.
+
+For signatures this is used in two places:
+
+* the public key is `A * secret`, represented here as the systematic view of
+  the secret free vector;
+* the commitment is `A * mask`, represented as the systematic view of the
+  signing mask.
+-/
+def productBlockPublicView
+    {q : Nat} [NeZero q]
+    {Block LocalPivot LocalFree : Type*}
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (free : Block × LocalFree -> ZMod q) :
+    Sum (Block × LocalPivot) (Block × LocalFree) -> ZMod q :=
+  systematicRelation q (blockDiagonalSystematicMatrix Plocal) free
+
+def productBlockPublicKey
+    {q : Nat} [NeZero q]
+    {Block LocalPivot LocalFree : Type*}
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (secret : Block × LocalFree -> ZMod q) :
+    Sum (Block × LocalPivot) (Block × LocalFree) -> ZMod q :=
+  productBlockPublicView Plocal secret
+
+def productBlockCommitment
+    {q : Nat} [NeZero q]
+    {Block LocalPivot LocalFree : Type*}
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (mask : Block × LocalFree -> ZMod q) :
+    Sum (Block × LocalPivot) (Block × LocalFree) -> ZMod q :=
+  productBlockPublicView Plocal mask
+
+/--
+Honest verifier equation for the product-block signing relation.
+
+Given public key `u = A * secret`, commitment `t = A * mask`, challenge `chi`,
+and response `z`, the verifier checks
+
+```text
+A * z = t + chi * u.
+```
+
+The challenge action is block-local, so this is still verifier-computable for
+the block-diagonal systematic public view.
+-/
+def productBlockVerifierEquation
+    {q : Nat} [NeZero q]
+    {Block LocalPivot LocalFree : Type*}
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (chi : Block -> ZMod q)
+    (publicKey commitment :
+      Sum (Block × LocalPivot) (Block × LocalFree) -> ZMod q)
+    (response : Block × LocalFree -> ZMod q) : Prop :=
+  productBlockPublicView Plocal response =
+    fun x => commitment x + blockScaleView chi publicKey x
+
+/--
+Active-only version of the honest verifier equation.
+
+This is the compact-signature relation: for each signed active block the
+signature carries only that block's free response coordinates.  The verifier
+checks both the free coordinates and the local systematic pivot coordinates
+against the public commitment and public key.
+-/
+def productBlockActiveVerifierEquation
+    {q : Nat} [NeZero q]
+    {Block LocalPivot LocalFree : Type*}
+    [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (chi : Block -> ZMod q)
+    (publicKey commitment :
+      Sum (Block × LocalPivot) (Block × LocalFree) -> ZMod q)
+    (response :
+      ∀ b, (chi b = 1 ∨ chi b = -1) ->
+        LocalFree -> ZMod q) : Prop :=
+  ∀ b hactive,
+    (∀ f,
+      response b hactive f =
+        commitment (Sum.inr (b, f)) +
+          chi b * publicKey (Sum.inr (b, f))) ∧
+    (∀ p,
+      -systematicPivotImage q (Plocal b) (response b hactive) p =
+        commitment (Sum.inl (b, p)) +
+          chi b * publicKey (Sum.inl (b, p)))
+
+/--
+Implicit commitment reconstructed by the verifier from a complete response.
+
+This is the Schnorr-style commitment representation:
+
+```text
+t' = A * z - chi * u.
+```
+
+No commitment bytes are needed if the verifier can decode the complete free
+response `z`; it reconstructs this value and hashes it as the Fiat-Shamir
+challenge point.
+-/
+def productBlockReconstructedCommitment
+    {q : Nat} [NeZero q]
+    {Block LocalPivot LocalFree : Type*}
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (chi : Block -> ZMod q)
+    (publicKey :
+      Sum (Block × LocalPivot) (Block × LocalFree) -> ZMod q)
+    (response : Block × LocalFree -> ZMod q) :
+    Sum (Block × LocalPivot) (Block × LocalFree) -> ZMod q :=
+  fun x =>
+    productBlockPublicView Plocal response x -
+      blockScaleView chi publicKey x
+
+theorem systematicPivotImage_add
+    {q : Nat} [NeZero q]
+    {Pivot Free : Type*} [Fintype Free]
+    (P : Pivot -> Free -> ZMod q)
+    (y z : Free -> ZMod q) :
+    systematicPivotImage q P (fun f => y f + z f) =
+      fun p => systematicPivotImage q P y p +
+        systematicPivotImage q P z p := by
+  classical
+  funext p
+  unfold systematicPivotImage
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro f _hf
+  ring
+
+theorem systematicRelation_add
+    {q : Nat} [NeZero q]
+    {Pivot Free : Type*} [Fintype Free]
+    (P : Pivot -> Free -> ZMod q)
+    (y z : Free -> ZMod q) :
+    systematicRelation q P (fun f => y f + z f) =
+      fun x => systematicRelation q P y x + systematicRelation q P z x := by
+  funext x
+  cases x with
+  | inl p =>
+      simp [systematicRelation, systematicPivotImage_add]
+      ring
+  | inr f =>
+      simp [systematicRelation]
+
+theorem productBlockPublicView_linearResponse
+    {q : Nat} [NeZero q]
+    {Block LocalPivot LocalFree : Type*}
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (chi : Block -> ZMod q)
+    (mask secret : Block × LocalFree -> ZMod q) :
+    productBlockPublicView Plocal
+        (productBlockLinearResponse chi mask secret) =
+      fun x =>
+        productBlockCommitment Plocal mask x +
+          blockScaleView chi (productBlockPublicKey Plocal secret) x := by
+  let P := blockDiagonalSystematicMatrix Plocal
+  have hadd :
+      systematicRelation q P
+          (fun bf => mask bf + blockScaleFree chi secret bf) =
+        fun x =>
+          systematicRelation q P mask x +
+            systematicRelation q P (blockScaleFree chi secret) x :=
+    systematicRelation_add P mask (blockScaleFree chi secret)
+  have hscale :
+      blockScaleView chi (systematicRelation q P secret) =
+        systematicRelation q P (blockScaleFree chi secret) :=
+    blockScaleView_systematicRelation (q := q) Plocal chi secret
+  funext x
+  calc
+    productBlockPublicView Plocal
+        (productBlockLinearResponse chi mask secret) x =
+        systematicRelation q P
+          (fun bf => mask bf + blockScaleFree chi secret bf) x := by
+          rfl
+    _ =
+        systematicRelation q P mask x +
+          systematicRelation q P (blockScaleFree chi secret) x := by
+          exact congrFun hadd x
+    _ =
+        productBlockCommitment Plocal mask x +
+          blockScaleView chi (productBlockPublicKey Plocal secret) x := by
+          rw [← congrFun hscale x]
+          rfl
+
+theorem productBlockVerifierEquation_honest
+    {q : Nat} [NeZero q]
+    {Block LocalPivot LocalFree : Type*}
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (chi : Block -> ZMod q)
+    (mask secret : Block × LocalFree -> ZMod q) :
+    productBlockVerifierEquation Plocal chi
+      (productBlockPublicKey Plocal secret)
+      (productBlockCommitment Plocal mask)
+      (productBlockLinearResponse chi mask secret) := by
+  exact productBlockPublicView_linearResponse Plocal chi mask secret
+
+theorem productBlockReconstructedCommitment_eq_of_verifierEquation
+    {q : Nat} [NeZero q]
+    {Block LocalPivot LocalFree : Type*}
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    {Plocal : Block -> LocalPivot -> LocalFree -> ZMod q}
+    {chi : Block -> ZMod q}
+    {publicKey commitment :
+      Sum (Block × LocalPivot) (Block × LocalFree) -> ZMod q}
+    {response : Block × LocalFree -> ZMod q}
+    (h :
+      productBlockVerifierEquation Plocal chi publicKey commitment response) :
+    productBlockReconstructedCommitment Plocal chi publicKey response =
+      commitment := by
+  funext x
+  have hx := congrFun h x
+  simp at hx
+  simp [productBlockReconstructedCommitment, hx]
+
+theorem productBlockVerifierEquation_of_reconstructedCommitment_eq
+    {q : Nat} [NeZero q]
+    {Block LocalPivot LocalFree : Type*}
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    {Plocal : Block -> LocalPivot -> LocalFree -> ZMod q}
+    {chi : Block -> ZMod q}
+    {publicKey commitment :
+      Sum (Block × LocalPivot) (Block × LocalFree) -> ZMod q}
+    {response : Block × LocalFree -> ZMod q}
+    (h :
+      productBlockReconstructedCommitment Plocal chi publicKey response =
+        commitment) :
+    productBlockVerifierEquation Plocal chi publicKey commitment response := by
+  funext x
+  have hx := congrFun h x
+  simp [productBlockReconstructedCommitment] at hx
+  rw [← hx]
+  ring
+
+theorem productBlockReconstructedCommitment_honest
+    {q : Nat} [NeZero q]
+    {Block LocalPivot LocalFree : Type*}
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (chi : Block -> ZMod q)
+    (mask secret : Block × LocalFree -> ZMod q) :
+    productBlockReconstructedCommitment Plocal chi
+      (productBlockPublicKey Plocal secret)
+      (productBlockLinearResponse chi mask secret) =
+        productBlockCommitment Plocal mask := by
+  exact productBlockReconstructedCommitment_eq_of_verifierEquation
+    (productBlockVerifierEquation_honest Plocal chi mask secret)
+
+theorem productBlockActiveVerifierEquation_honest
+    {q : Nat} [NeZero q]
+    {Block LocalPivot LocalFree : Type*}
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (chi : Block -> ZMod q)
+    (mask secret : Block × LocalFree -> ZMod q) :
+    productBlockActiveVerifierEquation Plocal chi
+      (productBlockPublicKey Plocal secret)
+      (productBlockCommitment Plocal mask)
+      (fun b _hactive f =>
+        productBlockLinearResponse chi mask secret (b, f)) := by
+  intro b hactive
+  constructor
+  · intro f
+    simp [productBlockLinearResponse, productBlockPublicKey,
+      productBlockCommitment, productBlockPublicView,
+      systematicRelation, blockScaleFree]
+  · intro p
+    have hfull :
+        productBlockVerifierEquation Plocal chi
+          (productBlockPublicKey Plocal secret)
+          (productBlockCommitment Plocal mask)
+          (productBlockLinearResponse chi mask secret) :=
+      productBlockVerifierEquation_honest Plocal chi mask secret
+    have hp := congrFun hfull (Sum.inl (b, p))
+    have hlocal :
+        systematicPivotImage q (Plocal b)
+            (fun f => productBlockLinearResponse chi mask secret (b, f)) p =
+          systematicPivotImage q (blockDiagonalSystematicMatrix Plocal)
+            (productBlockLinearResponse chi mask secret) (b, p) := by
+      exact (blockDiagonalSystematicPivotImage_eq (q := q) Plocal b p
+        (productBlockLinearResponse chi mask secret)).symm
+    rw [hlocal]
+    simpa [productBlockVerifierEquation, productBlockPublicView,
+      productBlockPublicKey, productBlockCommitment,
+      productBlockLinearResponse, systematicRelation, blockScaleView,
+      blockScaleFree] using hp
+
+theorem linearResponse_of_productBlockVerifierEquation
+    {q : Nat} [NeZero q]
+    {Block LocalPivot LocalFree : Type*}
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    {Plocal : Block -> LocalPivot -> LocalFree -> ZMod q}
+    {chi : Block -> ZMod q}
+    {mask secret response : Block × LocalFree -> ZMod q}
+    (h :
+    productBlockVerifierEquation Plocal chi
+        (productBlockPublicKey Plocal secret)
+        (productBlockCommitment Plocal mask)
+        response) :
+    response = productBlockLinearResponse chi mask secret := by
+  funext bf
+  have hfree := congrFun h (Sum.inr bf)
+  simpa [productBlockVerifierEquation, productBlockPublicView,
+    productBlockPublicKey, productBlockCommitment,
+    productBlockLinearResponse, systematicRelation, blockScaleView,
+    blockScaleFree] using hfree
+
+theorem activeLinearResponse_of_productBlockActiveVerifierEquation
+    {q : Nat} [NeZero q]
+    {Block LocalPivot LocalFree : Type*}
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    {Plocal : Block -> LocalPivot -> LocalFree -> ZMod q}
+    {chi : Block -> ZMod q}
+    {mask secret : Block × LocalFree -> ZMod q}
+    {response :
+      ∀ b, (chi b = 1 ∨ chi b = -1) ->
+        LocalFree -> ZMod q}
+    (h :
+      productBlockActiveVerifierEquation Plocal chi
+        (productBlockPublicKey Plocal secret)
+        (productBlockCommitment Plocal mask)
+        response)
+    (b : Block) (hactive : chi b = 1 ∨ chi b = -1)
+    (f : LocalFree) :
+    response b hactive f =
+      productBlockLinearResponse chi mask secret (b, f) := by
+  have hfree := (h b hactive).1 f
+  simpa [productBlockPublicKey, productBlockCommitment,
+    productBlockPublicView, productBlockLinearResponse,
+    systematicRelation, blockScaleView, blockScaleFree] using hfree
+
+/--
 The concrete rejection-sampler shape for product-block signatures.  The
 mathematical work needed from a concrete masking distribution is exactly a
 `RejectionSamplingCertificate` for this sampler.

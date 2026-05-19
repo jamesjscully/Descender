@@ -4,6 +4,19 @@ This directory holds the user-space research workflow that Armature invokes.
 Armature only provides triggers, logs, events, and run inspection; these scripts
 own the Descender-specific policy.
 
+## Review Readiness
+
+The current deployable-cryptography preparation package for the q12289
+implicit-commitment signature candidate is:
+
+```text
+research/cryptanalysis/review_readiness_20260519/README.md
+```
+
+That package freezes the target byte layout, maps the Lean proof endpoints,
+records remaining assumptions, and lists the conformance, cryptanalysis, and
+implementation-hardening gates required before third-party review.
+
 ## State Discipline
 
 Implementation agents do not mark research tasks as accepted. They can only move

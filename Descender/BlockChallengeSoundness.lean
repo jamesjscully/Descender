@@ -109,10 +109,79 @@ theorem productBlockLinearResponse_sub
   simp [productBlockLinearResponse, blockScaleFree]
   ring
 
+/--
+Any single affine response can be explained by any secret if the mask is free.
+
+This is the one-view obstruction: the equation `z = mask + chi * secret` alone
+does not identify the secret.  A linear one-view proof therefore needs an
+additional binding/extraction mechanism for the mask, or a different
+keygen-breaking witness.
+-/
+def maskExplainingResponse
+    {q : Nat} [NeZero q]
+    {Block LocalFree : Type*}
+    (chi : Block -> ZMod q)
+    (secret response : Block × LocalFree -> ZMod q) :
+    Block × LocalFree -> ZMod q :=
+  fun bf => response bf - blockScaleFree chi secret bf
+
+theorem productBlockLinearResponse_maskExplainingResponse
+    {q : Nat} [NeZero q]
+    {Block LocalFree : Type*}
+    (chi : Block -> ZMod q)
+    (secret response : Block × LocalFree -> ZMod q) :
+    productBlockLinearResponse chi
+        (maskExplainingResponse chi secret response) secret =
+  response := by
+  funext bf
+  simp [productBlockLinearResponse, maskExplainingResponse, blockScaleFree]
+
+theorem productBlockLinearResponse_single_view_secret_ambiguous
+    {q : Nat} [NeZero q]
+    {Block LocalFree : Type*}
+    (chi : Block -> ZMod q)
+    (mask₀ secret₀ secret₁ : Block × LocalFree -> ZMod q) :
+    ∃ mask₁,
+      productBlockLinearResponse chi mask₁ secret₁ =
+        productBlockLinearResponse chi mask₀ secret₀ := by
+  refine ⟨maskExplainingResponse chi secret₁
+    (productBlockLinearResponse chi mask₀ secret₀), ?_⟩
+  exact productBlockLinearResponse_maskExplainingResponse chi secret₁
+    (productBlockLinearResponse chi mask₀ secret₀)
+
 /-- The challenge delta at a block is extractable if it has a left inverse. -/
 def DeltaExtractable {q : Nat} [NeZero q] {Block : Type*}
     (chi₀ chi₁ : Block -> ZMod q) (b : Block) : Prop :=
   ∃ inv : ZMod q, inv * (chi₀ b - chi₁ b) = 1
+
+/-- A single challenge exposes a block if its scalar has a left inverse. -/
+def ScalarExtractable {q : Nat} [NeZero q] {Block : Type*}
+    (chi : Block -> ZMod q) (b : Block) : Prop :=
+  ∃ inv : ZMod q, inv * chi b = 1
+
+theorem scalarExtractable_of_signedActive
+    {q : Nat} [NeZero q] {Block : Type*}
+    {chi : Block -> ZMod q} {b : Block}
+    (hactive : chi b = 1 ∨ chi b = -1) :
+    ScalarExtractable chi b := by
+  rcases hactive with hone | hneg
+  · refine ⟨1, ?_⟩
+    simp [hone]
+  · refine ⟨-1, ?_⟩
+    simp [hneg]
+
+theorem scalarExtractable_of_signedUnitOrZero_active
+    {q : Nat} [NeZero q] {Block : Type*}
+    {chi : Block -> ZMod q} {b : Block}
+    (hsigned : SignedUnitOrZero (chi b))
+    (hactive : chi b ≠ 0) :
+    ScalarExtractable chi b := by
+  rcases signedUnitOrZero_eq_one_or_neg_one_of_active hsigned hactive with
+    hone | hneg
+  · refine ⟨1, ?_⟩
+    simp [hone]
+  · refine ⟨-1, ?_⟩
+    simp [hneg]
 
 /--
 For compact active-only transcripts, a block is exposed by both forked
@@ -171,6 +240,156 @@ theorem extract_coordinate_of_deltaExtractable
           ring
     _ = secret bf := by
           simp [hinv]
+
+theorem extract_coordinate_of_scalarExtractable
+    {q : Nat} [NeZero q]
+    {Block LocalFree : Type*}
+    {chi : Block -> ZMod q}
+    {mask secret response : Block × LocalFree -> ZMod q}
+    {bf : Block × LocalFree}
+    {inv : ZMod q}
+    (hinv : inv * chi bf.1 = 1)
+    (hresponse : response = productBlockLinearResponse chi mask secret) :
+    inv * (response bf - mask bf) = secret bf := by
+  rw [hresponse]
+  simp only [productBlockLinearResponse, blockScaleFree]
+  calc
+    inv * (mask bf + chi bf.1 * secret bf - mask bf) =
+        (inv * chi bf.1) * secret bf := by
+          ring
+    _ = secret bf := by
+          simp [hinv]
+
+/--
+A single linear response with a known mask.  This is the deterministic target
+for a redesigned one-view proof: once the mask is available, active signed
+challenge coordinates reveal the corresponding secret coordinates directly.
+-/
+structure SingleViewLinearRound
+    {q : Nat} [NeZero q] (Block LocalFree : Type*)
+    (secret : Block × LocalFree -> ZMod q) where
+  chi : Block -> ZMod q
+  mask : Block × LocalFree -> ZMod q
+  z : Block × LocalFree -> ZMod q
+  hz : z = productBlockLinearResponse chi mask secret
+
+namespace SingleViewLinearRound
+
+variable {q : Nat} [NeZero q]
+variable {Block LocalFree : Type*}
+variable {secret : Block × LocalFree -> ZMod q}
+
+def Active (R : SingleViewLinearRound Block LocalFree secret)
+    (b : Block) : Prop :=
+  ScalarExtractable R.chi b
+
+noncomputable def extractCoordinate
+    (R : SingleViewLinearRound Block LocalFree secret)
+    (b : Block) (hactive : R.Active b) (f : LocalFree) : ZMod q :=
+  Classical.choose hactive * (R.z (b, f) - R.mask (b, f))
+
+theorem extractCoordinate_eq_secret
+    (R : SingleViewLinearRound Block LocalFree secret)
+    (b : Block) (hactive : R.Active b) (f : LocalFree) :
+    R.extractCoordinate b hactive f = secret (b, f) := by
+  exact extract_coordinate_of_scalarExtractable
+    (q := q) (bf := (b, f))
+    (Classical.choose_spec hactive) R.hz
+
+noncomputable def extractedSecret
+    {Round : Type*}
+    (R : Round -> SingleViewLinearRound Block LocalFree secret)
+    (hcover : CoversBlocks fun r b => (R r).Active b) :
+    Block × LocalFree -> ZMod q :=
+  fun bf =>
+    (R (Classical.choose (hcover bf.1))).extractCoordinate bf.1
+      (Classical.choose_spec (hcover bf.1)) bf.2
+
+theorem extractedSecret_eq
+    {Round : Type*}
+    (R : Round -> SingleViewLinearRound Block LocalFree secret)
+    (hcover : CoversBlocks fun r b => (R r).Active b) :
+    extractedSecret R hcover = secret := by
+  funext bf
+  exact (R (Classical.choose (hcover bf.1))).extractCoordinate_eq_secret
+    bf.1 (Classical.choose_spec (hcover bf.1)) bf.2
+
+end SingleViewLinearRound
+
+/--
+Compact active-only single-view round.
+
+This is the one-view analogue of `CompactMultiForkLinearRound`: the response is
+available only on signed active blocks.  If the mask is known or extractable,
+one signed active challenge coordinate reveals the corresponding secret
+coordinate.
+-/
+structure CompactSingleViewLinearRound
+    {q : Nat} [NeZero q] (Block LocalFree : Type*)
+    (secret : Block × LocalFree -> ZMod q) where
+  chi : Block -> ZMod q
+  mask : Block × LocalFree -> ZMod q
+  z :
+    ∀ b, (chi b = 1 ∨ chi b = -1) ->
+      LocalFree -> ZMod q
+  hz :
+    ∀ b h f,
+      z b h f = productBlockLinearResponse chi mask secret (b, f)
+
+namespace CompactSingleViewLinearRound
+
+variable {q : Nat} [NeZero q]
+variable {Block LocalFree : Type*}
+variable {secret : Block × LocalFree -> ZMod q}
+
+def SignedActive
+    (R : CompactSingleViewLinearRound Block LocalFree secret)
+    (b : Block) : Prop :=
+  R.chi b = 1 ∨ R.chi b = -1
+
+noncomputable def extractCoordinate
+    (R : CompactSingleViewLinearRound Block LocalFree secret)
+    (b : Block) (hactive : R.SignedActive b) (f : LocalFree) :
+    ZMod q :=
+  Classical.choose (scalarExtractable_of_signedActive hactive) *
+    (R.z b hactive f - R.mask (b, f))
+
+theorem extractCoordinate_eq_secret
+    (R : CompactSingleViewLinearRound Block LocalFree secret)
+    (b : Block) (hactive : R.SignedActive b) (f : LocalFree) :
+    R.extractCoordinate b hactive f = secret (b, f) := by
+  unfold extractCoordinate
+  rw [R.hz b hactive f]
+  simp only [productBlockLinearResponse, blockScaleFree]
+  calc
+    Classical.choose (scalarExtractable_of_signedActive hactive) *
+        (R.mask (b, f) + R.chi b * secret (b, f) - R.mask (b, f)) =
+        (Classical.choose (scalarExtractable_of_signedActive hactive) *
+          R.chi b) * secret (b, f) := by
+          ring
+    _ = secret (b, f) := by
+          simp [Classical.choose_spec
+            (scalarExtractable_of_signedActive hactive)]
+
+noncomputable def extractedSecret
+    {Round : Type*}
+    (R : Round -> CompactSingleViewLinearRound Block LocalFree secret)
+    (hcover : CoversBlocks fun r b => (R r).SignedActive b) :
+    Block × LocalFree -> ZMod q :=
+  fun bf =>
+    (R (Classical.choose (hcover bf.1))).extractCoordinate bf.1
+      (Classical.choose_spec (hcover bf.1)) bf.2
+
+theorem extractedSecret_eq
+    {Round : Type*}
+    (R : Round -> CompactSingleViewLinearRound Block LocalFree secret)
+    (hcover : CoversBlocks fun r b => (R r).SignedActive b) :
+    extractedSecret R hcover = secret := by
+  funext bf
+  exact (R (Classical.choose (hcover bf.1))).extractCoordinate_eq_secret
+    bf.1 (Classical.choose_spec (hcover bf.1)) bf.2
+
+end CompactSingleViewLinearRound
 
 /--
 A forked linear round consists of two accepting responses for the same mask and
@@ -382,6 +601,317 @@ theorem extractedSecret_eq_of_coversCompactOpposite
     (coversMultiDelta_of_coversCompactOpposite round hinvTwo hcover)
 
 end MultiForkLinearRound
+
+/--
+Active-only multi-fork round.
+
+This is the deterministic extractor interface for compact signatures.  A draw
+only serializes coordinates on blocks where its challenge scalar is a signed
+unit.  The verifier-side soundness obligation supplies the response equation
+for exactly those coordinates.
+-/
+structure CompactMultiForkLinearRound
+    {q : Nat} [NeZero q] (Draw Block LocalFree : Type*)
+    (secret : Block × LocalFree -> ZMod q) where
+  chi : Draw -> Block -> ZMod q
+  mask : Block × LocalFree -> ZMod q
+  z :
+    ∀ d b, (chi d b = 1 ∨ chi d b = -1) ->
+      LocalFree -> ZMod q
+  hz :
+    ∀ d b h f,
+      z d b h f = productBlockLinearResponse (chi d) mask secret (b, f)
+
+namespace CompactMultiForkLinearRound
+
+variable {q : Nat} [NeZero q]
+variable {Draw Block LocalFree : Type*}
+variable {secret : Block × LocalFree -> ZMod q}
+
+def CompactOppositeActive
+    (R : CompactMultiForkLinearRound Draw Block LocalFree secret)
+    (b : Block) : Prop :=
+  ∃ d₀ d₁, OppositeSignedActive (R.chi d₀) (R.chi d₁) b
+
+theorem left_signedUnit_of_opposite
+    {R : CompactMultiForkLinearRound Draw Block LocalFree secret}
+    {d₀ d₁ : Draw} {b : Block}
+    (hopp : OppositeSignedActive (R.chi d₀) (R.chi d₁) b) :
+    R.chi d₀ b = 1 ∨ R.chi d₀ b = -1 := by
+  rcases hopp with ⟨h₀, _h₁⟩ | ⟨h₀, _h₁⟩
+  · exact Or.inl h₀
+  · exact Or.inr h₀
+
+theorem right_signedUnit_of_opposite
+    {R : CompactMultiForkLinearRound Draw Block LocalFree secret}
+    {d₀ d₁ : Draw} {b : Block}
+    (hopp : OppositeSignedActive (R.chi d₀) (R.chi d₁) b) :
+    R.chi d₁ b = 1 ∨ R.chi d₁ b = -1 := by
+  rcases hopp with ⟨_h₀, h₁⟩ | ⟨_h₀, h₁⟩
+  · exact Or.inr h₁
+  · exact Or.inl h₁
+
+def PairOppositeActive
+    (R : CompactMultiForkLinearRound Draw Block LocalFree secret)
+    (d₀ d₁ : Draw) (b : Block) : Prop :=
+  OppositeSignedActive (R.chi d₀) (R.chi d₁) b
+
+noncomputable def oppositeLeft
+    (R : CompactMultiForkLinearRound Draw Block LocalFree secret)
+    (b : Block) (hcompact : R.CompactOppositeActive b) : Draw :=
+  Classical.choose hcompact
+
+noncomputable def oppositeRight
+    (R : CompactMultiForkLinearRound Draw Block LocalFree secret)
+    (b : Block) (hcompact : R.CompactOppositeActive b) : Draw :=
+  Classical.choose (Classical.choose_spec hcompact)
+
+theorem oppositeWitness_spec
+    (R : CompactMultiForkLinearRound Draw Block LocalFree secret)
+    (b : Block) (hcompact : R.CompactOppositeActive b) :
+    R.PairOppositeActive (R.oppositeLeft b hcompact)
+      (R.oppositeRight b hcompact) b := by
+  unfold oppositeLeft oppositeRight PairOppositeActive
+  exact Classical.choose_spec (Classical.choose_spec hcompact)
+
+noncomputable def extractCoordinate
+    (R : CompactMultiForkLinearRound Draw Block LocalFree secret)
+    {invTwo : ZMod q}
+    (hinvTwo : invTwo * (2 : ZMod q) = 1)
+    (b : Block) (hcompact : R.CompactOppositeActive b)
+    (f : LocalFree) : ZMod q :=
+  let d₀ := R.oppositeLeft b hcompact
+  let d₁ := R.oppositeRight b hcompact
+  let hopp := R.oppositeWitness_spec b hcompact
+  let h₀ := R.left_signedUnit_of_opposite hopp
+  let h₁ := R.right_signedUnit_of_opposite hopp
+  let inv := Classical.choose
+    (deltaExtractable_of_oppositeSignedActive hinvTwo hopp)
+  inv * (R.z d₀ b h₀ f - R.z d₁ b h₁ f)
+
+theorem extractCoordinate_eq_secret
+    (R : CompactMultiForkLinearRound Draw Block LocalFree secret)
+    {invTwo : ZMod q}
+    (hinvTwo : invTwo * (2 : ZMod q) = 1)
+    (b : Block) (hcompact : R.CompactOppositeActive b)
+    (f : LocalFree) :
+    R.extractCoordinate hinvTwo b hcompact f = secret (b, f) := by
+  unfold extractCoordinate
+  let d₀ := R.oppositeLeft b hcompact
+  let d₁ := R.oppositeRight b hcompact
+  let hopp := R.oppositeWitness_spec b hcompact
+  let h₀ := R.left_signedUnit_of_opposite hopp
+  let h₁ := R.right_signedUnit_of_opposite hopp
+  let hdelta := deltaExtractable_of_oppositeSignedActive hinvTwo hopp
+  have hchoose : Classical.choose hdelta *
+        (R.z d₀ b h₀ f - R.z d₁ b h₁ f) =
+      Classical.choose hdelta *
+        (productBlockLinearResponse (R.chi d₀) R.mask secret (b, f) -
+          productBlockLinearResponse (R.chi d₁) R.mask secret (b, f)) := by
+    rw [R.hz d₀ b h₀ f, R.hz d₁ b h₁ f]
+  rw [hchoose]
+  exact extract_coordinate_of_deltaExtractable
+    (q := q) (chi₀ := R.chi d₀) (chi₁ := R.chi d₁)
+    (mask := R.mask) (secret := secret) (bf := (b, f))
+    (inv := Classical.choose hdelta) (Classical.choose_spec hdelta)
+
+/--
+Active-only extraction: opposite signed active compact responses covering every
+block recover the product-block secret.
+-/
+noncomputable def extractedSecret
+    {Round : Type*}
+    (round : Round -> CompactMultiForkLinearRound Draw Block LocalFree secret)
+    {invTwo : ZMod q}
+    (hinvTwo : invTwo * (2 : ZMod q) = 1)
+    (hcover : CoversBlocks fun r b => (round r).CompactOppositeActive b) :
+    Block × LocalFree -> ZMod q :=
+  fun bf =>
+    let r := Classical.choose (hcover bf.1)
+    (round r).extractCoordinate hinvTwo bf.1
+      (Classical.choose_spec (hcover bf.1)) bf.2
+
+theorem extractedSecret_eq
+    {Round : Type*}
+    (round : Round -> CompactMultiForkLinearRound Draw Block LocalFree secret)
+    {invTwo : ZMod q}
+    (hinvTwo : invTwo * (2 : ZMod q) = 1)
+    (hcover : CoversBlocks fun r b => (round r).CompactOppositeActive b) :
+    extractedSecret round hinvTwo hcover = secret := by
+  funext bf
+  unfold extractedSecret
+  exact (round (Classical.choose (hcover bf.1))).extractCoordinate_eq_secret
+    hinvTwo bf.1 (Classical.choose_spec (hcover bf.1)) bf.2
+
+end CompactMultiForkLinearRound
+
+/--
+Full-response honest verifier equations for one repeated commitment.
+
+This is the signable relation missing from the certificate-violation endpoint:
+the signer chooses `mask`, publishes the commitment `A * mask`, answers with
+`z = mask + chi * secret`, and the verifier checks `A * z = t + chi * pk`.
+-/
+structure HonestVerifierEquationMultiForkRound
+    {q : Nat} [NeZero q]
+    (Draw Block LocalPivot LocalFree : Type*)
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (secret : Block × LocalFree -> ZMod q) where
+  mask : Block × LocalFree -> ZMod q
+  chi : Draw -> Block -> ZMod q
+  z : Draw -> Block × LocalFree -> ZMod q
+  verifierEquation :
+    ∀ d,
+      productBlockVerifierEquation Plocal (chi d)
+        (productBlockPublicKey Plocal secret)
+        (productBlockCommitment Plocal mask)
+        (z d)
+
+namespace HonestVerifierEquationMultiForkRound
+
+variable {q : Nat} [NeZero q]
+variable {Draw Block LocalPivot LocalFree : Type*}
+variable [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+variable {Plocal : Block -> LocalPivot -> LocalFree -> ZMod q}
+variable {secret : Block × LocalFree -> ZMod q}
+
+def toMultiForkLinearRound
+    (R :
+      HonestVerifierEquationMultiForkRound
+        Draw Block LocalPivot LocalFree Plocal secret) :
+    MultiForkLinearRound Draw Block LocalFree secret where
+  chi := R.chi
+  mask := R.mask
+  z := R.z
+  hz := by
+    intro d
+    exact linearResponse_of_productBlockVerifierEquation
+      (Plocal := Plocal) (h := R.verifierEquation d)
+
+def CompactOppositeActive
+    (R :
+      HonestVerifierEquationMultiForkRound
+        Draw Block LocalPivot LocalFree Plocal secret)
+    (b : Block) : Prop :=
+  R.toMultiForkLinearRound.CompactOppositeActive b
+
+noncomputable def extractedSecret
+    {Round : Type*}
+    (round :
+      Round ->
+        HonestVerifierEquationMultiForkRound
+          Draw Block LocalPivot LocalFree Plocal secret)
+    {invTwo : ZMod q}
+    (hinvTwo : invTwo * (2 : ZMod q) = 1)
+    (hcover :
+      CoversBlocks fun r b => (round r).CompactOppositeActive b) :
+    Block × LocalFree -> ZMod q :=
+  MultiForkLinearRound.extractedSecret
+    (fun r => (round r).toMultiForkLinearRound)
+    (MultiForkLinearRound.coversMultiDelta_of_coversCompactOpposite
+      (fun r => (round r).toMultiForkLinearRound) hinvTwo hcover)
+
+theorem extractedSecret_eq
+    {Round : Type*}
+    (round :
+      Round ->
+        HonestVerifierEquationMultiForkRound
+          Draw Block LocalPivot LocalFree Plocal secret)
+    {invTwo : ZMod q}
+    (hinvTwo : invTwo * (2 : ZMod q) = 1)
+    (hcover :
+      CoversBlocks fun r b => (round r).CompactOppositeActive b) :
+    extractedSecret round hinvTwo hcover = secret := by
+  exact MultiForkLinearRound.extractedSecret_eq_of_coversCompactOpposite
+    (fun r => (round r).toMultiForkLinearRound) hinvTwo hcover
+
+end HonestVerifierEquationMultiForkRound
+
+/--
+Active-only honest verifier equations for compact signatures.
+
+The response contains only free coordinates on signed active blocks.  The
+verifier equation still checks the local systematic block against the public
+commitment and public key, so honest signatures are valid while forked accepting
+transcripts continue to instantiate the compact extractor.
+-/
+structure CompactHonestVerifierEquationMultiForkRound
+    {q : Nat} [NeZero q]
+    (Draw Block LocalPivot LocalFree : Type*)
+    [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+    (Plocal : Block -> LocalPivot -> LocalFree -> ZMod q)
+    (secret : Block × LocalFree -> ZMod q) where
+  mask : Block × LocalFree -> ZMod q
+  chi : Draw -> Block -> ZMod q
+  z :
+    ∀ d b, (chi d b = 1 ∨ chi d b = -1) ->
+      LocalFree -> ZMod q
+  verifierEquation :
+    ∀ d,
+      productBlockActiveVerifierEquation Plocal (chi d)
+        (productBlockPublicKey Plocal secret)
+        (productBlockCommitment Plocal mask)
+        (z d)
+
+namespace CompactHonestVerifierEquationMultiForkRound
+
+variable {q : Nat} [NeZero q]
+variable {Draw Block LocalPivot LocalFree : Type*}
+variable [DecidableEq Block] [Fintype Block] [Fintype LocalFree]
+variable {Plocal : Block -> LocalPivot -> LocalFree -> ZMod q}
+variable {secret : Block × LocalFree -> ZMod q}
+
+def toCompactMultiForkLinearRound
+    (R :
+      CompactHonestVerifierEquationMultiForkRound
+        Draw Block LocalPivot LocalFree Plocal secret) :
+    CompactMultiForkLinearRound Draw Block LocalFree secret where
+  chi := R.chi
+  mask := R.mask
+  z := R.z
+  hz := by
+    intro d b h f
+    exact activeLinearResponse_of_productBlockActiveVerifierEquation
+      (Plocal := Plocal) (h := R.verifierEquation d) b h f
+
+def CompactOppositeActive
+    (R :
+      CompactHonestVerifierEquationMultiForkRound
+        Draw Block LocalPivot LocalFree Plocal secret)
+    (b : Block) : Prop :=
+  R.toCompactMultiForkLinearRound.CompactOppositeActive b
+
+noncomputable def extractedSecret
+    {Round : Type*}
+    (round :
+      Round ->
+        CompactHonestVerifierEquationMultiForkRound
+          Draw Block LocalPivot LocalFree Plocal secret)
+    {invTwo : ZMod q}
+    (hinvTwo : invTwo * (2 : ZMod q) = 1)
+    (hcover :
+      CoversBlocks fun r b => (round r).CompactOppositeActive b) :
+    Block × LocalFree -> ZMod q :=
+  CompactMultiForkLinearRound.extractedSecret
+    (fun r => (round r).toCompactMultiForkLinearRound)
+    hinvTwo hcover
+
+theorem extractedSecret_eq
+    {Round : Type*}
+    (round :
+      Round ->
+        CompactHonestVerifierEquationMultiForkRound
+          Draw Block LocalPivot LocalFree Plocal secret)
+    {invTwo : ZMod q}
+    (hinvTwo : invTwo * (2 : ZMod q) = 1)
+    (hcover :
+      CoversBlocks fun r b => (round r).CompactOppositeActive b) :
+    extractedSecret round hinvTwo hcover = secret := by
+  exact CompactMultiForkLinearRound.extractedSecret_eq
+    (fun r => (round r).toCompactMultiForkLinearRound) hinvTwo hcover
+
+end CompactHonestVerifierEquationMultiForkRound
 
 end BlockChallengeSoundness
 

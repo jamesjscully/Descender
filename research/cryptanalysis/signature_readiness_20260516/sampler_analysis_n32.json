@@ -34,6 +34,7 @@
       "active_any_block_miss_bits": 0.019064642594593645,
       "full_response_fork_delta_any_block_miss_bits": 10.525296062692597,
       "compact_fork_delta_any_block_miss_bits": 4.170356150021212e-6,
+      "compact_fork_delta_direct_forgery_bits": 6.950593583368686e-7,
       "compact_one_fork_delta_any_block_miss_bits": 0.0,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -62,6 +63,7 @@
       "active_any_block_miss_bits": 0.019064642594593645,
       "full_response_fork_delta_any_block_miss_bits": 10.525296062692597,
       "compact_fork_delta_any_block_miss_bits": 4.170356150021212e-6,
+      "compact_fork_delta_direct_forgery_bits": 6.950593583368686e-7,
       "compact_one_fork_delta_any_block_miss_bits": 0.0,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -90,6 +92,7 @@
       "active_any_block_miss_bits": 0.019064642594593645,
       "full_response_fork_delta_any_block_miss_bits": 10.525296062692597,
       "compact_fork_delta_any_block_miss_bits": 4.170356150021212e-6,
+      "compact_fork_delta_direct_forgery_bits": 6.950593583368686e-7,
       "compact_one_fork_delta_any_block_miss_bits": 0.0,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -118,6 +121,7 @@
       "active_any_block_miss_bits": 0.019064642594593645,
       "full_response_fork_delta_any_block_miss_bits": 10.525296062692597,
       "compact_fork_delta_any_block_miss_bits": 4.170356150021212e-6,
+      "compact_fork_delta_direct_forgery_bits": 6.950593583368686e-7,
       "compact_one_fork_delta_any_block_miss_bits": 0.0,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -146,6 +150,7 @@
       "active_any_block_miss_bits": 0.027614992056453996,
       "full_response_fork_delta_any_block_miss_bits": 11.083874831821978,
       "compact_fork_delta_any_block_miss_bits": 7.007722747637414e-6,
+      "compact_fork_delta_direct_forgery_bits": 1.1679537912729022e-6,
       "compact_one_fork_delta_any_block_miss_bits": 7.364677532272376e-13,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -174,6 +179,7 @@
       "active_any_block_miss_bits": 0.027614992056453996,
       "full_response_fork_delta_any_block_miss_bits": 11.083874831821978,
       "compact_fork_delta_any_block_miss_bits": 7.007722747637414e-6,
+      "compact_fork_delta_direct_forgery_bits": 1.1679537912729022e-6,
       "compact_one_fork_delta_any_block_miss_bits": 7.364677532272376e-13,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -202,6 +208,7 @@
       "active_any_block_miss_bits": 0.027614992056453996,
       "full_response_fork_delta_any_block_miss_bits": 11.083874831821978,
       "compact_fork_delta_any_block_miss_bits": 7.007722747637414e-6,
+      "compact_fork_delta_direct_forgery_bits": 1.1679537912729022e-6,
       "compact_one_fork_delta_any_block_miss_bits": 7.364677532272376e-13,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -230,6 +237,7 @@
       "active_any_block_miss_bits": 0.027614992056453996,
       "full_response_fork_delta_any_block_miss_bits": 11.083874831821978,
       "compact_fork_delta_any_block_miss_bits": 7.007722747637414e-6,
+      "compact_fork_delta_direct_forgery_bits": 1.1679537912729022e-6,
       "compact_one_fork_delta_any_block_miss_bits": 7.364677532272376e-13,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -258,6 +266,7 @@
       "active_any_block_miss_bits": 0.03852785064143611,
       "full_response_fork_delta_any_block_miss_bits": 11.642479924038629,
       "compact_fork_delta_any_block_miss_bits": 0.000011428107700692421,
+      "compact_fork_delta_direct_forgery_bits": 1.9046846167820702e-6,
       "compact_one_fork_delta_any_block_miss_bits": 2.453984873249505e-12,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -286,6 +295,7 @@
       "active_any_block_miss_bits": 0.03852785064143611,
       "full_response_fork_delta_any_block_miss_bits": 11.642479924038629,
       "compact_fork_delta_any_block_miss_bits": 0.000011428107700692421,
+      "compact_fork_delta_direct_forgery_bits": 1.9046846167820702e-6,
       "compact_one_fork_delta_any_block_miss_bits": 2.453984873249505e-12,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -314,6 +324,7 @@
       "active_any_block_miss_bits": 0.03852785064143611,
       "full_response_fork_delta_any_block_miss_bits": 11.642479924038629,
       "compact_fork_delta_any_block_miss_bits": 0.000011428107700692421,
+      "compact_fork_delta_direct_forgery_bits": 1.9046846167820702e-6,
       "compact_one_fork_delta_any_block_miss_bits": 2.453984873249505e-12,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -342,6 +353,7 @@
       "active_any_block_miss_bits": 0.03852785064143611,
       "full_response_fork_delta_any_block_miss_bits": 11.642479924038629,
       "compact_fork_delta_any_block_miss_bits": 0.000011428107700692421,
+      "compact_fork_delta_direct_forgery_bits": 1.9046846167820702e-6,
       "compact_one_fork_delta_any_block_miss_bits": 2.453984873249505e-12,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -370,6 +382,7 @@
       "active_any_block_miss_bits": 0.05204794544781157,
       "full_response_fork_delta_any_block_miss_bits": 12.201102416096282,
       "compact_fork_delta_any_block_miss_bits": 0.000018133335939088312,
+      "compact_fork_delta_direct_forgery_bits": 3.0222226565147187e-6,
       "compact_one_fork_delta_any_block_miss_bits": 0.0,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -398,6 +411,7 @@
       "active_any_block_miss_bits": 0.08617732348824332,
       "full_response_fork_delta_any_block_miss_bits": 13.338078868009259,
       "compact_fork_delta_any_block_miss_bits": 0.0114184390316679,
+      "compact_fork_delta_direct_forgery_bits": 0.00190307317194465,
       "compact_one_fork_delta_any_block_miss_bits": 0.0,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -426,6 +440,7 @@
       "active_any_block_miss_bits": 0.05204794544781157,
       "full_response_fork_delta_any_block_miss_bits": 12.201102416096282,
       "compact_fork_delta_any_block_miss_bits": 0.000018133335939088312,
+      "compact_fork_delta_direct_forgery_bits": 3.0222226565147187e-6,
       "compact_one_fork_delta_any_block_miss_bits": 0.0,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -454,6 +469,7 @@
       "active_any_block_miss_bits": 0.08617732348824332,
       "full_response_fork_delta_any_block_miss_bits": 13.338078868009259,
       "compact_fork_delta_any_block_miss_bits": 0.0114184390316679,
+      "compact_fork_delta_direct_forgery_bits": 0.00190307317194465,
       "compact_one_fork_delta_any_block_miss_bits": 0.0,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -482,6 +498,7 @@
       "active_any_block_miss_bits": 0.05204794544781157,
       "full_response_fork_delta_any_block_miss_bits": 12.201102416096282,
       "compact_fork_delta_any_block_miss_bits": 0.000018133335939088312,
+      "compact_fork_delta_direct_forgery_bits": 3.0222226565147187e-6,
       "compact_one_fork_delta_any_block_miss_bits": 0.0,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -510,6 +527,7 @@
       "active_any_block_miss_bits": 0.08617732348824332,
       "full_response_fork_delta_any_block_miss_bits": 13.338078868009259,
       "compact_fork_delta_any_block_miss_bits": 0.0114184390316679,
+      "compact_fork_delta_direct_forgery_bits": 0.00190307317194465,
       "compact_one_fork_delta_any_block_miss_bits": 0.0,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -538,6 +556,7 @@
       "active_any_block_miss_bits": 0.05204794544781157,
       "full_response_fork_delta_any_block_miss_bits": 12.201102416096282,
       "compact_fork_delta_any_block_miss_bits": 0.000018133335939088312,
+      "compact_fork_delta_direct_forgery_bits": 3.0222226565147187e-6,
       "compact_one_fork_delta_any_block_miss_bits": 0.0,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -566,6 +585,7 @@
       "active_any_block_miss_bits": 0.08617732348824332,
       "full_response_fork_delta_any_block_miss_bits": 13.338078868009259,
       "compact_fork_delta_any_block_miss_bits": 0.0114184390316679,
+      "compact_fork_delta_direct_forgery_bits": 0.00190307317194465,
       "compact_one_fork_delta_any_block_miss_bits": 0.0,
       "full_block_coverage": false,
       "verdict": "entropy-retry-pass-weak-fork-delta"
@@ -596,6 +616,7 @@
       "active_any_block_miss_bits": 10.490285791966649,
       "full_response_fork_delta_any_block_miss_bits": 36.74243558921352,
       "compact_fork_delta_any_block_miss_bits": 17.07890656814029,
+      "compact_fork_delta_direct_forgery_bits": 2.846484428023382,
       "compact_one_fork_delta_any_block_miss_bits": 0.33592251292742864,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-16"
@@ -624,6 +645,7 @@
       "active_any_block_miss_bits": 10.490285791966649,
       "full_response_fork_delta_any_block_miss_bits": 36.74243558921352,
       "compact_fork_delta_any_block_miss_bits": 17.07890656814029,
+      "compact_fork_delta_direct_forgery_bits": 2.846484428023382,
       "compact_one_fork_delta_any_block_miss_bits": 0.33592251292742864,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-16"
@@ -652,6 +674,7 @@
       "active_any_block_miss_bits": 10.490285791966649,
       "full_response_fork_delta_any_block_miss_bits": 36.74243558921352,
       "compact_fork_delta_any_block_miss_bits": 17.07890656814029,
+      "compact_fork_delta_direct_forgery_bits": 2.846484428023382,
       "compact_one_fork_delta_any_block_miss_bits": 0.33592251292742864,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-16"
@@ -680,6 +703,7 @@
       "active_any_block_miss_bits": 10.000138504587401,
       "full_response_fork_delta_any_block_miss_bits": 47.997731495475186,
       "compact_fork_delta_any_block_miss_bits": 17.49972631615664,
+      "compact_fork_delta_direct_forgery_bits": 2.9166210526927734,
       "compact_one_fork_delta_any_block_miss_bits": 0.27782145829929017,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-16"
@@ -708,6 +732,7 @@
       "active_any_block_miss_bits": 10.000138504587401,
       "full_response_fork_delta_any_block_miss_bits": 47.997731495475186,
       "compact_fork_delta_any_block_miss_bits": 17.49972631615664,
+      "compact_fork_delta_direct_forgery_bits": 2.9166210526927734,
       "compact_one_fork_delta_any_block_miss_bits": 0.27782145829929017,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-16"
@@ -736,6 +761,7 @@
       "active_any_block_miss_bits": 10.000138504587401,
       "full_response_fork_delta_any_block_miss_bits": 47.997731495475186,
       "compact_fork_delta_any_block_miss_bits": 17.49972631615664,
+      "compact_fork_delta_direct_forgery_bits": 2.9166210526927734,
       "compact_one_fork_delta_any_block_miss_bits": 0.27782145829929017,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-16"
@@ -764,6 +790,7 @@
       "active_any_block_miss_bits": 10.490285791966649,
       "full_response_fork_delta_any_block_miss_bits": 36.74243558921352,
       "compact_fork_delta_any_block_miss_bits": 17.07890656814029,
+      "compact_fork_delta_direct_forgery_bits": 2.846484428023382,
       "compact_one_fork_delta_any_block_miss_bits": 0.33592251292742864,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-16"
@@ -792,6 +819,7 @@
       "active_any_block_miss_bits": 10.490285791966649,
       "full_response_fork_delta_any_block_miss_bits": 36.74243558921352,
       "compact_fork_delta_any_block_miss_bits": 17.07890656814029,
+      "compact_fork_delta_direct_forgery_bits": 2.846484428023382,
       "compact_one_fork_delta_any_block_miss_bits": 0.33592251292742864,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-16"
@@ -820,6 +848,7 @@
       "active_any_block_miss_bits": 10.490285791966649,
       "full_response_fork_delta_any_block_miss_bits": 36.74243558921352,
       "compact_fork_delta_any_block_miss_bits": 17.07890656814029,
+      "compact_fork_delta_direct_forgery_bits": 2.846484428023382,
       "compact_one_fork_delta_any_block_miss_bits": 0.33592251292742864,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-16"
@@ -848,6 +877,7 @@
       "active_any_block_miss_bits": 10.490285791966649,
       "full_response_fork_delta_any_block_miss_bits": 36.74243558921352,
       "compact_fork_delta_any_block_miss_bits": 17.07890656814029,
+      "compact_fork_delta_direct_forgery_bits": 2.846484428023382,
       "compact_one_fork_delta_any_block_miss_bits": 0.33592251292742864,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-16"
@@ -876,6 +906,7 @@
       "active_any_block_miss_bits": 9.424851946723697,
       "full_response_fork_delta_any_block_miss_bits": 59.07797906356265,
       "compact_fork_delta_any_block_miss_bits": 17.23624865535822,
+      "compact_fork_delta_direct_forgery_bits": 2.87270810922637,
       "compact_one_fork_delta_any_block_miss_bits": 0.19522154530874497,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-16"
@@ -904,6 +935,7 @@
       "active_any_block_miss_bits": 9.424851946723697,
       "full_response_fork_delta_any_block_miss_bits": 59.07797906356265,
       "compact_fork_delta_any_block_miss_bits": 17.23624865535822,
+      "compact_fork_delta_direct_forgery_bits": 2.87270810922637,
       "compact_one_fork_delta_any_block_miss_bits": 0.19522154530874497,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-16"
@@ -934,6 +966,7 @@
       "active_any_block_miss_bits": 24.0,
       "full_response_fork_delta_any_block_miss_bits": 34.91056661347598,
       "compact_fork_delta_any_block_miss_bits": 27.326574059378967,
+      "compact_fork_delta_direct_forgery_bits": 4.554429009896494,
       "compact_one_fork_delta_any_block_miss_bits": 2.024389154137149,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-24"
@@ -962,6 +995,7 @@
       "active_any_block_miss_bits": 24.0,
       "full_response_fork_delta_any_block_miss_bits": 34.91056661347598,
       "compact_fork_delta_any_block_miss_bits": 27.326574059378967,
+      "compact_fork_delta_direct_forgery_bits": 4.554429009896494,
       "compact_one_fork_delta_any_block_miss_bits": 2.024389154137149,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-24"
@@ -990,6 +1024,7 @@
       "active_any_block_miss_bits": 15.320301075032045,
       "full_response_fork_delta_any_block_miss_bits": 50.32324745228005,
       "compact_fork_delta_any_block_miss_bits": 24.105203756854216,
+      "compact_fork_delta_direct_forgery_bits": 4.017533959475703,
       "compact_one_fork_delta_any_block_miss_bits": 1.025911517272804,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-24"
@@ -1018,6 +1053,7 @@
       "active_any_block_miss_bits": 15.320301075032045,
       "full_response_fork_delta_any_block_miss_bits": 50.32324745228005,
       "compact_fork_delta_any_block_miss_bits": 24.105203756854216,
+      "compact_fork_delta_direct_forgery_bits": 4.017533959475703,
       "compact_one_fork_delta_any_block_miss_bits": 1.025911517272804,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-24"
@@ -1046,6 +1082,7 @@
       "active_any_block_miss_bits": 20.000000004221878,
       "full_response_fork_delta_any_block_miss_bits": 45.24382491547762,
       "compact_fork_delta_any_block_miss_bits": 27.844294913242567,
+      "compact_fork_delta_direct_forgery_bits": 4.640715818873761,
       "compact_one_fork_delta_any_block_miss_bits": 1.7816640504514927,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-24"
@@ -1074,6 +1111,7 @@
       "active_any_block_miss_bits": 20.000000004221878,
       "full_response_fork_delta_any_block_miss_bits": 45.24382491547762,
       "compact_fork_delta_any_block_miss_bits": 27.844294913242567,
+      "compact_fork_delta_direct_forgery_bits": 4.640715818873761,
       "compact_one_fork_delta_any_block_miss_bits": 1.7816640504514927,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-24"
@@ -1102,6 +1140,7 @@
       "active_any_block_miss_bits": 24.0,
       "full_response_fork_delta_any_block_miss_bits": 34.91056661347598,
       "compact_fork_delta_any_block_miss_bits": 27.326574059378967,
+      "compact_fork_delta_direct_forgery_bits": 4.554429009896494,
       "compact_one_fork_delta_any_block_miss_bits": 2.024389154137149,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-24"
@@ -1130,6 +1169,7 @@
       "active_any_block_miss_bits": 24.0,
       "full_response_fork_delta_any_block_miss_bits": 34.91056661347598,
       "compact_fork_delta_any_block_miss_bits": 27.326574059378967,
+      "compact_fork_delta_direct_forgery_bits": 4.554429009896494,
       "compact_one_fork_delta_any_block_miss_bits": 2.024389154137149,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-24"
@@ -1158,6 +1198,7 @@
       "active_any_block_miss_bits": 24.0,
       "full_response_fork_delta_any_block_miss_bits": 34.91056661347598,
       "compact_fork_delta_any_block_miss_bits": 27.326574059378967,
+      "compact_fork_delta_direct_forgery_bits": 4.554429009896494,
       "compact_one_fork_delta_any_block_miss_bits": 2.024389154137149,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-24"
@@ -1186,6 +1227,7 @@
       "active_any_block_miss_bits": 24.0,
       "full_response_fork_delta_any_block_miss_bits": 34.91056661347598,
       "compact_fork_delta_any_block_miss_bits": 27.326574059378967,
+      "compact_fork_delta_direct_forgery_bits": 4.554429009896494,
       "compact_one_fork_delta_any_block_miss_bits": 2.024389154137149,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-24"
@@ -1214,6 +1256,7 @@
       "active_any_block_miss_bits": 15.320301075032045,
       "full_response_fork_delta_any_block_miss_bits": 50.32324745228005,
       "compact_fork_delta_any_block_miss_bits": 24.105203756854216,
+      "compact_fork_delta_direct_forgery_bits": 4.017533959475703,
       "compact_one_fork_delta_any_block_miss_bits": 1.025911517272804,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-24"
@@ -1242,6 +1285,7 @@
       "active_any_block_miss_bits": 15.320301075032045,
       "full_response_fork_delta_any_block_miss_bits": 50.32324745228005,
       "compact_fork_delta_any_block_miss_bits": 24.105203756854216,
+      "compact_fork_delta_direct_forgery_bits": 4.017533959475703,
       "compact_one_fork_delta_any_block_miss_bits": 1.025911517272804,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-24"
@@ -1272,6 +1316,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1300,6 +1345,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1328,6 +1374,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1356,6 +1403,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1384,6 +1432,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1412,6 +1461,7 @@
       "active_any_block_miss_bits": 32.0,
       "full_response_fork_delta_any_block_miss_bits": 46.02787136016107,
       "compact_fork_delta_any_block_miss_bits": 36.27702378617083,
+      "compact_fork_delta_direct_forgery_bits": 6.046170631028471,
       "compact_one_fork_delta_any_block_miss_bits": 3.5719109274024,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1440,6 +1490,7 @@
       "active_any_block_miss_bits": 32.0,
       "full_response_fork_delta_any_block_miss_bits": 46.02787136016107,
       "compact_fork_delta_any_block_miss_bits": 36.27702378617083,
+      "compact_fork_delta_direct_forgery_bits": 6.046170631028471,
       "compact_one_fork_delta_any_block_miss_bits": 3.5719109274024,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1468,6 +1519,7 @@
       "active_any_block_miss_bits": 32.0,
       "full_response_fork_delta_any_block_miss_bits": 46.02787136016107,
       "compact_fork_delta_any_block_miss_bits": 36.27702378617083,
+      "compact_fork_delta_direct_forgery_bits": 6.046170631028471,
       "compact_one_fork_delta_any_block_miss_bits": 3.5719109274024,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1496,6 +1548,7 @@
       "active_any_block_miss_bits": 32.0,
       "full_response_fork_delta_any_block_miss_bits": 46.02787136016107,
       "compact_fork_delta_any_block_miss_bits": 36.27702378617083,
+      "compact_fork_delta_direct_forgery_bits": 6.046170631028471,
       "compact_one_fork_delta_any_block_miss_bits": 3.5719109274024,
       "full_block_coverage": false,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1524,6 +1577,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1552,6 +1606,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1580,6 +1635,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1610,6 +1666,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1638,6 +1695,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1666,6 +1724,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1694,6 +1753,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1722,6 +1782,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1750,6 +1811,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1778,6 +1840,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1806,6 +1869,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 36.00000000000984,
       "compact_fork_delta_any_block_miss_bits": 36.00000000000984,
+      "compact_fork_delta_direct_forgery_bits": 6.0000000000016405,
       "compact_one_fork_delta_any_block_miss_bits": 4.042114417915464,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1834,6 +1898,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 41.000000000000306,
       "compact_fork_delta_any_block_miss_bits": 41.000000000000306,
+      "compact_fork_delta_direct_forgery_bits": 6.8333333333333846,
       "compact_one_fork_delta_any_block_miss_bits": 5.021095304934067,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1862,6 +1927,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 41.000000000000306,
       "compact_fork_delta_any_block_miss_bits": 41.000000000000306,
+      "compact_fork_delta_direct_forgery_bits": 6.8333333333333846,
       "compact_one_fork_delta_any_block_miss_bits": 5.021095304934067,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1890,6 +1956,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 41.000000000000306,
       "compact_fork_delta_any_block_miss_bits": 41.000000000000306,
+      "compact_fork_delta_direct_forgery_bits": 6.8333333333333846,
       "compact_one_fork_delta_any_block_miss_bits": 5.021095304934067,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1918,6 +1985,7 @@
       "active_any_block_miss_bits": null,
       "full_response_fork_delta_any_block_miss_bits": 41.000000000000306,
       "compact_fork_delta_any_block_miss_bits": 41.000000000000306,
+      "compact_fork_delta_direct_forgery_bits": 6.8333333333333846,
       "compact_one_fork_delta_any_block_miss_bits": 5.021095304934067,
       "full_block_coverage": true,
       "verdict": "candidate-compact-fork-delta-32"
@@ -1929,6 +1997,7 @@
     "Signature sizes are reported with canonical challenge encoding.  Carrying a fixed 32-byte hash/digest instead adds the difference shown in the digest-size column.",
     "Active-challenge coverage and fork-delta coverage are separate diagnostics.  The extraction proof needs a usable challenge delta on every block, not merely a challenge that touches the block once.",
     "Compact fork-delta coverage assumes 6 challenge draws for the same commitment per repeated round.  It only counts opposite signed active openings, because a compact transcript omits inactive response coordinates.",
+    "Under the current moment proof, direct residual forgery bits are compact fork-delta coverage bits divided by 6.  A 128-bit residual target would require about 768 compact coverage bits before the root is taken.",
     "The full-response fork-delta column is an idealized diagnostic for a transcript that exposes every response coordinate; it should not be used as the compact-signature security claim.",
     "All coverage bits are exact any-block-missed probabilities computed by inclusion-exclusion over the product blocks.  They are sharper than a union-bound-only diagnostic while still charging the real failure event.",
     "The smallest rows pass challenge-entropy and retry accounting by using very low block weight, but their fork-delta diagnostic is weak under compact active-only openings.",

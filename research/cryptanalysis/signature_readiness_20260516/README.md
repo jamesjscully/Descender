@@ -95,11 +95,12 @@ terms, the verifier can apply a sparse signed product-block challenge directly
 to the public view, while the response bound only sees coefficients in
 `{-1, 0, 1}` instead of a large scalar challenge.
 
-This does not complete the signature proof.  The remaining blockers are now the
-rejection-sampling theorem, the serialized/high-bit verifier equation,
-Fiat-Shamir soundness, concrete challenge serialization, and key-generation
-cryptanalysis for the structured view.  See
-`product_block_challenge_action.md`.
+This was the original correctness-side boundary.  The later transcript proof
+now supplies the rejection-sampling abstraction, canonical challenge
+serialization, Fiat-Shamir replay/product-moment theorem, compact extraction,
+and keygen-break bridge.  The remaining scheme-specific obligations are the
+implementation's serialized verifier equation, concrete response-parser
+soundness, and key-generation cryptanalysis for the structured view.
 
 `Descender/ProductBlockSignature.lean` also proves the first correctness-side
 lemma for this route: sparse signed block challenges preserve the centered
@@ -274,8 +275,15 @@ the remaining replay work is bounding each accepting-replay failure.
 The byte-level binding proof is now in Lean.  `N32ChallengePointByteCodec`
 models a fixed-layout domain-separated byte frame for the public key, message,
 and seven commitments, and proves that equal challenge-point bytes imply equal
-semantic challenge points.  `N32SixDrawByteBindingInputs` uses this to set all
-same-point replay terms to zero:
+semantic challenge points.  `N32CanonicalChallengeByteCodec.packed17` is the
+canonical challenge serializer: it injects the `2^133` challenge space into a
+17-byte space and proves `decode(encode(c)) = c`, with three slack bits.
+For already-serialized scheme objects, `N32ChallengePointByteCodec.byteVector`
+instantiates the public-key, message, and commitment codecs as identity maps on
+fixed byte vectors.  `N32ByteSerializedVerifierInputs` fixes this byte-vector
+route together with the packed challenge codec.
+`N32SixDrawByteBindingInputs` uses this to set all same-point replay terms to
+zero:
 
 ```text
 Pr[extractable] >= Pr[forgery]
@@ -293,6 +301,52 @@ Pr[extractable] >= Pr[forgery]
   - 2^-133
   - sum_d (1 - alpha[d])
   - coverageFailureBound.
+```
+
+The proof now also records how such an `alpha` can be derived.  For a
+state-local accepting density
+
+```text
+p[state] = Pr_c[acceptingChallenge[state](c)],
+```
+
+Lean defines threshold-heavy states by `alpha <= p[state]` and proves that
+accepting on a light state costs at most `alpha`.  The practical final
+interface is therefore heavy-state based:
+
+```text
+Pr[extractable] >= Pr[forgery]
+  - 2^-133
+  - lightReplayBound
+  - sum_d (1 - alpha[d])
+  - coverageFailureBound.
+```
+
+This makes the remaining task precise: derive useful heavy-state thresholds
+and a small light-replay bound for the concrete replay schedule.
+
+The stronger replay route is now formalized as a product-moment theorem.  After
+cutting the execution at the challenge point and sampling independent replay
+challenges, Lean proves:
+
+```text
+Pr[all replay draws accept]
+  = E_state[ product_d p_d[state] ].
+```
+
+For identical draw distributions and six draws this becomes:
+
+```text
+Pr[all six replay draws accept] = E_state[p[state]^6].
+```
+
+This is the route that avoids an additive `sum_d (1 - alpha[d])` loss when the
+forger's success probability is not near one.  The Jensen-style lower bound
+from first-run success to the sixth moment is now formalized, along with the
+bridge
+
+```text
+Pr[forgery] - Pr[queryMiss] <= E_state[p[state]].
 ```
 
 See `canonical_transcript.md`.
@@ -340,6 +394,637 @@ systematic views, and the basic signed-challenge noise bound is formalized.
 The distributional rejection-sampling theorem is also formalized as a generic
 finite-probability proof.  The exact-box sampler, compact fork-delta coverage
 analysis, deterministic multi-fork extractor, and finite-probability
-random-oracle replay shell are now concrete.  The next signature-specific work
-is deriving concrete `queryMissBound` and `replayFailureBound` values for six
-accepting draws, plus the serialized verifier equation.
+random-oracle replay shell are now concrete.  The honest signing relation is
+now named as well: the signer publishes a product-block commitment
+`t = A * mask`, uses public key `u = A * secret`, returns
+`z = mask + chi * secret`, and the verifier checks
+`A * z = t + chi * u`.  Lean also has the compact active-only version where
+only signed active block coordinates of `z` are serialized, and it proves that
+forked accepting compact transcripts instantiate the existing product-block
+secret extractor.  The serialized verifier
+implication is formalized too: an accepting output transcript recomputes the
+random-oracle challenge point and lands in the one-shot accepting set, giving
+the product-moment bound
+
+```text
+L <= Pr[forgery] - 2^-133
+0 <= L
+---------------------------------------------
+L^6 <= Pr[all six independent replay draws accept].
+```
+
+The six-replay/fork wrapper is formalized as well.  It proves the extractor
+form:
+
+```text
+L <= Pr[forgery] - 2^-133
+0 <= L
+---------------------------------------------
+L^6 - coverageFailureBound <= Pr[extractable].
+```
+
+The compact active-only response path is formalized too.  The deterministic
+extractor now has a `CompactMultiForkLinearRound` form that only uses active
+response coordinates, and `N32CompactSixReplayExtractionInputs` proves:
+
+```text
+L <= Pr[forgery] - 2^-133
+0 <= L
+-------------------------------------------------------
+L^6 - coverageFailureBound <= Pr[compactExtractable].
+```
+
+Every `compactExtractable` trace is proven to recover the product-block
+secret.
+
+The concrete compact coverage event is now fixed as
+`N32CompactCoverage.failure`, with union-bound target:
+
+```text
+16 * (2 * (17/32)^6)^7 ~= 2^-27.326561.
+```
+
+`N32ConcreteCompactSixReplayExtractionInputs` uses that event directly, and
+Lean now proves the fixed-block miss calculation needed by the wrapper.  The
+same wrapper also internalizes the canonical query-miss event as
+`forgery && !pointQueried`; the serialized verifier's recomputed-challenge
+lemma supplies the blind-guess condition, so no separate query-miss certificate
+is needed there.  The certified compact-coverage constant uses the six-draw
+sign-union bound; the sharper inclusion-exclusion constant changes the budget
+by less than `0.000014` bits.
+
+The current N32 byte profile is also named in Lean:
+
+```text
+N32CompactSignatureByteProfile.leadingN32_9bit_2free
+```
+
+It certifies the 255-byte accounting for the leading row:
+
+```text
+challenge bytes = 17
+response coordinates per repetition = 30
+response bytes per repetition = 34
+signature bytes = 255
+```
+
+`N32FixedCompactResponseByteDecoder` and
+`N32ByteCompactProductBlockVerifierSoundnessInputs` now fix the response side
+as fixed-length bytes plus a decoder proof.  `N32ByteConcreteCompactSixReplayExtractionInputs`
+bundles the byte-vector public data, `packed17` challenge bytes, response-byte
+decoder, canonical query-miss event, and certified compact coverage event.
+The remaining implementation-specific proof is to show that the actual verifier
+recomputes the random-oracle challenge from these bytes and that the concrete
+response parser satisfies the active linear equation on accepted transcripts.
+
+Lean also has the positive-witness endpoint: if
+
+```text
+0 < (Pr[forgery] - 2^-133)^6
+    - N32CompactCoverage.failureUnionBound,
+```
+
+then there exists a concrete six-replay trace whose active-only extractor
+returns the product-block secret.
+
+Lean now also has the abstract keygen-break bridge:
+
+```text
+N32ProductBlockSecretRecoveryGame
+```
+
+packages a concrete keygen security game by giving a `BreaksKeygen` predicate
+and a builder from a recovered product-block secret to a breaker.  The theorem
+`exists_keygenBreaker_of_positive_lower_bound` says that the same positive
+lower bound above yields an actual keygen breaker for every instantiation that
+can validate that builder.  This is the formal interface where the remaining
+scheme-specific keygen game plugs into the transcript proof.
+
+There is also a canonical secret-recovery instantiation:
+
+```text
+N32ProductBlockSecretRecoveryGame.secretRecovery
+exists_secretRecoveryBreaker_of_positive_lower_bound
+```
+
+where `BreaksKeygen recovered` is exactly `recovered = secret`.
+
+Finally, Lean has the contrapositive security form:
+
+```text
+forgeryMinusGuess_sixth_le_failureUnionBound_of_no_keygenBreaker
+```
+
+If no keygen breaker exists and `Pr[forgery] >= 2^-133`, then
+
+```text
+(Pr[forgery] - 2^-133)^6
+  <= N32CompactCoverage.failureUnionBound.
+```
+
+The packaged endpoint is:
+
+```text
+N32ByteConcreteSignatureSecurityCertificate
+```
+
+Given the byte-concrete transcript inputs, a keygen no-break assumption, and
+`invTwo`, it yields the final bound directly.
+
+The practical reading of this endpoint is tracked in
+`practical_soundness_bottleneck.md`.  The current certificate is still a
+sixth-moment statement: for the leading `255 B` row, the `2^-27.326561`
+compact coverage bound becomes only about `2^-4.554429` direct residual
+forgery advantage after taking the sixth root.  The sampler reports now expose
+this as `direct proof bits`; practical security requires a lower-arity or
+tighter proof, not just more compact-coverage filtering.
+
+The replacement target theorem is also now in Lean:
+
+```text
+LinearStructuralSoundnessTarget
+forgeryProb_le_queryMiss_add_structuralFailure_of_no_keygenBreaker
+```
+
+It proves the desired linear form:
+
+```text
+no keygen breaker
+=> Pr[forgery] <= queryMissBound + structuralFailureBound.
+```
+
+The extracted object is abstract, so future work can instantiate the target
+with full-secret recovery, partial product-block recovery, or any smaller
+keygen-breaking witness justified by the concrete keygen game.
+
+The byte-concrete bridge to this target is:
+
+```text
+N32ByteLinearStructuralSoundnessInputs
+forgerSuccessProb_le_guess_add_structuralFailure_of_no_keygenBreaker
+```
+
+It reuses the serialized verifier to prove the canonical query-miss loss, so a
+future candidate only has to prove the queried clean-forgery extraction
+obligation and bound its structural failure probability.  The resulting bound
+has the practical form `Pr[forgery] <= 2^-133 + structuralFailureBound`.
+
+The first obstruction is now formalized in `BlockChallengeSoundness`: a single
+affine response `z = mask + chi * secret` is compatible with any candidate
+secret if the mask is free
+(`productBlockLinearResponse_single_view_secret_ambiguous`).  The matching
+positive target is `SingleViewLinearRound.extractedSecret_eq`: if a clean
+transcript gives a bound/extractable mask, then one active signed view recovers
+the active secret coordinates.  So the concrete algorithmic target is no longer
+"more forks"; it is a verifier/query structure that makes the relevant mask or
+a smaller keygen-breaking witness extractable for clean queried forgeries
+without leaking the key from honest signatures.
+
+That target now has code behind it.  `CompactSingleViewLinearRound` is the
+active-only deterministic extractor, and `N32ByteKnownMaskSingleViewInputs`
+instantiates the byte-level linear theorem when a clean forgery supplies an
+extractable mask and active signed challenge coverage.  Its endpoint is:
+
+```text
+N32ByteKnownMaskSingleViewInputs.forgerSuccessProb_le_guess_add_structuralFailure_of_no_keygenBreaker
+```
+
+which proves the same practical bound
+`Pr[forgery] <= 2^-133 + structuralFailureBound`.
+
+The proof target has now pivoted to partial witnesses:
+
+```text
+N32PartialKeygenBreakGame
+N32BytePartialWitnessLinearInputs
+```
+
+This keeps the same linear byte theorem but replaces "recover the full
+product-block secret" with "extract any witness that the concrete keygen game
+declares to be a break."  The first concrete test type is
+`N32RecoveredBlockWitness`, and the multi-block version is
+`N32RecoveredBlocksWitness` with a `minBlocks` threshold.  One block is probably
+too weak by itself; the stronger candidates are multi-block local preimage
+recovery and public-view relation or narrow-dual certificate violations that
+contradict the keygen/public-view certificate directly.
+
+The public-view relation candidate is now formalized at the certificate layer:
+
+```text
+PublicViewNarrowDualWitness
+SystematicLeeViolation
+```
+
+`PublicViewNarrowDualWitness` contradicts `NoNarrowQaryDualRelations` and hence
+any `PublicViewLeeDualCertificate` or `EfficientPublicViewCertificate`.
+`SystematicLeeViolation` is the systematic `A = [I | P]` version: a nonzero
+free vector whose relation `(-P y, y)` is below the certified Lee bound.  This
+is now the best formal target for a smaller partial-witness proof: make clean
+forgeries yield a certificate violation, rather than a full recovered secret.
+
+The byte-level instantiation is also present in
+`Descender.SignaturePublicViewWitness`:
+
+```text
+N32BytePublicViewNarrowDualInputs
+N32ByteSystematicLeeViolationInputs
+N32BytePublicViewNarrowDualSecurityCertificate
+N32ByteEfficientPublicViewNarrowDualSecurityCertificate
+ShortSystematicVerifierRelation
+N32SystematicRelationByteParser
+N32SystematicRelationByteParser.verifierChecks
+N32ExplicitSystematicRelationByteDecoder
+N32FixedOffsetSystematicRelationByteLayout
+N32ContiguousSystematicRelationByteLayout
+N32ContiguousSystematicRelationByteLayout.exact
+N32ContiguousPackedSystematicRelationByteLayout
+zmod12289Packed14Coeff
+zmod12289Packed14RangeCheck
+N32Q12289SystematicRelationLayout.target32x32
+N32Q12289SystematicRelationLayout.target32x32Decoder
+N32Q12289SystematicRelationLayout.target32x32SingleCarrierSignatureBytes
+N32Q12289SystematicRelationLayout.Target32x32SingleCarrierVerifierInputs
+N32Q12289SystematicRelationLayout.validated48x32
+N32Q12289SystematicRelationLayout.validated48x32Decoder
+N32Q12289SystematicRelationLayout.validated48x32SingleCarrierSignatureBytes
+N32Q12289SystematicRelationLayout.Validated48x32SingleCarrierVerifierInputs
+SharedRowProductBlock12289Rows3
+N32Q12289SystematicRelationLayout.Validated48x32ProductBlock.layout
+N32Q12289SystematicRelationLayout.Validated48x32ProductBlock.decoder
+N32Q12289SystematicRelationLayout.Validated48x32ProductBlock.rangeCheck
+N32Q12289SystematicRelationLayout.Validated48x32ProductBlock.payloadRangeCheck
+N32Q12289SystematicRelationLayout.Validated48x32ProductBlock.baseAcceptsPayload
+N32Q12289SystematicRelationLayout.Validated48x32ProductBlockSingleCarrierVerifierInputs
+N32Q12289SystematicRelationLayout.Validated48x32ProductBlockCanonicalBaseVerifierInputs
+N32Q12289SystematicRelationLayout.Validated48x32ProductBlockCanonicalBaseVerifierInputs.toSingleCarrierVerifierInputs
+N32Q12289SystematicRelationLayout.Validated48x32ProductBlockFSCoreVerifierInputs
+N32Q12289SystematicRelationLayout.Validated48x32ProductBlockFSCoreVerifierInputs.toCanonicalBaseVerifierInputs
+N32Q12289Validated48x32SingleCarrierSecurityCertificate
+N32Q12289Validated48x32SingleCarrierSecurityCertificate.toPublicViewSecurityCertificate
+N32Q12289Validated48x32SingleCarrierSecurityCertificate.forgerSuccessProb_le_guess_add_structuralFailure
+N32Q12289Validated48x32CanonicalBaseSecurityCertificate
+N32Q12289Validated48x32CanonicalBaseSecurityCertificate.toSingleCarrierSecurityCertificate
+N32Q12289Validated48x32CanonicalBaseSecurityCertificate.toPublicViewSecurityCertificate
+N32Q12289Validated48x32CanonicalBaseSecurityCertificate.forgerSuccessProb_le_guess_add_structuralFailure
+N32Q12289Validated48x32CanonicalNoFailureSecurityCertificate
+N32Q12289Validated48x32CanonicalNoFailureSecurityCertificate.toCanonicalBaseSecurityCertificate
+N32Q12289Validated48x32CanonicalNoFailureSecurityCertificate.toPublicViewSecurityCertificate
+N32Q12289Validated48x32CanonicalNoFailureSecurityCertificate.forgerSuccessProb_le_guess
+N32Q12289Validated48x32FSCoreNoFailureSecurityCertificate
+N32Q12289Validated48x32FSCoreNoFailureSecurityCertificate.toCanonicalNoFailureSecurityCertificate
+N32Q12289Validated48x32FSCoreNoFailureSecurityCertificate.toPublicViewSecurityCertificate
+N32Q12289Validated48x32FSCoreNoFailureSecurityCertificate.forgerSuccessProb_le_guess
+N32RelationCheckingByteVerifierInputs
+N32SingleCarrierRelationPayloadVerifierInputs
+N32ByteExplicitCheckedSystematicVerifierEquationSoundness
+N32ByteExplicitCheckedSystematicVerifierEquationSoundnessInputs
+N32ByteExplicitCheckedSystematicVerifierEquationSecurityCertificate
+N32ByteExplicitCheckedSystematicPublicViewVerifierEquationSecurityCertificate
+N32ByteCheckedSystematicVerifierEquationSoundness
+N32ByteCheckedSystematicVerifierEquationSoundnessInputs
+N32ByteCheckedSystematicVerifierEquationSecurityCertificate
+N32ByteCheckedSystematicPublicViewVerifierEquationSecurityCertificate
+N32ByteSystematicVerifierEquationSoundness
+N32ByteSystematicVerifierEquationSoundnessInputs
+N32ByteSystematicVerifierEquationSoundnessSecurityCertificate
+N32ByteSystematicPublicViewVerifierEquationSoundnessSecurityCertificate
+N32ByteSystematicVerifierEquationInputs
+N32ByteSystematicVerifierEquationSecurityCertificate
+N32ByteSystematicPublicViewVerifierEquationSecurityCertificate
+N32ByteShortSystematicRelationInputs
+N32ByteShortSystematicRelationSecurityCertificate
+N32ByteShortSystematicPublicViewRelationSecurityCertificate
+N32ByteSystematicLeeViolationSecurityCertificate
+N32ByteSystematicPublicViewLeeViolationSecurityCertificate
+```
+
+These wrappers replace full-secret extraction with the obligation that a clean
+queried forgery extracts one of the certificate-violation witnesses.  The
+public-view or systematic Lee certificate then supplies the no-break side and
+Lean gives the linear bound
+`Pr[forgery] <= 2^-133 + structuralFailureBound`.
+
+For the systematic route the extractor can now target the concrete verifier
+equation directly: produce pivot/free coordinates satisfying
+`pivot + P * free = 0`, with nonzero free part and Lee norm below the certified
+bound.  Lean converts that `ShortSystematicVerifierRelation` into a
+`SystematicLeeViolation`.
+
+The newest interface pushes this to response bytes: a
+`N32SystematicRelationByteParser` reads pivot/free coordinates from the seven
+response byte strings and the challenge.  `N32ByteSystematicVerifierEquationInputs`
+then requires only the parser equation, parser nonzero proof, and parser
+shortness proof on clean accepted transcripts.
+`N32ByteSystematicVerifierEquationSoundness` moves those facts to the actual
+serialized-verifier condition `oneShotAccepts = true`, and the wrapper derives
+them for forgeries via `oneShotAccepts_of_outputAccepts`.
+The checked route is the recommended instantiation: make the verifier perform
+`N32SystematicRelationByteParser.verifierChecks`, then prove accepted
+non-failing transcripts passed that single Boolean check.
+
+The honest-relation endpoints are:
+
+```text
+SignatureDistribution.productBlockVerifierEquation
+SignatureDistribution.productBlockVerifierEquation_honest
+SignatureDistribution.productBlockActiveVerifierEquation
+SignatureDistribution.productBlockActiveVerifierEquation_honest
+SignatureDistribution.productBlockReconstructedCommitment
+SignatureDistribution.productBlockReconstructedCommitment_honest
+BlockChallengeSoundness.HonestVerifierEquationMultiForkRound.toMultiForkLinearRound
+BlockChallengeSoundness.CompactHonestVerifierEquationMultiForkRound.toCompactMultiForkLinearRound
+BlockChallengeSoundness.CompactHonestVerifierEquationMultiForkRound.extractedSecret_eq
+```
+
+The implicit-commitment byte profile is now named too:
+
+```text
+N32CompletedResponseSignatureByteProfile.leadingN32_9bit_2free_implicitCommitment
+```
+
+It certifies the completed-response accounting:
+
+```text
+challenge bytes = 17
+response coordinates per repetition = 32
+response bytes per repetition = 36
+signature bytes = 269
+```
+
+The matching concrete verifier prototype is:
+
+```text
+tools/parameter-search/src/bin/signature_q12289_implicit_verifier.rs
+```
+
+It parses the 269-byte signature as a 17-byte canonical challenge followed by
+seven completed 36-byte response chunks, checks signed 9-bit responses against
+`|z| <= 224`, reconstructs `t' = A*z - chi*u`, and binds the transcript with
+the fixed domain
+`Descender.Signature.q12289.implicit_commitment.v1`.
+
+The Lean bridge for this verifier shape is now named:
+
+```text
+N32ImplicitCommitmentByteVerifierInputs
+N32ImplicitCommitmentByteVerifierInputs.toSerializedVerifierInputs
+N32ImplicitCommitmentByteVerifierInputs.outputAccepts_implies_outputChallenge_eq_actual
+N32Q12289ImplicitCommitmentByteVerifier.Inputs
+N32Q12289ImplicitCommitmentByteVerifier.serializedSignatureBytes_eq
+N32Q12289ImplicitCommitmentByteVerifier.profile_signatureBytes_eq
+N32Q12289ImplicitCommitmentByteVerifier.corePayloadCheck
+N32Q12289ImplicitCommitmentByteVerifier.implicitCommitmentDomainTag
+N32Q12289ImplicitCommitmentByteVerifier.publicKeyRangeCheck
+N32Q12289ImplicitCommitmentByteVerifier.responseRangeCheck
+N32Q12289ImplicitCommitmentByteVerifier.responseView
+N32Q12289ImplicitCommitmentByteVerifier.reconstructedCommitmentView
+N32Q12289ImplicitCommitmentByteVerifier.productBlockEquationSoundness
+N32Q12289ImplicitCommitmentByteVerifier.productBlockEquationSoundnessFromReconstruction
+N32Q12289ImplicitCommitmentByteVerifier.commitmentViewEncoder
+N32Q12289ImplicitCommitmentByteVerifier.EncodedReconstructionVerifierCertificate
+N32Q12289ImplicitCommitmentByteVerifier.EncodedReconstructionVerifierCertificate.verifierEquation_of_oneShotAccepts
+N32Q12289ImplicitCommitmentByteVerifier.q12289HashFrame
+N32Q12289ImplicitCommitmentByteVerifier.q12289HashFrame_length
+N32Q12289ImplicitCommitmentByteVerifier.HashFrameEncodedReconstructionVerifierCertificate
+N32Q12289ImplicitCommitmentByteVerifier.HashFrameEncodedReconstructionVerifierCertificate.verifierEquation_of_oneShotAccepts
+N32Q12289ImplicitCommitmentByteVerifier.ProductionHashFrameOracleAgreement
+N32Q12289ImplicitCommitmentByteVerifier.ProductionHashFrameOracleAgreement.toProductionHashFrameVerifierCertificate
+N32Q12289ImplicitCommitmentByteVerifier.ProductionHashFrameOracleAgreement.verifierEquation_of_oneShotAccepts
+SharedRowProductBlock12289Rows3.boundedCenteredPairCheck_eq_true
+SharedRowProductBlock12289Rows3.internalLocalLeeCertificate
+SharedRowProductBlock12289Rows3.internalLocalLeeCertificate_lower
+N32Q12289ImplicitCommitmentByteVerifier.ConcreteVerifierCertificate
+N32Q12289ImplicitCommitmentByteVerifier.ConcreteVerifierCertificate.verifierEquation_of_oneShotAccepts
+N32ImplicitProductBlockVerifierEquationSoundness.verifierEquation_of_acceptsTranscript
+N32ImplicitProductBlockVerifierEquationSoundness.verifierEquation_of_oneShotAccepts
+```
+
+It packages the implicit transcript binding proof: accepted transcripts have
+core payload checks, reconstructed commitments equal the output challenge
+point, and recomputed challenge bytes agree with the query-log challenge.
+The q12289 refinement also fixes the concrete parser/range predicates and the
+algebraic bridge.  The concrete `commitmentViewEncoder` now proves the q14
+packing fact: decoding the encoded 48-pivot/32-free view recovers the
+requested `ZMod 12289` coordinates.  Given this encoder, the
+`EncodedReconstructionVerifierCertificate` defines reconstructed bytes as the
+encoding of the formal value `A*z - chi*u`, so accepted byte transcripts imply
+the product-block verifier equation used by the extractor layer.  The remaining
+semantic field is now isolated by `HashFrameEncodedReconstructionVerifierCertificate`:
+SHA-256-to-challenge agreement for the exact `q12289HashFrame` byte string.
+That frame uses the Rust verifier's length-prefixed field format, fixes the
+labels and profile bytes, flattens the seven reconstructed commitments in
+repetition order, and proves length `1508 + messageLen` bytes.  The production
+certificate is derived by
+`ProductionHashFrameOracleAgreement.toProductionHashFrameVerifierCertificate`,
+so the external assumption is only the SHA/query-log agreement record.
+
+The implementation-facing refinement is
+`N32ExplicitSystematicRelationByteDecoder`.  It fixes one response repetition
+as the carrier for the systematic relation bytes and supplies `decodePivot` and
+`decodeFree` for that byte string.  Lean converts this explicit carried layout
+to the generic parser and exposes the same checked security certificates.  The
+remaining byte-packing choice is therefore isolated to the concrete decoders;
+the proof boundary is already the serialized verifier implication:
+
+```text
+oneShotAccepts(state, challenge) = true
+not structural failure
+---------------------------------
+decoder.toParser.verifierChecks response challenge = true
+```
+
+Status: the reduction theorem, q12289 implicit-verifier bridge, concrete q14
+commitment encoder, and hash-frame certificate wrapper are packaged.  The
+remaining deployment obligation is
+`ProductionHashFrameOracleAgreement`: SHA-256-to-challenge over
+`q12289HashFrame` must agree with the query-log oracle on accepted transcripts.
+
+The byte layout is now fixed at the proof-interface level.  A concrete
+implementation can use `N32ContiguousSystematicRelationByteLayout.exact` to
+store all pivot coordinates followed by all free coordinates in one carrier
+response, with no tags or gaps:
+
+```text
+responseLen = (pivotCount + freeCount) * bytesPerCoeff
+```
+
+`N32FixedOffsetSystematicRelationByteLayout` handles the lower-level byte
+slices, while `N32RelationCheckingByteVerifierInputs` constructs a serialized
+verifier whose accept predicate is:
+
+```text
+baseAccepts(transcript)
+&& decoder.toParser.verifierChecks(P, leeMin, response, challenge)
+```
+
+Lean proves the verifier implication directly from that construction:
+
+```text
+oneShotAccepts(state, challenge) = true
+--------------------------------------
+decoder.toParser.verifierChecks response challenge = true
+```
+
+For the `q = 12289` profile the concrete coefficient codec is now instantiated
+as a packed 14-bit little-endian field element decoder:
+
+```text
+zmod12289Packed14Coeff
+zmod12289Packed14RangeCheck
+```
+
+The range check rejects the unused 14-bit codes above `12288`; it belongs in
+`baseAccepts` when canonical signatures are required.  The algebraic decoder
+still maps bytes into `ZMod 12289`, so the proof remains about the verifier's
+actual field equation.
+
+Two concrete packed layouts are named:
+
+```text
+N32Q12289SystematicRelationLayout.target32x32
+  responseLen = 112 B
+  Pivot = Fin 32, Free = Fin 32
+
+N32Q12289SystematicRelationLayout.validated48x32
+  responseLen = 140 B
+  Pivot = Fin 48, Free = Fin 32
+```
+
+The first matches the original `n=32, m1=32` relation target; the second
+matches the current validated `q=12289, n=48, m1=32` coordinate-subview
+profile's 80 packed public coordinates.
+
+The response serialization is now single-carrier.  `N32SingleCarrierRelationPayloadVerifierInputs`
+models a signature that carries only one relation payload byte string.  The
+proof interface still expands it to the existing seven-response verifier by
+placing the payload at the decoder carrier and filling the other six
+repetitions with zero bytes.  The decoder reads only its carrier, so the proof
+does not charge seven copies of the payload.
+
+The named single-carrier sizes are:
+
+```text
+N32Q12289SystematicRelationLayout.target32x32SingleCarrierSignatureBytes
+  challenge 17 B + payload 112 B = 129 B
+
+N32Q12289SystematicRelationLayout.validated48x32SingleCarrierSignatureBytes
+  challenge 17 B + payload 140 B = 157 B
+```
+
+The corresponding verifier-input aliases are
+`Target32x32SingleCarrierVerifierInputs` and
+`Validated48x32SingleCarrierVerifierInputs`; both feed the same checked
+soundness and public-view certificate route.
+
+The validated `q = 12289, n = 48, m1 = 32` rows-per-group-3 sidecar is now
+wired as the concrete product-block matrix `P`:
+
+```text
+SharedRowProductBlock12289Rows3
+local block =
+  [[10849, 1171],
+   [1597,  1615],
+   [6102,  11189]]
+16 repeated blocks
+target Lee lower bound = 512
+eta = 12
+```
+
+`N32Q12289SystematicRelationLayout.Validated48x32ProductBlock.layout` maps the
+16 block-local `3 x 2` product layout into the packed 48-pivot/32-free byte
+view, and `Validated48x32ProductBlockSingleCarrierVerifierInputs` fixes the
+single 140-byte relation payload against `SharedRowProductBlock12289Rows3.globalMatrix`.
+The canonical base predicate is now named too:
+
+```text
+Validated48x32ProductBlock.baseAcceptsPayload(core, point, challenge, payload)
+  = core(point, challenge, payload)
+    && Validated48x32ProductBlock.payloadRangeCheck(payload)
+```
+
+`Validated48x32ProductBlockCanonicalBaseVerifierInputs` builds the
+single-carrier verifier from that predicate, so canonical 14-bit range checking
+is part of the concrete verifier shape rather than a loose side condition.
+The implementation-facing Fiat-Shamir route is
+`Validated48x32ProductBlockFSCoreVerifierInputs`: it packages a core payload
+check, a challenge recomputation function over the byte frame, and the query-log
+agreement lemma for accepted payloads.  Lean turns that directly into the
+canonical-base verifier inputs.
+The final named wrappers are:
+
+```text
+N32Q12289Validated48x32SingleCarrierSecurityCertificate
+N32Q12289Validated48x32SingleCarrierSecurityCertificate.toPublicViewSecurityCertificate
+N32Q12289Validated48x32SingleCarrierSecurityCertificate.forgerSuccessProb_le_guess_add_structuralFailure
+
+N32Q12289Validated48x32CanonicalBaseSecurityCertificate
+N32Q12289Validated48x32CanonicalBaseSecurityCertificate.toPublicViewSecurityCertificate
+N32Q12289Validated48x32CanonicalBaseSecurityCertificate.forgerSuccessProb_le_guess_add_structuralFailure
+
+N32Q12289Validated48x32CanonicalNoFailureSecurityCertificate
+N32Q12289Validated48x32CanonicalNoFailureSecurityCertificate.toPublicViewSecurityCertificate
+N32Q12289Validated48x32CanonicalNoFailureSecurityCertificate.forgerSuccessProb_le_guess
+
+N32Q12289Validated48x32FSCoreNoFailureSecurityCertificate
+N32Q12289Validated48x32FSCoreNoFailureSecurityCertificate.toPublicViewSecurityCertificate
+N32Q12289Validated48x32FSCoreNoFailureSecurityCertificate.forgerSuccessProb_le_guess
+```
+
+It proves:
+
+```text
+Pr[forgery] <= 2^-133 + structuralFailureBound.
+```
+
+The proof is complete at the global reduction boundary, and the q12289 local
+bounded-free Lee check is now internalized by Lean:
+
+```text
+SharedRowProductBlock12289Rows3.boundedCenteredPairCheck_eq_true
+SharedRowProductBlock12289Rows3.internalLocalLeeCertificate
+SharedRowProductBlock12289Rows3.internalLocalLeeCertificate_lower
+```
+
+It is not yet an unconditional deployment proof: it still takes the concrete
+implementation obligations through `verifierInputs` and the implicit verifier's
+encoded-reconstruction certificate, including transcript/challenge
+recomputation, q14 commitment-packer correctness, and the structural-failure
+bound.
+
+The local sidecar is retained as an independently rechecked audit artifact via
+`verify_shared_lee_cert`:
+
+```text
+research/parameter_search/product_block_lee_sidecars_broad_20260516/q12289_m132_target512_rows_per_group3.verify.json
+research/parameter_search/product_block_lee_sidecars_broad_20260516/q12289_m132_target512_rows_per_group3.verify.md
+```
+
+The verifier recomputes all `523264` centered nonzero local pairs with local
+free L1 below `512`, finds independent minimum L1 `533`, and confirms the
+artifact fields are consistent.  The implementation-facing benchmark is:
+
+```text
+research/cryptanalysis/signature_readiness_20260516/q12289_validated_signature_profile.json
+research/cryptanalysis/signature_readiness_20260516/q12289_validated_signature_profile.md
+```
+
+It records the current concrete byte target:
+
+```text
+public key = 172 B
+implicit-commitment signature = 269 B
+proof endpoint = Pr[forgery] <= 2^-133
+```
+
+That last no-failure endpoint is conditional on keeping structural failures at
+zero by making canonical payload range checking and the systematic relation
+check explicit verifier checks, which is exactly what the canonical wrapper
+does.  The Rust verifier now fixes the byte codec and recompute frame; the
+Lean implicit verifier bridge now fixes the serialized transcript implication.
+The remaining implementation obligation is now concentrated in
+`N32Q12289ImplicitCommitmentByteVerifier.ProductionHashFrameOracleAgreement`:
+prove that SHA-256-to-challenge over the exact `q12289HashFrame` agrees with
+the query-log oracle on accepted transcripts.  The q14 commitment packer is
+internalized as `N32Q12289ImplicitCommitmentByteVerifier.commitmentViewEncoder`,
+and the Rust verifier materializes the same hash frame before hashing while
+pinning both the q14 packing and zero-public-key hash-frame SHA fixture.
