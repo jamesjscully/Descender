@@ -226,6 +226,20 @@ and seven commitments, and proves:
 encodePoint p = encodePoint q => p = q.
 ```
 
+The canonical challenge codec is now named too:
+
+```text
+N32CanonicalChallengeByteCodec.packed17
+```
+
+It packs the `2^133` challenge space into 17 bytes and proves the decoder
+round trip.  The associated leading-byte profile
+`N32CompactSignatureByteProfile.leadingN32_9bit_2free` certifies the current
+255-byte row: 17 challenge bytes plus seven 34-byte compact active responses.
+The byte-vector route is now explicit through
+`N32ByteSerializedVerifierInputs`, `N32FixedCompactResponseByteDecoder`, and
+`N32ByteConcreteCompactSixReplayExtractionInputs`.
+
 `N32ByteReplayBinding` applies this to accepting replay draws, and
 `N32SixDrawByteBindingInputs` gives the byte-bound final form:
 
@@ -237,7 +251,7 @@ Pr[extractable] >=
   - coverageFailureBound.
 ```
 
-The accepting-replay term is now reduced to a density lower bound.  For each
+The accepting-replay term is first reduced to a density lower bound.  For each
 draw `d`, `N32ReplayAcceptanceProfile` records a value `alpha[d]` such that
 every adversary-side state accepts at least an `alpha[d]` fraction of the
 canonical challenge space.  Lean proves the miss bound:
@@ -256,7 +270,221 @@ Pr[extractable] >=
   - coverageFailureBound.
 ```
 
-The transcript proof must ensure:
+That "every state" version is too strong to derive from an arbitrary forger.
+The heavy-state version is now formalized as
+`N32SixDrawHeavyAcceptanceInputs`.  It uses the state-local density
+
+```text
+p_d[state] = Pr_c[replay draw d accepts after programming c]
+```
+
+and a heavy predicate satisfying
+
+```text
+heavy[state] => alpha[d] <= p_d[state].
+```
+
+Light states are charged once through `lightReplayBound`, not once per draw:
+
+```text
+Pr[extractable] >=
+  Pr[forgery]
+  - 2^-133
+  - lightReplayBound
+  - sum_d (1 - alpha[d])
+  - coverageFailureBound.
+```
+
+Lean also proves the threshold source for these quantities.  If
+`heavy_alpha[state]` is defined by `alpha <= p[state]`, then accepting on a
+light state has probability at most `alpha`.  This is the formal answer to
+where `alpha[d]` comes from: it is a threshold on state-local challenge
+density, plus an explicit light-state loss.
+
+The stronger moment route is now formalized too.  The generic theorem
+`productFunctionProduct_acceptProb_forall_eq_state_product` proves:
+
+```text
+Pr[all replay draws accept]
+  = E_state[ product_d p_d[state] ].
+```
+
+When all six replay draws use the same state-local accepting set,
+`productFunctionProduct_identical_acceptProb_eq_state_moment` gives:
+
+```text
+Pr[all six replay draws accept] = E_state[p[state]^6].
+```
+
+This is the proof shape that should replace the additive
+`sum_d (1 - alpha[d])` loss for ordinary forgers whose success probability is
+not close to one.  The convexity/Jensen bridge is now formalized:
+
+```text
+E[p^6] >= E[p]^6.
+```
+
+Lean also proves the first-run bridge:
+
+```text
+Pr[forgery] - Pr[queryMiss] <= E[p].
+```
+
+The concrete N32 endpoint is:
+
+```text
+L^6 <= Pr[all six replay draws accept]
+```
+
+for any nonnegative lower bound `L <= E[p]`.
+
+The serialized verifier implication is now formalized.  The Lean interface
+`N32SerializedVerifierProductMomentInputs` proves:
+
+```text
+Pr[forgery] - 2^-133 <= E_state[p[state]]
+
+L <= Pr[forgery] - 2^-133
+0 <= L
+---------------------------------------------
+L^6 <= Pr[all six independent replay draws accept]
+```
+
+where `p[state]` is the density of challenges accepted by the verifier after
+programming the challenge point for that state.
+
+The product-moment fork wrapper is now formalized as
+`N32SixReplayProductMomentForkInputs`.  It uses the six-replay trace
+
+```text
+State × (Fin 6 -> N32CanonicalChallenge)
+```
+
+and assumes the semantic replay implication:
+
+```text
+all six one-shot accepting programmed transcripts
+  => acceptingForks.
+```
+
+It then proves:
+
+```text
+L <= Pr[forgery] - 2^-133
+0 <= L
+---------------------------------------------
+L^6 - coverageFailureBound <= Pr[extractable].
+```
+
+Equivalently, when `Pr[forgery] >= 2^-133`:
+
+```text
+(Pr[forgery] - 2^-133)^6 - coverageFailureBound <= Pr[extractable].
+```
+
+The compact active-only path is now formalized separately.  The old
+`MultiForkLinearRound` boundary stored full responses, while the actual small
+signature target should only serialize active blocks.  The new deterministic
+object is:
+
+```text
+CompactMultiForkLinearRound
+```
+
+It stores response coordinates only for signed-unit challenge blocks and proves
+that opposite signed active compact openings recover the secret.  The N32
+transcript layer adds:
+
+```text
+N32CompactResponseCodec
+N32CompactProductBlockVerifierSoundness
+N32CompactSixReplayExtractionInputs
+```
+
+The last interface proves:
+
+```text
+L <= Pr[forgery] - 2^-133
+0 <= L
+-------------------------------------------------------
+L^6 - coverageFailureBound <= Pr[compactExtractable].
+```
+
+For every `compactExtractable` trace, Lean proves the active-only extractor
+returns the product-block secret.
+
+The concrete compact coverage event is now fixed as
+`N32CompactCoverage.failure`.  It misses exactly when some product block has no
+opposite signed active replay pair in any repetition.  Lean proves:
+
+```text
+not failure => CoversBlocks replayOppositeActive.
+```
+
+The union-bound target is:
+
+```text
+N32CompactCoverage.failureUnionBound
+  = 16 * (2 * (17/32)^6)^7
+  ~= 2^-27.326561.
+```
+
+`N32ConcreteCompactSixReplayExtractionInputs` uses that concrete event.  Lean
+now proves the fixed-block coverage probability and derives the canonical
+query-miss certificate internally for the compact product-moment wrapper:
+
+```text
+Pr[fixed block is missed] <= (2 * (17/32)^6)^7.
+queryMiss = forgery && !pointQueried.
+```
+
+This is the sign-union bound.  The exact inclusion-exclusion value subtracts
+`(1/16)^6` before the seventh power, but the difference is negligible at this
+candidate scale.
+
+With the certified coverage and query-miss pieces in the wrapper, Lean gives:
+
+```text
+(Pr[forgery] - 2^-133)^6
+  - N32CompactCoverage.failureUnionBound
+  <= Pr[compactExtractable].
+```
+
+The concrete compact wrapper also proves that a positive lower bound yields an
+actual extractable trace and recovered-secret equality:
+
+```text
+exists compactExtractable trace whose extractedSecret = secret.
+```
+
+That endpoint is connected to keygen security through
+`N32ProductBlockSecretRecoveryGame`.  Once a concrete scheme supplies a
+`BreaksKeygen` predicate and a sound builder from recovered product-block
+secret to breaker, Lean derives:
+
+```text
+exists keygen breaker.
+```
+
+The transcript file also instantiates this as direct secret recovery:
+
+```text
+N32ProductBlockSecretRecoveryGame.secretRecovery
+exists_secretRecoveryBreaker_of_positive_lower_bound
+```
+
+It also proves the no-break contrapositive:
+
+```text
+forgeryMinusGuess_sixth_le_failureUnionBound_of_no_keygenBreaker
+```
+
+so a no-keygen-break assumption forces
+`(Pr[forgery] - 2^-133)^6` below the certified compact coverage loss.
+`N32ByteConcreteSignatureSecurityCertificate` packages that final endpoint for
+the byte-vector scheme interface.
+
+The remaining concrete transcript proof must ensure:
 
 - all six accepting draws are bound to the same public key, message, round
   commitment, and repetition index;
@@ -266,6 +494,7 @@ The transcript proof must ensure:
   forked;
 - abort/rejection behavior is already absorbed into the observed accepting
   transcript event;
-- the final loss expression is small enough that
-  `forgerSuccess - 2^-133 - sum drawFailureBound -
-  coverageFailureBound` remains non-negligible for any successful forger.
+- the implementation's compact response parser satisfies the active linear
+  response equation on every accepted one-shot transcript;
+- the implementation's keygen security game treats recovered product-block
+  secret as a break.

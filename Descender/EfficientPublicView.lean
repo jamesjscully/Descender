@@ -113,6 +113,103 @@ def amplitudePromise
 end PublicViewLeeDualCertificate
 
 /--
+Concrete public-view witness for the dual-relation failure that the Lee
+certificate is meant to exclude.
+
+This is a deliberately small extracted object: an integer relation `z` plus the
+proof that its residue is a nontrivial public dual relation whose centered
+noise interval does not wrap modulo `q`.
+-/
+structure PublicViewNarrowDualWitness
+    [Fintype ViewCoord] [Zero DualTarget]
+    (dualMap : (ViewCoord -> ZMod q) -> DualTarget)
+    (eta : Nat) where
+  z : ViewCoord -> Int
+  vulnerable : AmplitudeVulnerableQaryDualRelation q eta dualMap z
+
+namespace PublicViewNarrowDualWitness
+
+theorem impossible_of_noNarrowDual
+    [Fintype ViewCoord] [Zero DualTarget]
+    {dualMap : (ViewCoord -> ZMod q) -> DualTarget}
+    {eta : Nat}
+    (C : NoNarrowQaryDualRelations q eta dualMap)
+    (W : PublicViewNarrowDualWitness (q := q) dualMap eta) :
+    False :=
+  C ⟨W.z, W.vulnerable⟩
+
+theorem impossible_of_certificate
+    [Fintype ViewCoord] [Zero DualTarget]
+    {dualMap : (ViewCoord -> ZMod q) -> DualTarget}
+    {eta : Nat}
+    (C : PublicViewLeeDualCertificate (q := q) dualMap eta)
+    (W : PublicViewNarrowDualWitness (q := q) dualMap eta) :
+    False :=
+  impossible_of_noNarrowDual C.noNarrowDual W
+
+end PublicViewNarrowDualWitness
+
+/--
+Systematic Lee witness for the more structured certificate failure:
+a nonzero free vector whose public systematic relation `(-P y, y)` is shorter
+than the advertised Lee lower bound.
+-/
+structure SystematicLeeViolation
+    [Fintype Pivot] [Fintype Free]
+    (P : Pivot -> Free -> ZMod q) (leeMin : Nat) where
+  y : Free -> ZMod q
+  nonzero : y ≠ 0
+  short : centeredNormL1 q (systematicRelation q P y) < leeMin
+
+namespace SystematicLeeViolation
+
+theorem relation_kernel
+    [Fintype Pivot] [Fintype Free]
+    {P : Pivot -> Free -> ZMod q} {leeMin : Nat}
+    (W : SystematicLeeViolation (q := q) P leeMin) :
+    systematicDualMap q P (systematicRelation q P W.y) = 0 :=
+  systematicDualMap_relation_eq_zero q P W.y
+
+theorem relation_nonzero
+    [Fintype Pivot] [Fintype Free]
+    {P : Pivot -> Free -> ZMod q} {leeMin : Nat}
+    (W : SystematicLeeViolation (q := q) P leeMin) :
+    systematicRelation q P W.y ≠ 0 :=
+  (systematicRelation_nonzero_iff q P).mpr W.nonzero
+
+theorem impossible_of_distanceAtLeast
+    [Fintype Pivot] [Fintype Free]
+    {P : Pivot -> Free -> ZMod q} {leeMin : Nat}
+    (hLee : SystematicLeeDistanceAtLeast q P leeMin)
+    (W : SystematicLeeViolation (q := q) P leeMin) :
+    False := by
+  exact Nat.not_lt_of_ge (hLee W.y W.nonzero) W.short
+
+theorem impossible_of_systematicCertificate
+    [Fintype Pivot] [Fintype Free]
+    {P : Pivot -> Free -> ZMod q}
+    (C : SystematicLeeCertificate q Pivot Free P)
+    (W : SystematicLeeViolation (q := q) P C.lowerBound) :
+    False :=
+  impossible_of_distanceAtLeast C.lowerBoundProof W
+
+theorem impossible_of_publicViewLeeDualCertificate
+    [Fintype Pivot] [Fintype Free]
+    {P : Pivot -> Free -> ZMod q} {eta : Nat}
+    (C : PublicViewLeeDualCertificate
+      (q := q) (ViewCoord := Sum Pivot Free)
+      (DualTarget := Pivot -> ZMod q) (systematicDualMap q P) eta)
+    (W : SystematicLeeViolation (q := q) P C.leeMin) :
+    False := by
+  have hLower := C.hLee
+    (systematicRelation q P W.y)
+    W.relation_kernel
+    W.relation_nonzero
+  exact Nat.not_lt_of_ge hLower W.short
+
+end SystematicLeeViolation
+
+/--
 Certificate that a serialized coordinate view has exactly the q-ary dual
 relations obtained by extending viewed relations into a larger certified
 coordinate system.
@@ -208,6 +305,16 @@ theorem noNarrowDual
     (C : EfficientPublicViewCertificate (q := q) P dualMap B) :
     NoNarrowQaryDualRelations q B.viewEta dualMap :=
   C.leeDual.noNarrowDual
+
+theorem noPublicViewNarrowDualWitness
+    [Fintype FullCoord] [Fintype ViewCoord] [Zero DualTarget]
+    {P : P_TND_Decision q FullCoord Secret Noise}
+    {dualMap : (ViewCoord -> ZMod q) -> DualTarget}
+    {B : SampleView.ViewReductionBudget}
+    (C : EfficientPublicViewCertificate (q := q) P dualMap B)
+    (W : PublicViewNarrowDualWitness (q := q) dualMap B.viewEta) :
+    False :=
+  PublicViewNarrowDualWitness.impossible_of_noNarrowDual C.noNarrowDual W
 
 def dualAmplitudePromise
     [Fintype FullCoord] [Fintype ViewCoord] [Zero DualTarget]

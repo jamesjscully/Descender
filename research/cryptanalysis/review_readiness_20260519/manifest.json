@@ -1,0 +1,27 @@
+{
+  "package": "q12289-review-readiness",
+  "date": "2026-05-19",
+  "profile": "validated-q12289-n48-m1-32-single-carrier",
+  "public_key_bytes": 172,
+  "signature_bytes": 269,
+  "hash_domain": "Descender.Signature.q12289.implicit_commitment.v1",
+  "primary_lean_file": "Descender/SignaturePublicViewWitness.lean",
+  "production_challenge_codec": "N32CanonicalChallengeByteCodec.productionBitLayout17",
+  "generated_profile": "research/cryptanalysis/signature_readiness_20260516/q12289_validated_signature_profile.md",
+  "primary_remaining_assumption": "N32Q12289ImplicitCommitmentByteVerifier.ProductionHashFrameOracleAgreement",
+  "largest_open_security_assumption": "A4 structured q12289 keygen/no-bad-public-view witness",
+  "review_package_files": [
+    "README.md",
+    "target_spec.md",
+    "target_theorem.md",
+    "theorem_map.md",
+    "assumption_ledger.md",
+    "assumption_review.md",
+    "conformance_plan.md",
+    "q12289_conformance_vectors.json",
+    "cryptanalysis_plan.md",
+    "implementation_hardening.md",
+    "reviewer_guide.md",
+    "review_gate_checklist.md"
+  ]
+}

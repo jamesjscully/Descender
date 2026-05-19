@@ -1,0 +1,115 @@
+{
+  "target_l1": 3277,
+  "results": [
+    {
+      "basis": "0001_toeplitz_scrambled_11778656130436721325.dual_qary_basis.txt",
+      "elapsed_sec": 11331.989,
+      "stages": [
+        {
+          "stage": "LLL",
+          "row": 0,
+          "l1": 24942,
+          "l2sq": 11882046,
+          "support": 80,
+          "linf": 1061
+        },
+        {
+          "stage": "BKZ-35",
+          "row": 1,
+          "l1": 12964,
+          "l2sq": 3652846,
+          "support": 79,
+          "linf": 642
+        },
+        {
+          "stage": "BKZ-40",
+          "row": 21,
+          "l1": 12964,
+          "l2sq": 3652846,
+          "support": 79,
+          "linf": 642
+        },
+        {
+          "stage": "BKZ-45",
+          "row": 6,
+          "l1": 12645,
+          "l2sq": 3228893,
+          "support": 80,
+          "linf": 513
+        },
+        {
+          "stage": "BKZ-50",
+          "row": 6,
+          "l1": 12645,
+          "l2sq": 3228893,
+          "support": 80,
+          "linf": 513
+        }
+      ],
+      "best": {
+        "stage": "BKZ-45",
+        "row": 6,
+        "l1": 12645,
+        "l2sq": 3228893,
+        "support": 80,
+        "linf": 513
+      },
+      "found_below_target": false
+    },
+    {
+      "basis": "0003_toeplitz_scrambled_10422444917664798613.dual_qary_basis.txt",
+      "elapsed_sec": 20552.766,
+      "stages": [
+        {
+          "stage": "LLL",
+          "row": 22,
+          "l1": 29682,
+          "l2sq": 19888236,
+          "support": 80,
+          "linf": 1551
+        },
+        {
+          "stage": "BKZ-35",
+          "row": 3,
+          "l1": 13200,
+          "l2sq": 3796358,
+          "support": 80,
+          "linf": 801
+        },
+        {
+          "stage": "BKZ-40",
+          "row": 3,
+          "l1": 13200,
+          "l2sq": 3796358,
+          "support": 80,
+          "linf": 801
+        },
+        {
+          "stage": "BKZ-45",
+          "row": 3,
+          "l1": 13200,
+          "l2sq": 3796358,
+          "support": 80,
+          "linf": 801
+        },
+        {
+          "stage": "BKZ-50",
+          "row": 0,
+          "l1": 13222,
+          "l2sq": 3391586,
+          "support": 80,
+          "linf": 577
+        }
+      ],
+      "best": {
+        "stage": "BKZ-35",
+        "row": 3,
+        "l1": 13200,
+        "l2sq": 3796358,
+        "support": 80,
+        "linf": 801
+      },
+      "found_below_target": false
+    }
+  ]
+}

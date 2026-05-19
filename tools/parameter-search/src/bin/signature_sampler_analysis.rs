@@ -93,6 +93,7 @@ struct SamplerRow {
     active_any_block_miss_bits: Option<f64>,
     full_response_fork_delta_any_block_miss_bits: Option<f64>,
     compact_fork_delta_any_block_miss_bits: Option<f64>,
+    compact_fork_delta_direct_forgery_bits: Option<f64>,
     compact_one_fork_delta_any_block_miss_bits: Option<f64>,
     full_block_coverage: bool,
     verdict: String,
@@ -414,6 +415,10 @@ fn probability_bits(probability: f64) -> Option<f64> {
     }
 }
 
+fn direct_forgery_bits(coverage_bits: Option<f64>, fork_challenges_per_round: u64) -> Option<f64> {
+    coverage_bits.map(|bits| bits / fork_challenges_per_round as f64)
+}
+
 fn coverage_diagnostics(cfg: &Config, weight: u64, repetitions: u64) -> CoverageDiagnostics {
     CoverageDiagnostics {
         active_single_block_miss_bits: single_block_miss_bits(
@@ -536,6 +541,10 @@ fn build_row(
         full_response_fork_delta_any_block_miss_bits: coverage
             .full_response_fork_delta_any_block_miss_bits,
         compact_fork_delta_any_block_miss_bits: coverage.compact_fork_delta_any_block_miss_bits,
+        compact_fork_delta_direct_forgery_bits: direct_forgery_bits(
+            coverage.compact_fork_delta_any_block_miss_bits,
+            cfg.fork_challenges_per_round,
+        ),
         compact_one_fork_delta_any_block_miss_bits: coverage
             .compact_one_fork_delta_any_block_miss_bits,
         full_block_coverage,
@@ -668,6 +677,11 @@ fn conclusions(cfg: &Config, local_free: u64) -> Vec<String> {
             "Compact fork-delta coverage assumes {} challenge draws for the same commitment per repeated round.  It only counts opposite signed active openings, because a compact transcript omits inactive response coordinates.",
             cfg.fork_challenges_per_round
         ),
+        format!(
+            "Under the current moment proof, direct residual forgery bits are compact fork-delta coverage bits divided by {}.  A 128-bit residual target would require about {} compact coverage bits before the root is taken.",
+            cfg.fork_challenges_per_round,
+            cfg.target_bits * cfg.fork_challenges_per_round as f64
+        ),
         "The full-response fork-delta column is an idealized diagnostic for a transcript that exposes every response coordinate; it should not be used as the compact-signature security claim.".to_string(),
         "All coverage bits are exact any-block-missed probabilities computed by inclusion-exclusion over the product blocks.  They are sharper than a union-bound-only diagnostic while still charging the real failure event.".to_string(),
         "The smallest rows pass challenge-entropy and retry accounting by using very low block weight, but their fork-delta diagnostic is weak under compact active-only openings.".to_string(),
@@ -753,14 +767,14 @@ fn fmt_optional_bits(bits: Option<f64>) -> String {
 }
 
 fn append_table(lines: &mut Vec<String>, rows: &[SamplerRow]) {
-    lines.push("| weight | entropy | reps | active coords | z bound | z bits | response/rep | challenge bytes | sig bytes | sig bytes w/32B hash | log2 retries | active any-miss bits | compact fork-delta bits | one-fork compact bits | full-response delta bits | verdict |".to_string());
+    lines.push("| weight | entropy | reps | active coords | z bound | z bits | response/rep | challenge bytes | sig bytes | sig bytes w/32B hash | log2 retries | active any-miss bits | compact fork-delta bits | direct proof bits | one-fork compact bits | full-response delta bits | verdict |".to_string());
     lines.push(
-        "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|"
+        "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|"
             .to_string(),
     );
     for row in rows {
         lines.push(format!(
-            "| {} | {:.2} | {} | {} | {} | {} | {} | {} | {} | {} | {:.2} | {} | {} | {} | {} | {} |",
+            "| {} | {:.2} | {} | {} | {} | {} | {} | {} | {} | {} | {:.2} | {} | {} | {} | {} | {} | {} |",
             row.block_weight,
             row.challenge_entropy_bits,
             row.repetitions,
@@ -774,6 +788,7 @@ fn append_table(lines: &mut Vec<String>, rows: &[SamplerRow]) {
             row.log2_expected_retries,
             fmt_optional_bits(row.active_any_block_miss_bits),
             fmt_optional_bits(row.compact_fork_delta_any_block_miss_bits),
+            fmt_optional_bits(row.compact_fork_delta_direct_forgery_bits),
             fmt_optional_bits(row.compact_one_fork_delta_any_block_miss_bits),
             fmt_optional_bits(row.full_response_fork_delta_any_block_miss_bits),
             row.verdict
@@ -866,5 +881,14 @@ mod tests {
             probability_bits(compact_fork_delta_any_block_miss_probability(16, 15, 7, 6)).unwrap();
         assert!(one_fork < 4.0);
         assert!(six_draws > 24.0);
+    }
+
+    #[test]
+    fn direct_forgery_bits_take_the_current_moment_root() {
+        let coverage_bits =
+            probability_bits(compact_fork_delta_any_block_miss_probability(16, 15, 7, 6)).unwrap();
+        let direct_bits = direct_forgery_bits(Some(coverage_bits), 6).unwrap();
+        assert!(direct_bits > 4.5);
+        assert!(direct_bits < 4.6);
     }
 }

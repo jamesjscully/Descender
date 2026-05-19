@@ -27,6 +27,32 @@ The theorem is `productBlockLinearResponse_sub`.  If the block-local challenge
 delta has a left inverse, `extract_coordinate_of_deltaExtractable` recovers the
 secret coordinate.
 
+Lean now also records the one-view obstruction:
+
+- `maskExplainingResponse`;
+- `productBlockLinearResponse_maskExplainingResponse`;
+- `productBlockLinearResponse_single_view_secret_ambiguous`.
+
+These prove that any single affine response can be explained by any candidate
+secret if the mask is allowed to move.  Therefore a linear one-view proof
+cannot come from the equation `z = mask + chi * s` alone; it needs an additional
+binding/extraction mechanism for the mask, or a different keygen-breaking
+witness.
+
+The positive one-view target is also formalized:
+
+- `ScalarExtractable`: a single challenge scalar is invertible on a block;
+- `SingleViewLinearRound`: one accepting response with a known mask;
+- `SingleViewLinearRound.extractCoordinate_eq_secret`;
+- `SingleViewLinearRound.extractedSecret_eq`.
+- `CompactSingleViewLinearRound`: active-only version for compact responses;
+- `CompactSingleViewLinearRound.extractedSecret_eq`.
+
+This says that if a redesigned clean transcript exposes the relevant mask, then
+ordinary active challenge coverage is enough to recover the secret.  That is
+the deterministic shape a linear proof would need underneath the byte-level
+north-star theorem.
+
 The file now also packages the forked linear extraction boundary:
 
 - `ForkedLinearRound`: two accepting responses for the same mask and two block

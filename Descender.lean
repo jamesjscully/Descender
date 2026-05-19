@@ -14,6 +14,7 @@ import Descender.PTND
 import Descender.Security
 import Descender.SampleView
 import Descender.EfficientPublicView
+import Descender.SignaturePublicViewWitness
 import Descender.DiagonalAmplification
 import Descender.StrategyComparison
 import Descender.Cauchy
