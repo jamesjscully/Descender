@@ -24,10 +24,16 @@ Executable checks now cover:
 - pinned hash-frame length and SHA-256 digest;
 - positive verification of the pinned zero-public-key fixture;
 - single-byte mutation reject across every public-key byte and every signature
-  byte of the positive fixture.
+  byte of the positive fixture;
+- conformance-bundle regeneration/diff through `--verify-conformance-vector`;
+- independent parsing of the generated hash frame and payload bitstreams inside
+  the verifier harness.
 
-The generated conformance bundle now includes nine negative cases instead of
-six, adding explicit short/long public-key and short/long signature rejects.
+The generated conformance bundle now includes twelve verifier-negative cases
+plus two hash-frame-negative cases, adding explicit short/long public-key,
+short/long signature, negative response bound, message mutation, public-key
+mutation, reconstructed-commitment length, and reconstructed-commitment
+canonicality checks.
 
 ## A6: Signer Distribution
 
@@ -59,14 +65,14 @@ What improved:
 
 What still blocks closure:
 
-- no independent implementation cross-check;
-- no CI harness that regenerates and diffs the checked vector bundle;
 - no fuzz target harness for arbitrary-input exploration beyond unit tests.
+- no production implementation independent from the Rust prototype.
 
 Conclusion:
 
-The verifier prototype is more reviewable than before, but the conformance gate
-is not closed.
+The review checklist's conformance gate is closed for the current Rust
+prototype/vector bundle.  A production implementation should still be checked
+against the same vectors before deployment.
 
 ## A8: Randomness, Constant Time, And Secret Handling
 

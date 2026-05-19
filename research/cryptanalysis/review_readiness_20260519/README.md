@@ -47,9 +47,26 @@ research/cryptanalysis/signature_readiness_20260516/q12289_validated_signature_p
 - [cryptanalysis_report.md](cryptanalysis_report.md): frozen-target attack
   archive, concrete security table, and limitations.
 - [implementation_hardening.md](implementation_hardening.md): reference implementation security gates.
+- [implementation_audit.md](implementation_audit.md): implementation security
+  audit note for review readiness and remaining implementation blockers.
 - [reviewer_guide.md](reviewer_guide.md): highest-risk questions for external
   review.
 - [review_gate_checklist.md](review_gate_checklist.md): exit criteria before third-party review.
+
+## Review Navigation
+
+Use the package in this order:
+
+1. [review_gate_checklist.md](review_gate_checklist.md) for the current gate state.
+2. [reviewer_guide.md](reviewer_guide.md) for the highest-risk questions.
+3. [target_spec.md](target_spec.md) and [target_theorem.md](target_theorem.md)
+   for the exact frozen target and claim boundary.
+4. [assumption_review.md](assumption_review.md) and
+   [assumption_ledger.md](assumption_ledger.md) for assumption classification.
+5. [conformance_plan.md](conformance_plan.md),
+   [cryptanalysis_report.md](cryptanalysis_report.md), and
+   [implementation_audit.md](implementation_audit.md) for the remaining
+   evidence backlog.
 
 ## Current Trust Boundary
 
@@ -67,7 +84,9 @@ The full assumption review is now split out in
 [assumption_review.md](assumption_review.md).  Its main conclusion is that the
 formal boundary is clean, but deployment is still blocked by keygen/no-bad-view
 closure, concrete signer distribution, independent byte-level conformance/CI,
-and frozen-target cryptanalysis.
+and frozen-target cryptanalysis.  The current gate-facing evidence placeholders
+for those last two areas are [cryptanalysis_report.md](cryptanalysis_report.md)
+and [implementation_audit.md](implementation_audit.md).
 
 ## No-Optimization Rule
 

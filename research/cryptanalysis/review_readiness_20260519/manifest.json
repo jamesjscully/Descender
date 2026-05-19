@@ -22,6 +22,7 @@
     "cryptanalysis_plan.md",
     "cryptanalysis_report.md",
     "implementation_hardening.md",
+    "implementation_audit.md",
     "reviewer_guide.md",
     "review_gate_checklist.md"
   ]

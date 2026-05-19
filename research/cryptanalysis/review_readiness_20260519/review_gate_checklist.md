@@ -45,7 +45,8 @@ Details: [conformance_plan.md](conformance_plan.md) and
 
 ## Cryptanalysis Gate
 
-Details: [cryptanalysis_plan.md](cryptanalysis_plan.md) and
+Details: [cryptanalysis_plan.md](cryptanalysis_plan.md),
+[cryptanalysis_report.md](cryptanalysis_report.md), and
 the A4/A9 sections of [assumption_review.md](assumption_review.md).
 
 - [x] Bad-vector/keygen-break search rerun against frozen target.
@@ -57,16 +58,23 @@ the A4/A9 sections of [assumption_review.md](assumption_review.md).
 
 ## Implementation Gate
 
-Details: [implementation_hardening.md](implementation_hardening.md) and
+Details: [implementation_hardening.md](implementation_hardening.md),
+[implementation_audit.md](implementation_audit.md), and
 the A6/A7/A8 sections of [assumption_review.md](assumption_review.md).
 
 - [ ] Reference keygen.
+  Evidence tracker: [implementation_audit.md](implementation_audit.md#1-reference-keygen).
 - [ ] Reference signing.
+  Evidence tracker: [implementation_audit.md](implementation_audit.md#2-reference-signing).
 - [x] Prototype verifier.
 - [ ] Constant-time review.
+  Evidence tracker: [implementation_audit.md](implementation_audit.md#4-constant-time-review).
 - [ ] Fuzz targets.
+  Evidence tracker: [implementation_audit.md](implementation_audit.md#5-fuzz-targets).
 - [ ] Randomness handling review.
+  Evidence tracker: [implementation_audit.md](implementation_audit.md#6-randomness-handling-review).
 - [ ] Secret zeroization review.
+  Evidence tracker: [implementation_audit.md](implementation_audit.md#7-secret-zeroization-review).
 
 ## Review Bundle Gate
 
