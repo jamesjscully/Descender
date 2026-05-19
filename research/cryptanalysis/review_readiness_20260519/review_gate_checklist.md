@@ -45,28 +45,42 @@ Details: [conformance_plan.md](conformance_plan.md) and
 
 ## Cryptanalysis Gate
 
-Details: [cryptanalysis_plan.md](cryptanalysis_plan.md) and
+Details: [cryptanalysis_plan.md](cryptanalysis_plan.md),
+[cryptanalysis_report.md](cryptanalysis_report.md), and
 the A4/A9 sections of [assumption_review.md](assumption_review.md).
 
 - [ ] Bad-vector/keygen-break search rerun against frozen target.
+  Evidence tracker: [cryptanalysis_report.md](cryptanalysis_report.md#1-bad-vector--keygen-break-search).
 - [ ] Lattice-reduction attack scripts and outputs archived.
+  Evidence tracker: [cryptanalysis_report.md](cryptanalysis_report.md#2-lattice-reduction-attack-archive).
 - [ ] Meet-in-the-middle/search attacks documented.
+  Evidence tracker: [cryptanalysis_report.md](cryptanalysis_report.md#3-meet-in-the-middle--search-attacks).
 - [ ] Transcript malleability attacks documented.
+  Evidence tracker: [cryptanalysis_report.md](cryptanalysis_report.md#4-transcript-malleability-attacks).
 - [ ] Concrete security table written.
+  Evidence tracker: [cryptanalysis_report.md](cryptanalysis_report.md#5-concrete-security-table).
 - [ ] Known limitations written plainly.
+  Evidence tracker: [cryptanalysis_report.md](cryptanalysis_report.md#6-known-limitations).
 
 ## Implementation Gate
 
-Details: [implementation_hardening.md](implementation_hardening.md) and
+Details: [implementation_hardening.md](implementation_hardening.md),
+[implementation_audit.md](implementation_audit.md), and
 the A6/A7/A8 sections of [assumption_review.md](assumption_review.md).
 
 - [ ] Reference keygen.
+  Evidence tracker: [implementation_audit.md](implementation_audit.md#1-reference-keygen).
 - [ ] Reference signing.
+  Evidence tracker: [implementation_audit.md](implementation_audit.md#2-reference-signing).
 - [x] Prototype verifier.
 - [ ] Constant-time review.
+  Evidence tracker: [implementation_audit.md](implementation_audit.md#4-constant-time-review).
 - [ ] Fuzz targets.
+  Evidence tracker: [implementation_audit.md](implementation_audit.md#5-fuzz-targets).
 - [ ] Randomness handling review.
+  Evidence tracker: [implementation_audit.md](implementation_audit.md#6-randomness-handling-review).
 - [ ] Secret zeroization review.
+  Evidence tracker: [implementation_audit.md](implementation_audit.md#7-secret-zeroization-review).
 
 ## Review Bundle Gate
 
@@ -79,7 +93,9 @@ and [manifest.json](manifest.json).
 - [x] One detailed assumption review.
 - [x] One conformance vector suite.
 - [ ] One cryptanalysis report.
+  Current artifact: [cryptanalysis_report.md](cryptanalysis_report.md) (skeleton only; incomplete until substantive evidence is archived).
 - [ ] One implementation audit note.
+  Current artifact: [implementation_audit.md](implementation_audit.md) (skeleton only; incomplete until substantive audit findings are archived).
 - [x] One reviewer guide with highest-risk questions.
 
 When every unchecked item is either completed or explicitly waived with a
