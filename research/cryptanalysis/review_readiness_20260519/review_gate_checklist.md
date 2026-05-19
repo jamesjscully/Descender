@@ -15,7 +15,7 @@ Details: [target_spec.md](target_spec.md), [manifest.json](manifest.json).
 - [x] Public key and signature sizes documented.
 - [x] Hash domain documented.
 - [x] Hash frame endpoint documented.
-- [ ] No unreviewed format changes since this package was created.
+- [x] No unreviewed format changes since this package was created.
 
 ## Formal Proof Gate
 
