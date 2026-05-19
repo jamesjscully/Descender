@@ -44,6 +44,8 @@ research/cryptanalysis/signature_readiness_20260516/q12289_validated_signature_p
 - [q12289_conformance_vectors.json](q12289_conformance_vectors.json):
   generated positive and negative verifier conformance vectors.
 - [cryptanalysis_plan.md](cryptanalysis_plan.md): attacks and experiments before review.
+- [cryptanalysis_report.md](cryptanalysis_report.md): frozen-target attack
+  archive, concrete security table, and limitations.
 - [implementation_hardening.md](implementation_hardening.md): reference implementation security gates.
 - [reviewer_guide.md](reviewer_guide.md): highest-risk questions for external
   review.

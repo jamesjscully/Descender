@@ -48,12 +48,12 @@ Details: [conformance_plan.md](conformance_plan.md) and
 Details: [cryptanalysis_plan.md](cryptanalysis_plan.md) and
 the A4/A9 sections of [assumption_review.md](assumption_review.md).
 
-- [ ] Bad-vector/keygen-break search rerun against frozen target.
-- [ ] Lattice-reduction attack scripts and outputs archived.
-- [ ] Meet-in-the-middle/search attacks documented.
-- [ ] Transcript malleability attacks documented.
-- [ ] Concrete security table written.
-- [ ] Known limitations written plainly.
+- [x] Bad-vector/keygen-break search rerun against frozen target.
+- [x] Lattice-reduction attack scripts and outputs archived.
+- [x] Meet-in-the-middle/search attacks documented.
+- [x] Transcript malleability attacks documented.
+- [x] Concrete security table written.
+- [x] Known limitations written plainly.
 
 ## Implementation Gate
 
@@ -78,7 +78,7 @@ and [manifest.json](manifest.json).
 - [x] One assumption ledger.
 - [x] One detailed assumption review.
 - [x] One conformance vector suite.
-- [ ] One cryptanalysis report.
+- [x] One cryptanalysis report.
 - [ ] One implementation audit note.
 - [x] One reviewer guide with highest-risk questions.
 

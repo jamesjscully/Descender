@@ -20,6 +20,7 @@
     "conformance_plan.md",
     "q12289_conformance_vectors.json",
     "cryptanalysis_plan.md",
+    "cryptanalysis_report.md",
     "implementation_hardening.md",
     "reviewer_guide.md",
     "review_gate_checklist.md"
