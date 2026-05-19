@@ -18,6 +18,24 @@ cargo run --manifest-path tools/parameter-search/Cargo.toml --release \
   --bin signature_q12289_implicit_verifier -- --emit-conformance-vector
 ```
 
+The checked-in bundle can be regenerated in place with:
+
+```text
+cargo run --manifest-path tools/parameter-search/Cargo.toml \
+  --bin signature_q12289_implicit_verifier -- \
+  --write-conformance-vector \
+  research/cryptanalysis/review_readiness_20260519/q12289_conformance_vectors.json
+```
+
+The conformance harness that CI should run is:
+
+```text
+cargo run --manifest-path tools/parameter-search/Cargo.toml \
+  --bin signature_q12289_implicit_verifier -- \
+  --verify-conformance-vector \
+  research/cryptanalysis/review_readiness_20260519/q12289_conformance_vectors.json
+```
+
 The bundle contains:
 
 - public key bytes;
@@ -49,40 +67,44 @@ The generated bundle currently includes reject vectors for:
 - challenge mismatch;
 - response mutation causing challenge mismatch;
 - response coordinate `225`;
+- response coordinate `-225`;
 - public-key q-coordinate equal to `12289`;
-- wrong signature length.
+- wrong public key length;
+- wrong signature length;
+- malformed response length;
+- modified message with unchanged signature;
+- modified public key with unchanged signature;
+- reconstructed commitment length short;
+- reconstructed commitment q-coordinate equal to `12289`.
 
 The remaining reject-vector backlog is:
 
-- wrong public key length;
-- malformed response length;
-- response coordinate `-225`;
-- reconstructed commitment q-coordinate equal to `12289`;
 - wrong domain label;
 - wrong profile label;
 - wrong `q` field;
 - wrong `response_bound` field;
 - swapped commitment repetition order;
-- modified message with unchanged signature;
-- modified public key with unchanged signature.
 
 ## Harness Requirements
 
-The conformance harness should:
+The conformance harness now:
 
-- export vectors from the Rust verifier in JSON and raw hex;
-- verify vectors through the Rust verifier;
-- verify frame length and SHA digest;
-- check every encoded field boundary by offset;
-- fail if any label, length prefix, or scalar parameter changes;
-- run in CI before any merge touching verifier, profile, or proof code.
+- regenerates the canonical JSON bundle from the verifier and compares it to the
+  checked-in file;
+- replays verifier-negative vectors through `verify_signature`;
+- verifies frame length, SHA-256 digest, and derived challenge;
+- independently parses every length-prefixed hash-frame field and checks the
+  field order, labels, scalar values, and byte boundaries;
+- independently decodes public-key, response, and reconstructed-commitment
+  payloads with a separate bitstream parser;
+- fails if any label, length prefix, scalar parameter, byte frame, or challenge
+  output changes.
 
 ## Lean/Rust Boundary
 
 Lean currently proves the production challenge bit-level codec, the frame
-length, and defines the frame algebraically as a `ByteString`.  The next
-conformance improvement is to compare the generated Rust fixture against the
-Lean field order in CI:
+length, and defines the frame algebraically as a `ByteString`.  The current
+Rust harness now makes the field order explicit in CI:
 
 ```text
 domain
@@ -98,7 +120,7 @@ message
 reconstructed_commitments
 ```
 
-The conformance claim is not complete until every byte in the generated Rust
-frame can be explained by this list, the q14 encoder theorem, and the
-production challenge codec theorem, with an independent implementation checking
-the same vector bundle.
+The conformance claim still depends on reviewers checking that this field order,
+the q14 encoder theorem, and the production challenge codec theorem match the
+Lean endpoints named in the vector bundle.  The current harness closes the Rust
+side by making the byte layout and challenge derivation fail closed.

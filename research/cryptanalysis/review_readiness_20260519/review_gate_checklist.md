@@ -40,8 +40,8 @@ Details: [conformance_plan.md](conformance_plan.md) and
 - [x] Rust verifier tests q-coordinate and response canonicality.
 - [x] Canonical JSON/raw-hex test-vector bundle.
 - [x] Negative test-vector bundle.
-- [ ] CI conformance harness that fails on byte-frame drift.
-- [ ] Independent implementation cross-check.
+- [x] CI conformance harness that fails on byte-frame drift.
+- [x] Independent implementation cross-check.
 
 ## Cryptanalysis Gate
 
