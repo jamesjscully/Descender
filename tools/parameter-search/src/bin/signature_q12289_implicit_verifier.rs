@@ -719,6 +719,10 @@ fn conformance_vector_bundle() -> ConformanceVectorBundle {
     let public_key = hex_decode(&positive.public_key_hex).unwrap();
     let message = hex_decode(&positive.message_hex).unwrap();
     let signature = hex_decode(&positive.signature_hex).unwrap();
+    let mut short_public_key = public_key.clone();
+    short_public_key.pop();
+    let mut long_public_key = public_key.clone();
+    long_public_key.push(0);
 
     let mut bad_challenge_high_bits = signature.clone();
     bad_challenge_high_bits[CHALLENGE_BYTES - 1] |= 0x80;
@@ -745,8 +749,22 @@ fn conformance_vector_bundle() -> ConformanceVectorBundle {
 
     let mut short_signature = signature.clone();
     short_signature.pop();
+    let mut long_signature = signature.clone();
+    long_signature.push(0);
 
     let negative = vec![
+        negative_vector(
+            "public-key-too-short",
+            short_public_key,
+            &message,
+            signature.clone(),
+        ),
+        negative_vector(
+            "public-key-too-long",
+            long_public_key,
+            &message,
+            signature.clone(),
+        ),
         negative_vector(
             "challenge-high-bits-set",
             public_key.clone(),
@@ -778,6 +796,12 @@ fn conformance_vector_bundle() -> ConformanceVectorBundle {
             signature.clone(),
         ),
         negative_vector("signature-too-short", public_key, &message, short_signature),
+        negative_vector(
+            "signature-too-long",
+            hex_decode(&positive.public_key_hex).unwrap(),
+            &message,
+            long_signature,
+        ),
     ];
 
     ConformanceVectorBundle {
@@ -1038,6 +1062,76 @@ mod tests {
     }
 
     #[test]
+    fn canonical_length_checks_reject_short_and_long_inputs() {
+        let positive = zero_public_key_positive_vector();
+        let public_key = hex_decode(&positive.public_key_hex).unwrap();
+        let signature = hex_decode(&positive.signature_hex).unwrap();
+        let message = hex_decode(&positive.message_hex).unwrap();
+
+        let report = verify_signature(&public_key[..public_key.len() - 1], &message, &signature);
+        assert_eq!(
+            report.reason,
+            format!("public key has {} bytes, expected {PK_BYTES}", PK_BYTES - 1)
+        );
+
+        let mut long_public_key = public_key.clone();
+        long_public_key.push(0);
+        let report = verify_signature(&long_public_key, &message, &signature);
+        assert_eq!(
+            report.reason,
+            format!("public key has {} bytes, expected {PK_BYTES}", PK_BYTES + 1)
+        );
+
+        let report = verify_signature(&public_key, &message, &signature[..signature.len() - 1]);
+        assert_eq!(
+            report.reason,
+            format!(
+                "signature has {} bytes, expected {SIGNATURE_BYTES}",
+                SIGNATURE_BYTES - 1
+            )
+        );
+
+        let mut long_signature = signature;
+        long_signature.push(0);
+        let report = verify_signature(&public_key, &message, &long_signature);
+        assert_eq!(
+            report.reason,
+            format!(
+                "signature has {} bytes, expected {SIGNATURE_BYTES}",
+                SIGNATURE_BYTES + 1
+            )
+        );
+    }
+
+    #[test]
+    fn every_single_byte_mutation_of_positive_fixture_rejects() {
+        let positive = zero_public_key_positive_vector();
+        let public_key = hex_decode(&positive.public_key_hex).unwrap();
+        let signature = hex_decode(&positive.signature_hex).unwrap();
+        let message = hex_decode(&positive.message_hex).unwrap();
+
+        for idx in 0..public_key.len() {
+            let mut mutated = public_key.clone();
+            mutated[idx] ^= 0x01;
+            let report = verify_signature(&mutated, &message, &signature);
+            assert!(
+                !report.accepted,
+                "public key byte mutation at index {idx} unexpectedly accepted"
+            );
+        }
+
+        for idx in 0..signature.len() {
+            let mut mutated = signature.clone();
+            mutated[idx] ^= 0x01;
+            let report = verify_signature(&public_key, &message, &mutated);
+            assert!(
+                !report.accepted,
+                "signature byte mutation at index {idx} unexpectedly accepted"
+            );
+        }
+    }
+
+    #[test]
     fn conformance_vector_bundle_has_expected_shape() {
         let bundle = conformance_vector_bundle();
         assert_eq!(bundle.positive.hash_frame_bytes, 1_540);
@@ -1045,7 +1139,7 @@ mod tests {
             bundle.positive.hash_frame_sha256,
             "500b7e675f1970875c294ccb0d00eee386910b1a37c8ecf5b78d97e0af51993c"
         );
-        assert_eq!(bundle.negative.len(), 6);
+        assert_eq!(bundle.negative.len(), 9);
         assert!(bundle.negative.iter().all(|case| !case.report.accepted));
     }
 }

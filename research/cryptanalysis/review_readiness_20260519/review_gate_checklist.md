@@ -79,7 +79,7 @@ and [manifest.json](manifest.json).
 - [x] One detailed assumption review.
 - [x] One conformance vector suite.
 - [ ] One cryptanalysis report.
-- [ ] One implementation audit note.
+- [x] One implementation audit note.
 - [x] One reviewer guide with highest-risk questions.
 
 When every unchecked item is either completed or explicitly waived with a
