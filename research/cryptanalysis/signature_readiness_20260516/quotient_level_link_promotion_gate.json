@@ -1,0 +1,426 @@
+{
+  "artifact_hashes": [
+    {
+      "bytes": 1200,
+      "exists": true,
+      "path": "Descender.lean",
+      "sha256": "c89c91427ef5ae5df7cc89b3918fb4307a00842b5cd1cc5d20913e12ab14873b"
+    },
+    {
+      "bytes": 8617,
+      "exists": true,
+      "path": "Descender/DescentInterface.lean",
+      "sha256": "599c70497e229234390d1d435f082856235b5b2ba646c2ef9582dc30eca0650d"
+    },
+    {
+      "bytes": 9950,
+      "exists": true,
+      "path": "Descender/HiddenCommittedQuotientLink.lean",
+      "sha256": "0c806fb87763a9b5870f05d8b63c95116aa810b7d4891234f11c8b5468740bef"
+    },
+    {
+      "bytes": 122159,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/README.md",
+      "sha256": "a19f9c063db4baec5d57bcdf37cd3eb1304b41681e7b934c4d7cef7b2fbc6935"
+    },
+    {
+      "bytes": 25410,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_research_program.md",
+      "sha256": "cb27fb78e31f1c692f18ac5648c30277e298ee62f52c0d8efaa9329f93c8e106"
+    },
+    {
+      "bytes": 52407,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_kernel_search.json",
+      "sha256": "e8a76758996be24e16068eb601e50571364a165f4c8502442e7f9424187725a4"
+    },
+    {
+      "bytes": 7770,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_kernel_search.md",
+      "sha256": "0070affcc68d91978176304fa78e73d25d65d2080fc706c133664966bb8fd005"
+    },
+    {
+      "bytes": 361001,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_coordinate_pair_sweep.json",
+      "sha256": "108bc13855a1d58fd6837d6ac1491dc8aee15ab9a8a5b76f5189d4a3fcdbf4ee"
+    },
+    {
+      "bytes": 7940,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_coordinate_pair_sweep.md",
+      "sha256": "5cf1946290d198c30714df4676a1c5fe408726d0666cd63f0e51ca21013b2263"
+    },
+    {
+      "bytes": 8959,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_exact_enum_coordinate-link-1-2_b96.json",
+      "sha256": "9464e0bcdf862af4d5545d4df2d8a124610d28c87d8a0200892ccf2a88732c73"
+    },
+    {
+      "bytes": 9114,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_exact_enum_sparse-difference-link-0m3-1m2_b96.json",
+      "sha256": "84f921c1771dfbf73d3cfe20b14fd23eb133c1903826f944c50ecfc1eddc3bb9"
+    },
+    {
+      "bytes": 8876,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_exact_enum_coordinate-link-1-14_b96.json",
+      "sha256": "16b9c1f60c073e694368bd9ab76ca483c2f952b6f3953e3536a15ede890e587f"
+    },
+    {
+      "bytes": 8879,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_exact_enum_coordinate-link-8-20_b96.json",
+      "sha256": "9b6dea9d99be80556084bfafaf60108dd43f771d76cd8e0dc716480e24213470"
+    },
+    {
+      "bytes": 8863,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_exact_enum_coordinate-link-14-15_b96.json",
+      "sha256": "3bec577d117c6d0fb3f2da889d0e6169b0f398f345f3182118cada62617f8230"
+    },
+    {
+      "bytes": 3461,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_sampler_replay_current-coordinate-link-0-3_b96.json",
+      "sha256": "f81df9b69d9b50f62351597e1ca0113047b062ae4522cd66bb9d66bd7ed252e5"
+    },
+    {
+      "bytes": 3450,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_sampler_replay_coordinate-link-1-2_b96.json",
+      "sha256": "3bf3b0d0853314279058cdcba77d2865be1c973ffc68ddd9aca285a19e33b611"
+    },
+    {
+      "bytes": 3444,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_sampler_replay_sparse-difference-link-0m3-1m2_b96.json",
+      "sha256": "888cc12a9be94b9401703e69e247bed508fc0eaa6bddca4406d20a1678f7e26a"
+    },
+    {
+      "bytes": 3442,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_sampler_replay_coordinate-link-1-14_b96.json",
+      "sha256": "2998eeecd07e2e98efa1d00941ee907f4027f860daa8c6df020f4065fb6833bf"
+    },
+    {
+      "bytes": 3424,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_sampler_replay_coordinate-link-8-20_b96.json",
+      "sha256": "339ccd7570c4b0b0320a88e644ce98b36f001565feb802d71ae2a84b364fcc99"
+    },
+    {
+      "bytes": 3427,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_sampler_replay_coordinate-link-14-15_b96.json",
+      "sha256": "5c31e688bb7ffec0feb6030fe9c8d7e95535612050ef4338c8e30956604b6ba5"
+    },
+    {
+      "bytes": 15075,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_hiding_review.json",
+      "sha256": "a4e08732fae2422b243c89bab4ba9a938da61e84384e57313a3c4a6e75c8ab0d"
+    },
+    {
+      "bytes": 3287,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_hiding_review.md",
+      "sha256": "7a131bf9ba6812ccc430e18dfa149ce0205a40f41da503f7262bcf0c462244bd"
+    },
+    {
+      "bytes": 5853,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_account_semantics.json",
+      "sha256": "f36c98b36f3b31c99413c3aab56cba08be200d149b72395855d3f4fcf306273d"
+    },
+    {
+      "bytes": 3407,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_account_semantics.md",
+      "sha256": "914f14c9505845d1ba7dba731fa3637179e1305f2d632973d260c54b5aeb3ddf"
+    },
+    {
+      "bytes": 3463,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_lean_interface_comparison.md",
+      "sha256": "af7fac7b19cad875bda64d235ecb82c52579ee798521f52f987c2b3d69fc1559"
+    },
+    {
+      "bytes": 10172,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_hidden_commitment_byte_state_review.json",
+      "sha256": "4b0d5358f606ddd3987d75f7a5e62f4e72f97e2d53179526480133e749af1043"
+    },
+    {
+      "bytes": 3221,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_hidden_commitment_byte_state_review.md",
+      "sha256": "4c7eb2019266df63c0019610c63b8742f8bd6f6edc77d90d41295ca6249f6b33"
+    },
+    {
+      "bytes": 7186,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_existing_commitment_reuse_review.json",
+      "sha256": "7a30218a08c0fdbec4a4534320020cdffae23e249b567422f70cc1cf6fa8c3c5"
+    },
+    {
+      "bytes": 4322,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_existing_commitment_reuse_review.md",
+      "sha256": "11648055702e63e11b9dfac6b7551fc2beab4bdb563ae8515062ef706b3d7160"
+    },
+    {
+      "bytes": 3202,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_implementation_handoff.md",
+      "sha256": "64908999a63be759e1d45b084b2a35490cb2f7cda3ab811098cd8e5bb39b6f85"
+    },
+    {
+      "bytes": 1113,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_firebreak_audit.json",
+      "sha256": "a396931c27b64ba6b92a1efebf7ada02bbe3ffff3cf07f7e63aea4b8c3ecbe12"
+    },
+    {
+      "bytes": 841,
+      "exists": true,
+      "path": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_firebreak_audit.md",
+      "sha256": "7ba5f32bb4abe76e7a63b84e44d3655f31bf8aee154622c5432733d8cda91796"
+    }
+  ],
+  "assumption_deltas": [
+    "No cryptanalytic assumption is removed from the deployable path.",
+    "Public quotient links add a public-link conditioning surface and fail the 128-bit hiding target.",
+    "Hidden commitments add commitment hiding and binding/extraction obligations.",
+    "A hidden link equation must be non-public; a public projection of the sigma equation adds no security constraint.",
+    "Reuse of byte-hash account commitments would require a new ZK/hash-circuit soundness argument to avoid opening link values."
+  ],
+  "baseline": {
+    "current_account_hidden_link_bytes": 68,
+    "current_control_candidate": "current-coordinate-link-0-3",
+    "current_control_kernel_margin": 43,
+    "current_online_plus_account_bytes": 318,
+    "current_spend_bytes": 250
+  },
+  "final_decision": {
+    "classification": "no_replacement",
+    "decision": "keep_current_path",
+    "implementation_instruction": "Do not migrate the deployable q12289 verifier, proof path, byte target, or account-link implementation based on this research program.  Continue using the current reviewed split account-carried bounded-kernel design unless a later promotion gate with independent review supersedes this one.",
+    "migration_plan_required": false,
+    "reason": "Public quotient links fail sampler hiding under public-link conditioning.  Hidden-commitment links preserve the desired sampler surface only by adding proof obligations or assumptions that are not cheaper or simpler than the current 68-byte split account object.  Existing account commitments cannot supply the hidden linear link equation for free."
+  },
+  "firebreak": {
+    "touches_current_proof_path": false,
+    "touches_current_verifier": false,
+    "touches_deployable_path": false
+  },
+  "generated_at": "2026-05-22T14:40:14.829893+00:00",
+  "independent_review_requirements_for_future_reopening": [
+    "Concrete commitment/proof system with byte and verifier-cost model.",
+    "Sampler replay showing no public-link conditioning below the hiding target.",
+    "Exact bounded-kernel certificate for the concrete selected link.",
+    "Lean q12289-shaped instantiation of the sidecar theorem shape.",
+    "Independent cryptanalytic review of any new commitment or ZK/hash-circuit assumption.",
+    "Passing import firebreak audit before any deployable import change.",
+    "Review-gate replay dry run includes quotient_level_link_closure_verify."
+  ],
+  "lean_build_commands": [
+    "lake build Descender.DescentInterface",
+    "lake build Descender.HiddenCommittedQuotientLink"
+  ],
+  "lean_theorem_names": [
+    "Descender.DescentInterface.EffectiveDescentCertificate.accepts_glues_or_breaks",
+    "Descender.CommittedSigma.AccountLinkProofSystem.accepts_accountBacked_of_noBreak",
+    "Descender.CommittedSigma.HomomorphicAccountLinkInterface.linkProofAccepts_of_publicProjection",
+    "Descender.CommittedSigma.reviewedAccountHiddenLinkBytes_eq",
+    "Descender.HiddenCommittedQuotientLink.Interface.toAccountLinkProofSystem",
+    "Descender.HiddenCommittedQuotientLink.Interface.accepts_accountBacked_of_noBreaks",
+    "Descender.HiddenCommittedQuotientLink.Interface.accepts_glues_or_breaks_of_effectiveDescent"
+  ],
+  "missing_records": [],
+  "promotion_matrix": [
+    {
+      "assumptions_changed": "none",
+      "bytes_saved_vs_current_account": 0,
+      "candidate": "current-reviewed-split-account-link",
+      "evidence_complete": true,
+      "external_review_status": "current control",
+      "lean_support": "CommittedSigma reviewed account-link path",
+      "recommendation": "keep",
+      "state_changed": false
+    },
+    {
+      "assumptions_changed": "adds public link conditioning; hiding target fails",
+      "bytes_saved_vs_current_account": 64,
+      "candidate": "public-two-row-quotient-link-shortlist",
+      "evidence_complete": true,
+      "external_review_status": "rejected before review",
+      "lean_support": "not migrated",
+      "recommendation": "reject: sampler support floor falls to 106-108 bits",
+      "state_changed": true
+    },
+    {
+      "assumptions_changed": "adds commitment hiding, binding/extraction, and non-public link-equation proof obligations",
+      "bytes_saved_vs_current_account": null,
+      "candidate": "hidden-commitment-quotient-link",
+      "evidence_complete": true,
+      "external_review_status": "not ready",
+      "lean_support": "Descender.HiddenCommittedQuotientLink sidecar only",
+      "recommendation": "reject for deployment: no surviving byte or proof simplification",
+      "state_changed": "depends_on_commitment_choice"
+    },
+    {
+      "assumptions_changed": "would require new ZK/hash-circuit proof if link remains hidden",
+      "bytes_saved_vs_current_account": 0,
+      "candidate": "reuse-existing-account-commitments-for-link",
+      "evidence_complete": true,
+      "external_review_status": "not needed for rejection",
+      "lean_support": "source hooks checked; no free homomorphic equation",
+      "recommendation": "reject for deployment",
+      "state_changed": false
+    },
+    {
+      "assumptions_changed": "adds new algebraic commitment assumption and likely proof/opening bytes",
+      "bytes_saved_vs_current_account": "at_most_4_before_proof_bytes",
+      "candidate": "pedersen-style-homomorphic-hidden-link",
+      "evidence_complete": false,
+      "external_review_status": "would require independent cryptanalytic review",
+      "lean_support": "interface-compatible in principle only",
+      "recommendation": "research-only, not promotion-ready",
+      "state_changed": true
+    }
+  ],
+  "replay_commands": [
+    "python3 scripts/research/quotient_level_link_kernel_search.py",
+    "python3 scripts/research/quotient_level_link_coordinate_pair_sweep.py --top-k 20 --exact-margin-floor 43 --bound 96",
+    "python3 scripts/research/quotient_level_link_exact_enum.py coordinate-link-1-2 --bound 96",
+    "python3 scripts/research/quotient_level_link_exact_enum.py sparse-difference-link-0m3-1m2 --bound 96",
+    "python3 scripts/research/quotient_level_link_exact_enum.py coordinate-link-1-14 --bound 96",
+    "python3 scripts/research/quotient_level_link_exact_enum.py coordinate-link-8-20 --bound 96",
+    "python3 scripts/research/quotient_level_link_exact_enum.py coordinate-link-14-15 --bound 96",
+    "python3 scripts/research/quotient_level_link_sampler_replay.py current-coordinate-link-0-3 --bound 96",
+    "python3 scripts/research/quotient_level_link_sampler_replay.py coordinate-link-1-2 --bound 96",
+    "python3 scripts/research/quotient_level_link_sampler_replay.py sparse-difference-link-0m3-1m2 --bound 96",
+    "python3 scripts/research/quotient_level_link_sampler_replay.py coordinate-link-1-14 --bound 96",
+    "python3 scripts/research/quotient_level_link_sampler_replay.py coordinate-link-8-20 --bound 96",
+    "python3 scripts/research/quotient_level_link_sampler_replay.py coordinate-link-14-15 --bound 96",
+    "python3 scripts/research/quotient_level_link_hiding_review.py",
+    "python3 scripts/research/quotient_level_link_account_semantics.py",
+    "python3 scripts/research/quotient_level_link_hidden_commitment_byte_state_review.py",
+    "python3 scripts/research/quotient_level_link_existing_commitment_reuse_review.py",
+    "python3 scripts/research/quotient_level_link_firebreak_audit.py",
+    "python3 scripts/research/quotient_level_link_promotion_gate.py",
+    "python3 scripts/research/verify_quotient_level_link_closure.py",
+    "python3 scripts/research/review_gate_replay.py --dry-run --skip-timing --json /tmp/quotient_review_gate_dry_run.json --md /tmp/quotient_review_gate_dry_run.md"
+  ],
+  "schema": "Descender.quotient_level_link.promotion_gate.v1",
+  "script_hashes": [
+    {
+      "bytes": 31611,
+      "exists": true,
+      "path": "scripts/research/quotient_level_link_kernel_search.py",
+      "sha256": "a5e030510fb2cbc7940cea248609e75a62930d2c5836c6371dacee307c0e9e84"
+    },
+    {
+      "bytes": 12765,
+      "exists": true,
+      "path": "scripts/research/quotient_level_link_coordinate_pair_sweep.py",
+      "sha256": "2d0e9f9455f721bc2afd6938d1435f70534aafa27a09b5bd8d912440c3ef4937"
+    },
+    {
+      "bytes": 13913,
+      "exists": true,
+      "path": "scripts/research/quotient_level_link_exact_enum.py",
+      "sha256": "b7fdaa4ec8192d8761ef40fdba405792038e16ed55724126769d065c4643a4a8"
+    },
+    {
+      "bytes": 9766,
+      "exists": true,
+      "path": "scripts/research/quotient_level_link_sampler_replay.py",
+      "sha256": "21c62d9c7621cadb0ed25b0f478bc303489fa45e7dbb46e0a8f831334e0ba61c"
+    },
+    {
+      "bytes": 17299,
+      "exists": true,
+      "path": "scripts/research/quotient_level_link_hiding_review.py",
+      "sha256": "1a31af84e97887b327e7c00d1ed40584c2cc78bea2288d3590b7dae7e99abccf"
+    },
+    {
+      "bytes": 11884,
+      "exists": true,
+      "path": "scripts/research/quotient_level_link_account_semantics.py",
+      "sha256": "e5309d848ea08bdea23927fea6b0a4c5fe2e64c70e5c282b2892b67c76d0cb5a"
+    },
+    {
+      "bytes": 14229,
+      "exists": true,
+      "path": "scripts/research/quotient_level_link_hidden_commitment_byte_state_review.py",
+      "sha256": "11cd2eb15a6e4c0849da4907cfc81fa71a0aa1963415f2cd975b8c0442098e37"
+    },
+    {
+      "bytes": 13692,
+      "exists": true,
+      "path": "scripts/research/quotient_level_link_existing_commitment_reuse_review.py",
+      "sha256": "b373a8cd3bd1b2eb6b9cd64cd2fe02cebcb5acc787393766feb6b5e10a963963"
+    },
+    {
+      "bytes": 19108,
+      "exists": true,
+      "path": "scripts/research/quotient_level_link_promotion_gate.py",
+      "sha256": "129ffd311add8a4d364b971c0e586ae8f7535ee67d93a5b95f33fcafdae89d28"
+    },
+    {
+      "bytes": 5823,
+      "exists": true,
+      "path": "scripts/research/quotient_level_link_firebreak_audit.py",
+      "sha256": "6250b762fb02bc43ddaed74371643a67708bdcc650e27938277902dd041bcdba"
+    },
+    {
+      "bytes": 3735,
+      "exists": true,
+      "path": "scripts/research/verify_quotient_level_link_closure.py",
+      "sha256": "f3c239d970dad3454d6e0fc7d8b73d870e44623a2c49ede07c1727ea2d15d607"
+    },
+    {
+      "bytes": 16137,
+      "exists": true,
+      "path": "scripts/research/review_gate_replay.py",
+      "sha256": "eaceb75a67b6a2af0576062377c4b48f4143f87f625c0060175b134e0da9d5a9"
+    }
+  ],
+  "upstream_summaries": {
+    "existing_commitment_reuse_review": {
+      "byte_saving_candidate_found": false,
+      "deployment_recommendation": "keep_current_reviewed_split_design",
+      "existing_commitment_reuse_status": "rejected_for_deployment",
+      "previous_best_remaining_branch": "reuse-existing-account-commitments-for-link",
+      "proof_simplification_candidate_found": false,
+      "reason": "Existing account commitments bind full hidden preimages only after opening; they do not expose a hidden quotient-link commitment or homomorphic link equation.  Any route that keeps the link hidden needs a new zero-knowledge/hash-circuit proof, and any route that opens link values reintroduces the public link hiding failure."
+    },
+    "hidden_commitment_byte_state_review": {
+      "best_remaining_research_branch": "reuse-existing-account-commitments-for-link",
+      "byte_saving_candidate_found": false,
+      "deployment_recommendation": "keep_current_reviewed_split_design",
+      "public_link_rejected": true,
+      "reason": "No hidden-commitment option currently gives a deployable byte win. The only branch worth further research is reuse of existing account commitments, because it might improve proof organization without increasing state.",
+      "rows_reviewed": 6
+    },
+    "hiding_review": {
+      "control_candidate": "current-coordinate-link-0-3",
+      "control_margin": 43,
+      "review_rows": 6,
+      "top_exact_coordinate_shortlist_rows": 3,
+      "top_shortlist_public_link_hiding_failures": 3,
+      "top_shortlist_raw_q_residue_bits_floor": [
+        122
+      ],
+      "top_shortlist_sampler_certificates_complete": 0,
+      "top_shortlist_status": "rejected_as_public_quotient_links_under_current_sampler_surface"
+    }
+  }
+}

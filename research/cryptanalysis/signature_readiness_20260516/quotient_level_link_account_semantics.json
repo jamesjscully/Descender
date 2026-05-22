@@ -1,0 +1,101 @@
+{
+  "account_object_candidates": [
+    {
+      "account_bytes": 68,
+      "account_object": "witness commitment + randomizer commitment + deterministic [0,3] response-link code",
+      "bounded_kernel_margin": 43,
+      "candidate": "current-reviewed-split-account-link",
+      "hiding_status": "reviewed_current_control",
+      "link_visibility": "response-link code public in account state; hidden representatives committed separately",
+      "proof_obligation_delta": "baseline",
+      "reason": "This is the existing reviewed path.  The sampler is not conditioned on public quotient-level link values; account binding and bounded-kernel exclusion remain separate proof objects.",
+      "spend_bytes_delta": 0,
+      "status": "keep_as_deployable_control",
+      "support_floor_bits": 133
+    },
+    {
+      "account_bytes": 4,
+      "account_object": "semantic quotient plus public/account-visible two-row link value",
+      "bounded_kernel_margin": 94,
+      "candidate": "public-quotient-link-top-coordinate-shortlist",
+      "hiding_status": "rejected_public_link_hiding",
+      "link_visibility": "public/account-visible quotient data",
+      "proof_obligation_delta": "would merge kernel exclusion but fails hiding",
+      "reason": "Candidate-specific sampler replays show support floors of 106-108 bits once the link rows are public conditioning data, below the 128-bit target.",
+      "spend_bytes_delta": 0,
+      "status": "rejected",
+      "support_floor_bits": 108
+    },
+    {
+      "account_bytes": null,
+      "account_object": "commitments to link(witness) and link(randomizer), with a non-public proof that response link value equals the committed linear combination",
+      "bounded_kernel_margin": 94,
+      "candidate": "hidden-commitment-quotient-link",
+      "hiding_status": "plausible_if_commitment_hides_link_values",
+      "link_visibility": "hidden behind binding/hiding commitments",
+      "proof_obligation_delta": "replace public-link conditioning with commitment hiding, binding extraction, non-public-projection proof, and bounded kernel equality over opened link values",
+      "reason": "This is the only branch that can preserve the current sampler surface while using the stronger exact-passed link rows.  It does not save state bytes unless the commitment object is smaller or already present; its value is proof unification, not a current compression claim.",
+      "spend_bytes_delta": null,
+      "status": "research_candidate",
+      "support_floor_bits": 133
+    }
+  ],
+  "firebreak": {
+    "touches_current_proof_path": false,
+    "touches_current_verifier": false,
+    "touches_deployable_path": false
+  },
+  "generated_at": "2026-05-22T14:12:26.266881+00:00",
+  "hidden_commitment_requirements": [
+    {
+      "meaning": "The account object must not reveal link(w) or link(r), otherwise the sampler is conditioned on public link rows and the support floor falls below target.",
+      "requirement": "commitment_hiding"
+    },
+    {
+      "meaning": "A successful opening must determine the committed link values well enough to apply bounded-kernel soundness, or produce a named binding break.",
+      "requirement": "commitment_binding_or_extraction"
+    },
+    {
+      "meaning": "The link equation proof cannot be a public projection of the sigma equation; that shortcut is already known to add no security.",
+      "requirement": "non_public_projection"
+    },
+    {
+      "meaning": "The verifier needs evidence for link(z) = link(r) + c * link(w) without learning the hidden link values.",
+      "requirement": "homomorphic_or_linear_link_proof"
+    },
+    {
+      "meaning": "The hidden representative sampler may condition on the semantic quotient, canonical packing, fiber-state equality, and bounds, but not on revealed link rows or active pads.",
+      "requirement": "sampler_surface_preservation"
+    }
+  ],
+  "inputs": {
+    "hiding_review": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_hiding_review.json",
+    "program_state": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_research_program.md"
+  },
+  "lean_facing_shape": {
+    "fields": [
+      "link : R -> L",
+      "commit : L -> Nonce -> Commitment",
+      "hiding : commitment view does not condition the representative sampler on L",
+      "binding_or_break : two openings of one commitment imply equal link value or BindingBreak",
+      "link_equation_proof : accepts proof of committed link(z) = committed link(r) + c * committed link(w)",
+      "non_public_projection : link equation acceptance is not implied by the public sigma equation alone",
+      "bounded_kernel : ker(semantic) cap ker(link) cap responseBox = {0} or LinkKernelBreak"
+    ],
+    "structure_name": "HiddenCommittedQuotientLink.Interface",
+    "target_theorem": "accepted + hidden_committed_link + no binding/link/projection/hiding breaks -> account-backed quotient witness"
+  },
+  "next_required_work": [
+    "Record byte/state possibilities for hash commitment, Pedersen-style homomorphic commitment, and existing account commitment reuse.",
+    "Compare each commitment option against the sidecar HiddenCommittedQuotientLink.Interface theorem shape.",
+    "Reject the branch if the proof object requires public link values or consumes more state than the current 68-byte account object without proof simplification.",
+    "Instantiate the interface abstractly against coordinate-link-1-14 only after a commitment option survives the byte/state screen."
+  ],
+  "schema": "Descender.quotient_level_link.account_semantics.v1",
+  "summary": {
+    "deployment_recommendation": "keep_current_reviewed_split_design",
+    "hidden_commitment_link_status": "research_candidate",
+    "public_quotient_link_status": "rejected_by_hiding_support",
+    "recommended_branch": "hidden-commitment-quotient-link"
+  }
+}

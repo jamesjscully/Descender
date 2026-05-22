@@ -1,0 +1,32 @@
+{
+  "allowed_imports": {
+    "Descender.DescentInterface": [
+      "Descender/HiddenCommittedQuotientLink.lean"
+    ],
+    "Descender.HiddenCommittedQuotientLink": []
+  },
+  "decision": "firebreak_passed",
+  "firebreak": {
+    "touches_current_proof_path": false,
+    "touches_current_verifier": false,
+    "touches_deployable_path": false
+  },
+  "generated_at": "2026-05-22T14:39:56.100840+00:00",
+  "implementation_instruction": "Keep Descender.HiddenCommittedQuotientLink and Descender.DescentInterface out of the deployable import aggregate unless a later promotion gate explicitly recommends migration.",
+  "passed": true,
+  "root_sidecar_imports": [],
+  "schema": "Descender.quotient_level_link.firebreak_audit.v1",
+  "sidecar_import_records": [
+    {
+      "path": "Descender/HiddenCommittedQuotientLink.lean",
+      "sidecar_imports": [
+        "Descender.DescentInterface"
+      ]
+    }
+  ],
+  "sidecar_modules": {
+    "Descender.DescentInterface": "generic descent sidecar interface",
+    "Descender.HiddenCommittedQuotientLink": "hidden quotient-link theorem-shape prototype"
+  },
+  "violations": []
+}

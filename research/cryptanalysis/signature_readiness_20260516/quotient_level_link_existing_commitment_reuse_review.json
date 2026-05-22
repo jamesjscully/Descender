@@ -1,0 +1,147 @@
+{
+  "firebreak": {
+    "touches_current_proof_path": false,
+    "touches_current_verifier": false,
+    "touches_deployable_path": false
+  },
+  "generated_at": "2026-05-22T14:20:05.101715+00:00",
+  "inputs": {
+    "byte_state_review": "research/cryptanalysis/signature_readiness_20260516/quotient_level_link_hidden_commitment_byte_state_review.json",
+    "committed_sigma": "Descender/CommittedSigma.lean",
+    "hidden_committed_quotient_link": "Descender/HiddenCommittedQuotientLink.lean",
+    "local_delta_byte_commitment": "Descender/LocalDeltaByteCommitment.lean"
+  },
+  "next_required_work": [
+    "Create the Milestone 5 promotion gate and classify the result as no replacement.",
+    "Record artifact paths, replay commands, Lean theorem names, and assumption deltas.",
+    "Tell the implementation agent to keep ignoring this sidecar research unless a later promotion gate changes the recommendation."
+  ],
+  "proof_routes": [
+    {
+      "binding_status": "works_after_opening",
+      "decision": "reject",
+      "hiding_status": "fails_if_link_rows_become_public",
+      "proof_delta_bytes": "large_or_contextual",
+      "reason": "Opening enough data to recompute link(w) and link(r) gives binding, but it either reveals the link rows or moves the cost into a large opening proof.",
+      "route": "open_full_hidden_preimages",
+      "state_delta_bytes": 0
+    },
+    {
+      "binding_status": "requires_new_hash_circuit_soundness_argument",
+      "decision": "research_only",
+      "hiding_status": "plausible",
+      "proof_delta_bytes": "unknown_nonzero",
+      "reason": "A zero-knowledge circuit could prove committed preimages have the desired link relation, but that is a new proof system and is unlikely to beat a 68-byte account object without a concrete cost model.",
+      "route": "zk_proof_from_hash_commitments",
+      "state_delta_bytes": 0
+    },
+    {
+      "binding_status": "not_available",
+      "decision": "reject",
+      "hiding_status": "not_applicable",
+      "proof_delta_bytes": null,
+      "reason": "A general byte hash digest does not supply add/scale operations or a response commitment equation.",
+      "route": "derive_homomorphic_link_commitment_from_hash_digest",
+      "state_delta_bytes": 0
+    }
+  ],
+  "requirements": [
+    {
+      "available_from_existing_commitments": true,
+      "reason": "The byte-hash path can bind an opened encoded hidden state, assuming collision freedom and an injective encoding.",
+      "requirement": "binds_full_hidden_preimage_after_opening",
+      "usable_for_hidden_quotient_link": "partial"
+    },
+    {
+      "available_from_existing_commitments": false,
+      "reason": "A digest of the full hidden preimage does not expose a committed quotient-link value or a verifier-checkable link projection.",
+      "requirement": "exposes_link_value_without_opening_hidden_state",
+      "usable_for_hidden_quotient_link": "no"
+    },
+    {
+      "available_from_existing_commitments": false,
+      "reason": "The byte-hash commitment has no add/scale structure for checking link(z) = link(r) + c * link(w) on commitments.",
+      "requirement": "homomorphic_link_equation_over_commitments",
+      "usable_for_hidden_quotient_link": "no"
+    },
+    {
+      "available_from_existing_commitments": true,
+      "reason": "The sampler surface is preserved only if link values remain hidden; opening them publicly reintroduces the public-link hiding failure.",
+      "requirement": "preserves_sampler_surface_without_public_link_rows",
+      "usable_for_hidden_quotient_link": "conditional"
+    },
+    {
+      "available_from_existing_commitments": false,
+      "reason": "Existing commitment binding can support an opening check, but does not by itself prove the hidden linear link equation.",
+      "requirement": "proves_response_link_soundness_without_new_proof",
+      "usable_for_hidden_quotient_link": "no"
+    },
+    {
+      "available_from_existing_commitments": false,
+      "reason": "No extra account bytes are needed only if reuse is free, but the missing non-public equation proof would add unknown proof bytes or assumptions.",
+      "requirement": "deployable_byte_win_over_68b_split_design",
+      "usable_for_hidden_quotient_link": "no"
+    }
+  ],
+  "schema": "Descender.quotient_level_link.existing_commitment_reuse_review.v1",
+  "source_check_failures": [],
+  "source_checks": [
+    {
+      "implication": "binds bytes only through collision exclusion",
+      "meaning": "existing commitment object hashes an encoded hidden state",
+      "present": true,
+      "source": "Descender/LocalDeltaByteCommitment.lean",
+      "symbol": "ByteCommitmentConfig"
+    },
+    {
+      "implication": "collision-free digest gives equality of encoded preimages after equal digest",
+      "meaning": "fixed-domain byte hash binding assumption",
+      "present": true,
+      "source": "Descender/LocalDeltaByteCommitment.lean",
+      "symbol": "ByteHashBinding"
+    },
+    {
+      "implication": "no homomorphic operation or committed linear link value is exposed",
+      "meaning": "binding is stated at the encoded byte-preimage boundary",
+      "present": true,
+      "source": "Descender/LocalDeltaByteCommitment.lean",
+      "symbol": "collisionFreeOnDomain"
+    },
+    {
+      "implication": "the current byte hash commitment is not itself this interface",
+      "meaning": "separate abstraction for commitments that can prove response-link equations",
+      "present": true,
+      "source": "Descender/CommittedSigma.lean",
+      "symbol": "HomomorphicAccountLinkInterface"
+    },
+    {
+      "implication": "a reused commitment proof must avoid becoming a public projection shortcut",
+      "meaning": "public projections of the sigma equation add no security constraint",
+      "present": true,
+      "source": "Descender/CommittedSigma.lean",
+      "symbol": "linkProofAccepts_of_publicProjection"
+    },
+    {
+      "implication": "reuse is only interesting if it adds no bytes and no larger proof object",
+      "meaning": "current reviewed account object is fixed at 68 bytes",
+      "present": true,
+      "source": "Descender/CommittedSigma.lean",
+      "symbol": "reviewedAccountHiddenLinkBytes_eq"
+    },
+    {
+      "implication": "requires binding, hiding, non-public projection, and sampler-surface gates",
+      "meaning": "sidecar hidden-link theorem shape",
+      "present": true,
+      "source": "Descender/HiddenCommittedQuotientLink.lean",
+      "symbol": "HiddenCommittedQuotientLink.Interface"
+    }
+  ],
+  "summary": {
+    "byte_saving_candidate_found": false,
+    "deployment_recommendation": "keep_current_reviewed_split_design",
+    "existing_commitment_reuse_status": "rejected_for_deployment",
+    "previous_best_remaining_branch": "reuse-existing-account-commitments-for-link",
+    "proof_simplification_candidate_found": false,
+    "reason": "Existing account commitments bind full hidden preimages only after opening; they do not expose a hidden quotient-link commitment or homomorphic link equation.  Any route that keeps the link hidden needs a new zero-knowledge/hash-circuit proof, and any route that opens link values reintroduces the public link hiding failure."
+  }
+}

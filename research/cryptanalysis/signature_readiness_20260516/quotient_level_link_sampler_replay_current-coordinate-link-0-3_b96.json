@@ -1,0 +1,85 @@
+{
+  "base_surface": {
+    "full_fixed_coord": 0,
+    "low_bit_allowed_values": 3073,
+    "low_bit_class": 0,
+    "low_bit_coord": 1,
+    "low_bit_modulus": 4,
+    "matrix_transcript_sha256": "b21703e6381ec794407acf6313af5e347d591b65251ad1f8e7a24d06b0bb71a6",
+    "q": 12289,
+    "representative_residues": 23,
+    "response_difference_bound": 96,
+    "semantic_rows": 12
+  },
+  "candidate": "current-coordinate-link-0-3",
+  "description": "Current reviewed response-link coordinate control [0,3].",
+  "exact_kernel_artifact": {
+    "artifact": "research/cryptanalysis/signature_readiness_20260516/response_link_bounded_kernel_exact_enum_n32_q12289_coords_0_3_b96.json",
+    "combined_constraint_rank": 14,
+    "margin_over_response_difference_bound": null,
+    "shortest_coeff_bound": null,
+    "status": "infeasible"
+  },
+  "firebreak": {
+    "touches_current_proof_path": false,
+    "touches_current_verifier": false,
+    "touches_deployable_path": false
+  },
+  "generated_at": "2026-05-22T14:02:10.276391+00:00",
+  "interpretation": [
+    "The semantic-only model reproduces the existing sampler support surface and should not be used for a public quotient-level link unless the link is hidden by a separate commitment argument.",
+    "The public-link-conditioned model treats the candidate link rows as account-visible quotient data.  This is the relevant first screen for replacing separate account binding with a quotient level link."
+  ],
+  "schema": "Descender.quotient_level_link.sampler_replay.v1",
+  "semantic_factorization": {
+    "classification": "auxiliary_product_quotient_only",
+    "combined_rank": 14,
+    "link_adds_independent_rows_to_semantic": 2,
+    "link_rank": 2,
+    "product_fiber_dimension": 9,
+    "product_semantic_factors": true,
+    "semantic_rank": 12,
+    "standalone_semantic_factors": false
+  },
+  "status": "hiding_target_fails_under_public_link_conditioning",
+  "support_models": {
+    "semantic_only_current_sampler_surface": {
+      "base_rank": 12,
+      "full_fixed_coord_independent": true,
+      "low_bit_condition": "surjective_low_bit_coordinate",
+      "low_bit_coord_independent": true,
+      "low_bit_multiplier": 3073,
+      "meets_target_bits": true,
+      "mode": "semantic_only_current_sampler_surface",
+      "q_power_exponent": 9,
+      "rank_after_full_fixed_coord": 13,
+      "rank_after_low_bit_coord": 14,
+      "support_decimal": "19643164710622955502452258988325173574657",
+      "support_floor_bits": 133,
+      "support_floor_margin_bits": 5,
+      "support_formula": "12289^9 * 3073",
+      "support_log2": 133.85115117649693,
+      "support_zero_risk_if_account_value_not_in_low_bit_class": false,
+      "target_bits": 128
+    },
+    "semantic_plus_public_link_rows": {
+      "base_rank": 14,
+      "full_fixed_coord_independent": false,
+      "low_bit_condition": "surjective_low_bit_coordinate",
+      "low_bit_coord_independent": true,
+      "low_bit_multiplier": 3073,
+      "meets_target_bits": false,
+      "mode": "semantic_plus_public_link_rows",
+      "q_power_exponent": 8,
+      "rank_after_full_fixed_coord": 14,
+      "rank_after_low_bit_coord": 15,
+      "support_decimal": "1598434755523065790743938399245274113",
+      "support_floor_bits": 120,
+      "support_floor_margin_bits": -8,
+      "support_formula": "12289^8 * 3073",
+      "support_log2": 120.26607127372982,
+      "support_zero_risk_if_account_value_not_in_low_bit_class": false,
+      "target_bits": 128
+    }
+  }
+}
