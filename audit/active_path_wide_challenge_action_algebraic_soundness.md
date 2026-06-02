@@ -81,3 +81,46 @@ The one-byte response bound can remain at 48 only if the signer samples from a l
 - reason: It addresses the QROM/multi-target horizon with the smallest algebraic blast radius: the active native checked-core verifier already consumes whole challenge bytes through the Fq12 action, while compact local block/sign semantics and response bounds can stay unchanged.
 - do not commit to: `wide_compact_coefficient_alphabet`
 - blocker: It needs new coefficient-noise theorems, Rust verifier semantics, signer/rejection-sampling proofs, and still does not obviously buy useful compact multifork coverage at fixed 26 reps.
+
+## Repetition-Compression Branch
+
+Question: after selecting auxiliary Fq12 action bits, can the active path reduce the
+number of compact repetitions and move even more of the challenge into auxiliary
+Fq12 action bits?
+
+Arithmetic answer: yes, potentially. If the target algebraic challenge budget is
+held at 182 bits, the algebraic challenge frame remains 23 bytes regardless of
+how those bits are split between compact block/sign fields and auxiliary Fq12
+action bits. Every repetition removed saves 2 response bytes plus 4 opening
+bytes, i.e. 6 transaction-signature bytes, while increasing the auxiliary
+challenge tail by 5 bits.
+
+| repetitions | compact bits | auxiliary action bits | challenge bytes | tx bytes | tx+hidden bytes |
+|---:|---:|---:|---:|---:|---:|
+| 26 | 130 | 52 | 27 | 258 | 290 |
+| 24 | 120 | 62 | 27 | 246 | 278 |
+| 22 | 110 | 72 | 27 | 234 | 266 |
+| 20 | 100 | 82 | 27 | 222 | 254 |
+| 18 | 90 | 92 | 27 | 210 | 242 |
+| 16 | 80 | 102 | 27 | 198 | 230 |
+
+Proof-risk answer: do not treat this as a free optimization yet. It is safe only
+if the active theorem's final soundness challenge is the checked-core Fq12 action
+over the whole canonical challenge byte string, and the compact repetitions are
+only carried local evidence. It is not safe if any remaining extraction,
+representative/canonicality, local opening, or hidden-source closure theorem
+depends on 26 independent compact block/sign views.
+
+Over-widening warning: more auxiliary input bits do not by themselves create a
+larger Fq12 action range. Once the canonical challenge input is wider than the
+`q^12` action codomain, the algebraic action-collision term is capped by the
+Fq12 range, not by the number of input challenge bits. Extra auxiliary bytes can
+still harden the transcript/preimage side, but a materially higher algebraic
+action-collision floor would require a wider action codomain, not only more
+input bytes.
+
+Near-term conclusion: keep 26 repetitions as the primary closure route, because
+it changes the fewest theorem and implementation surfaces. Track reduced-rep
+variants as a promising second-stage size optimization. The first audit task for
+that branch is to classify every use of `repetitions = 26` as either
+size/accounting-only or cryptographic-coverage-critical.
