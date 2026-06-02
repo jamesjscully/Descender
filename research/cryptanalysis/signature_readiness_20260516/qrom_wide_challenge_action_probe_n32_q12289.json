@@ -1,0 +1,279 @@
+{
+  "generated_at": "2026-06-02T20:24:29.395565+00:00",
+  "options": [
+    {
+      "bits_per_rep": 5,
+      "challenge_bytes": 21,
+      "delta_transaction_bytes_from_current": 0,
+      "hardening_bytes": 4,
+      "max_covered_log2_in_probe_table": 1,
+      "meets_log2_targets_32": false,
+      "name": "current-5bit-action",
+      "proof_risk": "baseline; fails above one-bit target horizon",
+      "security_rows": [
+        {
+          "algebraic_after_targets": 129,
+          "algebraic_bits": 130,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 128,
+          "margin_bits": 0,
+          "meets_128": true,
+          "minimum_bits": 128,
+          "quantum_bits": 129,
+          "target_count_log2": 1,
+          "total_transcript_bits": 162
+        },
+        {
+          "algebraic_after_targets": 128,
+          "algebraic_bits": 130,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 127,
+          "margin_bits": -1,
+          "meets_128": false,
+          "minimum_bits": 127,
+          "quantum_bits": 128,
+          "target_count_log2": 2,
+          "total_transcript_bits": 162
+        },
+        {
+          "algebraic_after_targets": 114,
+          "algebraic_bits": 130,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 113,
+          "margin_bits": -15,
+          "meets_128": false,
+          "minimum_bits": 113,
+          "quantum_bits": 114,
+          "target_count_log2": 16,
+          "total_transcript_bits": 162
+        },
+        {
+          "algebraic_after_targets": 106,
+          "algebraic_bits": 130,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 105,
+          "margin_bits": -23,
+          "meets_128": false,
+          "minimum_bits": 105,
+          "quantum_bits": 106,
+          "target_count_log2": 24,
+          "total_transcript_bits": 162
+        },
+        {
+          "algebraic_after_targets": 98,
+          "algebraic_bits": 130,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 97,
+          "margin_bits": -31,
+          "meets_128": false,
+          "minimum_bits": 97,
+          "quantum_bits": 98,
+          "target_count_log2": 32,
+          "total_transcript_bits": 162
+        }
+      ],
+      "structural_model": "16 block choices plus sign; existing active path",
+      "transaction_bytes": 252,
+      "with_hidden_source_proof_bytes": 284
+    },
+    {
+      "bits_per_rep": 6,
+      "challenge_bytes": 24,
+      "delta_transaction_bytes_from_current": 3,
+      "hardening_bytes": 4,
+      "max_covered_log2_in_probe_table": 24,
+      "meets_log2_targets_32": false,
+      "name": "six-bit-action-control",
+      "proof_risk": "still fails log2(T)=32 because algebraic action bits are only 156; useful for mid-sized target ledgers, not full deployment scale",
+      "security_rows": [
+        {
+          "algebraic_after_targets": 155,
+          "algebraic_bits": 156,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 154,
+          "margin_bits": 26,
+          "meets_128": true,
+          "minimum_bits": 154,
+          "quantum_bits": 155,
+          "target_count_log2": 1,
+          "total_transcript_bits": 188
+        },
+        {
+          "algebraic_after_targets": 154,
+          "algebraic_bits": 156,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 153,
+          "margin_bits": 25,
+          "meets_128": true,
+          "minimum_bits": 153,
+          "quantum_bits": 154,
+          "target_count_log2": 2,
+          "total_transcript_bits": 188
+        },
+        {
+          "algebraic_after_targets": 140,
+          "algebraic_bits": 156,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 139,
+          "margin_bits": 11,
+          "meets_128": true,
+          "minimum_bits": 139,
+          "quantum_bits": 140,
+          "target_count_log2": 16,
+          "total_transcript_bits": 188
+        },
+        {
+          "algebraic_after_targets": 132,
+          "algebraic_bits": 156,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 131,
+          "margin_bits": 3,
+          "meets_128": true,
+          "minimum_bits": 131,
+          "quantum_bits": 132,
+          "target_count_log2": 24,
+          "total_transcript_bits": 188
+        },
+        {
+          "algebraic_after_targets": 124,
+          "algebraic_bits": 156,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 123,
+          "margin_bits": -5,
+          "meets_128": false,
+          "minimum_bits": 123,
+          "quantum_bits": 124,
+          "target_count_log2": 32,
+          "total_transcript_bits": 188
+        }
+      ],
+      "structural_model": "hypothetical one extra action bit without changing reps",
+      "transaction_bytes": 255,
+      "with_hidden_source_proof_bytes": 287
+    },
+    {
+      "bits_per_rep": 7,
+      "challenge_bytes": 27,
+      "delta_transaction_bytes_from_current": 6,
+      "hardening_bytes": 4,
+      "max_covered_log2_in_probe_table": 32,
+      "meets_log2_targets_32": true,
+      "name": "seven-bit-effective-action-aux-fq12",
+      "proof_risk": "small byte cost under the auxiliary-Fq12 route; remaining proof work is challenge-byte canonicality, Fq12 action-collision/QROM budget, and byte-frame binding. Compact coefficient widening and larger block universes are not the selected route.",
+      "security_rows": [
+        {
+          "algebraic_after_targets": 181,
+          "algebraic_bits": 182,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 180,
+          "margin_bits": 52,
+          "meets_128": true,
+          "minimum_bits": 180,
+          "quantum_bits": 181,
+          "target_count_log2": 1,
+          "total_transcript_bits": 214
+        },
+        {
+          "algebraic_after_targets": 180,
+          "algebraic_bits": 182,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 179,
+          "margin_bits": 51,
+          "meets_128": true,
+          "minimum_bits": 179,
+          "quantum_bits": 180,
+          "target_count_log2": 2,
+          "total_transcript_bits": 214
+        },
+        {
+          "algebraic_after_targets": 166,
+          "algebraic_bits": 182,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 165,
+          "margin_bits": 37,
+          "meets_128": true,
+          "minimum_bits": 165,
+          "quantum_bits": 166,
+          "target_count_log2": 16,
+          "total_transcript_bits": 214
+        },
+        {
+          "algebraic_after_targets": 158,
+          "algebraic_bits": 182,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 157,
+          "margin_bits": 29,
+          "meets_128": true,
+          "minimum_bits": 157,
+          "quantum_bits": 158,
+          "target_count_log2": 24,
+          "total_transcript_bits": 214
+        },
+        {
+          "algebraic_after_targets": 150,
+          "algebraic_bits": 182,
+          "bottleneck": [
+            "classical_transcript"
+          ],
+          "classical_bits": 149,
+          "margin_bits": 21,
+          "meets_128": true,
+          "minimum_bits": 149,
+          "quantum_bits": 150,
+          "target_count_log2": 32,
+          "total_transcript_bits": 214
+        }
+      ],
+      "structural_model": "effective 7 action bits per repetition by appending auxiliary canonical Fq12 action bits after the existing 130 compact-local bits; preserves 26 compact block/sign fields, 52 active response bytes, 104 opening bytes, and 39 masked-response bytes",
+      "transaction_bytes": 258,
+      "with_hidden_source_proof_bytes": 290
+    }
+  ],
+  "parameters": {
+    "classical_query_log2": 33,
+    "current_bits_per_rep": 5,
+    "current_hardening_bytes": 4,
+    "current_transaction_bytes": 252,
+    "current_with_hidden_source_proof_bytes": 284,
+    "fixed_cost_assumption": "wider action changes only challenge bytes; response/opening/proof byte counts are held fixed to isolate the best-case cost",
+    "quantum_query_log2": 16,
+    "repetitions": 26,
+    "target_bits": 128
+  },
+  "result": {
+    "recommendation": "Use auxiliary Fq12 action bits as the primary redesign route. It fixes log2(T)=32 in the budget model with about +6 bytes while leaving compact local block/sign semantics and response bounds unchanged.",
+    "seven_bit_best_case_bytes": 258,
+    "seven_bit_best_case_delta_bytes": 6,
+    "seven_bit_best_case_with_hidden_source_proof_bytes": 290,
+    "seven_bit_runtime_delta_if_reps_fixed": "no repetition-scaled runtime increase"
+  },
+  "schema": "Descender.qrom_wide_challenge_action_probe.v1"
+}

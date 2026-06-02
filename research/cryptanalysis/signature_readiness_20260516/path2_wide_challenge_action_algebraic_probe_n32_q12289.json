@@ -1,0 +1,497 @@
+{
+  "generated_at": "2026-06-02T20:24:29.398097+00:00",
+  "parameters": {
+    "blocks": 16,
+    "current_response_bound": 48,
+    "local_free_coordinates": 2,
+    "multifork_draws_per_commitment": 6,
+    "repetitions": 26,
+    "secret_eta_assumption": 12
+  },
+  "recommendation": {
+    "blocker": "It needs new coefficient-noise theorems, Rust verifier semantics, signer/rejection-sampling proofs, and still does not obviously buy useful compact multifork coverage at fixed 26 reps.",
+    "do_not_commit_to": "wide_compact_coefficient_alphabet",
+    "primary": "auxiliary_fq12_action_bits",
+    "reason": "It addresses the QROM/multi-target horizon with the smallest algebraic blast radius: the active native checked-core verifier already consumes whole challenge bytes through the Fq12 action, while compact local block/sign semantics and response bounds can stay unchanged."
+  },
+  "routes": [
+    {
+      "algebraic_status": "highest probability of proof closure",
+      "description": "Append canonical auxiliary challenge bits after the existing 130 compact-local bits. The Fq12 checked-core action consumes the whole longer challenge byte string while the compact local block/sign decoder keeps its current bit offsets.",
+      "id": "auxiliary_fq12_action_bits",
+      "new_obligations": [
+        "update Lean/Rust challenge-byte constants and canonical high-bit mask",
+        "prove the Fq12 action-collision and QROM budget for the longer byte string",
+        "prove extra bits are bound into the selected checked-core frame and are not ignored by the Fq12 sigma equation",
+        "keep any older account-carried compact-local verifier either updated or explicitly non-active"
+      ],
+      "why": [
+        "native checked-core acceptance already computes challenge = H(frame)",
+        "Fq12 action hashes the whole challenge byte string into 12 q-residues",
+        "appending bits after the compact-local prefix preserves the 26 existing 5-bit block/sign fields",
+        "compact local response/opening semantics can remain 4-bit block plus 1-bit sign",
+        "does not multiply active response coordinates by larger local coefficients"
+      ]
+    },
+    {
+      "algebraic_status": "possible but high redesign risk",
+      "coefficient_fork_coverage": [
+        {
+          "any_block_miss_bits": 4.170356150021212e-06,
+          "any_block_miss_probability": 0.9999971093335707,
+          "coefficient_count": 2,
+          "terms": [
+            {
+              "all_reps_safe_probability": 0.5064151073184776,
+              "inclusion_exclusion_term": 8.102641717095642,
+              "one_rep_safe_probability": 0.9741702694445848,
+              "subset_blocks": 1
+            },
+            {
+              "all_reps_safe_probability": 0.25390182072333173,
+              "inclusion_exclusion_term": -30.468218486799806,
+              "one_rep_safe_probability": 0.9486423991620541,
+              "subset_blocks": 2
+            },
+            {
+              "all_reps_safe_probability": 0.125987899829497,
+              "inclusion_exclusion_term": 70.55322390451833,
+              "one_rep_safe_probability": 0.9234157186001539,
+              "subset_blocks": 3
+            },
+            {
+              "all_reps_safe_probability": 0.06184988262910169,
+              "inclusion_exclusion_term": -112.56678638496507,
+              "one_rep_safe_probability": 0.8984895572066307,
+              "subset_blocks": 4
+            },
+            {
+              "all_reps_safe_probability": 0.030028268780078252,
+              "inclusion_exclusion_term": 131.1634780313818,
+              "one_rep_safe_probability": 0.8738632444292307,
+              "subset_blocks": 5
+            },
+            {
+              "all_reps_safe_probability": 0.01441212193427488,
+              "inclusion_exclusion_term": -115.41227244967324,
+              "one_rep_safe_probability": 0.8495361097157001,
+              "subset_blocks": 6
+            },
+            {
+              "all_reps_safe_probability": 0.00683512351840276,
+              "inclusion_exclusion_term": 78.19381305052758,
+              "one_rep_safe_probability": 0.8255074825137854,
+              "subset_blocks": 7
+            },
+            {
+              "all_reps_safe_probability": 0.003201762435371708,
+              "inclusion_exclusion_term": -41.20668254323388,
+              "one_rep_safe_probability": 0.8017766922712326,
+              "subset_blocks": 8
+            },
+            {
+              "all_reps_safe_probability": 0.0014806336514242347,
+              "inclusion_exclusion_term": 16.938448972293244,
+              "one_rep_safe_probability": 0.7783430684357882,
+              "subset_blocks": 9
+            },
+            {
+              "all_reps_safe_probability": 0.0006756166348918052,
+              "inclusion_exclusion_term": -5.410338012213576,
+              "one_rep_safe_probability": 0.7552059404551983,
+              "subset_blocks": 10
+            },
+            {
+              "all_reps_safe_probability": 0.0003040265574667794,
+              "inclusion_exclusion_term": 1.3279880030148923,
+              "one_rep_safe_probability": 0.7323646377772093,
+              "subset_blocks": 11
+            },
+            {
+              "all_reps_safe_probability": 0.00013484349707096834,
+              "inclusion_exclusion_term": -0.24541516466916238,
+              "one_rep_safe_probability": 0.7098184898495674,
+              "subset_blocks": 12
+            },
+            {
+              "all_reps_safe_probability": 5.890983131104428e-05,
+              "inclusion_exclusion_term": 0.032989505534184796,
+              "one_rep_safe_probability": 0.687566826120019,
+              "subset_blocks": 13
+            },
+            {
+              "all_reps_safe_probability": 2.5333688104998944e-05,
+              "inclusion_exclusion_term": -0.0030400425725998735,
+              "one_rep_safe_probability": 0.6656089760363102,
+              "subset_blocks": 14
+            },
+            {
+              "all_reps_safe_probability": 1.0716558603691581e-05,
+              "inclusion_exclusion_term": 0.0001714649376590653,
+              "one_rep_safe_probability": 0.6439442690461874,
+              "subset_blocks": 15
+            },
+            {
+              "all_reps_safe_probability": 4.4558424319235565e-06,
+              "inclusion_exclusion_term": -4.4558424319235565e-06,
+              "one_rep_safe_probability": 0.6225720345973969,
+              "subset_blocks": 16
+            }
+          ]
+        },
+        {
+          "any_block_miss_bits": 0.00035784379145707994,
+          "any_block_miss_probability": 0.9997519923438551,
+          "coefficient_count": 4,
+          "terms": [
+            {
+              "all_reps_safe_probability": 0.36598854773446715,
+              "inclusion_exclusion_term": 5.855816763751474,
+              "one_rep_safe_probability": 0.9620780102559365,
+              "subset_blocks": 1
+            },
+            {
+              "all_reps_safe_probability": 0.13106606795828551,
+              "inclusion_exclusion_term": -15.727928154994261,
+              "one_rep_safe_probability": 0.9248202234739438,
+              "subset_blocks": 2
+            },
+            {
+              "all_reps_safe_probability": 0.04587645840788752,
+              "inclusion_exclusion_term": 25.69081670841701,
+              "one_rep_safe_probability": 0.8882243765401654,
+              "subset_blocks": 3
+            },
+            {
+              "all_reps_safe_probability": 0.015676476316784455,
+              "inclusion_exclusion_term": -28.53118689654771,
+              "one_rep_safe_probability": 0.8522882063407451,
+              "subset_blocks": 4
+            },
+            {
+              "all_reps_safe_probability": 0.005222808149299466,
+              "inclusion_exclusion_term": 22.813225996140066,
+              "one_rep_safe_probability": 0.8170094497618265,
+              "subset_blocks": 5
+            },
+            {
+              "all_reps_safe_probability": 0.0016941254998229425,
+              "inclusion_exclusion_term": -13.566557002582122,
+              "one_rep_safe_probability": 0.7823858436895534,
+              "subset_blocks": 6
+            },
+            {
+              "all_reps_safe_probability": 0.0005342031557925563,
+              "inclusion_exclusion_term": 6.111284102266844,
+              "one_rep_safe_probability": 0.7484151250100695,
+              "subset_blocks": 7
+            },
+            {
+              "all_reps_safe_probability": 0.00016347741453183787,
+              "inclusion_exclusion_term": -2.103954325024753,
+              "one_rep_safe_probability": 0.7150950306095183,
+              "subset_blocks": 8
+            },
+            {
+              "all_reps_safe_probability": 4.8461847503525884e-05,
+              "inclusion_exclusion_term": 0.5544035354403362,
+              "one_rep_safe_probability": 0.6824232973740436,
+              "subset_blocks": 9
+            },
+            {
+              "all_reps_safe_probability": 1.3888433389005049e-05,
+              "inclusion_exclusion_term": -0.11121857457915243,
+              "one_rep_safe_probability": 0.6503976621897891,
+              "subset_blocks": 10
+            },
+            {
+              "all_reps_safe_probability": 3.8392484778154e-06,
+              "inclusion_exclusion_term": 0.016769837351097664,
+              "one_rep_safe_probability": 0.6190158619428985,
+              "subset_blocks": 11
+            },
+            {
+              "all_reps_safe_probability": 1.0211801525495694e-06,
+              "inclusion_exclusion_term": -0.0018585478776402165,
+              "one_rep_safe_probability": 0.5882756335195154,
+              "subset_blocks": 12
+            },
+            {
+              "all_reps_safe_probability": 2.606298281796303e-07,
+              "inclusion_exclusion_term": 0.00014595270378059297,
+              "one_rep_safe_probability": 0.5581747138057835,
+              "subset_blocks": 13
+            },
+            {
+              "all_reps_safe_probability": 6.363170726478123e-08,
+              "inclusion_exclusion_term": -7.635804871773748e-06,
+              "one_rep_safe_probability": 0.5287108396878466,
+              "subset_blocks": 14
+            },
+            {
+              "all_reps_safe_probability": 1.4809802814254279e-08,
+              "inclusion_exclusion_term": 2.3695684502806846e-07,
+              "one_rep_safe_probability": 0.49988174805184826,
+              "subset_blocks": 15
+            },
+            {
+              "all_reps_safe_probability": 3.273089730774446e-09,
+              "inclusion_exclusion_term": -3.273089730774446e-09,
+              "one_rep_safe_probability": 0.4716851757839322,
+              "subset_blocks": 16
+            }
+          ]
+        },
+        {
+          "any_block_miss_bits": 0.0015631542056771131,
+          "any_block_miss_probability": 0.9989170908393301,
+          "coefficient_count": 8,
+          "terms": [
+            {
+              "all_reps_safe_probability": 0.31232593981986045,
+              "inclusion_exclusion_term": 4.997215037117767,
+              "one_rep_safe_probability": 0.9562288627803355,
+              "subset_blocks": 1
+            },
+            {
+              "all_reps_safe_probability": 0.09475212407868075,
+              "inclusion_exclusion_term": -11.37025488944169,
+              "one_rep_safe_probability": 0.9133516900219547,
+              "subset_blocks": 2
+            },
+            {
+              "all_reps_safe_probability": 0.02787413844059242,
+              "inclusion_exclusion_term": 15.609517526731755,
+              "one_rep_safe_probability": 0.8713648879838729,
+              "subset_blocks": 3
+            },
+            {
+              "all_reps_safe_probability": 0.007936575090279202,
+              "inclusion_exclusion_term": -14.444566664308148,
+              "one_rep_safe_probability": 0.8302648629251053,
+              "subset_blocks": 4
+            },
+            {
+              "all_reps_safe_probability": 0.0021826833204340586,
+              "inclusion_exclusion_term": 9.533960743655967,
+              "one_rep_safe_probability": 0.790048021104667,
+              "subset_blocks": 5
+            },
+            {
+              "all_reps_safe_probability": 0.0005784805880807447,
+              "inclusion_exclusion_term": -4.632472549350604,
+              "one_rep_safe_probability": 0.7507107687815733,
+              "subset_blocks": 6
+            },
+            {
+              "all_reps_safe_probability": 0.0001473791924754922,
+              "inclusion_exclusion_term": 1.6860179619196307,
+              "one_rep_safe_probability": 0.7122495122148393,
+              "subset_blocks": 7
+            },
+            {
+              "all_reps_safe_probability": 3.5993163453790304e-05,
+              "inclusion_exclusion_term": -0.4632320136502812,
+              "one_rep_safe_probability": 0.6746606576634804,
+              "subset_blocks": 8
+            },
+            {
+              "all_reps_safe_probability": 8.400139670185954e-06,
+              "inclusion_exclusion_term": 0.09609759782692731,
+              "one_rep_safe_probability": 0.6379406113865116,
+              "subset_blocks": 9
+            },
+            {
+              "all_reps_safe_probability": 1.866885225236406e-06,
+              "inclusion_exclusion_term": -0.01495001688369314,
+              "one_rep_safe_probability": 0.6020857796429482,
+              "subset_blocks": 10
+            },
+            {
+              "all_reps_safe_probability": 3.93552668964242e-07,
+              "inclusion_exclusion_term": 0.001719038058035809,
+              "one_rep_safe_probability": 0.5670925686918054,
+              "subset_blocks": 11
+            },
+            {
+              "all_reps_safe_probability": 7.834379251145966e-08,
+              "inclusion_exclusion_term": -0.00014258570237085658,
+              "one_rep_safe_probability": 0.5329573847920983,
+              "subset_blocks": 12
+            },
+            {
+              "all_reps_safe_probability": 1.4652612997861686e-08,
+              "inclusion_exclusion_term": 8.205463278802545e-06,
+              "one_rep_safe_probability": 0.49967663420284225,
+              "subset_blocks": 13
+            },
+            {
+              "all_reps_safe_probability": 2.5597813633562484e-09,
+              "inclusion_exclusion_term": -3.071737636027498e-07,
+              "one_rep_safe_probability": 0.4672467231830524,
+              "subset_blocks": 14
+            },
+            {
+              "all_reps_safe_probability": 4.149015356474934e-10,
+              "inclusion_exclusion_term": 6.6384245703598945e-09,
+              "one_rep_safe_probability": 0.4356640579917439,
+              "subset_blocks": 15
+            },
+            {
+              "all_reps_safe_probability": 6.190712194366927e-11,
+              "inclusion_exclusion_term": -6.190712194366927e-11,
+              "one_rep_safe_probability": 0.404925044887932,
+              "subset_blocks": 16
+            }
+          ]
+        },
+        {
+          "any_block_miss_bits": 0.0028919268575707292,
+          "any_block_miss_probability": 0.9979974767827061,
+          "coefficient_count": 16,
+          "terms": [
+            {
+              "all_reps_safe_probability": 0.28879587406322643,
+              "inclusion_exclusion_term": 4.620733985011623,
+              "one_rep_safe_probability": 0.9533524772360238,
+              "subset_blocks": 1
+            },
+            {
+              "all_reps_safe_probability": 0.08068950405634387,
+              "inclusion_exclusion_term": -9.682740486761265,
+              "one_rep_safe_probability": 0.9077254286731886,
+              "subset_blocks": 2
+            },
+            {
+              "all_reps_safe_probability": 0.021765962058604343,
+              "inclusion_exclusion_term": 12.188938752818432,
+              "one_rep_safe_probability": 0.8631144341672439,
+              "subset_blocks": 3
+            },
+            {
+              "all_reps_safe_probability": 0.005655624903292517,
+              "inclusion_exclusion_term": -10.293237323992381,
+              "one_rep_safe_probability": 0.8195150735739389,
+              "subset_blocks": 4
+            },
+            {
+              "all_reps_safe_probability": 0.001411972946778941,
+              "inclusion_exclusion_term": 6.167497831530415,
+              "one_rep_safe_probability": 0.7769229267490232,
+              "subset_blocks": 5
+            },
+            {
+              "all_reps_safe_probability": 0.00033774915931161786,
+              "inclusion_exclusion_term": -2.704695267767436,
+              "one_rep_safe_probability": 0.735333573548246,
+              "subset_blocks": 6
+            },
+            {
+              "all_reps_safe_probability": 7.716530369390588e-05,
+              "inclusion_exclusion_term": 0.8827710742582833,
+              "one_rep_safe_probability": 0.6947425938273568,
+              "subset_blocks": 7
+            },
+            {
+              "all_reps_safe_probability": 1.677965328735927e-05,
+              "inclusion_exclusion_term": -0.21595413780831382,
+              "one_rep_safe_probability": 0.655145567442105,
+              "subset_blocks": 8
+            },
+            {
+              "all_reps_safe_probability": 3.459054788278383e-06,
+              "inclusion_exclusion_term": 0.0395715867779047,
+              "one_rep_safe_probability": 0.6165380742482398,
+              "subset_blocks": 9
+            },
+            {
+              "all_reps_safe_probability": 6.729741828173802e-07,
+              "inclusion_exclusion_term": -0.005389177256001581,
+              "one_rep_safe_probability": 0.5789156941015108,
+              "subset_blocks": 10
+            },
+            {
+              "all_reps_safe_probability": 1.2293866098987618e-07,
+              "inclusion_exclusion_term": 0.0005369960712037792,
+              "one_rep_safe_probability": 0.5422740068576672,
+              "subset_blocks": 11
+            },
+            {
+              "all_reps_safe_probability": 2.096458821382356e-08,
+              "inclusion_exclusion_term": -3.815555054915888e-05,
+              "one_rep_safe_probability": 0.5066085923724586,
+              "subset_blocks": 12
+            },
+            {
+              "all_reps_safe_probability": 3.3148131733155755e-09,
+              "inclusion_exclusion_term": 1.8562953770567224e-06,
+              "one_rep_safe_probability": 0.4719150305016342,
+              "subset_blocks": 13
+            },
+            {
+              "all_reps_safe_probability": 4.821650207675011e-10,
+              "inclusion_exclusion_term": -5.7859802492100136e-08,
+              "one_rep_safe_probability": 0.43818890110094344,
+              "subset_blocks": 14
+            },
+            {
+              "all_reps_safe_probability": 6.392864451210617e-11,
+              "inclusion_exclusion_term": 1.0228583121936987e-09,
+              "one_rep_safe_probability": 0.4054257840261357,
+              "subset_blocks": 15
+            },
+            {
+              "all_reps_safe_probability": 7.642247042944626e-12,
+              "inclusion_exclusion_term": -7.642247042944626e-12,
+              "one_rep_safe_probability": 0.3736212591329604,
+              "subset_blocks": 16
+            }
+          ]
+        }
+      ],
+      "description": "Decode 7 bits as 4-bit block index plus an 8-value nonzero coefficient alphabet for the compact local equation.",
+      "id": "wide_compact_coefficient_alphabet",
+      "response_bound_models": [
+        {
+          "current_response_bound": 48,
+          "exact_box_mask_bound_for_same_response_bound": 60,
+          "max_abs_coeff": 1,
+          "response_bound_status": "unchanged one-byte response bound can be kept only if the signer samples masks from the enlarged interval and proves exact or bounded-leakage rejection for every shifted coefficient",
+          "secret_shift_bound_if_secret_eta": 12
+        },
+        {
+          "current_response_bound": 48,
+          "exact_box_mask_bound_for_same_response_bound": 72,
+          "max_abs_coeff": 2,
+          "response_bound_status": "unchanged one-byte response bound can be kept only if the signer samples masks from the enlarged interval and proves exact or bounded-leakage rejection for every shifted coefficient",
+          "secret_shift_bound_if_secret_eta": 24
+        },
+        {
+          "current_response_bound": 48,
+          "exact_box_mask_bound_for_same_response_bound": 96,
+          "max_abs_coeff": 4,
+          "response_bound_status": "unchanged one-byte response bound can be kept only if the signer samples masks from the enlarged interval and proves exact or bounded-leakage rejection for every shifted coefficient",
+          "secret_shift_bound_if_secret_eta": 48
+        }
+      ],
+      "why": [
+        "product-block verifier equation supports arbitrary q scalars",
+        "current noise-preservation theorem only covers {-1,0,1}",
+        "Rust challenge_mul rejects every coefficient except -1, 0, 1",
+        "larger coefficients stress the [-48,48] one-byte response bound",
+        "fixed-repetition compact multifork coverage remains weak for weight-one active blocks"
+      ]
+    },
+    {
+      "algebraic_status": "not a local patch",
+      "description": "Decode 6 or 7 index bits as 64 or 128 possible active blocks.",
+      "id": "larger_block_universe",
+      "why": [
+        "current public key, block-diagonal view, pad openings, and Lean block type are 16-block objects",
+        "changing the block count rewrites public-key size, coverage, local state, and generated certificates",
+        "does not preserve the fixed active response/opening byte accounting in the current theorem"
+      ]
+    }
+  ],
+  "schema": "Descender.path2_wide_challenge_action_algebraic_probe.v1"
+}
