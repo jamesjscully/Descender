@@ -354,8 +354,9 @@ Named breaks:
   the JSON for the transparent private-field denylist. The Path 2 query-budget
   object now also marks the selected transparent payload symbols active:
   `q_transparent_trace_commit`, `q_transparent_query_index`,
-  `q_transparent_merkle_open`, `q_transparent_consistency`,
-  `q_transparent_extractor`, and `q_transparent_simulator`.
+  `q_transparent_query_row`, `q_transparent_merkle_open`,
+  `q_transparent_consistency`, `q_transparent_extractor`, and
+  `q_transparent_simulator`.
   `research/path2_transparent_extractor_soundness_bridge.md` now pins the
   bridge from the transparent payload verifier into
   `direct_replayable_relation_certificate_soundness_or_break`: an accepting

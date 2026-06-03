@@ -87,6 +87,7 @@ The final theorem should quantify over:
 | `q_life` | lifecycle anchor/root queries |
 | `q_transparent_trace_commit` | selected transparent payload trace commitment queries |
 | `q_transparent_query_index` | selected transparent payload query-index derivation queries |
+| `q_transparent_query_row` | selected transparent payload query-row derivation queries |
 | `q_transparent_merkle_open` | selected transparent payload Merkle/opening queries |
 | `q_transparent_consistency` | selected transparent payload consistency/FRI queries |
 | `q_transparent_extractor` | selected transparent payload extractor/forking queries |
@@ -129,7 +130,7 @@ For direct single-slot mode it marks these symbols active:
 
 ```text
 q_leaf, q_auth, q_evidence, q_stmt, q_pad, q_mask, q_chal, q_life
-q_transparent_trace_commit, q_transparent_query_index
+q_transparent_trace_commit, q_transparent_query_index, q_transparent_query_row
 q_transparent_merkle_open, q_transparent_consistency
 q_transparent_extractor, q_transparent_simulator
 q_trace_commitment_binding, q_trace_relation_knowledge
@@ -149,7 +150,7 @@ The executable direct advantage terms are:
 
 ```text
 Adv_native_boundary_zk_trace_binding_hiding(
-  q_transparent_trace_commit,q_transparent_query_index,
+  q_transparent_trace_commit,q_transparent_query_index,q_transparent_query_row,
   q_transparent_merkle_open,q_transparent_consistency,
   q_transparent_extractor,q_transparent_simulator,
   q_trace_commitment_binding,q_trace_relation_knowledge,
@@ -163,7 +164,7 @@ Adv_checked_core_message_binding(q_chal,q_auth)
 Adv_lifecycle_consume_once(q_life)
 Adv_live_slot_leakage(q_pad,q_mask,q_leaf)
 Adv_qrom_domain_separation(q_leaf,q_auth,q_evidence,q_chal,q_pad,q_mask,
-  q_transparent_trace_commit,q_transparent_query_index,
+  q_transparent_trace_commit,q_transparent_query_index,q_transparent_query_row,
   q_transparent_merkle_open,q_transparent_consistency,
   q_trace_commitment_binding,q_trace_relation_knowledge,
   q_trace_proximity_bridge,q_trace_extractor_rewind,
@@ -338,6 +339,7 @@ Adv_Path2_direct(q_*) <=
     Adv_native_boundary_zk_trace_binding_hiding(
         q_transparent_trace_commit,
         q_transparent_query_index,
+        q_transparent_query_row,
         q_transparent_merkle_open,
         q_transparent_consistency,
         q_transparent_extractor,
@@ -361,6 +363,7 @@ Adv_Path2_direct(q_*) <=
   + Adv_qrom_domain_separation(q_leaf, q_auth, q_evidence, q_chal, q_pad, q_mask,
                                q_transparent_trace_commit,
                                q_transparent_query_index,
+                               q_transparent_query_row,
                                q_transparent_merkle_open,
                                q_transparent_consistency,
                                q_trace_commitment_binding,

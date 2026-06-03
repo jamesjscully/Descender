@@ -2770,7 +2770,7 @@ pub struct Path2DirectQueryBudgetV1 {
     pub qrom_quadratic_loss_bits_at_deployment_bound: u16,
     pub transcript_term_bits_after_qrom_loss: u16,
     pub minimum_deployment_margin_bits: u16,
-    pub active_query_symbols: [&'static str; 14],
+    pub active_query_symbols: [&'static str; 15],
     pub inactive_query_symbols: [&'static str; 1],
     pub direct_advantage_terms: [&'static str; 7],
     pub optional_aggregation_terms: [&'static str; 3],
@@ -12131,6 +12131,7 @@ pub fn path2_direct_query_budget_v1() -> Path2DirectQueryBudgetV1 {
             "q_life",
             "q_transparent_trace_commit",
             "q_transparent_query_index",
+            "q_transparent_query_row",
             "q_transparent_merkle_open",
             "q_transparent_consistency",
             "q_transparent_extractor",
@@ -12144,7 +12145,7 @@ pub fn path2_direct_query_budget_v1() -> Path2DirectQueryBudgetV1 {
             "Adv_checked_core_message_binding(q_chal,q_auth)",
             "Adv_lifecycle_consume_once(q_life)",
             "Adv_live_slot_leakage(q_pad,q_mask,q_leaf)",
-            "Adv_qrom_domain_separation(q_leaf,q_auth,q_evidence,q_chal,q_pad,q_mask,q_transparent_trace_commit,q_transparent_query_index,q_transparent_merkle_open,q_transparent_consistency)",
+            "Adv_qrom_domain_separation(q_leaf,q_auth,q_evidence,q_chal,q_pad,q_mask,q_transparent_trace_commit,q_transparent_query_index,q_transparent_query_row,q_transparent_merkle_open,q_transparent_consistency)",
         ],
         optional_aggregation_terms: [
             "Adv_optional_aggregation_soundness(q_batch)",
@@ -29448,6 +29449,11 @@ mod tests {
         assert!(
             budget
                 .active_query_symbols
+                .contains(&"q_transparent_query_row")
+        );
+        assert!(
+            budget
+                .active_query_symbols
                 .contains(&"q_transparent_merkle_open")
         );
         assert!(
@@ -29481,6 +29487,7 @@ mod tests {
         let serialized = serde_json::to_string(&budget).unwrap();
         assert!(serialized.contains(PATH2_DIRECT_QUERY_BUDGET_SCHEMA));
         assert!(serialized.contains("q_transparent_trace_commit"));
+        assert!(serialized.contains("q_transparent_query_row"));
         assert!(serialized.contains("q_transparent_merkle_open"));
         assert!(serialized.contains("\"inactive_query_symbols\":[\"q_batch\"]"));
     }
