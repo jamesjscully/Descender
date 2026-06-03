@@ -1,6 +1,6 @@
 # Path 2 Native Boundary No-Export / Hiding Interface
 
-Status: theorem interface pinned; not proved.
+Status: theorem interface split pinned; not proved.
 
 Purpose: state the no-export condition for the native-boundary route. The
 account-creation proof may reveal the public boundary class `b`, but must not
@@ -123,30 +123,53 @@ These are separate:
 - role restriction: "the handles name the right columns";
 - no-export: "the proof does not leak the hidden values in those columns."
 
+The active Lean interface now splits the no-export surface further:
+
+```text
+NativeBoundaryTraceZeroKnowledge =
+  NoExportSoundness
+  + RoleAuthenticationMaterialNoExportSoundness
+  + MaskFreshnessSoundness
+```
+
+This prevents a concrete proof-family candidate from satisfying the active
+route merely by avoiding raw hidden openings. It must also state a simulator
+for role-authentication material and a mask-freshness theorem for every masked
+opening domain.
+
 ## Lean Anchors
 
 `Descender/Path2NativeBoundary.lean` now provides:
 
 - `Descender.Path2NativeBoundary.Predicates.noExportHolds`
 - `Descender.Path2NativeBoundary.NoExportSoundness`
+- `Descender.Path2NativeBoundary.RoleAuthenticationMaterialNoExportSoundness`
+- `Descender.Path2NativeBoundary.MaskFreshnessSoundness`
 - `Descender.Path2NativeBoundary.no_export_holds_or_break`
+- `Descender.Path2NativeBoundary.role_authentication_material_simulatable_or_break`
+- `Descender.Path2NativeBoundary.mask_freshness_holds_or_break`
 - `Descender.Path2NativeBoundary.transparent_view_authenticates_extracts_no_export_or_break`
 
 These are interface-level definitions only.
 
 ## Composition Status
 
-No-export is now composed with the existing native-boundary transparent theorem
-at the Lean interface level:
+No-export, role-authentication material simulation, and mask freshness are now
+composed with the existing native-boundary transparent theorem at the Lean
+interface level:
 
 ```text
 RoleRestrictionSoundness
 + TwoViewExtractionSoundness
 + NoExportSoundness
+RoleAuthenticationMaterialNoExportSoundness
+MaskFreshnessSoundness
   =>
 accepted transparent proof authenticates roles,
 extracts h in Fiber(B_c, b),
-and reveals no forbidden representative coordinates
+reveals no forbidden representative coordinates,
+uses simulator-safe role-authentication material,
+and uses fresh masked-opening domains
 ```
 
 After that, the next highest-risk row is norm/range semantics for the extracted

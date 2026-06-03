@@ -1501,6 +1501,8 @@ pub struct Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
     pub role_subcommitment_link_mode: u16,
     pub opening_tuple_account_binding_rows_required: bool,
     pub checked_core_residue_compatibility_rows_required: bool,
+    pub role_authentication_material_simulatable_required: bool,
+    pub mask_freshness_required: bool,
     pub full_trace_extraction_required: bool,
     pub role_complete_extractor_required: bool,
     pub creation_binding_role_subcommitments_required: bool,
@@ -1533,6 +1535,8 @@ pub struct Path2TransparentProofFamilyCapabilityV1 {
     pub qrom_schedule_bound: bool,
     pub norm_range_soundness: bool,
     pub blinding_noise_bound_soundness: bool,
+    pub role_authentication_material_simulatable: bool,
+    pub mask_freshness: bool,
     pub no_raw_hidden_openings: bool,
     pub no_public_linear_role_commitments: bool,
     pub fallback_threshold_bytes: u32,
@@ -10027,6 +10031,8 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1()
             PATH2_NATIVE_BOUNDARY_TRACE_ROLE_SUBCOMMITMENTS_CREATION_BINDING,
         opening_tuple_account_binding_rows_required: true,
         checked_core_residue_compatibility_rows_required: true,
+        role_authentication_material_simulatable_required: true,
+        mask_freshness_required: true,
         full_trace_extraction_required: true,
         role_complete_extractor_required: true,
         creation_binding_role_subcommitments_required: true,
@@ -10118,6 +10124,17 @@ pub fn verify_path2_native_boundary_trace_proof_family_interface(
         return Err(
             "Path 2 native-boundary trace proof-family interface lacks checked-core residue compatibility rows"
                 .to_string(),
+        );
+    }
+    if !interface.role_authentication_material_simulatable_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks role-authentication simulator"
+                .to_string(),
+        );
+    }
+    if !interface.mask_freshness_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks mask freshness".to_string(),
         );
     }
     if !interface.full_trace_extraction_required {
@@ -10234,6 +10251,16 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
     );
     append_u64(
         &mut frame,
+        b"role_authentication_material_simulatable_required",
+        u64::from(interface.role_authentication_material_simulatable_required),
+    );
+    append_u64(
+        &mut frame,
+        b"mask_freshness_required",
+        u64::from(interface.mask_freshness_required),
+    );
+    append_u64(
+        &mut frame,
         b"full_trace_extraction_required",
         u64::from(interface.full_trace_extraction_required),
     );
@@ -10296,6 +10323,8 @@ pub fn path2_transparent_proof_family_capability_v1()
         qrom_schedule_bound: true,
         norm_range_soundness: true,
         blinding_noise_bound_soundness: true,
+        role_authentication_material_simulatable: true,
+        mask_freshness: true,
         no_raw_hidden_openings: true,
         no_public_linear_role_commitments: true,
         fallback_threshold_bytes: PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES,
@@ -10386,6 +10415,11 @@ pub fn verify_path2_transparent_proof_family_capability(
             "blinding_noise_bound_soundness",
             capability.blinding_noise_bound_soundness,
         ),
+        (
+            "role_authentication_material_simulatable",
+            capability.role_authentication_material_simulatable,
+        ),
+        ("mask_freshness", capability.mask_freshness),
         ("no_raw_hidden_openings", capability.no_raw_hidden_openings),
         (
             "no_public_linear_role_commitments",
@@ -10483,6 +10517,11 @@ pub fn path2_transparent_proof_family_capability_v1_digest() -> Result<[u8; DIGE
             "blinding_noise_bound_soundness",
             capability.blinding_noise_bound_soundness,
         ),
+        (
+            "role_authentication_material_simulatable",
+            capability.role_authentication_material_simulatable,
+        ),
+        ("mask_freshness", capability.mask_freshness),
         ("no_raw_hidden_openings", capability.no_raw_hidden_openings),
         (
             "no_public_linear_role_commitments",
@@ -33517,6 +33556,8 @@ mod tests {
         );
         assert!(interface.opening_tuple_account_binding_rows_required);
         assert!(interface.checked_core_residue_compatibility_rows_required);
+        assert!(interface.role_authentication_material_simulatable_required);
+        assert!(interface.mask_freshness_required);
         assert!(interface.full_trace_extraction_required);
         assert!(interface.role_complete_extractor_required);
         assert!(interface.creation_binding_role_subcommitments_required);
@@ -33570,6 +33611,22 @@ mod tests {
             verify_path2_native_boundary_trace_proof_family_interface(&no_checked_core_rows)
                 .unwrap_err(),
             "Path 2 native-boundary trace proof-family interface lacks checked-core residue compatibility rows"
+        );
+
+        let mut no_role_auth_simulator = interface.clone();
+        no_role_auth_simulator.role_authentication_material_simulatable_required = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&no_role_auth_simulator)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks role-authentication simulator"
+        );
+
+        let mut no_mask_freshness = interface.clone();
+        no_mask_freshness.mask_freshness_required = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&no_mask_freshness)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks mask freshness"
         );
 
         let mut no_creation_binding_role_handles = interface.clone();
@@ -33669,6 +33726,8 @@ mod tests {
         assert!(capability.qrom_schedule_bound);
         assert!(capability.norm_range_soundness);
         assert!(capability.blinding_noise_bound_soundness);
+        assert!(capability.role_authentication_material_simulatable);
+        assert!(capability.mask_freshness);
         assert!(capability.no_raw_hidden_openings);
         assert!(capability.no_public_linear_role_commitments);
         assert_eq!(
@@ -33725,6 +33784,20 @@ mod tests {
         assert_eq!(
             verify_path2_transparent_proof_family_capability(&no_no_export).unwrap_err(),
             "Path 2 transparent proof-family capability missing masked_query_no_export"
+        );
+
+        let mut no_role_auth_simulator = capability.clone();
+        no_role_auth_simulator.role_authentication_material_simulatable = false;
+        assert_eq!(
+            verify_path2_transparent_proof_family_capability(&no_role_auth_simulator).unwrap_err(),
+            "Path 2 transparent proof-family capability missing role_authentication_material_simulatable"
+        );
+
+        let mut no_mask_freshness = capability.clone();
+        no_mask_freshness.mask_freshness = false;
+        assert_eq!(
+            verify_path2_transparent_proof_family_capability(&no_mask_freshness).unwrap_err(),
+            "Path 2 transparent proof-family capability missing mask_freshness"
         );
 
         let mut wrong_family = capability.clone();

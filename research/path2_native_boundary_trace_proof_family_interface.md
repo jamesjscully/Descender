@@ -62,12 +62,24 @@ does not satisfy this interface.
 
 ```text
 NoExportSoundness
+RoleAuthenticationMaterialNoExportSoundness
+MaskFreshnessSoundness
 ```
 
 Meaning verifier-visible material must be simulatable from public boundary
 projections and masked public values. Raw hidden role vectors, digit/range
 witnesses, masks, pad sources, blinding/noise coordinates, and account-binding
 witnesses must not be public openings.
+
+The split is intentional:
+
+- `NoExportSoundness` says the public transcript exports only allowed material.
+- `RoleAuthenticationMaterialNoExportSoundness` says public authentication
+  paths, simulator messages, and extractor-only handles are simulatable and do
+  not leak raw private role vectors.
+- `MaskFreshnessSoundness` says every masked opening uses a fresh
+  native-boundary/role/column/row/query/transcript domain or exports a named
+  leakage/domain break.
 
 ## QROM Schedule
 
@@ -112,6 +124,8 @@ base-128 hidden-role witnesses for SIS/range binding.
 - `NativeBoundaryTraceQromScheduleSoundness`
 - `NativeBoundaryZkTraceBindingAndHiding`
 - `native_boundary_trace_qrom_schedule_bound_or_break`
+- `RoleAuthenticationMaterialNoExportSoundness`
+- `MaskFreshnessSoundness`
 
 and `transparent_view_full_interface_or_break` now includes:
 
@@ -131,10 +145,12 @@ transparent proof-system id through
 ```text
 opening_tuple_account_binding_rows_required = true
 checked_core_residue_compatibility_rows_required = true
+role_authentication_material_simulatable_required = true
+mask_freshness_required = true
 ```
 
-Negative controls reject clearing either flag before the transparent verifier
-handoff.
+Negative controls reject clearing any of these flags before the transparent
+verifier handoff.
 
 ## Closure Criterion
 

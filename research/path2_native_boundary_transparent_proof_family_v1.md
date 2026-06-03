@@ -28,6 +28,8 @@ ParentTraceCommitmentExtractionSoundness
 ExtractedTraceRelationKnowledgeSoundness
 TraceAssemblySoundness
 NoExportSoundness
+RoleAuthenticationMaterialNoExportSoundness
+MaskFreshnessSoundness
 NativeBoundaryTraceQromScheduleSoundness
 NormRangeSoundness
 BlindingNoiseBoundSoundness
@@ -101,6 +103,8 @@ Current native-boundary overlay:
 - no hidden SHA preimage relation is introduced;
 - the proof theorem gives full trace extraction and relation knowledge;
 - no-export is simulator-backed and does not require raw hidden openings.
+- role-authentication material is simulator-backed and masked openings have
+  fresh native-boundary/query domains.
 
 Pivot if:
 

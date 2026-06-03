@@ -574,14 +574,15 @@ Named breaks:
   handoff: full-trace role-complete knowledge soundness, masked-or-simulated
   hidden openings, native-boundary QROM schedule binding, hybrid base-128 range
   mode, extractor-bounded blinding/noise, creation-binding role-subcommitment
-  linking, inner-commitment binding-break export, no raw hidden openings, QROM
-  ledger binding, mandatory opening-tuple account-binding rows, mandatory
-  checked-core residue-compatibility rows, and the 16416-byte fallback
-  threshold. KAT
+  linking, inner-commitment binding-break export, no raw hidden openings,
+  simulator-safe role-authentication material, mask freshness, QROM ledger
+  binding, mandatory opening-tuple account-binding rows, mandatory checked-core
+  residue-compatibility rows, and the 16416-byte fallback threshold. KAT
   `path2_native_boundary_trace_proof_family_interface_pins_active_theorem_gate`
   rejects sampled-opening-only knowledge, missing role-complete extraction,
   missing opening-tuple account-binding rows, missing checked-core
-  residue-compatibility rows,
+  residue-compatibility rows, missing role-authentication simulator support,
+  missing mask freshness,
   missing creation-binding role handles, missing inner-commitment binding-break
   export, raw hidden openings, missing QROM ledger binding, and
   fallback-threshold drift.
@@ -1101,6 +1102,11 @@ Named breaks:
    consistent with the verifier-visible masked/simulated opening view before
    relation validity can close. This blocks a proof-family story that proves
    simulator-safe public openings and relation knowledge for unrelated traces.
+   The zero-knowledge/no-export bundle is now split as well:
+   `NativeBoundaryTraceZeroKnowledge` requires `NoExportSoundness`,
+   `RoleAuthenticationMaterialNoExportSoundness`, and
+   `MaskFreshnessSoundness`; the Rust proof-family interface and capability
+   digests bind the corresponding simulator/freshness flags.
    Relation-row coverage is now also a Lean gate:
    `TraceRelationProfile` is carried by the column profile, and
    `SupportsRelationKnowledge` requires

@@ -818,6 +818,9 @@ structure Predicates where
   parentRootBindsPrivateRoles : Boundary -> ColumnProfile -> Prop
   roleRestrictionsAuthenticate : Boundary -> ColumnProfile -> Prop
   noExportHolds : Boundary -> TransparentPublicView -> ColumnProfile -> Prop
+  roleAuthenticationMaterialSimulatable :
+    Boundary -> TransparentPublicView -> ColumnProfile -> Prop
+  maskFreshnessHolds : Boundary -> TransparentPublicView -> ColumnProfile -> Prop
   qromScheduleBound : Boundary -> TransparentPublicView -> ColumnProfile -> Prop
   transparentAccepts : Boundary -> TransparentPublicView -> Prop
   transparentExtractsTrace :
@@ -1250,6 +1253,59 @@ theorem no_export_holds_or_break
     (hProjects : TransparentViewProjectsFrom b view)
     (hProfile : ColumnProfileCompatibleWithBoundary b view profile) :
     P.noExportHolds b view profile ∨
+    (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
+  hSound hAccept hProjects hProfile
+
+/--
+Role-authentication material no-export assumption: public authentication paths,
+simulator messages, and extractor-only role handles are simulatable from the
+public native boundary view and do not reveal raw private role vectors, or the
+proof exports a named break.
+-/
+def RoleAuthenticationMaterialNoExportSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          P.roleAuthenticationMaterialSimulatable b view profile ∨
+            (exists breakEvent, P.boundaryBreakFor b.context b breakEvent)
+
+theorem role_authentication_material_simulatable_or_break
+    (P : Predicates)
+    (hSound : RoleAuthenticationMaterialNoExportSoundness P)
+    {b : Boundary} {view : TransparentPublicView}
+    {profile : ColumnProfile}
+    (hAccept : P.transparentAccepts b view)
+    (hProjects : TransparentViewProjectsFrom b view)
+    (hProfile : ColumnProfileCompatibleWithBoundary b view profile) :
+    P.roleAuthenticationMaterialSimulatable b view profile ∨
+      (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
+  hSound hAccept hProjects hProfile
+
+/--
+Mask-freshness assumption: every verifier-visible masked opening is bound to a
+fresh native-boundary/role/column/row/query/transcript domain, or the proof
+exports a named leakage or domain-separation break.
+-/
+def MaskFreshnessSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          P.maskFreshnessHolds b view profile ∨
+            (exists breakEvent, P.boundaryBreakFor b.context b breakEvent)
+
+theorem mask_freshness_holds_or_break
+    (P : Predicates)
+    (hSound : MaskFreshnessSoundness P)
+    {b : Boundary} {view : TransparentPublicView}
+    {profile : ColumnProfile}
+    (hAccept : P.transparentAccepts b view)
+    (hProjects : TransparentViewProjectsFrom b view)
+    (hProfile : ColumnProfileCompatibleWithBoundary b view profile) :
+    P.maskFreshnessHolds b view profile ∨
       (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
   hSound hAccept hProjects hProfile
 
@@ -1398,7 +1454,9 @@ theorem trace_extraction_implies_hidden_representative_or_break
 
 /-- Minimum zero-knowledge/no-export bundle required from the active trace proof. -/
 def NativeBoundaryTraceZeroKnowledge (P : Predicates) : Prop :=
-  NoExportSoundness P
+  NoExportSoundness P ∧
+    RoleAuthenticationMaterialNoExportSoundness P ∧
+      MaskFreshnessSoundness P
 
 /-- The full named proof-family assumption, still abstract over the construction. -/
 def NativeBoundaryZkTraceBindingAndHiding (P : Predicates) : Prop :=
@@ -1421,6 +1479,8 @@ theorem transparent_view_authenticates_extracts_no_export_or_break
     (hExtractSound : TwoViewExtractionSoundness P)
     (hExtractorCompleteSound : HiddenExtractorRoleCompletenessSoundness P)
     (hNoExportSound : NoExportSoundness P)
+    (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
+    (hMaskFreshnessSound : MaskFreshnessSoundness P)
     {b : Boundary} {view : TransparentPublicView}
     {profile : ColumnProfile}
     (hAccept : P.transparentAccepts b view)
@@ -1429,13 +1489,15 @@ theorem transparent_view_authenticates_extracts_no_export_or_break
     (hRoleComplete : ProfileRoleComplete profile) :
     (P.roleRestrictionsAuthenticate b profile ∧
       P.noExportHolds b view profile ∧
-        P.parentRootBindsPrivateRoles b profile ∧
-        exists h,
-          P.transparentExtracts b view h ∧
-            P.extractedRolesComplete b profile h ∧
-            InFiber P b.context b h ∧
-              P.localValid b.context h ∧
-                P.descentConsistent b.context h) ∨
+        P.roleAuthenticationMaterialSimulatable b view profile ∧
+          P.maskFreshnessHolds b view profile ∧
+            P.parentRootBindsPrivateRoles b profile ∧
+            exists h,
+              P.transparentExtracts b view h ∧
+                P.extractedRolesComplete b profile h ∧
+                InFiber P b.context b h ∧
+                  P.localValid b.context h ∧
+                    P.descentConsistent b.context h) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) := by
   cases
       transparent_view_authenticates_roles_and_extracts_or_break
@@ -1444,15 +1506,24 @@ theorem transparent_view_authenticates_extracts_no_export_or_break
   | inl hRoleAndExtract =>
       cases hNoExportSound hAccept hProjects hProfile with
       | inl hNoExport =>
-          rcases hRoleAndExtract.2.2 with
-            ⟨h, hTransparent, hFiber, hLocal, hDescent⟩
-          cases
-              hExtractorCompleteSound hAccept hProjects hProfile
-                hRoleComplete hTransparent hFiber with
-          | inl hComplete =>
-              exact Or.inl
-                ⟨hRoleAndExtract.1, hNoExport, hRoleAndExtract.2.1,
-                  h, hTransparent, hComplete, hFiber, hLocal, hDescent⟩
+          cases hRoleAuthNoExportSound hAccept hProjects hProfile with
+          | inl hRoleAuthNoExport =>
+              cases hMaskFreshnessSound hAccept hProjects hProfile with
+              | inl hMaskFresh =>
+                  rcases hRoleAndExtract.2.2 with
+                    ⟨h, hTransparent, hFiber, hLocal, hDescent⟩
+                  cases
+                      hExtractorCompleteSound hAccept hProjects hProfile
+                        hRoleComplete hTransparent hFiber with
+                  | inl hComplete =>
+                      exact Or.inl
+                        ⟨hRoleAndExtract.1, hNoExport, hRoleAuthNoExport,
+                          hMaskFresh, hRoleAndExtract.2.1, h, hTransparent,
+                          hComplete, hFiber, hLocal, hDescent⟩
+                  | inr hBreak =>
+                      exact Or.inr hBreak
+              | inr hBreak =>
+                  exact Or.inr hBreak
           | inr hBreak =>
               exact Or.inr hBreak
       | inr hBreak =>
@@ -1473,6 +1544,8 @@ theorem transparent_view_full_interface_or_break
     (hExtractSound : TwoViewExtractionSoundness P)
     (hExtractorCompleteSound : HiddenExtractorRoleCompletenessSoundness P)
     (hNoExportSound : NoExportSoundness P)
+    (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
+    (hMaskFreshnessSound : MaskFreshnessSoundness P)
     (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
     (hNormRangeSound : NormRangeSoundness P)
     (hBlindSound : BlindingNoiseBoundSoundness P)
@@ -1485,24 +1558,29 @@ theorem transparent_view_full_interface_or_break
     (hMode : UsesSelectedNormRangeMode profile) :
     (P.roleRestrictionsAuthenticate b profile ∧
       P.noExportHolds b view profile ∧
-        P.qromScheduleBound b view profile ∧
-          P.parentRootBindsPrivateRoles b profile ∧
-          exists h,
-            P.transparentExtracts b view h ∧
-              P.extractedRolesComplete b profile h ∧
-              InFiber P b.context b h ∧
-                P.localValid b.context h ∧
-                  P.descentConsistent b.context h ∧
-                    P.normRangeValid b h ∧
-                      P.blindingNoiseBounded b policy h) ∨
+        P.roleAuthenticationMaterialSimulatable b view profile ∧
+          P.maskFreshnessHolds b view profile ∧
+            P.qromScheduleBound b view profile ∧
+              P.parentRootBindsPrivateRoles b profile ∧
+              exists h,
+                P.transparentExtracts b view h ∧
+                  P.extractedRolesComplete b profile h ∧
+                  InFiber P b.context b h ∧
+                    P.localValid b.context h ∧
+                      P.descentConsistent b.context h ∧
+                        P.normRangeValid b h ∧
+                          P.blindingNoiseBounded b policy h) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) := by
   cases
       transparent_view_authenticates_extracts_no_export_or_break
         P hParentSound hRoleSound hExtractSound
         hExtractorCompleteSound hNoExportSound
+        hRoleAuthNoExportSound hMaskFreshnessSound
         hAccept hProjects hProfile hRoleComplete with
   | inl hAll =>
-      rcases hAll with ⟨hRole, hNoExport, hParent, hExtract⟩
+      rcases hAll with
+        ⟨hRole, hNoExport, hRoleAuthNoExport, hMaskFresh, hParent,
+          hExtract⟩
       cases hQromSound hAccept hProjects hProfile with
       | inl hQrom =>
           rcases hExtract with
@@ -1514,8 +1592,9 @@ theorem transparent_view_full_interface_or_break
               cases hBlindSound hAccept hProjects hTransparent hFiber with
               | inl hBlind =>
                   exact Or.inl
-                    ⟨hRole, hNoExport, hQrom, hParent, h, hTransparent,
-                      hComplete, hFiber, hLocal, hDescent, hNorm, hBlind⟩
+                    ⟨hRole, hNoExport, hRoleAuthNoExport, hMaskFresh, hQrom,
+                      hParent, h, hTransparent, hComplete, hFiber, hLocal,
+                      hDescent, hNorm, hBlind⟩
               | inr hBreak =>
                   exact Or.inr hBreak
           | inr hBreak =>
