@@ -49,6 +49,10 @@ The current preferred closure theorem is
 which composes the selected active profile, parent-trace commitment extraction,
 double-trace binding, masked-opening consistency, relation-knowledge,
 decomposed assembly, and decomposed range/blinding row soundness.
+The concrete theorem surface for instantiating this wrapper is recorded in
+`research/path2_transparent_iop_knowledge_theorem_probe.md`, including the
+required bridge from `accountCreateAccepts` to the accepted transparent view,
+selected profile, range policy, and blinding policy.
 
 ## Required Profile Modes
 
@@ -137,7 +141,11 @@ If this path fails by theorem quality, prefer:
 
 If this path only fails by bytes at the high-security row, compare directly
 against MPC-in-the-head and lattice/SIS ZK using the same account-creation
-state model.
+state model. The first MITH fallback probe is recorded in
+`research/path2_mith_full_witness_probe.md`; its default 64-round active
+row/lane extrapolation is byte-heavy, so MITH is currently a theorem-quality
+fallback unless a concrete wide-challenge construction reduces repetitions
+with quantified QROM loss.
 
 ## Non-Claims
 

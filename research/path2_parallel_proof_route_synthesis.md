@@ -41,7 +41,7 @@ with:
 | route | classification | main win | main risk | current verdict |
 |---|---|---|---|---|
 | transparent masked trace IOP / STARK-like IOP of knowledge | proof-family instantiation of current endpoint | preserves transparent/hash direction and current Lean/Rust interface | must provide a real committed-oracle argument of knowledge with ZK masked openings | active baseline, theorem-heavy |
-| MPC-in-the-head / full-witness hash ZK | parallel proof-family endpoint or selected-profile mode | full-witness extraction and ZK are native theorem features | proof bytes, verifier work, and aggregation may be worse | best theorem-quality fallback |
+| MPC-in-the-head / full-witness hash ZK | parallel proof-family endpoint or selected-profile mode | full-witness extraction and ZK are native theorem features | likely byte/verifier inflation unless wide challenges sharply reduce repetitions | theorem-quality fallback, not byte baseline |
 | descent/SIS commitment membership | replacement theorem or protocol redesign, depending on public object | aligns with q12289/descent math and PQ commitment thesis | public `C=A*v` leaks; private ZK/range proof may be large | research path, not a drop-in trace instantiation |
 | native image-membership redesign | protocol redesign probe | may remove full trace extraction as the account-admission proof | requires redesigning `B_c`/boundary semantics and proving image/lift theorem | high-upside redesign, not immediate proof-family work |
 
@@ -139,15 +139,18 @@ Needed Lean/Rust shape:
 
 Go if:
 
-- a 176-row / 194-lane MITH proof is plausibly below or near `16416` bytes;
+- a 176-row / 194-lane MITH proof is plausibly below or near `16416` bytes
+  after concrete challenge-width and QROM accounting;
 - opened MPC views are simulatable and do not leak raw hidden columns;
 - extractor maps cleanly into the active `ExtractedTrace`;
 - QROM rewind/forking loss is quantified.
 
 No-go if:
 
+- the 64-round row/lane extrapolation is representative; the working active
+  floor is about `36256` bytes and `23680` verifier q-ops;
 - proof bytes or verifier work are substantially worse than transparent stress
-  rows without better deployability;
+  rows without decisive theorem-quality or implementation advantages;
 - role restriction becomes SHA-heavy inside the witness circuit;
 - aggregation/verifier cost is unacceptable for account creation.
 
@@ -256,10 +259,14 @@ Run two concrete next probes in parallel:
    Write a one-page concrete theorem for a masked trace IOP of knowledge:
    commitment object, extractor, extracted trace, relation theorem,
    masked-opening consistency, simulator theorem, and QROM loss.
+   This is now recorded in
+   `research/path2_transparent_iop_knowledge_theorem_probe.md`.
 
 2. **MITH byte/theorem probe.**
    Estimate an MPC-in-the-head proof for the same `176`-row / `194`-lane
    relation and state its full-witness extraction theorem.
+   This is now recorded in
+   `research/path2_mith_full_witness_probe.md`.
 
 Keep descent/SIS as a separate private-ZK transcript experiment, not as a
 public SIS commitment route. Keep native image membership as a spec-level
@@ -272,7 +279,8 @@ The best deployable path is still unresolved, but the structure is clearer:
 
 - The transparent route is not impossible; it needs a real IOP-of-knowledge
   theorem, not sampled/proximity soundness.
-- MITH is the cleanest theorem fallback and should be compared on bytes.
+- MITH is the cleanest theorem fallback, but current byte extrapolation is
+  pessimistic unless wide-challenge repetitions can be cut safely.
 - SIS/descent is attractive only if commitments are private/ZK and avoid the
   full-rank leakage dead path.
 - Native image membership could dominate, but only as a genuine boundary-map

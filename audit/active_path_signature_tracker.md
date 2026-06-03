@@ -363,6 +363,13 @@ Parallel route synthesis is now recorded in
 the active theorem-heavy baseline, MPC-in-the-head is the cleanest theorem
 fallback with byte/verifier risk, descent/SIS is only viable as a private-ZK
 replacement probe, and native image membership is a protocol-redesign probe.
+The next two proof-family probes are now concrete:
+`research/path2_transparent_iop_knowledge_theorem_probe.md` states the exact
+transparent IOP-of-knowledge theorem surface, while
+`research/path2_mith_full_witness_probe.md` gives the parallel MITH
+full-witness theorem, optimistic wide-challenge byte floor, and conservative
+64-round extrapolation. The current MITH read is theorem-clean but likely
+byte-heavy unless challenge-width/QROM accounting cuts repetitions.
 
 ## Findings
 

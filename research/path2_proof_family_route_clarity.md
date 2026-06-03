@@ -10,6 +10,12 @@ Parallel route synthesis:
 `research/path2_parallel_proof_route_synthesis.md` compares the transparent
 IOP, MPC-in-the-head, descent/SIS, and native image-membership probes against
 the same active theorem target.
+Concrete next probes:
+`research/path2_transparent_iop_knowledge_theorem_probe.md` states the
+transparent IOP-of-knowledge theorem surface, and
+`research/path2_mith_full_witness_probe.md` states the MITH full-witness
+fallback theorem, optimistic wide-challenge byte floor, and conservative
+64-round extrapolation.
 
 ## Core Answer
 
@@ -124,7 +130,7 @@ handles.
 |---|---|---:|---|
 | `zk_masked_trace_iop_native_boundary` | good if we can state/cite an IOP-of-knowledge theorem with ZK openings | medium | active baseline, but theorem-heavy |
 | `transparent_stark_iop_with_witness_extraction` | plausible if using a known STARK/AIR knowledge theorem plus a real ZK masking layer | medium/high | best transparent fallback/comparator |
-| `mpc_in_the_head_hash_zk` | cleanest full-witness extraction and ZK story | high/unknown | best theorem-quality fallback |
+| `mpc_in_the_head_hash_zk` | cleanest full-witness extraction and ZK story | high; conservative active extrapolation is about 36.3 KB | theorem-quality fallback unless wide challenges make bytes competitive |
 | `descent_sis_commitment_membership` | promising if hiding kernel and norm/range proof stay compact | high | thesis-aligned research path |
 | `native_image_membership` | potentially dominant if `B_c` can be redesigned for compact image membership | unknown | high-upside redesign probe |
 | `vanilla_merkle_fri_trace` | insufficient | low but irrelevant | negative control only |
@@ -143,8 +149,8 @@ one of two theorem-quality tracks:
 2. **Full-witness ZK fallback track.**
    Model the same `NativeBoundaryTraceRelationV1` as an MPC-in-the-head or
    related hash-ZK statement. This likely has a cleaner extraction/no-export
-   theorem. If its byte estimate is tolerable, it may be the safer deployable
-   route even if less elegant.
+   theorem. The current 64-round extrapolation is not byte-competitive unless
+   wide challenge action cuts repetitions with quantified QROM loss.
 
 The native image-membership redesign remains worth probing, but it is not a
 small proof-family substitution. It may require changing the Rust account
