@@ -12,7 +12,7 @@ the path is abandoned.
 | rank | id | status | requirement | accept | reject |
 |---:|---|---|---|---|---|
 | 1 | `parent_root_binding` | `interface_pinned` | One parent section/trace root binds all role restrictions and public masked-view columns for the native boundary. | Extractor theorem outputs one parent trace under `p_section_root(b)` or exports `transparentProofSoundnessBreak`. | Proof only extracts sampled openings or an after-the-fact satisfying tuple. |
-| 2 | `private_typed_role_restrictions` | `object_pinned` | Role handles are typed private restrictions under `p_section_root(b)` and `p_role_profile(b)`, not public full-rank linear commitments. | Role handles authenticate pad/projection/opening/packed-witness columns with `inner_commitment_binding_break` for double openings. | Candidate publishes standalone `C_role = A_role*v_role mod q` for private roles under current dimensions. |
+| 2 | `private_typed_role_restrictions` | `theorem_and_profile_gate_pinned` | Role handles are typed private restrictions under `p_section_root(b)` and `p_role_profile(b)`, not public raw hidden leaves or public full-rank linear commitments. | Role handles authenticate pad/projection/opening/packed-witness columns with `inner_commitment_binding_break` for double openings, and private roles use only masked, simulator-only, or extractor-only authentication modes. | Candidate publishes standalone `C_role = A_role*v_role mod q` for private roles under current dimensions, or authenticates private roles through raw hidden leaves. |
 | 3 | `hidden_extractor_view` | `obligation_pinned` | The extractor recovers unmasked role digits, semantic residues, masks, blinding/noise, range witnesses, and account-binding witnesses. | Extractor returns `h in Fiber(B_c, b)` satisfying `ExtractedRolesComplete`, `LocalValid_c`, and `DescentConsistent_c`. | Extractor recovers only public masked values or cannot bind extracted values to `b`. |
 | 4 | `masked_or_simulated_openings` | `theorem_gate_pinned` | Public query openings for hidden classes are masked, secret-shared, or simulated and are consistent with the extracted hidden trace. | `NoExportHolds(b, view, profile)` plus `MaskedOpeningConsistencySoundness`, with no raw hidden digit/range/blinding/mask exposure. | Any raw hidden pad/projection/opening/range/blinding cell is verifier-visible, or the public masked view is not tied to the extracted trace. |
 | 5 | `hybrid_base128_range` | `blocking` | Hidden role values use base-128 digit witnesses; public masked projection remains raw canonical q12289. | `UsesSelectedNormRangeMode(profile)` and `NormRangeValid(b,h)` under `hybridBase128HiddenRoles`. | Candidate relies on raw q12289 hidden-role deltas for SIS binding. |
@@ -54,7 +54,11 @@ The parent-root binding interface is pinned in
 restriction object is pinned in
 `research/path2_native_boundary_private_role_restriction_v1.md`. The allowed
 role authentication modes are mapped in
-`research/path2_native_boundary_role_authentication_mode_map.md`. The QROM
+`research/path2_native_boundary_role_authentication_mode_map.md`; Lean now
+requires `ColumnProfilePrivateAuthModesSafe` through
+`ColumnProfileCompatibleWithBoundary`, and the Rust active column-profile digest
+binds `Path2TwoViewColumnProfileEntryV1.authentication_mode` with negative
+controls for raw hidden-leaf and public-linear downgrades. The QROM
 schedule is pinned in
 `research/path2_native_boundary_zk_trace_qrom_schedule.md`, and the symbolic
 native-boundary query rows are now recorded in

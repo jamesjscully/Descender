@@ -1,6 +1,6 @@
 # Path 2 Native Boundary PrivateRoleRestrictionV1
 
-Status: theorem object pinned; not implemented.
+Status: theorem object pinned; active profile auth-mode gate implemented.
 
 Purpose: define the concrete object needed after parent-root binding: a private
 role restriction authenticated under `p_section_root(b)` without exposing raw
@@ -48,6 +48,20 @@ The role vector itself is not a field. It is extractor-private.
 | `public_path_to_raw_leaf` | authentication path to raw hidden leaf | no | dead path for private roles |
 | `public_linear_commitment` | standalone `C=A*v` public role commitment | no for current dimensions | rejected by rank/hiding probe |
 
+The Lean active-boundary interface now mirrors this rule through
+`RoleAuthenticationMode`, `ColumnProfileEntry.authenticationMode`, and
+`ColumnProfilePrivateAuthModesSafe`.  `ColumnProfileCompatibleWithBoundary`
+requires that every private/hidden/simulator-only entry uses only
+`publicPathToMaskedLeaf`, `simulatorOnlyPath`, or `extractorOnlyOpening`; raw
+hidden leaves and public linear commitments cannot discharge the active
+theorem gate.
+
+The Rust active two-view column profile also carries `authentication_mode` in
+`Path2TwoViewColumnProfileEntryV1`, includes it in
+`path2_two_view_column_profile_v1_digest`, and rejects
+`public_path_to_raw_leaf`, `public_linear_commitment`, and unknown modes in the
+profile verifier.
+
 ## Required Role Instances
 
 | role | visibility | authentication mode |
@@ -92,9 +106,9 @@ commitment, the candidate fails.
 
 ## Next Proof Move
 
-Map each `Path2NativeBoundaryColumnProfileV1` role to a
-`PrivateRoleRestrictionV1` authentication mode, then decide which modes the
-active proof family must support.
+Instantiate the concrete transparent proof-family verifier so these allowed
+authentication modes correspond to actual parent-root role subcommitment,
+simulator, and extractor behavior, not just profile metadata.
 
 ## Non-Claims
 

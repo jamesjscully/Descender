@@ -230,6 +230,35 @@ parameter or route redesign.
 | AP2-N005 | Medium | Bind `Path2NoExportConcrete` tagged output frames to every concrete Rust accept/reject/storage serializer. | `AP2-007` |
 | AP2-N006 | Medium | Close signer/keygen/completeness productization: honest constructor complete, signer/verifier pipeline present, CT/storage blockers retired, and honest flow verifies under the selected byte verifier in production mode. | `AP2-005`, `AP2-006` |
 
+## 2026-06-03 Active Path Native-Boundary Update
+
+The active target for the current account-creation payload work is the Path 2
+`zk_masked_trace_iop_native_boundary` route, not the older public-linear/SIS
+commitment shape. A downgrade remained possible at the theorem surface: a
+column profile could be compatible with the boundary while a private role was
+authenticated by a public raw hidden leaf or a public linear commitment. Those
+modes are dead for the active private-role route because they either export
+hidden material or rely on the full-rank public-linear surface already rejected
+by the rank/hiding probe.
+
+This pass adds the active gate in Lean and Rust:
+
+- `Descender/Path2NativeBoundary.lean` now has `RoleAuthenticationMode`,
+  `ColumnProfileEntry.authenticationMode`,
+  `ColumnProfilePrivateAuthModesSafe`, and a strengthened
+  `ColumnProfileCompatibleWithBoundary`.
+- `tools/parameter-search/src/production_reference.rs` now binds
+  `Path2TwoViewColumnProfileEntryV1.authentication_mode` into
+  `path2_two_view_column_profile_v1_digest`.
+- The active two-view profile verifier rejects `public_path_to_raw_leaf`,
+  `public_linear_commitment`, and unknown authentication modes before the
+  transparent fail-closed proof handoff.
+
+This does not instantiate the proof-family verifier. The remaining blocker is
+to prove that the allowed modes actually correspond to parent-root role
+subcommitment authentication, simulator-only consistency, and extractor-only
+hidden role recovery in the concrete transparent proof system.
+
 ## Findings
 
 | ID | Severity | Status | Finding | Primary references |

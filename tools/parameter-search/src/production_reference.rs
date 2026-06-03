@@ -414,6 +414,11 @@ pub const PATH2_TWO_VIEW_EXTRACTION_FULL_TRACE_EXTRACTABLE: u8 = 1;
 pub const PATH2_TWO_VIEW_RELATION_FULL_WITNESS_RELATION_KNOWLEDGE: u8 = 1;
 pub const PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS: u16 = 1;
 pub const PATH2_TWO_VIEW_REJECTION_POLICY_UNKNOWN_PROFILE_REJECT: u16 = 1;
+pub const PATH2_TWO_VIEW_AUTH_PUBLIC_PATH_TO_MASKED_LEAF: u8 = 1;
+pub const PATH2_TWO_VIEW_AUTH_SIMULATOR_ONLY_PATH: u8 = 2;
+pub const PATH2_TWO_VIEW_AUTH_EXTRACTOR_ONLY_OPENING: u8 = 3;
+pub const PATH2_TWO_VIEW_AUTH_PUBLIC_PATH_TO_RAW_LEAF: u8 = 4;
+pub const PATH2_TWO_VIEW_AUTH_PUBLIC_LINEAR_COMMITMENT: u8 = 5;
 pub const PATH2_TOY_Q_COMMITMENT_PREFIX: &[u8; 4] = b"P2Q1";
 pub const PATH2_TOY_Q_COMMITMENT_ROLE_PAD_SOURCE: u8 = 1;
 pub const PATH2_TOY_Q_COMMITMENT_ROLE_PROJECTION_RELATION: u8 = 2;
@@ -1364,6 +1369,7 @@ pub struct Path2TwoViewColumnProfileEntryV1 {
     pub hidden_column_set_id: u16,
     pub masked_column_set_id: u16,
     pub visibility_class: u8,
+    pub authentication_mode: u8,
     pub mask_domain_id: u16,
     pub range_policy_id: u16,
     pub query_policy_id: u16,
@@ -10706,6 +10712,7 @@ pub fn path2_two_view_column_profile_v1() -> Path2TwoViewColumnProfileV1 {
                 hidden_column_set_id: 101,
                 masked_column_set_id: 201,
                 visibility_class: PATH2_TWO_VIEW_VISIBILITY_PUBLIC,
+                authentication_mode: PATH2_TWO_VIEW_AUTH_PUBLIC_PATH_TO_MASKED_LEAF,
                 mask_domain_id: 0,
                 range_policy_id: 0,
                 query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
@@ -10715,6 +10722,7 @@ pub fn path2_two_view_column_profile_v1() -> Path2TwoViewColumnProfileV1 {
                 hidden_column_set_id: 102,
                 masked_column_set_id: 202,
                 visibility_class: PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN,
+                authentication_mode: PATH2_TWO_VIEW_AUTH_EXTRACTOR_ONLY_OPENING,
                 mask_domain_id: 1,
                 range_policy_id: 1,
                 query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
@@ -10724,6 +10732,7 @@ pub fn path2_two_view_column_profile_v1() -> Path2TwoViewColumnProfileV1 {
                 hidden_column_set_id: 103,
                 masked_column_set_id: 203,
                 visibility_class: PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE,
+                authentication_mode: PATH2_TWO_VIEW_AUTH_SIMULATOR_ONLY_PATH,
                 mask_domain_id: 2,
                 range_policy_id: 0,
                 query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
@@ -10733,6 +10742,7 @@ pub fn path2_two_view_column_profile_v1() -> Path2TwoViewColumnProfileV1 {
                 hidden_column_set_id: 104,
                 masked_column_set_id: 204,
                 visibility_class: PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN,
+                authentication_mode: PATH2_TWO_VIEW_AUTH_EXTRACTOR_ONLY_OPENING,
                 mask_domain_id: 3,
                 range_policy_id: 1,
                 query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
@@ -10742,6 +10752,7 @@ pub fn path2_two_view_column_profile_v1() -> Path2TwoViewColumnProfileV1 {
                 hidden_column_set_id: 105,
                 masked_column_set_id: 205,
                 visibility_class: PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN,
+                authentication_mode: PATH2_TWO_VIEW_AUTH_EXTRACTOR_ONLY_OPENING,
                 mask_domain_id: 4,
                 range_policy_id: 1,
                 query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
@@ -10751,6 +10762,7 @@ pub fn path2_two_view_column_profile_v1() -> Path2TwoViewColumnProfileV1 {
                 hidden_column_set_id: 106,
                 masked_column_set_id: 206,
                 visibility_class: PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN,
+                authentication_mode: PATH2_TWO_VIEW_AUTH_EXTRACTOR_ONLY_OPENING,
                 mask_domain_id: 5,
                 range_policy_id: 1,
                 query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
@@ -10760,6 +10772,7 @@ pub fn path2_two_view_column_profile_v1() -> Path2TwoViewColumnProfileV1 {
                 hidden_column_set_id: 107,
                 masked_column_set_id: 207,
                 visibility_class: PATH2_TWO_VIEW_VISIBILITY_RANGE_PRIVATE,
+                authentication_mode: PATH2_TWO_VIEW_AUTH_EXTRACTOR_ONLY_OPENING,
                 mask_domain_id: 6,
                 range_policy_id: 2,
                 query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
@@ -10769,6 +10782,7 @@ pub fn path2_two_view_column_profile_v1() -> Path2TwoViewColumnProfileV1 {
                 hidden_column_set_id: 108,
                 masked_column_set_id: 208,
                 visibility_class: PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE,
+                authentication_mode: PATH2_TWO_VIEW_AUTH_SIMULATOR_ONLY_PATH,
                 mask_domain_id: 7,
                 range_policy_id: 0,
                 query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
@@ -10778,6 +10792,7 @@ pub fn path2_two_view_column_profile_v1() -> Path2TwoViewColumnProfileV1 {
                 hidden_column_set_id: 109,
                 masked_column_set_id: 209,
                 visibility_class: PATH2_TWO_VIEW_VISIBILITY_COMMITTED_HIDDEN,
+                authentication_mode: PATH2_TWO_VIEW_AUTH_SIMULATOR_ONLY_PATH,
                 mask_domain_id: 8,
                 range_policy_id: 0,
                 query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
@@ -10838,6 +10853,22 @@ pub fn verify_path2_two_view_column_profile(
             | PATH2_TWO_VIEW_VISIBILITY_SIMULATOR_ONLY => {}
             _ => {
                 return Err("Path 2 two-view column profile unknown visibility class".to_string());
+            }
+        }
+        match entry.authentication_mode {
+            PATH2_TWO_VIEW_AUTH_PUBLIC_PATH_TO_MASKED_LEAF
+            | PATH2_TWO_VIEW_AUTH_SIMULATOR_ONLY_PATH
+            | PATH2_TWO_VIEW_AUTH_EXTRACTOR_ONLY_OPENING => {}
+            PATH2_TWO_VIEW_AUTH_PUBLIC_PATH_TO_RAW_LEAF
+            | PATH2_TWO_VIEW_AUTH_PUBLIC_LINEAR_COMMITMENT => {
+                return Err(
+                    "Path 2 two-view column profile forbidden authentication mode".to_string(),
+                );
+            }
+            _ => {
+                return Err(
+                    "Path 2 two-view column profile unknown authentication mode".to_string()
+                );
             }
         }
         if matches!(
@@ -10930,6 +10961,11 @@ pub fn path2_two_view_column_profile_v1_digest() -> Result<[u8; DIGEST_BYTES], S
             &mut frame,
             b"visibility_class",
             entry.visibility_class as u64,
+        );
+        append_u64(
+            &mut frame,
+            b"authentication_mode",
+            entry.authentication_mode as u64,
         );
         append_u64(&mut frame, b"mask_domain_id", entry.mask_domain_id as u64);
         append_u64(&mut frame, b"range_policy_id", entry.range_policy_id as u64);
@@ -33081,6 +33117,12 @@ mod tests {
                 entry.query_policy_id,
                 PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS
             );
+            assert!(matches!(
+                entry.authentication_mode,
+                PATH2_TWO_VIEW_AUTH_PUBLIC_PATH_TO_MASKED_LEAF
+                    | PATH2_TWO_VIEW_AUTH_SIMULATOR_ONLY_PATH
+                    | PATH2_TWO_VIEW_AUTH_EXTRACTOR_ONLY_OPENING
+            ));
             if entry.mask_domain_id != 0 {
                 assert!(mask_domains.insert(entry.mask_domain_id));
             }
@@ -33139,6 +33181,29 @@ mod tests {
         assert_eq!(
             verify_path2_two_view_column_profile(&unknown_visibility).unwrap_err(),
             "Path 2 two-view column profile unknown visibility class"
+        );
+
+        let mut raw_hidden_leaf = profile;
+        raw_hidden_leaf.entries[4].authentication_mode =
+            PATH2_TWO_VIEW_AUTH_PUBLIC_PATH_TO_RAW_LEAF;
+        assert_eq!(
+            verify_path2_two_view_column_profile(&raw_hidden_leaf).unwrap_err(),
+            "Path 2 two-view column profile forbidden authentication mode"
+        );
+
+        let mut public_linear_role = profile;
+        public_linear_role.entries[5].authentication_mode =
+            PATH2_TWO_VIEW_AUTH_PUBLIC_LINEAR_COMMITMENT;
+        assert_eq!(
+            verify_path2_two_view_column_profile(&public_linear_role).unwrap_err(),
+            "Path 2 two-view column profile forbidden authentication mode"
+        );
+
+        let mut unknown_authentication_mode = profile;
+        unknown_authentication_mode.entries[6].authentication_mode = 0xff;
+        assert_eq!(
+            verify_path2_two_view_column_profile(&unknown_authentication_mode).unwrap_err(),
+            "Path 2 two-view column profile unknown authentication mode"
         );
     }
 

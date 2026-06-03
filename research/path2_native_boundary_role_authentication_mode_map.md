@@ -1,6 +1,6 @@
 # Path 2 Native Boundary Role Authentication Mode Map
 
-Status: role authentication mode map pinned.
+Status: role authentication mode map pinned; Lean/Rust profile gate implemented.
 
 Purpose: map each native-boundary column-profile role to the allowed
 `PrivateRoleRestrictionV1` authentication modes.
@@ -40,6 +40,15 @@ The active proof family must support at least three authentication modes:
 Any concrete proof family that only supports public raw leaf openings fails the
 native-boundary no-export theorem.
 
+This is now an active gate, not only a design note.  In
+`Descender/Path2NativeBoundary.lean`, `ColumnProfileEntry` includes
+`authenticationMode` and `ColumnProfileCompatibleWithBoundary` requires
+`ColumnProfilePrivateAuthModesSafe`.  In the Rust reference profile,
+`Path2TwoViewColumnProfileEntryV1.authentication_mode` is serialized into the
+column-profile digest, and the verifier rejects `public_path_to_raw_leaf`,
+`public_linear_commitment`, and unknown modes before the transparent proof
+handoff.
+
 ## Break Mapping
 
 | failure | break |
@@ -52,7 +61,8 @@ native-boundary no-export theorem.
 
 ## Next Move
 
-Define the concrete transcript order for these modes:
+Instantiate the concrete proof-family transcript and verifier semantics for
+these modes:
 
 ```text
 native_boundary_digest

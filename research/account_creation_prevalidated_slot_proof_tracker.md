@@ -447,9 +447,14 @@ Named breaks:
   requires the nine active roles, separate hidden/masked column sets, unique
   mask domains for hidden/range/blinding roles, the selected hybrid base-128
   norm/range mode, full-trace extraction, full-witness relation knowledge, and
-  unknown-profile rejection. KAT
+  unknown-profile rejection. The profile entries now also carry
+  `authentication_mode`, which is bound into the column-profile digest and
+  reject-gates raw hidden-leaf authentication and public-linear private-role
+  commitments before the transparent verifier handoff; the Lean compatibility
+  predicate now mirrors this with `ColumnProfilePrivateAuthModesSafe`. KAT
   `path2_two_view_column_profile_is_active_masked_base128_policy` checks those
-  rules and negative controls; KAT
+  rules plus raw-hidden-leaf, public-linear, and unknown-authentication-mode
+  negative controls; KAT
   `path2_transparent_descent_transcript_binds_public_context` now also rejects
   unknown column-profile ids before transcript hashing. The query-opening
   no-export surface now has a first executable manifest policy:

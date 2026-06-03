@@ -446,6 +446,15 @@ inductive VisibilityClass where
   | vcSimulatorOnly
   deriving DecidableEq
 
+/-- Authentication mode used for a role under the parent trace root. -/
+inductive RoleAuthenticationMode where
+  | publicPathToMaskedLeaf
+  | simulatorOnlyPath
+  | extractorOnlyOpening
+  | publicPathToRawLeaf
+  | publicLinearCommitment
+  deriving DecidableEq
+
 /-- Norm/range representation mode selected by a column profile. -/
 inductive NormRangeMode where
   | rawCenteredResidues
@@ -515,6 +524,7 @@ structure ColumnProfileEntry where
   roleId : RoleId
   columnSetId : Nat
   visibilityClass : VisibilityClass
+  authenticationMode : RoleAuthenticationMode
   maskDomainLabel : Nat
   rangePolicyId : Nat
   restrictionRuleId : Nat
@@ -609,22 +619,61 @@ theorem transcriptDigest_binds_boundary
                 d.stateDigest :=
   h.transcriptDigestEq
 
+/-- Profile entries whose raw values must not be public authentication leaves. -/
+def VisibilityRequiresPrivateAuthentication
+    (visibilityClass : VisibilityClass) : Prop :=
+  visibilityClass = VisibilityClass.vcCommittedHidden ∨
+    visibilityClass = VisibilityClass.vcExtractorHidden ∨
+      visibilityClass = VisibilityClass.vcRangePrivate ∨
+        visibilityClass = VisibilityClass.vcBlindingPrivate ∨
+          visibilityClass = VisibilityClass.vcSimulatorOnly
+
+/-- Allowed role-authentication modes for private native-boundary columns. -/
+def RoleAuthenticationModeAllowedForPrivate
+    (authenticationMode : RoleAuthenticationMode) : Prop :=
+  authenticationMode = RoleAuthenticationMode.publicPathToMaskedLeaf ∨
+    authenticationMode = RoleAuthenticationMode.simulatorOnlyPath ∨
+      authenticationMode = RoleAuthenticationMode.extractorOnlyOpening
+
+/--
+Private entries in the active column profile must be authenticated through
+masked, simulator-only, or extractor-only role restrictions.  This rejects the
+two dead downgrades found by the rank/hiding audit: public raw hidden leaves and
+public linear role commitments for private roles.
+-/
+def ColumnProfilePrivateAuthModesSafe
+    (profile : ColumnProfile) : Prop :=
+  forall index,
+    VisibilityRequiresPrivateAuthentication
+        (profile.entry index).visibilityClass ->
+      RoleAuthenticationModeAllowedForPrivate
+        (profile.entry index).authenticationMode
+
 /--
 The transparent view's compact column-profile id is compatible with the native
-boundary profile. Concrete role-table well-formedness is a separate predicate.
+boundary profile, and private entries in that profile use only active-safe role
+authentication modes.
 -/
 def ColumnProfileCompatibleWithBoundary
     (b : Boundary) (view : TransparentPublicView)
     (profile : ColumnProfile) : Prop :=
   view.columnProfile = profile.profileId ∧
-    profile.profileId = b.roleProfileDigest
+    profile.profileId = b.roleProfileDigest ∧
+      ColumnProfilePrivateAuthModesSafe profile
 
 theorem columnProfileCompatible_profile_eq
     {b : Boundary} {view : TransparentPublicView}
     {profile : ColumnProfile}
     (h : ColumnProfileCompatibleWithBoundary b view profile) :
     view.columnProfile = b.roleProfileDigest := by
-  exact Eq.trans h.1 h.2
+  exact Eq.trans h.1 h.2.1
+
+theorem columnProfileCompatible_private_auth_modes_safe
+    {b : Boundary} {view : TransparentPublicView}
+    {profile : ColumnProfile}
+    (h : ColumnProfileCompatibleWithBoundary b view profile) :
+    ColumnProfilePrivateAuthModesSafe profile :=
+  h.2.2
 
 /-- The selected native-boundary norm/range mode. -/
 def selectedNormRangeMode : NormRangeMode :=
