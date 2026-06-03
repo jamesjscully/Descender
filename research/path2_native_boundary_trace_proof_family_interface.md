@@ -164,7 +164,8 @@ transparent_view_full_interface_from_atomic_gates_or_break
 
 It derives the same endpoint from parent-trace commitment extraction,
 masked-opening consistency, extracted-trace relation knowledge, decomposed trace
-assembly, hybrid range-row, and blinding/noise bound-row obligations.
+assembly, same-trace hybrid range-row binding, hybrid range-row soundness,
+same-trace blinding/noise row binding, and blinding/noise bound-row obligations.
 
 The final interface now routes through `ParentTraceExtractionSoundness` and
 `TraceAssemblySoundness`; the older two-view extractor surface is no longer an
@@ -212,7 +213,8 @@ double_trace_binding_break_exported = true
 Negative controls reject clearing any of these flags or drifting either
 blinding/noise policy field before the transparent verifier handoff. Clearing
 any decomposed assembly/range/blinding row flag rejects because the atomic Lean
-endpoint consumes those subclaims directly. Clearing
+endpoint consumes those subclaims directly, including the same-trace gates that
+tie row facts to the extracted trace used for representative assembly. Clearing
 `lean_atomic_full_interface_endpoint_present` rejects because the active Rust
 interface must be bound to the narrow Lean theorem
 `transparent_view_full_interface_from_atomic_gates_or_break`.

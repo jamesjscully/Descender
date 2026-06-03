@@ -64,10 +64,11 @@ schedule is pinned in
 native-boundary query rows are now recorded in
 `research/path2_hash_qrom_assumption_ledger.md`.
 
-Next: define the minimum theorem interface for the active proof family:
-`NativeBoundaryTraceKnowledgeSoundness`,
-`NativeBoundaryTraceZeroKnowledge`, and
-`NativeBoundaryTraceQromSchedule`.
+The minimum theorem interface for the active proof family is now defined and
+digest-bound. The remaining blocker is no longer naming the interface; it is
+constructing or selecting a proof family that satisfies the atomic extraction
+triple and the same-trace row obligations consumed by
+`transparent_view_full_interface_from_atomic_gates_or_break`.
 Evidence:
 `research/path2_native_boundary_hidden_extractor_view.md` pins the complete
 extractor output obligation and the Lean endpoint now derives role-complete
@@ -105,6 +106,10 @@ classifies vanilla Merkle/random-query paths as dead for this gate and keeps
 committed-trace extraction plus simulator-safe openings.
 `research/path2_native_boundary_trace_proof_family_interface.md` pins the
 minimum Lean-level split for the active proof-family assumption.
+The preferred Lean endpoint now consumes the same-trace range-row and
+blinding-row gates directly, so accepted range/blinding facts cannot be supplied
+from a trace other than the extracted trace that assembles the hidden
+representative.
 
 ## Non-Claims
 

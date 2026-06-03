@@ -97,10 +97,16 @@ current full-column-rank dimensions, that family fails this assumption.
 
 ## Lean Anchor
 
-The composed Lean theorem that mirrors this assumption is:
+The legacy composed Lean theorem for the monolithic assumption is:
 
 ```text
 Descender.Path2NativeBoundary.transparent_view_full_interface_or_break
+```
+
+The active closure theorem preferred by the proof-family interface is:
+
+```text
+Descender.Path2NativeBoundary.transparent_view_full_interface_from_atomic_gates_or_break
 ```
 
 It composes:
@@ -131,6 +137,10 @@ It composes:
   plus `BlindingNoiseRowsToBoundSoundness`.
 - `TraceBlindingRowsBoundRepresentativeSoundness` for same-trace
   blinding/noise row binding.
+
+For the active endpoint, the same-trace range/blinding row gates are consumed
+on the extracted trace and assembled hidden representative used in the final
+interface conclusion.
 
 ## Active Candidate
 

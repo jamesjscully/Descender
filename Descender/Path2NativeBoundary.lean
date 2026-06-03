@@ -2139,8 +2139,10 @@ theorem transparent_view_full_interface_from_decomposed_or_break
     (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
     (hMaskFreshnessSound : MaskFreshnessSoundness P)
     (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
+    (hTraceRangeRows : TraceRangeRowsBindRepresentativeSoundness P)
     (hRangeRows : HybridBase128RangeRowSoundness P)
     (hRangeRowsToNorm : HybridBase128RangeRowsToNormRangeSoundness P)
+    (hTraceBlindRows : TraceBlindingRowsBoundRepresentativeSoundness P)
     (hBlindRows : BlindingNoiseBoundRowSoundness P)
     (hBlindRowsToBound : BlindingNoiseRowsToBoundSoundness P)
     {b : Boundary} {view : TransparentPublicView}
@@ -2168,18 +2170,109 @@ theorem transparent_view_full_interface_from_decomposed_or_break
                         P.normRangeValid b h ∧
                           P.blindingNoiseBounded b policy h) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
-  transparent_view_full_interface_or_break P
-    hParentSound hRoleSound hTraceExtractSound
-    (decomposed_trace_assembly_implies_trace_assembly_soundness P
-      hTraceAssemblyExists hTraceAssemblyRoles hTraceAssemblyFiber
-      hTraceAssemblyLocal hTraceAssemblyDescent)
-    hNoExportSound hRoleAuthNoExportSound hMaskFreshnessSound hQromSound
-    (hybrid_base128_range_rows_imply_norm_range_soundness P
-      hRangeRows hRangeRowsToNorm)
-    (blinding_noise_rows_imply_bound_soundness P
-      hBlindRows hBlindRowsToBound)
-    hAccept hProjects hProfile hRoleComplete hSelected
-    hRangePolicy hPolicy
+  by
+    have hTraceAssemblySound : TraceAssemblySoundness P :=
+      decomposed_trace_assembly_implies_trace_assembly_soundness P
+        hTraceAssemblyExists hTraceAssemblyRoles hTraceAssemblyFiber
+        hTraceAssemblyLocal hTraceAssemblyDescent
+    cases hParentSound hAccept hProjects hProfile with
+    | inl hParent =>
+        cases hRoleSound hAccept hProjects hProfile with
+        | inl hRole =>
+            cases hTraceExtractSound hAccept hProjects hProfile hSelected with
+            | inl hTrace =>
+                rcases hTrace with
+                  ⟨trace, hExtractsTrace, hOpens, _hMasked, hRelation⟩
+                cases
+                    hTraceAssemblySound hAccept hProjects hProfile
+                      hRoleComplete hExtractsTrace hOpens hRelation with
+                | inl hAssembled =>
+                    rcases hAssembled with
+                      ⟨h, hTraceAssembles, hTransparent, hComplete,
+                        hFiber, hLocal, hDescent⟩
+                    have _hSameTraceRangeRows :
+                        P.rangeRowsBindTraceRepresentative
+                            b view profile rangePolicy trace h ∧
+                          P.rangeRowsBindRepresentative
+                            b view profile rangePolicy h :=
+                      hTraceRangeRows hAccept hProjects hProfile
+                        hRangePolicy hExtractsTrace hOpens hRelation
+                        hTraceAssembles hTransparent hFiber
+                    have _hSameTraceBlindRows :
+                        P.blindingRowsBoundTraceRepresentative
+                            b view profile policy trace h ∧
+                          P.blindingRowsBoundRepresentative
+                            b view profile policy h :=
+                      hTraceBlindRows hAccept hProjects hProfile
+                        hPolicy hExtractsTrace hOpens hRelation
+                        hTraceAssembles hTransparent hFiber
+                    cases
+                        hNoExportSound hAccept hProjects hProfile with
+                    | inl hNoExport =>
+                        cases
+                            hRoleAuthNoExportSound hAccept hProjects
+                              hProfile with
+                        | inl hRoleAuthNoExport =>
+                            cases
+                                hMaskFreshnessSound hAccept hProjects
+                                  hProfile with
+                            | inl hMaskFresh =>
+                                cases hQromSound hAccept hProjects hProfile with
+                                | inl hQrom =>
+                                    cases
+                                        hRangeRows hAccept hProjects hProfile
+                                          hRangePolicy hTransparent hFiber with
+                                    | inl hBoundRangeRows =>
+                                        cases
+                                            hRangeRowsToNorm hAccept hProjects
+                                              hProfile hRangePolicy
+                                              hTransparent hFiber
+                                              hBoundRangeRows with
+                                        | inl hNorm =>
+                                            cases
+                                                hBlindRows hAccept hProjects
+                                                  hProfile hPolicy
+                                                  hTransparent hFiber with
+                                            | inl hBoundBlindRows =>
+                                                cases
+                                                    hBlindRowsToBound hAccept
+                                                      hProjects hProfile
+                                                      hPolicy hTransparent
+                                                      hFiber hBoundBlindRows with
+                                                | inl hBlind =>
+                                                    exact Or.inl
+                                                      ⟨hRole, hNoExport,
+                                                        hRoleAuthNoExport,
+                                                        hMaskFresh, hQrom,
+                                                        hParent, h,
+                                                        hTransparent,
+                                                        hComplete, hFiber,
+                                                        hLocal, hDescent,
+                                                        hNorm, hBlind⟩
+                                                | inr hBreak =>
+                                                    exact Or.inr hBreak
+                                            | inr hBreak =>
+                                                exact Or.inr hBreak
+                                        | inr hBreak =>
+                                            exact Or.inr hBreak
+                                    | inr hBreak =>
+                                        exact Or.inr hBreak
+                                | inr hBreak =>
+                                    exact Or.inr hBreak
+                            | inr hBreak =>
+                                exact Or.inr hBreak
+                        | inr hBreak =>
+                            exact Or.inr hBreak
+                    | inr hBreak =>
+                        exact Or.inr hBreak
+                | inr hBreak =>
+                    exact Or.inr hBreak
+            | inr hBreak =>
+                exact Or.inr hBreak
+        | inr hBreak =>
+            exact Or.inr hBreak
+    | inr hBreak =>
+        exact Or.inr hBreak
 
 /--
 Atomic-gate active transparent interface: the same endpoint as
@@ -2203,8 +2296,10 @@ theorem transparent_view_full_interface_from_atomic_gates_or_break
     (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
     (hMaskFreshnessSound : MaskFreshnessSoundness P)
     (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
+    (hTraceRangeRows : TraceRangeRowsBindRepresentativeSoundness P)
     (hRangeRows : HybridBase128RangeRowSoundness P)
     (hRangeRowsToNorm : HybridBase128RangeRowsToNormRangeSoundness P)
+    (hTraceBlindRows : TraceBlindingRowsBoundRepresentativeSoundness P)
     (hBlindRows : BlindingNoiseBoundRowSoundness P)
     (hBlindRowsToBound : BlindingNoiseRowsToBoundSoundness P)
     {b : Boundary} {view : TransparentPublicView}
@@ -2239,7 +2334,8 @@ theorem transparent_view_full_interface_from_atomic_gates_or_break
     hTraceAssemblyExists hTraceAssemblyRoles hTraceAssemblyFiber
     hTraceAssemblyLocal hTraceAssemblyDescent
     hNoExportSound hRoleAuthNoExportSound hMaskFreshnessSound hQromSound
-    hRangeRows hRangeRowsToNorm hBlindRows hBlindRowsToBound
+    hTraceRangeRows hRangeRows hRangeRowsToNorm
+    hTraceBlindRows hBlindRows hBlindRowsToBound
     hAccept hProjects hProfile hRoleComplete hSelected
     hRangePolicy hPolicy
 

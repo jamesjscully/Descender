@@ -468,7 +468,7 @@ The proof-family checklist is now instantiated:
 Evidence:
 `research/path2_native_boundary_zk_trace_checklist.md` pins the active
 pre-implementation gates and identifies the first unresolved gate as
-defining the minimum theorem interface for the active proof family after
+instantiating the already defined atomic proof-family endpoint after
 classifying full-trace extraction versus sampled-query-only candidates.
 `research/path2_hash_qrom_assumption_ledger.md` now records the
 native-boundary query symbols and schedule inputs.
@@ -481,8 +481,9 @@ only with full committed-trace extraction.
 active assumption into knowledge-soundness, no-export, QROM schedule,
 norm/range, and blinding/noise components.
 `research/path2_native_boundary_knowledge_soundness_decomposition.md` further
-splits knowledge soundness into parent-trace extraction, which is proof-family
-dependent, and trace assembly, which is controlled by the native-boundary
+splits knowledge soundness into parent-trace extraction atoms, which are
+proof-family dependent, and trace assembly, which is controlled by the
+native-boundary
 column/profile design.
 `research/path2_native_boundary_parent_trace_extraction_contract.md` pins the
 full-trace extraction contract and now pins the active extraction/relation pair

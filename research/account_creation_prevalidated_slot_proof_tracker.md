@@ -600,9 +600,11 @@ Named breaks:
   missing creation-binding role handles, missing inner-commitment binding-break
   export, raw hidden openings, missing QROM ledger binding, and
   fallback-threshold drift.
-  The Lean endpoint `transparent_view_full_interface_or_break` now consumes
-  `ParentTraceExtractionSoundness` and `TraceAssemblySoundness` directly, so
-  the active proof cannot close via an unrelated abstract two-view extractor.
+  The preferred Lean endpoint
+  `transparent_view_full_interface_from_atomic_gates_or_break` now consumes the
+  parent-trace extraction atoms, decomposed trace assembly, and same-trace
+  range/blinding row gates directly, so the active proof cannot close via an
+  unrelated abstract two-view extractor or unrelated auxiliary-row trace.
   `PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA`,
   `path2_transparent_proof_family_capability_v1`,
   `verify_path2_transparent_proof_family_capability`, and

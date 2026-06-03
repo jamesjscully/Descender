@@ -176,8 +176,11 @@ trace assembly and hidden extractor role completeness.
 parent-trace extraction contract. The preferred full-interface endpoint now
 uses `transparent_view_full_interface_from_atomic_gates_or_break`, so concrete
 proof work can target the parent-trace commitment extraction, masked-opening
-consistency, relation-knowledge, decomposed assembly, range-row, and
-blinding-row subclaims directly.
+consistency, relation-knowledge, decomposed assembly, same-trace range-row,
+range-row soundness, same-trace blinding-row, and blinding-row subclaims
+directly. The endpoint now runs the same-trace range/blinding obligations on
+the extracted trace and assembled representative that appear in the final
+interface conclusion.
 `research/path2_native_boundary_relation_knowledge_soundness_contract.md` pins
 the separate relation-knowledge gate, and Lean now requires
 `SupportsRelationKnowledge profile` as well.

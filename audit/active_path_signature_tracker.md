@@ -304,7 +304,8 @@ descent consistency, with a composition theorem back to the endpoint.
 The preferred full-interface closure theorem is now
 `transparent_view_full_interface_from_atomic_gates_or_break`, which composes
 parent-trace commitment extraction, masked-opening consistency,
-relation-knowledge, decomposed assembly, hybrid range, and blinding/noise row
+relation-knowledge, decomposed assembly, same-trace hybrid range rows, range
+row soundness, same-trace blinding/noise rows, and blinding/noise row
 obligations. The Rust proof-family interface now binds
 `lean_atomic_full_interface_endpoint_present = true` plus the decomposed
 assembly/range/blinding row subclaim flags into its digest.

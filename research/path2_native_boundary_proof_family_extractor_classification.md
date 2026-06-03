@@ -94,7 +94,8 @@ trace.
 
 ## Next Proof Move
 
-Define the minimum theorem interface for the active candidate:
+The minimum theorem interface for the active candidate is now defined and
+digest-bound:
 
 ```text
 NativeBoundaryTraceKnowledgeSoundness
@@ -102,9 +103,12 @@ NativeBoundaryTraceZeroKnowledge
 NativeBoundaryTraceQromSchedule
 ```
 
-Then decide whether those three assumptions are acceptable as one named
-proof-family assumption or whether any one of them needs to be decomposed
-further before we can call the proof side closed.
+The remaining proof move is to instantiate the preferred atomic endpoint,
+`transparent_view_full_interface_from_atomic_gates_or_break`, with a concrete
+proof family or accept the named proof-family assumption explicitly. The
+highest-risk subclaims are parent-trace commitment extraction, masked-opening
+consistency, extracted-trace relation knowledge, and same-trace range/blinding
+row binding for the extracted trace that assembles the representative.
 
 ## Non-Claims
 
