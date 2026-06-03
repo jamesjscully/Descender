@@ -71,6 +71,10 @@ change:
 - `Descender.Path2NativeBoundary.Predicates.normRangeValid`
 - `Descender.Path2NativeBoundary.HybridBase128RangePolicy`
 - `Descender.Path2NativeBoundary.UsesSelectedHybridBase128RangePolicy`
+- `Descender.Path2NativeBoundary.Predicates.rangeRowsBindRepresentative`
+- `Descender.Path2NativeBoundary.HybridBase128RangeRowSoundness`
+- `Descender.Path2NativeBoundary.HybridBase128RangeRowsToNormRangeSoundness`
+- `Descender.Path2NativeBoundary.hybrid_base128_range_rows_imply_norm_range_soundness`
 - `Descender.Path2NativeBoundary.NormRangeSoundness`
 - `Descender.Path2NativeBoundary.norm_range_valid_or_break`
 - `Descender.Path2NativeBoundary.transparent_view_full_interface_or_break`
@@ -115,8 +119,18 @@ See `research/path2_native_boundary_norm_range_selection.md`.
 
 ## Next Proof Move
 
-Prove that the concrete reconstruction rows, digit-range rows, and authenticated
-range-witness columns imply `NormRangeValid` for the extracted representative.
+Discharge the two decomposed range obligations:
+
+```text
+HybridBase128RangeRowSoundness:
+  accepted selected rows bind range/digit witnesses to the extracted h
+
+HybridBase128RangeRowsToNormRangeSoundness:
+  those bound rows imply NormRangeValid(b, h)
+```
+
+The composition theorem now turns those two facts back into
+`NormRangeSoundness` for the full interface endpoint.
 
 ## Non-Claims
 

@@ -151,10 +151,17 @@ digit columns: 12, 12, 16
 The 48-row `opening_tuple` case is now a rejected comparator under the selected
 blinding bound, not an active row band.
 
-The proof-side next move is narrower: prove that the concrete reconstruction
-rows and digit-range rows force each extracted hidden semantic value to equal
-its selected base-128 digits in the authenticated role columns, or export
-`path2_sis_norm_or_range_break`.
+The proof-side next move is decomposed in Lean:
+
+```text
+HybridBase128RangeRowSoundness
+HybridBase128RangeRowsToNormRangeSoundness
+```
+
+The first binds accepted reconstruction/range rows to the extracted
+representative. The second proves those bound rows force each extracted hidden
+semantic value to equal its selected base-128 digits in the authenticated role
+columns, or exports `path2_sis_norm_or_range_break`.
 
 ## Non-Claims
 

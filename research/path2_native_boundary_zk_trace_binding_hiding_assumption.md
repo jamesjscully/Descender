@@ -122,6 +122,8 @@ It composes:
 - `NormRangeSoundness`;
 - `UsesSelectedHybridBase128RangePolicy(profile, rangePolicy)` for that
   norm/range contract;
+- or, equivalently for the selected route, `HybridBase128RangeRowSoundness`
+  plus `HybridBase128RangeRowsToNormRangeSoundness`;
 - `BlindingNoiseBoundSoundness`.
 
 ## Active Candidate

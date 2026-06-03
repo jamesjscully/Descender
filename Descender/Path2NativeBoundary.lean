@@ -737,6 +737,7 @@ Profile entries that must carry the selected hidden base-128 range policy.
 
 This binds the theorem-level range obligation to the typed active roles rather
 than to an after-the-fact `NormRangeValid` claim.
+-/
 def RoleUsesRangePolicyWithVisibility
     (profile : ColumnProfile) (roleId : RoleId)
     (policyId : Nat) (visibilityClass : VisibilityClass) : Prop :=
@@ -946,6 +947,11 @@ structure Predicates where
     Boundary -> TransparentPublicView -> ColumnProfile -> Prop
   maskFreshnessHolds : Boundary -> TransparentPublicView -> ColumnProfile -> Prop
   qromScheduleBound : Boundary -> TransparentPublicView -> ColumnProfile -> Prop
+  rangeRowsBindRepresentative :
+    Boundary ->
+      TransparentPublicView ->
+        ColumnProfile ->
+          HybridBase128RangePolicy -> HiddenRepresentative -> Prop
   transparentAccepts : Boundary -> TransparentPublicView -> Prop
   transparentExtractsTrace :
     Boundary -> TransparentPublicView -> ExtractedTrace -> Prop
@@ -1465,6 +1471,45 @@ theorem native_boundary_trace_qrom_schedule_bound_or_break
   hSound hAccept hProjects hProfile
 
 /--
+Selected range-row soundness: accepted rows for the selected hybrid base-128
+policy bind the extracted representative to the authenticated digit/range
+witness columns, or export a named break.
+-/
+def HybridBase128RangeRowSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile} {rangePolicy : HybridBase128RangePolicy}
+      {h : HiddenRepresentative},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          UsesSelectedHybridBase128RangePolicy profile rangePolicy ->
+            P.transparentExtracts b view h ->
+              InFiber P b.context b h ->
+                P.rangeRowsBindRepresentative b view profile rangePolicy h ∨
+                  (exists breakEvent,
+                    P.boundaryBreakFor b.context b breakEvent)
+
+/--
+Selected range-row completeness: once accepted rows are bound to the extracted
+representative, their reconstruction/range facts imply the theorem-level
+`NormRangeValid` predicate, or export a named break.
+-/
+def HybridBase128RangeRowsToNormRangeSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile} {rangePolicy : HybridBase128RangePolicy}
+      {h : HiddenRepresentative},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          UsesSelectedHybridBase128RangePolicy profile rangePolicy ->
+            P.transparentExtracts b view h ->
+              InFiber P b.context b h ->
+                P.rangeRowsBindRepresentative b view profile rangePolicy h ->
+                  P.normRangeValid b h ∨
+                    (exists breakEvent,
+                      P.boundaryBreakFor b.context b breakEvent)
+
+/--
 Norm/range assumption: every representative extracted from an accepted
 compatible transparent view satisfies the canonicality/range bounds needed by
 the native-boundary binding theorem, or exports a named break.
@@ -1482,6 +1527,23 @@ def NormRangeSoundness (P : Predicates) : Prop :=
                 P.normRangeValid b h ∨
                   (exists breakEvent,
                     P.boundaryBreakFor b.context b breakEvent)
+
+theorem hybrid_base128_range_rows_imply_norm_range_soundness
+    (P : Predicates)
+    (hRows : HybridBase128RangeRowSoundness P)
+    (hRowsToNorm : HybridBase128RangeRowsToNormRangeSoundness P) :
+    NormRangeSoundness P := by
+  intro b view profile rangePolicy h hAccept hProjects hProfile
+    hRangePolicy hExtracts hFiber
+  cases
+      hRows hAccept hProjects hProfile hRangePolicy hExtracts
+        hFiber with
+  | inl hBoundRows =>
+      exact
+        hRowsToNorm hAccept hProjects hProfile hRangePolicy
+          hExtracts hFiber hBoundRows
+  | inr hBreak =>
+      exact Or.inr hBreak
 
 theorem norm_range_valid_or_break
     (P : Predicates)

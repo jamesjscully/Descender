@@ -125,6 +125,9 @@ base-128 hidden-role witnesses for SIS/range binding. The selected range
 certificate fixes semantic range policy id `1`, witness policy id `2`, private
 role rows `64`, digit counts `12/12/16`, reconstruction rows `20`, range rows
 `40`, range witnesses `40`, and digit maximum `127`.
+The Lean route now decomposes this into `HybridBase128RangeRowSoundness` plus
+`HybridBase128RangeRowsToNormRangeSoundness`, which compose back into
+`NormRangeSoundness`.
 
 ## Lean Anchors
 

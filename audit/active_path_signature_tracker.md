@@ -306,6 +306,10 @@ counts `12/12/16`, range rows `40`, reconstruction rows `20`, range witnesses
 `40`, digit maximum `127`, extractor-hidden semantic range entries, and
 range-private witness entries; Rust rejects range-policy id drift and range
 witness visibility drift in the active two-view column profile.
+`NormRangeSoundness` is no longer only monolithic: Lean now exposes
+`HybridBase128RangeRowSoundness` and
+`HybridBase128RangeRowsToNormRangeSoundness`, with a composition theorem back
+to the full endpoint.
 
 ## Findings
 
