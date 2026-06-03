@@ -530,8 +530,21 @@ Named breaks:
   length, and zero proof/query/Merkle/consistency component digests, so
   placeholder proof material cannot reach the fail-closed verifier handoff as
   the active route.
-  The proof-system id now binds the
-  active proof-family capability profile:
+  The proof-system id now binds the active proof-family theorem interface and
+  capability profile:
+  `PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA`,
+  `path2_native_boundary_trace_proof_family_interface_v1`,
+  `verify_path2_native_boundary_trace_proof_family_interface`, and
+  `path2_native_boundary_trace_proof_family_interface_v1_digest` pin the
+  active `zk_masked_trace_iop_native_boundary` theorem split before capability
+  handoff: full-trace role-complete knowledge soundness, masked-or-simulated
+  hidden openings, native-boundary QROM schedule binding, hybrid base-128 range
+  mode, extractor-bounded blinding/noise, no raw hidden openings, QROM ledger
+  binding, and the 16416-byte fallback threshold. KAT
+  `path2_native_boundary_trace_proof_family_interface_pins_active_theorem_gate`
+  rejects sampled-opening-only knowledge, missing role-complete extraction,
+  raw hidden openings, missing QROM ledger binding, and fallback-threshold
+  drift.
   `PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA`,
   `path2_transparent_proof_family_capability_v1`,
   `verify_path2_transparent_proof_family_capability`, and
@@ -544,7 +557,8 @@ Named breaks:
   commitments, and the 16416-byte fallback threshold. KAT
   `path2_transparent_proof_family_capability_pins_active_assumptions` rejects
   sampled-only extraction, raw hidden openings, missing typed role
-  subcommitments, missing no-export, and vanilla Merkle/FRI relabeling. The
+  subcommitments, missing no-export, vanilla Merkle/FRI relabeling, and
+  trace-proof-interface rebinding. The
   active lane-floor mismatch is now executable too:
   `PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA`,
   `path2_native_boundary_trace_column_manifest_v1`,

@@ -271,6 +271,8 @@ pub const PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA: &str =
     "DESCENDER_PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_V1";
 pub const PATH2_TRANSPARENT_QUERY_SCHEDULE_SCHEMA: &str =
     "DESCENDER_PATH2_TRANSPARENT_NATIVE_BOUNDARY_QUERY_SCHEDULE_V1";
+pub const PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA: &str =
+    "DESCENDER_PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_V1";
 pub const PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA: &str =
     "DESCENDER_PATH2_TRANSPARENT_ZK_MASKED_TRACE_IOP_CAPABILITY_V1";
 pub const PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA: &str =
@@ -345,9 +347,15 @@ pub const PATH2_DIRECT_CREATION_PROOF_KIND_TRANSPARENT_DESCENT: u16 = 2;
 pub const PATH2_TRANSPARENT_DESCENT_PROOF_SYSTEM_PROFILE: &str =
     "DESCENDER_PATH2_TRANSPARENT_HASH_PROOF_OVER_DESCENT_RELATION_V1";
 pub const PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_PROFILE_ID: u16 = 1;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_PROFILE_ID: u16 = 1;
 pub const PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY: &str =
     "zk_masked_trace_iop_native_boundary";
 pub const PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES: u32 = 16_416;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_KNOWLEDGE_FULL_TRACE_ROLE_COMPLETE: u16 = 1;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_ZK_MASKED_OR_SIMULATED_OPENINGS: u16 = 1;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_QROM_NATIVE_BOUNDARY_SCHEDULE: u16 = 1;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_RANGE_HYBRID_BASE128: u16 = 1;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_EXTRACTOR_BOUNDED: u16 = 1;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_PROFILE_ID: u16 = 1;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_CLASS_COUNT: usize = 10;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_SEMANTIC_CORE_LANES: u16 = 80;
@@ -1464,6 +1472,26 @@ pub struct Path2TransparentQueryScheduleV1 {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
+    pub schema: &'static str,
+    pub profile_id: u16,
+    pub family: &'static str,
+    pub column_profile: u16,
+    pub trace_column_manifest_digest: [u8; DIGEST_BYTES],
+    pub query_schedule_digest: [u8; DIGEST_BYTES],
+    pub knowledge_soundness_mode: u16,
+    pub zero_knowledge_mode: u16,
+    pub qrom_schedule_mode: u16,
+    pub norm_range_mode: u16,
+    pub blinding_noise_mode: u16,
+    pub full_trace_extraction_required: bool,
+    pub role_complete_extractor_required: bool,
+    pub no_raw_hidden_openings: bool,
+    pub qrom_ledger_bound: bool,
+    pub fallback_threshold_bytes: u32,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2TransparentProofFamilyCapabilityV1 {
     pub schema: &'static str,
     pub profile_id: u16,
@@ -1471,6 +1499,7 @@ pub struct Path2TransparentProofFamilyCapabilityV1 {
     pub relation_layout_digest: [u8; DIGEST_BYTES],
     pub trace_column_manifest_digest: [u8; DIGEST_BYTES],
     pub query_schedule_digest: [u8; DIGEST_BYTES],
+    pub trace_proof_family_interface_digest: [u8; DIGEST_BYTES],
     pub column_profile: u16,
     pub active_witness_lane_floor: u16,
     pub native_boundary_relation_rows: u16,
@@ -9924,6 +9953,204 @@ pub fn verify_path2_transparent_query_schedule_pair(
     }
 }
 
+pub fn path2_native_boundary_trace_proof_family_interface_v1()
+-> Result<Path2NativeBoundaryTraceProofFamilyInterfaceV1, String> {
+    let interface = Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
+        schema: PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA,
+        profile_id: PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_PROFILE_ID,
+        family: PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY,
+        column_profile: PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+        trace_column_manifest_digest: path2_native_boundary_trace_column_manifest_v1_digest()?,
+        query_schedule_digest: path2_transparent_query_schedule_v1_digest()?,
+        knowledge_soundness_mode: PATH2_NATIVE_BOUNDARY_TRACE_KNOWLEDGE_FULL_TRACE_ROLE_COMPLETE,
+        zero_knowledge_mode: PATH2_NATIVE_BOUNDARY_TRACE_ZK_MASKED_OR_SIMULATED_OPENINGS,
+        qrom_schedule_mode: PATH2_NATIVE_BOUNDARY_TRACE_QROM_NATIVE_BOUNDARY_SCHEDULE,
+        norm_range_mode: PATH2_NATIVE_BOUNDARY_TRACE_RANGE_HYBRID_BASE128,
+        blinding_noise_mode: PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_EXTRACTOR_BOUNDED,
+        full_trace_extraction_required: true,
+        role_complete_extractor_required: true,
+        no_raw_hidden_openings: true,
+        qrom_ledger_bound: true,
+        fallback_threshold_bytes: PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES,
+    };
+    verify_path2_native_boundary_trace_proof_family_interface(&interface)?;
+    Ok(interface)
+}
+
+pub fn verify_path2_native_boundary_trace_proof_family_interface(
+    interface: &Path2NativeBoundaryTraceProofFamilyInterfaceV1,
+) -> Result<(), String> {
+    if interface.schema != PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface schema mismatch".to_string(),
+        );
+    }
+    if interface.profile_id != PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_PROFILE_ID {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface profile mismatch".to_string(),
+        );
+    }
+    if interface.family != PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface family mismatch".to_string(),
+        );
+    }
+    verify_path2_two_view_column_profile_id(interface.column_profile)?;
+    if interface.trace_column_manifest_digest
+        != path2_native_boundary_trace_column_manifest_v1_digest()?
+    {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface manifest mismatch".to_string(),
+        );
+    }
+    if interface.query_schedule_digest != path2_transparent_query_schedule_v1_digest()? {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface schedule mismatch".to_string(),
+        );
+    }
+    if interface.knowledge_soundness_mode
+        != PATH2_NATIVE_BOUNDARY_TRACE_KNOWLEDGE_FULL_TRACE_ROLE_COMPLETE
+    {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface knowledge mode mismatch"
+                .to_string(),
+        );
+    }
+    if interface.zero_knowledge_mode != PATH2_NATIVE_BOUNDARY_TRACE_ZK_MASKED_OR_SIMULATED_OPENINGS
+    {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface ZK mode mismatch".to_string(),
+        );
+    }
+    if interface.qrom_schedule_mode != PATH2_NATIVE_BOUNDARY_TRACE_QROM_NATIVE_BOUNDARY_SCHEDULE {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface QROM mode mismatch".to_string(),
+        );
+    }
+    if interface.norm_range_mode != PATH2_NATIVE_BOUNDARY_TRACE_RANGE_HYBRID_BASE128 {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface range mode mismatch".to_string(),
+        );
+    }
+    if interface.blinding_noise_mode != PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_EXTRACTOR_BOUNDED {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface blinding mode mismatch"
+                .to_string(),
+        );
+    }
+    if !interface.full_trace_extraction_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks full trace extraction"
+                .to_string(),
+        );
+    }
+    if !interface.role_complete_extractor_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks role-complete extraction"
+                .to_string(),
+        );
+    }
+    if !interface.no_raw_hidden_openings {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface allows raw hidden openings"
+                .to_string(),
+        );
+    }
+    if !interface.qrom_ledger_bound {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks QROM ledger binding"
+                .to_string(),
+        );
+    }
+    if interface.fallback_threshold_bytes != PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES
+    {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface fallback threshold mismatch"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
+pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
+-> Result<[u8; DIGEST_BYTES], String> {
+    let interface = path2_native_boundary_trace_proof_family_interface_v1()?;
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA.as_bytes(),
+    );
+    append_u64(&mut frame, b"profile_id", interface.profile_id as u64);
+    append_frame(&mut frame, b"family", interface.family.as_bytes());
+    append_u64(
+        &mut frame,
+        b"column_profile",
+        interface.column_profile as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"trace_column_manifest_digest",
+        &interface.trace_column_manifest_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"query_schedule_digest",
+        &interface.query_schedule_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"knowledge_soundness_mode",
+        interface.knowledge_soundness_mode as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"zero_knowledge_mode",
+        interface.zero_knowledge_mode as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_schedule_mode",
+        interface.qrom_schedule_mode as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"norm_range_mode",
+        interface.norm_range_mode as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"blinding_noise_mode",
+        interface.blinding_noise_mode as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"full_trace_extraction_required",
+        u64::from(interface.full_trace_extraction_required),
+    );
+    append_u64(
+        &mut frame,
+        b"role_complete_extractor_required",
+        u64::from(interface.role_complete_extractor_required),
+    );
+    append_u64(
+        &mut frame,
+        b"no_raw_hidden_openings",
+        u64::from(interface.no_raw_hidden_openings),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_ledger_bound",
+        u64::from(interface.qrom_ledger_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"fallback_threshold_bytes",
+        interface.fallback_threshold_bytes as u64,
+    );
+    Ok(Sha256::digest(frame).into())
+}
+
 pub fn path2_transparent_proof_family_capability_v1()
 -> Result<Path2TransparentProofFamilyCapabilityV1, String> {
     let trace_column_manifest = path2_native_boundary_trace_column_manifest_v1()?;
@@ -9934,6 +10161,8 @@ pub fn path2_transparent_proof_family_capability_v1()
         relation_layout_digest: path2_transparent_relation_layout_v1_digest()?,
         trace_column_manifest_digest: path2_native_boundary_trace_column_manifest_v1_digest()?,
         query_schedule_digest: path2_transparent_query_schedule_v1_digest()?,
+        trace_proof_family_interface_digest:
+            path2_native_boundary_trace_proof_family_interface_v1_digest()?,
         column_profile: PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
         active_witness_lane_floor: trace_column_manifest.range_account_lane_floor,
         native_boundary_relation_rows: trace_column_manifest.relation_rows_working,
@@ -9982,6 +10211,13 @@ pub fn verify_path2_transparent_proof_family_capability(
     if capability.query_schedule_digest != path2_transparent_query_schedule_v1_digest()? {
         return Err(
             "Path 2 transparent proof-family capability query schedule mismatch".to_string(),
+        );
+    }
+    if capability.trace_proof_family_interface_digest
+        != path2_native_boundary_trace_proof_family_interface_v1_digest()?
+    {
+        return Err(
+            "Path 2 transparent proof-family capability trace proof interface mismatch".to_string(),
         );
     }
     verify_path2_two_view_column_profile_id(capability.column_profile)?;
@@ -10067,6 +10303,11 @@ pub fn path2_transparent_proof_family_capability_v1_digest() -> Result<[u8; DIGE
         &mut frame,
         b"query_schedule_digest",
         &capability.query_schedule_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"trace_proof_family_interface_digest",
+        &capability.trace_proof_family_interface_digest,
     );
     append_u64(
         &mut frame,
@@ -14240,7 +14481,7 @@ pub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(
         .map_err(|err| format!("encode Path 2 native storage/lifecycle hardening scope: {err}"))
 }
 
-pub fn path2_registered_domain_constants() -> [&'static str; 30] {
+pub fn path2_registered_domain_constants() -> [&'static str; 31] {
     [
         PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN,
         PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN,
@@ -14261,6 +14502,7 @@ pub fn path2_registered_domain_constants() -> [&'static str; 30] {
         PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN,
         PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA,
         PATH2_TRANSPARENT_QUERY_SCHEDULE_SCHEMA,
+        PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA,
         PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA,
         PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA,
         PATH2_TRANSPARENT_PROOF_BODY_DIGEST_SCHEMA,
@@ -14567,6 +14809,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_TRANSPARENT_QUERY_SCHEDULE_SCHEMA",
             PATH2_TRANSPARENT_QUERY_SCHEDULE_SCHEMA,
+        ),
+        (
+            "PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA",
+            PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA,
         ),
         (
             "PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA",
@@ -28114,6 +28360,7 @@ mod tests {
             "PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN",
             "PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA",
             "PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA",
+            "PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA",
             "PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA",
             "PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA",
             "REVIEWED_FQ12_STATE_ASSISTED_CARRIER_DOMAIN",
@@ -28133,7 +28380,7 @@ mod tests {
             })
             .map(|(_, value)| *value)
             .collect();
-        assert_eq!(active_native_values.len(), 36);
+        assert_eq!(active_native_values.len(), 37);
         for active in active_native_values {
             for (label, value) in &registry {
                 if label.starts_with("PATH2_NATIVE_") || label.starts_with("PATH2_PUBLIC_NATIVE_") {
@@ -32626,6 +32873,107 @@ mod tests {
     }
 
     #[test]
+    fn path2_native_boundary_trace_proof_family_interface_pins_active_theorem_gate() {
+        let interface = path2_native_boundary_trace_proof_family_interface_v1().unwrap();
+        verify_path2_native_boundary_trace_proof_family_interface(&interface).unwrap();
+        assert_eq!(
+            interface.schema,
+            PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA
+        );
+        assert_eq!(
+            interface.profile_id,
+            PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_PROFILE_ID
+        );
+        assert_eq!(
+            interface.family,
+            PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY
+        );
+        assert_eq!(
+            interface.column_profile,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1
+        );
+        assert_eq!(
+            interface.trace_column_manifest_digest,
+            path2_native_boundary_trace_column_manifest_v1_digest().unwrap()
+        );
+        assert_eq!(
+            interface.query_schedule_digest,
+            path2_transparent_query_schedule_v1_digest().unwrap()
+        );
+        assert_eq!(
+            interface.knowledge_soundness_mode,
+            PATH2_NATIVE_BOUNDARY_TRACE_KNOWLEDGE_FULL_TRACE_ROLE_COMPLETE
+        );
+        assert_eq!(
+            interface.zero_knowledge_mode,
+            PATH2_NATIVE_BOUNDARY_TRACE_ZK_MASKED_OR_SIMULATED_OPENINGS
+        );
+        assert_eq!(
+            interface.qrom_schedule_mode,
+            PATH2_NATIVE_BOUNDARY_TRACE_QROM_NATIVE_BOUNDARY_SCHEDULE
+        );
+        assert_eq!(
+            interface.norm_range_mode,
+            PATH2_NATIVE_BOUNDARY_TRACE_RANGE_HYBRID_BASE128
+        );
+        assert_eq!(
+            interface.blinding_noise_mode,
+            PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_EXTRACTOR_BOUNDED
+        );
+        assert!(interface.full_trace_extraction_required);
+        assert!(interface.role_complete_extractor_required);
+        assert!(interface.no_raw_hidden_openings);
+        assert!(interface.qrom_ledger_bound);
+        assert_eq!(
+            interface.fallback_threshold_bytes,
+            PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES
+        );
+        assert_ne!(
+            path2_native_boundary_trace_proof_family_interface_v1_digest().unwrap(),
+            [0_u8; DIGEST_BYTES]
+        );
+
+        let mut sampled_opening_only = interface.clone();
+        sampled_opening_only.knowledge_soundness_mode = 0;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&sampled_opening_only)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface knowledge mode mismatch"
+        );
+
+        let mut no_role_complete_extractor = interface.clone();
+        no_role_complete_extractor.role_complete_extractor_required = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&no_role_complete_extractor)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks role-complete extraction"
+        );
+
+        let mut raw_hidden_openings = interface.clone();
+        raw_hidden_openings.no_raw_hidden_openings = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&raw_hidden_openings)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface allows raw hidden openings"
+        );
+
+        let mut qrom_unbound = interface.clone();
+        qrom_unbound.qrom_ledger_bound = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&qrom_unbound).unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks QROM ledger binding"
+        );
+
+        let mut threshold_drift = interface.clone();
+        threshold_drift.fallback_threshold_bytes += 1;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&threshold_drift)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface fallback threshold mismatch"
+        );
+    }
+
+    #[test]
     fn path2_transparent_proof_family_capability_pins_active_assumptions() {
         let capability = path2_transparent_proof_family_capability_v1().unwrap();
         verify_path2_transparent_proof_family_capability(&capability).unwrap();
@@ -32652,6 +33000,10 @@ mod tests {
         assert_eq!(
             capability.query_schedule_digest,
             path2_transparent_query_schedule_v1_digest().unwrap()
+        );
+        assert_eq!(
+            capability.trace_proof_family_interface_digest,
+            path2_native_boundary_trace_proof_family_interface_v1_digest().unwrap()
         );
         assert_eq!(
             capability.column_profile,
@@ -32744,6 +33096,13 @@ mod tests {
         assert_eq!(
             verify_path2_transparent_proof_family_capability(&wrong_schedule).unwrap_err(),
             "Path 2 transparent proof-family capability query schedule mismatch"
+        );
+
+        let mut wrong_interface = capability.clone();
+        wrong_interface.trace_proof_family_interface_digest[0] ^= 0x80;
+        assert_eq!(
+            verify_path2_transparent_proof_family_capability(&wrong_interface).unwrap_err(),
+            "Path 2 transparent proof-family capability trace proof interface mismatch"
         );
     }
 
