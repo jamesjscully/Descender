@@ -38,6 +38,8 @@ and either proves all of:
 6. `NormRangeValid(b, h)` under `hybridBase128HiddenRoles`;
 7. `BlindingNoiseBounded(b, policy, h)` as an extractor-side bound;
 8. `NoExportHolds(b, view, profile)`;
+9. `RoleAuthenticationMaterialSimulatable(b, view, profile)`;
+10. `MaskFreshnessHolds(b, view, profile)`;
 
 or exports a named break.
 
@@ -107,7 +109,10 @@ It composes:
 - `RoleRestrictionSoundness`;
 - `TwoViewExtractionSoundness`;
 - `HiddenExtractorRoleCompletenessSoundness`;
-- `NativeBoundaryTraceZeroKnowledge`, currently `NoExportSoundness`;
+- `NativeBoundaryTraceZeroKnowledge`, namely:
+- `NoExportSoundness`;
+- `RoleAuthenticationMaterialNoExportSoundness`;
+- `MaskFreshnessSoundness`;
 - `NativeBoundaryTraceQromScheduleSoundness`;
 - `NormRangeSoundness`;
 - `BlindingNoiseBoundSoundness`.
