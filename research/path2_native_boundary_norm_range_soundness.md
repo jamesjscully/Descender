@@ -83,6 +83,7 @@ The selected theorem mode is:
 
 ```text
 hybridBase128HiddenRoles
+selectedSisRoleMatrixRows = 64
 ```
 
 Meaning:
@@ -95,9 +96,8 @@ See `research/path2_native_boundary_norm_range_selection.md`.
 
 ## Next Proof Move
 
-Instantiate the column-profile range policy for `hybridBase128HiddenRoles` and
-then run the SIS/module-SIS sanity probe under the selected digit-coordinate
-norm bounds.
+Instantiate the concrete range gadget for `hybridBase128HiddenRoles` under the
+selected 64-row private role-matrix gate.
 
 ## Non-Claims
 

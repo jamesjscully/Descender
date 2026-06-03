@@ -564,6 +564,10 @@ def selectedBlindingNoisePolicyId : Nat :=
 def selectedBlindingNoiseCenteredBound : Nat :=
   2048
 
+/-- The selected private role-matrix row band for active SIS role handles. -/
+def selectedSisRoleMatrixRows : Nat :=
+  64
+
 /-- The active route uses one binding-compatible blinding/noise policy. -/
 def UsesSelectedBlindingNoisePolicy
     (policy : BlindingNoisePolicy) : Prop :=

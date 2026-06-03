@@ -434,6 +434,7 @@ pub const PATH2_DESCENT_SIS_TOTAL_COLUMNS: usize = PATH2_DESCENT_SIS_PAD_SOURCE_
     + PATH2_DESCENT_SIS_PROJECTION_RELATION_COLUMNS
     + PATH2_DESCENT_SIS_OPENING_TUPLE_COLUMNS;
 pub const PATH2_DESCENT_SIS_PRIMARY_ROW_BANDS: [usize; 2] = [48, 64];
+pub const PATH2_DESCENT_SIS_SELECTED_ROLE_MATRIX_ROWS: usize = 64;
 pub const PATH2_DESCENT_SIS_PAD_SOURCE_SECRET_COLUMNS: usize = 12;
 pub const PATH2_DESCENT_SIS_PAD_SOURCE_BLINDING_COLUMNS: usize = 24;
 pub const PATH2_DESCENT_SIS_PAD_SOURCE_RANGE_COLUMNS: usize = 0;
@@ -1501,6 +1502,7 @@ pub struct Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
     pub blinding_noise_mode: u16,
     pub blinding_noise_policy_id: u16,
     pub blinding_noise_centered_bound: u16,
+    pub sis_role_matrix_rows: u16,
     pub role_subcommitment_link_mode: u16,
     pub opening_tuple_account_binding_rows_required: bool,
     pub checked_core_residue_compatibility_rows_required: bool,
@@ -10038,6 +10040,7 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1()
         blinding_noise_mode: PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_EXTRACTOR_BOUNDED,
         blinding_noise_policy_id: PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_NOISE_POLICY_ID,
         blinding_noise_centered_bound: PATH2_DESCENT_SIS_BLINDING_CENTERED_BOUND as u16,
+        sis_role_matrix_rows: PATH2_DESCENT_SIS_SELECTED_ROLE_MATRIX_ROWS as u16,
         role_subcommitment_link_mode:
             PATH2_NATIVE_BOUNDARY_TRACE_ROLE_SUBCOMMITMENTS_CREATION_BINDING,
         opening_tuple_account_binding_rows_required: true,
@@ -10134,6 +10137,26 @@ pub fn verify_path2_native_boundary_trace_proof_family_interface(
             "Path 2 native-boundary trace proof-family interface blinding bound mismatch"
                 .to_string(),
         );
+    }
+    if interface.sis_role_matrix_rows != PATH2_DESCENT_SIS_SELECTED_ROLE_MATRIX_ROWS as u16 {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface SIS role rows mismatch"
+                .to_string(),
+        );
+    }
+    for role in [
+        PATH2_DESCENT_SIS_ROLE_PAD_SOURCE,
+        PATH2_DESCENT_SIS_ROLE_PROJECTION_RELATION,
+        PATH2_DESCENT_SIS_ROLE_OPENING_TUPLE,
+    ] {
+        let sanity =
+            path2_descent_sis_hardness_sanity(role, PATH2_DESCENT_SIS_SELECTED_ROLE_MATRIX_ROWS)?;
+        if sanity.verdict != PATH2_DESCENT_SIS_SANITY_VERDICT_FULL_COLUMN_RANK_PRIVATE_ONLY {
+            return Err(
+                "Path 2 native-boundary trace proof-family interface selected SIS role matrix is not full-rank private-only"
+                    .to_string(),
+            );
+        }
     }
     if interface.role_subcommitment_link_mode
         != PATH2_NATIVE_BOUNDARY_TRACE_ROLE_SUBCOMMITMENTS_CREATION_BINDING
@@ -10308,6 +10331,11 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
         &mut frame,
         b"blinding_noise_centered_bound",
         interface.blinding_noise_centered_bound as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"sis_role_matrix_rows",
+        interface.sis_role_matrix_rows as u64,
     );
     append_u64(
         &mut frame,
@@ -33664,6 +33692,10 @@ mod tests {
             PATH2_DESCENT_SIS_BLINDING_CENTERED_BOUND as u16
         );
         assert_eq!(
+            interface.sis_role_matrix_rows,
+            PATH2_DESCENT_SIS_SELECTED_ROLE_MATRIX_ROWS as u16
+        );
+        assert_eq!(
             interface.role_subcommitment_link_mode,
             PATH2_NATIVE_BOUNDARY_TRACE_ROLE_SUBCOMMITMENTS_CREATION_BINDING
         );
@@ -33730,6 +33762,13 @@ mod tests {
             verify_path2_native_boundary_trace_proof_family_interface(&wrong_blinding_bound)
                 .unwrap_err(),
             "Path 2 native-boundary trace proof-family interface blinding bound mismatch"
+        );
+
+        let mut wrong_sis_rows = interface.clone();
+        wrong_sis_rows.sis_role_matrix_rows -= 1;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&wrong_sis_rows).unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface SIS role rows mismatch"
         );
 
         let mut no_opening_account_rows = interface.clone();

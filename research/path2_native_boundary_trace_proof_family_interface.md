@@ -161,6 +161,7 @@ role_authentication_material_simulatable_required = true
 mask_freshness_required = true
 blinding_noise_policy_id = 1
 blinding_noise_centered_bound = 2048
+sis_role_matrix_rows = 64
 parent_trace_commitment_extractable_required = true
 extracted_trace_relation_knowledge_required = true
 masked_opening_consistency_required = true

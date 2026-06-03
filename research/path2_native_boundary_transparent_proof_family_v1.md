@@ -49,6 +49,7 @@ ProfileRoleComplete(profile)
 UsesSelectedTraceKnowledgeModes(profile)
 UsesSelectedNormRangeMode(profile)
 UsesSelectedBlindingNoisePolicy(policy)
+selectedSisRoleMatrixRows = 64
 ```
 
 Rejected modes:

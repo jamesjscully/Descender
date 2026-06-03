@@ -122,17 +122,18 @@ re-evaluated under native-boundary projections.
 
 ## Next Move
 
-Run the SIS/module-SIS sanity probe for:
+The SIS/module-SIS sanity probe is pinned for:
 
 ```text
-rows: 48 and 64
+selected rows: 64
 roles: pad_source, projection_relation, opening_tuple
 coordinate bound: 127 for digit coordinates
+blinding bound: 2048
 digit columns: 12, 12, 16
 ```
 
-and compare against the raw-centered q12289 baseline only as a rejected
-comparator.
+The 48-row `opening_tuple` case is now a rejected comparator under the selected
+blinding bound, not an active row band.
 
 ## Non-Claims
 

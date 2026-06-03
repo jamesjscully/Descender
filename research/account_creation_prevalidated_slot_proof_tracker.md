@@ -578,7 +578,8 @@ Named breaks:
   rewind accounting, double-trace binding-break export, masked-or-simulated
   hidden openings, native-boundary QROM schedule binding, hybrid base-128 range
   mode, extractor-bounded blinding/noise with selected policy id `1` and
-  centered bound `2048`, creation-binding role-subcommitment
+  centered bound `2048`, selected 64-row private SIS role matrices,
+  creation-binding role-subcommitment
   linking, inner-commitment binding-break export, no raw hidden openings,
   simulator-safe role-authentication material, mask freshness, QROM ledger
   binding, mandatory opening-tuple account-binding rows, mandatory checked-core
@@ -592,7 +593,7 @@ Named breaks:
   missing opening-tuple account-binding rows, missing checked-core
   residue-compatibility rows, missing role-authentication simulator support,
   missing mask freshness, blinding/noise policy drift, blinding/noise centered
-  bound drift,
+  bound drift, SIS role-row drift,
   missing creation-binding role handles, missing inner-commitment binding-break
   export, raw hidden openings, missing QROM ledger binding, and
   fallback-threshold drift.

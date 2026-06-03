@@ -1,6 +1,6 @@
 # Path 2 Native Boundary Hybrid Base-128 SIS Sanity
 
-Status: first-pass sanity comparison complete; not a hardness estimate.
+Status: selected 64-row role-matrix sanity gate pinned; not a hardness estimate.
 
 Purpose: compare the selected hybrid base-128 hidden-role norm surface against
 the rejected raw-centered q12289 surface before any byte-model update.
@@ -9,8 +9,10 @@ the rejected raw-centered q12289 surface before any byte-model update.
 
 - modulus: `q = 12289`
 - row bands: `48`, `64`
+- selected role-matrix row band: `64`
 - selected norm/range mode: `hybridBase128HiddenRoles`
 - digit bound: `|delta_digit| <= 127`
+- selected blinding/noise centered bound: `2048`
 - public masked projection: raw canonical q12289 residues
 - hidden role openings: base-128 digits
 
@@ -77,41 +79,38 @@ bound is assigned to blinding/noise columns.
 | hybrid base-128 hidden roles | selected for theorem path | keeps public quotient compact while making the semantic part of the SIS witness digit-bounded |
 | base-16 hidden roles | parked fallback | smaller digit bound, but doubles digit columns again |
 
+With the selected blinding bound `2048`, the 48-row `opening_tuple` role matrix
+has a nontrivial kernel whose bound-to-Gaussian sanity ratio is too large for
+the active short-SIS story. The active role-matrix row band is therefore pinned
+to `64`, where `pad_source`, `projection_relation`, and `opening_tuple` are all
+full-column-rank private-only surfaces. This is acceptable only because private
+role material is hidden inside the ZK/two-view proof; it is not a public linear
+commitment hiding argument.
+
 ## Remaining Hardness Blocker
 
-This sanity pass fixes the semantic/digit coordinate bound, but not the whole
-SIS vector bound. The commitment vector also includes blinding/noise columns:
+This sanity pass fixes the semantic/digit coordinate bound and the active
+private role-matrix row band, but not a full SIS hardness estimate. The
+commitment vector also includes blinding/noise columns:
 
 - `pad_source`: 24 blinding/noise columns;
 - `projection_relation`: 24 blinding/noise columns;
 - `opening_tuple`: 32 blinding/noise columns plus range auxiliaries.
 
-Before an SIS/module-SIS hardness statement is meaningful, we still need:
+The real estimator/sanity input is now:
 
 ```text
-BlindingNoiseBound:
-  exact integer bound and distribution for all blinding/noise coordinates
-```
-
-Then the real estimator/sanity input is:
-
-```text
-role, rows, total columns, digit bound, blinding bound, range bound
+role, rows=64, total columns, digit bound=127, blinding bound=2048, range bound
 ```
 
 ## Next Move
 
-Define `Path2NativeBoundaryBlindingNoiseBoundV1`:
-
-- per-role blinding/noise coordinate bounds;
-- whether blinding deltas are short enough for binding extraction;
-- whether hiding requires a wider blinding distribution than binding can
-  tolerate;
-- fallback if binding and hiding bounds conflict.
+Keep the `64`-row role-matrix gate in the proof-family interface. A concrete
+proof-family proof still has to justify that these private full-rank role
+handles, together with no-export, give the intended binding/hiding surface.
 
 ## Non-Claims
 
 - This is not a lattice-estimator result.
 - This does not prove SIS hardness.
-- This does not choose blinding/noise bounds.
 - This does not update transparent payload bytes.

@@ -295,6 +295,10 @@ profile's `fullTraceExtractable` and `fullWitnessRelationKnowledge` modes.
 The final Lean endpoint now routes through `ParentTraceExtractionSoundness` and
 `TraceAssemblySoundness` directly; the old `TwoViewExtractionSoundness` surface
 is no longer enough to discharge `transparent_view_full_interface_or_break`.
+The active range/SIS gate now also pins `selectedSisRoleMatrixRows = 64` and the
+Rust proof-family interface binds `sis_role_matrix_rows = 64`; the existing
+sanity probe rejects the 48-row `opening_tuple` case under the selected `2048`
+blinding bound.
 
 ## Findings
 
