@@ -27,9 +27,10 @@ The first two claims bind the public handles. The next four split the proof
 family's hard extractor obligation into commitment extraction, double-trace
 binding, relation knowledge, and masked-opening consistency.
 `ParentTraceExtractionSoundness` is the composed extraction contract produced
-from the extraction/consistency/relation subclaims. `TraceAssemblySoundness` is
-now itself a composed design-controlled endpoint; the active endpoint no longer
-accepts an independent two-view extractor shortcut.
+from the extraction, double-binding, consistency, and relation subclaims.
+`TraceAssemblySoundness` is now itself a composed design-controlled endpoint;
+the active endpoint no longer accepts an independent two-view extractor
+shortcut.
 
 ## ParentTraceExtractionSoundness
 
@@ -44,8 +45,14 @@ UsesSelectedTraceKnowledgeModes(profile)
 exists trace.
   TransparentExtractsTrace(b, view, trace)
   TraceOpensBoundary(b, profile, trace)
+  TracesSafetyEquivalent(b, profile, trace, trace)
+  MaskedOpeningsConsistent(b, view, profile, trace)
   TraceRelationValid(b, profile, trace)
 ```
+
+The self-stability line is intentionally routed through
+`ParentTraceDoubleBindingSoundness`, so the active atomic adapter cannot compose
+parent-trace extraction without the named double-trace binding-break theorem.
 
 or a named break.
 

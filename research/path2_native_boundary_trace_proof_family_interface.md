@@ -53,6 +53,8 @@ Meaning:
 - an accepting proof extracts a full parent trace opening that root;
 - two full traces opening that same accepted parent trace are safety-equivalent
   or export a named trace-binding break;
+- the active extraction combiner consumes the double-trace theorem before
+  returning `ParentTraceExtractionSoundness`;
 - the profile declares `fullTraceExtractable` or `fullWitnessExtractable`, not
   sampled-opening-only extraction;
 - the profile declares relation knowledge support, not sampled-row-only checks

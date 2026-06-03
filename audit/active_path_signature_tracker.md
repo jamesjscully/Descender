@@ -296,6 +296,10 @@ Lean now separates QROM schedule binding from
 `NativeBoundaryTraceQromExtractorRewindSoundness`; the active endpoint returns
 both `qromScheduleBound` and `qromExtractorRewindBound` before range/blinding
 closure.
+Lean also now consumes `ParentTraceDoubleBindingSoundness` inside the
+commitment/consistency/relation combiner for `ParentTraceExtractionSoundness`,
+so the selected-profile atomic endpoint no longer merely carries the
+double-binding theorem as an unused parameter.
 Lean now also requires `UsesSelectedTraceKnowledgeModes(profile)` for the
 parent-trace extraction contract, aligning the proof target with the Rust
 profile's `fullTraceExtractable` and `fullWitnessRelationKnowledge` modes.

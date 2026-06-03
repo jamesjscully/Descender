@@ -161,7 +161,10 @@ ExtractedTraceRelationKnowledgeSoundness
 
 The current preferred endpoint,
 `transparent_view_full_interface_from_selected_profile_atomic_gates_or_break`,
-consumes those atomic pieces through the selected active profile. Meanwhile:
+consumes those atomic pieces through the selected active profile. The composed
+contract now returns a trace that opens the boundary, is self-stable via
+`ParentTraceDoubleBindingSoundness`, is consistent with the masked public
+openings, and satisfies the relation-knowledge predicate. Meanwhile:
 
 ```text
 TraceAssemblySoundness
@@ -169,19 +172,8 @@ TraceAssemblySoundness
 
 is a design-controlled native-boundary theorem.
 
-## Next Move
+## Current Lean State
 
-Add Lean predicates distinguishing:
-
-```text
-sampledOpeningOnly
-fullTraceExtractable
-```
-
-or, more generally, add a proof-family extraction mode enum so the active theorem
-can explicitly reject sampled-opening-only candidates.
-
-Done:
 `Descender/Path2NativeBoundary.lean` now defines `TraceExtractionMode` and
 `SupportsFullTraceExtraction`. `ParentTraceExtractionSoundness` requires
 `UsesSelectedTraceKnowledgeModes profile`, so the active theorem is pinned to

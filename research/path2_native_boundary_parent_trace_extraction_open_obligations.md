@@ -78,7 +78,9 @@ bits, plus `qrom_extractor_rewind_bound_required` and
 `double_trace_binding_break_exported`. Lean now has theorem-level
 `NativeBoundaryTraceQromExtractorRewindSoundness` and
 `ParentTraceDoubleBindingSoundness` obligations matching those Rust flags. This
-is a fail-closed interface gate, not a proof of those obligations.
+is a fail-closed interface gate, not a proof of those obligations. The active
+parent-trace extraction combiner now consumes the double-binding theorem before
+returning the composed extraction contract.
 
 ## Likely Hardest Subclaim
 

@@ -1444,13 +1444,15 @@ def ParentTraceExtractionSoundness (P : Predicates) : Prop :=
             (exists trace,
               P.transparentExtractsTrace b view trace ∧
                 P.traceOpensBoundary b profile trace ∧
-                  P.maskedOpeningsConsistent b view profile trace ∧
-                    P.traceRelationValid b profile trace) ∨
+                  P.tracesSafetyEquivalent b profile trace trace ∧
+                    P.maskedOpeningsConsistent b view profile trace ∧
+                      P.traceRelationValid b profile trace) ∨
             (exists breakEvent, P.boundaryBreakFor b.context b breakEvent)
 
 theorem commitment_extraction_and_relation_knowledge_imply_parent_trace_extraction
     (P : Predicates)
     (hCommitExtract : ParentTraceCommitmentExtractionSoundness P)
+    (hDoubleTraceBinding : ParentTraceDoubleBindingSoundness P)
     (hMaskedConsistency : MaskedOpeningConsistencySoundness P)
     (hRelationKnowledge : ExtractedTraceRelationKnowledgeSoundness P) :
     ParentTraceExtractionSoundness P := by
@@ -1464,13 +1466,22 @@ theorem commitment_extraction_and_relation_knowledge_imply_parent_trace_extracti
   cases hCommitExtract hAccept hProjects hProfile hFullTrace with
   | inl hTrace =>
       rcases hTrace with ⟨trace, hExtractsTrace, hOpens⟩
-      cases hMaskedConsistency hAccept hProjects hProfile hExtractsTrace hOpens with
-      | inl hMasked =>
-          cases
-              hRelationKnowledge hAccept hProjects hProfile hRelationMode
-                hExtractsTrace hOpens with
-          | inl hRelation =>
-              exact Or.inl ⟨trace, hExtractsTrace, hOpens, hMasked, hRelation⟩
+      cases
+          hDoubleTraceBinding hAccept hProjects hProfile
+            hExtractsTrace hOpens hExtractsTrace hOpens with
+      | inl hTraceStable =>
+          cases hMaskedConsistency hAccept hProjects hProfile hExtractsTrace hOpens with
+          | inl hMasked =>
+              cases
+                  hRelationKnowledge hAccept hProjects hProfile hRelationMode
+                    hExtractsTrace hOpens with
+              | inl hRelation =>
+                  exact
+                    Or.inl
+                      ⟨trace, hExtractsTrace, hOpens, hTraceStable, hMasked,
+                        hRelation⟩
+              | inr hBreak =>
+                  exact Or.inr hBreak
           | inr hBreak =>
               exact Or.inr hBreak
       | inr hBreak =>
@@ -1490,8 +1501,9 @@ theorem parent_trace_extracts_or_break
     (exists trace,
     P.transparentExtractsTrace b view trace ∧
         P.traceOpensBoundary b profile trace ∧
-          P.maskedOpeningsConsistent b view profile trace ∧
-            P.traceRelationValid b profile trace) ∨
+          P.tracesSafetyEquivalent b profile trace trace ∧
+            P.maskedOpeningsConsistent b view profile trace ∧
+              P.traceRelationValid b profile trace) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
   hSound hAccept hProjects hProfile hSelected
 
@@ -1963,7 +1975,8 @@ theorem trace_range_rows_bind_representative_or_break
   cases
       hTraceExtractSound hAccept hProjects hProfile hSelected with
   | inl hTrace =>
-      rcases hTrace with ⟨trace, hExtractsTrace, hOpens, _hMasked, hRelation⟩
+      rcases hTrace with
+        ⟨trace, hExtractsTrace, hOpens, _hTraceStable, _hMasked, hRelation⟩
       cases
           hTraceAssemblySound hAccept hProjects hProfile hRoleComplete
             hExtractsTrace hOpens hRelation with
@@ -2110,7 +2123,8 @@ theorem trace_blinding_rows_bound_representative_or_break
   cases
       hTraceExtractSound hAccept hProjects hProfile hSelected with
   | inl hTrace =>
-      rcases hTrace with ⟨trace, hExtractsTrace, hOpens, _hMasked, hRelation⟩
+      rcases hTrace with
+        ⟨trace, hExtractsTrace, hOpens, _hTraceStable, _hMasked, hRelation⟩
       cases
           hTraceAssemblySound hAccept hProjects hProfile hRoleComplete
             hExtractsTrace hOpens hRelation with
@@ -2188,7 +2202,8 @@ theorem trace_extraction_implies_hidden_representative_or_break
   cases
       hTraceExtractSound hAccept hProjects hProfile hSelected with
   | inl hTrace =>
-      rcases hTrace with ⟨trace, hExtractsTrace, hOpens, hMasked, hRelation⟩
+      rcases hTrace with
+        ⟨trace, hExtractsTrace, hOpens, _hTraceStable, hMasked, hRelation⟩
       cases
           hTraceAssemblySound hAccept hProjects hProfile hRoleComplete
             hExtractsTrace hOpens hRelation with
@@ -2259,8 +2274,8 @@ theorem transparent_view_authenticates_extracts_no_export_or_break
                 hAccept hProjects hProfile hRoleComplete hSelected with
           | inl hTrace =>
               rcases hTrace with
-                ⟨_trace, _hExtractsTrace, _hOpens, _hMasked,
-                  _hRelation, hAssembled⟩
+                ⟨_trace, _hExtractsTrace, _hOpens, _hTraceStable,
+                  _hMasked, _hRelation, hAssembled⟩
               rcases hAssembled with
                 ⟨h, _hTraceAssembles, hTransparent, hComplete,
                   _hDerived, hFiber, hLocal, hDescent⟩
@@ -2437,7 +2452,8 @@ theorem transparent_view_full_interface_from_decomposed_or_break
             cases hTraceExtractSound hAccept hProjects hProfile hSelected with
             | inl hTrace =>
                 rcases hTrace with
-                  ⟨trace, hExtractsTrace, hOpens, _hMasked, hRelation⟩
+                  ⟨trace, hExtractsTrace, hOpens, _hTraceStable,
+                    _hMasked, hRelation⟩
                 cases
                     hTraceAssemblySound hAccept hProjects hProfile
                       hRoleComplete hExtractsTrace hOpens hRelation with
@@ -2599,7 +2615,7 @@ theorem transparent_view_full_interface_from_atomic_gates_or_break
   transparent_view_full_interface_from_decomposed_or_break P
     hParentSound hRoleSound
     (commitment_extraction_and_relation_knowledge_imply_parent_trace_extraction
-      P hCommitExtract hMaskedConsistency hRelationKnowledge)
+      P hCommitExtract hDoubleTraceBinding hMaskedConsistency hRelationKnowledge)
     hTraceAssemblyExists hTraceAssemblyRoles hTraceAssemblyDerived
     hTraceAssemblyFiber hTraceAssemblyLocal hTraceAssemblyDescent
     hNoExportSound hRoleAuthNoExportSound hMaskFreshnessSound hQromSound
