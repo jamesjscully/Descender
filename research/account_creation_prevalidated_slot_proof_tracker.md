@@ -319,15 +319,16 @@ Named breaks:
   byte floor. The key result is sobering: with base-128 digit/range witnesses,
   a 64-repetition floor is already 16416 bytes before concrete rejection and
   proof-family overhead. `research/path2_private_zk_vs_transparent_gate.md`
-  therefore promotes the transparent hash proof from passive fallback to active
+  therefore promotes a transparent proof route from passive fallback to active
   comparator before further sigma optimization.
   `research/path2_transparent_proof_byte_model.md` models the same 80-lane /
   66-row private relation and produces planning floors of 4896, 6744, and 8848
   bytes for the 256/512/1024-row comparator bands. Based on that comparison,
-  `research/path2_payload_proof_candidate_decision.md` selects
-  `transparent_hash_proof_over_path2_descent_relation` as the active deployable
-  account-creation payload candidate. The descent/SIS work remains the semantic
-  relation, matrix/domain framework, and assumption vocabulary; the
+  `research/path2_payload_proof_candidate_decision.md` first selects the
+  transparent descent proof route; later masked-trace work refines the only
+  active deployable account-creation payload candidate to
+  `zk_masked_trace_iop_native_boundary`. The descent/SIS work remains the
+  semantic relation, matrix/domain framework, and assumption vocabulary; the
   repetition-heavy lattice-sigma transcript is parked until a non-repetition-
   heavy argument beats the transparent planning rows.
   `research/path2_transparent_payload_contract.md` now pins the selected
