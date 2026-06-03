@@ -498,7 +498,10 @@ Named breaks:
   truncated proof body, envelope context rebinding, zero Merkle/consistency
   envelope digest rejection, component-digest envelope mismatch, empty
   proof-body rejection, oversized proof-body rejection, and oversized envelope
-  rejection. Query-opening manifests are now also checked
+  rejection. `path2_transparent_descent_public_view_digest` now gives the
+  transparent payload digest a direct canonical handle for the full accepted
+  public view, reducing reliance on transcript indirection alone. Query-opening
+  manifests are now also checked
   against the accepted
   public view before proof-verifier handoff:
   `verify_path2_transparent_query_opening_manifest_for_public_view` rejects

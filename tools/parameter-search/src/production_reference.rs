@@ -10889,6 +10889,79 @@ pub fn verify_path2_transparent_descent_public_view(
     Ok(())
 }
 
+pub fn path2_transparent_descent_public_view_digest(
+    public_view: &Path2TransparentDescentPublicViewV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    verify_path2_transparent_descent_public_view(public_view)?;
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA.as_bytes(),
+    );
+    append_frame(&mut frame, b"proof_system_id", &public_view.proof_system_id);
+    append_frame(&mut frame, b"relation_id", &public_view.relation_id);
+    append_frame(
+        &mut frame,
+        b"trace_rows",
+        &public_view.trace_rows.to_le_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"query_count",
+        &public_view.query_count.to_le_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"column_profile",
+        &public_view.column_profile.to_le_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"leaf_context_digest",
+        &public_view.leaf_context_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"creation_proof_binding_digest",
+        &public_view.creation_proof_binding_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"matrix_domain_transcript_digest",
+        &public_view.matrix_domain_transcript_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"aggregation_context_digest",
+        &public_view.aggregation_context_digest,
+    );
+    for value in public_view.masked_projection {
+        append_frame(&mut frame, b"masked_projection", &value.to_le_bytes());
+    }
+    append_frame(
+        &mut frame,
+        b"trace_commitment_root",
+        &public_view.trace_commitment_root,
+    );
+    append_frame(
+        &mut frame,
+        b"constraint_commitment_root",
+        &public_view.constraint_commitment_root,
+    );
+    append_frame(
+        &mut frame,
+        b"query_index",
+        &public_view.query_index.to_le_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"transparent_transcript_digest",
+        &public_view.transparent_transcript_digest,
+    );
+    Ok(Sha256::digest(frame).into())
+}
+
 pub fn path2_transparent_descent_public_view_v1(
     proof_system_id: [u8; DIGEST_BYTES],
     trace_rows: u16,
@@ -11220,6 +11293,11 @@ pub fn path2_transparent_descent_proof_payload_digest(
         &mut frame,
         b"transparent_transcript_digest",
         &public_view.transparent_transcript_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"transparent_public_view_digest",
+        &path2_transparent_descent_public_view_digest(public_view)?,
     );
     append_frame(&mut frame, b"proof_system_id", &public_view.proof_system_id);
     append_frame(&mut frame, b"relation_id", &public_view.relation_id);
@@ -28735,6 +28813,28 @@ mod tests {
             3,
         )
         .unwrap();
+        let public_view_digest =
+            path2_transparent_descent_public_view_digest(&public_view).unwrap();
+        assert_ne!(public_view_digest, [0_u8; DIGEST_BYTES]);
+        let rebound_public_view = path2_transparent_descent_public_view_v1(
+            path2_transparent_descent_proof_system_id(),
+            256,
+            16,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+            leaf_context_digest,
+            binding.digest,
+            matrix_domain_transcript_digest,
+            [19_u16, 23, 29, 31, 37, 41],
+            binding.aggregation_context_digest,
+            test_digest("path2-transparent-trace-root"),
+            test_digest("path2-transparent-constraint-root"),
+            3,
+        )
+        .unwrap();
+        assert_ne!(
+            public_view_digest,
+            path2_transparent_descent_public_view_digest(&rebound_public_view).unwrap()
+        );
         let query_opening_manifest =
             path2_transparent_query_opening_manifest_fixture_for_public_view(&public_view);
         let query_openings_digest =
