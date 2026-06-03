@@ -470,9 +470,22 @@ Named breaks:
   `path2_transparent_descent_payload_boundary_binds_public_view_before_fail_closed`
   now covers the manifest-aware positive path plus mismatched manifest context,
   rebound manifest digest, and raw-hidden-opening negative controls at the
-  verifier handoff. The next executable blocker remains concrete transparent
-  proof-byte parsing and honest/malformed verifier coverage against this encoded
-  relation and validated query-opening manifest.
+  verifier handoff. Transparent proof-byte parsing now has a canonical
+  fail-closed envelope:
+  `PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA`,
+  `path2_transparent_proof_bytes_envelope_v1_bytes`,
+  `decode_path2_transparent_proof_bytes_envelope_v1`,
+  `verify_path2_transparent_proof_bytes_envelope_v1`, and
+  `verify_path2_direct_creation_transparent_descent_payload_boundary_with_proof_bytes`
+  bind proof bytes to the accepted public view, `R_core_66` layout digest,
+  query-opening manifest digest, column profile, trace rows, query count, and
+  an opaque proof-body digest/length before returning the proof-verifier-not-
+  implemented blocker. The boundary KAT now also covers proof-byte digest
+  mismatch, body digest mismatch, truncated proof body, envelope context
+  rebinding, and empty proof-body rejection. The next executable blocker is no
+  longer byte parsing; it is an actual concrete transparent proof-system
+  verifier with honest/malformed coverage against this encoded relation,
+  validated query-opening manifest, and canonical proof-byte envelope.
 
 - [x] Carry over active-lane negative controls into creation time.
   Requirement: wrong witness digest, wrong pad seed, wrong public pad statement,

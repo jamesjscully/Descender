@@ -267,6 +267,8 @@ pub const PATH2_DESCENT_SIS_TRANSCRIPT_COMMITMENT_MATRIX_DOMAIN: &str =
     "DESCENDER_PATH2_DESCENT_SIS_TRANSCRIPT_COMMITMENT_MATRIX_V1";
 pub const PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN: &str =
     "DESCENDER_PATH2_TRANSPARENT_DESCENT_PROOF_V1";
+pub const PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA: &str =
+    "DESCENDER_PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_V1";
 pub const PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN: &str =
     "DESCENDER_PATH2_TRANSPARENT_DESCENT_RELATION_V1";
 pub const PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA: &str =
@@ -330,6 +332,7 @@ pub const PATH2_DIRECT_CREATION_PROOF_KIND_TOY_Q_LINEAR: u16 = 1;
 pub const PATH2_DIRECT_CREATION_PROOF_KIND_TRANSPARENT_DESCENT: u16 = 2;
 pub const PATH2_TRANSPARENT_DESCENT_PROOF_SYSTEM_PROFILE: &str =
     "DESCENDER_PATH2_TRANSPARENT_HASH_PROOF_OVER_DESCENT_RELATION_V1";
+pub const PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_VERSION: u16 = 1;
 pub const PATH2_TRANSPARENT_RELATION_ROW_GROUP_MASKED_PROJECTION: u8 = 1;
 pub const PATH2_TRANSPARENT_RELATION_ROW_GROUP_DIGIT_RECONSTRUCTION: u8 = 2;
 pub const PATH2_TRANSPARENT_RELATION_ROW_GROUP_DIGIT_RANGE: u8 = 3;
@@ -1368,6 +1371,22 @@ pub struct Path2TransparentRelationLayoutV1 {
     pub column_profile: u16,
     pub row_groups: [Path2TransparentRelationRowGroupV1; 3],
     pub role_layouts: [Path2TransparentRelationRoleLayoutV1; 3],
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2TransparentProofBytesEnvelopeV1 {
+    pub schema: &'static str,
+    pub version: u16,
+    pub proof_system_id: [u8; DIGEST_BYTES],
+    pub relation_id: [u8; DIGEST_BYTES],
+    pub relation_layout_digest: [u8; DIGEST_BYTES],
+    pub transparent_transcript_digest: [u8; DIGEST_BYTES],
+    pub query_opening_manifest_digest: [u8; DIGEST_BYTES],
+    pub column_profile: u16,
+    pub trace_rows: u16,
+    pub query_count: u16,
+    pub proof_body_digest: [u8; DIGEST_BYTES],
+    pub proof_body_byte_len: u32,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -9905,6 +9924,135 @@ pub fn path2_transparent_descent_public_view_v1_json(
     .map_err(|err| format!("encode Path 2 transparent public view: {err}"))
 }
 
+pub fn path2_transparent_proof_bytes_envelope_v1_bytes(
+    public_view: &Path2TransparentDescentPublicViewV1,
+    query_opening_manifest: &Path2TransparentQueryOpeningManifestV1,
+    proof_body: &[u8],
+) -> Result<Vec<u8>, String> {
+    if proof_body.is_empty() {
+        return Err("Path 2 transparent proof body is empty".to_string());
+    }
+    verify_path2_transparent_query_opening_manifest(query_opening_manifest)?;
+    if query_opening_manifest.proof_system_id != public_view.proof_system_id
+        || query_opening_manifest.relation_id != public_view.relation_id
+        || query_opening_manifest.column_profile != public_view.column_profile
+        || query_opening_manifest.query_count != public_view.query_count
+    {
+        return Err("Path 2 transparent proof envelope manifest context mismatch".to_string());
+    }
+    if proof_body.len() > u32::MAX as usize {
+        return Err("Path 2 transparent proof body is too large".to_string());
+    }
+    let mut bytes = Vec::new();
+    bytes.extend_from_slice(PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA.as_bytes());
+    bytes.extend_from_slice(&PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_VERSION.to_le_bytes());
+    bytes.extend_from_slice(&public_view.proof_system_id);
+    bytes.extend_from_slice(&public_view.relation_id);
+    bytes.extend_from_slice(&path2_transparent_relation_layout_v1_digest()?);
+    bytes.extend_from_slice(&public_view.transparent_transcript_digest);
+    bytes.extend_from_slice(&path2_transparent_query_opening_manifest_digest(
+        query_opening_manifest,
+    )?);
+    bytes.extend_from_slice(&public_view.column_profile.to_le_bytes());
+    bytes.extend_from_slice(&public_view.trace_rows.to_le_bytes());
+    bytes.extend_from_slice(&public_view.query_count.to_le_bytes());
+    let proof_body_digest: [u8; DIGEST_BYTES] = Sha256::digest(proof_body).into();
+    bytes.extend_from_slice(&proof_body_digest);
+    bytes.extend_from_slice(&(proof_body.len() as u32).to_le_bytes());
+    bytes.extend_from_slice(proof_body);
+    Ok(bytes)
+}
+
+pub fn decode_path2_transparent_proof_bytes_envelope_v1(
+    bytes: &[u8],
+) -> Result<Path2TransparentProofBytesEnvelopeV1, String> {
+    let schema = PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA.as_bytes();
+    let fixed_len = schema.len() + 2 + DIGEST_BYTES * 6 + 2 + 2 + 2 + 4;
+    if bytes.len() < fixed_len {
+        return Err("Path 2 transparent proof bytes envelope is truncated".to_string());
+    }
+    if &bytes[..schema.len()] != schema {
+        return Err("Path 2 transparent proof bytes envelope schema mismatch".to_string());
+    }
+    let mut offset = schema.len();
+    let version = u16::from_le_bytes(bytes[offset..offset + 2].try_into().unwrap());
+    offset += 2;
+    if version != PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_VERSION {
+        return Err("Path 2 transparent proof bytes envelope version mismatch".to_string());
+    }
+    let proof_system_id: [u8; DIGEST_BYTES] =
+        bytes[offset..offset + DIGEST_BYTES].try_into().unwrap();
+    offset += DIGEST_BYTES;
+    let relation_id: [u8; DIGEST_BYTES] = bytes[offset..offset + DIGEST_BYTES].try_into().unwrap();
+    offset += DIGEST_BYTES;
+    let relation_layout_digest: [u8; DIGEST_BYTES] =
+        bytes[offset..offset + DIGEST_BYTES].try_into().unwrap();
+    offset += DIGEST_BYTES;
+    let transparent_transcript_digest: [u8; DIGEST_BYTES] =
+        bytes[offset..offset + DIGEST_BYTES].try_into().unwrap();
+    offset += DIGEST_BYTES;
+    let query_opening_manifest_digest: [u8; DIGEST_BYTES] =
+        bytes[offset..offset + DIGEST_BYTES].try_into().unwrap();
+    offset += DIGEST_BYTES;
+    let column_profile = u16::from_le_bytes(bytes[offset..offset + 2].try_into().unwrap());
+    offset += 2;
+    let trace_rows = u16::from_le_bytes(bytes[offset..offset + 2].try_into().unwrap());
+    offset += 2;
+    let query_count = u16::from_le_bytes(bytes[offset..offset + 2].try_into().unwrap());
+    offset += 2;
+    let proof_body_digest: [u8; DIGEST_BYTES] =
+        bytes[offset..offset + DIGEST_BYTES].try_into().unwrap();
+    offset += DIGEST_BYTES;
+    let proof_body_byte_len = u32::from_le_bytes(bytes[offset..offset + 4].try_into().unwrap());
+    offset += 4;
+    if proof_body_byte_len == 0 {
+        return Err("Path 2 transparent proof body is empty".to_string());
+    }
+    if bytes.len() != offset + proof_body_byte_len as usize {
+        return Err("Path 2 transparent proof body length mismatch".to_string());
+    }
+    let actual_body_digest: [u8; DIGEST_BYTES] = Sha256::digest(&bytes[offset..]).into();
+    if actual_body_digest != proof_body_digest {
+        return Err("Path 2 transparent proof body digest mismatch".to_string());
+    }
+    Ok(Path2TransparentProofBytesEnvelopeV1 {
+        schema: PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA,
+        version,
+        proof_system_id,
+        relation_id,
+        relation_layout_digest,
+        transparent_transcript_digest,
+        query_opening_manifest_digest,
+        column_profile,
+        trace_rows,
+        query_count,
+        proof_body_digest,
+        proof_body_byte_len,
+    })
+}
+
+pub fn verify_path2_transparent_proof_bytes_envelope_v1(
+    public_view: &Path2TransparentDescentPublicViewV1,
+    query_opening_manifest: &Path2TransparentQueryOpeningManifestV1,
+    proof_bytes: &[u8],
+) -> Result<Path2TransparentProofBytesEnvelopeV1, String> {
+    let envelope = decode_path2_transparent_proof_bytes_envelope_v1(proof_bytes)?;
+    verify_path2_transparent_query_opening_manifest(query_opening_manifest)?;
+    if envelope.proof_system_id != public_view.proof_system_id
+        || envelope.relation_id != public_view.relation_id
+        || envelope.relation_layout_digest != path2_transparent_relation_layout_v1_digest()?
+        || envelope.transparent_transcript_digest != public_view.transparent_transcript_digest
+        || envelope.query_opening_manifest_digest
+            != path2_transparent_query_opening_manifest_digest(query_opening_manifest)?
+        || envelope.column_profile != public_view.column_profile
+        || envelope.trace_rows != public_view.trace_rows
+        || envelope.query_count != public_view.query_count
+    {
+        return Err("Path 2 transparent proof bytes envelope context mismatch".to_string());
+    }
+    Ok(envelope)
+}
+
 pub fn path2_prevalidated_slot_leaf_context_digest(
     leaf: &Path2PrevalidatedSlotLeafV1,
     evidence: &Path2AccountCreationEvidenceV1,
@@ -10753,6 +10901,40 @@ pub fn verify_path2_direct_creation_transparent_descent_payload_boundary_with_qu
             "Path 2 transparent descent query opening manifest digest mismatch".to_string(),
         );
     }
+    Err("Path 2 transparent descent proof verifier is not implemented".to_string())
+}
+
+pub fn verify_path2_direct_creation_transparent_descent_payload_boundary_with_proof_bytes(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    binding: &Path2CreationProofBindingV1,
+    payload: &Path2DirectCreationProofPayloadV1,
+    transparent_payload: &Path2TransparentDescentProofPayloadV1,
+    query_opening_manifest: &Path2TransparentQueryOpeningManifestV1,
+    proof_bytes: &[u8],
+) -> Result<(), String> {
+    match verify_path2_direct_creation_transparent_descent_payload_boundary_with_query_manifest(
+        leaf,
+        evidence,
+        certificate,
+        binding,
+        payload,
+        transparent_payload,
+        query_opening_manifest,
+    ) {
+        Err(err) if err == "Path 2 transparent descent proof verifier is not implemented" => {}
+        result => return result,
+    }
+    let proof_bytes_digest: [u8; DIGEST_BYTES] = Sha256::digest(proof_bytes).into();
+    if proof_bytes_digest != transparent_payload.proof_bytes_digest {
+        return Err("Path 2 transparent descent proof bytes digest mismatch".to_string());
+    }
+    verify_path2_transparent_proof_bytes_envelope_v1(
+        &transparent_payload.public_view,
+        query_opening_manifest,
+        proof_bytes,
+    )?;
     Err("Path 2 transparent descent proof verifier is not implemented".to_string())
 }
 
@@ -12894,7 +13076,7 @@ pub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(
         .map_err(|err| format!("encode Path 2 native storage/lifecycle hardening scope: {err}"))
 }
 
-pub fn path2_registered_domain_constants() -> [&'static str; 23] {
+pub fn path2_registered_domain_constants() -> [&'static str; 24] {
     [
         PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN,
         PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN,
@@ -12913,6 +13095,7 @@ pub fn path2_registered_domain_constants() -> [&'static str; 23] {
         PATH2_DESCENT_SIS_OPENING_TUPLE_MATRIX_DOMAIN,
         PATH2_DESCENT_SIS_TRANSCRIPT_COMMITMENT_MATRIX_DOMAIN,
         PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN,
+        PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA,
         PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN,
         PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA,
         PATH2_TRANSPARENT_DESCENT_PROOF_SYSTEM_PROFILE,
@@ -13206,6 +13389,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN",
             PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN,
+        ),
+        (
+            "PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA",
+            PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA,
         ),
         (
             "PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN",
@@ -27453,10 +27640,16 @@ mod tests {
             3,
         )
         .unwrap();
-        let proof_bytes_digest = test_digest("path2-transparent-proof-bytes");
         let query_opening_manifest = path2_transparent_query_opening_manifest_fixture(16);
         let query_openings_digest =
             path2_transparent_query_opening_manifest_digest(&query_opening_manifest).unwrap();
+        let proof_bytes = path2_transparent_proof_bytes_envelope_v1_bytes(
+            &public_view,
+            &query_opening_manifest,
+            b"path2-transparent-proof-body-placeholder",
+        )
+        .unwrap();
+        let proof_bytes_digest: [u8; DIGEST_BYTES] = Sha256::digest(&proof_bytes).into();
         let merkle_paths_digest = test_digest("path2-transparent-merkle-paths");
         let consistency_messages_digest = test_digest("path2-transparent-consistency");
         let payload_digest = path2_transparent_descent_proof_payload_digest(
@@ -27522,6 +27715,48 @@ mod tests {
             "Path 2 transparent descent proof verifier is not implemented"
         );
         assert_eq!(
+            verify_path2_direct_creation_transparent_descent_payload_boundary_with_proof_bytes(
+                &leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &payload,
+                &transparent_payload,
+                &query_opening_manifest,
+                &proof_bytes,
+            )
+            .unwrap_err(),
+            "Path 2 transparent descent proof verifier is not implemented"
+        );
+        let decoded_envelope =
+            decode_path2_transparent_proof_bytes_envelope_v1(&proof_bytes).unwrap();
+        assert_eq!(
+            decoded_envelope.schema,
+            PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA
+        );
+        assert_eq!(
+            decoded_envelope.version,
+            PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_VERSION
+        );
+        assert_eq!(
+            decoded_envelope.proof_system_id,
+            public_view.proof_system_id
+        );
+        assert_eq!(decoded_envelope.relation_id, public_view.relation_id);
+        assert_eq!(
+            decoded_envelope.transparent_transcript_digest,
+            public_view.transparent_transcript_digest
+        );
+        assert_eq!(
+            verify_path2_transparent_proof_bytes_envelope_v1(
+                &public_view,
+                &query_opening_manifest,
+                &proof_bytes,
+            )
+            .unwrap(),
+            decoded_envelope
+        );
+        assert_eq!(
             verify_path2_direct_creation_proof_payload_v1(
                 &leaf,
                 &evidence,
@@ -27576,6 +27811,56 @@ mod tests {
             )
             .unwrap_err(),
             "Path 2 transparent descent payload digest mismatch"
+        );
+
+        let mut wrong_proof_bytes = proof_bytes.clone();
+        let last = wrong_proof_bytes.len() - 1;
+        wrong_proof_bytes[last] ^= 1;
+        assert_eq!(
+            verify_path2_direct_creation_transparent_descent_payload_boundary_with_proof_bytes(
+                &leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &payload,
+                &transparent_payload,
+                &query_opening_manifest,
+                &wrong_proof_bytes,
+            )
+            .unwrap_err(),
+            "Path 2 transparent descent proof bytes digest mismatch"
+        );
+        assert_eq!(
+            decode_path2_transparent_proof_bytes_envelope_v1(&wrong_proof_bytes).unwrap_err(),
+            "Path 2 transparent proof body digest mismatch"
+        );
+        let mut truncated_proof_bytes = proof_bytes.clone();
+        truncated_proof_bytes.pop();
+        assert_eq!(
+            decode_path2_transparent_proof_bytes_envelope_v1(&truncated_proof_bytes).unwrap_err(),
+            "Path 2 transparent proof body length mismatch"
+        );
+        let mut rebound_envelope = proof_bytes.clone();
+        let relation_id_offset =
+            PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA.len() + 2 + DIGEST_BYTES;
+        rebound_envelope[relation_id_offset] ^= 1;
+        assert_eq!(
+            verify_path2_transparent_proof_bytes_envelope_v1(
+                &public_view,
+                &query_opening_manifest,
+                &rebound_envelope,
+            )
+            .unwrap_err(),
+            "Path 2 transparent proof bytes envelope context mismatch"
+        );
+        assert_eq!(
+            path2_transparent_proof_bytes_envelope_v1_bytes(
+                &public_view,
+                &query_opening_manifest,
+                &[],
+            )
+            .unwrap_err(),
+            "Path 2 transparent proof body is empty"
         );
 
         let mismatched_manifest = path2_transparent_query_opening_manifest_fixture(8);
