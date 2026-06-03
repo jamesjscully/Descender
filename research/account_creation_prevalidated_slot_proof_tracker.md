@@ -480,9 +480,13 @@ Named breaks:
   bind proof bytes to the accepted public view, `R_core_66` layout digest,
   query-opening manifest digest, column profile, trace rows, query count, and
   an opaque proof-body digest/length before returning the proof-verifier-not-
-  implemented blocker. The boundary KAT now also covers proof-byte digest
-  mismatch, body digest mismatch, truncated proof body, envelope context
-  rebinding, and empty proof-body rejection. The proof-system id now binds the
+  implemented blocker. The envelope constructor/parser now also enforce the
+  active 16416-byte fallback threshold on the canonical encoded proof bytes, so
+  an over-budget transparent proof cannot pass the fail-closed boundary as the
+  active route. The boundary KAT now also covers proof-byte digest mismatch,
+  body digest mismatch, truncated proof body, envelope context rebinding, empty
+  proof-body rejection, oversized proof-body rejection, and oversized envelope
+  rejection. The proof-system id now binds the
   active proof-family capability profile:
   `PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA`,
   `path2_transparent_proof_family_capability_v1`,

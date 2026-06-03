@@ -10521,6 +10521,11 @@ pub fn path2_transparent_proof_bytes_envelope_v1_bytes(
     if proof_body.len() > u32::MAX as usize {
         return Err("Path 2 transparent proof body is too large".to_string());
     }
+    if path2_transparent_proof_bytes_envelope_fixed_len() + proof_body.len()
+        > PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES as usize
+    {
+        return Err("Path 2 transparent proof bytes exceed active fallback threshold".to_string());
+    }
     let mut bytes = Vec::new();
     bytes.extend_from_slice(PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA.as_bytes());
     bytes.extend_from_slice(&PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_VERSION.to_le_bytes());
@@ -10541,13 +10546,20 @@ pub fn path2_transparent_proof_bytes_envelope_v1_bytes(
     Ok(bytes)
 }
 
+pub fn path2_transparent_proof_bytes_envelope_fixed_len() -> usize {
+    PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA.len() + 2 + DIGEST_BYTES * 6 + 2 + 2 + 2 + 4
+}
+
 pub fn decode_path2_transparent_proof_bytes_envelope_v1(
     bytes: &[u8],
 ) -> Result<Path2TransparentProofBytesEnvelopeV1, String> {
     let schema = PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA.as_bytes();
-    let fixed_len = schema.len() + 2 + DIGEST_BYTES * 6 + 2 + 2 + 2 + 4;
+    let fixed_len = path2_transparent_proof_bytes_envelope_fixed_len();
     if bytes.len() < fixed_len {
         return Err("Path 2 transparent proof bytes envelope is truncated".to_string());
+    }
+    if bytes.len() > PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES as usize {
+        return Err("Path 2 transparent proof bytes exceed active fallback threshold".to_string());
     }
     if &bytes[..schema.len()] != schema {
         return Err("Path 2 transparent proof bytes envelope schema mismatch".to_string());
@@ -28450,6 +28462,27 @@ mod tests {
             )
             .unwrap_err(),
             "Path 2 transparent proof body is empty"
+        );
+        let oversized_body_len = PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES as usize
+            - path2_transparent_proof_bytes_envelope_fixed_len()
+            + 1;
+        assert_eq!(
+            path2_transparent_proof_bytes_envelope_v1_bytes(
+                &public_view,
+                &query_opening_manifest,
+                &vec![0x42; oversized_body_len],
+            )
+            .unwrap_err(),
+            "Path 2 transparent proof bytes exceed active fallback threshold"
+        );
+        let mut oversized_envelope = proof_bytes.clone();
+        oversized_envelope.resize(
+            PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES as usize + 1,
+            0,
+        );
+        assert_eq!(
+            decode_path2_transparent_proof_bytes_envelope_v1(&oversized_envelope).unwrap_err(),
+            "Path 2 transparent proof bytes exceed active fallback threshold"
         );
 
         let mismatched_manifest = path2_transparent_query_opening_manifest_fixture(8);
