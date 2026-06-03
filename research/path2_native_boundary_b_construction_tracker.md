@@ -485,10 +485,12 @@ splits knowledge soundness into parent-trace extraction, which is proof-family
 dependent, and trace assembly, which is controlled by the native-boundary
 column/profile design.
 `research/path2_native_boundary_parent_trace_extraction_contract.md` pins the
-full-trace extraction contract and adds the extraction-mode gate.
+full-trace extraction contract and now pins the active extraction/relation pair
+to `fullTraceExtractable` plus `fullWitnessRelationKnowledge`.
 `research/path2_native_boundary_relation_knowledge_soundness_contract.md` adds
-the separate relation-knowledge gate, rejecting sampled-row-only and
-proximity-without-witness modes.
+the separate relation-knowledge gate, rejecting sampled-row-only,
+proximity-without-witness, and non-selected relation modes for the active
+profile.
 `research/path2_native_boundary_parent_trace_extraction_open_obligations.md`
 lists the remaining proof-family obligations, with relation knowledge
 soundness as the likely hardest subclaim.

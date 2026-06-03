@@ -20,7 +20,7 @@ ParentTraceExtractionSoundness
 
 | route | commitment extraction | relation knowledge | no raw hidden openings | PQ fit | current disposition |
 |---|---|---|---|---|---|
-| `zk_masked_trace_iop_native_boundary` | plausible if parent trace commitment has knowledge extraction | plausible only with proximity-to-witness or direct relation-knowledge theorem | yes by design, not proved | yes under hash/RO assumptions | active, but assumption-heavy |
+| `zk_masked_trace_iop_native_boundary` | plausible if parent trace commitment has knowledge extraction | selected profile requires full-witness relation knowledge for the extracted trace | yes by design, not proved | yes under hash/RO assumptions | active, but assumption-heavy |
 | `transparent_stark_iop_with_witness_extraction` | plausible as a named STARK/IOP theorem | plausible if AIR/constraint theorem extracts satisfying trace | needs ZK masking layer | yes under hash/RO assumptions | viable broad fallback / active comparator |
 | `mpc_in_the_head_hash_zk` | natural full witness extraction | natural relation knowledge for circuit witness | yes by design if instantiated correctly | yes under symmetric/hash assumptions | fallback if transparent trace ZK is too hard |
 | `parked_lattice_sigma_private` | natural via special soundness | natural for linear/SIS relation | yes under simulator/rejection proof | yes under lattice assumptions | fallback floor, byte-heavy |
@@ -35,12 +35,12 @@ The native-boundary design has made one thing clear: the active transparent
 route is not "just use FRI." It needs a ZK proof-family theorem with both:
 
 ```text
-full trace or full witness extraction
-relation knowledge for the extracted object
+full trace extraction
+full-witness relation knowledge for the extracted object
 ```
 
-Vanilla proximity testing is dead unless upgraded into a witness-extraction
-theorem.
+Vanilla proximity testing is dead unless the active profile is deliberately
+changed to a witness-reconstruction route and the proof-system id changes.
 
 ## Most Promising Paths
 

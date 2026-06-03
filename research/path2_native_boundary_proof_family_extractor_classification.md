@@ -76,14 +76,13 @@ TraceExtractionMode =
 The active theorem requires:
 
 ```text
-SupportsFullTraceExtraction(profile)
-SupportsRelationKnowledge(profile)
+UsesSelectedTraceKnowledgeModes(profile)
 ```
 
 so `sampledOpeningOnly` and bare `proximityOnly` profiles are rejected for the
-native-boundary route. A proximity proof can become viable only if paired with a
-knowledge/extraction theorem strong enough to mark the profile
-`fullTraceExtractable` and `proximityWithWitnessBridge`.
+native-boundary route. The selected profile is `fullTraceExtractable` plus
+`fullWitnessRelationKnowledge`. A proximity proof can become viable only by
+changing the active profile/proof-system id to a witness-reconstruction mode.
 
 ## Practical Implication
 
