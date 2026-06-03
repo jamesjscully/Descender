@@ -1,6 +1,6 @@
 # Path 2 Native Boundary Blinding/Noise Bound
 
-Status: theorem interface pinned; public-commitment bound path rejected.
+Status: selected-policy theorem interface pinned; public-commitment bound path rejected.
 
 Purpose: isolate the remaining SIS binding blocker after selecting hybrid
 base-128 hidden-role digits.
@@ -51,6 +51,8 @@ BlindingNoiseBoundSoundness:
 
 accepted transparent proof
 compatible native boundary b
+compatible column profile
+UsesSelectedBlindingNoisePolicy(policy)
 extracted h in Fiber(B_c, b)
   =>
 BlindingNoiseBounded(b, policy, h)
@@ -69,6 +71,7 @@ or one of:
 `Descender/Path2NativeBoundary.lean` now provides:
 
 - `Descender.Path2NativeBoundary.BlindingNoisePolicy`
+- `Descender.Path2NativeBoundary.UsesSelectedBlindingNoisePolicy`
 - `Descender.Path2NativeBoundary.Predicates.blindingNoiseBounded`
 - `Descender.Path2NativeBoundary.BlindingNoiseBoundSoundness`
 - `Descender.Path2NativeBoundary.blinding_noise_bounded_or_break`
@@ -81,6 +84,11 @@ P.blindingNoiseBounded b policy h
 ```
 
 for the extracted hidden representative.
+
+The active selected policy is pinned to policy id `1` and centered bound `2048`
+for pad-source, projection-relation, opening-tuple, and range-auxiliary
+blinding/noise coordinates. The Rust proof-family interface digest binds the
+same policy id and `PATH2_DESCENT_SIS_BLINDING_CENTERED_BOUND`.
 
 ## Design Options
 

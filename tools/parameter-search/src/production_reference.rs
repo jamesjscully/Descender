@@ -362,6 +362,7 @@ pub const PATH2_NATIVE_BOUNDARY_TRACE_ZK_MASKED_OR_SIMULATED_OPENINGS: u16 = 1;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_QROM_NATIVE_BOUNDARY_SCHEDULE: u16 = 1;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_RANGE_HYBRID_BASE128: u16 = 1;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_EXTRACTOR_BOUNDED: u16 = 1;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_NOISE_POLICY_ID: u16 = 1;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_ROLE_SUBCOMMITMENTS_CREATION_BINDING: u16 = 1;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_PROFILE_ID: u16 = 1;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_CLASS_COUNT: usize = 10;
@@ -1498,6 +1499,8 @@ pub struct Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
     pub qrom_schedule_mode: u16,
     pub norm_range_mode: u16,
     pub blinding_noise_mode: u16,
+    pub blinding_noise_policy_id: u16,
+    pub blinding_noise_centered_bound: u16,
     pub role_subcommitment_link_mode: u16,
     pub opening_tuple_account_binding_rows_required: bool,
     pub checked_core_residue_compatibility_rows_required: bool,
@@ -10027,6 +10030,8 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1()
         qrom_schedule_mode: PATH2_NATIVE_BOUNDARY_TRACE_QROM_NATIVE_BOUNDARY_SCHEDULE,
         norm_range_mode: PATH2_NATIVE_BOUNDARY_TRACE_RANGE_HYBRID_BASE128,
         blinding_noise_mode: PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_EXTRACTOR_BOUNDED,
+        blinding_noise_policy_id: PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_NOISE_POLICY_ID,
+        blinding_noise_centered_bound: PATH2_DESCENT_SIS_BLINDING_CENTERED_BOUND as u16,
         role_subcommitment_link_mode:
             PATH2_NATIVE_BOUNDARY_TRACE_ROLE_SUBCOMMITMENTS_CREATION_BINDING,
         opening_tuple_account_binding_rows_required: true,
@@ -10103,6 +10108,18 @@ pub fn verify_path2_native_boundary_trace_proof_family_interface(
     if interface.blinding_noise_mode != PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_EXTRACTOR_BOUNDED {
         return Err(
             "Path 2 native-boundary trace proof-family interface blinding mode mismatch"
+                .to_string(),
+        );
+    }
+    if interface.blinding_noise_policy_id != PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_NOISE_POLICY_ID {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface blinding policy mismatch"
+                .to_string(),
+        );
+    }
+    if interface.blinding_noise_centered_bound != PATH2_DESCENT_SIS_BLINDING_CENTERED_BOUND as u16 {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface blinding bound mismatch"
                 .to_string(),
         );
     }
@@ -10233,6 +10250,16 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
         &mut frame,
         b"blinding_noise_mode",
         interface.blinding_noise_mode as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"blinding_noise_policy_id",
+        interface.blinding_noise_policy_id as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"blinding_noise_centered_bound",
+        interface.blinding_noise_centered_bound as u64,
     );
     append_u64(
         &mut frame,
@@ -33551,6 +33578,14 @@ mod tests {
             PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_EXTRACTOR_BOUNDED
         );
         assert_eq!(
+            interface.blinding_noise_policy_id,
+            PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_NOISE_POLICY_ID
+        );
+        assert_eq!(
+            interface.blinding_noise_centered_bound,
+            PATH2_DESCENT_SIS_BLINDING_CENTERED_BOUND as u16
+        );
+        assert_eq!(
             interface.role_subcommitment_link_mode,
             PATH2_NATIVE_BOUNDARY_TRACE_ROLE_SUBCOMMITMENTS_CREATION_BINDING
         );
@@ -33595,6 +33630,22 @@ mod tests {
             verify_path2_native_boundary_trace_proof_family_interface(&wrong_role_link_mode)
                 .unwrap_err(),
             "Path 2 native-boundary trace proof-family interface role link mode mismatch"
+        );
+
+        let mut wrong_blinding_policy = interface.clone();
+        wrong_blinding_policy.blinding_noise_policy_id += 1;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&wrong_blinding_policy)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface blinding policy mismatch"
+        );
+
+        let mut wrong_blinding_bound = interface.clone();
+        wrong_blinding_bound.blinding_noise_centered_bound += 1;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&wrong_blinding_bound)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface blinding bound mismatch"
         );
 
         let mut no_opening_account_rows = interface.clone();

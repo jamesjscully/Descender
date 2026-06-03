@@ -57,6 +57,7 @@ must reject in direct mode unless the optional aggregation theorem is enabled.
 | `no_export_policy_id` | policy digest for simulator-only/extractor-only hidden openings | no-export/hiding separation | `no_export_zk_break` or `qrom_or_domain_separation_break` |
 | `norm_range_mode` | selected range representation, currently `hybridBase128HiddenRoles` | range soundness for hidden role openings | `norm_range_break` or `transparent_proof_soundness_break` |
 | `blinding_noise_policy_id` | selected extractor-side masking/noise policy | prevents extractor proof from relying on unbounded hidden cancellations | `blinding_noise_bound_break` or `transparent_proof_soundness_break` |
+| `blinding_noise_centered_bound` | selected centered extractor-side masking/noise bound, currently `2048` | fixes the active SIS/binding norm budget before proof handoff | `blinding_noise_bound_break` or `transparent_proof_soundness_break` |
 
 ## PRF And Hiding Roles
 
@@ -426,6 +427,7 @@ The KAT suite must include:
 - no-export policy id mutation rejects;
 - norm-range mode mutation rejects;
 - blinding/noise policy id mutation rejects;
+- blinding/noise centered-bound mutation rejects;
 - public full-rank linear commitments for private roles reject in the active
   native-boundary mode;
 - duplicate or prefix-related Path 2 domains remain absent from the global

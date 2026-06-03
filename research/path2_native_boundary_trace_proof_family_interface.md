@@ -147,10 +147,12 @@ opening_tuple_account_binding_rows_required = true
 checked_core_residue_compatibility_rows_required = true
 role_authentication_material_simulatable_required = true
 mask_freshness_required = true
+blinding_noise_policy_id = 1
+blinding_noise_centered_bound = 2048
 ```
 
-Negative controls reject clearing any of these flags before the transparent
-verifier handoff.
+Negative controls reject clearing any of these flags or drifting either
+blinding/noise policy field before the transparent verifier handoff.
 
 ## Closure Criterion
 

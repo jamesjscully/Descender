@@ -279,6 +279,10 @@ The zero-knowledge/no-export assumption is also split now:
 The Rust proof-family interface and capability digests bind corresponding
 simulator/freshness flags, with negative controls for clearing them. This keeps
 “no raw openings” from being treated as a complete hiding theorem.
+The same active proof-family interface now binds the extractor-side
+blinding/noise policy to policy id `1` and centered bound `2048`; Lean requires
+`UsesSelectedBlindingNoisePolicy(policy)` before deriving
+`BlindingNoiseBounded`, and Rust negative controls reject policy or bound drift.
 
 ## Findings
 

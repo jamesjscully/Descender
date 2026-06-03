@@ -556,6 +556,23 @@ structure BlindingNoisePolicy where
   openingTupleBound : Nat
   rangeAuxiliaryBound : Nat
 
+/-- The selected extractor-side blinding/noise policy id for the active route. -/
+def selectedBlindingNoisePolicyId : Nat :=
+  1
+
+/-- The selected centered bound used by the active private blinding policy. -/
+def selectedBlindingNoiseCenteredBound : Nat :=
+  2048
+
+/-- The active route uses one binding-compatible blinding/noise policy. -/
+def UsesSelectedBlindingNoisePolicy
+    (policy : BlindingNoisePolicy) : Prop :=
+  policy.policyId = selectedBlindingNoisePolicyId ∧
+    policy.padSourceBound = selectedBlindingNoiseCenteredBound ∧
+      policy.projectionRelationBound = selectedBlindingNoiseCenteredBound ∧
+        policy.openingTupleBound = selectedBlindingNoiseCenteredBound ∧
+          policy.rangeAuxiliaryBound = selectedBlindingNoiseCenteredBound
+
 /-- The public context projection from a native boundary. -/
 def pContext (b : Boundary) : Context :=
   b.context
@@ -1376,26 +1393,32 @@ policy, or export a named break.
 -/
 def BlindingNoiseBoundSoundness (P : Predicates) : Prop :=
   forall {b : Boundary} {view : TransparentPublicView}
-      {policy : BlindingNoisePolicy} {h : HiddenRepresentative},
+      {profile : ColumnProfile} {policy : BlindingNoisePolicy}
+      {h : HiddenRepresentative},
     P.transparentAccepts b view ->
       TransparentViewProjectsFrom b view ->
-        P.transparentExtracts b view h ->
-          InFiber P b.context b h ->
-            P.blindingNoiseBounded b policy h ∨
-              (exists breakEvent, P.boundaryBreakFor b.context b breakEvent)
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          UsesSelectedBlindingNoisePolicy policy ->
+            P.transparentExtracts b view h ->
+              InFiber P b.context b h ->
+                P.blindingNoiseBounded b policy h ∨
+                  (exists breakEvent, P.boundaryBreakFor b.context b breakEvent)
 
 theorem blinding_noise_bounded_or_break
     (P : Predicates)
     (hSound : BlindingNoiseBoundSoundness P)
     {b : Boundary} {view : TransparentPublicView}
-    {policy : BlindingNoisePolicy} {h : HiddenRepresentative}
+    {profile : ColumnProfile} {policy : BlindingNoisePolicy}
+    {h : HiddenRepresentative}
     (hAccept : P.transparentAccepts b view)
     (hProjects : TransparentViewProjectsFrom b view)
+    (hProfile : ColumnProfileCompatibleWithBoundary b view profile)
+    (hPolicy : UsesSelectedBlindingNoisePolicy policy)
     (hExtracts : P.transparentExtracts b view h)
     (hFiber : InFiber P b.context b h) :
     P.blindingNoiseBounded b policy h ∨
       (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
-  hSound hAccept hProjects hExtracts hFiber
+  hSound hAccept hProjects hProfile hPolicy hExtracts hFiber
 
 /-- Minimum knowledge-soundness bundle required from the active trace proof. -/
 def NativeBoundaryTraceKnowledgeSoundness (P : Predicates) : Prop :=
@@ -1555,7 +1578,8 @@ theorem transparent_view_full_interface_or_break
     (hProjects : TransparentViewProjectsFrom b view)
     (hProfile : ColumnProfileCompatibleWithBoundary b view profile)
     (hRoleComplete : ProfileRoleComplete profile)
-    (hMode : UsesSelectedNormRangeMode profile) :
+    (hMode : UsesSelectedNormRangeMode profile)
+    (hPolicy : UsesSelectedBlindingNoisePolicy policy) :
     (P.roleRestrictionsAuthenticate b profile ∧
       P.noExportHolds b view profile ∧
         P.roleAuthenticationMaterialSimulatable b view profile ∧
@@ -1589,7 +1613,9 @@ theorem transparent_view_full_interface_or_break
               hNormRangeSound hAccept hProjects hProfile hMode
                 hTransparent hFiber with
           | inl hNorm =>
-              cases hBlindSound hAccept hProjects hTransparent hFiber with
+              cases
+                  hBlindSound hAccept hProjects hProfile hPolicy
+                    hTransparent hFiber with
               | inl hBlind =>
                   exact Or.inl
                     ⟨hRole, hNoExport, hRoleAuthNoExport, hMaskFresh, hQrom,

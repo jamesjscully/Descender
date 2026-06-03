@@ -1,6 +1,6 @@
 # Path 2 Native Boundary Blinding/Noise Row Estimate
 
-Status: first-pass estimate pinned; exact bound gadget pending.
+Status: selected-policy row estimate pinned; exact bound gadget pending.
 
 Purpose: close the `r_blinding_noise_bounds` estimate in
 `NativeBoundaryTraceRelationV1`.
@@ -15,6 +15,11 @@ BlindingNoiseBounded(b, policy, h)
 ```
 
 They are not public hiding commitments.
+
+The active theorem and Rust interface now bind this extractor-side policy to
+policy id `1` with centered bound `2048` for pad-source,
+projection-relation, opening-tuple, and range-auxiliary coordinates. A
+different policy must change the active proof-family interface digest.
 
 ## Required Checks
 
@@ -76,6 +81,7 @@ conditional on:
 
 ```text
 compact_private_bound_gadget
+UsesSelectedBlindingNoisePolicy(policy)
 ```
 
 Stress estimate still allows this row group to expand before crossing the

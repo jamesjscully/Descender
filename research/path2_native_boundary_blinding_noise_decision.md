@@ -87,6 +87,12 @@ and NoExportHolds(b, view, profile)
 
 or a named break.
 
+The theorem no longer accepts an arbitrary `policy`: Lean now requires
+`UsesSelectedBlindingNoisePolicy(policy)`, and the Rust proof-family interface
+digest binds policy id `1` plus centered bound `2048`. A candidate with a
+looser or different blinding/noise policy must change the active proof-system
+interface instead of silently satisfying this theorem.
+
 This matches the existing Lean wrapper:
 
 ```text
