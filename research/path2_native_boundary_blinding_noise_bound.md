@@ -1,6 +1,6 @@
 # Path 2 Native Boundary Blinding/Noise Bound
 
-Status: selected-policy theorem interface pinned; public-commitment bound path rejected.
+Status: selected-policy theorem interface pinned; bound-row proof route split.
 
 Purpose: isolate the remaining SIS binding blocker after selecting hybrid
 base-128 hidden-role digits.
@@ -73,6 +73,10 @@ or one of:
 - `Descender.Path2NativeBoundary.BlindingNoisePolicy`
 - `Descender.Path2NativeBoundary.UsesSelectedBlindingNoisePolicy`
 - `Descender.Path2NativeBoundary.Predicates.blindingNoiseBounded`
+- `Descender.Path2NativeBoundary.Predicates.blindingRowsBoundRepresentative`
+- `Descender.Path2NativeBoundary.BlindingNoiseBoundRowSoundness`
+- `Descender.Path2NativeBoundary.BlindingNoiseRowsToBoundSoundness`
+- `Descender.Path2NativeBoundary.blinding_noise_rows_imply_bound_soundness`
 - `Descender.Path2NativeBoundary.BlindingNoiseBoundSoundness`
 - `Descender.Path2NativeBoundary.blinding_noise_bounded_or_break`
 
@@ -106,8 +110,19 @@ Use the active decision in
 commitments private inside the ZK/two-view proof. Blinding/noise bounds are now
 extractor-side bounds, not a public linear commitment hiding fix.
 
-Next proof work should instantiate the native-boundary ZK trace
-binding/hiding assumption rather than trying to rescue public linear role
+Next proof work is decomposed:
+
+```text
+BlindingNoiseBoundRowSoundness:
+  accepted selected bound rows bind blinding/noise auxiliaries to extracted h
+
+BlindingNoiseRowsToBoundSoundness:
+  those bound rows imply BlindingNoiseBounded(b, policy, h)
+```
+
+The composition theorem now turns those two facts back into
+`BlindingNoiseBoundSoundness`. This should be instantiated inside the
+native-boundary ZK trace proof rather than trying to rescue public linear role
 commitments.
 
 ## Non-Claims

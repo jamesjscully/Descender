@@ -116,10 +116,13 @@ openings at a smaller cost.
 
 ## Next Move
 
-Update the proof-family gate:
+Instantiate the decomposed blinding/noise bound route inside the proof-family
+gate:
 
-- active candidate: native-boundary two-view ZK trace proof with private role
-  linear commitments;
+- `BlindingNoiseBoundRowSoundness`: accepted selected bound rows bind
+  blinding/noise auxiliaries to the extracted representative;
+- `BlindingNoiseRowsToBoundSoundness`: those rows imply the selected
+  `BlindingNoiseBounded(b, policy, h)` predicate;
 - dead path: public linear role commitments with current dimensions;
 - fallback: small-noise computational hiding commitment if private role
   commitments inside ZK cannot be instantiated compactly.

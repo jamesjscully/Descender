@@ -125,6 +125,8 @@ It composes:
 - or, equivalently for the selected route, `HybridBase128RangeRowSoundness`
   plus `HybridBase128RangeRowsToNormRangeSoundness`;
 - `BlindingNoiseBoundSoundness`.
+- or, equivalently for the selected route, `BlindingNoiseBoundRowSoundness`
+  plus `BlindingNoiseRowsToBoundSoundness`.
 
 ## Active Candidate
 

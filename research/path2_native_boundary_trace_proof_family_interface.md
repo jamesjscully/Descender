@@ -128,6 +128,9 @@ role rows `64`, digit counts `12/12/16`, reconstruction rows `20`, range rows
 The Lean route now decomposes this into `HybridBase128RangeRowSoundness` plus
 `HybridBase128RangeRowsToNormRangeSoundness`, which compose back into
 `NormRangeSoundness`.
+The blinding/noise side has the parallel route:
+`BlindingNoiseBoundRowSoundness` plus `BlindingNoiseRowsToBoundSoundness`
+compose back into `BlindingNoiseBoundSoundness`.
 
 ## Lean Anchors
 

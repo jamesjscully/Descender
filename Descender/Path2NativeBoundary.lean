@@ -952,6 +952,10 @@ structure Predicates where
       TransparentPublicView ->
         ColumnProfile ->
           HybridBase128RangePolicy -> HiddenRepresentative -> Prop
+  blindingRowsBoundRepresentative :
+    Boundary ->
+      TransparentPublicView ->
+        ColumnProfile -> BlindingNoisePolicy -> HiddenRepresentative -> Prop
   transparentAccepts : Boundary -> TransparentPublicView -> Prop
   transparentExtractsTrace :
     Boundary -> TransparentPublicView -> ExtractedTrace -> Prop
@@ -1566,6 +1570,35 @@ Blinding/noise bound assumption: the extracted representative's blinding and
 range-auxiliary coordinates satisfy the selected binding-compatible bound
 policy, or export a named break.
 -/
+def BlindingNoiseBoundRowSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile} {policy : BlindingNoisePolicy}
+      {h : HiddenRepresentative},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          UsesSelectedBlindingNoisePolicy policy ->
+            P.transparentExtracts b view h ->
+              InFiber P b.context b h ->
+                P.blindingRowsBoundRepresentative b view profile policy h ∨
+                  (exists breakEvent,
+                    P.boundaryBreakFor b.context b breakEvent)
+
+def BlindingNoiseRowsToBoundSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile} {policy : BlindingNoisePolicy}
+      {h : HiddenRepresentative},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          UsesSelectedBlindingNoisePolicy policy ->
+            P.transparentExtracts b view h ->
+              InFiber P b.context b h ->
+                P.blindingRowsBoundRepresentative b view profile policy h ->
+                  P.blindingNoiseBounded b policy h ∨
+                    (exists breakEvent,
+                      P.boundaryBreakFor b.context b breakEvent)
+
 def BlindingNoiseBoundSoundness (P : Predicates) : Prop :=
   forall {b : Boundary} {view : TransparentPublicView}
       {profile : ColumnProfile} {policy : BlindingNoisePolicy}
@@ -1578,6 +1611,23 @@ def BlindingNoiseBoundSoundness (P : Predicates) : Prop :=
               InFiber P b.context b h ->
                 P.blindingNoiseBounded b policy h ∨
                   (exists breakEvent, P.boundaryBreakFor b.context b breakEvent)
+
+theorem blinding_noise_rows_imply_bound_soundness
+    (P : Predicates)
+    (hRows : BlindingNoiseBoundRowSoundness P)
+    (hRowsToBound : BlindingNoiseRowsToBoundSoundness P) :
+    BlindingNoiseBoundSoundness P := by
+  intro b view profile policy h hAccept hProjects hProfile
+    hPolicy hExtracts hFiber
+  cases
+      hRows hAccept hProjects hProfile hPolicy hExtracts
+        hFiber with
+  | inl hBoundRows =>
+      exact
+        hRowsToBound hAccept hProjects hProfile hPolicy
+          hExtracts hFiber hBoundRows
+  | inr hBreak =>
+      exact Or.inr hBreak
 
 theorem blinding_noise_bounded_or_break
     (P : Predicates)
