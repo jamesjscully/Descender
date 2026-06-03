@@ -286,6 +286,8 @@ pub const PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA: &str =
     "DESCENDER_PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_V1";
 pub const PATH2_TRANSPARENT_QUERY_OPENING_MASK_DOMAIN_SCHEMA: &str =
     "DESCENDER_PATH2_TRANSPARENT_QUERY_OPENING_MASK_DOMAIN_V1";
+pub const PATH2_TRANSPARENT_QUERY_ROW_DERIVATION_SCHEMA: &str =
+    "DESCENDER_PATH2_TRANSPARENT_QUERY_ROW_DERIVATION_V1";
 pub const PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA: &str =
     "DESCENDER_PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_V1";
 pub const PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA: &str =
@@ -10424,6 +10426,55 @@ fn path2_two_view_entry_is_hidden_or_private(entry: &Path2TwoViewColumnProfileEn
     )
 }
 
+pub fn path2_transparent_query_row_index(
+    public_view: &Path2TransparentDescentPublicViewV1,
+    query_index: u16,
+) -> Result<u16, String> {
+    verify_path2_transparent_query_schedule_pair(public_view.trace_rows, public_view.query_count)?;
+    if !public_view.trace_rows.is_power_of_two() {
+        return Err("Path 2 transparent query row trace size is not power of two".to_string());
+    }
+    if query_index >= public_view.query_count {
+        return Err("Path 2 transparent query row index outside schedule".to_string());
+    }
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PATH2_TRANSPARENT_QUERY_ROW_DERIVATION_SCHEMA.as_bytes(),
+    );
+    append_frame(&mut frame, b"proof_system_id", &public_view.proof_system_id);
+    append_frame(&mut frame, b"relation_id", &public_view.relation_id);
+    append_frame(
+        &mut frame,
+        b"transparent_transcript_digest",
+        &public_view.transparent_transcript_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"query_schedule_digest",
+        &path2_transparent_query_schedule_v1_digest()?,
+    );
+    append_frame(
+        &mut frame,
+        b"column_profile",
+        &public_view.column_profile.to_le_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"trace_rows",
+        &public_view.trace_rows.to_le_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"query_count",
+        &public_view.query_count.to_le_bytes(),
+    );
+    append_frame(&mut frame, b"query_index", &query_index.to_le_bytes());
+    let digest = Sha256::digest(frame);
+    Ok(u16::from_le_bytes([digest[0], digest[1]]) & (public_view.trace_rows - 1))
+}
+
 pub fn path2_transparent_query_opening_mask_domain_digest(
     public_view: &Path2TransparentDescentPublicViewV1,
     record: &Path2TransparentQueryOpeningRecordV1,
@@ -10669,6 +10720,9 @@ pub fn verify_path2_transparent_query_opening_manifest_for_public_view(
     for record in &manifest.records {
         if record.row_index >= public_view.trace_rows {
             return Err("Path 2 transparent query opening row is outside trace".to_string());
+        }
+        if record.row_index != path2_transparent_query_row_index(public_view, record.query_index)? {
+            return Err("Path 2 transparent query opening row does not match schedule".to_string());
         }
         let expected_mask_domain_digest =
             path2_transparent_query_opening_mask_domain_digest(public_view, record)?;
@@ -14025,7 +14079,7 @@ pub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(
         .map_err(|err| format!("encode Path 2 native storage/lifecycle hardening scope: {err}"))
 }
 
-pub fn path2_registered_domain_constants() -> [&'static str; 28] {
+pub fn path2_registered_domain_constants() -> [&'static str; 29] {
     [
         PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN,
         PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN,
@@ -14055,6 +14109,7 @@ pub fn path2_registered_domain_constants() -> [&'static str; 28] {
         PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA,
         PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA,
         PATH2_TRANSPARENT_QUERY_OPENING_MASK_DOMAIN_SCHEMA,
+        PATH2_TRANSPARENT_QUERY_ROW_DERIVATION_SCHEMA,
     ]
 }
 
@@ -14386,6 +14441,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_TRANSPARENT_QUERY_OPENING_MASK_DOMAIN_SCHEMA",
             PATH2_TRANSPARENT_QUERY_OPENING_MASK_DOMAIN_SCHEMA,
+        ),
+        (
+            "PATH2_TRANSPARENT_QUERY_ROW_DERIVATION_SCHEMA",
+            PATH2_TRANSPARENT_QUERY_ROW_DERIVATION_SCHEMA,
         ),
         (
             "PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA",
@@ -26661,13 +26720,14 @@ mod tests {
         let mut records = Vec::new();
         let profile = path2_two_view_column_profile_v1();
         for query_index in 0..public_view.query_count {
+            let row_index = path2_transparent_query_row_index(public_view, query_index).unwrap();
             for entry in profile.entries {
                 let hidden_role = path2_two_view_entry_is_hidden_or_private(&entry);
                 let mut record = Path2TransparentQueryOpeningRecordV1 {
                     query_index,
                     role_id: entry.role_id,
                     column_set_id: entry.masked_column_set_id,
-                    row_index: query_index,
+                    row_index,
                     visibility_class: if hidden_role {
                         PATH2_TWO_VIEW_VISIBILITY_MASKED_PUBLIC
                     } else {
@@ -32467,6 +32527,13 @@ mod tests {
         verify_path2_transparent_query_opening_manifest(&manifest).unwrap();
         verify_path2_transparent_query_opening_manifest_for_public_view(&public_view, &manifest)
             .unwrap();
+        let scheduled_row = path2_transparent_query_row_index(&public_view, 0).unwrap();
+        assert_eq!(manifest.records[0].row_index, scheduled_row);
+        assert!(scheduled_row < public_view.trace_rows);
+        assert_eq!(
+            path2_transparent_query_row_index(&public_view, public_view.query_count).unwrap_err(),
+            "Path 2 transparent query row index outside schedule"
+        );
         assert_eq!(
             manifest.schema,
             PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA
@@ -32483,6 +32550,23 @@ mod tests {
         assert!(serialized.contains(PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA));
         assert!(serialized.contains("component_digest"));
         assert_no_path2_transparent_private_material(&serialized);
+
+        let mut wrong_query_row = manifest.clone();
+        let wrong_row = (scheduled_row + 1) & (public_view.trace_rows - 1);
+        for record in &mut wrong_query_row.records {
+            if record.query_index == 0 {
+                record.row_index = wrong_row;
+            }
+        }
+        verify_path2_transparent_query_opening_manifest(&wrong_query_row).unwrap();
+        assert_eq!(
+            verify_path2_transparent_query_opening_manifest_for_public_view(
+                &public_view,
+                &wrong_query_row,
+            )
+            .unwrap_err(),
+            "Path 2 transparent query opening row does not match schedule"
+        );
 
         let mut rebound_mask_domain = manifest.clone();
         rebound_mask_domain.records[1].mask_domain_digest[0] ^= 1;

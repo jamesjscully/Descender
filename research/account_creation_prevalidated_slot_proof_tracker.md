@@ -499,8 +499,11 @@ Named breaks:
   against the accepted
   public view before proof-verifier handoff:
   `verify_path2_transparent_query_opening_manifest_for_public_view` rejects
-  manifest context mismatch and any record whose `row_index` is outside the
-  scheduled trace row count, and also checks each masked opening's
+  manifest context mismatch, any record whose `row_index` is outside the
+  scheduled trace row count, and any in-range row that does not match
+  `path2_transparent_query_row_index`, which derives each query row from the
+  accepted public view, transparent transcript digest, active query-schedule
+  digest, and query index. It also checks each masked opening's
   `mask_domain_digest` against
   `path2_transparent_query_opening_mask_domain_digest`, which binds the
   accepted public view, transcript digest, role, column set, row, query, and
@@ -553,10 +556,14 @@ Named breaks:
   the active proof-system id. `path2_transparent_descent_transcript_digest`
   now rejects row/query mismatches and out-of-schedule public `query_index`
   values before hashing, and the proof-system id plus proof-family capability
-  digest bind the schedule digest. KAT
+  digest bind the schedule digest. `path2_transparent_query_row_index` now
+  makes row selection executable for powers-of-two active trace sizes before
+  query-opening manifests reach the proof-byte handoff. KAT
   `path2_transparent_query_schedule_pins_active_row_query_pairs` rejects
   low-query schedules, 128-row planning schedules, byte-floor drift, and
-  manifest rebinding. The
+  manifest rebinding; KAT
+  `path2_transparent_query_opening_manifest_enforces_no_export_policy` covers
+  query-row derivation and in-range row-schedule rebinding. The
   next executable blocker is an actual concrete transparent proof-system
   verifier with honest/malformed coverage against this capability profile,
   encoded relation, validated query-opening manifest, and canonical proof-byte
