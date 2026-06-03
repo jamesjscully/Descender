@@ -284,6 +284,8 @@ pub const PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA: &str =
     "DESCENDER_PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1";
 pub const PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA: &str =
     "DESCENDER_PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_V1";
+pub const PATH2_TRANSPARENT_QUERY_OPENING_MASK_DOMAIN_SCHEMA: &str =
+    "DESCENDER_PATH2_TRANSPARENT_QUERY_OPENING_MASK_DOMAIN_V1";
 pub const PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA: &str =
     "DESCENDER_PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_V1";
 pub const PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA: &str =
@@ -1366,6 +1368,7 @@ pub struct Path2TransparentQueryOpeningRecordV1 {
     pub row_index: u16,
     pub visibility_class: u8,
     pub mask_domain_id: u16,
+    pub mask_domain_digest: [u8; DIGEST_BYTES],
     pub component_digest: [u8; DIGEST_BYTES],
 }
 
@@ -10410,6 +10413,73 @@ fn path2_two_view_column_profile_entry(
         .ok_or_else(|| "Path 2 transparent query opening unknown role".to_string())
 }
 
+fn path2_two_view_entry_is_hidden_or_private(entry: &Path2TwoViewColumnProfileEntryV1) -> bool {
+    matches!(
+        entry.visibility_class,
+        PATH2_TWO_VIEW_VISIBILITY_COMMITTED_HIDDEN
+            | PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN
+            | PATH2_TWO_VIEW_VISIBILITY_RANGE_PRIVATE
+            | PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE
+            | PATH2_TWO_VIEW_VISIBILITY_SIMULATOR_ONLY
+    )
+}
+
+pub fn path2_transparent_query_opening_mask_domain_digest(
+    public_view: &Path2TransparentDescentPublicViewV1,
+    record: &Path2TransparentQueryOpeningRecordV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let entry = path2_two_view_column_profile_entry(record.role_id)?;
+    if !path2_two_view_entry_is_hidden_or_private(&entry) {
+        return Ok([0_u8; DIGEST_BYTES]);
+    }
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PATH2_TRANSPARENT_QUERY_OPENING_MASK_DOMAIN_SCHEMA.as_bytes(),
+    );
+    append_frame(&mut frame, b"proof_system_id", &public_view.proof_system_id);
+    append_frame(&mut frame, b"relation_id", &public_view.relation_id);
+    append_frame(
+        &mut frame,
+        b"transparent_transcript_digest",
+        &public_view.transparent_transcript_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"column_profile",
+        &public_view.column_profile.to_le_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"trace_rows",
+        &public_view.trace_rows.to_le_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"query_count",
+        &public_view.query_count.to_le_bytes(),
+    );
+    append_frame(&mut frame, b"role_id", &[record.role_id]);
+    append_frame(
+        &mut frame,
+        b"column_set_id",
+        &record.column_set_id.to_le_bytes(),
+    );
+    append_frame(&mut frame, b"row_index", &record.row_index.to_le_bytes());
+    append_frame(
+        &mut frame,
+        b"query_index",
+        &record.query_index.to_le_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"mask_domain_id",
+        &record.mask_domain_id.to_le_bytes(),
+    );
+    Ok(Sha256::digest(frame).into())
+}
+
 pub fn verify_path2_transparent_query_opening_manifest(
     manifest: &Path2TransparentQueryOpeningManifestV1,
 ) -> Result<(), String> {
@@ -10476,14 +10546,7 @@ pub fn verify_path2_transparent_query_opening_manifest(
             return Err("Path 2 transparent query opening column set mismatch".to_string());
         }
 
-        if matches!(
-            entry.visibility_class,
-            PATH2_TWO_VIEW_VISIBILITY_COMMITTED_HIDDEN
-                | PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN
-                | PATH2_TWO_VIEW_VISIBILITY_RANGE_PRIVATE
-                | PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE
-                | PATH2_TWO_VIEW_VISIBILITY_SIMULATOR_ONLY
-        ) {
+        if path2_two_view_entry_is_hidden_or_private(&entry) {
             if record.visibility_class != PATH2_TWO_VIEW_VISIBILITY_MASKED_PUBLIC {
                 return Err(
                     "Path 2 transparent query opening hidden role is not masked".to_string()
@@ -10497,8 +10560,17 @@ pub fn verify_path2_transparent_query_opening_manifest(
             if !mask_domains.insert(record.mask_domain_id) {
                 return Err("Path 2 transparent query opening duplicate mask domain".to_string());
             }
+            if record.mask_domain_digest == [0_u8; DIGEST_BYTES] {
+                return Err(
+                    "Path 2 transparent query opening mask domain digest is zero".to_string(),
+                );
+            }
         } else if record.mask_domain_id != 0 {
             return Err("Path 2 transparent query opening public role has mask domain".to_string());
+        } else if record.mask_domain_digest != [0_u8; DIGEST_BYTES] {
+            return Err(
+                "Path 2 transparent query opening public role has mask domain digest".to_string(),
+            );
         }
     }
 
@@ -10570,6 +10642,11 @@ pub fn path2_transparent_query_opening_manifest_digest(
             b"mask_domain_id",
             &record.mask_domain_id.to_le_bytes(),
         );
+        append_frame(
+            &mut frame,
+            b"mask_domain_digest",
+            &record.mask_domain_digest,
+        );
         append_frame(&mut frame, b"component_digest", &record.component_digest);
     }
     Ok(Sha256::digest(frame).into())
@@ -10592,6 +10669,11 @@ pub fn verify_path2_transparent_query_opening_manifest_for_public_view(
     for record in &manifest.records {
         if record.row_index >= public_view.trace_rows {
             return Err("Path 2 transparent query opening row is outside trace".to_string());
+        }
+        let expected_mask_domain_digest =
+            path2_transparent_query_opening_mask_domain_digest(public_view, record)?;
+        if record.mask_domain_digest != expected_mask_domain_digest {
+            return Err("Path 2 transparent query opening mask domain digest mismatch".to_string());
         }
     }
     Ok(())
@@ -13943,7 +14025,7 @@ pub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(
         .map_err(|err| format!("encode Path 2 native storage/lifecycle hardening scope: {err}"))
 }
 
-pub fn path2_registered_domain_constants() -> [&'static str; 27] {
+pub fn path2_registered_domain_constants() -> [&'static str; 28] {
     [
         PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN,
         PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN,
@@ -13972,6 +14054,7 @@ pub fn path2_registered_domain_constants() -> [&'static str; 27] {
         PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA,
         PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA,
         PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA,
+        PATH2_TRANSPARENT_QUERY_OPENING_MASK_DOMAIN_SCHEMA,
     ]
 }
 
@@ -14299,6 +14382,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA",
             PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA,
+        ),
+        (
+            "PATH2_TRANSPARENT_QUERY_OPENING_MASK_DOMAIN_SCHEMA",
+            PATH2_TRANSPARENT_QUERY_OPENING_MASK_DOMAIN_SCHEMA,
         ),
         (
             "PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA",
@@ -26568,22 +26655,15 @@ mod tests {
         [byte; DIGEST_BYTES]
     }
 
-    fn path2_transparent_query_opening_manifest_fixture(
-        query_count: u16,
+    fn path2_transparent_query_opening_manifest_fixture_for_public_view(
+        public_view: &Path2TransparentDescentPublicViewV1,
     ) -> Path2TransparentQueryOpeningManifestV1 {
         let mut records = Vec::new();
         let profile = path2_two_view_column_profile_v1();
-        for query_index in 0..query_count {
+        for query_index in 0..public_view.query_count {
             for entry in profile.entries {
-                let hidden_role = matches!(
-                    entry.visibility_class,
-                    PATH2_TWO_VIEW_VISIBILITY_COMMITTED_HIDDEN
-                        | PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN
-                        | PATH2_TWO_VIEW_VISIBILITY_RANGE_PRIVATE
-                        | PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE
-                        | PATH2_TWO_VIEW_VISIBILITY_SIMULATOR_ONLY
-                );
-                records.push(Path2TransparentQueryOpeningRecordV1 {
+                let hidden_role = path2_two_view_entry_is_hidden_or_private(&entry);
+                let mut record = Path2TransparentQueryOpeningRecordV1 {
                     query_index,
                     role_id: entry.role_id,
                     column_set_id: entry.masked_column_set_id,
@@ -26599,14 +26679,19 @@ mod tests {
                     } else {
                         0
                     },
+                    mask_domain_digest: [0_u8; DIGEST_BYTES],
                     component_digest: test_digest(&format!(
                         "path2-transparent-query-{query_index}-role-{}",
                         entry.role_id
                     )),
-                });
+                };
+                record.mask_domain_digest =
+                    path2_transparent_query_opening_mask_domain_digest(public_view, &record)
+                        .unwrap();
+                records.push(record);
             }
         }
-        path2_transparent_query_opening_manifest_v1(query_count, records).unwrap()
+        path2_transparent_query_opening_manifest_v1(public_view.query_count, records).unwrap()
     }
 
     fn contains_window(haystack: &[u8], needle: &[u8]) -> bool {
@@ -28526,7 +28611,8 @@ mod tests {
             3,
         )
         .unwrap();
-        let query_opening_manifest = path2_transparent_query_opening_manifest_fixture(16);
+        let query_opening_manifest =
+            path2_transparent_query_opening_manifest_fixture_for_public_view(&public_view);
         let query_openings_digest =
             path2_transparent_query_opening_manifest_digest(&query_opening_manifest).unwrap();
         let merkle_paths_digest = test_digest("path2-transparent-merkle-paths");
@@ -28909,7 +28995,24 @@ mod tests {
             "Path 2 transparent proof bytes exceed active fallback threshold"
         );
 
-        let mismatched_manifest = path2_transparent_query_opening_manifest_fixture(8);
+        let mismatched_public_view = path2_transparent_descent_public_view_v1(
+            path2_transparent_descent_proof_system_id(),
+            512,
+            20,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+            leaf_context_digest,
+            binding.digest,
+            matrix_domain_transcript_digest,
+            masked_projection,
+            binding.aggregation_context_digest,
+            test_digest("path2-transparent-other-trace-root"),
+            test_digest("path2-transparent-other-constraint-root"),
+            3,
+        )
+        .unwrap();
+        let mismatched_manifest = path2_transparent_query_opening_manifest_fixture_for_public_view(
+            &mismatched_public_view,
+        );
         assert_eq!(
             verify_path2_direct_creation_transparent_descent_payload_boundary_with_query_manifest(
                 &leaf,
@@ -32344,8 +32447,26 @@ mod tests {
 
     #[test]
     fn path2_transparent_query_opening_manifest_enforces_no_export_policy() {
-        let manifest = path2_transparent_query_opening_manifest_fixture(16);
+        let public_view = path2_transparent_descent_public_view_v1(
+            path2_transparent_descent_proof_system_id(),
+            256,
+            16,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+            test_digest("path2-query-manifest-leaf-context"),
+            test_digest("path2-query-manifest-proof-binding"),
+            test_digest("path2-query-manifest-matrix-domain"),
+            [3_u16, 5, 7, 11, 13, 17],
+            test_digest("path2-query-manifest-aggregation-context"),
+            test_digest("path2-query-manifest-trace-root"),
+            test_digest("path2-query-manifest-constraint-root"),
+            3,
+        )
+        .unwrap();
+        let manifest =
+            path2_transparent_query_opening_manifest_fixture_for_public_view(&public_view);
         verify_path2_transparent_query_opening_manifest(&manifest).unwrap();
+        verify_path2_transparent_query_opening_manifest_for_public_view(&public_view, &manifest)
+            .unwrap();
         assert_eq!(
             manifest.schema,
             PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA
@@ -32362,6 +32483,17 @@ mod tests {
         assert!(serialized.contains(PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA));
         assert!(serialized.contains("component_digest"));
         assert_no_path2_transparent_private_material(&serialized);
+
+        let mut rebound_mask_domain = manifest.clone();
+        rebound_mask_domain.records[1].mask_domain_digest[0] ^= 1;
+        assert_eq!(
+            verify_path2_transparent_query_opening_manifest_for_public_view(
+                &public_view,
+                &rebound_mask_domain,
+            )
+            .unwrap_err(),
+            "Path 2 transparent query opening mask domain digest mismatch"
+        );
 
         let mut truncated = manifest.clone();
         truncated.records.pop();

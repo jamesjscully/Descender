@@ -445,10 +445,12 @@ Named breaks:
   `path2_transparent_query_opening_manifest_digest` bind public query-opening
   metadata to the active profile while rejecting raw hidden visibility classes,
   hidden column-set ids, unknown roles/classes, duplicate query indices,
-  missing/duplicate mask domains for hidden roles, and zero component digests.
-  KAT `path2_transparent_query_opening_manifest_enforces_no_export_policy`
-  covers the positive manifest, private-material serialization denylist, and
-  those negative controls. The manifest verifier now treats `query_count` as
+  missing/duplicate mask domains for hidden roles, public-role mask domains,
+  zero mask-domain digests for hidden roles, nonzero mask-domain digests for
+  public roles, and zero component digests. KAT
+  `path2_transparent_query_opening_manifest_enforces_no_export_policy` covers
+  the positive manifest, private-material serialization denylist, and those
+  negative controls. The manifest verifier now treats `query_count` as
   scheduled query positions and requires every scheduled query to carry one
   typed opening record for each active two-view role, with a single row per
   query and no duplicate query-role pairs; KATs cover count mismatch, duplicate
@@ -498,9 +500,14 @@ Named breaks:
   public view before proof-verifier handoff:
   `verify_path2_transparent_query_opening_manifest_for_public_view` rejects
   manifest context mismatch and any record whose `row_index` is outside the
-  scheduled trace row count; the boundary KAT covers this out-of-trace-row
+  scheduled trace row count, and also checks each masked opening's
+  `mask_domain_digest` against
+  `path2_transparent_query_opening_mask_domain_digest`, which binds the
+  accepted public view, transcript digest, role, column set, row, query, and
+  local mask-domain id. The boundary KAT covers this out-of-trace-row
   negative at the proof-byte envelope constructor, manifest-aware boundary, and
-  proof-byte envelope verifier. Transparent public-view and payload digest
+  proof-byte envelope verifier, while the manifest KAT covers mask-domain
+  digest rebinding. Transparent public-view and payload digest
   builders now reject zero trace roots, zero constraint roots, zero payload
   length, and zero proof/query/Merkle/consistency component digests, so
   placeholder proof material cannot reach the fail-closed verifier handoff as
