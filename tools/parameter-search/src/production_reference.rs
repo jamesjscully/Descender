@@ -11584,6 +11584,12 @@ pub fn path2_transparent_descent_proof_payload_digest(
     if payload_byte_len == 0 {
         return Err("Path 2 transparent descent payload length is zero".to_string());
     }
+    if payload_byte_len > PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES as u64 {
+        return Err(
+            "Path 2 transparent descent payload length exceeds active fallback threshold"
+                .to_string(),
+        );
+    }
     for (label, digest) in [
         ("proof bytes", proof_bytes_digest),
         ("query openings", query_openings_digest),
@@ -29205,6 +29211,18 @@ mod tests {
             )
             .unwrap_err(),
             "Path 2 transparent descent payload length is zero"
+        );
+        assert_eq!(
+            path2_transparent_descent_proof_payload_digest(
+                &public_view,
+                PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES as u64 + 1,
+                &proof_bytes_digest,
+                &query_openings_digest,
+                &merkle_paths_digest,
+                &consistency_messages_digest,
+            )
+            .unwrap_err(),
+            "Path 2 transparent descent payload length exceeds active fallback threshold"
         );
         assert_eq!(
             path2_transparent_descent_proof_payload_digest(

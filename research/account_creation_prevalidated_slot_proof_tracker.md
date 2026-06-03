@@ -493,10 +493,13 @@ Named breaks:
   blocker. The envelope constructor/parser now also enforce the active
   16416-byte fallback threshold on the canonical encoded proof bytes, so an
   over-budget transparent proof cannot pass the fail-closed boundary as the
-  active route. The transparent payload's full proof-byte digest is now also
-  domain-separated under `PATH2_TRANSPARENT_PROOF_BYTES_DIGEST_SCHEMA`, so the
-  payload no longer binds the canonical proof bytes with a bare reusable SHA-256
-  digest. The boundary KAT now also covers domain-separated proof-byte digest
+  active route. The transparent payload digest builder now rejects
+  over-threshold `payload_byte_len` metadata as well, so the fail-closed payload
+  cannot advertise an impossible active proof size. The transparent payload's
+  full proof-byte digest is now also domain-separated under
+  `PATH2_TRANSPARENT_PROOF_BYTES_DIGEST_SCHEMA`, so the payload no longer binds
+  the canonical proof bytes with a bare reusable SHA-256 digest. The boundary
+  KAT now also covers domain-separated proof-byte digest
   mismatch, proof-byte length mismatch against the payload length,
   domain-separated proof body digest mismatch, truncated proof body, envelope context rebinding, zero Merkle/consistency
   envelope digest rejection, component-digest envelope mismatch, empty
