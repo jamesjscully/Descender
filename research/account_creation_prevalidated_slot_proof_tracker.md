@@ -1092,6 +1092,13 @@ Named breaks:
    consistent with the verifier-visible masked/simulated opening view before
    relation validity can close. This blocks a proof-family story that proves
    simulator-safe public openings and relation knowledge for unrelated traces.
+   Relation-row coverage is now also a Lean gate:
+   `TraceRelationProfile` is carried by the column profile, and
+   `SupportsRelationKnowledge` requires
+   `TraceRelationCoversNativeBoundary`, covering q-field, base-128 range,
+   mask-consistency, role-restriction, lifecycle/context, and proof-system
+   bookkeeping row classes. This blocks claiming relation knowledge for only
+   the obsolete 66-row semantic core.
 3. Classify every concrete trace column as public, masked, committed-hidden, or
    derived-public before choosing a final transparent proof family. Any sampled
    query opening that reveals an unmasked pad/projection/opening lane is a

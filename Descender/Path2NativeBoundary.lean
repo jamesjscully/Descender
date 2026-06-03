@@ -481,6 +481,35 @@ inductive TraceConstraintClass where
   | proofSystemBookkeepingRow
   deriving DecidableEq
 
+/-- The theorem-level row inventory for a native-boundary trace relation. -/
+structure TraceRelationProfile where
+  relationId : Nat
+  rowCount : Nat
+  constraintClass : Nat -> TraceConstraintClass
+
+/-- A trace relation contains at least one row of the requested class. -/
+def ConstraintClassCovered
+    (relation : TraceRelationProfile)
+    (constraintClass : TraceConstraintClass) : Prop :=
+  exists row, row < relation.rowCount ∧
+    relation.constraintClass row = constraintClass
+
+/--
+The active native-boundary relation must cover every mandatory row class. This
+prevents relation-knowledge soundness from being claimed for only the old
+66-row semantic core or for sampled/proximity checks that omit mask, role,
+lifecycle/context, or proof-system bookkeeping rows.
+-/
+def TraceRelationCoversNativeBoundary
+    (relation : TraceRelationProfile) : Prop :=
+  ConstraintClassCovered relation TraceConstraintClass.qFieldRow ∧
+    ConstraintClassCovered relation TraceConstraintClass.base128RangeRow ∧
+      ConstraintClassCovered relation TraceConstraintClass.maskConsistencyRow ∧
+        ConstraintClassCovered relation TraceConstraintClass.roleRestrictionRow ∧
+          ConstraintClassCovered relation TraceConstraintClass.lifecycleContextRow ∧
+            ConstraintClassCovered relation
+              TraceConstraintClass.proofSystemBookkeepingRow
+
 /-- One role/column entry in a native-boundary column profile. -/
 structure ColumnProfileEntry where
   roleId : RoleId
@@ -494,17 +523,12 @@ structure ColumnProfileEntry where
 structure ColumnProfile where
   profileId : Nat
   entry : Nat -> ColumnProfileEntry
+  relationProfile : TraceRelationProfile
   normRangeMode : NormRangeMode
   extractionMode : TraceExtractionMode
   relationKnowledgeMode : RelationKnowledgeMode
   queryOpeningPolicyId : Nat
   rejectionPolicyId : Nat
-
-/-- The theorem-level row inventory for a native-boundary trace relation. -/
-structure TraceRelationProfile where
-  relationId : Nat
-  rowCount : Nat
-  constraintClass : Nat -> TraceConstraintClass
 
 /-- Bound policy for blinding/noise coordinates in role commitments. -/
 structure BlindingNoisePolicy where
@@ -638,12 +662,19 @@ def SupportsFullTraceExtraction (profile : ColumnProfile) : Prop :=
 
 /-- The active route rejects sampled-row-only relation checks. -/
 def SupportsRelationKnowledge (profile : ColumnProfile) : Prop :=
-  profile.relationKnowledgeMode =
-      RelationKnowledgeMode.proximityWithWitnessBridge ∨
-    profile.relationKnowledgeMode =
-      RelationKnowledgeMode.directRelationKnowledge ∨
-    profile.relationKnowledgeMode =
-      RelationKnowledgeMode.fullWitnessRelationKnowledge
+  (profile.relationKnowledgeMode =
+        RelationKnowledgeMode.proximityWithWitnessBridge ∨
+      profile.relationKnowledgeMode =
+        RelationKnowledgeMode.directRelationKnowledge ∨
+      profile.relationKnowledgeMode =
+        RelationKnowledgeMode.fullWitnessRelationKnowledge) ∧
+    TraceRelationCoversNativeBoundary profile.relationProfile
+
+theorem supports_relation_knowledge_covers_native_boundary
+    {profile : ColumnProfile}
+    (h : SupportsRelationKnowledge profile) :
+    TraceRelationCoversNativeBoundary profile.relationProfile :=
+  h.2
 
 /-- Native boundary masked projection as the older Path2DescentSIS quotient. -/
 def toDescentSISMaskedProjection

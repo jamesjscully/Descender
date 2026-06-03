@@ -1,6 +1,6 @@
 # Path 2 Native Boundary Trace Relation Row Symbols
 
-Status: symbolic row model pinned; numeric estimates pending.
+Status: symbolic row model pinned; Lean row-class coverage gate applied; numeric estimates pending.
 
 Purpose: replace the obsolete single `66-row` planning number with a symbolic
 row model for `NativeBoundaryTraceRelationV1`.
@@ -28,6 +28,13 @@ Current fixed lower bound:
 r_fixed_native_trace_floor =
   6 + 20 + 40 + 18 + 40 = 124
 ```
+
+Lean gate:
+`Descender/Path2NativeBoundary.lean` now requires
+`TraceRelationCoversNativeBoundary(profile.relationProfile)` inside
+`SupportsRelationKnowledge(profile)`. At minimum, a relation profile must cover
+`qFieldRow`, `base128RangeRow`, `maskConsistencyRow`, `roleRestrictionRow`,
+`lifecycleContextRow`, and `proofSystemBookkeepingRow`.
 
 ## Open Symbolic Rows
 

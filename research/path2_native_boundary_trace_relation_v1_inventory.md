@@ -1,6 +1,6 @@
 # Path 2 Native Boundary Trace Relation V1 Inventory
 
-Status: first-pass relation inventory pinned; exact row indices pending.
+Status: relation inventory pinned; Lean row-class coverage gate applied; exact row indices pending.
 
 Purpose: make `TraceRelationValid(b, profile, trace)` concrete enough to judge
 whether a compact transparent proof family can plausibly supply
@@ -36,6 +36,18 @@ and the row inventory carrier:
 ```text
 TraceRelationProfile
 ```
+
+Lean now also defines:
+
+```text
+TraceRelationCoversNativeBoundary
+```
+
+and `SupportsRelationKnowledge(profile)` requires the profile's relation
+inventory to contain at least one row in every mandatory class. A proof family
+therefore cannot close the active relation-knowledge theorem with only the old
+66-row semantic core, or with a profile that omits mask-consistency,
+role-restriction, lifecycle/context, or proof-system bookkeeping rows.
 
 ## Row Inventory
 

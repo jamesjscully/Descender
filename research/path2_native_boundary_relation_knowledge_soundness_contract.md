@@ -38,6 +38,22 @@ It rejects:
 - `sampledRowChecksOnly`;
 - `proximityWithoutWitness`.
 
+It also now requires the profile's `TraceRelationProfile` to cover every
+mandatory native-boundary constraint class:
+
+```text
+qFieldRow
+base128RangeRow
+maskConsistencyRow
+roleRestrictionRow
+lifecycleContextRow
+proofSystemBookkeepingRow
+```
+
+This prevents relation-knowledge soundness from being claimed for only the old
+66-row semantic core or for a relation profile that omits masked-opening,
+role-restriction, lifecycle/context, or transcript/bookkeeping obligations.
+
 ## Contract
 
 For an accepted proof with a full extracted trace:
@@ -179,6 +195,8 @@ digest and transcript schedule checks remain outside the hidden relation.
 
 - `RelationKnowledgeMode`
 - `SupportsRelationKnowledge`
+- `TraceRelationProfile`
+- `TraceRelationCoversNativeBoundary`
 
 and `ParentTraceExtractionSoundness` requires both:
 
