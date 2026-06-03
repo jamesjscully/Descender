@@ -358,6 +358,11 @@ Route clarity is now recorded in
 viable only as an argument of knowledge for the full hidden native-boundary
 trace with simulator-safe masked openings. Sampled/proximity-only Merkle/FRI
 does not imply the needed extraction theorem.
+Parallel route synthesis is now recorded in
+`research/path2_parallel_proof_route_synthesis.md`: the transparent IOP remains
+the active theorem-heavy baseline, MPC-in-the-head is the cleanest theorem
+fallback with byte/verifier risk, descent/SIS is only viable as a private-ZK
+replacement probe, and native image membership is a protocol-redesign probe.
 
 ## Findings
 

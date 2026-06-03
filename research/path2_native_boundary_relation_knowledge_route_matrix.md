@@ -97,6 +97,7 @@ frame is:
 
 ```text
 research/path2_proof_family_route_clarity.md
+research/path2_parallel_proof_route_synthesis.md
 ```
 
 The precise relation remains:

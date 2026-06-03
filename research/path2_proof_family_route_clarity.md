@@ -6,6 +6,11 @@ Purpose: decide whether the active proof-family blocker is merely an
 implementation theorem to prove, or whether the current masked trace route is
 hoping for a relationship that may not exist.
 
+Parallel route synthesis:
+`research/path2_parallel_proof_route_synthesis.md` compares the transparent
+IOP, MPC-in-the-head, descent/SIS, and native image-membership probes against
+the same active theorem target.
+
 ## Core Answer
 
 We can construct a proof family to supply full committed-trace extraction and
@@ -174,6 +179,8 @@ The most likely deployable path is:
 ```text
 try transparent masked IOP-of-knowledge first;
 in parallel, estimate MPC-in-the-head for the same 176-row relation;
+keep descent/SIS as a private-ZK transcript probe, not public C=A*v;
+keep native image membership as a spec-level redesign probe;
 pivot if the transparent theorem requires raw openings or generic STARK
 overhead near the fallback floor.
 ```
