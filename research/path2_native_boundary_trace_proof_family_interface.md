@@ -169,6 +169,8 @@ same extracted trace.
 - `native_boundary_trace_qrom_extractor_rewind_bound_or_break`
 - `RoleAuthenticationMaterialNoExportSoundness`
 - `MaskFreshnessSoundness`
+- `AccountCreateSelectedTransparentViewSoundness`
+- `selected_transparent_view_atomic_gates_imply_account_admission`
 
 and `transparent_view_full_interface_or_break` now includes:
 
@@ -200,6 +202,11 @@ independent shortcut for the active endpoint.
 `TraceAssemblySoundness` is now decomposed into representative assembly
 existence, role completeness, boundary-fiber projection, local validity, and
 descent consistency.
+`AccountCreateSelectedTransparentViewSoundness` is the account-admission bridge:
+accepted account creation must expose the accepted transparent view, selected
+profile, selected range policy, and selected blinding policy. The theorem
+`selected_transparent_view_atomic_gates_imply_account_admission` then turns the
+selected-profile transparent endpoint into `AccountAdmissionSoundness`.
 
 The deeper knowledge-soundness split is recorded in
 `research/path2_native_boundary_knowledge_soundness_decomposition.md`.
@@ -237,6 +244,7 @@ blinding_row_soundness_required = true
 blinding_rows_to_bound_required = true
 lean_atomic_full_interface_endpoint_present = true
 lean_selected_profile_atomic_endpoint_present = true
+lean_account_admission_adapter_endpoint_present = true
 qrom_extractor_rewind_bound_required = true
 double_trace_binding_break_exported = true
 ```
@@ -261,6 +269,10 @@ Clearing `lean_selected_profile_atomic_endpoint_present` rejects because the
 active closure target is the selected-profile theorem
 `transparent_view_full_interface_from_selected_profile_atomic_gates_or_break`,
 not the looser atomic adapter alone.
+Clearing `lean_account_admission_adapter_endpoint_present` rejects because the
+active route must bridge account creation into the selected transparent
+view/profile/policy tuple and derive `AccountAdmissionSoundness`, not merely a
+view-level theorem.
 Clearing `qrom_extractor_rewind_bound_required` rejects because the active Lean
 endpoint now consumes `NativeBoundaryTraceQromExtractorRewindSoundness` as a
 distinct proof-family obligation, not as part of the schedule predicate.

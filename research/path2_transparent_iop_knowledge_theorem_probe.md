@@ -23,6 +23,8 @@ The account-admission wrapper is:
 ```text
 AccountAdmissionSoundness
 account_admission_soundness_or_break
+AccountCreateSelectedTransparentViewSoundness
+selected_transparent_view_atomic_gates_imply_account_admission
 ```
 
 so the final bridge must start from `P.accountCreateAccepts c b`, recover the
@@ -155,29 +157,16 @@ recover one full hidden native-boundary trace whose role handles, masked query
 openings, range rows, blinding rows, opening-tuple rows, checked-core rows, and
 lifecycle/context rows all refer to the same accepted boundary.
 
-In schematic Lean-shaped form, the intended final adapter is:
+Lean now names the bridge and final adapter:
 
 ```text
-theorem concrete_transparent_committed_oracle_iop_account_admission_v1
-    (P : Predicates)
-    (hCreateToView :
-      forall {c b}, P.accountCreateAccepts c b ->
-        c = b.context and
-        exists view profile rangePolicy policy,
-          P.transparentAccepts b view and
-          TransparentViewProjectsFrom b view and
-          ColumnProfileCompatibleWithBoundary b view profile and
-          SelectedActiveColumnProfile profile and
-          UsesSelectedHybridBase128RangePolicy profile rangePolicy and
-          UsesSelectedBlindingNoisePolicy policy)
-    -- plus the exact atomic premises consumed by
-    -- transparent_view_full_interface_from_selected_profile_atomic_gates_or_break
-    :
-    AccountAdmissionSoundness P
+AccountCreateSelectedTransparentViewSoundness(P)
+selected_transparent_view_atomic_gates_imply_account_admission(P)
 ```
 
-The `hCreateToView` bridge is not optional. Without it, the proof family only
-proves a transparent-view theorem and does not close account admission.
+`AccountCreateSelectedTransparentViewSoundness` is not optional. Without it,
+the proof family only proves a transparent-view theorem and does not close
+account admission.
 
 ## False Implication To Reject
 

@@ -62,6 +62,7 @@ must reject in direct mode unless the optional aggregation theorem is enabled.
 | `decomposed_trace_assembly_and_row_flags` | selected trace assembly, derived lifecycle/statement roles, same-trace range/blinding row, and row-implication proof gates are all present | prevents the proof-family id from binding only the atomic endpoint name while omitting one required subclaim | `transparent_proof_soundness_break` |
 | `lean_atomic_full_interface_endpoint_present` | selected Lean closure endpoint `transparent_view_full_interface_from_atomic_gates_or_break` is present | prevents a Rust proof-family id from binding only ingredient flags without the composed theorem endpoint | `transparent_proof_soundness_break` |
 | `lean_selected_profile_atomic_endpoint_present` | selected-profile Lean closure endpoint `transparent_view_full_interface_from_selected_profile_atomic_gates_or_break` is present | prevents a Rust proof-family id from binding only the looser atomic adapter while leaving selected profile closure outside the theorem target | `transparent_proof_soundness_break` |
+| `lean_account_admission_adapter_endpoint_present` | selected transparent endpoint composes with `AccountCreateSelectedTransparentViewSoundness` through `selected_transparent_view_atomic_gates_imply_account_admission` | prevents a proof-family id from binding only view-level extraction while leaving `accountCreateAccepts` outside `AccountAdmissionSoundness` | `transparent_proof_soundness_break` |
 
 ## PRF And Hiding Roles
 

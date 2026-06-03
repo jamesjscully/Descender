@@ -1344,6 +1344,25 @@ def AccountAdmissionSoundness (P : Predicates) : Prop :=
             P.descentConsistent c h) ∨
       (exists breakEvent, P.boundaryBreakFor c b breakEvent)
 
+/--
+Account-create/view bridge for the selected transparent proof-family route.
+This is the missing account-admission adapter: an accepted account creation
+must provide the accepted transparent public view, selected active column
+profile, and selected range/blinding policies consumed by the active
+selected-profile endpoint.
+-/
+def AccountCreateSelectedTransparentViewSoundness (P : Predicates) : Prop :=
+  forall {c : Context} {b : Boundary},
+    P.accountCreateAccepts c b ->
+      c = b.context ∧
+        exists view profile rangePolicy policy,
+          P.transparentAccepts b view ∧
+            TransparentViewProjectsFrom b view ∧
+              ColumnProfileCompatibleWithBoundary b view profile ∧
+                SelectedActiveColumnProfile profile ∧
+                  UsesSelectedHybridBase128RangePolicy profile rangePolicy ∧
+                    UsesSelectedBlindingNoisePolicy policy
+
 /-- Native two-view extraction assumption for accepted transparent views. -/
 def TwoViewExtractionSoundness (P : Predicates) : Prop :=
   forall {b : Boundary} {view : TransparentPublicView},
@@ -2064,7 +2083,7 @@ theorem trace_range_rows_bind_representative_or_break
       | inl hAssembled =>
           rcases hAssembled with
             ⟨h, hTraceAssembles, hTransparent, _hComplete,
-              hFiber, _hLocal, _hDescent⟩
+              _hDerived, hFiber, _hLocal, _hDescent⟩
           exact Or.inl
             ⟨trace, hExtractsTrace, hOpens, hRelation, h,
               hTraceAssembles, hTransparent, hFiber,
@@ -2212,7 +2231,7 @@ theorem trace_blinding_rows_bound_representative_or_break
       | inl hAssembled =>
           rcases hAssembled with
             ⟨h, hTraceAssembles, hTransparent, _hComplete,
-              hFiber, _hLocal, _hDescent⟩
+              _hDerived, hFiber, _hLocal, _hDescent⟩
           exact Or.inl
             ⟨trace, hExtractsTrace, hOpens, hRelation, h,
               hTraceAssembles, hTransparent, hFiber,
@@ -2355,8 +2374,8 @@ theorem transparent_view_authenticates_extracts_no_export_or_break
                 hAccept hProjects hProfile hRoleComplete hSelected with
           | inl hTrace =>
               rcases hTrace with
-                ⟨_trace, _hExtractsTrace, _hOpens, _hTraceStable,
-                  _hMasked, _hRelation, hAssembled⟩
+                ⟨_trace, _hExtractsTrace, _hOpens, _hMasked, _hRelation,
+                  hAssembled⟩
               rcases hAssembled with
                 ⟨h, _hTraceAssembles, hTransparent, hComplete,
                   _hDerived, hFiber, hLocal, hDescent⟩
@@ -2771,6 +2790,63 @@ theorem transparent_view_full_interface_from_selected_profile_atomic_gates_or_br
     (selected_active_column_profile_role_complete hSelectedProfile)
     (selected_active_column_profile_trace_modes hSelectedProfile)
     hRangePolicy hPolicy
+
+/--
+Selected transparent proof-family account-admission adapter: once accepted
+account creation is known to expose the selected transparent view/profile/
+policy tuple, the selected-profile atomic endpoint closes the native admission
+surface or exports the same named boundary break.
+-/
+theorem selected_transparent_view_atomic_gates_imply_account_admission
+    (P : Predicates)
+    (hCreateToView : AccountCreateSelectedTransparentViewSoundness P)
+    (hParentSound : ParentRootRoleBindingSoundness P)
+    (hRoleSound : RoleRestrictionSoundness P)
+    (hCommitExtract : ParentTraceCommitmentExtractionSoundness P)
+    (hDoubleTraceBinding : ParentTraceDoubleBindingSoundness P)
+    (hMaskedConsistency : MaskedOpeningConsistencySoundness P)
+    (hRelationKnowledge : ExtractedTraceRelationKnowledgeSoundness P)
+    (hTraceAssemblyExists : TraceRepresentativeAssemblyExistenceSoundness P)
+    (hTraceAssemblyRoles : TraceAssemblyRolesCompleteSoundness P)
+    (hTraceAssemblyDerived : TraceAssemblyDerivedRolesSoundness P)
+    (hTraceAssemblyFiber : TraceAssemblyFiberSoundness P)
+    (hTraceAssemblyLocal : TraceAssemblyLocalValiditySoundness P)
+    (hTraceAssemblyDescent : TraceAssemblyDescentConsistencySoundness P)
+    (hNoExportSound : NoExportSoundness P)
+    (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
+    (hMaskFreshnessSound : MaskFreshnessSoundness P)
+    (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
+    (hQromRewindSound : NativeBoundaryTraceQromExtractorRewindSoundness P)
+    (hTraceRangeRows : TraceRangeRowsBindRepresentativeSoundness P)
+    (hRangeRows : HybridBase128RangeRowSoundness P)
+    (hRangeRowsToNorm : HybridBase128RangeRowsToNormRangeSoundness P)
+    (hTraceBlindRows : TraceBlindingRowsBoundRepresentativeSoundness P)
+    (hBlindRows : BlindingNoiseBoundRowSoundness P)
+    (hBlindRowsToBound : BlindingNoiseRowsToBoundSoundness P) :
+    AccountAdmissionSoundness P := by
+  intro c b hCreate
+  rcases hCreateToView hCreate with
+    ⟨hContext, view, profile, rangePolicy, policy, hAccept, hProjects,
+      hProfile, hSelectedProfile, hRangePolicy, hPolicy⟩
+  subst c
+  cases
+      transparent_view_full_interface_from_selected_profile_atomic_gates_or_break
+        P hParentSound hRoleSound hCommitExtract hDoubleTraceBinding
+        hMaskedConsistency hRelationKnowledge hTraceAssemblyExists
+        hTraceAssemblyRoles hTraceAssemblyDerived hTraceAssemblyFiber
+        hTraceAssemblyLocal hTraceAssemblyDescent hNoExportSound
+        hRoleAuthNoExportSound hMaskFreshnessSound hQromSound
+        hQromRewindSound hTraceRangeRows hRangeRows hRangeRowsToNorm
+        hTraceBlindRows hBlindRows hBlindRowsToBound
+        hAccept hProjects hProfile hSelectedProfile hRangePolicy hPolicy with
+  | inl hClosed =>
+      rcases hClosed with
+        ⟨_hRole, _hNoExport, _hRoleAuthNoExport, _hMaskFresh, _hQrom,
+          _hQromRewind, _hParent, h, _hTransparent, _hComplete,
+          hFiber, hLocal, hDescent, _hNorm, _hBlind⟩
+      exact Or.inl ⟨h, hFiber, hLocal, hDescent⟩
+  | inr hBreak =>
+      exact Or.inr hBreak
 
 /--
 If the native admission interface holds, every boundary is either explained by

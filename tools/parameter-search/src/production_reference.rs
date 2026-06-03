@@ -1531,6 +1531,7 @@ pub struct Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
     pub blinding_rows_to_bound_required: bool,
     pub lean_atomic_full_interface_endpoint_present: bool,
     pub lean_selected_profile_atomic_endpoint_present: bool,
+    pub lean_account_admission_adapter_endpoint_present: bool,
     pub qrom_extractor_rewind_bound_required: bool,
     pub double_trace_binding_break_exported: bool,
     pub full_trace_extraction_required: bool,
@@ -10086,6 +10087,7 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1()
         blinding_rows_to_bound_required: true,
         lean_atomic_full_interface_endpoint_present: true,
         lean_selected_profile_atomic_endpoint_present: true,
+        lean_account_admission_adapter_endpoint_present: true,
         qrom_extractor_rewind_bound_required: true,
         double_trace_binding_break_exported: true,
         full_trace_extraction_required: true,
@@ -10346,6 +10348,12 @@ pub fn verify_path2_native_boundary_trace_proof_family_interface(
                 .to_string(),
         );
     }
+    if !interface.lean_account_admission_adapter_endpoint_present {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks Lean account-admission adapter endpoint"
+                .to_string(),
+        );
+    }
     if !interface.qrom_extractor_rewind_bound_required {
         return Err(
             "Path 2 native-boundary trace proof-family interface lacks QROM extractor rewind bound"
@@ -10594,6 +10602,11 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
         &mut frame,
         b"lean_selected_profile_atomic_endpoint_present",
         u64::from(interface.lean_selected_profile_atomic_endpoint_present),
+    );
+    append_u64(
+        &mut frame,
+        b"lean_account_admission_adapter_endpoint_present",
+        u64::from(interface.lean_account_admission_adapter_endpoint_present),
     );
     append_u64(
         &mut frame,
@@ -34000,6 +34013,7 @@ mod tests {
         assert!(interface.blinding_rows_to_bound_required);
         assert!(interface.lean_atomic_full_interface_endpoint_present);
         assert!(interface.lean_selected_profile_atomic_endpoint_present);
+        assert!(interface.lean_account_admission_adapter_endpoint_present);
         assert!(interface.qrom_extractor_rewind_bound_required);
         assert!(interface.double_trace_binding_break_exported);
         assert!(interface.full_trace_extraction_required);
@@ -34271,6 +34285,17 @@ mod tests {
             )
             .unwrap_err(),
             "Path 2 native-boundary trace proof-family interface lacks Lean selected-profile atomic endpoint"
+        );
+
+        let mut no_account_admission_adapter_endpoint = interface.clone();
+        no_account_admission_adapter_endpoint.lean_account_admission_adapter_endpoint_present =
+            false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(
+                &no_account_admission_adapter_endpoint
+            )
+            .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks Lean account-admission adapter endpoint"
         );
 
         let mut no_qrom_rewind = interface.clone();

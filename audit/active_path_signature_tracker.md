@@ -330,7 +330,8 @@ masked-opening consistency, relation-knowledge, decomposed assembly, same-trace
 hybrid range rows, range row soundness, same-trace blinding/noise rows, and
 blinding/noise row obligations. The Rust proof-family interface now binds
 `lean_atomic_full_interface_endpoint_present = true`,
-`lean_selected_profile_atomic_endpoint_present = true`, plus the decomposed
+`lean_selected_profile_atomic_endpoint_present = true`,
+`lean_account_admission_adapter_endpoint_present = true`, plus the decomposed
 assembly/range/blinding row subclaim flags into its digest.
 The active range/SIS gate now also pins `selectedSisRoleMatrixRows = 64` and the
 Rust proof-family interface binds `sis_role_matrix_rows = 64`; the existing
@@ -370,6 +371,13 @@ transparent IOP-of-knowledge theorem surface, while
 full-witness theorem, optimistic wide-challenge byte floor, and conservative
 64-round extrapolation. The current MITH read is theorem-clean but likely
 byte-heavy unless challenge-width/QROM accounting cuts repetitions.
+Lean now names the transparent account-admission bridge as
+`AccountCreateSelectedTransparentViewSoundness` and proves
+`selected_transparent_view_atomic_gates_imply_account_admission`, so the
+selected transparent endpoint composes into `AccountAdmissionSoundness` once
+accepted account creation supplies the selected view/profile/policies.
+Rust now digest-binds that Lean account-admission adapter through
+`lean_account_admission_adapter_endpoint_present`.
 
 ## Findings
 

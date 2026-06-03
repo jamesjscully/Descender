@@ -53,6 +53,9 @@ The concrete theorem surface for instantiating this wrapper is recorded in
 `research/path2_transparent_iop_knowledge_theorem_probe.md`, including the
 required bridge from `accountCreateAccepts` to the accepted transparent view,
 selected profile, range policy, and blinding policy.
+Lean now names that bridge as `AccountCreateSelectedTransparentViewSoundness`
+and composes it through
+`selected_transparent_view_atomic_gates_imply_account_admission`.
 
 ## Required Profile Modes
 

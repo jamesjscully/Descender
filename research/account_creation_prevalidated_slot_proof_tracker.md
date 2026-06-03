@@ -614,7 +614,10 @@ Named breaks:
   `TraceAssemblyDerivedRolesSoundness`, and the Rust proof-family interface
   rejects clearing `trace_assembly_derived_roles_required`.
   The Rust proof-family interface also rejects clearing
-  `lean_selected_profile_atomic_endpoint_present`.
+  `lean_selected_profile_atomic_endpoint_present` and
+  `lean_account_admission_adapter_endpoint_present`, so the active proof-family
+  id must bind the selected view/profile endpoint and its account-admission
+  adapter into `AccountAdmissionSoundness`.
   `PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA`,
   `path2_transparent_proof_family_capability_v1`,
   `verify_path2_transparent_proof_family_capability`, and
