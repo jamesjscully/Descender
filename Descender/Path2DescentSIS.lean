@@ -75,6 +75,117 @@ inductive BreakEvent where
   | noExportBreak
   deriving DecidableEq
 
+/-- Commitment roles used by the Path 2 descent/SIS payload candidate. -/
+inductive CommitmentRole where
+  | padSource
+  | projectionRelation
+  | openingTuple
+  | transcriptCommitment
+  deriving DecidableEq
+
+/--
+Column layout and norm/range policy for one SIS commitment role.
+
+The Rust verifier owns byte parsing and concrete centered-lift checks. This
+Lean policy pins the role partition consumed by the proof boundary.
+-/
+structure RoleLayout where
+  columns : Nat
+  semanticColumns : Nat
+  blindingColumns : Nat
+  rangeColumns : Nat
+  blindingCenteredBound : Nat
+  rangeDigitMax : Nat
+
+/-- Selected executable role layout for the current Path 2 descent/SIS probe. -/
+def layoutForRole : CommitmentRole -> RoleLayout
+  | .padSource =>
+      { columns := 30, semanticColumns := 6, blindingColumns := 24,
+        rangeColumns := 0, blindingCenteredBound := 2048,
+        rangeDigitMax := 127 }
+  | .projectionRelation =>
+      { columns := 30, semanticColumns := 6, blindingColumns := 24,
+        rangeColumns := 0, blindingCenteredBound := 2048,
+        rangeDigitMax := 127 }
+  | .openingTuple =>
+      { columns := 48, semanticColumns := 8, blindingColumns := 32,
+        rangeColumns := 8, blindingCenteredBound := 2048,
+        rangeDigitMax := 127 }
+  | .transcriptCommitment =>
+      { columns := 108, semanticColumns := 20, blindingColumns := 80,
+        rangeColumns := 8, blindingCenteredBound := 2048,
+        rangeDigitMax := 127 }
+
+/-- Each selected role layout partitions the exact commitment column count. -/
+theorem layoutForRole_partitions (role : CommitmentRole) :
+    let L := layoutForRole role
+    L.semanticColumns + L.blindingColumns + L.rangeColumns = L.columns := by
+  cases role <;> rfl
+
+/-- Embed a semantic lane index into the full role opening. -/
+def semanticColumnIndex (role : CommitmentRole)
+    (i : Fin (layoutForRole role).semanticColumns) :
+    Fin (layoutForRole role).columns :=
+  ⟨i.val, by
+    cases role <;> simp [layoutForRole] at i ⊢ <;> omega⟩
+
+/-- Embed a blinding lane index into the full role opening. -/
+def blindingColumnIndex (role : CommitmentRole)
+    (i : Fin (layoutForRole role).blindingColumns) :
+    Fin (layoutForRole role).columns :=
+  ⟨(layoutForRole role).semanticColumns + i.val, by
+    cases role <;> simp [layoutForRole] at i ⊢ <;> omega⟩
+
+/-- Embed a range-digit lane index into the full role opening. -/
+def rangeColumnIndex (role : CommitmentRole)
+    (i : Fin (layoutForRole role).rangeColumns) :
+    Fin (layoutForRole role).columns :=
+  match role with
+  | .padSource => nomatch i
+  | .projectionRelation => nomatch i
+  | .openingTuple =>
+      ⟨(layoutForRole .openingTuple).semanticColumns +
+          (layoutForRole .openingTuple).blindingColumns + i.val, by
+        simp [layoutForRole] at i ⊢
+        omega⟩
+  | .transcriptCommitment =>
+      ⟨(layoutForRole .transcriptCommitment).semanticColumns +
+          (layoutForRole .transcriptCommitment).blindingColumns + i.val, by
+        simp [layoutForRole] at i ⊢
+        omega⟩
+
+/-- Per-segment semantic bounds; transcript commitments inherit constituent bounds. -/
+def semanticCenteredBoundFor (role : CommitmentRole)
+    (i : Fin (layoutForRole role).semanticColumns) : Nat :=
+  match role with
+  | .padSource => 96
+  | .projectionRelation => 96
+  | .openingTuple => 512
+  | .transcriptCommitment =>
+      if i.val < 12 then 96 else 512
+
+/--
+Abstract norm/range acceptance for a role opening.
+
+Concrete Rust checks enforce canonical q12289 centered lifts, semantic/blinding
+centered bounds, nonnegative base-128 range digits, and exact column count.
+-/
+structure OpeningNormRangeValid (role : CommitmentRole) where
+  opening : Fin (layoutForRole role).columns -> Int
+  semantic_bound :
+    ∀ i : Fin (layoutForRole role).semanticColumns,
+      (opening (semanticColumnIndex role i)).natAbs ≤
+        semanticCenteredBoundFor role i
+  blinding_bound :
+    ∀ i : Fin (layoutForRole role).blindingColumns,
+      (opening (blindingColumnIndex role i)).natAbs ≤
+        (layoutForRole role).blindingCenteredBound
+  range_digit_bound :
+    ∀ i : Fin (layoutForRole role).rangeColumns,
+      0 ≤ opening (rangeColumnIndex role i) ∧
+      (opening (rangeColumnIndex role i)).natAbs ≤
+        (layoutForRole role).rangeDigitMax
+
 /-- The public quotient of a representative is its masked projection vector. -/
 def quotientOfRepresentative (rep : Representative) : MaskedProjection :=
   rep.maskedProjection

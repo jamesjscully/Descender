@@ -246,9 +246,11 @@ Named breaks:
   `research/path2_descent_sis_type_map.md` maps `Path2CreationProofBindingV1`
   and payload bytes into `Public`, `Representative`, `MaskedProjection`,
   `HiddenOpening`, `AccountEvidence`, `BreakEvent`, `Predicates`, and
-  `localQuotientDescent`. The second row is now executable-closed:
-  `research/path2_descent_sis_matrix_domains.md` and KAT
-  `path2_descent_sis_matrix_domains_are_role_and_row_band_separated` define
+  `localQuotientDescent`. The Lean sidecar now also pins the descent/SIS role
+  layout and fixed-length `OpeningNormRangeValid` policy for pad-source,
+  projection-relation, opening-tuple, and transcript commitments. The second row
+  is now executable-closed: `research/path2_descent_sis_matrix_domains.md` and
+  KAT `path2_descent_sis_matrix_domains_are_role_and_row_band_separated` define
   role-separated pad/projection/opening/transcript matrix domains, 48/64 row
   bands, column counts, SHA-256 rejection sampling, transcript digests,
   deterministic regeneration, and global Path 2 domain separation. The third
@@ -256,10 +258,23 @@ Named breaks:
   `research/path2_descent_sis_binding_surface.md` defines the exact binding
   game for Path 2 role matrices. A double opening exports
   `delta = v0 - v1` with `A_role,rowband * delta = 0 mod q` for a registered
-  role and the 48/64 row band. No numeric binding claim is made yet; the next
-  blocker is `p2_sis_norm_range`, because the shortness bounds and modular-wrap
-  rejection rules determine the SIS hardness surface. That blocker is now
-  explicitly pinned in `research/path2_descent_sis_norm_range_surface.md`: raw
+  role and the 48/64 row band. No numeric binding claim is made yet.
+  `p2_sis_norm_range` now has executable policy coverage:
+  `verify_path2_descent_sis_opening_norm_range` enforces exact role column
+  counts, canonical q12289 centered lifts, pad/projection semantic lane bounds
+  `96`, opening-tuple semantic bounds `512`, blinding bounds `2048`,
+  nonnegative base-128 range digits, and range digit maximum `127`. KATs
+  `path2_descent_sis_norm_range_policy_rejects_wraps_and_wrong_shapes` and
+  `path2_descent_sis_norm_range_policy_covers_range_digits` reject semantic
+  overflow, blinding overflow, negative range digits, noncanonical residues,
+  wrong column counts, and unknown roles; KAT
+  `path2_descent_sis_norm_range_policy_tightens_transcript_semantic_segments`
+  checks that aggregate transcript commitments do not relax pad/projection
+  semantic lanes. This is still not a binding hardness
+  estimate; the next blocker is a SIS/module-SIS sanity model for these exact
+  bounds and a final choice between raw centered lanes and digit openings.
+  The remaining design fork is explicitly pinned in
+  `research/path2_descent_sis_norm_range_surface.md`: raw
   q12289 residue lanes give canonical openings but not a clean short-SIS
   witness surface. Base-128 digit openings are the primary next probe, with raw
   centered residues kept as the negative/cheap comparison and base-16 digit
