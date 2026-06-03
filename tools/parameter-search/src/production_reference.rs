@@ -288,6 +288,8 @@ pub const PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA: &str =
 pub const PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA: &str = "DESCENDER_PATH2_TRANSPARENT_PUBLIC_VIEW_V1";
 pub const PATH2_PREVALIDATED_SLOT_LEAF_CONTEXT_SCHEMA: &str =
     "DESCENDER_PATH2_PREVALIDATED_SLOT_LEAF_CONTEXT_V1";
+pub const PATH2_TRANSPARENT_COMMITMENT_API_SCHEMA: &str =
+    "DESCENDER_PATH2_TRANSPARENT_COMMITMENT_API_V1";
 pub const PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA: &str =
     "DESCENDER_PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1";
 pub const PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA: &str =
@@ -370,6 +372,7 @@ pub const PATH2_NATIVE_BOUNDARY_TRACE_RANGE_ACCOUNT_DELTA_LANES: u16 = 56;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_OPTIMISTIC: u16 = 160;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_WORKING: u16 = 176;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_STRESS: u16 = 220;
+pub const PATH2_TRANSPARENT_COMMITMENT_ROLE_HANDLE_COUNT: usize = 4;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_PAD_DIGITS: u8 = 1;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_PROJECTION_DIGITS: u8 = 2;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_OPENING_DIGITS: u8 = 3;
@@ -1525,6 +1528,28 @@ pub struct Path2TransparentProofFamilyCapabilityV1 {
     pub no_raw_hidden_openings: bool,
     pub no_public_linear_role_commitments: bool,
     pub fallback_threshold_bytes: u32,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2TransparentCommitmentRoleHandleV1 {
+    pub role_id: u8,
+    pub column_set_id: u16,
+    pub role_handle: [u8; DIGEST_BYTES],
+    pub authenticated_under_parent_root: bool,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2TransparentCommitmentApiV1 {
+    pub schema: &'static str,
+    pub proof_system_id: [u8; DIGEST_BYTES],
+    pub relation_id: [u8; DIGEST_BYTES],
+    pub column_profile: u16,
+    pub trace_commitment_root: [u8; DIGEST_BYTES],
+    pub constraint_commitment_root: [u8; DIGEST_BYTES],
+    pub creation_proof_binding_digest: [u8; DIGEST_BYTES],
+    pub native_role_root_commitment: [u8; DIGEST_BYTES],
+    pub role_handles:
+        [Path2TransparentCommitmentRoleHandleV1; PATH2_TRANSPARENT_COMMITMENT_ROLE_HANDLE_COUNT],
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -10442,6 +10467,191 @@ pub fn path2_transparent_proof_family_capability_v1_digest() -> Result<[u8; DIGE
     Ok(Sha256::digest(frame).into())
 }
 
+pub fn path2_transparent_commitment_api_v1(
+    public_view: &Path2TransparentDescentPublicViewV1,
+    binding: &Path2CreationProofBindingV1,
+) -> Result<Path2TransparentCommitmentApiV1, String> {
+    let role_handles = [
+        Path2TransparentCommitmentRoleHandleV1 {
+            role_id: PATH2_TWO_VIEW_ROLE_PAD_SOURCE,
+            column_set_id: path2_two_view_column_profile_entry(PATH2_TWO_VIEW_ROLE_PAD_SOURCE)?
+                .hidden_column_set_id,
+            role_handle: binding.pad_source_commitment,
+            authenticated_under_parent_root: true,
+        },
+        Path2TransparentCommitmentRoleHandleV1 {
+            role_id: PATH2_TWO_VIEW_ROLE_PROJECTION_RELATION,
+            column_set_id: path2_two_view_column_profile_entry(
+                PATH2_TWO_VIEW_ROLE_PROJECTION_RELATION,
+            )?
+            .hidden_column_set_id,
+            role_handle: binding.projection_relation_commitment,
+            authenticated_under_parent_root: true,
+        },
+        Path2TransparentCommitmentRoleHandleV1 {
+            role_id: PATH2_TWO_VIEW_ROLE_OPENING_TUPLE,
+            column_set_id: path2_two_view_column_profile_entry(PATH2_TWO_VIEW_ROLE_OPENING_TUPLE)?
+                .hidden_column_set_id,
+            role_handle: binding.opening_tuple_commitment,
+            authenticated_under_parent_root: true,
+        },
+        Path2TransparentCommitmentRoleHandleV1 {
+            role_id: PATH2_TWO_VIEW_ROLE_PACKED_WITNESS,
+            column_set_id: path2_two_view_column_profile_entry(PATH2_TWO_VIEW_ROLE_PACKED_WITNESS)?
+                .hidden_column_set_id,
+            role_handle: binding.packed_witness_commitment,
+            authenticated_under_parent_root: true,
+        },
+    ];
+    let api = Path2TransparentCommitmentApiV1 {
+        schema: PATH2_TRANSPARENT_COMMITMENT_API_SCHEMA,
+        proof_system_id: public_view.proof_system_id,
+        relation_id: public_view.relation_id,
+        column_profile: public_view.column_profile,
+        trace_commitment_root: public_view.trace_commitment_root,
+        constraint_commitment_root: public_view.constraint_commitment_root,
+        creation_proof_binding_digest: binding.digest,
+        native_role_root_commitment: binding.native_role_root_commitment,
+        role_handles,
+    };
+    verify_path2_transparent_commitment_api(&api, public_view, binding)?;
+    Ok(api)
+}
+
+pub fn verify_path2_transparent_commitment_api(
+    api: &Path2TransparentCommitmentApiV1,
+    public_view: &Path2TransparentDescentPublicViewV1,
+    binding: &Path2CreationProofBindingV1,
+) -> Result<(), String> {
+    verify_path2_transparent_descent_public_view(public_view)?;
+    if api.schema != PATH2_TRANSPARENT_COMMITMENT_API_SCHEMA {
+        return Err("Path 2 transparent commitment API schema mismatch".to_string());
+    }
+    if path2_creation_proof_binding_v1_digest(binding) != binding.digest {
+        return Err("Path 2 transparent commitment API binding digest mismatch".to_string());
+    }
+    let expected_role_root = path2_creation_native_role_root_commitment_v1(
+        &binding.packed_witness_commitment,
+        &binding.randomizer_commitment,
+        &binding.pad_source_commitment,
+        &binding.opening_tuple_commitment,
+        &binding.projection_relation_commitment,
+        &binding.gauge_commitment,
+    );
+    if binding.native_role_root_commitment != expected_role_root {
+        return Err("Path 2 transparent commitment API native role root mismatch".to_string());
+    }
+    if api.proof_system_id != public_view.proof_system_id
+        || api.relation_id != public_view.relation_id
+        || api.column_profile != public_view.column_profile
+        || api.trace_commitment_root != public_view.trace_commitment_root
+        || api.constraint_commitment_root != public_view.constraint_commitment_root
+        || api.creation_proof_binding_digest != public_view.creation_proof_binding_digest
+        || api.creation_proof_binding_digest != binding.digest
+        || api.native_role_root_commitment != binding.native_role_root_commitment
+    {
+        return Err("Path 2 transparent commitment API context mismatch".to_string());
+    }
+    let expected_roles = [
+        (
+            PATH2_TWO_VIEW_ROLE_PAD_SOURCE,
+            binding.pad_source_commitment,
+        ),
+        (
+            PATH2_TWO_VIEW_ROLE_PROJECTION_RELATION,
+            binding.projection_relation_commitment,
+        ),
+        (
+            PATH2_TWO_VIEW_ROLE_OPENING_TUPLE,
+            binding.opening_tuple_commitment,
+        ),
+        (
+            PATH2_TWO_VIEW_ROLE_PACKED_WITNESS,
+            binding.packed_witness_commitment,
+        ),
+    ];
+    let mut seen_roles = BTreeSet::new();
+    for (handle, (expected_role_id, expected_handle)) in api.role_handles.iter().zip(expected_roles)
+    {
+        if !seen_roles.insert(handle.role_id) {
+            return Err("Path 2 transparent commitment API duplicate role handle".to_string());
+        }
+        if handle.role_id != expected_role_id {
+            return Err("Path 2 transparent commitment API role order mismatch".to_string());
+        }
+        let profile_entry = path2_two_view_column_profile_entry(handle.role_id)?;
+        if handle.column_set_id != profile_entry.hidden_column_set_id {
+            return Err("Path 2 transparent commitment API column set mismatch".to_string());
+        }
+        if handle.role_handle != expected_handle || handle.role_handle == [0_u8; DIGEST_BYTES] {
+            return Err("Path 2 transparent commitment API role handle mismatch".to_string());
+        }
+        if !handle.authenticated_under_parent_root {
+            return Err(
+                "Path 2 transparent commitment API role handle is not parent-authenticated"
+                    .to_string(),
+            );
+        }
+    }
+    Ok(())
+}
+
+pub fn path2_transparent_commitment_api_v1_digest(
+    api: &Path2TransparentCommitmentApiV1,
+    public_view: &Path2TransparentDescentPublicViewV1,
+    binding: &Path2CreationProofBindingV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    verify_path2_transparent_commitment_api(api, public_view, binding)?;
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PATH2_TRANSPARENT_COMMITMENT_API_SCHEMA.as_bytes(),
+    );
+    append_frame(&mut frame, b"proof_system_id", &api.proof_system_id);
+    append_frame(&mut frame, b"relation_id", &api.relation_id);
+    append_frame(
+        &mut frame,
+        b"column_profile",
+        &api.column_profile.to_le_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"trace_commitment_root",
+        &api.trace_commitment_root,
+    );
+    append_frame(
+        &mut frame,
+        b"constraint_commitment_root",
+        &api.constraint_commitment_root,
+    );
+    append_frame(
+        &mut frame,
+        b"creation_proof_binding_digest",
+        &api.creation_proof_binding_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"native_role_root_commitment",
+        &api.native_role_root_commitment,
+    );
+    for handle in api.role_handles {
+        append_frame(&mut frame, b"role_id", &[handle.role_id]);
+        append_frame(
+            &mut frame,
+            b"column_set_id",
+            &handle.column_set_id.to_le_bytes(),
+        );
+        append_frame(&mut frame, b"role_handle", &handle.role_handle);
+        append_u64(
+            &mut frame,
+            b"authenticated_under_parent_root",
+            u64::from(handle.authenticated_under_parent_root),
+        );
+    }
+    Ok(Sha256::digest(frame).into())
+}
+
 pub fn path2_transparent_descent_proof_system_id() -> [u8; DIGEST_BYTES] {
     let proof_family_capability_digest = path2_transparent_proof_family_capability_v1_digest()
         .expect("Path 2 transparent proof-family capability is statically valid");
@@ -12384,6 +12594,7 @@ pub fn verify_path2_direct_creation_transparent_descent_payload_boundary(
     if view.aggregation_context_digest != binding.aggregation_context_digest {
         return Err("Path 2 transparent descent aggregation context mismatch".to_string());
     }
+    path2_transparent_commitment_api_v1(view, binding)?;
     let expected_payload_digest = path2_transparent_descent_proof_payload_digest(
         view,
         transparent_payload.payload_byte_len,
@@ -14608,7 +14819,7 @@ pub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(
         .map_err(|err| format!("encode Path 2 native storage/lifecycle hardening scope: {err}"))
 }
 
-pub fn path2_registered_domain_constants() -> [&'static str; 33] {
+pub fn path2_registered_domain_constants() -> [&'static str; 34] {
     [
         PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN,
         PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN,
@@ -14639,6 +14850,7 @@ pub fn path2_registered_domain_constants() -> [&'static str; 33] {
         PATH2_TRANSPARENT_DESCENT_PROOF_SYSTEM_PROFILE,
         PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA,
         PATH2_PREVALIDATED_SLOT_LEAF_CONTEXT_SCHEMA,
+        PATH2_TRANSPARENT_COMMITMENT_API_SCHEMA,
         PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA,
         PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA,
         PATH2_TRANSPARENT_QUERY_OPENING_MASK_DOMAIN_SCHEMA,
@@ -14978,6 +15190,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_PREVALIDATED_SLOT_LEAF_CONTEXT_SCHEMA",
             PATH2_PREVALIDATED_SLOT_LEAF_CONTEXT_SCHEMA,
+        ),
+        (
+            "PATH2_TRANSPARENT_COMMITMENT_API_SCHEMA",
+            PATH2_TRANSPARENT_COMMITMENT_API_SCHEMA,
         ),
         (
             "PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA",
@@ -29274,6 +29490,82 @@ mod tests {
         let public_view_digest =
             path2_transparent_descent_public_view_digest(&public_view).unwrap();
         assert_ne!(public_view_digest, [0_u8; DIGEST_BYTES]);
+        let commitment_api = path2_transparent_commitment_api_v1(&public_view, &binding).unwrap();
+        assert_eq!(
+            commitment_api.schema,
+            PATH2_TRANSPARENT_COMMITMENT_API_SCHEMA
+        );
+        assert_eq!(commitment_api.creation_proof_binding_digest, binding.digest);
+        assert_eq!(
+            commitment_api.native_role_root_commitment,
+            binding.native_role_root_commitment
+        );
+        assert_eq!(
+            commitment_api.role_handles[0].role_id,
+            PATH2_TWO_VIEW_ROLE_PAD_SOURCE
+        );
+        assert_eq!(
+            commitment_api.role_handles[0].role_handle,
+            binding.pad_source_commitment
+        );
+        assert_eq!(
+            commitment_api.role_handles[1].role_handle,
+            binding.projection_relation_commitment
+        );
+        assert_eq!(
+            commitment_api.role_handles[2].role_handle,
+            binding.opening_tuple_commitment
+        );
+        assert_eq!(
+            commitment_api.role_handles[3].role_handle,
+            binding.packed_witness_commitment
+        );
+        assert_ne!(
+            path2_transparent_commitment_api_v1_digest(&commitment_api, &public_view, &binding)
+                .unwrap(),
+            [0_u8; DIGEST_BYTES]
+        );
+        let mut unauthenticated_role = commitment_api;
+        unauthenticated_role.role_handles[0].authenticated_under_parent_root = false;
+        assert_eq!(
+            verify_path2_transparent_commitment_api(&unauthenticated_role, &public_view, &binding,)
+                .unwrap_err(),
+            "Path 2 transparent commitment API role handle is not parent-authenticated"
+        );
+        let mut duplicate_role = commitment_api;
+        duplicate_role.role_handles[1].role_id = duplicate_role.role_handles[0].role_id;
+        assert_eq!(
+            verify_path2_transparent_commitment_api(&duplicate_role, &public_view, &binding)
+                .unwrap_err(),
+            "Path 2 transparent commitment API duplicate role handle"
+        );
+        let mut rebound_role_root_binding = binding;
+        rebound_role_root_binding.native_role_root_commitment[0] ^= 1;
+        rebound_role_root_binding.digest =
+            path2_creation_proof_binding_v1_digest(&rebound_role_root_binding);
+        let rebound_role_root_view = path2_transparent_descent_public_view_v1(
+            path2_transparent_descent_proof_system_id(),
+            256,
+            16,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+            leaf_context_digest,
+            rebound_role_root_binding.digest,
+            matrix_domain_transcript_digest,
+            masked_projection,
+            rebound_role_root_binding.aggregation_context_digest,
+            test_digest("path2-transparent-trace-root"),
+            test_digest("path2-transparent-constraint-root"),
+            3,
+        )
+        .unwrap();
+        assert_eq!(
+            path2_transparent_commitment_api_v1(
+                &rebound_role_root_view,
+                &rebound_role_root_binding,
+            )
+            .unwrap_err(),
+            "Path 2 transparent commitment API native role root mismatch"
+        );
         let rebound_public_view = path2_transparent_descent_public_view_v1(
             path2_transparent_descent_proof_system_id(),
             256,

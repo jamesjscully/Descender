@@ -391,7 +391,18 @@ Named breaks:
   bytes. `research/path2_transparent_commitment_api.md` now pins that theorem
   interface and makes the next decision explicit: select a transparent proof
   family that supplies authenticated typed role subcommitments with ZK query
-  openings, or fall back to explicit algebraic opening rows.
+  openings, or fall back to explicit algebraic opening rows. The API contract
+  now also has an executable Rust mirror:
+  `PATH2_TRANSPARENT_COMMITMENT_API_SCHEMA`,
+  `path2_transparent_commitment_api_v1`,
+  `verify_path2_transparent_commitment_api`, and
+  `path2_transparent_commitment_api_v1_digest` derive the four active role
+  handles from `Path2CreationProofBindingV1`, require them to be authenticated
+  under the parent trace root, rederive the native role-root commitment from the
+  role handles, and reject role/root drift before the transparent fail-closed
+  verifier handoff. KAT coverage includes unauthenticated role handles,
+  duplicate role ids, and a self-consistent binding digest whose native role
+  root no longer matches the role handles.
   `research/path2_transparent_proof_family_gate.md` selects the conditional
   primary family `zk_masked_trace_iop` and marks vanilla Merkle/FRI raw trace
   opening dead for hidden columns. The next proof blocker is now the masked
