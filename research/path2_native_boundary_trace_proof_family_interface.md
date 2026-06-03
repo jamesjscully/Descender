@@ -127,10 +127,14 @@ role rows `64`, digit counts `12/12/16`, reconstruction rows `20`, range rows
 `40`, range witnesses `40`, and digit maximum `127`.
 The Lean route now decomposes this into `HybridBase128RangeRowSoundness` plus
 `HybridBase128RangeRowsToNormRangeSoundness`, which compose back into
-`NormRangeSoundness`.
+`NormRangeSoundness`. `TraceRangeRowsBindRepresentativeSoundness` additionally
+ties those row facts to the same extracted trace that assembles the
+representative.
 The blinding/noise side has the parallel route:
 `BlindingNoiseBoundRowSoundness` plus `BlindingNoiseRowsToBoundSoundness`
-compose back into `BlindingNoiseBoundSoundness`.
+compose back into `BlindingNoiseBoundSoundness`, with
+`TraceBlindingRowsBoundRepresentativeSoundness` tying those bound rows to the
+same extracted trace.
 
 ## Lean Anchors
 

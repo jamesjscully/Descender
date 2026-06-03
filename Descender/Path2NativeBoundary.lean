@@ -952,10 +952,22 @@ structure Predicates where
       TransparentPublicView ->
         ColumnProfile ->
           HybridBase128RangePolicy -> HiddenRepresentative -> Prop
+  rangeRowsBindTraceRepresentative :
+    Boundary ->
+      TransparentPublicView ->
+        ColumnProfile ->
+          HybridBase128RangePolicy ->
+            ExtractedTrace -> HiddenRepresentative -> Prop
   blindingRowsBoundRepresentative :
     Boundary ->
       TransparentPublicView ->
         ColumnProfile -> BlindingNoisePolicy -> HiddenRepresentative -> Prop
+  blindingRowsBoundTraceRepresentative :
+    Boundary ->
+      TransparentPublicView ->
+        ColumnProfile ->
+          BlindingNoisePolicy ->
+            ExtractedTrace -> HiddenRepresentative -> Prop
   transparentAccepts : Boundary -> TransparentPublicView -> Prop
   transparentExtractsTrace :
     Boundary -> TransparentPublicView -> ExtractedTrace -> Prop
@@ -1513,6 +1525,25 @@ def HybridBase128RangeRowsToNormRangeSoundness (P : Predicates) : Prop :=
                     (exists breakEvent,
                       P.boundaryBreakFor b.context b breakEvent)
 
+def TraceRangeRowsBindRepresentativeSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile} {rangePolicy : HybridBase128RangePolicy}
+      {trace : ExtractedTrace} {h : HiddenRepresentative},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          UsesSelectedHybridBase128RangePolicy profile rangePolicy ->
+            P.transparentExtractsTrace b view trace ->
+              P.traceOpensBoundary b profile trace ->
+                P.traceRelationValid b profile trace ->
+                  P.traceAssemblesRepresentative trace h ->
+                    P.transparentExtracts b view h ->
+                      InFiber P b.context b h ->
+                        P.rangeRowsBindTraceRepresentative
+                          b view profile rangePolicy trace h ∧
+                          P.rangeRowsBindRepresentative
+                            b view profile rangePolicy h
+
 /--
 Norm/range assumption: every representative extracted from an accepted
 compatible transparent view satisfies the canonicality/range bounds needed by
@@ -1546,6 +1577,54 @@ theorem hybrid_base128_range_rows_imply_norm_range_soundness
       exact
         hRowsToNorm hAccept hProjects hProfile hRangePolicy
           hExtracts hFiber hBoundRows
+  | inr hBreak =>
+      exact Or.inr hBreak
+
+theorem trace_range_rows_bind_representative_or_break
+    (P : Predicates)
+    (hTraceExtractSound : ParentTraceExtractionSoundness P)
+    (hTraceAssemblySound : TraceAssemblySoundness P)
+    (hTraceRangeRows : TraceRangeRowsBindRepresentativeSoundness P)
+    {b : Boundary} {view : TransparentPublicView}
+    {profile : ColumnProfile} {rangePolicy : HybridBase128RangePolicy}
+    (hAccept : P.transparentAccepts b view)
+    (hProjects : TransparentViewProjectsFrom b view)
+    (hProfile : ColumnProfileCompatibleWithBoundary b view profile)
+    (hRoleComplete : ProfileRoleComplete profile)
+    (hSelected : UsesSelectedTraceKnowledgeModes profile)
+    (hRangePolicy : UsesSelectedHybridBase128RangePolicy profile rangePolicy) :
+    (exists trace,
+      P.transparentExtractsTrace b view trace ∧
+        P.traceOpensBoundary b profile trace ∧
+          P.traceRelationValid b profile trace ∧
+            exists h,
+              P.traceAssemblesRepresentative trace h ∧
+                P.transparentExtracts b view h ∧
+                  InFiber P b.context b h ∧
+                    P.rangeRowsBindTraceRepresentative
+                      b view profile rangePolicy trace h ∧
+                      P.rangeRowsBindRepresentative
+                        b view profile rangePolicy h) ∨
+    (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) := by
+  cases
+      hTraceExtractSound hAccept hProjects hProfile hSelected with
+  | inl hTrace =>
+      rcases hTrace with ⟨trace, hExtractsTrace, hOpens, _hMasked, hRelation⟩
+      cases
+          hTraceAssemblySound hAccept hProjects hProfile hRoleComplete
+            hExtractsTrace hOpens hRelation with
+      | inl hAssembled =>
+          rcases hAssembled with
+            ⟨h, hTraceAssembles, hTransparent, _hComplete,
+              hFiber, _hLocal, _hDescent⟩
+          exact Or.inl
+            ⟨trace, hExtractsTrace, hOpens, hRelation, h,
+              hTraceAssembles, hTransparent, hFiber,
+              hTraceRangeRows hAccept hProjects hProfile hRangePolicy
+                hExtractsTrace hOpens hRelation hTraceAssembles
+                hTransparent hFiber⟩
+      | inr hBreak =>
+          exact Or.inr hBreak
   | inr hBreak =>
       exact Or.inr hBreak
 
@@ -1599,6 +1678,25 @@ def BlindingNoiseRowsToBoundSoundness (P : Predicates) : Prop :=
                     (exists breakEvent,
                       P.boundaryBreakFor b.context b breakEvent)
 
+def TraceBlindingRowsBoundRepresentativeSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile} {policy : BlindingNoisePolicy}
+      {trace : ExtractedTrace} {h : HiddenRepresentative},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          UsesSelectedBlindingNoisePolicy policy ->
+            P.transparentExtractsTrace b view trace ->
+              P.traceOpensBoundary b profile trace ->
+                P.traceRelationValid b profile trace ->
+                  P.traceAssemblesRepresentative trace h ->
+                    P.transparentExtracts b view h ->
+                      InFiber P b.context b h ->
+                        P.blindingRowsBoundTraceRepresentative
+                          b view profile policy trace h ∧
+                          P.blindingRowsBoundRepresentative
+                            b view profile policy h
+
 def BlindingNoiseBoundSoundness (P : Predicates) : Prop :=
   forall {b : Boundary} {view : TransparentPublicView}
       {profile : ColumnProfile} {policy : BlindingNoisePolicy}
@@ -1626,6 +1724,54 @@ theorem blinding_noise_rows_imply_bound_soundness
       exact
         hRowsToBound hAccept hProjects hProfile hPolicy
           hExtracts hFiber hBoundRows
+  | inr hBreak =>
+      exact Or.inr hBreak
+
+theorem trace_blinding_rows_bound_representative_or_break
+    (P : Predicates)
+    (hTraceExtractSound : ParentTraceExtractionSoundness P)
+    (hTraceAssemblySound : TraceAssemblySoundness P)
+    (hTraceBlindingRows : TraceBlindingRowsBoundRepresentativeSoundness P)
+    {b : Boundary} {view : TransparentPublicView}
+    {profile : ColumnProfile} {policy : BlindingNoisePolicy}
+    (hAccept : P.transparentAccepts b view)
+    (hProjects : TransparentViewProjectsFrom b view)
+    (hProfile : ColumnProfileCompatibleWithBoundary b view profile)
+    (hRoleComplete : ProfileRoleComplete profile)
+    (hSelected : UsesSelectedTraceKnowledgeModes profile)
+    (hPolicy : UsesSelectedBlindingNoisePolicy policy) :
+    (exists trace,
+      P.transparentExtractsTrace b view trace ∧
+        P.traceOpensBoundary b profile trace ∧
+          P.traceRelationValid b profile trace ∧
+            exists h,
+              P.traceAssemblesRepresentative trace h ∧
+                P.transparentExtracts b view h ∧
+                  InFiber P b.context b h ∧
+                    P.blindingRowsBoundTraceRepresentative
+                      b view profile policy trace h ∧
+                      P.blindingRowsBoundRepresentative
+                        b view profile policy h) ∨
+    (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) := by
+  cases
+      hTraceExtractSound hAccept hProjects hProfile hSelected with
+  | inl hTrace =>
+      rcases hTrace with ⟨trace, hExtractsTrace, hOpens, _hMasked, hRelation⟩
+      cases
+          hTraceAssemblySound hAccept hProjects hProfile hRoleComplete
+            hExtractsTrace hOpens hRelation with
+      | inl hAssembled =>
+          rcases hAssembled with
+            ⟨h, hTraceAssembles, hTransparent, _hComplete,
+              hFiber, _hLocal, _hDescent⟩
+          exact Or.inl
+            ⟨trace, hExtractsTrace, hOpens, hRelation, h,
+              hTraceAssembles, hTransparent, hFiber,
+              hTraceBlindingRows hAccept hProjects hProfile hPolicy
+                hExtractsTrace hOpens hRelation hTraceAssembles
+                hTransparent hFiber⟩
+      | inr hBreak =>
+          exact Or.inr hBreak
   | inr hBreak =>
       exact Or.inr hBreak
 

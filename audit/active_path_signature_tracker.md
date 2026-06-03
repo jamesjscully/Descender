@@ -313,6 +313,12 @@ witness visibility drift in the active two-view column profile.
 `HybridBase128RangeRowSoundness` and
 `HybridBase128RangeRowsToNormRangeSoundness`, with a composition theorem back
 to the full endpoint.
+`TraceRangeRowsBindRepresentativeSoundness` ties those selected range rows to
+the same extracted trace that assembles the hidden representative.
+`BlindingNoiseBoundSoundness` is similarly decomposed into
+`BlindingNoiseBoundRowSoundness` and `BlindingNoiseRowsToBoundSoundness`, with
+`TraceBlindingRowsBoundRepresentativeSoundness` tying selected blinding/noise
+bound rows to the same extracted trace.
 
 ## Findings
 

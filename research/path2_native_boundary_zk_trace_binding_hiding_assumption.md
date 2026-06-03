@@ -124,9 +124,13 @@ It composes:
   norm/range contract;
 - or, equivalently for the selected route, `HybridBase128RangeRowSoundness`
   plus `HybridBase128RangeRowsToNormRangeSoundness`;
+- `TraceRangeRowsBindRepresentativeSoundness` for same-trace range-row
+  binding;
 - `BlindingNoiseBoundSoundness`.
 - or, equivalently for the selected route, `BlindingNoiseBoundRowSoundness`
   plus `BlindingNoiseRowsToBoundSoundness`.
+- `TraceBlindingRowsBoundRepresentativeSoundness` for same-trace
+  blinding/noise row binding.
 
 ## Active Candidate
 

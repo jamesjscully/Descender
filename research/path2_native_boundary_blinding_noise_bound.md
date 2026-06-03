@@ -74,6 +74,9 @@ or one of:
 - `Descender.Path2NativeBoundary.UsesSelectedBlindingNoisePolicy`
 - `Descender.Path2NativeBoundary.Predicates.blindingNoiseBounded`
 - `Descender.Path2NativeBoundary.Predicates.blindingRowsBoundRepresentative`
+- `Descender.Path2NativeBoundary.Predicates.blindingRowsBoundTraceRepresentative`
+- `Descender.Path2NativeBoundary.TraceBlindingRowsBoundRepresentativeSoundness`
+- `Descender.Path2NativeBoundary.trace_blinding_rows_bound_representative_or_break`
 - `Descender.Path2NativeBoundary.BlindingNoiseBoundRowSoundness`
 - `Descender.Path2NativeBoundary.BlindingNoiseRowsToBoundSoundness`
 - `Descender.Path2NativeBoundary.blinding_noise_rows_imply_bound_soundness`
@@ -115,6 +118,9 @@ Next proof work is decomposed:
 ```text
 BlindingNoiseBoundRowSoundness:
   accepted selected bound rows bind blinding/noise auxiliaries to extracted h
+
+TraceBlindingRowsBoundRepresentativeSoundness:
+  those rows are from the same extracted trace that assembles h
 
 BlindingNoiseRowsToBoundSoundness:
   those bound rows imply BlindingNoiseBounded(b, policy, h)

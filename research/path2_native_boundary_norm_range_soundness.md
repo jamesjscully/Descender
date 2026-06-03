@@ -72,6 +72,9 @@ change:
 - `Descender.Path2NativeBoundary.HybridBase128RangePolicy`
 - `Descender.Path2NativeBoundary.UsesSelectedHybridBase128RangePolicy`
 - `Descender.Path2NativeBoundary.Predicates.rangeRowsBindRepresentative`
+- `Descender.Path2NativeBoundary.Predicates.rangeRowsBindTraceRepresentative`
+- `Descender.Path2NativeBoundary.TraceRangeRowsBindRepresentativeSoundness`
+- `Descender.Path2NativeBoundary.trace_range_rows_bind_representative_or_break`
 - `Descender.Path2NativeBoundary.HybridBase128RangeRowSoundness`
 - `Descender.Path2NativeBoundary.HybridBase128RangeRowsToNormRangeSoundness`
 - `Descender.Path2NativeBoundary.hybrid_base128_range_rows_imply_norm_range_soundness`
@@ -124,6 +127,9 @@ Discharge the two decomposed range obligations:
 ```text
 HybridBase128RangeRowSoundness:
   accepted selected rows bind range/digit witnesses to the extracted h
+
+TraceRangeRowsBindRepresentativeSoundness:
+  those rows are from the same extracted trace that assembles h
 
 HybridBase128RangeRowsToNormRangeSoundness:
   those bound rows imply NormRangeValid(b, h)

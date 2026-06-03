@@ -44,6 +44,7 @@ B_c(h) = b
 LocalValid_c(h)
 DescentConsistent_c(h)
 ExtractedRolesComplete(b, profile, h)
+Range/blinding bound rows are bound to the same trace that assembles h
 ```
 
 ## Source Columns
@@ -130,6 +131,9 @@ The design constraints for assembly are:
 - make `native_boundary_digest` the digest of the projection object, not a
   separate witness commitment;
 - reject profiles that omit any role needed to assemble `H_c`.
+- expose same-trace row binding for range and blinding auxiliaries, so
+  `NormRangeSoundness` and `BlindingNoiseBoundSoundness` cannot be discharged
+  using rows from an unrelated accepted trace.
 
 ## Open Details
 
@@ -148,7 +152,11 @@ The design constraints for assembly are:
 - `Predicates.traceOpensBoundary`
 - `Predicates.traceRelationValid`
 - `Predicates.traceAssemblesRepresentative`
+- `Predicates.rangeRowsBindTraceRepresentative`
+- `Predicates.blindingRowsBoundTraceRepresentative`
 - `TraceAssemblySoundness`
+- `TraceRangeRowsBindRepresentativeSoundness`
+- `TraceBlindingRowsBoundRepresentativeSoundness`
 
 ## Next Move
 
