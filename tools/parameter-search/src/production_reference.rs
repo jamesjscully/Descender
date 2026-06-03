@@ -11190,9 +11190,7 @@ pub fn path2_transparent_descent_proof_payload_digest(
     merkle_paths_digest: &[u8; DIGEST_BYTES],
     consistency_messages_digest: &[u8; DIGEST_BYTES],
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    if public_view.schema != PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA {
-        return Err("Path 2 transparent public view schema mismatch".to_string());
-    }
+    verify_path2_transparent_descent_public_view(public_view)?;
     if payload_byte_len == 0 {
         return Err("Path 2 transparent descent payload length is zero".to_string());
     }
@@ -11205,29 +11203,6 @@ pub fn path2_transparent_descent_proof_payload_digest(
         if *digest == [0_u8; DIGEST_BYTES] {
             return Err(format!("Path 2 transparent descent {label} digest is zero"));
         }
-    }
-    if public_view.proof_system_id != path2_transparent_descent_proof_system_id() {
-        return Err("Path 2 transparent proof system id mismatch".to_string());
-    }
-    if public_view.relation_id != path2_transparent_descent_relation_id() {
-        return Err("Path 2 transparent relation id mismatch".to_string());
-    }
-    let expected_transcript = path2_transparent_descent_transcript_digest(
-        &public_view.proof_system_id,
-        public_view.trace_rows,
-        public_view.query_count,
-        public_view.column_profile,
-        &public_view.leaf_context_digest,
-        &public_view.creation_proof_binding_digest,
-        &public_view.matrix_domain_transcript_digest,
-        &public_view.masked_projection,
-        &public_view.aggregation_context_digest,
-        &public_view.trace_commitment_root,
-        &public_view.constraint_commitment_root,
-        public_view.query_index,
-    )?;
-    if public_view.transparent_transcript_digest != expected_transcript {
-        return Err("Path 2 transparent transcript digest mismatch".to_string());
     }
     let mut frame = Vec::new();
     append_frame(

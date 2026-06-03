@@ -516,7 +516,10 @@ Named breaks:
   role, column set, row, record query index, and local mask-domain id. The
   manifest KAT now also proves stale public-view rebinding changes the
   mask-domain digest, and the manifest/public-view verifier rejects stale
-  transcript context before proof handoff. The
+  transcript context before proof handoff. `verify_path2_transparent_descent_public_view`
+  is now the shared public-view validation helper used by the manifest boundary
+  and transparent payload digest, reducing drift between fail-closed entry
+  points. The
   boundary KAT covers this out-of-trace-row
   negative at the proof-byte envelope constructor, manifest-aware boundary, and
   proof-byte envelope verifier, while the manifest KAT covers mask-domain
