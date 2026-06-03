@@ -267,6 +267,8 @@ pub const PATH2_DESCENT_SIS_TRANSCRIPT_COMMITMENT_MATRIX_DOMAIN: &str =
     "DESCENDER_PATH2_DESCENT_SIS_TRANSCRIPT_COMMITMENT_MATRIX_V1";
 pub const PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN: &str =
     "DESCENDER_PATH2_TRANSPARENT_DESCENT_PROOF_V1";
+pub const PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA: &str =
+    "DESCENDER_PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_V1";
 pub const PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA: &str =
     "DESCENDER_PATH2_TRANSPARENT_ZK_MASKED_TRACE_IOP_CAPABILITY_V1";
 pub const PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA: &str =
@@ -338,6 +340,25 @@ pub const PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_PROFILE_ID: u16 = 1;
 pub const PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY: &str =
     "zk_masked_trace_iop_native_boundary";
 pub const PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES: u32 = 16_416;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_PROFILE_ID: u16 = 1;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_CLASS_COUNT: usize = 10;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_SEMANTIC_CORE_LANES: u16 = 80;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_MASKED_LANE_FLOOR: u16 = 138;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_RANGE_ACCOUNT_LANE_FLOOR: u16 = 194;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_RANGE_ACCOUNT_DELTA_LANES: u16 = 56;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_OPTIMISTIC: u16 = 160;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_WORKING: u16 = 176;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_STRESS: u16 = 220;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_PAD_DIGITS: u8 = 1;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_PROJECTION_DIGITS: u8 = 2;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_OPENING_DIGITS: u8 = 3;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_RANGE_WITNESSES: u8 = 4;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_PAD_DIGIT_MASKS: u8 = 5;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_PROJECTION_DIGIT_MASKS: u8 = 6;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_OPENING_DIGIT_MASKS: u8 = 7;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_MASKED_PROJECTION_RELATION_MASKS: u8 = 8;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_RANGE_WITNESS_ZK_MASKS: u8 = 9;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_ACCOUNT_BINDING_LINK_LANES: u8 = 10;
 pub const PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_VERSION: u16 = 1;
 pub const PATH2_TRANSPARENT_RELATION_ROW_GROUP_MASKED_PROJECTION: u8 = 1;
 pub const PATH2_TRANSPARENT_RELATION_ROW_GROUP_DIGIT_RECONSTRUCTION: u8 = 2;
@@ -1379,13 +1400,46 @@ pub struct Path2TransparentRelationLayoutV1 {
     pub role_layouts: [Path2TransparentRelationRoleLayoutV1; 3],
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2NativeBoundaryTraceColumnClassV1 {
+    pub class_id: u8,
+    pub role_id: u8,
+    pub start_lane: u16,
+    pub lane_count: u16,
+    pub column_set_id: u16,
+    pub visibility_class: u8,
+    pub semantic_core: bool,
+    pub opens_publicly: bool,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2NativeBoundaryTraceColumnManifestV1 {
+    pub schema: &'static str,
+    pub profile_id: u16,
+    pub proof_family: &'static str,
+    pub column_profile: u16,
+    pub semantic_core_relation_layout_digest: [u8; DIGEST_BYTES],
+    pub semantic_core_witness_lanes: u16,
+    pub masked_lane_floor: u16,
+    pub range_account_lane_floor: u16,
+    pub range_account_delta_lanes: u16,
+    pub relation_rows_optimistic: u16,
+    pub relation_rows_working: u16,
+    pub relation_rows_stress: u16,
+    pub classes:
+        [Path2NativeBoundaryTraceColumnClassV1; PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_CLASS_COUNT],
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2TransparentProofFamilyCapabilityV1 {
     pub schema: &'static str,
     pub profile_id: u16,
     pub family: &'static str,
     pub relation_layout_digest: [u8; DIGEST_BYTES],
+    pub trace_column_manifest_digest: [u8; DIGEST_BYTES],
     pub column_profile: u16,
+    pub active_witness_lane_floor: u16,
+    pub native_boundary_relation_rows: u16,
     pub parent_root_binding: bool,
     pub typed_role_subcommitments: bool,
     pub full_trace_extractable: bool,
@@ -9374,14 +9428,322 @@ pub fn path2_transparent_descent_relation_id() -> [u8; DIGEST_BYTES] {
     Sha256::digest(frame).into()
 }
 
+fn path2_native_boundary_trace_column_class(
+    class_id: u8,
+    role_id: u8,
+    start_lane: u16,
+    lane_count: u16,
+    visibility_class: u8,
+    semantic_core: bool,
+) -> Result<Path2NativeBoundaryTraceColumnClassV1, String> {
+    let entry = path2_two_view_column_profile_entry(role_id)?;
+    Ok(Path2NativeBoundaryTraceColumnClassV1 {
+        class_id,
+        role_id,
+        start_lane,
+        lane_count,
+        column_set_id: entry.hidden_column_set_id,
+        visibility_class,
+        semantic_core,
+        opens_publicly: false,
+    })
+}
+
+pub fn path2_native_boundary_trace_column_manifest_v1()
+-> Result<Path2NativeBoundaryTraceColumnManifestV1, String> {
+    let manifest = Path2NativeBoundaryTraceColumnManifestV1 {
+        schema: PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA,
+        profile_id: PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_PROFILE_ID,
+        proof_family: PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY,
+        column_profile: PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+        semantic_core_relation_layout_digest: path2_transparent_relation_layout_v1_digest()?,
+        semantic_core_witness_lanes: PATH2_NATIVE_BOUNDARY_TRACE_SEMANTIC_CORE_LANES,
+        masked_lane_floor: PATH2_NATIVE_BOUNDARY_TRACE_MASKED_LANE_FLOOR,
+        range_account_lane_floor: PATH2_NATIVE_BOUNDARY_TRACE_RANGE_ACCOUNT_LANE_FLOOR,
+        range_account_delta_lanes: PATH2_NATIVE_BOUNDARY_TRACE_RANGE_ACCOUNT_DELTA_LANES,
+        relation_rows_optimistic: PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_OPTIMISTIC,
+        relation_rows_working: PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_WORKING,
+        relation_rows_stress: PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_STRESS,
+        classes: [
+            path2_native_boundary_trace_column_class(
+                PATH2_NATIVE_BOUNDARY_TRACE_CLASS_PAD_DIGITS,
+                PATH2_TWO_VIEW_ROLE_PAD_SOURCE,
+                0,
+                12,
+                PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN,
+                true,
+            )?,
+            path2_native_boundary_trace_column_class(
+                PATH2_NATIVE_BOUNDARY_TRACE_CLASS_PROJECTION_DIGITS,
+                PATH2_TWO_VIEW_ROLE_PROJECTION_RELATION,
+                12,
+                12,
+                PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN,
+                true,
+            )?,
+            path2_native_boundary_trace_column_class(
+                PATH2_NATIVE_BOUNDARY_TRACE_CLASS_OPENING_DIGITS,
+                PATH2_TWO_VIEW_ROLE_OPENING_TUPLE,
+                24,
+                16,
+                PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN,
+                true,
+            )?,
+            path2_native_boundary_trace_column_class(
+                PATH2_NATIVE_BOUNDARY_TRACE_CLASS_RANGE_WITNESSES,
+                PATH2_TWO_VIEW_ROLE_RANGE_WITNESS,
+                40,
+                40,
+                PATH2_TWO_VIEW_VISIBILITY_RANGE_PRIVATE,
+                true,
+            )?,
+            path2_native_boundary_trace_column_class(
+                PATH2_NATIVE_BOUNDARY_TRACE_CLASS_PAD_DIGIT_MASKS,
+                PATH2_TWO_VIEW_ROLE_PAD_SOURCE,
+                80,
+                12,
+                PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE,
+                false,
+            )?,
+            path2_native_boundary_trace_column_class(
+                PATH2_NATIVE_BOUNDARY_TRACE_CLASS_PROJECTION_DIGIT_MASKS,
+                PATH2_TWO_VIEW_ROLE_PROJECTION_RELATION,
+                92,
+                12,
+                PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE,
+                false,
+            )?,
+            path2_native_boundary_trace_column_class(
+                PATH2_NATIVE_BOUNDARY_TRACE_CLASS_OPENING_DIGIT_MASKS,
+                PATH2_TWO_VIEW_ROLE_OPENING_TUPLE,
+                104,
+                16,
+                PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE,
+                false,
+            )?,
+            path2_native_boundary_trace_column_class(
+                PATH2_NATIVE_BOUNDARY_TRACE_CLASS_MASKED_PROJECTION_RELATION_MASKS,
+                PATH2_TWO_VIEW_ROLE_BLINDING,
+                120,
+                18,
+                PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE,
+                false,
+            )?,
+            path2_native_boundary_trace_column_class(
+                PATH2_NATIVE_BOUNDARY_TRACE_CLASS_RANGE_WITNESS_ZK_MASKS,
+                PATH2_TWO_VIEW_ROLE_RANGE_WITNESS,
+                138,
+                40,
+                PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE,
+                false,
+            )?,
+            path2_native_boundary_trace_column_class(
+                PATH2_NATIVE_BOUNDARY_TRACE_CLASS_ACCOUNT_BINDING_LINK_LANES,
+                PATH2_TWO_VIEW_ROLE_OPENING_TUPLE,
+                178,
+                16,
+                PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN,
+                false,
+            )?,
+        ],
+    };
+    verify_path2_native_boundary_trace_column_manifest(&manifest)?;
+    Ok(manifest)
+}
+
+pub fn verify_path2_native_boundary_trace_column_manifest(
+    manifest: &Path2NativeBoundaryTraceColumnManifestV1,
+) -> Result<(), String> {
+    if manifest.schema != PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA {
+        return Err("Path 2 native-boundary trace column manifest schema mismatch".to_string());
+    }
+    if manifest.profile_id != PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_PROFILE_ID {
+        return Err("Path 2 native-boundary trace column manifest profile mismatch".to_string());
+    }
+    if manifest.proof_family != PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY {
+        return Err(
+            "Path 2 native-boundary trace column manifest proof family mismatch".to_string(),
+        );
+    }
+    verify_path2_two_view_column_profile_id(manifest.column_profile)?;
+    if manifest.semantic_core_relation_layout_digest
+        != path2_transparent_relation_layout_v1_digest()?
+    {
+        return Err(
+            "Path 2 native-boundary trace column manifest core layout mismatch".to_string(),
+        );
+    }
+    if manifest.semantic_core_witness_lanes != PATH2_TRANSPARENT_DESCENT_WITNESS_LANES as u16 {
+        return Err("Path 2 native-boundary trace semantic core lane mismatch".to_string());
+    }
+    if manifest.masked_lane_floor != PATH2_NATIVE_BOUNDARY_TRACE_MASKED_LANE_FLOOR {
+        return Err("Path 2 native-boundary trace masked lane floor mismatch".to_string());
+    }
+    if manifest.range_account_lane_floor != PATH2_NATIVE_BOUNDARY_TRACE_RANGE_ACCOUNT_LANE_FLOOR {
+        return Err("Path 2 native-boundary trace range/account lane floor mismatch".to_string());
+    }
+    if manifest.range_account_delta_lanes
+        != manifest.range_account_lane_floor - manifest.masked_lane_floor
+    {
+        return Err("Path 2 native-boundary trace range/account delta mismatch".to_string());
+    }
+    if manifest.relation_rows_optimistic <= PATH2_TRANSPARENT_DESCENT_RELATION_ROWS as u16
+        || manifest.relation_rows_working < manifest.relation_rows_optimistic
+        || manifest.relation_rows_stress < manifest.relation_rows_working
+    {
+        return Err("Path 2 native-boundary trace row model mismatch".to_string());
+    }
+
+    let mut expected_start = 0_u16;
+    let mut semantic_core_lanes = 0_u16;
+    let mut class_ids = BTreeSet::new();
+    for class in manifest.classes {
+        if class.class_id == 0 || !class_ids.insert(class.class_id) {
+            return Err("Path 2 native-boundary trace column manifest duplicate class".to_string());
+        }
+        if class.start_lane != expected_start || class.lane_count == 0 {
+            return Err(
+                "Path 2 native-boundary trace column manifest lanes are not contiguous".to_string(),
+            );
+        }
+        expected_start += class.lane_count;
+        if class.semantic_core {
+            semantic_core_lanes += class.lane_count;
+        }
+        let profile_entry = path2_two_view_column_profile_entry(class.role_id)?;
+        if class.column_set_id != profile_entry.hidden_column_set_id {
+            return Err(
+                "Path 2 native-boundary trace column manifest column set mismatch".to_string(),
+            );
+        }
+        match class.visibility_class {
+            PATH2_TWO_VIEW_VISIBILITY_COMMITTED_HIDDEN
+            | PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN
+            | PATH2_TWO_VIEW_VISIBILITY_RANGE_PRIVATE
+            | PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE
+            | PATH2_TWO_VIEW_VISIBILITY_SIMULATOR_ONLY => {}
+            PATH2_TWO_VIEW_VISIBILITY_PUBLIC
+            | PATH2_TWO_VIEW_VISIBILITY_DERIVED_PUBLIC
+            | PATH2_TWO_VIEW_VISIBILITY_MASKED_PUBLIC => {
+                return Err(
+                    "Path 2 native-boundary trace column manifest exposes public private lane"
+                        .to_string(),
+                );
+            }
+            _ => {
+                return Err(
+                    "Path 2 native-boundary trace column manifest unknown visibility".to_string(),
+                );
+            }
+        }
+        if class.opens_publicly {
+            return Err(
+                "Path 2 native-boundary trace column manifest opens private lane".to_string(),
+            );
+        }
+    }
+    if semantic_core_lanes != manifest.semantic_core_witness_lanes {
+        return Err("Path 2 native-boundary trace semantic core coverage mismatch".to_string());
+    }
+    if expected_start != manifest.range_account_lane_floor {
+        return Err("Path 2 native-boundary trace lane coverage mismatch".to_string());
+    }
+    Ok(())
+}
+
+pub fn path2_native_boundary_trace_column_manifest_v1_digest() -> Result<[u8; DIGEST_BYTES], String>
+{
+    let manifest = path2_native_boundary_trace_column_manifest_v1()?;
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA.as_bytes(),
+    );
+    append_u64(&mut frame, b"profile_id", manifest.profile_id as u64);
+    append_frame(
+        &mut frame,
+        b"proof_family",
+        manifest.proof_family.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"column_profile",
+        manifest.column_profile as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"semantic_core_relation_layout_digest",
+        &manifest.semantic_core_relation_layout_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"semantic_core_witness_lanes",
+        manifest.semantic_core_witness_lanes as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"masked_lane_floor",
+        manifest.masked_lane_floor as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"range_account_lane_floor",
+        manifest.range_account_lane_floor as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"range_account_delta_lanes",
+        manifest.range_account_delta_lanes as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"relation_rows_optimistic",
+        manifest.relation_rows_optimistic as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"relation_rows_working",
+        manifest.relation_rows_working as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"relation_rows_stress",
+        manifest.relation_rows_stress as u64,
+    );
+    for class in manifest.classes {
+        append_u64(&mut frame, b"class_id", class.class_id as u64);
+        append_u64(&mut frame, b"role_id", class.role_id as u64);
+        append_u64(&mut frame, b"start_lane", class.start_lane as u64);
+        append_u64(&mut frame, b"lane_count", class.lane_count as u64);
+        append_u64(&mut frame, b"column_set_id", class.column_set_id as u64);
+        append_u64(
+            &mut frame,
+            b"visibility_class",
+            class.visibility_class as u64,
+        );
+        append_u64(&mut frame, b"semantic_core", u64::from(class.semantic_core));
+        append_u64(
+            &mut frame,
+            b"opens_publicly",
+            u64::from(class.opens_publicly),
+        );
+    }
+    Ok(Sha256::digest(frame).into())
+}
+
 pub fn path2_transparent_proof_family_capability_v1()
 -> Result<Path2TransparentProofFamilyCapabilityV1, String> {
+    let trace_column_manifest = path2_native_boundary_trace_column_manifest_v1()?;
     let capability = Path2TransparentProofFamilyCapabilityV1 {
         schema: PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA,
         profile_id: PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_PROFILE_ID,
         family: PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY,
         relation_layout_digest: path2_transparent_relation_layout_v1_digest()?,
+        trace_column_manifest_digest: path2_native_boundary_trace_column_manifest_v1_digest()?,
         column_profile: PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+        active_witness_lane_floor: trace_column_manifest.range_account_lane_floor,
+        native_boundary_relation_rows: trace_column_manifest.relation_rows_working,
         parent_root_binding: true,
         typed_role_subcommitments: true,
         full_trace_extractable: true,
@@ -9416,7 +9778,29 @@ pub fn verify_path2_transparent_proof_family_capability(
             "Path 2 transparent proof-family capability relation layout mismatch".to_string(),
         );
     }
+    let trace_column_manifest = path2_native_boundary_trace_column_manifest_v1()?;
+    if capability.trace_column_manifest_digest
+        != path2_native_boundary_trace_column_manifest_v1_digest()?
+    {
+        return Err(
+            "Path 2 transparent proof-family capability trace column manifest mismatch".to_string(),
+        );
+    }
     verify_path2_two_view_column_profile_id(capability.column_profile)?;
+    if capability.active_witness_lane_floor != trace_column_manifest.range_account_lane_floor {
+        return Err(
+            "Path 2 transparent proof-family capability active witness lane floor mismatch"
+                .to_string(),
+        );
+    }
+    if capability.active_witness_lane_floor <= PATH2_TRANSPARENT_DESCENT_WITNESS_LANES as u16 {
+        return Err("Path 2 transparent proof-family capability is semantic-core-only".to_string());
+    }
+    if capability.native_boundary_relation_rows != trace_column_manifest.relation_rows_working {
+        return Err(
+            "Path 2 transparent proof-family capability native relation rows mismatch".to_string(),
+        );
+    }
     for (label, enabled) in [
         ("parent_root_binding", capability.parent_root_binding),
         (
@@ -9476,10 +9860,25 @@ pub fn path2_transparent_proof_family_capability_v1_digest() -> Result<[u8; DIGE
         b"relation_layout_digest",
         &capability.relation_layout_digest,
     );
+    append_frame(
+        &mut frame,
+        b"trace_column_manifest_digest",
+        &capability.trace_column_manifest_digest,
+    );
     append_u64(
         &mut frame,
         b"column_profile",
         capability.column_profile as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"active_witness_lane_floor",
+        capability.active_witness_lane_floor as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"native_boundary_relation_rows",
+        capability.native_boundary_relation_rows as u64,
     );
     for (label, enabled) in [
         ("parent_root_binding", capability.parent_root_binding),
@@ -13255,7 +13654,7 @@ pub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(
         .map_err(|err| format!("encode Path 2 native storage/lifecycle hardening scope: {err}"))
 }
 
-pub fn path2_registered_domain_constants() -> [&'static str; 25] {
+pub fn path2_registered_domain_constants() -> [&'static str; 26] {
     [
         PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN,
         PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN,
@@ -13274,6 +13673,7 @@ pub fn path2_registered_domain_constants() -> [&'static str; 25] {
         PATH2_DESCENT_SIS_OPENING_TUPLE_MATRIX_DOMAIN,
         PATH2_DESCENT_SIS_TRANSCRIPT_COMMITMENT_MATRIX_DOMAIN,
         PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN,
+        PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA,
         PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA,
         PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA,
         PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN,
@@ -13569,6 +13969,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN",
             PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN,
+        ),
+        (
+            "PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA",
+            PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA,
         ),
         (
             "PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA",
@@ -27101,6 +27505,7 @@ mod tests {
             "PATH2_NATIVE_SIGNER_ENTROPY_DERIVATION_DOMAIN",
             "PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN",
             "PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA",
+            "PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA",
             "PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA",
             "PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA",
             "REVIEWED_FQ12_STATE_ASSISTED_CARRIER_DOMAIN",
@@ -27120,7 +27525,7 @@ mod tests {
             })
             .map(|(_, value)| *value)
             .collect();
-        assert_eq!(active_native_values.len(), 35);
+        assert_eq!(active_native_values.len(), 36);
         for active in active_native_values {
             for (label, value) in &registry {
                 if label.starts_with("PATH2_NATIVE_") || label.starts_with("PATH2_PUBLIC_NATIVE_") {
@@ -31159,6 +31564,84 @@ mod tests {
     }
 
     #[test]
+    fn path2_native_boundary_trace_column_manifest_pins_active_lane_floor() {
+        let manifest = path2_native_boundary_trace_column_manifest_v1().unwrap();
+        verify_path2_native_boundary_trace_column_manifest(&manifest).unwrap();
+        assert_eq!(
+            manifest.schema,
+            PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA
+        );
+        assert_eq!(
+            manifest.proof_family,
+            PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY
+        );
+        assert_eq!(
+            manifest.semantic_core_witness_lanes,
+            PATH2_TRANSPARENT_DESCENT_WITNESS_LANES as u16
+        );
+        assert_eq!(
+            manifest.range_account_lane_floor,
+            PATH2_NATIVE_BOUNDARY_TRACE_RANGE_ACCOUNT_LANE_FLOOR
+        );
+        assert_eq!(manifest.range_account_lane_floor, 194);
+        assert!(manifest.range_account_lane_floor > PATH2_TRANSPARENT_DESCENT_WITNESS_LANES as u16);
+        assert_eq!(
+            manifest.relation_rows_working,
+            PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_WORKING
+        );
+        assert_ne!(
+            path2_native_boundary_trace_column_manifest_v1_digest().unwrap(),
+            [0_u8; DIGEST_BYTES]
+        );
+
+        let private_lane_count: u16 = manifest
+            .classes
+            .iter()
+            .map(|class| {
+                assert!(!class.opens_publicly);
+                class.lane_count
+            })
+            .sum();
+        let semantic_core_lanes: u16 = manifest
+            .classes
+            .iter()
+            .filter(|class| class.semantic_core)
+            .map(|class| class.lane_count)
+            .sum();
+        assert_eq!(private_lane_count, manifest.range_account_lane_floor);
+        assert_eq!(semantic_core_lanes, manifest.semantic_core_witness_lanes);
+
+        let mut semantic_core_only = manifest;
+        semantic_core_only.range_account_lane_floor =
+            PATH2_TRANSPARENT_DESCENT_WITNESS_LANES as u16;
+        assert_eq!(
+            verify_path2_native_boundary_trace_column_manifest(&semantic_core_only).unwrap_err(),
+            "Path 2 native-boundary trace range/account lane floor mismatch"
+        );
+
+        let mut lane_gap = manifest;
+        lane_gap.classes[5].start_lane += 1;
+        assert_eq!(
+            verify_path2_native_boundary_trace_column_manifest(&lane_gap).unwrap_err(),
+            "Path 2 native-boundary trace column manifest lanes are not contiguous"
+        );
+
+        let mut public_private_lane = manifest;
+        public_private_lane.classes[0].visibility_class = PATH2_TWO_VIEW_VISIBILITY_PUBLIC;
+        assert_eq!(
+            verify_path2_native_boundary_trace_column_manifest(&public_private_lane).unwrap_err(),
+            "Path 2 native-boundary trace column manifest exposes public private lane"
+        );
+
+        let mut opened_private_lane = manifest;
+        opened_private_lane.classes[0].opens_publicly = true;
+        assert_eq!(
+            verify_path2_native_boundary_trace_column_manifest(&opened_private_lane).unwrap_err(),
+            "Path 2 native-boundary trace column manifest opens private lane"
+        );
+    }
+
+    #[test]
     fn path2_transparent_proof_family_capability_pins_active_assumptions() {
         let capability = path2_transparent_proof_family_capability_v1().unwrap();
         verify_path2_transparent_proof_family_capability(&capability).unwrap();
@@ -31179,8 +31662,20 @@ mod tests {
             path2_transparent_relation_layout_v1_digest().unwrap()
         );
         assert_eq!(
+            capability.trace_column_manifest_digest,
+            path2_native_boundary_trace_column_manifest_v1_digest().unwrap()
+        );
+        assert_eq!(
             capability.column_profile,
             PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1
+        );
+        assert_eq!(
+            capability.active_witness_lane_floor,
+            PATH2_NATIVE_BOUNDARY_TRACE_RANGE_ACCOUNT_LANE_FLOOR
+        );
+        assert_eq!(
+            capability.native_boundary_relation_rows,
+            PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_WORKING
         );
         assert!(capability.parent_root_binding);
         assert!(capability.typed_role_subcommitments);
@@ -31239,6 +31734,21 @@ mod tests {
         assert_eq!(
             verify_path2_transparent_proof_family_capability(&wrong_family).unwrap_err(),
             "Path 2 transparent proof-family capability family mismatch"
+        );
+
+        let mut semantic_core_only = capability.clone();
+        semantic_core_only.active_witness_lane_floor =
+            PATH2_TRANSPARENT_DESCENT_WITNESS_LANES as u16;
+        assert_eq!(
+            verify_path2_transparent_proof_family_capability(&semantic_core_only).unwrap_err(),
+            "Path 2 transparent proof-family capability active witness lane floor mismatch"
+        );
+
+        let mut wrong_manifest = capability.clone();
+        wrong_manifest.trace_column_manifest_digest[0] ^= 0x80;
+        assert_eq!(
+            verify_path2_transparent_proof_family_capability(&wrong_manifest).unwrap_err(),
+            "Path 2 transparent proof-family capability trace column manifest mismatch"
         );
     }
 

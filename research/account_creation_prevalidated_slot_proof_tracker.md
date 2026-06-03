@@ -497,6 +497,22 @@ Named breaks:
   `path2_transparent_proof_family_capability_pins_active_assumptions` rejects
   sampled-only extraction, raw hidden openings, missing typed role
   subcommitments, missing no-export, and vanilla Merkle/FRI relabeling. The
+  active lane-floor mismatch is now executable too:
+  `PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA`,
+  `path2_native_boundary_trace_column_manifest_v1`,
+  `verify_path2_native_boundary_trace_column_manifest`, and
+  `path2_native_boundary_trace_column_manifest_v1_digest` pin the active
+  native-boundary private trace as 194 contiguous lanes: the 80-lane
+  `R_core_66` semantic core, 40 digit-mask lanes, 18 masked-projection relation
+  mask lanes, 40 range-witness ZK mask lanes, and 16 account-binding link
+  lanes. The proof-family capability now binds this manifest digest, the
+  194-lane active witness floor, and the 176-row working native-boundary
+  relation estimate, so an 80-lane semantic-core-only verifier changes the
+  proof-system id instead of silently satisfying the active path. KAT
+  `path2_native_boundary_trace_column_manifest_pins_active_lane_floor` rejects
+  semantic-core-only lane regression, non-contiguous lane coverage, public
+  private-lane exposure, and private-lane opening; the capability KAT now also
+  rejects trace-column-manifest rebinding and active-lane-floor rebinding. The
   next executable blocker is an actual concrete transparent proof-system
   verifier with honest/malformed coverage against this capability profile,
   encoded relation, validated query-opening manifest, and canonical proof-byte
