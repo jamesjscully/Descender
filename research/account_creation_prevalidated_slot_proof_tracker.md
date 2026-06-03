@@ -520,6 +520,10 @@ Named breaks:
   accepted public view directly, including leaf/proof binding, matrix context,
   masked projection, roots, public-view query index, profile mask-domain id,
   role, column set, row, record query index, and local mask-domain id. The
+  verifier now also derives the local mask-domain id canonically from the
+  scheduled query index and profile mask-domain id, so a masked-opening
+  manifest cannot be re-encoded by choosing fresh arbitrary local mask labels
+  and recomputing `mask_domain_digest`.
   mask-domain digest helper and the manifest/public-view verifier now both
   reject stale transcript context before proof handoff. `verify_path2_transparent_descent_public_view`
   is now the shared public-view validation helper used by the manifest boundary

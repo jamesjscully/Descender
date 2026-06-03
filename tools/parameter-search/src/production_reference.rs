@@ -10671,6 +10671,19 @@ fn path2_two_view_entry_is_hidden_or_private(entry: &Path2TwoViewColumnProfileEn
     )
 }
 
+fn path2_transparent_query_opening_expected_mask_domain_id(
+    query_index: u16,
+    entry: &Path2TwoViewColumnProfileEntryV1,
+) -> Result<u16, String> {
+    if !path2_two_view_entry_is_hidden_or_private(entry) {
+        return Ok(0);
+    }
+    query_index
+        .checked_mul(PATH2_TWO_VIEW_COLUMN_PROFILE_ENTRY_COUNT as u16)
+        .and_then(|base| base.checked_add(entry.mask_domain_id))
+        .ok_or_else(|| "Path 2 transparent query opening mask domain id overflow".to_string())
+}
+
 pub fn path2_transparent_query_row_index(
     public_view: &Path2TransparentDescentPublicViewV1,
     query_index: u16,
@@ -10892,10 +10905,17 @@ pub fn verify_path2_transparent_query_opening_manifest(
                     "Path 2 transparent query opening hidden role is not masked".to_string()
                 );
             }
-            if record.mask_domain_id == 0 {
+            let expected_mask_domain_id = path2_transparent_query_opening_expected_mask_domain_id(
+                record.query_index,
+                &entry,
+            )?;
+            if expected_mask_domain_id == 0 {
                 return Err(
                     "Path 2 transparent query opening masked role lacks mask domain".to_string(),
                 );
+            }
+            if record.mask_domain_id != expected_mask_domain_id {
+                return Err("Path 2 transparent query opening mask domain id mismatch".to_string());
             }
             if !mask_domains.insert(record.mask_domain_id) {
                 return Err("Path 2 transparent query opening duplicate mask domain".to_string());
@@ -27173,8 +27193,8 @@ mod tests {
                         entry.visibility_class
                     },
                     mask_domain_id: if hidden_role {
-                        query_index * PATH2_TWO_VIEW_COLUMN_PROFILE_ENTRY_COUNT as u16
-                            + entry.role_id as u16
+                        path2_transparent_query_opening_expected_mask_domain_id(query_index, &entry)
+                            .unwrap()
                     } else {
                         0
                     },
@@ -33210,6 +33230,20 @@ mod tests {
             "Path 2 transparent query opening mask domain digest mismatch"
         );
 
+        let mut rebound_mask_domain_id = manifest.clone();
+        rebound_mask_domain_id.records[1].mask_domain_id +=
+            PATH2_TWO_VIEW_COLUMN_PROFILE_ENTRY_COUNT as u16;
+        rebound_mask_domain_id.records[1].mask_domain_digest =
+            path2_transparent_query_opening_mask_domain_digest(
+                &public_view,
+                &rebound_mask_domain_id.records[1],
+            )
+            .unwrap();
+        assert_eq!(
+            verify_path2_transparent_query_opening_manifest(&rebound_mask_domain_id).unwrap_err(),
+            "Path 2 transparent query opening mask domain id mismatch"
+        );
+
         let mut stale_public_view_context = public_view;
         stale_public_view_context.leaf_context_digest[0] ^= 1;
         assert_eq!(
@@ -33284,7 +33318,7 @@ mod tests {
         duplicate_mask.records[3].mask_domain_id = duplicate_mask.records[1].mask_domain_id;
         assert_eq!(
             verify_path2_transparent_query_opening_manifest(&duplicate_mask).unwrap_err(),
-            "Path 2 transparent query opening duplicate mask domain"
+            "Path 2 transparent query opening mask domain id mismatch"
         );
 
         let mut unknown_role = manifest.clone();
