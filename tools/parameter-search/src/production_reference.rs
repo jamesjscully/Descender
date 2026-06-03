@@ -6541,7 +6541,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let rust_native_representative_digest_frame_source_present =
         path2_reviewed_fq12_native_representative_digest_frame_source_present_v1();
     let rust_constructed_assembly_compatibility_witness_source_present = true;
-    let rust_independent_direct_assembly_binding_source_present = true;
+    let rust_independent_direct_assembly_binding_source_present =
+        path2_reviewed_fq12_independent_direct_assembly_binding_source_present_v1();
     let rust_compatibility_route_witness_source_present = true;
     let rust_assembly_compatibility_local_model_source_present = true;
     let rust_full_opening_field_evidence_present = true;
@@ -7702,6 +7703,69 @@ fn path2_reviewed_fq12_role_root_lift_source_present_v1() -> bool {
         && full_opening_verify_source
             .contains("path2_reviewed_fq12_full_native_opening_certificate_v1_digest(cert)?")
         && full_opening_verify_source.contains("!= cert.role_lift_certificate_digest")
+}
+
+fn path2_reviewed_fq12_independent_direct_assembly_binding_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+    let binding_start = source
+        .find("\npub fn path2_reviewed_fq12_assembly_binds_full_opening_fields_v1(")
+        .expect("Path 2 reviewed Fq12 assembly/full-opening binding source start marker missing");
+    let binding_end = source[binding_start..]
+        .find("\npub fn path2_reviewed_fq12_compatibility_binds_same_representative_fields_v1(")
+        .expect("Path 2 reviewed Fq12 assembly/full-opening binding source end marker missing")
+        + binding_start;
+    let binding_source = &source[binding_start..binding_end];
+
+    let digest_witness_start = source
+        .find("\npub fn path2_reviewed_fq12_native_representative_digest_frame_witness_v1(")
+        .expect("Path 2 reviewed Fq12 digest-frame witness source start marker missing");
+    let digest_witness_end = source[digest_witness_start..]
+        .find("\npub fn path2_reviewed_fq12_native_representative_digest_frame_witness_v1_frame(")
+        .expect("Path 2 reviewed Fq12 digest-frame witness source end marker missing")
+        + digest_witness_start;
+    let digest_witness_source = &source[digest_witness_start..digest_witness_end];
+
+    let canonical_witness_start = source
+        .find(
+            "\npub fn path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1(",
+        )
+        .expect(
+            "Path 2 reviewed Fq12 canonical representative witness source start marker missing",
+        );
+    let canonical_witness_end = source[canonical_witness_start..]
+        .find("\npub fn path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1_frame(")
+        .expect("Path 2 reviewed Fq12 canonical representative witness source end marker missing")
+        + canonical_witness_start;
+    let canonical_witness_source = &source[canonical_witness_start..canonical_witness_end];
+
+    [
+        "assembly_cert.role_lift_certificate_digest == full_opening_cert.role_lift_certificate_digest",
+        "assembly_cert.payload_binding_digest == full_opening_cert.payload_binding_digest",
+        "assembly_cert.extraction_certificate_digest\n            == full_opening_cert.extraction_certificate_digest",
+        "assembly_cert.creation_proof_binding_digest\n            == full_opening_cert.creation_proof_binding_digest",
+        "assembly_cert.native_boundary_digest == full_opening_cert.native_boundary_digest",
+        "assembly_cert.slot_id == full_opening_cert.slot_id",
+        "assembly_cert.hidden_source_statement_digest\n            == full_opening_cert.hidden_source_statement_digest",
+        "assembly_cert.reviewed_active_lane_statement_digest\n            == full_opening_cert.reviewed_active_lane_statement_digest",
+        "assembly_cert.native_role_root_commitment\n            == full_opening_cert.native_role_root_commitment",
+        "assembly_cert.full_opening_digest == full_opening_cert.full_opening_digest",
+        "assembly_cert.local_section_digest == full_opening_cert.local_section_digest",
+        "assembly_cert.packed_residues_digest == full_opening_cert.packed_residues_digest",
+        "assembly_cert.randomizer_digest == full_opening_cert.randomizer_digest",
+        "assembly_cert.selected_account_projection_digest\n            == full_opening_cert.selected_account_projection_digest",
+        "assembly_cert.pad_source_digest == full_opening_cert.pad_source_digest",
+        "assembly_cert.opening_tuple_digest == full_opening_cert.opening_tuple_digest",
+        "assembly_cert.projection_relation_digest == full_opening_cert.projection_relation_digest",
+        "assembly_cert.lifecycle_slot_digest == full_opening_cert.lifecycle_slot_digest",
+        "assembly_cert.trace_witness_digest == full_opening_cert.trace_witness_digest",
+        "assembly_cert.gauge_digest == full_opening_cert.gauge_digest",
+    ]
+    .iter()
+    .all(|marker| binding_source.contains(marker))
+        && digest_witness_source
+            .contains("if !path2_reviewed_fq12_assembly_binds_full_opening_fields_v1(assembly_cert, full_opening_cert)")
+        && canonical_witness_source
+            .contains("if !path2_reviewed_fq12_assembly_binds_full_opening_fields_v1(assembly_cert, full_opening_cert)")
 }
 
 fn path2_reviewed_fq12_full_native_opening_canonical_representative_source_present_v1() -> bool {
@@ -38012,6 +38076,7 @@ mod tests {
         assert!(path2_reviewed_fq12_native_representative_digest_frame_witness_api_present_v1());
         assert!(audit.rust_constructed_assembly_compatibility_witness_source_present);
         assert!(audit.rust_independent_direct_assembly_binding_source_present);
+        assert!(path2_reviewed_fq12_independent_direct_assembly_binding_source_present_v1());
         assert!(audit.rust_compatibility_route_witness_source_present);
         assert!(audit.rust_assembly_compatibility_local_model_source_present);
         assert!(audit.rust_full_opening_field_evidence_present);
