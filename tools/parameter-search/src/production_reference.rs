@@ -9955,6 +9955,19 @@ pub fn verify_path2_transparent_query_schedule_pair(
     }
 }
 
+pub fn verify_path2_transparent_query_schedule_count(query_count: u16) -> Result<(), String> {
+    let schedule = path2_transparent_query_schedule_v1()?;
+    if schedule
+        .entries
+        .iter()
+        .any(|entry| entry.query_count == query_count)
+    {
+        Ok(())
+    } else {
+        Err("Path 2 transparent proof query count is outside active schedule".to_string())
+    }
+}
+
 pub fn path2_native_boundary_trace_proof_family_interface_v1()
 -> Result<Path2NativeBoundaryTraceProofFamilyInterfaceV1, String> {
     let interface = Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
@@ -10849,6 +10862,7 @@ pub fn verify_path2_transparent_query_opening_manifest(
     if manifest.query_count == 0 {
         return Err("Path 2 transparent query opening count is zero".to_string());
     }
+    verify_path2_transparent_query_schedule_count(manifest.query_count)?;
     let expected_record_count =
         manifest.query_count as usize * PATH2_TWO_VIEW_COLUMN_PROFILE_ENTRY_COUNT;
     if manifest.records.len() != expected_record_count {
@@ -32889,6 +32903,9 @@ mod tests {
         verify_path2_transparent_query_schedule_pair(256, 16).unwrap();
         verify_path2_transparent_query_schedule_pair(512, 20).unwrap();
         verify_path2_transparent_query_schedule_pair(1024, 24).unwrap();
+        assert_eq!(verify_path2_transparent_query_schedule_count(16), Ok(()));
+        assert_eq!(verify_path2_transparent_query_schedule_count(20), Ok(()));
+        assert_eq!(verify_path2_transparent_query_schedule_count(24), Ok(()));
         assert_eq!(
             verify_path2_transparent_query_schedule_pair(256, 1).unwrap_err(),
             "Path 2 transparent proof query count does not match active schedule"
@@ -32896,6 +32913,10 @@ mod tests {
         assert_eq!(
             verify_path2_transparent_query_schedule_pair(128, 12).unwrap_err(),
             "Path 2 transparent proof unsupported trace row count"
+        );
+        assert_eq!(
+            verify_path2_transparent_query_schedule_count(12).unwrap_err(),
+            "Path 2 transparent proof query count is outside active schedule"
         );
 
         let mut low_query = schedule;
@@ -33268,6 +33289,13 @@ mod tests {
         assert_eq!(
             verify_path2_transparent_query_opening_manifest(&truncated).unwrap_err(),
             "Path 2 transparent query opening manifest count mismatch"
+        );
+
+        let mut unsupported_query_count = manifest.clone();
+        unsupported_query_count.query_count = 12;
+        assert_eq!(
+            verify_path2_transparent_query_opening_manifest(&unsupported_query_count).unwrap_err(),
+            "Path 2 transparent proof query count is outside active schedule"
         );
 
         let mut duplicate_role = manifest.clone();
