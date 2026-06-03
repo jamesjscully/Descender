@@ -193,6 +193,17 @@ parent_trace_commitment_extractable_required = true
 extracted_trace_relation_knowledge_required = true
 masked_opening_consistency_required = true
 parent_trace_extraction_composition_required = true
+trace_assembly_existence_required = true
+trace_assembly_roles_complete_required = true
+trace_assembly_fiber_required = true
+trace_assembly_local_valid_required = true
+trace_assembly_descent_consistent_required = true
+same_trace_range_rows_required = true
+range_row_soundness_required = true
+range_rows_to_norm_required = true
+same_trace_blinding_rows_required = true
+blinding_row_soundness_required = true
+blinding_rows_to_bound_required = true
 lean_atomic_full_interface_endpoint_present = true
 qrom_extractor_rewind_bound_required = true
 double_trace_binding_break_exported = true
@@ -200,6 +211,8 @@ double_trace_binding_break_exported = true
 
 Negative controls reject clearing any of these flags or drifting either
 blinding/noise policy field before the transparent verifier handoff. Clearing
+any decomposed assembly/range/blinding row flag rejects because the atomic Lean
+endpoint consumes those subclaims directly. Clearing
 `lean_atomic_full_interface_endpoint_present` rejects because the active Rust
 interface must be bound to the narrow Lean theorem
 `transparent_view_full_interface_from_atomic_gates_or_break`.

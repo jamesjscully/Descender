@@ -1515,6 +1515,17 @@ pub struct Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
     pub extracted_trace_relation_knowledge_required: bool,
     pub masked_opening_consistency_required: bool,
     pub parent_trace_extraction_composition_required: bool,
+    pub trace_assembly_existence_required: bool,
+    pub trace_assembly_roles_complete_required: bool,
+    pub trace_assembly_fiber_required: bool,
+    pub trace_assembly_local_valid_required: bool,
+    pub trace_assembly_descent_consistent_required: bool,
+    pub same_trace_range_rows_required: bool,
+    pub range_row_soundness_required: bool,
+    pub range_rows_to_norm_required: bool,
+    pub same_trace_blinding_rows_required: bool,
+    pub blinding_row_soundness_required: bool,
+    pub blinding_rows_to_bound_required: bool,
     pub lean_atomic_full_interface_endpoint_present: bool,
     pub qrom_extractor_rewind_bound_required: bool,
     pub double_trace_binding_break_exported: bool,
@@ -10055,6 +10066,17 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1()
         extracted_trace_relation_knowledge_required: true,
         masked_opening_consistency_required: true,
         parent_trace_extraction_composition_required: true,
+        trace_assembly_existence_required: true,
+        trace_assembly_roles_complete_required: true,
+        trace_assembly_fiber_required: true,
+        trace_assembly_local_valid_required: true,
+        trace_assembly_descent_consistent_required: true,
+        same_trace_range_rows_required: true,
+        range_row_soundness_required: true,
+        range_rows_to_norm_required: true,
+        same_trace_blinding_rows_required: true,
+        blinding_row_soundness_required: true,
+        blinding_rows_to_bound_required: true,
         lean_atomic_full_interface_endpoint_present: true,
         qrom_extractor_rewind_bound_required: true,
         double_trace_binding_break_exported: true,
@@ -10215,6 +10237,72 @@ pub fn verify_path2_native_boundary_trace_proof_family_interface(
     if !interface.parent_trace_extraction_composition_required {
         return Err(
             "Path 2 native-boundary trace proof-family interface lacks parent trace extraction composition"
+                .to_string(),
+        );
+    }
+    if !interface.trace_assembly_existence_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks trace assembly existence"
+                .to_string(),
+        );
+    }
+    if !interface.trace_assembly_roles_complete_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks trace assembly role completeness"
+                .to_string(),
+        );
+    }
+    if !interface.trace_assembly_fiber_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks trace assembly fiber proof"
+                .to_string(),
+        );
+    }
+    if !interface.trace_assembly_local_valid_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks trace assembly local validity"
+                .to_string(),
+        );
+    }
+    if !interface.trace_assembly_descent_consistent_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks trace assembly descent consistency"
+                .to_string(),
+        );
+    }
+    if !interface.same_trace_range_rows_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks same-trace range rows"
+                .to_string(),
+        );
+    }
+    if !interface.range_row_soundness_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks range row soundness"
+                .to_string(),
+        );
+    }
+    if !interface.range_rows_to_norm_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks range rows-to-norm proof"
+                .to_string(),
+        );
+    }
+    if !interface.same_trace_blinding_rows_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks same-trace blinding rows"
+                .to_string(),
+        );
+    }
+    if !interface.blinding_row_soundness_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks blinding row soundness"
+                .to_string(),
+        );
+    }
+    if !interface.blinding_rows_to_bound_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks blinding rows-to-bound proof"
                 .to_string(),
         );
     }
@@ -10392,6 +10480,61 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
         &mut frame,
         b"parent_trace_extraction_composition_required",
         u64::from(interface.parent_trace_extraction_composition_required),
+    );
+    append_u64(
+        &mut frame,
+        b"trace_assembly_existence_required",
+        u64::from(interface.trace_assembly_existence_required),
+    );
+    append_u64(
+        &mut frame,
+        b"trace_assembly_roles_complete_required",
+        u64::from(interface.trace_assembly_roles_complete_required),
+    );
+    append_u64(
+        &mut frame,
+        b"trace_assembly_fiber_required",
+        u64::from(interface.trace_assembly_fiber_required),
+    );
+    append_u64(
+        &mut frame,
+        b"trace_assembly_local_valid_required",
+        u64::from(interface.trace_assembly_local_valid_required),
+    );
+    append_u64(
+        &mut frame,
+        b"trace_assembly_descent_consistent_required",
+        u64::from(interface.trace_assembly_descent_consistent_required),
+    );
+    append_u64(
+        &mut frame,
+        b"same_trace_range_rows_required",
+        u64::from(interface.same_trace_range_rows_required),
+    );
+    append_u64(
+        &mut frame,
+        b"range_row_soundness_required",
+        u64::from(interface.range_row_soundness_required),
+    );
+    append_u64(
+        &mut frame,
+        b"range_rows_to_norm_required",
+        u64::from(interface.range_rows_to_norm_required),
+    );
+    append_u64(
+        &mut frame,
+        b"same_trace_blinding_rows_required",
+        u64::from(interface.same_trace_blinding_rows_required),
+    );
+    append_u64(
+        &mut frame,
+        b"blinding_row_soundness_required",
+        u64::from(interface.blinding_row_soundness_required),
+    );
+    append_u64(
+        &mut frame,
+        b"blinding_rows_to_bound_required",
+        u64::from(interface.blinding_rows_to_bound_required),
     );
     append_u64(
         &mut frame,
@@ -33789,6 +33932,17 @@ mod tests {
         assert!(interface.extracted_trace_relation_knowledge_required);
         assert!(interface.masked_opening_consistency_required);
         assert!(interface.parent_trace_extraction_composition_required);
+        assert!(interface.trace_assembly_existence_required);
+        assert!(interface.trace_assembly_roles_complete_required);
+        assert!(interface.trace_assembly_fiber_required);
+        assert!(interface.trace_assembly_local_valid_required);
+        assert!(interface.trace_assembly_descent_consistent_required);
+        assert!(interface.same_trace_range_rows_required);
+        assert!(interface.range_row_soundness_required);
+        assert!(interface.range_rows_to_norm_required);
+        assert!(interface.same_trace_blinding_rows_required);
+        assert!(interface.blinding_row_soundness_required);
+        assert!(interface.blinding_rows_to_bound_required);
         assert!(interface.lean_atomic_full_interface_endpoint_present);
         assert!(interface.qrom_extractor_rewind_bound_required);
         assert!(interface.double_trace_binding_break_exported);
@@ -33919,6 +34073,102 @@ mod tests {
                 .unwrap_err(),
             "Path 2 native-boundary trace proof-family interface lacks parent trace extraction composition"
         );
+
+        for (mutated, expected_error) in [
+            {
+                let mut mutated = interface.clone();
+                mutated.trace_assembly_existence_required = false;
+                (
+                    mutated,
+                    "Path 2 native-boundary trace proof-family interface lacks trace assembly existence",
+                )
+            },
+            {
+                let mut mutated = interface.clone();
+                mutated.trace_assembly_roles_complete_required = false;
+                (
+                    mutated,
+                    "Path 2 native-boundary trace proof-family interface lacks trace assembly role completeness",
+                )
+            },
+            {
+                let mut mutated = interface.clone();
+                mutated.trace_assembly_fiber_required = false;
+                (
+                    mutated,
+                    "Path 2 native-boundary trace proof-family interface lacks trace assembly fiber proof",
+                )
+            },
+            {
+                let mut mutated = interface.clone();
+                mutated.trace_assembly_local_valid_required = false;
+                (
+                    mutated,
+                    "Path 2 native-boundary trace proof-family interface lacks trace assembly local validity",
+                )
+            },
+            {
+                let mut mutated = interface.clone();
+                mutated.trace_assembly_descent_consistent_required = false;
+                (
+                    mutated,
+                    "Path 2 native-boundary trace proof-family interface lacks trace assembly descent consistency",
+                )
+            },
+            {
+                let mut mutated = interface.clone();
+                mutated.same_trace_range_rows_required = false;
+                (
+                    mutated,
+                    "Path 2 native-boundary trace proof-family interface lacks same-trace range rows",
+                )
+            },
+            {
+                let mut mutated = interface.clone();
+                mutated.range_row_soundness_required = false;
+                (
+                    mutated,
+                    "Path 2 native-boundary trace proof-family interface lacks range row soundness",
+                )
+            },
+            {
+                let mut mutated = interface.clone();
+                mutated.range_rows_to_norm_required = false;
+                (
+                    mutated,
+                    "Path 2 native-boundary trace proof-family interface lacks range rows-to-norm proof",
+                )
+            },
+            {
+                let mut mutated = interface.clone();
+                mutated.same_trace_blinding_rows_required = false;
+                (
+                    mutated,
+                    "Path 2 native-boundary trace proof-family interface lacks same-trace blinding rows",
+                )
+            },
+            {
+                let mut mutated = interface.clone();
+                mutated.blinding_row_soundness_required = false;
+                (
+                    mutated,
+                    "Path 2 native-boundary trace proof-family interface lacks blinding row soundness",
+                )
+            },
+            {
+                let mut mutated = interface.clone();
+                mutated.blinding_rows_to_bound_required = false;
+                (
+                    mutated,
+                    "Path 2 native-boundary trace proof-family interface lacks blinding rows-to-bound proof",
+                )
+            },
+        ] {
+            assert_eq!(
+                verify_path2_native_boundary_trace_proof_family_interface(&mutated).unwrap_err(),
+                expected_error
+            );
+        }
 
         let mut no_lean_atomic_endpoint = interface.clone();
         no_lean_atomic_endpoint.lean_atomic_full_interface_endpoint_present = false;

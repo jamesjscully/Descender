@@ -588,7 +588,9 @@ Named breaks:
   rejects sampled-opening-only knowledge, missing role-complete extraction,
   missing parent-trace commitment extraction, missing extracted-trace relation
   knowledge, missing masked-opening consistency, missing parent-trace
-  extraction composition, missing Lean atomic full-interface endpoint, missing
+  extraction composition, missing decomposed trace assembly gates, missing
+  same-trace range/blinding row gates, missing range/blinding row implication
+  gates, missing Lean atomic full-interface endpoint, missing
   QROM extractor rewind accounting, missing
   double-trace binding-break export,
   missing opening-tuple account-binding rows, missing checked-core
