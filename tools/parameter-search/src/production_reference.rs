@@ -6428,6 +6428,22 @@ pub fn production_deployment_preflight_certificate_digest(
     .into()
 }
 
+fn lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1()
+-> bool {
+    let source =
+        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
+    [
+        "ReviewedFq12SelectedRustDirectAssemblyDigestFrameWitnessPackagedSourceRouteInputs",
+        "ReviewedFq12SelectedRustDirectAssemblyDigestFrameWitnessPackagedSourceRouteInputs.toSharedRepresentativeFramePackagedInputs",
+        "shared_representative_frame_source_of_assembly_frame_functionality_binding_and_local_model",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_inputs",
+        "ReviewedFq12SelectedRustAssemblyRepresentativeFrameSource",
+        "ReviewedFq12FullNativeOpeningRepresentativeDigestFunctionalitySource",
+    ]
+    .iter()
+    .all(|marker| source.contains(marker))
+}
+
 pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
 -> Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     let lean_payload_interface_pinned = true;
@@ -6457,7 +6473,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let lean_selected_rust_direct_assembly_native_digest_frame_packaged_source_route_endpoint_present =
         true;
     let lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present =
-        true;
+        lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1();
     let lean_selected_rust_field_local_packaged_source_route_adapter_present = true;
     let rust_concrete_role_root_field_binding_present = true;
     let rust_certificate_lift_opening_functionality_present = true;
@@ -37561,6 +37577,9 @@ mod tests {
         assert!(
             audit
                 .lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present
+        );
+        assert!(
+            lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1()
         );
         assert!(audit.lean_selected_rust_field_local_packaged_source_route_adapter_present);
         assert!(audit.rust_concrete_role_root_field_binding_present);
