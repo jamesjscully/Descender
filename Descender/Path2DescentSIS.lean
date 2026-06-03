@@ -100,19 +100,19 @@ structure RoleLayout where
 /-- Selected executable role layout for the current Path 2 descent/SIS probe. -/
 def layoutForRole : CommitmentRole -> RoleLayout
   | .padSource =>
-      { columns := 30, semanticColumns := 6, blindingColumns := 24,
+      { columns := 36, semanticColumns := 12, blindingColumns := 24,
         rangeColumns := 0, blindingCenteredBound := 2048,
         rangeDigitMax := 127 }
   | .projectionRelation =>
-      { columns := 30, semanticColumns := 6, blindingColumns := 24,
+      { columns := 36, semanticColumns := 12, blindingColumns := 24,
         rangeColumns := 0, blindingCenteredBound := 2048,
         rangeDigitMax := 127 }
   | .openingTuple =>
-      { columns := 48, semanticColumns := 8, blindingColumns := 32,
+      { columns := 56, semanticColumns := 16, blindingColumns := 32,
         rangeColumns := 8, blindingCenteredBound := 2048,
         rangeDigitMax := 127 }
   | .transcriptCommitment =>
-      { columns := 108, semanticColumns := 20, blindingColumns := 80,
+      { columns := 128, semanticColumns := 40, blindingColumns := 80,
         rangeColumns := 8, blindingCenteredBound := 2048,
         rangeDigitMax := 127 }
 
@@ -154,28 +154,30 @@ def rangeColumnIndex (role : CommitmentRole)
         simp [layoutForRole] at i ⊢
         omega⟩
 
-/-- Per-segment semantic bounds; transcript commitments inherit constituent bounds. -/
-def semanticCenteredBoundFor (role : CommitmentRole)
+/-- Active semantic role columns are nonnegative base-128 digits. -/
+def semanticDigitMaxFor (role : CommitmentRole)
     (i : Fin (layoutForRole role).semanticColumns) : Nat :=
   match role with
-  | .padSource => 96
-  | .projectionRelation => 96
-  | .openingTuple => 512
-  | .transcriptCommitment =>
-      if i.val < 12 then 96 else 512
+  | .padSource => 127
+  | .projectionRelation => 127
+  | .openingTuple => 127
+  | .transcriptCommitment => 127
 
 /--
 Abstract norm/range acceptance for a role opening.
 
-Concrete Rust checks enforce canonical q12289 centered lifts, semantic/blinding
-centered bounds, nonnegative base-128 range digits, and exact column count.
+Concrete Rust checks enforce canonical q12289 centered lifts, nonnegative
+base-128 semantic digits, blinding centered bounds, nonnegative base-128 range
+digits, and exact column count. Digit reconstruction back to q12289 residues is
+a relation/proof-row obligation rather than a norm-only check.
 -/
 structure OpeningNormRangeValid (role : CommitmentRole) where
   opening : Fin (layoutForRole role).columns -> Int
-  semantic_bound :
+  semantic_digit_bound :
     ∀ i : Fin (layoutForRole role).semanticColumns,
+      0 ≤ opening (semanticColumnIndex role i) ∧
       (opening (semanticColumnIndex role i)).natAbs ≤
-        semanticCenteredBoundFor role i
+        semanticDigitMaxFor role i
   blinding_bound :
     ∀ i : Fin (layoutForRole role).blindingColumns,
       (opening (blindingColumnIndex role i)).natAbs ≤

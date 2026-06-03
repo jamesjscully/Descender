@@ -331,27 +331,26 @@ pub const PATH2_DESCENT_SIS_ROLE_PAD_SOURCE: u8 = 1;
 pub const PATH2_DESCENT_SIS_ROLE_PROJECTION_RELATION: u8 = 2;
 pub const PATH2_DESCENT_SIS_ROLE_OPENING_TUPLE: u8 = 3;
 pub const PATH2_DESCENT_SIS_ROLE_TRANSCRIPT_COMMITMENT: u8 = 4;
-pub const PATH2_DESCENT_SIS_PAD_SOURCE_COLUMNS: usize = 30;
-pub const PATH2_DESCENT_SIS_PROJECTION_RELATION_COLUMNS: usize = 30;
-pub const PATH2_DESCENT_SIS_OPENING_TUPLE_COLUMNS: usize = 48;
+pub const PATH2_DESCENT_SIS_PAD_SOURCE_COLUMNS: usize = 36;
+pub const PATH2_DESCENT_SIS_PROJECTION_RELATION_COLUMNS: usize = 36;
+pub const PATH2_DESCENT_SIS_OPENING_TUPLE_COLUMNS: usize = 56;
 pub const PATH2_DESCENT_SIS_TOTAL_COLUMNS: usize = PATH2_DESCENT_SIS_PAD_SOURCE_COLUMNS
     + PATH2_DESCENT_SIS_PROJECTION_RELATION_COLUMNS
     + PATH2_DESCENT_SIS_OPENING_TUPLE_COLUMNS;
 pub const PATH2_DESCENT_SIS_PRIMARY_ROW_BANDS: [usize; 2] = [48, 64];
-pub const PATH2_DESCENT_SIS_PAD_SOURCE_SECRET_COLUMNS: usize = 6;
+pub const PATH2_DESCENT_SIS_PAD_SOURCE_SECRET_COLUMNS: usize = 12;
 pub const PATH2_DESCENT_SIS_PAD_SOURCE_BLINDING_COLUMNS: usize = 24;
 pub const PATH2_DESCENT_SIS_PAD_SOURCE_RANGE_COLUMNS: usize = 0;
-pub const PATH2_DESCENT_SIS_PROJECTION_RELATION_SECRET_COLUMNS: usize = 6;
+pub const PATH2_DESCENT_SIS_PROJECTION_RELATION_SECRET_COLUMNS: usize = 12;
 pub const PATH2_DESCENT_SIS_PROJECTION_RELATION_BLINDING_COLUMNS: usize = 24;
 pub const PATH2_DESCENT_SIS_PROJECTION_RELATION_RANGE_COLUMNS: usize = 0;
-pub const PATH2_DESCENT_SIS_OPENING_TUPLE_SECRET_COLUMNS: usize = 8;
+pub const PATH2_DESCENT_SIS_OPENING_TUPLE_SECRET_COLUMNS: usize = 16;
 pub const PATH2_DESCENT_SIS_OPENING_TUPLE_BLINDING_COLUMNS: usize = 32;
 pub const PATH2_DESCENT_SIS_OPENING_TUPLE_RANGE_COLUMNS: usize = 8;
-pub const PATH2_DESCENT_SIS_TRANSCRIPT_SECRET_COLUMNS: usize = 20;
+pub const PATH2_DESCENT_SIS_TRANSCRIPT_SECRET_COLUMNS: usize = 40;
 pub const PATH2_DESCENT_SIS_TRANSCRIPT_BLINDING_COLUMNS: usize = 80;
 pub const PATH2_DESCENT_SIS_TRANSCRIPT_RANGE_COLUMNS: usize = 8;
-pub const PATH2_DESCENT_SIS_SEMANTIC_LANE_CENTERED_BOUND: i32 = 96;
-pub const PATH2_DESCENT_SIS_OPENING_TUPLE_CENTERED_BOUND: i32 = 512;
+pub const PATH2_DESCENT_SIS_SEMANTIC_DIGIT_MAX: i32 = 127;
 pub const PATH2_DESCENT_SIS_BLINDING_CENTERED_BOUND: i32 = 2048;
 pub const PATH2_DESCENT_SIS_RANGE_DIGIT_MAX: i32 = 127;
 pub const PATH2_DESCENT_SIS_CANONICAL_CENTER_MIN: i32 = -((Q as i32) / 2);
@@ -8732,7 +8731,7 @@ pub fn path2_descent_sis_role_layout(role: u8) -> Option<Path2DescentSisRoleLayo
     }
 }
 
-pub fn path2_descent_sis_semantic_centered_bound_for_index(
+pub fn path2_descent_sis_semantic_digit_bound_for_index(
     role: u8,
     semantic_idx: usize,
 ) -> Option<i32> {
@@ -8741,21 +8740,11 @@ pub fn path2_descent_sis_semantic_centered_bound_for_index(
         return None;
     }
     match role {
-        PATH2_DESCENT_SIS_ROLE_TRANSCRIPT_COMMITMENT => {
-            let projection_start = PATH2_DESCENT_SIS_PAD_SOURCE_SECRET_COLUMNS;
-            let opening_tuple_start =
-                projection_start + PATH2_DESCENT_SIS_PROJECTION_RELATION_SECRET_COLUMNS;
-            if semantic_idx < opening_tuple_start {
-                Some(PATH2_DESCENT_SIS_SEMANTIC_LANE_CENTERED_BOUND)
-            } else {
-                Some(PATH2_DESCENT_SIS_OPENING_TUPLE_CENTERED_BOUND)
-            }
-        }
-        PATH2_DESCENT_SIS_ROLE_PAD_SOURCE | PATH2_DESCENT_SIS_ROLE_PROJECTION_RELATION => {
-            Some(PATH2_DESCENT_SIS_SEMANTIC_LANE_CENTERED_BOUND)
-        }
-        PATH2_DESCENT_SIS_ROLE_OPENING_TUPLE => {
-            Some(PATH2_DESCENT_SIS_OPENING_TUPLE_CENTERED_BOUND)
+        PATH2_DESCENT_SIS_ROLE_PAD_SOURCE
+        | PATH2_DESCENT_SIS_ROLE_PROJECTION_RELATION
+        | PATH2_DESCENT_SIS_ROLE_OPENING_TUPLE
+        | PATH2_DESCENT_SIS_ROLE_TRANSCRIPT_COMMITMENT => {
+            Some(PATH2_DESCENT_SIS_SEMANTIC_DIGIT_MAX)
         }
         _ => None,
     }
@@ -8802,7 +8791,7 @@ pub fn verify_path2_descent_sis_opening_norm_range(
     for (idx, &residue) in opening.iter().enumerate() {
         let centered = path2_descent_sis_centered_lift(residue)?;
         let bound = if idx < blinding_start {
-            path2_descent_sis_semantic_centered_bound_for_index(role, idx).ok_or_else(|| {
+            path2_descent_sis_semantic_digit_bound_for_index(role, idx).ok_or_else(|| {
                 "Path 2 descent/SIS semantic coordinate is out of range".to_string()
             })?
         } else if idx < range_start {
@@ -8813,11 +8802,133 @@ pub fn verify_path2_descent_sis_opening_norm_range(
         if centered.abs() > bound {
             return Err("Path 2 descent/SIS opening coordinate exceeds selected bound".to_string());
         }
+        if idx < blinding_start && centered < 0 {
+            return Err("Path 2 descent/SIS semantic digit is negative".to_string());
+        }
         if idx >= range_start && centered < 0 {
             return Err("Path 2 descent/SIS range digit is negative".to_string());
         }
     }
     Ok(())
+}
+
+pub fn path2_descent_sis_matrix_rank(
+    role: u8,
+    rows_per_commitment: usize,
+) -> Result<usize, String> {
+    let columns = path2_descent_sis_columns_for_role(role)
+        .ok_or_else(|| "Path 2 descent/SIS unknown matrix role".to_string())?;
+    if !PATH2_DESCENT_SIS_PRIMARY_ROW_BANDS.contains(&rows_per_commitment) {
+        return Err("Path 2 descent/SIS unsupported row band".to_string());
+    }
+    let mut matrix = vec![vec![0_u16; columns]; rows_per_commitment];
+    for (row, row_values) in matrix.iter_mut().enumerate() {
+        for (col, value) in row_values.iter_mut().enumerate() {
+            *value = path2_descent_sis_matrix_entry(role, rows_per_commitment, row, col)?;
+        }
+    }
+
+    let mut rank = 0;
+    for col in 0..columns {
+        let Some(pivot) = (rank..rows_per_commitment).find(|&row| matrix[row][col] != 0) else {
+            continue;
+        };
+        matrix.swap(rank, pivot);
+        let inverse = mod_inverse_q(matrix[rank][col])
+            .ok_or_else(|| "Path 2 descent/SIS matrix pivot is not invertible".to_string())?;
+        for entry in matrix[rank].iter_mut().skip(col) {
+            *entry = ((*entry as u32 * inverse as u32) % Q as u32) as u16;
+        }
+        for row in 0..rows_per_commitment {
+            if row == rank {
+                continue;
+            }
+            let factor = matrix[row][col];
+            if factor == 0 {
+                continue;
+            }
+            for idx in col..columns {
+                let product = ((factor as u32 * matrix[rank][idx] as u32) % Q as u32) as u16;
+                matrix[row][idx] = sub_mod(matrix[row][idx], product);
+            }
+        }
+        rank += 1;
+        if rank == rows_per_commitment {
+            break;
+        }
+    }
+    Ok(rank)
+}
+
+pub const PATH2_DESCENT_SIS_SANITY_VERDICT_FULL_COLUMN_RANK_PRIVATE_ONLY: &str =
+    "full_column_rank_private_only";
+pub const PATH2_DESCENT_SIS_SANITY_VERDICT_BOUND_TOO_WIDE_FOR_SHORT_SIS: &str =
+    "bound_too_wide_for_short_sis";
+pub const PATH2_DESCENT_SIS_SANITY_VERDICT_REQUIRES_EXTERNAL_ESTIMATOR: &str =
+    "requires_external_estimator";
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Path2DescentSisHardnessSanity {
+    pub role: u8,
+    pub rows_per_commitment: usize,
+    pub columns: usize,
+    pub rank: usize,
+    pub kernel_dimension: usize,
+    pub delta_l2_bound: f64,
+    pub gaussian_kernel_l2_estimate: Option<f64>,
+    pub bound_to_gaussian_ratio: Option<f64>,
+    pub verdict: &'static str,
+}
+
+pub fn path2_descent_sis_delta_l2_bound(role: u8) -> Result<f64, String> {
+    let layout = path2_descent_sis_role_layout(role)
+        .ok_or_else(|| "Path 2 descent/SIS unknown opening role".to_string())?;
+    let semantic =
+        layout.semantic_columns as f64 * (PATH2_DESCENT_SIS_SEMANTIC_DIGIT_MAX as f64).powi(2);
+    let blinding_delta = (2 * PATH2_DESCENT_SIS_BLINDING_CENTERED_BOUND) as f64;
+    let blinding = layout.blinding_columns as f64 * blinding_delta.powi(2);
+    let range = layout.range_columns as f64 * (PATH2_DESCENT_SIS_RANGE_DIGIT_MAX as f64).powi(2);
+    Ok((semantic + blinding + range).sqrt())
+}
+
+pub fn path2_descent_sis_gaussian_kernel_l2_estimate(columns: usize, rank: usize) -> Option<f64> {
+    if columns <= rank {
+        return None;
+    }
+    let dimension = columns as f64;
+    let determinant_log = rank as f64 * (Q as f64).ln();
+    let gaussian_scale = (dimension / (2.0 * std::f64::consts::PI * std::f64::consts::E)).sqrt();
+    Some(gaussian_scale * (determinant_log / dimension).exp())
+}
+
+pub fn path2_descent_sis_hardness_sanity(
+    role: u8,
+    rows_per_commitment: usize,
+) -> Result<Path2DescentSisHardnessSanity, String> {
+    let columns = path2_descent_sis_columns_for_role(role)
+        .ok_or_else(|| "Path 2 descent/SIS unknown matrix role".to_string())?;
+    let rank = path2_descent_sis_matrix_rank(role, rows_per_commitment)?;
+    let kernel_dimension = columns.saturating_sub(rank);
+    let delta_l2_bound = path2_descent_sis_delta_l2_bound(role)?;
+    let gaussian_kernel_l2_estimate = path2_descent_sis_gaussian_kernel_l2_estimate(columns, rank);
+    let bound_to_gaussian_ratio =
+        gaussian_kernel_l2_estimate.map(|estimate| delta_l2_bound / estimate);
+    let verdict = match bound_to_gaussian_ratio {
+        None => PATH2_DESCENT_SIS_SANITY_VERDICT_FULL_COLUMN_RANK_PRIVATE_ONLY,
+        Some(ratio) if ratio > 3.0 => PATH2_DESCENT_SIS_SANITY_VERDICT_BOUND_TOO_WIDE_FOR_SHORT_SIS,
+        Some(_) => PATH2_DESCENT_SIS_SANITY_VERDICT_REQUIRES_EXTERNAL_ESTIMATOR,
+    };
+    Ok(Path2DescentSisHardnessSanity {
+        role,
+        rows_per_commitment,
+        columns,
+        rank,
+        kernel_dimension,
+        delta_l2_bound,
+        gaussian_kernel_l2_estimate,
+        bound_to_gaussian_ratio,
+        verdict,
+    })
 }
 
 pub fn path2_descent_sis_matrix_entry(
@@ -29118,19 +29229,77 @@ mod tests {
     }
 
     #[test]
+    fn path2_descent_sis_hardness_sanity_rejects_wide_blinding_kernel_surfaces() {
+        let pad_48 =
+            path2_descent_sis_hardness_sanity(PATH2_DESCENT_SIS_ROLE_PAD_SOURCE, 48).unwrap();
+        assert_eq!(pad_48.columns, 36);
+        assert_eq!(pad_48.rank, 36);
+        assert_eq!(pad_48.kernel_dimension, 0);
+        assert_eq!(
+            pad_48.verdict,
+            PATH2_DESCENT_SIS_SANITY_VERDICT_FULL_COLUMN_RANK_PRIVATE_ONLY
+        );
+
+        let projection_64 =
+            path2_descent_sis_hardness_sanity(PATH2_DESCENT_SIS_ROLE_PROJECTION_RELATION, 64)
+                .unwrap();
+        assert_eq!(projection_64.columns, 36);
+        assert_eq!(projection_64.rank, 36);
+        assert_eq!(projection_64.kernel_dimension, 0);
+        assert_eq!(
+            projection_64.verdict,
+            PATH2_DESCENT_SIS_SANITY_VERDICT_FULL_COLUMN_RANK_PRIVATE_ONLY
+        );
+
+        let opening_48 =
+            path2_descent_sis_hardness_sanity(PATH2_DESCENT_SIS_ROLE_OPENING_TUPLE, 48).unwrap();
+        assert_eq!(opening_48.columns, 56);
+        assert_eq!(opening_48.rank, 48);
+        assert_eq!(opening_48.kernel_dimension, 8);
+        assert!(opening_48.bound_to_gaussian_ratio.unwrap() > 3.0);
+        assert_eq!(
+            opening_48.verdict,
+            PATH2_DESCENT_SIS_SANITY_VERDICT_BOUND_TOO_WIDE_FOR_SHORT_SIS
+        );
+
+        let opening_64 =
+            path2_descent_sis_hardness_sanity(PATH2_DESCENT_SIS_ROLE_OPENING_TUPLE, 64).unwrap();
+        assert_eq!(opening_64.columns, 56);
+        assert_eq!(opening_64.rank, 56);
+        assert_eq!(opening_64.kernel_dimension, 0);
+        assert_eq!(
+            opening_64.verdict,
+            PATH2_DESCENT_SIS_SANITY_VERDICT_FULL_COLUMN_RANK_PRIVATE_ONLY
+        );
+
+        for rows in PATH2_DESCENT_SIS_PRIMARY_ROW_BANDS {
+            let transcript = path2_descent_sis_hardness_sanity(
+                PATH2_DESCENT_SIS_ROLE_TRANSCRIPT_COMMITMENT,
+                rows,
+            )
+            .unwrap();
+            assert_eq!(transcript.columns, 128);
+            assert_eq!(transcript.rank, rows);
+            assert_eq!(transcript.kernel_dimension, 128 - rows);
+            assert!(transcript.bound_to_gaussian_ratio.unwrap() > 100.0);
+            assert_eq!(
+                transcript.verdict,
+                PATH2_DESCENT_SIS_SANITY_VERDICT_BOUND_TOO_WIDE_FOR_SHORT_SIS
+            );
+        }
+    }
+
+    #[test]
     fn path2_descent_sis_norm_range_policy_rejects_wraps_and_wrong_shapes() {
         let pad_layout = path2_descent_sis_role_layout(PATH2_DESCENT_SIS_ROLE_PAD_SOURCE).unwrap();
         assert!(pad_layout.validates_partition());
-        assert_eq!(pad_layout.semantic_columns, 6);
+        assert_eq!(pad_layout.semantic_columns, 12);
         assert_eq!(pad_layout.blinding_columns, 24);
         assert_eq!(pad_layout.range_columns, 0);
 
         let mut pad_opening = vec![0_u16; pad_layout.columns];
         for slot in pad_opening.iter_mut().take(pad_layout.semantic_columns) {
-            *slot = path2_descent_sis_centered_to_residue(
-                PATH2_DESCENT_SIS_SEMANTIC_LANE_CENTERED_BOUND,
-            )
-            .unwrap();
+            *slot = PATH2_DESCENT_SIS_SEMANTIC_DIGIT_MAX as u16;
         }
         for slot in pad_opening
             .iter_mut()
@@ -29148,10 +29317,7 @@ mod tests {
         .unwrap();
 
         let mut semantic_overflow = pad_opening.clone();
-        semantic_overflow[0] = path2_descent_sis_centered_to_residue(
-            PATH2_DESCENT_SIS_SEMANTIC_LANE_CENTERED_BOUND + 1,
-        )
-        .unwrap();
+        semantic_overflow[0] = (PATH2_DESCENT_SIS_SEMANTIC_DIGIT_MAX + 1) as u16;
         assert_eq!(
             verify_path2_descent_sis_opening_norm_range(
                 PATH2_DESCENT_SIS_ROLE_PAD_SOURCE,
@@ -29159,6 +29325,17 @@ mod tests {
             )
             .unwrap_err(),
             "Path 2 descent/SIS opening coordinate exceeds selected bound"
+        );
+
+        let mut negative_semantic_digit = pad_opening.clone();
+        negative_semantic_digit[0] = path2_descent_sis_centered_to_residue(-1).unwrap();
+        assert_eq!(
+            verify_path2_descent_sis_opening_norm_range(
+                PATH2_DESCENT_SIS_ROLE_PAD_SOURCE,
+                &negative_semantic_digit,
+            )
+            .unwrap_err(),
+            "Path 2 descent/SIS semantic digit is negative"
         );
 
         let mut blinding_overflow = pad_opening.clone();
@@ -29200,16 +29377,13 @@ mod tests {
         let opening_layout =
             path2_descent_sis_role_layout(PATH2_DESCENT_SIS_ROLE_OPENING_TUPLE).unwrap();
         assert!(opening_layout.validates_partition());
-        assert_eq!(opening_layout.semantic_columns, 8);
+        assert_eq!(opening_layout.semantic_columns, 16);
         assert_eq!(opening_layout.blinding_columns, 32);
         assert_eq!(opening_layout.range_columns, 8);
 
         let mut opening = vec![0_u16; opening_layout.columns];
         for slot in opening.iter_mut().take(opening_layout.semantic_columns) {
-            *slot = path2_descent_sis_centered_to_residue(
-                -PATH2_DESCENT_SIS_OPENING_TUPLE_CENTERED_BOUND,
-            )
-            .unwrap();
+            *slot = PATH2_DESCENT_SIS_SEMANTIC_DIGIT_MAX as u16;
         }
         for slot in opening
             .iter_mut()
@@ -29254,11 +29428,11 @@ mod tests {
     }
 
     #[test]
-    fn path2_descent_sis_norm_range_policy_tightens_transcript_semantic_segments() {
+    fn path2_descent_sis_norm_range_policy_covers_transcript_semantic_digits() {
         let transcript_layout =
             path2_descent_sis_role_layout(PATH2_DESCENT_SIS_ROLE_TRANSCRIPT_COMMITMENT).unwrap();
         assert!(transcript_layout.validates_partition());
-        assert_eq!(transcript_layout.semantic_columns, 20);
+        assert_eq!(transcript_layout.semantic_columns, 40);
         assert_eq!(transcript_layout.blinding_columns, 80);
         assert_eq!(transcript_layout.range_columns, 8);
 
@@ -29266,20 +29440,14 @@ mod tests {
         let opening_tuple_start = PATH2_DESCENT_SIS_PAD_SOURCE_SECRET_COLUMNS
             + PATH2_DESCENT_SIS_PROJECTION_RELATION_SECRET_COLUMNS;
         for slot in transcript.iter_mut().take(opening_tuple_start) {
-            *slot = path2_descent_sis_centered_to_residue(
-                PATH2_DESCENT_SIS_SEMANTIC_LANE_CENTERED_BOUND,
-            )
-            .unwrap();
+            *slot = PATH2_DESCENT_SIS_SEMANTIC_DIGIT_MAX as u16;
         }
         for slot in transcript
             .iter_mut()
             .skip(opening_tuple_start)
             .take(PATH2_DESCENT_SIS_OPENING_TUPLE_SECRET_COLUMNS)
         {
-            *slot = path2_descent_sis_centered_to_residue(
-                PATH2_DESCENT_SIS_OPENING_TUPLE_CENTERED_BOUND,
-            )
-            .unwrap();
+            *slot = PATH2_DESCENT_SIS_SEMANTIC_DIGIT_MAX as u16;
         }
         for slot in transcript
             .iter_mut()
@@ -29302,32 +29470,27 @@ mod tests {
         )
         .unwrap();
 
-        let mut relaxed_pad_lane = transcript.clone();
-        relaxed_pad_lane[0] = path2_descent_sis_centered_to_residue(
-            PATH2_DESCENT_SIS_SEMANTIC_LANE_CENTERED_BOUND + 1,
-        )
-        .unwrap();
+        let mut semantic_digit_overflow = transcript.clone();
+        semantic_digit_overflow[0] = (PATH2_DESCENT_SIS_SEMANTIC_DIGIT_MAX + 1) as u16;
         assert_eq!(
             verify_path2_descent_sis_opening_norm_range(
                 PATH2_DESCENT_SIS_ROLE_TRANSCRIPT_COMMITMENT,
-                &relaxed_pad_lane,
+                &semantic_digit_overflow,
             )
             .unwrap_err(),
             "Path 2 descent/SIS opening coordinate exceeds selected bound"
         );
 
-        let mut opening_tuple_overflow = transcript;
-        opening_tuple_overflow[opening_tuple_start] = path2_descent_sis_centered_to_residue(
-            PATH2_DESCENT_SIS_OPENING_TUPLE_CENTERED_BOUND + 1,
-        )
-        .unwrap();
+        let mut negative_semantic_digit = transcript;
+        negative_semantic_digit[opening_tuple_start] =
+            path2_descent_sis_centered_to_residue(-1).unwrap();
         assert_eq!(
             verify_path2_descent_sis_opening_norm_range(
                 PATH2_DESCENT_SIS_ROLE_TRANSCRIPT_COMMITMENT,
-                &opening_tuple_overflow,
+                &negative_semantic_digit,
             )
             .unwrap_err(),
-            "Path 2 descent/SIS opening coordinate exceeds selected bound"
+            "Path 2 descent/SIS semantic digit is negative"
         );
     }
 
