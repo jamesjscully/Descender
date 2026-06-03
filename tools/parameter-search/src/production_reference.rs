@@ -6548,9 +6548,12 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         rust_constructed_assembly_compatibility_witness_source_present;
     let rust_assembly_compatibility_local_model_source_present =
         rust_constructed_assembly_compatibility_witness_source_present;
-    let rust_full_opening_field_evidence_present = true;
-    let rust_full_opening_source_route_present = true;
-    let rust_source_route_negative_controls_present = true;
+    let rust_full_opening_field_evidence_present =
+        path2_reviewed_fq12_full_opening_field_evidence_source_present_v1();
+    let rust_full_opening_source_route_present =
+        path2_reviewed_fq12_full_opening_source_route_source_present_v1();
+    let rust_source_route_negative_controls_present =
+        path2_reviewed_fq12_source_route_negative_controls_present_v1();
     let hidden_relation_verifier_implemented = true;
     let extractor_theorem_instantiated = false;
     let semantics_bridge_complete = lean_payload_interface_pinned
@@ -7984,6 +7987,253 @@ fn path2_reviewed_fq12_assembly_compatibility_local_model_source_present_v1() ->
         && source_route_verify_source
             .contains("path2_reviewed_fq12_full_opening_field_source_route_v1_digest(source_route)?")
         && source_route_verify_source.contains("!= source_route.source_route_digest")
+}
+
+fn path2_reviewed_fq12_full_opening_field_evidence_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+    let evidence_start = source
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_evidence_v1(")
+        .expect("Path 2 reviewed Fq12 field evidence source start marker missing");
+    let evidence_end = source[evidence_start..]
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_evidence_v1_frame(")
+        .expect("Path 2 reviewed Fq12 field evidence source end marker missing")
+        + evidence_start;
+    let evidence_source = &source[evidence_start..evidence_end];
+
+    let evidence_frame_start = source
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_evidence_v1_frame(")
+        .expect("Path 2 reviewed Fq12 field evidence frame source start marker missing");
+    let evidence_frame_end = source[evidence_frame_start..]
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_evidence_v1_digest(")
+        .expect("Path 2 reviewed Fq12 field evidence frame source end marker missing")
+        + evidence_frame_start;
+    let evidence_frame_source = &source[evidence_frame_start..evidence_frame_end];
+
+    let evidence_verify_start = source
+        .find("\npub fn verify_path2_reviewed_fq12_full_opening_field_evidence_v1(")
+        .expect("Path 2 reviewed Fq12 field evidence verifier source start marker missing");
+    let evidence_verify_end = source[evidence_verify_start..]
+        .find("\npub fn path2_reviewed_fq12_assembly_binds_full_opening_fields_v1(")
+        .expect("Path 2 reviewed Fq12 field evidence verifier source end marker missing")
+        + evidence_verify_start;
+    let evidence_verify_source = &source[evidence_verify_start..evidence_verify_end];
+
+    let evidence_constructor_checks = [
+        "path2_reviewed_fq12_hidden_source_payload_binding_v1_digest(payload_binding)?",
+        "!= payload_binding.payload_digest",
+        "path2_reviewed_fq12_hidden_relation_extraction_certificate_v1_digest(extraction_cert)?",
+        "!= extraction_cert.extraction_certificate_digest",
+        "path2_creation_proof_binding_v1_digest(creation_binding) != creation_binding.digest",
+        "path2_reviewed_fq12_full_native_opening_certificate_v1_digest(full_opening_cert)?",
+        "!= full_opening_cert.role_lift_certificate_digest",
+        "path2_reviewed_fq12_native_representative_assembly_certificate_v1_digest(assembly_cert)?",
+        "!= assembly_cert.assembly_certificate_digest",
+        "verify_path2_reviewed_fq12_extraction_compatibility_certificate_v1(",
+        "payload_binding.creation_proof_binding_digest != creation_binding.digest",
+        "extraction_cert.payload_binding_digest != payload_binding.payload_digest",
+        "full_opening_cert.payload_binding_digest != payload_binding.payload_digest",
+        "full_opening_cert.extraction_certificate_digest",
+        "full_opening_cert.creation_proof_binding_digest != creation_binding.digest",
+        "assembly_cert.role_lift_certificate_digest",
+        "assembly_cert.payload_binding_digest != payload_binding.payload_digest",
+        "assembly_cert.creation_proof_binding_digest != creation_binding.digest",
+        "compatibility_cert.assembly_certificate_digest",
+        "compatibility_cert.role_lift_certificate_digest",
+        "compatibility_cert.payload_binding_digest != payload_binding.payload_digest",
+        "compatibility_cert.extraction_certificate_digest",
+        "creation_binding.randomizer_commitment != payload_binding.randomizer_commitment",
+        "creation_binding.opening_tuple_commitment != payload_binding.opening_commitment",
+        "creation_binding.pad_source_commitment != payload_binding.pad_seed_digest",
+        "creation_binding.projection_relation_commitment",
+        "full_opening_cert.native_boundary_digest != payload_binding.native_boundary_digest",
+        "full_opening_cert.native_boundary_digest != extraction_cert.native_boundary_digest",
+        "full_opening_cert.native_boundary_digest != assembly_cert.native_boundary_digest",
+        "compatibility_cert.native_boundary_digest != payload_binding.native_boundary_digest",
+        "compatibility_cert.native_boundary_digest != extraction_cert.native_boundary_digest",
+        "compatibility_cert.native_boundary_digest != full_opening_cert.native_boundary_digest",
+        "let expected_native_role_root_commitment = path2_creation_native_role_root_commitment_v1(",
+        "creation_binding.native_role_root_commitment != expected_native_role_root_commitment",
+        "full_opening_cert.native_role_root_commitment != expected_native_role_root_commitment",
+        "assembly_cert.native_role_root_commitment != expected_native_role_root_commitment",
+        "full_opening_cert.local_section_digest != assembly_cert.local_section_digest",
+        "full_opening_cert.packed_residues_digest != creation_binding.packed_witness_commitment",
+        "full_opening_cert.packed_residues_digest != assembly_cert.packed_residues_digest",
+        "full_opening_cert.randomizer_digest != creation_binding.randomizer_commitment",
+        "full_opening_cert.randomizer_digest != assembly_cert.randomizer_digest",
+        "full_opening_cert.selected_account_projection_digest",
+        "!= extraction_cert.account_projection_digest",
+        "!= assembly_cert.selected_account_projection_digest",
+        "compatibility_cert.selected_account_projection_digest",
+        "full_opening_cert.pad_source_digest != creation_binding.pad_source_commitment",
+        "full_opening_cert.pad_source_digest != assembly_cert.pad_source_digest",
+        "full_opening_cert.opening_tuple_digest != creation_binding.opening_tuple_commitment",
+        "full_opening_cert.opening_tuple_digest != assembly_cert.opening_tuple_digest",
+        "full_opening_cert.projection_relation_digest",
+        "!= creation_binding.projection_relation_commitment",
+        "full_opening_cert.projection_relation_digest != assembly_cert.projection_relation_digest",
+        "full_opening_cert.lifecycle_slot_digest != assembly_cert.lifecycle_slot_digest",
+        "full_opening_cert.trace_witness_digest != assembly_cert.trace_witness_digest",
+        "full_opening_cert.gauge_digest != creation_binding.gauge_commitment",
+        "full_opening_cert.gauge_digest != assembly_cert.gauge_digest",
+        "full_opening_cert.full_opening_digest != assembly_cert.full_opening_digest",
+        "full_opening_cert.full_opening_digest != compatibility_cert.full_opening_digest",
+        "assembly_cert.representative_digest != compatibility_cert.representative_digest",
+        "aggregate_bridge_used_as_source: false",
+        "path2_reviewed_fq12_full_opening_field_evidence_v1_digest(&evidence)?",
+    ];
+    let evidence_frame_checks = [
+        "if evidence.schema != PATH2_REVIEWED_FQ12_FULL_OPENING_FIELD_EVIDENCE_DOMAIN",
+        "if evidence.aggregate_bridge_used_as_source",
+        "let expected_native_role_root_commitment = path2_creation_native_role_root_commitment_v1(",
+        "evidence.expected_native_role_root_commitment != expected_native_role_root_commitment",
+        "evidence.native_role_root_commitment != expected_native_role_root_commitment",
+        "let expected_full_opening_digest = path2_reviewed_fq12_full_native_opening_digest_v1(",
+        "if evidence.full_opening_digest != expected_full_opening_digest",
+        "let expected_representative_digest = path2_reviewed_fq12_native_representative_digest_v1(",
+        "if evidence.representative_digest != expected_representative_digest",
+        "b\"expected_native_role_root_commitment\"",
+        "b\"native_role_root_commitment\"",
+        "b\"full_opening_digest\"",
+        "b\"representative_digest\"",
+        "b\"aggregate_bridge_used_as_source\"",
+    ];
+
+    evidence_constructor_checks
+        .iter()
+        .all(|marker| evidence_source.contains(marker))
+        && evidence_frame_checks
+            .iter()
+            .all(|marker| evidence_frame_source.contains(marker))
+        && evidence_verify_source
+            .contains("let expected = path2_reviewed_fq12_full_opening_field_evidence_v1(")
+        && evidence_verify_source.contains("if expected != *evidence")
+        && evidence_verify_source
+            .contains("path2_reviewed_fq12_full_opening_field_evidence_v1_digest(evidence)?")
+        && evidence_verify_source.contains("!= evidence.field_evidence_digest")
+}
+
+fn path2_reviewed_fq12_full_opening_source_route_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+    let adapter_start = source
+        .find("\npub fn path2_reviewed_fq12_field_evidence_is_adapter_only_v1(")
+        .expect("Path 2 reviewed Fq12 field-evidence adapter source start marker missing");
+    let adapter_end = source[adapter_start..]
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_source_route_v1(")
+        .expect("Path 2 reviewed Fq12 field-evidence adapter source end marker missing")
+        + adapter_start;
+    let adapter_source = &source[adapter_start..adapter_end];
+
+    let route_start = source
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_source_route_v1(")
+        .expect("Path 2 reviewed Fq12 source-route source start marker missing");
+    let route_end = source[route_start..]
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_source_route_v1_frame(")
+        .expect("Path 2 reviewed Fq12 source-route source end marker missing")
+        + route_start;
+    let route_source = &source[route_start..route_end];
+
+    let route_frame_start = source
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_source_route_v1_frame(")
+        .expect("Path 2 reviewed Fq12 source-route frame source start marker missing");
+    let route_frame_end = source[route_frame_start..]
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_source_route_v1_digest(")
+        .expect("Path 2 reviewed Fq12 source-route frame source end marker missing")
+        + route_frame_start;
+    let route_frame_source = &source[route_frame_start..route_frame_end];
+
+    let route_verify_start = source
+        .find("\npub fn verify_path2_reviewed_fq12_full_opening_field_source_route_v1(")
+        .expect("Path 2 reviewed Fq12 source-route verifier source start marker missing");
+    let route_verify_end = source[route_verify_start..]
+        .find("\npub fn path2_reviewed_fq12_full_opening_bridge_certificate_v1(")
+        .expect("Path 2 reviewed Fq12 source-route verifier source end marker missing")
+        + route_verify_start;
+    let route_verify_source = &source[route_verify_start..route_verify_end];
+
+    let route_checks = [
+        "path2_reviewed_fq12_assembly_binds_full_opening_fields_v1(assembly_cert, full_opening_cert)",
+        "if !assembly_is_full_opening_field_certificate",
+        "path2_reviewed_fq12_compatibility_binds_same_representative_fields_v1(",
+        "if !compatibility_is_same_representative_field_certificate",
+        "path2_reviewed_fq12_field_evidence_is_adapter_only_v1(",
+        "if !field_evidence_is_adapter_only",
+        "verify_path2_reviewed_fq12_full_opening_field_evidence_v1(",
+        "aggregate_bridge_used_as_source: field_evidence.aggregate_bridge_used_as_source",
+        "path2_reviewed_fq12_full_opening_field_source_route_v1_digest(&source_route)?",
+    ];
+    let route_frame_checks = [
+        "if source_route.schema != PATH2_REVIEWED_FQ12_FULL_OPENING_FIELD_SOURCE_ROUTE_DOMAIN",
+        "if !source_route.assembly_is_full_opening_field_certificate",
+        "if !source_route.compatibility_is_same_representative_field_certificate",
+        "if !source_route.field_evidence_is_adapter_only",
+        "if source_route.aggregate_bridge_used_as_source",
+        "b\"assembly_is_full_opening_field_certificate\"",
+        "b\"compatibility_is_same_representative_field_certificate\"",
+        "b\"field_evidence_is_adapter_only\"",
+        "b\"aggregate_bridge_used_as_source\"",
+    ];
+
+    adapter_source.contains("if evidence.aggregate_bridge_used_as_source")
+        && adapter_source
+            .contains("path2_reviewed_fq12_full_opening_field_evidence_v1_digest(evidence)?")
+        && adapter_source.contains("== evidence.field_evidence_digest")
+        && route_checks
+            .iter()
+            .all(|marker| route_source.contains(marker))
+        && route_frame_checks
+            .iter()
+            .all(|marker| route_frame_source.contains(marker))
+        && route_verify_source
+            .contains("let expected = path2_reviewed_fq12_full_opening_field_source_route_v1(")
+        && route_verify_source.contains("if expected != *source_route")
+        && route_verify_source.contains(
+            "path2_reviewed_fq12_full_opening_field_source_route_v1_digest(source_route)?",
+        )
+        && route_verify_source.contains("!= source_route.source_route_digest")
+}
+
+fn path2_reviewed_fq12_source_route_negative_controls_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+    let test_start = source
+        .find("\n    fn path2_reviewed_fq12_full_native_opening_certificate_binds_all_roles()")
+        .expect("Path 2 reviewed Fq12 field/source-route regression source start marker missing");
+    let test_end = source[test_start..]
+        .find(
+            "\n    fn path2_reviewed_fq12_full_native_opening_certificate_rejects_role_root_rebinding()",
+        )
+        .expect("Path 2 reviewed Fq12 field/source-route regression source end marker missing")
+        + test_start;
+    let test_source = &source[test_start..test_end];
+
+    [
+        "stale_route_representative_digest.representative_digest[0] ^= 1",
+        "\"Path 2 full opening field source route mismatch\"",
+        "aggregate_sourced_route.aggregate_bridge_used_as_source = true",
+        "\"Path 2 full opening field source route aggregate bridge source forbidden\"",
+        "stale_route_digest.source_route_digest[0] ^= 1",
+        "stale_digest_field_evidence.field_evidence_digest[0] ^= 1",
+        "\"Path 2 full opening field evidence mismatch\"",
+        "bad_schema_field_evidence.schema =",
+        "\"Path 2 full opening field evidence schema mismatch\"",
+        "aggregate_sourced_field_evidence.aggregate_bridge_used_as_source = true",
+        "\"Path 2 full opening field evidence aggregate bridge source forbidden\"",
+        "bad_role_root_field_evidence.expected_native_role_root_commitment[0] ^= 1",
+        "\"Path 2 full opening field evidence role-root mismatch\"",
+        "bad_full_opening_field_evidence.full_opening_digest[0] ^= 1",
+        "\"Path 2 full opening field evidence full opening mismatch\"",
+        "bad_representative_field_evidence.representative_digest[0] ^= 1",
+        "\"Path 2 full opening field evidence representative mismatch\"",
+        "rebound_compatibility_digest_field_evidence.compatibility_certificate_digest[0] ^= 1",
+        "bad_assembly_role_root.native_role_root_commitment[0] ^= 1",
+        "\"Path 2 full opening field evidence role-root mismatch\"",
+        "bad_assembly_opening_field.local_section_digest[0] ^= 1",
+        "\"Path 2 full opening field evidence opening field mismatch\"",
+        "\"Path 2 full opening field source route assembly source mismatch\"",
+        "bad_compatibility_cert.selected_account_projection_digest[0] ^= 1",
+        "\"Path 2 full opening field source route compatibility source mismatch\"",
+    ]
+    .iter()
+    .all(|marker| test_source.contains(marker))
 }
 
 fn path2_reviewed_fq12_full_native_opening_canonical_representative_source_present_v1() -> bool {
@@ -38299,8 +38549,11 @@ mod tests {
         assert!(audit.rust_compatibility_route_witness_source_present);
         assert!(audit.rust_assembly_compatibility_local_model_source_present);
         assert!(audit.rust_full_opening_field_evidence_present);
+        assert!(path2_reviewed_fq12_full_opening_field_evidence_source_present_v1());
         assert!(audit.rust_full_opening_source_route_present);
+        assert!(path2_reviewed_fq12_full_opening_source_route_source_present_v1());
         assert!(audit.rust_source_route_negative_controls_present);
+        assert!(path2_reviewed_fq12_source_route_negative_controls_present_v1());
         assert!(audit.hidden_relation_verifier_implemented);
         assert!(!audit.extractor_theorem_instantiated);
         assert!(!audit.semantics_bridge_complete);
