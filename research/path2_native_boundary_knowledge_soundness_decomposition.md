@@ -38,6 +38,7 @@ Target:
 TransparentAccepts(b, view)
 TransparentViewProjectsFrom(b, view)
 ColumnProfileCompatibleWithBoundary(b, view, profile)
+UsesSelectedTraceKnowledgeModes(profile)
   =>
 exists trace.
   TransparentExtractsTrace(b, view, trace)
@@ -126,6 +127,7 @@ boundary projections.
 - `ParentTraceCommitmentExtractionSoundness`
 - `ExtractedTraceRelationKnowledgeSoundness`
 - `MaskedOpeningConsistencySoundness`
+- `UsesSelectedTraceKnowledgeModes`
 - `ParentTraceExtractionSoundness`
 - `TraceAssemblySoundness`
 - `trace_extraction_implies_hidden_representative_or_break`

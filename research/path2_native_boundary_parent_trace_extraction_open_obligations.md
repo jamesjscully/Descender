@@ -26,7 +26,7 @@ A concrete proof family must supply:
 ```text
 For all adversaries A:
   if A produces an accepting proof for (b, view, profile)
-  and SupportsFullTraceExtraction(profile),
+  and UsesSelectedTraceKnowledgeModes(profile),
   then an extractor E^A outputs trace such that:
     TransparentExtractsTrace(b, view, trace)
     TraceOpensBoundary(b, profile, trace)
@@ -55,7 +55,9 @@ Relation-mode update:
 `research/path2_native_boundary_relation_knowledge_soundness_contract.md` pins
 `RelationKnowledgeMode` and `SupportsRelationKnowledge`. Lean now rejects
 `sampledRowChecksOnly` and `proximityWithoutWitness` for
-`ParentTraceExtractionSoundness`.
+`ParentTraceExtractionSoundness`; the active theorem now further requires
+`UsesSelectedTraceKnowledgeModes`, which selects `fullTraceExtractable` and
+`fullWitnessRelationKnowledge` for the current profile.
 
 Two-view consistency update:
 `Descender/Path2NativeBoundary.lean` now exposes

@@ -17,6 +17,7 @@ TransparentAccepts(b, view)
 TransparentViewProjectsFrom(b, view)
 ColumnProfileCompatibleWithBoundary(b, view, profile)
 ProfileRoleComplete(profile)
+UsesSelectedTraceKnowledgeModes(profile)
   =>
 exists trace.
   TransparentExtractsTrace(b, view, trace)
@@ -172,9 +173,11 @@ can explicitly reject sampled-opening-only candidates.
 Done:
 `Descender/Path2NativeBoundary.lean` now defines `TraceExtractionMode` and
 `SupportsFullTraceExtraction`. `ParentTraceExtractionSoundness` requires
-`SupportsFullTraceExtraction profile`, so profiles marked `sampledOpeningOnly`
-or `proximityOnly` cannot satisfy the active parent-trace extraction theorem
-unless they are upgraded to a full-trace/full-witness extractor mode.
+`UsesSelectedTraceKnowledgeModes profile`, so the active theorem is pinned to
+`fullTraceExtractable` plus `fullWitnessRelationKnowledge` with native-boundary
+relation coverage. Profiles marked `sampledOpeningOnly`, `proximityOnly`, or a
+non-selected relation-knowledge mode cannot satisfy the active parent-trace
+extraction theorem unless the active profile is deliberately changed.
 
 Further split:
 `research/path2_native_boundary_relation_knowledge_soundness_contract.md`

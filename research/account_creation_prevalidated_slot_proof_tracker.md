@@ -573,8 +573,9 @@ Named breaks:
   active `zk_masked_trace_iop_native_boundary` theorem split before capability
   handoff: full-trace role-complete knowledge soundness, parent-trace
   commitment extraction, extracted-trace relation knowledge, masked-opening
-  consistency, composed parent-trace extraction, QROM extractor rewind
-  accounting, double-trace binding-break export, masked-or-simulated
+  consistency, composed parent-trace extraction pinned to
+  `fullTraceExtractable` plus `fullWitnessRelationKnowledge`, QROM extractor
+  rewind accounting, double-trace binding-break export, masked-or-simulated
   hidden openings, native-boundary QROM schedule binding, hybrid base-128 range
   mode, extractor-bounded blinding/noise with selected policy id `1` and
   centered bound `2048`, creation-binding role-subcommitment

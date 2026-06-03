@@ -40,6 +40,12 @@ TwoViewExtractionSoundness
 HiddenExtractorRoleCompletenessSoundness
 ```
 
+`ParentTraceExtractionSoundness` is active-path specific: Lean now requires
+`UsesSelectedTraceKnowledgeModes(profile)`, selecting `fullTraceExtractable`
+and `fullWitnessRelationKnowledge` with full native-boundary relation coverage.
+`proximityWithWitnessBridge` remains a supported redesign shape, not the
+currently selected Rust profile.
+
 Meaning:
 
 - one parent section root binds the full trace;

@@ -111,6 +111,7 @@ It composes:
 - `ExtractedTraceRelationKnowledgeSoundness`;
 - `MaskedOpeningConsistencySoundness`;
 - `ParentTraceExtractionSoundness`;
+- `UsesSelectedTraceKnowledgeModes(profile)` for that extraction contract;
 - `TwoViewExtractionSoundness`;
 - `HiddenExtractorRoleCompletenessSoundness`;
 - `NativeBoundaryTraceZeroKnowledge`, namely:

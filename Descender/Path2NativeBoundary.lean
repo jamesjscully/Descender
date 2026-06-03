@@ -750,6 +750,32 @@ theorem supports_relation_knowledge_covers_native_boundary
     TraceRelationCoversNativeBoundary profile.relationProfile :=
   h.2
 
+/-- The selected extraction mode for the active native-boundary profile. -/
+def selectedTraceExtractionMode : TraceExtractionMode :=
+  TraceExtractionMode.fullTraceExtractable
+
+/-- The selected relation-knowledge mode for the active native-boundary profile. -/
+def selectedRelationKnowledgeMode : RelationKnowledgeMode :=
+  RelationKnowledgeMode.fullWitnessRelationKnowledge
+
+/-- The active route uses one selected extraction/relation-knowledge pair. -/
+def UsesSelectedTraceKnowledgeModes (profile : ColumnProfile) : Prop :=
+  profile.extractionMode = selectedTraceExtractionMode ∧
+    profile.relationKnowledgeMode = selectedRelationKnowledgeMode ∧
+      TraceRelationCoversNativeBoundary profile.relationProfile
+
+theorem selected_trace_knowledge_modes_support_full_trace
+    {profile : ColumnProfile}
+    (h : UsesSelectedTraceKnowledgeModes profile) :
+    SupportsFullTraceExtraction profile :=
+  Or.inl h.1
+
+theorem selected_trace_knowledge_modes_support_relation_knowledge
+    {profile : ColumnProfile}
+    (h : UsesSelectedTraceKnowledgeModes profile) :
+    SupportsRelationKnowledge profile :=
+  ⟨Or.inr (Or.inr h.2.1), h.2.2⟩
+
 /-- Native boundary masked projection as the older Path2DescentSIS quotient. -/
 def toDescentSISMaskedProjection
     (b : Boundary) : Path2DescentSIS.MaskedProjection where
@@ -1113,8 +1139,7 @@ def ParentTraceExtractionSoundness (P : Predicates) : Prop :=
     P.transparentAccepts b view ->
       TransparentViewProjectsFrom b view ->
         ColumnProfileCompatibleWithBoundary b view profile ->
-          SupportsFullTraceExtraction profile ->
-            SupportsRelationKnowledge profile ->
+          UsesSelectedTraceKnowledgeModes profile ->
             (exists trace,
               P.transparentExtractsTrace b view trace ∧
                 P.traceOpensBoundary b profile trace ∧
@@ -1128,7 +1153,13 @@ theorem commitment_extraction_and_relation_knowledge_imply_parent_trace_extracti
     (hMaskedConsistency : MaskedOpeningConsistencySoundness P)
     (hRelationKnowledge : ExtractedTraceRelationKnowledgeSoundness P) :
     ParentTraceExtractionSoundness P := by
-  intro b view profile hAccept hProjects hProfile hFullTrace hRelationMode
+  intro b view profile hAccept hProjects hProfile hSelected
+  have hFullTrace :
+      SupportsFullTraceExtraction profile :=
+    selected_trace_knowledge_modes_support_full_trace hSelected
+  have hRelationMode :
+      SupportsRelationKnowledge profile :=
+    selected_trace_knowledge_modes_support_relation_knowledge hSelected
   cases hCommitExtract hAccept hProjects hProfile hFullTrace with
   | inl hTrace =>
       rcases hTrace with ⟨trace, hExtractsTrace, hOpens⟩
@@ -1154,15 +1185,14 @@ theorem parent_trace_extracts_or_break
     (hAccept : P.transparentAccepts b view)
     (hProjects : TransparentViewProjectsFrom b view)
     (hProfile : ColumnProfileCompatibleWithBoundary b view profile)
-    (hFullTrace : SupportsFullTraceExtraction profile)
-    (hRelationKnowledge : SupportsRelationKnowledge profile) :
+    (hSelected : UsesSelectedTraceKnowledgeModes profile) :
     (exists trace,
     P.transparentExtractsTrace b view trace ∧
         P.traceOpensBoundary b profile trace ∧
           P.maskedOpeningsConsistent b view profile trace ∧
             P.traceRelationValid b profile trace) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
-  hSound hAccept hProjects hProfile hFullTrace hRelationKnowledge
+  hSound hAccept hProjects hProfile hSelected
 
 /--
 Trace assembly assumption: a full extracted trace that opens the boundary and
@@ -1446,8 +1476,7 @@ theorem trace_extraction_implies_hidden_representative_or_break
     (hProjects : TransparentViewProjectsFrom b view)
     (hProfile : ColumnProfileCompatibleWithBoundary b view profile)
     (hRoleComplete : ProfileRoleComplete profile)
-    (hFullTrace : SupportsFullTraceExtraction profile)
-    (hRelationKnowledge : SupportsRelationKnowledge profile) :
+    (hSelected : UsesSelectedTraceKnowledgeModes profile) :
     (exists trace,
       P.transparentExtractsTrace b view trace ∧
         P.traceOpensBoundary b profile trace ∧
@@ -1462,8 +1491,7 @@ theorem trace_extraction_implies_hidden_representative_or_break
                           P.descentConsistent b.context h) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) := by
   cases
-      hTraceExtractSound hAccept hProjects hProfile hFullTrace
-        hRelationKnowledge with
+      hTraceExtractSound hAccept hProjects hProfile hSelected with
   | inl hTrace =>
       rcases hTrace with ⟨trace, hExtractsTrace, hOpens, hMasked, hRelation⟩
       cases

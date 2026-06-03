@@ -1,6 +1,6 @@
 # Path 2 Native Boundary Column Profile V1
 
-Status: theorem-level enum/table pinned; not implemented.
+Status: theorem-level enum/table pinned; Rust active profile implemented.
 
 Purpose: define the column-profile vocabulary consumed by the native-boundary
 two-view theorem. The profile tells the proof system how to interpret
@@ -26,6 +26,15 @@ The transparent public view carries a compact `column_profile` identifier. The
 theorem interprets that identifier as this table. Implementations may either
 make the table fixed by version or carry authenticated profile metadata for data
 availability.
+
+The active Rust profile fixes:
+
+```text
+extraction_mode = fullTraceExtractable
+relation_knowledge_mode = fullWitnessRelationKnowledge
+```
+
+Lean mirrors this with `UsesSelectedTraceKnowledgeModes(profile)`.
 
 ## Role IDs
 

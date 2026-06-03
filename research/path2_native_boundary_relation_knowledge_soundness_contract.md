@@ -24,10 +24,16 @@ RelationKnowledgeMode =
 The active theorem requires:
 
 ```text
-SupportsRelationKnowledge(profile)
+UsesSelectedTraceKnowledgeModes(profile)
 ```
 
-which accepts only:
+which pins the active profile to:
+
+- `TraceExtractionMode.fullTraceExtractable`;
+- `RelationKnowledgeMode.fullWitnessRelationKnowledge`;
+- full `TraceRelationCoversNativeBoundary` coverage.
+
+The broader helper predicate `SupportsRelationKnowledge(profile)` accepts:
 
 - `proximityWithWitnessBridge`;
 - `directRelationKnowledge`;
@@ -134,7 +140,7 @@ trace satisfying the relation except with the claimed soundness error.
 
 ## Proximity Bridge
 
-If the proof family uses proximity testing, the bridge must show:
+If a future profile uses proximity testing, the bridge must show:
 
 ```text
 CommittedOracle close to low_degree_oracle
