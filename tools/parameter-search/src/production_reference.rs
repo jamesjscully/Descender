@@ -1499,6 +1499,8 @@ pub struct Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
     pub norm_range_mode: u16,
     pub blinding_noise_mode: u16,
     pub role_subcommitment_link_mode: u16,
+    pub opening_tuple_account_binding_rows_required: bool,
+    pub checked_core_residue_compatibility_rows_required: bool,
     pub full_trace_extraction_required: bool,
     pub role_complete_extractor_required: bool,
     pub creation_binding_role_subcommitments_required: bool,
@@ -10023,6 +10025,8 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1()
         blinding_noise_mode: PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_EXTRACTOR_BOUNDED,
         role_subcommitment_link_mode:
             PATH2_NATIVE_BOUNDARY_TRACE_ROLE_SUBCOMMITMENTS_CREATION_BINDING,
+        opening_tuple_account_binding_rows_required: true,
+        checked_core_residue_compatibility_rows_required: true,
         full_trace_extraction_required: true,
         role_complete_extractor_required: true,
         creation_binding_role_subcommitments_required: true,
@@ -10101,6 +10105,18 @@ pub fn verify_path2_native_boundary_trace_proof_family_interface(
     {
         return Err(
             "Path 2 native-boundary trace proof-family interface role link mode mismatch"
+                .to_string(),
+        );
+    }
+    if !interface.opening_tuple_account_binding_rows_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks opening tuple account-binding rows"
+                .to_string(),
+        );
+    }
+    if !interface.checked_core_residue_compatibility_rows_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks checked-core residue compatibility rows"
                 .to_string(),
         );
     }
@@ -10205,6 +10221,16 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
         &mut frame,
         b"role_subcommitment_link_mode",
         interface.role_subcommitment_link_mode as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"opening_tuple_account_binding_rows_required",
+        u64::from(interface.opening_tuple_account_binding_rows_required),
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_residue_compatibility_rows_required",
+        u64::from(interface.checked_core_residue_compatibility_rows_required),
     );
     append_u64(
         &mut frame,
@@ -33489,6 +33515,8 @@ mod tests {
             interface.role_subcommitment_link_mode,
             PATH2_NATIVE_BOUNDARY_TRACE_ROLE_SUBCOMMITMENTS_CREATION_BINDING
         );
+        assert!(interface.opening_tuple_account_binding_rows_required);
+        assert!(interface.checked_core_residue_compatibility_rows_required);
         assert!(interface.full_trace_extraction_required);
         assert!(interface.role_complete_extractor_required);
         assert!(interface.creation_binding_role_subcommitments_required);
@@ -33526,6 +33554,22 @@ mod tests {
             verify_path2_native_boundary_trace_proof_family_interface(&wrong_role_link_mode)
                 .unwrap_err(),
             "Path 2 native-boundary trace proof-family interface role link mode mismatch"
+        );
+
+        let mut no_opening_account_rows = interface.clone();
+        no_opening_account_rows.opening_tuple_account_binding_rows_required = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&no_opening_account_rows)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks opening tuple account-binding rows"
+        );
+
+        let mut no_checked_core_rows = interface.clone();
+        no_checked_core_rows.checked_core_residue_compatibility_rows_required = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&no_checked_core_rows)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks checked-core residue compatibility rows"
         );
 
         let mut no_creation_binding_role_handles = interface.clone();

@@ -1,7 +1,7 @@
 # Path 2 Native Boundary Trace Proof-Family Interface
 
-Status: minimum active proof-family interface pinned in Lean; construction not
-selected.
+Status: minimum active proof-family interface pinned in Lean and Rust;
+construction not selected.
 
 Purpose: split `NativeBoundaryZkTraceBindingAndHiding` into the three proof
 interfaces that must be supplied by any concrete transparent account-creation
@@ -46,6 +46,9 @@ Meaning:
   sampled-opening-only extraction;
 - the profile declares relation knowledge support, not sampled-row-only checks
   or proximity without witness reconstruction;
+- the profile's relation inventory covers mandatory native-boundary classes,
+  including opening-tuple account-binding and checked-core residue
+  compatibility;
 - the full trace assembles into the native hidden representative;
 - an accepting proof extracts `h in Fiber(B_c, b)`;
 - the extracted `h` covers every private role in the column profile.
@@ -119,6 +122,19 @@ P.qromScheduleBound b view profile
 
 The deeper knowledge-soundness split is recorded in
 `research/path2_native_boundary_knowledge_soundness_decomposition.md`.
+
+The Rust active proof-family interface mirror is
+`Path2NativeBoundaryTraceProofFamilyInterfaceV1`. Its digest is bound into the
+transparent proof-system id through
+`path2_transparent_proof_family_capability_v1_digest`, and it now requires:
+
+```text
+opening_tuple_account_binding_rows_required = true
+checked_core_residue_compatibility_rows_required = true
+```
+
+Negative controls reject clearing either flag before the transparent verifier
+handoff.
 
 ## Closure Criterion
 

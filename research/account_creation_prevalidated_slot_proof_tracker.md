@@ -575,9 +575,13 @@ Named breaks:
   hidden openings, native-boundary QROM schedule binding, hybrid base-128 range
   mode, extractor-bounded blinding/noise, creation-binding role-subcommitment
   linking, inner-commitment binding-break export, no raw hidden openings, QROM
-  ledger binding, and the 16416-byte fallback threshold. KAT
+  ledger binding, mandatory opening-tuple account-binding rows, mandatory
+  checked-core residue-compatibility rows, and the 16416-byte fallback
+  threshold. KAT
   `path2_native_boundary_trace_proof_family_interface_pins_active_theorem_gate`
   rejects sampled-opening-only knowledge, missing role-complete extraction,
+  missing opening-tuple account-binding rows, missing checked-core
+  residue-compatibility rows,
   missing creation-binding role handles, missing inner-commitment binding-break
   export, raw hidden openings, missing QROM ledger binding, and
   fallback-threshold drift.

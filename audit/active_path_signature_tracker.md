@@ -267,6 +267,12 @@ range, mask, role-restriction, lifecycle/context, and bookkeeping classes. This
 prevents the active relation-knowledge assumption from being discharged by a
 profile that includes the obsolete masked core and generic lifecycle rows while
 omitting the two account/spend handoff groups most likely to force redesign.
+The Rust proof-family interface mirror now binds
+`opening_tuple_account_binding_rows_required` and
+`checked_core_residue_compatibility_rows_required` into
+`path2_native_boundary_trace_proof_family_interface_v1_digest`, which is in
+turn bound into the active transparent proof-system id through the capability
+digest. Negative controls reject clearing either bit before verifier handoff.
 
 ## Findings
 
