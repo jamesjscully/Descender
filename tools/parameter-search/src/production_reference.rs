@@ -286,6 +286,8 @@ pub const PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN: &str =
 pub const PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA: &str =
     "DESCENDER_PATH2_TRANSPARENT_R_CORE_66_LAYOUT_V1";
 pub const PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA: &str = "DESCENDER_PATH2_TRANSPARENT_PUBLIC_VIEW_V1";
+pub const PATH2_PREVALIDATED_SLOT_LEAF_CONTEXT_SCHEMA: &str =
+    "DESCENDER_PATH2_PREVALIDATED_SLOT_LEAF_CONTEXT_V1";
 pub const PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA: &str =
     "DESCENDER_PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1";
 pub const PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA: &str =
@@ -11534,7 +11536,7 @@ pub fn path2_prevalidated_slot_leaf_context_digest(
     append_frame(
         &mut frame,
         b"domain",
-        PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA.as_bytes(),
+        PATH2_PREVALIDATED_SLOT_LEAF_CONTEXT_SCHEMA.as_bytes(),
     );
     append_frame(&mut frame, b"account_id", &leaf.account_id);
     append_frame(
@@ -14543,7 +14545,7 @@ pub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(
         .map_err(|err| format!("encode Path 2 native storage/lifecycle hardening scope: {err}"))
 }
 
-pub fn path2_registered_domain_constants() -> [&'static str; 32] {
+pub fn path2_registered_domain_constants() -> [&'static str; 33] {
     [
         PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN,
         PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN,
@@ -14573,6 +14575,7 @@ pub fn path2_registered_domain_constants() -> [&'static str; 32] {
         PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA,
         PATH2_TRANSPARENT_DESCENT_PROOF_SYSTEM_PROFILE,
         PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA,
+        PATH2_PREVALIDATED_SLOT_LEAF_CONTEXT_SCHEMA,
         PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA,
         PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA,
         PATH2_TRANSPARENT_QUERY_OPENING_MASK_DOMAIN_SCHEMA,
@@ -14908,6 +14911,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA",
             PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA,
+        ),
+        (
+            "PATH2_PREVALIDATED_SLOT_LEAF_CONTEXT_SCHEMA",
+            PATH2_PREVALIDATED_SLOT_LEAF_CONTEXT_SCHEMA,
         ),
         (
             "PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA",
@@ -29130,6 +29137,56 @@ mod tests {
         );
         let leaf_context_digest =
             path2_prevalidated_slot_leaf_context_digest(&leaf, &evidence, &certificate).unwrap();
+        let mut old_leaf_context_frame = Vec::new();
+        append_frame(
+            &mut old_leaf_context_frame,
+            b"domain",
+            PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA.as_bytes(),
+        );
+        append_frame(&mut old_leaf_context_frame, b"account_id", &leaf.account_id);
+        append_frame(
+            &mut old_leaf_context_frame,
+            b"public_key_identity",
+            &leaf.public_key_identity,
+        );
+        append_frame(
+            &mut old_leaf_context_frame,
+            b"slot_id",
+            &leaf.slot_id.to_le_bytes(),
+        );
+        append_frame(
+            &mut old_leaf_context_frame,
+            b"verifier_version_digest",
+            &leaf.verifier_version_digest,
+        );
+        append_frame(
+            &mut old_leaf_context_frame,
+            b"account_state_root_before",
+            &leaf.account_state_root_before,
+        );
+        append_frame(
+            &mut old_leaf_context_frame,
+            b"lifecycle_anchor",
+            &leaf.lifecycle_anchor,
+        );
+        append_frame(
+            &mut old_leaf_context_frame,
+            b"live_status_marker",
+            &[leaf.live_status_marker],
+        );
+        append_frame(
+            &mut old_leaf_context_frame,
+            b"hidden_source_statement_digest",
+            &leaf.hidden_source_statement_digest,
+        );
+        append_frame(
+            &mut old_leaf_context_frame,
+            b"relation_transcript_digest",
+            &certificate.relation_transcript_digest,
+        );
+        let old_leaf_context_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(old_leaf_context_frame).into();
+        assert_ne!(leaf_context_digest, old_leaf_context_digest);
         let matrix_domain_transcript_digest = path2_descent_sis_matrix_transcript_digest(
             PATH2_DESCENT_SIS_ROLE_TRANSCRIPT_COMMITMENT,
             64,

@@ -506,7 +506,13 @@ Named breaks:
   proof-body rejection, oversized proof-body rejection, and oversized envelope
   rejection. `path2_transparent_descent_public_view_digest` now gives the
   transparent payload digest a direct canonical handle for the full accepted
-  public view, reducing reliance on transcript indirection alone. Query-opening
+  public view, reducing reliance on transcript indirection alone.
+  The leaf-context commitment consumed by that public view is now separately
+  domain-separated under `PATH2_PREVALIDATED_SLOT_LEAF_CONTEXT_SCHEMA` instead
+  of reusing `PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA`; the active payload-boundary
+  KAT reconstructs the old public-view-framed leaf-context digest as a negative
+  control and requires it to differ from the accepted leaf-context digest.
+  Query-opening
   manifests are now also checked
   against the accepted
   public view before proof-verifier handoff:
