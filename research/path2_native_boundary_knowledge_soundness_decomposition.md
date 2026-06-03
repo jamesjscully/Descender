@@ -26,8 +26,8 @@ The first two claims bind the public handles. The next three split the proof
 family's hard extractor obligation into commitment extraction, relation
 knowledge, and masked-opening consistency. `ParentTraceExtractionSoundness` is
 the composed contract produced from those subclaims. `TraceAssemblySoundness`
-then preserves the hidden-representative theorem surface; the active endpoint
-no longer accepts an independent two-view extractor shortcut.
+is now itself a composed design-controlled endpoint; the active endpoint no
+longer accepts an independent two-view extractor shortcut.
 
 ## ParentTraceExtractionSoundness
 
@@ -84,6 +84,8 @@ Meaning:
   system theorem;
 - once a full trace is available, the role columns must assemble into one
   hidden representative;
+- the assembly proof is split into representative existence, role completeness,
+  boundary fiber projection, local validity, and descent consistency;
 - failures are charged to boundary binding, descent soundness, norm/range, or
   trace relation soundness.
 
@@ -123,18 +125,29 @@ boundary projections.
 - `Predicates.traceOpensBoundary`
 - `Predicates.traceRelationValid`
 - `Predicates.traceAssemblesRepresentative`
+- `Predicates.traceAssemblyRolesComplete`
+- `Predicates.traceAssemblyInFiber`
+- `Predicates.traceAssemblyLocalValid`
+- `Predicates.traceAssemblyDescentConsistent`
 - `ParentTraceCommitmentExtractionSoundness`
 - `ExtractedTraceRelationKnowledgeSoundness`
 - `MaskedOpeningConsistencySoundness`
 - `UsesSelectedTraceKnowledgeModes`
 - `ParentTraceExtractionSoundness`
+- `TraceRepresentativeAssemblyExistenceSoundness`
+- `TraceAssemblyRolesCompleteSoundness`
+- `TraceAssemblyFiberSoundness`
+- `TraceAssemblyLocalValiditySoundness`
+- `TraceAssemblyDescentConsistencySoundness`
+- `decomposed_trace_assembly_implies_trace_assembly_soundness`
 - `TraceAssemblySoundness`
 - `trace_extraction_implies_hidden_representative_or_break`
 
 ## Next Proof Move
 
 Work on `TraceAssemblySoundness` first, because it is design-controlled. The
-task is to specify which columns of `ExtractedTrace` assemble into:
+task is now to instantiate the five decomposed subclaims for the columns of
+`ExtractedTrace` that assemble into:
 
 ```text
 Section_c

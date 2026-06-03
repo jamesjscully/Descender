@@ -38,7 +38,9 @@ BlindingNoiseBoundSoundness
 ```
 
 The first two are proof-family cryptographic assumptions. `TraceAssemblySoundness`
-is mostly native-boundary bookkeeping once a full trace is extracted.
+is mostly native-boundary bookkeeping once a full trace is extracted, and Lean
+now decomposes it into representative assembly existence, role completeness,
+boundary-fiber projection, local validity, and descent consistency.
 
 ## Required Profile Modes
 

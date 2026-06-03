@@ -174,6 +174,11 @@ proximity/list-decoding/extractor theorem before it is usable.
 - `Predicates.transparentExtractsTrace`
 - `Predicates.extractedRolesComplete`
 - `ParentTraceExtractionSoundness`
+- `TraceRepresentativeAssemblyExistenceSoundness`
+- `TraceAssemblyRolesCompleteSoundness`
+- `TraceAssemblyFiberSoundness`
+- `TraceAssemblyLocalValiditySoundness`
+- `TraceAssemblyDescentConsistencySoundness`
 - `TraceAssemblySoundness`
 - `trace_extraction_implies_hidden_representative_or_break`
 
@@ -181,6 +186,9 @@ The composed theorem `transparent_view_full_interface_or_break` now requires
 `UsesSelectedTraceKnowledgeModes(profile)` and routes through
 `ParentTraceExtractionSoundness` plus `TraceAssemblySoundness` before returning
 `P.extractedRolesComplete b profile h`.
+The assembly endpoint is now decomposed, so a concrete proof can separately
+prove representative existence, role completeness, boundary-fiber projection,
+local validity, and descent consistency.
 
 ## Non-Claims
 

@@ -1,6 +1,7 @@
 # Path 2 Native Boundary Trace Assembly Map
 
-Status: first-pass assembly map pinned; concrete column indices not assigned.
+Status: decomposed assembly theorem route pinned; concrete column indices not
+assigned.
 
 Purpose: test the design-controlled half of knowledge soundness:
 
@@ -152,31 +153,41 @@ The design constraints for assembly are:
 - `Predicates.traceOpensBoundary`
 - `Predicates.traceRelationValid`
 - `Predicates.traceAssemblesRepresentative`
+- `Predicates.traceAssemblyRolesComplete`
+- `Predicates.traceAssemblyInFiber`
+- `Predicates.traceAssemblyLocalValid`
+- `Predicates.traceAssemblyDescentConsistent`
 - `Predicates.rangeRowsBindTraceRepresentative`
 - `Predicates.blindingRowsBoundTraceRepresentative`
+- `TraceRepresentativeAssemblyExistenceSoundness`
+- `TraceAssemblyRolesCompleteSoundness`
+- `TraceAssemblyFiberSoundness`
+- `TraceAssemblyLocalValiditySoundness`
+- `TraceAssemblyDescentConsistencySoundness`
+- `decomposed_trace_assembly_implies_trace_assembly_soundness`
 - `TraceAssemblySoundness`
 - `TraceRangeRowsBindRepresentativeSoundness`
 - `TraceBlindingRowsBoundRepresentativeSoundness`
 
 ## Next Move
 
-Pin a role-completeness table that lists mandatory roles and whether each is:
+Instantiate the decomposed assembly obligations against concrete column-set ids:
 
-- required for `LocalValid_c`;
-- required for `DescentConsistent_c`;
-- required for `B_c(h) = b`;
-- allowed to vary under `~safe`.
-
-That table will expose any missing role before we spend more effort on the
-proof-family extractor.
+- representative assembly existence;
+- role completeness;
+- boundary fiber projection;
+- local validity;
+- descent consistency.
 
 Done:
 `research/path2_native_boundary_role_completeness_table.md` pins the mandatory
 roles, and Lean now requires `ProfileRoleComplete profile` before
 trace-assembly or extracted-role completeness can be claimed.
+Lean now also decomposes `TraceAssemblySoundness` into five named subclaims,
+with a composition theorem back to the existing endpoint.
 
 ## Non-Claims
 
-- This does not prove `TraceAssemblySoundness`.
+- This does not prove the decomposed assembly obligations.
 - This does not assign final column indices.
 - This does not prove the proof family extracts the full trace.

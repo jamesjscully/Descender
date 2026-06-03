@@ -1065,6 +1065,14 @@ structure Predicates where
     ExtractedTrace -> HiddenRepresentative -> Prop
   extractedRolesComplete :
     Boundary -> ColumnProfile -> HiddenRepresentative -> Prop
+  traceAssemblyRolesComplete :
+    Boundary -> ColumnProfile -> ExtractedTrace -> HiddenRepresentative -> Prop
+  traceAssemblyInFiber :
+    Boundary -> ColumnProfile -> ExtractedTrace -> HiddenRepresentative -> Prop
+  traceAssemblyLocalValid :
+    Boundary -> ColumnProfile -> ExtractedTrace -> HiddenRepresentative -> Prop
+  traceAssemblyDescentConsistent :
+    Boundary -> ColumnProfile -> ExtractedTrace -> HiddenRepresentative -> Prop
   slotAuthorizationOf : Boundary -> SlotAuthorization
   spendAccepts : Context -> SlotAuthorization -> Prop
   spendWitnessValid : Context -> HiddenRepresentative -> SlotAuthorization -> Prop
@@ -1302,6 +1310,82 @@ Trace assembly assumption: a full extracted trace that opens the boundary and
 satisfies the relation assembles into a role-complete hidden representative in
 the native-boundary fiber, or exports a named break.
 -/
+def TraceRepresentativeAssemblyExistenceSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile} {trace : ExtractedTrace},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          ProfileRoleComplete profile ->
+          P.transparentExtractsTrace b view trace ->
+            P.traceOpensBoundary b profile trace ->
+              P.traceRelationValid b profile trace ->
+                (exists h,
+                  P.traceAssemblesRepresentative trace h ∧
+                    P.transparentExtracts b view h) ∨
+                (exists breakEvent, P.boundaryBreakFor b.context b breakEvent)
+
+def TraceAssemblyRolesCompleteSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile} {trace : ExtractedTrace}
+      {h : HiddenRepresentative},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          ProfileRoleComplete profile ->
+          P.transparentExtractsTrace b view trace ->
+            P.traceOpensBoundary b profile trace ->
+              P.traceRelationValid b profile trace ->
+                P.traceAssemblesRepresentative trace h ->
+                  P.transparentExtracts b view h ->
+                    P.traceAssemblyRolesComplete b profile trace h ∧
+                      P.extractedRolesComplete b profile h
+
+def TraceAssemblyFiberSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile} {trace : ExtractedTrace}
+      {h : HiddenRepresentative},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          P.transparentExtractsTrace b view trace ->
+            P.traceOpensBoundary b profile trace ->
+              P.traceRelationValid b profile trace ->
+                P.traceAssemblesRepresentative trace h ->
+                  P.transparentExtracts b view h ->
+                    P.traceAssemblyInFiber b profile trace h ∧
+                      InFiber P b.context b h
+
+def TraceAssemblyLocalValiditySoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile} {trace : ExtractedTrace}
+      {h : HiddenRepresentative},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          P.transparentExtractsTrace b view trace ->
+            P.traceOpensBoundary b profile trace ->
+              P.traceRelationValid b profile trace ->
+                P.traceAssemblesRepresentative trace h ->
+                  P.transparentExtracts b view h ->
+                    P.traceAssemblyLocalValid b profile trace h ∧
+                      P.localValid b.context h
+
+def TraceAssemblyDescentConsistencySoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile} {trace : ExtractedTrace}
+      {h : HiddenRepresentative},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          P.transparentExtractsTrace b view trace ->
+            P.traceOpensBoundary b profile trace ->
+              P.traceRelationValid b profile trace ->
+                P.traceAssemblesRepresentative trace h ->
+                  P.transparentExtracts b view h ->
+                    P.traceAssemblyDescentConsistent b profile trace h ∧
+                      P.descentConsistent b.context h
+
 def TraceAssemblySoundness (P : Predicates) : Prop :=
   forall {b : Boundary} {view : TransparentPublicView}
       {profile : ColumnProfile} {trace : ExtractedTrace},
@@ -1320,6 +1404,34 @@ def TraceAssemblySoundness (P : Predicates) : Prop :=
                           P.localValid b.context h ∧
                             P.descentConsistent b.context h) ∨
                 (exists breakEvent, P.boundaryBreakFor b.context b breakEvent)
+
+theorem decomposed_trace_assembly_implies_trace_assembly_soundness
+    (P : Predicates)
+    (hAssemble : TraceRepresentativeAssemblyExistenceSoundness P)
+    (hRoles : TraceAssemblyRolesCompleteSoundness P)
+    (hFiber : TraceAssemblyFiberSoundness P)
+    (hLocal : TraceAssemblyLocalValiditySoundness P)
+    (hDescent : TraceAssemblyDescentConsistencySoundness P) :
+    TraceAssemblySoundness P := by
+  intro b view profile trace hAccept hProjects hProfile hRoleComplete
+    hTrace hOpens hRelation
+  cases
+      hAssemble hAccept hProjects hProfile hRoleComplete
+        hTrace hOpens hRelation with
+  | inl hAssembly =>
+      rcases hAssembly with ⟨h, hTraceAssembles, hTransparent⟩
+      exact Or.inl
+        ⟨h, hTraceAssembles, hTransparent,
+          (hRoles hAccept hProjects hProfile hRoleComplete
+            hTrace hOpens hRelation hTraceAssembles hTransparent).2,
+          (hFiber hAccept hProjects hProfile
+            hTrace hOpens hRelation hTraceAssembles hTransparent).2,
+          (hLocal hAccept hProjects hProfile
+            hTrace hOpens hRelation hTraceAssembles hTransparent).2,
+          (hDescent hAccept hProjects hProfile
+            hTrace hOpens hRelation hTraceAssembles hTransparent).2⟩
+  | inr hBreak =>
+      exact Or.inr hBreak
 
 theorem trace_assembles_representative_or_break
     (P : Predicates)

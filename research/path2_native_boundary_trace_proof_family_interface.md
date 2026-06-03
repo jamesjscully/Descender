@@ -159,6 +159,9 @@ P.qromScheduleBound b view profile
 The final interface now routes through `ParentTraceExtractionSoundness` and
 `TraceAssemblySoundness`; the older two-view extractor surface is no longer an
 independent shortcut for the active endpoint.
+`TraceAssemblySoundness` is now decomposed into representative assembly
+existence, role completeness, boundary-fiber projection, local validity, and
+descent consistency.
 
 The deeper knowledge-soundness split is recorded in
 `research/path2_native_boundary_knowledge_soundness_decomposition.md`.
