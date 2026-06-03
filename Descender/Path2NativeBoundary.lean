@@ -1222,6 +1222,8 @@ structure Predicates where
     Boundary -> ReviewedFq12HiddenSourcePayload -> HiddenRepresentative -> Prop
   traceOpensBoundary :
     Boundary -> ColumnProfile -> ExtractedTrace -> Prop
+  tracesSafetyEquivalent :
+    Boundary -> ColumnProfile -> ExtractedTrace -> ExtractedTrace -> Prop
   maskedOpeningsConsistent :
     Boundary -> TransparentPublicView -> ColumnProfile -> ExtractedTrace -> Prop
   traceRelationValid :
@@ -1375,6 +1377,26 @@ def ParentTraceCommitmentExtractionSoundness (P : Predicates) : Prop :=
               P.transparentExtractsTrace b view trace ∧
                 P.traceOpensBoundary b profile trace) ∨
             (exists breakEvent, P.boundaryBreakFor b.context b breakEvent)
+
+/--
+Double-trace binding assumption: two full extractor outputs that both open the
+same accepted native-boundary parent trace are safety-equivalent, or the proof
+exports a named trace/commitment binding break. This is the Lean counterpart of
+the Rust `double_trace_binding_break_exported` interface flag.
+-/
+def ParentTraceDoubleBindingSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile} {traceA traceB : ExtractedTrace},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          P.transparentExtractsTrace b view traceA ->
+            P.traceOpensBoundary b profile traceA ->
+              P.transparentExtractsTrace b view traceB ->
+                P.traceOpensBoundary b profile traceB ->
+                  P.tracesSafetyEquivalent b profile traceA traceB ∨
+                    (exists breakEvent,
+                      P.boundaryBreakFor b.context b breakEvent)
 
 /--
 Relation-knowledge assumption: an extracted full trace that opens the native
@@ -2101,10 +2123,11 @@ def NativeBoundaryTraceKnowledgeSoundness (P : Predicates) : Prop :=
   ParentRootRoleBindingSoundness P ∧
     RoleRestrictionSoundness P ∧
       ParentTraceCommitmentExtractionSoundness P ∧
-        ExtractedTraceRelationKnowledgeSoundness P ∧
-          MaskedOpeningConsistencySoundness P ∧
-            ParentTraceExtractionSoundness P ∧
-              TraceAssemblySoundness P
+        ParentTraceDoubleBindingSoundness P ∧
+          ExtractedTraceRelationKnowledgeSoundness P ∧
+            MaskedOpeningConsistencySoundness P ∧
+              ParentTraceExtractionSoundness P ∧
+                TraceAssemblySoundness P
 
 /--
 The decomposed full-trace extractor assumptions imply the older two-view
@@ -2480,6 +2503,7 @@ theorem transparent_view_full_interface_from_atomic_gates_or_break
     (hParentSound : ParentRootRoleBindingSoundness P)
     (hRoleSound : RoleRestrictionSoundness P)
     (hCommitExtract : ParentTraceCommitmentExtractionSoundness P)
+    (hDoubleTraceBinding : ParentTraceDoubleBindingSoundness P)
     (hMaskedConsistency : MaskedOpeningConsistencySoundness P)
     (hRelationKnowledge : ExtractedTraceRelationKnowledgeSoundness P)
     (hTraceAssemblyExists : TraceRepresentativeAssemblyExistenceSoundness P)
@@ -2545,6 +2569,7 @@ theorem transparent_view_full_interface_from_selected_profile_atomic_gates_or_br
     (hParentSound : ParentRootRoleBindingSoundness P)
     (hRoleSound : RoleRestrictionSoundness P)
     (hCommitExtract : ParentTraceCommitmentExtractionSoundness P)
+    (hDoubleTraceBinding : ParentTraceDoubleBindingSoundness P)
     (hMaskedConsistency : MaskedOpeningConsistencySoundness P)
     (hRelationKnowledge : ExtractedTraceRelationKnowledgeSoundness P)
     (hTraceAssemblyExists : TraceRepresentativeAssemblyExistenceSoundness P)
@@ -2588,8 +2613,8 @@ theorem transparent_view_full_interface_from_selected_profile_atomic_gates_or_br
                           P.blindingNoiseBounded b policy h) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
   transparent_view_full_interface_from_atomic_gates_or_break P
-    hParentSound hRoleSound hCommitExtract hMaskedConsistency
-    hRelationKnowledge hTraceAssemblyExists hTraceAssemblyRoles
+    hParentSound hRoleSound hCommitExtract hDoubleTraceBinding
+    hMaskedConsistency hRelationKnowledge hTraceAssemblyExists hTraceAssemblyRoles
     hTraceAssemblyDerived hTraceAssemblyFiber hTraceAssemblyLocal
     hTraceAssemblyDescent hNoExportSound hRoleAuthNoExportSound
     hMaskFreshnessSound hQromSound hTraceRangeRows hRangeRows

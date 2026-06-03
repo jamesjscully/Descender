@@ -32,6 +32,7 @@ library.
 ParentRootRoleBindingSoundness
 RoleRestrictionSoundness
 ParentTraceCommitmentExtractionSoundness
+ParentTraceDoubleBindingSoundness
 ExtractedTraceRelationKnowledgeSoundness
 MaskedOpeningConsistencySoundness
 ParentTraceExtractionSoundness
@@ -49,6 +50,8 @@ Meaning:
 - one parent section root binds the full trace;
 - role handles are typed restrictions of that root;
 - an accepting proof extracts a full parent trace opening that root;
+- two full traces opening that same accepted parent trace are safety-equivalent
+  or export a named trace-binding break;
 - the profile declares `fullTraceExtractable` or `fullWitnessExtractable`, not
   sampled-opening-only extraction;
 - the profile declares relation knowledge support, not sampled-row-only checks
@@ -163,10 +166,10 @@ transparent_view_full_interface_from_selected_profile_atomic_gates_or_break
 ```
 
 It derives the same endpoint from the selected active Rust profile map,
-parent-trace commitment extraction, masked-opening consistency, extracted-trace
-relation knowledge, decomposed trace assembly, same-trace hybrid range-row
-binding, hybrid range-row soundness, same-trace blinding/noise row binding, and
-blinding/noise bound-row obligations. The older
+parent-trace commitment extraction, double-trace binding, masked-opening
+consistency, extracted-trace relation knowledge, decomposed trace assembly,
+same-trace hybrid range-row binding, hybrid range-row soundness, same-trace
+blinding/noise row binding, and blinding/noise bound-row obligations. The older
 `transparent_view_full_interface_from_atomic_gates_or_break` remains the
 general atomic adapter; the selected-profile adapter derives role completeness
 and selected trace-knowledge modes from `SelectedActiveColumnProfile`.

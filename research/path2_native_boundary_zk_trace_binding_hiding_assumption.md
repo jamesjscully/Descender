@@ -115,6 +115,7 @@ It composes:
 - `ParentRootRoleBindingSoundness`;
 - `RoleRestrictionSoundness`;
 - `ParentTraceCommitmentExtractionSoundness`;
+- `ParentTraceDoubleBindingSoundness`;
 - `ExtractedTraceRelationKnowledgeSoundness`;
 - `MaskedOpeningConsistencySoundness`;
 - `ParentTraceExtractionSoundness`;

@@ -25,6 +25,7 @@ The proof family must provide:
 
 ```text
 ParentTraceCommitmentExtractionSoundness
+ParentTraceDoubleBindingSoundness
 ExtractedTraceRelationKnowledgeSoundness
 MaskedOpeningConsistencySoundness
 ParentTraceExtractionSoundness
@@ -45,8 +46,8 @@ and descent consistency.
 The current preferred closure theorem is
 `transparent_view_full_interface_from_selected_profile_atomic_gates_or_break`,
 which composes the selected active profile, parent-trace commitment extraction,
-masked-opening consistency, relation-knowledge, decomposed assembly, and
-decomposed range/blinding row soundness.
+double-trace binding, masked-opening consistency, relation-knowledge,
+decomposed assembly, and decomposed range/blinding row soundness.
 
 ## Required Profile Modes
 

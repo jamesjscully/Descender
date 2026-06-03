@@ -154,13 +154,14 @@ as a composed proof-family contract from:
 
 ```text
 ParentTraceCommitmentExtractionSoundness
+ParentTraceDoubleBindingSoundness
 MaskedOpeningConsistencySoundness
 ExtractedTraceRelationKnowledgeSoundness
 ```
 
 The current preferred endpoint,
 `transparent_view_full_interface_from_selected_profile_atomic_gates_or_break`,
-consumes those three atomic pieces through the selected active profile. Meanwhile:
+consumes those atomic pieces through the selected active profile. Meanwhile:
 
 ```text
 TraceAssemblySoundness

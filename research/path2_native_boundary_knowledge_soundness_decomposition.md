@@ -16,18 +16,20 @@ NativeBoundaryTraceKnowledgeSoundness
 ParentRootRoleBindingSoundness
   + RoleRestrictionSoundness
   + ParentTraceCommitmentExtractionSoundness
+  + ParentTraceDoubleBindingSoundness
   + ExtractedTraceRelationKnowledgeSoundness
   + MaskedOpeningConsistencySoundness
   + ParentTraceExtractionSoundness
   + TraceAssemblySoundness
 ```
 
-The first two claims bind the public handles. The next three split the proof
-family's hard extractor obligation into commitment extraction, relation
-knowledge, and masked-opening consistency. `ParentTraceExtractionSoundness` is
-the composed contract produced from those subclaims. `TraceAssemblySoundness`
-is now itself a composed design-controlled endpoint; the active endpoint no
-longer accepts an independent two-view extractor shortcut.
+The first two claims bind the public handles. The next four split the proof
+family's hard extractor obligation into commitment extraction, double-trace
+binding, relation knowledge, and masked-opening consistency.
+`ParentTraceExtractionSoundness` is the composed extraction contract produced
+from the extraction/consistency/relation subclaims. `TraceAssemblySoundness` is
+now itself a composed design-controlled endpoint; the active endpoint no longer
+accepts an independent two-view extractor shortcut.
 
 ## ParentTraceExtractionSoundness
 
@@ -130,6 +132,7 @@ boundary projections.
 - `Predicates.traceAssemblyLocalValid`
 - `Predicates.traceAssemblyDescentConsistent`
 - `ParentTraceCommitmentExtractionSoundness`
+- `ParentTraceDoubleBindingSoundness`
 - `ExtractedTraceRelationKnowledgeSoundness`
 - `MaskedOpeningConsistencySoundness`
 - `UsesSelectedTraceKnowledgeModes`

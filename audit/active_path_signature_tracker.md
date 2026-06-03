@@ -288,10 +288,10 @@ blinding/noise policy to policy id `1` and centered bound `2048`; Lean requires
 compose back into the full blinding/noise bound endpoint.
 The knowledge side is also split more aggressively now:
 `NativeBoundaryTraceKnowledgeSoundness` explicitly includes parent-trace
-commitment extraction, extracted-trace relation knowledge, masked-opening
-consistency, and the composed parent-trace extraction contract. The Rust
-proof-family interface binds matching requirement bits plus QROM extractor
-rewind accounting and double-trace binding-break export.
+commitment extraction, double-trace binding, extracted-trace relation
+knowledge, masked-opening consistency, and the composed parent-trace extraction
+contract. The Rust proof-family interface binds matching requirement bits plus
+QROM extractor rewind accounting and double-trace binding-break export.
 Lean now also requires `UsesSelectedTraceKnowledgeModes(profile)` for the
 parent-trace extraction contract, aligning the proof target with the Rust
 profile's `fullTraceExtractable` and `fullWitnessRelationKnowledge` modes.
