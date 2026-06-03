@@ -448,9 +448,14 @@ Named breaks:
   missing/duplicate mask domains for hidden roles, and zero component digests.
   KAT `path2_transparent_query_opening_manifest_enforces_no_export_policy`
   covers the positive manifest, private-material serialization denylist, and
-  those negative controls; the transparent payload boundary fixture now binds
-  `query_openings_digest` to that manifest digest instead of an arbitrary
-  placeholder. The `R_core_66` relation encoding is now also executable:
+  those negative controls. The manifest verifier now treats `query_count` as
+  scheduled query positions and requires every scheduled query to carry one
+  typed opening record for each active two-view role, with a single row per
+  query and no duplicate query-role pairs; KATs cover count mismatch, duplicate
+  query-role records, and per-query row mismatch. The transparent payload
+  boundary fixture now binds `query_openings_digest` to that full-role manifest
+  digest instead of an arbitrary placeholder. The `R_core_66` relation encoding
+  is now also executable:
   `PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA`,
   `path2_transparent_relation_layout_v1`,
   `verify_path2_transparent_relation_layout`, and

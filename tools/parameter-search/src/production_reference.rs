@@ -10424,15 +10424,26 @@ pub fn verify_path2_transparent_query_opening_manifest(
     if manifest.query_count == 0 {
         return Err("Path 2 transparent query opening count is zero".to_string());
     }
-    if manifest.records.len() != manifest.query_count as usize {
+    let expected_record_count =
+        manifest.query_count as usize * PATH2_TWO_VIEW_COLUMN_PROFILE_ENTRY_COUNT;
+    if manifest.records.len() != expected_record_count {
         return Err("Path 2 transparent query opening manifest count mismatch".to_string());
     }
 
-    let mut query_indices = BTreeSet::new();
+    let profile = path2_two_view_column_profile_v1();
+    let mut query_role_pairs = BTreeSet::new();
+    let mut query_rows = BTreeMap::new();
     let mut mask_domains = BTreeSet::new();
     for record in &manifest.records {
-        if record.query_index >= manifest.query_count || !query_indices.insert(record.query_index) {
-            return Err("Path 2 transparent query opening duplicate query index".to_string());
+        if record.query_index >= manifest.query_count
+            || !query_role_pairs.insert((record.query_index, record.role_id))
+        {
+            return Err("Path 2 transparent query opening duplicate query role".to_string());
+        }
+        if let Some(row_index) = query_rows.insert(record.query_index, record.row_index) {
+            if row_index != record.row_index {
+                return Err("Path 2 transparent query opening row mismatch".to_string());
+            }
         }
         if record.component_digest == [0_u8; DIGEST_BYTES] {
             return Err("Path 2 transparent query opening digest is zero".to_string());
@@ -10486,6 +10497,14 @@ pub fn verify_path2_transparent_query_opening_manifest(
             }
         } else if record.mask_domain_id != 0 {
             return Err("Path 2 transparent query opening public role has mask domain".to_string());
+        }
+    }
+
+    for query_index in 0..manifest.query_count {
+        for entry in profile.entries {
+            if !query_role_pairs.contains(&(query_index, entry.role_id)) {
+                return Err("Path 2 transparent query opening missing mandatory role".to_string());
+            }
         }
     }
 
@@ -26521,33 +26540,36 @@ mod tests {
         query_count: u16,
     ) -> Path2TransparentQueryOpeningManifestV1 {
         let mut records = Vec::new();
-        let context_entry =
-            path2_two_view_column_profile_entry(PATH2_TWO_VIEW_ROLE_CONTEXT_PUBLIC).unwrap();
-        let pad_entry =
-            path2_two_view_column_profile_entry(PATH2_TWO_VIEW_ROLE_PAD_SOURCE).unwrap();
+        let profile = path2_two_view_column_profile_v1();
         for query_index in 0..query_count {
-            if query_index % 2 == 0 {
+            for entry in profile.entries {
+                let hidden_role = matches!(
+                    entry.visibility_class,
+                    PATH2_TWO_VIEW_VISIBILITY_COMMITTED_HIDDEN
+                        | PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN
+                        | PATH2_TWO_VIEW_VISIBILITY_RANGE_PRIVATE
+                        | PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE
+                        | PATH2_TWO_VIEW_VISIBILITY_SIMULATOR_ONLY
+                );
                 records.push(Path2TransparentQueryOpeningRecordV1 {
                     query_index,
-                    role_id: PATH2_TWO_VIEW_ROLE_CONTEXT_PUBLIC,
-                    column_set_id: context_entry.masked_column_set_id,
+                    role_id: entry.role_id,
+                    column_set_id: entry.masked_column_set_id,
                     row_index: query_index,
-                    visibility_class: PATH2_TWO_VIEW_VISIBILITY_PUBLIC,
-                    mask_domain_id: 0,
+                    visibility_class: if hidden_role {
+                        PATH2_TWO_VIEW_VISIBILITY_MASKED_PUBLIC
+                    } else {
+                        entry.visibility_class
+                    },
+                    mask_domain_id: if hidden_role {
+                        query_index * PATH2_TWO_VIEW_COLUMN_PROFILE_ENTRY_COUNT as u16
+                            + entry.role_id as u16
+                    } else {
+                        0
+                    },
                     component_digest: test_digest(&format!(
-                        "path2-transparent-public-query-{query_index}"
-                    )),
-                });
-            } else {
-                records.push(Path2TransparentQueryOpeningRecordV1 {
-                    query_index,
-                    role_id: PATH2_TWO_VIEW_ROLE_PAD_SOURCE,
-                    column_set_id: pad_entry.masked_column_set_id,
-                    row_index: query_index,
-                    visibility_class: PATH2_TWO_VIEW_VISIBILITY_MASKED_PUBLIC,
-                    mask_domain_id: query_index,
-                    component_digest: test_digest(&format!(
-                        "path2-transparent-masked-query-{query_index}"
+                        "path2-transparent-query-{query_index}-role-{}",
+                        entry.role_id
                     )),
                 });
             }
@@ -28637,7 +28659,11 @@ mod tests {
             decoded_envelope
         );
         let mut out_of_trace_manifest = query_opening_manifest.clone();
-        out_of_trace_manifest.records[0].row_index = public_view.trace_rows;
+        for record in &mut out_of_trace_manifest.records {
+            if record.query_index == 0 {
+                record.row_index = public_view.trace_rows;
+            }
+        }
         assert_eq!(
             path2_transparent_proof_bytes_envelope_v1_bytes(
                 &public_view,
@@ -32251,10 +32277,31 @@ mod tests {
         assert!(serialized.contains("component_digest"));
         assert_no_path2_transparent_private_material(&serialized);
 
+        let mut truncated = manifest.clone();
+        truncated.records.pop();
+        assert_eq!(
+            verify_path2_transparent_query_opening_manifest(&truncated).unwrap_err(),
+            "Path 2 transparent query opening manifest count mismatch"
+        );
+
+        let mut duplicate_role = manifest.clone();
+        duplicate_role.records[2].role_id = duplicate_role.records[1].role_id;
+        assert_eq!(
+            verify_path2_transparent_query_opening_manifest(&duplicate_role).unwrap_err(),
+            "Path 2 transparent query opening duplicate query role"
+        );
+
+        let mut row_mismatch = manifest.clone();
+        row_mismatch.records[2].row_index += 1;
+        assert_eq!(
+            verify_path2_transparent_query_opening_manifest(&row_mismatch).unwrap_err(),
+            "Path 2 transparent query opening row mismatch"
+        );
+
         let mut hidden_column = manifest.clone();
-        let pad_entry =
-            path2_two_view_column_profile_entry(PATH2_TWO_VIEW_ROLE_PAD_SOURCE).unwrap();
-        hidden_column.records[1].column_set_id = pad_entry.hidden_column_set_id;
+        let packed_entry =
+            path2_two_view_column_profile_entry(PATH2_TWO_VIEW_ROLE_PACKED_WITNESS).unwrap();
+        hidden_column.records[1].column_set_id = packed_entry.hidden_column_set_id;
         assert_eq!(
             verify_path2_transparent_query_opening_manifest(&hidden_column).unwrap_err(),
             "Path 2 transparent query opening uses hidden column set"
