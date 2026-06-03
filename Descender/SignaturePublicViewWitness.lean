@@ -550,6 +550,43 @@ theorem noSystematicLeeViolationBreaker_of_publicViewLeeCertificate
     SystematicLeeViolation.impossible_of_publicViewLeeDualCertificate C breaker
 
 /--
+Treat a generic q-ary Lee-kernel violation as a partial keygen-breaking object.
+
+This is the target produced by fibered commitment mask collisions before a
+construction specializes the q-ary map to a systematic/public-view certificate.
+-/
+def modqLeeKernelViolationKeygenBreakGame
+    {LocalFree Coord Target : Type*}
+    [Fintype Coord] [Zero Target]
+    (secret : N32Block × LocalFree -> ZMod q)
+    (AT : (Coord -> ZMod q) -> Target)
+    (leeMin : Nat) :
+    N32PartialKeygenBreakGame (q := q) LocalFree
+      (ModqLeeKernelViolation q AT leeMin)
+      (ModqLeeKernelViolation q AT leeMin) where
+  secret := secret
+  ValidWitness := fun _ => True
+  buildBreaker := id
+  BreaksKeygen := fun _ => True
+  buildBreaker_sound := by
+    intro _witness _hvalid
+    trivial
+
+theorem noModqLeeKernelViolationBreaker_of_noLeeKernelVectorBelow
+    {LocalFree Coord Target : Type*}
+    [Fintype Coord] [Zero Target]
+    {secret : N32Block × LocalFree -> ZMod q}
+    {AT : (Coord -> ZMod q) -> Target}
+    {leeMin : Nat}
+    (hLee : ModqNoLeeKernelVectorBelow q AT leeMin) :
+    ∀ breaker,
+      ¬ (modqLeeKernelViolationKeygenBreakGame
+          secret AT leeMin).BreaksKeygen breaker := by
+  intro breaker _hbreak
+  exact ModqLeeKernelViolation.impossible_of_noLeeKernelVectorBelow
+    q hLee breaker
+
+/--
 Byte-concrete linear target whose clean-forgery extractor returns a systematic
 Lee violation.
 -/
@@ -3633,6 +3670,68 @@ structure ProductionHashFrameOracleAgreement
                 (E.outputPoint τ.1))) =
           E.actualChallenge τ
 
+/-- Cryptographic model selected for the q12289 Fiat-Shamir boundary. -/
+inductive Q12289HashAssumptionModel where
+  | classicalRandomOracle
+  | quantumRandomOracle
+  | concreteSha256
+  deriving DecidableEq, Repr
+
+/--
+Named q12289 Fiat-Shamir/hash assumption boundary.
+
+`ProductionHashFrameOracleAgreement` proves only that accepted transcripts in
+the query-log experiment agree with the verifier's exact hash frame.  This
+record is the explicit place where a deployable proof must state which
+cryptographic model is being assumed, what query and multi-target budgets are
+priced, and that the q12289 frame/domain separation is the one used by the
+implementation.
+-/
+structure Q12289HashFrameAssumptionBoundary
+    {State QueryIdx : Type*}
+    [Fintype State]
+    {messageLen : Nat}
+    (E :
+      N32QueryLogExperiment State QueryIdx
+        (ByteVector publicKeyBytes) (ByteVector messageLen)
+        (ByteVector commitmentBytesPerRepetition)) where
+  model : Q12289HashAssumptionModel
+  queryBudget : Nat
+  multiTargetBudget : Nat
+  frameDomainSeparated : Prop
+  queryBudgetPriced : Prop
+  multiTargetLossPriced : Prop
+  agreement : ProductionHashFrameOracleAgreement E
+
+/--
+Generic Fiat-Shamir/hash boundary for the q12289 FS-core endpoint.
+
+Unlike `Q12289HashFrameAssumptionBoundary`, this tracks the implementation-facing
+FS-core verifier shape with its explicit domain/public-key/message/commitment
+frame lengths.  It is the boundary used by the q12289 accepted-transcript
+reference certificate, not the current active deployment target.
+-/
+structure Q12289FSCoreHashAssumptionBoundary
+    {State QueryIdx : Type*}
+    [Fintype State] [Fintype QueryIdx]
+    {domainLen publicKeyLen messageLen commitmentLen : Nat}
+    (E :
+      N32QueryLogExperiment State QueryIdx
+        (ByteVector publicKeyLen) (ByteVector messageLen)
+        (ByteVector commitmentLen)) where
+  model : Q12289HashAssumptionModel
+  queryBudget : Nat
+  multiTargetBudget : Nat
+  frameDomainSeparated : Prop
+  queryBudgetPriced : Prop
+  multiTargetLossPriced : Prop
+  verifierInputs :
+    N32Q12289SystematicRelationLayout.Validated48x32ProductBlockFSCoreVerifierInputs
+      (domainLen := domainLen)
+      (publicKeyLen := publicKeyLen)
+      (messageLen := messageLen)
+      (commitmentLen := commitmentLen) E
+
 namespace ProductionHashFrameOracleAgreement
 
 variable {State QueryIdx : Type*}
@@ -5179,14 +5278,16 @@ theorem forgerSuccessProb_le_guess
 end N32Q12289Validated48x32CanonicalNoFailureSecurityCertificate
 
 /--
-Final no-failure q12289 certificate using the Fiat-Shamir recomputing core
-verifier interface directly.
+No-failure q12289 accepted-transcript certificate using the Fiat-Shamir
+recomputing core verifier interface directly.
 
-This is the most implementation-facing endpoint in the current repository:
-the concrete verifier supplies a payload predicate, a byte-frame challenge
-recomputation function, and the query-log agreement lemma for accepted
-payloads.  The wrapper derives canonical range checking, byte-frame binding,
-systematic relation checking, and the no-structural-failure security bound.
+This is the most implementation-facing accepted-transcript endpoint in the
+current repository: the concrete verifier supplies a payload predicate, a
+byte-frame challenge recomputation function, and the query-log agreement lemma
+for accepted payloads.  The wrapper derives canonical range checking,
+byte-frame binding, systematic relation checking, and the no-structural-failure
+accepted-transcript bound.  It is not, by itself, a full EUF-CMA signature
+security theorem.
 -/
 structure N32Q12289Validated48x32FSCoreNoFailureSecurityCertificate
     {State QueryIdx SchemeLocalFree : Type*}
@@ -5284,6 +5385,119 @@ theorem forgerSuccessProb_le_guess
       C.toCanonicalNoFailureSecurityCertificate.forgerSuccessProb_le_guess
 
 end N32Q12289Validated48x32FSCoreNoFailureSecurityCertificate
+
+/--
+Full-signature-game boundary for the q12289 FS-core reference path.
+
+This record deliberately separates the proved accepted-transcript theorem from
+the extra deployment obligations needed for a full signature security claim:
+key generation distribution, signing-oracle behavior, completeness,
+implementation verification relation, Fiat-Shamir/hash assumption budget, and
+the reduction from EUF-CMA forgeries to the accepted-transcript predicate.
+
+This boundary is not the current active deployable-signature target unless the
+deployment verifier is explicitly switched back to q12289 FS-core. The active
+target is the Path 2 native / reviewed-Fq12 route in
+`Path2NativeAccountDesign`.
+-/
+structure N32Q12289FullSignatureSecurityBoundary
+    {State QueryIdx SchemeLocalFree : Type*}
+    [Fintype State]
+    [Fintype QueryIdx]
+    {domainLen publicKeyLen messageLen commitmentLen : Nat}
+    (E :
+      N32QueryLogExperiment State QueryIdx
+        (ByteVector publicKeyLen) (ByteVector messageLen)
+        (ByteVector commitmentLen))
+    (secret : N32Block × SchemeLocalFree ->
+      ZMod N32Q12289SystematicRelationLayout.modulus) where
+  acceptedTranscriptCertificate :
+    N32Q12289Validated48x32FSCoreNoFailureSecurityCertificate
+      (domainLen := domainLen)
+      (publicKeyLen := publicKeyLen)
+      (messageLen := messageLen)
+      (commitmentLen := commitmentLen) E secret
+  hashBoundary :
+    N32Q12289ImplicitCommitmentByteVerifier.Q12289FSCoreHashAssumptionBoundary
+      (domainLen := domainLen)
+      (publicKeyLen := publicKeyLen)
+      (messageLen := messageLen)
+      (commitmentLen := commitmentLen) E
+  keygenDistributionModeled : Prop
+  signingOracleModeled : Prop
+  completenessModeled : Prop
+  verifierRelationMatchesImplementation : Prop
+  eufCmaForgeryImpliesAcceptedTranscriptForgery : Prop
+  signatureForgerySuccessProb : ℝ
+  signatureForgerySuccess_le_acceptedTranscript :
+    signatureForgerySuccessProb <=
+      acceptedTranscriptCertificate.forgerSuccessProb
+  fullSignatureSecurityClaimComplete :
+    keygenDistributionModeled ∧
+      signingOracleModeled ∧
+      completenessModeled ∧
+      verifierRelationMatchesImplementation ∧
+      eufCmaForgeryImpliesAcceptedTranscriptForgery ∧
+      hashBoundary.frameDomainSeparated ∧
+      hashBoundary.queryBudgetPriced ∧
+      hashBoundary.multiTargetLossPriced
+
+namespace N32Q12289FullSignatureSecurityBoundary
+
+variable {State QueryIdx SchemeLocalFree : Type*}
+variable [Fintype State]
+variable [Fintype QueryIdx]
+variable {domainLen publicKeyLen messageLen commitmentLen : Nat}
+variable {E :
+  N32QueryLogExperiment State QueryIdx
+    (ByteVector publicKeyLen) (ByteVector messageLen)
+    (ByteVector commitmentLen)}
+variable {secret : N32Block × SchemeLocalFree ->
+  ZMod N32Q12289SystematicRelationLayout.modulus}
+
+def acceptedTranscriptSuccessProb
+    (B :
+      N32Q12289FullSignatureSecurityBoundary
+        (domainLen := domainLen)
+        (publicKeyLen := publicKeyLen)
+        (messageLen := messageLen)
+        (commitmentLen := commitmentLen) E secret) :
+    ℝ :=
+  B.acceptedTranscriptCertificate.forgerSuccessProb
+
+theorem acceptedTranscriptSuccessProb_le_guess
+    (B :
+      N32Q12289FullSignatureSecurityBoundary
+        (domainLen := domainLen)
+        (publicKeyLen := publicKeyLen)
+        (messageLen := messageLen)
+        (commitmentLen := commitmentLen) E secret) :
+    B.acceptedTranscriptSuccessProb <= n32ChallengeGuessBound := by
+  simpa [acceptedTranscriptSuccessProb] using
+    B.acceptedTranscriptCertificate.forgerSuccessProb_le_guess
+
+def fullSignatureSuccessProb
+    (B :
+      N32Q12289FullSignatureSecurityBoundary
+        (domainLen := domainLen)
+        (publicKeyLen := publicKeyLen)
+        (messageLen := messageLen)
+        (commitmentLen := commitmentLen) E secret) :
+    ℝ :=
+  B.signatureForgerySuccessProb
+
+theorem fullSignatureSuccessProb_le_guess
+    (B :
+      N32Q12289FullSignatureSecurityBoundary
+        (domainLen := domainLen)
+        (publicKeyLen := publicKeyLen)
+        (messageLen := messageLen)
+        (commitmentLen := commitmentLen) E secret) :
+    B.fullSignatureSuccessProb <= n32ChallengeGuessBound := by
+  exact le_trans B.signatureForgerySuccess_le_acceptedTranscript
+    B.acceptedTranscriptSuccessProb_le_guess
+
+end N32Q12289FullSignatureSecurityBoundary
 
 /--
 Packaged certificate for the checked-verifier parser route, using a raw

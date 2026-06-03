@@ -57,6 +57,20 @@ python3 scripts/parameter_search/search.py --profile descender-192
 python3 scripts/parameter_search/search.py --profile descender-256
 ```
 
+Focused committed-sigma/account-carried cost model:
+
+```bash
+python3 scripts/parameter_search/committed_sigma_cost_model.py
+```
+
+This model is deliberately narrower than the KEM/view search.  It applies the
+current committed-sigma structural gates and keeps spend-transaction bytes
+separate from account/state bytes.  The default output is:
+
+```text
+research/parameter_search/committed_sigma_account_carried_20260521/
+```
+
 Outputs are written under:
 
 ```text

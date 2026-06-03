@@ -12,6 +12,7 @@ __pycache__/
 tools/external/
 
 # Armature/Paseo research runtime output.
+.armature/runs/
 research/artifacts/**
 !research/artifacts/.gitkeep
 research/state/.state.lock

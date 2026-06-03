@@ -160,6 +160,93 @@ theorem encoded_secret_independent
 
 end RejectionSamplingCertificate
 
+/--
+Leakage-bounded rejection-sampling certificate.
+
+This is the proof surface for samplers such as the conditioned shifted
+discrete-Gaussian mode.  Unlike `RejectionSamplingCertificate`, it does not
+claim that every accepted-response distribution is identical to one common
+target.  It instead gives a concrete total-variation style budget: every
+Boolean test distinguishes the accepted response distributions for two secrets
+by at most `leakage`.
+
+The concrete sampler analysis is responsible for instantiating `leakage` from
+finite per-coordinate TV/KL accounting and retry/timing discipline.  Once that
+certificate is supplied, deterministic byte serialization is handled by the
+data-processing theorem below.
+-/
+structure LeakageBoundedCertificate
+    (S : RejectionSampler Secret Challenge Mask Response) where
+  leakage : ℝ
+  leakage_nonneg : 0 ≤ leakage
+  acceptance : Secret -> Challenge -> ℝ
+  acceptance_pos : ∀ s c, 0 < acceptance s c
+  test_distance_le :
+    ∀ s₀ s₁ c A,
+      |S.conditionalAcceptedProb (acceptance s₀ c) s₀ c A -
+        S.conditionalAcceptedProb (acceptance s₁ c) s₁ c A| ≤ leakage
+
+namespace LeakageBoundedCertificate
+
+variable {S : RejectionSampler Secret Challenge Mask Response}
+
+/-- The accepted-response distinguishing advantage between two secrets. -/
+def responseAdvantage
+    (C : S.LeakageBoundedCertificate)
+    (s₀ s₁ : Secret) (c : Challenge) (A : Response -> Bool) : ℝ :=
+  |S.conditionalAcceptedProb (C.acceptance s₀ c) s₀ c A -
+    S.conditionalAcceptedProb (C.acceptance s₁ c) s₁ c A|
+
+theorem responseAdvantage_nonneg
+    (C : S.LeakageBoundedCertificate)
+    (s₀ s₁ : Secret) (c : Challenge) (A : Response -> Bool) :
+    0 ≤ C.responseAdvantage s₀ s₁ c A := by
+  unfold responseAdvantage
+  exact abs_nonneg _
+
+/--
+Every response test distinguishes two accepted-response laws by at most the
+certificate leakage budget.
+-/
+theorem responseAdvantage_le
+    (C : S.LeakageBoundedCertificate)
+    (s₀ s₁ : Secret) (c : Challenge) (A : Response -> Bool) :
+    C.responseAdvantage s₀ s₁ c A ≤ C.leakage := by
+  exact C.test_distance_le s₀ s₁ c A
+
+/--
+Data processing for deterministic encodings: serialization, projection, and
+compact transcript formation cannot increase the bounded-leakage budget.
+-/
+theorem encoded_responseAdvantage_le
+    (C : S.LeakageBoundedCertificate)
+    {Encoded : Type*} (encode : Response -> Encoded)
+    (s₀ s₁ : Secret) (c : Challenge) (A : Encoded -> Bool) :
+    C.responseAdvantage s₀ s₁ c (fun r => A (encode r)) ≤ C.leakage := by
+  exact C.responseAdvantage_le s₀ s₁ c (fun r => A (encode r))
+
+/--
+If the leakage budget is zero, the bounded-leakage certificate collapses to
+ordinary secret independence for every Boolean response test.
+-/
+theorem secret_independent_of_zero_leakage
+    (C : S.LeakageBoundedCertificate)
+    (hzero : C.leakage = 0)
+    (s₀ s₁ : Secret) (c : Challenge) (A : Response -> Bool) :
+    S.conditionalAcceptedProb (C.acceptance s₀ c) s₀ c A =
+      S.conditionalAcceptedProb (C.acceptance s₁ c) s₁ c A := by
+  have hnonneg : 0 ≤ C.responseAdvantage s₀ s₁ c A :=
+    C.responseAdvantage_nonneg s₀ s₁ c A
+  have hle : C.responseAdvantage s₀ s₁ c A ≤ 0 := by
+    simpa [hzero] using C.responseAdvantage_le s₀ s₁ c A
+  have habs :
+      |S.conditionalAcceptedProb (C.acceptance s₀ c) s₀ c A -
+        S.conditionalAcceptedProb (C.acceptance s₁ c) s₁ c A| = 0 :=
+    le_antisymm hle hnonneg
+  exact sub_eq_zero.mp (abs_eq_zero.mp habs)
+
+end LeakageBoundedCertificate
+
 end RejectionSampler
 
 /-- Product-block linear response `z = y + chi * s`. -/
@@ -571,6 +658,61 @@ theorem productBlock_accepted_response_secret_independent
       (productBlockRejectionSampler mask target accept).conditionalAcceptedProb
         C.acceptance secret₁ chi A := by
   exact C.secret_independent secret₀ secret₁ chi A
+
+/--
+Product-block bounded-leakage theorem for conditioned samplers.
+
+For the conditioned shifted discrete-Gaussian mode, the concrete finite sampler
+analysis supplies a `LeakageBoundedCertificate` whose `leakage` field is the
+charged product TV/KL budget for all serialized response coordinates.  This
+theorem is the formal handoff: every Boolean test on accepted product-block
+responses distinguishes two secrets by at most that budget.
+-/
+theorem productBlock_accepted_response_leakage_bounded
+    {q : Nat} [NeZero q]
+    {Block LocalFree : Type*}
+    [Fintype (Block × LocalFree -> ZMod q)]
+    {mask target :
+      FiniteProbability (Block × LocalFree -> ZMod q)}
+    {accept :
+      (Block × LocalFree -> ZMod q) ->
+        (Block -> ZMod q) ->
+        (Block × LocalFree -> ZMod q) -> Bool}
+    (C :
+      (productBlockRejectionSampler mask target accept).LeakageBoundedCertificate)
+    (secret₀ secret₁ : Block × LocalFree -> ZMod q)
+    (chi : Block -> ZMod q)
+    (A : (Block × LocalFree -> ZMod q) -> Bool) :
+    C.responseAdvantage secret₀ secret₁ chi A ≤ C.leakage := by
+  exact C.responseAdvantage_le secret₀ secret₁ chi A
+
+/--
+Serialized product-block bounded-leakage theorem.
+
+Any deterministic encoder of the accepted response, including the concrete
+byte-level response packing used by the verifier, inherits the same leakage
+budget.  This is the data-processing step needed for the conditioned
+discrete-Gaussian signing mode.
+-/
+theorem productBlock_encoded_response_leakage_bounded
+    {q : Nat} [NeZero q]
+    {Block LocalFree Encoded : Type*}
+    [Fintype (Block × LocalFree -> ZMod q)]
+    {mask target :
+      FiniteProbability (Block × LocalFree -> ZMod q)}
+    {accept :
+      (Block × LocalFree -> ZMod q) ->
+        (Block -> ZMod q) ->
+        (Block × LocalFree -> ZMod q) -> Bool}
+    (C :
+      (productBlockRejectionSampler mask target accept).LeakageBoundedCertificate)
+    (encode : (Block × LocalFree -> ZMod q) -> Encoded)
+    (secret₀ secret₁ : Block × LocalFree -> ZMod q)
+    (chi : Block -> ZMod q)
+    (A : Encoded -> Bool) :
+    C.responseAdvantage secret₀ secret₁ chi (fun r => A (encode r)) ≤
+      C.leakage := by
+  exact C.encoded_responseAdvantage_le encode secret₀ secret₁ chi A
 
 end
 

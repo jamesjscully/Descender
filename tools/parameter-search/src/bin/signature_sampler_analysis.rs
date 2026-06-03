@@ -1,8 +1,14 @@
-use serde::Serialize;
+#![allow(clippy::manual_is_multiple_of)]
+
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::env;
+use std::fmt::Write as FmtWrite;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+
+const RATIONAL_GAUSSIAN_WEIGHT_PRECISION_BITS: u32 = 20;
 
 #[derive(Clone, Debug)]
 struct Config {
@@ -17,8 +23,12 @@ struct Config {
     fork_challenges_per_round: u64,
     block_weights: Vec<u64>,
     z_bounds: Vec<u64>,
+    leakage_sigmas: Vec<u64>,
     output_json: PathBuf,
     output_md: PathBuf,
+    output_certificate: PathBuf,
+    output_lean_certificate: Option<PathBuf>,
+    verify_certificate: Option<PathBuf>,
 }
 
 impl Default for Config {
@@ -38,12 +48,18 @@ impl Default for Config {
                 12, 16, 24, 32, 48, 64, 80, 96, 128, 160, 192, 224, 256, 320, 384, 448, 512, 640,
                 768, 1024,
             ],
+            leakage_sigmas: vec![32, 48, 64, 96, 128, 160, 224, 320, 448, 640, 896],
             output_json: PathBuf::from(
                 "research/cryptanalysis/signature_readiness_20260516/sampler_analysis_n48.json",
             ),
             output_md: PathBuf::from(
                 "research/cryptanalysis/signature_readiness_20260516/sampler_analysis_n48.md",
             ),
+            output_certificate: PathBuf::from(
+                "research/cryptanalysis/signature_readiness_20260516/conditioned_gaussian_leakage_certificate_n48.json",
+            ),
+            output_lean_certificate: None,
+            verify_certificate: None,
         }
     }
 }
@@ -65,6 +81,9 @@ struct SamplerOutput {
     best_compact_fork_delta_24_rows: Vec<SamplerRow>,
     best_compact_fork_delta_32_rows: Vec<SamplerRow>,
     best_full_coverage_rows: Vec<SamplerRow>,
+    best_fast_interior_leakage_rows: Vec<LeakageSamplerRow>,
+    best_gaussian_leakage_rows: Vec<LeakageSamplerRow>,
+    lowest_gaussian_leakage_rows: Vec<LeakageSamplerRow>,
     conclusions: Vec<String>,
 }
 
@@ -99,6 +118,80 @@ struct SamplerRow {
     verdict: String,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct LeakageSamplerRow {
+    sampler: String,
+    proof_status: String,
+    block_weight: u64,
+    repetitions: u64,
+    serialized_response_coordinates: u64,
+    accepted_z_bound: u64,
+    sigma: Option<u64>,
+    estimated_signature_bytes: u64,
+    signature_bytes_with_digest: u64,
+    min_accept_probability_per_coordinate: f64,
+    max_accept_probability_per_coordinate: f64,
+    accept_probability_ratio: f64,
+    log2_expected_retries: f64,
+    per_coordinate_tv: f64,
+    signature_tv_union_bound: f64,
+    per_coordinate_kl_bits: Option<f64>,
+    signature_kl_bits: Option<f64>,
+    pinsker_signature_tv_bound: Option<f64>,
+    verdict: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct LeakageCertificate {
+    schema: String,
+    profile: String,
+    q: u64,
+    n: u64,
+    eta: u64,
+    product_block_groups: u64,
+    local_free_coordinates_per_block: u64,
+    target_bits: f64,
+    digest_bytes: u64,
+    max_log2_retries: f64,
+    max_extra_repetitions: u64,
+    fork_challenges_per_round: u64,
+    block_weights: Vec<u64>,
+    z_bounds: Vec<u64>,
+    leakage_sigmas: Vec<u64>,
+    row_source: String,
+    row_limit: usize,
+    metric_definitions: Vec<String>,
+    selected_rows: Vec<LeakageSamplerRow>,
+    rational_interval_rows: Vec<RationalIntervalLeakageProofRow>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct RationalInterval {
+    lower_numerator: String,
+    upper_numerator: String,
+    denominator: String,
+    upper_decimal: f64,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct RationalIntervalLeakageProofRow {
+    sampler: String,
+    proof_status: String,
+    block_weight: u64,
+    repetitions: u64,
+    serialized_response_coordinates: u64,
+    accepted_z_bound: u64,
+    eta: u64,
+    sigma: u64,
+    weight_precision_bits: u32,
+    support_min: i64,
+    support_max: i64,
+    weights_by_support_offset: Vec<String>,
+    worst_shift_pair: [i64; 2],
+    per_coordinate_tv_exact: RationalInterval,
+    signature_tv_bound: RationalInterval,
+}
+
 #[derive(Clone, Debug)]
 struct CoverageDiagnostics {
     active_single_block_miss_bits: Option<f64>,
@@ -107,6 +200,9 @@ struct CoverageDiagnostics {
     compact_fork_delta_any_block_miss_bits: Option<f64>,
     compact_one_fork_delta_any_block_miss_bits: Option<f64>,
 }
+
+type GaussianLeakageMetrics = (f64, f64, f64, f64, f64);
+type TvRational = (u128, u128, [i64; 2]);
 
 fn parse_csv_u64(s: &str) -> Vec<u64> {
     s.split(',')
@@ -159,8 +255,19 @@ fn parse_args() -> Result<Config, String> {
             }
             "--block-weights" => cfg.block_weights = parse_csv_u64(&value("--block-weights")?),
             "--z-bounds" => cfg.z_bounds = parse_csv_u64(&value("--z-bounds")?),
+            "--leakage-sigmas" => cfg.leakage_sigmas = parse_csv_u64(&value("--leakage-sigmas")?),
             "--output-json" => cfg.output_json = PathBuf::from(value("--output-json")?),
             "--output-md" => cfg.output_md = PathBuf::from(value("--output-md")?),
+            "--output-certificate" => {
+                cfg.output_certificate = PathBuf::from(value("--output-certificate")?)
+            }
+            "--output-lean-certificate" => {
+                cfg.output_lean_certificate =
+                    Some(PathBuf::from(value("--output-lean-certificate")?))
+            }
+            "--verify-certificate" => {
+                cfg.verify_certificate = Some(PathBuf::from(value("--verify-certificate")?))
+            }
             "--help" | "-h" => {
                 print_help();
                 std::process::exit(0);
@@ -191,8 +298,17 @@ fn print_help() {
            --fork-challenges-per-round N\n\
            --block-weights CSV\n\
            --z-bounds CSV\n\
+           --leakage-sigmas CSV\n\
            --output-json PATH\n\
-           --output-md PATH"
+           --output-md PATH\n\
+           --output-certificate PATH\n\
+           --output-lean-certificate PATH\n\
+           --verify-certificate PATH\n\
+         \n\
+         The certificate contains rational interval proof rows for a concrete\n\
+         dyadic quantized conditioned sampler.  Verification recomputes those\n\
+         TV bounds exactly from the integer weight tables.  The Lean output\n\
+         emits the verified rational constants as importable definitions."
     );
 }
 
@@ -419,6 +535,290 @@ fn direct_forgery_bits(coverage_bits: Option<f64>, fork_challenges_per_round: u6
     coverage_bits.map(|bits| bits / fork_challenges_per_round as f64)
 }
 
+fn fast_interior_coordinate_tv(z_bound: u64, eta: u64) -> Option<f64> {
+    if z_bound < eta {
+        None
+    } else {
+        Some((eta as f64 / (2 * (z_bound - eta) + 1) as f64).min(1.0))
+    }
+}
+
+fn log_sum_exp(values: &[f64]) -> f64 {
+    let max = values.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+    if !max.is_finite() {
+        return max;
+    }
+    let scaled_sum: f64 = values.iter().map(|value| (value - max).exp()).sum();
+    max + scaled_sum.ln()
+}
+
+fn gaussian_log_weight(x: i64, sigma: u64) -> f64 {
+    let sigma = sigma as f64;
+    let x = x as f64;
+    -(x * x) / (2.0 * sigma * sigma)
+}
+
+fn kl_bits(log_p: &[f64], log_q: &[f64]) -> f64 {
+    log_p
+        .iter()
+        .zip(log_q)
+        .map(|(&p, &q)| {
+            let probability = p.exp();
+            probability * (p - q) / std::f64::consts::LN_2
+        })
+        .sum()
+}
+
+fn tv_from_logs(log_p: &[f64], log_q: &[f64]) -> f64 {
+    0.5 * log_p
+        .iter()
+        .zip(log_q)
+        .map(|(&p, &q)| (p.exp() - q.exp()).abs())
+        .sum::<f64>()
+}
+
+fn gaussian_shifted_conditioned_metrics(
+    z_bound: u64,
+    eta: u64,
+    sigma: u64,
+) -> Option<(f64, f64, f64, f64, f64)> {
+    if sigma == 0 {
+        return None;
+    }
+    let z_bound = z_bound as i64;
+    let eta = eta as i64;
+    let proposal_logs: Vec<f64> = (-z_bound - eta..=z_bound + eta)
+        .map(|y| gaussian_log_weight(y, sigma))
+        .collect();
+    let proposal_log_mass = log_sum_exp(&proposal_logs);
+
+    let mut shifted_logs = Vec::new();
+    let mut accept_probabilities = Vec::new();
+    for shift in -eta..=eta {
+        let response_logs: Vec<f64> = (-z_bound..=z_bound)
+            .map(|z| gaussian_log_weight(z - shift, sigma))
+            .collect();
+        let accepted_log_mass = log_sum_exp(&response_logs);
+        accept_probabilities.push((accepted_log_mass - proposal_log_mass).exp());
+        shifted_logs.push(
+            response_logs
+                .iter()
+                .map(|value| value - accepted_log_mass)
+                .collect::<Vec<_>>(),
+        );
+    }
+
+    let mut max_tv = 0.0_f64;
+    let mut max_kl_bits = 0.0_f64;
+    for left in 0..shifted_logs.len() {
+        for right in 0..shifted_logs.len() {
+            max_tv = max_tv.max(tv_from_logs(&shifted_logs[left], &shifted_logs[right]));
+            max_kl_bits = max_kl_bits.max(kl_bits(&shifted_logs[left], &shifted_logs[right]));
+        }
+    }
+    let min_accept = accept_probabilities
+        .iter()
+        .copied()
+        .fold(f64::INFINITY, f64::min);
+    let max_accept = accept_probabilities
+        .iter()
+        .copied()
+        .fold(f64::NEG_INFINITY, f64::max);
+    Some((
+        min_accept,
+        max_accept,
+        if min_accept > 0.0 {
+            max_accept / min_accept
+        } else {
+            f64::INFINITY
+        },
+        max_tv,
+        max_kl_bits,
+    ))
+}
+
+fn leakage_verdict(
+    sampler: &str,
+    signature_tv_union_bound: f64,
+    signature_kl_bits: Option<f64>,
+    log2_expected_retries: f64,
+    max_log2_retries: f64,
+) -> String {
+    if signature_tv_union_bound == 0.0 && signature_kl_bits == Some(0.0) {
+        "secret-independent".to_string()
+    } else if sampler == "fast-interior-shifted-uniform" {
+        "support-shift-leakage-too-large-for-security-claim".to_string()
+    } else if log2_expected_retries > max_log2_retries {
+        "low-leakage-but-retry-too-high".to_string()
+    } else if signature_kl_bits.unwrap_or(f64::INFINITY) <= 0.01 {
+        "candidate-low-leakage".to_string()
+    } else if signature_kl_bits.unwrap_or(f64::INFINITY) <= 1.0 {
+        "bounded-leakage-but-needs-security-budget".to_string()
+    } else {
+        "leakage-too-large-for-direct-claim".to_string()
+    }
+}
+
+fn pinsker_tv_bound(kl_bits: f64) -> f64 {
+    ((std::f64::consts::LN_2 * kl_bits) / 2.0).sqrt().min(1.0)
+}
+
+fn rational_interval_exact(numerator: u128, denominator: u128) -> RationalInterval {
+    RationalInterval {
+        lower_numerator: numerator.to_string(),
+        upper_numerator: numerator.to_string(),
+        denominator: denominator.to_string(),
+        upper_decimal: numerator as f64 / denominator as f64,
+    }
+}
+
+fn rational_interval_upper(numerator: u128, denominator: u128) -> RationalInterval {
+    RationalInterval {
+        lower_numerator: "0".to_string(),
+        upper_numerator: numerator.to_string(),
+        denominator: denominator.to_string(),
+        upper_decimal: numerator as f64 / denominator as f64,
+    }
+}
+
+fn parse_u128_field(name: &str, value: &str) -> Result<u128, String> {
+    value
+        .parse::<u128>()
+        .map_err(|err| format!("{name} is not a u128 decimal: {err}"))
+}
+
+fn quantized_gaussian_weights(
+    z_bound: u64,
+    eta: u64,
+    sigma: u64,
+    precision_bits: u32,
+) -> Vec<u128> {
+    assert!(precision_bits < u128::BITS);
+    let scale = (1_u128 << precision_bits) as f64;
+    let support = z_bound + eta;
+    (-(support as i64)..=(support as i64))
+        .map(|x| {
+            let weight = (scale * gaussian_log_weight(x, sigma).exp()).round();
+            (weight as u128).max(1)
+        })
+        .collect()
+}
+
+fn weight_at(weights: &[u128], support_min: i64, x: i64) -> u128 {
+    weights[(x - support_min) as usize]
+}
+
+fn accepted_weight_sum(weights: &[u128], support_min: i64, z_bound: u64, shift: i64) -> u128 {
+    let z = z_bound as i64;
+    (-z..=z)
+        .map(|r| weight_at(weights, support_min, r - shift))
+        .sum()
+}
+
+fn rational_tv_from_weights(
+    weights: &[u128],
+    support_min: i64,
+    z_bound: u64,
+    eta: u64,
+) -> TvRational {
+    let z = z_bound as i64;
+    let eta = eta as i64;
+    let mut best_num = 0_u128;
+    let mut best_den = 1_u128;
+    let mut best_pair = [0_i64, 0_i64];
+    for left_shift in -eta..=eta {
+        let left_sum = accepted_weight_sum(weights, support_min, z_bound, left_shift);
+        for right_shift in -eta..=eta {
+            let right_sum = accepted_weight_sum(weights, support_min, z_bound, right_shift);
+            let mut numerator = 0_u128;
+            for r in -z..=z {
+                let left = weight_at(weights, support_min, r - left_shift);
+                let right = weight_at(weights, support_min, r - right_shift);
+                let left_scaled = left
+                    .checked_mul(right_sum)
+                    .expect("TV numerator term overflow");
+                let right_scaled = right
+                    .checked_mul(left_sum)
+                    .expect("TV numerator term overflow");
+                numerator = numerator
+                    .checked_add(left_scaled.abs_diff(right_scaled))
+                    .expect("TV numerator overflow");
+            }
+            let denominator = 2_u128
+                .checked_mul(left_sum)
+                .and_then(|value| value.checked_mul(right_sum))
+                .expect("TV denominator overflow");
+            if numerator
+                .checked_mul(best_den)
+                .expect("TV comparison overflow")
+                > best_num
+                    .checked_mul(denominator)
+                    .expect("TV comparison overflow")
+            {
+                best_num = numerator;
+                best_den = denominator;
+                best_pair = [left_shift, right_shift];
+            }
+        }
+    }
+    (best_num, best_den, best_pair)
+}
+
+fn signature_tv_bound_from_coordinate(
+    serialized_response_coordinates: u64,
+    numerator: u128,
+    denominator: u128,
+) -> (u128, u128) {
+    let scaled = numerator
+        .checked_mul(serialized_response_coordinates as u128)
+        .expect("signature TV numerator overflow");
+    if scaled >= denominator {
+        (1, 1)
+    } else {
+        (scaled, denominator)
+    }
+}
+
+fn rational_interval_row_from_leakage_row(
+    row: &LeakageSamplerRow,
+    eta: u64,
+) -> Option<RationalIntervalLeakageProofRow> {
+    if row.sampler != "conditioned-shifted-discrete-gaussian" {
+        return None;
+    }
+    let sigma = row.sigma?;
+    let support = row.accepted_z_bound + eta;
+    let support_min = -(support as i64);
+    let support_max = support as i64;
+    let weights = quantized_gaussian_weights(
+        row.accepted_z_bound,
+        eta,
+        sigma,
+        RATIONAL_GAUSSIAN_WEIGHT_PRECISION_BITS,
+    );
+    let (tv_num, tv_den, worst_pair) =
+        rational_tv_from_weights(&weights, support_min, row.accepted_z_bound, eta);
+    let (sig_num, sig_den) =
+        signature_tv_bound_from_coordinate(row.serialized_response_coordinates, tv_num, tv_den);
+    Some(RationalIntervalLeakageProofRow {
+        sampler: "dyadic-conditioned-shifted-discrete-gaussian".to_string(),
+        proof_status: "exact-rational-tv-bound-for-quantized-weight-table".to_string(),
+        block_weight: row.block_weight,
+        repetitions: row.repetitions,
+        serialized_response_coordinates: row.serialized_response_coordinates,
+        accepted_z_bound: row.accepted_z_bound,
+        eta,
+        sigma,
+        weight_precision_bits: RATIONAL_GAUSSIAN_WEIGHT_PRECISION_BITS,
+        support_min,
+        support_max,
+        weights_by_support_offset: weights.iter().map(u128::to_string).collect(),
+        worst_shift_pair: worst_pair,
+        per_coordinate_tv_exact: rational_interval_exact(tv_num, tv_den),
+        signature_tv_bound: rational_interval_upper(sig_num, sig_den),
+    })
+}
+
 fn coverage_diagnostics(cfg: &Config, weight: u64, repetitions: u64) -> CoverageDiagnostics {
     CoverageDiagnostics {
         active_single_block_miss_bits: single_block_miss_bits(
@@ -571,6 +971,132 @@ fn keep_best(mut rows: Vec<SamplerRow>, limit: usize) -> Vec<SamplerRow> {
     rows
 }
 
+fn keep_leakage_best_by_size(
+    mut rows: Vec<LeakageSamplerRow>,
+    limit: usize,
+) -> Vec<LeakageSamplerRow> {
+    rows.sort_by(|a, b| {
+        a.estimated_signature_bytes
+            .cmp(&b.estimated_signature_bytes)
+            .then_with(|| {
+                a.signature_tv_union_bound
+                    .partial_cmp(&b.signature_tv_union_bound)
+                    .unwrap()
+            })
+            .then_with(|| {
+                a.signature_kl_bits
+                    .unwrap_or(f64::INFINITY)
+                    .partial_cmp(&b.signature_kl_bits.unwrap_or(f64::INFINITY))
+                    .unwrap()
+            })
+    });
+    rows.truncate(limit);
+    rows
+}
+
+fn keep_leakage_best_by_kl(
+    mut rows: Vec<LeakageSamplerRow>,
+    limit: usize,
+) -> Vec<LeakageSamplerRow> {
+    rows.sort_by(|a, b| {
+        a.signature_kl_bits
+            .unwrap_or(f64::INFINITY)
+            .partial_cmp(&b.signature_kl_bits.unwrap_or(f64::INFINITY))
+            .unwrap()
+            .then_with(|| {
+                a.signature_tv_union_bound
+                    .partial_cmp(&b.signature_tv_union_bound)
+                    .unwrap()
+            })
+            .then_with(|| {
+                a.estimated_signature_bytes
+                    .cmp(&b.estimated_signature_bytes)
+            })
+    });
+    rows.truncate(limit);
+    rows
+}
+
+fn fast_interior_leakage_row(cfg: &Config, row: &SamplerRow) -> Option<LeakageSamplerRow> {
+    let per_coordinate_tv = fast_interior_coordinate_tv(row.accepted_z_bound, cfg.eta)?;
+    let serialized_response_coordinates = row
+        .repetitions
+        .saturating_mul(row.active_response_coordinates);
+    let signature_tv_union_bound =
+        (serialized_response_coordinates as f64 * per_coordinate_tv).min(1.0);
+    Some(LeakageSamplerRow {
+        sampler: "fast-interior-shifted-uniform".to_string(),
+        proof_status: "valid-signature-only; response law depends on the secret shift".to_string(),
+        block_weight: row.block_weight,
+        repetitions: row.repetitions,
+        serialized_response_coordinates,
+        accepted_z_bound: row.accepted_z_bound,
+        sigma: None,
+        estimated_signature_bytes: row.estimated_signature_bytes,
+        signature_bytes_with_digest: row.signature_bytes_with_digest,
+        min_accept_probability_per_coordinate: 1.0,
+        max_accept_probability_per_coordinate: 1.0,
+        accept_probability_ratio: 1.0,
+        log2_expected_retries: 0.0,
+        per_coordinate_tv,
+        signature_tv_union_bound,
+        per_coordinate_kl_bits: None,
+        signature_kl_bits: None,
+        pinsker_signature_tv_bound: None,
+        verdict: leakage_verdict(
+            "fast-interior-shifted-uniform",
+            signature_tv_union_bound,
+            None,
+            0.0,
+            cfg.max_log2_retries,
+        ),
+    })
+}
+
+fn gaussian_leakage_row(
+    cfg: &Config,
+    row: &SamplerRow,
+    sigma: u64,
+    metrics: GaussianLeakageMetrics,
+) -> LeakageSamplerRow {
+    let (min_accept, max_accept, accept_ratio, per_coordinate_tv, per_coordinate_kl_bits) = metrics;
+    let serialized_response_coordinates = row
+        .repetitions
+        .saturating_mul(row.active_response_coordinates);
+    let signature_tv_union_bound =
+        (serialized_response_coordinates as f64 * per_coordinate_tv).min(1.0);
+    let signature_kl_bits = serialized_response_coordinates as f64 * per_coordinate_kl_bits;
+    let log2_expected_retries =
+        serialized_response_coordinates as f64 * (-(min_accept.max(f64::MIN_POSITIVE)).log2());
+    LeakageSamplerRow {
+        sampler: "conditioned-shifted-discrete-gaussian".to_string(),
+        proof_status: "leakage-bounded-candidate; not secret-independent".to_string(),
+        block_weight: row.block_weight,
+        repetitions: row.repetitions,
+        serialized_response_coordinates,
+        accepted_z_bound: row.accepted_z_bound,
+        sigma: Some(sigma),
+        estimated_signature_bytes: row.estimated_signature_bytes,
+        signature_bytes_with_digest: row.signature_bytes_with_digest,
+        min_accept_probability_per_coordinate: min_accept,
+        max_accept_probability_per_coordinate: max_accept,
+        accept_probability_ratio: accept_ratio,
+        log2_expected_retries,
+        per_coordinate_tv,
+        signature_tv_union_bound,
+        per_coordinate_kl_bits: Some(per_coordinate_kl_bits),
+        signature_kl_bits: Some(signature_kl_bits),
+        pinsker_signature_tv_bound: Some(pinsker_tv_bound(signature_kl_bits)),
+        verdict: leakage_verdict(
+            "conditioned-shifted-discrete-gaussian",
+            signature_tv_union_bound,
+            Some(signature_kl_bits),
+            log2_expected_retries,
+            cfg.max_log2_retries,
+        ),
+    }
+}
+
 fn run_analysis(cfg: &Config) -> Result<SamplerOutput, String> {
     if cfg.product_block_groups == 0 {
         return Err("--product-block-groups must be positive".to_string());
@@ -592,6 +1118,9 @@ fn run_analysis(cfg: &Config) -> Result<SamplerOutput, String> {
     }
     let local_free = cfg.n / cfg.product_block_groups;
     let mut retry_pass = Vec::new();
+    let mut fast_leakage_rows = Vec::new();
+    let mut gaussian_leakage_rows = Vec::new();
+    let mut gaussian_metrics: HashMap<(u64, u64), GaussianLeakageMetrics> = HashMap::new();
     for &weight in &cfg.block_weights {
         if weight == 0 || weight > cfg.product_block_groups {
             continue;
@@ -604,6 +1133,24 @@ fn run_analysis(cfg: &Config) -> Result<SamplerOutput, String> {
                 if let Some(row) =
                     build_row(cfg, local_free, weight, repetitions, z_bound, &coverage)
                 {
+                    if let Some(leakage_row) = fast_interior_leakage_row(cfg, &row) {
+                        fast_leakage_rows.push(leakage_row);
+                    }
+                    for &sigma in &cfg.leakage_sigmas {
+                        let metrics =
+                            if let Some(&metrics) = gaussian_metrics.get(&(z_bound, sigma)) {
+                                metrics
+                            } else {
+                                let Some(metrics) =
+                                    gaussian_shifted_conditioned_metrics(z_bound, cfg.eta, sigma)
+                                else {
+                                    continue;
+                                };
+                                gaussian_metrics.insert((z_bound, sigma), metrics);
+                                metrics
+                            };
+                        gaussian_leakage_rows.push(gaussian_leakage_row(cfg, &row, sigma, metrics));
+                    }
                     if row.log2_expected_retries <= cfg.max_log2_retries {
                         retry_pass.push(row);
                     }
@@ -643,6 +1190,11 @@ fn run_analysis(cfg: &Config) -> Result<SamplerOutput, String> {
         .filter(|row| row.full_block_coverage)
         .cloned()
         .collect();
+    let gaussian_retry_pass = gaussian_leakage_rows
+        .iter()
+        .filter(|row| row.log2_expected_retries <= cfg.max_log2_retries)
+        .cloned()
+        .collect();
     Ok(SamplerOutput {
         q: cfg.q,
         n: cfg.n,
@@ -659,15 +1211,429 @@ fn run_analysis(cfg: &Config) -> Result<SamplerOutput, String> {
         best_compact_fork_delta_24_rows: keep_best(compact_fork_delta_24, 12),
         best_compact_fork_delta_32_rows: keep_best(compact_fork_delta_32, 12),
         best_full_coverage_rows: keep_best(full_coverage, 12),
+        best_fast_interior_leakage_rows: keep_leakage_best_by_size(fast_leakage_rows, 12),
+        best_gaussian_leakage_rows: keep_leakage_best_by_size(gaussian_retry_pass, 12),
+        lowest_gaussian_leakage_rows: keep_leakage_best_by_kl(gaussian_leakage_rows, 12),
         conclusions: conclusions(cfg, local_free),
     })
+}
+
+fn leakage_certificate(cfg: &Config, out: &SamplerOutput) -> LeakageCertificate {
+    let rational_interval_rows = out
+        .best_gaussian_leakage_rows
+        .iter()
+        .filter_map(|row| rational_interval_row_from_leakage_row(row, cfg.eta))
+        .collect();
+    LeakageCertificate {
+        schema: "descender.conditioned-gaussian-leakage-certificate.v2".to_string(),
+        profile: "dyadic-conditioned-shifted-discrete-gaussian-product-response".to_string(),
+        q: cfg.q,
+        n: cfg.n,
+        eta: cfg.eta,
+        product_block_groups: cfg.product_block_groups,
+        local_free_coordinates_per_block: out.local_free_coordinates_per_block,
+        target_bits: cfg.target_bits,
+        digest_bytes: cfg.digest_bytes,
+        max_log2_retries: cfg.max_log2_retries,
+        max_extra_repetitions: cfg.max_extra_repetitions,
+        fork_challenges_per_round: cfg.fork_challenges_per_round,
+        block_weights: cfg.block_weights.clone(),
+        z_bounds: cfg.z_bounds.clone(),
+        leakage_sigmas: cfg.leakage_sigmas.clone(),
+        row_source: "best_gaussian_leakage_rows_under_retry_budget".to_string(),
+        row_limit: out.best_gaussian_leakage_rows.len(),
+        metric_definitions: vec![
+            "For each shift v in [-eta,eta], P_v is the discrete Gaussian proposal y over [-z-eta,z+eta], shifted to r=y+v and conditioned on r in [-z,z].".to_string(),
+            "per_coordinate_tv is max_{v0,v1} 1/2 * sum_r |P_v0(r)-P_v1(r)| over the finite response interval.".to_string(),
+            "per_coordinate_kl_bits is max_{v0,v1} sum_r P_v0(r) log2(P_v0(r)/P_v1(r)).".to_string(),
+            "signature_kl_bits is serialized_response_coordinates * per_coordinate_kl_bits.".to_string(),
+            "signature_tv_union_bound is min(1, serialized_response_coordinates * per_coordinate_tv).".to_string(),
+            "pinsker_signature_tv_bound is min(1, sqrt(ln(2) * signature_kl_bits / 2)).".to_string(),
+            "log2_expected_retries uses the worst per-coordinate acceptance probability in the selected row.".to_string(),
+            "rational_interval_rows certify the dyadic quantized sampler actually used by the proof object: weights are positive integers indexed by support offset, and TV is recomputed exactly as a rational number from those weights.".to_string(),
+        ],
+        selected_rows: out.best_gaussian_leakage_rows.clone(),
+        rational_interval_rows,
+    }
+}
+
+fn config_from_certificate(cert: &LeakageCertificate) -> Config {
+    Config {
+        q: cert.q,
+        n: cert.n,
+        eta: cert.eta,
+        product_block_groups: cert.product_block_groups,
+        target_bits: cert.target_bits,
+        digest_bytes: cert.digest_bytes,
+        max_log2_retries: cert.max_log2_retries,
+        max_extra_repetitions: cert.max_extra_repetitions,
+        fork_challenges_per_round: cert.fork_challenges_per_round,
+        block_weights: cert.block_weights.clone(),
+        z_bounds: cert.z_bounds.clone(),
+        leakage_sigmas: cert.leakage_sigmas.clone(),
+        output_json: PathBuf::new(),
+        output_md: PathBuf::new(),
+        output_certificate: PathBuf::new(),
+        output_lean_certificate: None,
+        verify_certificate: None,
+    }
+}
+
+fn close_f64(name: &str, expected: f64, actual: f64) -> Result<(), String> {
+    let tolerance = 1e-12_f64.max(1e-12 * expected.abs().max(actual.abs()));
+    if (expected - actual).abs() <= tolerance {
+        Ok(())
+    } else {
+        Err(format!("{name} drifted: expected {expected}, got {actual}"))
+    }
+}
+
+fn close_option_f64(name: &str, expected: Option<f64>, actual: Option<f64>) -> Result<(), String> {
+    match (expected, actual) {
+        (Some(expected), Some(actual)) => close_f64(name, expected, actual),
+        (None, None) => Ok(()),
+        _ => Err(format!(
+            "{name} option drifted: expected {expected:?}, got {actual:?}"
+        )),
+    }
+}
+
+fn verify_leakage_row(
+    idx: usize,
+    expected: &LeakageSamplerRow,
+    actual: &LeakageSamplerRow,
+) -> Result<(), String> {
+    let prefix = |field: &str| format!("selected_rows[{idx}].{field}");
+    if expected.sampler != actual.sampler {
+        return Err(format!(
+            "{} drifted: expected {}, got {}",
+            prefix("sampler"),
+            expected.sampler,
+            actual.sampler
+        ));
+    }
+    if expected.proof_status != actual.proof_status {
+        return Err(format!("{} drifted", prefix("proof_status")));
+    }
+    if expected.block_weight != actual.block_weight {
+        return Err(format!("{} drifted", prefix("block_weight")));
+    }
+    if expected.repetitions != actual.repetitions {
+        return Err(format!("{} drifted", prefix("repetitions")));
+    }
+    if expected.serialized_response_coordinates != actual.serialized_response_coordinates {
+        return Err(format!(
+            "{} drifted",
+            prefix("serialized_response_coordinates")
+        ));
+    }
+    if expected.accepted_z_bound != actual.accepted_z_bound {
+        return Err(format!("{} drifted", prefix("accepted_z_bound")));
+    }
+    if expected.sigma != actual.sigma {
+        return Err(format!("{} drifted", prefix("sigma")));
+    }
+    if expected.estimated_signature_bytes != actual.estimated_signature_bytes {
+        return Err(format!("{} drifted", prefix("estimated_signature_bytes")));
+    }
+    if expected.signature_bytes_with_digest != actual.signature_bytes_with_digest {
+        return Err(format!("{} drifted", prefix("signature_bytes_with_digest")));
+    }
+    close_f64(
+        &prefix("min_accept_probability_per_coordinate"),
+        expected.min_accept_probability_per_coordinate,
+        actual.min_accept_probability_per_coordinate,
+    )?;
+    close_f64(
+        &prefix("max_accept_probability_per_coordinate"),
+        expected.max_accept_probability_per_coordinate,
+        actual.max_accept_probability_per_coordinate,
+    )?;
+    close_f64(
+        &prefix("accept_probability_ratio"),
+        expected.accept_probability_ratio,
+        actual.accept_probability_ratio,
+    )?;
+    close_f64(
+        &prefix("log2_expected_retries"),
+        expected.log2_expected_retries,
+        actual.log2_expected_retries,
+    )?;
+    close_f64(
+        &prefix("per_coordinate_tv"),
+        expected.per_coordinate_tv,
+        actual.per_coordinate_tv,
+    )?;
+    close_f64(
+        &prefix("signature_tv_union_bound"),
+        expected.signature_tv_union_bound,
+        actual.signature_tv_union_bound,
+    )?;
+    close_option_f64(
+        &prefix("per_coordinate_kl_bits"),
+        expected.per_coordinate_kl_bits,
+        actual.per_coordinate_kl_bits,
+    )?;
+    close_option_f64(
+        &prefix("signature_kl_bits"),
+        expected.signature_kl_bits,
+        actual.signature_kl_bits,
+    )?;
+    close_option_f64(
+        &prefix("pinsker_signature_tv_bound"),
+        expected.pinsker_signature_tv_bound,
+        actual.pinsker_signature_tv_bound,
+    )?;
+    if expected.verdict != actual.verdict {
+        return Err(format!(
+            "{} drifted: expected {}, got {}",
+            prefix("verdict"),
+            expected.verdict,
+            actual.verdict
+        ));
+    }
+    Ok(())
+}
+
+fn verify_exact_interval(
+    name: &str,
+    interval: &RationalInterval,
+    numerator: u128,
+    denominator: u128,
+) -> Result<(), String> {
+    let lower = parse_u128_field(
+        &format!("{name}.lower_numerator"),
+        &interval.lower_numerator,
+    )?;
+    let upper = parse_u128_field(
+        &format!("{name}.upper_numerator"),
+        &interval.upper_numerator,
+    )?;
+    let actual_den = parse_u128_field(&format!("{name}.denominator"), &interval.denominator)?;
+    if lower != numerator || upper != numerator || actual_den != denominator {
+        return Err(format!(
+            "{name} drifted: expected exact {numerator}/{denominator}, got [{lower},{upper}]/{actual_den}"
+        ));
+    }
+    close_f64(
+        &format!("{name}.upper_decimal"),
+        numerator as f64 / denominator as f64,
+        interval.upper_decimal,
+    )
+}
+
+fn verify_upper_interval(
+    name: &str,
+    interval: &RationalInterval,
+    numerator: u128,
+    denominator: u128,
+) -> Result<(), String> {
+    let lower = parse_u128_field(
+        &format!("{name}.lower_numerator"),
+        &interval.lower_numerator,
+    )?;
+    let upper = parse_u128_field(
+        &format!("{name}.upper_numerator"),
+        &interval.upper_numerator,
+    )?;
+    let actual_den = parse_u128_field(&format!("{name}.denominator"), &interval.denominator)?;
+    if lower != 0 || upper != numerator || actual_den != denominator {
+        return Err(format!(
+            "{name} drifted: expected upper [0,{numerator}]/{denominator}, got [{lower},{upper}]/{actual_den}"
+        ));
+    }
+    close_f64(
+        &format!("{name}.upper_decimal"),
+        numerator as f64 / denominator as f64,
+        interval.upper_decimal,
+    )
+}
+
+fn verify_rational_interval_row(
+    idx: usize,
+    eta: u64,
+    selected: &LeakageSamplerRow,
+    proof: &RationalIntervalLeakageProofRow,
+) -> Result<(), String> {
+    let prefix = |field: &str| format!("rational_interval_rows[{idx}].{field}");
+    if proof.sampler != "dyadic-conditioned-shifted-discrete-gaussian" {
+        return Err(format!("{} has unsupported sampler", prefix("sampler")));
+    }
+    if proof.proof_status != "exact-rational-tv-bound-for-quantized-weight-table" {
+        return Err(format!(
+            "{} has unsupported proof status",
+            prefix("proof_status")
+        ));
+    }
+    if proof.block_weight != selected.block_weight
+        || proof.repetitions != selected.repetitions
+        || proof.serialized_response_coordinates != selected.serialized_response_coordinates
+        || proof.accepted_z_bound != selected.accepted_z_bound
+        || Some(proof.sigma) != selected.sigma
+    {
+        return Err(format!(
+            "{idx}: rational proof row does not match selected row parameters"
+        ));
+    }
+    if proof.eta != eta {
+        return Err(format!("{} drifted", prefix("eta")));
+    }
+    if proof.weight_precision_bits != RATIONAL_GAUSSIAN_WEIGHT_PRECISION_BITS {
+        return Err(format!("{} drifted", prefix("weight_precision_bits")));
+    }
+    let support = proof.accepted_z_bound + proof.eta;
+    if proof.support_min != -(support as i64) || proof.support_max != support as i64 {
+        return Err(format!("{} or support_max drifted", prefix("support_min")));
+    }
+    let expected_len = (2 * support + 1) as usize;
+    if proof.weights_by_support_offset.len() != expected_len {
+        return Err(format!(
+            "{} has {} weights, expected {expected_len}",
+            prefix("weights_by_support_offset"),
+            proof.weights_by_support_offset.len()
+        ));
+    }
+    let mut weights = Vec::with_capacity(expected_len);
+    for (weight_idx, value) in proof.weights_by_support_offset.iter().enumerate() {
+        let weight = parse_u128_field(
+            &format!("{}.{}", prefix("weights_by_support_offset"), weight_idx),
+            value,
+        )?;
+        if weight == 0 {
+            return Err(format!(
+                "{} contains zero weight at {weight_idx}",
+                prefix("weights")
+            ));
+        }
+        weights.push(weight);
+    }
+    let expected_weights = quantized_gaussian_weights(
+        proof.accepted_z_bound,
+        proof.eta,
+        proof.sigma,
+        proof.weight_precision_bits,
+    );
+    if weights != expected_weights {
+        return Err(format!(
+            "{} does not match the canonical dyadic Gaussian table",
+            prefix("weights_by_support_offset")
+        ));
+    }
+    for idx in 0..weights.len() {
+        if weights[idx] != weights[weights.len() - 1 - idx] {
+            return Err(format!(
+                "{} is not symmetric at offset {idx}",
+                prefix("weights")
+            ));
+        }
+    }
+    let (tv_num, tv_den, worst_pair) = rational_tv_from_weights(
+        &weights,
+        proof.support_min,
+        proof.accepted_z_bound,
+        proof.eta,
+    );
+    if proof.worst_shift_pair != worst_pair {
+        return Err(format!(
+            "{} drifted: expected {:?}, got {:?}",
+            prefix("worst_shift_pair"),
+            worst_pair,
+            proof.worst_shift_pair
+        ));
+    }
+    verify_exact_interval(
+        &prefix("per_coordinate_tv_exact"),
+        &proof.per_coordinate_tv_exact,
+        tv_num,
+        tv_den,
+    )?;
+    let (sig_num, sig_den) =
+        signature_tv_bound_from_coordinate(proof.serialized_response_coordinates, tv_num, tv_den);
+    verify_upper_interval(
+        &prefix("signature_tv_bound"),
+        &proof.signature_tv_bound,
+        sig_num,
+        sig_den,
+    )?;
+    Ok(())
+}
+
+fn verify_leakage_certificate_file(path: &Path) -> Result<LeakageCertificate, String> {
+    let text = fs::read_to_string(path)
+        .map_err(|err| format!("failed to read {}: {err}", path.display()))?;
+    let cert: LeakageCertificate = serde_json::from_str(&text)
+        .map_err(|err| format!("failed to parse {}: {err}", path.display()))?;
+    if cert.schema != "descender.conditioned-gaussian-leakage-certificate.v2" {
+        return Err(format!(
+            "unsupported leakage certificate schema {}",
+            cert.schema
+        ));
+    }
+    if cert.profile != "dyadic-conditioned-shifted-discrete-gaussian-product-response" {
+        return Err(format!(
+            "unsupported leakage certificate profile {}",
+            cert.profile
+        ));
+    }
+    let cfg = config_from_certificate(&cert);
+    let out = run_analysis(&cfg)?;
+    let expected = leakage_certificate(&cfg, &out);
+
+    if cert.local_free_coordinates_per_block != expected.local_free_coordinates_per_block {
+        return Err("local_free_coordinates_per_block drifted".to_string());
+    }
+    if cert.row_source != expected.row_source {
+        return Err("row_source drifted".to_string());
+    }
+    if cert.row_limit != expected.row_limit {
+        return Err(format!(
+            "row_limit drifted: expected {}, got {}",
+            expected.row_limit, cert.row_limit
+        ));
+    }
+    if cert.metric_definitions != expected.metric_definitions {
+        return Err("metric_definitions drifted".to_string());
+    }
+    if cert.selected_rows.len() != expected.selected_rows.len() {
+        return Err(format!(
+            "selected row count drifted: expected {}, got {}",
+            expected.selected_rows.len(),
+            cert.selected_rows.len()
+        ));
+    }
+    for (idx, (actual, expected)) in cert
+        .selected_rows
+        .iter()
+        .zip(expected.selected_rows.iter())
+        .enumerate()
+    {
+        verify_leakage_row(idx, expected, actual)?;
+    }
+    if cert.rational_interval_rows.len() != cert.selected_rows.len() {
+        return Err(format!(
+            "rational interval row count drifted: expected {}, got {}",
+            cert.selected_rows.len(),
+            cert.rational_interval_rows.len()
+        ));
+    }
+    for (idx, (selected, proof)) in cert
+        .selected_rows
+        .iter()
+        .zip(cert.rational_interval_rows.iter())
+        .enumerate()
+    {
+        verify_rational_interval_row(idx, cert.eta, selected, proof)?;
+    }
+    Ok(cert)
 }
 
 fn conclusions(cfg: &Config, local_free: u64) -> Vec<String> {
     vec![
         format!(
-            "The exact-box sampler is concrete: for each active coordinate, sample y uniformly from [-z-eta,z+eta], output y+shift, and accept iff the response lies in [-z,z].  This exactly realizes the target law with per-coordinate acceptance (2z+1)/(2(z+eta)+1)."
+        "The exact-box sampler is concrete: for each active coordinate, sample y uniformly from [-z-eta,z+eta], output y+shift, and accept iff the response lies in [-z,z].  This exactly realizes the target law with per-coordinate acceptance (2z+1)/(2(z+eta)+1)."
         ),
+        "The new leakage-bounded diagnostics treat fast shifted responses and conditioned shifted discrete-Gaussian responses as valid-signature candidates, then charge their actual response-distribution dependence on the secret by exact finite TV/KL accounting.".to_string(),
+        "The fast-interior sampler has zero rejection, but shifted interval supports give infinite KL for worst-case secret shifts and a product TV union bound that saturates quickly.  It is an implementation tool, not a security proof candidate by itself.".to_string(),
         format!(
             "The rejection exponent is active coordinates, not one scalar.  For this profile each active product block contributes {local_free} free response coordinates."
         ),
@@ -690,6 +1656,7 @@ fn conclusions(cfg: &Config, local_free: u64) -> Vec<String> {
             cfg.n
         ),
         "The most promising small-signature route is now an intermediate compact fork-delta row plus an explicit multi-fork Fiat-Shamir theorem, not another scalar-challenge size screen.".to_string(),
+        "If bounded-leakage rows are to replace exact-box rows, the security theorem must explicitly consume their product KL/TV budget and any secret-dependent retry timing must be hidden or separately bounded.".to_string(),
     ]
 }
 
@@ -751,6 +1718,28 @@ fn markdown(out: &SamplerOutput) -> String {
         String::new(),
     ]);
     append_table(&mut lines, &out.best_full_coverage_rows);
+    lines.extend([
+        String::new(),
+        "## Leakage-Bounded Candidate Rows".to_string(),
+        String::new(),
+        "These rows are valid-signature sampler candidates, not secret-independent proofs.  `TV union` is the simple product union bound over serialized response coordinates.  `KL bits` is additive across serialized coordinates when finite.".to_string(),
+        String::new(),
+        "### Fast Interior Rows".to_string(),
+        String::new(),
+    ]);
+    append_leakage_table(&mut lines, &out.best_fast_interior_leakage_rows);
+    lines.extend([
+        String::new(),
+        "### Discrete-Gaussian Rows By Size Under Retry Budget".to_string(),
+        String::new(),
+    ]);
+    append_leakage_table(&mut lines, &out.best_gaussian_leakage_rows);
+    lines.extend([
+        String::new(),
+        "### Lowest Discrete-Gaussian Leakage Rows".to_string(),
+        String::new(),
+    ]);
+    append_leakage_table(&mut lines, &out.lowest_gaussian_leakage_rows);
     lines.extend([String::new(), "## Conclusions".to_string(), String::new()]);
     for conclusion in &out.conclusions {
         lines.push(format!("- {conclusion}"));
@@ -796,8 +1785,339 @@ fn append_table(lines: &mut Vec<String>, rows: &[SamplerRow]) {
     }
 }
 
+fn fmt_optional_float(value: Option<f64>) -> String {
+    match value {
+        Some(value) => format!("{value:.4}"),
+        None => "inf/unsupported".to_string(),
+    }
+}
+
+fn append_leakage_table(lines: &mut Vec<String>, rows: &[LeakageSamplerRow]) {
+    lines.push("| sampler | weight | reps | coords | z bound | sigma | sig bytes | sig bytes w/32B hash | min accept | accept ratio | log2 retries | coord TV | TV union | coord KL bits | sig KL bits | Pinsker TV | verdict |".to_string());
+    lines.push(
+        "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|"
+            .to_string(),
+    );
+    for row in rows {
+        lines.push(format!(
+            "| {} | {} | {} | {} | {} | {} | {} | {} | {:.6} | {:.4} | {:.2} | {:.6} | {:.4} | {} | {} | {} | {} |",
+            row.sampler,
+            row.block_weight,
+            row.repetitions,
+            row.serialized_response_coordinates,
+            row.accepted_z_bound,
+            row.sigma.map_or("-".to_string(), |sigma| sigma.to_string()),
+            row.estimated_signature_bytes,
+            row.signature_bytes_with_digest,
+            row.min_accept_probability_per_coordinate,
+            row.accept_probability_ratio,
+            row.log2_expected_retries,
+            row.per_coordinate_tv,
+            row.signature_tv_union_bound,
+            fmt_optional_float(row.per_coordinate_kl_bits),
+            fmt_optional_float(row.signature_kl_bits),
+            fmt_optional_float(row.pinsker_signature_tv_bound),
+            row.verdict
+        ));
+    }
+}
+
+fn sha256_hex(text: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(text.as_bytes());
+    format!("{:x}", hasher.finalize())
+}
+
+fn lean_string_literal(value: &str) -> String {
+    serde_json::to_string(value).expect("string serialization should not fail")
+}
+
+fn lean_certificate_namespace(cert: &LeakageCertificate) -> String {
+    format!("ConditionedGaussianLeakageN{}", cert.n)
+}
+
+fn write_lean_interval_def(
+    out: &mut String,
+    name: &str,
+    interval: &RationalInterval,
+) -> Result<(), String> {
+    writeln!(out, "def {name} : RationalIntervalProof := {{").map_err(|err| err.to_string())?;
+    writeln!(out, "  lowerNumerator := {},", interval.lower_numerator)
+        .map_err(|err| err.to_string())?;
+    writeln!(out, "  upperNumerator := {},", interval.upper_numerator)
+        .map_err(|err| err.to_string())?;
+    writeln!(out, "  denominator := {},", interval.denominator).map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "  upperDecimal := {}",
+        lean_string_literal(&interval.upper_decimal.to_string())
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(out, "}}\n").map_err(|err| err.to_string())
+}
+
+fn write_lean_row_defs(
+    out: &mut String,
+    idx: usize,
+    row: &RationalIntervalLeakageProofRow,
+) -> Result<(), String> {
+    let per_coord = format!("row{idx}PerCoordinateTvExact");
+    let sig = format!("row{idx}SignatureTvBound");
+    write_lean_interval_def(out, &per_coord, &row.per_coordinate_tv_exact)?;
+    write_lean_interval_def(out, &sig, &row.signature_tv_bound)?;
+    writeln!(out, "def row{idx} : DyadicGaussianLeakageProofRow := {{")
+        .map_err(|err| err.to_string())?;
+    writeln!(out, "  sampler := {},", lean_string_literal(&row.sampler))
+        .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "  proofStatus := {},",
+        lean_string_literal(&row.proof_status)
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(out, "  blockWeight := {},", row.block_weight).map_err(|err| err.to_string())?;
+    writeln!(out, "  repetitions := {},", row.repetitions).map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "  serializedResponseCoordinates := {},",
+        row.serialized_response_coordinates
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(out, "  acceptedZBound := {},", row.accepted_z_bound)
+        .map_err(|err| err.to_string())?;
+    writeln!(out, "  eta := {},", row.eta).map_err(|err| err.to_string())?;
+    writeln!(out, "  sigma := {},", row.sigma).map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "  weightPrecisionBits := {},",
+        row.weight_precision_bits
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(out, "  supportMin := {},", row.support_min).map_err(|err| err.to_string())?;
+    writeln!(out, "  supportMax := {},", row.support_max).map_err(|err| err.to_string())?;
+    writeln!(out, "  worstShiftLeft := {},", row.worst_shift_pair[0])
+        .map_err(|err| err.to_string())?;
+    writeln!(out, "  worstShiftRight := {},", row.worst_shift_pair[1])
+        .map_err(|err| err.to_string())?;
+    writeln!(out, "  perCoordinateTvExact := {per_coord},").map_err(|err| err.to_string())?;
+    writeln!(out, "  signatureTvBound := {sig}").map_err(|err| err.to_string())?;
+    writeln!(out, "}}\n").map_err(|err| err.to_string())?;
+
+    writeln!(
+        out,
+        "def row{idx}SignatureLeakage : ℝ := row{idx}.signatureLeakage"
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "theorem row{idx}SignatureLeakage_eq :\n    row{idx}SignatureLeakage = ({} : ℝ) / {} := by",
+        row.signature_tv_bound.upper_numerator, row.signature_tv_bound.denominator
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "  norm_num [row{idx}SignatureLeakage, DyadicGaussianLeakageProofRow.signatureLeakage,\n    RationalIntervalProof.upperReal, row{idx}, {sig}]\n"
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "theorem row{idx}SignatureLeakage_nonneg : 0 ≤ row{idx}SignatureLeakage := by"
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(out, "  exact row{idx}.signatureLeakage_nonneg\n").map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "theorem row{idx}SignatureLeakage_le_one : row{idx}SignatureLeakage ≤ 1 := by"
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "  exact row{idx}.signatureLeakage_le_one (by norm_num [row{idx}, {sig}])\n"
+    )
+    .map_err(|err| err.to_string())
+}
+
+fn lean_certificate_module(
+    cert: &LeakageCertificate,
+    source_path: &Path,
+    source_text: &str,
+) -> Result<String, String> {
+    let mut out = String::new();
+    let namespace = lean_certificate_namespace(cert);
+    let source_path = source_path.display().to_string();
+    let source_hash = sha256_hex(source_text);
+    writeln!(out, "import Descender.SignatureLeakageCertificate\n")
+        .map_err(|err| err.to_string())?;
+    writeln!(out, "namespace Descender").map_err(|err| err.to_string())?;
+    writeln!(out, "namespace SignatureDistribution").map_err(|err| err.to_string())?;
+    writeln!(out, "namespace Generated").map_err(|err| err.to_string())?;
+    writeln!(out, "namespace {namespace}\n").map_err(|err| err.to_string())?;
+    writeln!(out, "noncomputable section\n").map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "/-!\nGenerated by `signature_sampler_analysis --output-lean-certificate`.\n\nSource certificate: `{}`\nSource SHA-256: `{}`\n\nThe Rust verifier checks the source JSON before emitting this module.\n-/\n",
+        source_path, source_hash
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "def sourcePath : String := {}",
+        lean_string_literal(&source_path)
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "def sourceSha256 : String := {}",
+        lean_string_literal(&source_hash)
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "def schema : String := {}",
+        lean_string_literal(&cert.schema)
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "def profile : String := {}\n",
+        lean_string_literal(&cert.profile)
+    )
+    .map_err(|err| err.to_string())?;
+
+    for (idx, row) in cert.rational_interval_rows.iter().enumerate() {
+        write_lean_row_defs(&mut out, idx, row)?;
+    }
+
+    writeln!(out, "def rows : List DyadicGaussianLeakageProofRow := [")
+        .map_err(|err| err.to_string())?;
+    for idx in 0..cert.rational_interval_rows.len() {
+        if idx + 1 == cert.rational_interval_rows.len() {
+            writeln!(out, "  row{idx}").map_err(|err| err.to_string())?;
+        } else {
+            writeln!(out, "  row{idx},").map_err(|err| err.to_string())?;
+        }
+    }
+    writeln!(out, "]\n").map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "theorem rows_length : rows.length = {} := by rfl\n",
+        cert.rational_interval_rows.len()
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "def certificate : DyadicGaussianLeakageCertificate := {{"
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(out, "  schema := schema,").map_err(|err| err.to_string())?;
+    writeln!(out, "  profile := profile,").map_err(|err| err.to_string())?;
+    writeln!(out, "  sourcePath := sourcePath,").map_err(|err| err.to_string())?;
+    writeln!(out, "  sourceSha256 := sourceSha256,").map_err(|err| err.to_string())?;
+    writeln!(out, "  q := {},", cert.q).map_err(|err| err.to_string())?;
+    writeln!(out, "  n := {},", cert.n).map_err(|err| err.to_string())?;
+    writeln!(out, "  eta := {},", cert.eta).map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "  productBlockGroups := {},",
+        cert.product_block_groups
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "  localFreeCoordinatesPerBlock := {},",
+        cert.local_free_coordinates_per_block
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "  targetBits := {},",
+        lean_string_literal(&cert.target_bits.to_string())
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(out, "  digestBytes := {},", cert.digest_bytes).map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "  maxLog2Retries := {},",
+        lean_string_literal(&cert.max_log2_retries.to_string())
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "  maxExtraRepetitions := {},",
+        cert.max_extra_repetitions
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "  forkChallengesPerRound := {},",
+        cert.fork_challenges_per_round
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "  rowSource := {},",
+        lean_string_literal(&cert.row_source)
+    )
+    .map_err(|err| err.to_string())?;
+    writeln!(out, "  rowLimit := {},", cert.row_limit).map_err(|err| err.to_string())?;
+    writeln!(out, "  rows := rows").map_err(|err| err.to_string())?;
+    writeln!(out, "}}\n").map_err(|err| err.to_string())?;
+    writeln!(
+        out,
+        "theorem certificate_rows_length : certificate.rows.length = {} := by rfl\n",
+        cert.rational_interval_rows.len()
+    )
+    .map_err(|err| err.to_string())?;
+    if !cert.rational_interval_rows.is_empty() {
+        writeln!(
+            out,
+            "def leadingSignatureLeakage : ℝ := row0SignatureLeakage"
+        )
+        .map_err(|err| err.to_string())?;
+        writeln!(
+            out,
+            "theorem leadingSignatureLeakage_eq : leadingSignatureLeakage = row0SignatureLeakage := by rfl\n"
+        )
+        .map_err(|err| err.to_string())?;
+    }
+    writeln!(out, "end\n").map_err(|err| err.to_string())?;
+    writeln!(out, "end {namespace}").map_err(|err| err.to_string())?;
+    writeln!(out, "end Generated").map_err(|err| err.to_string())?;
+    writeln!(out, "end SignatureDistribution").map_err(|err| err.to_string())?;
+    writeln!(out, "end Descender").map_err(|err| err.to_string())?;
+    Ok(out)
+}
+
+fn write_lean_certificate(
+    path: &Path,
+    cert: &LeakageCertificate,
+    source_path: &Path,
+    source_text: &str,
+) -> Result<(), String> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|e| format!("create {}: {e}", parent.display()))?;
+    }
+    let module = lean_certificate_module(cert, source_path, source_text)?;
+    fs::write(path, module).map_err(|e| format!("write {}: {e}", path.display()))
+}
+
 fn main() -> Result<(), String> {
     let cfg = parse_args()?;
+    if let Some(path) = cfg.verify_certificate.as_ref() {
+        let source_text = fs::read_to_string(path)
+            .map_err(|err| format!("failed to read {}: {err}", path.display()))?;
+        let cert = verify_leakage_certificate_file(path)?;
+        if let Some(lean_path) = cfg.output_lean_certificate.as_ref() {
+            write_lean_certificate(lean_path, &cert, path, &source_text)?;
+            println!("wrote {}", lean_path.display());
+        }
+        println!(
+            "verified {} conditioned Gaussian leakage rows in {}",
+            cert.selected_rows.len(),
+            path.display()
+        );
+        return Ok(());
+    }
     let out = run_analysis(&cfg)?;
     if let Some(parent) = cfg.output_json.parent() {
         fs::create_dir_all(parent).map_err(|e| format!("create {}: {e}", parent.display()))?;
@@ -805,13 +2125,27 @@ fn main() -> Result<(), String> {
     if let Some(parent) = cfg.output_md.parent() {
         fs::create_dir_all(parent).map_err(|e| format!("create {}: {e}", parent.display()))?;
     }
+    if let Some(parent) = cfg.output_certificate.parent() {
+        fs::create_dir_all(parent).map_err(|e| format!("create {}: {e}", parent.display()))?;
+    }
     let json = serde_json::to_string_pretty(&out).map_err(|e| format!("serialize json: {e}"))?;
+    let cert_obj = leakage_certificate(&cfg, &out);
+    let cert = serde_json::to_string_pretty(&cert_obj)
+        .map_err(|e| format!("serialize leakage certificate: {e}"))?;
+    let cert_text = format!("{cert}\n");
     fs::write(&cfg.output_json, format!("{json}\n"))
         .map_err(|e| format!("write {}: {e}", cfg.output_json.display()))?;
     fs::write(&cfg.output_md, markdown(&out))
         .map_err(|e| format!("write {}: {e}", cfg.output_md.display()))?;
+    fs::write(&cfg.output_certificate, &cert_text)
+        .map_err(|e| format!("write {}: {e}", cfg.output_certificate.display()))?;
+    if let Some(lean_path) = cfg.output_lean_certificate.as_ref() {
+        write_lean_certificate(lean_path, &cert_obj, &cfg.output_certificate, &cert_text)?;
+        println!("wrote {}", lean_path.display());
+    }
     println!("wrote {}", cfg.output_json.display());
     println!("wrote {}", cfg.output_md.display());
+    println!("wrote {}", cfg.output_certificate.display());
     Ok(())
 }
 
@@ -824,6 +2158,129 @@ mod tests {
         let p = coordinate_accept_probability(128, 12);
         let expected = 257.0 / 281.0;
         assert!((p - expected).abs() < 1e-12);
+    }
+
+    #[test]
+    fn fast_interior_tv_matches_shifted_interval_count() {
+        let tv = fast_interior_coordinate_tv(224, 12).unwrap();
+        let expected = 12.0 / 425.0;
+        assert!((tv - expected).abs() < 1e-12);
+    }
+
+    #[test]
+    fn gaussian_shifted_metrics_are_finite_and_improve_with_sigma() {
+        let small = gaussian_shifted_conditioned_metrics(224, 12, 64).unwrap();
+        let large = gaussian_shifted_conditioned_metrics(224, 12, 320).unwrap();
+        assert!(small.3 > large.3);
+        assert!(small.4 > large.4);
+        assert!(small.0 > 0.0);
+        assert!(large.0 > 0.0);
+    }
+
+    #[test]
+    fn leakage_rows_capture_fast_path_as_leaky() {
+        let cfg = Config {
+            n: 32,
+            output_json: PathBuf::from("/tmp/unused.json"),
+            output_md: PathBuf::from("/tmp/unused.md"),
+            output_certificate: PathBuf::from("/tmp/unused-cert.json"),
+            ..Config::default()
+        };
+        let out = run_analysis(&cfg).unwrap();
+        assert!(out.best_fast_interior_leakage_rows.iter().any(|row| {
+            row.verdict == "support-shift-leakage-too-large-for-security-claim"
+                && row.signature_tv_union_bound >= 1.0
+        }));
+    }
+
+    #[test]
+    fn leakage_certificate_round_trips_through_verifier() {
+        let path = PathBuf::from("/tmp/descender-leakage-certificate-test.json");
+        let cfg = Config {
+            n: 32,
+            block_weights: vec![1, 2],
+            z_bounds: vec![48, 64],
+            leakage_sigmas: vec![640, 896],
+            output_json: PathBuf::from("/tmp/unused.json"),
+            output_md: PathBuf::from("/tmp/unused.md"),
+            output_certificate: path.clone(),
+            ..Config::default()
+        };
+        let out = run_analysis(&cfg).unwrap();
+        let cert = serde_json::to_string_pretty(&leakage_certificate(&cfg, &out)).unwrap();
+        fs::write(&path, format!("{cert}\n")).unwrap();
+        let verified = verify_leakage_certificate_file(&path).unwrap();
+        assert_eq!(
+            verified.selected_rows.len(),
+            out.best_gaussian_leakage_rows.len()
+        );
+        fs::remove_file(path).unwrap();
+    }
+
+    #[test]
+    fn leakage_certificate_rejects_noncanonical_weight_table() {
+        let path = PathBuf::from("/tmp/descender-leakage-certificate-tampered-test.json");
+        let cfg = Config {
+            n: 32,
+            block_weights: vec![1],
+            z_bounds: vec![48],
+            leakage_sigmas: vec![640],
+            output_json: PathBuf::from("/tmp/unused.json"),
+            output_md: PathBuf::from("/tmp/unused.md"),
+            output_certificate: path.clone(),
+            ..Config::default()
+        };
+        let out = run_analysis(&cfg).unwrap();
+        let mut cert = leakage_certificate(&cfg, &out);
+        let weights = &mut cert.rational_interval_rows[0].weights_by_support_offset;
+        let mid = weights.len() / 2;
+        let tampered = weights[mid].parse::<u128>().unwrap() + 1;
+        weights[mid] = tampered.to_string();
+        let cert_json = serde_json::to_string_pretty(&cert).unwrap();
+        fs::write(&path, format!("{cert_json}\n")).unwrap();
+        let err = verify_leakage_certificate_file(&path).unwrap_err();
+        assert!(err.contains("canonical dyadic Gaussian table"));
+        fs::remove_file(path).unwrap();
+    }
+
+    #[test]
+    fn lean_certificate_module_contains_verified_rational_constants() {
+        let cfg = Config {
+            n: 32,
+            block_weights: vec![1],
+            z_bounds: vec![48],
+            leakage_sigmas: vec![896],
+            output_json: PathBuf::from("/tmp/unused.json"),
+            output_md: PathBuf::from("/tmp/unused.md"),
+            output_certificate: PathBuf::from("/tmp/unused-cert.json"),
+            ..Config::default()
+        };
+        let out = run_analysis(&cfg).unwrap();
+        let cert = leakage_certificate(&cfg, &out);
+        let source_text = serde_json::to_string_pretty(&cert).unwrap();
+        let module =
+            lean_certificate_module(&cert, &PathBuf::from("certificate.json"), &source_text)
+                .unwrap();
+        assert!(module.contains("namespace ConditionedGaussianLeakageN32"));
+        assert!(module.contains(&sha256_hex(&source_text)));
+        assert!(module.contains("def row0SignatureLeakage : ℝ"));
+        assert!(module.contains("row0SignatureLeakage_le_one"));
+        assert!(
+            module.contains(
+                cert.rational_interval_rows[0]
+                    .signature_tv_bound
+                    .upper_numerator
+                    .as_str()
+            )
+        );
+        assert!(
+            module.contains(
+                cert.rational_interval_rows[0]
+                    .signature_tv_bound
+                    .denominator
+                    .as_str()
+            )
+        );
     }
 
     #[test]

@@ -1,3 +1,9 @@
+#![allow(
+    clippy::manual_is_multiple_of,
+    clippy::needless_range_loop,
+    clippy::too_many_arguments
+)]
+
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::env;
@@ -26,6 +32,17 @@ const RESPONSE_BYTES_PER_REP: usize = 36;
 const RESPONSE_BOUND: i16 = 224;
 const SIGNATURE_BYTES: usize = CHALLENGE_BYTES + REPS * RESPONSE_BYTES_PER_REP;
 const RECONSTRUCTED_COMMITMENT_BYTES: usize = REPS * PK_PAYLOAD_BYTES;
+const DEFAULT_SECRET_ETA: i16 = 12;
+const MAX_SECRET_ETA: i16 = 31;
+const DEFAULT_REFERENCE_MAX_ATTEMPTS: u64 = 1_000_000;
+const CERTIFIED_DYADIC_BLOCK_WEIGHT: usize = GROUPS - 1;
+const CERTIFIED_DYADIC_REPETITIONS: usize = REPS;
+const CERTIFIED_DYADIC_SERIALIZED_RESPONSE_COORDINATES: usize =
+    CERTIFIED_DYADIC_BLOCK_WEIGHT * LOCAL_FREE * CERTIFIED_DYADIC_REPETITIONS;
+const CERTIFIED_DYADIC_ACCEPTED_Z_BOUND: i16 = RESPONSE_BOUND;
+const CERTIFIED_DYADIC_ETA: i16 = DEFAULT_SECRET_ETA;
+const CERTIFIED_DYADIC_SIGMA: u64 = 896;
+const CERTIFIED_DYADIC_WEIGHT_PRECISION_BITS: u32 = 20;
 
 const LOCAL_BLOCK: [[u16; LOCAL_FREE]; LOCAL_PIVOT] =
     [[10_849, 1_171], [1_597, 1_615], [6_102, 11_189]];
@@ -39,6 +56,12 @@ struct Config {
     emit_conformance_vector: bool,
     verify_conformance_vector: Option<PathBuf>,
     write_conformance_vector: Option<PathBuf>,
+    reference_keygen_seed: Option<[u8; 32]>,
+    reference_sign_seed: Option<[u8; 32]>,
+    reference_secret_eta: i16,
+    reference_max_attempts: u64,
+    reference_exact_box: bool,
+    reference_certified_dyadic: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -56,6 +79,58 @@ struct PublicView {
 #[derive(Clone, Debug)]
 struct Responses {
     free: [[[i16; LOCAL_FREE]; GROUPS]; REPS],
+}
+
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+enum ReferenceSigningMode {
+    FastInterior,
+    ExactBox,
+    CertifiedDyadicGaussian,
+}
+
+#[derive(Clone, Debug)]
+struct ReferenceSecretKey {
+    seed: [u8; 32],
+    secret_eta: i16,
+    free: [[i16; LOCAL_FREE]; GROUPS],
+}
+
+#[derive(Clone, Debug)]
+struct ReferenceKeypair {
+    public_key: Vec<u8>,
+    public_view: PublicView,
+    secret_key: ReferenceSecretKey,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+struct ReferenceKeygenOutput {
+    profile: String,
+    keygen_seed_hex: String,
+    public_key_hex: String,
+    public_key_bytes: usize,
+    secret_eta: i16,
+    secret_free: Vec<Vec<i16>>,
+    public_pivot: Vec<Vec<u16>>,
+    public_free: Vec<Vec<u16>>,
+    relation_note: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+struct ReferenceSignatureOutput {
+    profile: String,
+    signing_mode: ReferenceSigningMode,
+    keygen_seed_hex: String,
+    signing_seed_hex: String,
+    message_hex: String,
+    public_key_hex: String,
+    signature_hex: String,
+    attempts: u64,
+    max_attempts: u64,
+    secret_eta: i16,
+    signature_bytes: usize,
+    report: VerifyReport,
+    distribution_note: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -488,6 +563,19 @@ fn hex_decode(input: &str) -> Result<Vec<u8>, String> {
     Ok(out)
 }
 
+fn hex_decode_32(input: &str, flag: &str) -> Result<[u8; 32], String> {
+    let bytes = hex_decode(input)?;
+    if bytes.len() != 32 {
+        return Err(format!(
+            "{flag} has {} bytes after hex decoding, expected 32",
+            bytes.len()
+        ));
+    }
+    let mut out = [0_u8; 32];
+    out.copy_from_slice(&bytes);
+    Ok(out)
+}
+
 fn reject(
     public_key: &[u8],
     message: &[u8],
@@ -662,6 +750,499 @@ fn encode_responses(responses: &Responses) -> Vec<u8> {
         out.extend_from_slice(&pack_response_round(&responses.free[rep]));
     }
     out
+}
+
+struct DeterministicStream {
+    key: [u8; 32],
+    counter: u64,
+    block: [u8; 32],
+    cursor: usize,
+}
+
+impl DeterministicStream {
+    fn new(label: &[u8], seed: &[u8; 32], context: &[u8]) -> Self {
+        let mut hasher = Sha256::new();
+        hasher.update(b"Descender.ReferenceDeterministicStream.v1");
+        hasher.update((label.len() as u64).to_le_bytes());
+        hasher.update(label);
+        hasher.update(seed);
+        hasher.update((context.len() as u64).to_le_bytes());
+        hasher.update(context);
+        let digest = hasher.finalize();
+        let mut key = [0_u8; 32];
+        key.copy_from_slice(&digest);
+        Self {
+            key,
+            counter: 0,
+            block: [0_u8; 32],
+            cursor: 32,
+        }
+    }
+
+    fn refill(&mut self) {
+        let mut hasher = Sha256::new();
+        hasher.update(b"Descender.ReferenceStreamBlock.v1");
+        hasher.update(self.key);
+        hasher.update(self.counter.to_le_bytes());
+        self.block.copy_from_slice(&hasher.finalize());
+        self.counter = self
+            .counter
+            .checked_add(1)
+            .expect("stream counter overflow");
+        self.cursor = 0;
+    }
+
+    fn fill(&mut self, out: &mut [u8]) {
+        for byte in out {
+            if self.cursor == self.block.len() {
+                self.refill();
+            }
+            *byte = self.block[self.cursor];
+            self.cursor += 1;
+        }
+    }
+
+    fn next_u16(&mut self) -> u16 {
+        let mut bytes = [0_u8; 2];
+        self.fill(&mut bytes);
+        u16::from_le_bytes(bytes)
+    }
+
+    fn next_u64(&mut self) -> u64 {
+        let mut bytes = [0_u8; 8];
+        self.fill(&mut bytes);
+        u64::from_le_bytes(bytes)
+    }
+
+    fn sample_u64_below(&mut self, upper: u64) -> u64 {
+        assert!(upper > 0);
+        let zone = u64::MAX / upper * upper;
+        loop {
+            let draw = self.next_u64();
+            if draw < zone {
+                return draw % upper;
+            }
+        }
+    }
+
+    fn sample_i16_inclusive(&mut self, min: i16, max: i16) -> i16 {
+        assert!(min <= max);
+        let span = (max as i32 - min as i32 + 1) as u32;
+        let zone = (u16::MAX as u32 + 1) / span * span;
+        loop {
+            let draw = self.next_u16() as u32;
+            if draw < zone {
+                return (min as i32 + (draw % span) as i32) as i16;
+            }
+        }
+    }
+}
+
+fn gaussian_log_weight(x: i64, sigma: u64) -> f64 {
+    let sigma = sigma as f64;
+    let x = x as f64;
+    -(x * x) / (2.0 * sigma * sigma)
+}
+
+fn canonical_dyadic_gaussian_weights(
+    z_bound: i16,
+    eta: i16,
+    sigma: u64,
+    precision_bits: u32,
+) -> Vec<u64> {
+    assert!(z_bound >= 0);
+    assert!(eta >= 0);
+    assert!(precision_bits < u64::BITS);
+    let scale = (1_u64 << precision_bits) as f64;
+    let support = z_bound as i64 + eta as i64;
+    (-support..=support)
+        .map(|x| {
+            let weight = (scale * gaussian_log_weight(x, sigma).exp()).round();
+            (weight as u64).max(1)
+        })
+        .collect()
+}
+
+fn certified_dyadic_support_min() -> i16 {
+    -(CERTIFIED_DYADIC_ACCEPTED_Z_BOUND + CERTIFIED_DYADIC_ETA)
+}
+
+fn certified_dyadic_weights() -> Vec<u64> {
+    canonical_dyadic_gaussian_weights(
+        CERTIFIED_DYADIC_ACCEPTED_Z_BOUND,
+        CERTIFIED_DYADIC_ETA,
+        CERTIFIED_DYADIC_SIGMA,
+        CERTIFIED_DYADIC_WEIGHT_PRECISION_BITS,
+    )
+}
+
+fn cumulative_weights(weights: &[u64]) -> Vec<u64> {
+    assert!(!weights.is_empty());
+    let mut running = 0_u64;
+    weights
+        .iter()
+        .map(|&weight| {
+            assert!(weight > 0);
+            running = running
+                .checked_add(weight)
+                .expect("dyadic weight total overflow");
+            running
+        })
+        .collect()
+}
+
+fn sample_from_cumulative_weight_table(
+    rng: &mut DeterministicStream,
+    support_min: i16,
+    cumulative: &[u64],
+) -> i16 {
+    assert!(!cumulative.is_empty());
+    let total = *cumulative.last().expect("cumulative table is nonempty");
+    let mut draw = rng.sample_u64_below(total);
+    draw += 1;
+    let offset = cumulative.partition_point(|&weight| weight < draw);
+    support_min + offset as i16
+}
+
+fn validate_secret_eta(secret_eta: i16) -> Result<(), String> {
+    if !(0..=MAX_SECRET_ETA).contains(&secret_eta) {
+        return Err(format!(
+            "secret eta must be in 0..={MAX_SECRET_ETA}, got {secret_eta}"
+        ));
+    }
+    Ok(())
+}
+
+fn derive_public_seed(seed: &[u8; 32], secret_eta: i16) -> [u8; 32] {
+    let mut hasher = Sha256::new();
+    hasher.update(b"Descender.ReferencePublicSeed.v1");
+    hasher.update(seed);
+    hasher.update(secret_eta.to_le_bytes());
+    let digest = hasher.finalize();
+    let mut public_seed = [0_u8; PK_SEED_BYTES];
+    public_seed.copy_from_slice(&digest[..PK_SEED_BYTES]);
+    public_seed
+}
+
+fn public_view_from_secret_free(free: &[[i16; LOCAL_FREE]; GROUPS]) -> PublicView {
+    let mut pivot = [[0_u16; LOCAL_PIVOT]; GROUPS];
+    let mut public_free = [[0_u16; LOCAL_FREE]; GROUPS];
+    for block in 0..GROUPS {
+        pivot[block] = systematic_pivot_from_free(free[block]);
+        for coord in 0..LOCAL_FREE {
+            public_free[block][coord] = mod_q(free[block][coord] as i64);
+        }
+    }
+    PublicView {
+        pivot,
+        free: public_free,
+    }
+}
+
+fn encode_public_view(public_seed: &[u8; PK_SEED_BYTES], public_view: &PublicView) -> Vec<u8> {
+    let mut coords = Vec::with_capacity(VIEW_COORDS);
+    for block in 0..GROUPS {
+        coords.extend_from_slice(&public_view.pivot[block]);
+    }
+    for block in 0..GROUPS {
+        coords.extend_from_slice(&public_view.free[block]);
+    }
+    let mut public_key = Vec::with_capacity(PK_BYTES);
+    public_key.extend_from_slice(public_seed);
+    public_key.extend_from_slice(&pack_q_elements(&coords));
+    public_key
+}
+
+fn reference_keygen_from_seed(seed: [u8; 32], secret_eta: i16) -> Result<ReferenceKeypair, String> {
+    validate_secret_eta(secret_eta)?;
+    let mut eta_context = Vec::with_capacity(2);
+    eta_context.extend_from_slice(&secret_eta.to_le_bytes());
+    let mut rng = DeterministicStream::new(b"keygen.secret-free", &seed, &eta_context);
+    let mut free = [[0_i16; LOCAL_FREE]; GROUPS];
+    for block in 0..GROUPS {
+        for coord in 0..LOCAL_FREE {
+            free[block][coord] = rng.sample_i16_inclusive(-secret_eta, secret_eta);
+        }
+    }
+    let public_seed = derive_public_seed(&seed, secret_eta);
+    let public_view = public_view_from_secret_free(&free);
+    let public_key = encode_public_view(&public_seed, &public_view);
+    debug_assert_eq!(public_key.len(), PK_BYTES);
+    validate_keypair_consistency(&public_key, &public_view, &free)?;
+    Ok(ReferenceKeypair {
+        public_key,
+        public_view,
+        secret_key: ReferenceSecretKey {
+            seed,
+            secret_eta,
+            free,
+        },
+    })
+}
+
+fn validate_keypair_consistency(
+    public_key: &[u8],
+    public_view: &PublicView,
+    secret_free: &[[i16; LOCAL_FREE]; GROUPS],
+) -> Result<(), String> {
+    let decoded = decode_public_key(public_key)?;
+    if decoded.pivot != public_view.pivot || decoded.free != public_view.free {
+        return Err("encoded public key does not decode to generated public view".to_string());
+    }
+    let recomputed = public_view_from_secret_free(secret_free);
+    if recomputed.pivot != public_view.pivot || recomputed.free != public_view.free {
+        return Err("secret free vector does not generate public view".to_string());
+    }
+    Ok(())
+}
+
+fn block_i16_rows(rows: &[[i16; LOCAL_FREE]; GROUPS]) -> Vec<Vec<i16>> {
+    rows.iter().map(|row| row.to_vec()).collect()
+}
+
+fn block_u16_rows<const W: usize>(rows: &[[u16; W]; GROUPS]) -> Vec<Vec<u16>> {
+    rows.iter().map(|row| row.to_vec()).collect()
+}
+
+fn reference_keygen_output(keypair: &ReferenceKeypair) -> ReferenceKeygenOutput {
+    ReferenceKeygenOutput {
+        profile: PROFILE.to_string(),
+        keygen_seed_hex: hex_encode(&keypair.secret_key.seed),
+        public_key_hex: hex_encode(&keypair.public_key),
+        public_key_bytes: keypair.public_key.len(),
+        secret_eta: keypair.secret_key.secret_eta,
+        secret_free: block_i16_rows(&keypair.secret_key.free),
+        public_pivot: block_u16_rows(&keypair.public_view.pivot),
+        public_free: block_u16_rows(&keypair.public_view.free),
+        relation_note: "Reference relation keygen for the current systematic q-ary view; this is an implementation target, not a third-party-reviewed deployment key format.".to_string(),
+    }
+}
+
+fn commitment_bytes_from_free_masks(masks: &[[[i16; LOCAL_FREE]; GROUPS]; REPS]) -> Vec<u8> {
+    let mut coords = Vec::with_capacity(REPS * VIEW_COORDS);
+    for rep_masks in masks.iter().take(REPS) {
+        for block_mask in rep_masks.iter().take(GROUPS) {
+            coords.extend_from_slice(&systematic_pivot_from_free(*block_mask));
+        }
+        for block_mask in rep_masks.iter().take(GROUPS) {
+            for &value in block_mask.iter().take(LOCAL_FREE) {
+                coords.push(mod_q(value as i64));
+            }
+        }
+    }
+    pack_q_elements(&coords)
+}
+
+fn sample_masks(rng: &mut DeterministicStream, bound: i16) -> [[[i16; LOCAL_FREE]; GROUPS]; REPS] {
+    let mut masks = [[[0_i16; LOCAL_FREE]; GROUPS]; REPS];
+    for rep_masks in masks.iter_mut().take(REPS) {
+        for block_mask in rep_masks.iter_mut().take(GROUPS) {
+            for value in block_mask.iter_mut().take(LOCAL_FREE) {
+                *value = rng.sample_i16_inclusive(-bound, bound);
+            }
+        }
+    }
+    masks
+}
+
+fn sample_certified_dyadic_masks(
+    rng: &mut DeterministicStream,
+    cumulative_weights: &[u64],
+) -> [[[i16; LOCAL_FREE]; GROUPS]; REPS] {
+    let support_min = certified_dyadic_support_min();
+    let mut masks = [[[0_i16; LOCAL_FREE]; GROUPS]; REPS];
+    for rep_masks in masks.iter_mut().take(REPS) {
+        for block_mask in rep_masks.iter_mut().take(GROUPS) {
+            for value in block_mask.iter_mut().take(LOCAL_FREE) {
+                *value = sample_from_cumulative_weight_table(rng, support_min, cumulative_weights);
+            }
+        }
+    }
+    masks
+}
+
+fn responses_from_masks(
+    masks: &[[[i16; LOCAL_FREE]; GROUPS]; REPS],
+    challenge: &Challenge,
+    secret_free: &[[i16; LOCAL_FREE]; GROUPS],
+    active_accept_bound: i16,
+) -> Option<Responses> {
+    let mut free = [[[0_i16; LOCAL_FREE]; GROUPS]; REPS];
+    for rep in 0..REPS {
+        for block in 0..GROUPS {
+            let coeff = challenge.coeffs[rep][block] as i16;
+            for coord in 0..LOCAL_FREE {
+                let value = masks[rep][block][coord] + coeff * secret_free[block][coord];
+                if value.abs() > RESPONSE_BOUND {
+                    return None;
+                }
+                if coeff != 0 && value.abs() > active_accept_bound {
+                    return None;
+                }
+                free[rep][block][coord] = value;
+            }
+        }
+    }
+    Some(Responses { free })
+}
+
+fn build_reference_signature(
+    keypair: &ReferenceKeypair,
+    message: &[u8],
+    challenge_bytes: &[u8; CHALLENGE_BYTES],
+    responses: &Responses,
+) -> Result<Vec<u8>, String> {
+    let mut signature = Vec::with_capacity(SIGNATURE_BYTES);
+    signature.extend_from_slice(challenge_bytes);
+    signature.extend_from_slice(&encode_responses(responses));
+    let report = verify_signature(&keypair.public_key, message, &signature);
+    if !report.accepted {
+        return Err(format!(
+            "internal signer produced a signature rejected by verifier: {}",
+            report.reason
+        ));
+    }
+    Ok(signature)
+}
+
+fn reference_sign(
+    keypair: &ReferenceKeypair,
+    message: &[u8],
+    signing_seed: [u8; 32],
+    mode: ReferenceSigningMode,
+    max_attempts: u64,
+) -> Result<(Vec<u8>, u64), String> {
+    if max_attempts == 0 {
+        return Err("max attempts must be positive".to_string());
+    }
+    let secret_eta = keypair.secret_key.secret_eta;
+    let mask_bound = match mode {
+        ReferenceSigningMode::FastInterior => Some(RESPONSE_BOUND - secret_eta),
+        ReferenceSigningMode::ExactBox => Some(RESPONSE_BOUND + secret_eta),
+        ReferenceSigningMode::CertifiedDyadicGaussian => None,
+    };
+    if let Some(mask_bound) = mask_bound
+        && mask_bound < 0
+    {
+        return Err(format!(
+            "secret eta {secret_eta} is too large for response bound {RESPONSE_BOUND}"
+        ));
+    }
+    if mode == ReferenceSigningMode::CertifiedDyadicGaussian && secret_eta > CERTIFIED_DYADIC_ETA {
+        return Err(format!(
+            "certified dyadic sampler is proven only for secret eta <= {CERTIFIED_DYADIC_ETA}, got {secret_eta}"
+        ));
+    }
+    let mut context = Vec::new();
+    append_frame(&mut context, b"profile", PROFILE.as_bytes());
+    append_frame(&mut context, b"public_key", &keypair.public_key);
+    append_frame(&mut context, b"message", message);
+    append_frame(&mut context, b"mode", format!("{mode:?}").as_bytes());
+    append_u64(&mut context, b"secret_eta", secret_eta as u64);
+    if mode == ReferenceSigningMode::CertifiedDyadicGaussian {
+        append_u64(
+            &mut context,
+            b"certified_dyadic_accepted_z_bound",
+            CERTIFIED_DYADIC_ACCEPTED_Z_BOUND as u64,
+        );
+        append_u64(
+            &mut context,
+            b"certified_dyadic_sigma",
+            CERTIFIED_DYADIC_SIGMA,
+        );
+        append_u64(
+            &mut context,
+            b"certified_dyadic_weight_precision_bits",
+            CERTIFIED_DYADIC_WEIGHT_PRECISION_BITS as u64,
+        );
+    }
+    let mut rng = DeterministicStream::new(b"reference.sign", &signing_seed, &context);
+    let certified_cumulative_weights = (mode == ReferenceSigningMode::CertifiedDyadicGaussian)
+        .then(|| cumulative_weights(&certified_dyadic_weights()));
+    for attempt in 1..=max_attempts {
+        let masks = match mode {
+            ReferenceSigningMode::FastInterior | ReferenceSigningMode::ExactBox => sample_masks(
+                &mut rng,
+                mask_bound.expect("uniform signing mode needs mask bound"),
+            ),
+            ReferenceSigningMode::CertifiedDyadicGaussian => sample_certified_dyadic_masks(
+                &mut rng,
+                certified_cumulative_weights
+                    .as_deref()
+                    .expect("certified signing mode needs cumulative weights"),
+            ),
+        };
+        let commitments = commitment_bytes_from_free_masks(&masks);
+        debug_assert_eq!(commitments.len(), RECONSTRUCTED_COMMITMENT_BYTES);
+        let frame = hash_frame_bytes(&keypair.public_key, message, &commitments);
+        let challenge_bytes = hash_frame_to_challenge_bytes(&frame);
+        let challenge = decode_challenge(&challenge_bytes)?;
+        let active_accept_bound = match mode {
+            ReferenceSigningMode::FastInterior | ReferenceSigningMode::ExactBox => RESPONSE_BOUND,
+            ReferenceSigningMode::CertifiedDyadicGaussian => CERTIFIED_DYADIC_ACCEPTED_Z_BOUND,
+        };
+        let Some(responses) = responses_from_masks(
+            &masks,
+            &challenge,
+            &keypair.secret_key.free,
+            active_accept_bound,
+        ) else {
+            continue;
+        };
+        let signature = build_reference_signature(keypair, message, &challenge_bytes, &responses)?;
+        return Ok((signature, attempt));
+    }
+    Err(format!(
+        "signing failed after {max_attempts} attempts with mode {mode:?}"
+    ))
+}
+
+fn reference_signature_output(
+    keypair: &ReferenceKeypair,
+    message: &[u8],
+    signing_seed: [u8; 32],
+    mode: ReferenceSigningMode,
+    max_attempts: u64,
+) -> Result<ReferenceSignatureOutput, String> {
+    let (signature, attempts) = reference_sign(keypair, message, signing_seed, mode, max_attempts)?;
+    let report = verify_signature(&keypair.public_key, message, &signature);
+    let distribution_note = match mode {
+        ReferenceSigningMode::FastInterior => {
+            "Fast interior sampler: efficient valid-signature path; distributional proof remains a separate obligation.".to_string()
+        }
+        ReferenceSigningMode::ExactBox => {
+            "Exact-box rejection sampler: proof-oriented path with acceptance cost governed by secret eta and response bound.".to_string()
+        }
+        ReferenceSigningMode::CertifiedDyadicGaussian => {
+            format!(
+                "Certified dyadic Gaussian sampler: masks use the canonical {}-bit integer weight table with z={}, eta={}, sigma={}; active responses are rejected outside [-{},{}]. Certificate profile: block_weight={}, repetitions={}, serialized_active_coordinates={}.",
+                CERTIFIED_DYADIC_WEIGHT_PRECISION_BITS,
+                CERTIFIED_DYADIC_ACCEPTED_Z_BOUND,
+                CERTIFIED_DYADIC_ETA,
+                CERTIFIED_DYADIC_SIGMA,
+                CERTIFIED_DYADIC_ACCEPTED_Z_BOUND,
+                CERTIFIED_DYADIC_ACCEPTED_Z_BOUND,
+                CERTIFIED_DYADIC_BLOCK_WEIGHT,
+                CERTIFIED_DYADIC_REPETITIONS,
+                CERTIFIED_DYADIC_SERIALIZED_RESPONSE_COORDINATES
+            )
+        }
+    };
+    Ok(ReferenceSignatureOutput {
+        profile: PROFILE.to_string(),
+        signing_mode: mode,
+        keygen_seed_hex: hex_encode(&keypair.secret_key.seed),
+        signing_seed_hex: hex_encode(&signing_seed),
+        message_hex: hex_encode(message),
+        public_key_hex: hex_encode(&keypair.public_key),
+        signature_hex: hex_encode(&signature),
+        attempts,
+        max_attempts,
+        secret_eta: keypair.secret_key.secret_eta,
+        signature_bytes: signature.len(),
+        report,
+        distribution_note,
+    })
 }
 
 #[cfg(test)]
@@ -1400,6 +1981,12 @@ fn print_help() {
            --signature-hex HEX\n\
            --message-hex HEX\n\
            --message-text TEXT\n\
+           --reference-keygen-seed-hex HEX\n\
+           --reference-sign-seed-hex HEX\n\
+           --reference-secret-eta N\n\
+           --reference-max-attempts N\n\
+           --reference-exact-box\n\
+           --reference-certified-dyadic\n\
            --emit-conformance-vector\n\
            --verify-conformance-vector PATH\n\
            --write-conformance-vector PATH\n\
@@ -1415,6 +2002,12 @@ fn parse_args() -> Result<Config, String> {
     let mut emit_conformance_vector = false;
     let mut verify_conformance_vector = None;
     let mut write_conformance_vector = None;
+    let mut reference_keygen_seed = None;
+    let mut reference_sign_seed = None;
+    let mut reference_secret_eta = DEFAULT_SECRET_ETA;
+    let mut reference_max_attempts = DEFAULT_REFERENCE_MAX_ATTEMPTS;
+    let mut reference_exact_box = false;
+    let mut reference_certified_dyadic = false;
     let mut args = env::args().skip(1);
     while let Some(arg) = args.next() {
         let mut value = |flag: &str| {
@@ -1444,6 +2037,24 @@ fn parse_args() -> Result<Config, String> {
             "--write-conformance-vector" => {
                 write_conformance_vector = Some(PathBuf::from(value(&arg)?));
             }
+            "--reference-keygen-seed-hex" => {
+                reference_keygen_seed = Some(hex_decode_32(&value(&arg)?, &arg)?);
+            }
+            "--reference-sign-seed-hex" => {
+                reference_sign_seed = Some(hex_decode_32(&value(&arg)?, &arg)?);
+            }
+            "--reference-secret-eta" => {
+                reference_secret_eta = value(&arg)?
+                    .parse::<i16>()
+                    .map_err(|err| format!("{arg} must be an integer: {err}"))?;
+            }
+            "--reference-max-attempts" => {
+                reference_max_attempts = value(&arg)?
+                    .parse::<u64>()
+                    .map_err(|err| format!("{arg} must be an integer: {err}"))?;
+            }
+            "--reference-exact-box" => reference_exact_box = true,
+            "--reference-certified-dyadic" => reference_certified_dyadic = true,
             "--help" | "-h" => {
                 print_help();
                 std::process::exit(0);
@@ -1459,10 +2070,22 @@ fn parse_args() -> Result<Config, String> {
                 .to_string(),
         );
     }
+    validate_secret_eta(reference_secret_eta)?;
+    if reference_sign_seed.is_some() && reference_keygen_seed.is_none() {
+        return Err("--reference-sign-seed-hex requires --reference-keygen-seed-hex".to_string());
+    }
+    if reference_exact_box && reference_certified_dyadic {
+        return Err(
+            "--reference-exact-box and --reference-certified-dyadic are mutually exclusive"
+                .to_string(),
+        );
+    }
+    let reference_operation = reference_keygen_seed.is_some() || reference_sign_seed.is_some();
     Ok(Config {
         public_key: if emit_conformance_vector
             || verify_conformance_vector.is_some()
             || write_conformance_vector.is_some()
+            || reference_operation
         {
             public_key.unwrap_or_default()
         } else {
@@ -1472,6 +2095,7 @@ fn parse_args() -> Result<Config, String> {
         signature: if emit_conformance_vector
             || verify_conformance_vector.is_some()
             || write_conformance_vector.is_some()
+            || reference_operation
         {
             signature.unwrap_or_default()
         } else {
@@ -1481,6 +2105,12 @@ fn parse_args() -> Result<Config, String> {
         emit_conformance_vector,
         verify_conformance_vector,
         write_conformance_vector,
+        reference_keygen_seed,
+        reference_sign_seed,
+        reference_secret_eta,
+        reference_max_attempts,
+        reference_exact_box,
+        reference_certified_dyadic,
     })
 }
 
@@ -1511,6 +2141,45 @@ fn main() {
             std::process::exit(1);
         }
         println!("conformance bundle verified: {}", path.display());
+        return;
+    }
+    if let Some(seed) = cfg.reference_keygen_seed {
+        let keypair = match reference_keygen_from_seed(seed, cfg.reference_secret_eta) {
+            Ok(keypair) => keypair,
+            Err(err) => {
+                eprintln!("{err}");
+                std::process::exit(1);
+            }
+        };
+        if let Some(signing_seed) = cfg.reference_sign_seed {
+            let mode = if cfg.reference_certified_dyadic {
+                ReferenceSigningMode::CertifiedDyadicGaussian
+            } else if cfg.reference_exact_box {
+                ReferenceSigningMode::ExactBox
+            } else {
+                ReferenceSigningMode::FastInterior
+            };
+            match reference_signature_output(
+                &keypair,
+                &cfg.message,
+                signing_seed,
+                mode,
+                cfg.reference_max_attempts,
+            ) {
+                Ok(output) => {
+                    println!("{}", serde_json::to_string_pretty(&output).unwrap());
+                    return;
+                }
+                Err(err) => {
+                    eprintln!("{err}");
+                    std::process::exit(1);
+                }
+            }
+        }
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&reference_keygen_output(&keypair)).unwrap()
+        );
         return;
     }
     let report = verify_signature(&cfg.public_key, &cfg.message, &cfg.signature);
@@ -1741,6 +2410,138 @@ mod tests {
                 "signature byte mutation at index {idx} unexpectedly accepted"
             );
         }
+    }
+
+    #[test]
+    fn reference_keygen_is_deterministic_and_consistent() {
+        let seed = [7_u8; 32];
+        let first = reference_keygen_from_seed(seed, DEFAULT_SECRET_ETA).unwrap();
+        let second = reference_keygen_from_seed(seed, DEFAULT_SECRET_ETA).unwrap();
+
+        assert_eq!(first.public_key, second.public_key);
+        assert_eq!(first.secret_key.free, second.secret_key.free);
+        assert_eq!(first.public_key.len(), PK_BYTES);
+        validate_keypair_consistency(
+            &first.public_key,
+            &first.public_view,
+            &first.secret_key.free,
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn reference_fast_interior_signing_round_trips() {
+        let keypair = reference_keygen_from_seed([1_u8; 32], DEFAULT_SECRET_ETA).unwrap();
+        let output = reference_signature_output(
+            &keypair,
+            b"reference implementation smoke test",
+            [2_u8; 32],
+            ReferenceSigningMode::FastInterior,
+            1,
+        )
+        .unwrap();
+
+        assert_eq!(output.attempts, 1);
+        assert!(output.report.accepted, "{:?}", output.report);
+        assert_eq!(output.signature_bytes, SIGNATURE_BYTES);
+    }
+
+    #[test]
+    fn reference_exact_box_signing_round_trips_for_small_eta() {
+        let keypair = reference_keygen_from_seed([3_u8; 32], 1).unwrap();
+        let output = reference_signature_output(
+            &keypair,
+            b"exact-box reference implementation smoke test",
+            [4_u8; 32],
+            ReferenceSigningMode::ExactBox,
+            1_000,
+        )
+        .unwrap();
+
+        assert!(output.attempts <= 1_000);
+        assert!(output.report.accepted, "{:?}", output.report);
+        assert_eq!(output.signature_bytes, SIGNATURE_BYTES);
+    }
+
+    #[test]
+    fn certified_dyadic_sampler_matches_current_verifier_certificate_row0() {
+        let cert: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../research/cryptanalysis/signature_readiness_20260516/current_verifier_conditioned_gaussian_leakage_certificate_n32_w15_r7.json"
+        ))
+        .unwrap();
+        assert_eq!(cert["n"].as_u64().unwrap(), FREE_COORDS as u64);
+        assert_eq!(
+            cert["local_free_coordinates_per_block"].as_u64().unwrap(),
+            LOCAL_FREE as u64
+        );
+        let rows = cert["rational_interval_rows"].as_array().unwrap();
+        let row0 = &rows[0];
+        assert_eq!(
+            row0["block_weight"].as_u64().unwrap(),
+            CERTIFIED_DYADIC_BLOCK_WEIGHT as u64
+        );
+        assert_eq!(
+            row0["repetitions"].as_u64().unwrap(),
+            CERTIFIED_DYADIC_REPETITIONS as u64
+        );
+        assert_eq!(
+            row0["serialized_response_coordinates"].as_u64().unwrap(),
+            CERTIFIED_DYADIC_SERIALIZED_RESPONSE_COORDINATES as u64
+        );
+        assert_eq!(
+            row0["accepted_z_bound"].as_u64().unwrap(),
+            CERTIFIED_DYADIC_ACCEPTED_Z_BOUND as u64
+        );
+        assert_eq!(row0["eta"].as_u64().unwrap(), CERTIFIED_DYADIC_ETA as u64);
+        assert_eq!(row0["sigma"].as_u64().unwrap(), CERTIFIED_DYADIC_SIGMA);
+        assert_eq!(
+            row0["weight_precision_bits"].as_u64().unwrap(),
+            CERTIFIED_DYADIC_WEIGHT_PRECISION_BITS as u64
+        );
+        assert_eq!(
+            row0["support_min"].as_i64().unwrap(),
+            certified_dyadic_support_min() as i64
+        );
+        assert_eq!(
+            row0["support_max"].as_i64().unwrap(),
+            -certified_dyadic_support_min() as i64
+        );
+        let certificate_weights: Vec<u64> = row0["weights_by_support_offset"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|value| value.as_str().unwrap().parse::<u64>().unwrap())
+            .collect();
+        assert_eq!(certificate_weights, certified_dyadic_weights());
+        assert_eq!(
+            row0["signature_tv_bound"]["upper_decimal"]
+                .as_f64()
+                .unwrap(),
+            0.3505041021704922
+        );
+    }
+
+    #[test]
+    fn reference_certified_dyadic_signing_round_trips() {
+        let keypair = reference_keygen_from_seed([9_u8; 32], DEFAULT_SECRET_ETA).unwrap();
+        let output = reference_signature_output(
+            &keypair,
+            b"certified dyadic reference implementation smoke test",
+            [11_u8; 32],
+            ReferenceSigningMode::CertifiedDyadicGaussian,
+            DEFAULT_REFERENCE_MAX_ATTEMPTS,
+        )
+        .unwrap();
+
+        assert_eq!(output.attempts, 2_879);
+        assert!(output.attempts <= DEFAULT_REFERENCE_MAX_ATTEMPTS);
+        assert!(output.report.accepted, "{:?}", output.report);
+        assert_eq!(output.signature_bytes, SIGNATURE_BYTES);
+        assert!(
+            output
+                .distribution_note
+                .contains("Certified dyadic Gaussian sampler")
+        );
     }
 
     #[test]

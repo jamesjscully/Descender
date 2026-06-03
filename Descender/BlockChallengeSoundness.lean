@@ -110,6 +110,53 @@ theorem productBlockLinearResponse_sub
   ring
 
 /--
+Fork subtraction when the two accepting openings use different masks.  The
+extra term is exactly the same-state mask-collision term that a fibered
+commitment proof must either rule out or convert into a separate witness.
+-/
+theorem productBlockLinearResponse_sub_with_mask_delta
+    {q : Nat} [NeZero q]
+    {Block LocalFree : Type*}
+    (chi₀ chi₁ : Block -> ZMod q)
+    (mask₀ mask₁ secret : Block × LocalFree -> ZMod q)
+    (bf : Block × LocalFree) :
+    productBlockLinearResponse chi₀ mask₀ secret bf -
+        productBlockLinearResponse chi₁ mask₁ secret bf =
+      (mask₀ bf - mask₁ bf) +
+        (chi₀ bf.1 - chi₁ bf.1) * secret bf := by
+  simp [productBlockLinearResponse, blockScaleFree]
+  ring
+
+/--
+If the mask delta is known or proved zero on the extracted coordinate, the
+usual fork extractor still recovers the secret.  Without that term, a fibered
+commitment proof must treat the delta as a binding/collision witness.
+-/
+theorem extract_coordinate_of_deltaExtractable_with_mask_delta
+    {q : Nat} [NeZero q]
+    {Block LocalFree : Type*}
+    {chi₀ chi₁ : Block -> ZMod q}
+    {mask₀ mask₁ secret : Block × LocalFree -> ZMod q}
+    {bf : Block × LocalFree}
+    {inv : ZMod q}
+    (hinv : inv * (chi₀ bf.1 - chi₁ bf.1) = 1) :
+    inv *
+        (productBlockLinearResponse chi₀ mask₀ secret bf -
+          productBlockLinearResponse chi₁ mask₁ secret bf -
+          (mask₀ bf - mask₁ bf)) =
+      secret bf := by
+  rw [productBlockLinearResponse_sub_with_mask_delta]
+  calc
+    inv *
+        ((mask₀ bf - mask₁ bf) +
+          (chi₀ bf.1 - chi₁ bf.1) * secret bf -
+          (mask₀ bf - mask₁ bf)) =
+        (inv * (chi₀ bf.1 - chi₁ bf.1)) * secret bf := by
+          ring
+    _ = secret bf := by
+          simp [hinv]
+
+/--
 Any single affine response can be explained by any secret if the mask is free.
 
 This is the one-view obstruction: the equation `z = mask + chi * secret` alone
@@ -456,6 +503,333 @@ theorem extractedSecret_eq
     bf.1 (Classical.choose_spec (hcover bf.1)) bf.2
 
 end ForkedLinearRound
+
+/--
+A same-state mask collision witness for a fibered commitment representation.
+
+`stateOfMask` is the map from the sampled signing mask to the reconstructed
+commitment state.  `ValidMask` is the hook for the concrete proof's acceptance
+and norm bounds.  A collision is useful only when the two masks are both valid,
+different, and nevertheless map to the same commitment state.
+-/
+structure SameStateMaskCollision
+    {q : Nat} [NeZero q] (Block LocalFree CommitState : Type*)
+    (stateOfMask : (Block × LocalFree -> ZMod q) -> CommitState)
+    (ValidMask : (Block × LocalFree -> ZMod q) -> Prop) where
+  mask₀ : Block × LocalFree -> ZMod q
+  mask₁ : Block × LocalFree -> ZMod q
+  valid₀ : ValidMask mask₀
+  valid₁ : ValidMask mask₁
+  sameState : stateOfMask mask₀ = stateOfMask mask₁
+  different : mask₀ ≠ mask₁
+
+namespace SameStateMaskCollision
+
+variable {q : Nat} [NeZero q]
+variable {Block LocalFree CommitState : Type*}
+variable {stateOfMask : (Block × LocalFree -> ZMod q) -> CommitState}
+variable {ValidMask : (Block × LocalFree -> ZMod q) -> Prop}
+
+/-- The q-ary kernel vector exposed by a same-state mask collision. -/
+def maskDelta
+    (C :
+      SameStateMaskCollision Block LocalFree CommitState stateOfMask
+        ValidMask) :
+    Block × LocalFree -> ZMod q :=
+  fun bf => C.mask₀ bf - C.mask₁ bf
+
+theorem maskDelta_nonzero
+    (C :
+      SameStateMaskCollision Block LocalFree CommitState stateOfMask
+        ValidMask) :
+    C.maskDelta ≠ 0 := by
+  intro hdelta
+  apply C.different
+  funext bf
+  have hcoord := congrFun hdelta bf
+  exact sub_eq_zero.mp hcoord
+
+/--
+Convert a same-state mask collision into a q-ary Lee-kernel violation once the
+commitment-state map is subtractive and the mask delta is short.
+-/
+def toModqLeeKernelViolation_of_short
+    [Fintype (Block × LocalFree)] [Zero CommitState]
+    {leeMin : Nat}
+    (C :
+      SameStateMaskCollision Block LocalFree CommitState stateOfMask
+        ValidMask)
+    (hstate_sub :
+      ∀ y₀ y₁,
+        stateOfMask y₀ = stateOfMask y₁ ->
+          stateOfMask (fun bf => y₀ bf - y₁ bf) = 0)
+    (hshort : centeredNormL1 q C.maskDelta < leeMin) :
+    ModqLeeKernelViolation q stateOfMask leeMin where
+  r := C.maskDelta
+  kernel := hstate_sub C.mask₀ C.mask₁ C.sameState
+  nonzero := C.maskDelta_nonzero
+  short := hshort
+
+end SameStateMaskCollision
+
+/--
+Concrete validity predicate for accepted masks whose centered coordinates are
+bounded by `eta`.
+-/
+def BoundedMaskValid
+    {q : Nat} [NeZero q] {Coord : Type*} [Fintype Coord]
+    (eta : Nat) (mask : Coord -> ZMod q) : Prop :=
+  centeredResidueNoiseSupport q eta mask
+
+/--
+Same-state bounded-mask collisions are q-ary Lee-kernel violations.
+
+This is the construction-specific bridge needed by the fibered 69-byte route:
+instantiate `stateOfMask` with the concrete commitment-state map and prove
+`hstate_sub`; instantiate `ValidMask` with `BoundedMaskValid`; then the
+accepted-mask bound supplies the shortness of the collision witness.
+-/
+def SameStateMaskCollision.toModqLeeKernelViolation_of_boundedMasks
+    {q : Nat} [NeZero q]
+    {Block LocalFree CommitState : Type*}
+    [Fintype (Block × LocalFree)] [Zero CommitState]
+    {stateOfMask : (Block × LocalFree -> ZMod q) -> CommitState}
+    {eta leeMin : Nat}
+    (C :
+      SameStateMaskCollision Block LocalFree CommitState stateOfMask
+        (BoundedMaskValid (q := q) (Coord := Block × LocalFree) eta))
+    (hstate_sub :
+      ∀ y₀ y₁,
+        stateOfMask y₀ = stateOfMask y₁ ->
+          stateOfMask (fun bf => y₀ bf - y₁ bf) = 0)
+    (hbound : Fintype.card (Block × LocalFree) * (eta + eta) < leeMin) :
+    ModqLeeKernelViolation q stateOfMask leeMin :=
+  C.toModqLeeKernelViolation_of_short hstate_sub
+    (lt_of_le_of_lt
+      (centeredNormL1_sub_le_card_mul_add_of_noiseSupport
+        (q := q) (eta := eta) (rho := eta)
+        (x := C.mask₀) (y := C.mask₁) C.valid₀ C.valid₁)
+      hbound)
+
+/--
+Certificate that a concrete fibered commitment-state map rules out valid
+same-state mask collisions.
+
+The active information-set proof still has to reconstruct this state from the
+small active view.  This certificate only closes the collision branch once such
+a state map has been chosen.
+-/
+structure FiberedMaskStateCollisionCertificate
+    {q : Nat} [NeZero q] (Block LocalFree CommitState : Type*)
+    [Fintype (Block × LocalFree)] [Zero CommitState] where
+  stateOfMask : (Block × LocalFree -> ZMod q) -> CommitState
+  eta : Nat
+  leeMin : Nat
+  state_sub :
+    ∀ y₀ y₁,
+      stateOfMask y₀ = stateOfMask y₁ ->
+        stateOfMask (fun bf => y₀ bf - y₁ bf) = 0
+  shortCollisionBound :
+    Fintype.card (Block × LocalFree) * (eta + eta) < leeMin
+  noLeeKernel :
+    ModqNoLeeKernelVectorBelow q stateOfMask leeMin
+
+namespace FiberedMaskStateCollisionCertificate
+
+variable {q : Nat} [NeZero q]
+variable {Block LocalFree CommitState : Type*}
+variable [Fintype (Block × LocalFree)] [Zero CommitState]
+
+def ValidMask
+    (C :
+      FiberedMaskStateCollisionCertificate
+        (q := q) Block LocalFree CommitState)
+    (mask : Block × LocalFree -> ZMod q) : Prop :=
+  BoundedMaskValid (q := q) (Coord := Block × LocalFree) C.eta mask
+
+def collisionToLeeViolation
+    (C :
+      FiberedMaskStateCollisionCertificate
+        (q := q) Block LocalFree CommitState)
+    (W :
+      SameStateMaskCollision Block LocalFree CommitState C.stateOfMask
+        C.ValidMask) :
+    ModqLeeKernelViolation q C.stateOfMask C.leeMin :=
+  W.toModqLeeKernelViolation_of_boundedMasks
+    C.state_sub C.shortCollisionBound
+
+theorem no_sameStateMaskCollision
+    (C :
+      FiberedMaskStateCollisionCertificate
+        (q := q) Block LocalFree CommitState) :
+    ¬ Nonempty
+      (SameStateMaskCollision Block LocalFree CommitState C.stateOfMask
+        C.ValidMask) := by
+  rintro ⟨W⟩
+  exact ModqLeeKernelViolation.impossible_of_noLeeKernelVectorBelow
+    q C.noLeeKernel (C.collisionToLeeViolation W)
+
+end FiberedMaskStateCollisionCertificate
+
+/--
+A forked round for a fibered commitment representation.
+
+The two accepting openings are tied to the same reconstructed commitment state,
+but they may be backed by different sampled masks.  If the masks are equal this
+collapses to the usual `ForkedLinearRound`.  If they differ, the round itself is
+a same-state mask-collision witness.
+-/
+structure FiberedForkedLinearRound
+    {q : Nat} [NeZero q] (Block LocalFree CommitState : Type*)
+    (stateOfMask : (Block × LocalFree -> ZMod q) -> CommitState)
+    (ValidMask : (Block × LocalFree -> ZMod q) -> Prop)
+    (secret : Block × LocalFree -> ZMod q) where
+  mask₀ : Block × LocalFree -> ZMod q
+  mask₁ : Block × LocalFree -> ZMod q
+  valid₀ : ValidMask mask₀
+  valid₁ : ValidMask mask₁
+  sameState : stateOfMask mask₀ = stateOfMask mask₁
+  chi₀ : Block -> ZMod q
+  chi₁ : Block -> ZMod q
+  z₀ : Block × LocalFree -> ZMod q
+  z₁ : Block × LocalFree -> ZMod q
+  hz₀ : z₀ = productBlockLinearResponse chi₀ mask₀ secret
+  hz₁ : z₁ = productBlockLinearResponse chi₁ mask₁ secret
+
+namespace FiberedForkedLinearRound
+
+variable {q : Nat} [NeZero q]
+variable {Block LocalFree CommitState : Type*}
+variable {stateOfMask : (Block × LocalFree -> ZMod q) -> CommitState}
+variable {ValidMask : (Block × LocalFree -> ZMod q) -> Prop}
+variable {secret : Block × LocalFree -> ZMod q}
+
+def DeltaActive
+    (R :
+      FiberedForkedLinearRound Block LocalFree CommitState stateOfMask
+        ValidMask secret)
+    (b : Block) : Prop :=
+  DeltaExtractable R.chi₀ R.chi₁ b
+
+def maskCollision
+    (R :
+      FiberedForkedLinearRound Block LocalFree CommitState stateOfMask
+        ValidMask secret)
+    (hdiff : R.mask₀ ≠ R.mask₁) :
+    SameStateMaskCollision Block LocalFree CommitState stateOfMask
+      ValidMask where
+  mask₀ := R.mask₀
+  mask₁ := R.mask₁
+  valid₀ := R.valid₀
+  valid₁ := R.valid₁
+  sameState := R.sameState
+  different := hdiff
+
+def HasMaskCollision
+    (R :
+      FiberedForkedLinearRound Block LocalFree CommitState stateOfMask
+        ValidMask secret) : Prop :=
+  Nonempty
+    { C : SameStateMaskCollision Block LocalFree CommitState stateOfMask
+        ValidMask // C.mask₀ = R.mask₀ ∧ C.mask₁ = R.mask₁ }
+
+noncomputable def toForkedLinearRound
+    (R :
+      FiberedForkedLinearRound Block LocalFree CommitState stateOfMask
+        ValidMask secret)
+    (hsame : R.mask₀ = R.mask₁) :
+    ForkedLinearRound Block LocalFree secret where
+  chi₀ := R.chi₀
+  chi₁ := R.chi₁
+  mask := R.mask₀
+  z₀ := R.z₀
+  z₁ := R.z₁
+  hz₀ := R.hz₀
+  hz₁ := by
+    rw [hsame]
+    exact R.hz₁
+
+noncomputable def correctedExtractCoordinate
+    (R :
+      FiberedForkedLinearRound Block LocalFree CommitState stateOfMask
+        ValidMask secret)
+    (b : Block) (hdelta : R.DeltaActive b) (f : LocalFree) :
+    ZMod q :=
+  Classical.choose hdelta *
+    (R.z₀ (b, f) - R.z₁ (b, f) - (R.mask₀ (b, f) - R.mask₁ (b, f)))
+
+theorem correctedExtractCoordinate_eq_secret
+    (R :
+      FiberedForkedLinearRound Block LocalFree CommitState stateOfMask
+        ValidMask secret)
+    (b : Block) (hdelta : R.DeltaActive b) (f : LocalFree) :
+    R.correctedExtractCoordinate b hdelta f = secret (b, f) := by
+  unfold correctedExtractCoordinate
+  rw [R.hz₀, R.hz₁]
+  exact extract_coordinate_of_deltaExtractable_with_mask_delta
+    (q := q) (bf := (b, f))
+    (inv := Classical.choose hdelta) (Classical.choose_spec hdelta)
+
+noncomputable def extractedSecret
+    {Round : Type*}
+    (round :
+      Round ->
+        FiberedForkedLinearRound Block LocalFree CommitState stateOfMask
+          ValidMask secret)
+    (hsame : ∀ r, (round r).mask₀ = (round r).mask₁)
+    (hcover : CoversBlocks fun r b => (round r).DeltaActive b) :
+    Block × LocalFree -> ZMod q :=
+  ForkedLinearRound.extractedSecret
+    (fun r => (round r).toForkedLinearRound (hsame r))
+    (by
+      intro b
+      rcases hcover b with ⟨r, hr⟩
+      exact ⟨r, hr⟩)
+
+theorem extractedSecret_eq_of_all_sameMask
+    {Round : Type*}
+    (round :
+      Round ->
+        FiberedForkedLinearRound Block LocalFree CommitState stateOfMask
+          ValidMask secret)
+    (hsame : ∀ r, (round r).mask₀ = (round r).mask₁)
+    (hcover : CoversBlocks fun r b => (round r).DeltaActive b) :
+    extractedSecret round hsame hcover = secret := by
+  unfold extractedSecret
+  exact ForkedLinearRound.extractedSecret_eq
+    (fun r => (round r).toForkedLinearRound (hsame r))
+    (by
+      intro b
+      rcases hcover b with ⟨r, hr⟩
+      exact ⟨r, hr⟩)
+
+/--
+Fibered fork alternative.
+
+Under coverage, a fibered fork either behaves like the usual same-mask fork and
+extracts the product-block secret, or it contains an explicit same-state mask
+collision.  The concrete commitment proof must reduce the right-hand case to
+the keygen/q-ary lattice breaking witness.
+-/
+theorem extraction_or_collision_of_cover
+    {Round : Type*}
+    (round :
+      Round ->
+        FiberedForkedLinearRound Block LocalFree CommitState stateOfMask
+          ValidMask secret)
+    (hcover : CoversBlocks fun r b => (round r).DeltaActive b) :
+    (∃ hsame : ∀ r, (round r).mask₀ = (round r).mask₁,
+        extractedSecret round hsame hcover = secret) ∨
+      ∃ r : Round, (round r).HasMaskCollision := by
+  classical
+  by_cases hsame : ∀ r, (round r).mask₀ = (round r).mask₁
+  · exact Or.inl
+      ⟨hsame, extractedSecret_eq_of_all_sameMask round hsame hcover⟩
+  · rcases not_forall.mp hsame with ⟨r, hdiff⟩
+    exact Or.inr
+      ⟨r, ⟨⟨(round r).maskCollision hdiff, by constructor <;> rfl⟩⟩⟩
+
+end FiberedForkedLinearRound
 
 /--
 A multi-fork linear round packages several accepting responses for one fixed

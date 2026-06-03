@@ -30,6 +30,30 @@ def ModqNoLeeKernelVectorBelow [Fintype ι]
     (AT : (ι -> ZMod q) -> V) (d : Nat) : Prop :=
   ∀ r : ι -> ZMod q, AT r = 0 -> r ≠ 0 -> d <= centeredNormL1 q r
 
+/--
+A concrete certificate violation for `ModqNoLeeKernelVectorBelow`: a nonzero
+q-ary kernel vector whose centered Lee norm is below the advertised bound.
+-/
+structure ModqLeeKernelViolation [Fintype ι]
+    (q : Nat) [NeZero q] [Zero V]
+    (AT : (ι -> ZMod q) -> V) (d : Nat) where
+  r : ι -> ZMod q
+  kernel : AT r = 0
+  nonzero : r ≠ 0
+  short : centeredNormL1 q r < d
+
+namespace ModqLeeKernelViolation
+
+theorem impossible_of_noLeeKernelVectorBelow [Fintype ι]
+    (q : Nat) [NeZero q] [Zero V]
+    {AT : (ι -> ZMod q) -> V} {d : Nat}
+    (hCode : ModqNoLeeKernelVectorBelow q AT d)
+    (W : ModqLeeKernelViolation q AT d) :
+    False :=
+  Nat.not_lt_of_ge (hCode W.r W.kernel W.nonzero) W.short
+
+end ModqLeeKernelViolation
+
 theorem mem_qaryDualLattice_iff (q : Nat) [NeZero q] [Zero V]
     {AT : (ι -> ZMod q) -> V} {z : ι -> Int} :
     z ∈ qaryDualLattice q AT ↔ AT (residueVec q z) = 0 :=

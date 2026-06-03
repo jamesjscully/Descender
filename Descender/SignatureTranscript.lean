@@ -3059,7 +3059,7 @@ structure N32CompactResponseByteDecoder
 namespace N32CompactResponseByteDecoder
 
 variable {q : Nat} [NeZero q]
-variable {LocalFree : Type*}
+variable {LocalFree Breaker : Type*}
 
 def toCompactResponseCodec
     (D : N32CompactResponseByteDecoder (q := q) LocalFree) :
@@ -4261,6 +4261,32 @@ theorem secretRecovery_breaks_iff
       recovered = secret := by
   rfl
 
+/--
+Every `N32ProductBlockSecretRecoveryGame` contains an unbounded breaker in the
+plain Lean model: apply the game-provided breaker builder to the actual secret.
+
+This is a sanity lemma for the compact six-replay endpoint.  A theorem that
+assumes `∀ breaker, ¬ K.BreaksKeygen breaker` for this game is therefore a
+contradiction witness, not a deployable cryptographic security theorem.  A real
+keygen-security reduction must model efficient adversaries, a sampled keygen
+distribution, or a named external assumption with an explicit game and budget.
+-/
+theorem exists_keygenBreaker
+    (K : N32ProductBlockSecretRecoveryGame (q := q) LocalFree Breaker) :
+    ∃ breaker : Breaker, K.BreaksKeygen breaker := by
+  exact ⟨K.buildBreaker K.secret, K.buildBreaker_sound K.secret rfl⟩
+
+/--
+The compact endpoint's old "no keygen breaker exists" assumption is impossible
+for this unbounded recovery-game interface.
+-/
+theorem no_keygenBreaker_false
+    (K : N32ProductBlockSecretRecoveryGame (q := q) LocalFree Breaker)
+    (hNoBreak : ∀ breaker : Breaker, ¬ K.BreaksKeygen breaker) :
+    False := by
+  rcases exists_keygenBreaker (q := q) K with ⟨breaker, hbreak⟩
+  exact hNoBreak breaker hbreak
+
 end N32ProductBlockSecretRecoveryGame
 
 /--
@@ -5222,10 +5248,13 @@ theorem forgeryMinusGuess_sixth_le_failureUnionBound_of_no_keygenBreaker
 end N32ByteConcreteCompactSixReplayExtractionInputs
 
 /--
-Final byte-concrete signature security certificate.
+Compact no-breaker contradiction certificate.
 
-All transcript/proof obligations are packaged in `inputs`; the only remaining
-cryptographic assumption is that the declared keygen target has no breaker.
+This structure is retained only as a negative-control endpoint for the compact
+six-replay proof.  Its `noKeygenBreak` field contradicts
+`N32ProductBlockSecretRecoveryGame.exists_keygenBreaker` in the unbounded Lean
+model, so the theorems below must not be read as deployable signature-security
+claims.  They show what follows from an impossible no-breaker package.
 -/
 structure N32ByteConcreteSignatureSecurityCertificate
     {q : Nat} [NeZero q]
@@ -5263,6 +5292,26 @@ variable {E :
     (ByteVector commitmentLen)}
 variable {K : N32ProductBlockSecretRecoveryGame (q := q) LocalFree Breaker}
 
+/-- The compact no-breaker certificate is uninhabitable as a security package. -/
+theorem noKeygenBreak_impossible
+    (C :
+      N32ByteConcreteSignatureSecurityCertificate
+        (q := q)
+        (domainLen := domainLen)
+        (publicKeyLen := publicKeyLen)
+        (messageLen := messageLen)
+        (commitmentLen := commitmentLen)
+        (responseLen := responseLen) E K) :
+    False := by
+  exact N32ProductBlockSecretRecoveryGame.no_keygenBreaker_false
+    (q := q) K C.noKeygenBreak
+
+/--
+Contradictory compact sixth-moment bound.
+
+This theorem is intentionally kept under the impossible certificate wrapper so
+that downstream code cannot mistake it for a live security endpoint.
+-/
 theorem forgeryMinusGuess_sixth_le_failureUnionBound
     (C :
       N32ByteConcreteSignatureSecurityCertificate
@@ -5281,11 +5330,14 @@ theorem forgeryMinusGuess_sixth_le_failureUnionBound
       K C.noKeygenBreak hnonneg C.invTwo_spec
 
 /--
-Concrete target for reading the N32 certificate as a direct forgery bound.
+Negative-control target for reading the compact sixth-moment statement as a
+direct residual bound.
 
-The six-replay extractor proves a sixth-moment statement.  To certify a
-target residual advantage `targetAdv`, the concrete compact coverage failure
-must therefore fit under `targetAdv ^ 6`.
+The six-replay extractor proves a sixth-moment statement.  To certify a target
+residual advantage `targetAdv`, the concrete compact coverage failure must
+therefore fit under `targetAdv ^ 6`.  For the current compact constants this is
+not a cryptographic residual target, and this wrapper still depends on the
+impossible no-breaker certificate above.
 -/
 structure PracticalForgeryTarget where
   targetAdv : ℝ

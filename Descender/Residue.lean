@@ -128,6 +128,52 @@ theorem centeredNormLinf_sub_le [Fintype ι] (q : Nat)
   simpa [sub_eq_add_neg, centeredNormLinf, centeredAbs, centeredLift] using
     centeredNormLinf_add_le q x (fun i => -y i)
 
+theorem centeredNormL1_sub_le [Fintype ι] (q : Nat)
+    (x y : ι -> ZMod q) :
+    centeredNormL1 q (fun i => x i - y i) <=
+      centeredNormL1 q x + centeredNormL1 q y := by
+  unfold centeredNormL1
+  calc
+    ∑ i, centeredAbs q (x i - y i) <=
+        ∑ i, (centeredAbs q (x i) + centeredAbs q (y i)) := by
+          exact Finset.sum_le_sum (by
+            intro i _hi
+            exact centeredAbs_sub_le q (x i) (y i))
+    _ = ∑ i, centeredAbs q (x i) + ∑ i, centeredAbs q (y i) := by
+          rw [Finset.sum_add_distrib]
+
+theorem centeredNormL1_le_card_mul_of_noiseSupport [Fintype ι]
+    {q eta : Nat} {e : ι -> ZMod q}
+    (h : centeredResidueNoiseSupport q eta e) :
+    centeredNormL1 q e <= Fintype.card ι * eta := by
+  unfold centeredNormL1
+  calc
+    ∑ i, centeredAbs q (e i) <= ∑ _i : ι, eta := by
+      exact Finset.sum_le_sum (by
+        intro i _hi
+        exact h i)
+    _ = Fintype.card ι * eta := by
+      simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul,
+        Nat.cast_id]
+
+theorem centeredNormL1_sub_le_card_mul_add_of_noiseSupport [Fintype ι]
+    {q eta rho : Nat} {x y : ι -> ZMod q}
+    (hx : centeredResidueNoiseSupport q eta x)
+    (hy : centeredResidueNoiseSupport q rho y) :
+    centeredNormL1 q (fun i => x i - y i) <=
+      Fintype.card ι * (eta + rho) := by
+  unfold centeredNormL1
+  calc
+    ∑ i, centeredAbs q (x i - y i) <=
+        ∑ i, (eta + rho) := by
+          exact Finset.sum_le_sum (by
+            intro i _hi
+            exact Nat.le_trans (centeredAbs_sub_le q (x i) (y i))
+              (Nat.add_le_add (hx i) (hy i)))
+    _ = Fintype.card ι * (eta + rho) := by
+          simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul,
+            Nat.cast_id]
+
 theorem centeredAbs_sum_le [Fintype ι] (q : Nat)
     (f : ι -> ZMod q) :
     centeredAbs q (∑ i, f i) <= ∑ i, centeredAbs q (f i) := by
