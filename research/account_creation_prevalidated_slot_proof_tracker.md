@@ -438,9 +438,21 @@ Named breaks:
   `path2_two_view_column_profile_is_active_masked_base128_policy` checks those
   rules and negative controls; KAT
   `path2_transparent_descent_transcript_binds_public_context` now also rejects
-  unknown column-profile ids before transcript hashing. The next executable
-  blocker remains later: concrete transparent verifier plus trace/relation
-  encoding and full query-opening no-export tests.
+  unknown column-profile ids before transcript hashing. The query-opening
+  no-export surface now has a first executable manifest policy:
+  `PATH2_TRANSPARENT_QUERY_OPENING_MANIFEST_SCHEMA`,
+  `path2_transparent_query_opening_manifest_v1`, and
+  `path2_transparent_query_opening_manifest_digest` bind public query-opening
+  metadata to the active profile while rejecting raw hidden visibility classes,
+  hidden column-set ids, unknown roles/classes, duplicate query indices,
+  missing/duplicate mask domains for hidden roles, and zero component digests.
+  KAT `path2_transparent_query_opening_manifest_enforces_no_export_policy`
+  covers the positive manifest, private-material serialization denylist, and
+  those negative controls; the transparent payload boundary fixture now binds
+  `query_openings_digest` to that manifest digest instead of an arbitrary
+  placeholder. The next executable blocker remains concrete transparent
+  verifier plus trace/relation encoding and honest/malformed query-opening
+  coverage against real proof bytes.
 
 - [x] Carry over active-lane negative controls into creation time.
   Requirement: wrong witness digest, wrong pad seed, wrong public pad statement,
