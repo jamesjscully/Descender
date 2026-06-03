@@ -267,6 +267,8 @@ pub const PATH2_DESCENT_SIS_TRANSCRIPT_COMMITMENT_MATRIX_DOMAIN: &str =
     "DESCENDER_PATH2_DESCENT_SIS_TRANSCRIPT_COMMITMENT_MATRIX_V1";
 pub const PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN: &str =
     "DESCENDER_PATH2_TRANSPARENT_DESCENT_PROOF_V1";
+pub const PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA: &str =
+    "DESCENDER_PATH2_TRANSPARENT_ZK_MASKED_TRACE_IOP_CAPABILITY_V1";
 pub const PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA: &str =
     "DESCENDER_PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_V1";
 pub const PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN: &str =
@@ -332,6 +334,10 @@ pub const PATH2_DIRECT_CREATION_PROOF_KIND_TOY_Q_LINEAR: u16 = 1;
 pub const PATH2_DIRECT_CREATION_PROOF_KIND_TRANSPARENT_DESCENT: u16 = 2;
 pub const PATH2_TRANSPARENT_DESCENT_PROOF_SYSTEM_PROFILE: &str =
     "DESCENDER_PATH2_TRANSPARENT_HASH_PROOF_OVER_DESCENT_RELATION_V1";
+pub const PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_PROFILE_ID: u16 = 1;
+pub const PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY: &str =
+    "zk_masked_trace_iop_native_boundary";
+pub const PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES: u32 = 16_416;
 pub const PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_VERSION: u16 = 1;
 pub const PATH2_TRANSPARENT_RELATION_ROW_GROUP_MASKED_PROJECTION: u8 = 1;
 pub const PATH2_TRANSPARENT_RELATION_ROW_GROUP_DIGIT_RECONSTRUCTION: u8 = 2;
@@ -1371,6 +1377,27 @@ pub struct Path2TransparentRelationLayoutV1 {
     pub column_profile: u16,
     pub row_groups: [Path2TransparentRelationRowGroupV1; 3],
     pub role_layouts: [Path2TransparentRelationRoleLayoutV1; 3],
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2TransparentProofFamilyCapabilityV1 {
+    pub schema: &'static str,
+    pub profile_id: u16,
+    pub family: &'static str,
+    pub relation_layout_digest: [u8; DIGEST_BYTES],
+    pub column_profile: u16,
+    pub parent_root_binding: bool,
+    pub typed_role_subcommitments: bool,
+    pub full_trace_extractable: bool,
+    pub full_witness_relation_knowledge: bool,
+    pub hidden_column_zero_knowledge: bool,
+    pub masked_query_no_export: bool,
+    pub qrom_schedule_bound: bool,
+    pub norm_range_soundness: bool,
+    pub blinding_noise_bound_soundness: bool,
+    pub no_raw_hidden_openings: bool,
+    pub no_public_linear_role_commitments: bool,
+    pub fallback_threshold_bytes: u32,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -9347,7 +9374,154 @@ pub fn path2_transparent_descent_relation_id() -> [u8; DIGEST_BYTES] {
     Sha256::digest(frame).into()
 }
 
+pub fn path2_transparent_proof_family_capability_v1()
+-> Result<Path2TransparentProofFamilyCapabilityV1, String> {
+    let capability = Path2TransparentProofFamilyCapabilityV1 {
+        schema: PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA,
+        profile_id: PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_PROFILE_ID,
+        family: PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY,
+        relation_layout_digest: path2_transparent_relation_layout_v1_digest()?,
+        column_profile: PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+        parent_root_binding: true,
+        typed_role_subcommitments: true,
+        full_trace_extractable: true,
+        full_witness_relation_knowledge: true,
+        hidden_column_zero_knowledge: true,
+        masked_query_no_export: true,
+        qrom_schedule_bound: true,
+        norm_range_soundness: true,
+        blinding_noise_bound_soundness: true,
+        no_raw_hidden_openings: true,
+        no_public_linear_role_commitments: true,
+        fallback_threshold_bytes: PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES,
+    };
+    verify_path2_transparent_proof_family_capability(&capability)?;
+    Ok(capability)
+}
+
+pub fn verify_path2_transparent_proof_family_capability(
+    capability: &Path2TransparentProofFamilyCapabilityV1,
+) -> Result<(), String> {
+    if capability.schema != PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA {
+        return Err("Path 2 transparent proof-family capability schema mismatch".to_string());
+    }
+    if capability.profile_id != PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_PROFILE_ID {
+        return Err("Path 2 transparent proof-family capability profile mismatch".to_string());
+    }
+    if capability.family != PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY {
+        return Err("Path 2 transparent proof-family capability family mismatch".to_string());
+    }
+    if capability.relation_layout_digest != path2_transparent_relation_layout_v1_digest()? {
+        return Err(
+            "Path 2 transparent proof-family capability relation layout mismatch".to_string(),
+        );
+    }
+    verify_path2_two_view_column_profile_id(capability.column_profile)?;
+    for (label, enabled) in [
+        ("parent_root_binding", capability.parent_root_binding),
+        (
+            "typed_role_subcommitments",
+            capability.typed_role_subcommitments,
+        ),
+        ("full_trace_extractable", capability.full_trace_extractable),
+        (
+            "full_witness_relation_knowledge",
+            capability.full_witness_relation_knowledge,
+        ),
+        (
+            "hidden_column_zero_knowledge",
+            capability.hidden_column_zero_knowledge,
+        ),
+        ("masked_query_no_export", capability.masked_query_no_export),
+        ("qrom_schedule_bound", capability.qrom_schedule_bound),
+        ("norm_range_soundness", capability.norm_range_soundness),
+        (
+            "blinding_noise_bound_soundness",
+            capability.blinding_noise_bound_soundness,
+        ),
+        ("no_raw_hidden_openings", capability.no_raw_hidden_openings),
+        (
+            "no_public_linear_role_commitments",
+            capability.no_public_linear_role_commitments,
+        ),
+    ] {
+        if !enabled {
+            return Err(format!(
+                "Path 2 transparent proof-family capability missing {label}"
+            ));
+        }
+    }
+    if capability.fallback_threshold_bytes
+        != PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES
+    {
+        return Err(
+            "Path 2 transparent proof-family capability fallback threshold mismatch".to_string(),
+        );
+    }
+    Ok(())
+}
+
+pub fn path2_transparent_proof_family_capability_v1_digest() -> Result<[u8; DIGEST_BYTES], String> {
+    let capability = path2_transparent_proof_family_capability_v1()?;
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA.as_bytes(),
+    );
+    append_u64(&mut frame, b"profile_id", capability.profile_id as u64);
+    append_frame(&mut frame, b"family", capability.family.as_bytes());
+    append_frame(
+        &mut frame,
+        b"relation_layout_digest",
+        &capability.relation_layout_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"column_profile",
+        capability.column_profile as u64,
+    );
+    for (label, enabled) in [
+        ("parent_root_binding", capability.parent_root_binding),
+        (
+            "typed_role_subcommitments",
+            capability.typed_role_subcommitments,
+        ),
+        ("full_trace_extractable", capability.full_trace_extractable),
+        (
+            "full_witness_relation_knowledge",
+            capability.full_witness_relation_knowledge,
+        ),
+        (
+            "hidden_column_zero_knowledge",
+            capability.hidden_column_zero_knowledge,
+        ),
+        ("masked_query_no_export", capability.masked_query_no_export),
+        ("qrom_schedule_bound", capability.qrom_schedule_bound),
+        ("norm_range_soundness", capability.norm_range_soundness),
+        (
+            "blinding_noise_bound_soundness",
+            capability.blinding_noise_bound_soundness,
+        ),
+        ("no_raw_hidden_openings", capability.no_raw_hidden_openings),
+        (
+            "no_public_linear_role_commitments",
+            capability.no_public_linear_role_commitments,
+        ),
+    ] {
+        append_u64(&mut frame, label.as_bytes(), u64::from(enabled));
+    }
+    append_u64(
+        &mut frame,
+        b"fallback_threshold_bytes",
+        capability.fallback_threshold_bytes as u64,
+    );
+    Ok(Sha256::digest(frame).into())
+}
+
 pub fn path2_transparent_descent_proof_system_id() -> [u8; DIGEST_BYTES] {
+    let proof_family_capability_digest = path2_transparent_proof_family_capability_v1_digest()
+        .expect("Path 2 transparent proof-family capability is statically valid");
     let mut frame = Vec::new();
     append_frame(
         &mut frame,
@@ -9363,6 +9537,11 @@ pub fn path2_transparent_descent_proof_system_id() -> [u8; DIGEST_BYTES] {
         &mut frame,
         b"relation_id",
         &path2_transparent_descent_relation_id(),
+    );
+    append_frame(
+        &mut frame,
+        b"proof_family_capability_digest",
+        &proof_family_capability_digest,
     );
     append_u64(
         &mut frame,
@@ -13076,7 +13255,7 @@ pub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(
         .map_err(|err| format!("encode Path 2 native storage/lifecycle hardening scope: {err}"))
 }
 
-pub fn path2_registered_domain_constants() -> [&'static str; 24] {
+pub fn path2_registered_domain_constants() -> [&'static str; 25] {
     [
         PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN,
         PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN,
@@ -13095,6 +13274,7 @@ pub fn path2_registered_domain_constants() -> [&'static str; 24] {
         PATH2_DESCENT_SIS_OPENING_TUPLE_MATRIX_DOMAIN,
         PATH2_DESCENT_SIS_TRANSCRIPT_COMMITMENT_MATRIX_DOMAIN,
         PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN,
+        PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA,
         PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA,
         PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN,
         PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA,
@@ -13389,6 +13569,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN",
             PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN,
+        ),
+        (
+            "PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA",
+            PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA,
         ),
         (
             "PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA",
@@ -30971,6 +31155,90 @@ mod tests {
         assert_eq!(
             verify_path2_transparent_relation_layout(&public_role).unwrap_err(),
             "Path 2 transparent relation layout private role is public"
+        );
+    }
+
+    #[test]
+    fn path2_transparent_proof_family_capability_pins_active_assumptions() {
+        let capability = path2_transparent_proof_family_capability_v1().unwrap();
+        verify_path2_transparent_proof_family_capability(&capability).unwrap();
+        assert_eq!(
+            capability.schema,
+            PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA
+        );
+        assert_eq!(
+            capability.profile_id,
+            PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_PROFILE_ID
+        );
+        assert_eq!(
+            capability.family,
+            PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY
+        );
+        assert_eq!(
+            capability.relation_layout_digest,
+            path2_transparent_relation_layout_v1_digest().unwrap()
+        );
+        assert_eq!(
+            capability.column_profile,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1
+        );
+        assert!(capability.parent_root_binding);
+        assert!(capability.typed_role_subcommitments);
+        assert!(capability.full_trace_extractable);
+        assert!(capability.full_witness_relation_knowledge);
+        assert!(capability.hidden_column_zero_knowledge);
+        assert!(capability.masked_query_no_export);
+        assert!(capability.qrom_schedule_bound);
+        assert!(capability.norm_range_soundness);
+        assert!(capability.blinding_noise_bound_soundness);
+        assert!(capability.no_raw_hidden_openings);
+        assert!(capability.no_public_linear_role_commitments);
+        assert_eq!(
+            capability.fallback_threshold_bytes,
+            PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES
+        );
+        assert_ne!(
+            path2_transparent_proof_family_capability_v1_digest().unwrap(),
+            [0_u8; DIGEST_BYTES]
+        );
+        assert_ne!(
+            path2_transparent_descent_proof_system_id(),
+            [0_u8; DIGEST_BYTES]
+        );
+
+        let mut sampled_only = capability.clone();
+        sampled_only.full_trace_extractable = false;
+        assert_eq!(
+            verify_path2_transparent_proof_family_capability(&sampled_only).unwrap_err(),
+            "Path 2 transparent proof-family capability missing full_trace_extractable"
+        );
+
+        let mut raw_openings = capability.clone();
+        raw_openings.no_raw_hidden_openings = false;
+        assert_eq!(
+            verify_path2_transparent_proof_family_capability(&raw_openings).unwrap_err(),
+            "Path 2 transparent proof-family capability missing no_raw_hidden_openings"
+        );
+
+        let mut no_role_subroots = capability.clone();
+        no_role_subroots.typed_role_subcommitments = false;
+        assert_eq!(
+            verify_path2_transparent_proof_family_capability(&no_role_subroots).unwrap_err(),
+            "Path 2 transparent proof-family capability missing typed_role_subcommitments"
+        );
+
+        let mut no_no_export = capability.clone();
+        no_no_export.masked_query_no_export = false;
+        assert_eq!(
+            verify_path2_transparent_proof_family_capability(&no_no_export).unwrap_err(),
+            "Path 2 transparent proof-family capability missing masked_query_no_export"
+        );
+
+        let mut wrong_family = capability.clone();
+        wrong_family.family = "vanilla_merkle_fri_trace";
+        assert_eq!(
+            verify_path2_transparent_proof_family_capability(&wrong_family).unwrap_err(),
+            "Path 2 transparent proof-family capability family mismatch"
         );
     }
 

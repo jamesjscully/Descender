@@ -482,10 +482,25 @@ Named breaks:
   an opaque proof-body digest/length before returning the proof-verifier-not-
   implemented blocker. The boundary KAT now also covers proof-byte digest
   mismatch, body digest mismatch, truncated proof body, envelope context
-  rebinding, and empty proof-body rejection. The next executable blocker is no
-  longer byte parsing; it is an actual concrete transparent proof-system
-  verifier with honest/malformed coverage against this encoded relation,
-  validated query-opening manifest, and canonical proof-byte envelope.
+  rebinding, and empty proof-body rejection. The proof-system id now binds the
+  active proof-family capability profile:
+  `PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA`,
+  `path2_transparent_proof_family_capability_v1`,
+  `verify_path2_transparent_proof_family_capability`, and
+  `path2_transparent_proof_family_capability_v1_digest` pin
+  `zk_masked_trace_iop_native_boundary` as the only active transparent family
+  shape and require parent-root binding, typed role subcommitments, full-trace
+  extraction, full-witness relation knowledge, hidden-column zero knowledge,
+  masked-query no-export, QROM schedule binding, norm/range soundness,
+  blinding/noise bound soundness, no raw hidden openings, no public linear role
+  commitments, and the 16416-byte fallback threshold. KAT
+  `path2_transparent_proof_family_capability_pins_active_assumptions` rejects
+  sampled-only extraction, raw hidden openings, missing typed role
+  subcommitments, missing no-export, and vanilla Merkle/FRI relabeling. The
+  next executable blocker is an actual concrete transparent proof-system
+  verifier with honest/malformed coverage against this capability profile,
+  encoded relation, validated query-opening manifest, and canonical proof-byte
+  envelope.
 
 - [x] Carry over active-lane negative controls into creation time.
   Requirement: wrong witness digest, wrong pad seed, wrong public pad statement,
