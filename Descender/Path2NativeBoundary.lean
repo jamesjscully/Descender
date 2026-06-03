@@ -568,6 +568,14 @@ def selectedBlindingNoiseCenteredBound : Nat :=
 def selectedSisRoleMatrixRows : Nat :=
   64
 
+/-- The selected range policy id for hidden base-128 semantic role digits. -/
+def selectedHybridBase128SemanticRangePolicyId : Nat :=
+  1
+
+/-- The selected range policy id for private range-witness columns. -/
+def selectedHybridBase128WitnessRangePolicyId : Nat :=
+  2
+
 /-- The active route uses one binding-compatible blinding/noise policy. -/
 def UsesSelectedBlindingNoisePolicy
     (policy : BlindingNoisePolicy) : Prop :=
@@ -707,6 +715,75 @@ theorem columnProfileCompatible_private_auth_modes_safe
 /-- The selected native-boundary norm/range mode. -/
 def selectedNormRangeMode : NormRangeMode :=
   NormRangeMode.hybridBase128HiddenRoles
+
+/-- The selected theorem-level layout for hybrid base-128 range checks. -/
+structure HybridBase128RangePolicy where
+  semanticRangePolicyId : Nat
+  witnessRangePolicyId : Nat
+  privateRoleMatrixRows : Nat
+  padSemanticValues : Nat
+  padDigitColumns : Nat
+  projectionSemanticValues : Nat
+  projectionDigitColumns : Nat
+  openingTupleSemanticValues : Nat
+  openingTupleDigitColumns : Nat
+  digitRangeRows : Nat
+  reconstructionRows : Nat
+  rangeWitnessColumns : Nat
+  digitMax : Nat
+
+/--
+Profile entries that must carry the selected hidden base-128 range policy.
+
+This binds the theorem-level range obligation to the typed active roles rather
+than to an after-the-fact `NormRangeValid` claim.
+def RoleUsesRangePolicyWithVisibility
+    (profile : ColumnProfile) (roleId : RoleId)
+    (policyId : Nat) (visibilityClass : VisibilityClass) : Prop :=
+  exists index,
+    (profile.entry index).roleId = roleId ∧
+      (profile.entry index).rangePolicyId = policyId ∧
+        (profile.entry index).visibilityClass = visibilityClass
+
+/-- The active route uses one selected hybrid base-128 range layout. -/
+def UsesSelectedHybridBase128RangePolicy
+    (profile : ColumnProfile) (policy : HybridBase128RangePolicy) : Prop :=
+  profile.normRangeMode = selectedNormRangeMode ∧
+    policy.semanticRangePolicyId =
+      selectedHybridBase128SemanticRangePolicyId ∧
+      policy.witnessRangePolicyId =
+        selectedHybridBase128WitnessRangePolicyId ∧
+        policy.privateRoleMatrixRows = selectedSisRoleMatrixRows ∧
+          policy.padSemanticValues = 6 ∧
+            policy.padDigitColumns = 12 ∧
+              policy.projectionSemanticValues = 6 ∧
+                policy.projectionDigitColumns = 12 ∧
+                  policy.openingTupleSemanticValues = 8 ∧
+                    policy.openingTupleDigitColumns = 16 ∧
+                      policy.digitRangeRows = 40 ∧
+                        policy.reconstructionRows = 20 ∧
+                          policy.rangeWitnessColumns = 40 ∧
+                            policy.digitMax = 127 ∧
+                              ConstraintClassCovered profile.relationProfile
+                                TraceConstraintClass.base128RangeRow ∧
+                                  ConstraintClassCovered profile.relationProfile
+                                    TraceConstraintClass.qFieldRow ∧
+                                  RoleUsesRangePolicyWithVisibility profile
+                                    RoleId.padSource
+                                    policy.semanticRangePolicyId
+                                    VisibilityClass.vcExtractorHidden ∧
+                                    RoleUsesRangePolicyWithVisibility profile
+                                      RoleId.projectionRelation
+                                      policy.semanticRangePolicyId
+                                      VisibilityClass.vcExtractorHidden ∧
+                                      RoleUsesRangePolicyWithVisibility profile
+                                        RoleId.openingTuple
+                                        policy.semanticRangePolicyId
+                                        VisibilityClass.vcExtractorHidden ∧
+                                        RoleUsesRangePolicyWithVisibility profile
+                                          RoleId.rangeWitness
+                                          policy.witnessRangePolicyId
+                                          VisibilityClass.vcRangePrivate
 
 /-- A column profile uses the selected hybrid base-128 hidden-role mode. -/
 def UsesSelectedNormRangeMode (profile : ColumnProfile) : Prop :=
@@ -1394,11 +1471,12 @@ the native-boundary binding theorem, or exports a named break.
 -/
 def NormRangeSoundness (P : Predicates) : Prop :=
   forall {b : Boundary} {view : TransparentPublicView}
-      {profile : ColumnProfile} {h : HiddenRepresentative},
+      {profile : ColumnProfile} {rangePolicy : HybridBase128RangePolicy}
+      {h : HiddenRepresentative},
     P.transparentAccepts b view ->
       TransparentViewProjectsFrom b view ->
         ColumnProfileCompatibleWithBoundary b view profile ->
-          UsesSelectedNormRangeMode profile ->
+          UsesSelectedHybridBase128RangePolicy profile rangePolicy ->
             P.transparentExtracts b view h ->
               InFiber P b.context b h ->
                 P.normRangeValid b h ∨
@@ -1409,16 +1487,17 @@ theorem norm_range_valid_or_break
     (P : Predicates)
     (hSound : NormRangeSoundness P)
     {b : Boundary} {view : TransparentPublicView}
-    {profile : ColumnProfile} {h : HiddenRepresentative}
+    {profile : ColumnProfile} {rangePolicy : HybridBase128RangePolicy}
+    {h : HiddenRepresentative}
     (hAccept : P.transparentAccepts b view)
     (hProjects : TransparentViewProjectsFrom b view)
     (hProfile : ColumnProfileCompatibleWithBoundary b view profile)
-    (hMode : UsesSelectedNormRangeMode profile)
+    (hRangePolicy : UsesSelectedHybridBase128RangePolicy profile rangePolicy)
     (hExtracts : P.transparentExtracts b view h)
     (hFiber : InFiber P b.context b h) :
     P.normRangeValid b h ∨
       (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
-  hSound hAccept hProjects hProfile hMode hExtracts hFiber
+  hSound hAccept hProjects hProfile hRangePolicy hExtracts hFiber
 
 /--
 Blinding/noise bound assumption: the extracted representative's blinding and
@@ -1612,13 +1691,14 @@ theorem transparent_view_full_interface_or_break
     (hNormRangeSound : NormRangeSoundness P)
     (hBlindSound : BlindingNoiseBoundSoundness P)
     {b : Boundary} {view : TransparentPublicView}
-    {profile : ColumnProfile} {policy : BlindingNoisePolicy}
+    {profile : ColumnProfile} {rangePolicy : HybridBase128RangePolicy}
+    {policy : BlindingNoisePolicy}
     (hAccept : P.transparentAccepts b view)
     (hProjects : TransparentViewProjectsFrom b view)
     (hProfile : ColumnProfileCompatibleWithBoundary b view profile)
     (hRoleComplete : ProfileRoleComplete profile)
     (hSelected : UsesSelectedTraceKnowledgeModes profile)
-    (hMode : UsesSelectedNormRangeMode profile)
+    (hRangePolicy : UsesSelectedHybridBase128RangePolicy profile rangePolicy)
     (hPolicy : UsesSelectedBlindingNoisePolicy policy) :
     (P.roleRestrictionsAuthenticate b profile ∧
       P.noExportHolds b view profile ∧
@@ -1650,7 +1730,7 @@ theorem transparent_view_full_interface_or_break
           rcases hExtract with
             ⟨h, hTransparent, hComplete, hFiber, hLocal, hDescent⟩
           cases
-              hNormRangeSound hAccept hProjects hProfile hMode
+              hNormRangeSound hAccept hProjects hProfile hRangePolicy
                 hTransparent hFiber with
           | inl hNorm =>
               cases

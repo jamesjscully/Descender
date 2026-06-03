@@ -1,6 +1,7 @@
 # Path 2 Native Boundary Hybrid Base-128 Range Policy
 
-Status: range-policy interface pinned; not proved.
+Status: range-policy ids and layout pinned; reconstruction/range-row soundness
+not proved.
 
 Purpose: instantiate the selected `hybridBase128HiddenRoles` norm/range mode at
 the column-profile level.
@@ -8,7 +9,8 @@ the column-profile level.
 ## Policy
 
 ```text
-RangePolicyId := PATH2_NATIVE_BOUNDARY_HYBRID_BASE128_RANGE_V1
+SemanticRangePolicyId := 1
+WitnessRangePolicyId := 2
 ```
 
 This policy applies to hidden role openings only:
@@ -18,6 +20,20 @@ This policy applies to hidden role openings only:
 - `opening_tuple`.
 
 It does not digitize the public `masked_projection[6]` quotient.
+
+The active Rust column-profile verifier now rejects drift in these selected
+range-policy ids:
+
+- `packed_witness`, `pad_source`, `projection_relation`, and `opening_tuple`
+  must carry semantic range policy `1`;
+- `range_witness` must carry witness range policy `2`;
+- context, randomizer, blinding, and constraint roles must carry no range
+  policy;
+- `range_witness` must remain `VisibilityClass.rangePrivate`.
+
+The Lean selected-policy certificate additionally requires the pad,
+projection, and opening-tuple semantic entries to be `vcExtractorHidden` on the
+same entries that carry semantic policy `1`.
 
 ## Digit Encoding
 
@@ -134,6 +150,11 @@ digit columns: 12, 12, 16
 
 The 48-row `opening_tuple` case is now a rejected comparator under the selected
 blinding bound, not an active row band.
+
+The proof-side next move is narrower: prove that the concrete reconstruction
+rows and digit-range rows force each extracted hidden semantic value to equal
+its selected base-128 digits in the authenticated role columns, or export
+`path2_sis_norm_or_range_break`.
 
 ## Non-Claims
 

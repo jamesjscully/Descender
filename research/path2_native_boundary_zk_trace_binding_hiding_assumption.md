@@ -24,7 +24,7 @@ column profile `profile`, an accepted proof satisfies:
 TransparentAccepts(b, view)
 TransparentViewProjectsFrom(b, view)
 ColumnProfileCompatibleWithBoundary(b, view, profile)
-UsesSelectedNormRangeMode(profile)
+UsesSelectedHybridBase128RangePolicy(profile, rangePolicy)
 ```
 
 and either proves all of:
@@ -35,7 +35,8 @@ and either proves all of:
 3. `ExtractedRolesComplete(b, profile, h)`;
 4. `LocalValid_c(h)`;
 5. `DescentConsistent_c(h)`;
-6. `NormRangeValid(b, h)` under `hybridBase128HiddenRoles`;
+6. `NormRangeValid(b, h)` under the selected `hybridBase128HiddenRoles`
+   range-policy certificate;
 7. `BlindingNoiseBounded(b, policy, h)` as an extractor-side bound;
 8. `NoExportHolds(b, view, profile)`;
 9. `RoleAuthenticationMaterialSimulatable(b, view, profile)`;
@@ -119,6 +120,8 @@ It composes:
 - `MaskFreshnessSoundness`;
 - `NativeBoundaryTraceQromScheduleSoundness`;
 - `NormRangeSoundness`;
+- `UsesSelectedHybridBase128RangePolicy(profile, rangePolicy)` for that
+  norm/range contract;
 - `BlindingNoiseBoundSoundness`.
 
 ## Active Candidate

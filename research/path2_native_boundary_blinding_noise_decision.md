@@ -76,7 +76,8 @@ means:
 TransparentAccepts(b, view)
 TransparentViewProjectsFrom(b, view)
 ColumnProfileCompatibleWithBoundary(b, view, profile)
-UsesSelectedNormRangeMode(profile)
+UsesSelectedHybridBase128RangePolicy(profile, rangePolicy)
+UsesSelectedBlindingNoisePolicy(policy)
   =>
 role restrictions authenticate under p_section_root(b)
 and extractor obtains h in Fiber(B_c, b)

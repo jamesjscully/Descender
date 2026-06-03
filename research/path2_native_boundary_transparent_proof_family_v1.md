@@ -47,7 +47,7 @@ The active profile must satisfy:
 ```text
 ProfileRoleComplete(profile)
 UsesSelectedTraceKnowledgeModes(profile)
-UsesSelectedNormRangeMode(profile)
+UsesSelectedHybridBase128RangePolicy(profile, rangePolicy)
 UsesSelectedBlindingNoisePolicy(policy)
 selectedSisRoleMatrixRows = 64
 ```

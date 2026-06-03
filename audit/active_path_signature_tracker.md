@@ -299,6 +299,13 @@ The active range/SIS gate now also pins `selectedSisRoleMatrixRows = 64` and the
 Rust proof-family interface binds `sis_role_matrix_rows = 64`; the existing
 sanity probe rejects the 48-row `opening_tuple` case under the selected `2048`
 blinding bound.
+The norm/range gate now consumes
+`UsesSelectedHybridBase128RangePolicy(profile, rangePolicy)`, which fixes
+semantic policy id `1`, witness policy id `2`, private role rows `64`, digit
+counts `12/12/16`, range rows `40`, reconstruction rows `20`, range witnesses
+`40`, digit maximum `127`, extractor-hidden semantic range entries, and
+range-private witness entries; Rust rejects range-policy id drift and range
+witness visibility drift in the active two-view column profile.
 
 ## Findings
 
