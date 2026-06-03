@@ -14,7 +14,7 @@ be treated as an acceptable internal proof-family assumption.
 | `relation_knowledge_soundness` | open | Extracted trace satisfies the native-boundary relation, not just sampled row checks. | Needed for `TraceRelationValid`. |
 | `proximity_to_witness_bridge` | open | If using proximity/low-degree testing, closeness implies an extractable witness trace for the committed relation. | Bare proximity is not enough. |
 | `forking_or_rewinding_bound` | open | QROM/FS extraction loss is quantified for the proof-family extractor. | Needed for the final advantage bound. |
-| `masked_opening_consistency` | partly pinned | Public masked openings are consistent with hidden extracted cells and masks. | Needed to connect verifier view to extractor view. |
+| `masked_opening_consistency` | theorem_gate_pinned | Public masked openings are consistent with hidden extracted cells and masks. | Needed to connect verifier view to extractor view. |
 | `no_raw_hidden_public_openings` | partly pinned | Hidden role cells, range witnesses, masks, and blinding/noise are never verifier-visible raw. | Needed for no-export/ZK. |
 | `double_trace_binding_break` | open | Two safety-distinct full traces under one parent root export a named binding break. | Needed for boundary binding and role uniqueness. |
 | `domain_ordering` | ledger pinned | Root/profile/role handles/auth modes/mask domains are bound before query derivation. | Needed to avoid adaptive trace/profile choice. |
@@ -56,6 +56,14 @@ Relation-mode update:
 `RelationKnowledgeMode` and `SupportsRelationKnowledge`. Lean now rejects
 `sampledRowChecksOnly` and `proximityWithoutWitness` for
 `ParentTraceExtractionSoundness`.
+
+Two-view consistency update:
+`Descender/Path2NativeBoundary.lean` now exposes
+`MaskedOpeningConsistencySoundness`; `ParentTraceExtractionSoundness` requires
+the extracted trace to both open the native boundary and satisfy
+`maskedOpeningsConsistent` before relation validity can close. This prevents
+closing the active theorem with disjoint public masked openings and an unrelated
+hidden extractor trace.
 
 ## Likely Hardest Subclaim
 

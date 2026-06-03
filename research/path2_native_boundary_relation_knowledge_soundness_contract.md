@@ -59,6 +59,17 @@ TraceRelationValid(b, profile, trace)
 for the extracted `trace`, not for a post-hoc witness and not only for sampled
 rows.
 
+The parent extraction theorem now also requires:
+
+```text
+MaskedOpeningsConsistent(b, view, profile, trace)
+```
+
+before relation validity closes. This is intentionally separate from
+`TraceRelationValid`: the public masked/simulated openings must be tied to the
+same hidden extracted cells and mask witnesses used by the relation, so a proof
+cannot pair a simulator-safe public view with an unrelated relation witness.
+
 ## Required Relation Content
 
 `TraceRelationValid(b, profile, trace)` must cover:

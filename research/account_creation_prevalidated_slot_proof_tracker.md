@@ -1081,6 +1081,17 @@ Named breaks:
    hidden-column openings over proof-friendly inner commitments; outer SHA-256
    remains a public byte-binding and data-availability layer, not the compact
    arithmetic opening relation.
+   Highest-risk native-boundary split:
+   `research/path2_native_boundary_parent_trace_extraction_open_obligations.md`
+   and
+   `research/path2_native_boundary_relation_knowledge_soundness_contract.md`.
+   Lean now makes the public/extractor two-view join explicit:
+   `Descender/Path2NativeBoundary.lean` defines
+   `MaskedOpeningConsistencySoundness`, and
+   `ParentTraceExtractionSoundness` requires the extracted trace to be
+   consistent with the verifier-visible masked/simulated opening view before
+   relation validity can close. This blocks a proof-family story that proves
+   simulator-safe public openings and relation knowledge for unrelated traces.
 3. Classify every concrete trace column as public, masked, committed-hidden, or
    derived-public before choosing a final transparent proof family. Any sampled
    query opening that reveals an unmasked pad/projection/opening lane is a

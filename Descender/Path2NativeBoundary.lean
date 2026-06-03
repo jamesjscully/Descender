@@ -820,6 +820,8 @@ structure Predicates where
     Boundary -> ReviewedFq12HiddenSourcePayload -> HiddenRepresentative -> Prop
   traceOpensBoundary :
     Boundary -> ColumnProfile -> ExtractedTrace -> Prop
+  maskedOpeningsConsistent :
+    Boundary -> TransparentPublicView -> ColumnProfile -> ExtractedTrace -> Prop
   traceRelationValid :
     Boundary -> ColumnProfile -> ExtractedTrace -> Prop
   traceAssemblesRepresentative :
@@ -979,6 +981,24 @@ def ExtractedTraceRelationKnowledgeSoundness (P : Predicates) : Prop :=
                   (exists breakEvent,
                     P.boundaryBreakFor b.context b breakEvent)
 
+/--
+Masked-opening consistency assumption: the verifier-visible masked/simulated
+query openings are views of the same extracted hidden trace that opens the
+native boundary, or the proof exports a named break. This rules out a disjoint
+public masked view paired with an unrelated extractor witness.
+-/
+def MaskedOpeningConsistencySoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile} {trace : ExtractedTrace},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          P.transparentExtractsTrace b view trace ->
+            P.traceOpensBoundary b profile trace ->
+              P.maskedOpeningsConsistent b view profile trace ∨
+                (exists breakEvent,
+                  P.boundaryBreakFor b.context b breakEvent)
+
 def ParentTraceExtractionSoundness (P : Predicates) : Prop :=
   forall {b : Boundary} {view : TransparentPublicView}
       {profile : ColumnProfile},
@@ -990,23 +1010,29 @@ def ParentTraceExtractionSoundness (P : Predicates) : Prop :=
             (exists trace,
               P.transparentExtractsTrace b view trace ∧
                 P.traceOpensBoundary b profile trace ∧
-                  P.traceRelationValid b profile trace) ∨
+                  P.maskedOpeningsConsistent b view profile trace ∧
+                    P.traceRelationValid b profile trace) ∨
             (exists breakEvent, P.boundaryBreakFor b.context b breakEvent)
 
 theorem commitment_extraction_and_relation_knowledge_imply_parent_trace_extraction
     (P : Predicates)
     (hCommitExtract : ParentTraceCommitmentExtractionSoundness P)
+    (hMaskedConsistency : MaskedOpeningConsistencySoundness P)
     (hRelationKnowledge : ExtractedTraceRelationKnowledgeSoundness P) :
     ParentTraceExtractionSoundness P := by
   intro b view profile hAccept hProjects hProfile hFullTrace hRelationMode
   cases hCommitExtract hAccept hProjects hProfile hFullTrace with
   | inl hTrace =>
       rcases hTrace with ⟨trace, hExtractsTrace, hOpens⟩
-      cases
-          hRelationKnowledge hAccept hProjects hProfile hRelationMode
-            hExtractsTrace hOpens with
-      | inl hRelation =>
-          exact Or.inl ⟨trace, hExtractsTrace, hOpens, hRelation⟩
+      cases hMaskedConsistency hAccept hProjects hProfile hExtractsTrace hOpens with
+      | inl hMasked =>
+          cases
+              hRelationKnowledge hAccept hProjects hProfile hRelationMode
+                hExtractsTrace hOpens with
+          | inl hRelation =>
+              exact Or.inl ⟨trace, hExtractsTrace, hOpens, hMasked, hRelation⟩
+          | inr hBreak =>
+              exact Or.inr hBreak
       | inr hBreak =>
           exact Or.inr hBreak
   | inr hBreak =>
@@ -1025,7 +1051,8 @@ theorem parent_trace_extracts_or_break
     (exists trace,
     P.transparentExtractsTrace b view trace ∧
         P.traceOpensBoundary b profile trace ∧
-          P.traceRelationValid b profile trace) ∨
+          P.maskedOpeningsConsistent b view profile trace ∧
+            P.traceRelationValid b profile trace) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
   hSound hAccept hProjects hProfile hFullTrace hRelationKnowledge
 
@@ -1231,9 +1258,10 @@ def NativeBoundaryTraceKnowledgeSoundness (P : Predicates) : Prop :=
   ParentRootRoleBindingSoundness P ∧
     RoleRestrictionSoundness P ∧
       ParentTraceExtractionSoundness P ∧
-        TraceAssemblySoundness P ∧
-          TwoViewExtractionSoundness P ∧
-            HiddenExtractorRoleCompletenessSoundness P
+        MaskedOpeningConsistencySoundness P ∧
+          TraceAssemblySoundness P ∧
+            TwoViewExtractionSoundness P ∧
+              HiddenExtractorRoleCompletenessSoundness P
 
 /--
 The decomposed full-trace extractor assumptions imply the older two-view
@@ -1254,26 +1282,27 @@ theorem trace_extraction_implies_hidden_representative_or_break
     (exists trace,
       P.transparentExtractsTrace b view trace ∧
         P.traceOpensBoundary b profile trace ∧
-          P.traceRelationValid b profile trace ∧
-            exists h,
-              P.traceAssemblesRepresentative trace h ∧
-                P.transparentExtracts b view h ∧
-                  P.extractedRolesComplete b profile h ∧
-                    InFiber P b.context b h ∧
-                      P.localValid b.context h ∧
-                        P.descentConsistent b.context h) ∨
+          P.maskedOpeningsConsistent b view profile trace ∧
+            P.traceRelationValid b profile trace ∧
+              exists h,
+                P.traceAssemblesRepresentative trace h ∧
+                  P.transparentExtracts b view h ∧
+                    P.extractedRolesComplete b profile h ∧
+                      InFiber P b.context b h ∧
+                        P.localValid b.context h ∧
+                          P.descentConsistent b.context h) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) := by
   cases
       hTraceExtractSound hAccept hProjects hProfile hFullTrace
         hRelationKnowledge with
   | inl hTrace =>
-      rcases hTrace with ⟨trace, hExtractsTrace, hOpens, hRelation⟩
+      rcases hTrace with ⟨trace, hExtractsTrace, hOpens, hMasked, hRelation⟩
       cases
           hTraceAssemblySound hAccept hProjects hProfile hRoleComplete
             hExtractsTrace hOpens hRelation with
       | inl hAssembled =>
           exact Or.inl
-            ⟨trace, hExtractsTrace, hOpens, hRelation, hAssembled⟩
+            ⟨trace, hExtractsTrace, hOpens, hMasked, hRelation, hAssembled⟩
       | inr hBreak =>
           exact Or.inr hBreak
   | inr hBreak =>
