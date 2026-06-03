@@ -536,6 +536,7 @@ structure ColumnProfileEntry where
   authenticationMode : RoleAuthenticationMode
   maskDomainLabel : Nat
   rangePolicyId : Nat
+  queryPolicyId : Nat
   restrictionRuleId : Nat
 
 /-- The theorem-level column profile consumed by the two-view proof. -/
@@ -960,7 +961,7 @@ def SelectedActiveRoleEntry
                 selectedRoleMaskDomain roleId ∧
                 (profile.entry index).rangePolicyId =
                   selectedRoleRangePolicyId roleId ∧
-                  (profile.entry index).restrictionRuleId =
+                  (profile.entry index).queryPolicyId =
                     selectedTwoViewQueryOpeningPolicyId
 
 /--

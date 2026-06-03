@@ -29,17 +29,17 @@ The active Rust profile `PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1` is
 mirrored in Lean by `SelectedActiveColumnProfile`. The selected theorem-level
 role entries are:
 
-| role | hidden set | masked set | visibility | auth mode | mask domain | range policy |
-|---|---:|---:|---|---|---:|---:|
-| `context_public` | 101 | 201 | public | public path to masked leaf | 0 | 0 |
-| `packed_witness` | 102 | 202 | extractor hidden | extractor-only opening | 1 | 1 |
-| `randomizer` | 103 | 203 | blinding private | simulator-only path | 2 | 0 |
-| `pad_source` | 104 | 204 | extractor hidden | extractor-only opening | 3 | 1 |
-| `opening_tuple` | 105 | 205 | extractor hidden | extractor-only opening | 4 | 1 |
-| `projection_relation` | 106 | 206 | extractor hidden | extractor-only opening | 5 | 1 |
-| `range_witness` | 107 | 207 | range private | extractor-only opening | 6 | 2 |
-| `blinding` | 108 | 208 | blinding private | simulator-only path | 7 | 0 |
-| `constraint` | 109 | 209 | committed hidden | simulator-only path | 8 | 0 |
+| role | hidden set | masked set | visibility | auth mode | mask domain | range policy | query policy |
+|---|---:|---:|---|---|---:|---:|---:|
+| `context_public` | 101 | 201 | public | public path to masked leaf | 0 | 0 | 1 |
+| `packed_witness` | 102 | 202 | extractor hidden | extractor-only opening | 1 | 1 | 1 |
+| `randomizer` | 103 | 203 | blinding private | simulator-only path | 2 | 0 | 1 |
+| `pad_source` | 104 | 204 | extractor hidden | extractor-only opening | 3 | 1 | 1 |
+| `opening_tuple` | 105 | 205 | extractor hidden | extractor-only opening | 4 | 1 | 1 |
+| `projection_relation` | 106 | 206 | extractor hidden | extractor-only opening | 5 | 1 | 1 |
+| `range_witness` | 107 | 207 | range private | extractor-only opening | 6 | 2 | 1 |
+| `blinding` | 108 | 208 | blinding private | simulator-only path | 7 | 0 | 1 |
+| `constraint` | 109 | 209 | committed hidden | simulator-only path | 8 | 0 | 1 |
 
 Lean theorem `selected_active_column_profile_role_complete` proves that this
 selected map implies `ProfileRoleComplete`, so the trace-assembly endpoint no
