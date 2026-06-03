@@ -755,6 +755,189 @@ def reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
     opening.lifecycleSlotDigest opening.traceWitnessDigest opening.gaugeDigest
 
 /--
+Lean mirror of a Rust byte-backed canonical full-opening representative
+witness.
+
+This object is about the representative assembled from the full native opening,
+not the assembly-certificate-side digest-frame witness below.  It carries the
+same selected digest frame and role coordinates needed to instantiate
+`ReviewedFq12FullNativeOpeningCanonicalRepresentativeSource`.
+-/
+structure ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessCertificate where
+  nativeBoundaryDigest : Nat
+  fullOpeningDigest : Nat
+  localSectionDigest : Nat
+  packedResiduesDigest : Nat
+  randomizerDigest : Nat
+  selectedAccountProjectionDigest : Nat
+  padSourceDigest : Nat
+  openingTupleDigest : Nat
+  projectionRelationDigest : Nat
+  lifecycleSlotDigest : Nat
+  traceWitnessDigest : Nat
+  gaugeDigest : Nat
+  representativeDigest : Nat
+  canonicalRepresentativeWitnessDigest : Nat
+
+/-- Parser hooks for the Rust canonical full-opening representative witness. -/
+structure ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser where
+  parse :
+    Nat ->
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessCertificate
+  frameDigest :
+    ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessCertificate ->
+      Nat
+  frameBytesCanonical : Nat -> Prop
+  domainSeparated :
+    Nat ->
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessCertificate ->
+        Prop
+
+/--
+Byte certificate for the canonical full-opening representative witness.
+
+The representative object itself is still supplied by the semantic
+`fullNativeOpeningAssemblesRepresentative` premise.  The byte certificate
+provides the missing representative-digest equality against the selected Rust
+digest frame; `FullNativeOpeningMatchesRepresentative` supplies the remaining
+role-coordinate equalities.
+-/
+structure ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteCertificate
+    (Parser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (digestFrame : ReviewedFq12NativeRepresentativeDigestFrame)
+    (b : Boundary)
+    (opening : FullNativeRepresentativeOpening)
+    (h : HiddenRepresentative)
+    (frameBytes : Nat)
+    (witness :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessCertificate) :
+    Prop where
+  canonical :
+    Parser.frameBytesCanonical frameBytes
+  parsed_eq :
+    Parser.parse frameBytes = witness
+  frame_digest_eq :
+    Parser.frameDigest witness =
+      witness.canonicalRepresentativeWitnessDigest
+  domain_separated :
+    Parser.domainSeparated frameBytes witness
+  native_boundary_digest_eq :
+    witness.nativeBoundaryDigest = b.nativeBoundaryDigest
+  local_section_digest_eq :
+    witness.localSectionDigest = opening.localSectionDigest
+  packed_residues_digest_eq :
+    witness.packedResiduesDigest = opening.packedResiduesDigest
+  randomizer_digest_eq :
+    witness.randomizerDigest = opening.randomizerDigest
+  selected_account_projection_digest_eq :
+    witness.selectedAccountProjectionDigest =
+      opening.selectedAccountProjectionDigest
+  pad_source_digest_eq :
+    witness.padSourceDigest = opening.padSourceDigest
+  opening_tuple_digest_eq :
+    witness.openingTupleDigest = opening.openingTupleDigest
+  projection_relation_digest_eq :
+    witness.projectionRelationDigest =
+      opening.projectionRelationDigest
+  lifecycle_slot_digest_eq :
+    witness.lifecycleSlotDigest = opening.lifecycleSlotDigest
+  trace_witness_digest_eq :
+    witness.traceWitnessDigest = opening.traceWitnessDigest
+  gauge_digest_eq :
+    witness.gaugeDigest = opening.gaugeDigest
+  representative_digest_eq :
+    h.representativeDigest =
+      reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
+        digestFrame b opening
+
+/--
+Selected-Rust byte source for the full-opening canonical representative.
+-/
+structure ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteSource
+    (Parser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (P : Predicates) where
+  digestFrame :
+    ReviewedFq12NativeRepresentativeDigestFrame
+  hasCanonicalRepresentativeWitness :
+    Boundary ->
+      ReviewedFq12HiddenSourcePayload ->
+        ReviewedFq12HiddenRelationExtractionCertificate ->
+          FullNativeRepresentativeOpening ->
+            HiddenRepresentative ->
+              Nat ->
+                ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessCertificate ->
+                  Prop
+  canonicalRepresentativeWitnessAvailable :
+    forall {b : Boundary} {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening}
+        {h : HiddenRepresentative},
+      P.reviewedFq12PayloadAccepts b payload ->
+        P.reviewedFq12PayloadProjectsFrom b payload ->
+          P.reviewedFq12PayloadHasExtractionCertificate b payload cert ->
+            P.reviewedFq12ExtractionCertificateValid b payload cert ->
+              P.reviewedFq12CertificateLiftsToOpening b payload cert opening ->
+                FullNativeOpeningMatchesRepresentative opening h ->
+                  P.fullNativeOpeningAssemblesRepresentative
+                      b payload cert opening h ->
+                    InFiber P b.context b h ->
+                      P.localValid b.context h ->
+                        P.descentConsistent b.context h ->
+                          (exists frameBytes witness,
+                            hasCanonicalRepresentativeWitness
+                                b payload cert opening h frameBytes
+                                witness ∧
+                              ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteCertificate
+                                Parser digestFrame b opening h frameBytes
+                                witness) ∨
+                            (exists breakEvent,
+                              P.boundaryBreakFor b.context b breakEvent)
+
+/--
+The canonical-representative byte source instantiates the semantic canonical
+representative source consumed by the active P2FS-001 route.
+-/
+def canonical_representative_source_of_canonical_representative_byte_source
+    {Parser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {P : Predicates}
+    (Source :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteSource
+        Parser P) :
+    ReviewedFq12FullNativeOpeningCanonicalRepresentativeSource P :=
+  { canonicalDigest :=
+      reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
+        Source.digestFrame
+    assemblesCanonicalRepresentative := by
+      intro b payload cert opening h hAccept hProjects hHas hValid hLifts
+        hMatches hAssembles hFiber hLocal hDescent
+      rcases
+          Source.canonicalRepresentativeWitnessAvailable hAccept hProjects
+            hHas hValid hLifts hMatches hAssembles hFiber hLocal hDescent with
+        hWitness | hBreak
+      · rcases hWitness with ⟨_frameBytes, _witness, _hHasWitness, hByte⟩
+        have hDigest :
+            h.representativeDigest =
+              reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
+                Source.digestFrame b opening :=
+          hByte.representative_digest_eq
+        rcases hMatches with
+          ⟨hLocalSection, hPackedResidues, hRandomizer,
+            hSelectedAccountProjection, hPadSource, hOpeningTuple,
+            hProjectionRelation, hLifecycleSlot, hTraceWitness, hGauge⟩
+        cases h
+        simp [reviewedFq12FullNativeOpeningCanonicalRepresentative,
+          reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest] at hDigest hLocalSection hPackedResidues hRandomizer hSelectedAccountProjection hPadSource hOpeningTuple hProjectionRelation hLifecycleSlot hTraceWitness hGauge ⊢
+        exact
+          Or.inl
+            ⟨hDigest, hLocalSection, hPackedResidues, hRandomizer,
+              hSelectedAccountProjection, hPadSource, hOpeningTuple,
+              hProjectionRelation, hLifecycleSlot, hTraceWitness, hGauge⟩
+      · exact Or.inr hBreak }
+
+/--
 Lean mirror of the Rust
 `Path2ReviewedFq12NativeRepresentativeDigestFrameWitnessV1` object.
 
@@ -4286,6 +4469,81 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_c
     ReviewedFq12ExtractionCertificateSoundness P :=
   reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_inputs
     P I.toDigestFrameWitnessPackagedInputs
+
+/--
+Fully byte-shaped direct-assembly package: selected source-route bytes, a
+canonical representative byte source, and Rust digest-frame witness bytes.
+-/
+structure ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeByteAndWitnessPackagedSourceRouteInputs
+    (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)
+    (RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser)
+    (CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
+    (P : Predicates) where
+  roleRootLiftSource :
+    ReviewedFq12RoleRootFunctionalLiftSource P
+  selectedSource :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+      FieldParser RouteParser P
+  directAssemblyBinding :
+    ReviewedFq12ConcreteAssemblyFieldBindingOrBreak P
+  localModelSource :
+    ReviewedFq12AssemblyCompatibilityLocalModelSource P
+  canonicalRepresentativeByteSource :
+    ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteSource
+      CanonicalParser P
+  nativeDigestFrameWitnessByteSource :
+    ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource
+      WitnessParser P
+
+/--
+Convert the fully byte-shaped package into the canonical-representative
+witness-byte package by discharging the canonical representative source from
+the byte source.
+-/
+def ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeByteAndWitnessPackagedSourceRouteInputs.toCanonicalRepresentativeWitnessBytePackagedInputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (I :
+      ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeByteAndWitnessPackagedSourceRouteInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeWitnessBytePackagedSourceRouteInputs
+      FieldParser RouteParser WitnessParser P :=
+  { roleRootLiftSource := I.roleRootLiftSource
+    selectedSource := I.selectedSource
+    directAssemblyBinding := I.directAssemblyBinding
+    localModelSource := I.localModelSource
+    canonicalRepresentativeSource :=
+      canonical_representative_source_of_canonical_representative_byte_source
+        I.canonicalRepresentativeByteSource
+    nativeDigestFrameWitnessByteSource :=
+      I.nativeDigestFrameWitnessByteSource }
+
+/--
+P2FS-001 closure from byte-shaped selected Rust source-route evidence,
+canonical representative evidence, and digest-frame witness evidence.
+-/
+theorem reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_byte_and_witness_packaged_source_route_inputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (I :
+      ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeByteAndWitnessPackagedSourceRouteInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12ExtractionCertificateSoundness P :=
+  reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_witness_byte_packaged_source_route_inputs
+    P I.toCanonicalRepresentativeWitnessBytePackagedInputs
 
 /--
 Selected-Rust packaged source-route adapter using the existing concrete
