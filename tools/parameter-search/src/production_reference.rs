@@ -277,6 +277,8 @@ pub const PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA: &str =
     "DESCENDER_PATH2_TRANSPARENT_ZK_MASKED_TRACE_IOP_CAPABILITY_V1";
 pub const PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA: &str =
     "DESCENDER_PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_V1";
+pub const PATH2_TRANSPARENT_PROOF_BYTES_DIGEST_SCHEMA: &str =
+    "DESCENDER_PATH2_TRANSPARENT_PROOF_BYTES_DIGEST_V1";
 pub const PATH2_TRANSPARENT_PROOF_BODY_DIGEST_SCHEMA: &str =
     "DESCENDER_PATH2_TRANSPARENT_PROOF_BODY_DIGEST_V1";
 pub const PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN: &str =
@@ -11350,6 +11352,26 @@ pub fn path2_transparent_proof_body_digest(
     Ok(Sha256::digest(frame).into())
 }
 
+pub fn path2_transparent_proof_bytes_digest(
+    proof_bytes: &[u8],
+) -> Result<[u8; DIGEST_BYTES], String> {
+    if proof_bytes.is_empty() {
+        return Err("Path 2 transparent proof bytes are empty".to_string());
+    }
+    if proof_bytes.len() > PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES as usize {
+        return Err("Path 2 transparent proof bytes exceed active fallback threshold".to_string());
+    }
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PATH2_TRANSPARENT_PROOF_BYTES_DIGEST_SCHEMA.as_bytes(),
+    );
+    append_u64(&mut frame, b"proof_bytes_len", proof_bytes.len() as u64);
+    append_frame(&mut frame, b"proof_bytes", proof_bytes);
+    Ok(Sha256::digest(frame).into())
+}
+
 pub fn path2_transparent_proof_bytes_envelope_fixed_len() -> usize {
     PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA.len() + 2 + DIGEST_BYTES * 8 + 2 + 2 + 2 + 4
 }
@@ -12325,7 +12347,7 @@ pub fn verify_path2_direct_creation_transparent_descent_payload_boundary_with_pr
         Err(err) if err == "Path 2 transparent descent proof verifier is not implemented" => {}
         result => return result,
     }
-    let proof_bytes_digest: [u8; DIGEST_BYTES] = Sha256::digest(proof_bytes).into();
+    let proof_bytes_digest = path2_transparent_proof_bytes_digest(proof_bytes)?;
     if proof_bytes_digest != transparent_payload.proof_bytes_digest {
         return Err("Path 2 transparent descent proof bytes digest mismatch".to_string());
     }
@@ -14481,7 +14503,7 @@ pub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(
         .map_err(|err| format!("encode Path 2 native storage/lifecycle hardening scope: {err}"))
 }
 
-pub fn path2_registered_domain_constants() -> [&'static str; 31] {
+pub fn path2_registered_domain_constants() -> [&'static str; 32] {
     [
         PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN,
         PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN,
@@ -14505,6 +14527,7 @@ pub fn path2_registered_domain_constants() -> [&'static str; 31] {
         PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA,
         PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA,
         PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA,
+        PATH2_TRANSPARENT_PROOF_BYTES_DIGEST_SCHEMA,
         PATH2_TRANSPARENT_PROOF_BODY_DIGEST_SCHEMA,
         PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN,
         PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA,
@@ -14821,6 +14844,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA",
             PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA,
+        ),
+        (
+            "PATH2_TRANSPARENT_PROOF_BYTES_DIGEST_SCHEMA",
+            PATH2_TRANSPARENT_PROOF_BYTES_DIGEST_SCHEMA,
         ),
         (
             "PATH2_TRANSPARENT_PROOF_BODY_DIGEST_SCHEMA",
@@ -29120,7 +29147,9 @@ mod tests {
             b"path2-transparent-proof-body-placeholder",
         )
         .unwrap();
-        let proof_bytes_digest: [u8; DIGEST_BYTES] = Sha256::digest(&proof_bytes).into();
+        let proof_bytes_digest = path2_transparent_proof_bytes_digest(&proof_bytes).unwrap();
+        let bare_proof_bytes_digest: [u8; DIGEST_BYTES] = Sha256::digest(&proof_bytes).into();
+        assert_ne!(proof_bytes_digest, bare_proof_bytes_digest);
         let payload_byte_len = proof_bytes.len() as u64;
         let payload_digest = path2_transparent_descent_proof_payload_digest(
             &public_view,
