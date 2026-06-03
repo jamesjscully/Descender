@@ -765,6 +765,7 @@ same selected digest frame and role coordinates needed to instantiate
 -/
 structure ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessCertificate where
   nativeBoundaryDigest : Nat
+  nativeRoleRootCommitment : Nat
   fullOpeningDigest : Nat
   localSectionDigest : Nat
   packedResiduesDigest : Nat
@@ -824,6 +825,11 @@ structure ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteCertificate
     Parser.domainSeparated frameBytes witness
   native_boundary_digest_eq :
     witness.nativeBoundaryDigest = b.nativeBoundaryDigest
+  native_role_root_commitment_eq :
+    witness.nativeRoleRootCommitment =
+      opening.nativeRoleRootCommitment
+  full_opening_digest_eq :
+    witness.fullOpeningDigest = opening.openingDigest
   local_section_digest_eq :
     witness.localSectionDigest = opening.localSectionDigest
   packed_residues_digest_eq :
