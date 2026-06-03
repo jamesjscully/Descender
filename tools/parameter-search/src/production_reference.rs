@@ -269,6 +269,8 @@ pub const PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN: &str =
     "DESCENDER_PATH2_TRANSPARENT_DESCENT_PROOF_V1";
 pub const PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA: &str =
     "DESCENDER_PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_V1";
+pub const PATH2_TRANSPARENT_QUERY_SCHEDULE_SCHEMA: &str =
+    "DESCENDER_PATH2_TRANSPARENT_NATIVE_BOUNDARY_QUERY_SCHEDULE_V1";
 pub const PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA: &str =
     "DESCENDER_PATH2_TRANSPARENT_ZK_MASKED_TRACE_IOP_CAPABILITY_V1";
 pub const PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA: &str =
@@ -359,6 +361,9 @@ pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_OPENING_DIGIT_MASKS: u8 = 7;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_MASKED_PROJECTION_RELATION_MASKS: u8 = 8;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_RANGE_WITNESS_ZK_MASKS: u8 = 9;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_CLASS_ACCOUNT_BINDING_LINK_LANES: u8 = 10;
+pub const PATH2_TRANSPARENT_QUERY_SCHEDULE_PROFILE_ID: u16 = 1;
+pub const PATH2_TRANSPARENT_QUERY_SCHEDULE_ENTRY_COUNT: usize = 3;
+pub const PATH2_TRANSPARENT_QUERY_SCHEDULE_STATUS_NATIVE_PLANNING_OVERLAY: u8 = 1;
 pub const PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_VERSION: u16 = 1;
 pub const PATH2_TRANSPARENT_RELATION_ROW_GROUP_MASKED_PROJECTION: u8 = 1;
 pub const PATH2_TRANSPARENT_RELATION_ROW_GROUP_DIGIT_RECONSTRUCTION: u8 = 2;
@@ -1430,6 +1435,27 @@ pub struct Path2NativeBoundaryTraceColumnManifestV1 {
         [Path2NativeBoundaryTraceColumnClassV1; PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_CLASS_COUNT],
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2TransparentQueryScheduleEntryV1 {
+    pub trace_rows: u16,
+    pub query_count: u16,
+    pub native_working_floor_bytes: u32,
+    pub native_stress_floor_bytes: u32,
+    pub status: u8,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2TransparentQueryScheduleV1 {
+    pub schema: &'static str,
+    pub profile_id: u16,
+    pub proof_family: &'static str,
+    pub column_profile: u16,
+    pub trace_column_manifest_digest: [u8; DIGEST_BYTES],
+    pub fallback_threshold_bytes: u32,
+    pub entries:
+        [Path2TransparentQueryScheduleEntryV1; PATH2_TRANSPARENT_QUERY_SCHEDULE_ENTRY_COUNT],
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2TransparentProofFamilyCapabilityV1 {
     pub schema: &'static str,
@@ -1437,6 +1463,7 @@ pub struct Path2TransparentProofFamilyCapabilityV1 {
     pub family: &'static str,
     pub relation_layout_digest: [u8; DIGEST_BYTES],
     pub trace_column_manifest_digest: [u8; DIGEST_BYTES],
+    pub query_schedule_digest: [u8; DIGEST_BYTES],
     pub column_profile: u16,
     pub active_witness_lane_floor: u16,
     pub native_boundary_relation_rows: u16,
@@ -9732,6 +9759,162 @@ pub fn path2_native_boundary_trace_column_manifest_v1_digest() -> Result<[u8; DI
     Ok(Sha256::digest(frame).into())
 }
 
+pub fn path2_transparent_query_schedule_v1() -> Result<Path2TransparentQueryScheduleV1, String> {
+    let schedule = Path2TransparentQueryScheduleV1 {
+        schema: PATH2_TRANSPARENT_QUERY_SCHEDULE_SCHEMA,
+        profile_id: PATH2_TRANSPARENT_QUERY_SCHEDULE_PROFILE_ID,
+        proof_family: PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY,
+        column_profile: PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+        trace_column_manifest_digest: path2_native_boundary_trace_column_manifest_v1_digest()?,
+        fallback_threshold_bytes: PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES,
+        entries: [
+            Path2TransparentQueryScheduleEntryV1 {
+                trace_rows: 256,
+                query_count: 16,
+                native_working_floor_bytes: 8_704,
+                native_stress_floor_bytes: 9_728,
+                status: PATH2_TRANSPARENT_QUERY_SCHEDULE_STATUS_NATIVE_PLANNING_OVERLAY,
+            },
+            Path2TransparentQueryScheduleEntryV1 {
+                trace_rows: 512,
+                query_count: 20,
+                native_working_floor_bytes: 11_504,
+                native_stress_floor_bytes: 12_784,
+                status: PATH2_TRANSPARENT_QUERY_SCHEDULE_STATUS_NATIVE_PLANNING_OVERLAY,
+            },
+            Path2TransparentQueryScheduleEntryV1 {
+                trace_rows: 1024,
+                query_count: 24,
+                native_working_floor_bytes: 14_560,
+                native_stress_floor_bytes: 16_096,
+                status: PATH2_TRANSPARENT_QUERY_SCHEDULE_STATUS_NATIVE_PLANNING_OVERLAY,
+            },
+        ],
+    };
+    verify_path2_transparent_query_schedule(&schedule)?;
+    Ok(schedule)
+}
+
+pub fn verify_path2_transparent_query_schedule(
+    schedule: &Path2TransparentQueryScheduleV1,
+) -> Result<(), String> {
+    if schedule.schema != PATH2_TRANSPARENT_QUERY_SCHEDULE_SCHEMA {
+        return Err("Path 2 transparent query schedule schema mismatch".to_string());
+    }
+    if schedule.profile_id != PATH2_TRANSPARENT_QUERY_SCHEDULE_PROFILE_ID {
+        return Err("Path 2 transparent query schedule profile mismatch".to_string());
+    }
+    if schedule.proof_family != PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY {
+        return Err("Path 2 transparent query schedule proof family mismatch".to_string());
+    }
+    verify_path2_two_view_column_profile_id(schedule.column_profile)?;
+    if schedule.trace_column_manifest_digest
+        != path2_native_boundary_trace_column_manifest_v1_digest()?
+    {
+        return Err("Path 2 transparent query schedule trace manifest mismatch".to_string());
+    }
+    if schedule.fallback_threshold_bytes != PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES
+    {
+        return Err("Path 2 transparent query schedule fallback threshold mismatch".to_string());
+    }
+
+    let expected = [
+        (256_u16, 16_u16, 8_704_u32, 9_728_u32),
+        (512, 20, 11_504, 12_784),
+        (1024, 24, 14_560, 16_096),
+    ];
+    for (entry, (trace_rows, query_count, working_floor, stress_floor)) in
+        schedule.entries.into_iter().zip(expected)
+    {
+        if entry.trace_rows != trace_rows || entry.query_count != query_count {
+            return Err("Path 2 transparent query schedule row/query mismatch".to_string());
+        }
+        if entry.native_working_floor_bytes != working_floor
+            || entry.native_stress_floor_bytes != stress_floor
+        {
+            return Err("Path 2 transparent query schedule byte floor mismatch".to_string());
+        }
+        if entry.native_working_floor_bytes >= entry.native_stress_floor_bytes
+            || entry.native_stress_floor_bytes >= schedule.fallback_threshold_bytes
+        {
+            return Err("Path 2 transparent query schedule threshold mismatch".to_string());
+        }
+        if entry.status != PATH2_TRANSPARENT_QUERY_SCHEDULE_STATUS_NATIVE_PLANNING_OVERLAY {
+            return Err("Path 2 transparent query schedule status mismatch".to_string());
+        }
+    }
+    Ok(())
+}
+
+pub fn path2_transparent_query_schedule_v1_digest() -> Result<[u8; DIGEST_BYTES], String> {
+    let schedule = path2_transparent_query_schedule_v1()?;
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PATH2_TRANSPARENT_QUERY_SCHEDULE_SCHEMA.as_bytes(),
+    );
+    append_u64(&mut frame, b"profile_id", schedule.profile_id as u64);
+    append_frame(
+        &mut frame,
+        b"proof_family",
+        schedule.proof_family.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"column_profile",
+        schedule.column_profile as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"trace_column_manifest_digest",
+        &schedule.trace_column_manifest_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"fallback_threshold_bytes",
+        schedule.fallback_threshold_bytes as u64,
+    );
+    for entry in schedule.entries {
+        append_u64(&mut frame, b"trace_rows", entry.trace_rows as u64);
+        append_u64(&mut frame, b"query_count", entry.query_count as u64);
+        append_u64(
+            &mut frame,
+            b"native_working_floor_bytes",
+            entry.native_working_floor_bytes as u64,
+        );
+        append_u64(
+            &mut frame,
+            b"native_stress_floor_bytes",
+            entry.native_stress_floor_bytes as u64,
+        );
+        append_u64(&mut frame, b"status", entry.status as u64);
+    }
+    Ok(Sha256::digest(frame).into())
+}
+
+pub fn verify_path2_transparent_query_schedule_pair(
+    trace_rows: u16,
+    query_count: u16,
+) -> Result<(), String> {
+    let schedule = path2_transparent_query_schedule_v1()?;
+    if schedule
+        .entries
+        .iter()
+        .any(|entry| entry.trace_rows == trace_rows && entry.query_count == query_count)
+    {
+        Ok(())
+    } else if schedule
+        .entries
+        .iter()
+        .any(|entry| entry.trace_rows == trace_rows)
+    {
+        Err("Path 2 transparent proof query count does not match active schedule".to_string())
+    } else {
+        Err("Path 2 transparent proof unsupported trace row count".to_string())
+    }
+}
+
 pub fn path2_transparent_proof_family_capability_v1()
 -> Result<Path2TransparentProofFamilyCapabilityV1, String> {
     let trace_column_manifest = path2_native_boundary_trace_column_manifest_v1()?;
@@ -9741,6 +9924,7 @@ pub fn path2_transparent_proof_family_capability_v1()
         family: PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY,
         relation_layout_digest: path2_transparent_relation_layout_v1_digest()?,
         trace_column_manifest_digest: path2_native_boundary_trace_column_manifest_v1_digest()?,
+        query_schedule_digest: path2_transparent_query_schedule_v1_digest()?,
         column_profile: PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
         active_witness_lane_floor: trace_column_manifest.range_account_lane_floor,
         native_boundary_relation_rows: trace_column_manifest.relation_rows_working,
@@ -9784,6 +9968,11 @@ pub fn verify_path2_transparent_proof_family_capability(
     {
         return Err(
             "Path 2 transparent proof-family capability trace column manifest mismatch".to_string(),
+        );
+    }
+    if capability.query_schedule_digest != path2_transparent_query_schedule_v1_digest()? {
+        return Err(
+            "Path 2 transparent proof-family capability query schedule mismatch".to_string(),
         );
     }
     verify_path2_two_view_column_profile_id(capability.column_profile)?;
@@ -9865,6 +10054,11 @@ pub fn path2_transparent_proof_family_capability_v1_digest() -> Result<[u8; DIGE
         b"trace_column_manifest_digest",
         &capability.trace_column_manifest_digest,
     );
+    append_frame(
+        &mut frame,
+        b"query_schedule_digest",
+        &capability.query_schedule_digest,
+    );
     append_u64(
         &mut frame,
         b"column_profile",
@@ -9921,6 +10115,8 @@ pub fn path2_transparent_proof_family_capability_v1_digest() -> Result<[u8; DIGE
 pub fn path2_transparent_descent_proof_system_id() -> [u8; DIGEST_BYTES] {
     let proof_family_capability_digest = path2_transparent_proof_family_capability_v1_digest()
         .expect("Path 2 transparent proof-family capability is statically valid");
+    let query_schedule_digest = path2_transparent_query_schedule_v1_digest()
+        .expect("Path 2 transparent query schedule is statically valid");
     let mut frame = Vec::new();
     append_frame(
         &mut frame,
@@ -9942,6 +10138,7 @@ pub fn path2_transparent_descent_proof_system_id() -> [u8; DIGEST_BYTES] {
         b"proof_family_capability_digest",
         &proof_family_capability_digest,
     );
+    append_frame(&mut frame, b"query_schedule_digest", &query_schedule_digest);
     append_u64(
         &mut frame,
         b"witness_lanes",
@@ -10371,12 +10568,7 @@ pub fn path2_transparent_descent_transcript_digest(
     constraint_commitment_root: &[u8; DIGEST_BYTES],
     query_index: u16,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    if ![128_u16, 256, 512, 1024].contains(&trace_rows) {
-        return Err("Path 2 transparent proof unsupported trace row count".to_string());
-    }
-    if query_count == 0 {
-        return Err("Path 2 transparent proof query count is zero".to_string());
-    }
+    verify_path2_transparent_query_schedule_pair(trace_rows, query_count)?;
     if masked_projection.iter().any(|&value| value >= Q) {
         return Err("Path 2 transparent proof masked projection is noncanonical".to_string());
     }
@@ -13666,7 +13858,7 @@ pub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(
         .map_err(|err| format!("encode Path 2 native storage/lifecycle hardening scope: {err}"))
 }
 
-pub fn path2_registered_domain_constants() -> [&'static str; 26] {
+pub fn path2_registered_domain_constants() -> [&'static str; 27] {
     [
         PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN,
         PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN,
@@ -13686,6 +13878,7 @@ pub fn path2_registered_domain_constants() -> [&'static str; 26] {
         PATH2_DESCENT_SIS_TRANSCRIPT_COMMITMENT_MATRIX_DOMAIN,
         PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN,
         PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA,
+        PATH2_TRANSPARENT_QUERY_SCHEDULE_SCHEMA,
         PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA,
         PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA,
         PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN,
@@ -13985,6 +14178,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA",
             PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA,
+        ),
+        (
+            "PATH2_TRANSPARENT_QUERY_SCHEDULE_SCHEMA",
+            PATH2_TRANSPARENT_QUERY_SCHEDULE_SCHEMA,
         ),
         (
             "PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA",
@@ -31675,6 +31872,74 @@ mod tests {
     }
 
     #[test]
+    fn path2_transparent_query_schedule_pins_active_row_query_pairs() {
+        let schedule = path2_transparent_query_schedule_v1().unwrap();
+        verify_path2_transparent_query_schedule(&schedule).unwrap();
+        assert_eq!(schedule.schema, PATH2_TRANSPARENT_QUERY_SCHEDULE_SCHEMA);
+        assert_eq!(
+            schedule.proof_family,
+            PATH2_TRANSPARENT_PROOF_FAMILY_ZK_MASKED_TRACE_IOP_NATIVE_BOUNDARY
+        );
+        assert_eq!(
+            schedule.trace_column_manifest_digest,
+            path2_native_boundary_trace_column_manifest_v1_digest().unwrap()
+        );
+        assert_eq!(
+            schedule.fallback_threshold_bytes,
+            PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES
+        );
+        assert_eq!(schedule.entries[0].trace_rows, 256);
+        assert_eq!(schedule.entries[0].query_count, 16);
+        assert_eq!(schedule.entries[1].trace_rows, 512);
+        assert_eq!(schedule.entries[1].query_count, 20);
+        assert_eq!(schedule.entries[2].trace_rows, 1024);
+        assert_eq!(schedule.entries[2].query_count, 24);
+        assert!(
+            schedule
+                .entries
+                .iter()
+                .all(|entry| entry.native_stress_floor_bytes < schedule.fallback_threshold_bytes)
+        );
+        assert_ne!(
+            path2_transparent_query_schedule_v1_digest().unwrap(),
+            [0_u8; DIGEST_BYTES]
+        );
+        verify_path2_transparent_query_schedule_pair(256, 16).unwrap();
+        verify_path2_transparent_query_schedule_pair(512, 20).unwrap();
+        verify_path2_transparent_query_schedule_pair(1024, 24).unwrap();
+        assert_eq!(
+            verify_path2_transparent_query_schedule_pair(256, 1).unwrap_err(),
+            "Path 2 transparent proof query count does not match active schedule"
+        );
+        assert_eq!(
+            verify_path2_transparent_query_schedule_pair(128, 12).unwrap_err(),
+            "Path 2 transparent proof unsupported trace row count"
+        );
+
+        let mut low_query = schedule;
+        low_query.entries[0].query_count = 1;
+        assert_eq!(
+            verify_path2_transparent_query_schedule(&low_query).unwrap_err(),
+            "Path 2 transparent query schedule row/query mismatch"
+        );
+
+        let mut over_threshold = schedule;
+        over_threshold.entries[2].native_stress_floor_bytes =
+            PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES;
+        assert_eq!(
+            verify_path2_transparent_query_schedule(&over_threshold).unwrap_err(),
+            "Path 2 transparent query schedule byte floor mismatch"
+        );
+
+        let mut wrong_manifest = schedule;
+        wrong_manifest.trace_column_manifest_digest[0] ^= 0x80;
+        assert_eq!(
+            verify_path2_transparent_query_schedule(&wrong_manifest).unwrap_err(),
+            "Path 2 transparent query schedule trace manifest mismatch"
+        );
+    }
+
+    #[test]
     fn path2_transparent_proof_family_capability_pins_active_assumptions() {
         let capability = path2_transparent_proof_family_capability_v1().unwrap();
         verify_path2_transparent_proof_family_capability(&capability).unwrap();
@@ -31697,6 +31962,10 @@ mod tests {
         assert_eq!(
             capability.trace_column_manifest_digest,
             path2_native_boundary_trace_column_manifest_v1_digest().unwrap()
+        );
+        assert_eq!(
+            capability.query_schedule_digest,
+            path2_transparent_query_schedule_v1_digest().unwrap()
         );
         assert_eq!(
             capability.column_profile,
@@ -31782,6 +32051,13 @@ mod tests {
         assert_eq!(
             verify_path2_transparent_proof_family_capability(&wrong_manifest).unwrap_err(),
             "Path 2 transparent proof-family capability trace column manifest mismatch"
+        );
+
+        let mut wrong_schedule = capability.clone();
+        wrong_schedule.query_schedule_digest[0] ^= 0x80;
+        assert_eq!(
+            verify_path2_transparent_proof_family_capability(&wrong_schedule).unwrap_err(),
+            "Path 2 transparent proof-family capability query schedule mismatch"
         );
     }
 

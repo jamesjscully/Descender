@@ -517,6 +517,19 @@ Named breaks:
   semantic-core-only lane regression, non-contiguous lane coverage, public
   private-lane exposure, and private-lane opening; the capability KAT now also
   rejects trace-column-manifest rebinding and active-lane-floor rebinding. The
+  active query schedule is now executable:
+  `PATH2_TRANSPARENT_QUERY_SCHEDULE_SCHEMA`,
+  `path2_transparent_query_schedule_v1`,
+  `verify_path2_transparent_query_schedule`, and
+  `path2_transparent_query_schedule_v1_digest` pin the native-boundary planning
+  rows to 256/16, 512/20, and 1024/24, bind the trace-column manifest digest
+  and fallback threshold, and reject the 128/12 low-security planning row under
+  the active proof-system id. `path2_transparent_descent_transcript_digest`
+  now rejects row/query mismatches before hashing, and the proof-system id plus
+  proof-family capability digest bind the schedule digest. KAT
+  `path2_transparent_query_schedule_pins_active_row_query_pairs` rejects
+  low-query schedules, 128-row planning schedules, byte-floor drift, and
+  manifest rebinding. The
   next executable blocker is an actual concrete transparent proof-system
   verifier with honest/malformed coverage against this capability profile,
   encoded relation, validated query-opening manifest, and canonical proof-byte
