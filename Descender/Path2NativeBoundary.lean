@@ -1014,6 +1014,15 @@ theorem selected_active_column_profile_role_complete
       selected_active_role_entry_covers hBlinding,
       selected_active_role_entry_covers hConstraint⟩
 
+theorem selected_active_column_profile_trace_modes
+    {profile : ColumnProfile}
+    (h : SelectedActiveColumnProfile profile) :
+    UsesSelectedTraceKnowledgeModes profile := by
+  rcases h with
+    ⟨_hProfileId, _hQueryPolicy, _hRejectionPolicy,
+      hTraceModes, _hRest⟩
+  exact hTraceModes
+
 /-- Native boundary masked projection as the older Path2DescentSIS quotient. -/
 def toDescentSISMaskedProjection
     (b : Boundary) : Path2DescentSIS.MaskedProjection where
@@ -2524,6 +2533,70 @@ theorem transparent_view_full_interface_from_atomic_gates_or_break
     hTraceRangeRows hRangeRows hRangeRowsToNorm
     hTraceBlindRows hBlindRows hBlindRowsToBound
     hAccept hProjects hProfile hRoleComplete hSelected
+    hRangePolicy hPolicy
+
+/--
+Selected-profile atomic transparent interface: the active closure endpoint with
+role completeness and trace-knowledge modes derived from the selected Rust
+masked-base128 two-view column profile.
+-/
+theorem transparent_view_full_interface_from_selected_profile_atomic_gates_or_break
+    (P : Predicates)
+    (hParentSound : ParentRootRoleBindingSoundness P)
+    (hRoleSound : RoleRestrictionSoundness P)
+    (hCommitExtract : ParentTraceCommitmentExtractionSoundness P)
+    (hMaskedConsistency : MaskedOpeningConsistencySoundness P)
+    (hRelationKnowledge : ExtractedTraceRelationKnowledgeSoundness P)
+    (hTraceAssemblyExists : TraceRepresentativeAssemblyExistenceSoundness P)
+    (hTraceAssemblyRoles : TraceAssemblyRolesCompleteSoundness P)
+    (hTraceAssemblyDerived : TraceAssemblyDerivedRolesSoundness P)
+    (hTraceAssemblyFiber : TraceAssemblyFiberSoundness P)
+    (hTraceAssemblyLocal : TraceAssemblyLocalValiditySoundness P)
+    (hTraceAssemblyDescent : TraceAssemblyDescentConsistencySoundness P)
+    (hNoExportSound : NoExportSoundness P)
+    (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
+    (hMaskFreshnessSound : MaskFreshnessSoundness P)
+    (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
+    (hTraceRangeRows : TraceRangeRowsBindRepresentativeSoundness P)
+    (hRangeRows : HybridBase128RangeRowSoundness P)
+    (hRangeRowsToNorm : HybridBase128RangeRowsToNormRangeSoundness P)
+    (hTraceBlindRows : TraceBlindingRowsBoundRepresentativeSoundness P)
+    (hBlindRows : BlindingNoiseBoundRowSoundness P)
+    (hBlindRowsToBound : BlindingNoiseRowsToBoundSoundness P)
+    {b : Boundary} {view : TransparentPublicView}
+    {profile : ColumnProfile} {rangePolicy : HybridBase128RangePolicy}
+    {policy : BlindingNoisePolicy}
+    (hAccept : P.transparentAccepts b view)
+    (hProjects : TransparentViewProjectsFrom b view)
+    (hProfile : ColumnProfileCompatibleWithBoundary b view profile)
+    (hSelectedProfile : SelectedActiveColumnProfile profile)
+    (hRangePolicy : UsesSelectedHybridBase128RangePolicy profile rangePolicy)
+    (hPolicy : UsesSelectedBlindingNoisePolicy policy) :
+    (P.roleRestrictionsAuthenticate b profile ∧
+      P.noExportHolds b view profile ∧
+        P.roleAuthenticationMaterialSimulatable b view profile ∧
+          P.maskFreshnessHolds b view profile ∧
+            P.qromScheduleBound b view profile ∧
+              P.parentRootBindsPrivateRoles b profile ∧
+              exists h,
+                P.transparentExtracts b view h ∧
+                  P.extractedRolesComplete b profile h ∧
+                  InFiber P b.context b h ∧
+                    P.localValid b.context h ∧
+                      P.descentConsistent b.context h ∧
+                        P.normRangeValid b h ∧
+                          P.blindingNoiseBounded b policy h) ∨
+    (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
+  transparent_view_full_interface_from_atomic_gates_or_break P
+    hParentSound hRoleSound hCommitExtract hMaskedConsistency
+    hRelationKnowledge hTraceAssemblyExists hTraceAssemblyRoles
+    hTraceAssemblyDerived hTraceAssemblyFiber hTraceAssemblyLocal
+    hTraceAssemblyDescent hNoExportSound hRoleAuthNoExportSound
+    hMaskFreshnessSound hQromSound hTraceRangeRows hRangeRows
+    hRangeRowsToNorm hTraceBlindRows hBlindRows hBlindRowsToBound
+    hAccept hProjects hProfile
+    (selected_active_column_profile_role_complete hSelectedProfile)
+    (selected_active_column_profile_trace_modes hSelectedProfile)
     hRangePolicy hPolicy
 
 /--

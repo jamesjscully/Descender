@@ -601,10 +601,11 @@ Named breaks:
   export, raw hidden openings, missing QROM ledger binding, and
   fallback-threshold drift.
   The preferred Lean endpoint
-  `transparent_view_full_interface_from_atomic_gates_or_break` now consumes the
-  parent-trace extraction atoms, decomposed trace assembly, and same-trace
-  range/blinding row gates directly, so the active proof cannot close via an
-  unrelated abstract two-view extractor or unrelated auxiliary-row trace.
+  `transparent_view_full_interface_from_selected_profile_atomic_gates_or_break`
+  now consumes the selected active profile, parent-trace extraction atoms,
+  decomposed trace assembly, and same-trace range/blinding row gates directly,
+  so the active proof cannot close via an unrelated abstract two-view extractor
+  or unrelated auxiliary-row trace.
   Lean also mirrors the selected active Rust role map as
   `SelectedActiveColumnProfile`, with hidden/masked column sets `101..109` and
   `201..209`, and proves that this selected map implies
@@ -612,6 +613,8 @@ Named breaks:
   The decomposed assembly route now includes
   `TraceAssemblyDerivedRolesSoundness`, and the Rust proof-family interface
   rejects clearing `trace_assembly_derived_roles_required`.
+  The Rust proof-family interface also rejects clearing
+  `lean_selected_profile_atomic_endpoint_present`.
   `PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA`,
   `path2_transparent_proof_family_capability_v1`,
   `verify_path2_transparent_proof_family_capability`, and

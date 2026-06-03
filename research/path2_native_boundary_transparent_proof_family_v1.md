@@ -40,12 +40,13 @@ BlindingNoiseBoundSoundness
 The first two are proof-family cryptographic assumptions. `TraceAssemblySoundness`
 is mostly native-boundary bookkeeping once a full trace is extracted, and Lean
 now decomposes it into representative assembly existence, role completeness,
-boundary-fiber projection, local validity, and descent consistency.
+derived lifecycle/statement roles, boundary-fiber projection, local validity,
+and descent consistency.
 The current preferred closure theorem is
-`transparent_view_full_interface_from_atomic_gates_or_break`, which composes
-parent-trace commitment extraction, masked-opening consistency,
-relation-knowledge, decomposed assembly, and decomposed range/blinding row
-soundness.
+`transparent_view_full_interface_from_selected_profile_atomic_gates_or_break`,
+which composes the selected active profile, parent-trace commitment extraction,
+masked-opening consistency, relation-knowledge, decomposed assembly, and
+decomposed range/blinding row soundness.
 
 ## Required Profile Modes
 

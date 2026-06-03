@@ -106,7 +106,7 @@ Descender.Path2NativeBoundary.transparent_view_full_interface_or_break
 The active closure theorem preferred by the proof-family interface is:
 
 ```text
-Descender.Path2NativeBoundary.transparent_view_full_interface_from_atomic_gates_or_break
+Descender.Path2NativeBoundary.transparent_view_full_interface_from_selected_profile_atomic_gates_or_break
 ```
 
 It composes:

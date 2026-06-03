@@ -1528,6 +1528,7 @@ pub struct Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
     pub blinding_row_soundness_required: bool,
     pub blinding_rows_to_bound_required: bool,
     pub lean_atomic_full_interface_endpoint_present: bool,
+    pub lean_selected_profile_atomic_endpoint_present: bool,
     pub qrom_extractor_rewind_bound_required: bool,
     pub double_trace_binding_break_exported: bool,
     pub full_trace_extraction_required: bool,
@@ -10080,6 +10081,7 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1()
         blinding_row_soundness_required: true,
         blinding_rows_to_bound_required: true,
         lean_atomic_full_interface_endpoint_present: true,
+        lean_selected_profile_atomic_endpoint_present: true,
         qrom_extractor_rewind_bound_required: true,
         double_trace_binding_break_exported: true,
         full_trace_extraction_required: true,
@@ -10320,6 +10322,12 @@ pub fn verify_path2_native_boundary_trace_proof_family_interface(
                 .to_string(),
         );
     }
+    if !interface.lean_selected_profile_atomic_endpoint_present {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks Lean selected-profile atomic endpoint"
+                .to_string(),
+        );
+    }
     if !interface.qrom_extractor_rewind_bound_required {
         return Err(
             "Path 2 native-boundary trace proof-family interface lacks QROM extractor rewind bound"
@@ -10553,6 +10561,11 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
         &mut frame,
         b"lean_atomic_full_interface_endpoint_present",
         u64::from(interface.lean_atomic_full_interface_endpoint_present),
+    );
+    append_u64(
+        &mut frame,
+        b"lean_selected_profile_atomic_endpoint_present",
+        u64::from(interface.lean_selected_profile_atomic_endpoint_present),
     );
     append_u64(
         &mut frame,
@@ -33958,6 +33971,7 @@ mod tests {
         assert!(interface.blinding_row_soundness_required);
         assert!(interface.blinding_rows_to_bound_required);
         assert!(interface.lean_atomic_full_interface_endpoint_present);
+        assert!(interface.lean_selected_profile_atomic_endpoint_present);
         assert!(interface.qrom_extractor_rewind_bound_required);
         assert!(interface.double_trace_binding_break_exported);
         assert!(interface.full_trace_extraction_required);
@@ -34198,6 +34212,16 @@ mod tests {
             verify_path2_native_boundary_trace_proof_family_interface(&no_lean_atomic_endpoint)
                 .unwrap_err(),
             "Path 2 native-boundary trace proof-family interface lacks Lean atomic full-interface endpoint"
+        );
+
+        let mut no_selected_profile_atomic_endpoint = interface.clone();
+        no_selected_profile_atomic_endpoint.lean_selected_profile_atomic_endpoint_present = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(
+                &no_selected_profile_atomic_endpoint
+            )
+            .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks Lean selected-profile atomic endpoint"
         );
 
         let mut no_qrom_rewind = interface.clone();

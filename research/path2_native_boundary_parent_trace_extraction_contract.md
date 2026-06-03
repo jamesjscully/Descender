@@ -159,8 +159,8 @@ ExtractedTraceRelationKnowledgeSoundness
 ```
 
 The current preferred endpoint,
-`transparent_view_full_interface_from_atomic_gates_or_break`, consumes those
-three atomic pieces directly. Meanwhile:
+`transparent_view_full_interface_from_selected_profile_atomic_gates_or_break`,
+consumes those three atomic pieces through the selected active profile. Meanwhile:
 
 ```text
 TraceAssemblySoundness

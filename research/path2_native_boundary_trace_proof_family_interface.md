@@ -159,13 +159,17 @@ P.qromScheduleBound b view profile
 The preferred active closure adapter is now:
 
 ```text
-transparent_view_full_interface_from_atomic_gates_or_break
+transparent_view_full_interface_from_selected_profile_atomic_gates_or_break
 ```
 
-It derives the same endpoint from parent-trace commitment extraction,
-masked-opening consistency, extracted-trace relation knowledge, decomposed trace
-assembly, same-trace hybrid range-row binding, hybrid range-row soundness,
-same-trace blinding/noise row binding, and blinding/noise bound-row obligations.
+It derives the same endpoint from the selected active Rust profile map,
+parent-trace commitment extraction, masked-opening consistency, extracted-trace
+relation knowledge, decomposed trace assembly, same-trace hybrid range-row
+binding, hybrid range-row soundness, same-trace blinding/noise row binding, and
+blinding/noise bound-row obligations. The older
+`transparent_view_full_interface_from_atomic_gates_or_break` remains the
+general atomic adapter; the selected-profile adapter derives role completeness
+and selected trace-knowledge modes from `SelectedActiveColumnProfile`.
 
 The final interface now routes through `ParentTraceExtractionSoundness` and
 `TraceAssemblySoundness`; the older two-view extractor surface is no longer an
@@ -207,6 +211,7 @@ same_trace_blinding_rows_required = true
 blinding_row_soundness_required = true
 blinding_rows_to_bound_required = true
 lean_atomic_full_interface_endpoint_present = true
+lean_selected_profile_atomic_endpoint_present = true
 qrom_extractor_rewind_bound_required = true
 double_trace_binding_break_exported = true
 ```
@@ -221,6 +226,10 @@ statement-source derivation are now named inside `TraceAssemblySoundness`.
 `lean_atomic_full_interface_endpoint_present` rejects because the active Rust
 interface must be bound to the narrow Lean theorem
 `transparent_view_full_interface_from_atomic_gates_or_break`.
+Clearing `lean_selected_profile_atomic_endpoint_present` rejects because the
+active closure target is the selected-profile theorem
+`transparent_view_full_interface_from_selected_profile_atomic_gates_or_break`,
+not the looser atomic adapter alone.
 
 ## Closure Criterion
 

@@ -144,6 +144,7 @@ boundary projections.
 - `trace_extraction_implies_hidden_representative_or_break`
 - `transparent_view_full_interface_from_decomposed_or_break`
 - `transparent_view_full_interface_from_atomic_gates_or_break`
+- `transparent_view_full_interface_from_selected_profile_atomic_gates_or_break`
 
 ## Next Proof Move
 
@@ -179,15 +180,20 @@ masked-base128 role/column-set map discharges `ProfileRoleComplete` directly.
 by `TraceAssemblyDerivedRolesSoundness`, so derived lifecycle-slot and
 statement-source obligations are part of the assembly proof surface rather
 than prose-only role-completeness assumptions.
+The selected-profile endpoint
+`transparent_view_full_interface_from_selected_profile_atomic_gates_or_break`
+now derives `ProfileRoleComplete` and selected trace-knowledge modes directly
+from `SelectedActiveColumnProfile`, so the preferred active closure no longer
+takes those as loose premises.
 `research/path2_native_boundary_parent_trace_extraction_contract.md` pins the
 parent-trace extraction contract. The preferred full-interface endpoint now
-uses `transparent_view_full_interface_from_atomic_gates_or_break`, so concrete
-proof work can target the parent-trace commitment extraction, masked-opening
-consistency, relation-knowledge, decomposed assembly, same-trace range-row,
-range-row soundness, same-trace blinding-row, and blinding-row subclaims
-directly. The endpoint now runs the same-trace range/blinding obligations on
-the extracted trace and assembled representative that appear in the final
-interface conclusion.
+uses `transparent_view_full_interface_from_selected_profile_atomic_gates_or_break`,
+so concrete proof work can target the selected profile map, parent-trace
+commitment extraction, masked-opening consistency, relation-knowledge,
+decomposed assembly, same-trace range-row, range-row soundness, same-trace
+blinding-row, and blinding-row subclaims directly. The endpoint now runs the
+same-trace range/blinding obligations on the extracted trace and assembled
+representative that appear in the final interface conclusion.
 `research/path2_native_boundary_relation_knowledge_soundness_contract.md` pins
 the separate relation-knowledge gate, and Lean now requires
 `SupportsRelationKnowledge profile` as well.

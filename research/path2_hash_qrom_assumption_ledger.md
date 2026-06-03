@@ -61,6 +61,7 @@ must reject in direct mode unless the optional aggregation theorem is enabled.
 | `sis_role_matrix_rows` | selected private role-matrix row band, currently `64` | rejects the 48-row opening-tuple kernel surface under the selected blinding bound | `inner_commitment_binding_break` or `transparent_proof_soundness_break` |
 | `decomposed_trace_assembly_and_row_flags` | selected trace assembly, derived lifecycle/statement roles, same-trace range/blinding row, and row-implication proof gates are all present | prevents the proof-family id from binding only the atomic endpoint name while omitting one required subclaim | `transparent_proof_soundness_break` |
 | `lean_atomic_full_interface_endpoint_present` | selected Lean closure endpoint `transparent_view_full_interface_from_atomic_gates_or_break` is present | prevents a Rust proof-family id from binding only ingredient flags without the composed theorem endpoint | `transparent_proof_soundness_break` |
+| `lean_selected_profile_atomic_endpoint_present` | selected-profile Lean closure endpoint `transparent_view_full_interface_from_selected_profile_atomic_gates_or_break` is present | prevents a Rust proof-family id from binding only the looser atomic adapter while leaving selected profile closure outside the theorem target | `transparent_proof_soundness_break` |
 
 ## PRF And Hiding Roles
 

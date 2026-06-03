@@ -309,12 +309,13 @@ the active profile map discharges `ProfileRoleComplete` for trace assembly.
 Rust now binds `trace_assembly_derived_roles_required = true`, matching Lean's
 `TraceAssemblyDerivedRolesSoundness` gate.
 The preferred full-interface closure theorem is now
-`transparent_view_full_interface_from_atomic_gates_or_break`, which composes
-parent-trace commitment extraction, masked-opening consistency,
-relation-knowledge, decomposed assembly, same-trace hybrid range rows, range
-row soundness, same-trace blinding/noise rows, and blinding/noise row
-obligations. The Rust proof-family interface now binds
-`lean_atomic_full_interface_endpoint_present = true` plus the decomposed
+`transparent_view_full_interface_from_selected_profile_atomic_gates_or_break`,
+which composes the selected active profile, parent-trace commitment extraction,
+masked-opening consistency, relation-knowledge, decomposed assembly, same-trace
+hybrid range rows, range row soundness, same-trace blinding/noise rows, and
+blinding/noise row obligations. The Rust proof-family interface now binds
+`lean_atomic_full_interface_endpoint_present = true`,
+`lean_selected_profile_atomic_endpoint_present = true`, plus the decomposed
 assembly/range/blinding row subclaim flags into its digest.
 The active range/SIS gate now also pins `selectedSisRoleMatrixRows = 64` and the
 Rust proof-family interface binds `sis_role_matrix_rows = 64`; the existing
