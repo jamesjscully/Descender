@@ -10479,6 +10479,7 @@ pub fn path2_transparent_query_opening_mask_domain_digest(
     public_view: &Path2TransparentDescentPublicViewV1,
     record: &Path2TransparentQueryOpeningRecordV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
+    verify_path2_transparent_descent_public_view(public_view)?;
     let entry = path2_two_view_column_profile_entry(record.role_id)?;
     if !path2_two_view_entry_is_hidden_or_private(&entry) {
         return Ok([0_u8; DIGEST_BYTES]);
@@ -32691,14 +32692,13 @@ mod tests {
 
         let mut stale_public_view_context = public_view;
         stale_public_view_context.leaf_context_digest[0] ^= 1;
-        assert_ne!(
-            path2_transparent_query_opening_mask_domain_digest(&public_view, &manifest.records[1])
-                .unwrap(),
+        assert_eq!(
             path2_transparent_query_opening_mask_domain_digest(
                 &stale_public_view_context,
                 &manifest.records[1],
             )
-            .unwrap()
+            .unwrap_err(),
+            "Path 2 transparent transcript digest mismatch"
         );
         assert_eq!(
             verify_path2_transparent_query_opening_manifest_for_public_view(

@@ -514,9 +514,8 @@ Named breaks:
   accepted public view directly, including leaf/proof binding, matrix context,
   masked projection, roots, public-view query index, profile mask-domain id,
   role, column set, row, record query index, and local mask-domain id. The
-  manifest KAT now also proves stale public-view rebinding changes the
-  mask-domain digest, and the manifest/public-view verifier rejects stale
-  transcript context before proof handoff. `verify_path2_transparent_descent_public_view`
+  mask-domain digest helper and the manifest/public-view verifier now both
+  reject stale transcript context before proof handoff. `verify_path2_transparent_descent_public_view`
   is now the shared public-view validation helper used by the manifest boundary
   and transparent payload digest, reducing drift between fail-closed entry
   points. The
