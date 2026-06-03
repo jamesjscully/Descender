@@ -512,8 +512,9 @@ Named breaks:
   accepted public view directly, including leaf/proof binding, matrix context,
   masked projection, roots, public-view query index, profile mask-domain id,
   role, column set, row, record query index, and local mask-domain id. The
-  manifest KAT now also rejects stale-transcript public-view rebinding at the
-  mask-domain check instead of relying on earlier transcript validation. The
+  manifest KAT now also proves stale public-view rebinding changes the
+  mask-domain digest, and the manifest/public-view verifier rejects stale
+  transcript context before proof handoff. The
   boundary KAT covers this out-of-trace-row
   negative at the proof-byte envelope constructor, manifest-aware boundary, and
   proof-byte envelope verifier, while the manifest KAT covers mask-domain

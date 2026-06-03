@@ -10750,6 +10750,7 @@ pub fn verify_path2_transparent_query_opening_manifest_for_public_view(
     public_view: &Path2TransparentDescentPublicViewV1,
     manifest: &Path2TransparentQueryOpeningManifestV1,
 ) -> Result<(), String> {
+    verify_path2_transparent_descent_public_view(public_view)?;
     verify_path2_transparent_query_opening_manifest(manifest)?;
     if manifest.proof_system_id != public_view.proof_system_id
         || manifest.relation_id != public_view.relation_id
@@ -10845,6 +10846,38 @@ pub fn path2_transparent_descent_transcript_digest(
     );
     append_frame(&mut frame, b"query_index", &query_index.to_le_bytes());
     Ok(Sha256::digest(frame).into())
+}
+
+pub fn verify_path2_transparent_descent_public_view(
+    public_view: &Path2TransparentDescentPublicViewV1,
+) -> Result<(), String> {
+    if public_view.schema != PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA {
+        return Err("Path 2 transparent public view schema mismatch".to_string());
+    }
+    if public_view.proof_system_id != path2_transparent_descent_proof_system_id() {
+        return Err("Path 2 transparent proof system id mismatch".to_string());
+    }
+    if public_view.relation_id != path2_transparent_descent_relation_id() {
+        return Err("Path 2 transparent relation id mismatch".to_string());
+    }
+    let expected_transcript = path2_transparent_descent_transcript_digest(
+        &public_view.proof_system_id,
+        public_view.trace_rows,
+        public_view.query_count,
+        public_view.column_profile,
+        &public_view.leaf_context_digest,
+        &public_view.creation_proof_binding_digest,
+        &public_view.matrix_domain_transcript_digest,
+        &public_view.masked_projection,
+        &public_view.aggregation_context_digest,
+        &public_view.trace_commitment_root,
+        &public_view.constraint_commitment_root,
+        public_view.query_index,
+    )?;
+    if public_view.transparent_transcript_digest != expected_transcript {
+        return Err("Path 2 transparent transcript digest mismatch".to_string());
+    }
+    Ok(())
 }
 
 pub fn path2_transparent_descent_public_view_v1(
@@ -32617,6 +32650,7 @@ mod tests {
         .unwrap();
         let manifest =
             path2_transparent_query_opening_manifest_fixture_for_public_view(&public_view);
+        verify_path2_transparent_descent_public_view(&public_view).unwrap();
         verify_path2_transparent_query_opening_manifest(&manifest).unwrap();
         verify_path2_transparent_query_opening_manifest_for_public_view(&public_view, &manifest)
             .unwrap();
@@ -32674,13 +32708,22 @@ mod tests {
 
         let mut stale_public_view_context = public_view;
         stale_public_view_context.leaf_context_digest[0] ^= 1;
+        assert_ne!(
+            path2_transparent_query_opening_mask_domain_digest(&public_view, &manifest.records[1])
+                .unwrap(),
+            path2_transparent_query_opening_mask_domain_digest(
+                &stale_public_view_context,
+                &manifest.records[1],
+            )
+            .unwrap()
+        );
         assert_eq!(
             verify_path2_transparent_query_opening_manifest_for_public_view(
                 &stale_public_view_context,
                 &manifest,
             )
             .unwrap_err(),
-            "Path 2 transparent query opening mask domain digest mismatch"
+            "Path 2 transparent transcript digest mismatch"
         );
 
         let mut truncated = manifest.clone();
