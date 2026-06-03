@@ -168,6 +168,17 @@ selected_transparent_view_atomic_gates_imply_account_admission(P)
 the proof family only proves a transparent-view theorem and does not close
 account admission.
 
+The Rust mirror is now named
+`verify_path2_direct_creation_transparent_descent_selected_view_bridge`. It is a
+pre-verifier adapter for this Lean obligation: from a direct account-creation
+payload plus transparent payload it checks the selected proof-system id, public
+view validity, selected column profile, query schedule, interface policy flags,
+leaf-context binding, aggregation-context binding, commitment API, and payload
+digest recomputation. This does not claim transparent proof soundness; the
+account-create-to-view bridge is only enough to hand a concrete proof verifier
+the selected view/profile tuple that `AccountCreateSelectedTransparentViewSoundness`
+expects.
+
 ## False Implication To Reject
 
 The following implication is invalid:

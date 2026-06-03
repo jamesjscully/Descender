@@ -13050,6 +13050,25 @@ pub fn verify_path2_direct_creation_transparent_descent_payload_boundary(
     payload: &Path2DirectCreationProofPayloadV1,
     transparent_payload: &Path2TransparentDescentProofPayloadV1,
 ) -> Result<(), String> {
+    verify_path2_direct_creation_transparent_descent_selected_view_bridge(
+        leaf,
+        evidence,
+        certificate,
+        binding,
+        payload,
+        transparent_payload,
+    )?;
+    Err("Path 2 transparent descent proof verifier is not implemented".to_string())
+}
+
+pub fn verify_path2_direct_creation_transparent_descent_selected_view_bridge(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    binding: &Path2CreationProofBindingV1,
+    payload: &Path2DirectCreationProofPayloadV1,
+    transparent_payload: &Path2TransparentDescentProofPayloadV1,
+) -> Result<(), String> {
     verify_path2_direct_creation_proof_payload_common(
         leaf,
         evidence,
@@ -13063,12 +13082,24 @@ pub fn verify_path2_direct_creation_transparent_descent_payload_boundary(
     if payload.proof_system_id != path2_transparent_descent_proof_system_id() {
         return Err("Path 2 transparent descent proof system mismatch".to_string());
     }
+    let interface = path2_native_boundary_trace_proof_family_interface_v1()?;
     if transparent_payload.payload_digest != payload.payload_digest
         || transparent_payload.payload_byte_len != payload.payload_byte_len
     {
         return Err("Path 2 transparent descent payload header mismatch".to_string());
     }
     let view = &transparent_payload.public_view;
+    verify_path2_transparent_descent_public_view(view)?;
+    verify_path2_two_view_column_profile_id(view.column_profile)?;
+    verify_path2_transparent_query_schedule_pair(view.trace_rows, view.query_count)?;
+    if view.column_profile != interface.column_profile
+        || interface.norm_range_mode != PATH2_NATIVE_BOUNDARY_TRACE_RANGE_HYBRID_BASE128
+        || interface.blinding_noise_policy_id
+            != PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_NOISE_POLICY_ID
+        || !interface.lean_account_admission_adapter_endpoint_present
+    {
+        return Err("Path 2 transparent descent selected view bridge mismatch".to_string());
+    }
     if view.creation_proof_binding_digest != binding.digest {
         return Err("Path 2 transparent descent binding digest mismatch".to_string());
     }
@@ -13092,7 +13123,7 @@ pub fn verify_path2_direct_creation_transparent_descent_payload_boundary(
     if transparent_payload.payload_digest != expected_payload_digest {
         return Err("Path 2 transparent descent payload digest mismatch".to_string());
     }
-    Err("Path 2 transparent descent proof verifier is not implemented".to_string())
+    Ok(())
 }
 
 pub fn verify_path2_direct_creation_transparent_descent_payload_boundary_with_query_manifest(
@@ -29889,6 +29920,111 @@ mod tests {
     }
 
     #[test]
+    fn path2_transparent_selected_view_bridge_rejects_profile_drift_before_verifier() {
+        let (mut leaf, mut evidence, mut certificate) = path2_creation_frame_binding_fixture();
+        let binding = path2_creation_proof_binding_v1(
+            &leaf,
+            test_digest("path2-selected-view-packed-witness-commitment"),
+            test_digest("path2-selected-view-randomizer-commitment"),
+            test_digest("path2-selected-view-pad-source-commitment"),
+            test_digest("path2-selected-view-projection-relation-commitment"),
+            test_digest("path2-selected-view-gauge-commitment"),
+            test_digest("path2-selected-view-aggregation-context"),
+        );
+        let leaf_context_digest =
+            path2_prevalidated_slot_leaf_context_digest(&leaf, &evidence, &certificate).unwrap();
+        let matrix_domain_transcript_digest = path2_descent_sis_matrix_transcript_digest(
+            PATH2_DESCENT_SIS_ROLE_TRANSCRIPT_COMMITMENT,
+            64,
+        )
+        .unwrap();
+        let masked_projection = [3_u16, 5, 7, 11, 13, 17];
+        let proof_bytes_digest = test_digest("path2-selected-view-proof-bytes");
+        let query_openings_digest = test_digest("path2-selected-view-query-openings");
+        let merkle_paths_digest = test_digest("path2-selected-view-merkle-paths");
+        let consistency_messages_digest = test_digest("path2-selected-view-consistency");
+        let payload_byte_len = 512_u64;
+
+        let public_view = path2_transparent_descent_public_view_v1(
+            path2_transparent_descent_proof_system_id(),
+            256,
+            16,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+            leaf_context_digest,
+            binding.digest,
+            matrix_domain_transcript_digest,
+            masked_projection,
+            binding.aggregation_context_digest,
+            test_digest("path2-selected-view-trace-root"),
+            test_digest("path2-selected-view-constraint-root"),
+            3,
+        )
+        .unwrap();
+        let payload_digest = path2_transparent_descent_proof_payload_digest(
+            &public_view,
+            payload_byte_len,
+            &proof_bytes_digest,
+            &query_openings_digest,
+            &merkle_paths_digest,
+            &consistency_messages_digest,
+        )
+        .unwrap();
+        certificate.public_replay_payload_digest = payload_digest;
+        evidence.evidence_payload_digest =
+            path2_direct_replayable_relation_certificate_digest(&certificate);
+        leaf.prevalidation_transcript_digest =
+            path2_account_creation_evidence_transcript_digest(&evidence).unwrap();
+        refresh_path2_leaf_digest_bindings(&leaf, &mut evidence);
+        let payload = Path2DirectCreationProofPayloadV1 {
+            schema: PATH2_DIRECT_CREATION_PROOF_PAYLOAD_SCHEMA,
+            payload_version: 1,
+            proof_kind: PATH2_DIRECT_CREATION_PROOF_KIND_TRANSPARENT_DESCENT,
+            proof_system_id: path2_transparent_descent_proof_system_id(),
+            proof_binding_digest: binding.digest,
+            hidden_source_statement_digest: leaf.hidden_source_statement_digest,
+            relation_transcript_digest: certificate.relation_transcript_digest,
+            payload_digest,
+            payload_byte_len,
+        };
+        let transparent_payload = Path2TransparentDescentProofPayloadV1 {
+            public_view,
+            payload_digest,
+            payload_byte_len,
+            proof_bytes_digest,
+            query_openings_digest,
+            merkle_paths_digest,
+            consistency_messages_digest,
+        };
+        assert_eq!(
+            verify_path2_direct_creation_transparent_descent_payload_boundary(
+                &leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &payload,
+                &transparent_payload,
+            )
+            .unwrap_err(),
+            "Path 2 transparent descent proof verifier is not implemented"
+        );
+
+        let mut wrong_profile_transparent_payload = transparent_payload;
+        wrong_profile_transparent_payload.public_view.column_profile += 1;
+        assert_eq!(
+            verify_path2_direct_creation_transparent_descent_selected_view_bridge(
+                &leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &payload,
+                &wrong_profile_transparent_payload,
+            )
+            .unwrap_err(),
+            "Path 2 transparent proof unknown column profile"
+        );
+    }
+
+    #[test]
     fn path2_transparent_descent_payload_boundary_binds_public_view_before_fail_closed() {
         let (mut leaf, mut evidence, mut certificate) = path2_creation_frame_binding_fixture();
         let binding = path2_creation_proof_binding_v1(
@@ -30186,6 +30322,15 @@ mod tests {
             consistency_messages_digest,
         };
 
+        verify_path2_direct_creation_transparent_descent_selected_view_bridge(
+            &leaf,
+            &evidence,
+            &certificate,
+            &binding,
+            &payload,
+            &transparent_payload,
+        )
+        .unwrap();
         assert_eq!(
             verify_path2_direct_creation_transparent_descent_payload_boundary(
                 &leaf,

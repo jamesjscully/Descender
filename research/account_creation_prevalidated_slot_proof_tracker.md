@@ -617,7 +617,16 @@ Named breaks:
   `lean_selected_profile_atomic_endpoint_present` and
   `lean_account_admission_adapter_endpoint_present`, so the active proof-family
   id must bind the selected view/profile endpoint and its account-admission
-  adapter into `AccountAdmissionSoundness`.
+  adapter into `AccountAdmissionSoundness`. The Rust direct-creation boundary
+  now exposes this adapter separately as
+  `verify_path2_direct_creation_transparent_descent_selected_view_bridge`: it
+  validates the direct creation payload binding, selected transparent public
+  view, selected column profile/query schedule, proof-family interface policy
+  flags, leaf-context/aggregation-context bindings, commitment API, and
+  transparent payload digest before proof-verifier handoff. The ordinary
+  transparent payload boundary calls this bridge and still returns the
+  proof-verifier-not-implemented blocker, so this is a selected-view/admission
+  bridge, not a proof-verifier implementation.
   `PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA`,
   `path2_transparent_proof_family_capability_v1`,
   `verify_path2_transparent_proof_family_capability`, and

@@ -332,7 +332,15 @@ blinding/noise row obligations. The Rust proof-family interface now binds
 `lean_atomic_full_interface_endpoint_present = true`,
 `lean_selected_profile_atomic_endpoint_present = true`,
 `lean_account_admission_adapter_endpoint_present = true`, plus the decomposed
-assembly/range/blinding row subclaim flags into its digest.
+assembly/range/blinding row subclaim flags into its digest. Rust now also has a
+direct pre-verifier selected-view bridge,
+`verify_path2_direct_creation_transparent_descent_selected_view_bridge`, which
+checks the active transparent public view/profile/query schedule, interface
+policy flags, leaf and aggregation bindings, commitment API, and transparent
+payload digest before the full payload boundary returns the intentional
+proof-verifier-not-implemented blocker. This records the account-create-to-view
+adapter needed by `AccountCreateSelectedTransparentViewSoundness` without
+claiming that the concrete transparent IOP verifier exists.
 The active range/SIS gate now also pins `selectedSisRoleMatrixRows = 64` and the
 Rust proof-family interface binds `sis_role_matrix_rows = 64`; the existing
 sanity probe rejects the 48-row `opening_tuple` case under the selected `2048`

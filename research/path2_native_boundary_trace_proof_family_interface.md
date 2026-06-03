@@ -273,6 +273,15 @@ Clearing `lean_account_admission_adapter_endpoint_present` rejects because the
 active route must bridge account creation into the selected transparent
 view/profile/policy tuple and derive `AccountAdmissionSoundness`, not merely a
 view-level theorem.
+Rust now exposes the corresponding pre-verifier bridge as
+`verify_path2_direct_creation_transparent_descent_selected_view_bridge`. It
+reuses the direct creation proof payload binding checks, validates the accepted
+transparent public view, requires the selected column profile/range/blinding
+interface, checks the leaf context and aggregation context against the creation
+binding, and recomputes the transparent payload digest. It deliberately stops
+before transparent proof verification; the full
+`verify_path2_direct_creation_transparent_descent_payload_boundary` still returns
+the proof-verifier-not-implemented blocker after this bridge succeeds.
 Clearing `qrom_extractor_rewind_bound_required` rejects because the active Lean
 endpoint now consumes `NativeBoundaryTraceQromExtractorRewindSoundness` as a
 distinct proof-family obligation, not as part of the schedule predicate.
