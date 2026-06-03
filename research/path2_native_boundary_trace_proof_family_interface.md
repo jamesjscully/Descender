@@ -156,6 +156,15 @@ P.extractedRolesComplete b profile h
 P.qromScheduleBound b view profile
 ```
 
+The preferred active closure adapter is now:
+
+```text
+transparent_view_full_interface_from_decomposed_or_break
+```
+
+It derives the same endpoint from decomposed trace assembly, hybrid range-row,
+and blinding/noise bound-row obligations.
+
 The final interface now routes through `ParentTraceExtractionSoundness` and
 `TraceAssemblySoundness`; the older two-view extractor surface is no longer an
 independent shortcut for the active endpoint.

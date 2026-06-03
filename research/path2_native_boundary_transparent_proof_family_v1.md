@@ -41,6 +41,9 @@ The first two are proof-family cryptographic assumptions. `TraceAssemblySoundnes
 is mostly native-boundary bookkeeping once a full trace is extracted, and Lean
 now decomposes it into representative assembly existence, role completeness,
 boundary-fiber projection, local validity, and descent consistency.
+The current preferred closure theorem is
+`transparent_view_full_interface_from_decomposed_or_break`, which composes those
+assembly subclaims with decomposed range and blinding/noise row soundness.
 
 ## Required Profile Modes
 
