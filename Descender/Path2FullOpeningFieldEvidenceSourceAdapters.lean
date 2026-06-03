@@ -755,6 +755,184 @@ def reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
     opening.lifecycleSlotDigest opening.traceWitnessDigest opening.gaugeDigest
 
 /--
+Lean mirror of the Rust
+`Path2ReviewedFq12NativeRepresentativeDigestFrameWitnessV1` object.
+
+This is a byte-bound witness for the assembly-certificate side of
+`path2_reviewed_fq12_native_representative_digest_v1`.  It does not claim
+representative uniqueness; that remains the separate digest-functionality
+source consumed by the active P2FS-001 wrapper.
+-/
+structure ReviewedFq12NativeRepresentativeDigestFrameWitnessCertificate where
+  roleLiftCertificateDigest : Nat
+  assemblyCertificateDigest : Nat
+  nativeBoundaryDigest : Nat
+  nativeRoleRootCommitment : Nat
+  fullOpeningDigest : Nat
+  localSectionDigest : Nat
+  packedResiduesDigest : Nat
+  randomizerDigest : Nat
+  selectedAccountProjectionDigest : Nat
+  padSourceDigest : Nat
+  openingTupleDigest : Nat
+  projectionRelationDigest : Nat
+  lifecycleSlotDigest : Nat
+  traceWitnessDigest : Nat
+  gaugeDigest : Nat
+  representativeDigest : Nat
+  digestFrameWitnessDigest : Nat
+
+/--
+Parser hooks for the Rust native representative digest-frame witness.
+-/
+structure ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser where
+  parse : Nat -> ReviewedFq12NativeRepresentativeDigestFrameWitnessCertificate
+  frameDigest :
+    ReviewedFq12NativeRepresentativeDigestFrameWitnessCertificate -> Nat
+  frameBytesCanonical : Nat -> Prop
+  domainSeparated :
+    Nat -> ReviewedFq12NativeRepresentativeDigestFrameWitnessCertificate ->
+      Prop
+
+/--
+Byte certificate for the Rust digest-frame witness.
+
+The equalities are intentionally only the data needed to discharge
+`ReviewedFq12SelectedRustAssemblyRepresentativeFrameSource`: the witness is
+the parsed canonical frame, it is domain-separated, it binds the assembly
+certificate digest, it binds the opening role digests, and it recomputes the
+selected digest frame carried by the assembly certificate.
+-/
+structure ReviewedFq12NativeRepresentativeDigestFrameWitnessByteCertificate
+    (Parser : ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
+    (digestFrame : ReviewedFq12NativeRepresentativeDigestFrame)
+    (b : Boundary)
+    (opening : FullNativeRepresentativeOpening)
+    (assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate)
+    (frameBytes : Nat)
+    (witness :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessCertificate) :
+    Prop where
+  canonical :
+    Parser.frameBytesCanonical frameBytes
+  parsed_eq :
+    Parser.parse frameBytes = witness
+  frame_digest_eq :
+    Parser.frameDigest witness = witness.digestFrameWitnessDigest
+  domain_separated :
+    Parser.domainSeparated frameBytes witness
+  role_lift_certificate_digest_eq :
+    witness.roleLiftCertificateDigest =
+      assemblyCert.roleLiftCertificateDigest
+  assembly_certificate_digest_eq :
+    witness.assemblyCertificateDigest =
+      assemblyCert.assemblyCertificateDigest
+  native_boundary_digest_eq :
+    witness.nativeBoundaryDigest = b.nativeBoundaryDigest
+  local_section_digest_eq :
+    witness.localSectionDigest = opening.localSectionDigest
+  packed_residues_digest_eq :
+    witness.packedResiduesDigest = opening.packedResiduesDigest
+  randomizer_digest_eq :
+    witness.randomizerDigest = opening.randomizerDigest
+  selected_account_projection_digest_eq :
+    witness.selectedAccountProjectionDigest =
+      opening.selectedAccountProjectionDigest
+  pad_source_digest_eq :
+    witness.padSourceDigest = opening.padSourceDigest
+  opening_tuple_digest_eq :
+    witness.openingTupleDigest = opening.openingTupleDigest
+  projection_relation_digest_eq :
+    witness.projectionRelationDigest = opening.projectionRelationDigest
+  lifecycle_slot_digest_eq :
+    witness.lifecycleSlotDigest = opening.lifecycleSlotDigest
+  trace_witness_digest_eq :
+    witness.traceWitnessDigest = opening.traceWitnessDigest
+  gauge_digest_eq :
+    witness.gaugeDigest = opening.gaugeDigest
+  representative_digest_assembly_eq :
+    witness.representativeDigest = assemblyCert.representativeDigest
+  representative_digest_frame_eq :
+    witness.representativeDigest =
+      reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
+        digestFrame b opening
+
+/--
+Selected-Rust byte source for the digest-frame witness.
+
+This source is the Lean/Rust bridge for the typed Rust witness artifact: from a
+valid binding assembly certificate, it produces the canonical parsed witness
+or a named boundary break.
+-/
+structure ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource
+    (Parser : ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
+    (P : Predicates) where
+  digestFrame :
+    ReviewedFq12NativeRepresentativeDigestFrame
+  hasDigestFrameWitness :
+    Boundary ->
+      ReviewedFq12HiddenSourcePayload ->
+        ReviewedFq12HiddenRelationExtractionCertificate ->
+          FullNativeRepresentativeOpening ->
+            ReviewedFq12NativeRepresentativeAssemblyCertificate ->
+              Nat ->
+                ReviewedFq12NativeRepresentativeDigestFrameWitnessCertificate ->
+                  Prop
+  digestFrameWitnessAvailable :
+    forall {b : Boundary} {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening}
+        {assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate},
+      P.reviewedFq12PayloadAccepts b payload ->
+        P.reviewedFq12PayloadProjectsFrom b payload ->
+          P.reviewedFq12PayloadHasExtractionCertificate b payload cert ->
+            P.reviewedFq12ExtractionCertificateValid b payload cert ->
+              P.reviewedFq12CertificateLiftsToOpening b payload cert opening ->
+                P.reviewedFq12OpeningHasAssemblyCertificate
+                    b payload cert opening assemblyCert ->
+                  P.reviewedFq12AssemblyCertificateValid
+                      b payload cert opening assemblyCert ->
+                    ReviewedFq12AssemblyCertificateBindsOpening
+                        payload cert opening assemblyCert ->
+                      (exists frameBytes witness,
+                        hasDigestFrameWitness
+                            b payload cert opening assemblyCert frameBytes
+                            witness ∧
+                          ReviewedFq12NativeRepresentativeDigestFrameWitnessByteCertificate
+                            Parser digestFrame b opening assemblyCert
+                            frameBytes witness) ∨
+                        (exists breakEvent,
+                          P.boundaryBreakFor b.context b breakEvent)
+
+/--
+The Rust digest-frame witness byte source instantiates the assembly-frame side
+of the active representative digest route.
+-/
+def assembly_frame_source_of_digest_frame_witness_byte_source
+    {Parser : ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Source :
+      ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource
+        Parser P) :
+    ReviewedFq12SelectedRustAssemblyRepresentativeFrameSource P :=
+  { canonicalDigest :=
+      reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
+        Source.digestFrame
+    assemblyCertificateDigestCanonical := by
+      intro b payload cert opening assemblyCert hAccept hProjects hHas
+        hValid hLifts hHasAssembly hAssemblyValid hBinds
+      rcases
+          Source.digestFrameWitnessAvailable hAccept hProjects hHas hValid
+            hLifts hHasAssembly hAssemblyValid hBinds with
+        hWitness | hBreak
+      · rcases hWitness with
+          ⟨_frameBytes, _witness, _hHasWitness, hByte⟩
+        exact Or.inl
+          (hByte.representative_digest_assembly_eq.symm.trans
+            hByte.representative_digest_frame_eq)
+      · exact Or.inr hBreak }
+
+/--
 Selected Rust native representative digest-frame source.
 
 This is the concrete instantiation target for
