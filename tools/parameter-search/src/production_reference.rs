@@ -275,6 +275,8 @@ pub const PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA: &str =
     "DESCENDER_PATH2_TRANSPARENT_ZK_MASKED_TRACE_IOP_CAPABILITY_V1";
 pub const PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA: &str =
     "DESCENDER_PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_V1";
+pub const PATH2_TRANSPARENT_PROOF_BODY_DIGEST_SCHEMA: &str =
+    "DESCENDER_PATH2_TRANSPARENT_PROOF_BODY_DIGEST_V1";
 pub const PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN: &str =
     "DESCENDER_PATH2_TRANSPARENT_DESCENT_RELATION_V1";
 pub const PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA: &str =
@@ -11083,11 +11085,28 @@ pub fn path2_transparent_proof_bytes_envelope_v1_bytes(
     bytes.extend_from_slice(&public_view.query_count.to_le_bytes());
     bytes.extend_from_slice(merkle_paths_digest);
     bytes.extend_from_slice(consistency_messages_digest);
-    let proof_body_digest: [u8; DIGEST_BYTES] = Sha256::digest(proof_body).into();
+    let proof_body_digest = path2_transparent_proof_body_digest(proof_body)?;
     bytes.extend_from_slice(&proof_body_digest);
     bytes.extend_from_slice(&(proof_body.len() as u32).to_le_bytes());
     bytes.extend_from_slice(proof_body);
     Ok(bytes)
+}
+
+pub fn path2_transparent_proof_body_digest(
+    proof_body: &[u8],
+) -> Result<[u8; DIGEST_BYTES], String> {
+    if proof_body.is_empty() {
+        return Err("Path 2 transparent proof body is empty".to_string());
+    }
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PATH2_TRANSPARENT_PROOF_BODY_DIGEST_SCHEMA.as_bytes(),
+    );
+    append_u64(&mut frame, b"proof_body_byte_len", proof_body.len() as u64);
+    append_frame(&mut frame, b"proof_body", proof_body);
+    Ok(Sha256::digest(frame).into())
 }
 
 pub fn path2_transparent_proof_bytes_envelope_fixed_len() -> usize {
@@ -11157,7 +11176,7 @@ pub fn decode_path2_transparent_proof_bytes_envelope_v1(
     if bytes.len() != offset + proof_body_byte_len as usize {
         return Err("Path 2 transparent proof body length mismatch".to_string());
     }
-    let actual_body_digest: [u8; DIGEST_BYTES] = Sha256::digest(&bytes[offset..]).into();
+    let actual_body_digest = path2_transparent_proof_body_digest(&bytes[offset..])?;
     if actual_body_digest != proof_body_digest {
         return Err("Path 2 transparent proof body digest mismatch".to_string());
     }
@@ -14221,7 +14240,7 @@ pub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(
         .map_err(|err| format!("encode Path 2 native storage/lifecycle hardening scope: {err}"))
 }
 
-pub fn path2_registered_domain_constants() -> [&'static str; 29] {
+pub fn path2_registered_domain_constants() -> [&'static str; 30] {
     [
         PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN,
         PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN,
@@ -14244,6 +14263,7 @@ pub fn path2_registered_domain_constants() -> [&'static str; 29] {
         PATH2_TRANSPARENT_QUERY_SCHEDULE_SCHEMA,
         PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA,
         PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA,
+        PATH2_TRANSPARENT_PROOF_BODY_DIGEST_SCHEMA,
         PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN,
         PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA,
         PATH2_TRANSPARENT_DESCENT_PROOF_SYSTEM_PROFILE,
@@ -14555,6 +14575,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA",
             PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA,
+        ),
+        (
+            "PATH2_TRANSPARENT_PROOF_BODY_DIGEST_SCHEMA",
+            PATH2_TRANSPARENT_PROOF_BODY_DIGEST_SCHEMA,
         ),
         (
             "PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN",
@@ -29038,6 +29062,14 @@ mod tests {
             decoded_envelope.consistency_messages_digest,
             consistency_messages_digest
         );
+        assert_eq!(
+            decoded_envelope.proof_body_digest,
+            path2_transparent_proof_body_digest(b"path2-transparent-proof-body-placeholder")
+                .unwrap()
+        );
+        let bare_proof_body_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(b"path2-transparent-proof-body-placeholder").into();
+        assert_ne!(decoded_envelope.proof_body_digest, bare_proof_body_digest);
         assert_eq!(
             verify_path2_transparent_proof_bytes_envelope_v1(
                 &public_view,

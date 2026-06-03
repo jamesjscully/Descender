@@ -494,8 +494,8 @@ Named breaks:
   16416-byte fallback threshold on the canonical encoded proof bytes, so an
   over-budget transparent proof cannot pass the fail-closed boundary as the
   active route. The boundary KAT now also covers proof-byte digest mismatch,
-  proof-byte length mismatch against the payload length, body digest mismatch,
-  truncated proof body, envelope context rebinding, zero Merkle/consistency
+  proof-byte length mismatch against the payload length, domain-separated proof
+  body digest mismatch, truncated proof body, envelope context rebinding, zero Merkle/consistency
   envelope digest rejection, component-digest envelope mismatch, empty
   proof-body rejection, oversized proof-body rejection, and oversized envelope
   rejection. `path2_transparent_descent_public_view_digest` now gives the
