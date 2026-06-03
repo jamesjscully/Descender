@@ -302,8 +302,10 @@ is no longer enough to discharge `transparent_view_full_interface_or_break`.
 existence, role completeness, boundary-fiber projection, local validity, and
 descent consistency, with a composition theorem back to the endpoint.
 The preferred full-interface closure theorem is now
-`transparent_view_full_interface_from_decomposed_or_break`, which composes the
-decomposed assembly, hybrid range, and blinding/noise row obligations.
+`transparent_view_full_interface_from_atomic_gates_or_break`, which composes
+parent-trace commitment extraction, masked-opening consistency,
+relation-knowledge, decomposed assembly, hybrid range, and blinding/noise row
+obligations.
 The active range/SIS gate now also pins `selectedSisRoleMatrixRows = 64` and the
 Rust proof-family interface binds `sis_role_matrix_rows = 64`; the existing
 sanity probe rejects the 48-row `opening_tuple` case under the selected `2048`

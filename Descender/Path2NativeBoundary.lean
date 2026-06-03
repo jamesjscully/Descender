@@ -2182,6 +2182,68 @@ theorem transparent_view_full_interface_from_decomposed_or_break
     hRangePolicy hPolicy
 
 /--
+Atomic-gate active transparent interface: the same endpoint as
+`transparent_view_full_interface_or_break`, but parent-trace extraction is also
+derived from commitment extraction, masked-opening consistency, and relation
+knowledge.
+-/
+theorem transparent_view_full_interface_from_atomic_gates_or_break
+    (P : Predicates)
+    (hParentSound : ParentRootRoleBindingSoundness P)
+    (hRoleSound : RoleRestrictionSoundness P)
+    (hCommitExtract : ParentTraceCommitmentExtractionSoundness P)
+    (hMaskedConsistency : MaskedOpeningConsistencySoundness P)
+    (hRelationKnowledge : ExtractedTraceRelationKnowledgeSoundness P)
+    (hTraceAssemblyExists : TraceRepresentativeAssemblyExistenceSoundness P)
+    (hTraceAssemblyRoles : TraceAssemblyRolesCompleteSoundness P)
+    (hTraceAssemblyFiber : TraceAssemblyFiberSoundness P)
+    (hTraceAssemblyLocal : TraceAssemblyLocalValiditySoundness P)
+    (hTraceAssemblyDescent : TraceAssemblyDescentConsistencySoundness P)
+    (hNoExportSound : NoExportSoundness P)
+    (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
+    (hMaskFreshnessSound : MaskFreshnessSoundness P)
+    (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
+    (hRangeRows : HybridBase128RangeRowSoundness P)
+    (hRangeRowsToNorm : HybridBase128RangeRowsToNormRangeSoundness P)
+    (hBlindRows : BlindingNoiseBoundRowSoundness P)
+    (hBlindRowsToBound : BlindingNoiseRowsToBoundSoundness P)
+    {b : Boundary} {view : TransparentPublicView}
+    {profile : ColumnProfile} {rangePolicy : HybridBase128RangePolicy}
+    {policy : BlindingNoisePolicy}
+    (hAccept : P.transparentAccepts b view)
+    (hProjects : TransparentViewProjectsFrom b view)
+    (hProfile : ColumnProfileCompatibleWithBoundary b view profile)
+    (hRoleComplete : ProfileRoleComplete profile)
+    (hSelected : UsesSelectedTraceKnowledgeModes profile)
+    (hRangePolicy : UsesSelectedHybridBase128RangePolicy profile rangePolicy)
+    (hPolicy : UsesSelectedBlindingNoisePolicy policy) :
+    (P.roleRestrictionsAuthenticate b profile ∧
+      P.noExportHolds b view profile ∧
+        P.roleAuthenticationMaterialSimulatable b view profile ∧
+          P.maskFreshnessHolds b view profile ∧
+            P.qromScheduleBound b view profile ∧
+              P.parentRootBindsPrivateRoles b profile ∧
+              exists h,
+                P.transparentExtracts b view h ∧
+                  P.extractedRolesComplete b profile h ∧
+                  InFiber P b.context b h ∧
+                    P.localValid b.context h ∧
+                      P.descentConsistent b.context h ∧
+                        P.normRangeValid b h ∧
+                          P.blindingNoiseBounded b policy h) ∨
+    (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
+  transparent_view_full_interface_from_decomposed_or_break P
+    hParentSound hRoleSound
+    (commitment_extraction_and_relation_knowledge_imply_parent_trace_extraction
+      P hCommitExtract hMaskedConsistency hRelationKnowledge)
+    hTraceAssemblyExists hTraceAssemblyRoles hTraceAssemblyFiber
+    hTraceAssemblyLocal hTraceAssemblyDescent
+    hNoExportSound hRoleAuthNoExportSound hMaskFreshnessSound hQromSound
+    hRangeRows hRangeRowsToNorm hBlindRows hBlindRowsToBound
+    hAccept hProjects hProfile hRoleComplete hSelected
+    hRangePolicy hPolicy
+
+/--
 If the native admission interface holds, every boundary is either explained by
 a locally valid descent-consistent hidden representative or exports a named
 break.

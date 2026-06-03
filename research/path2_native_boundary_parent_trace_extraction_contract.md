@@ -150,7 +150,17 @@ For the active native-boundary route, the best framing is:
 ParentTraceExtractionSoundness
 ```
 
-is a proof-family assumption, while:
+as a composed proof-family contract from:
+
+```text
+ParentTraceCommitmentExtractionSoundness
+MaskedOpeningConsistencySoundness
+ExtractedTraceRelationKnowledgeSoundness
+```
+
+The current preferred endpoint,
+`transparent_view_full_interface_from_atomic_gates_or_break`, consumes those
+three atomic pieces directly. Meanwhile:
 
 ```text
 TraceAssemblySoundness

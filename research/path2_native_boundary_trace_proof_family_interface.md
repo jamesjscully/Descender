@@ -159,11 +159,12 @@ P.qromScheduleBound b view profile
 The preferred active closure adapter is now:
 
 ```text
-transparent_view_full_interface_from_decomposed_or_break
+transparent_view_full_interface_from_atomic_gates_or_break
 ```
 
-It derives the same endpoint from decomposed trace assembly, hybrid range-row,
-and blinding/noise bound-row obligations.
+It derives the same endpoint from parent-trace commitment extraction,
+masked-opening consistency, extracted-trace relation knowledge, decomposed trace
+assembly, hybrid range-row, and blinding/noise bound-row obligations.
 
 The final interface now routes through `ParentTraceExtractionSoundness` and
 `TraceAssemblySoundness`; the older two-view extractor surface is no longer an
