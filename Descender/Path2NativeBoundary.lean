@@ -1112,6 +1112,7 @@ structure Predicates where
     Boundary -> TransparentPublicView -> ColumnProfile -> Prop
   maskFreshnessHolds : Boundary -> TransparentPublicView -> ColumnProfile -> Prop
   qromScheduleBound : Boundary -> TransparentPublicView -> ColumnProfile -> Prop
+  qromExtractorRewindBound : Boundary -> TransparentPublicView -> ColumnProfile -> Prop
   rangeRowsBindRepresentative :
     Boundary ->
       TransparentPublicView ->
@@ -1814,6 +1815,32 @@ theorem native_boundary_trace_qrom_schedule_bound_or_break
   hSound hAccept hProjects hProfile
 
 /--
+QROM extractor-rewind assumption: the accepted transparent view's pinned query
+schedule also carries the concrete measure-and-reprogram/forking loss needed
+by the trace extractor, or exports a named break.
+-/
+def NativeBoundaryTraceQromExtractorRewindSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          P.qromExtractorRewindBound b view profile ∨
+            (exists breakEvent, P.boundaryBreakFor b.context b breakEvent)
+
+theorem native_boundary_trace_qrom_extractor_rewind_bound_or_break
+    (P : Predicates)
+    (hSound : NativeBoundaryTraceQromExtractorRewindSoundness P)
+    {b : Boundary} {view : TransparentPublicView}
+    {profile : ColumnProfile}
+    (hAccept : P.transparentAccepts b view)
+    (hProjects : TransparentViewProjectsFrom b view)
+    (hProfile : ColumnProfileCompatibleWithBoundary b view profile) :
+    P.qromExtractorRewindBound b view profile ∨
+      (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
+  hSound hAccept hProjects hProfile
+
+/--
 Selected range-row soundness: accepted rows for the selected hybrid base-128
 policy bind the extracted representative to the authenticated digit/range
 witness columns, or export a named break.
@@ -2184,8 +2211,9 @@ def NativeBoundaryZkTraceBindingAndHiding (P : Predicates) : Prop :=
   NativeBoundaryTraceKnowledgeSoundness P ∧
     NativeBoundaryTraceZeroKnowledge P ∧
       NativeBoundaryTraceQromScheduleSoundness P ∧
-        NormRangeSoundness P ∧
-          BlindingNoiseBoundSoundness P
+        NativeBoundaryTraceQromExtractorRewindSoundness P ∧
+          NormRangeSoundness P ∧
+            BlindingNoiseBoundSoundness P
 
 /--
 Composed transparent account-creation proof surface before norm/range
@@ -2275,6 +2303,7 @@ theorem transparent_view_full_interface_or_break
     (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
     (hMaskFreshnessSound : MaskFreshnessSoundness P)
     (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
+    (hQromRewindSound : NativeBoundaryTraceQromExtractorRewindSoundness P)
     (hNormRangeSound : NormRangeSoundness P)
     (hBlindSound : BlindingNoiseBoundSoundness P)
     {b : Boundary} {view : TransparentPublicView}
@@ -2292,15 +2321,16 @@ theorem transparent_view_full_interface_or_break
         P.roleAuthenticationMaterialSimulatable b view profile ∧
           P.maskFreshnessHolds b view profile ∧
             P.qromScheduleBound b view profile ∧
-              P.parentRootBindsPrivateRoles b profile ∧
-              exists h,
-                P.transparentExtracts b view h ∧
-                  P.extractedRolesComplete b profile h ∧
-                  InFiber P b.context b h ∧
-                    P.localValid b.context h ∧
-                      P.descentConsistent b.context h ∧
-                        P.normRangeValid b h ∧
-                          P.blindingNoiseBounded b policy h) ∨
+              P.qromExtractorRewindBound b view profile ∧
+                P.parentRootBindsPrivateRoles b profile ∧
+                exists h,
+                  P.transparentExtracts b view h ∧
+                    P.extractedRolesComplete b profile h ∧
+                    InFiber P b.context b h ∧
+                      P.localValid b.context h ∧
+                        P.descentConsistent b.context h ∧
+                          P.normRangeValid b h ∧
+                            P.blindingNoiseBounded b policy h) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) := by
   cases
       transparent_view_authenticates_extracts_no_export_or_break
@@ -2314,20 +2344,25 @@ theorem transparent_view_full_interface_or_break
           hExtract⟩
       cases hQromSound hAccept hProjects hProfile with
       | inl hQrom =>
-          rcases hExtract with
-            ⟨h, hTransparent, hComplete, hFiber, hLocal, hDescent⟩
-          cases
-              hNormRangeSound hAccept hProjects hProfile hRangePolicy
-                hTransparent hFiber with
-          | inl hNorm =>
+          cases hQromRewindSound hAccept hProjects hProfile with
+          | inl hQromRewind =>
+              rcases hExtract with
+                ⟨h, hTransparent, hComplete, hFiber, hLocal, hDescent⟩
               cases
-                  hBlindSound hAccept hProjects hProfile hPolicy
+                  hNormRangeSound hAccept hProjects hProfile hRangePolicy
                     hTransparent hFiber with
-              | inl hBlind =>
-                  exact Or.inl
-                    ⟨hRole, hNoExport, hRoleAuthNoExport, hMaskFresh, hQrom,
-                      hParent, h, hTransparent, hComplete, hFiber, hLocal,
-                      hDescent, hNorm, hBlind⟩
+              | inl hNorm =>
+                  cases
+                      hBlindSound hAccept hProjects hProfile hPolicy
+                        hTransparent hFiber with
+                  | inl hBlind =>
+                      exact Or.inl
+                        ⟨hRole, hNoExport, hRoleAuthNoExport, hMaskFresh,
+                          hQrom, hQromRewind, hParent, h, hTransparent,
+                          hComplete, hFiber, hLocal, hDescent, hNorm,
+                          hBlind⟩
+                  | inr hBreak =>
+                      exact Or.inr hBreak
               | inr hBreak =>
                   exact Or.inr hBreak
           | inr hBreak =>
@@ -2357,6 +2392,7 @@ theorem transparent_view_full_interface_from_decomposed_or_break
     (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
     (hMaskFreshnessSound : MaskFreshnessSoundness P)
     (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
+    (hQromRewindSound : NativeBoundaryTraceQromExtractorRewindSoundness P)
     (hTraceRangeRows : TraceRangeRowsBindRepresentativeSoundness P)
     (hRangeRows : HybridBase128RangeRowSoundness P)
     (hRangeRowsToNorm : HybridBase128RangeRowsToNormRangeSoundness P)
@@ -2378,15 +2414,16 @@ theorem transparent_view_full_interface_from_decomposed_or_break
         P.roleAuthenticationMaterialSimulatable b view profile ∧
           P.maskFreshnessHolds b view profile ∧
             P.qromScheduleBound b view profile ∧
-              P.parentRootBindsPrivateRoles b profile ∧
-              exists h,
-                P.transparentExtracts b view h ∧
-                  P.extractedRolesComplete b profile h ∧
-                  InFiber P b.context b h ∧
-                    P.localValid b.context h ∧
-                      P.descentConsistent b.context h ∧
-                        P.normRangeValid b h ∧
-                          P.blindingNoiseBounded b policy h) ∨
+              P.qromExtractorRewindBound b view profile ∧
+                P.parentRootBindsPrivateRoles b profile ∧
+                exists h,
+                  P.transparentExtracts b view h ∧
+                    P.extractedRolesComplete b profile h ∧
+                    InFiber P b.context b h ∧
+                      P.localValid b.context h ∧
+                        P.descentConsistent b.context h ∧
+                          P.normRangeValid b h ∧
+                            P.blindingNoiseBounded b policy h) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
   by
     have hTraceAssemblySound : TraceAssemblySoundness P :=
@@ -2438,35 +2475,45 @@ theorem transparent_view_full_interface_from_decomposed_or_break
                                 cases hQromSound hAccept hProjects hProfile with
                                 | inl hQrom =>
                                     cases
-                                        hRangeRows hAccept hProjects hProfile
-                                          hRangePolicy hTransparent hFiber with
-                                    | inl hBoundRangeRows =>
+                                        hQromRewindSound hAccept hProjects
+                                          hProfile with
+                                    | inl hQromRewind =>
                                         cases
-                                            hRangeRowsToNorm hAccept hProjects
+                                            hRangeRows hAccept hProjects
                                               hProfile hRangePolicy
-                                              hTransparent hFiber
-                                              hBoundRangeRows with
-                                        | inl hNorm =>
+                                              hTransparent hFiber with
+                                        | inl hBoundRangeRows =>
                                             cases
-                                                hBlindRows hAccept hProjects
-                                                  hProfile hPolicy
-                                                  hTransparent hFiber with
-                                            | inl hBoundBlindRows =>
+                                                hRangeRowsToNorm hAccept
+                                                  hProjects hProfile
+                                                  hRangePolicy hTransparent
+                                                  hFiber hBoundRangeRows with
+                                            | inl hNorm =>
                                                 cases
-                                                    hBlindRowsToBound hAccept
+                                                    hBlindRows hAccept
                                                       hProjects hProfile
                                                       hPolicy hTransparent
-                                                      hFiber hBoundBlindRows with
-                                                | inl hBlind =>
-                                                    exact Or.inl
-                                                      ⟨hRole, hNoExport,
-                                                        hRoleAuthNoExport,
-                                                        hMaskFresh, hQrom,
-                                                        hParent, h,
-                                                        hTransparent,
-                                                        hComplete, hFiber,
-                                                        hLocal, hDescent,
-                                                        hNorm, hBlind⟩
+                                                      hFiber with
+                                                | inl hBoundBlindRows =>
+                                                    cases
+                                                        hBlindRowsToBound
+                                                          hAccept hProjects
+                                                          hProfile hPolicy
+                                                          hTransparent hFiber
+                                                          hBoundBlindRows with
+                                                    | inl hBlind =>
+                                                        exact Or.inl
+                                                          ⟨hRole, hNoExport,
+                                                            hRoleAuthNoExport,
+                                                            hMaskFresh, hQrom,
+                                                            hQromRewind,
+                                                            hParent, h,
+                                                            hTransparent,
+                                                            hComplete, hFiber,
+                                                            hLocal, hDescent,
+                                                            hNorm, hBlind⟩
+                                                    | inr hBreak =>
+                                                        exact Or.inr hBreak
                                                 | inr hBreak =>
                                                     exact Or.inr hBreak
                                             | inr hBreak =>
@@ -2516,6 +2563,7 @@ theorem transparent_view_full_interface_from_atomic_gates_or_break
     (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
     (hMaskFreshnessSound : MaskFreshnessSoundness P)
     (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
+    (hQromRewindSound : NativeBoundaryTraceQromExtractorRewindSoundness P)
     (hTraceRangeRows : TraceRangeRowsBindRepresentativeSoundness P)
     (hRangeRows : HybridBase128RangeRowSoundness P)
     (hRangeRowsToNorm : HybridBase128RangeRowsToNormRangeSoundness P)
@@ -2537,15 +2585,16 @@ theorem transparent_view_full_interface_from_atomic_gates_or_break
         P.roleAuthenticationMaterialSimulatable b view profile ∧
           P.maskFreshnessHolds b view profile ∧
             P.qromScheduleBound b view profile ∧
-              P.parentRootBindsPrivateRoles b profile ∧
-              exists h,
-                P.transparentExtracts b view h ∧
-                  P.extractedRolesComplete b profile h ∧
-                  InFiber P b.context b h ∧
-                    P.localValid b.context h ∧
-                      P.descentConsistent b.context h ∧
-                        P.normRangeValid b h ∧
-                          P.blindingNoiseBounded b policy h) ∨
+              P.qromExtractorRewindBound b view profile ∧
+                P.parentRootBindsPrivateRoles b profile ∧
+                exists h,
+                  P.transparentExtracts b view h ∧
+                    P.extractedRolesComplete b profile h ∧
+                    InFiber P b.context b h ∧
+                      P.localValid b.context h ∧
+                        P.descentConsistent b.context h ∧
+                          P.normRangeValid b h ∧
+                            P.blindingNoiseBounded b policy h) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
   transparent_view_full_interface_from_decomposed_or_break P
     hParentSound hRoleSound
@@ -2554,7 +2603,7 @@ theorem transparent_view_full_interface_from_atomic_gates_or_break
     hTraceAssemblyExists hTraceAssemblyRoles hTraceAssemblyDerived
     hTraceAssemblyFiber hTraceAssemblyLocal hTraceAssemblyDescent
     hNoExportSound hRoleAuthNoExportSound hMaskFreshnessSound hQromSound
-    hTraceRangeRows hRangeRows hRangeRowsToNorm
+    hQromRewindSound hTraceRangeRows hRangeRows hRangeRowsToNorm
     hTraceBlindRows hBlindRows hBlindRowsToBound
     hAccept hProjects hProfile hRoleComplete hSelected
     hRangePolicy hPolicy
@@ -2582,6 +2631,7 @@ theorem transparent_view_full_interface_from_selected_profile_atomic_gates_or_br
     (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
     (hMaskFreshnessSound : MaskFreshnessSoundness P)
     (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
+    (hQromRewindSound : NativeBoundaryTraceQromExtractorRewindSoundness P)
     (hTraceRangeRows : TraceRangeRowsBindRepresentativeSoundness P)
     (hRangeRows : HybridBase128RangeRowSoundness P)
     (hRangeRowsToNorm : HybridBase128RangeRowsToNormRangeSoundness P)
@@ -2602,23 +2652,24 @@ theorem transparent_view_full_interface_from_selected_profile_atomic_gates_or_br
         P.roleAuthenticationMaterialSimulatable b view profile ∧
           P.maskFreshnessHolds b view profile ∧
             P.qromScheduleBound b view profile ∧
-              P.parentRootBindsPrivateRoles b profile ∧
-              exists h,
-                P.transparentExtracts b view h ∧
-                  P.extractedRolesComplete b profile h ∧
-                  InFiber P b.context b h ∧
-                    P.localValid b.context h ∧
-                      P.descentConsistent b.context h ∧
-                        P.normRangeValid b h ∧
-                          P.blindingNoiseBounded b policy h) ∨
+              P.qromExtractorRewindBound b view profile ∧
+                P.parentRootBindsPrivateRoles b profile ∧
+                exists h,
+                  P.transparentExtracts b view h ∧
+                    P.extractedRolesComplete b profile h ∧
+                    InFiber P b.context b h ∧
+                      P.localValid b.context h ∧
+                        P.descentConsistent b.context h ∧
+                          P.normRangeValid b h ∧
+                            P.blindingNoiseBounded b policy h) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
   transparent_view_full_interface_from_atomic_gates_or_break P
     hParentSound hRoleSound hCommitExtract hDoubleTraceBinding
     hMaskedConsistency hRelationKnowledge hTraceAssemblyExists hTraceAssemblyRoles
     hTraceAssemblyDerived hTraceAssemblyFiber hTraceAssemblyLocal
     hTraceAssemblyDescent hNoExportSound hRoleAuthNoExportSound
-    hMaskFreshnessSound hQromSound hTraceRangeRows hRangeRows
-    hRangeRowsToNorm hTraceBlindRows hBlindRows hBlindRowsToBound
+    hMaskFreshnessSound hQromSound hQromRewindSound hTraceRangeRows
+    hRangeRows hRangeRowsToNorm hTraceBlindRows hBlindRows hBlindRowsToBound
     hAccept hProjects hProfile
     (selected_active_column_profile_role_complete hSelectedProfile)
     (selected_active_column_profile_trace_modes hSelectedProfile)

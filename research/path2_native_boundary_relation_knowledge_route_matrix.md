@@ -63,6 +63,7 @@ ParentTraceCommitmentExtractionSoundness
 ExtractedTraceRelationKnowledgeSoundness
 NoExportSoundness
 NativeBoundaryTraceQromScheduleSoundness
+NativeBoundaryTraceQromExtractorRewindSoundness
 ```
 
 ### 2. MPC-In-The-Head Route

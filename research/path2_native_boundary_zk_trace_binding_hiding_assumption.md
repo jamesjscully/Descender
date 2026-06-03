@@ -126,6 +126,7 @@ It composes:
 - `RoleAuthenticationMaterialNoExportSoundness`;
 - `MaskFreshnessSoundness`;
 - `NativeBoundaryTraceQromScheduleSoundness`;
+- `NativeBoundaryTraceQromExtractorRewindSoundness`;
 - `NormRangeSoundness`;
 - `UsesSelectedHybridBase128RangePolicy(profile, rangePolicy)` for that
   norm/range contract;

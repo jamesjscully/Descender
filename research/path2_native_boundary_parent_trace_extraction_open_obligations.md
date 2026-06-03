@@ -75,9 +75,10 @@ Interface hardening update:
 `MaskedOpeningConsistencySoundness`, and `ParentTraceExtractionSoundness`
 separately. The Rust proof-family interface digest binds matching requirement
 bits, plus `qrom_extractor_rewind_bound_required` and
-`double_trace_binding_break_exported`. Lean now has a theorem-level
-`ParentTraceDoubleBindingSoundness` obligation matching that Rust flag. This is
-a fail-closed interface gate, not a proof of those obligations.
+`double_trace_binding_break_exported`. Lean now has theorem-level
+`NativeBoundaryTraceQromExtractorRewindSoundness` and
+`ParentTraceDoubleBindingSoundness` obligations matching those Rust flags. This
+is a fail-closed interface gate, not a proof of those obligations.
 
 ## Likely Hardest Subclaim
 

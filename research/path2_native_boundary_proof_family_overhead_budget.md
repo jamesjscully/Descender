@@ -44,6 +44,7 @@ For the transparent route to remain the active path:
    ExtractedTraceRelationKnowledgeSoundness
    NoExportSoundness
    NativeBoundaryTraceQromScheduleSoundness
+   NativeBoundaryTraceQromExtractorRewindSoundness
    ```
 
 3. No hidden SHA preimage rows may enter `NativeBoundaryTraceRelationV1`.

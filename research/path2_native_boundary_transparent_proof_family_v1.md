@@ -34,6 +34,7 @@ NoExportSoundness
 RoleAuthenticationMaterialNoExportSoundness
 MaskFreshnessSoundness
 NativeBoundaryTraceQromScheduleSoundness
+NativeBoundaryTraceQromExtractorRewindSoundness
 NormRangeSoundness
 BlindingNoiseBoundSoundness
 ```

@@ -17,6 +17,7 @@ NativeBoundaryZkTraceBindingAndHiding
 NativeBoundaryTraceKnowledgeSoundness
   + NativeBoundaryTraceZeroKnowledge
   + NativeBoundaryTraceQromScheduleSoundness
+  + NativeBoundaryTraceQromExtractorRewindSoundness
   + NormRangeSoundness
   + BlindingNoiseBoundSoundness
 ```
@@ -107,6 +108,16 @@ indices or challenges.
 The symbolic query rows are recorded in
 `research/path2_hash_qrom_assumption_ledger.md`.
 
+`NativeBoundaryTraceQromExtractorRewindSoundness` is separate. It requires:
+
+```text
+QromExtractorRewindBound(b, view, profile)
+```
+
+or a named break. Schedule binding fixes what is hashed before challenges are
+drawn; extractor-rewind soundness accounts for the measure-and-reprogram or
+forking loss paid by the full-trace extractor for that exact schedule.
+
 ## Range And Blinding
 
 The proof family must also supply:
@@ -146,8 +157,10 @@ same extracted trace.
 - `NativeBoundaryTraceKnowledgeSoundness`
 - `NativeBoundaryTraceZeroKnowledge`
 - `NativeBoundaryTraceQromScheduleSoundness`
+- `NativeBoundaryTraceQromExtractorRewindSoundness`
 - `NativeBoundaryZkTraceBindingAndHiding`
 - `native_boundary_trace_qrom_schedule_bound_or_break`
+- `native_boundary_trace_qrom_extractor_rewind_bound_or_break`
 - `RoleAuthenticationMaterialNoExportSoundness`
 - `MaskFreshnessSoundness`
 
@@ -157,6 +170,7 @@ and `transparent_view_full_interface_or_break` now includes:
 UsesSelectedTraceKnowledgeModes(profile)
 P.extractedRolesComplete b profile h
 P.qromScheduleBound b view profile
+P.qromExtractorRewindBound b view profile
 ```
 
 The preferred active closure adapter is now:
@@ -233,12 +247,15 @@ Clearing `lean_selected_profile_atomic_endpoint_present` rejects because the
 active closure target is the selected-profile theorem
 `transparent_view_full_interface_from_selected_profile_atomic_gates_or_break`,
 not the looser atomic adapter alone.
+Clearing `qrom_extractor_rewind_bound_required` rejects because the active Lean
+endpoint now consumes `NativeBoundaryTraceQromExtractorRewindSoundness` as a
+distinct proof-family obligation, not as part of the schedule predicate.
 
 ## Closure Criterion
 
 The proof side can treat this assumption as closed only after we decide one of:
 
-1. A concrete proof family supplies all five components above with acceptable
+1. A concrete proof family supplies all six components above with acceptable
    assumptions.
 2. We intentionally keep `NativeBoundaryZkTraceBindingAndHiding` as one named
    cryptographic assumption and document that the deployability claim depends
