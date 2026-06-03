@@ -6441,7 +6441,11 @@ fn lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route
         "ReviewedFq12NativeRepresentativeDigestFrameWitnessByteCertificate",
         "ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource",
         "assembly_frame_source_of_digest_frame_witness_byte_source",
+        "ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeWitnessBytePackagedSourceRouteInputs",
+        "ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeWitnessBytePackagedSourceRouteInputs.toDigestFrameWitnessPackagedInputs",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_witness_byte_packaged_source_route_inputs",
         "reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_inputs",
+        "ReviewedFq12FullNativeOpeningCanonicalRepresentativeSource",
         "ReviewedFq12SelectedRustAssemblyRepresentativeFrameSource",
         "ReviewedFq12FullNativeOpeningRepresentativeDigestFunctionalitySource",
     ]

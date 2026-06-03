@@ -4211,6 +4211,83 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_d
     P I.toSharedRepresentativeFramePackagedInputs
 
 /--
+Direct-assembly package using the Rust digest-frame witness bytes plus a
+canonical full-opening representative source.
+
+This is one step closer to the concrete Rust/model instantiation than the raw
+digest-functionality package: the byte source discharges the assembly-frame
+side, while canonical representative construction discharges representative
+digest functionality.
+-/
+structure ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeWitnessBytePackagedSourceRouteInputs
+    (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)
+    (RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser)
+    (WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
+    (P : Predicates) where
+  roleRootLiftSource :
+    ReviewedFq12RoleRootFunctionalLiftSource P
+  selectedSource :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+      FieldParser RouteParser P
+  directAssemblyBinding :
+    ReviewedFq12ConcreteAssemblyFieldBindingOrBreak P
+  localModelSource :
+    ReviewedFq12AssemblyCompatibilityLocalModelSource P
+  canonicalRepresentativeSource :
+    ReviewedFq12FullNativeOpeningCanonicalRepresentativeSource P
+  nativeDigestFrameWitnessByteSource :
+    ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource
+      WitnessParser P
+
+/--
+Convert canonical representative plus Rust witness bytes into the
+digest-functionality/witness package.
+-/
+def ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeWitnessBytePackagedSourceRouteInputs.toDigestFrameWitnessPackagedInputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (I :
+      ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeWitnessBytePackagedSourceRouteInputs
+        FieldParser RouteParser WitnessParser P) :
+    ReviewedFq12SelectedRustDirectAssemblyDigestFrameWitnessPackagedSourceRouteInputs
+      FieldParser RouteParser P :=
+  let representativeFrameSource :
+      ReviewedFq12FullNativeOpeningRepresentativeFrameSource P :=
+    representative_frame_source_of_canonical_representative_source
+      I.canonicalRepresentativeSource
+  { roleRootLiftSource := I.roleRootLiftSource
+    selectedSource := I.selectedSource
+    directAssemblyBinding := I.directAssemblyBinding
+    localModelSource := I.localModelSource
+    representativeDigestFunctionality :=
+      representative_digest_functionality_of_representative_frame_source
+        representativeFrameSource
+    nativeDigestFrameWitnessSource :=
+      assembly_frame_source_of_digest_frame_witness_byte_source
+        I.nativeDigestFrameWitnessByteSource }
+
+/--
+P2FS-001 closure from canonical representative construction, Rust digest-frame
+witness bytes, direct assembly binding, and source-route bytes.
+-/
+theorem reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_witness_byte_packaged_source_route_inputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (I :
+      ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeWitnessBytePackagedSourceRouteInputs
+        FieldParser RouteParser WitnessParser P) :
+    ReviewedFq12ExtractionCertificateSoundness P :=
+  reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_inputs
+    P I.toDigestFrameWitnessPackagedInputs
+
+/--
 Selected-Rust packaged source-route adapter using the existing concrete
 field/local source records for the local model.
 
