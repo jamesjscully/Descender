@@ -506,7 +506,9 @@ Named breaks:
   scheduled trace row count, and any in-range row that does not match
   `path2_transparent_query_row_index`, which derives each query row from the
   accepted public view, transparent transcript digest, active query-schedule
-  digest, and query index. It also checks each masked opening's
+  digest, and query index. The standalone manifest verifier now also enforces
+  canonical query/role record order, so a semantic manifest has one digest
+  encoding and record permutations reject. It also checks each masked opening's
   `mask_domain_digest` against
   `path2_transparent_query_opening_mask_domain_digest`, which binds the
   accepted public view directly, including leaf/proof binding, matrix context,

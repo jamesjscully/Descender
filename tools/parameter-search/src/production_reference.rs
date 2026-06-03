@@ -10668,6 +10668,14 @@ pub fn verify_path2_transparent_query_opening_manifest(
         }
     }
 
+    for (index, record) in manifest.records.iter().enumerate() {
+        let expected_query_index = (index / PATH2_TWO_VIEW_COLUMN_PROFILE_ENTRY_COUNT) as u16;
+        let expected_entry = profile.entries[index % PATH2_TWO_VIEW_COLUMN_PROFILE_ENTRY_COUNT];
+        if record.query_index != expected_query_index || record.role_id != expected_entry.role_id {
+            return Err("Path 2 transparent query opening manifest order mismatch".to_string());
+        }
+    }
+
     for query_index in 0..manifest.query_count {
         for entry in profile.entries {
             if !query_role_pairs.contains(&(query_index, entry.role_id)) {
@@ -32738,6 +32746,13 @@ mod tests {
         assert_eq!(
             verify_path2_transparent_query_opening_manifest(&duplicate_role).unwrap_err(),
             "Path 2 transparent query opening duplicate query role"
+        );
+
+        let mut permuted = manifest.clone();
+        permuted.records.swap(1, 2);
+        assert_eq!(
+            verify_path2_transparent_query_opening_manifest(&permuted).unwrap_err(),
+            "Path 2 transparent query opening manifest order mismatch"
         );
 
         let mut row_mismatch = manifest.clone();
