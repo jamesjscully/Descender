@@ -10498,6 +10498,39 @@ pub fn path2_transparent_query_opening_mask_domain_digest(
     );
     append_frame(
         &mut frame,
+        b"leaf_context_digest",
+        &public_view.leaf_context_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"creation_proof_binding_digest",
+        &public_view.creation_proof_binding_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"matrix_domain_transcript_digest",
+        &public_view.matrix_domain_transcript_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"aggregation_context_digest",
+        &public_view.aggregation_context_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"trace_commitment_root",
+        &public_view.trace_commitment_root,
+    );
+    append_frame(
+        &mut frame,
+        b"constraint_commitment_root",
+        &public_view.constraint_commitment_root,
+    );
+    for value in public_view.masked_projection {
+        append_frame(&mut frame, b"masked_projection", &value.to_le_bytes());
+    }
+    append_frame(
+        &mut frame,
         b"column_profile",
         &public_view.column_profile.to_le_bytes(),
     );
@@ -10511,7 +10544,17 @@ pub fn path2_transparent_query_opening_mask_domain_digest(
         b"query_count",
         &public_view.query_count.to_le_bytes(),
     );
+    append_frame(
+        &mut frame,
+        b"public_view_query_index",
+        &public_view.query_index.to_le_bytes(),
+    );
     append_frame(&mut frame, b"role_id", &[record.role_id]);
+    append_frame(
+        &mut frame,
+        b"profile_mask_domain_id",
+        &entry.mask_domain_id.to_le_bytes(),
+    );
     append_frame(
         &mut frame,
         b"column_set_id",
@@ -32624,6 +32667,17 @@ mod tests {
             verify_path2_transparent_query_opening_manifest_for_public_view(
                 &public_view,
                 &rebound_mask_domain,
+            )
+            .unwrap_err(),
+            "Path 2 transparent query opening mask domain digest mismatch"
+        );
+
+        let mut stale_public_view_context = public_view;
+        stale_public_view_context.leaf_context_digest[0] ^= 1;
+        assert_eq!(
+            verify_path2_transparent_query_opening_manifest_for_public_view(
+                &stale_public_view_context,
+                &manifest,
             )
             .unwrap_err(),
             "Path 2 transparent query opening mask domain digest mismatch"

@@ -509,8 +509,12 @@ Named breaks:
   digest, and query index. It also checks each masked opening's
   `mask_domain_digest` against
   `path2_transparent_query_opening_mask_domain_digest`, which binds the
-  accepted public view, transcript digest, role, column set, row, query, and
-  local mask-domain id. The boundary KAT covers this out-of-trace-row
+  accepted public view directly, including leaf/proof binding, matrix context,
+  masked projection, roots, public-view query index, profile mask-domain id,
+  role, column set, row, record query index, and local mask-domain id. The
+  manifest KAT now also rejects stale-transcript public-view rebinding at the
+  mask-domain check instead of relying on earlier transcript validation. The
+  boundary KAT covers this out-of-trace-row
   negative at the proof-byte envelope constructor, manifest-aware boundary, and
   proof-byte envelope verifier, while the manifest KAT covers mask-domain
   digest rebinding. Transparent public-view and payload digest
