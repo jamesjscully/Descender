@@ -43,6 +43,9 @@ TraceAssemblySoundness
 `ParentTraceExtractionSoundness` is active-path specific: Lean now requires
 `UsesSelectedTraceKnowledgeModes(profile)`, selecting `fullTraceExtractable`
 and `fullWitnessRelationKnowledge` with full native-boundary relation coverage.
+For the selected active profile, the same predicate also requires the
+native-boundary relation row floor `176`, matching the Rust
+`PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_WORKING` constant.
 `proximityWithWitnessBridge` remains a supported redesign shape, not the
 currently selected Rust profile.
 
@@ -213,6 +216,7 @@ mask_freshness_required = true
 blinding_noise_policy_id = 1
 blinding_noise_centered_bound = 2048
 sis_role_matrix_rows = 64
+native_boundary_relation_row_floor = 176
 parent_trace_commitment_extractable_required = true
 extracted_trace_relation_knowledge_required = true
 masked_opening_consistency_required = true
@@ -237,6 +241,9 @@ double_trace_binding_break_exported = true
 
 Negative controls reject clearing any of these flags or drifting either
 blinding/noise policy field before the transparent verifier handoff. Clearing
+or lowering the native-boundary relation row floor rejects because the active
+profile must use the working 176-row native-boundary relation scale rather than
+a one-row-per-class placeholder. Clearing
 any decomposed assembly/range/blinding row flag rejects because the atomic Lean
 endpoint consumes those subclaims directly, including the same-trace gates that
 tie row facts to the extracted trace used for representative assembly. Clearing

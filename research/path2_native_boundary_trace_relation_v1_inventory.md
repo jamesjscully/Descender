@@ -1,6 +1,7 @@
 # Path 2 Native Boundary Trace Relation V1 Inventory
 
-Status: relation inventory pinned; Lean row-class coverage gate applied; exact row indices pending.
+Status: relation inventory pinned; Lean row-class coverage and selected row
+floor gates applied; exact row indices pending.
 
 Purpose: make `TraceRelationValid(b, profile, trace)` concrete enough to judge
 whether a compact transparent proof family can plausibly supply
@@ -51,6 +52,17 @@ therefore cannot close the active relation-knowledge theorem with only the old
 66-row semantic core, or with a profile that omits mask-consistency,
 role-restriction, opening-tuple account-binding, checked-core compatibility,
 lifecycle/context, or proof-system bookkeeping rows.
+
+For the selected active profile, `UsesSelectedTraceKnowledgeModes(profile)` now
+also requires:
+
+```text
+TraceRelationMeetsSelectedNativeBoundaryRowFloor(profile.relationProfile)
+selectedNativeBoundaryTraceRelationRowFloor = 176
+```
+
+This is a working lower-bound gate, not an exact final row layout. It prevents
+closing the active theorem with a one-row-per-class placeholder relation.
 
 ## Row Inventory
 

@@ -527,6 +527,18 @@ def TraceRelationCoversNativeBoundary
                 ConstraintClassCovered relation
                   TraceConstraintClass.proofSystemBookkeepingRow
 
+/-- Conservative selected working row floor for the active native-boundary relation. -/
+def selectedNativeBoundaryTraceRelationRowFloor : Nat :=
+  176
+
+/--
+The selected active profile must use the native-boundary relation scale, not a
+one-row-per-class placeholder relation.
+-/
+def TraceRelationMeetsSelectedNativeBoundaryRowFloor
+    (relation : TraceRelationProfile) : Prop :=
+  selectedNativeBoundaryTraceRelationRowFloor <= relation.rowCount
+
 /-- One role/column entry in a native-boundary column profile. -/
 structure ColumnProfileEntry where
   roleId : RoleId
@@ -846,7 +858,8 @@ def selectedRelationKnowledgeMode : RelationKnowledgeMode :=
 def UsesSelectedTraceKnowledgeModes (profile : ColumnProfile) : Prop :=
   profile.extractionMode = selectedTraceExtractionMode ∧
     profile.relationKnowledgeMode = selectedRelationKnowledgeMode ∧
-      TraceRelationCoversNativeBoundary profile.relationProfile
+      TraceRelationCoversNativeBoundary profile.relationProfile ∧
+        TraceRelationMeetsSelectedNativeBoundaryRowFloor profile.relationProfile
 
 theorem selected_trace_knowledge_modes_support_full_trace
     {profile : ColumnProfile}
@@ -858,7 +871,13 @@ theorem selected_trace_knowledge_modes_support_relation_knowledge
     {profile : ColumnProfile}
     (h : UsesSelectedTraceKnowledgeModes profile) :
     SupportsRelationKnowledge profile :=
-  ⟨Or.inr (Or.inr h.2.1), h.2.2⟩
+  ⟨Or.inr (Or.inr h.2.1), h.2.2.1⟩
+
+theorem selected_trace_knowledge_modes_relation_row_floor
+    {profile : ColumnProfile}
+    (h : UsesSelectedTraceKnowledgeModes profile) :
+    TraceRelationMeetsSelectedNativeBoundaryRowFloor profile.relationProfile :=
+  h.2.2.2
 
 /-- The active Rust two-view column profile id mirrored at theorem level. -/
 def selectedTwoViewColumnProfileId : Nat :=

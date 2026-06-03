@@ -31,7 +31,9 @@ which pins the active profile to:
 
 - `TraceExtractionMode.fullTraceExtractable`;
 - `RelationKnowledgeMode.fullWitnessRelationKnowledge`;
-- full `TraceRelationCoversNativeBoundary` coverage.
+- full `TraceRelationCoversNativeBoundary` coverage;
+- `TraceRelationMeetsSelectedNativeBoundaryRowFloor`, with selected floor
+  `176` rows.
 
 The broader helper predicate `SupportsRelationKnowledge(profile)` accepts:
 
@@ -205,6 +207,7 @@ digest and transcript schedule checks remain outside the hidden relation.
 - `SupportsRelationKnowledge`
 - `TraceRelationProfile`
 - `TraceRelationCoversNativeBoundary`
+- `TraceRelationMeetsSelectedNativeBoundaryRowFloor`
 
 and `ParentTraceExtractionSoundness` requires both:
 

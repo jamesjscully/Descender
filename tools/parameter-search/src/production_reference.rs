@@ -1498,6 +1498,7 @@ pub struct Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
     pub column_profile: u16,
     pub trace_column_manifest_digest: [u8; DIGEST_BYTES],
     pub query_schedule_digest: [u8; DIGEST_BYTES],
+    pub native_boundary_relation_row_floor: u16,
     pub knowledge_soundness_mode: u16,
     pub zero_knowledge_mode: u16,
     pub qrom_schedule_mode: u16,
@@ -10050,6 +10051,7 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1()
         column_profile: PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
         trace_column_manifest_digest: path2_native_boundary_trace_column_manifest_v1_digest()?,
         query_schedule_digest: path2_transparent_query_schedule_v1_digest()?,
+        native_boundary_relation_row_floor: PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_WORKING,
         knowledge_soundness_mode: PATH2_NATIVE_BOUNDARY_TRACE_KNOWLEDGE_FULL_TRACE_ROLE_COMPLETE,
         zero_knowledge_mode: PATH2_NATIVE_BOUNDARY_TRACE_ZK_MASKED_OR_SIMULATED_OPENINGS,
         qrom_schedule_mode: PATH2_NATIVE_BOUNDARY_TRACE_QROM_NATIVE_BOUNDARY_SCHEDULE,
@@ -10125,6 +10127,14 @@ pub fn verify_path2_native_boundary_trace_proof_family_interface(
     if interface.query_schedule_digest != path2_transparent_query_schedule_v1_digest()? {
         return Err(
             "Path 2 native-boundary trace proof-family interface schedule mismatch".to_string(),
+        );
+    }
+    if interface.native_boundary_relation_row_floor
+        != PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_WORKING
+    {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface relation row floor mismatch"
+                .to_string(),
         );
     }
     if interface.knowledge_soundness_mode
@@ -10411,6 +10421,11 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
         &mut frame,
         b"query_schedule_digest",
         &interface.query_schedule_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"native_boundary_relation_row_floor",
+        interface.native_boundary_relation_row_floor as u64,
     );
     append_u64(
         &mut frame,
@@ -33981,6 +33996,10 @@ mod tests {
         assert!(interface.no_raw_hidden_openings);
         assert!(interface.qrom_ledger_bound);
         assert_eq!(
+            interface.native_boundary_relation_row_floor,
+            PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_WORKING
+        );
+        assert_eq!(
             interface.fallback_threshold_bytes,
             PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES
         );
@@ -34034,6 +34053,14 @@ mod tests {
         assert_eq!(
             verify_path2_native_boundary_trace_proof_family_interface(&wrong_sis_rows).unwrap_err(),
             "Path 2 native-boundary trace proof-family interface SIS role rows mismatch"
+        );
+
+        let mut wrong_relation_row_floor = interface.clone();
+        wrong_relation_row_floor.native_boundary_relation_row_floor -= 1;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&wrong_relation_row_floor)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface relation row floor mismatch"
         );
 
         let mut no_opening_account_rows = interface.clone();

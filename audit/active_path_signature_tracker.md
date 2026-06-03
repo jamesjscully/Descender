@@ -303,6 +303,9 @@ double-binding theorem as an unused parameter.
 Lean now also requires `UsesSelectedTraceKnowledgeModes(profile)` for the
 parent-trace extraction contract, aligning the proof target with the Rust
 profile's `fullTraceExtractable` and `fullWitnessRelationKnowledge` modes.
+That selected trace-mode gate now also requires
+`TraceRelationMeetsSelectedNativeBoundaryRowFloor`, with Lean and Rust both
+pinning the active working native-boundary relation floor to `176` rows.
 The final Lean endpoint now routes through `ParentTraceExtractionSoundness` and
 `TraceAssemblySoundness` directly; the old `TwoViewExtractionSoundness` surface
 is no longer enough to discharge `transparent_view_full_interface_or_break`.
