@@ -69,7 +69,8 @@ The final wrapper composes:
 
 ```text
 RoleRestrictionSoundness
-+ TwoViewExtractionSoundness
++ ParentTraceExtractionSoundness
++ TraceAssemblySoundness
 + NoExportSoundness
 + NormRangeSoundness
 ```

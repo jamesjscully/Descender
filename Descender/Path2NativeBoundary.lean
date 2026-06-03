@@ -1458,9 +1458,7 @@ def NativeBoundaryTraceKnowledgeSoundness (P : Predicates) : Prop :=
         ExtractedTraceRelationKnowledgeSoundness P ∧
           MaskedOpeningConsistencySoundness P ∧
             ParentTraceExtractionSoundness P ∧
-              TraceAssemblySoundness P ∧
-                TwoViewExtractionSoundness P ∧
-                  HiddenExtractorRoleCompletenessSoundness P
+              TraceAssemblySoundness P
 
 /--
 The decomposed full-trace extractor assumptions imply the older two-view
@@ -1529,8 +1527,8 @@ theorem transparent_view_authenticates_extracts_no_export_or_break
     (P : Predicates)
     (hParentSound : ParentRootRoleBindingSoundness P)
     (hRoleSound : RoleRestrictionSoundness P)
-    (hExtractSound : TwoViewExtractionSoundness P)
-    (hExtractorCompleteSound : HiddenExtractorRoleCompletenessSoundness P)
+    (hTraceExtractSound : ParentTraceExtractionSoundness P)
+    (hTraceAssemblySound : TraceAssemblySoundness P)
     (hNoExportSound : NoExportSoundness P)
     (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
     (hMaskFreshnessSound : MaskFreshnessSoundness P)
@@ -1539,7 +1537,8 @@ theorem transparent_view_authenticates_extracts_no_export_or_break
     (hAccept : P.transparentAccepts b view)
     (hProjects : TransparentViewProjectsFrom b view)
     (hProfile : ColumnProfileCompatibleWithBoundary b view profile)
-    (hRoleComplete : ProfileRoleComplete profile) :
+    (hRoleComplete : ProfileRoleComplete profile)
+    (hSelected : UsesSelectedTraceKnowledgeModes profile) :
     (P.roleRestrictionsAuthenticate b profile ∧
       P.noExportHolds b view profile ∧
         P.roleAuthenticationMaterialSimulatable b view profile ∧
@@ -1552,27 +1551,33 @@ theorem transparent_view_authenticates_extracts_no_export_or_break
                   P.localValid b.context h ∧
                     P.descentConsistent b.context h) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) := by
-  cases
-      transparent_view_authenticates_roles_and_extracts_or_break
-        P hParentSound hRoleSound hExtractSound
-        hAccept hProjects hProfile with
-  | inl hRoleAndExtract =>
-      cases hNoExportSound hAccept hProjects hProfile with
-      | inl hNoExport =>
-          cases hRoleAuthNoExportSound hAccept hProjects hProfile with
-          | inl hRoleAuthNoExport =>
-              cases hMaskFreshnessSound hAccept hProjects hProfile with
-              | inl hMaskFresh =>
-                  rcases hRoleAndExtract.2.2 with
-                    ⟨h, hTransparent, hFiber, hLocal, hDescent⟩
-                  cases
-                      hExtractorCompleteSound hAccept hProjects hProfile
-                        hRoleComplete hTransparent hFiber with
-                  | inl hComplete =>
-                      exact Or.inl
-                        ⟨hRoleAndExtract.1, hNoExport, hRoleAuthNoExport,
-                          hMaskFresh, hRoleAndExtract.2.1, h, hTransparent,
-                          hComplete, hFiber, hLocal, hDescent⟩
+  cases hParentSound hAccept hProjects hProfile with
+  | inl hParent =>
+      cases hRoleSound hAccept hProjects hProfile with
+      | inl hRole =>
+          cases
+              trace_extraction_implies_hidden_representative_or_break
+                P hTraceExtractSound hTraceAssemblySound
+                hAccept hProjects hProfile hRoleComplete hSelected with
+          | inl hTrace =>
+              rcases hTrace with
+                ⟨_trace, _hExtractsTrace, _hOpens, _hMasked,
+                  _hRelation, hAssembled⟩
+              rcases hAssembled with
+                ⟨h, _hTraceAssembles, hTransparent, hComplete,
+                  hFiber, hLocal, hDescent⟩
+              cases hNoExportSound hAccept hProjects hProfile with
+              | inl hNoExport =>
+                  cases hRoleAuthNoExportSound hAccept hProjects hProfile with
+                  | inl hRoleAuthNoExport =>
+                      cases hMaskFreshnessSound hAccept hProjects hProfile with
+                      | inl hMaskFresh =>
+                          exact Or.inl
+                            ⟨hRole, hNoExport, hRoleAuthNoExport,
+                              hMaskFresh, hParent, h, hTransparent,
+                              hComplete, hFiber, hLocal, hDescent⟩
+                      | inr hBreak =>
+                          exact Or.inr hBreak
                   | inr hBreak =>
                       exact Or.inr hBreak
               | inr hBreak =>
@@ -1594,8 +1599,8 @@ theorem transparent_view_full_interface_or_break
     (P : Predicates)
     (hParentSound : ParentRootRoleBindingSoundness P)
     (hRoleSound : RoleRestrictionSoundness P)
-    (hExtractSound : TwoViewExtractionSoundness P)
-    (hExtractorCompleteSound : HiddenExtractorRoleCompletenessSoundness P)
+    (hTraceExtractSound : ParentTraceExtractionSoundness P)
+    (hTraceAssemblySound : TraceAssemblySoundness P)
     (hNoExportSound : NoExportSoundness P)
     (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
     (hMaskFreshnessSound : MaskFreshnessSoundness P)
@@ -1608,6 +1613,7 @@ theorem transparent_view_full_interface_or_break
     (hProjects : TransparentViewProjectsFrom b view)
     (hProfile : ColumnProfileCompatibleWithBoundary b view profile)
     (hRoleComplete : ProfileRoleComplete profile)
+    (hSelected : UsesSelectedTraceKnowledgeModes profile)
     (hMode : UsesSelectedNormRangeMode profile)
     (hPolicy : UsesSelectedBlindingNoisePolicy policy) :
     (P.roleRestrictionsAuthenticate b profile ∧
@@ -1627,10 +1633,10 @@ theorem transparent_view_full_interface_or_break
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) := by
   cases
       transparent_view_authenticates_extracts_no_export_or_break
-        P hParentSound hRoleSound hExtractSound
-        hExtractorCompleteSound hNoExportSound
+        P hParentSound hRoleSound hTraceExtractSound
+        hTraceAssemblySound hNoExportSound
         hRoleAuthNoExportSound hMaskFreshnessSound
-        hAccept hProjects hProfile hRoleComplete with
+        hAccept hProjects hProfile hRoleComplete hSelected with
   | inl hAll =>
       rcases hAll with
         ⟨hRole, hNoExport, hRoleAuthNoExport, hMaskFresh, hParent,

@@ -292,6 +292,9 @@ rewind accounting and double-trace binding-break export.
 Lean now also requires `UsesSelectedTraceKnowledgeModes(profile)` for the
 parent-trace extraction contract, aligning the proof target with the Rust
 profile's `fullTraceExtractable` and `fullWitnessRelationKnowledge` modes.
+The final Lean endpoint now routes through `ParentTraceExtractionSoundness` and
+`TraceAssemblySoundness` directly; the old `TwoViewExtractionSoundness` surface
+is no longer enough to discharge `transparent_view_full_interface_or_break`.
 
 ## Findings
 

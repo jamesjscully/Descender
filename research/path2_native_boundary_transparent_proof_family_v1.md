@@ -26,6 +26,8 @@ The proof family must provide:
 ```text
 ParentTraceCommitmentExtractionSoundness
 ExtractedTraceRelationKnowledgeSoundness
+MaskedOpeningConsistencySoundness
+ParentTraceExtractionSoundness
 TraceAssemblySoundness
 NoExportSoundness
 RoleAuthenticationMaterialNoExportSoundness
@@ -44,9 +46,9 @@ The active profile must satisfy:
 
 ```text
 ProfileRoleComplete(profile)
-SupportsFullTraceExtraction(profile)
-SupportsRelationKnowledge(profile)
+UsesSelectedTraceKnowledgeModes(profile)
 UsesSelectedNormRangeMode(profile)
+UsesSelectedBlindingNoisePolicy(policy)
 ```
 
 Rejected modes:

@@ -70,8 +70,9 @@ Next: define the minimum theorem interface for the active proof family:
 `NativeBoundaryTraceQromSchedule`.
 Evidence:
 `research/path2_native_boundary_hidden_extractor_view.md` pins the complete
-extractor output obligation and the Lean interface now includes
-`HiddenExtractorRoleCompletenessSoundness`.
+extractor output obligation and the Lean endpoint now derives role-complete
+hidden representatives through `ParentTraceExtractionSoundness` plus
+`TraceAssemblySoundness`.
 `research/path2_native_boundary_knowledge_soundness_decomposition.md` splits
 knowledge soundness into parent-trace commitment extraction, extracted-trace
 relation knowledge, masked-opening consistency, the composed parent-trace

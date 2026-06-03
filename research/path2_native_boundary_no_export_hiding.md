@@ -160,7 +160,8 @@ interface level:
 
 ```text
 RoleRestrictionSoundness
-+ TwoViewExtractionSoundness
++ ParentTraceExtractionSoundness
++ TraceAssemblySoundness
 + NoExportSoundness
 RoleAuthenticationMaterialNoExportSoundness
 MaskFreshnessSoundness

@@ -36,8 +36,6 @@ ExtractedTraceRelationKnowledgeSoundness
 MaskedOpeningConsistencySoundness
 ParentTraceExtractionSoundness
 TraceAssemblySoundness
-TwoViewExtractionSoundness
-HiddenExtractorRoleCompletenessSoundness
 ```
 
 `ParentTraceExtractionSoundness` is active-path specific: Lean now requires
@@ -139,9 +137,14 @@ base-128 hidden-role witnesses for SIS/range binding.
 and `transparent_view_full_interface_or_break` now includes:
 
 ```text
+UsesSelectedTraceKnowledgeModes(profile)
 P.extractedRolesComplete b profile h
 P.qromScheduleBound b view profile
 ```
+
+The final interface now routes through `ParentTraceExtractionSoundness` and
+`TraceAssemblySoundness`; the older two-view extractor surface is no longer an
+independent shortcut for the active endpoint.
 
 The deeper knowledge-soundness split is recorded in
 `research/path2_native_boundary_knowledge_soundness_decomposition.md`.

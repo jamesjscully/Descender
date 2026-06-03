@@ -105,12 +105,13 @@ the predicate.
 
 ## Composition Status
 
-`RoleRestrictionSoundness` is now integrated with the native-boundary two-view
+`RoleRestrictionSoundness` is now integrated with the selected full-trace
 extraction theorem at the Lean interface level:
 
 ```text
 RoleRestrictionSoundness
-+ TwoViewExtractionSoundness
++ ParentTraceExtractionSoundness
++ TraceAssemblySoundness
   =>
 accepted transparent proof extracts h in Fiber(B_c, b)
 whose role components are authenticated restrictions of p_section_root(b)

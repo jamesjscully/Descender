@@ -175,14 +175,12 @@ proximity/list-decoding/extractor theorem before it is usable.
 - `Predicates.extractedRolesComplete`
 - `ParentTraceExtractionSoundness`
 - `TraceAssemblySoundness`
-- `HiddenExtractorRoleCompletenessSoundness`
-- `hidden_extractor_roles_complete_or_break`
+- `trace_extraction_implies_hidden_representative_or_break`
 
 The composed theorem `transparent_view_full_interface_or_break` now requires
-and returns `P.extractedRolesComplete b profile h`.
-The bridge theorem
-`trace_extraction_implies_hidden_representative_or_break` states the intended
-route from a full extracted trace to a role-complete hidden representative.
+`UsesSelectedTraceKnowledgeModes(profile)` and routes through
+`ParentTraceExtractionSoundness` plus `TraceAssemblySoundness` before returning
+`P.extractedRolesComplete b profile h`.
 
 ## Non-Claims
 

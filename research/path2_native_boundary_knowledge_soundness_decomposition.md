@@ -20,15 +20,14 @@ ParentRootRoleBindingSoundness
   + MaskedOpeningConsistencySoundness
   + ParentTraceExtractionSoundness
   + TraceAssemblySoundness
-  + TwoViewExtractionSoundness
-  + HiddenExtractorRoleCompletenessSoundness
 ```
 
 The first two claims bind the public handles. The next three split the proof
 family's hard extractor obligation into commitment extraction, relation
 knowledge, and masked-opening consistency. `ParentTraceExtractionSoundness` is
-the composed contract produced from those subclaims. The final three preserve
-the older hidden-representative theorem surface.
+the composed contract produced from those subclaims. `TraceAssemblySoundness`
+then preserves the hidden-representative theorem surface; the active endpoint
+no longer accepts an independent two-view extractor shortcut.
 
 ## ParentTraceExtractionSoundness
 

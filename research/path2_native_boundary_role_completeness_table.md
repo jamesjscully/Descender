@@ -92,8 +92,9 @@ from satisfying `ExtractedRolesComplete` with a partial profile.
 
 Done:
 `Descender/Path2NativeBoundary.lean` now defines `MandatoryRoleCovered` and
-`ProfileRoleComplete`. `HiddenExtractorRoleCompletenessSoundness` and
-`TraceAssemblySoundness` now require `ProfileRoleComplete profile`, so a partial
+`ProfileRoleComplete`. The final active endpoint now routes through
+`ParentTraceExtractionSoundness` and `TraceAssemblySoundness`, and
+`TraceAssemblySoundness` requires `ProfileRoleComplete profile`, so a partial
 profile cannot satisfy the active extractor-completeness surface.
 
 ## Non-Claims

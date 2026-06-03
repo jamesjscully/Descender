@@ -71,8 +71,7 @@ For an accepted proof with a full extracted trace:
 TransparentAccepts(b, view)
 TransparentViewProjectsFrom(b, view)
 ColumnProfileCompatibleWithBoundary(b, view, profile)
-SupportsFullTraceExtraction(profile)
-SupportsRelationKnowledge(profile)
+UsesSelectedTraceKnowledgeModes(profile)
 ```
 
 the proof family must establish:
@@ -210,8 +209,7 @@ digest and transcript schedule checks remain outside the hidden relation.
 and `ParentTraceExtractionSoundness` requires both:
 
 ```text
-SupportsFullTraceExtraction(profile)
-SupportsRelationKnowledge(profile)
+UsesSelectedTraceKnowledgeModes(profile)
 ```
 
 ## Non-Claims
