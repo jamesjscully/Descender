@@ -240,6 +240,8 @@ pub const PATH2_REVIEWED_FQ12_NATIVE_REPRESENTATIVE_ASSEMBLY_CERTIFICATE_DOMAIN:
     "DESCENDER_PATH2_REVIEWED_FQ12_NATIVE_REPRESENTATIVE_ASSEMBLY_CERTIFICATE_V1";
 pub const PATH2_REVIEWED_FQ12_NATIVE_REPRESENTATIVE_DIGEST_FRAME_WITNESS_DOMAIN: &str =
     "DESCENDER_PATH2_REVIEWED_FQ12_NATIVE_REPRESENTATIVE_DIGEST_FRAME_WITNESS_V1";
+pub const PATH2_REVIEWED_FQ12_FULL_NATIVE_OPENING_CANONICAL_REPRESENTATIVE_WITNESS_DOMAIN: &str =
+    "DESCENDER_PATH2_REVIEWED_FQ12_FULL_NATIVE_OPENING_CANONICAL_REPRESENTATIVE_WITNESS_V1";
 pub const PATH2_REVIEWED_FQ12_EXTRACTION_COMPATIBILITY_CERTIFICATE_DOMAIN: &str =
     "DESCENDER_PATH2_REVIEWED_FQ12_EXTRACTION_COMPATIBILITY_CERTIFICATE_V1";
 pub const PATH2_REVIEWED_FQ12_FULL_OPENING_FIELD_EVIDENCE_DOMAIN: &str =
@@ -1260,6 +1262,28 @@ pub struct Path2ReviewedFq12NativeRepresentativeDigestFrameWitnessV1 {
     pub gauge_digest: [u8; DIGEST_BYTES],
     pub representative_digest: [u8; DIGEST_BYTES],
     pub digest_frame_witness_digest: [u8; DIGEST_BYTES],
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessV1 {
+    pub schema: &'static str,
+    pub role_lift_certificate_digest: [u8; DIGEST_BYTES],
+    pub assembly_certificate_digest: [u8; DIGEST_BYTES],
+    pub native_boundary_digest: [u8; DIGEST_BYTES],
+    pub native_role_root_commitment: [u8; DIGEST_BYTES],
+    pub full_opening_digest: [u8; DIGEST_BYTES],
+    pub local_section_digest: [u8; DIGEST_BYTES],
+    pub packed_residues_digest: [u8; DIGEST_BYTES],
+    pub randomizer_digest: [u8; DIGEST_BYTES],
+    pub selected_account_projection_digest: [u8; DIGEST_BYTES],
+    pub pad_source_digest: [u8; DIGEST_BYTES],
+    pub opening_tuple_digest: [u8; DIGEST_BYTES],
+    pub projection_relation_digest: [u8; DIGEST_BYTES],
+    pub lifecycle_slot_digest: [u8; DIGEST_BYTES],
+    pub trace_witness_digest: [u8; DIGEST_BYTES],
+    pub gauge_digest: [u8; DIGEST_BYTES],
+    pub representative_digest: [u8; DIGEST_BYTES],
+    pub canonical_representative_witness_digest: [u8; DIGEST_BYTES],
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -7587,10 +7611,15 @@ fn path2_reviewed_fq12_native_representative_digest_frame_witness_api_present_v1
     let source = include_str!("production_reference.rs");
     [
         "Path2ReviewedFq12NativeRepresentativeDigestFrameWitnessV1",
+        "Path2ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessV1",
         "path2_reviewed_fq12_native_representative_digest_frame_witness_v1",
         "path2_reviewed_fq12_native_representative_digest_frame_witness_v1_frame",
         "verify_path2_reviewed_fq12_native_representative_digest_frame_witness_v1",
+        "path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1",
+        "path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1_frame",
+        "verify_path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1",
         "PATH2_REVIEWED_FQ12_NATIVE_REPRESENTATIVE_DIGEST_FRAME_WITNESS_DOMAIN",
+        "PATH2_REVIEWED_FQ12_FULL_NATIVE_OPENING_CANONICAL_REPRESENTATIVE_WITNESS_DOMAIN",
     ]
     .iter()
     .all(|marker| source.contains(marker))
@@ -7876,6 +7905,197 @@ pub fn verify_path2_reviewed_fq12_native_representative_digest_frame_witness_v1(
         return Err(
             "Path 2 native representative digest frame witness digest mismatch".to_string(),
         );
+    }
+    Ok(())
+}
+
+pub fn path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1(
+    full_opening_cert: &Path2ReviewedFq12FullNativeOpeningCertificateV1,
+    assembly_cert: &Path2ReviewedFq12NativeRepresentativeAssemblyCertificateV1,
+) -> Result<Path2ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessV1, String> {
+    if path2_reviewed_fq12_full_native_opening_certificate_v1_digest(full_opening_cert)?
+        != full_opening_cert.role_lift_certificate_digest
+    {
+        return Err(
+            "Path 2 canonical representative witness role-lift digest mismatch".to_string(),
+        );
+    }
+    if path2_reviewed_fq12_native_representative_assembly_certificate_v1_digest(assembly_cert)?
+        != assembly_cert.assembly_certificate_digest
+    {
+        return Err("Path 2 canonical representative witness assembly digest mismatch".to_string());
+    }
+    if !path2_reviewed_fq12_assembly_binds_full_opening_fields_v1(assembly_cert, full_opening_cert)
+    {
+        return Err(
+            "Path 2 canonical representative witness assembly/opening mismatch".to_string(),
+        );
+    }
+    let representative_digest = path2_reviewed_fq12_native_representative_digest_v1(
+        &full_opening_cert.native_boundary_digest,
+        &full_opening_cert.local_section_digest,
+        &full_opening_cert.packed_residues_digest,
+        &full_opening_cert.randomizer_digest,
+        &full_opening_cert.selected_account_projection_digest,
+        &full_opening_cert.pad_source_digest,
+        &full_opening_cert.opening_tuple_digest,
+        &full_opening_cert.projection_relation_digest,
+        &full_opening_cert.lifecycle_slot_digest,
+        &full_opening_cert.trace_witness_digest,
+        &full_opening_cert.gauge_digest,
+    );
+    if assembly_cert.representative_digest != representative_digest {
+        return Err("Path 2 canonical representative witness representative mismatch".to_string());
+    }
+    let mut witness = Path2ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessV1 {
+        schema: PATH2_REVIEWED_FQ12_FULL_NATIVE_OPENING_CANONICAL_REPRESENTATIVE_WITNESS_DOMAIN,
+        role_lift_certificate_digest: full_opening_cert.role_lift_certificate_digest,
+        assembly_certificate_digest: assembly_cert.assembly_certificate_digest,
+        native_boundary_digest: full_opening_cert.native_boundary_digest,
+        native_role_root_commitment: full_opening_cert.native_role_root_commitment,
+        full_opening_digest: full_opening_cert.full_opening_digest,
+        local_section_digest: full_opening_cert.local_section_digest,
+        packed_residues_digest: full_opening_cert.packed_residues_digest,
+        randomizer_digest: full_opening_cert.randomizer_digest,
+        selected_account_projection_digest: full_opening_cert.selected_account_projection_digest,
+        pad_source_digest: full_opening_cert.pad_source_digest,
+        opening_tuple_digest: full_opening_cert.opening_tuple_digest,
+        projection_relation_digest: full_opening_cert.projection_relation_digest,
+        lifecycle_slot_digest: full_opening_cert.lifecycle_slot_digest,
+        trace_witness_digest: full_opening_cert.trace_witness_digest,
+        gauge_digest: full_opening_cert.gauge_digest,
+        representative_digest,
+        canonical_representative_witness_digest: [0_u8; DIGEST_BYTES],
+    };
+    witness.canonical_representative_witness_digest =
+        path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1_digest(
+            &witness,
+        )?;
+    Ok(witness)
+}
+
+pub fn path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1_frame(
+    witness: &Path2ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessV1,
+) -> Result<Vec<u8>, String> {
+    if witness.schema
+        != PATH2_REVIEWED_FQ12_FULL_NATIVE_OPENING_CANONICAL_REPRESENTATIVE_WITNESS_DOMAIN
+    {
+        return Err("Path 2 canonical representative witness schema mismatch".to_string());
+    }
+    let expected_representative_digest = path2_reviewed_fq12_native_representative_digest_v1(
+        &witness.native_boundary_digest,
+        &witness.local_section_digest,
+        &witness.packed_residues_digest,
+        &witness.randomizer_digest,
+        &witness.selected_account_projection_digest,
+        &witness.pad_source_digest,
+        &witness.opening_tuple_digest,
+        &witness.projection_relation_digest,
+        &witness.lifecycle_slot_digest,
+        &witness.trace_witness_digest,
+        &witness.gauge_digest,
+    );
+    if witness.representative_digest != expected_representative_digest {
+        return Err("Path 2 canonical representative witness representative mismatch".to_string());
+    }
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", witness.schema.as_bytes());
+    append_frame(
+        &mut frame,
+        b"role_lift_certificate_digest",
+        &witness.role_lift_certificate_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"assembly_certificate_digest",
+        &witness.assembly_certificate_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"native_boundary_digest",
+        &witness.native_boundary_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"native_role_root_commitment",
+        &witness.native_role_root_commitment,
+    );
+    append_frame(
+        &mut frame,
+        b"full_opening_digest",
+        &witness.full_opening_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"local_section_digest",
+        &witness.local_section_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"packed_residues_digest",
+        &witness.packed_residues_digest,
+    );
+    append_frame(&mut frame, b"randomizer_digest", &witness.randomizer_digest);
+    append_frame(
+        &mut frame,
+        b"selected_account_projection_digest",
+        &witness.selected_account_projection_digest,
+    );
+    append_frame(&mut frame, b"pad_source_digest", &witness.pad_source_digest);
+    append_frame(
+        &mut frame,
+        b"opening_tuple_digest",
+        &witness.opening_tuple_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"projection_relation_digest",
+        &witness.projection_relation_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"lifecycle_slot_digest",
+        &witness.lifecycle_slot_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"trace_witness_digest",
+        &witness.trace_witness_digest,
+    );
+    append_frame(&mut frame, b"gauge_digest", &witness.gauge_digest);
+    append_frame(
+        &mut frame,
+        b"representative_digest",
+        &witness.representative_digest,
+    );
+    Ok(frame)
+}
+
+pub fn path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1_digest(
+    witness: &Path2ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    Ok(Sha256::digest(
+        path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1_frame(witness)?,
+    )
+    .into())
+}
+
+pub fn verify_path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1(
+    witness: &Path2ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessV1,
+    full_opening_cert: &Path2ReviewedFq12FullNativeOpeningCertificateV1,
+    assembly_cert: &Path2ReviewedFq12NativeRepresentativeAssemblyCertificateV1,
+) -> Result<(), String> {
+    let expected = path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1(
+        full_opening_cert,
+        assembly_cert,
+    )?;
+    if expected != *witness {
+        return Err("Path 2 canonical representative witness mismatch".to_string());
+    }
+    if path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1_digest(witness)?
+        != witness.canonical_representative_witness_digest
+    {
+        return Err("Path 2 canonical representative witness digest mismatch".to_string());
     }
     Ok(())
 }
@@ -15957,6 +16177,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_REVIEWED_FQ12_NATIVE_REPRESENTATIVE_DIGEST_FRAME_WITNESS_DOMAIN",
             PATH2_REVIEWED_FQ12_NATIVE_REPRESENTATIVE_DIGEST_FRAME_WITNESS_DOMAIN,
+        ),
+        (
+            "PATH2_REVIEWED_FQ12_FULL_NATIVE_OPENING_CANONICAL_REPRESENTATIVE_WITNESS_DOMAIN",
+            PATH2_REVIEWED_FQ12_FULL_NATIVE_OPENING_CANONICAL_REPRESENTATIVE_WITNESS_DOMAIN,
         ),
         (
             "PATH2_REVIEWED_FQ12_EXTRACTION_COMPATIBILITY_CERTIFICATE_DOMAIN",
@@ -38783,6 +39007,63 @@ mod tests {
             .unwrap_err(),
             "Path 2 native representative digest frame witness mismatch"
         );
+        let canonical_representative_witness =
+            path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1(
+                &cert,
+                &assembly_cert,
+            )
+            .unwrap();
+        assert_eq!(
+            canonical_representative_witness.schema,
+            PATH2_REVIEWED_FQ12_FULL_NATIVE_OPENING_CANONICAL_REPRESENTATIVE_WITNESS_DOMAIN
+        );
+        assert_eq!(
+            canonical_representative_witness.role_lift_certificate_digest,
+            cert.role_lift_certificate_digest
+        );
+        assert_eq!(
+            canonical_representative_witness.assembly_certificate_digest,
+            assembly_cert.assembly_certificate_digest
+        );
+        assert_eq!(
+            canonical_representative_witness.representative_digest,
+            assembly_cert.representative_digest
+        );
+        assert_eq!(
+            path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1_digest(
+                &canonical_representative_witness
+            )
+            .unwrap(),
+            canonical_representative_witness.canonical_representative_witness_digest
+        );
+        verify_path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1(
+            &canonical_representative_witness,
+            &cert,
+            &assembly_cert,
+        )
+        .unwrap();
+        let mut stale_canonical_representative_witness = canonical_representative_witness.clone();
+        stale_canonical_representative_witness.representative_digest[0] ^= 1;
+        assert_eq!(
+            path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1_frame(
+                &stale_canonical_representative_witness,
+            )
+            .unwrap_err(),
+            "Path 2 canonical representative witness representative mismatch"
+        );
+        let mut stale_canonical_representative_witness_digest =
+            canonical_representative_witness.clone();
+        stale_canonical_representative_witness_digest.canonical_representative_witness_digest[0] ^=
+            1;
+        assert_eq!(
+            verify_path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1(
+                &stale_canonical_representative_witness_digest,
+                &cert,
+                &assembly_cert,
+            )
+            .unwrap_err(),
+            "Path 2 canonical representative witness mismatch"
+        );
         let mut rebound_digest_frame_assembly = assembly_cert.clone();
         rebound_digest_frame_assembly.local_section_digest[0] ^= 1;
         rebound_digest_frame_assembly.representative_digest =
@@ -38811,6 +39092,14 @@ mod tests {
             )
             .unwrap_err(),
             "Path 2 native representative digest frame witness assembly/opening mismatch"
+        );
+        assert_eq!(
+            path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1(
+                &cert,
+                &rebound_digest_frame_assembly,
+            )
+            .unwrap_err(),
+            "Path 2 canonical representative witness assembly/opening mismatch"
         );
         let mut bad_assembly_representative_digest = assembly_cert.clone();
         bad_assembly_representative_digest.representative_digest[0] ^= 1;
