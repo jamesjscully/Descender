@@ -10591,6 +10591,9 @@ pub fn path2_transparent_descent_transcript_digest(
     query_index: u16,
 ) -> Result<[u8; DIGEST_BYTES], String> {
     verify_path2_transparent_query_schedule_pair(trace_rows, query_count)?;
+    if query_index >= query_count {
+        return Err("Path 2 transparent proof query index outside schedule".to_string());
+    }
     if masked_projection.iter().any(|&value| value >= Q) {
         return Err("Path 2 transparent proof masked projection is noncanonical".to_string());
     }
@@ -31653,6 +31656,24 @@ mod tests {
             )
             .unwrap_err(),
             "Path 2 transparent proof unknown column profile"
+        );
+        assert_eq!(
+            path2_transparent_descent_transcript_digest(
+                &proof_system_id,
+                256,
+                16,
+                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+                &leaf_context_digest,
+                &creation_proof_binding_digest,
+                &matrix_domain_transcript_digest,
+                &masked_projection,
+                &aggregation_context_digest,
+                &trace_commitment_root,
+                &constraint_commitment_root,
+                16,
+            )
+            .unwrap_err(),
+            "Path 2 transparent proof query index outside schedule"
         );
     }
 

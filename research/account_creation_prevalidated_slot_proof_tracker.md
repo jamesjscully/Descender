@@ -531,8 +531,9 @@ Named breaks:
   rows to 256/16, 512/20, and 1024/24, bind the trace-column manifest digest
   and fallback threshold, and reject the 128/12 low-security planning row under
   the active proof-system id. `path2_transparent_descent_transcript_digest`
-  now rejects row/query mismatches before hashing, and the proof-system id plus
-  proof-family capability digest bind the schedule digest. KAT
+  now rejects row/query mismatches and out-of-schedule public `query_index`
+  values before hashing, and the proof-system id plus proof-family capability
+  digest bind the schedule digest. KAT
   `path2_transparent_query_schedule_pins_active_row_query_pairs` rejects
   low-query schedules, 128-row planning schedules, byte-floor drift, and
   manifest rebinding. The
