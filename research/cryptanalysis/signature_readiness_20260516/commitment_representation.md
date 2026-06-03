@@ -15,6 +15,21 @@ The signature carries the challenge and enough response coordinates for the
 verifier to reconstruct the full Fiat-Shamir commitment.  It does not carry
 `t` as a separate serialized object.
 
+For the compact `n=32`, weight-1, 26-repetition target, the same idea gives
+the first signable compact replacement for explicit commitments:
+
+```text
+challenge          = 17 B
+completed response = 26 * ceil(16 * 2 * 7 / 8) = 728 B
+total              = 745 B
+```
+
+The verifier carries all response coordinates, reconstructs each block
+commitment as `A * z - chi * u` for the one active signed block and as `A * z`
+for the inactive blocks, and hashes the full reconstructed commitment view.
+This removes the `3640 B` explicit commitment payload without publishing the
+mask/free commitment coordinates directly.
+
 For the current q=12289 rows3, 16-block, 2-free profile, the best immediate
 variant is the weight-15 challenge with full free-response completion:
 
@@ -87,6 +102,15 @@ systematic view as an algebraic model, but a deployable signature needs the
 published public map/commitment representation to avoid revealing the signing
 mask or the secret.  The implicit reconstruction route is compatible with a
 Schnorr-style public map `u = A*s` where `A` is one-way or syndrome-like.
+
+The information-set route must obey the same boundary.  A transparent
+low-dimensional mask code is not enough: if the active projection recovers the
+mask/codeword, it leaks the active secret.  The viable stateless variant would
+need a fibered commitment representation where the active projection determines
+the Fiat-Shamir commitment state, but leaves many possible signing masks in the
+fiber.  The abstract bound and this distinction are recorded in
+`information_set_commitment_frontier.md` and
+`Descender.InformationSetCommitment`.
 
 ## Next Proof Tasks
 
