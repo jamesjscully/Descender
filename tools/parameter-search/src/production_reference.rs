@@ -270,6 +270,8 @@ pub const PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN: &str =
 pub const PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN: &str =
     "DESCENDER_PATH2_TRANSPARENT_DESCENT_RELATION_V1";
 pub const PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA: &str = "DESCENDER_PATH2_TRANSPARENT_PUBLIC_VIEW_V1";
+pub const PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA: &str =
+    "DESCENDER_PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1";
 pub const PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA: &str =
     "DESCENDER_PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_V1";
 pub const PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA: &str =
@@ -324,6 +326,30 @@ pub const PATH2_DIRECT_CREATION_PROOF_KIND_TOY_Q_LINEAR: u16 = 1;
 pub const PATH2_DIRECT_CREATION_PROOF_KIND_TRANSPARENT_DESCENT: u16 = 2;
 pub const PATH2_TRANSPARENT_DESCENT_PROOF_SYSTEM_PROFILE: &str =
     "DESCENDER_PATH2_TRANSPARENT_HASH_PROOF_OVER_DESCENT_RELATION_V1";
+pub const PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1: u16 = 1;
+pub const PATH2_TWO_VIEW_COLUMN_PROFILE_ENTRY_COUNT: usize = 9;
+pub const PATH2_TWO_VIEW_ROLE_CONTEXT_PUBLIC: u8 = 1;
+pub const PATH2_TWO_VIEW_ROLE_PACKED_WITNESS: u8 = 2;
+pub const PATH2_TWO_VIEW_ROLE_RANDOMIZER: u8 = 3;
+pub const PATH2_TWO_VIEW_ROLE_PAD_SOURCE: u8 = 4;
+pub const PATH2_TWO_VIEW_ROLE_OPENING_TUPLE: u8 = 5;
+pub const PATH2_TWO_VIEW_ROLE_PROJECTION_RELATION: u8 = 6;
+pub const PATH2_TWO_VIEW_ROLE_RANGE_WITNESS: u8 = 7;
+pub const PATH2_TWO_VIEW_ROLE_BLINDING: u8 = 8;
+pub const PATH2_TWO_VIEW_ROLE_CONSTRAINT: u8 = 9;
+pub const PATH2_TWO_VIEW_VISIBILITY_PUBLIC: u8 = 1;
+pub const PATH2_TWO_VIEW_VISIBILITY_DERIVED_PUBLIC: u8 = 2;
+pub const PATH2_TWO_VIEW_VISIBILITY_MASKED_PUBLIC: u8 = 3;
+pub const PATH2_TWO_VIEW_VISIBILITY_COMMITTED_HIDDEN: u8 = 4;
+pub const PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN: u8 = 5;
+pub const PATH2_TWO_VIEW_VISIBILITY_RANGE_PRIVATE: u8 = 6;
+pub const PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE: u8 = 7;
+pub const PATH2_TWO_VIEW_VISIBILITY_SIMULATOR_ONLY: u8 = 8;
+pub const PATH2_TWO_VIEW_NORM_RANGE_HYBRID_BASE128_HIDDEN_ROLES: u8 = 1;
+pub const PATH2_TWO_VIEW_EXTRACTION_FULL_TRACE_EXTRACTABLE: u8 = 1;
+pub const PATH2_TWO_VIEW_RELATION_FULL_WITNESS_RELATION_KNOWLEDGE: u8 = 1;
+pub const PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS: u16 = 1;
+pub const PATH2_TWO_VIEW_REJECTION_POLICY_UNKNOWN_PROFILE_REJECT: u16 = 1;
 pub const PATH2_TOY_Q_COMMITMENT_PREFIX: &[u8; 4] = b"P2Q1";
 pub const PATH2_TOY_Q_COMMITMENT_ROLE_PAD_SOURCE: u8 = 1;
 pub const PATH2_TOY_Q_COMMITMENT_ROLE_PROJECTION_RELATION: u8 = 2;
@@ -1266,6 +1292,28 @@ pub struct Path2TransparentDescentPublicViewV1 {
     pub constraint_commitment_root: [u8; DIGEST_BYTES],
     pub query_index: u16,
     pub transparent_transcript_digest: [u8; DIGEST_BYTES],
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2TwoViewColumnProfileEntryV1 {
+    pub role_id: u8,
+    pub hidden_column_set_id: u16,
+    pub masked_column_set_id: u16,
+    pub visibility_class: u8,
+    pub mask_domain_id: u16,
+    pub range_policy_id: u16,
+    pub query_policy_id: u16,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2TwoViewColumnProfileV1 {
+    pub schema: &'static str,
+    pub profile_id: u16,
+    pub norm_range_mode: u8,
+    pub extraction_mode: u8,
+    pub relation_knowledge_mode: u8,
+    pub rejection_policy_id: u16,
+    pub entries: [Path2TwoViewColumnProfileEntryV1; PATH2_TWO_VIEW_COLUMN_PROFILE_ENTRY_COUNT],
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -9041,6 +9089,252 @@ pub fn path2_transparent_descent_proof_system_id() -> [u8; DIGEST_BYTES] {
     Sha256::digest(frame).into()
 }
 
+pub fn path2_two_view_column_profile_v1() -> Path2TwoViewColumnProfileV1 {
+    Path2TwoViewColumnProfileV1 {
+        schema: PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA,
+        profile_id: PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+        norm_range_mode: PATH2_TWO_VIEW_NORM_RANGE_HYBRID_BASE128_HIDDEN_ROLES,
+        extraction_mode: PATH2_TWO_VIEW_EXTRACTION_FULL_TRACE_EXTRACTABLE,
+        relation_knowledge_mode: PATH2_TWO_VIEW_RELATION_FULL_WITNESS_RELATION_KNOWLEDGE,
+        rejection_policy_id: PATH2_TWO_VIEW_REJECTION_POLICY_UNKNOWN_PROFILE_REJECT,
+        entries: [
+            Path2TwoViewColumnProfileEntryV1 {
+                role_id: PATH2_TWO_VIEW_ROLE_CONTEXT_PUBLIC,
+                hidden_column_set_id: 101,
+                masked_column_set_id: 201,
+                visibility_class: PATH2_TWO_VIEW_VISIBILITY_PUBLIC,
+                mask_domain_id: 0,
+                range_policy_id: 0,
+                query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
+            },
+            Path2TwoViewColumnProfileEntryV1 {
+                role_id: PATH2_TWO_VIEW_ROLE_PACKED_WITNESS,
+                hidden_column_set_id: 102,
+                masked_column_set_id: 202,
+                visibility_class: PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN,
+                mask_domain_id: 1,
+                range_policy_id: 1,
+                query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
+            },
+            Path2TwoViewColumnProfileEntryV1 {
+                role_id: PATH2_TWO_VIEW_ROLE_RANDOMIZER,
+                hidden_column_set_id: 103,
+                masked_column_set_id: 203,
+                visibility_class: PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE,
+                mask_domain_id: 2,
+                range_policy_id: 0,
+                query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
+            },
+            Path2TwoViewColumnProfileEntryV1 {
+                role_id: PATH2_TWO_VIEW_ROLE_PAD_SOURCE,
+                hidden_column_set_id: 104,
+                masked_column_set_id: 204,
+                visibility_class: PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN,
+                mask_domain_id: 3,
+                range_policy_id: 1,
+                query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
+            },
+            Path2TwoViewColumnProfileEntryV1 {
+                role_id: PATH2_TWO_VIEW_ROLE_OPENING_TUPLE,
+                hidden_column_set_id: 105,
+                masked_column_set_id: 205,
+                visibility_class: PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN,
+                mask_domain_id: 4,
+                range_policy_id: 1,
+                query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
+            },
+            Path2TwoViewColumnProfileEntryV1 {
+                role_id: PATH2_TWO_VIEW_ROLE_PROJECTION_RELATION,
+                hidden_column_set_id: 106,
+                masked_column_set_id: 206,
+                visibility_class: PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN,
+                mask_domain_id: 5,
+                range_policy_id: 1,
+                query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
+            },
+            Path2TwoViewColumnProfileEntryV1 {
+                role_id: PATH2_TWO_VIEW_ROLE_RANGE_WITNESS,
+                hidden_column_set_id: 107,
+                masked_column_set_id: 207,
+                visibility_class: PATH2_TWO_VIEW_VISIBILITY_RANGE_PRIVATE,
+                mask_domain_id: 6,
+                range_policy_id: 2,
+                query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
+            },
+            Path2TwoViewColumnProfileEntryV1 {
+                role_id: PATH2_TWO_VIEW_ROLE_BLINDING,
+                hidden_column_set_id: 108,
+                masked_column_set_id: 208,
+                visibility_class: PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE,
+                mask_domain_id: 7,
+                range_policy_id: 0,
+                query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
+            },
+            Path2TwoViewColumnProfileEntryV1 {
+                role_id: PATH2_TWO_VIEW_ROLE_CONSTRAINT,
+                hidden_column_set_id: 109,
+                masked_column_set_id: 209,
+                visibility_class: PATH2_TWO_VIEW_VISIBILITY_COMMITTED_HIDDEN,
+                mask_domain_id: 8,
+                range_policy_id: 0,
+                query_policy_id: PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS,
+            },
+        ],
+    }
+}
+
+pub fn verify_path2_two_view_column_profile(
+    profile: &Path2TwoViewColumnProfileV1,
+) -> Result<(), String> {
+    if profile.schema != PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA {
+        return Err("Path 2 two-view column profile schema mismatch".to_string());
+    }
+    if profile.profile_id != PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1 {
+        return Err("Path 2 two-view unknown column profile".to_string());
+    }
+    if profile.norm_range_mode != PATH2_TWO_VIEW_NORM_RANGE_HYBRID_BASE128_HIDDEN_ROLES {
+        return Err("Path 2 two-view column profile norm/range mode mismatch".to_string());
+    }
+    if profile.extraction_mode != PATH2_TWO_VIEW_EXTRACTION_FULL_TRACE_EXTRACTABLE {
+        return Err("Path 2 two-view column profile extraction mode mismatch".to_string());
+    }
+    if profile.relation_knowledge_mode != PATH2_TWO_VIEW_RELATION_FULL_WITNESS_RELATION_KNOWLEDGE {
+        return Err("Path 2 two-view column profile relation knowledge mode mismatch".to_string());
+    }
+    if profile.rejection_policy_id != PATH2_TWO_VIEW_REJECTION_POLICY_UNKNOWN_PROFILE_REJECT {
+        return Err("Path 2 two-view column profile rejection policy mismatch".to_string());
+    }
+
+    let mut roles = BTreeSet::new();
+    let mut hidden_sets = BTreeSet::new();
+    let mut masked_sets = BTreeSet::new();
+    let mut mask_domains = BTreeSet::new();
+    for entry in profile.entries {
+        if entry.role_id == 0 || !roles.insert(entry.role_id) {
+            return Err("Path 2 two-view column profile duplicate or unknown role".to_string());
+        }
+        if entry.hidden_column_set_id == entry.masked_column_set_id {
+            return Err(
+                "Path 2 two-view column profile identifies hidden and masked columns".to_string(),
+            );
+        }
+        if !hidden_sets.insert(entry.hidden_column_set_id) {
+            return Err("Path 2 two-view column profile duplicate hidden column set".to_string());
+        }
+        if !masked_sets.insert(entry.masked_column_set_id) {
+            return Err("Path 2 two-view column profile duplicate masked column set".to_string());
+        }
+        match entry.visibility_class {
+            PATH2_TWO_VIEW_VISIBILITY_PUBLIC
+            | PATH2_TWO_VIEW_VISIBILITY_DERIVED_PUBLIC
+            | PATH2_TWO_VIEW_VISIBILITY_MASKED_PUBLIC
+            | PATH2_TWO_VIEW_VISIBILITY_COMMITTED_HIDDEN
+            | PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN
+            | PATH2_TWO_VIEW_VISIBILITY_RANGE_PRIVATE
+            | PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE
+            | PATH2_TWO_VIEW_VISIBILITY_SIMULATOR_ONLY => {}
+            _ => {
+                return Err("Path 2 two-view column profile unknown visibility class".to_string());
+            }
+        }
+        if matches!(
+            entry.visibility_class,
+            PATH2_TWO_VIEW_VISIBILITY_COMMITTED_HIDDEN
+                | PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN
+                | PATH2_TWO_VIEW_VISIBILITY_RANGE_PRIVATE
+                | PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE
+                | PATH2_TWO_VIEW_VISIBILITY_SIMULATOR_ONLY
+        ) && entry.mask_domain_id == 0
+        {
+            return Err("Path 2 two-view column profile hidden role lacks mask domain".to_string());
+        }
+        if entry.mask_domain_id != 0 && !mask_domains.insert(entry.mask_domain_id) {
+            return Err("Path 2 two-view column profile duplicate mask domain".to_string());
+        }
+        if entry.query_policy_id != PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS {
+            return Err("Path 2 two-view column profile query policy mismatch".to_string());
+        }
+    }
+
+    for role in [
+        PATH2_TWO_VIEW_ROLE_CONTEXT_PUBLIC,
+        PATH2_TWO_VIEW_ROLE_PACKED_WITNESS,
+        PATH2_TWO_VIEW_ROLE_RANDOMIZER,
+        PATH2_TWO_VIEW_ROLE_PAD_SOURCE,
+        PATH2_TWO_VIEW_ROLE_OPENING_TUPLE,
+        PATH2_TWO_VIEW_ROLE_PROJECTION_RELATION,
+        PATH2_TWO_VIEW_ROLE_RANGE_WITNESS,
+        PATH2_TWO_VIEW_ROLE_BLINDING,
+        PATH2_TWO_VIEW_ROLE_CONSTRAINT,
+    ] {
+        if !roles.contains(&role) {
+            return Err("Path 2 two-view column profile missing mandatory role".to_string());
+        }
+    }
+    Ok(())
+}
+
+pub fn verify_path2_two_view_column_profile_id(column_profile: u16) -> Result<(), String> {
+    if column_profile != PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1 {
+        return Err("Path 2 transparent proof unknown column profile".to_string());
+    }
+    verify_path2_two_view_column_profile(&path2_two_view_column_profile_v1())
+}
+
+pub fn path2_two_view_column_profile_v1_digest() -> Result<[u8; DIGEST_BYTES], String> {
+    let profile = path2_two_view_column_profile_v1();
+    verify_path2_two_view_column_profile(&profile)?;
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA.as_bytes(),
+    );
+    append_u64(&mut frame, b"profile_id", profile.profile_id as u64);
+    append_u64(
+        &mut frame,
+        b"norm_range_mode",
+        profile.norm_range_mode as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"extraction_mode",
+        profile.extraction_mode as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"relation_knowledge_mode",
+        profile.relation_knowledge_mode as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"rejection_policy_id",
+        profile.rejection_policy_id as u64,
+    );
+    for entry in profile.entries {
+        append_u64(&mut frame, b"role_id", entry.role_id as u64);
+        append_u64(
+            &mut frame,
+            b"hidden_column_set_id",
+            entry.hidden_column_set_id as u64,
+        );
+        append_u64(
+            &mut frame,
+            b"masked_column_set_id",
+            entry.masked_column_set_id as u64,
+        );
+        append_u64(
+            &mut frame,
+            b"visibility_class",
+            entry.visibility_class as u64,
+        );
+        append_u64(&mut frame, b"mask_domain_id", entry.mask_domain_id as u64);
+        append_u64(&mut frame, b"range_policy_id", entry.range_policy_id as u64);
+        append_u64(&mut frame, b"query_policy_id", entry.query_policy_id as u64);
+    }
+    Ok(Sha256::digest(frame).into())
+}
+
 pub fn path2_transparent_descent_transcript_digest(
     proof_system_id: &[u8; DIGEST_BYTES],
     trace_rows: u16,
@@ -9064,6 +9358,8 @@ pub fn path2_transparent_descent_transcript_digest(
     if masked_projection.iter().any(|&value| value >= Q) {
         return Err("Path 2 transparent proof masked projection is noncanonical".to_string());
     }
+    verify_path2_two_view_column_profile_id(column_profile)?;
+    let column_profile_digest = path2_two_view_column_profile_v1_digest()?;
     let relation_id = path2_transparent_descent_relation_id();
     let mut frame = Vec::new();
     append_frame(
@@ -9076,6 +9372,7 @@ pub fn path2_transparent_descent_transcript_digest(
     append_frame(&mut frame, b"trace_rows", &trace_rows.to_le_bytes());
     append_frame(&mut frame, b"query_count", &query_count.to_le_bytes());
     append_frame(&mut frame, b"column_profile", &column_profile.to_le_bytes());
+    append_frame(&mut frame, b"column_profile_digest", &column_profile_digest);
     append_frame(&mut frame, b"leaf_context_digest", leaf_context_digest);
     append_frame(
         &mut frame,
@@ -12131,7 +12428,7 @@ pub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(
         .map_err(|err| format!("encode Path 2 native storage/lifecycle hardening scope: {err}"))
 }
 
-pub fn path2_registered_domain_constants() -> [&'static str; 20] {
+pub fn path2_registered_domain_constants() -> [&'static str; 21] {
     [
         PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN,
         PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN,
@@ -12153,6 +12450,7 @@ pub fn path2_registered_domain_constants() -> [&'static str; 20] {
         PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN,
         PATH2_TRANSPARENT_DESCENT_PROOF_SYSTEM_PROFILE,
         PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA,
+        PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA,
     ]
 }
 
@@ -12452,6 +12750,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA",
             PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA,
+        ),
+        (
+            "PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA",
+            PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA,
         ),
         (
             "PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA",
@@ -26626,7 +26928,7 @@ mod tests {
             path2_transparent_descent_proof_system_id(),
             256,
             16,
-            0x5042,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
             leaf_context_digest,
             binding.digest,
             matrix_domain_transcript_digest,
@@ -29508,7 +29810,7 @@ mod tests {
             &proof_system_id,
             256,
             16,
-            1,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
             &leaf_context_digest,
             &creation_proof_binding_digest,
             &matrix_domain_transcript_digest,
@@ -29526,7 +29828,7 @@ mod tests {
                 &proof_system_id,
                 256,
                 16,
-                1,
+                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
                 &leaf_context_digest,
                 &creation_proof_binding_digest,
                 &matrix_domain_transcript_digest,
@@ -29547,7 +29849,7 @@ mod tests {
                 &proof_system_id,
                 256,
                 16,
-                1,
+                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
                 &rebound_leaf,
                 &creation_proof_binding_digest,
                 &matrix_domain_transcript_digest,
@@ -29567,7 +29869,7 @@ mod tests {
                 &proof_system_id,
                 256,
                 16,
-                1,
+                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
                 &leaf_context_digest,
                 &creation_proof_binding_digest,
                 &matrix_domain_transcript_digest,
@@ -29584,7 +29886,7 @@ mod tests {
                 &proof_system_id,
                 255,
                 16,
-                1,
+                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
                 &leaf_context_digest,
                 &creation_proof_binding_digest,
                 &matrix_domain_transcript_digest,
@@ -29601,7 +29903,7 @@ mod tests {
                 &proof_system_id,
                 256,
                 0,
-                1,
+                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
                 &leaf_context_digest,
                 &creation_proof_binding_digest,
                 &matrix_domain_transcript_digest,
@@ -29612,6 +29914,124 @@ mod tests {
                 0,
             )
             .is_err()
+        );
+        assert_eq!(
+            path2_transparent_descent_transcript_digest(
+                &proof_system_id,
+                256,
+                16,
+                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1 + 1,
+                &leaf_context_digest,
+                &creation_proof_binding_digest,
+                &matrix_domain_transcript_digest,
+                &masked_projection,
+                &aggregation_context_digest,
+                &trace_commitment_root,
+                &constraint_commitment_root,
+                0,
+            )
+            .unwrap_err(),
+            "Path 2 transparent proof unknown column profile"
+        );
+    }
+
+    #[test]
+    fn path2_two_view_column_profile_is_active_masked_base128_policy() {
+        let profile = path2_two_view_column_profile_v1();
+        verify_path2_two_view_column_profile(&profile).unwrap();
+        assert_eq!(profile.schema, PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA);
+        assert_eq!(
+            profile.profile_id,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1
+        );
+        assert_eq!(
+            profile.norm_range_mode,
+            PATH2_TWO_VIEW_NORM_RANGE_HYBRID_BASE128_HIDDEN_ROLES
+        );
+        assert_eq!(
+            profile.extraction_mode,
+            PATH2_TWO_VIEW_EXTRACTION_FULL_TRACE_EXTRACTABLE
+        );
+        assert_eq!(
+            profile.relation_knowledge_mode,
+            PATH2_TWO_VIEW_RELATION_FULL_WITNESS_RELATION_KNOWLEDGE
+        );
+        assert_eq!(
+            profile.rejection_policy_id,
+            PATH2_TWO_VIEW_REJECTION_POLICY_UNKNOWN_PROFILE_REJECT
+        );
+        assert_ne!(
+            path2_two_view_column_profile_v1_digest().unwrap(),
+            [0_u8; DIGEST_BYTES]
+        );
+
+        let mut roles = BTreeSet::new();
+        let mut mask_domains = BTreeSet::new();
+        for entry in profile.entries {
+            assert!(roles.insert(entry.role_id));
+            assert_ne!(entry.hidden_column_set_id, entry.masked_column_set_id);
+            assert_eq!(
+                entry.query_policy_id,
+                PATH2_TWO_VIEW_QUERY_POLICY_ZK_TYPED_ROLE_OPENINGS
+            );
+            if entry.mask_domain_id != 0 {
+                assert!(mask_domains.insert(entry.mask_domain_id));
+            }
+            if matches!(
+                entry.visibility_class,
+                PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN
+                    | PATH2_TWO_VIEW_VISIBILITY_RANGE_PRIVATE
+                    | PATH2_TWO_VIEW_VISIBILITY_BLINDING_PRIVATE
+            ) {
+                assert_ne!(entry.mask_domain_id, 0);
+                assert_ne!(entry.visibility_class, PATH2_TWO_VIEW_VISIBILITY_PUBLIC);
+                assert_ne!(
+                    entry.visibility_class,
+                    PATH2_TWO_VIEW_VISIBILITY_DERIVED_PUBLIC
+                );
+            }
+        }
+        for role in [
+            PATH2_TWO_VIEW_ROLE_CONTEXT_PUBLIC,
+            PATH2_TWO_VIEW_ROLE_PACKED_WITNESS,
+            PATH2_TWO_VIEW_ROLE_RANDOMIZER,
+            PATH2_TWO_VIEW_ROLE_PAD_SOURCE,
+            PATH2_TWO_VIEW_ROLE_OPENING_TUPLE,
+            PATH2_TWO_VIEW_ROLE_PROJECTION_RELATION,
+            PATH2_TWO_VIEW_ROLE_RANGE_WITNESS,
+            PATH2_TWO_VIEW_ROLE_BLINDING,
+            PATH2_TWO_VIEW_ROLE_CONSTRAINT,
+        ] {
+            assert!(roles.contains(&role), "missing active two-view role {role}");
+        }
+
+        let mut duplicate_role = profile;
+        duplicate_role.entries[1].role_id = duplicate_role.entries[0].role_id;
+        assert_eq!(
+            verify_path2_two_view_column_profile(&duplicate_role).unwrap_err(),
+            "Path 2 two-view column profile duplicate or unknown role"
+        );
+
+        let mut merged_columns = profile;
+        merged_columns.entries[2].masked_column_set_id =
+            merged_columns.entries[2].hidden_column_set_id;
+        assert_eq!(
+            verify_path2_two_view_column_profile(&merged_columns).unwrap_err(),
+            "Path 2 two-view column profile identifies hidden and masked columns"
+        );
+
+        let mut unmasked_hidden = profile;
+        unmasked_hidden.entries[3].mask_domain_id = 0;
+        assert_eq!(
+            verify_path2_two_view_column_profile(&unmasked_hidden).unwrap_err(),
+            "Path 2 two-view column profile hidden role lacks mask domain"
+        );
+
+        let mut unknown_visibility = profile;
+        unknown_visibility.entries[4].visibility_class = 0xff;
+        assert_eq!(
+            verify_path2_two_view_column_profile(&unknown_visibility).unwrap_err(),
+            "Path 2 two-view column profile unknown visibility class"
         );
     }
 
@@ -29629,7 +30049,7 @@ mod tests {
             proof_system_id,
             256,
             16,
-            1,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
             leaf_context_digest,
             creation_proof_binding_digest,
             matrix_domain_transcript_digest,
@@ -29648,7 +30068,7 @@ mod tests {
                 &proof_system_id,
                 256,
                 16,
-                1,
+                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
                 &leaf_context_digest,
                 &creation_proof_binding_digest,
                 &matrix_domain_transcript_digest,
@@ -29664,7 +30084,7 @@ mod tests {
             proof_system_id,
             256,
             16,
-            1,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
             leaf_context_digest,
             creation_proof_binding_digest,
             matrix_domain_transcript_digest,

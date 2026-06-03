@@ -425,10 +425,22 @@ Named breaks:
   linear leakage case: fresh per-opening masks have zero linear leakage in the
   probe, while role-wide/reused masks leak rank. The resulting rules are pinned
   in `research/path2_two_view_column_profile_rules.md`; the next proof blocker
-  is the concrete two-view column-profile enum consumed by the transcript. The
-  next executable blocker remains later: concrete
-  transparent verifier plus trace/relation encoding and full query-opening
-  no-export tests.
+  has now been turned into executable profile policy:
+  `PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1`,
+  `path2_two_view_column_profile_v1`,
+  `verify_path2_two_view_column_profile_id`, and
+  `path2_two_view_column_profile_v1_digest` pin the active masked/base-128
+  two-view profile consumed by the transparent transcript. The profile table
+  requires the nine active roles, separate hidden/masked column sets, unique
+  mask domains for hidden/range/blinding roles, the selected hybrid base-128
+  norm/range mode, full-trace extraction, full-witness relation knowledge, and
+  unknown-profile rejection. KAT
+  `path2_two_view_column_profile_is_active_masked_base128_policy` checks those
+  rules and negative controls; KAT
+  `path2_transparent_descent_transcript_binds_public_context` now also rejects
+  unknown column-profile ids before transcript hashing. The next executable
+  blocker remains later: concrete transparent verifier plus trace/relation
+  encoding and full query-opening no-export tests.
 
 - [x] Carry over active-lane negative controls into creation time.
   Requirement: wrong witness digest, wrong pad seed, wrong public pad statement,
