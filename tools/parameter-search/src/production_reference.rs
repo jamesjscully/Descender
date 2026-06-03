@@ -6486,13 +6486,21 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let lean_selected_rust_field_local_packaged_source_route_adapter_present = true;
     let rust_concrete_role_root_field_binding_present = true;
     let rust_certificate_lift_opening_functionality_present = true;
-    let rust_assembly_representative_digest_lookup_source_present = true;
-    let rust_representative_canonical_digest_source_present = true;
-    let rust_full_native_opening_canonical_representative_source_present = true;
-    let rust_full_native_opening_representative_frame_source_present = true;
-    let rust_representative_digest_functionality_source_present = true;
-    let rust_assembly_representative_frame_source_present = true;
-    let rust_shared_representative_frame_source_present = true;
+    let rust_full_native_opening_canonical_representative_source_present =
+        path2_reviewed_fq12_full_native_opening_canonical_representative_source_present_v1();
+    let rust_representative_canonical_digest_source_present =
+        rust_full_native_opening_canonical_representative_source_present;
+    let rust_assembly_representative_digest_lookup_source_present =
+        rust_representative_canonical_digest_source_present;
+    let rust_full_native_opening_representative_frame_source_present =
+        rust_full_native_opening_canonical_representative_source_present;
+    let rust_representative_digest_functionality_source_present =
+        rust_full_native_opening_representative_frame_source_present;
+    let rust_assembly_representative_frame_source_present =
+        path2_reviewed_fq12_native_representative_digest_frame_source_present_v1();
+    let rust_shared_representative_frame_source_present =
+        rust_full_native_opening_representative_frame_source_present
+            && rust_assembly_representative_frame_source_present;
     let rust_native_representative_digest_frame_source_present =
         path2_reviewed_fq12_native_representative_digest_frame_source_present_v1();
     let rust_constructed_assembly_compatibility_witness_source_present = true;
@@ -7578,6 +7586,90 @@ fn path2_reviewed_fq12_native_representative_digest_frame_witness_api_present_v1
     ]
     .iter()
     .all(|marker| source.contains(marker))
+}
+
+fn path2_reviewed_fq12_full_native_opening_canonical_representative_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+    let binding_start = source
+        .find("\npub fn path2_reviewed_fq12_assembly_binds_full_opening_fields_v1(")
+        .expect("Path 2 reviewed Fq12 assembly/full-opening binding source start marker missing");
+    let binding_end = source[binding_start..]
+        .find("\npub fn path2_reviewed_fq12_compatibility_binds_same_representative_fields_v1(")
+        .expect("Path 2 reviewed Fq12 assembly/full-opening binding source end marker missing")
+        + binding_start;
+    let binding_source = &source[binding_start..binding_end];
+    let required_field_bindings = [
+        "assembly_cert.native_boundary_digest == full_opening_cert.native_boundary_digest",
+        "assembly_cert.local_section_digest == full_opening_cert.local_section_digest",
+        "assembly_cert.packed_residues_digest == full_opening_cert.packed_residues_digest",
+        "assembly_cert.randomizer_digest == full_opening_cert.randomizer_digest",
+        "assembly_cert.selected_account_projection_digest\n            == full_opening_cert.selected_account_projection_digest",
+        "assembly_cert.pad_source_digest == full_opening_cert.pad_source_digest",
+        "assembly_cert.opening_tuple_digest == full_opening_cert.opening_tuple_digest",
+        "assembly_cert.projection_relation_digest == full_opening_cert.projection_relation_digest",
+        "assembly_cert.lifecycle_slot_digest == full_opening_cert.lifecycle_slot_digest",
+        "assembly_cert.trace_witness_digest == full_opening_cert.trace_witness_digest",
+        "assembly_cert.gauge_digest == full_opening_cert.gauge_digest",
+    ];
+
+    let full_opening_source_start = source
+        .find("\npub fn path2_reviewed_fq12_full_native_opening_certificate_v1(")
+        .expect("Path 2 reviewed Fq12 full-native-opening source start marker missing");
+    let full_opening_source_end = source[full_opening_source_start..]
+        .find("\npub fn path2_reviewed_fq12_full_native_opening_digest_v1(")
+        .expect("Path 2 reviewed Fq12 full-native-opening source end marker missing")
+        + full_opening_source_start;
+    let full_opening_source = &source[full_opening_source_start..full_opening_source_end];
+
+    let full_opening_frame_start = source
+        .find("\npub fn path2_reviewed_fq12_full_native_opening_certificate_v1_frame(")
+        .expect("Path 2 reviewed Fq12 full-native-opening frame source start marker missing");
+    let full_opening_frame_end = source[full_opening_frame_start..]
+        .find("\npub fn path2_reviewed_fq12_full_native_opening_certificate_v1_digest(")
+        .expect("Path 2 reviewed Fq12 full-native-opening frame source end marker missing")
+        + full_opening_frame_start;
+    let full_opening_frame_source = &source[full_opening_frame_start..full_opening_frame_end];
+
+    let assembly_source_start = source
+        .find("\npub fn path2_reviewed_fq12_native_representative_assembly_certificate_v1(")
+        .expect("Path 2 reviewed Fq12 assembly certificate source start marker missing");
+    let assembly_source_end = source[assembly_source_start..]
+        .find("\npub fn path2_reviewed_fq12_native_representative_assembly_certificate_v1_frame(")
+        .expect("Path 2 reviewed Fq12 assembly certificate source end marker missing")
+        + assembly_source_start;
+    let assembly_source = &source[assembly_source_start..assembly_source_end];
+
+    let assembly_frame_start = source
+        .find("\npub fn path2_reviewed_fq12_native_representative_assembly_certificate_v1_frame(")
+        .expect("Path 2 reviewed Fq12 assembly certificate frame source start marker missing");
+    let assembly_frame_end = source[assembly_frame_start..]
+        .find("\npub fn path2_reviewed_fq12_native_representative_assembly_certificate_v1_digest(")
+        .expect("Path 2 reviewed Fq12 assembly certificate frame source end marker missing")
+        + assembly_frame_start;
+    let assembly_frame_source = &source[assembly_frame_start..assembly_frame_end];
+
+    required_field_bindings
+        .iter()
+        .all(|binding| binding_source.contains(binding))
+        && full_opening_source.contains("let full_opening_digest = path2_reviewed_fq12_full_native_opening_digest_v1(")
+        && full_opening_source.contains("local_section_digest,")
+        && full_opening_source.contains("packed_residues_digest,")
+        && full_opening_source.contains("randomizer_digest,")
+        && full_opening_source.contains("selected_account_projection_digest,")
+        && full_opening_source.contains("pad_source_digest,")
+        && full_opening_source.contains("opening_tuple_digest,")
+        && full_opening_source.contains("projection_relation_digest,")
+        && full_opening_source.contains("lifecycle_slot_digest,")
+        && full_opening_source.contains("trace_witness_digest,")
+        && full_opening_source.contains("gauge_digest,")
+        && full_opening_frame_source.contains("let expected_opening_digest = path2_reviewed_fq12_full_native_opening_digest_v1(")
+        && full_opening_frame_source.contains("if cert.full_opening_digest != expected_opening_digest")
+        && assembly_source.contains("verify_path2_reviewed_fq12_full_native_opening_certificate_v1(")
+        && assembly_source.contains("path2_reviewed_fq12_native_representative_digest_v1(")
+        && assembly_source.contains("representative_digest,")
+        && assembly_frame_source.contains("let expected_representative_digest = path2_reviewed_fq12_native_representative_digest_v1(")
+        && assembly_frame_source.contains("if cert.representative_digest != expected_representative_digest")
+        && path2_reviewed_fq12_native_representative_digest_frame_source_present_v1()
 }
 
 pub fn path2_reviewed_fq12_native_representative_digest_frame_witness_v1(
@@ -37596,6 +37688,9 @@ mod tests {
         assert!(audit.rust_assembly_representative_digest_lookup_source_present);
         assert!(audit.rust_representative_canonical_digest_source_present);
         assert!(audit.rust_full_native_opening_canonical_representative_source_present);
+        assert!(
+            path2_reviewed_fq12_full_native_opening_canonical_representative_source_present_v1()
+        );
         assert!(audit.rust_full_native_opening_representative_frame_source_present);
         assert!(audit.rust_representative_digest_functionality_source_present);
         assert!(audit.rust_assembly_representative_frame_source_present);
