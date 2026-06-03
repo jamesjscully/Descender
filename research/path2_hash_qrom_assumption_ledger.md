@@ -59,6 +59,7 @@ must reject in direct mode unless the optional aggregation theorem is enabled.
 | `blinding_noise_policy_id` | selected extractor-side masking/noise policy | prevents extractor proof from relying on unbounded hidden cancellations | `blinding_noise_bound_break` or `transparent_proof_soundness_break` |
 | `blinding_noise_centered_bound` | selected centered extractor-side masking/noise bound, currently `2048` | fixes the active SIS/binding norm budget before proof handoff | `blinding_noise_bound_break` or `transparent_proof_soundness_break` |
 | `sis_role_matrix_rows` | selected private role-matrix row band, currently `64` | rejects the 48-row opening-tuple kernel surface under the selected blinding bound | `inner_commitment_binding_break` or `transparent_proof_soundness_break` |
+| `lean_atomic_full_interface_endpoint_present` | selected Lean closure endpoint `transparent_view_full_interface_from_atomic_gates_or_break` is present | prevents a Rust proof-family id from binding only ingredient flags without the composed theorem endpoint | `transparent_proof_soundness_break` |
 
 ## PRF And Hiding Roles
 
@@ -430,6 +431,7 @@ The KAT suite must include:
 - blinding/noise policy id mutation rejects;
 - blinding/noise centered-bound mutation rejects;
 - SIS role-matrix row mutation rejects;
+- Lean atomic full-interface endpoint flag clearing rejects;
 - trace-extractor QROM rewind-bound flag clearing rejects;
 - double-trace binding-break export flag clearing rejects;
 - public full-rank linear commitments for private roles reject in the active

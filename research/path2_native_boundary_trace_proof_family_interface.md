@@ -193,12 +193,16 @@ parent_trace_commitment_extractable_required = true
 extracted_trace_relation_knowledge_required = true
 masked_opening_consistency_required = true
 parent_trace_extraction_composition_required = true
+lean_atomic_full_interface_endpoint_present = true
 qrom_extractor_rewind_bound_required = true
 double_trace_binding_break_exported = true
 ```
 
 Negative controls reject clearing any of these flags or drifting either
-blinding/noise policy field before the transparent verifier handoff.
+blinding/noise policy field before the transparent verifier handoff. Clearing
+`lean_atomic_full_interface_endpoint_present` rejects because the active Rust
+interface must be bound to the narrow Lean theorem
+`transparent_view_full_interface_from_atomic_gates_or_break`.
 
 ## Closure Criterion
 

@@ -305,7 +305,8 @@ The preferred full-interface closure theorem is now
 `transparent_view_full_interface_from_atomic_gates_or_break`, which composes
 parent-trace commitment extraction, masked-opening consistency,
 relation-knowledge, decomposed assembly, hybrid range, and blinding/noise row
-obligations.
+obligations. The Rust proof-family interface now binds
+`lean_atomic_full_interface_endpoint_present = true` into its digest.
 The active range/SIS gate now also pins `selectedSisRoleMatrixRows = 64` and the
 Rust proof-family interface binds `sis_role_matrix_rows = 64`; the existing
 sanity probe rejects the 48-row `opening_tuple` case under the selected `2048`
