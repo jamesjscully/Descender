@@ -1493,6 +1493,8 @@ pub struct Path2TransparentProofBytesEnvelopeV1 {
     pub column_profile: u16,
     pub trace_rows: u16,
     pub query_count: u16,
+    pub merkle_paths_digest: [u8; DIGEST_BYTES],
+    pub consistency_messages_digest: [u8; DIGEST_BYTES],
     pub proof_body_digest: [u8; DIGEST_BYTES],
     pub proof_body_byte_len: u32,
 }
@@ -10747,10 +10749,18 @@ pub fn path2_transparent_descent_public_view_v1_json(
 pub fn path2_transparent_proof_bytes_envelope_v1_bytes(
     public_view: &Path2TransparentDescentPublicViewV1,
     query_opening_manifest: &Path2TransparentQueryOpeningManifestV1,
+    merkle_paths_digest: &[u8; DIGEST_BYTES],
+    consistency_messages_digest: &[u8; DIGEST_BYTES],
     proof_body: &[u8],
 ) -> Result<Vec<u8>, String> {
     if proof_body.is_empty() {
         return Err("Path 2 transparent proof body is empty".to_string());
+    }
+    if *merkle_paths_digest == [0_u8; DIGEST_BYTES] {
+        return Err("Path 2 transparent proof merkle paths digest is zero".to_string());
+    }
+    if *consistency_messages_digest == [0_u8; DIGEST_BYTES] {
+        return Err("Path 2 transparent proof consistency messages digest is zero".to_string());
     }
     verify_path2_transparent_query_opening_manifest_for_public_view(
         public_view,
@@ -10777,6 +10787,8 @@ pub fn path2_transparent_proof_bytes_envelope_v1_bytes(
     bytes.extend_from_slice(&public_view.column_profile.to_le_bytes());
     bytes.extend_from_slice(&public_view.trace_rows.to_le_bytes());
     bytes.extend_from_slice(&public_view.query_count.to_le_bytes());
+    bytes.extend_from_slice(merkle_paths_digest);
+    bytes.extend_from_slice(consistency_messages_digest);
     let proof_body_digest: [u8; DIGEST_BYTES] = Sha256::digest(proof_body).into();
     bytes.extend_from_slice(&proof_body_digest);
     bytes.extend_from_slice(&(proof_body.len() as u32).to_le_bytes());
@@ -10785,7 +10797,7 @@ pub fn path2_transparent_proof_bytes_envelope_v1_bytes(
 }
 
 pub fn path2_transparent_proof_bytes_envelope_fixed_len() -> usize {
-    PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA.len() + 2 + DIGEST_BYTES * 6 + 2 + 2 + 2 + 4
+    PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA.len() + 2 + DIGEST_BYTES * 8 + 2 + 2 + 2 + 4
 }
 
 pub fn decode_path2_transparent_proof_bytes_envelope_v1(
@@ -10828,6 +10840,18 @@ pub fn decode_path2_transparent_proof_bytes_envelope_v1(
     offset += 2;
     let query_count = u16::from_le_bytes(bytes[offset..offset + 2].try_into().unwrap());
     offset += 2;
+    let merkle_paths_digest: [u8; DIGEST_BYTES] =
+        bytes[offset..offset + DIGEST_BYTES].try_into().unwrap();
+    offset += DIGEST_BYTES;
+    if merkle_paths_digest == [0_u8; DIGEST_BYTES] {
+        return Err("Path 2 transparent proof merkle paths digest is zero".to_string());
+    }
+    let consistency_messages_digest: [u8; DIGEST_BYTES] =
+        bytes[offset..offset + DIGEST_BYTES].try_into().unwrap();
+    offset += DIGEST_BYTES;
+    if consistency_messages_digest == [0_u8; DIGEST_BYTES] {
+        return Err("Path 2 transparent proof consistency messages digest is zero".to_string());
+    }
     let proof_body_digest: [u8; DIGEST_BYTES] =
         bytes[offset..offset + DIGEST_BYTES].try_into().unwrap();
     offset += DIGEST_BYTES;
@@ -10854,6 +10878,8 @@ pub fn decode_path2_transparent_proof_bytes_envelope_v1(
         column_profile,
         trace_rows,
         query_count,
+        merkle_paths_digest,
+        consistency_messages_digest,
         proof_body_digest,
         proof_body_byte_len,
     })
@@ -10862,6 +10888,8 @@ pub fn decode_path2_transparent_proof_bytes_envelope_v1(
 pub fn verify_path2_transparent_proof_bytes_envelope_v1(
     public_view: &Path2TransparentDescentPublicViewV1,
     query_opening_manifest: &Path2TransparentQueryOpeningManifestV1,
+    merkle_paths_digest: &[u8; DIGEST_BYTES],
+    consistency_messages_digest: &[u8; DIGEST_BYTES],
     proof_bytes: &[u8],
 ) -> Result<Path2TransparentProofBytesEnvelopeV1, String> {
     let envelope = decode_path2_transparent_proof_bytes_envelope_v1(proof_bytes)?;
@@ -10878,6 +10906,8 @@ pub fn verify_path2_transparent_proof_bytes_envelope_v1(
         || envelope.column_profile != public_view.column_profile
         || envelope.trace_rows != public_view.trace_rows
         || envelope.query_count != public_view.query_count
+        || &envelope.merkle_paths_digest != merkle_paths_digest
+        || &envelope.consistency_messages_digest != consistency_messages_digest
     {
         return Err("Path 2 transparent proof bytes envelope context mismatch".to_string());
     }
@@ -11768,6 +11798,8 @@ pub fn verify_path2_direct_creation_transparent_descent_payload_boundary_with_pr
     verify_path2_transparent_proof_bytes_envelope_v1(
         &transparent_payload.public_view,
         query_opening_manifest,
+        &transparent_payload.merkle_paths_digest,
+        &transparent_payload.consistency_messages_digest,
         proof_bytes,
     )?;
     Err("Path 2 transparent descent proof verifier is not implemented".to_string())
@@ -28497,15 +28529,17 @@ mod tests {
         let query_opening_manifest = path2_transparent_query_opening_manifest_fixture(16);
         let query_openings_digest =
             path2_transparent_query_opening_manifest_digest(&query_opening_manifest).unwrap();
+        let merkle_paths_digest = test_digest("path2-transparent-merkle-paths");
+        let consistency_messages_digest = test_digest("path2-transparent-consistency");
         let proof_bytes = path2_transparent_proof_bytes_envelope_v1_bytes(
             &public_view,
             &query_opening_manifest,
+            &merkle_paths_digest,
+            &consistency_messages_digest,
             b"path2-transparent-proof-body-placeholder",
         )
         .unwrap();
         let proof_bytes_digest: [u8; DIGEST_BYTES] = Sha256::digest(&proof_bytes).into();
-        let merkle_paths_digest = test_digest("path2-transparent-merkle-paths");
-        let consistency_messages_digest = test_digest("path2-transparent-consistency");
         let payload_digest = path2_transparent_descent_proof_payload_digest(
             &public_view,
             4896,
@@ -28649,14 +28683,56 @@ mod tests {
             decoded_envelope.transparent_transcript_digest,
             public_view.transparent_transcript_digest
         );
+        assert_eq!(decoded_envelope.merkle_paths_digest, merkle_paths_digest);
+        assert_eq!(
+            decoded_envelope.consistency_messages_digest,
+            consistency_messages_digest
+        );
         assert_eq!(
             verify_path2_transparent_proof_bytes_envelope_v1(
                 &public_view,
                 &query_opening_manifest,
+                &merkle_paths_digest,
+                &consistency_messages_digest,
                 &proof_bytes,
             )
             .unwrap(),
             decoded_envelope
+        );
+        assert_eq!(
+            path2_transparent_proof_bytes_envelope_v1_bytes(
+                &public_view,
+                &query_opening_manifest,
+                &[0_u8; DIGEST_BYTES],
+                &consistency_messages_digest,
+                b"path2-transparent-proof-body-placeholder",
+            )
+            .unwrap_err(),
+            "Path 2 transparent proof merkle paths digest is zero"
+        );
+        assert_eq!(
+            path2_transparent_proof_bytes_envelope_v1_bytes(
+                &public_view,
+                &query_opening_manifest,
+                &merkle_paths_digest,
+                &[0_u8; DIGEST_BYTES],
+                b"path2-transparent-proof-body-placeholder",
+            )
+            .unwrap_err(),
+            "Path 2 transparent proof consistency messages digest is zero"
+        );
+        let mut wrong_merkle_digest = merkle_paths_digest;
+        wrong_merkle_digest[0] ^= 1;
+        assert_eq!(
+            verify_path2_transparent_proof_bytes_envelope_v1(
+                &public_view,
+                &query_opening_manifest,
+                &wrong_merkle_digest,
+                &consistency_messages_digest,
+                &proof_bytes,
+            )
+            .unwrap_err(),
+            "Path 2 transparent proof bytes envelope context mismatch"
         );
         let mut out_of_trace_manifest = query_opening_manifest.clone();
         for record in &mut out_of_trace_manifest.records {
@@ -28668,6 +28744,8 @@ mod tests {
             path2_transparent_proof_bytes_envelope_v1_bytes(
                 &public_view,
                 &out_of_trace_manifest,
+                &merkle_paths_digest,
+                &consistency_messages_digest,
                 b"path2-transparent-proof-body-placeholder",
             )
             .unwrap_err(),
@@ -28690,6 +28768,8 @@ mod tests {
             verify_path2_transparent_proof_bytes_envelope_v1(
                 &public_view,
                 &out_of_trace_manifest,
+                &merkle_paths_digest,
+                &consistency_messages_digest,
                 &proof_bytes,
             )
             .unwrap_err(),
@@ -28787,6 +28867,8 @@ mod tests {
             verify_path2_transparent_proof_bytes_envelope_v1(
                 &public_view,
                 &query_opening_manifest,
+                &merkle_paths_digest,
+                &consistency_messages_digest,
                 &rebound_envelope,
             )
             .unwrap_err(),
@@ -28796,6 +28878,8 @@ mod tests {
             path2_transparent_proof_bytes_envelope_v1_bytes(
                 &public_view,
                 &query_opening_manifest,
+                &merkle_paths_digest,
+                &consistency_messages_digest,
                 &[],
             )
             .unwrap_err(),
@@ -28808,6 +28892,8 @@ mod tests {
             path2_transparent_proof_bytes_envelope_v1_bytes(
                 &public_view,
                 &query_opening_manifest,
+                &merkle_paths_digest,
+                &consistency_messages_digest,
                 &vec![0x42; oversized_body_len],
             )
             .unwrap_err(),
