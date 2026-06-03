@@ -1,6 +1,6 @@
 # Path 2 Native Boundary Opening Tuple Account-Binding Estimate
 
-Status: first-pass estimate; semantic rows pinned, exact encoding pending.
+Status: first-pass estimate; semantic row class required, exact encoding pending.
 
 Purpose: stress-test `r_opening_tuple_account_binding`, the highest-risk open
 row group in the current 176-row working estimate.
@@ -12,6 +12,10 @@ Opening tuple binding must be algebraic. It must not prove the old
 
 The public `opening_tuple_handle` is a typed restriction of
 `p_section_root(b)`, not an independent digest witness.
+
+Lean now requires `openingTupleAccountBindingRow` coverage through
+`TraceRelationCoversNativeBoundary`, so a candidate relation profile cannot
+claim active relation knowledge while omitting this group.
 
 ## Required Semantics
 

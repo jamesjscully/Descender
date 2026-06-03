@@ -46,13 +46,16 @@ qFieldRow
 base128RangeRow
 maskConsistencyRow
 roleRestrictionRow
+openingTupleAccountBindingRow
+checkedCoreResidueCompatibilityRow
 lifecycleContextRow
 proofSystemBookkeepingRow
 ```
 
 This prevents relation-knowledge soundness from being claimed for only the old
 66-row semantic core or for a relation profile that omits masked-opening,
-role-restriction, lifecycle/context, or transcript/bookkeeping obligations.
+role-restriction, opening-tuple account-binding, checked-core compatibility,
+lifecycle/context, or transcript/bookkeeping obligations.
 
 ## Contract
 

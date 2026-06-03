@@ -27,6 +27,8 @@ TraceConstraintClass =
   | base128RangeRow
   | maskConsistencyRow
   | roleRestrictionRow
+  | openingTupleAccountBindingRow
+  | checkedCoreResidueCompatibilityRow
   | lifecycleContextRow
   | proofSystemBookkeepingRow
 ```
@@ -47,7 +49,8 @@ and `SupportsRelationKnowledge(profile)` requires the profile's relation
 inventory to contain at least one row in every mandatory class. A proof family
 therefore cannot close the active relation-knowledge theorem with only the old
 66-row semantic core, or with a profile that omits mask-consistency,
-role-restriction, lifecycle/context, or proof-system bookkeeping rows.
+role-restriction, opening-tuple account-binding, checked-core compatibility,
+lifecycle/context, or proof-system bookkeeping rows.
 
 ## Row Inventory
 
@@ -65,8 +68,8 @@ role-restriction, lifecycle/context, or proof-system bookkeeping rows.
 | `role_restriction_projection_relation` | `roleRestrictionRow` | open | binds projection relation columns to `projectionRelationHandle` |
 | `context_projection_match` | `lifecycleContextRow` | open | binds account/key/slot/state/lifecycle/aggregation context to `p_context(b)` |
 | `lifecycle_slot_consistency` | `lifecycleContextRow` | open | binds live marker and consume-once namespace to the admitted boundary |
-| `opening_tuple_account_binding` | `qFieldRow` / `lifecycleContextRow` | open | connects opening tuple to account witness, randomizer, lifecycle anchor, and spend-opening semantics |
-| `checked_core_residue_compatibility` | `qFieldRow` | open | connects carried residues to checked-core spend compatibility |
+| `opening_tuple_account_binding` | `openingTupleAccountBindingRow` | open | connects opening tuple to account witness, randomizer, lifecycle anchor, and spend-opening semantics |
+| `checked_core_residue_compatibility` | `checkedCoreResidueCompatibilityRow` | open | connects carried residues to checked-core spend compatibility |
 | `statement_digest_source` | `proofSystemBookkeepingRow` | open | binds canonical statement source to `p_statement(b)` without treating SHA as hidden proof semantics |
 | `transcript_schedule_bindings` | `proofSystemBookkeepingRow` | open | binds relation id, proof id, query schedule, role modes, no-export/range/blinding policies |
 

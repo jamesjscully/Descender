@@ -1,6 +1,6 @@
 # Path 2 Native Boundary Checked-Core Compatibility Estimate
 
-Status: first-pass estimate; exact checked-core row mapping pending.
+Status: first-pass estimate; semantic row class required, exact checked-core row mapping pending.
 
 Purpose: stress-test `r_checked_core_residue_compatibility`, one of the
 highest-risk open row groups in `NativeBoundaryTraceRelationV1`.
@@ -12,6 +12,10 @@ creation-time hidden representative to the checked-core residue interface that
 the spend proof will later consume.
 
 So this group should be residue compatibility, not checked-core verifier logic.
+
+Lean now requires `checkedCoreResidueCompatibilityRow` coverage through
+`TraceRelationCoversNativeBoundary`, so relation knowledge cannot be discharged
+by a profile that leaves the checked-core handoff implicit.
 
 ## Required Semantics
 

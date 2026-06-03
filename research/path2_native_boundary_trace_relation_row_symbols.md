@@ -34,6 +34,7 @@ Lean gate:
 `TraceRelationCoversNativeBoundary(profile.relationProfile)` inside
 `SupportsRelationKnowledge(profile)`. At minimum, a relation profile must cover
 `qFieldRow`, `base128RangeRow`, `maskConsistencyRow`, `roleRestrictionRow`,
+`openingTupleAccountBindingRow`, `checkedCoreResidueCompatibilityRow`,
 `lifecycleContextRow`, and `proofSystemBookkeepingRow`.
 
 ## Open Symbolic Rows
@@ -85,8 +86,8 @@ The active relation must additionally prove:
 
 - hidden/public masked-view consistency;
 - role restriction binding under the native parent root;
-- account/lifecycle/opening semantics;
-- checked-core compatibility;
+- opening-tuple account binding and lifecycle semantics;
+- checked-core residue compatibility;
 - transcript and policy schedule binding;
 - blinding/noise bounds.
 

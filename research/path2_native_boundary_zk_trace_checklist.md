@@ -77,6 +77,13 @@ knowledge soundness into parent-trace extraction and trace assembly, making the
 construction-dependent part explicit.
 `research/path2_native_boundary_role_completeness_table.md` pins the mandatory
 roles and Lean now exposes `ProfileRoleComplete`.
+`research/path2_native_boundary_trace_relation_v1_inventory.md`,
+`research/path2_native_boundary_opening_tuple_account_binding_estimate.md`, and
+`research/path2_native_boundary_checked_core_compat_estimate.md` pin the
+mandatory opening-tuple account-binding and checked-core residue-compatibility
+row classes; Lean now requires those classes inside
+`TraceRelationCoversNativeBoundary`, so a proof profile cannot close with only
+the masked 66-row core plus generic lifecycle/bookkeeping rows.
 `research/path2_native_boundary_parent_trace_extraction_contract.md` pins the
 extraction-mode gate and Lean now rejects sampled-opening-only profiles via
 `SupportsFullTraceExtraction`.

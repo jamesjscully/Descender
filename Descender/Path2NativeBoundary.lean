@@ -486,6 +486,8 @@ inductive TraceConstraintClass where
   | base128RangeRow
   | maskConsistencyRow
   | roleRestrictionRow
+  | openingTupleAccountBindingRow
+  | checkedCoreResidueCompatibilityRow
   | lifecycleContextRow
   | proofSystemBookkeepingRow
   deriving DecidableEq
@@ -507,7 +509,8 @@ def ConstraintClassCovered
 The active native-boundary relation must cover every mandatory row class. This
 prevents relation-knowledge soundness from being claimed for only the old
 66-row semantic core or for sampled/proximity checks that omit mask, role,
-lifecycle/context, or proof-system bookkeeping rows.
+opening-tuple account binding, checked-core compatibility, lifecycle/context,
+or proof-system bookkeeping rows.
 -/
 def TraceRelationCoversNativeBoundary
     (relation : TraceRelationProfile) : Prop :=
@@ -515,9 +518,14 @@ def TraceRelationCoversNativeBoundary
     ConstraintClassCovered relation TraceConstraintClass.base128RangeRow ∧
       ConstraintClassCovered relation TraceConstraintClass.maskConsistencyRow ∧
         ConstraintClassCovered relation TraceConstraintClass.roleRestrictionRow ∧
-          ConstraintClassCovered relation TraceConstraintClass.lifecycleContextRow ∧
+          ConstraintClassCovered relation
+              TraceConstraintClass.openingTupleAccountBindingRow ∧
             ConstraintClassCovered relation
-              TraceConstraintClass.proofSystemBookkeepingRow
+                TraceConstraintClass.checkedCoreResidueCompatibilityRow ∧
+              ConstraintClassCovered relation
+                  TraceConstraintClass.lifecycleContextRow ∧
+                ConstraintClassCovered relation
+                  TraceConstraintClass.proofSystemBookkeepingRow
 
 /-- One role/column entry in a native-boundary column profile. -/
 structure ColumnProfileEntry where

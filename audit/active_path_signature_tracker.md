@@ -259,6 +259,15 @@ to prove that the allowed modes actually correspond to parent-root role
 subcommitment authentication, simulator-only consistency, and extractor-only
 hidden role recovery in the concrete transparent proof system.
 
+The same pass also tightened relation-row coverage for the active
+native-boundary trace. `TraceRelationCoversNativeBoundary` now requires
+explicit `openingTupleAccountBindingRow` and
+`checkedCoreResidueCompatibilityRow` classes in addition to the older q-field,
+range, mask, role-restriction, lifecycle/context, and bookkeeping classes. This
+prevents the active relation-knowledge assumption from being discharged by a
+profile that includes the obsolete masked core and generic lifecycle rows while
+omitting the two account/spend handoff groups most likely to force redesign.
+
 ## Findings
 
 | ID | Severity | Status | Finding | Primary references |
