@@ -148,7 +148,7 @@ boundary projections.
 ## Next Proof Move
 
 Work on `TraceAssemblySoundness` first, because it is design-controlled. The
-task is now to instantiate the five decomposed subclaims for the columns of
+task is now to instantiate the six decomposed subclaims for the columns of
 `ExtractedTrace` that assemble into:
 
 ```text
@@ -175,6 +175,10 @@ trace assembly and hidden extractor role completeness. Lean now also exposes
 `SelectedActiveColumnProfile` and proves
 `selected_active_column_profile_role_complete`, so the active Rust
 masked-base128 role/column-set map discharges `ProfileRoleComplete` directly.
+`TraceAssemblySoundness` now carries `traceAssemblyDerivedRolesBound`, supplied
+by `TraceAssemblyDerivedRolesSoundness`, so derived lifecycle-slot and
+statement-source obligations are part of the assembly proof surface rather
+than prose-only role-completeness assumptions.
 `research/path2_native_boundary_parent_trace_extraction_contract.md` pins the
 parent-trace extraction contract. The preferred full-interface endpoint now
 uses `transparent_view_full_interface_from_atomic_gates_or_break`, so concrete

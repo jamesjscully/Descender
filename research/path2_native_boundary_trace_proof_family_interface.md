@@ -196,6 +196,7 @@ masked_opening_consistency_required = true
 parent_trace_extraction_composition_required = true
 trace_assembly_existence_required = true
 trace_assembly_roles_complete_required = true
+trace_assembly_derived_roles_required = true
 trace_assembly_fiber_required = true
 trace_assembly_local_valid_required = true
 trace_assembly_descent_consistent_required = true
@@ -215,6 +216,8 @@ blinding/noise policy field before the transparent verifier handoff. Clearing
 any decomposed assembly/range/blinding row flag rejects because the atomic Lean
 endpoint consumes those subclaims directly, including the same-trace gates that
 tie row facts to the extracted trace used for representative assembly. Clearing
+the derived-role assembly flag rejects because lifecycle-slot and
+statement-source derivation are now named inside `TraceAssemblySoundness`.
 `lean_atomic_full_interface_endpoint_present` rejects because the active Rust
 interface must be bound to the narrow Lean theorem
 `transparent_view_full_interface_from_atomic_gates_or_break`.

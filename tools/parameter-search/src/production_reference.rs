@@ -1517,6 +1517,7 @@ pub struct Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
     pub parent_trace_extraction_composition_required: bool,
     pub trace_assembly_existence_required: bool,
     pub trace_assembly_roles_complete_required: bool,
+    pub trace_assembly_derived_roles_required: bool,
     pub trace_assembly_fiber_required: bool,
     pub trace_assembly_local_valid_required: bool,
     pub trace_assembly_descent_consistent_required: bool,
@@ -10068,6 +10069,7 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1()
         parent_trace_extraction_composition_required: true,
         trace_assembly_existence_required: true,
         trace_assembly_roles_complete_required: true,
+        trace_assembly_derived_roles_required: true,
         trace_assembly_fiber_required: true,
         trace_assembly_local_valid_required: true,
         trace_assembly_descent_consistent_required: true,
@@ -10249,6 +10251,12 @@ pub fn verify_path2_native_boundary_trace_proof_family_interface(
     if !interface.trace_assembly_roles_complete_required {
         return Err(
             "Path 2 native-boundary trace proof-family interface lacks trace assembly role completeness"
+                .to_string(),
+        );
+    }
+    if !interface.trace_assembly_derived_roles_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks trace assembly derived roles"
                 .to_string(),
         );
     }
@@ -10490,6 +10498,11 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
         &mut frame,
         b"trace_assembly_roles_complete_required",
         u64::from(interface.trace_assembly_roles_complete_required),
+    );
+    append_u64(
+        &mut frame,
+        b"trace_assembly_derived_roles_required",
+        u64::from(interface.trace_assembly_derived_roles_required),
     );
     append_u64(
         &mut frame,
@@ -33934,6 +33947,7 @@ mod tests {
         assert!(interface.parent_trace_extraction_composition_required);
         assert!(interface.trace_assembly_existence_required);
         assert!(interface.trace_assembly_roles_complete_required);
+        assert!(interface.trace_assembly_derived_roles_required);
         assert!(interface.trace_assembly_fiber_required);
         assert!(interface.trace_assembly_local_valid_required);
         assert!(interface.trace_assembly_descent_consistent_required);
@@ -34089,6 +34103,14 @@ mod tests {
                 (
                     mutated,
                     "Path 2 native-boundary trace proof-family interface lacks trace assembly role completeness",
+                )
+            },
+            {
+                let mut mutated = interface.clone();
+                mutated.trace_assembly_derived_roles_required = false;
+                (
+                    mutated,
+                    "Path 2 native-boundary trace proof-family interface lacks trace assembly derived roles",
                 )
             },
             {

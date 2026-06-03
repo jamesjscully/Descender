@@ -609,6 +609,9 @@ Named breaks:
   `SelectedActiveColumnProfile`, with hidden/masked column sets `101..109` and
   `201..209`, and proves that this selected map implies
   `ProfileRoleComplete`.
+  The decomposed assembly route now includes
+  `TraceAssemblyDerivedRolesSoundness`, and the Rust proof-family interface
+  rejects clearing `trace_assembly_derived_roles_required`.
   `PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA`,
   `path2_transparent_proof_family_capability_v1`,
   `verify_path2_transparent_proof_family_capability`, and

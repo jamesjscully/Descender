@@ -1223,6 +1223,8 @@ structure Predicates where
     Boundary -> ColumnProfile -> HiddenRepresentative -> Prop
   traceAssemblyRolesComplete :
     Boundary -> ColumnProfile -> ExtractedTrace -> HiddenRepresentative -> Prop
+  traceAssemblyDerivedRolesBound :
+    Boundary -> ColumnProfile -> ExtractedTrace -> HiddenRepresentative -> Prop
   traceAssemblyInFiber :
     Boundary -> ColumnProfile -> ExtractedTrace -> HiddenRepresentative -> Prop
   traceAssemblyLocalValid :
@@ -1497,6 +1499,22 @@ def TraceAssemblyRolesCompleteSoundness (P : Predicates) : Prop :=
                     P.traceAssemblyRolesComplete b profile trace h ∧
                       P.extractedRolesComplete b profile h
 
+def TraceAssemblyDerivedRolesSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile} {trace : ExtractedTrace}
+      {h : HiddenRepresentative},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          ProfileRoleComplete profile ->
+          P.transparentExtractsTrace b view trace ->
+            P.traceOpensBoundary b profile trace ->
+              P.traceRelationValid b profile trace ->
+                P.traceAssemblesRepresentative trace h ->
+                  P.transparentExtracts b view h ->
+                    P.traceAssemblyRolesComplete b profile trace h ->
+                      P.traceAssemblyDerivedRolesBound b profile trace h
+
 def TraceAssemblyFiberSoundness (P : Predicates) : Prop :=
   forall {b : Boundary} {view : TransparentPublicView}
       {profile : ColumnProfile} {trace : ExtractedTrace}
@@ -1556,15 +1574,17 @@ def TraceAssemblySoundness (P : Predicates) : Prop :=
                   P.traceAssemblesRepresentative trace h ∧
                     P.transparentExtracts b view h ∧
                       P.extractedRolesComplete b profile h ∧
-                        InFiber P b.context b h ∧
-                          P.localValid b.context h ∧
-                            P.descentConsistent b.context h) ∨
+                        P.traceAssemblyDerivedRolesBound b profile trace h ∧
+                          InFiber P b.context b h ∧
+                            P.localValid b.context h ∧
+                              P.descentConsistent b.context h) ∨
                 (exists breakEvent, P.boundaryBreakFor b.context b breakEvent)
 
 theorem decomposed_trace_assembly_implies_trace_assembly_soundness
     (P : Predicates)
     (hAssemble : TraceRepresentativeAssemblyExistenceSoundness P)
     (hRoles : TraceAssemblyRolesCompleteSoundness P)
+    (hDerived : TraceAssemblyDerivedRolesSoundness P)
     (hFiber : TraceAssemblyFiberSoundness P)
     (hLocal : TraceAssemblyLocalValiditySoundness P)
     (hDescent : TraceAssemblyDescentConsistencySoundness P) :
@@ -1576,10 +1596,17 @@ theorem decomposed_trace_assembly_implies_trace_assembly_soundness
         hTrace hOpens hRelation with
   | inl hAssembly =>
       rcases hAssembly with ⟨h, hTraceAssembles, hTransparent⟩
+      have hRolesComplete :
+          P.traceAssemblyRolesComplete b profile trace h ∧
+            P.extractedRolesComplete b profile h :=
+        hRoles hAccept hProjects hProfile hRoleComplete
+          hTrace hOpens hRelation hTraceAssembles hTransparent
       exact Or.inl
         ⟨h, hTraceAssembles, hTransparent,
-          (hRoles hAccept hProjects hProfile hRoleComplete
-            hTrace hOpens hRelation hTraceAssembles hTransparent).2,
+          hRolesComplete.2,
+          hDerived hAccept hProjects hProfile hRoleComplete
+            hTrace hOpens hRelation hTraceAssembles hTransparent
+            hRolesComplete.1,
           (hFiber hAccept hProjects hProfile
             hTrace hOpens hRelation hTraceAssembles hTransparent).2,
           (hLocal hAccept hProjects hProfile
@@ -1605,9 +1632,10 @@ theorem trace_assembles_representative_or_break
       P.traceAssemblesRepresentative trace h ∧
         P.transparentExtracts b view h ∧
           P.extractedRolesComplete b profile h ∧
-            InFiber P b.context b h ∧
-              P.localValid b.context h ∧
-                P.descentConsistent b.context h) ∨
+            P.traceAssemblyDerivedRolesBound b profile trace h ∧
+              InFiber P b.context b h ∧
+                P.localValid b.context h ∧
+                  P.descentConsistent b.context h) ∨
       (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
   hSound hAccept hProjects hProfile hRoleComplete hTrace hOpens hRelation
 
@@ -2093,9 +2121,10 @@ theorem trace_extraction_implies_hidden_representative_or_break
                 P.traceAssemblesRepresentative trace h ∧
                   P.transparentExtracts b view h ∧
                     P.extractedRolesComplete b profile h ∧
-                      InFiber P b.context b h ∧
-                        P.localValid b.context h ∧
-                          P.descentConsistent b.context h) ∨
+                      P.traceAssemblyDerivedRolesBound b profile trace h ∧
+                        InFiber P b.context b h ∧
+                          P.localValid b.context h ∧
+                            P.descentConsistent b.context h) ∨
     (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) := by
   cases
       hTraceExtractSound hAccept hProjects hProfile hSelected with
@@ -2174,7 +2203,7 @@ theorem transparent_view_authenticates_extracts_no_export_or_break
                   _hRelation, hAssembled⟩
               rcases hAssembled with
                 ⟨h, _hTraceAssembles, hTransparent, hComplete,
-                  hFiber, hLocal, hDescent⟩
+                  _hDerived, hFiber, hLocal, hDescent⟩
               cases hNoExportSound hAccept hProjects hProfile with
               | inl hNoExport =>
                   cases hRoleAuthNoExportSound hAccept hProjects hProfile with
@@ -2288,6 +2317,7 @@ theorem transparent_view_full_interface_from_decomposed_or_break
     (hTraceExtractSound : ParentTraceExtractionSoundness P)
     (hTraceAssemblyExists : TraceRepresentativeAssemblyExistenceSoundness P)
     (hTraceAssemblyRoles : TraceAssemblyRolesCompleteSoundness P)
+    (hTraceAssemblyDerived : TraceAssemblyDerivedRolesSoundness P)
     (hTraceAssemblyFiber : TraceAssemblyFiberSoundness P)
     (hTraceAssemblyLocal : TraceAssemblyLocalValiditySoundness P)
     (hTraceAssemblyDescent : TraceAssemblyDescentConsistencySoundness P)
@@ -2329,8 +2359,8 @@ theorem transparent_view_full_interface_from_decomposed_or_break
   by
     have hTraceAssemblySound : TraceAssemblySoundness P :=
       decomposed_trace_assembly_implies_trace_assembly_soundness P
-        hTraceAssemblyExists hTraceAssemblyRoles hTraceAssemblyFiber
-        hTraceAssemblyLocal hTraceAssemblyDescent
+        hTraceAssemblyExists hTraceAssemblyRoles hTraceAssemblyDerived
+        hTraceAssemblyFiber hTraceAssemblyLocal hTraceAssemblyDescent
     cases hParentSound hAccept hProjects hProfile with
     | inl hParent =>
         cases hRoleSound hAccept hProjects hProfile with
@@ -2345,7 +2375,7 @@ theorem transparent_view_full_interface_from_decomposed_or_break
                 | inl hAssembled =>
                     rcases hAssembled with
                       ⟨h, hTraceAssembles, hTransparent, hComplete,
-                        hFiber, hLocal, hDescent⟩
+                        _hDerived, hFiber, hLocal, hDescent⟩
                     have _hSameTraceRangeRows :
                         P.rangeRowsBindTraceRepresentative
                             b view profile rangePolicy trace h ∧
@@ -2445,6 +2475,7 @@ theorem transparent_view_full_interface_from_atomic_gates_or_break
     (hRelationKnowledge : ExtractedTraceRelationKnowledgeSoundness P)
     (hTraceAssemblyExists : TraceRepresentativeAssemblyExistenceSoundness P)
     (hTraceAssemblyRoles : TraceAssemblyRolesCompleteSoundness P)
+    (hTraceAssemblyDerived : TraceAssemblyDerivedRolesSoundness P)
     (hTraceAssemblyFiber : TraceAssemblyFiberSoundness P)
     (hTraceAssemblyLocal : TraceAssemblyLocalValiditySoundness P)
     (hTraceAssemblyDescent : TraceAssemblyDescentConsistencySoundness P)
@@ -2487,8 +2518,8 @@ theorem transparent_view_full_interface_from_atomic_gates_or_break
     hParentSound hRoleSound
     (commitment_extraction_and_relation_knowledge_imply_parent_trace_extraction
       P hCommitExtract hMaskedConsistency hRelationKnowledge)
-    hTraceAssemblyExists hTraceAssemblyRoles hTraceAssemblyFiber
-    hTraceAssemblyLocal hTraceAssemblyDescent
+    hTraceAssemblyExists hTraceAssemblyRoles hTraceAssemblyDerived
+    hTraceAssemblyFiber hTraceAssemblyLocal hTraceAssemblyDescent
     hNoExportSound hRoleAuthNoExportSound hMaskFreshnessSound hQromSound
     hTraceRangeRows hRangeRows hRangeRowsToNorm
     hTraceBlindRows hBlindRows hBlindRowsToBound

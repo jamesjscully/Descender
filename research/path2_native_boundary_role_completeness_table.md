@@ -122,9 +122,14 @@ Done:
 `TraceAssemblySoundness` requires `ProfileRoleComplete profile`. The theorem
 `selected_active_column_profile_role_complete` discharges that role-completeness
 obligation from the selected active profile map.
+Lean now also names `traceAssemblyDerivedRolesBound` and
+`TraceAssemblyDerivedRolesSoundness`, and `TraceAssemblySoundness` carries that
+fact in the assembled trace witness. The Rust proof-family interface binds
+`trace_assembly_derived_roles_required = true`, so lifecycle-slot and
+statement-source derivation cannot remain only prose.
 
 ## Non-Claims
 
 - This does not assign final within-column indices.
 - This does not prove the mandatory roles are extractable.
-- This does not decide final encoding of derived lifecycle/statement roles.
+- This does not prove the concrete lifecycle/statement derivation equations.

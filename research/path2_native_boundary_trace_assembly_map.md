@@ -45,6 +45,7 @@ B_c(h) = b
 LocalValid_c(h)
 DescentConsistent_c(h)
 ExtractedRolesComplete(b, profile, h)
+TraceAssemblyDerivedRolesBound(b, profile, trace, h)
 Range/blinding bound rows are bound to the same trace that assembles h
 ```
 
@@ -162,6 +163,7 @@ The design constraints for assembly are:
 - `Predicates.traceRelationValid`
 - `Predicates.traceAssemblesRepresentative`
 - `Predicates.traceAssemblyRolesComplete`
+- `Predicates.traceAssemblyDerivedRolesBound`
 - `Predicates.traceAssemblyInFiber`
 - `Predicates.traceAssemblyLocalValid`
 - `Predicates.traceAssemblyDescentConsistent`
@@ -169,6 +171,7 @@ The design constraints for assembly are:
 - `Predicates.blindingRowsBoundTraceRepresentative`
 - `TraceRepresentativeAssemblyExistenceSoundness`
 - `TraceAssemblyRolesCompleteSoundness`
+- `TraceAssemblyDerivedRolesSoundness`
 - `TraceAssemblyFiberSoundness`
 - `TraceAssemblyLocalValiditySoundness`
 - `TraceAssemblyDescentConsistencySoundness`
@@ -191,10 +194,14 @@ Done:
 `research/path2_native_boundary_role_completeness_table.md` pins the mandatory
 roles, and Lean now requires `ProfileRoleComplete profile` before
 trace-assembly or extracted-role completeness can be claimed.
-Lean now also decomposes `TraceAssemblySoundness` into five named subclaims,
+Lean now also decomposes `TraceAssemblySoundness` into six named subclaims,
 with a composition theorem back to the existing endpoint.
 Lean now pins `SelectedActiveColumnProfile` and proves it implies
 `ProfileRoleComplete`, matching the active Rust column-set map.
+Lean now also requires `TraceAssemblyDerivedRolesSoundness` in the decomposed
+assembly composition, so lifecycle-slot and statement-source derivation are
+named obligations. Rust binds this as
+`trace_assembly_derived_roles_required = true`.
 
 ## Non-Claims
 
