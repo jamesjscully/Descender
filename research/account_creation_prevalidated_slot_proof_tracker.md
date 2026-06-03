@@ -450,9 +450,20 @@ Named breaks:
   covers the positive manifest, private-material serialization denylist, and
   those negative controls; the transparent payload boundary fixture now binds
   `query_openings_digest` to that manifest digest instead of an arbitrary
-  placeholder. The next executable blocker remains concrete transparent
-  verifier plus trace/relation encoding and honest/malformed query-opening
-  coverage against real proof bytes.
+  placeholder. The `R_core_66` relation encoding is now also executable:
+  `PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA`,
+  `path2_transparent_relation_layout_v1`,
+  `verify_path2_transparent_relation_layout`, and
+  `path2_transparent_relation_layout_v1_digest` pin the 6 masked-projection
+  rows, 20 digit-reconstruction rows, 40 digit-range rows, three semantic
+  roles, 40 base-128 digit lanes, 40 range-witness lanes, and the active
+  two-view column profile. `path2_transparent_descent_relation_id` now binds
+  the relation-layout digest, so row/role/lane drift changes the relation and
+  proof-system ids. KAT `path2_transparent_relation_layout_pins_r_core_66`
+  checks the positive layout and malformed row/role/digit negative controls.
+  The next executable blocker remains concrete transparent verifier plus
+  honest/malformed proof-byte coverage against this encoded relation and the
+  validated query-opening manifest.
 
 - [x] Carry over active-lane negative controls into creation time.
   Requirement: wrong witness digest, wrong pad seed, wrong public pad statement,

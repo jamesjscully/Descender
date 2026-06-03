@@ -269,6 +269,8 @@ pub const PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN: &str =
     "DESCENDER_PATH2_TRANSPARENT_DESCENT_PROOF_V1";
 pub const PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN: &str =
     "DESCENDER_PATH2_TRANSPARENT_DESCENT_RELATION_V1";
+pub const PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA: &str =
+    "DESCENDER_PATH2_TRANSPARENT_R_CORE_66_LAYOUT_V1";
 pub const PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA: &str = "DESCENDER_PATH2_TRANSPARENT_PUBLIC_VIEW_V1";
 pub const PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA: &str =
     "DESCENDER_PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1";
@@ -328,6 +330,9 @@ pub const PATH2_DIRECT_CREATION_PROOF_KIND_TOY_Q_LINEAR: u16 = 1;
 pub const PATH2_DIRECT_CREATION_PROOF_KIND_TRANSPARENT_DESCENT: u16 = 2;
 pub const PATH2_TRANSPARENT_DESCENT_PROOF_SYSTEM_PROFILE: &str =
     "DESCENDER_PATH2_TRANSPARENT_HASH_PROOF_OVER_DESCENT_RELATION_V1";
+pub const PATH2_TRANSPARENT_RELATION_ROW_GROUP_MASKED_PROJECTION: u8 = 1;
+pub const PATH2_TRANSPARENT_RELATION_ROW_GROUP_DIGIT_RECONSTRUCTION: u8 = 2;
+pub const PATH2_TRANSPARENT_RELATION_ROW_GROUP_DIGIT_RANGE: u8 = 3;
 pub const PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1: u16 = 1;
 pub const PATH2_TWO_VIEW_COLUMN_PROFILE_ENTRY_COUNT: usize = 9;
 pub const PATH2_TWO_VIEW_ROLE_CONTEXT_PUBLIC: u8 = 1;
@@ -1337,6 +1342,32 @@ pub struct Path2TransparentQueryOpeningManifestV1 {
     pub column_profile: u16,
     pub query_count: u16,
     pub records: Vec<Path2TransparentQueryOpeningRecordV1>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2TransparentRelationRoleLayoutV1 {
+    pub role_id: u8,
+    pub semantic_residues: u16,
+    pub base128_digits: u16,
+    pub range_witnesses: u16,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2TransparentRelationRowGroupV1 {
+    pub group_id: u8,
+    pub start_row: u16,
+    pub row_count: u16,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2TransparentRelationLayoutV1 {
+    pub schema: &'static str,
+    pub relation_rows: u16,
+    pub witness_lanes: u16,
+    pub masked_projection_lanes: u16,
+    pub column_profile: u16,
+    pub row_groups: [Path2TransparentRelationRowGroupV1; 3],
+    pub role_layouts: [Path2TransparentRelationRoleLayoutV1; 3],
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -9057,7 +9088,217 @@ pub fn path2_descent_sis_matrix_transcript_digest(
     Ok(hasher.finalize().into())
 }
 
+pub fn path2_transparent_relation_layout_v1() -> Path2TransparentRelationLayoutV1 {
+    Path2TransparentRelationLayoutV1 {
+        schema: PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA,
+        relation_rows: PATH2_TRANSPARENT_DESCENT_RELATION_ROWS as u16,
+        witness_lanes: PATH2_TRANSPARENT_DESCENT_WITNESS_LANES as u16,
+        masked_projection_lanes: HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES as u16,
+        column_profile: PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+        row_groups: [
+            Path2TransparentRelationRowGroupV1 {
+                group_id: PATH2_TRANSPARENT_RELATION_ROW_GROUP_MASKED_PROJECTION,
+                start_row: 0,
+                row_count: 6,
+            },
+            Path2TransparentRelationRowGroupV1 {
+                group_id: PATH2_TRANSPARENT_RELATION_ROW_GROUP_DIGIT_RECONSTRUCTION,
+                start_row: 6,
+                row_count: 20,
+            },
+            Path2TransparentRelationRowGroupV1 {
+                group_id: PATH2_TRANSPARENT_RELATION_ROW_GROUP_DIGIT_RANGE,
+                start_row: 26,
+                row_count: 40,
+            },
+        ],
+        role_layouts: [
+            Path2TransparentRelationRoleLayoutV1 {
+                role_id: PATH2_TWO_VIEW_ROLE_PAD_SOURCE,
+                semantic_residues: 6,
+                base128_digits: 12,
+                range_witnesses: 12,
+            },
+            Path2TransparentRelationRoleLayoutV1 {
+                role_id: PATH2_TWO_VIEW_ROLE_PROJECTION_RELATION,
+                semantic_residues: 6,
+                base128_digits: 12,
+                range_witnesses: 12,
+            },
+            Path2TransparentRelationRoleLayoutV1 {
+                role_id: PATH2_TWO_VIEW_ROLE_OPENING_TUPLE,
+                semantic_residues: 8,
+                base128_digits: 16,
+                range_witnesses: 16,
+            },
+        ],
+    }
+}
+
+pub fn verify_path2_transparent_relation_layout(
+    layout: &Path2TransparentRelationLayoutV1,
+) -> Result<(), String> {
+    if layout.schema != PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA {
+        return Err("Path 2 transparent relation layout schema mismatch".to_string());
+    }
+    if layout.relation_rows != PATH2_TRANSPARENT_DESCENT_RELATION_ROWS as u16 {
+        return Err("Path 2 transparent relation layout row count mismatch".to_string());
+    }
+    if layout.witness_lanes != PATH2_TRANSPARENT_DESCENT_WITNESS_LANES as u16 {
+        return Err("Path 2 transparent relation layout witness lane mismatch".to_string());
+    }
+    if layout.masked_projection_lanes != HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES as u16 {
+        return Err(
+            "Path 2 transparent relation layout masked projection lane mismatch".to_string(),
+        );
+    }
+    verify_path2_two_view_column_profile_id(layout.column_profile)?;
+
+    let mut expected_start = 0_u16;
+    let mut row_group_ids = BTreeSet::new();
+    for row_group in layout.row_groups {
+        if !row_group_ids.insert(row_group.group_id) {
+            return Err("Path 2 transparent relation layout duplicate row group".to_string());
+        }
+        if row_group.start_row != expected_start {
+            return Err(
+                "Path 2 transparent relation layout row groups are not contiguous".to_string(),
+            );
+        }
+        expected_start = expected_start
+            .checked_add(row_group.row_count)
+            .ok_or_else(|| "Path 2 transparent relation layout row overflow".to_string())?;
+    }
+    if expected_start != layout.relation_rows {
+        return Err("Path 2 transparent relation layout row total mismatch".to_string());
+    }
+    let masked_rows = layout
+        .row_groups
+        .iter()
+        .find(|row_group| {
+            row_group.group_id == PATH2_TRANSPARENT_RELATION_ROW_GROUP_MASKED_PROJECTION
+        })
+        .ok_or_else(|| {
+            "Path 2 transparent relation layout missing masked projection rows".to_string()
+        })?
+        .row_count;
+    if masked_rows != layout.masked_projection_lanes {
+        return Err(
+            "Path 2 transparent relation layout masked projection row mismatch".to_string(),
+        );
+    }
+
+    let mut role_ids = BTreeSet::new();
+    let mut semantic_residues = 0_u16;
+    let mut base128_digits = 0_u16;
+    let mut range_witnesses = 0_u16;
+    for role_layout in layout.role_layouts {
+        if !role_ids.insert(role_layout.role_id) {
+            return Err("Path 2 transparent relation layout duplicate role".to_string());
+        }
+        let profile_entry = path2_two_view_column_profile_entry(role_layout.role_id)?;
+        if profile_entry.visibility_class == PATH2_TWO_VIEW_VISIBILITY_PUBLIC {
+            return Err("Path 2 transparent relation layout private role is public".to_string());
+        }
+        if role_layout.base128_digits != role_layout.semantic_residues * 2 {
+            return Err("Path 2 transparent relation layout digit count mismatch".to_string());
+        }
+        if role_layout.range_witnesses != role_layout.base128_digits {
+            return Err("Path 2 transparent relation layout range witness mismatch".to_string());
+        }
+        semantic_residues = semantic_residues
+            .checked_add(role_layout.semantic_residues)
+            .ok_or_else(|| "Path 2 transparent relation layout semantic overflow".to_string())?;
+        base128_digits = base128_digits
+            .checked_add(role_layout.base128_digits)
+            .ok_or_else(|| "Path 2 transparent relation layout digit overflow".to_string())?;
+        range_witnesses = range_witnesses
+            .checked_add(role_layout.range_witnesses)
+            .ok_or_else(|| "Path 2 transparent relation layout range overflow".to_string())?;
+    }
+    for role in [
+        PATH2_TWO_VIEW_ROLE_PAD_SOURCE,
+        PATH2_TWO_VIEW_ROLE_PROJECTION_RELATION,
+        PATH2_TWO_VIEW_ROLE_OPENING_TUPLE,
+    ] {
+        if !role_ids.contains(&role) {
+            return Err("Path 2 transparent relation layout missing semantic role".to_string());
+        }
+    }
+    let reconstruction_rows = layout
+        .row_groups
+        .iter()
+        .find(|row_group| {
+            row_group.group_id == PATH2_TRANSPARENT_RELATION_ROW_GROUP_DIGIT_RECONSTRUCTION
+        })
+        .ok_or_else(|| {
+            "Path 2 transparent relation layout missing reconstruction rows".to_string()
+        })?
+        .row_count;
+    if reconstruction_rows != semantic_residues {
+        return Err("Path 2 transparent relation layout reconstruction row mismatch".to_string());
+    }
+    let range_rows = layout
+        .row_groups
+        .iter()
+        .find(|row_group| row_group.group_id == PATH2_TRANSPARENT_RELATION_ROW_GROUP_DIGIT_RANGE)
+        .ok_or_else(|| "Path 2 transparent relation layout missing range rows".to_string())?
+        .row_count;
+    if range_rows != base128_digits || range_rows != range_witnesses {
+        return Err("Path 2 transparent relation layout range row mismatch".to_string());
+    }
+    if base128_digits + range_witnesses != layout.witness_lanes {
+        return Err("Path 2 transparent relation layout witness lane total mismatch".to_string());
+    }
+    Ok(())
+}
+
+pub fn path2_transparent_relation_layout_v1_digest() -> Result<[u8; DIGEST_BYTES], String> {
+    let layout = path2_transparent_relation_layout_v1();
+    verify_path2_transparent_relation_layout(&layout)?;
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA.as_bytes(),
+    );
+    append_u64(&mut frame, b"relation_rows", layout.relation_rows as u64);
+    append_u64(&mut frame, b"witness_lanes", layout.witness_lanes as u64);
+    append_u64(
+        &mut frame,
+        b"masked_projection_lanes",
+        layout.masked_projection_lanes as u64,
+    );
+    append_u64(&mut frame, b"column_profile", layout.column_profile as u64);
+    for row_group in layout.row_groups {
+        append_u64(&mut frame, b"row_group_id", row_group.group_id as u64);
+        append_u64(&mut frame, b"start_row", row_group.start_row as u64);
+        append_u64(&mut frame, b"row_count", row_group.row_count as u64);
+    }
+    for role_layout in layout.role_layouts {
+        append_u64(&mut frame, b"role_id", role_layout.role_id as u64);
+        append_u64(
+            &mut frame,
+            b"semantic_residues",
+            role_layout.semantic_residues as u64,
+        );
+        append_u64(
+            &mut frame,
+            b"base128_digits",
+            role_layout.base128_digits as u64,
+        );
+        append_u64(
+            &mut frame,
+            b"range_witnesses",
+            role_layout.range_witnesses as u64,
+        );
+    }
+    Ok(Sha256::digest(frame).into())
+}
+
 pub fn path2_transparent_descent_relation_id() -> [u8; DIGEST_BYTES] {
+    let relation_layout_digest = path2_transparent_relation_layout_v1_digest()
+        .expect("Path 2 transparent relation layout is statically valid");
     let mut frame = Vec::new();
     append_frame(
         &mut frame,
@@ -9078,6 +9319,11 @@ pub fn path2_transparent_descent_relation_id() -> [u8; DIGEST_BYTES] {
         &mut frame,
         b"masked_projection_lanes",
         HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"relation_layout_digest",
+        &relation_layout_digest,
     );
     Sha256::digest(frame).into()
 }
@@ -12607,7 +12853,7 @@ pub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(
         .map_err(|err| format!("encode Path 2 native storage/lifecycle hardening scope: {err}"))
 }
 
-pub fn path2_registered_domain_constants() -> [&'static str; 22] {
+pub fn path2_registered_domain_constants() -> [&'static str; 23] {
     [
         PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN,
         PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN,
@@ -12627,6 +12873,7 @@ pub fn path2_registered_domain_constants() -> [&'static str; 22] {
         PATH2_DESCENT_SIS_TRANSCRIPT_COMMITMENT_MATRIX_DOMAIN,
         PATH2_TRANSPARENT_DESCENT_PROOF_DOMAIN,
         PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN,
+        PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA,
         PATH2_TRANSPARENT_DESCENT_PROOF_SYSTEM_PROFILE,
         PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA,
         PATH2_TWO_VIEW_COLUMN_PROFILE_SCHEMA,
@@ -12922,6 +13169,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN",
             PATH2_TRANSPARENT_DESCENT_RELATION_DOMAIN,
+        ),
+        (
+            "PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA",
+            PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA,
         ),
         (
             "PATH2_TRANSPARENT_DESCENT_PROOF_SYSTEM_PROFILE",
@@ -30256,6 +30507,83 @@ mod tests {
         assert_eq!(
             verify_path2_two_view_column_profile(&unknown_visibility).unwrap_err(),
             "Path 2 two-view column profile unknown visibility class"
+        );
+    }
+
+    #[test]
+    fn path2_transparent_relation_layout_pins_r_core_66() {
+        let layout = path2_transparent_relation_layout_v1();
+        verify_path2_transparent_relation_layout(&layout).unwrap();
+        assert_eq!(layout.schema, PATH2_TRANSPARENT_RELATION_LAYOUT_SCHEMA);
+        assert_eq!(
+            layout.relation_rows,
+            PATH2_TRANSPARENT_DESCENT_RELATION_ROWS as u16
+        );
+        assert_eq!(
+            layout.witness_lanes,
+            PATH2_TRANSPARENT_DESCENT_WITNESS_LANES as u16
+        );
+        assert_eq!(
+            layout.masked_projection_lanes,
+            HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES as u16
+        );
+        assert_eq!(
+            layout.column_profile,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1
+        );
+        assert_eq!(
+            layout.row_groups[0].group_id,
+            PATH2_TRANSPARENT_RELATION_ROW_GROUP_MASKED_PROJECTION
+        );
+        assert_eq!(layout.row_groups[0].start_row, 0);
+        assert_eq!(layout.row_groups[0].row_count, 6);
+        assert_eq!(
+            layout.row_groups[1].group_id,
+            PATH2_TRANSPARENT_RELATION_ROW_GROUP_DIGIT_RECONSTRUCTION
+        );
+        assert_eq!(layout.row_groups[1].start_row, 6);
+        assert_eq!(layout.row_groups[1].row_count, 20);
+        assert_eq!(
+            layout.row_groups[2].group_id,
+            PATH2_TRANSPARENT_RELATION_ROW_GROUP_DIGIT_RANGE
+        );
+        assert_eq!(layout.row_groups[2].start_row, 26);
+        assert_eq!(layout.row_groups[2].row_count, 40);
+        assert_ne!(
+            path2_transparent_relation_layout_v1_digest().unwrap(),
+            [0_u8; DIGEST_BYTES]
+        );
+        assert_ne!(
+            path2_transparent_descent_relation_id(),
+            [0_u8; DIGEST_BYTES]
+        );
+
+        let mut malformed_rows = layout;
+        malformed_rows.row_groups[1].start_row += 1;
+        assert_eq!(
+            verify_path2_transparent_relation_layout(&malformed_rows).unwrap_err(),
+            "Path 2 transparent relation layout row groups are not contiguous"
+        );
+
+        let mut malformed_reconstruction = layout;
+        malformed_reconstruction.relation_rows += 1;
+        assert_eq!(
+            verify_path2_transparent_relation_layout(&malformed_reconstruction).unwrap_err(),
+            "Path 2 transparent relation layout row count mismatch"
+        );
+
+        let mut malformed_digits = layout;
+        malformed_digits.role_layouts[0].base128_digits -= 1;
+        assert_eq!(
+            verify_path2_transparent_relation_layout(&malformed_digits).unwrap_err(),
+            "Path 2 transparent relation layout digit count mismatch"
+        );
+
+        let mut public_role = layout;
+        public_role.role_layouts[0].role_id = PATH2_TWO_VIEW_ROLE_CONTEXT_PUBLIC;
+        assert_eq!(
+            verify_path2_transparent_relation_layout(&public_role).unwrap_err(),
+            "Path 2 transparent relation layout private role is public"
         );
     }
 
