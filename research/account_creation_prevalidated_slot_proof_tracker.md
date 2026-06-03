@@ -605,6 +605,10 @@ Named breaks:
   parent-trace extraction atoms, decomposed trace assembly, and same-trace
   range/blinding row gates directly, so the active proof cannot close via an
   unrelated abstract two-view extractor or unrelated auxiliary-row trace.
+  Lean also mirrors the selected active Rust role map as
+  `SelectedActiveColumnProfile`, with hidden/masked column sets `101..109` and
+  `201..209`, and proves that this selected map implies
+  `ProfileRoleComplete`.
   `PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA`,
   `path2_transparent_proof_family_capability_v1`,
   `verify_path2_transparent_proof_family_capability`, and

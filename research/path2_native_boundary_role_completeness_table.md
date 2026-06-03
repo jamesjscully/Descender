@@ -1,6 +1,6 @@
 # Path 2 Native Boundary Role Completeness Table
 
-Status: mandatory role coverage pinned; concrete column ids pending.
+Status: mandatory role coverage and selected active column-set map pinned.
 
 Purpose: ensure `ExtractedRolesComplete(b, profile, h)` is not a vague claim.
 Every role needed for local validity, descent consistency, or the boundary
@@ -22,6 +22,28 @@ projection must be present in the profile and extractable from the full trace.
 | `mask_domain` | yes for no-export | yes | yes through transcript semantics | no if reuse changes leakage/replay surface | binds native boundary, role, column set, row, query, and transcript |
 | `lifecycle_slot` | yes | yes | yes | no | may be represented across context/opening columns rather than a separate role handle |
 | `statement_digest_source` | yes | yes | yes | no | canonical source for `p_statement(b)` / creation statement digest |
+
+## Selected Active Column Sets
+
+The active Rust profile `PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1` is
+mirrored in Lean by `SelectedActiveColumnProfile`. The selected theorem-level
+role entries are:
+
+| role | hidden set | masked set | visibility | auth mode | mask domain | range policy |
+|---|---:|---:|---|---|---:|---:|
+| `context_public` | 101 | 201 | public | public path to masked leaf | 0 | 0 |
+| `packed_witness` | 102 | 202 | extractor hidden | extractor-only opening | 1 | 1 |
+| `randomizer` | 103 | 203 | blinding private | simulator-only path | 2 | 0 |
+| `pad_source` | 104 | 204 | extractor hidden | extractor-only opening | 3 | 1 |
+| `opening_tuple` | 105 | 205 | extractor hidden | extractor-only opening | 4 | 1 |
+| `projection_relation` | 106 | 206 | extractor hidden | extractor-only opening | 5 | 1 |
+| `range_witness` | 107 | 207 | range private | extractor-only opening | 6 | 2 |
+| `blinding` | 108 | 208 | blinding private | simulator-only path | 7 | 0 |
+| `constraint` | 109 | 209 | committed hidden | simulator-only path | 8 | 0 |
+
+Lean theorem `selected_active_column_profile_role_complete` proves that this
+selected map implies `ProfileRoleComplete`, so the trace-assembly endpoint no
+longer relies on an unnamed role-coverage witness for the active profile.
 
 ## Completeness Predicate
 
@@ -71,8 +93,10 @@ Reject or export a named break for any profile that:
 ## Current Assessment
 
 No missing mandatory role is visible in the active native-boundary profile. The
-main cleanup is to decide whether `randomizer` and `lifecycle_slot` are
-explicit role handles or derived subroles of `opening_tuple` and context.
+role ids and hidden/masked column-set ids are now pinned for the selected
+profile. The remaining cleanup is to decide whether `lifecycle_slot` and
+statement-digest source remain purely derived roles or need explicit profile
+entries.
 
 That is not a cryptographic blocker as long as the profile states the
 derivation rule and `TraceAssemblySoundness` consumes it.
@@ -91,14 +115,16 @@ The predicates can remain abstract, but naming them prevents a future proof
 from satisfying `ExtractedRolesComplete` with a partial profile.
 
 Done:
-`Descender/Path2NativeBoundary.lean` now defines `MandatoryRoleCovered` and
-`ProfileRoleComplete`. The final active endpoint now routes through
+`Descender/Path2NativeBoundary.lean` now defines `MandatoryRoleCovered`,
+`ProfileRoleComplete`, `SelectedActiveRoleEntry`, and
+`SelectedActiveColumnProfile`. The final active endpoint now routes through
 `ParentTraceExtractionSoundness` and `TraceAssemblySoundness`, and
-`TraceAssemblySoundness` requires `ProfileRoleComplete profile`, so a partial
-profile cannot satisfy the active extractor-completeness surface.
+`TraceAssemblySoundness` requires `ProfileRoleComplete profile`. The theorem
+`selected_active_column_profile_role_complete` discharges that role-completeness
+obligation from the selected active profile map.
 
 ## Non-Claims
 
-- This does not assign concrete column indices.
+- This does not assign final within-column indices.
 - This does not prove the mandatory roles are extractable.
-- This does not decide final encoding of derived roles.
+- This does not decide final encoding of derived lifecycle/statement roles.

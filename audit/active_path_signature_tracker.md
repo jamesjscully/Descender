@@ -301,6 +301,10 @@ is no longer enough to discharge `transparent_view_full_interface_or_break`.
 `TraceAssemblySoundness` is now decomposed into representative assembly
 existence, role completeness, boundary-fiber projection, local validity, and
 descent consistency, with a composition theorem back to the endpoint.
+Lean now mirrors the selected active Rust column profile as
+`SelectedActiveColumnProfile`, including hidden/masked column sets `101..109`
+and `201..209`, and proves `selected_active_column_profile_role_complete`, so
+the active profile map discharges `ProfileRoleComplete` for trace assembly.
 The preferred full-interface closure theorem is now
 `transparent_view_full_interface_from_atomic_gates_or_break`, which composes
 parent-trace commitment extraction, masked-opening consistency,

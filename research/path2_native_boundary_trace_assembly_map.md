@@ -1,7 +1,7 @@
 # Path 2 Native Boundary Trace Assembly Map
 
-Status: decomposed assembly theorem route pinned; concrete column indices not
-assigned.
+Status: decomposed assembly theorem route and selected role column-set map
+pinned; final within-column indices not assigned.
 
 Purpose: test the design-controlled half of knowledge soundness:
 
@@ -60,6 +60,15 @@ Range/blinding bound rows are bound to the same trace that assembles h
 | `LifecycleSlot_c` | context/public and opening tuple columns | fixed by `p_context(b)`, live marker, slot id, lifecycle anchor, and consume-once namespace |
 | `TraceWitness_c` | full hidden extractor view | includes all private role vectors, masks, range witnesses, account-binding witnesses, and local constraint witnesses |
 | `Gauge_c` | blinding/range/mask auxiliary columns | quotient-safe choices, private masks, encoding choices, and blinding/noise auxiliaries |
+
+The selected active profile now fixes theorem-level role column sets:
+`context_public = 101/201`, `packed_witness = 102/202`, `randomizer = 103/203`,
+`pad_source = 104/204`, `opening_tuple = 105/205`,
+`projection_relation = 106/206`, `range_witness = 107/207`,
+`blinding = 108/208`, and `constraint = 109/209`, where each pair is
+`hidden_set/masked_set`. Lean mirrors this as `SelectedActiveColumnProfile`,
+and `selected_active_column_profile_role_complete` proves the selected map
+implies `ProfileRoleComplete`.
 
 ## Boundary Projection Checks
 
@@ -128,6 +137,7 @@ The design constraints for assembly are:
 
 - keep all semantic roles under one parent root;
 - keep role handles typed by role id and column set;
+- use the selected active column-set ids for the mandatory role map;
 - make every cross-role equality a trace relation check;
 - make `native_boundary_digest` the digest of the projection object, not a
   separate witness commitment;
@@ -138,9 +148,7 @@ The design constraints for assembly are:
 
 ## Open Details
 
-- assign concrete column-set ids for each role;
-- decide whether `randomizer` remains a separate role handle or is absorbed
-  into `opening_tuple`;
+- assign final within-column indices for each role;
 - pin exact base-128 digit counts for each hidden q12289 role value;
 - pin exact lifecycle consume-once columns needed for `LifecycleSlot_c`;
 - specify the canonical statement digest recipe from assembled projections.
@@ -185,9 +193,11 @@ roles, and Lean now requires `ProfileRoleComplete profile` before
 trace-assembly or extracted-role completeness can be claimed.
 Lean now also decomposes `TraceAssemblySoundness` into five named subclaims,
 with a composition theorem back to the existing endpoint.
+Lean now pins `SelectedActiveColumnProfile` and proves it implies
+`ProfileRoleComplete`, matching the active Rust column-set map.
 
 ## Non-Claims
 
 - This does not prove the decomposed assembly obligations.
-- This does not assign final column indices.
+- This does not assign final within-column indices.
 - This does not prove the proof family extracts the full trace.

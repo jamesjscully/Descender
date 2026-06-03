@@ -531,6 +531,7 @@ def TraceRelationCoversNativeBoundary
 structure ColumnProfileEntry where
   roleId : RoleId
   columnSetId : Nat
+  maskedColumnSetId : Nat
   visibilityClass : VisibilityClass
   authenticationMode : RoleAuthenticationMode
   maskDomainLabel : Nat
@@ -857,6 +858,160 @@ theorem selected_trace_knowledge_modes_support_relation_knowledge
     (h : UsesSelectedTraceKnowledgeModes profile) :
     SupportsRelationKnowledge profile :=
   ⟨Or.inr (Or.inr h.2.1), h.2.2⟩
+
+/-- The active Rust two-view column profile id mirrored at theorem level. -/
+def selectedTwoViewColumnProfileId : Nat :=
+  1
+
+/-- The active typed-role query-opening policy id. -/
+def selectedTwoViewQueryOpeningPolicyId : Nat :=
+  1
+
+/-- The active unknown-profile rejection policy id. -/
+def selectedTwoViewRejectionPolicyId : Nat :=
+  1
+
+/-- Hidden column-set ids for the active two-view column profile. -/
+def selectedRoleHiddenColumnSet : RoleId -> Nat
+  | RoleId.contextPublic => 101
+  | RoleId.packedWitness => 102
+  | RoleId.randomizer => 103
+  | RoleId.padSource => 104
+  | RoleId.openingTuple => 105
+  | RoleId.projectionRelation => 106
+  | RoleId.rangeWitness => 107
+  | RoleId.blinding => 108
+  | RoleId.constraint => 109
+
+/-- Masked column-set ids for the active two-view column profile. -/
+def selectedRoleMaskedColumnSet : RoleId -> Nat
+  | RoleId.contextPublic => 201
+  | RoleId.packedWitness => 202
+  | RoleId.randomizer => 203
+  | RoleId.padSource => 204
+  | RoleId.openingTuple => 205
+  | RoleId.projectionRelation => 206
+  | RoleId.rangeWitness => 207
+  | RoleId.blinding => 208
+  | RoleId.constraint => 209
+
+/-- Mask-domain labels for the active two-view column profile. -/
+def selectedRoleMaskDomain : RoleId -> Nat
+  | RoleId.contextPublic => 0
+  | RoleId.packedWitness => 1
+  | RoleId.randomizer => 2
+  | RoleId.padSource => 3
+  | RoleId.openingTuple => 4
+  | RoleId.projectionRelation => 5
+  | RoleId.rangeWitness => 6
+  | RoleId.blinding => 7
+  | RoleId.constraint => 8
+
+/-- Visibility class selected for each active theorem-level role. -/
+def selectedRoleVisibility : RoleId -> VisibilityClass
+  | RoleId.contextPublic => VisibilityClass.vcPublic
+  | RoleId.packedWitness => VisibilityClass.vcExtractorHidden
+  | RoleId.randomizer => VisibilityClass.vcBlindingPrivate
+  | RoleId.padSource => VisibilityClass.vcExtractorHidden
+  | RoleId.openingTuple => VisibilityClass.vcExtractorHidden
+  | RoleId.projectionRelation => VisibilityClass.vcExtractorHidden
+  | RoleId.rangeWitness => VisibilityClass.vcRangePrivate
+  | RoleId.blinding => VisibilityClass.vcBlindingPrivate
+  | RoleId.constraint => VisibilityClass.vcCommittedHidden
+
+/-- Role-authentication mode selected for each active theorem-level role. -/
+def selectedRoleAuthenticationMode : RoleId -> RoleAuthenticationMode
+  | RoleId.contextPublic => RoleAuthenticationMode.publicPathToMaskedLeaf
+  | RoleId.packedWitness => RoleAuthenticationMode.extractorOnlyOpening
+  | RoleId.randomizer => RoleAuthenticationMode.simulatorOnlyPath
+  | RoleId.padSource => RoleAuthenticationMode.extractorOnlyOpening
+  | RoleId.openingTuple => RoleAuthenticationMode.extractorOnlyOpening
+  | RoleId.projectionRelation => RoleAuthenticationMode.extractorOnlyOpening
+  | RoleId.rangeWitness => RoleAuthenticationMode.extractorOnlyOpening
+  | RoleId.blinding => RoleAuthenticationMode.simulatorOnlyPath
+  | RoleId.constraint => RoleAuthenticationMode.simulatorOnlyPath
+
+/-- Range-policy id selected for each active theorem-level role. -/
+def selectedRoleRangePolicyId : RoleId -> Nat
+  | RoleId.packedWitness => selectedHybridBase128SemanticRangePolicyId
+  | RoleId.padSource => selectedHybridBase128SemanticRangePolicyId
+  | RoleId.openingTuple => selectedHybridBase128SemanticRangePolicyId
+  | RoleId.projectionRelation => selectedHybridBase128SemanticRangePolicyId
+  | RoleId.rangeWitness => selectedHybridBase128WitnessRangePolicyId
+  | RoleId.contextPublic => 0
+  | RoleId.randomizer => 0
+  | RoleId.blinding => 0
+  | RoleId.constraint => 0
+
+/-- One active role entry matches the selected Rust two-view profile table. -/
+def SelectedActiveRoleEntry
+    (profile : ColumnProfile) (roleId : RoleId) : Prop :=
+  exists index,
+    (profile.entry index).roleId = roleId ∧
+      (profile.entry index).columnSetId =
+        selectedRoleHiddenColumnSet roleId ∧
+        (profile.entry index).maskedColumnSetId =
+          selectedRoleMaskedColumnSet roleId ∧
+          (profile.entry index).visibilityClass =
+            selectedRoleVisibility roleId ∧
+            (profile.entry index).authenticationMode =
+              selectedRoleAuthenticationMode roleId ∧
+              (profile.entry index).maskDomainLabel =
+                selectedRoleMaskDomain roleId ∧
+                (profile.entry index).rangePolicyId =
+                  selectedRoleRangePolicyId roleId ∧
+                  (profile.entry index).restrictionRuleId =
+                    selectedTwoViewQueryOpeningPolicyId
+
+/--
+The selected active column profile pins every role/column-set entry used by
+the Rust masked-base128 two-view profile.
+-/
+def SelectedActiveColumnProfile (profile : ColumnProfile) : Prop :=
+  profile.profileId = selectedTwoViewColumnProfileId ∧
+    profile.queryOpeningPolicyId =
+      selectedTwoViewQueryOpeningPolicyId ∧
+      profile.rejectionPolicyId =
+        selectedTwoViewRejectionPolicyId ∧
+        UsesSelectedTraceKnowledgeModes profile ∧
+          ColumnProfilePrivateAuthModesSafe profile ∧
+            SelectedActiveRoleEntry profile RoleId.contextPublic ∧
+              SelectedActiveRoleEntry profile RoleId.packedWitness ∧
+                SelectedActiveRoleEntry profile RoleId.randomizer ∧
+                  SelectedActiveRoleEntry profile RoleId.padSource ∧
+                    SelectedActiveRoleEntry profile RoleId.openingTuple ∧
+                      SelectedActiveRoleEntry profile
+                        RoleId.projectionRelation ∧
+                        SelectedActiveRoleEntry profile
+                          RoleId.rangeWitness ∧
+                          SelectedActiveRoleEntry profile RoleId.blinding ∧
+                            SelectedActiveRoleEntry profile RoleId.constraint
+
+theorem selected_active_role_entry_covers
+    {profile : ColumnProfile} {roleId : RoleId}
+    (h : SelectedActiveRoleEntry profile roleId) :
+    MandatoryRoleCovered profile roleId := by
+  rcases h with ⟨index, hRole, _hRest⟩
+  exact ⟨index, hRole⟩
+
+theorem selected_active_column_profile_role_complete
+    {profile : ColumnProfile}
+    (h : SelectedActiveColumnProfile profile) :
+    ProfileRoleComplete profile := by
+  rcases h with
+    ⟨_hProfileId, _hQueryPolicy, _hRejectionPolicy,
+      _hTraceModes, _hPrivateAuth, hContext, hPacked, hRandomizer,
+      hPad, hOpening, hProjection, hRange, hBlinding, hConstraint⟩
+  exact
+    ⟨selected_active_role_entry_covers hContext,
+      selected_active_role_entry_covers hPacked,
+      selected_active_role_entry_covers hRandomizer,
+      selected_active_role_entry_covers hPad,
+      selected_active_role_entry_covers hOpening,
+      selected_active_role_entry_covers hProjection,
+      selected_active_role_entry_covers hRange,
+      selected_active_role_entry_covers hBlinding,
+      selected_active_role_entry_covers hConstraint⟩
 
 /-- Native boundary masked projection as the older Path2DescentSIS quotient. -/
 def toDescentSISMaskedProjection

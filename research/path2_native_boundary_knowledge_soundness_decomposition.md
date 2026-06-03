@@ -167,11 +167,14 @@ columns.
 
 First-pass result:
 `research/path2_native_boundary_trace_assembly_map.md` pins the map from full
-trace roles to `H_c` components and identifies the remaining concrete role and
-column-set details.
+trace roles to `H_c` components and records the selected active role column-set
+map.
 `research/path2_native_boundary_role_completeness_table.md` pins mandatory
 role coverage, and the Lean interface now requires `ProfileRoleComplete` for
-trace assembly and hidden extractor role completeness.
+trace assembly and hidden extractor role completeness. Lean now also exposes
+`SelectedActiveColumnProfile` and proves
+`selected_active_column_profile_role_complete`, so the active Rust
+masked-base128 role/column-set map discharges `ProfileRoleComplete` directly.
 `research/path2_native_boundary_parent_trace_extraction_contract.md` pins the
 parent-trace extraction contract. The preferred full-interface endpoint now
 uses `transparent_view_full_interface_from_atomic_gates_or_break`, so concrete
