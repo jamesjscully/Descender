@@ -486,7 +486,13 @@ Named breaks:
   active route. The boundary KAT now also covers proof-byte digest mismatch,
   body digest mismatch, truncated proof body, envelope context rebinding, empty
   proof-body rejection, oversized proof-body rejection, and oversized envelope
-  rejection. The proof-system id now binds the
+  rejection. Query-opening manifests are now also checked against the accepted
+  public view before proof-verifier handoff:
+  `verify_path2_transparent_query_opening_manifest_for_public_view` rejects
+  manifest context mismatch and any record whose `row_index` is outside the
+  scheduled trace row count; the boundary KAT covers this out-of-trace-row
+  negative at both the manifest-aware boundary and proof-byte envelope verifier.
+  The proof-system id now binds the
   active proof-family capability profile:
   `PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA`,
   `path2_transparent_proof_family_capability_v1`,

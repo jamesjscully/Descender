@@ -10554,6 +10554,28 @@ pub fn path2_transparent_query_opening_manifest_digest(
     Ok(Sha256::digest(frame).into())
 }
 
+pub fn verify_path2_transparent_query_opening_manifest_for_public_view(
+    public_view: &Path2TransparentDescentPublicViewV1,
+    manifest: &Path2TransparentQueryOpeningManifestV1,
+) -> Result<(), String> {
+    verify_path2_transparent_query_opening_manifest(manifest)?;
+    if manifest.proof_system_id != public_view.proof_system_id
+        || manifest.relation_id != public_view.relation_id
+        || manifest.column_profile != public_view.column_profile
+        || manifest.query_count != public_view.query_count
+    {
+        return Err(
+            "Path 2 transparent descent query opening manifest context mismatch".to_string(),
+        );
+    }
+    for record in &manifest.records {
+        if record.row_index >= public_view.trace_rows {
+            return Err("Path 2 transparent query opening row is outside trace".to_string());
+        }
+    }
+    Ok(())
+}
+
 pub fn path2_transparent_descent_transcript_digest(
     proof_system_id: &[u8; DIGEST_BYTES],
     trace_rows: u16,
@@ -10819,7 +10841,10 @@ pub fn verify_path2_transparent_proof_bytes_envelope_v1(
     proof_bytes: &[u8],
 ) -> Result<Path2TransparentProofBytesEnvelopeV1, String> {
     let envelope = decode_path2_transparent_proof_bytes_envelope_v1(proof_bytes)?;
-    verify_path2_transparent_query_opening_manifest(query_opening_manifest)?;
+    verify_path2_transparent_query_opening_manifest_for_public_view(
+        public_view,
+        query_opening_manifest,
+    )?;
     if envelope.proof_system_id != public_view.proof_system_id
         || envelope.relation_id != public_view.relation_id
         || envelope.relation_layout_digest != path2_transparent_relation_layout_v1_digest()?
@@ -11665,17 +11690,8 @@ pub fn verify_path2_direct_creation_transparent_descent_payload_boundary_with_qu
         Err(err) if err == "Path 2 transparent descent proof verifier is not implemented" => {}
         result => return result,
     }
-    verify_path2_transparent_query_opening_manifest(query_opening_manifest)?;
     let view = &transparent_payload.public_view;
-    if query_opening_manifest.proof_system_id != view.proof_system_id
-        || query_opening_manifest.relation_id != view.relation_id
-        || query_opening_manifest.column_profile != view.column_profile
-        || query_opening_manifest.query_count != view.query_count
-    {
-        return Err(
-            "Path 2 transparent descent query opening manifest context mismatch".to_string(),
-        );
-    }
+    verify_path2_transparent_query_opening_manifest_for_public_view(view, query_opening_manifest)?;
     if path2_transparent_query_opening_manifest_digest(query_opening_manifest)?
         != transparent_payload.query_openings_digest
     {
@@ -28553,6 +28569,30 @@ mod tests {
             )
             .unwrap(),
             decoded_envelope
+        );
+        let mut out_of_trace_manifest = query_opening_manifest.clone();
+        out_of_trace_manifest.records[0].row_index = public_view.trace_rows;
+        assert_eq!(
+            verify_path2_direct_creation_transparent_descent_payload_boundary_with_query_manifest(
+                &leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &payload,
+                &transparent_payload,
+                &out_of_trace_manifest,
+            )
+            .unwrap_err(),
+            "Path 2 transparent query opening row is outside trace"
+        );
+        assert_eq!(
+            verify_path2_transparent_proof_bytes_envelope_v1(
+                &public_view,
+                &out_of_trace_manifest,
+                &proof_bytes,
+            )
+            .unwrap_err(),
+            "Path 2 transparent query opening row is outside trace"
         );
         assert_eq!(
             verify_path2_direct_creation_proof_payload_v1(
