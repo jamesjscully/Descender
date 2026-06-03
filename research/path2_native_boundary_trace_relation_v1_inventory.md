@@ -58,11 +58,25 @@ also requires:
 
 ```text
 TraceRelationMeetsSelectedNativeBoundaryRowFloor(profile.relationProfile)
+TraceRelationMeetsSelectedNativeBoundaryClassFloors(profile.relationProfile)
 selectedNativeBoundaryTraceRelationRowFloor = 176
 ```
 
 This is a working lower-bound gate, not an exact final row layout. It prevents
 closing the active theorem with a one-row-per-class placeholder relation.
+
+The selected class floors are:
+
+| class | selected floor |
+|---|---:|
+| `qFieldRow` | 26 |
+| `base128RangeRow` | 40 |
+| `maskConsistencyRow` | 58 |
+| `roleRestrictionRow` | 5 |
+| `openingTupleAccountBindingRow` | 1 |
+| `checkedCoreResidueCompatibilityRow` | 1 |
+| `lifecycleContextRow` | 2 |
+| `proofSystemBookkeepingRow` | 2 |
 
 ## Row Inventory
 

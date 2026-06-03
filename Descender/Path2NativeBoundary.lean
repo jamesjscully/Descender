@@ -539,6 +539,59 @@ def TraceRelationMeetsSelectedNativeBoundaryRowFloor
     (relation : TraceRelationProfile) : Prop :=
   selectedNativeBoundaryTraceRelationRowFloor <= relation.rowCount
 
+/-- Count rows assigned to one constraint class in a relation profile. -/
+def TraceRelationClassRowCount
+    (relation : TraceRelationProfile)
+    (constraintClass : TraceConstraintClass) : Nat :=
+  (List.range relation.rowCount).filter
+    (fun row => relation.constraintClass row = constraintClass) |>.length
+
+/-- A relation profile has at least the selected number of rows for one class. -/
+def TraceRelationClassRowsAtLeast
+    (relation : TraceRelationProfile)
+    (constraintClass : TraceConstraintClass)
+    (minimumRows : Nat) : Prop :=
+  minimumRows <= TraceRelationClassRowCount relation constraintClass
+
+def selectedQFieldRelationRowsFloor : Nat := 26
+def selectedBase128RangeRelationRowsFloor : Nat := 40
+def selectedMaskConsistencyRelationRowsFloor : Nat := 58
+def selectedRoleRestrictionRelationRowsFloor : Nat := 5
+def selectedOpeningTupleAccountBindingRelationRowsFloor : Nat := 1
+def selectedCheckedCoreResidueCompatibilityRelationRowsFloor : Nat := 1
+def selectedLifecycleContextRelationRowsFloor : Nat := 2
+def selectedProofSystemBookkeepingRelationRowsFloor : Nat := 2
+
+/--
+Conservative selected per-class floors for the active native-boundary relation.
+These are lower bounds from the row inventory, not final exact row indices.
+-/
+def TraceRelationMeetsSelectedNativeBoundaryClassFloors
+    (relation : TraceRelationProfile) : Prop :=
+  TraceRelationClassRowsAtLeast relation
+      TraceConstraintClass.qFieldRow selectedQFieldRelationRowsFloor ∧
+    TraceRelationClassRowsAtLeast relation
+        TraceConstraintClass.base128RangeRow
+        selectedBase128RangeRelationRowsFloor ∧
+      TraceRelationClassRowsAtLeast relation
+          TraceConstraintClass.maskConsistencyRow
+          selectedMaskConsistencyRelationRowsFloor ∧
+        TraceRelationClassRowsAtLeast relation
+            TraceConstraintClass.roleRestrictionRow
+            selectedRoleRestrictionRelationRowsFloor ∧
+          TraceRelationClassRowsAtLeast relation
+              TraceConstraintClass.openingTupleAccountBindingRow
+              selectedOpeningTupleAccountBindingRelationRowsFloor ∧
+            TraceRelationClassRowsAtLeast relation
+                TraceConstraintClass.checkedCoreResidueCompatibilityRow
+                selectedCheckedCoreResidueCompatibilityRelationRowsFloor ∧
+              TraceRelationClassRowsAtLeast relation
+                  TraceConstraintClass.lifecycleContextRow
+                  selectedLifecycleContextRelationRowsFloor ∧
+                TraceRelationClassRowsAtLeast relation
+                    TraceConstraintClass.proofSystemBookkeepingRow
+                    selectedProofSystemBookkeepingRelationRowsFloor
+
 /-- One role/column entry in a native-boundary column profile. -/
 structure ColumnProfileEntry where
   roleId : RoleId
@@ -859,7 +912,9 @@ def UsesSelectedTraceKnowledgeModes (profile : ColumnProfile) : Prop :=
   profile.extractionMode = selectedTraceExtractionMode ∧
     profile.relationKnowledgeMode = selectedRelationKnowledgeMode ∧
       TraceRelationCoversNativeBoundary profile.relationProfile ∧
-        TraceRelationMeetsSelectedNativeBoundaryRowFloor profile.relationProfile
+        TraceRelationMeetsSelectedNativeBoundaryRowFloor profile.relationProfile ∧
+          TraceRelationMeetsSelectedNativeBoundaryClassFloors
+            profile.relationProfile
 
 theorem selected_trace_knowledge_modes_support_full_trace
     {profile : ColumnProfile}
@@ -877,7 +932,14 @@ theorem selected_trace_knowledge_modes_relation_row_floor
     {profile : ColumnProfile}
     (h : UsesSelectedTraceKnowledgeModes profile) :
     TraceRelationMeetsSelectedNativeBoundaryRowFloor profile.relationProfile :=
-  h.2.2.2
+  h.2.2.2.1
+
+theorem selected_trace_knowledge_modes_relation_class_floors
+    {profile : ColumnProfile}
+    (h : UsesSelectedTraceKnowledgeModes profile) :
+    TraceRelationMeetsSelectedNativeBoundaryClassFloors
+      profile.relationProfile :=
+  h.2.2.2.2
 
 /-- The active Rust two-view column profile id mirrored at theorem level. -/
 def selectedTwoViewColumnProfileId : Nat :=

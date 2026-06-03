@@ -45,7 +45,8 @@ TraceAssemblySoundness
 and `fullWitnessRelationKnowledge` with full native-boundary relation coverage.
 For the selected active profile, the same predicate also requires the
 native-boundary relation row floor `176`, matching the Rust
-`PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_WORKING` constant.
+`PATH2_NATIVE_BOUNDARY_TRACE_RELATION_ROWS_WORKING` constant, plus selected
+per-class relation floors so surplus rows cannot all sit in irrelevant classes.
 `proximityWithWitnessBridge` remains a supported redesign shape, not the
 currently selected Rust profile.
 
@@ -217,6 +218,7 @@ blinding_noise_policy_id = 1
 blinding_noise_centered_bound = 2048
 sis_role_matrix_rows = 64
 native_boundary_relation_row_floor = 176
+native_boundary_relation_class_floors_required = true
 parent_trace_commitment_extractable_required = true
 extracted_trace_relation_knowledge_required = true
 masked_opening_consistency_required = true
@@ -244,6 +246,9 @@ blinding/noise policy field before the transparent verifier handoff. Clearing
 or lowering the native-boundary relation row floor rejects because the active
 profile must use the working 176-row native-boundary relation scale rather than
 a one-row-per-class placeholder. Clearing
+`native_boundary_relation_class_floors_required` rejects because the Lean
+selected profile now requires conservative floors for each mandatory relation
+class. Clearing
 any decomposed assembly/range/blinding row flag rejects because the atomic Lean
 endpoint consumes those subclaims directly, including the same-trace gates that
 tie row facts to the extracted trace used for representative assembly. Clearing

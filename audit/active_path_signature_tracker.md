@@ -306,6 +306,10 @@ profile's `fullTraceExtractable` and `fullWitnessRelationKnowledge` modes.
 That selected trace-mode gate now also requires
 `TraceRelationMeetsSelectedNativeBoundaryRowFloor`, with Lean and Rust both
 pinning the active working native-boundary relation floor to `176` rows.
+Lean also requires `TraceRelationMeetsSelectedNativeBoundaryClassFloors`, and
+Rust digest-binds `native_boundary_relation_class_floors_required = true`, so
+relation knowledge cannot close with all surplus rows assigned to irrelevant
+classes.
 The final Lean endpoint now routes through `ParentTraceExtractionSoundness` and
 `TraceAssemblySoundness` directly; the old `TwoViewExtractionSoundness` surface
 is no longer enough to discharge `transparent_view_full_interface_or_break`.
