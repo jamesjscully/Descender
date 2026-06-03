@@ -493,10 +493,11 @@ Named breaks:
   16416-byte fallback threshold on the canonical encoded proof bytes, so an
   over-budget transparent proof cannot pass the fail-closed boundary as the
   active route. The boundary KAT now also covers proof-byte digest mismatch,
-  body digest mismatch, truncated proof body, envelope context rebinding, zero
-  Merkle/consistency envelope digest rejection, component-digest envelope
-  mismatch, empty proof-body rejection, oversized proof-body rejection, and
-  oversized envelope rejection. Query-opening manifests are now also checked
+  proof-byte length mismatch against the payload length, body digest mismatch,
+  truncated proof body, envelope context rebinding, zero Merkle/consistency
+  envelope digest rejection, component-digest envelope mismatch, empty
+  proof-body rejection, oversized proof-body rejection, and oversized envelope
+  rejection. Query-opening manifests are now also checked
   against the accepted
   public view before proof-verifier handoff:
   `verify_path2_transparent_query_opening_manifest_for_public_view` rejects

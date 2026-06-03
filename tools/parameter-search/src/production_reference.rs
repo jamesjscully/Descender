@@ -11931,6 +11931,9 @@ pub fn verify_path2_direct_creation_transparent_descent_payload_boundary_with_pr
     if proof_bytes_digest != transparent_payload.proof_bytes_digest {
         return Err("Path 2 transparent descent proof bytes digest mismatch".to_string());
     }
+    if transparent_payload.payload_byte_len != proof_bytes.len() as u64 {
+        return Err("Path 2 transparent descent proof bytes length mismatch".to_string());
+    }
     verify_path2_transparent_proof_bytes_envelope_v1(
         &transparent_payload.public_view,
         query_opening_manifest,
@@ -28687,9 +28690,10 @@ mod tests {
         )
         .unwrap();
         let proof_bytes_digest: [u8; DIGEST_BYTES] = Sha256::digest(&proof_bytes).into();
+        let payload_byte_len = proof_bytes.len() as u64;
         let payload_digest = path2_transparent_descent_proof_payload_digest(
             &public_view,
-            4896,
+            payload_byte_len,
             &proof_bytes_digest,
             &query_openings_digest,
             &merkle_paths_digest,
@@ -28711,7 +28715,7 @@ mod tests {
         assert_eq!(
             path2_transparent_descent_proof_payload_digest(
                 &public_view,
-                4896,
+                payload_byte_len,
                 &[0_u8; DIGEST_BYTES],
                 &query_openings_digest,
                 &merkle_paths_digest,
@@ -28723,7 +28727,7 @@ mod tests {
         assert_eq!(
             path2_transparent_descent_proof_payload_digest(
                 &public_view,
-                4896,
+                payload_byte_len,
                 &proof_bytes_digest,
                 &query_openings_digest,
                 &[0_u8; DIGEST_BYTES],
@@ -28735,7 +28739,7 @@ mod tests {
         assert_eq!(
             path2_transparent_descent_proof_payload_digest(
                 &public_view,
-                4896,
+                payload_byte_len,
                 &proof_bytes_digest,
                 &query_openings_digest,
                 &merkle_paths_digest,
@@ -28760,12 +28764,12 @@ mod tests {
             hidden_source_statement_digest: leaf.hidden_source_statement_digest,
             relation_transcript_digest: certificate.relation_transcript_digest,
             payload_digest,
-            payload_byte_len: 4896,
+            payload_byte_len,
         };
         let transparent_payload = Path2TransparentDescentProofPayloadV1 {
             public_view,
             payload_digest,
-            payload_byte_len: 4896,
+            payload_byte_len,
             proof_bytes_digest,
             query_openings_digest,
             merkle_paths_digest,
@@ -28810,6 +28814,45 @@ mod tests {
             )
             .unwrap_err(),
             "Path 2 transparent descent proof verifier is not implemented"
+        );
+        let rebound_payload_byte_len = payload_byte_len + 1;
+        let rebound_payload_digest = path2_transparent_descent_proof_payload_digest(
+            &public_view,
+            rebound_payload_byte_len,
+            &proof_bytes_digest,
+            &query_openings_digest,
+            &merkle_paths_digest,
+            &consistency_messages_digest,
+        )
+        .unwrap();
+        let mut length_rebound_certificate = certificate;
+        length_rebound_certificate.public_replay_payload_digest = rebound_payload_digest;
+        let mut length_rebound_evidence = evidence;
+        length_rebound_evidence.evidence_payload_digest =
+            path2_direct_replayable_relation_certificate_digest(&length_rebound_certificate);
+        let mut length_rebound_leaf = leaf;
+        length_rebound_leaf.prevalidation_transcript_digest =
+            path2_account_creation_evidence_transcript_digest(&length_rebound_evidence).unwrap();
+        refresh_path2_leaf_digest_bindings(&length_rebound_leaf, &mut length_rebound_evidence);
+        let mut length_rebound_payload = payload;
+        length_rebound_payload.payload_digest = rebound_payload_digest;
+        length_rebound_payload.payload_byte_len = rebound_payload_byte_len;
+        let mut length_rebound_transparent_payload = transparent_payload;
+        length_rebound_transparent_payload.payload_digest = rebound_payload_digest;
+        length_rebound_transparent_payload.payload_byte_len = rebound_payload_byte_len;
+        assert_eq!(
+            verify_path2_direct_creation_transparent_descent_payload_boundary_with_proof_bytes(
+                &length_rebound_leaf,
+                &length_rebound_evidence,
+                &length_rebound_certificate,
+                &binding,
+                &length_rebound_payload,
+                &length_rebound_transparent_payload,
+                &query_opening_manifest,
+                &proof_bytes,
+            )
+            .unwrap_err(),
+            "Path 2 transparent descent proof bytes length mismatch"
         );
         let decoded_envelope =
             decode_path2_transparent_proof_bytes_envelope_v1(&proof_bytes).unwrap();
