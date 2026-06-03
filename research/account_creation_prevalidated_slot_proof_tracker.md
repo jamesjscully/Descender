@@ -557,26 +557,30 @@ Named breaks:
   active `zk_masked_trace_iop_native_boundary` theorem split before capability
   handoff: full-trace role-complete knowledge soundness, masked-or-simulated
   hidden openings, native-boundary QROM schedule binding, hybrid base-128 range
-  mode, extractor-bounded blinding/noise, no raw hidden openings, QROM ledger
-  binding, and the 16416-byte fallback threshold. KAT
+  mode, extractor-bounded blinding/noise, creation-binding role-subcommitment
+  linking, inner-commitment binding-break export, no raw hidden openings, QROM
+  ledger binding, and the 16416-byte fallback threshold. KAT
   `path2_native_boundary_trace_proof_family_interface_pins_active_theorem_gate`
   rejects sampled-opening-only knowledge, missing role-complete extraction,
-  raw hidden openings, missing QROM ledger binding, and fallback-threshold
-  drift.
+  missing creation-binding role handles, missing inner-commitment binding-break
+  export, raw hidden openings, missing QROM ledger binding, and
+  fallback-threshold drift.
   `PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA`,
   `path2_transparent_proof_family_capability_v1`,
   `verify_path2_transparent_proof_family_capability`, and
   `path2_transparent_proof_family_capability_v1_digest` pin
   `zk_masked_trace_iop_native_boundary` as the only active transparent family
   shape and require parent-root binding, typed role subcommitments, full-trace
-  extraction, full-witness relation knowledge, hidden-column zero knowledge,
-  masked-query no-export, QROM schedule binding, norm/range soundness,
-  blinding/noise bound soundness, no raw hidden openings, no public linear role
-  commitments, and the 16416-byte fallback threshold. KAT
+  extraction, creation-binding role-handle binding, inner-commitment
+  binding-break export, full-witness relation knowledge, hidden-column zero
+  knowledge, masked-query no-export, QROM schedule binding, norm/range
+  soundness, blinding/noise bound soundness, no raw hidden openings, no public
+  linear role commitments, and the 16416-byte fallback threshold. KAT
   `path2_transparent_proof_family_capability_pins_active_assumptions` rejects
   sampled-only extraction, raw hidden openings, missing typed role
-  subcommitments, missing no-export, vanilla Merkle/FRI relabeling, and
-  trace-proof-interface rebinding. The
+  subcommitments, missing creation-binding role-handle binding, missing
+  inner-commitment binding-break export, missing no-export, vanilla Merkle/FRI
+  relabeling, and trace-proof-interface rebinding. The
   active lane-floor mismatch is now executable too:
   `PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA`,
   `path2_native_boundary_trace_column_manifest_v1`,

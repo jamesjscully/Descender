@@ -360,6 +360,7 @@ pub const PATH2_NATIVE_BOUNDARY_TRACE_ZK_MASKED_OR_SIMULATED_OPENINGS: u16 = 1;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_QROM_NATIVE_BOUNDARY_SCHEDULE: u16 = 1;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_RANGE_HYBRID_BASE128: u16 = 1;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_EXTRACTOR_BOUNDED: u16 = 1;
+pub const PATH2_NATIVE_BOUNDARY_TRACE_ROLE_SUBCOMMITMENTS_CREATION_BINDING: u16 = 1;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_PROFILE_ID: u16 = 1;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_CLASS_COUNT: usize = 10;
 pub const PATH2_NATIVE_BOUNDARY_TRACE_SEMANTIC_CORE_LANES: u16 = 80;
@@ -1488,8 +1489,11 @@ pub struct Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
     pub qrom_schedule_mode: u16,
     pub norm_range_mode: u16,
     pub blinding_noise_mode: u16,
+    pub role_subcommitment_link_mode: u16,
     pub full_trace_extraction_required: bool,
     pub role_complete_extractor_required: bool,
+    pub creation_binding_role_subcommitments_required: bool,
+    pub inner_commitment_binding_break_exported: bool,
     pub no_raw_hidden_openings: bool,
     pub qrom_ledger_bound: bool,
     pub fallback_threshold_bytes: u32,
@@ -1509,6 +1513,8 @@ pub struct Path2TransparentProofFamilyCapabilityV1 {
     pub native_boundary_relation_rows: u16,
     pub parent_root_binding: bool,
     pub typed_role_subcommitments: bool,
+    pub creation_binding_role_handles_bound: bool,
+    pub inner_commitment_binding_break_exported: bool,
     pub full_trace_extractable: bool,
     pub full_witness_relation_knowledge: bool,
     pub hidden_column_zero_knowledge: bool,
@@ -9984,8 +9990,12 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1()
         qrom_schedule_mode: PATH2_NATIVE_BOUNDARY_TRACE_QROM_NATIVE_BOUNDARY_SCHEDULE,
         norm_range_mode: PATH2_NATIVE_BOUNDARY_TRACE_RANGE_HYBRID_BASE128,
         blinding_noise_mode: PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_EXTRACTOR_BOUNDED,
+        role_subcommitment_link_mode:
+            PATH2_NATIVE_BOUNDARY_TRACE_ROLE_SUBCOMMITMENTS_CREATION_BINDING,
         full_trace_extraction_required: true,
         role_complete_extractor_required: true,
+        creation_binding_role_subcommitments_required: true,
+        inner_commitment_binding_break_exported: true,
         no_raw_hidden_openings: true,
         qrom_ledger_bound: true,
         fallback_threshold_bytes: PATH2_TRANSPARENT_PROOF_FAMILY_FALLBACK_THRESHOLD_BYTES,
@@ -10055,6 +10065,14 @@ pub fn verify_path2_native_boundary_trace_proof_family_interface(
                 .to_string(),
         );
     }
+    if interface.role_subcommitment_link_mode
+        != PATH2_NATIVE_BOUNDARY_TRACE_ROLE_SUBCOMMITMENTS_CREATION_BINDING
+    {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface role link mode mismatch"
+                .to_string(),
+        );
+    }
     if !interface.full_trace_extraction_required {
         return Err(
             "Path 2 native-boundary trace proof-family interface lacks full trace extraction"
@@ -10064,6 +10082,18 @@ pub fn verify_path2_native_boundary_trace_proof_family_interface(
     if !interface.role_complete_extractor_required {
         return Err(
             "Path 2 native-boundary trace proof-family interface lacks role-complete extraction"
+                .to_string(),
+        );
+    }
+    if !interface.creation_binding_role_subcommitments_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks creation-binding role handles"
+                .to_string(),
+        );
+    }
+    if !interface.inner_commitment_binding_break_exported {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks inner commitment binding break"
                 .to_string(),
         );
     }
@@ -10142,6 +10172,11 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
     );
     append_u64(
         &mut frame,
+        b"role_subcommitment_link_mode",
+        interface.role_subcommitment_link_mode as u64,
+    );
+    append_u64(
+        &mut frame,
         b"full_trace_extraction_required",
         u64::from(interface.full_trace_extraction_required),
     );
@@ -10149,6 +10184,16 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
         &mut frame,
         b"role_complete_extractor_required",
         u64::from(interface.role_complete_extractor_required),
+    );
+    append_u64(
+        &mut frame,
+        b"creation_binding_role_subcommitments_required",
+        u64::from(interface.creation_binding_role_subcommitments_required),
+    );
+    append_u64(
+        &mut frame,
+        b"inner_commitment_binding_break_exported",
+        u64::from(interface.inner_commitment_binding_break_exported),
     );
     append_u64(
         &mut frame,
@@ -10185,6 +10230,8 @@ pub fn path2_transparent_proof_family_capability_v1()
         native_boundary_relation_rows: trace_column_manifest.relation_rows_working,
         parent_root_binding: true,
         typed_role_subcommitments: true,
+        creation_binding_role_handles_bound: true,
+        inner_commitment_binding_break_exported: true,
         full_trace_extractable: true,
         full_witness_relation_knowledge: true,
         hidden_column_zero_knowledge: true,
@@ -10257,6 +10304,14 @@ pub fn verify_path2_transparent_proof_family_capability(
         (
             "typed_role_subcommitments",
             capability.typed_role_subcommitments,
+        ),
+        (
+            "creation_binding_role_handles_bound",
+            capability.creation_binding_role_handles_bound,
+        ),
+        (
+            "inner_commitment_binding_break_exported",
+            capability.inner_commitment_binding_break_exported,
         ),
         ("full_trace_extractable", capability.full_trace_extractable),
         (
@@ -10346,6 +10401,14 @@ pub fn path2_transparent_proof_family_capability_v1_digest() -> Result<[u8; DIGE
         (
             "typed_role_subcommitments",
             capability.typed_role_subcommitments,
+        ),
+        (
+            "creation_binding_role_handles_bound",
+            capability.creation_binding_role_handles_bound,
+        ),
+        (
+            "inner_commitment_binding_break_exported",
+            capability.inner_commitment_binding_break_exported,
         ),
         ("full_trace_extractable", capability.full_trace_extractable),
         (
@@ -33065,8 +33128,14 @@ mod tests {
             interface.blinding_noise_mode,
             PATH2_NATIVE_BOUNDARY_TRACE_BLINDING_EXTRACTOR_BOUNDED
         );
+        assert_eq!(
+            interface.role_subcommitment_link_mode,
+            PATH2_NATIVE_BOUNDARY_TRACE_ROLE_SUBCOMMITMENTS_CREATION_BINDING
+        );
         assert!(interface.full_trace_extraction_required);
         assert!(interface.role_complete_extractor_required);
+        assert!(interface.creation_binding_role_subcommitments_required);
+        assert!(interface.inner_commitment_binding_break_exported);
         assert!(interface.no_raw_hidden_openings);
         assert!(interface.qrom_ledger_bound);
         assert_eq!(
@@ -33092,6 +33161,32 @@ mod tests {
             verify_path2_native_boundary_trace_proof_family_interface(&no_role_complete_extractor)
                 .unwrap_err(),
             "Path 2 native-boundary trace proof-family interface lacks role-complete extraction"
+        );
+
+        let mut wrong_role_link_mode = interface.clone();
+        wrong_role_link_mode.role_subcommitment_link_mode = 0;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&wrong_role_link_mode)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface role link mode mismatch"
+        );
+
+        let mut no_creation_binding_role_handles = interface.clone();
+        no_creation_binding_role_handles.creation_binding_role_subcommitments_required = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(
+                &no_creation_binding_role_handles
+            )
+            .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks creation-binding role handles"
+        );
+
+        let mut no_inner_binding_break = interface.clone();
+        no_inner_binding_break.inner_commitment_binding_break_exported = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&no_inner_binding_break)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks inner commitment binding break"
         );
 
         let mut raw_hidden_openings = interface.clone();
@@ -33164,6 +33259,8 @@ mod tests {
         );
         assert!(capability.parent_root_binding);
         assert!(capability.typed_role_subcommitments);
+        assert!(capability.creation_binding_role_handles_bound);
+        assert!(capability.inner_commitment_binding_break_exported);
         assert!(capability.full_trace_extractable);
         assert!(capability.full_witness_relation_knowledge);
         assert!(capability.hidden_column_zero_knowledge);
@@ -33205,6 +33302,21 @@ mod tests {
         assert_eq!(
             verify_path2_transparent_proof_family_capability(&no_role_subroots).unwrap_err(),
             "Path 2 transparent proof-family capability missing typed_role_subcommitments"
+        );
+
+        let mut no_creation_binding_role_handles = capability.clone();
+        no_creation_binding_role_handles.creation_binding_role_handles_bound = false;
+        assert_eq!(
+            verify_path2_transparent_proof_family_capability(&no_creation_binding_role_handles)
+                .unwrap_err(),
+            "Path 2 transparent proof-family capability missing creation_binding_role_handles_bound"
+        );
+
+        let mut no_inner_binding_break = capability.clone();
+        no_inner_binding_break.inner_commitment_binding_break_exported = false;
+        assert_eq!(
+            verify_path2_transparent_proof_family_capability(&no_inner_binding_break).unwrap_err(),
+            "Path 2 transparent proof-family capability missing inner_commitment_binding_break_exported"
         );
 
         let mut no_no_export = capability.clone();
