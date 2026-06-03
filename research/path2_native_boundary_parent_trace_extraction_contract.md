@@ -7,6 +7,11 @@ Purpose: state the exact cryptographic theorem needed for
 
 This is now the main hard assumption in the active path.
 
+Route-clarity note:
+`research/path2_proof_family_route_clarity.md` records why this is a real
+argument-of-knowledge requirement, not a consequence of sampled Merkle/FRI
+openings.
+
 ## Contract
 
 For a public native boundary `b`, transparent view `view`, and role-complete
@@ -143,6 +148,8 @@ This contract is plausible for a STARK-like IOP only if we explicitly assume or
 prove a knowledge-extraction theorem for the committed trace. A generic
 "FRI-style proximity proof" is not enough by itself; proximity must be tied to
 the committed witness and relation in a way that extracts the full role trace.
+Equivalently, the proof family must be a committed-oracle/witness argument of
+knowledge with simulator-safe masked openings.
 
 For the active native-boundary route, the best framing is:
 

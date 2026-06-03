@@ -90,8 +90,16 @@ ZK machinery, it may approach the parked sigma floor.
 
 Keep `zk_masked_trace_iop_native_boundary` active, but only as a named
 proof-family assumption with the decomposed contract. The next proof task should
-not be implementation or byte counting; it should be to write the precise
-relation:
+not be verifier implementation. It should be proof-family theorem selection:
+either a transparent IOP of knowledge with masked openings, or a full-witness
+ZK fallback for the same native-boundary relation. The consolidated decision
+frame is:
+
+```text
+research/path2_proof_family_route_clarity.md
+```
+
+The precise relation remains:
 
 ```text
 NativeBoundaryTraceRelationV1
@@ -106,9 +114,11 @@ and classify every constraint as:
 - lifecycle/context row;
 - proof-system bookkeeping row.
 
-Once that relation is explicit, we can decide whether a STARK-like assumption is
-credible or whether the relation is better suited to MPC-in-the-head or
-lattice/SIS ZK.
+Since that relation now has row-class coverage, a 176-row selected floor, and
+conservative per-class floors, the main question is whether a candidate proof
+family supplies an argument of knowledge for the full hidden committed trace
+without raw openings. If not, pivot to MPC-in-the-head or a commitment-native
+route.
 
 First-pass result:
 `research/path2_native_boundary_trace_relation_v1_inventory.md` pins the active

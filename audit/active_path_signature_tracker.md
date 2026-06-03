@@ -353,6 +353,11 @@ the same extracted trace that assembles the hidden representative.
 `BlindingNoiseBoundRowSoundness` and `BlindingNoiseRowsToBoundSoundness`, with
 `TraceBlindingRowsBoundRepresentativeSoundness` tying selected blinding/noise
 bound rows to the same extracted trace.
+Route clarity is now recorded in
+`research/path2_proof_family_route_clarity.md`: the active transparent route is
+viable only as an argument of knowledge for the full hidden native-boundary
+trace with simulator-safe masked openings. Sampled/proximity-only Merkle/FRI
+does not imply the needed extraction theorem.
 
 ## Findings
 
