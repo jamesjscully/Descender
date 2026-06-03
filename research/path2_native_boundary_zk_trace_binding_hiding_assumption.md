@@ -107,6 +107,10 @@ It composes:
 - `NativeBoundaryTraceKnowledgeSoundness`, namely:
 - `ParentRootRoleBindingSoundness`;
 - `RoleRestrictionSoundness`;
+- `ParentTraceCommitmentExtractionSoundness`;
+- `ExtractedTraceRelationKnowledgeSoundness`;
+- `MaskedOpeningConsistencySoundness`;
+- `ParentTraceExtractionSoundness`;
 - `TwoViewExtractionSoundness`;
 - `HiddenExtractorRoleCompletenessSoundness`;
 - `NativeBoundaryTraceZeroKnowledge`, namely:

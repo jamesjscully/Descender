@@ -1506,6 +1506,12 @@ pub struct Path2NativeBoundaryTraceProofFamilyInterfaceV1 {
     pub checked_core_residue_compatibility_rows_required: bool,
     pub role_authentication_material_simulatable_required: bool,
     pub mask_freshness_required: bool,
+    pub parent_trace_commitment_extractable_required: bool,
+    pub extracted_trace_relation_knowledge_required: bool,
+    pub masked_opening_consistency_required: bool,
+    pub parent_trace_extraction_composition_required: bool,
+    pub qrom_extractor_rewind_bound_required: bool,
+    pub double_trace_binding_break_exported: bool,
     pub full_trace_extraction_required: bool,
     pub role_complete_extractor_required: bool,
     pub creation_binding_role_subcommitments_required: bool,
@@ -10038,6 +10044,12 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1()
         checked_core_residue_compatibility_rows_required: true,
         role_authentication_material_simulatable_required: true,
         mask_freshness_required: true,
+        parent_trace_commitment_extractable_required: true,
+        extracted_trace_relation_knowledge_required: true,
+        masked_opening_consistency_required: true,
+        parent_trace_extraction_composition_required: true,
+        qrom_extractor_rewind_bound_required: true,
+        double_trace_binding_break_exported: true,
         full_trace_extraction_required: true,
         role_complete_extractor_required: true,
         creation_binding_role_subcommitments_required: true,
@@ -10152,6 +10164,42 @@ pub fn verify_path2_native_boundary_trace_proof_family_interface(
     if !interface.mask_freshness_required {
         return Err(
             "Path 2 native-boundary trace proof-family interface lacks mask freshness".to_string(),
+        );
+    }
+    if !interface.parent_trace_commitment_extractable_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks parent trace commitment extraction"
+                .to_string(),
+        );
+    }
+    if !interface.extracted_trace_relation_knowledge_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks extracted trace relation knowledge"
+                .to_string(),
+        );
+    }
+    if !interface.masked_opening_consistency_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks masked opening consistency"
+                .to_string(),
+        );
+    }
+    if !interface.parent_trace_extraction_composition_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks parent trace extraction composition"
+                .to_string(),
+        );
+    }
+    if !interface.qrom_extractor_rewind_bound_required {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks QROM extractor rewind bound"
+                .to_string(),
+        );
+    }
+    if !interface.double_trace_binding_break_exported {
+        return Err(
+            "Path 2 native-boundary trace proof-family interface lacks double trace binding break"
+                .to_string(),
         );
     }
     if !interface.full_trace_extraction_required {
@@ -10285,6 +10333,36 @@ pub fn path2_native_boundary_trace_proof_family_interface_v1_digest()
         &mut frame,
         b"mask_freshness_required",
         u64::from(interface.mask_freshness_required),
+    );
+    append_u64(
+        &mut frame,
+        b"parent_trace_commitment_extractable_required",
+        u64::from(interface.parent_trace_commitment_extractable_required),
+    );
+    append_u64(
+        &mut frame,
+        b"extracted_trace_relation_knowledge_required",
+        u64::from(interface.extracted_trace_relation_knowledge_required),
+    );
+    append_u64(
+        &mut frame,
+        b"masked_opening_consistency_required",
+        u64::from(interface.masked_opening_consistency_required),
+    );
+    append_u64(
+        &mut frame,
+        b"parent_trace_extraction_composition_required",
+        u64::from(interface.parent_trace_extraction_composition_required),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_extractor_rewind_bound_required",
+        u64::from(interface.qrom_extractor_rewind_bound_required),
+    );
+    append_u64(
+        &mut frame,
+        b"double_trace_binding_break_exported",
+        u64::from(interface.double_trace_binding_break_exported),
     );
     append_u64(
         &mut frame,
@@ -33593,6 +33671,12 @@ mod tests {
         assert!(interface.checked_core_residue_compatibility_rows_required);
         assert!(interface.role_authentication_material_simulatable_required);
         assert!(interface.mask_freshness_required);
+        assert!(interface.parent_trace_commitment_extractable_required);
+        assert!(interface.extracted_trace_relation_knowledge_required);
+        assert!(interface.masked_opening_consistency_required);
+        assert!(interface.parent_trace_extraction_composition_required);
+        assert!(interface.qrom_extractor_rewind_bound_required);
+        assert!(interface.double_trace_binding_break_exported);
         assert!(interface.full_trace_extraction_required);
         assert!(interface.role_complete_extractor_required);
         assert!(interface.creation_binding_role_subcommitments_required);
@@ -33678,6 +33762,57 @@ mod tests {
             verify_path2_native_boundary_trace_proof_family_interface(&no_mask_freshness)
                 .unwrap_err(),
             "Path 2 native-boundary trace proof-family interface lacks mask freshness"
+        );
+
+        let mut no_trace_commitment_extraction = interface.clone();
+        no_trace_commitment_extraction.parent_trace_commitment_extractable_required = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(
+                &no_trace_commitment_extraction
+            )
+            .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks parent trace commitment extraction"
+        );
+
+        let mut no_relation_knowledge = interface.clone();
+        no_relation_knowledge.extracted_trace_relation_knowledge_required = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&no_relation_knowledge)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks extracted trace relation knowledge"
+        );
+
+        let mut no_masked_consistency = interface.clone();
+        no_masked_consistency.masked_opening_consistency_required = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&no_masked_consistency)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks masked opening consistency"
+        );
+
+        let mut no_parent_trace_composition = interface.clone();
+        no_parent_trace_composition.parent_trace_extraction_composition_required = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&no_parent_trace_composition)
+                .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks parent trace extraction composition"
+        );
+
+        let mut no_qrom_rewind = interface.clone();
+        no_qrom_rewind.qrom_extractor_rewind_bound_required = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(&no_qrom_rewind).unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks QROM extractor rewind bound"
+        );
+
+        let mut no_double_trace_binding_break = interface.clone();
+        no_double_trace_binding_break.double_trace_binding_break_exported = false;
+        assert_eq!(
+            verify_path2_native_boundary_trace_proof_family_interface(
+                &no_double_trace_binding_break
+            )
+            .unwrap_err(),
+            "Path 2 native-boundary trace proof-family interface lacks double trace binding break"
         );
 
         let mut no_creation_binding_role_handles = interface.clone();

@@ -73,8 +73,10 @@ Evidence:
 extractor output obligation and the Lean interface now includes
 `HiddenExtractorRoleCompletenessSoundness`.
 `research/path2_native_boundary_knowledge_soundness_decomposition.md` splits
-knowledge soundness into parent-trace extraction and trace assembly, making the
-construction-dependent part explicit.
+knowledge soundness into parent-trace commitment extraction, extracted-trace
+relation knowledge, masked-opening consistency, the composed parent-trace
+extraction contract, and trace assembly, making the construction-dependent
+part explicit.
 `research/path2_native_boundary_role_completeness_table.md` pins the mandatory
 roles and Lean now exposes `ProfileRoleComplete`.
 `research/path2_native_boundary_trace_relation_v1_inventory.md`,

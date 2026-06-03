@@ -15,14 +15,20 @@ NativeBoundaryTraceKnowledgeSoundness
   =
 ParentRootRoleBindingSoundness
   + RoleRestrictionSoundness
+  + ParentTraceCommitmentExtractionSoundness
+  + ExtractedTraceRelationKnowledgeSoundness
+  + MaskedOpeningConsistencySoundness
   + ParentTraceExtractionSoundness
   + TraceAssemblySoundness
   + TwoViewExtractionSoundness
   + HiddenExtractorRoleCompletenessSoundness
 ```
 
-The first two claims bind the public handles. The next two are the new
-mechanical bottleneck. The final two preserve the older theorem surface.
+The first two claims bind the public handles. The next three split the proof
+family's hard extractor obligation into commitment extraction, relation
+knowledge, and masked-opening consistency. `ParentTraceExtractionSoundness` is
+the composed contract produced from those subclaims. The final three preserve
+the older hidden-representative theorem surface.
 
 ## ParentTraceExtractionSoundness
 
@@ -117,6 +123,9 @@ boundary projections.
 - `Predicates.traceOpensBoundary`
 - `Predicates.traceRelationValid`
 - `Predicates.traceAssemblesRepresentative`
+- `ParentTraceCommitmentExtractionSoundness`
+- `ExtractedTraceRelationKnowledgeSoundness`
+- `MaskedOpeningConsistencySoundness`
 - `ParentTraceExtractionSoundness`
 - `TraceAssemblySoundness`
 - `trace_extraction_implies_hidden_representative_or_break`

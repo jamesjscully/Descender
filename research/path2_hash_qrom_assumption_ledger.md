@@ -428,6 +428,8 @@ The KAT suite must include:
 - norm-range mode mutation rejects;
 - blinding/noise policy id mutation rejects;
 - blinding/noise centered-bound mutation rejects;
+- trace-extractor QROM rewind-bound flag clearing rejects;
+- double-trace binding-break export flag clearing rejects;
 - public full-rank linear commitments for private roles reject in the active
   native-boundary mode;
 - duplicate or prefix-related Path 2 domains remain absent from the global

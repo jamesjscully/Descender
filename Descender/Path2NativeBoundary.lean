@@ -1424,11 +1424,13 @@ theorem blinding_noise_bounded_or_break
 def NativeBoundaryTraceKnowledgeSoundness (P : Predicates) : Prop :=
   ParentRootRoleBindingSoundness P ∧
     RoleRestrictionSoundness P ∧
-      ParentTraceExtractionSoundness P ∧
-        MaskedOpeningConsistencySoundness P ∧
-          TraceAssemblySoundness P ∧
-            TwoViewExtractionSoundness P ∧
-              HiddenExtractorRoleCompletenessSoundness P
+      ParentTraceCommitmentExtractionSoundness P ∧
+        ExtractedTraceRelationKnowledgeSoundness P ∧
+          MaskedOpeningConsistencySoundness P ∧
+            ParentTraceExtractionSoundness P ∧
+              TraceAssemblySoundness P ∧
+                TwoViewExtractionSoundness P ∧
+                  HiddenExtractorRoleCompletenessSoundness P
 
 /--
 The decomposed full-trace extractor assumptions imply the older two-view

@@ -9,14 +9,14 @@ be treated as an acceptable internal proof-family assumption.
 
 | id | status | requirement | why it matters |
 |---|---|---|---|
-| `commitment_extractability` | open | Accepted proof yields an extractor output for the full parent trace committed by `p_section_root(b)`. | Without this, unqueried hidden roles are not known. |
+| `commitment_extractability` | interface pinned / proof open | Accepted proof yields an extractor output for the full parent trace committed by `p_section_root(b)`. | Without this, unqueried hidden roles are not known. |
 | `role_restriction_extractability` | interface pinned | Extracted trace includes every role named by `p_role_handles(b)` and `ProfileRoleComplete(profile)`. | Prevents partial witnesses from satisfying account creation. |
-| `relation_knowledge_soundness` | open | Extracted trace satisfies the native-boundary relation, not just sampled row checks. | Needed for `TraceRelationValid`. |
+| `relation_knowledge_soundness` | interface pinned / proof open | Extracted trace satisfies the native-boundary relation, not just sampled row checks. | Needed for `TraceRelationValid`. |
 | `proximity_to_witness_bridge` | open | If using proximity/low-degree testing, closeness implies an extractable witness trace for the committed relation. | Bare proximity is not enough. |
-| `forking_or_rewinding_bound` | open | QROM/FS extraction loss is quantified for the proof-family extractor. | Needed for the final advantage bound. |
+| `forking_or_rewinding_bound` | interface pinned / proof open | QROM/FS extraction loss is quantified for the proof-family extractor. | Needed for the final advantage bound. |
 | `masked_opening_consistency` | theorem_gate_pinned | Public masked openings are consistent with hidden extracted cells and masks. | Needed to connect verifier view to extractor view. |
 | `no_raw_hidden_public_openings` | partly pinned | Hidden role cells, range witnesses, masks, and blinding/noise are never verifier-visible raw. | Needed for no-export/ZK. |
-| `double_trace_binding_break` | open | Two safety-distinct full traces under one parent root export a named binding break. | Needed for boundary binding and role uniqueness. |
+| `double_trace_binding_break` | interface pinned / proof open | Two safety-distinct full traces under one parent root export a named binding break. | Needed for boundary binding and role uniqueness. |
 | `domain_ordering` | ledger pinned | Root/profile/role handles/auth modes/mask domains are bound before query derivation. | Needed to avoid adaptive trace/profile choice. |
 
 ## Minimal Acceptable Theorem
@@ -64,6 +64,16 @@ the extracted trace to both open the native boundary and satisfy
 `maskedOpeningsConsistent` before relation validity can close. This prevents
 closing the active theorem with disjoint public masked openings and an unrelated
 hidden extractor trace.
+
+Interface hardening update:
+`NativeBoundaryTraceKnowledgeSoundness` now lists
+`ParentTraceCommitmentExtractionSoundness`,
+`ExtractedTraceRelationKnowledgeSoundness`,
+`MaskedOpeningConsistencySoundness`, and `ParentTraceExtractionSoundness`
+separately. The Rust proof-family interface digest binds matching requirement
+bits, plus `qrom_extractor_rewind_bound_required` and
+`double_trace_binding_break_exported`. This is a fail-closed interface gate,
+not a proof of those obligations.
 
 ## Likely Hardest Subclaim
 

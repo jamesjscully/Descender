@@ -31,6 +31,9 @@ library.
 ```text
 ParentRootRoleBindingSoundness
 RoleRestrictionSoundness
+ParentTraceCommitmentExtractionSoundness
+ExtractedTraceRelationKnowledgeSoundness
+MaskedOpeningConsistencySoundness
 ParentTraceExtractionSoundness
 TraceAssemblySoundness
 TwoViewExtractionSoundness
@@ -149,6 +152,12 @@ role_authentication_material_simulatable_required = true
 mask_freshness_required = true
 blinding_noise_policy_id = 1
 blinding_noise_centered_bound = 2048
+parent_trace_commitment_extractable_required = true
+extracted_trace_relation_knowledge_required = true
+masked_opening_consistency_required = true
+parent_trace_extraction_composition_required = true
+qrom_extractor_rewind_bound_required = true
+double_trace_binding_break_exported = true
 ```
 
 Negative controls reject clearing any of these flags or drifting either

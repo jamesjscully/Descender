@@ -571,7 +571,10 @@ Named breaks:
   `verify_path2_native_boundary_trace_proof_family_interface`, and
   `path2_native_boundary_trace_proof_family_interface_v1_digest` pin the
   active `zk_masked_trace_iop_native_boundary` theorem split before capability
-  handoff: full-trace role-complete knowledge soundness, masked-or-simulated
+  handoff: full-trace role-complete knowledge soundness, parent-trace
+  commitment extraction, extracted-trace relation knowledge, masked-opening
+  consistency, composed parent-trace extraction, QROM extractor rewind
+  accounting, double-trace binding-break export, masked-or-simulated
   hidden openings, native-boundary QROM schedule binding, hybrid base-128 range
   mode, extractor-bounded blinding/noise with selected policy id `1` and
   centered bound `2048`, creation-binding role-subcommitment
@@ -581,6 +584,10 @@ Named breaks:
   residue-compatibility rows, and the 16416-byte fallback threshold. KAT
   `path2_native_boundary_trace_proof_family_interface_pins_active_theorem_gate`
   rejects sampled-opening-only knowledge, missing role-complete extraction,
+  missing parent-trace commitment extraction, missing extracted-trace relation
+  knowledge, missing masked-opening consistency, missing parent-trace
+  extraction composition, missing QROM extractor rewind accounting, missing
+  double-trace binding-break export,
   missing opening-tuple account-binding rows, missing checked-core
   residue-compatibility rows, missing role-authentication simulator support,
   missing mask freshness, blinding/noise policy drift, blinding/noise centered

@@ -283,6 +283,12 @@ The same active proof-family interface now binds the extractor-side
 blinding/noise policy to policy id `1` and centered bound `2048`; Lean requires
 `UsesSelectedBlindingNoisePolicy(policy)` before deriving
 `BlindingNoiseBounded`, and Rust negative controls reject policy or bound drift.
+The knowledge side is also split more aggressively now:
+`NativeBoundaryTraceKnowledgeSoundness` explicitly includes parent-trace
+commitment extraction, extracted-trace relation knowledge, masked-opening
+consistency, and the composed parent-trace extraction contract. The Rust
+proof-family interface binds matching requirement bits plus QROM extractor
+rewind accounting and double-trace binding-break export.
 
 ## Findings
 
