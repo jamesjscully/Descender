@@ -10594,6 +10594,12 @@ pub fn path2_transparent_descent_transcript_digest(
     if query_index >= query_count {
         return Err("Path 2 transparent proof query index outside schedule".to_string());
     }
+    if *trace_commitment_root == [0_u8; DIGEST_BYTES] {
+        return Err("Path 2 transparent proof trace commitment root is zero".to_string());
+    }
+    if *constraint_commitment_root == [0_u8; DIGEST_BYTES] {
+        return Err("Path 2 transparent proof constraint commitment root is zero".to_string());
+    }
     if masked_projection.iter().any(|&value| value >= Q) {
         return Err("Path 2 transparent proof masked projection is noncanonical".to_string());
     }
@@ -10727,14 +10733,10 @@ pub fn path2_transparent_proof_bytes_envelope_v1_bytes(
     if proof_body.is_empty() {
         return Err("Path 2 transparent proof body is empty".to_string());
     }
-    verify_path2_transparent_query_opening_manifest(query_opening_manifest)?;
-    if query_opening_manifest.proof_system_id != public_view.proof_system_id
-        || query_opening_manifest.relation_id != public_view.relation_id
-        || query_opening_manifest.column_profile != public_view.column_profile
-        || query_opening_manifest.query_count != public_view.query_count
-    {
-        return Err("Path 2 transparent proof envelope manifest context mismatch".to_string());
-    }
+    verify_path2_transparent_query_opening_manifest_for_public_view(
+        public_view,
+        query_opening_manifest,
+    )?;
     if proof_body.len() > u32::MAX as usize {
         return Err("Path 2 transparent proof body is too large".to_string());
     }
@@ -10921,6 +10923,19 @@ pub fn path2_transparent_descent_proof_payload_digest(
 ) -> Result<[u8; DIGEST_BYTES], String> {
     if public_view.schema != PATH2_TRANSPARENT_PUBLIC_VIEW_SCHEMA {
         return Err("Path 2 transparent public view schema mismatch".to_string());
+    }
+    if payload_byte_len == 0 {
+        return Err("Path 2 transparent descent payload length is zero".to_string());
+    }
+    for (label, digest) in [
+        ("proof bytes", proof_bytes_digest),
+        ("query openings", query_openings_digest),
+        ("merkle paths", merkle_paths_digest),
+        ("consistency messages", consistency_messages_digest),
+    ] {
+        if *digest == [0_u8; DIGEST_BYTES] {
+            return Err(format!("Path 2 transparent descent {label} digest is zero"));
+        }
     }
     if public_view.proof_system_id != path2_transparent_descent_proof_system_id() {
         return Err("Path 2 transparent proof system id mismatch".to_string());
@@ -28478,6 +28493,54 @@ mod tests {
             &consistency_messages_digest,
         )
         .unwrap();
+        assert_eq!(
+            path2_transparent_descent_proof_payload_digest(
+                &public_view,
+                0,
+                &proof_bytes_digest,
+                &query_openings_digest,
+                &merkle_paths_digest,
+                &consistency_messages_digest,
+            )
+            .unwrap_err(),
+            "Path 2 transparent descent payload length is zero"
+        );
+        assert_eq!(
+            path2_transparent_descent_proof_payload_digest(
+                &public_view,
+                4896,
+                &[0_u8; DIGEST_BYTES],
+                &query_openings_digest,
+                &merkle_paths_digest,
+                &consistency_messages_digest,
+            )
+            .unwrap_err(),
+            "Path 2 transparent descent proof bytes digest is zero"
+        );
+        assert_eq!(
+            path2_transparent_descent_proof_payload_digest(
+                &public_view,
+                4896,
+                &proof_bytes_digest,
+                &query_openings_digest,
+                &[0_u8; DIGEST_BYTES],
+                &consistency_messages_digest,
+            )
+            .unwrap_err(),
+            "Path 2 transparent descent merkle paths digest is zero"
+        );
+        assert_eq!(
+            path2_transparent_descent_proof_payload_digest(
+                &public_view,
+                4896,
+                &proof_bytes_digest,
+                &query_openings_digest,
+                &merkle_paths_digest,
+                &[0_u8; DIGEST_BYTES],
+            )
+            .unwrap_err(),
+            "Path 2 transparent descent consistency messages digest is zero"
+        );
         certificate.public_replay_payload_digest = payload_digest;
         evidence.evidence_payload_digest =
             path2_direct_replayable_relation_certificate_digest(&certificate);
@@ -28575,6 +28638,15 @@ mod tests {
         );
         let mut out_of_trace_manifest = query_opening_manifest.clone();
         out_of_trace_manifest.records[0].row_index = public_view.trace_rows;
+        assert_eq!(
+            path2_transparent_proof_bytes_envelope_v1_bytes(
+                &public_view,
+                &out_of_trace_manifest,
+                b"path2-transparent-proof-body-placeholder",
+            )
+            .unwrap_err(),
+            "Path 2 transparent query opening row is outside trace"
+        );
         assert_eq!(
             verify_path2_direct_creation_transparent_descent_payload_boundary_with_query_manifest(
                 &leaf,
@@ -31674,6 +31746,42 @@ mod tests {
             )
             .unwrap_err(),
             "Path 2 transparent proof query index outside schedule"
+        );
+        assert_eq!(
+            path2_transparent_descent_transcript_digest(
+                &proof_system_id,
+                256,
+                16,
+                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+                &leaf_context_digest,
+                &creation_proof_binding_digest,
+                &matrix_domain_transcript_digest,
+                &masked_projection,
+                &aggregation_context_digest,
+                &[0_u8; DIGEST_BYTES],
+                &constraint_commitment_root,
+                0,
+            )
+            .unwrap_err(),
+            "Path 2 transparent proof trace commitment root is zero"
+        );
+        assert_eq!(
+            path2_transparent_descent_transcript_digest(
+                &proof_system_id,
+                256,
+                16,
+                PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+                &leaf_context_digest,
+                &creation_proof_binding_digest,
+                &matrix_domain_transcript_digest,
+                &masked_projection,
+                &aggregation_context_digest,
+                &trace_commitment_root,
+                &[0_u8; DIGEST_BYTES],
+                0,
+            )
+            .unwrap_err(),
+            "Path 2 transparent proof constraint commitment root is zero"
         );
     }
 

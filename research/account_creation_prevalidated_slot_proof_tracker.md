@@ -491,7 +491,12 @@ Named breaks:
   `verify_path2_transparent_query_opening_manifest_for_public_view` rejects
   manifest context mismatch and any record whose `row_index` is outside the
   scheduled trace row count; the boundary KAT covers this out-of-trace-row
-  negative at both the manifest-aware boundary and proof-byte envelope verifier.
+  negative at the proof-byte envelope constructor, manifest-aware boundary, and
+  proof-byte envelope verifier. Transparent public-view and payload digest
+  builders now reject zero trace roots, zero constraint roots, zero payload
+  length, and zero proof/query/Merkle/consistency component digests, so
+  placeholder proof material cannot reach the fail-closed verifier handoff as
+  the active route.
   The proof-system id now binds the
   active proof-family capability profile:
   `PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_SCHEMA`,
