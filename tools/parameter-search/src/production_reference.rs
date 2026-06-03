@@ -10715,6 +10715,47 @@ pub fn verify_path2_direct_creation_transparent_descent_payload_boundary(
     Err("Path 2 transparent descent proof verifier is not implemented".to_string())
 }
 
+pub fn verify_path2_direct_creation_transparent_descent_payload_boundary_with_query_manifest(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    binding: &Path2CreationProofBindingV1,
+    payload: &Path2DirectCreationProofPayloadV1,
+    transparent_payload: &Path2TransparentDescentProofPayloadV1,
+    query_opening_manifest: &Path2TransparentQueryOpeningManifestV1,
+) -> Result<(), String> {
+    match verify_path2_direct_creation_transparent_descent_payload_boundary(
+        leaf,
+        evidence,
+        certificate,
+        binding,
+        payload,
+        transparent_payload,
+    ) {
+        Err(err) if err == "Path 2 transparent descent proof verifier is not implemented" => {}
+        result => return result,
+    }
+    verify_path2_transparent_query_opening_manifest(query_opening_manifest)?;
+    let view = &transparent_payload.public_view;
+    if query_opening_manifest.proof_system_id != view.proof_system_id
+        || query_opening_manifest.relation_id != view.relation_id
+        || query_opening_manifest.column_profile != view.column_profile
+        || query_opening_manifest.query_count != view.query_count
+    {
+        return Err(
+            "Path 2 transparent descent query opening manifest context mismatch".to_string(),
+        );
+    }
+    if path2_transparent_query_opening_manifest_digest(query_opening_manifest)?
+        != transparent_payload.query_openings_digest
+    {
+        return Err(
+            "Path 2 transparent descent query opening manifest digest mismatch".to_string(),
+        );
+    }
+    Err("Path 2 transparent descent proof verifier is not implemented".to_string())
+}
+
 pub fn verify_path2_direct_creation_toy_q_linear_proof_v1(
     leaf: &Path2PrevalidatedSlotLeafV1,
     evidence: &Path2AccountCreationEvidenceV1,
@@ -27468,6 +27509,19 @@ mod tests {
             "Path 2 transparent descent proof verifier is not implemented"
         );
         assert_eq!(
+            verify_path2_direct_creation_transparent_descent_payload_boundary_with_query_manifest(
+                &leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &payload,
+                &transparent_payload,
+                &query_opening_manifest,
+            )
+            .unwrap_err(),
+            "Path 2 transparent descent proof verifier is not implemented"
+        );
+        assert_eq!(
             verify_path2_direct_creation_proof_payload_v1(
                 &leaf,
                 &evidence,
@@ -27522,6 +27576,54 @@ mod tests {
             )
             .unwrap_err(),
             "Path 2 transparent descent payload digest mismatch"
+        );
+
+        let mismatched_manifest = path2_transparent_query_opening_manifest_fixture(8);
+        assert_eq!(
+            verify_path2_direct_creation_transparent_descent_payload_boundary_with_query_manifest(
+                &leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &payload,
+                &transparent_payload,
+                &mismatched_manifest,
+            )
+            .unwrap_err(),
+            "Path 2 transparent descent query opening manifest context mismatch"
+        );
+
+        let mut rebound_manifest = query_opening_manifest.clone();
+        rebound_manifest.records[0].component_digest[0] ^= 1;
+        assert_eq!(
+            verify_path2_direct_creation_transparent_descent_payload_boundary_with_query_manifest(
+                &leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &payload,
+                &transparent_payload,
+                &rebound_manifest,
+            )
+            .unwrap_err(),
+            "Path 2 transparent descent query opening manifest digest mismatch"
+        );
+
+        let mut raw_hidden_manifest = query_opening_manifest.clone();
+        raw_hidden_manifest.records[1].visibility_class =
+            PATH2_TWO_VIEW_VISIBILITY_EXTRACTOR_HIDDEN;
+        assert_eq!(
+            verify_path2_direct_creation_transparent_descent_payload_boundary_with_query_manifest(
+                &leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &payload,
+                &transparent_payload,
+                &raw_hidden_manifest,
+            )
+            .unwrap_err(),
+            "Path 2 transparent query opening exposes hidden visibility class"
         );
 
         let serialized = serde_json::to_string(&transparent_payload).unwrap();

@@ -461,9 +461,18 @@ Named breaks:
   the relation-layout digest, so row/role/lane drift changes the relation and
   proof-system ids. KAT `path2_transparent_relation_layout_pins_r_core_66`
   checks the positive layout and malformed row/role/digit negative controls.
-  The next executable blocker remains concrete transparent verifier plus
-  honest/malformed proof-byte coverage against this encoded relation and the
-  validated query-opening manifest.
+  The transparent verifier boundary now has a manifest-aware fail-closed entry:
+  `verify_path2_direct_creation_transparent_descent_payload_boundary_with_query_manifest`
+  reuses the existing payload/public-view binding checks, then validates the
+  query-opening manifest object, checks manifest context against the accepted
+  public view, and checks the manifest digest against `query_openings_digest`
+  before returning the proof-verifier-not-implemented blocker. KAT
+  `path2_transparent_descent_payload_boundary_binds_public_view_before_fail_closed`
+  now covers the manifest-aware positive path plus mismatched manifest context,
+  rebound manifest digest, and raw-hidden-opening negative controls at the
+  verifier handoff. The next executable blocker remains concrete transparent
+  proof-byte parsing and honest/malformed verifier coverage against this encoded
+  relation and validated query-opening manifest.
 
 - [x] Carry over active-lane negative controls into creation time.
   Requirement: wrong witness digest, wrong pad seed, wrong public pad statement,
