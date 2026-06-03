@@ -30,20 +30,26 @@ For all adversaries A:
   then an extractor E^A outputs trace such that:
     TransparentExtractsTrace(b, view, trace)
     TraceOpensBoundary(b, profile, trace)
+    TracesSafetyEquivalent(b, profile, trace, trace)
+    MaskedOpeningsConsistent(b, view, profile, trace)
     TraceRelationValid(b, profile, trace)
   except with probability bounded by:
     Adv_trace_commitment_binding
+  + Adv_double_trace_binding
+  + Adv_masked_opening_consistency
   + Adv_relation_knowledge_soundness
   + Adv_qrom_extraction_loss
   + Adv_domain_separation
 ```
 
-The exact term names can change, but the four categories cannot disappear.
+The exact term names can change, but the categories cannot disappear.
 
 Ledger update:
 `research/path2_hash_qrom_assumption_ledger.md` now names symbolic rows for:
 
 - `q_trace_commitment_binding`;
+- `q_trace_double_binding`;
+- `q_trace_masked_opening_consistency`;
 - `q_trace_relation_knowledge`;
 - `q_trace_proximity_bridge`;
 - `q_trace_extractor_rewind`.

@@ -97,7 +97,9 @@ The final theorem should quantify over:
 | `q_transparent_consistency` | selected transparent payload consistency/FRI queries |
 | `q_transparent_extractor` | selected transparent payload extractor/forking queries |
 | `q_transparent_simulator` | selected transparent payload simulator/no-export queries |
-| `q_trace_commitment_binding` | parent trace commitment and double-opening binding queries |
+| `q_trace_commitment_binding` | parent trace commitment binding queries |
+| `q_trace_double_binding` | double-trace binding-break queries for two extracted openings |
+| `q_trace_masked_opening_consistency` | consistency queries linking masked public openings to extracted hidden cells |
 | `q_trace_relation_knowledge` | proof-family relation knowledge-soundness queries |
 | `q_trace_proximity_bridge` | proximity/list-decoding-to-witness bridge queries, if used |
 | `q_trace_extractor_rewind` | extractor rewinding/forking queries for full trace extraction |
@@ -138,7 +140,8 @@ q_leaf, q_auth, q_evidence, q_stmt, q_pad, q_mask, q_chal, q_life
 q_transparent_trace_commit, q_transparent_query_index, q_transparent_query_row
 q_transparent_merkle_open, q_transparent_consistency
 q_transparent_extractor, q_transparent_simulator
-q_trace_commitment_binding, q_trace_relation_knowledge
+q_trace_commitment_binding, q_trace_double_binding
+q_trace_masked_opening_consistency, q_trace_relation_knowledge
 q_trace_proximity_bridge, q_trace_extractor_rewind
 q_native_boundary, q_native_role_handle, q_native_role_auth_mode
 q_native_mask_domain, q_native_no_export_policy
@@ -158,7 +161,8 @@ Adv_native_boundary_zk_trace_binding_hiding(
   q_transparent_trace_commit,q_transparent_query_index,q_transparent_query_row,
   q_transparent_merkle_open,q_transparent_consistency,
   q_transparent_extractor,q_transparent_simulator,
-  q_trace_commitment_binding,q_trace_relation_knowledge,
+  q_trace_commitment_binding,q_trace_double_binding,
+  q_trace_masked_opening_consistency,q_trace_relation_knowledge,
   q_trace_proximity_bridge,q_trace_extractor_rewind,
   q_native_boundary,q_native_role_handle,q_native_role_auth_mode,
   q_native_mask_domain,q_native_no_export_policy,
@@ -171,7 +175,8 @@ Adv_live_slot_leakage(q_pad,q_mask,q_leaf)
 Adv_qrom_domain_separation(q_leaf,q_auth,q_evidence,q_chal,q_pad,q_mask,
   q_transparent_trace_commit,q_transparent_query_index,q_transparent_query_row,
   q_transparent_merkle_open,q_transparent_consistency,
-  q_trace_commitment_binding,q_trace_relation_knowledge,
+  q_trace_commitment_binding,q_trace_double_binding,
+  q_trace_masked_opening_consistency,q_trace_relation_knowledge,
   q_trace_proximity_bridge,q_trace_extractor_rewind,
   q_native_boundary,q_native_role_handle,q_native_role_auth_mode,
   q_native_mask_domain,q_native_no_export_policy,
@@ -317,6 +322,10 @@ The native-boundary proof-family term must internally account for:
 ```text
 Adv_trace_commitment_binding(q_trace_commitment_binding,
                              q_native_role_handle)
+Adv_trace_double_binding(q_trace_double_binding,
+                         q_trace_commitment_binding)
+Adv_masked_opening_consistency(q_trace_masked_opening_consistency,
+                               q_transparent_consistency)
 Adv_trace_relation_knowledge_soundness(q_trace_relation_knowledge,
                                        q_transparent_consistency)
 Adv_trace_proximity_to_witness(q_trace_proximity_bridge)
@@ -350,6 +359,8 @@ Adv_Path2_direct(q_*) <=
         q_transparent_extractor,
         q_transparent_simulator,
         q_trace_commitment_binding,
+        q_trace_double_binding,
+        q_trace_masked_opening_consistency,
         q_trace_relation_knowledge,
         q_trace_proximity_bridge,
         q_trace_extractor_rewind,
@@ -372,6 +383,8 @@ Adv_Path2_direct(q_*) <=
                                q_transparent_merkle_open,
                                q_transparent_consistency,
                                q_trace_commitment_binding,
+                               q_trace_double_binding,
+                               q_trace_masked_opening_consistency,
                                q_trace_relation_knowledge,
                                q_trace_proximity_bridge,
                                q_trace_extractor_rewind,
