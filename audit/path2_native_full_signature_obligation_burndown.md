@@ -242,6 +242,15 @@ The selected hidden-relation extraction-certificate flag is source-inspected by
 covering payload digest checks, statement/opening/pad binding,
 account-witness opening-frame recomputation, certificate framing, and the
 statement-rebinding regression.
+The upstream hidden-source payload binding is now source-inspected by
+`path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1`; the audit
+uses it for native-boundary payload binding, slot/opening binding, projection
+carrier binding, the accepting wrapper path through extraction, and the active
+rebinding controls. That source check requires the constructor to assemble the
+native boundary, bind the prevalidated leaf to the projection bundle, recompute
+the reviewed creation statement and opening commitment, digest the carrier and
+checked-core frame/proof bytes, frame every payload field, and reject rebound
+payloads by verifier reconstruction.
 The Lean source-route endpoint flags are now source-inspected by
 `lean_path2_reviewed_fq12_source_route_endpoint_surface_present_v1`, covering
 the source-route local-instantiation theorem, boundary/factored selected-Rust

@@ -6545,6 +6545,136 @@ fn lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route
     .all(|marker| source.contains(marker))
 }
 
+fn path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+    let constructor_start = source
+        .find("\npub fn path2_reviewed_fq12_hidden_source_payload_binding_v1(")
+        .expect("Path 2 reviewed Fq12 payload binding source start marker missing");
+    let constructor_end = source[constructor_start..]
+        .find("\npub fn path2_reviewed_fq12_hidden_source_payload_binding_v1_frame(")
+        .expect("Path 2 reviewed Fq12 payload binding source end marker missing")
+        + constructor_start;
+    let constructor_source = &source[constructor_start..constructor_end];
+
+    let frame_start = source
+        .find("\npub fn path2_reviewed_fq12_hidden_source_payload_binding_v1_frame(")
+        .expect("Path 2 reviewed Fq12 payload binding frame start marker missing");
+    let frame_end = source[frame_start..]
+        .find("\npub fn path2_reviewed_fq12_hidden_source_payload_binding_v1_digest(")
+        .expect("Path 2 reviewed Fq12 payload binding frame end marker missing")
+        + frame_start;
+    let frame_source = &source[frame_start..frame_end];
+
+    let verifier_start = source
+        .find("\npub fn verify_path2_reviewed_fq12_hidden_source_payload_binding_v1(")
+        .expect("Path 2 reviewed Fq12 payload binding verifier start marker missing");
+    let verifier_end = source[verifier_start..]
+        .find("\nfn digest_u16_slice(")
+        .expect("Path 2 reviewed Fq12 payload binding verifier end marker missing")
+        + verifier_start;
+    let verifier_source = &source[verifier_start..verifier_end];
+
+    let test_start = source
+        .find(
+            "\n    fn path2_reviewed_fq12_hidden_source_payload_binding_carries_native_boundary()",
+        )
+        .expect("Path 2 reviewed Fq12 payload binding regression start marker missing");
+    let test_end = source[test_start..]
+        .find(
+            "\n    fn path2_reviewed_fq12_hidden_relation_extraction_certificate_binds_accepted_tuple()",
+        )
+        .expect("Path 2 reviewed Fq12 payload binding regression end marker missing")
+        + test_start;
+    let test_source = &source[test_start..test_end];
+
+    let constructor_checks = [
+        "let assembly = assemble_path2_native_boundary_v1(bundle, checked_core_proof_bytes)?;",
+        "if leaf.account_id != bundle.account.account_id",
+        "if leaf.public_key_identity != bundle.account.public_key_identity",
+        "if leaf.slot_id != bundle.lifecycle.slot_id",
+        "if leaf.account_state_root_before != bundle.state.account_state_root_before",
+        "if leaf.lifecycle_anchor != bundle.lifecycle.lifecycle_anchor",
+        "if opening.slot_id != leaf.slot_id",
+        "if statement.slot_id as u64 != leaf.slot_id",
+        "path2_creation_hidden_source_statement_v1_from_reviewed(leaf, statement)",
+        "if creation_statement.digest != leaf.hidden_source_statement_digest",
+        "let opening_commitment = reviewed_fq12_state_assisted_opening_commitment_digest(opening)",
+        "if opening_commitment != leaf.opening_commitment",
+        "if opening.pad_seed_digest != leaf.pad_seed_digest",
+        "carrier.decode()?;",
+        "Sha256::digest(carrier.as_bytes()).into()",
+        "path2_native_checked_core_frame_v1_digest(&assembly.checked_core_frame)?",
+        "Sha256::digest(checked_core_proof_bytes).into()",
+        "native_boundary_digest: assembly.native_boundary_digest",
+        "slot_id: leaf.slot_id",
+        "creation_proof_binding_digest",
+        "hidden_source_statement_digest: leaf.hidden_source_statement_digest",
+        "reviewed_active_lane_statement_digest: statement.digest",
+        "randomizer_commitment: statement.randomizer_commitment",
+        "opening_commitment,",
+        "pad_seed_digest: leaf.pad_seed_digest",
+        "projection_carrier_digest,",
+        "checked_core_frame_digest,",
+        "checked_core_proof_bytes_digest,",
+        "path2_reviewed_fq12_hidden_source_payload_binding_v1_digest(&binding)?",
+    ];
+    let frame_checks = [
+        "if binding.schema != PATH2_REVIEWED_FQ12_HIDDEN_SOURCE_PAYLOAD_BINDING_DOMAIN",
+        "b\"schema\"",
+        "b\"native_boundary_digest\"",
+        "b\"slot_id\"",
+        "b\"creation_proof_binding_digest\"",
+        "b\"hidden_source_statement_digest\"",
+        "b\"reviewed_active_lane_statement_digest\"",
+        "b\"randomizer_commitment\"",
+        "b\"opening_commitment\"",
+        "b\"pad_seed_digest\"",
+        "b\"projection_carrier_digest\"",
+        "b\"checked_core_frame_digest\"",
+        "b\"checked_core_proof_bytes_digest\"",
+    ];
+    let verifier_checks = [
+        "let expected = path2_reviewed_fq12_hidden_source_payload_binding_v1(",
+        "binding.creation_proof_binding_digest",
+        "if expected != *binding",
+        "Path 2 payload binding mismatch",
+        "path2_reviewed_fq12_hidden_source_payload_binding_v1_digest(binding)?",
+        "!= binding.payload_digest",
+        "Path 2 payload binding digest mismatch",
+    ];
+    let test_checks = [
+        "path2_reviewed_fq12_hidden_source_payload_binding_v1(",
+        "assemble_path2_native_boundary_v1(&bundle, &checked_core_proof_bytes)",
+        "assert_eq!(\n            binding.native_boundary_digest,\n            assembly.native_boundary_digest\n        )",
+        "assert_eq!(binding.slot_id, leaf.slot_id)",
+        "binding.hidden_source_statement_digest",
+        "assert_eq!(binding.opening_commitment, leaf.opening_commitment)",
+        "assert_eq!(binding.pad_seed_digest, leaf.pad_seed_digest)",
+        "binding.projection_carrier_digest",
+        "Sha256::digest(fixture.carrier.as_bytes()).into()",
+        "binding.checked_core_frame_digest",
+        "binding.checked_core_proof_bytes_digest",
+        "verify_path2_reviewed_fq12_hidden_source_payload_binding_v1(",
+        "rebound.native_boundary_digest[0] ^= 1",
+        "\"Path 2 payload binding mismatch\"",
+        "wrong_slot_bundle.lifecycle.slot_id += 1",
+        "\"Path 2 payload binding slot id mismatch\"",
+    ];
+
+    constructor_checks
+        .iter()
+        .all(|marker| constructor_source.contains(marker))
+        && frame_checks
+            .iter()
+            .all(|marker| frame_source.contains(marker))
+        && verifier_checks
+            .iter()
+            .all(|marker| verifier_source.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| test_source.contains(marker))
+}
+
 fn path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
     let constructor_start = source
@@ -6644,16 +6774,25 @@ fn path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1(
 pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
 -> Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     let lean_payload_interface_pinned = true;
-    let rust_accepting_certificate_wrapper_present = true;
-    let rust_slot_opening_binding_present = true;
-    let rust_masked_projection_opening_binding_present = true;
-    let rust_projection_carrier_tuple_binding_present = true;
-    let rust_statement_rebinding_negative_controls_present = true;
-    let rust_no_partial_export_negative_controls_present = true;
-    let path2_creation_statement_bridge_present = true;
-    let native_boundary_digest_payload_binding_complete = true;
+    let hidden_source_payload_binding_source_present =
+        path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1();
     let selected_hidden_relation_extraction_certificate_present =
         path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1();
+    let rust_accepting_certificate_wrapper_present = hidden_source_payload_binding_source_present
+        && selected_hidden_relation_extraction_certificate_present;
+    let rust_slot_opening_binding_present = hidden_source_payload_binding_source_present;
+    let rust_masked_projection_opening_binding_present =
+        hidden_source_payload_binding_source_present
+            && selected_hidden_relation_extraction_certificate_present;
+    let rust_projection_carrier_tuple_binding_present = hidden_source_payload_binding_source_present
+        && selected_hidden_relation_extraction_certificate_present;
+    let rust_statement_rebinding_negative_controls_present =
+        hidden_source_payload_binding_source_present
+            && selected_hidden_relation_extraction_certificate_present;
+    let rust_no_partial_export_negative_controls_present = true;
+    let path2_creation_statement_bridge_present = true;
+    let native_boundary_digest_payload_binding_complete =
+        hidden_source_payload_binding_source_present;
     let full_native_opening_role_lift_certificate_present =
         path2_reviewed_fq12_role_root_lift_source_present_v1();
     let lean_source_route_endpoint_surface_present =
@@ -38654,6 +38793,7 @@ mod tests {
         assert!(audit.rust_no_partial_export_negative_controls_present);
         assert!(audit.path2_creation_statement_bridge_present);
         assert!(audit.native_boundary_digest_payload_binding_complete);
+        assert!(path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1());
         assert!(audit.selected_hidden_relation_extraction_certificate_present);
         assert!(path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1());
         assert!(audit.full_native_opening_role_lift_certificate_present);
@@ -39204,6 +39344,10 @@ mod tests {
         );
         assert_eq!(binding.opening_commitment, leaf.opening_commitment);
         assert_eq!(binding.pad_seed_digest, leaf.pad_seed_digest);
+        assert_eq!(binding.projection_carrier_digest, {
+            let digest: [u8; DIGEST_BYTES] = Sha256::digest(fixture.carrier.as_bytes()).into();
+            digest
+        });
         assert_eq!(
             binding.checked_core_frame_digest,
             path2_native_checked_core_frame_v1_digest(&assembly.checked_core_frame).unwrap()

@@ -171,6 +171,14 @@ The selected extraction-certificate flag is now source-inspected by
 which pins payload digest checks, statement/opening/pad binding,
 account-witness opening-frame recomputation, certificate framing, and the
 statement-rebinding regression.
+The hidden-source payload binding itself is now source-inspected by
+`path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1`; the Rust
+audit uses it to back the native-boundary payload-binding, slot/opening,
+projection-carrier, accepting-wrapper, and rebinding-control flags. The source
+check requires native-boundary assembly, leaf/bundle equality checks, reviewed
+statement and opening recomputation, carrier and checked-core digest binding,
+payload frame labels, verifier reconstruction, and the native-boundary rebound
+regression.
 The Lean source-route endpoint flags are now source-inspected by
 `lean_path2_reviewed_fq12_source_route_endpoint_surface_present_v1`, which pins
 the base source-route closure theorem, boundary/factored wrappers, selected-Rust
