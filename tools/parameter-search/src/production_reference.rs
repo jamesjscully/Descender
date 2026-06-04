@@ -7014,6 +7014,213 @@ fn path2_reviewed_fq12_no_partial_export_negative_controls_source_present_v1() -
             .all(|marker| accepting_wrapper_source.contains(marker))
 }
 
+fn lean_path2_reviewed_fq12_payload_interface_pinned_v1() -> bool {
+    let lean_source = include_str!("../../../Descender/Path2NativeBoundary.lean");
+    let payload_start = lean_source
+        .find("\nstructure ReviewedFq12HiddenSourcePayload where")
+        .expect("Lean Path 2 reviewed Fq12 payload interface start marker missing");
+    let payload_end = lean_source[payload_start..]
+        .find("\n/--\nExecutable extraction certificate")
+        .expect("Lean Path 2 reviewed Fq12 payload interface end marker missing")
+        + payload_start;
+    let payload_source = &lean_source[payload_start..payload_end];
+
+    let cert_start = lean_source
+        .find("\nstructure ReviewedFq12HiddenRelationExtractionCertificate where")
+        .expect("Lean Path 2 reviewed Fq12 extraction certificate start marker missing");
+    let cert_end = lean_source[cert_start..]
+        .find("\n/--\nFull native representative opening")
+        .expect("Lean Path 2 reviewed Fq12 extraction certificate end marker missing")
+        + cert_start;
+    let cert_source = &lean_source[cert_start..cert_end];
+
+    let predicates_start = lean_source
+        .find("\nstructure Predicates where")
+        .expect("Lean Path 2 native-boundary predicates start marker missing");
+    let predicates_end = lean_source[predicates_start..]
+        .find("\n/-- A hidden representative lies in the fiber")
+        .expect("Lean Path 2 native-boundary predicates end marker missing")
+        + predicates_start;
+    let predicates_source = &lean_source[predicates_start..predicates_end];
+
+    let soundness_start = lean_source
+        .find("\ndef ReviewedFq12HiddenSourcePayloadSoundness")
+        .expect("Lean Path 2 reviewed Fq12 payload soundness start marker missing");
+    let soundness_end = lean_source[soundness_start..]
+        .find("\n/--\nExtraction-certificate availability")
+        .expect("Lean Path 2 reviewed Fq12 payload soundness end marker missing")
+        + soundness_start;
+    let soundness_source = &lean_source[soundness_start..soundness_end];
+
+    let availability_start = lean_source
+        .find("\ndef ReviewedFq12ExtractionCertificateAvailability")
+        .expect("Lean Path 2 reviewed Fq12 certificate availability start marker missing");
+    let availability_end = lean_source[availability_start..]
+        .find("\n/--\nThe remaining P2FS-001 theorem obligation")
+        .expect("Lean Path 2 reviewed Fq12 certificate availability end marker missing")
+        + availability_start;
+    let availability_source = &lean_source[availability_start..availability_end];
+
+    let extraction_soundness_start = lean_source
+        .find("\ndef ReviewedFq12ExtractionCertificateSoundness")
+        .expect("Lean Path 2 reviewed Fq12 extraction soundness start marker missing");
+    let extraction_soundness_end = lean_source[extraction_soundness_start..]
+        .find("\n/--\nThe selected reviewed-Fq12 certificate")
+        .expect("Lean Path 2 reviewed Fq12 extraction soundness end marker missing")
+        + extraction_soundness_start;
+    let extraction_soundness_source =
+        &lean_source[extraction_soundness_start..extraction_soundness_end];
+
+    let rust_source = include_str!("production_reference.rs");
+    let rust_payload_start = rust_source
+        .find("\npub struct Path2ReviewedFq12HiddenSourcePayloadBindingV1 {")
+        .expect("Rust Path 2 reviewed Fq12 payload binding struct start marker missing");
+    let rust_payload_end = rust_source[rust_payload_start..]
+        .find("\n#[derive(Clone, Debug, PartialEq, Eq, Serialize)]\npub struct Path2ReviewedFq12HiddenRelationExtractionCertificateV1")
+        .expect("Rust Path 2 reviewed Fq12 payload binding struct end marker missing")
+        + rust_payload_start;
+    let rust_payload_source = &rust_source[rust_payload_start..rust_payload_end];
+
+    let rust_cert_start = rust_source
+        .find("\npub struct Path2ReviewedFq12HiddenRelationExtractionCertificateV1 {")
+        .expect("Rust Path 2 reviewed Fq12 extraction certificate struct start marker missing");
+    let rust_cert_end = rust_source[rust_cert_start..]
+        .find("\n#[derive(Clone, Debug, PartialEq, Eq, Serialize)]\npub struct Path2ReviewedFq12FullNativeOpeningCertificateV1")
+        .expect("Rust Path 2 reviewed Fq12 extraction certificate struct end marker missing")
+        + rust_cert_start;
+    let rust_cert_source = &rust_source[rust_cert_start..rust_cert_end];
+
+    let payload_checks = [
+        "statementDigest : Nat",
+        "creationStatementDigest : Nat",
+        "creationProofBindingDigest : Nat",
+        "randomizerCommitment : Nat",
+        "openingCommitment : Nat",
+        "padSeedDigest : Nat",
+        "projectionCarrierDigest : Nat",
+        "checkedCoreTranscriptDigest : Nat",
+        "proofDigest : Nat",
+        "nativeBoundaryDigest : Nat",
+        "slotId : Nat",
+    ];
+    let cert_checks = [
+        "payloadBindingDigest : Nat",
+        "nativeBoundaryDigest : Nat",
+        "slotId : Nat",
+        "creationStatementDigest : Nat",
+        "reviewedStatementDigest : Nat",
+        "openingCommitment : Nat",
+        "padSeedDigest : Nat",
+        "accountProjectionDigest : Nat",
+        "accountWitnessOpeningFrameDigest : Nat",
+        "carrierLanesDigest : Nat",
+        "checkedCoreChallengeDigest : Nat",
+        "checkedCoreWitnessSyndromeDigest : Nat",
+        "checkedCoreResponseSyndromeDigest : Nat",
+        "extractionCertificateDigest : Nat",
+    ];
+    let predicate_checks = [
+        "reviewedFq12PayloadAccepts :",
+        "Boundary -> ReviewedFq12HiddenSourcePayload -> Prop",
+        "reviewedFq12PayloadProjectsFrom :",
+        "reviewedFq12PayloadHasExtractionCertificate :",
+        "ReviewedFq12HiddenRelationExtractionCertificate -> Prop",
+        "reviewedFq12ExtractionCertificateValid :",
+        "reviewedFq12CertificateExtracts :",
+        "HiddenRepresentative -> Prop",
+        "reviewedFq12CertificateLiftsToOpening :",
+        "FullNativeRepresentativeOpening -> Prop",
+    ];
+    let soundness_checks = [
+        "P.reviewedFq12PayloadAccepts b payload",
+        "P.reviewedFq12PayloadProjectsFrom b payload",
+        "exists h,",
+        "P.reviewedFq12PayloadExtracts b payload h",
+        "InFiber P b.context b h",
+        "P.localValid b.context h",
+        "P.descentConsistent b.context h",
+        "exists breakEvent",
+        "P.boundaryBreakFor b.context b breakEvent",
+    ];
+    let availability_checks = [
+        "P.reviewedFq12PayloadAccepts b payload",
+        "P.reviewedFq12PayloadProjectsFrom b payload",
+        "exists cert,",
+        "P.reviewedFq12PayloadHasExtractionCertificate b payload cert",
+        "P.reviewedFq12ExtractionCertificateValid b payload cert",
+        "exists breakEvent",
+        "P.boundaryBreakFor b.context b breakEvent",
+    ];
+    let extraction_soundness_checks = [
+        "P.reviewedFq12PayloadAccepts b payload",
+        "P.reviewedFq12PayloadProjectsFrom b payload",
+        "P.reviewedFq12PayloadHasExtractionCertificate b payload cert",
+        "P.reviewedFq12ExtractionCertificateValid b payload cert",
+        "P.reviewedFq12CertificateExtracts b payload cert h",
+        "P.reviewedFq12PayloadExtracts b payload h",
+        "InFiber P b.context b h",
+        "P.localValid b.context h",
+        "P.descentConsistent b.context h",
+        "P.boundaryBreakFor b.context b breakEvent",
+    ];
+    let rust_payload_checks = [
+        "pub schema: &'static str",
+        "pub native_boundary_digest: [u8; DIGEST_BYTES]",
+        "pub slot_id: u64",
+        "pub creation_proof_binding_digest: [u8; DIGEST_BYTES]",
+        "pub hidden_source_statement_digest: [u8; DIGEST_BYTES]",
+        "pub reviewed_active_lane_statement_digest: [u8; DIGEST_BYTES]",
+        "pub randomizer_commitment: [u8; DIGEST_BYTES]",
+        "pub opening_commitment: [u8; DIGEST_BYTES]",
+        "pub pad_seed_digest: [u8; DIGEST_BYTES]",
+        "pub projection_carrier_digest: [u8; DIGEST_BYTES]",
+        "pub checked_core_frame_digest: [u8; DIGEST_BYTES]",
+        "pub checked_core_proof_bytes_digest: [u8; DIGEST_BYTES]",
+        "pub payload_digest: [u8; DIGEST_BYTES]",
+    ];
+    let rust_cert_checks = [
+        "pub payload_binding_digest: [u8; DIGEST_BYTES]",
+        "pub native_boundary_digest: [u8; DIGEST_BYTES]",
+        "pub slot_id: u64",
+        "pub hidden_source_statement_digest: [u8; DIGEST_BYTES]",
+        "pub reviewed_active_lane_statement_digest: [u8; DIGEST_BYTES]",
+        "pub opening_commitment: [u8; DIGEST_BYTES]",
+        "pub pad_seed_digest: [u8; DIGEST_BYTES]",
+        "pub account_projection_digest: [u8; DIGEST_BYTES]",
+        "pub account_witness_opening_frame_digest: [u8; DIGEST_BYTES]",
+        "pub carrier_lanes_digest: [u8; DIGEST_BYTES]",
+        "pub checked_core_challenge: [u8; CHALLENGE_BYTES]",
+        "pub checked_core_witness_syndrome_digest: [u8; DIGEST_BYTES]",
+        "pub checked_core_response_syndrome_digest: [u8; DIGEST_BYTES]",
+        "pub extraction_certificate_digest: [u8; DIGEST_BYTES]",
+    ];
+
+    payload_checks
+        .iter()
+        .all(|marker| payload_source.contains(marker))
+        && cert_checks
+            .iter()
+            .all(|marker| cert_source.contains(marker))
+        && predicate_checks
+            .iter()
+            .all(|marker| predicates_source.contains(marker))
+        && soundness_checks
+            .iter()
+            .all(|marker| soundness_source.contains(marker))
+        && availability_checks
+            .iter()
+            .all(|marker| availability_source.contains(marker))
+        && extraction_soundness_checks
+            .iter()
+            .all(|marker| extraction_soundness_source.contains(marker))
+        && rust_payload_checks
+            .iter()
+            .all(|marker| rust_payload_source.contains(marker))
+        && rust_cert_checks
+            .iter()
+            .all(|marker| rust_cert_source.contains(marker))
+}
+
 fn path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
     let constructor_start = source
@@ -7112,7 +7319,7 @@ fn path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1(
 
 pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
 -> Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
-    let lean_payload_interface_pinned = true;
+    let lean_payload_interface_pinned = lean_path2_reviewed_fq12_payload_interface_pinned_v1();
     let hidden_source_payload_binding_source_present =
         path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1();
     let selected_hidden_relation_extraction_certificate_present =
@@ -39126,6 +39333,7 @@ mod tests {
             PATH2_REVIEWED_FQ12_HIDDEN_SOURCE_SEMANTICS_BRIDGE_AUDIT_DOMAIN
         );
         assert!(audit.lean_payload_interface_pinned);
+        assert!(lean_path2_reviewed_fq12_payload_interface_pinned_v1());
         assert!(audit.rust_accepting_certificate_wrapper_present);
         assert!(audit.rust_slot_opening_binding_present);
         assert!(audit.rust_masked_projection_opening_binding_present);

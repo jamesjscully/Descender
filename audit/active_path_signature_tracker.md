@@ -192,6 +192,15 @@ wrong-pad and malformed-opening public errors, opaque carrier-export rejection,
 and the single accepting-certificate export wrapper. This records the active
 negative controls only; the full Rust serializer allowlist bridge remains
 P2FS-004.
+The Lean payload-interface flag is now source-inspected by
+`lean_path2_reviewed_fq12_payload_interface_pinned_v1`, which pins
+`ReviewedFq12HiddenSourcePayload`,
+`ReviewedFq12HiddenRelationExtractionCertificate`, the active
+payload/certificate predicates, extraction availability/soundness definitions,
+and matching Rust payload-binding/extraction-certificate structs. The active
+hidden-source semantics-bridge audit no longer uses unconditional booleans
+inside the P2FS-001 source-route core; remaining `true` presence flags are
+productization/preflight surfaces outside this audit.
 The Lean source-route endpoint flags are now source-inspected by
 `lean_path2_reviewed_fq12_source_route_endpoint_surface_present_v1`, which pins
 the base source-route closure theorem, boundary/factored wrappers, selected-Rust
