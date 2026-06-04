@@ -7459,9 +7459,9 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let rust_shared_digest_frame_witness_byte_source_contract_present =
         path2_reviewed_fq12_shared_digest_frame_witness_byte_source_contract_present_v1();
     let rust_representative_canonical_digest_source_present =
-        rust_full_native_opening_canonical_representative_source_present;
+        path2_reviewed_fq12_representative_canonical_digest_source_present_v1();
     let rust_assembly_representative_digest_lookup_source_present =
-        rust_representative_canonical_digest_source_present;
+        path2_reviewed_fq12_assembly_representative_digest_lookup_source_present_v1();
     let rust_full_native_opening_representative_frame_source_present =
         rust_full_native_opening_canonical_representative_source_present;
     let rust_representative_digest_functionality_source_present =
@@ -10203,6 +10203,49 @@ fn path2_reviewed_fq12_representative_digest_functionality_source_present_v1() -
         && path2_reviewed_fq12_full_native_opening_canonical_representative_source_present_v1()
         && path2_reviewed_fq12_full_native_opening_canonical_representative_witness_source_present_v1()
         && path2_reviewed_fq12_shared_digest_frame_witness_byte_source_contract_present_v1()
+}
+
+fn path2_reviewed_fq12_representative_canonical_digest_source_present_v1() -> bool {
+    let lean_source =
+        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
+    let lean_checks = [
+        "structure ReviewedFq12RepresentativeCanonicalDigestSource",
+        "representativeDigestCanonical",
+        "assemblyCertificateDigestCanonical",
+        "structure ReviewedFq12SelectedRustSharedRepresentativeFrameSource",
+        "representative_canonical_digest_source_of_shared_representative_frame_source",
+        "canonicalDigest := source.canonicalDigest",
+        "source.representativeDigestCanonical",
+        "source.assemblyCertificateDigestCanonical",
+        "ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessByteSource",
+        "ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource",
+    ];
+
+    lean_checks
+        .iter()
+        .all(|marker| lean_source.contains(marker))
+        && path2_reviewed_fq12_full_native_opening_canonical_representative_source_present_v1()
+        && path2_reviewed_fq12_shared_digest_frame_witness_byte_source_contract_present_v1()
+        && path2_reviewed_fq12_native_representative_digest_frame_source_present_v1()
+}
+
+fn path2_reviewed_fq12_assembly_representative_digest_lookup_source_present_v1() -> bool {
+    let lean_source =
+        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
+    let lean_checks = [
+        "def ReviewedFq12AssemblyRepresentativeDigestLookupSource",
+        "theorem assembly_representative_digest_lookup_of_canonical_digest_source",
+        "ReviewedFq12RepresentativeCanonicalDigestSource P",
+        "ReviewedFq12AssemblyRepresentativeDigestLookupSource P",
+        "canonicalSource.representativeDigestCanonical",
+        "canonicalSource.assemblyCertificateDigestCanonical",
+        "hRepresentativeCanonical.trans hAssemblyCanonical.symm",
+    ];
+
+    lean_checks
+        .iter()
+        .all(|marker| lean_source.contains(marker))
+        && path2_reviewed_fq12_representative_canonical_digest_source_present_v1()
 }
 
 pub fn path2_reviewed_fq12_native_representative_digest_frame_witness_v1(
@@ -40506,7 +40549,9 @@ mod tests {
         assert!(path2_reviewed_fq12_certificate_lift_opening_functionality_source_present_v1());
         assert!(path2_reviewed_fq12_role_root_lift_source_present_v1());
         assert!(audit.rust_assembly_representative_digest_lookup_source_present);
+        assert!(path2_reviewed_fq12_assembly_representative_digest_lookup_source_present_v1());
         assert!(audit.rust_representative_canonical_digest_source_present);
+        assert!(path2_reviewed_fq12_representative_canonical_digest_source_present_v1());
         assert!(audit.rust_full_native_opening_canonical_representative_source_present);
         assert!(
             path2_reviewed_fq12_full_native_opening_canonical_representative_source_present_v1()

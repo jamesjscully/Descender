@@ -301,6 +301,13 @@ which pins the Lean
 `ReviewedFq12FullNativeOpeningRepresentativeDigestFunctionalitySource`
 uniqueness theorem to the selected Rust shared-frame witness contract rather
 than aliasing the broader canonical-representative source.
+The canonical-digest and assembly-digest-lookup flags are source-inspected now
+as well. `rust_representative_canonical_digest_source_present` checks the Lean
+`ReviewedFq12RepresentativeCanonicalDigestSource` and shared-frame adapter
+markers against the Rust shared witness-frame contract, and
+`rust_assembly_representative_digest_lookup_source_present` checks
+`assembly_representative_digest_lookup_of_canonical_digest_source` rather than
+aliasing the canonical representative flag.
 The audit now also carries a dedicated marker bit for
 `reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources`,
 so the active five-source endpoint is checked directly rather than only through
