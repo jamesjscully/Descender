@@ -18654,6 +18654,8 @@ fn path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
     lean_source: &str,
 ) -> bool {
     let selected_source_facts = [
+        "selectedRustCheckedCoreEvidenceReportVerified",
+        "selectedRustCheckedCoreEvidenceFactsAllTrue",
         "selectedRustCheckedCoreAcceptorAccepts",
         "selectedRustCheckedCoreParserMatchesNative",
         "selectedRustCheckedCoreProofLengthEq",
@@ -18706,6 +18708,8 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
     let instantiation_source = &lean_source[instantiation_start..instantiation_end];
 
     let selected_source_facts = [
+        "selectedRustCheckedCoreEvidenceReportVerified",
+        "selectedRustCheckedCoreEvidenceFactsAllTrue",
         "selectedRustCheckedCoreAcceptorAccepts",
         "selectedRustCheckedCoreParserMatchesNative",
         "selectedRustCheckedCoreProofLengthEq",
@@ -38359,6 +38363,40 @@ end Path2CheckedCoreByteBridge
         assert!(
             !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
                 evidence_certificate_assumed_instantiation
+            )
+        );
+        let evidence_bits_assumed_instantiation = r#"
+theorem selectedRustCheckedCoreByteSource_instantiation_v1
+    (selectedRustCheckedCoreEvidenceReportVerified : evidence_verified)
+    (selectedRustCheckedCoreEvidenceFactsAllTrue : evidence_facts_true) :
+    SelectedRustCheckedCoreByteSource B H P V := by
+  let selectedRustCheckedCoreEvidenceCertificate :
+      SelectedRustCheckedCoreByteEvidenceCertificate B H P V :=
+    { evidenceReportVerified := selectedRustCheckedCoreEvidenceReportVerified
+      evidenceFactsAllTrue := selectedRustCheckedCoreEvidenceFactsAllTrue
+      evidenceSelectedRustCheckedCoreAcceptorAccepts := selectedRustCheckedCoreAcceptorAccepts
+      evidenceSelectedRustCheckedCoreParserMatchesNative := selectedRustCheckedCoreParserMatchesNative
+      evidenceSelectedRustCheckedCoreProofLengthEq := selectedRustCheckedCoreProofLengthEq
+      evidenceSelectedRustCheckedCoreProofCanonical := selectedRustCheckedCoreProofCanonical
+      evidenceSelectedRustCheckedCoreDecodedProofCommitment := selectedRustCheckedCoreDecodedProofCommitment
+      evidenceSelectedRustCheckedCoreParsedResponseSyndrome := selectedRustCheckedCoreParsedResponseSyndrome
+      evidenceSelectedRustCheckedCoreFrameBytes := selectedRustCheckedCoreFrameBytes
+      evidenceSelectedRustCheckedCoreVerifierHandleEq := selectedRustCheckedCoreVerifierHandleEq
+      evidenceSelectedRustCheckedCoreParserEquality := selectedRustCheckedCoreParserEquality
+      evidenceSelectedRustCheckedCoreHashAndSyndrome := selectedRustCheckedCoreHashAndSyndrome }
+  let selectedRustCheckedCoreInputs :
+      SelectedRustCheckedCoreByteInstantiationInputs B H P V :=
+    SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs selectedRustCheckedCoreEvidenceCertificate
+  exact selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1 selectedRustCheckedCoreInputs
+theorem selectedRustCheckedCoreByteSource_valid_or_named_break := trivial
+theorem Path2NativeCheckedCoreAcceptV1Bridge := trivial
+theorem Path2NativeCheckedCoreAcceptV1Soundness := trivial
+theorem selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break := trivial
+end Path2CheckedCoreByteBridge
+"#;
+        assert!(
+            !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
+                evidence_bits_assumed_instantiation
             )
         );
         let local_inputs_without_evidence_certificate = r#"
