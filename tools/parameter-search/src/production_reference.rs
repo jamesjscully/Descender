@@ -18787,6 +18787,15 @@ fn path2_active_native_hash_budget_boundary_source_present_v1() -> bool {
         + horizon_start;
     let horizon_window = &domain_source[horizon_start..horizon_end];
 
+    let byte_domain_start = domain_source
+        .find("\ndef activeHashByteDomainInstantiationV1")
+        .expect("Lean Path 2 active byte-domain instantiation start marker missing");
+    let byte_domain_end = domain_source[byte_domain_start..]
+        .find("\n/--\nExplicit aggregate-target horizon")
+        .expect("Lean Path 2 active byte-domain instantiation end marker missing")
+        + byte_domain_start;
+    let byte_domain_window = &domain_source[byte_domain_start..byte_domain_end];
+
     let boundary_start = domain_source
         .find("\ndef activePath2HashDomainAndMultiTargetCertificate")
         .expect("Lean Path 2 active hash certificate source start marker missing");
@@ -18833,10 +18842,23 @@ fn path2_active_native_hash_budget_boundary_source_present_v1() -> bool {
         "messageHorizonLog2 := 0",
         "aggregateTargetCountLog2 := 32",
     ];
+    let byte_domain_checks = [
+        "activeHashByteDomainInstantiationV1",
+        "checkedCoreFrameDomainBytes := 0",
+        "hiddenSourceFrameDomainBytes := 1",
+        "projectionCarrierDomainBytes := 2",
+        "accountLifecycleDomainBytes := 3",
+        "tagOfDomainBytes := id",
+        "active_checkedCoreFrameByteDomainSeparated",
+        "active_hiddenSourceFrameByteDomainSeparated",
+        "checkedCoreFrameByteDomainSeparated_of_instantiation",
+        "hiddenSourceFrameByteDomainSeparated_of_instantiation",
+    ];
     let boundary_checks = [
         "activePath2HashDomainAndMultiTargetCertificate",
         "directBudget := path2DirectQueryBudgetV1",
         "registry := activeHashDomainRegistryV1",
+        "byteDomainInstantiation := activeHashByteDomainInstantiationV1",
         "horizon := activeLaneAccountHorizonV1",
         "auxiliaryFq12ChallengeShapeComplete :=",
         "path2_direct_query_budget_auxiliary_fq12_challenge_shape_complete",
@@ -18850,6 +18872,7 @@ fn path2_active_native_hash_budget_boundary_source_present_v1() -> bool {
         "activeNativeHashBudgetBoundary_fq12ActionCollisionBudgetPriced",
         "activeNativeHashBudgetBoundary_multiTargetLossPriced",
         "activeNativeHashBudgetBoundary_hashBoundaryProps",
+        "activeHashDomainAndMultiTargetCertificate_byteDomainProps",
     ];
 
     budget_checks
@@ -18864,6 +18887,9 @@ fn path2_active_native_hash_budget_boundary_source_present_v1() -> bool {
         && horizon_checks
             .iter()
             .all(|marker| horizon_window.contains(marker))
+        && byte_domain_checks
+            .iter()
+            .all(|marker| byte_domain_window.contains(marker))
         && boundary_checks
             .iter()
             .all(|marker| boundary_window.contains(marker))

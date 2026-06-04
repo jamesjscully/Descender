@@ -151,6 +151,39 @@ theorem active_hiddenSourceFrameDomainSeparated :
     activeHashDomainRegistryV1.hiddenSource_ne_accountLifecycle⟩
 
 /--
+Selected concrete byte-domain instantiation for the active native route.
+
+The natural numbers are theorem-side representatives of the concrete Rust
+domain-prefixed byte frames audited by the production registry.
+-/
+def activeHashByteDomainInstantiationV1 :
+    ActiveHashByteDomainInstantiation activeHashDomainRegistryV1 where
+  checkedCoreFrameDomainBytes := 0
+  hiddenSourceFrameDomainBytes := 1
+  projectionCarrierDomainBytes := 2
+  accountLifecycleDomainBytes := 3
+  tagOfDomainBytes := id
+  checkedCore_tag_matches := rfl
+  hiddenSource_tag_matches := rfl
+  projectionCarrier_tag_matches := rfl
+  accountLifecycle_tag_matches := rfl
+  checkedCore_bytes_ne_hiddenSource := by native_decide
+  checkedCore_bytes_ne_projectionCarrier := by native_decide
+  checkedCore_bytes_ne_accountLifecycle := by native_decide
+  hiddenSource_bytes_ne_projectionCarrier := by native_decide
+  hiddenSource_bytes_ne_accountLifecycle := by native_decide
+
+theorem active_checkedCoreFrameByteDomainSeparated :
+    CheckedCoreFrameByteDomainSeparated activeHashByteDomainInstantiationV1 :=
+  checkedCoreFrameByteDomainSeparated_of_instantiation
+    activeHashByteDomainInstantiationV1
+
+theorem active_hiddenSourceFrameByteDomainSeparated :
+    HiddenSourceFrameByteDomainSeparated activeHashByteDomainInstantiationV1 :=
+  hiddenSourceFrameByteDomainSeparated_of_instantiation
+    activeHashByteDomainInstantiationV1
+
+/--
 Explicit aggregate-target horizon for multi-target pricing.
 
 The additive `log2` components make the account horizon and spend/message
@@ -250,6 +283,7 @@ the direct query-budget mirror.
 structure ActiveHashDomainAndMultiTargetCertificate where
   directBudget : Path2DirectQueryBudgetV1
   registry : ActiveHashDomainRegistry
+  byteDomainInstantiation : ActiveHashByteDomainInstantiation registry
   horizon : ActiveMultiTargetHorizon
   directQueryBudgetPriced :
     DirectQueryBudgetPriced directBudget
@@ -261,6 +295,10 @@ structure ActiveHashDomainAndMultiTargetCertificate where
     CheckedCoreFrameDomainSeparated registry
   hiddenSourceFrameDomainSeparated :
     HiddenSourceFrameDomainSeparated registry
+  checkedCoreFrameByteDomainSeparated :
+    CheckedCoreFrameByteDomainSeparated byteDomainInstantiation
+  hiddenSourceFrameByteDomainSeparated :
+    HiddenSourceFrameByteDomainSeparated byteDomainInstantiation
   multiTargetLossPriced :
     MultiTargetHorizonLossPriced directBudget horizon
 
@@ -317,6 +355,13 @@ theorem native_hashBoundaryProps
     C.native_queryBudgetPriced,
     C.native_multiTargetLossPriced⟩
 
+theorem byteDomainProps
+    (C : ActiveHashDomainAndMultiTargetCertificate) :
+    CheckedCoreFrameByteDomainSeparated C.byteDomainInstantiation ∧
+      HiddenSourceFrameByteDomainSeparated C.byteDomainInstantiation :=
+  ⟨C.checkedCoreFrameByteDomainSeparated,
+    C.hiddenSourceFrameByteDomainSeparated⟩
+
 end ActiveHashDomainAndMultiTargetCertificate
 
 /-- Active certificate for the reviewed Path 2 native active-lane route. -/
@@ -324,6 +369,7 @@ def activePath2HashDomainAndMultiTargetCertificate :
     ActiveHashDomainAndMultiTargetCertificate where
   directBudget := path2DirectQueryBudgetV1
   registry := activeHashDomainRegistryV1
+  byteDomainInstantiation := activeHashByteDomainInstantiationV1
   horizon := activeLaneAccountHorizonV1
   directQueryBudgetPriced :=
     path2_direct_query_budget_priced
@@ -335,6 +381,10 @@ def activePath2HashDomainAndMultiTargetCertificate :
     active_checkedCoreFrameDomainSeparated
   hiddenSourceFrameDomainSeparated :=
     active_hiddenSourceFrameDomainSeparated
+  checkedCoreFrameByteDomainSeparated :=
+    active_checkedCoreFrameByteDomainSeparated
+  hiddenSourceFrameByteDomainSeparated :=
+    active_hiddenSourceFrameByteDomainSeparated
   multiTargetLossPriced :=
     active_multiTargetLossPriced
 
@@ -382,6 +432,14 @@ theorem activeNativeHashBudgetBoundary_hashBoundaryProps :
       activeNativeHashBudgetBoundary.multiTargetLossPriced :=
   activePath2HashDomainAndMultiTargetCertificate
     |>.native_hashBoundaryProps
+
+theorem activeHashDomainAndMultiTargetCertificate_byteDomainProps :
+    CheckedCoreFrameByteDomainSeparated
+        activePath2HashDomainAndMultiTargetCertificate.byteDomainInstantiation ∧
+      HiddenSourceFrameByteDomainSeparated
+        activePath2HashDomainAndMultiTargetCertificate.byteDomainInstantiation :=
+  activePath2HashDomainAndMultiTargetCertificate
+    |>.byteDomainProps
 
 end Path2HashDomainAndMultiTarget
 end Descender
