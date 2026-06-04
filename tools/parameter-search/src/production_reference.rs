@@ -40,6 +40,8 @@ pub const PATH2_NATIVE_DEPLOYMENT_PREFLIGHT_SCHEMA: &str =
     "Descender.Path2.NativeDeploymentPreflight.v1";
 pub const PATH2_NATIVE_VERIFIER_PIPELINE_VERDICT_SCHEMA: &str =
     "Descender.Path2.NativeVerifierPipelineVerdict.v1";
+pub const PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.NativeCheckedCoreByteInstantiationEvidence.v1";
 pub const PATH2_NATIVE_SIGNER_VERIFIER_PIPELINE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeSignerVerifierPipelineEvidence.v1";
 pub const PATH2_NATIVE_SIGNER_PIPELINE_PUBLIC_OUTPUT_SCHEMA: &str =
@@ -1894,6 +1896,32 @@ pub struct Path2NativeCheckedCoreFrameV1 {
     pub proof_commitment: [u8; DIGEST_BYTES],
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2NativeCheckedCoreByteInstantiationEvidenceV1 {
+    pub schema: &'static str,
+    pub accepted: bool,
+    pub checked_core_acceptor_accepts: bool,
+    pub parser_matches_native_handle: bool,
+    pub proof_length_eq: bool,
+    pub proof_canonical: bool,
+    pub decoded_proof_commitment_eq: bool,
+    pub parsed_response_syndrome_eq: bool,
+    pub frame_bytes_eq: bool,
+    pub verifier_handle_eq: bool,
+    pub parser_equality: bool,
+    pub hash_and_syndrome_eq: bool,
+    pub short_proof_rejected: bool,
+    pub noncanonical_proof_rejected: bool,
+    pub commitment_mismatch_rejected: bool,
+    pub verifier_handle_mismatch_rejected: bool,
+    pub checked_core_frame_digest: [u8; DIGEST_BYTES],
+    pub checked_core_proof_bytes_digest: [u8; DIGEST_BYTES],
+    pub checked_core_verifier_handle_digest: [u8; DIGEST_BYTES],
+    pub checked_core_challenge: [u8; CHALLENGE_BYTES],
+    pub proof_byte_len: u16,
+    pub cleanup_policy: &'static str,
+}
+
 pub fn validate_path2_native_checked_core_frame_v1(
     frame: &Path2NativeCheckedCoreFrameV1,
 ) -> Result<(), String> {
@@ -2167,6 +2195,139 @@ pub fn path2_native_checked_core_accept_v1(
         return Err("Path 2 native checked-core sigma equation mismatch".to_string());
     }
     Ok(proof)
+}
+
+pub fn path2_native_checked_core_byte_instantiation_evidence_v1(
+    bundle: &Path2NativeProjectionBundleV1,
+    checked_core_proof_bytes: &[u8],
+) -> Result<Path2NativeCheckedCoreByteInstantiationEvidenceV1, String> {
+    let (_, checked_core_frame) = path2_native_derive_boundary_frame_v1(bundle)?;
+    let checked_core_frame_bytes = path2_native_checked_core_frame_v1_bytes(&checked_core_frame)?;
+    let decoded_frame = decode_path2_native_checked_core_frame_v1(&checked_core_frame_bytes)?;
+    let checked_core_frame_digest = path2_native_checked_core_frame_v1_digest(&checked_core_frame)?;
+    let checked_core_challenge = path2_native_checked_core_frame_v1_challenge(&checked_core_frame)?;
+    let accepted_proof = path2_native_checked_core_accept_v1(
+        &checked_core_frame,
+        &bundle.spend.checked_core_verifier_handle_digest,
+        checked_core_proof_bytes,
+    )?;
+    let decoded_proof = decode_reviewed_fq12_account_carried_proof(checked_core_proof_bytes)
+        .map_err(|err| format!("Path 2 native checked-core proof decode: {err}"))?;
+    let actual_response_syndrome =
+        reviewed_fq12_account_carried_response_syndrome(&decoded_proof.masked_quotient_response)
+            .map_err(|err| format!("Path 2 native checked-core response syndrome: {err}"))?;
+    let expected_response_syndrome = reviewed_fq12_state_assisted_expected_response_syndrome(
+        &checked_core_challenge,
+        &bundle.spend.checked_core_verifier_handle_digest,
+        &checked_core_frame.proof_commitment,
+    )
+    .map_err(|err| format!("Path 2 native checked-core expected syndrome: {err}"))?;
+
+    let short_proof_rejected = if checked_core_proof_bytes.len()
+        < PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES
+    {
+        true
+    } else {
+        let short_proof = &checked_core_proof_bytes[..PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES - 1];
+        path2_native_checked_core_accept_v1(
+            &checked_core_frame,
+            &bundle.spend.checked_core_verifier_handle_digest,
+            short_proof,
+        )
+        .unwrap_err()
+        .contains("Path 2 native checked-core proof has")
+    };
+
+    let mut noncanonical_proof = checked_core_proof_bytes.to_vec();
+    if let Some(last) = noncanonical_proof.last_mut() {
+        *last |= 0xc0;
+    }
+    let noncanonical_proof_rejected = path2_native_checked_core_accept_v1(
+        &checked_core_frame,
+        &bundle.spend.checked_core_verifier_handle_digest,
+        &noncanonical_proof,
+    )
+    .unwrap_err()
+    .contains("not canonical");
+
+    let mut commitment_mismatch_proof = checked_core_proof_bytes.to_vec();
+    if let Some(first) = commitment_mismatch_proof.first_mut() {
+        *first ^= 1;
+    }
+    let commitment_mismatch_rejected = path2_native_checked_core_accept_v1(
+        &checked_core_frame,
+        &bundle.spend.checked_core_verifier_handle_digest,
+        &commitment_mismatch_proof,
+    )
+    .unwrap_err()
+    .contains("proof commitment mismatch");
+
+    let mut verifier_handle_mismatch = bundle.spend.checked_core_verifier_handle_digest;
+    verifier_handle_mismatch[0] ^= 1;
+    let verifier_handle_mismatch_rejected = path2_native_checked_core_accept_v1(
+        &checked_core_frame,
+        &verifier_handle_mismatch,
+        checked_core_proof_bytes,
+    )
+    .unwrap_err()
+    .contains("sigma equation mismatch");
+
+    let proof_length_eq = checked_core_proof_bytes.len() == PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES;
+    let proof_canonical = decoded_proof == accepted_proof;
+    let decoded_proof_commitment_eq =
+        decoded_proof.proof_commitment == checked_core_frame.proof_commitment;
+    let parsed_response_syndrome_eq = actual_response_syndrome
+        == reviewed_fq12_account_carried_response_syndrome(
+            &accepted_proof.masked_quotient_response,
+        )
+        .map_err(|err| format!("Path 2 native checked-core accepted syndrome: {err}"))?;
+    let frame_bytes_eq = decoded_frame == checked_core_frame;
+    let expected_public_key_identity = path2_native_public_key_identity_digest_v1(
+        bundle.spend.spend_verifier_family_id,
+        bundle.spend.checked_core_verifier_handle_digest,
+    )?;
+    let verifier_handle_eq = bundle.account.public_key_identity == expected_public_key_identity;
+    let parser_equality = decoded_proof == accepted_proof
+        && decoded_proof_commitment_eq
+        && parsed_response_syndrome_eq;
+    let hash_and_syndrome_eq = actual_response_syndrome == expected_response_syndrome;
+    let parser_matches_native_handle = proof_length_eq && proof_canonical;
+
+    Ok(Path2NativeCheckedCoreByteInstantiationEvidenceV1 {
+        schema: PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA,
+        accepted: true,
+        checked_core_acceptor_accepts: true,
+        parser_matches_native_handle,
+        proof_length_eq,
+        proof_canonical,
+        decoded_proof_commitment_eq,
+        parsed_response_syndrome_eq,
+        frame_bytes_eq,
+        verifier_handle_eq,
+        parser_equality,
+        hash_and_syndrome_eq,
+        short_proof_rejected,
+        noncanonical_proof_rejected,
+        commitment_mismatch_rejected,
+        verifier_handle_mismatch_rejected,
+        checked_core_frame_digest,
+        checked_core_proof_bytes_digest: Sha256::digest(checked_core_proof_bytes).into(),
+        checked_core_verifier_handle_digest: bundle.spend.checked_core_verifier_handle_digest,
+        checked_core_challenge,
+        proof_byte_len: checked_core_proof_bytes
+            .len()
+            .try_into()
+            .map_err(|_| "checked-core proof byte length overflow".to_string())?,
+        cleanup_policy: "checked-core byte instantiation evidence is public and digest-only",
+    })
+}
+
+pub fn path2_native_checked_core_byte_instantiation_evidence_v1_digest(
+    evidence: &Path2NativeCheckedCoreByteInstantiationEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    serde_json::to_vec(evidence)
+        .map(|bytes| Sha256::digest(bytes).into())
+        .map_err(|err| format!("encode Path 2 native checked-core byte evidence: {err}"))
 }
 
 fn validate_path2_native_context_fields(
@@ -18297,9 +18458,17 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "checked_core_verifier_handle_digest",
         "actual != expected",
         "Ok(proof)",
+        "path2_native_checked_core_byte_instantiation_evidence_v1",
+        "PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA",
+        "decoded_proof_commitment_eq",
+        "hash_and_syndrome_eq",
+        "verifier_handle_mismatch_rejected",
+        "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
     ];
     let test_checks = [
         "path2_native_checked_core_accept_pins_canonical_proof_bytes_before_acceptance",
+        "path2_native_checked_core_byte_instantiation_evidence_reports_component_facts",
+        "assert!(evidence.hash_and_syndrome_eq)",
         "short_proof",
         "noncanonical_proof",
         "commitment_mismatch_proof",
@@ -38050,6 +38219,63 @@ mod tests {
             .unwrap_err(),
             "Path 2 native checked-core proof commitment mismatch"
         );
+    }
+
+    #[test]
+    fn path2_native_checked_core_byte_instantiation_evidence_reports_component_facts() {
+        let bundle = native_projection_bundle_fixture();
+        let proof_bytes = path2_native_checked_core_proof_from_bundle_v1(&bundle).unwrap();
+        let evidence =
+            path2_native_checked_core_byte_instantiation_evidence_v1(&bundle, &proof_bytes)
+                .unwrap();
+
+        assert_eq!(
+            evidence.schema,
+            PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA
+        );
+        assert!(evidence.accepted);
+        assert!(evidence.checked_core_acceptor_accepts);
+        assert!(evidence.parser_matches_native_handle);
+        assert!(evidence.proof_length_eq);
+        assert!(evidence.proof_canonical);
+        assert!(evidence.decoded_proof_commitment_eq);
+        assert!(evidence.parsed_response_syndrome_eq);
+        assert!(evidence.frame_bytes_eq);
+        assert!(evidence.verifier_handle_eq);
+        assert!(evidence.parser_equality);
+        assert!(evidence.hash_and_syndrome_eq);
+        assert!(evidence.short_proof_rejected);
+        assert!(evidence.noncanonical_proof_rejected);
+        assert!(evidence.commitment_mismatch_rejected);
+        assert!(evidence.verifier_handle_mismatch_rejected);
+        assert_eq!(
+            evidence.proof_byte_len as usize,
+            PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES
+        );
+        assert_ne!(evidence.checked_core_frame_digest, [0_u8; DIGEST_BYTES]);
+        assert_ne!(
+            evidence.checked_core_proof_bytes_digest,
+            [0_u8; DIGEST_BYTES]
+        );
+        let expected_proof_digest: [u8; DIGEST_BYTES] = Sha256::digest(proof_bytes).into();
+        assert_eq!(
+            evidence.checked_core_proof_bytes_digest,
+            expected_proof_digest
+        );
+        assert_eq!(
+            evidence.checked_core_verifier_handle_digest,
+            bundle.spend.checked_core_verifier_handle_digest
+        );
+        assert_ne!(
+            path2_native_checked_core_byte_instantiation_evidence_v1_digest(&evidence).unwrap(),
+            [0_u8; DIGEST_BYTES]
+        );
+
+        let rendered = serde_json::to_string(&evidence).unwrap();
+        assert!(rendered.contains(PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA));
+        assert_no_active_native_private_material(&rendered);
+        assert!(!rendered.contains("masked_quotient_response"));
+        assert!(!rendered.contains("proof_randomizer_syndrome"));
     }
 
     #[test]
