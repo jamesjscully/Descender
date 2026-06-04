@@ -6790,7 +6790,13 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "assemblySource :",
         "compatibilitySource :",
         "witnessSources :",
-        "(I :",
+        "ReviewedFq12SelectedRustModelFiveSourceClosureInputs",
+        "ReviewedFq12ExtractionCertificateAvailability",
+        "ReviewedFq12RoleRootFunctionalLiftSource",
+        "SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource",
+        "ReviewedFq12FieldConcreteAssemblyLocalSource",
+        "ReviewedFq12FieldConcreteCompatibilitySource",
+        "ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources",
     ];
     if forbidden_header_parameters
         .iter()
@@ -41671,6 +41677,36 @@ theorem {theorem_name}
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &parameterized_theorem,
+                theorem_name
+            )
+        );
+
+        let renamed_record_parameter_theorem = format!(
+            r#"
+theorem {theorem_name}
+    (P : Predicates)
+    (inputs :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P := by
+  let selectedRustModelFiveSourceInputs :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    {{ payloadProjectsFrom := inputs.payloadProjectsFrom
+      certificateAvailability := inputs.certificateAvailability
+      roleRootLiftSource := inputs.roleRootLiftSource
+      selectedSource := inputs.selectedSource
+      assemblySource := inputs.assemblySource
+      compatibilitySource := inputs.compatibilitySource
+      witnessSources := inputs.witnessSources }}
+  exact
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+      P selectedRustModelFiveSourceInputs
+"#
+        );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &renamed_record_parameter_theorem,
                 theorem_name
             )
         );
