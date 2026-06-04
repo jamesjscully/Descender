@@ -319,6 +319,15 @@ canonical-representative flag:
 `representative_frame_source_of_canonical_representative_source` and the
 matching canonical witness gates rather than aliasing the broader canonical
 representative source.
+The constructed-compatibility and compatibility-route witness flags are now
+source-inspected separately from the broad local-model helper.
+`rust_constructed_assembly_compatibility_witness_source_present` checks
+`constructed_compatibility_witness_of_assembly_field_binding_and_local_model`
+against direct assembly binding plus assembly/compatibility component helpers.
+`rust_compatibility_route_witness_source_present` checks
+`compatibility_route_witness_source_of_assembly_field_binding_local_model_and_digest_lookup`,
+including the representative-digest lookup source, instead of aliasing the
+constructed-compatibility flag.
 The audit now also carries a dedicated marker bit for
 `reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources`,
 so the active five-source endpoint is checked directly rather than only through

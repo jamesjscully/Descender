@@ -7473,11 +7473,11 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let rust_native_representative_digest_frame_source_present =
         path2_reviewed_fq12_native_representative_digest_frame_source_present_v1();
     let rust_constructed_assembly_compatibility_witness_source_present =
-        path2_reviewed_fq12_assembly_compatibility_local_model_source_present_v1();
+        path2_reviewed_fq12_constructed_assembly_compatibility_witness_source_present_v1();
     let rust_independent_direct_assembly_binding_source_present =
         path2_reviewed_fq12_independent_direct_assembly_binding_source_present_v1();
     let rust_compatibility_route_witness_source_present =
-        rust_constructed_assembly_compatibility_witness_source_present;
+        path2_reviewed_fq12_compatibility_route_witness_source_present_v1();
     let rust_assembly_compatibility_local_model_source_present =
         rust_constructed_assembly_compatibility_witness_source_present;
     let rust_assembly_field_local_native_components_present =
@@ -10293,6 +10293,53 @@ fn path2_reviewed_fq12_full_native_opening_representative_frame_source_present_v
         && path2_reviewed_fq12_full_native_opening_canonical_representative_source_present_v1()
         && path2_reviewed_fq12_full_native_opening_canonical_representative_witness_source_present_v1()
         && path2_reviewed_fq12_shared_digest_frame_witness_byte_source_contract_present_v1()
+}
+
+fn path2_reviewed_fq12_constructed_assembly_compatibility_witness_source_present_v1() -> bool {
+    let lean_source =
+        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
+    let lean_checks = [
+        "def ReviewedFq12ConstructedAssemblyCompatibilityWitnessSource",
+        "theorem constructed_compatibility_witness_of_assembly_field_binding_and_local_model",
+        "ReviewedFq12ConcreteAssemblyFieldBindingOrBreak P",
+        "ReviewedFq12AssemblyAvailabilityLocalSource P",
+        "ReviewedFq12CompatibilityAvailabilityExtractionRulesSource P",
+        "binding_of_assembly_concrete_field_certificate",
+        "assemblySource.localPredicates",
+        "assemblySource.nativeValidity",
+        "compatibilitySource.availability",
+    ];
+
+    lean_checks
+        .iter()
+        .all(|marker| lean_source.contains(marker))
+        && path2_reviewed_fq12_independent_direct_assembly_binding_source_present_v1()
+        && path2_reviewed_fq12_assembly_field_local_native_components_present_v1()
+        && path2_reviewed_fq12_compatibility_field_extraction_components_present_v1()
+}
+
+fn path2_reviewed_fq12_compatibility_route_witness_source_present_v1() -> bool {
+    let lean_source =
+        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
+    let lean_checks = [
+        "structure ReviewedFq12CompatibilityRouteWitnessSource",
+        "constructedCompatibilityWitness",
+        "compatibilityAssemblyWitness",
+        "def compatibility_route_witness_source_of_assembly_field_binding_local_model_and_digest_lookup",
+        "constructed_compatibility_witness_of_assembly_field_binding_and_local_model",
+        "compatibility_assembly_representative_witness_of_assembly_availability_binding_and_digest_lookup",
+        "localModel.assemblySource.availability",
+        "assemblyBinding",
+        "digestLookup",
+    ];
+
+    lean_checks
+        .iter()
+        .all(|marker| lean_source.contains(marker))
+        && path2_reviewed_fq12_constructed_assembly_compatibility_witness_source_present_v1()
+        && path2_reviewed_fq12_assembly_representative_digest_lookup_source_present_v1()
+        && path2_reviewed_fq12_independent_direct_assembly_binding_source_present_v1()
+        && path2_reviewed_fq12_assembly_compatibility_local_model_source_present_v1()
 }
 
 pub fn path2_reviewed_fq12_native_representative_digest_frame_witness_v1(
@@ -40632,11 +40679,13 @@ mod tests {
         assert!(audit.rust_native_representative_digest_frame_witness_api_present);
         assert!(path2_reviewed_fq12_native_representative_digest_frame_witness_api_present_v1());
         assert!(audit.rust_constructed_assembly_compatibility_witness_source_present);
-        assert!(path2_reviewed_fq12_assembly_compatibility_local_model_source_present_v1());
+        assert!(path2_reviewed_fq12_constructed_assembly_compatibility_witness_source_present_v1());
         assert!(audit.rust_independent_direct_assembly_binding_source_present);
         assert!(path2_reviewed_fq12_independent_direct_assembly_binding_source_present_v1());
         assert!(audit.rust_compatibility_route_witness_source_present);
+        assert!(path2_reviewed_fq12_compatibility_route_witness_source_present_v1());
         assert!(audit.rust_assembly_compatibility_local_model_source_present);
+        assert!(path2_reviewed_fq12_assembly_compatibility_local_model_source_present_v1());
         assert!(audit.rust_assembly_field_local_native_components_present);
         assert!(path2_reviewed_fq12_assembly_field_local_native_components_present_v1());
         assert!(audit.rust_compatibility_field_extraction_components_present);
