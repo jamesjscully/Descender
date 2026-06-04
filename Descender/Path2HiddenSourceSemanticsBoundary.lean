@@ -187,5 +187,49 @@ theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_loc
     (reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_component_inputs
       P I)
 
+/--
+Active AP2-N001 boundary closure from the five selected Rust/model source
+records.
+
+This is the production-facing route from the source package the Rust audit
+tracks into the named raw-component certificate and then into hidden-source
+proof semantics closure.
+-/
+theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (payloadProjectsFrom :
+      forall {b : Path2NativeBoundary.Boundary}
+          {payload : ReviewedFq12HiddenSourcePayload},
+        P.reviewedFq12PayloadAccepts b payload ->
+          payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+            payload.slotId = b.context.slotId ->
+          P.reviewedFq12PayloadProjectsFrom b payload)
+    (certificateAvailability :
+      ReviewedFq12ExtractionCertificateAvailability P)
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (selectedSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P)
+    (assemblySource :
+      ReviewedFq12FieldConcreteAssemblyLocalSource P)
+    (compatibilitySource :
+      ReviewedFq12FieldConcreteCompatibilitySource P)
+    (witnessSources :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P :=
+  reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_digest_frame_witness_byte_component_inputs
+    P payloadProjectsFrom certificateAvailability
+    (reviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputsOfSources
+      roleRootLiftSource selectedSource assemblySource compatibilitySource
+      witnessSources)
+
 end Path2HiddenSourceSemanticsBoundary
 end Descender
