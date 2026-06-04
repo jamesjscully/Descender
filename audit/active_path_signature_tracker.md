@@ -280,6 +280,9 @@ The raw-component theorem
 then expands the remaining source records into the exact role-root/lift,
 source-route byte, assembly field/local/native, compatibility field/extraction,
 and shared witness byte obligations.
+The Rust audit tracks this theorem with its own component-endpoint bit, so the
+bridge gate is no longer satisfied merely by the older packaged or shared-frame
+markers.
 
 Lean now also exposes
 `reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_byte_and_witness_sources`,
