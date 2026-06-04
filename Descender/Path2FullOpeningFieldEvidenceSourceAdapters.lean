@@ -5104,6 +5104,77 @@ structure ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInput
     nativeDigestFrameWitnessByteSource.digestFrame = digestFrame
 
 /--
+Assemble the named AP2-N001 raw component package from the five selected
+Rust/model source records.
+
+This is the proof-side certificate constructor that matches the active Rust
+audit shape: role-root/lift source, selected source-route bytes, concrete
+assembly source, concrete compatibility source, and the shared-frame witness
+source package.
+-/
+def reviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputsOfSources
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (selectedSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P)
+    (assemblySource :
+      ReviewedFq12FieldConcreteAssemblyLocalSource P)
+    (compatibilitySource :
+      ReviewedFq12FieldConcreteCompatibilitySource P)
+    (witnessSources :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs
+      FieldParser RouteParser CanonicalParser WitnessParser P :=
+  { roleRootFields := roleRootLiftSource.roleRootFields
+    liftOpeningFunctionality :=
+      roleRootLiftSource.liftOpeningFunctionality
+    selectedSource := selectedSource
+    assemblyAvailability := assemblySource.availability
+    assemblyFieldBinding := assemblySource.fieldBinding
+    assemblyLocalPredicates := assemblySource.localPredicates
+    assemblyNativeValidity := assemblySource.nativeValidity
+    compatibilityAvailability := compatibilitySource.availability
+    compatibilityFieldBinding := compatibilitySource.fieldBinding
+    compatibilityExtractionRules := compatibilitySource.extractionRules
+    digestFrame := witnessSources.digestFrame
+    canonicalRepresentativeWitnessByteSource :=
+      witnessSources.canonicalRepresentativeWitnessByteSource
+    canonical_digest_frame_eq := witnessSources.canonical_digest_frame_eq
+    nativeDigestFrameWitnessByteSource :=
+      witnessSources.nativeDigestFrameWitnessByteSource
+    assembly_digest_frame_eq := witnessSources.assembly_digest_frame_eq }
+
+/--
+Forget the existing five-source implementation package into the named AP2-N001
+raw component package.
+-/
+def ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs.toByteComponentInputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (I :
+      ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs
+      FieldParser RouteParser CanonicalParser WitnessParser P :=
+  reviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputsOfSources
+    I.roleRootLiftSource I.selectedSource I.assemblySource
+    I.compatibilitySource I.witnessSources
+
+/--
 P2FS-001 closure from the raw source components remaining in the selected
 Rust/model route. This is the concrete checklist behind the field-local
 shared-frame theorem: role-root/lift facts, selected source-route bytes,
@@ -5190,6 +5261,56 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_diges
     I.compatibilityFieldBinding I.compatibilityExtractionRules I.digestFrame
     I.canonicalRepresentativeWitnessByteSource I.canonical_digest_frame_eq
     I.nativeDigestFrameWitnessByteSource I.assembly_digest_frame_eq
+
+/--
+P2FS-001 closure from the five-source implementation package through the named
+AP2-N001 raw component certificate.
+-/
+theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_inputs_via_component_inputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (I :
+      ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12ExtractionCertificateSoundness P :=
+  reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_component_inputs
+    P I.toByteComponentInputs
+
+/--
+P2FS-001 closure from the five selected Rust/model sources through the named
+AP2-N001 raw component certificate.
+-/
+theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources_via_component_inputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (selectedSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P)
+    (assemblySource :
+      ReviewedFq12FieldConcreteAssemblyLocalSource P)
+    (compatibilitySource :
+      ReviewedFq12FieldConcreteCompatibilitySource P)
+    (witnessSources :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12ExtractionCertificateSoundness P :=
+  reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_component_inputs
+    P
+    (reviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputsOfSources
+      roleRootLiftSource selectedSource assemblySource compatibilitySource
+      witnessSources)
 
 /--
 Selected-Rust packaged source-route adapter using the existing concrete
