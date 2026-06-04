@@ -344,6 +344,97 @@ structure SelectedRustCheckedCoreByteSource
         HashAndSyndromeEquality H evidence
 
 /--
+Implementation-oriented component package for the selected Rust checked-core
+byte source.
+
+This is intentionally one step below the deployment-closing concrete theorem:
+it packages the exact parser/native-handle, canonical proof, frame, verifier
+handle, challenge, and syndrome facts that a Rust/model instantiation must
+supply, but it does not assert that those facts have already been derived from
+the production Rust parser and hash functions.
+-/
+structure SelectedRustCheckedCoreByteInstantiationInputs
+    {F : NativeCheckedCoreFrameFields}
+    (B : NativeCheckedCoreFrameBinding F)
+    (H : NativeCheckedCoreVerifierHandleFields)
+    (P : CheckedCoreProofByteParser)
+    (V : VerifierPredicates) where
+  selectedRustCheckedCoreAcceptorAccepts :
+    Boundary -> Nat -> Nat -> NativeCheckedCoreSpendEvidence -> Prop
+  selectedRustCheckedCoreParserMatchesNative :
+    ParserMatchesNativeHandle P H
+  selectedRustCheckedCoreProofLengthEq :
+    forall {q msg state evidence},
+      selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+        P.proofByteLength evidence.checkedCoreProofBytes =
+          H.requiredProofByteLength
+  selectedRustCheckedCoreProofCanonical :
+    forall {q msg state evidence},
+      selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+        P.proofBytesCanonical evidence.checkedCoreProofBytes
+  selectedRustCheckedCoreDecodedProofCommitment :
+    forall {q msg state evidence},
+      selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+        DecodedProofCommitment P
+          evidence.checkedCoreProofBytes evidence.proofCommitment
+  selectedRustCheckedCoreParsedResponseSyndrome :
+    forall {q msg state evidence},
+      selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+        ParsedResponseSyndrome P
+          evidence.checkedCoreProofBytes evidence.actualResponseSyndrome
+  selectedRustCheckedCoreFrameBytes :
+    forall {q msg state evidence},
+      selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+        FrameBytes B q msg state evidence.proofCommitment
+          evidence.checkedCoreFrame
+  selectedRustCheckedCoreVerifierHandleEq :
+    forall {q msg state evidence},
+      selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+        evidence.checkedCoreVerifierHandleDigest =
+          H.checkedCoreVerifierHandleDigest q
+  selectedRustCheckedCoreParserEquality :
+    forall {q msg state evidence},
+      selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+        ParserEquality P evidence.checkedCoreProofBytes evidence
+  selectedRustCheckedCoreHashAndSyndrome :
+    forall {q msg state evidence},
+      selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+        HashAndSyndromeEquality H evidence
+
+/--
+Build the selected Rust byte source from the implementation-oriented component
+package.
+-/
+def selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1
+    {F : NativeCheckedCoreFrameFields}
+    {B : NativeCheckedCoreFrameBinding F}
+    {H : NativeCheckedCoreVerifierHandleFields}
+    {P : CheckedCoreProofByteParser}
+    {V : VerifierPredicates}
+    (Inputs : SelectedRustCheckedCoreByteInstantiationInputs B H P V) :
+    SelectedRustCheckedCoreByteSource B H P V where
+  rustAcceptorAccepts :=
+    Inputs.selectedRustCheckedCoreAcceptorAccepts
+  parserMatchesNative :=
+    Inputs.selectedRustCheckedCoreParserMatchesNative
+  proof_length_eq :=
+    Inputs.selectedRustCheckedCoreProofLengthEq
+  proof_canonical :=
+    Inputs.selectedRustCheckedCoreProofCanonical
+  decoded_proof_commitment :=
+    Inputs.selectedRustCheckedCoreDecodedProofCommitment
+  parsed_response_syndrome :=
+    Inputs.selectedRustCheckedCoreParsedResponseSyndrome
+  frame_bytes :=
+    Inputs.selectedRustCheckedCoreFrameBytes
+  verifier_handle_eq :=
+    Inputs.selectedRustCheckedCoreVerifierHandleEq
+  parser_equality :=
+    Inputs.selectedRustCheckedCoreParserEquality
+  hash_and_syndrome :=
+    Inputs.selectedRustCheckedCoreHashAndSyndrome
+
+/--
 A selected Rust accept result is enough to build the standalone byte
 certificate, once the concrete Rust source contract has been instantiated.
 -/
@@ -537,6 +628,38 @@ theorem selectedRustCheckedCoreByteSource_valid_or_named_break
   | inr hBreak =>
       exact Or.inr
         (checkedCoreByteBreakAlternatives_to_byteAndEquation hBreak)
+
+/--
+Implementation-oriented checked-core endpoint: once the selected Rust/model
+instantiation supplies the named component facts, the existing native V1 bridge
+and soundness boundary yield valid checked-core evidence or the same named
+byte/parser/frame/domain/equation residual breaks.
+-/
+theorem selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break
+    {M : MeaningProjection}
+    {Proj : PublicProjections}
+    {V : VerifierPredicates}
+    {F : NativeCheckedCoreFrameFields}
+    (Bridge : Path2NativeCheckedCoreAcceptV1Bridge M Proj V F)
+    (Soundness :
+      Path2NativeCheckedCoreAcceptV1Soundness
+        V F Bridge.nativeFrameBinding Bridge.verifierHandleFields)
+    {P : CheckedCoreProofByteParser}
+    (Inputs :
+      SelectedRustCheckedCoreByteInstantiationInputs
+        Bridge.nativeFrameBinding Bridge.verifierHandleFields P V)
+    {q : Boundary} {msg state : Nat}
+    {evidence : NativeCheckedCoreSpendEvidence}
+    (h :
+      SelectedRustCheckedCoreByteSourceAcceptOrBreak
+        (selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1 Inputs)
+        q msg state evidence) :
+    Soundness.validCheckedCoreEvidence q msg state evidence ∨
+      CheckedCoreByteAndEquationBreakAlternatives V q :=
+  selectedRustCheckedCoreByteSource_valid_or_named_break
+    Bridge Soundness
+    (selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1 Inputs)
+    h
 
 end Path2CheckedCoreByteBridge
 end Descender

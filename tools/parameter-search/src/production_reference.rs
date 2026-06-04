@@ -18250,6 +18250,10 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "verifier_handle_eq",
         "parser_equality",
         "hash_and_syndrome",
+        "SelectedRustCheckedCoreByteInstantiationInputs",
+        "selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1",
+        "Inputs.selectedRustCheckedCoreAcceptorAccepts",
+        "Inputs.selectedRustCheckedCoreHashAndSyndrome",
     ];
     let accept_endpoint_checks = [
         "selectedRustCheckedCoreByteSource_checkedCoreAccepts_or_named_break",
@@ -18272,6 +18276,9 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "checkedCoreParserBreak_to_byteAndEquation",
         "checkedCoreByteBreakAlternatives_to_byteAndEquation",
         "Soundness.validCheckedCoreEvidence",
+        "selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break",
+        "SelectedRustCheckedCoreByteInstantiationInputs",
+        "selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1",
     ];
     let native_soundness_checks = [
         "structure Path2NativeCheckedCoreAcceptV1Soundness",
