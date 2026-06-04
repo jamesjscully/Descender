@@ -6803,10 +6803,36 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "ReviewedFq12FieldConcreteAssemblyLocalSource",
         "ReviewedFq12FieldConcreteCompatibilitySource",
         "ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources",
+        "selectedRustPayloadProjectionLaw :",
+        "selectedRustExtractionCertificateAvailability :",
+        "selectedRustRoleRootLiftSource :",
+        "selectedRustSourceRouteByteSource :",
+        "selectedRustAssemblySource :",
+        "selectedRustCompatibilitySource :",
+        "selectedRustSharedFrameWitnessSources :",
     ];
     if forbidden_header_parameters
         .iter()
         .any(|marker| theorem_header.contains(marker))
+    {
+        return false;
+    }
+
+    let normalized_source = theorem_source.split_whitespace().collect::<String>();
+    let contains_normalized =
+        |marker: &str| normalized_source.contains(&marker.split_whitespace().collect::<String>());
+    let required_source_bindings = [
+        "payloadProjectsFrom := selectedRustPayloadProjectionLaw",
+        "certificateAvailability := selectedRustExtractionCertificateAvailability",
+        "roleRootLiftSource := selectedRustRoleRootLiftSource",
+        "selectedSource := selectedRustSourceRouteByteSource",
+        "assemblySource := selectedRustAssemblySource",
+        "compatibilitySource := selectedRustCompatibilitySource",
+        "witnessSources := selectedRustSharedFrameWitnessSources",
+    ];
+    if !required_source_bindings
+        .iter()
+        .all(|marker| contains_normalized(marker))
     {
         return false;
     }
@@ -42120,7 +42146,7 @@ theorem {theorem_name}
             )
         );
 
-        let concrete_theorem = format!(
+        let placeholder_fed_local_construction = format!(
             r#"
 theorem {theorem_name}
     (P : Predicates) :
@@ -42135,6 +42161,33 @@ theorem {theorem_name}
       assemblySource := assemblySource
       compatibilitySource := compatibilitySource
       witnessSources := witnessSources }}
+  exact
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+      P selectedRustModelFiveSourceInputs
+"#
+        );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &placeholder_fed_local_construction,
+                theorem_name
+            )
+        );
+
+        let concrete_theorem = format!(
+            r#"
+theorem {theorem_name}
+    (P : Predicates) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P := by
+  let selectedRustModelFiveSourceInputs :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    {{ payloadProjectsFrom := selectedRustPayloadProjectionLaw
+      certificateAvailability := selectedRustExtractionCertificateAvailability
+      roleRootLiftSource := selectedRustRoleRootLiftSource
+      selectedSource := selectedRustSourceRouteByteSource
+      assemblySource := selectedRustAssemblySource
+      compatibilitySource := selectedRustCompatibilitySource
+      witnessSources := selectedRustSharedFrameWitnessSources }}
   exact
     reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
       P selectedRustModelFiveSourceInputs
