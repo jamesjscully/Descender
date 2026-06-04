@@ -98,6 +98,8 @@ pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_PUBLIC_VIEW_SERIALIZERS: &str =
     "active native public account/spend serializers are not source-pinned";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSENSUS_CARRIER: &str =
     "active native consensus carrier source boundary is not pinned";
+pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_GLOBAL_DOMAIN_REGISTRY: &str =
+    "active native global domain registry is not source-pinned";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION: &str =
     "active native checked-core equation soundness is not composed into verifier acceptance";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON: &str =
@@ -18374,6 +18376,117 @@ fn path2_native_consensus_carrier_source_boundary_present_v1() -> bool {
             .all(|marker| tests_window.contains(marker))
 }
 
+fn path2_native_global_domain_registry_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let registry_start = source
+        .find("\npub fn production_registered_domain_schema_constants()")
+        .expect("production domain/schema registry source start marker missing");
+    let registry_end = source[registry_start..]
+        .find("\npub fn validate_production_deployment_preflight_certificate(")
+        .expect("production domain/schema registry source end marker missing")
+        + registry_start;
+    let registry_window = &source[registry_start..registry_end];
+
+    let active_test_start = source
+        .find("\n    fn path2_active_native_domains_and_public_schemas_are_unique()")
+        .expect("active native domain/schema disjointness test start marker missing");
+    let active_test_end = source[active_test_start..]
+        .find("\n    fn production_domain_schema_registry_is_globally_disjoint()")
+        .expect("active native domain/schema disjointness test end marker missing")
+        + active_test_start;
+    let active_test_window = &source[active_test_start..active_test_end];
+
+    let registry_test_start = source
+        .find("\n    fn production_domain_schema_registry_is_globally_disjoint()")
+        .expect("production domain/schema registry test start marker missing");
+    let registry_test_end = source[registry_test_start..]
+        .find("\n    fn path2_native_consensus_carrier_v1_is_canonical_hybrid_surface()")
+        .expect("production domain/schema registry test end marker missing")
+        + registry_test_start;
+    let registry_test_window = &source[registry_test_start..registry_test_end];
+
+    let registry_checks = [
+        "production_registered_domain_schema_constants",
+        "PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA",
+        "PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA",
+        "PATH2_NATIVE_PROJECTION_CONTEXT_DOMAIN",
+        "PATH2_NATIVE_PUBLIC_KEY_IDENTITY_DOMAIN",
+        "PATH2_NATIVE_AUTHORIZATION_CLASS_DOMAIN",
+        "PATH2_NATIVE_PROJECTION_ACCOUNT_DOMAIN",
+        "PATH2_NATIVE_PROJECTION_SPEND_DOMAIN",
+        "PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN",
+        "PATH2_NATIVE_PROJECTION_STATE_DOMAIN",
+        "PATH2_NATIVE_PROJECTION_TRANSCRIPT_DOMAIN",
+        "PATH2_NATIVE_BOUNDARY_DOMAIN",
+        "PATH2_NATIVE_NO_OBSTRUCTION_FLAGS_DOMAIN",
+        "PATH2_NATIVE_PROJECTION_PREIMAGE_DA_DOMAIN",
+        "PATH2_NATIVE_CONSENSUS_CARRIER_DOMAIN",
+        "PATH2_NATIVE_CONSENSUS_PREFLIGHT_REPORT_SCHEMA",
+        "PATH2_NATIVE_SIGNER_EXECUTION_REPORT_SCHEMA",
+        "PATH2_NATIVE_SIGNER_CT_SOURCE_AUDIT_SCHEMA",
+        "PATH2_NATIVE_SIGNER_ENTROPY_DERIVATION_DOMAIN",
+        "PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN",
+        "PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA",
+        "PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA",
+    ];
+    let active_test_checks = [
+        "path2_active_native_domains_and_public_schemas_are_unique",
+        "PATH2_NATIVE_PROJECTION_CONTEXT_DOMAIN",
+        "PATH2_NATIVE_PUBLIC_KEY_IDENTITY_DOMAIN",
+        "PATH2_NATIVE_AUTHORIZATION_CLASS_DOMAIN",
+        "PATH2_NATIVE_PROJECTION_ACCOUNT_DOMAIN",
+        "PATH2_NATIVE_PROJECTION_SPEND_DOMAIN",
+        "PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN",
+        "PATH2_NATIVE_PROJECTION_STATE_DOMAIN",
+        "PATH2_NATIVE_PROJECTION_TRANSCRIPT_DOMAIN",
+        "PATH2_NATIVE_BOUNDARY_DOMAIN",
+        "PATH2_NATIVE_NO_OBSTRUCTION_FLAGS_DOMAIN",
+        "PATH2_NATIVE_PROJECTION_PREIMAGE_DA_DOMAIN",
+        "PATH2_NATIVE_CONSENSUS_CARRIER_DOMAIN",
+        "PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN",
+        "PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA",
+        "PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA",
+        "domain.starts_with(\"Descender.Path2.\")",
+        "domain.ends_with(\".v1\")",
+        "duplicate active native domain",
+        "schema.starts_with(\"DESCENDER_PATH2_PUBLIC_NATIVE_\")",
+        "schema.ends_with(\"_V1\")",
+        "active native domain collides with public schema",
+    ];
+    let registry_test_checks = [
+        "production_domain_schema_registry_is_globally_disjoint",
+        "production_registered_domain_schema_constants()",
+        "registry.len() >= 80",
+        "BTreeMap::new()",
+        "by_value.insert(*value, *label).is_none()",
+        "duplicate production domain/schema value",
+        "PATH2_NATIVE_CONSENSUS_PREFLIGHT_REPORT_SCHEMA",
+        "PATH2_NATIVE_SIGNER_EXECUTION_REPORT_SCHEMA",
+        "PATH2_NATIVE_SIGNER_CT_SOURCE_AUDIT_SCHEMA",
+        "PATH2_NATIVE_SIGNER_ENTROPY_DERIVATION_DOMAIN",
+        "PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN",
+        "PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA",
+        "PATH2_NATIVE_BOUNDARY_TRACE_COLUMN_MANIFEST_SCHEMA",
+        "PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA",
+        "PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA",
+        "PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA",
+        "active_native_values.len(), 37",
+        "label.starts_with(\"PATH2_NATIVE_\") || label.starts_with(\"PATH2_PUBLIC_NATIVE_\")",
+        "active native registry value collides with non-native",
+    ];
+
+    registry_checks
+        .iter()
+        .all(|marker| registry_window.contains(marker))
+        && active_test_checks
+            .iter()
+            .all(|marker| active_test_window.contains(marker))
+        && registry_test_checks
+            .iter()
+            .all(|marker| registry_test_window.contains(marker))
+}
+
 fn path2_native_production_facade_exports_source_present_v1() -> bool {
     let facade_source = include_str!("../../../tools/production-reference/src/lib.rs");
     let facade_start = facade_source
@@ -18418,6 +18531,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_PROJECTION_ENCODERS",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_FRAME",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSENSUS_CARRIER",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_GLOBAL_DOMAIN_REGISTRY",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE",
@@ -18453,9 +18567,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         path2_native_public_view_serializer_source_boundary_present_v1();
     let consensus_carrier_present = path2_native_consensus_carrier_source_boundary_present_v1();
     let verifier_preflight_report_present = true;
-    let global_domain_registry_present = production_registered_domain_schema_constants()
-        .iter()
-        .any(|(label, _)| *label == "PATH2_NATIVE_CONSENSUS_CARRIER_DOMAIN");
+    let global_domain_registry_present = path2_native_global_domain_registry_source_present_v1();
     let hash_qrom_review_present =
         path2_native_hash_qrom_review_v1().schema == PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA;
     let facade_exports_present = path2_native_production_facade_exports_source_present_v1();
@@ -18482,6 +18594,9 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     }
     if !consensus_carrier_present {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSENSUS_CARRIER);
+    }
+    if !global_domain_registry_present {
+        internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_GLOBAL_DOMAIN_REGISTRY);
     }
     if !checked_core_composition_review_complete {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION);
@@ -18570,6 +18685,8 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         Some("reject_active_native_public_view_serializer_source_open")
     } else if !deployment_preflight.consensus_carrier_present {
         Some("reject_active_native_consensus_carrier_source_open")
+    } else if !deployment_preflight.global_domain_registry_present {
+        Some("reject_active_native_global_domain_registry_source_open")
     } else if !deployment_preflight.checked_core_composition_review_complete {
         Some("reject_active_native_checked_core_composition_open")
     } else if !deployment_preflight.hash_qrom_deployment_horizon_complete {
@@ -36367,6 +36484,7 @@ mod tests {
         assert!(path2_native_consensus_carrier_source_boundary_present_v1());
         assert!(preflight.consensus_carrier_present);
         assert!(preflight.verifier_preflight_report_present);
+        assert!(path2_native_global_domain_registry_source_present_v1());
         assert!(preflight.global_domain_registry_present);
         assert!(preflight.hash_qrom_review_present);
         assert!(path2_native_production_facade_exports_source_present_v1());
