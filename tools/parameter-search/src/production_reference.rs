@@ -102,6 +102,8 @@ pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE: &str 
     "active native full-signature execution source is not bound to accepted-spend soundness";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS: &str =
     "active native accept/reject/storage serializers are not bound to no-export allowlist";
+pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_FACADE_EXPORTS: &str =
+    "active native production facade exports are not source-pinned";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME: &str =
     "active native constant-time signer, sampler, keygen, and verifier audit remains open";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE: &str =
@@ -18200,6 +18202,75 @@ fn path2_native_consensus_carrier_source_boundary_present_v1() -> bool {
             .all(|marker| tests_window.contains(marker))
 }
 
+fn path2_native_production_facade_exports_source_present_v1() -> bool {
+    let facade_source = include_str!("../../../tools/production-reference/src/lib.rs");
+    let facade_start = facade_source
+        .find("\npub use descender_parameter_search::production_reference::{")
+        .expect("production-reference facade export list start marker missing");
+    let facade_end = facade_source[facade_start..]
+        .find("\n};")
+        .expect("production-reference facade export list end marker missing")
+        + facade_start;
+    let facade_window = &facade_source[facade_start..facade_end];
+
+    let test_start = facade_source
+        .find("\n    fn production_reference_facade_excludes_selected_material_helpers()")
+        .expect("production-reference facade negative-control test start marker missing");
+    let test_end = facade_source[test_start..]
+        .find("\n    #[derive(Clone, Debug, Default, PartialEq, Eq)]")
+        .expect("production-reference facade negative-control test end marker missing")
+        + test_start;
+    let test_window = &facade_source[test_start..test_end];
+
+    let required_exports = [
+        "Path2NativeConsensusCarrierV1",
+        "Path2NativeConsensusCarrierPreflightReportV1",
+        "Path2NativeDeploymentPreflightV1",
+        "Path2NativeVerifierPipelineVerdictV1",
+        "path2_native_consensus_carrier_v1_from_assembly",
+        "validate_path2_native_consensus_carrier_v1",
+        "path2_native_consensus_carrier_v1_bytes",
+        "path2_native_consensus_carrier_v1_digest",
+        "decode_path2_native_consensus_carrier_v1",
+        "verify_path2_native_consensus_carrier_v1_against_bundle",
+        "path2_native_consensus_carrier_preflight_report_v1",
+        "path2_native_deployment_preflight_v1",
+        "path2_native_deployment_preflight_v1_digest",
+        "verify_path2_native_deployment_pipeline_v1",
+        "path2_native_verifier_pipeline_verdict_v1_digest",
+        "public_native_account_view_v1",
+        "public_native_account_view_v1_json",
+        "public_native_spend_view_v1",
+        "public_native_spend_view_v1_json",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_PUBLIC_VIEW_SERIALIZERS",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSENSUS_CARRIER",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_FACADE_EXPORTS",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE",
+    ];
+    let negative_controls = [
+        "!facade.contains(\"pub use descender_parameter_search::production_reference::*\")",
+        "ProductionReviewedFq12HiddenSourceWitness",
+        "ProductionReviewedFq12MaskedState18PackedWitnessOpening",
+        "reviewed_fq12_packed_witness_state18_projection_opening",
+        "reviewed_fq12_masked_state18_packed_witness_opening",
+        "verify_reviewed_fq12_state_assisted_masked_witness_state18_projection_carrier_tuple",
+        "!facade_exports(forbidden)",
+    ];
+
+    required_exports
+        .iter()
+        .all(|marker| facade_window.contains(marker))
+        && negative_controls
+            .iter()
+            .all(|marker| test_window.contains(marker))
+}
+
 pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV1 {
     let proof_side_public_boundary_preflight_complete = true;
     let projection_encoders_present = true;
@@ -18213,7 +18284,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         .any(|(label, _)| *label == "PATH2_NATIVE_CONSENSUS_CARRIER_DOMAIN");
     let hash_qrom_review_present =
         path2_native_hash_qrom_review_v1().schema == PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA;
-    let facade_exports_present = true;
+    let facade_exports_present = path2_native_production_facade_exports_source_present_v1();
 
     let checked_core_composition_review_complete =
         path2_native_checked_core_byte_bridge_source_present_v1();
@@ -18243,6 +18314,9 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     }
     if !no_export_serializer_boundary_present {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS);
+    }
+    if !facade_exports_present {
+        internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FACADE_EXPORTS);
     }
     if !signer_verifier_pipeline_present {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE);
@@ -18320,6 +18394,8 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         Some("reject_active_native_full_signature_execution_source_open")
     } else if !deployment_preflight.no_export_serializer_boundary_present {
         Some("reject_active_native_no_export_serializer_boundary_open")
+    } else if !deployment_preflight.facade_exports_present {
+        Some("reject_active_native_facade_exports_open")
     } else if !deployment_preflight.signer_verifier_pipeline_present {
         Some("reject_active_native_pipeline_not_productized")
     } else if !deployment_preflight.constant_time_audit_complete {
@@ -36107,6 +36183,7 @@ mod tests {
         assert!(preflight.verifier_preflight_report_present);
         assert!(preflight.global_domain_registry_present);
         assert!(preflight.hash_qrom_review_present);
+        assert!(path2_native_production_facade_exports_source_present_v1());
         assert!(preflight.facade_exports_present);
         assert_eq!(
             preflight.consensus_carrier_body_bytes as usize,
