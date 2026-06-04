@@ -18531,6 +18531,12 @@ fn path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
 
 fn path2_native_checked_core_selected_rust_instantiation_present_v1() -> bool {
     let lean_source = include_str!("../../../Descender/Path2CheckedCoreByteBridge.lean");
+    path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(lean_source)
+}
+
+fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
+    lean_source: &str,
+) -> bool {
     if path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(lean_source) {
         return false;
     }
@@ -18545,6 +18551,32 @@ fn path2_native_checked_core_selected_rust_instantiation_present_v1() -> bool {
         .map(|offset| instantiation_start + offset)
         .unwrap_or(lean_source.len());
     let instantiation_source = &lean_source[instantiation_start..instantiation_end];
+
+    let selected_source_facts = [
+        "selectedRustCheckedCoreAcceptorAccepts",
+        "selectedRustCheckedCoreParserMatchesNative",
+        "selectedRustCheckedCoreProofLengthEq",
+        "selectedRustCheckedCoreProofCanonical",
+        "selectedRustCheckedCoreDecodedProofCommitment",
+        "selectedRustCheckedCoreParsedResponseSyndrome",
+        "selectedRustCheckedCoreFrameBytes",
+        "selectedRustCheckedCoreVerifierHandleEq",
+        "selectedRustCheckedCoreParserEquality",
+        "selectedRustCheckedCoreHashAndSyndrome",
+    ];
+    let theorem_header_end = instantiation_source
+        .find(":= by")
+        .or_else(|| instantiation_source.find(" where"))
+        .unwrap_or(instantiation_source.len().min(1024));
+    let theorem_header = &instantiation_source[..theorem_header_end];
+    let forbidden_theorem_parameter = selected_source_facts.iter().any(|fact| {
+        ["(", "{", "["]
+            .iter()
+            .any(|binder| theorem_header.contains(&format!("{binder}{fact}")))
+    });
+    if forbidden_theorem_parameter {
+        return false;
+    }
 
     let instantiation_checks = [
         "selectedRustCheckedCoreByteSource_instantiation_v1",
@@ -37897,6 +37929,31 @@ mod tests {
         assert!(
             !path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
                 "\ndef selectedRustCheckedCoreAcceptorAccepts := proved_acceptor_fact\n"
+            )
+        );
+        let parameter_assumed_instantiation = r#"
+theorem selectedRustCheckedCoreByteSource_instantiation_v1
+    (selectedRustCheckedCoreAcceptorAccepts : acceptor_fact) :
+    SelectedRustCheckedCoreByteSource B H P V := by
+  exact
+    { rustAcceptorAccepts := selectedRustCheckedCoreAcceptorAccepts
+      parserMatchesNative := selectedRustCheckedCoreParserMatchesNative
+      proof_length_eq := selectedRustCheckedCoreProofLengthEq
+      proof_canonical := selectedRustCheckedCoreProofCanonical
+      decoded_proof_commitment := selectedRustCheckedCoreDecodedProofCommitment
+      parsed_response_syndrome := selectedRustCheckedCoreParsedResponseSyndrome
+      frame_bytes := selectedRustCheckedCoreFrameBytes
+      verifier_handle_eq := selectedRustCheckedCoreVerifierHandleEq
+      parser_equality := selectedRustCheckedCoreParserEquality
+      hash_and_syndrome := selectedRustCheckedCoreHashAndSyndrome }
+theorem selectedRustCheckedCoreByteSource_valid_or_named_break := trivial
+theorem Path2NativeCheckedCoreAcceptV1Bridge := trivial
+theorem Path2NativeCheckedCoreAcceptV1Soundness := trivial
+end Path2CheckedCoreByteBridge
+"#;
+        assert!(
+            !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
+                parameter_assumed_instantiation
             )
         );
         assert!(!path2_native_checked_core_selected_rust_instantiation_present_v1());
