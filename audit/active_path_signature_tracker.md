@@ -265,6 +265,10 @@ It also carries
 source-inspects that the canonical representative witness and assembly
 digest-frame witness recompute the representative digest from the same
 `path2_reviewed_fq12_native_representative_digest_v1` argument list.
+The audit now also carries a dedicated marker bit for
+`reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources`,
+so the active five-source endpoint is checked directly rather than only through
+the broader canonical/witness package surface.
 
 Lean now also exposes
 `reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_byte_and_witness_sources`,
