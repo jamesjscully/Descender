@@ -6778,6 +6778,27 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
     theorem_source: &str,
     theorem_name: &str,
 ) -> bool {
+    let Some(body_start) = theorem_source.find(":= ") else {
+        return false;
+    };
+    let theorem_header = &theorem_source[..body_start];
+    let forbidden_header_parameters = [
+        "payloadProjectsFrom :",
+        "certificateAvailability :",
+        "roleRootLiftSource :",
+        "selectedSource :",
+        "assemblySource :",
+        "compatibilitySource :",
+        "witnessSources :",
+        "(I :",
+    ];
+    if forbidden_header_parameters
+        .iter()
+        .any(|marker| theorem_header.contains(marker))
+    {
+        return false;
+    }
+
     [
         theorem_name,
         "ReviewedFq12HiddenSourceProofSemanticsClosed",
@@ -41650,6 +41671,40 @@ theorem {theorem_name}
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &parameterized_theorem,
+                theorem_name
+            )
+        );
+
+        let parameter_fed_local_construction = format!(
+            r#"
+theorem {theorem_name}
+    (P : Predicates)
+    (payloadProjectsFrom : payload_projection_law)
+    (certificateAvailability : extraction_certificate_availability)
+    (roleRootLiftSource : role_root_lift_source)
+    (selectedSource : selected_source)
+    (assemblySource : assembly_source)
+    (compatibilitySource : compatibility_source)
+    (witnessSources : witness_sources) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P := by
+  let selectedRustModelFiveSourceInputs :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    {{ payloadProjectsFrom := payloadProjectsFrom
+      certificateAvailability := certificateAvailability
+      roleRootLiftSource := roleRootLiftSource
+      selectedSource := selectedSource
+      assemblySource := assemblySource
+      compatibilitySource := compatibilitySource
+      witnessSources := witnessSources }}
+  exact
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+      P selectedRustModelFiveSourceInputs
+"#
+        );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &parameter_fed_local_construction,
                 theorem_name
             )
         );
