@@ -6090,6 +6090,7 @@ pub struct Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     pub rust_representative_canonical_digest_source_present: bool,
     pub rust_full_native_opening_canonical_representative_source_present: bool,
     pub rust_full_native_opening_canonical_representative_witness_byte_source_present: bool,
+    pub rust_canonical_representative_witness_negative_controls_present: bool,
     pub rust_canonical_and_digest_witnesses_share_native_frame_present: bool,
     pub rust_full_native_opening_representative_frame_source_present: bool,
     pub rust_representative_digest_functionality_source_present: bool,
@@ -7399,6 +7400,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let rust_full_native_opening_canonical_representative_witness_byte_source_present =
         path2_reviewed_fq12_full_native_opening_canonical_representative_witness_source_present_v1(
         );
+    let rust_canonical_representative_witness_negative_controls_present =
+        path2_reviewed_fq12_canonical_representative_witness_negative_controls_present_v1();
     let rust_canonical_and_digest_witnesses_share_native_frame_present =
         path2_reviewed_fq12_canonical_and_digest_witnesses_share_native_frame_source_present_v1();
     let rust_representative_canonical_digest_source_present =
@@ -7438,6 +7441,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
             && rust_assembly_compatibility_local_model_source_present
             && rust_full_native_opening_canonical_representative_source_present
             && rust_full_native_opening_canonical_representative_witness_byte_source_present
+            && rust_canonical_representative_witness_negative_controls_present
             && rust_canonical_and_digest_witnesses_share_native_frame_present
             && rust_native_representative_digest_frame_source_present
             && rust_native_representative_digest_frame_witness_api_present;
@@ -7474,6 +7478,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         && rust_representative_canonical_digest_source_present
         && rust_full_native_opening_canonical_representative_source_present
         && rust_full_native_opening_canonical_representative_witness_byte_source_present
+        && rust_canonical_representative_witness_negative_controls_present
         && rust_canonical_and_digest_witnesses_share_native_frame_present
         && rust_full_native_opening_representative_frame_source_present
         && rust_representative_digest_functionality_source_present
@@ -7529,6 +7534,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         rust_representative_canonical_digest_source_present,
         rust_full_native_opening_canonical_representative_source_present,
         rust_full_native_opening_canonical_representative_witness_byte_source_present,
+        rust_canonical_representative_witness_negative_controls_present,
         rust_canonical_and_digest_witnesses_share_native_frame_present,
         rust_full_native_opening_representative_frame_source_present,
         rust_representative_digest_functionality_source_present,
@@ -9289,6 +9295,31 @@ fn path2_reviewed_fq12_full_native_opening_canonical_representative_witness_sour
             "path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1_digest(witness)?",
         )
         && verify_source.contains("!= witness.canonical_representative_witness_digest")
+}
+
+fn path2_reviewed_fq12_canonical_representative_witness_negative_controls_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+    let test_start = source
+        .find("\n    fn path2_reviewed_fq12_full_native_opening_certificate_binds_all_roles()")
+        .expect("Path 2 reviewed Fq12 canonical witness regression source start marker missing");
+    let test_end = source[test_start..]
+        .find(
+            "\n    fn path2_reviewed_fq12_full_native_opening_certificate_rejects_role_root_rebinding()",
+        )
+        .expect("Path 2 reviewed Fq12 canonical witness regression source end marker missing")
+        + test_start;
+    let test_source = &source[test_start..test_end];
+
+    [
+        "rebound_canonical_witness_role_root.native_role_root_commitment[0] ^= 1",
+        "rebound_canonical_witness_role_root.canonical_representative_witness_digest",
+        "verify_path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1(",
+        "rebound_canonical_witness_full_opening.full_opening_digest[0] ^= 1",
+        "rebound_canonical_witness_full_opening.canonical_representative_witness_digest",
+        "\"Path 2 canonical representative witness mismatch\"",
+    ]
+    .iter()
+    .all(|marker| test_source.contains(marker))
 }
 
 fn path2_reviewed_fq12_canonical_and_digest_witnesses_share_native_frame_source_present_v1() -> bool
@@ -27272,6 +27303,11 @@ fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit_frame(
     );
     append_u64(
         &mut frame,
+        b"rust_canonical_representative_witness_negative_controls_present",
+        u64::from(audit.rust_canonical_representative_witness_negative_controls_present),
+    );
+    append_u64(
+        &mut frame,
         b"rust_canonical_and_digest_witnesses_share_native_frame_present",
         u64::from(audit.rust_canonical_and_digest_witnesses_share_native_frame_present),
     );
@@ -39641,6 +39677,10 @@ mod tests {
         assert!(
             path2_reviewed_fq12_full_native_opening_canonical_representative_witness_source_present_v1()
         );
+        assert!(audit.rust_canonical_representative_witness_negative_controls_present);
+        assert!(
+            path2_reviewed_fq12_canonical_representative_witness_negative_controls_present_v1()
+        );
         assert!(audit.rust_canonical_and_digest_witnesses_share_native_frame_present);
         assert!(
             path2_reviewed_fq12_canonical_and_digest_witnesses_share_native_frame_source_present_v1(
@@ -39986,6 +40026,21 @@ mod tests {
         assert_eq!(
             validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
                 &missing_full_native_opening_canonical_representative_witness_source
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
+        );
+
+        let mut missing_canonical_witness_negative_controls = audit.clone();
+        missing_canonical_witness_negative_controls
+            .rust_canonical_representative_witness_negative_controls_present = false;
+        missing_canonical_witness_negative_controls.digest =
+            path2_reviewed_fq12_hidden_source_semantics_bridge_audit_digest(
+                &missing_canonical_witness_negative_controls,
+            );
+        assert_eq!(
+            validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
+                &missing_canonical_witness_negative_controls
             )
             .unwrap_err(),
             "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
@@ -40835,6 +40890,38 @@ mod tests {
             &assembly_cert,
         )
         .unwrap();
+        let mut rebound_canonical_witness_role_root = canonical_representative_witness.clone();
+        rebound_canonical_witness_role_root.native_role_root_commitment[0] ^= 1;
+        rebound_canonical_witness_role_root.canonical_representative_witness_digest =
+            path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1_digest(
+                &rebound_canonical_witness_role_root,
+            )
+            .unwrap();
+        assert_eq!(
+            verify_path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1(
+                &rebound_canonical_witness_role_root,
+                &cert,
+                &assembly_cert,
+            )
+            .unwrap_err(),
+            "Path 2 canonical representative witness mismatch"
+        );
+        let mut rebound_canonical_witness_full_opening = canonical_representative_witness.clone();
+        rebound_canonical_witness_full_opening.full_opening_digest[0] ^= 1;
+        rebound_canonical_witness_full_opening.canonical_representative_witness_digest =
+            path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1_digest(
+                &rebound_canonical_witness_full_opening,
+            )
+            .unwrap();
+        assert_eq!(
+            verify_path2_reviewed_fq12_full_native_opening_canonical_representative_witness_v1(
+                &rebound_canonical_witness_full_opening,
+                &cert,
+                &assembly_cert,
+            )
+            .unwrap_err(),
+            "Path 2 canonical representative witness mismatch"
+        );
         let mut stale_canonical_representative_witness = canonical_representative_witness.clone();
         stale_canonical_representative_witness.representative_digest[0] ^= 1;
         assert_eq!(
