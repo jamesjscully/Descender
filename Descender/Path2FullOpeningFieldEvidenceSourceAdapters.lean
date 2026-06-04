@@ -4765,6 +4765,46 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_c
       canonicalRepresentativeByteSource nativeDigestFrameWitnessByteSource)
 
 /--
+P2FS-001 closure from the Rust-shaped canonical representative witness source
+and the Rust digest-frame witness byte source.
+
+This is the concrete AP2-N001 target for the selected implementation: the
+canonical-representative side may be proved in the same shape as
+`Path2ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessV1`, while
+the theorem derives the semantic canonical byte source internally.
+-/
+theorem reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_witness_and_digest_frame_sources
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (selectedSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P)
+    (directAssemblyBinding :
+      ReviewedFq12ConcreteAssemblyFieldBindingOrBreak P)
+    (localModelSource :
+      ReviewedFq12AssemblyCompatibilityLocalModelSource P)
+    (canonicalRepresentativeWitnessByteSource :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessByteSource
+        CanonicalParser P)
+    (nativeDigestFrameWitnessByteSource :
+      ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource
+        WitnessParser P) :
+    ReviewedFq12ExtractionCertificateSoundness P :=
+  reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_byte_and_witness_sources
+    P roleRootLiftSource selectedSource directAssemblyBinding localModelSource
+    (canonical_representative_byte_source_of_witness_source_and_model
+      roleRootLiftSource directAssemblyBinding localModelSource
+      canonicalRepresentativeWitnessByteSource)
+    nativeDigestFrameWitnessByteSource
+
+/--
 Selected-Rust packaged source-route adapter using the existing concrete
 field/local source records for the local model.
 
