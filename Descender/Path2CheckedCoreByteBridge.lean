@@ -206,9 +206,68 @@ available as a certificate.
 def CheckedCoreByteBridgeBreakAlternatives
     (V : VerifierPredicates) (q : Boundary) : Prop :=
   V.breakFor q BreakEvent.byteDataAvailabilityBreak ∨
-    V.breakFor q BreakEvent.byteParserCanonicalityBreak ∨
-      V.breakFor q BreakEvent.checkedCoreFrameBindingBreak ∨
-        V.breakFor q BreakEvent.domainBindingOrQromBreak
+    (V.breakFor q BreakEvent.byteParserCanonicalityBreak ∨
+      (V.breakFor q BreakEvent.checkedCoreFrameBindingBreak ∨
+        V.breakFor q BreakEvent.domainBindingOrQromBreak))
+
+/--
+Residual breaks after composing the selected Rust byte source with the native
+checked-core soundness boundary.
+-/
+def CheckedCoreByteAndEquationBreakAlternatives
+    (V : VerifierPredicates) (q : Boundary) : Prop :=
+  V.breakFor q BreakEvent.byteDataAvailabilityBreak ∨
+    (V.breakFor q BreakEvent.byteParserCanonicalityBreak ∨
+      (V.breakFor q BreakEvent.checkedCoreFrameBindingBreak ∨
+        (V.breakFor q BreakEvent.domainBindingOrQromBreak ∨
+          V.breakFor q BreakEvent.checkedCoreEquationSoundnessBreak)))
+
+theorem checkedCoreByteBreakAlternatives_to_byteAndEquation
+    {V : VerifierPredicates} {q : Boundary}
+    (h : CheckedCoreByteBridgeBreakAlternatives V q) :
+    CheckedCoreByteAndEquationBreakAlternatives V q := by
+  rcases h with hData | hParser | hFrame | hDomain
+  · exact Or.inl hData
+  · exact Or.inr (Or.inl hParser)
+  · exact Or.inr (Or.inr (Or.inl hFrame))
+  · exact Or.inr (Or.inr (Or.inr (Or.inl hDomain)))
+
+theorem checkedCoreEquationBreak_to_byteAndEquation
+    {V : VerifierPredicates} {q : Boundary}
+    (h : V.breakFor q BreakEvent.checkedCoreEquationSoundnessBreak) :
+    CheckedCoreByteAndEquationBreakAlternatives V q := by
+  right
+  right
+  right
+  right
+  exact h
+
+theorem checkedCoreFrameBreak_to_byteAndEquation
+    {V : VerifierPredicates} {q : Boundary}
+    (h : V.breakFor q BreakEvent.checkedCoreFrameBindingBreak) :
+    CheckedCoreByteAndEquationBreakAlternatives V q := by
+  right
+  right
+  left
+  exact h
+
+theorem checkedCoreDomainBreak_to_byteAndEquation
+    {V : VerifierPredicates} {q : Boundary}
+    (h : V.breakFor q BreakEvent.domainBindingOrQromBreak) :
+    CheckedCoreByteAndEquationBreakAlternatives V q := by
+  right
+  right
+  right
+  left
+  exact h
+
+theorem checkedCoreParserBreak_to_byteAndEquation
+    {V : VerifierPredicates} {q : Boundary}
+    (h : V.breakFor q BreakEvent.byteParserCanonicalityBreak) :
+    CheckedCoreByteAndEquationBreakAlternatives V q := by
+  right
+  left
+  exact h
 
 /--
 A concrete byte certificate gives native V1 accept; otherwise the only
@@ -433,6 +492,51 @@ theorem selectedRustCheckedCoreByteSource_checkedCoreAccepts_or_named_break
             (selectedRustCheckedCoreByteSource_certificate Source hAccept)))
   | inr hBreak =>
       exact Or.inr hBreak
+
+/--
+The selected Rust byte source, native V1 bridge, and checked-core soundness
+boundary give valid checked-core evidence directly, or one of the named
+byte/parser/frame/domain/equation residuals.
+-/
+theorem selectedRustCheckedCoreByteSource_valid_or_named_break
+    {M : MeaningProjection}
+    {Proj : PublicProjections}
+    {V : VerifierPredicates}
+    {F : NativeCheckedCoreFrameFields}
+    (Bridge : Path2NativeCheckedCoreAcceptV1Bridge M Proj V F)
+    (Soundness :
+      Path2NativeCheckedCoreAcceptV1Soundness
+        V F Bridge.nativeFrameBinding Bridge.verifierHandleFields)
+    {P : CheckedCoreProofByteParser}
+    (Source :
+      SelectedRustCheckedCoreByteSource
+        Bridge.nativeFrameBinding Bridge.verifierHandleFields P V)
+    {q : Boundary} {msg state : Nat}
+    {evidence : NativeCheckedCoreSpendEvidence}
+    (h :
+      SelectedRustCheckedCoreByteSourceAcceptOrBreak
+        Source q msg state evidence) :
+    Soundness.validCheckedCoreEvidence q msg state evidence ∨
+      CheckedCoreByteAndEquationBreakAlternatives V q := by
+  cases h with
+  | inl hAccept =>
+      have hNative :
+          Path2NativeCheckedCoreAcceptV1
+            Bridge.nativeFrameBinding Bridge.verifierHandleFields
+            q msg state evidence :=
+        checkedCoreByteCertificate_accepts_native_v1
+          (selectedRustCheckedCoreByteSource_certificate Source hAccept)
+      rcases
+          path2_native_checked_core_accept_valid_or_named_break
+            Soundness hNative with hValid | hEquation | hFrame | hDomain | hParser
+      · exact Or.inl hValid
+      · exact Or.inr (checkedCoreEquationBreak_to_byteAndEquation hEquation)
+      · exact Or.inr (checkedCoreFrameBreak_to_byteAndEquation hFrame)
+      · exact Or.inr (checkedCoreDomainBreak_to_byteAndEquation hDomain)
+      · exact Or.inr (checkedCoreParserBreak_to_byteAndEquation hParser)
+  | inr hBreak =>
+      exact Or.inr
+        (checkedCoreByteBreakAlternatives_to_byteAndEquation hBreak)
 
 end Path2CheckedCoreByteBridge
 end Descender

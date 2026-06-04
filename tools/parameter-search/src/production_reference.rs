@@ -17164,6 +17164,8 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "checkedCoreByteCertificate_accepts_native_v1",
         "checkedCoreByteCertificate_checkedCoreAccepts",
         "selectedRustCheckedCoreByteSource_checkedCoreAccepts_or_named_break",
+        "selectedRustCheckedCoreByteSource_valid_or_named_break",
+        "CheckedCoreByteAndEquationBreakAlternatives",
         "CheckedCoreByteBridgeBreakAlternatives",
     ];
     let accept_checks = [
