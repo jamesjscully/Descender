@@ -4864,6 +4864,58 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_s
     witnessSources.nativeDigestFrameWitnessByteSource
 
 /--
+Selected-Rust source-route inputs using existing concrete field/local sources
+and witness byte sources pinned to one representative digest frame.
+
+This is the most implementation-oriented AP2-N001 wrapper: the assembly field
+source supplies the direct assembly binding, the assembly/compatibility field
+sources supply the local model, and the shared witness package supplies both
+representative byte witnesses under one digest frame.
+-/
+structure ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs
+    (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)
+    (RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser)
+    (CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
+    (P : Predicates) where
+  roleRootLiftSource :
+    ReviewedFq12RoleRootFunctionalLiftSource P
+  selectedSource :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+      FieldParser RouteParser P
+  assemblySource :
+    ReviewedFq12FieldConcreteAssemblyLocalSource P
+  compatibilitySource :
+    ReviewedFq12FieldConcreteCompatibilitySource P
+  witnessSources :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+      CanonicalParser WitnessParser P
+
+/--
+P2FS-001 closure from the concrete field/local sources and shared-frame witness
+sources used by the selected Rust implementation.
+-/
+theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_inputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (I :
+      ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12ExtractionCertificateSoundness P :=
+  reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_shared_digest_frame_witness_sources
+    P I.roleRootLiftSource I.selectedSource I.assemblySource.fieldBinding
+    (assembly_compatibility_local_model_source_of_field_sources
+      I.assemblySource I.compatibilitySource)
+    I.witnessSources
+
+/--
 Selected-Rust packaged source-route adapter using the existing concrete
 field/local source records for the local model.
 

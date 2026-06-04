@@ -6549,6 +6549,8 @@ fn lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route
         "canonical_digest_frame_eq",
         "assembly_digest_frame_eq",
         "reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_shared_digest_frame_witness_sources",
+        "ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_inputs",
         "reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_inputs",
         "ReviewedFq12FullNativeOpeningCanonicalRepresentativeSource",
         "ReviewedFq12SelectedRustAssemblyRepresentativeFrameSource",
