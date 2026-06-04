@@ -4991,8 +4991,9 @@ This is an instantiation-oriented convenience wrapper around
 source-route byte evidence responsible for field binding, while accepting the
 already-named concrete field/local source records as the local-model evidence.
 It is not the active cryptographic closure target: the active target is the
-packaged source-route input record above, whose local-model source does not
-require redundant field-binding assumptions.
+field-local shared-frame source theorem below, which consumes the concrete
+field/local records and pins the canonical and assembly witness byte sources
+to one selected representative digest frame.
 -/
 structure ReviewedFq12SelectedRustFieldLocalPackagedSourceRouteInputs
     (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)

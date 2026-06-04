@@ -199,12 +199,15 @@ witnesses into `ReviewedFq12CompatibilityRouteWitnessSource`.
 `ReviewedFq12SelectedRustPackagedSourceRouteInputs` groups role-root/lift facts as
 `ReviewedFq12RoleRootFunctionalLiftSource` and assembly/compatibility local
 facts as `ReviewedFq12AssemblyCompatibilityLocalModelSource`.
-This packaged endpoint is the active P2FS-001 closure target. The field/local
-packaged record is only a convenience adapter that consumes already-named
-concrete field/local assembly and compatibility source records and forgets
-their redundant field-binding facts, because selected source-route bytes supply
+That packaged endpoint is now an adapter under the field-local shared-frame
+source theorem
+`reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources`,
+which is the active P2FS-001 closure target. The older field/local packaged
+record remains a convenience adapter that consumes already-named concrete
+field/local assembly and compatibility source records and forgets their
+redundant field-binding facts, because selected source-route bytes supply
 those bindings. The Rust hidden-source semantics audit now digest-binds the
-packaged endpoint plus the field/local adapter presence
+packaged endpoint plus the field/local shared-frame endpoint presence
 with source-route local-instantiation, boundary-availability/concrete-role-root
 source-route endpoint, factored boundary-availability/concrete-role-root
 source-route endpoint, selected-Rust source-route byte-source endpoint,
