@@ -18925,6 +18925,115 @@ fn path2_native_signer_verifier_pipeline_productized_v1() -> bool {
         && keygen_scope.productized
 }
 
+fn path2_native_constant_time_audit_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let ledger_start = source
+        .find("\npub fn path2_native_signer_ct_evidence_ledger_v1()")
+        .expect("Path 2 native CT evidence ledger source start marker missing");
+    let ledger_end = source[ledger_start..]
+        .find("\npub fn path2_native_signer_ct_evidence_ledger_v1_digest(")
+        .expect("Path 2 native CT evidence ledger source end marker missing")
+        + ledger_start;
+    let ledger_window = &source[ledger_start..ledger_end];
+
+    let scope_start = source
+        .find("\npub fn path2_native_constant_time_audit_scope_v1()")
+        .expect("Path 2 native CT audit scope source start marker missing");
+    let scope_end = source[scope_start..]
+        .find("\npub fn path2_native_constant_time_audit_scope_v1_digest(")
+        .expect("Path 2 native CT audit scope source end marker missing")
+        + scope_start;
+    let scope_window = &source[scope_start..scope_end];
+
+    let test_start = source
+        .find(
+            "\n    fn path2_native_signer_ct_evidence_ledger_separates_pinned_evidence_from_open_claims()",
+        )
+        .expect("Path 2 native CT evidence ledger test start marker missing");
+    let test_end = source[test_start..]
+        .find("\n    fn path2_native_storage_lifecycle_hardening_scope_pins_consensus_storage_surface()")
+        .expect("Path 2 native CT evidence ledger test end marker missing")
+        + test_start;
+    let test_window = &source[test_start..test_end];
+
+    let ledger_checks = [
+        "path2_native_signer_ct_evidence_ledger_v1",
+        "path2_native_signer_ct_source_audit_v1()",
+        "path2_native_signer_sha256_boundary_audit_v1()",
+        "path2_native_signer_sha256_call_schedule_audit_v1()",
+        "path2_native_signer_runtime_cleanup_audit_v1()",
+        "path2_native_signer_production_routing_audit_v1()",
+        "source_evidence_complete",
+        "backend_evidence_scripts_pinned",
+        "timing_evidence_is_smoke_only: true",
+        "sha256_backend_constant_time_claim_complete: false",
+        "whole_signer_microarchitectural_timing_complete: false",
+        "register_and_internal_hash_state_lifetime_complete: false",
+        "target_host_evidence_bundle_execution_complete: false",
+        "constant_time_audit_complete: false",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME",
+        "constant-time deployment blocker remains active",
+    ];
+    let scope_checks = [
+        "path2_native_constant_time_audit_scope_v1",
+        "audit_complete: false",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME",
+        "active_native_keygen_secret_sampling",
+        "active_native_checked_core_proof_generation",
+        "secret_independent_branch_audit",
+        "sampler_no_runtime_modulo_or_division",
+        "keygen_and_signer_timing_harness",
+        "no deployment claim for unaudited sampler schedules",
+    ];
+    let test_checks = [
+        "path2_native_signer_ct_evidence_ledger_separates_pinned_evidence_from_open_claims",
+        "ledger.source_evidence_complete",
+        "ledger.backend_evidence_scripts_pinned",
+        "ledger.timing_evidence_is_smoke_only",
+        "!ledger.sha256_backend_constant_time_claim_complete",
+        "!ledger.whole_signer_microarchitectural_timing_complete",
+        "!ledger.register_and_internal_hash_state_lifetime_complete",
+        "!ledger.target_host_evidence_bundle_execution_complete",
+        "!ledger.constant_time_audit_complete",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME",
+        "constant-time deployment blocker remains active",
+        "assert_no_active_native_private_material(&rendered)",
+    ];
+
+    ledger_checks
+        .iter()
+        .all(|marker| ledger_window.contains(marker))
+        && scope_checks
+            .iter()
+            .all(|marker| scope_window.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| test_window.contains(marker))
+}
+
+fn path2_native_constant_time_audit_complete_v1() -> bool {
+    let scope = path2_native_constant_time_audit_scope_v1();
+    let source = include_str!("production_reference.rs");
+    let ledger_start = source
+        .find("\npub fn path2_native_signer_ct_evidence_ledger_v1()")
+        .expect("Path 2 native CT evidence ledger source start marker missing");
+    let ledger_end = source[ledger_start..]
+        .find("\npub fn path2_native_signer_ct_evidence_ledger_v1_digest(")
+        .expect("Path 2 native CT evidence ledger source end marker missing")
+        + ledger_start;
+    let ledger_window = &source[ledger_start..ledger_end];
+    let ledger_claim_complete = ledger_window.contains("constant_time_audit_complete: true")
+        && !ledger_window.contains("timing_evidence_is_smoke_only: true")
+        && !ledger_window.contains("sha256_backend_constant_time_claim_complete: false")
+        && !ledger_window.contains("whole_signer_microarchitectural_timing_complete: false")
+        && !ledger_window.contains("register_and_internal_hash_state_lifetime_complete: false")
+        && !ledger_window.contains("target_host_evidence_bundle_execution_complete: false");
+    path2_native_constant_time_audit_source_present_v1()
+        && scope.audit_complete
+        && ledger_claim_complete
+}
+
 pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV1 {
     let projection_encoders_present = path2_native_projection_encoder_source_boundary_present_v1();
     let checked_core_frame_present = path2_native_checked_core_frame_source_boundary_present_v1();
@@ -18955,7 +19064,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         && full_signature_execution_source_boundary_present
         && no_export_serializer_boundary_present;
     let signer_verifier_pipeline_present = path2_native_signer_verifier_pipeline_productized_v1();
-    let constant_time_audit_complete = false;
+    let constant_time_audit_complete = path2_native_constant_time_audit_complete_v1();
     let storage_lifecycle_hardening_complete = false;
 
     let mut internal_blockers = Vec::new();
@@ -20324,7 +20433,7 @@ pub fn path2_native_signer_runtime_cleanup_audit_v1_digest(
 
 fn path2_native_function_source_window_v1(function_name: &str, next_marker: &str) -> &'static str {
     let source = include_str!("production_reference.rs");
-    let start_marker = format!("pub fn {function_name}(");
+    let start_marker = format!("\npub fn {function_name}(");
     let start = source
         .find(&start_marker)
         .unwrap_or_else(|| panic!("Path 2 native source start marker missing: {start_marker}"));
@@ -36914,6 +37023,8 @@ mod tests {
         assert!(path2_native_signer_verifier_pipeline_source_present_v1());
         assert!(!path2_native_signer_verifier_pipeline_productized_v1());
         assert!(!preflight.signer_verifier_pipeline_present);
+        assert!(path2_native_constant_time_audit_source_present_v1());
+        assert!(!path2_native_constant_time_audit_complete_v1());
         assert!(!preflight.constant_time_audit_complete);
         assert!(!preflight.storage_lifecycle_hardening_complete);
         assert!(!preflight.internal_deployment_ready);
