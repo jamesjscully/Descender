@@ -9458,6 +9458,8 @@ fn path2_reviewed_fq12_assembly_compatibility_local_model_source_present_v1() ->
 
 fn path2_reviewed_fq12_assembly_field_local_native_components_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
+    let lean_source =
+        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
     let assembly_start = source
         .find("\npub fn path2_reviewed_fq12_native_representative_assembly_certificate_v1(")
         .expect("Path 2 reviewed Fq12 assembly certificate source start marker missing");
@@ -9484,6 +9486,36 @@ fn path2_reviewed_fq12_assembly_field_local_native_components_present_v1() -> bo
         .expect("Path 2 reviewed Fq12 assembly certificate verifier source end marker missing")
         + assembly_verify_start;
     let assembly_verify_source = &source[assembly_verify_start..assembly_verify_end];
+
+    let assembly_binding_start = source
+        .find("\npub fn path2_reviewed_fq12_assembly_binds_full_opening_fields_v1(")
+        .expect("Path 2 reviewed Fq12 assembly field-binding source start marker missing");
+    let assembly_binding_end = source[assembly_binding_start..]
+        .find("\npub fn path2_reviewed_fq12_compatibility_binds_same_representative_fields_v1(")
+        .expect("Path 2 reviewed Fq12 assembly field-binding source end marker missing")
+        + assembly_binding_start;
+    let assembly_binding_source = &source[assembly_binding_start..assembly_binding_end];
+
+    let lean_assembly_source_start = lean_source
+        .find("\nstructure ReviewedFq12AssemblyAvailabilityLocalSource")
+        .expect("Path 2 reviewed Fq12 Lean assembly local source start marker missing");
+    let lean_assembly_source_end = lean_source[lean_assembly_source_start..]
+        .find("\nstructure ReviewedFq12CompatibilityAvailabilityExtractionRulesSource")
+        .expect("Path 2 reviewed Fq12 Lean assembly local source end marker missing")
+        + lean_assembly_source_start;
+    let lean_assembly_source = &lean_source[lean_assembly_source_start..lean_assembly_source_end];
+
+    let lean_assembly_forget_start = lean_source
+        .find("\ndef assembly_availability_local_source_of_field_concrete_assembly_local_source")
+        .expect("Path 2 reviewed Fq12 Lean assembly forgetter start marker missing");
+    let lean_assembly_forget_end = lean_source[lean_assembly_forget_start..]
+        .find(
+            "\ndef compatibility_availability_extraction_rules_source_of_field_concrete_compatibility_source",
+        )
+        .expect("Path 2 reviewed Fq12 Lean assembly forgetter end marker missing")
+        + lean_assembly_forget_start;
+    let lean_assembly_forget_source =
+        &lean_source[lean_assembly_forget_start..lean_assembly_forget_end];
 
     let test_start = source
         .find("\n    fn path2_reviewed_fq12_full_native_opening_certificate_binds_all_roles()")
@@ -9521,6 +9553,30 @@ fn path2_reviewed_fq12_assembly_field_local_native_components_present_v1() -> bo
     ]
     .iter()
     .all(|marker| assembly_source.contains(marker))
+        && [
+            "assembly_cert.role_lift_certificate_digest == full_opening_cert.role_lift_certificate_digest",
+            "assembly_cert.payload_binding_digest == full_opening_cert.payload_binding_digest",
+            "assembly_cert.extraction_certificate_digest\n            == full_opening_cert.extraction_certificate_digest",
+            "assembly_cert.creation_proof_binding_digest\n            == full_opening_cert.creation_proof_binding_digest",
+            "assembly_cert.native_boundary_digest == full_opening_cert.native_boundary_digest",
+            "assembly_cert.slot_id == full_opening_cert.slot_id",
+            "assembly_cert.hidden_source_statement_digest\n            == full_opening_cert.hidden_source_statement_digest",
+            "assembly_cert.reviewed_active_lane_statement_digest\n            == full_opening_cert.reviewed_active_lane_statement_digest",
+            "assembly_cert.native_role_root_commitment\n            == full_opening_cert.native_role_root_commitment",
+            "assembly_cert.full_opening_digest == full_opening_cert.full_opening_digest",
+            "assembly_cert.local_section_digest == full_opening_cert.local_section_digest",
+            "assembly_cert.packed_residues_digest == full_opening_cert.packed_residues_digest",
+            "assembly_cert.randomizer_digest == full_opening_cert.randomizer_digest",
+            "assembly_cert.selected_account_projection_digest\n            == full_opening_cert.selected_account_projection_digest",
+            "assembly_cert.pad_source_digest == full_opening_cert.pad_source_digest",
+            "assembly_cert.opening_tuple_digest == full_opening_cert.opening_tuple_digest",
+            "assembly_cert.projection_relation_digest == full_opening_cert.projection_relation_digest",
+            "assembly_cert.lifecycle_slot_digest == full_opening_cert.lifecycle_slot_digest",
+            "assembly_cert.trace_witness_digest == full_opening_cert.trace_witness_digest",
+            "assembly_cert.gauge_digest == full_opening_cert.gauge_digest",
+        ]
+        .iter()
+        .all(|marker| assembly_binding_source.contains(marker))
         && assembly_frame_source.contains(
             "let expected_representative_digest = path2_reviewed_fq12_native_representative_digest_v1(",
         )
@@ -9534,6 +9590,27 @@ fn path2_reviewed_fq12_assembly_field_local_native_components_present_v1() -> bo
             .contains("path2_reviewed_fq12_native_representative_assembly_certificate_v1_digest(cert)?")
         && assembly_verify_source.contains("!= cert.assembly_certificate_digest")
         && [
+            "structure ReviewedFq12AssemblyAvailabilityLocalSource",
+            "availability :",
+            "ReviewedFq12RepresentativeAssemblyCertificateAvailability P",
+            "localPredicates :",
+            "ReviewedFq12AssemblyConstructedLocalPredicatesOrBreak P",
+            "nativeValidity :",
+            "ReviewedFq12AssemblyConstructedNativeValidityOrBreak P",
+        ]
+        .iter()
+        .all(|marker| lean_assembly_source.contains(marker))
+        && [
+            "assembly_availability_local_source_of_field_concrete_assembly_local_source",
+            "ReviewedFq12FieldConcreteAssemblyLocalSource P",
+            "ReviewedFq12AssemblyAvailabilityLocalSource P",
+            "availability := A.availability",
+            "localPredicates := A.localPredicates",
+            "nativeValidity := A.nativeValidity",
+        ]
+        .iter()
+        .all(|marker| lean_assembly_forget_source.contains(marker))
+        && [
             "bad_assembly_cert.local_section_digest[0] ^= 1",
             "bad_assembly_randomizer.randomizer_digest[0] ^= 1",
             "\"Path 2 native representative assembly certificate mismatch\"",
@@ -9544,6 +9621,8 @@ fn path2_reviewed_fq12_assembly_field_local_native_components_present_v1() -> bo
 
 fn path2_reviewed_fq12_compatibility_field_extraction_components_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
+    let lean_source =
+        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
     let compatibility_start = source
         .find("\npub fn path2_reviewed_fq12_extraction_compatibility_certificate_v1(")
         .expect("Path 2 reviewed Fq12 compatibility certificate source start marker missing");
@@ -9570,6 +9649,30 @@ fn path2_reviewed_fq12_compatibility_field_extraction_components_present_v1() ->
         .expect("Path 2 reviewed Fq12 same-representative source end marker missing")
         + same_representative_start;
     let same_representative_source = &source[same_representative_start..same_representative_end];
+
+    let lean_compatibility_source_start = lean_source
+        .find("\nstructure ReviewedFq12CompatibilityAvailabilityExtractionRulesSource")
+        .expect("Path 2 reviewed Fq12 Lean compatibility source start marker missing");
+    let lean_compatibility_source_end = lean_source[lean_compatibility_source_start..]
+        .find(
+            "\ntheorem constructed_compatibility_witness_of_assembly_field_binding_and_local_model",
+        )
+        .expect("Path 2 reviewed Fq12 Lean compatibility source end marker missing")
+        + lean_compatibility_source_start;
+    let lean_compatibility_source =
+        &lean_source[lean_compatibility_source_start..lean_compatibility_source_end];
+
+    let lean_compatibility_forget_start = lean_source
+        .find(
+            "\ndef compatibility_availability_extraction_rules_source_of_field_concrete_compatibility_source",
+        )
+        .expect("Path 2 reviewed Fq12 Lean compatibility forgetter start marker missing");
+    let lean_compatibility_forget_end = lean_source[lean_compatibility_forget_start..]
+        .find("\ndef assembly_compatibility_local_model_source_of_field_sources")
+        .expect("Path 2 reviewed Fq12 Lean compatibility forgetter end marker missing")
+        + lean_compatibility_forget_start;
+    let lean_compatibility_forget_source =
+        &lean_source[lean_compatibility_forget_start..lean_compatibility_forget_end];
 
     let test_start = source
         .find("\n    fn path2_reviewed_fq12_full_native_opening_certificate_binds_all_roles()")
@@ -9646,6 +9749,24 @@ fn path2_reviewed_fq12_compatibility_field_extraction_components_present_v1() ->
         ]
         .iter()
         .all(|marker| same_representative_source.contains(marker))
+        && [
+            "structure ReviewedFq12CompatibilityAvailabilityExtractionRulesSource",
+            "availability :",
+            "ReviewedFq12ExtractionCompatibilityCertificateAvailability P",
+            "extractionRules :",
+            "SameRepresentativeConcreteExtractionPredicates P",
+        ]
+        .iter()
+        .all(|marker| lean_compatibility_source.contains(marker))
+        && [
+            "compatibility_availability_extraction_rules_source_of_field_concrete_compatibility_source",
+            "ReviewedFq12FieldConcreteCompatibilitySource P",
+            "ReviewedFq12CompatibilityAvailabilityExtractionRulesSource P",
+            "availability := C.availability",
+            "extractionRules := C.extractionRules",
+        ]
+        .iter()
+        .all(|marker| lean_compatibility_forget_source.contains(marker))
         && [
             "rebound_compatibility_digest_field_evidence.compatibility_certificate_digest[0] ^= 1",
             "bad_compatibility_cert.selected_account_projection_digest[0] ^= 1",
