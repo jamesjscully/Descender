@@ -258,6 +258,11 @@ The Rust audit now also carries
 separately, so the Rust-shaped canonical witness source required by the latest
 Lean endpoint is visible as its own audited item rather than hidden inside the
 broader canonical representative source flag.
+It also carries
+`rust_canonical_and_digest_witnesses_share_native_frame_present`, which
+source-inspects that the canonical representative witness and assembly
+digest-frame witness recompute the representative digest from the same
+`path2_reviewed_fq12_native_representative_digest_v1` argument list.
 
 Lean now also exposes
 `reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_byte_and_witness_sources`,
