@@ -6866,6 +6866,7 @@ pub struct Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     pub active_field_local_digest_frame_witness_byte_component_surfaces_present: bool,
     pub lean_hidden_source_boundary_adapter_present: bool,
     pub lean_active_five_source_boundary_route_present: bool,
+    pub lean_full_signature_hidden_source_handoff_present: bool,
     pub selected_rust_model_five_source_inputs_ready: bool,
     pub selected_rust_canonical_byte_and_witness_package_surfaces_present: bool,
     pub rust_concrete_role_root_field_binding_present: bool,
@@ -7527,6 +7528,45 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
     ]
     .iter()
     .all(|marker| route_source.contains(marker))
+}
+
+fn lean_path2_full_signature_hidden_source_handoff_present_v1() -> bool {
+    let boundary_source =
+        include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
+    let Some(handoff_start) = boundary_source
+        .find("\ndef NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure")
+    else {
+        return false;
+    };
+    let handoff_end = boundary_source[handoff_start..]
+        .find("\nend Path2HiddenSourceSemanticsBoundary")
+        .map(|offset| handoff_start + offset)
+        .unwrap_or(boundary_source.len());
+    let handoff_source = &boundary_source[handoff_start..handoff_end];
+
+    [
+        "NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure",
+        "NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure",
+        "fullSignatureSecurityClaimComplete",
+        "hKeygen",
+        "hSigning",
+        "hCompleteness",
+        "hVerifier",
+        "hFullGame",
+        "hCheckedCore",
+        "hLifecycle",
+        "hNoExport",
+        "hCheckedCoreDomain",
+        "hHiddenSourceDomain",
+        "hQueryBudget",
+        "hMultiTarget",
+        "full_signature_with_reviewed_fq12_hidden_source_closure_closed",
+        "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs",
+        "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs",
+        "acceptedSpendSoundness.hiddenSourceProofSemanticsClosed",
+    ]
+    .iter()
+    .all(|marker| handoff_source.contains(marker))
 }
 
 fn path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1() -> bool {
@@ -8722,6 +8762,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         lean_path2_hidden_source_boundary_adapter_present_v1();
     let lean_active_five_source_boundary_route_present =
         lean_path2_active_five_source_boundary_route_present_v1();
+    let lean_full_signature_hidden_source_handoff_present =
+        lean_path2_full_signature_hidden_source_handoff_present_v1();
     let rust_native_representative_digest_frame_witness_api_present =
         path2_reviewed_fq12_native_representative_digest_frame_witness_api_present_v1();
     let rust_concrete_role_root_field_binding_present =
@@ -8814,6 +8856,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let selected_rust_model_five_source_inputs_ready = rust_payload_projection_law_present
         && rust_extraction_certificate_availability_present
         && lean_active_five_source_boundary_route_present
+        && lean_full_signature_hidden_source_handoff_present
         && active_field_local_digest_frame_witness_byte_component_surfaces_present
         && full_native_opening_role_lift_certificate_present
         && rust_assembly_field_local_native_components_present
@@ -8837,6 +8880,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         && selected_hidden_relation_extraction_certificate_present
         && lean_hidden_source_boundary_adapter_present
         && lean_active_five_source_boundary_route_present
+        && lean_full_signature_hidden_source_handoff_present
         && active_field_local_digest_frame_witness_byte_component_surfaces_present
         && selected_rust_model_five_source_inputs_ready
         && hidden_relation_verifier_implemented
@@ -8880,6 +8924,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         active_field_local_digest_frame_witness_byte_component_surfaces_present,
         lean_hidden_source_boundary_adapter_present,
         lean_active_five_source_boundary_route_present,
+        lean_full_signature_hidden_source_handoff_present,
         selected_rust_model_five_source_inputs_ready,
         selected_rust_canonical_byte_and_witness_package_surfaces_present,
         rust_concrete_role_root_field_binding_present,
@@ -31669,6 +31714,11 @@ fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit_frame(
     );
     append_u64(
         &mut frame,
+        b"lean_full_signature_hidden_source_handoff_present",
+        u64::from(audit.lean_full_signature_hidden_source_handoff_present),
+    );
+    append_u64(
+        &mut frame,
         b"selected_rust_model_five_source_inputs_ready",
         u64::from(audit.selected_rust_model_five_source_inputs_ready),
     );
@@ -44710,6 +44760,8 @@ variable
         assert!(lean_path2_hidden_source_boundary_adapter_present_v1());
         assert!(audit.lean_active_five_source_boundary_route_present);
         assert!(lean_path2_active_five_source_boundary_route_present_v1());
+        assert!(audit.lean_full_signature_hidden_source_handoff_present);
+        assert!(lean_path2_full_signature_hidden_source_handoff_present_v1());
         assert!(audit.selected_rust_model_five_source_inputs_ready);
         assert!(audit.selected_rust_canonical_byte_and_witness_package_surfaces_present);
         assert!(audit.rust_concrete_role_root_field_binding_present);
@@ -45113,6 +45165,20 @@ variable
         assert_eq!(
             validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
                 &missing_active_five_source_boundary_route
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
+        );
+
+        let mut missing_full_signature_handoff = audit.clone();
+        missing_full_signature_handoff.lean_full_signature_hidden_source_handoff_present = false;
+        missing_full_signature_handoff.digest =
+            path2_reviewed_fq12_hidden_source_semantics_bridge_audit_digest(
+                &missing_full_signature_handoff,
+            );
+        assert_eq!(
+            validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
+                &missing_full_signature_handoff
             )
             .unwrap_err(),
             "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
