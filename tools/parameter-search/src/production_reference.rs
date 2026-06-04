@@ -19975,8 +19975,7 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "Sha256::digest(checked_core_proof_bytes)",
         "u16::try_from(checked_core_proof_bytes.len())",
         "path2_native_deployment_preflight_v1()",
-        "deployment_preflight.signer_verifier_pipeline_present",
-        "deployment_preflight.constant_time_audit_complete",
+        "deployment_preflight.internal_deployment_ready",
         "reject_active_native_signer_not_productized",
         "Path2NativeSignerPipelinePublicOutputV1",
     ];
@@ -20478,8 +20477,7 @@ pub fn path2_native_signer_pipeline_public_output_v1(
     let core_proof_len = u16::try_from(checked_core_proof_bytes.len())
         .map_err(|_| "Path 2 native core proof too large for signer public output".to_string())?;
     let deployment_preflight = path2_native_deployment_preflight_v1();
-    let signer_pipeline_ready = deployment_preflight.signer_verifier_pipeline_present
-        && deployment_preflight.constant_time_audit_complete;
+    let signer_pipeline_ready = deployment_preflight.internal_deployment_ready;
     let rejection_code = if signer_pipeline_ready {
         None
     } else {
@@ -38736,6 +38734,22 @@ end Path2FullSpendConcrete
         assert_eq!(
             output.rejection_code,
             Some("reject_active_native_signer_not_productized")
+        );
+        assert_eq!(
+            output.signer_pipeline_ready,
+            output.deployment_preflight.internal_deployment_ready
+        );
+        assert!(
+            output
+                .deployment_preflight
+                .internal_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION)
+        );
+        assert!(
+            output
+                .deployment_preflight
+                .internal_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
         );
         assert_eq!(
             output.native_boundary_digest,
