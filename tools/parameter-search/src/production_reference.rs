@@ -90,6 +90,8 @@ pub const PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA: &str =
     "Descender.Path2.NativeStorageLifecycleHardeningScope.v1";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE: &str =
     "active native signer/verifier pipeline is not productionized end-to-end";
+pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_PROJECTION_ENCODERS: &str =
+    "active native projection encoders are not source-pinned";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_PUBLIC_VIEW_SERIALIZERS: &str =
     "active native public account/spend serializers are not source-pinned";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSENSUS_CARRIER: &str =
@@ -17996,6 +17998,88 @@ fn path2_no_export_serializer_boundary_present_v1() -> bool {
             .all(|marker| storage_test_window.contains(marker))
 }
 
+fn path2_native_projection_encoder_source_boundary_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let encoder_start = source
+        .find("\npub fn path2_native_context_projection_v1_bytes(")
+        .expect("Path 2 native projection encoder start marker missing");
+    let encoder_end = source[encoder_start..]
+        .find("\nfn path2_native_derive_boundary_frame_v1(")
+        .expect("Path 2 native projection encoder end marker missing")
+        + encoder_start;
+    let encoder_window = &source[encoder_start..encoder_end];
+
+    let tests_start = source
+        .find("\n    fn path2_native_projection_preimage_encoders_have_stable_layouts()")
+        .expect("Path 2 native projection encoder tests start marker missing");
+    let tests_end = source[tests_start..]
+        .find("\n    fn native_projection_bundle_fixture()")
+        .expect("Path 2 native projection encoder tests end marker missing")
+        + tests_start;
+    let tests_window = &source[tests_start..tests_end];
+
+    let encoder_checks = [
+        "path2_native_context_projection_v1_bytes",
+        "PATH2_NATIVE_PROJECTION_CONTEXT_DOMAIN",
+        "validate_path2_native_context_fields",
+        "path2_native_account_projection_v1_bytes",
+        "PATH2_NATIVE_PROJECTION_ACCOUNT_DOMAIN",
+        "path2_native_public_key_identity_digest_v1",
+        "PATH2_NATIVE_PUBLIC_KEY_IDENTITY_DOMAIN",
+        "path2_native_spend_authorization_class_digest_v1",
+        "PATH2_NATIVE_AUTHORIZATION_CLASS_DOMAIN",
+        "PATH2_NATIVE_AUTHORIZATION_LOCAL_MODE_DIRECT",
+        "path2_native_spend_projection_v1_bytes",
+        "PATH2_NATIVE_PROJECTION_SPEND_DOMAIN",
+        "spend_authorization_class_digest != expected_authorization_class_digest",
+        "path2_native_lifecycle_projection_v1_bytes",
+        "PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN",
+        "path2_native_state_projection_v1_bytes",
+        "PATH2_NATIVE_PROJECTION_STATE_DOMAIN",
+        "path2_native_transcript_projection_v1_bytes",
+        "PATH2_NATIVE_PROJECTION_TRANSCRIPT_DOMAIN",
+        "path2_native_projection_preimage_da_v1_bytes",
+        "PATH2_NATIVE_PROJECTION_PREIMAGE_DA_DOMAIN",
+        "append_frame",
+        "path2_native_projection_preimage_da_digest_v1",
+        "path2_native_boundary_v1_digest",
+        "PATH2_NATIVE_BOUNDARY_DOMAIN",
+    ];
+    let test_checks = [
+        "path2_native_projection_preimage_encoders_have_stable_layouts",
+        "starts_with(PATH2_NATIVE_PROJECTION_CONTEXT_DOMAIN.as_bytes())",
+        "starts_with(PATH2_NATIVE_PROJECTION_ACCOUNT_DOMAIN.as_bytes())",
+        "starts_with(PATH2_NATIVE_PROJECTION_SPEND_DOMAIN.as_bytes())",
+        "starts_with(PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN.as_bytes())",
+        "starts_with(PATH2_NATIVE_PROJECTION_STATE_DOMAIN.as_bytes())",
+        "path2_native_projection_mutations_cascade_to_transcript_and_boundary",
+        "assert_ne!(mutated_account_digest, account_digest)",
+        "assert_ne!(mutated_transcript_digest, transcript_digest)",
+        "verifier family mismatch",
+        "path2_native_projection_preimages_exclude_private_sentinels",
+        "raw_pad_seed",
+        "opening_tuple",
+        "unmasked_projection",
+        "path2_native_projection_preimage_da_frames_roundtrip",
+        "context_projection",
+        "account_projection",
+        "spend_projection",
+        "lifecycle_projection",
+        "state_projection",
+        "obstruction_flags_digest",
+        "message_digest",
+        "proof_commitment",
+    ];
+
+    encoder_checks
+        .iter()
+        .all(|marker| encoder_window.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| tests_window.contains(marker))
+}
+
 fn path2_native_public_view_serializer_source_boundary_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
 
@@ -18243,6 +18327,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "public_native_spend_view_v1",
         "public_native_spend_view_v1_json",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_PUBLIC_VIEW_SERIALIZERS",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_PROJECTION_ENCODERS",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSENSUS_CARRIER",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON",
@@ -18273,7 +18358,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
 
 pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV1 {
     let proof_side_public_boundary_preflight_complete = true;
-    let projection_encoders_present = true;
+    let projection_encoders_present = path2_native_projection_encoder_source_boundary_present_v1();
     let checked_core_frame_present = true;
     let public_view_serializers_present =
         path2_native_public_view_serializer_source_boundary_present_v1();
@@ -18297,6 +18382,9 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     let storage_lifecycle_hardening_complete = false;
 
     let mut internal_blockers = Vec::new();
+    if !projection_encoders_present {
+        internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_PROJECTION_ENCODERS);
+    }
     if !public_view_serializers_present {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_PUBLIC_VIEW_SERIALIZERS);
     }
@@ -18382,6 +18470,8 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         public_boundary_accepted && deployment_preflight.internal_deployment_ready;
     let rejection_code = if !public_boundary_accepted {
         verifier_preflight.rejection_code
+    } else if !deployment_preflight.projection_encoders_present {
+        Some("reject_active_native_projection_encoder_source_open")
     } else if !deployment_preflight.public_view_serializers_present {
         Some("reject_active_native_public_view_serializer_source_open")
     } else if !deployment_preflight.consensus_carrier_present {
@@ -36174,6 +36264,7 @@ mod tests {
         let preflight = path2_native_deployment_preflight_v1();
         assert_eq!(preflight.schema, PATH2_NATIVE_DEPLOYMENT_PREFLIGHT_SCHEMA);
         assert!(preflight.proof_side_public_boundary_preflight_complete);
+        assert!(path2_native_projection_encoder_source_boundary_present_v1());
         assert!(preflight.projection_encoders_present);
         assert!(preflight.checked_core_frame_present);
         assert!(path2_native_public_view_serializer_source_boundary_present_v1());
