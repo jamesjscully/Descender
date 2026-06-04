@@ -6768,11 +6768,30 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1() ->
         .unwrap_or(boundary_source.len());
     let theorem_source = &boundary_source[theorem_start..theorem_end];
 
+    path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+        theorem_source,
+        theorem_name,
+    )
+}
+
+fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+    theorem_source: &str,
+    theorem_name: &str,
+) -> bool {
     [
         theorem_name,
         "ReviewedFq12HiddenSourceProofSemanticsClosed",
+        "let selectedRustModelFiveSourceInputs :",
         "ReviewedFq12SelectedRustModelFiveSourceClosureInputs",
+        "payloadProjectsFrom :=",
+        "certificateAvailability :=",
+        "roleRootLiftSource :=",
+        "selectedSource :=",
+        "assemblySource :=",
+        "compatibilitySource :=",
+        "witnessSources :=",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs",
+        "selectedRustModelFiveSourceInputs",
     ]
     .iter()
     .all(|marker| theorem_source.contains(marker))
@@ -41546,6 +41565,56 @@ mod tests {
                 ProductionCallbackErrorPolicy::SanitizedFixedPublicErrors
             );
         }
+    }
+
+    #[test]
+    fn path2_five_source_extractor_gate_requires_concrete_record_construction() {
+        let theorem_name = "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation";
+        let parameterized_theorem = format!(
+            r#"
+theorem {theorem_name}
+    (P : Predicates)
+    (I :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P :=
+  reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+    P I
+"#
+        );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &parameterized_theorem,
+                theorem_name
+            )
+        );
+
+        let concrete_theorem = format!(
+            r#"
+theorem {theorem_name}
+    (P : Predicates) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P := by
+  let selectedRustModelFiveSourceInputs :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    {{ payloadProjectsFrom := payloadProjectsFrom
+      certificateAvailability := certificateAvailability
+      roleRootLiftSource := roleRootLiftSource
+      selectedSource := selectedSource
+      assemblySource := assemblySource
+      compatibilitySource := compatibilitySource
+      witnessSources := witnessSources }}
+  exact
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+      P selectedRustModelFiveSourceInputs
+"#
+        );
+        assert!(
+            path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &concrete_theorem,
+                theorem_name
+            )
+        );
     }
 
     #[test]
