@@ -5028,6 +5028,71 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_diges
       assembly_digest_frame_eq := assembly_digest_frame_eq }
 
 /--
+P2FS-001 closure from the raw source components remaining in the selected
+Rust/model route. This is the concrete checklist behind the field-local
+shared-frame theorem: role-root/lift facts, selected source-route bytes,
+assembly field/local/native facts, compatibility field/extraction facts, and
+the two witness byte sources pinned to one digest frame.
+-/
+theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_components
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (roleRootFields :
+      ReviewedFq12ConcreteRoleRootFieldBindingCertificate P)
+    (liftOpeningFunctionality :
+      ReviewedFq12CertificateLiftOpeningFunctionality P)
+    (selectedSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P)
+    (assemblyAvailability :
+      ReviewedFq12RepresentativeAssemblyCertificateAvailability P)
+    (assemblyFieldBinding :
+      ReviewedFq12ConcreteAssemblyFieldBindingOrBreak P)
+    (assemblyLocalPredicates :
+      ReviewedFq12AssemblyConstructedLocalPredicatesOrBreak P)
+    (assemblyNativeValidity :
+      ReviewedFq12AssemblyConstructedNativeValidityOrBreak P)
+    (compatibilityAvailability :
+      ReviewedFq12ExtractionCompatibilityCertificateAvailability P)
+    (compatibilityFieldBinding :
+      ReviewedFq12ConcreteCompatibilityFieldBindingOrBreak P)
+    (compatibilityExtractionRules :
+      SameRepresentativeConcreteExtractionPredicates P)
+    (digestFrame :
+      ReviewedFq12NativeRepresentativeDigestFrame)
+    (canonicalRepresentativeWitnessByteSource :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessByteSource
+        CanonicalParser P)
+    (canonical_digest_frame_eq :
+      canonicalRepresentativeWitnessByteSource.digestFrame = digestFrame)
+    (nativeDigestFrameWitnessByteSource :
+      ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource
+        WitnessParser P)
+    (assembly_digest_frame_eq :
+      nativeDigestFrameWitnessByteSource.digestFrame = digestFrame) :
+    ReviewedFq12ExtractionCertificateSoundness P :=
+  reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_sources
+    P
+    { roleRootFields := roleRootFields
+      liftOpeningFunctionality := liftOpeningFunctionality }
+    selectedSource
+    { availability := assemblyAvailability
+      fieldBinding := assemblyFieldBinding
+      localPredicates := assemblyLocalPredicates
+      nativeValidity := assemblyNativeValidity }
+    { availability := compatibilityAvailability
+      fieldBinding := compatibilityFieldBinding
+      extractionRules := compatibilityExtractionRules }
+    digestFrame canonicalRepresentativeWitnessByteSource
+    canonical_digest_frame_eq nativeDigestFrameWitnessByteSource
+    assembly_digest_frame_eq
+
+/--
 Selected-Rust packaged source-route adapter using the existing concrete
 field/local source records for the local model.
 
