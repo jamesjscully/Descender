@@ -257,6 +257,13 @@ creation statement derived from the prevalidated leaf plus reviewed pad/witness
 commitments, the creation-statement frame labels, the creation-proof binding and
 native role-root inputs, and regressions that message/signature rebinding does
 not change the creation digest while pad and proof-binding field mutations do.
+The active no-partial-export negative-control flag is now source-inspected by
+`path2_reviewed_fq12_no_partial_export_negative_controls_source_present_v1`,
+covering the selected-material reject-path assertion, helper-visibility guard,
+wrong-pad and malformed-opening public errors, opaque carrier-export rejection,
+and the single accepting-certificate export wrapper. This is a scoped active
+negative-control check; the full serializer allowlist theorem remains tracked
+under P2FS-004.
 The Lean source-route endpoint flags are now source-inspected by
 `lean_path2_reviewed_fq12_source_route_endpoint_surface_present_v1`, covering
 the source-route local-instantiation theorem, boundary/factored selected-Rust

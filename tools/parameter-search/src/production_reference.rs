@@ -6883,6 +6883,137 @@ fn path2_creation_statement_bridge_source_present_v1() -> bool {
             .all(|marker| binding_test_source.contains(marker))
 }
 
+fn path2_reviewed_fq12_no_partial_export_negative_controls_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+    let assertion_start = source
+        .find("\n    fn assert_no_selected_projection_material(")
+        .expect("Path 2 no-partial-export assertion source start marker missing");
+    let assertion_end = source[assertion_start..]
+        .find("\n    fn assert_no_path2_transparent_private_material(")
+        .expect("Path 2 no-partial-export assertion source end marker missing")
+        + assertion_start;
+    let assertion_source = &source[assertion_start..assertion_end];
+
+    let visibility_start = source
+        .find("\n    fn production_reviewed_fq12_helper_visibility_compile_guard()")
+        .expect("Path 2 helper visibility regression start marker missing");
+    let visibility_end = source[visibility_start..]
+        .find("\n    fn production_reviewed_fq12_wrong_pad_seed_no_partial_export()")
+        .expect("Path 2 helper visibility regression end marker missing")
+        + visibility_start;
+    let visibility_source = &source[visibility_start..visibility_end];
+
+    let wrong_pad_start = source
+        .find("\n    fn production_reviewed_fq12_wrong_pad_seed_no_partial_export()")
+        .expect("Path 2 wrong-pad no-partial-export regression start marker missing");
+    let wrong_pad_end = source[wrong_pad_start..]
+        .find("\n    fn production_reviewed_fq12_malformed_opening_no_partial_export()")
+        .expect("Path 2 wrong-pad no-partial-export regression end marker missing")
+        + wrong_pad_start;
+    let wrong_pad_source = &source[wrong_pad_start..wrong_pad_end];
+
+    let malformed_start = source
+        .find("\n    fn production_reviewed_fq12_malformed_opening_no_partial_export()")
+        .expect("Path 2 malformed-opening no-partial-export regression start marker missing");
+    let malformed_end = source[malformed_start..]
+        .find("\n    fn production_reviewed_fq12_carrier_export_branch_is_opaque_error()")
+        .expect("Path 2 malformed-opening no-partial-export regression end marker missing")
+        + malformed_start;
+    let malformed_source = &source[malformed_start..malformed_end];
+
+    let carrier_start = source
+        .find("\n    fn production_reviewed_fq12_carrier_export_branch_is_opaque_error()")
+        .expect("Path 2 carrier-export no-partial-export regression start marker missing");
+    let carrier_end = source[carrier_start..]
+        .find("\n    fn production_reviewed_fq12_accepting_certificate_single_export_wrapper()")
+        .expect("Path 2 carrier-export no-partial-export regression end marker missing")
+        + carrier_start;
+    let carrier_source = &source[carrier_start..carrier_end];
+
+    let accepting_wrapper_start = source
+        .find("\n    fn production_reviewed_fq12_accepting_certificate_single_export_wrapper()")
+        .expect("Path 2 accepting-wrapper regression start marker missing");
+    let accepting_wrapper_end = source[accepting_wrapper_start..]
+        .find("\n    fn production_reviewed_fq12_post_spend_lifecycle_result_digest_only()")
+        .expect("Path 2 accepting-wrapper regression end marker missing")
+        + accepting_wrapper_start;
+    let accepting_wrapper_source = &source[accepting_wrapper_start..accepting_wrapper_end];
+
+    let assertion_checks = [
+        "ProductionReviewedFq12MaskedState18PackedWitnessOpening",
+        "packed_witness_opening",
+        "account_witness_projection_opening_frame",
+        "account_projection",
+        "projection_masks",
+        "masked_projection",
+        "pad_seed:",
+        "\\\"pad_seed\\\"",
+        "pad_seed_opening_frame",
+        "HiddenSourceFallbackProjectionBreakExport",
+        "HiddenSourceFallbackProjectionHiddenMaterialFrameReplayInput",
+        "reject path leaked selected projection marker",
+    ];
+    let visibility_checks = [
+        "production_reviewed_fq12_helper_visibility_compile_guard",
+        "pub struct ",
+        "HiddenSourceFallbackProjectionHiddenMaterialFrameReplayInput",
+        "pub fn ",
+        "reviewed_fq12_packed_witness_state18_projection_mask_prf_input_frame",
+        "verify_hidden_source_fallback_hidden_material_frame_projection_or_export",
+        "selected-material helper stayed public",
+    ];
+    let wrong_pad_checks = [
+        "production_reviewed_fq12_wrong_pad_seed_no_partial_export",
+        "wrong_pad_seed[0] ^= 1",
+        "verify_reviewed_fq12_state_assisted_masked_projection_candidate_verifier(",
+        "PRODUCTION_SELECTED_PROJECTION_INVALID_OPENING_REASON",
+        "assert_no_selected_projection_material(&format!(\"{err:?}\"))",
+    ];
+    let malformed_checks = [
+        "production_reviewed_fq12_malformed_opening_no_partial_export",
+        "bad_opening.witness_opening_digest[0] ^= 1",
+        "verify_reviewed_fq12_state_assisted_masked_projection_candidate_verifier(",
+        "PRODUCTION_SELECTED_PROJECTION_INVALID_CARRIER_REASON",
+        "assert_no_selected_projection_material(&format!(\"{err:?}\"))",
+    ];
+    let carrier_checks = [
+        "production_reviewed_fq12_carrier_export_branch_is_opaque_error",
+        "let carrier_start = REVIEWED_FQ12_ACCOUNT_CARRIED_TRANSACTION_SIGNATURE_BYTES",
+        "mutated[carrier_start..carrier_start + 2]",
+        "ProductionSignature::new(mutated)",
+        "PRODUCTION_SELECTED_PROJECTION_INVALID_CARRIER_REASON",
+        "assert_no_selected_projection_material(&format!(\"{err:?}\"))",
+    ];
+    let accepting_wrapper_checks = [
+        "production_reviewed_fq12_accepting_certificate_single_export_wrapper",
+        "verify_reviewed_fq12_state_assisted_masked_projection_soundness_certificate(",
+        "certificate.packed_witness_opening.account_projection",
+        "certificate\n                .account_witness_projection_opening_frame",
+        "wrong_pad_seed[0] ^= 1",
+        "PRODUCTION_SELECTED_PROJECTION_INVALID_OPENING_REASON",
+        "assert_no_selected_projection_material(&format!(\"{err:?}\"))",
+    ];
+
+    assertion_checks
+        .iter()
+        .all(|marker| assertion_source.contains(marker))
+        && visibility_checks
+            .iter()
+            .all(|marker| visibility_source.contains(marker))
+        && wrong_pad_checks
+            .iter()
+            .all(|marker| wrong_pad_source.contains(marker))
+        && malformed_checks
+            .iter()
+            .all(|marker| malformed_source.contains(marker))
+        && carrier_checks
+            .iter()
+            .all(|marker| carrier_source.contains(marker))
+        && accepting_wrapper_checks
+            .iter()
+            .all(|marker| accepting_wrapper_source.contains(marker))
+}
+
 fn path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
     let constructor_start = source
@@ -6997,7 +7128,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let rust_statement_rebinding_negative_controls_present =
         hidden_source_payload_binding_source_present
             && selected_hidden_relation_extraction_certificate_present;
-    let rust_no_partial_export_negative_controls_present = true;
+    let rust_no_partial_export_negative_controls_present =
+        path2_reviewed_fq12_no_partial_export_negative_controls_source_present_v1();
     let path2_creation_statement_bridge_present =
         path2_creation_statement_bridge_source_present_v1();
     let native_boundary_digest_payload_binding_complete =
@@ -39000,6 +39132,7 @@ mod tests {
         assert!(audit.rust_projection_carrier_tuple_binding_present);
         assert!(audit.rust_statement_rebinding_negative_controls_present);
         assert!(audit.rust_no_partial_export_negative_controls_present);
+        assert!(path2_reviewed_fq12_no_partial_export_negative_controls_source_present_v1());
         assert!(audit.path2_creation_statement_bridge_present);
         assert!(path2_creation_statement_bridge_source_present_v1());
         assert!(audit.native_boundary_digest_payload_binding_complete);

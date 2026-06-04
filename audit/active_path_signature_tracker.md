@@ -185,6 +185,13 @@ creation statement, creation-statement frame, creation-proof binding/native
 role-root inputs, and regressions showing message/signature rebinding does not
 become the Path 2 creation digest while pad/proof-binding field mutations remain
 digest-visible.
+The active no-partial-export negative-control flag is now source-inspected by
+`path2_reviewed_fq12_no_partial_export_negative_controls_source_present_v1`,
+which pins selected-material reject-path assertions, helper-visibility checks,
+wrong-pad and malformed-opening public errors, opaque carrier-export rejection,
+and the single accepting-certificate export wrapper. This records the active
+negative controls only; the full Rust serializer allowlist bridge remains
+P2FS-004.
 The Lean source-route endpoint flags are now source-inspected by
 `lean_path2_reviewed_fq12_source_route_endpoint_surface_present_v1`, which pins
 the base source-route closure theorem, boundary/factored wrappers, selected-Rust
