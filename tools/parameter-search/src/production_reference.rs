@@ -6083,6 +6083,7 @@ pub struct Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     pub lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present:
         bool,
     pub lean_selected_rust_field_local_packaged_source_route_adapter_present: bool,
+    pub selected_rust_canonical_byte_and_witness_package_surfaces_present: bool,
     pub rust_concrete_role_root_field_binding_present: bool,
     pub rust_certificate_lift_opening_functionality_present: bool,
     pub rust_assembly_representative_digest_lookup_source_present: bool,
@@ -6093,6 +6094,7 @@ pub struct Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     pub rust_assembly_representative_frame_source_present: bool,
     pub rust_shared_representative_frame_source_present: bool,
     pub rust_native_representative_digest_frame_source_present: bool,
+    pub rust_native_representative_digest_frame_witness_api_present: bool,
     pub rust_constructed_assembly_compatibility_witness_source_present: bool,
     pub rust_independent_direct_assembly_binding_source_present: bool,
     pub rust_compatibility_route_witness_source_present: bool,
@@ -7371,6 +7373,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1();
     let lean_selected_rust_field_local_packaged_source_route_adapter_present =
         lean_source_route_endpoint_surface_present;
+    let rust_native_representative_digest_frame_witness_api_present =
+        path2_reviewed_fq12_native_representative_digest_frame_witness_api_present_v1();
     let rust_concrete_role_root_field_binding_present =
         path2_reviewed_fq12_role_root_lift_source_present_v1();
     let rust_certificate_lift_opening_functionality_present =
@@ -7406,6 +7410,15 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         path2_reviewed_fq12_full_opening_source_route_source_present_v1();
     let rust_source_route_negative_controls_present =
         path2_reviewed_fq12_source_route_negative_controls_present_v1();
+    let selected_rust_canonical_byte_and_witness_package_surfaces_present =
+        full_native_opening_role_lift_certificate_present
+            && lean_selected_rust_source_route_byte_source_endpoint_present
+            && lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present
+            && rust_independent_direct_assembly_binding_source_present
+            && rust_assembly_compatibility_local_model_source_present
+            && rust_full_native_opening_canonical_representative_source_present
+            && rust_native_representative_digest_frame_source_present
+            && rust_native_representative_digest_frame_witness_api_present;
     let hidden_relation_verifier_implemented =
         selected_hidden_relation_extraction_certificate_present;
     let extractor_theorem_instantiated = false;
@@ -7432,6 +7445,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         && lean_selected_rust_direct_assembly_shared_representative_frame_packaged_source_route_endpoint_present
         && lean_selected_rust_direct_assembly_native_digest_frame_packaged_source_route_endpoint_present
         && lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present
+        && selected_rust_canonical_byte_and_witness_package_surfaces_present
         && rust_concrete_role_root_field_binding_present
         && rust_certificate_lift_opening_functionality_present
         && rust_assembly_representative_digest_lookup_source_present
@@ -7442,6 +7456,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         && rust_assembly_representative_frame_source_present
         && rust_shared_representative_frame_source_present
         && rust_native_representative_digest_frame_source_present
+        && rust_native_representative_digest_frame_witness_api_present
         && rust_constructed_assembly_compatibility_witness_source_present
         && rust_independent_direct_assembly_binding_source_present
         && rust_compatibility_route_witness_source_present
@@ -7483,6 +7498,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         lean_selected_rust_direct_assembly_native_digest_frame_packaged_source_route_endpoint_present,
         lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present,
         lean_selected_rust_field_local_packaged_source_route_adapter_present,
+        selected_rust_canonical_byte_and_witness_package_surfaces_present,
         rust_concrete_role_root_field_binding_present,
         rust_certificate_lift_opening_functionality_present,
         rust_assembly_representative_digest_lookup_source_present,
@@ -7493,6 +7509,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         rust_assembly_representative_frame_source_present,
         rust_shared_representative_frame_source_present,
         rust_native_representative_digest_frame_source_present,
+        rust_native_representative_digest_frame_witness_api_present,
         rust_constructed_assembly_compatibility_witness_source_present,
         rust_independent_direct_assembly_binding_source_present,
         rust_compatibility_route_witness_source_present,
@@ -27017,6 +27034,11 @@ fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit_frame(
     );
     append_u64(
         &mut frame,
+        b"selected_rust_canonical_byte_and_witness_package_surfaces_present",
+        u64::from(audit.selected_rust_canonical_byte_and_witness_package_surfaces_present),
+    );
+    append_u64(
+        &mut frame,
         b"rust_concrete_role_root_field_binding_present",
         u64::from(audit.rust_concrete_role_root_field_binding_present),
     );
@@ -27064,6 +27086,11 @@ fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit_frame(
         &mut frame,
         b"rust_native_representative_digest_frame_source_present",
         u64::from(audit.rust_native_representative_digest_frame_source_present),
+    );
+    append_u64(
+        &mut frame,
+        b"rust_native_representative_digest_frame_witness_api_present",
+        u64::from(audit.rust_native_representative_digest_frame_witness_api_present),
     );
     append_u64(
         &mut frame,
@@ -39385,6 +39412,7 @@ mod tests {
             lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1()
         );
         assert!(audit.lean_selected_rust_field_local_packaged_source_route_adapter_present);
+        assert!(audit.selected_rust_canonical_byte_and_witness_package_surfaces_present);
         assert!(audit.rust_concrete_role_root_field_binding_present);
         assert!(audit.rust_certificate_lift_opening_functionality_present);
         assert!(path2_reviewed_fq12_role_root_lift_source_present_v1());
@@ -39400,6 +39428,7 @@ mod tests {
         assert!(audit.rust_shared_representative_frame_source_present);
         assert!(audit.rust_native_representative_digest_frame_source_present);
         assert!(path2_reviewed_fq12_native_representative_digest_frame_source_present_v1());
+        assert!(audit.rust_native_representative_digest_frame_witness_api_present);
         assert!(path2_reviewed_fq12_native_representative_digest_frame_witness_api_present_v1());
         assert!(audit.rust_constructed_assembly_compatibility_witness_source_present);
         assert!(path2_reviewed_fq12_assembly_compatibility_local_model_source_present_v1());
@@ -39635,6 +39664,21 @@ mod tests {
             "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
         );
 
+        let mut missing_package_surfaces = audit.clone();
+        missing_package_surfaces
+            .selected_rust_canonical_byte_and_witness_package_surfaces_present = false;
+        missing_package_surfaces.digest =
+            path2_reviewed_fq12_hidden_source_semantics_bridge_audit_digest(
+                &missing_package_surfaces,
+            );
+        assert_eq!(
+            validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
+                &missing_package_surfaces
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
+        );
+
         let mut missing_concrete_role_root = audit.clone();
         missing_concrete_role_root.rust_concrete_role_root_field_binding_present = false;
         missing_concrete_role_root.digest =
@@ -39778,6 +39822,21 @@ mod tests {
         assert_eq!(
             validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
                 &missing_native_representative_digest_frame_source
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
+        );
+
+        let mut missing_digest_frame_witness_api = audit.clone();
+        missing_digest_frame_witness_api
+            .rust_native_representative_digest_frame_witness_api_present = false;
+        missing_digest_frame_witness_api.digest =
+            path2_reviewed_fq12_hidden_source_semantics_bridge_audit_digest(
+                &missing_digest_frame_witness_api,
+            );
+        assert_eq!(
+            validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
+                &missing_digest_frame_witness_api
             )
             .unwrap_err(),
             "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
