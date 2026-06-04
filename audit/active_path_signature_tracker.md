@@ -177,6 +177,14 @@ Rust field-evidence/source-route constructors, frame labels, verifier
 reconstruction, and source-route negative controls. This keeps the raw
 AP2-N001 component theorem from treating generic route-source evidence as the
 selected byte-source contract.
+The parser/frame part of that contract is now visible separately as
+`rust_source_route_byte_parser_frame_certificates_present`, backed by
+`path2_reviewed_fq12_source_route_byte_parser_frame_certificates_present_v1`.
+It source-inspects the Lean field-evidence and source-route byte parser
+certificates, the Rust field-evidence/source-route frame self-checks, the
+SHA-256 frame digest functions, verifier reconstruction, and the stale/tamper
+negative controls. This keeps byte canonicality and self-frame validation from
+being hidden behind the broader selected-source-route contract bit.
 The selected extraction-certificate flag is now source-inspected by
 `path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1`,
 which pins payload digest checks, statement/opening/pad binding,
@@ -245,7 +253,8 @@ surface with `lean_source_route_local_instantiation_endpoint_present`,
 `rust_assembly_compatibility_local_model_source_present`,
 `rust_full_opening_field_evidence_present`,
 `rust_full_opening_source_route_present`,
-`rust_selected_source_route_byte_source_contract_present`, and
+`rust_selected_source_route_byte_source_contract_present`,
+`rust_source_route_byte_parser_frame_certificates_present`, and
 `rust_source_route_negative_controls_present`, while still keeping
 `extractor_theorem_instantiated = false` and
 `semantics_bridge_complete = false`. The production hidden-source semantics
