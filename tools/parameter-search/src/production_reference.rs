@@ -6742,6 +6742,33 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
     .all(|marker| route_source.contains(marker))
 }
 
+fn path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1() -> bool {
+    let boundary_source =
+        include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
+    let theorem_name = "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation";
+    let Some(theorem_start) = boundary_source.find(&format!("\ntheorem {theorem_name}")) else {
+        return false;
+    };
+    let theorem_end = boundary_source[theorem_start..]
+        .find("\nend Path2HiddenSourceSemanticsBoundary")
+        .map(|offset| theorem_start + offset)
+        .unwrap_or(boundary_source.len());
+    let theorem_source = &boundary_source[theorem_start..theorem_end];
+
+    [
+        theorem_name,
+        "ReviewedFq12HiddenSourceProofSemanticsClosed",
+        "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources",
+        "ReviewedFq12RoleRootFunctionalLiftSource",
+        "SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource",
+        "ReviewedFq12FieldConcreteAssemblyLocalSource",
+        "ReviewedFq12FieldConcreteCompatibilitySource",
+        "ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources",
+    ]
+    .iter()
+    .all(|marker| theorem_source.contains(marker))
+}
+
 fn path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
     let constructor_start = source
@@ -7897,7 +7924,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
             && rust_native_representative_digest_frame_witness_api_present;
     let hidden_relation_verifier_implemented =
         selected_hidden_relation_extraction_certificate_present;
-    let extractor_theorem_instantiated = false;
+    let extractor_theorem_instantiated =
+        path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1();
     let semantics_bridge_complete = lean_payload_interface_pinned
         && rust_accepting_certificate_wrapper_present
         && rust_slot_opening_binding_present
@@ -41647,6 +41675,7 @@ mod tests {
         assert!(path2_reviewed_fq12_source_route_negative_controls_present_v1());
         assert!(audit.hidden_relation_verifier_implemented);
         assert!(!audit.extractor_theorem_instantiated);
+        assert!(!path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1());
         assert!(!audit.semantics_bridge_complete);
         assert_eq!(
             audit.blocker,
