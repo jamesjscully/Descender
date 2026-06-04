@@ -6631,7 +6631,12 @@ fn lean_selected_rust_field_local_digest_frame_witness_byte_component_endpoint_p
         "ReviewedFq12ExtractionCompatibilityCertificateAvailability",
         "ReviewedFq12ConcreteCompatibilityFieldBindingOrBreak",
         "SameRepresentativeConcreteExtractionPredicates",
+        "digestFrame :",
+        "canonicalRepresentativeWitnessByteSource",
+        "canonical_digest_frame_eq",
         "ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessByteSource",
+        "nativeDigestFrameWitnessByteSource",
+        "assembly_digest_frame_eq",
         "ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource",
     ]
     .iter()
