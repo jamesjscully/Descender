@@ -90,6 +90,8 @@ pub const PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA: &str =
     "Descender.Path2.NativeStorageLifecycleHardeningScope.v1";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE: &str =
     "active native signer/verifier pipeline is not productionized end-to-end";
+pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_PUBLIC_VIEW_SERIALIZERS: &str =
+    "active native public account/spend serializers are not source-pinned";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSENSUS_CARRIER: &str =
     "active native consensus carrier source boundary is not pinned";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION: &str =
@@ -17992,6 +17994,96 @@ fn path2_no_export_serializer_boundary_present_v1() -> bool {
             .all(|marker| storage_test_window.contains(marker))
 }
 
+fn path2_native_public_view_serializer_source_boundary_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let account_start = source
+        .find("\npub fn public_native_account_view_v1(")
+        .expect("Path 2 native public account view serializer start marker missing");
+    let account_end = source[account_start..]
+        .find("\npub fn public_native_spend_view_v1(")
+        .expect("Path 2 native public account view serializer end marker missing")
+        + account_start;
+    let account_window = &source[account_start..account_end];
+
+    let spend_start = source
+        .find("\npub fn public_native_spend_view_v1(")
+        .expect("Path 2 native public spend view serializer start marker missing");
+    let spend_end = source[spend_start..]
+        .find("\npub fn path2_native_checked_core_accept_v1(")
+        .expect("Path 2 native public spend view serializer end marker missing")
+        + spend_start;
+    let spend_window = &source[spend_start..spend_end];
+
+    let tests_start = source
+        .find("\n    fn public_native_account_view_v1_serializes_only_allowlisted_fields()")
+        .expect("Path 2 native public view tests start marker missing");
+    let tests_end = source[tests_start..]
+        .find("\n    fn native_projection_fixtures()")
+        .expect("Path 2 native public view tests end marker missing")
+        + tests_start;
+    let tests_window = &source[tests_start..tests_end];
+
+    let account_checks = [
+        "public_native_account_view_v1",
+        "validate_path2_native_checked_core_frame_v1(&context_probe)?",
+        "schema: PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA",
+        "native_boundary_digest",
+        "p_context_digest",
+        "p_account_digest",
+        "p_spend_digest",
+        "p_lifecycle_digest",
+        "p_transcript_digest",
+        "p_state_digest",
+        "public_lifecycle_marker",
+        "public_state_root",
+        "obstruction_flags_digest",
+        "public_native_account_view_v1_json",
+        "serde_json::to_string(view)",
+    ];
+    let spend_checks = [
+        "public_native_spend_view_v1",
+        "validate_path2_native_checked_core_frame_v1(checked_core_frame)?",
+        "checked_core_proof_bytes.len() != PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES",
+        "schema: PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA",
+        "native_boundary_digest: checked_core_frame.native_boundary_digest",
+        "checked_core_frame_digest: path2_native_checked_core_frame_v1_digest(checked_core_frame)?",
+        "message_digest: checked_core_frame.message_digest",
+        "current_state_digest: checked_core_frame.current_state_digest",
+        "proof_commitment: checked_core_frame.proof_commitment",
+        "checked_core_proof_bytes_digest: Sha256::digest(checked_core_proof_bytes).into()",
+        "checked_core_proof_byte_len",
+        "public_native_spend_view_v1_json",
+    ];
+    let test_checks = [
+        "public_native_account_view_v1_serializes_only_allowlisted_fields",
+        "PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA",
+        "native_boundary_version",
+        "p_context_digest",
+        "public_state_root",
+        "assert_no_active_native_private_material(&serialized)",
+        "version mismatch",
+        "public_native_spend_view_v1_serializes_digest_only_proof_surface",
+        "PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA",
+        "checked_core_frame_digest",
+        "checked_core_proof_bytes_digest",
+        "checked_core_proof_byte_len",
+        "!serialized.contains(\"161,161,161,161\")",
+        "mutated_view.checked_core_proof_bytes_digest",
+        "checked-core proof has",
+    ];
+
+    account_checks
+        .iter()
+        .all(|marker| account_window.contains(marker))
+        && spend_checks
+            .iter()
+            .all(|marker| spend_window.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| tests_window.contains(marker))
+}
+
 fn path2_native_consensus_carrier_source_boundary_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
 
@@ -18112,7 +18204,8 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     let proof_side_public_boundary_preflight_complete = true;
     let projection_encoders_present = true;
     let checked_core_frame_present = true;
-    let public_view_serializers_present = true;
+    let public_view_serializers_present =
+        path2_native_public_view_serializer_source_boundary_present_v1();
     let consensus_carrier_present = path2_native_consensus_carrier_source_boundary_present_v1();
     let verifier_preflight_report_present = true;
     let global_domain_registry_present = production_registered_domain_schema_constants()
@@ -18133,6 +18226,9 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     let storage_lifecycle_hardening_complete = false;
 
     let mut internal_blockers = Vec::new();
+    if !public_view_serializers_present {
+        internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_PUBLIC_VIEW_SERIALIZERS);
+    }
     if !consensus_carrier_present {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSENSUS_CARRIER);
     }
@@ -18212,6 +18308,8 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         public_boundary_accepted && deployment_preflight.internal_deployment_ready;
     let rejection_code = if !public_boundary_accepted {
         verifier_preflight.rejection_code
+    } else if !deployment_preflight.public_view_serializers_present {
+        Some("reject_active_native_public_view_serializer_source_open")
     } else if !deployment_preflight.consensus_carrier_present {
         Some("reject_active_native_consensus_carrier_source_open")
     } else if !deployment_preflight.checked_core_composition_review_complete {
@@ -36002,6 +36100,7 @@ mod tests {
         assert!(preflight.proof_side_public_boundary_preflight_complete);
         assert!(preflight.projection_encoders_present);
         assert!(preflight.checked_core_frame_present);
+        assert!(path2_native_public_view_serializer_source_boundary_present_v1());
         assert!(preflight.public_view_serializers_present);
         assert!(path2_native_consensus_carrier_source_boundary_present_v1());
         assert!(preflight.consensus_carrier_present);
