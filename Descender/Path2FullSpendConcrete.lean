@@ -462,6 +462,58 @@ theorem concrete_fullExecutionImpliesAcceptedSpendForgery
     (concreteDirectAcceptedSpendSoundness C)
     hSuccess
 
+/-- Proposition installed into the active full-signature boundary by a concrete execution source. -/
+def ConcreteFullExecutionAcceptedSpendLift
+    (C : ConcreteGameConfig)
+    (Source : ConcreteFullSignatureExecutionSource C) : Prop :=
+  forall {run : Path2FullSpendGame.FullForgeryRun concreteTypes},
+    Source.executionSucceeds run ->
+      Path2FullSpendGame.AcceptedSpendConclusion
+          (concretePredicates C) run.spend ∨
+        Path2FullSpendGame.HasBreak (concretePredicates C) run.spend
+
+/-- A concrete execution source supplies the full-game lift proposition. -/
+theorem concrete_fullExecutionAcceptedSpendLift
+    (C : ConcreteGameConfig)
+    (Source : ConcreteFullSignatureExecutionSource C) :
+    ConcreteFullExecutionAcceptedSpendLift C Source := by
+  intro run hSuccess
+  exact concrete_fullExecutionImpliesAcceptedSpendForgery C Source hSuccess
+
+/--
+Install a concrete full-signature execution source into the active native
+full-signature security boundary, preserving every other proof obligation.
+-/
+def Path2NativeAccountDesign.NativeFullSignatureSecurityBoundary.withConcreteFullExecutionSource
+    (B : Path2NativeAccountDesign.NativeFullSignatureSecurityBoundary)
+    (C : ConcreteGameConfig)
+    (Source : ConcreteFullSignatureExecutionSource C) :
+    Path2NativeAccountDesign.NativeFullSignatureSecurityBoundary :=
+  { B with
+    fullForgeryImpliesAcceptedSpendForgery :=
+      ConcreteFullExecutionAcceptedSpendLift C Source
+    fullSignatureSecurityClaimComplete := by
+      rcases B.fullSignatureSecurityClaimComplete with
+        ⟨hKeygen, hSigning, hCompleteness, hVerifier, _hFullGame,
+          hHiddenSource, hCheckedCore, hLifecycle, hNoExport,
+          hCheckedCoreDomain, hHiddenSourceDomain, hQueryBudget,
+          hMultiTarget⟩
+      exact
+        ⟨hKeygen, hSigning, hCompleteness, hVerifier,
+          concrete_fullExecutionAcceptedSpendLift C Source,
+          hHiddenSource, hCheckedCore, hLifecycle, hNoExport,
+          hCheckedCoreDomain, hHiddenSourceDomain, hQueryBudget,
+          hMultiTarget⟩ }
+
+/-- The full-signature wrapper exposes exactly the concrete execution lift. -/
+theorem full_signature_with_concrete_full_execution_source_lift
+    (B : Path2NativeAccountDesign.NativeFullSignatureSecurityBoundary)
+    (C : ConcreteGameConfig)
+    (Source : ConcreteFullSignatureExecutionSource C) :
+    (Path2NativeAccountDesign.NativeFullSignatureSecurityBoundary.withConcreteFullExecutionSource
+      B C Source).fullForgeryImpliesAcceptedSpendForgery :=
+  concrete_fullExecutionAcceptedSpendLift C Source
+
 /-- Full-game success supplies an accepted spend for the concrete carrier. -/
 def concreteFullForgeryToAcceptedSpendSoundness
     (C : ConcreteGameConfig) :

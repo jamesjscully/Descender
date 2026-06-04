@@ -18978,6 +18978,11 @@ fn path2_full_signature_execution_source_boundary_present_v1() -> bool {
         "Path2FullSpendGame.fullForgeryImpliesAcceptedSpendForgery",
         "concreteFullForgeryToAcceptedSpendSoundnessFromExecution C Source",
         "concreteDirectAcceptedSpendSoundness C",
+        "ConcreteFullExecutionAcceptedSpendLift",
+        "concrete_fullExecutionAcceptedSpendLift",
+        "NativeFullSignatureSecurityBoundary.withConcreteFullExecutionSource",
+        "fullForgeryImpliesAcceptedSpendForgery :=",
+        "full_signature_with_concrete_full_execution_source_lift",
     ];
 
     source_checks
