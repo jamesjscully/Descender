@@ -7495,7 +7495,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let rust_source_route_negative_controls_present =
         path2_reviewed_fq12_source_route_negative_controls_present_v1();
     let selected_rust_canonical_byte_and_witness_package_surfaces_present =
-        full_native_opening_role_lift_certificate_present
+        rust_concrete_role_root_field_binding_present
+            && rust_certificate_lift_opening_functionality_present
             && lean_selected_rust_source_route_byte_source_endpoint_present
             && lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present
             && lean_selected_rust_field_local_shared_digest_frame_witness_source_endpoint_present
