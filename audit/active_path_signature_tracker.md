@@ -253,6 +253,11 @@ canonical representative source, native representative digest-frame source, and
 Rust digest-frame witness API are all present. This is still a surface gate,
 not a theorem-instantiation claim; `extractor_theorem_instantiated` remains the
 final blocker.
+The Rust audit now also carries
+`rust_full_native_opening_canonical_representative_witness_byte_source_present`
+separately, so the Rust-shaped canonical witness source required by the latest
+Lean endpoint is visible as its own audited item rather than hidden inside the
+broader canonical representative source flag.
 
 Lean now also exposes
 `reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_byte_and_witness_sources`,
