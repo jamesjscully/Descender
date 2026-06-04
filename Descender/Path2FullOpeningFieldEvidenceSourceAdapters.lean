@@ -4983,6 +4983,51 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_share
       witnessSources)
 
 /--
+P2FS-001 closure from the field/local source records plus the two Rust witness
+byte sources and explicit proof that they use the same selected representative
+digest frame.
+-/
+theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_sources
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (selectedSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P)
+    (assemblySource :
+      ReviewedFq12FieldConcreteAssemblyLocalSource P)
+    (compatibilitySource :
+      ReviewedFq12FieldConcreteCompatibilitySource P)
+    (digestFrame :
+      ReviewedFq12NativeRepresentativeDigestFrame)
+    (canonicalRepresentativeWitnessByteSource :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessByteSource
+        CanonicalParser P)
+    (canonical_digest_frame_eq :
+      canonicalRepresentativeWitnessByteSource.digestFrame = digestFrame)
+    (nativeDigestFrameWitnessByteSource :
+      ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource
+        WitnessParser P)
+    (assembly_digest_frame_eq :
+      nativeDigestFrameWitnessByteSource.digestFrame = digestFrame) :
+    ReviewedFq12ExtractionCertificateSoundness P :=
+  reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources
+    P roleRootLiftSource selectedSource assemblySource compatibilitySource
+    { digestFrame := digestFrame
+      canonicalRepresentativeWitnessByteSource :=
+        canonicalRepresentativeWitnessByteSource
+      canonical_digest_frame_eq := canonical_digest_frame_eq
+      nativeDigestFrameWitnessByteSource :=
+        nativeDigestFrameWitnessByteSource
+      assembly_digest_frame_eq := assembly_digest_frame_eq }
+
+/--
 Selected-Rust packaged source-route adapter using the existing concrete
 field/local source records for the local model.
 
