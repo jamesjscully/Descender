@@ -3217,6 +3217,7 @@ pub struct Path2NativeSignerVerifierPipelineEvidenceV1 {
     pub signer_public_output_digest: [u8; DIGEST_BYTES],
     pub carrier_digest: [u8; DIGEST_BYTES],
     pub checked_core_proof_digest: [u8; DIGEST_BYTES],
+    pub checked_core_byte_instantiation_evidence_digest: [u8; DIGEST_BYTES],
     pub native_boundary_digest: [u8; DIGEST_BYTES],
     pub verifier_public_boundary_accepted: bool,
     pub verifier_production_accepted: bool,
@@ -19693,6 +19694,9 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "path2_native_honest_constructor_from_prevalidated_entropy_root_v1",
         "path2_native_signer_pipeline_public_output_v1_digest",
         "Sha256::digest(output.checked_core_proof_bytes)",
+        "path2_native_checked_core_byte_instantiation_evidence_v1",
+        "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
+        "checked_core_byte_instantiation_evidence_digest",
         "verify_path2_native_deployment_pipeline_v1",
         "hash_qrom_deployment_horizon_complete",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON",
@@ -19737,6 +19741,7 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "assert_no_active_native_private_material",
         "path2_native_prevalidated_honest_flow_reaches_selected_verifier_public_acceptance",
         "PATH2_NATIVE_SIGNER_VERIFIER_PIPELINE_EVIDENCE_SCHEMA",
+        "checked_core_byte_instantiation_evidence_digest",
         "evidence.verifier_public_boundary_accepted",
         "evidence.verifier_production_accepted",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
@@ -20595,6 +20600,15 @@ pub fn path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_
     )?;
     let checked_core_proof_digest: [u8; DIGEST_BYTES] =
         Sha256::digest(output.checked_core_proof_bytes).into();
+    let checked_core_byte_instantiation_evidence =
+        path2_native_checked_core_byte_instantiation_evidence_v1(
+            &output.projection_bundle,
+            &output.checked_core_proof_bytes,
+        )?;
+    let checked_core_byte_instantiation_evidence_digest =
+        path2_native_checked_core_byte_instantiation_evidence_v1_digest(
+            &checked_core_byte_instantiation_evidence,
+        )?;
     let verdict = verify_path2_native_deployment_pipeline_v1(
         &output.constructed.signer_public_output.carrier,
         &output.projection_bundle,
@@ -20633,6 +20647,7 @@ pub fn path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_
         signer_public_output_digest,
         carrier_digest: output.constructed.signer_public_output.carrier_digest,
         checked_core_proof_digest,
+        checked_core_byte_instantiation_evidence_digest,
         native_boundary_digest: output.constructed.boundary_meaning.native_boundary_digest,
         verifier_public_boundary_accepted: verdict.public_boundary_accepted,
         verifier_production_accepted: verdict.production_accepted,
@@ -38966,10 +38981,11 @@ end Path2CheckedCoreByteBridge
         let prevalidated =
             path2_native_signer_prevalidated_public_input_v1(native_projection_bundle_fixture())
                 .unwrap();
+        let entropy_label = "prevalidated-verifier-evidence";
         let evidence =
             path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_root_v1(
                 prevalidated,
-                native_entropy_root_fixture("prevalidated-verifier-evidence"),
+                native_entropy_root_fixture(entropy_label),
             )
             .unwrap();
 
@@ -38982,6 +38998,10 @@ end Path2CheckedCoreByteBridge
         assert_ne!(evidence.signer_public_output_digest, [0_u8; DIGEST_BYTES]);
         assert_ne!(evidence.carrier_digest, [0_u8; DIGEST_BYTES]);
         assert_ne!(evidence.checked_core_proof_digest, [0_u8; DIGEST_BYTES]);
+        assert_ne!(
+            evidence.checked_core_byte_instantiation_evidence_digest,
+            [0_u8; DIGEST_BYTES]
+        );
         assert_ne!(evidence.native_boundary_digest, [0_u8; DIGEST_BYTES]);
         assert!(evidence.verifier_public_boundary_accepted);
         assert!(!evidence.verifier_production_accepted);
@@ -39005,6 +39025,22 @@ end Path2CheckedCoreByteBridge
         assert_ne!(
             path2_native_signer_verifier_pipeline_evidence_v1_digest(&evidence).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+
+        let evidence_fixture = path2_native_honest_constructor_from_prevalidated_entropy_root_v1(
+            prevalidated,
+            native_entropy_root_fixture(entropy_label),
+        )
+        .unwrap();
+        let checked_core_report = path2_native_checked_core_byte_instantiation_evidence_v1(
+            &evidence_fixture.projection_bundle,
+            &evidence_fixture.checked_core_proof_bytes,
+        )
+        .unwrap();
+        assert_eq!(
+            evidence.checked_core_byte_instantiation_evidence_digest,
+            path2_native_checked_core_byte_instantiation_evidence_v1_digest(&checked_core_report)
+                .unwrap()
         );
 
         let rendered = serde_json::to_string(&evidence).unwrap();
