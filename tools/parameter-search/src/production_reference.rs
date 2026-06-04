@@ -18542,6 +18542,10 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "verifier_handle_eq",
         "parser_equality",
         "hash_and_syndrome",
+        "SelectedRustCheckedCoreByteEvidenceCertificate",
+        "evidenceReportVerified",
+        "evidenceFactsAllTrue",
+        "SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs",
         "SelectedRustCheckedCoreByteInstantiationInputs",
         "selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1",
         "Inputs.selectedRustCheckedCoreAcceptorAccepts",
@@ -18726,7 +18730,9 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
     if forbidden_theorem_parameter {
         return false;
     }
-    if theorem_header.contains("SelectedRustCheckedCoreByteInstantiationInputs") {
+    if theorem_header.contains("SelectedRustCheckedCoreByteInstantiationInputs")
+        || theorem_header.contains("SelectedRustCheckedCoreByteEvidenceCertificate")
+    {
         return false;
     }
 
@@ -18736,18 +18742,13 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
         "SelectedRustCheckedCoreByteSource",
         "Path2NativeCheckedCoreAcceptV1Bridge",
         "Path2NativeCheckedCoreAcceptV1Soundness",
+        "let selectedRustCheckedCoreEvidenceCertificate :",
+        "SelectedRustCheckedCoreByteEvidenceCertificate",
+        "evidenceReportVerified := selectedRustCheckedCoreEvidenceReportVerified",
+        "evidenceFactsAllTrue := selectedRustCheckedCoreEvidenceFactsAllTrue",
         "let selectedRustCheckedCoreInputs :",
         "SelectedRustCheckedCoreByteInstantiationInputs",
-        "selectedRustCheckedCoreAcceptorAccepts := selectedRustCheckedCoreAcceptorAccepts",
-        "selectedRustCheckedCoreParserMatchesNative := selectedRustCheckedCoreParserMatchesNative",
-        "selectedRustCheckedCoreProofLengthEq := selectedRustCheckedCoreProofLengthEq",
-        "selectedRustCheckedCoreProofCanonical := selectedRustCheckedCoreProofCanonical",
-        "selectedRustCheckedCoreDecodedProofCommitment := selectedRustCheckedCoreDecodedProofCommitment",
-        "selectedRustCheckedCoreParsedResponseSyndrome := selectedRustCheckedCoreParsedResponseSyndrome",
-        "selectedRustCheckedCoreFrameBytes := selectedRustCheckedCoreFrameBytes",
-        "selectedRustCheckedCoreVerifierHandleEq := selectedRustCheckedCoreVerifierHandleEq",
-        "selectedRustCheckedCoreParserEquality := selectedRustCheckedCoreParserEquality",
-        "selectedRustCheckedCoreHashAndSyndrome := selectedRustCheckedCoreHashAndSyndrome",
+        "SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs selectedRustCheckedCoreEvidenceCertificate",
         "selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1 selectedRustCheckedCoreInputs",
         "selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break",
     ];
@@ -38337,6 +38338,54 @@ end Path2CheckedCoreByteBridge
         assert!(
             !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
                 input_assumed_instantiation
+            )
+        );
+        let evidence_certificate_assumed_instantiation = r#"
+theorem selectedRustCheckedCoreByteSource_instantiation_v1
+    (selectedRustCheckedCoreEvidenceCertificate :
+      SelectedRustCheckedCoreByteEvidenceCertificate B H P V) :
+    SelectedRustCheckedCoreByteSource B H P V := by
+  let selectedRustCheckedCoreInputs :
+      SelectedRustCheckedCoreByteInstantiationInputs B H P V :=
+    SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs
+      selectedRustCheckedCoreEvidenceCertificate
+  exact selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1 selectedRustCheckedCoreInputs
+theorem selectedRustCheckedCoreByteSource_valid_or_named_break := trivial
+theorem Path2NativeCheckedCoreAcceptV1Bridge := trivial
+theorem Path2NativeCheckedCoreAcceptV1Soundness := trivial
+theorem selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break := trivial
+end Path2CheckedCoreByteBridge
+"#;
+        assert!(
+            !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
+                evidence_certificate_assumed_instantiation
+            )
+        );
+        let local_inputs_without_evidence_certificate = r#"
+theorem selectedRustCheckedCoreByteSource_instantiation_v1 :
+    SelectedRustCheckedCoreByteSource B H P V := by
+  let selectedRustCheckedCoreInputs :
+      SelectedRustCheckedCoreByteInstantiationInputs B H P V :=
+    { selectedRustCheckedCoreAcceptorAccepts := selectedRustCheckedCoreAcceptorAccepts
+      selectedRustCheckedCoreParserMatchesNative := selectedRustCheckedCoreParserMatchesNative
+      selectedRustCheckedCoreProofLengthEq := selectedRustCheckedCoreProofLengthEq
+      selectedRustCheckedCoreProofCanonical := selectedRustCheckedCoreProofCanonical
+      selectedRustCheckedCoreDecodedProofCommitment := selectedRustCheckedCoreDecodedProofCommitment
+      selectedRustCheckedCoreParsedResponseSyndrome := selectedRustCheckedCoreParsedResponseSyndrome
+      selectedRustCheckedCoreFrameBytes := selectedRustCheckedCoreFrameBytes
+      selectedRustCheckedCoreVerifierHandleEq := selectedRustCheckedCoreVerifierHandleEq
+      selectedRustCheckedCoreParserEquality := selectedRustCheckedCoreParserEquality
+      selectedRustCheckedCoreHashAndSyndrome := selectedRustCheckedCoreHashAndSyndrome }
+  exact selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1 selectedRustCheckedCoreInputs
+theorem selectedRustCheckedCoreByteSource_valid_or_named_break := trivial
+theorem Path2NativeCheckedCoreAcceptV1Bridge := trivial
+theorem Path2NativeCheckedCoreAcceptV1Soundness := trivial
+theorem selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break := trivial
+end Path2CheckedCoreByteBridge
+"#;
+        assert!(
+            !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
+                local_inputs_without_evidence_certificate
             )
         );
         assert!(!path2_native_checked_core_selected_rust_instantiation_present_v1());
