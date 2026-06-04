@@ -3079,18 +3079,25 @@ pub fn path2_native_consensus_carrier_preflight_report_v1(
                             projection_preimage_da_digest,
                         );
                         if carrier == &expected {
-                            accepted = true;
-                            checked_core_byte_instantiation_evidence_digest =
-                                path2_native_checked_core_byte_instantiation_evidence_v1(
-                                    bundle,
-                                    checked_core_proof_bytes,
+                            match path2_native_checked_core_byte_instantiation_evidence_v1(
+                                bundle,
+                                checked_core_proof_bytes,
+                            )
+                            .and_then(|evidence| {
+                                path2_native_checked_core_byte_instantiation_evidence_v1_digest(
+                                    &evidence,
                                 )
-                                .and_then(|evidence| {
-                                    path2_native_checked_core_byte_instantiation_evidence_v1_digest(
-                                        &evidence,
-                                    )
-                                })
-                                .ok();
+                            }) {
+                                Ok(evidence_digest) => {
+                                    accepted = true;
+                                    checked_core_byte_instantiation_evidence_digest =
+                                        Some(evidence_digest);
+                                }
+                                Err(_) => {
+                                    rejection_code =
+                                        Some("reject_checked_core_byte_evidence_unavailable");
+                                }
+                            }
                         } else {
                             rejection_code = Some("reject_carrier_bundle_mismatch");
                         }
@@ -19419,6 +19426,7 @@ fn path2_native_verifier_preflight_report_source_present_v1() -> bool {
         "accepted = true",
         "path2_native_checked_core_byte_instantiation_evidence_v1",
         "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
+        "reject_checked_core_byte_evidence_unavailable",
         "reject_carrier_bundle_mismatch",
         "reject_projection_preimage_da_noncanonical",
         "reject_projection_bundle_inconsistent",
@@ -20153,15 +20161,8 @@ pub fn verify_path2_native_deployment_pipeline_v1(
     } else {
         None
     };
-    let checked_core_byte_instantiation_evidence_digest = if public_boundary_accepted {
-        path2_native_checked_core_byte_instantiation_evidence_v1(bundle, checked_core_proof_bytes)
-            .and_then(|evidence| {
-                path2_native_checked_core_byte_instantiation_evidence_v1_digest(&evidence)
-            })
-            .ok()
-    } else {
-        None
-    };
+    let checked_core_byte_instantiation_evidence_digest =
+        verifier_preflight.checked_core_byte_instantiation_evidence_digest;
 
     Path2NativeVerifierPipelineVerdictV1 {
         schema: PATH2_NATIVE_VERIFIER_PIPELINE_VERDICT_SCHEMA,
@@ -38128,6 +38129,12 @@ end Path2CheckedCoreByteBridge
                 )
                 .unwrap()
             )
+        );
+        assert_eq!(
+            verdict.checked_core_byte_instantiation_evidence_digest,
+            verdict
+                .verifier_preflight_report
+                .checked_core_byte_instantiation_evidence_digest
         );
         assert_eq!(
             verdict.native_boundary_digest,
