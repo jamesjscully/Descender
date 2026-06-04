@@ -4805,6 +4805,65 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_c
     nativeDigestFrameWitnessByteSource
 
 /--
+Canonical and assembly-side Rust witness byte sources pinned to one selected
+native representative digest frame.
+
+Both Rust witness artifacts are byte-level views of the same
+`path2_reviewed_fq12_native_representative_digest_v1` frame. The equalities are
+kept in the source package so the concrete selected Rust instantiation cannot
+silently feed the representative side and the assembly side from different
+digest-frame definitions.
+-/
+structure ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+    (CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
+    (P : Predicates) where
+  digestFrame :
+    ReviewedFq12NativeRepresentativeDigestFrame
+  canonicalRepresentativeWitnessByteSource :
+    ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessByteSource
+      CanonicalParser P
+  canonical_digest_frame_eq :
+    canonicalRepresentativeWitnessByteSource.digestFrame = digestFrame
+  nativeDigestFrameWitnessByteSource :
+    ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource
+      WitnessParser P
+  assembly_digest_frame_eq :
+    nativeDigestFrameWitnessByteSource.digestFrame = digestFrame
+
+/--
+P2FS-001 closure from selected Rust witness byte sources that are explicitly
+pinned to the same representative digest frame.
+-/
+theorem reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_shared_digest_frame_witness_sources
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (selectedSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P)
+    (directAssemblyBinding :
+      ReviewedFq12ConcreteAssemblyFieldBindingOrBreak P)
+    (localModelSource :
+      ReviewedFq12AssemblyCompatibilityLocalModelSource P)
+    (witnessSources :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12ExtractionCertificateSoundness P :=
+  reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_witness_and_digest_frame_sources
+    P roleRootLiftSource selectedSource directAssemblyBinding localModelSource
+    witnessSources.canonicalRepresentativeWitnessByteSource
+    witnessSources.nativeDigestFrameWitnessByteSource
+
+/--
 Selected-Rust packaged source-route adapter using the existing concrete
 field/local source records for the local model.
 
