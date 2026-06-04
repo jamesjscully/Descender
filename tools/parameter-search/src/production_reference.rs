@@ -1863,6 +1863,7 @@ pub struct Path2NativeConsensusCarrierPreflightReportV1 {
     pub rejection_code: Option<&'static str>,
     pub carrier_digest: Option<[u8; DIGEST_BYTES]>,
     pub recomputed_native_boundary_digest: Option<[u8; DIGEST_BYTES]>,
+    pub checked_core_byte_instantiation_evidence_digest: Option<[u8; DIGEST_BYTES]>,
     pub native_boundary_digest: [u8; DIGEST_BYTES],
     pub p_context_digest: [u8; DIGEST_BYTES],
     pub p_account_digest: [u8; DIGEST_BYTES],
@@ -3063,6 +3064,7 @@ pub fn path2_native_consensus_carrier_preflight_report_v1(
     let mut accepted = false;
     let mut rejection_code = None;
     let mut recomputed_native_boundary_digest = None;
+    let mut checked_core_byte_instantiation_evidence_digest = None;
 
     if validate_path2_native_consensus_carrier_v1(carrier).is_err() {
         rejection_code = Some("reject_invalid_carrier_context");
@@ -3078,6 +3080,17 @@ pub fn path2_native_consensus_carrier_preflight_report_v1(
                         );
                         if carrier == &expected {
                             accepted = true;
+                            checked_core_byte_instantiation_evidence_digest =
+                                path2_native_checked_core_byte_instantiation_evidence_v1(
+                                    bundle,
+                                    checked_core_proof_bytes,
+                                )
+                                .and_then(|evidence| {
+                                    path2_native_checked_core_byte_instantiation_evidence_v1_digest(
+                                        &evidence,
+                                    )
+                                })
+                                .ok();
                         } else {
                             rejection_code = Some("reject_carrier_bundle_mismatch");
                         }
@@ -3099,6 +3112,7 @@ pub fn path2_native_consensus_carrier_preflight_report_v1(
         rejection_code,
         carrier_digest,
         recomputed_native_boundary_digest,
+        checked_core_byte_instantiation_evidence_digest,
         native_boundary_digest: carrier.native_boundary_digest,
         p_context_digest: carrier.p_context_digest,
         p_account_digest: carrier.p_account_digest,
@@ -19377,6 +19391,7 @@ fn path2_native_verifier_preflight_report_source_present_v1() -> bool {
         "rejection_code: Option<&'static str>",
         "carrier_digest: Option<[u8; DIGEST_BYTES]>",
         "recomputed_native_boundary_digest: Option<[u8; DIGEST_BYTES]>",
+        "checked_core_byte_instantiation_evidence_digest: Option<[u8; DIGEST_BYTES]>",
         "native_boundary_digest",
         "p_context_digest",
         "p_account_digest",
@@ -19394,6 +19409,7 @@ fn path2_native_verifier_preflight_report_source_present_v1() -> bool {
         "let mut accepted = false",
         "let mut rejection_code = None",
         "let mut recomputed_native_boundary_digest = None",
+        "let mut checked_core_byte_instantiation_evidence_digest = None",
         "validate_path2_native_consensus_carrier_v1(carrier).is_err()",
         "reject_invalid_carrier_context",
         "assemble_path2_native_boundary_v1(bundle, checked_core_proof_bytes)",
@@ -19401,6 +19417,8 @@ fn path2_native_verifier_preflight_report_source_present_v1() -> bool {
         "path2_native_projection_preimage_da_digest_v1(bundle)",
         "path2_native_consensus_carrier_v1_from_assembly",
         "accepted = true",
+        "path2_native_checked_core_byte_instantiation_evidence_v1",
+        "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
         "reject_carrier_bundle_mismatch",
         "reject_projection_preimage_da_noncanonical",
         "reject_projection_bundle_inconsistent",
@@ -19418,6 +19436,12 @@ fn path2_native_verifier_preflight_report_source_present_v1() -> bool {
         "accepted_report.rejection_code, None",
         "accepted_report.carrier_digest, Some(carrier_digest)",
         "accepted_report.recomputed_native_boundary_digest",
+        "accepted_report.checked_core_byte_instantiation_evidence_digest",
+        "bad_carrier_report.checked_core_byte_instantiation_evidence_digest",
+        "bad_context_report.checked_core_byte_instantiation_evidence_digest",
+        "bad_bundle_report.checked_core_byte_instantiation_evidence_digest",
+        "bad_da_report.checked_core_byte_instantiation_evidence_digest",
+        "None",
         "bad_carrier.p_state_digest",
         "reject_carrier_bundle_mismatch",
         "bad_context.carrier_version",
@@ -36139,6 +36163,18 @@ mod tests {
             accepted_report.recomputed_native_boundary_digest,
             Some(assembly.native_boundary_digest)
         );
+        let checked_core_report =
+            path2_native_checked_core_byte_instantiation_evidence_v1(&bundle, &proof_bytes)
+                .unwrap();
+        assert_eq!(
+            accepted_report.checked_core_byte_instantiation_evidence_digest,
+            Some(
+                path2_native_checked_core_byte_instantiation_evidence_v1_digest(
+                    &checked_core_report,
+                )
+                .unwrap()
+            )
+        );
 
         let mut bad_carrier = carrier;
         bad_carrier.p_state_digest[0] ^= 1;
@@ -36148,6 +36184,10 @@ mod tests {
         assert_eq!(
             bad_carrier_report.rejection_code,
             Some("reject_carrier_bundle_mismatch")
+        );
+        assert_eq!(
+            bad_carrier_report.checked_core_byte_instantiation_evidence_digest,
+            None
         );
 
         let mut bad_context = carrier;
@@ -36159,6 +36199,10 @@ mod tests {
             bad_context_report.rejection_code,
             Some("reject_invalid_carrier_context")
         );
+        assert_eq!(
+            bad_context_report.checked_core_byte_instantiation_evidence_digest,
+            None
+        );
 
         let mut bad_bundle = bundle;
         bad_bundle.context.verifier_family_id += 1;
@@ -36168,6 +36212,10 @@ mod tests {
         assert_eq!(
             bad_bundle_report.rejection_code,
             Some("reject_projection_bundle_inconsistent")
+        );
+        assert_eq!(
+            bad_bundle_report.checked_core_byte_instantiation_evidence_digest,
+            None
         );
 
         let mut bad_da_carrier = carrier;
@@ -36181,6 +36229,10 @@ mod tests {
         assert_eq!(
             bad_da_report.rejection_code,
             Some("reject_carrier_bundle_mismatch")
+        );
+        assert_eq!(
+            bad_da_report.checked_core_byte_instantiation_evidence_digest,
+            None
         );
 
         for report in [
