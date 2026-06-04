@@ -2343,6 +2343,28 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_v1_digest(
         .map_err(|err| format!("encode Path 2 native checked-core byte evidence: {err}"))
 }
 
+pub fn path2_native_checked_core_byte_instantiation_evidence_all_facts_true(
+    evidence: &Path2NativeCheckedCoreByteInstantiationEvidenceV1,
+) -> bool {
+    evidence.schema == PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA
+        && evidence.accepted
+        && evidence.checked_core_acceptor_accepts
+        && evidence.parser_matches_native_handle
+        && evidence.proof_length_eq
+        && evidence.proof_canonical
+        && evidence.decoded_proof_commitment_eq
+        && evidence.parsed_response_syndrome_eq
+        && evidence.frame_bytes_eq
+        && evidence.verifier_handle_eq
+        && evidence.parser_equality
+        && evidence.hash_and_syndrome_eq
+        && evidence.short_proof_rejected
+        && evidence.noncanonical_proof_rejected
+        && evidence.commitment_mismatch_rejected
+        && evidence.verifier_handle_mismatch_rejected
+        && evidence.proof_byte_len as usize == PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES
+}
+
 pub fn verify_path2_native_checked_core_byte_instantiation_evidence_v1(
     bundle: &Path2NativeProjectionBundleV1,
     checked_core_proof_bytes: &[u8],
@@ -2352,6 +2374,12 @@ pub fn verify_path2_native_checked_core_byte_instantiation_evidence_v1(
         path2_native_checked_core_byte_instantiation_evidence_v1(bundle, checked_core_proof_bytes)?;
     if expected != *evidence {
         return Err("Path 2 native checked-core byte evidence mismatch".to_string());
+    }
+    if !path2_native_checked_core_byte_instantiation_evidence_all_facts_true(evidence) {
+        return Err(
+            "Path 2 native checked-core byte evidence has an unsatisfied component fact"
+                .to_string(),
+        );
     }
     path2_native_checked_core_byte_instantiation_evidence_v1_digest(evidence)
 }
@@ -18568,15 +18596,19 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "path2_native_checked_core_rejection_contains_v1",
         "result.is_err_and",
         "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
+        "path2_native_checked_core_byte_instantiation_evidence_all_facts_true",
         "verify_path2_native_checked_core_byte_instantiation_evidence_v1",
         "if expected != *evidence",
+        "Path 2 native checked-core byte evidence has an unsatisfied component fact",
     ];
     let test_checks = [
         "path2_native_checked_core_accept_pins_canonical_proof_bytes_before_acceptance",
         "path2_native_checked_core_byte_instantiation_evidence_reports_component_facts",
         "verify_path2_native_checked_core_byte_instantiation_evidence_v1",
+        "path2_native_checked_core_byte_instantiation_evidence_all_facts_true",
         "tampered_digest_evidence.checked_core_proof_bytes_digest",
         "tampered_bool_evidence.hash_and_syndrome_eq",
+        "untrue_fact_evidence.verifier_handle_eq",
         "assert!(evidence.hash_and_syndrome_eq)",
         "short_proof",
         "noncanonical_proof",
@@ -19705,6 +19737,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "verify_path2_native_deployment_pipeline_v1",
         "path2_native_verifier_pipeline_verdict_v1_digest",
         "path2_native_checked_core_byte_instantiation_evidence_v1",
+        "path2_native_checked_core_byte_instantiation_evidence_all_facts_true",
         "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
         "verify_path2_native_checked_core_byte_instantiation_evidence_v1",
         "public_native_account_view_v1",
@@ -38564,6 +38597,7 @@ end Path2CheckedCoreByteBridge
             path2_native_checked_core_byte_instantiation_evidence_v1_digest(&evidence).unwrap(),
             [0_u8; DIGEST_BYTES]
         );
+        assert!(path2_native_checked_core_byte_instantiation_evidence_all_facts_true(&evidence));
         assert_eq!(
             verify_path2_native_checked_core_byte_instantiation_evidence_v1(
                 &bundle,
@@ -38572,6 +38606,31 @@ end Path2CheckedCoreByteBridge
             )
             .unwrap(),
             path2_native_checked_core_byte_instantiation_evidence_v1_digest(&evidence).unwrap()
+        );
+
+        let mut unbound_bundle = bundle;
+        unbound_bundle.account.public_key_identity[0] ^= 1;
+        let unbound_proof_bytes =
+            path2_native_checked_core_proof_from_bundle_v1(&unbound_bundle).unwrap();
+        let untrue_fact_evidence = path2_native_checked_core_byte_instantiation_evidence_v1(
+            &unbound_bundle,
+            &unbound_proof_bytes,
+        )
+        .unwrap();
+        assert!(!untrue_fact_evidence.verifier_handle_eq);
+        assert!(
+            !path2_native_checked_core_byte_instantiation_evidence_all_facts_true(
+                &untrue_fact_evidence
+            )
+        );
+        assert_eq!(
+            verify_path2_native_checked_core_byte_instantiation_evidence_v1(
+                &unbound_bundle,
+                &unbound_proof_bytes,
+                &untrue_fact_evidence,
+            )
+            .unwrap_err(),
+            "Path 2 native checked-core byte evidence has an unsatisfied component fact"
         );
 
         let mut tampered_digest_evidence = evidence;
