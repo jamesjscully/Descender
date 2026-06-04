@@ -96,6 +96,8 @@ pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON: &str =
     "active native QROM multi-target horizon is not priced for the requested deployment scale";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE: &str =
     "active native full-signature execution source is not bound to accepted-spend soundness";
+pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS: &str =
+    "active native accept/reject/storage serializers are not bound to no-export allowlist";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME: &str =
     "active native constant-time signer, sampler, keygen, and verifier audit remains open";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE: &str =
@@ -2999,6 +3001,7 @@ pub struct Path2NativeDeploymentPreflightV1 {
     pub checked_core_composition_review_complete: bool,
     pub hash_qrom_deployment_horizon_complete: bool,
     pub full_signature_execution_source_boundary_present: bool,
+    pub no_export_serializer_boundary_present: bool,
     pub signer_verifier_pipeline_present: bool,
     pub constant_time_audit_complete: bool,
     pub storage_lifecycle_hardening_complete: bool,
@@ -17793,6 +17796,149 @@ fn path2_full_signature_execution_source_boundary_present_v1() -> bool {
             .all(|marker| theorem_window.contains(marker))
 }
 
+fn path2_no_export_serializer_boundary_present_v1() -> bool {
+    let no_export_source = include_str!("../../../Descender/Path2NoExport.lean");
+    let concrete_source = include_str!("../../../Descender/Path2NoExportConcrete.lean");
+    let rust_source = include_str!("production_reference.rs");
+
+    let conformance_start = no_export_source
+        .find("\nstructure ActiveNativeOutputConformance")
+        .expect("Lean Path 2 no-export conformance source start marker missing");
+    let conformance_end = no_export_source[conformance_start..]
+        .find("\n/-- Denylisted private material is absent")
+        .expect("Lean Path 2 no-export conformance source end marker missing")
+        + conformance_start;
+    let conformance_window = &no_export_source[conformance_start..conformance_end];
+
+    let closure_start = no_export_source
+        .find("\ntheorem active_native_no_export_closure_from_public_output_no_export")
+        .expect("Lean Path 2 no-export closure source start marker missing");
+    let closure_end = no_export_source[closure_start..]
+        .find("\n/--\nUse an active no-export closure")
+        .expect("Lean Path 2 no-export closure source end marker missing")
+        + closure_start;
+    let closure_window = &no_export_source[closure_start..closure_end];
+
+    let concrete_start = concrete_source
+        .find("\ndef activeAcceptOutputFrame")
+        .expect("Lean Path 2 concrete no-export serializer source start marker missing");
+    let concrete_end = concrete_source[concrete_start..]
+        .find("\nend Path2NoExportConcrete")
+        .expect("Lean Path 2 concrete no-export serializer source end marker missing")
+        + concrete_start;
+    let concrete_window = &concrete_source[concrete_start..concrete_end];
+
+    let no_private_start = rust_source
+        .find("\n    fn assert_no_active_native_private_material(")
+        .expect("Rust active native no-export assertion start marker missing");
+    let no_private_end = rust_source[no_private_start..]
+        .find("\n    fn public_native_account_view_v1_serializes_only_allowlisted_fields")
+        .expect("Rust active native no-export assertion end marker missing")
+        + no_private_start;
+    let no_private_window = &rust_source[no_private_start..no_private_end];
+
+    let verifier_test_start = rust_source
+        .find("\n    fn path2_native_verifier_pipeline_is_public_only_and_fail_closed_until_productized()")
+        .expect("Rust active native verifier no-export test start marker missing");
+    let verifier_test_end = rust_source[verifier_test_start..]
+        .find(
+            "\n    fn path2_native_signer_pipeline_public_output_is_public_and_verifier_compatible",
+        )
+        .expect("Rust active native verifier no-export test end marker missing")
+        + verifier_test_start;
+    let verifier_test_window = &rust_source[verifier_test_start..verifier_test_end];
+
+    let storage_test_start = rust_source
+        .find(
+            "\n    fn path2_native_storage_lifecycle_hardening_scope_pins_consensus_storage_surface()",
+        )
+        .expect("Rust active native storage no-export test start marker missing");
+    let storage_test_end = rust_source[storage_test_start..]
+        .find("\n    fn path2_domain_constants_are_disjoint_and_mode_separated")
+        .expect("Rust active native storage no-export test end marker missing")
+        + storage_test_start;
+    let storage_test_window = &rust_source[storage_test_start..storage_test_end];
+
+    let conformance_checks = [
+        "accept_conforms",
+        "reject_conforms",
+        "storage_conforms",
+        "Surfaces.acceptOutputProduced",
+        "Surfaces.rejectOutputProduced",
+        "Surfaces.storageOutputProduced",
+    ];
+    let closure_checks = [
+        "active_native_no_export_closure_from_public_output_no_export",
+        "PublicOutputNoExport Policy",
+        "ActiveNativeOutputConformance Policy Surfaces",
+        "Conforms.accept_conforms",
+        "Conforms.reject_conforms",
+        "Conforms.storage_conforms",
+        "NoExport.no_denylisted_field",
+    ];
+    let concrete_checks = [
+        "activeAcceptOutputFrame",
+        "activeRejectOutputFrame",
+        "activeStorageOutputFrame",
+        "structure ActiveTaggedSerializer",
+        "acceptOutputOf",
+        "rejectOutputOf",
+        "storageOutputOf",
+        "ActiveSerializerAllowlistCertificate",
+        "accept_allowed",
+        "reject_allowed",
+        "storage_allowed",
+        "activeSerializerAllowlist_activeNativeOutputConformance",
+        "activeSerializerAllowlist_activeNativeNoExportClosure",
+        "activeSerializerAllowlist_boundaryNoExportClosed",
+        "withActiveNoExportClosure",
+    ];
+    let rust_no_private_checks = [
+        "assert_no_active_native_private_material",
+        "\"private_signing\"",
+        "\"private_trapdoor\"",
+        "\"raw_pad_seed\"",
+        "\"opening_preimage\"",
+        "\"unmasked_projection\"",
+        "\"transparent_query_opening\"",
+        "!rendered.contains(forbidden)",
+    ];
+    let verifier_test_checks = [
+        "path2_native_verifier_pipeline_is_public_only_and_fail_closed_until_productized",
+        "assert_no_active_native_private_material(&rendered)",
+        "!rendered.contains(\"message_digest\")",
+        "!rendered.contains(\"proof_commitment\")",
+        "!rendered.contains(\"checked_core_proof\")",
+        "!rendered.contains(\"proof_bytes\")",
+    ];
+    let storage_test_checks = [
+        "path2_native_storage_lifecycle_hardening_scope_pins_consensus_storage_surface",
+        "assert_no_active_native_private_material(&rendered)",
+        "target_chain_storage_artifacts",
+        "lifecycle_safety_artifacts",
+        "hardening_complete",
+    ];
+
+    conformance_checks
+        .iter()
+        .all(|marker| conformance_window.contains(marker))
+        && closure_checks
+            .iter()
+            .all(|marker| closure_window.contains(marker))
+        && concrete_checks
+            .iter()
+            .all(|marker| concrete_window.contains(marker))
+        && rust_no_private_checks
+            .iter()
+            .all(|marker| no_private_window.contains(marker))
+        && verifier_test_checks
+            .iter()
+            .all(|marker| verifier_test_window.contains(marker))
+        && storage_test_checks
+            .iter()
+            .all(|marker| storage_test_window.contains(marker))
+}
+
 pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV1 {
     let proof_side_public_boundary_preflight_complete = true;
     let projection_encoders_present = true;
@@ -17812,6 +17958,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     let hash_qrom_deployment_horizon_complete = path2_auxiliary_fq12_qrom_horizon_complete_v1();
     let full_signature_execution_source_boundary_present =
         path2_full_signature_execution_source_boundary_present_v1();
+    let no_export_serializer_boundary_present = path2_no_export_serializer_boundary_present_v1();
     let signer_verifier_pipeline_present = false;
     let constant_time_audit_complete = false;
     let storage_lifecycle_hardening_complete = false;
@@ -17825,6 +17972,9 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     }
     if !full_signature_execution_source_boundary_present {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE);
+    }
+    if !no_export_serializer_boundary_present {
+        internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS);
     }
     if !signer_verifier_pipeline_present {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE);
@@ -17857,6 +18007,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         checked_core_composition_review_complete,
         hash_qrom_deployment_horizon_complete,
         full_signature_execution_source_boundary_present,
+        no_export_serializer_boundary_present,
         signer_verifier_pipeline_present,
         constant_time_audit_complete,
         storage_lifecycle_hardening_complete,
@@ -17893,6 +18044,8 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         Some("reject_active_native_qrom_target_horizon_open")
     } else if !deployment_preflight.full_signature_execution_source_boundary_present {
         Some("reject_active_native_full_signature_execution_source_open")
+    } else if !deployment_preflight.no_export_serializer_boundary_present {
+        Some("reject_active_native_no_export_serializer_boundary_open")
     } else if !deployment_preflight.signer_verifier_pipeline_present {
         Some("reject_active_native_pipeline_not_productized")
     } else if !deployment_preflight.constant_time_audit_complete {
@@ -35697,6 +35850,8 @@ mod tests {
         assert!(preflight.hash_qrom_deployment_horizon_complete);
         assert!(path2_full_signature_execution_source_boundary_present_v1());
         assert!(preflight.full_signature_execution_source_boundary_present);
+        assert!(path2_no_export_serializer_boundary_present_v1());
+        assert!(preflight.no_export_serializer_boundary_present);
         assert!(!preflight.signer_verifier_pipeline_present);
         assert!(!preflight.constant_time_audit_complete);
         assert!(!preflight.storage_lifecycle_hardening_complete);
@@ -37609,6 +37764,7 @@ mod tests {
         );
         let rendered = serde_json::to_string(&scope).unwrap();
         assert!(rendered.contains(PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA));
+        assert_no_active_native_private_material(&rendered);
         assert!(rendered.contains("da_missing_preimage_rejection"));
         assert!(rendered.contains("restore_anchor_not_account_restorable"));
     }
