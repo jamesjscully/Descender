@@ -19034,6 +19034,79 @@ fn path2_native_constant_time_audit_complete_v1() -> bool {
         && ledger_claim_complete
 }
 
+fn path2_native_storage_lifecycle_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let scope_start = source
+        .find("\npub fn path2_native_storage_lifecycle_hardening_scope_v1()")
+        .expect("Path 2 native storage hardening scope source start marker missing");
+    let scope_end = source[scope_start..]
+        .find("\npub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(")
+        .expect("Path 2 native storage hardening scope source end marker missing")
+        + scope_start;
+    let scope_window = &source[scope_start..scope_end];
+
+    let test_start = source
+        .find(
+            "\n    fn path2_native_storage_lifecycle_hardening_scope_pins_consensus_storage_surface()",
+        )
+        .expect("Path 2 native storage hardening scope test start marker missing");
+    let test_end = source[test_start..]
+        .find("\n    fn path2_domain_constants_are_disjoint_and_mode_separated()")
+        .expect("Path 2 native storage hardening scope test end marker missing")
+        + test_start;
+    let test_window = &source[test_start..test_end];
+
+    let scope_checks = [
+        "path2_native_storage_lifecycle_hardening_scope_v1",
+        "PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA",
+        "hardening_complete: false",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE",
+        "canonical_account_state_key_schema",
+        "single_transaction_state_transition",
+        "write_ahead_or_atomic_batch_commit",
+        "consume_once_spent_slot_write",
+        "successor_state_class_enforcement",
+        "projection_preimage_da_bytes_retrieval",
+        "da_missing_preimage_rejection",
+        "trusted_restore_anchor_placement_review",
+        "fork_epoch_scope_revalidation",
+        "atomic_consume_once_replay_harness",
+        "crash_between_state_and_spent_write_harness",
+        "concurrent_spend_serialization_harness",
+        "no claim for reference in-memory stores",
+        "no claim without external storage review digest",
+    ];
+    let test_checks = [
+        "path2_native_storage_lifecycle_hardening_scope_pins_consensus_storage_surface",
+        "PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA",
+        "!scope.hardening_complete",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE",
+        "single_transaction_state_transition",
+        "consume_once_spent_slot_write",
+        "projection_preimage_da_bytes_retrieval",
+        "fork_epoch_scope_revalidation",
+        "atomic_consume_once_replay_harness",
+        "claim.contains(\"in-memory stores\")",
+        "path2_native_storage_lifecycle_hardening_scope_v1_digest",
+        "assert_no_active_native_private_material(&rendered)",
+        "da_missing_preimage_rejection",
+        "restore_anchor_not_account_restorable",
+    ];
+
+    scope_checks
+        .iter()
+        .all(|marker| scope_window.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| test_window.contains(marker))
+}
+
+fn path2_native_storage_lifecycle_hardening_complete_v1() -> bool {
+    let scope = path2_native_storage_lifecycle_hardening_scope_v1();
+    path2_native_storage_lifecycle_source_present_v1() && scope.hardening_complete
+}
+
 pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV1 {
     let projection_encoders_present = path2_native_projection_encoder_source_boundary_present_v1();
     let checked_core_frame_present = path2_native_checked_core_frame_source_boundary_present_v1();
@@ -19065,7 +19138,8 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         && no_export_serializer_boundary_present;
     let signer_verifier_pipeline_present = path2_native_signer_verifier_pipeline_productized_v1();
     let constant_time_audit_complete = path2_native_constant_time_audit_complete_v1();
-    let storage_lifecycle_hardening_complete = false;
+    let storage_lifecycle_hardening_complete =
+        path2_native_storage_lifecycle_hardening_complete_v1();
 
     let mut internal_blockers = Vec::new();
     if !projection_encoders_present {
@@ -37026,6 +37100,8 @@ mod tests {
         assert!(path2_native_constant_time_audit_source_present_v1());
         assert!(!path2_native_constant_time_audit_complete_v1());
         assert!(!preflight.constant_time_audit_complete);
+        assert!(path2_native_storage_lifecycle_source_present_v1());
+        assert!(!path2_native_storage_lifecycle_hardening_complete_v1());
         assert!(!preflight.storage_lifecycle_hardening_complete);
         assert!(!preflight.internal_deployment_ready);
         assert_eq!(
