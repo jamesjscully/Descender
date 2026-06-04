@@ -104,6 +104,8 @@ pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_GLOBAL_DOMAIN_REGISTRY: &str =
     "active native global domain registry is not source-pinned";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION: &str =
     "active native checked-core equation soundness is not composed into verifier acceptance";
+pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_HASH_QROM_REVIEW: &str =
+    "active native hash/QROM review is not source-pinned";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON: &str =
     "active native QROM multi-target horizon is not priced for the requested deployment scale";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE: &str =
@@ -17497,6 +17499,142 @@ pub fn path2_native_hash_qrom_review_v1() -> Path2NativeHashQromReviewV1 {
     }
 }
 
+fn path2_native_hash_qrom_review_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let struct_start = source
+        .find("\npub struct Path2NativeHashQromReviewV1")
+        .expect("Path 2 native hash/QROM review struct start marker missing");
+    let struct_end = source[struct_start..]
+        .find("\npub struct Path2NativeDeploymentPreflightV1")
+        .expect("Path 2 native hash/QROM review struct end marker missing")
+        + struct_start;
+    let struct_window = &source[struct_start..struct_end];
+
+    let review_start = source
+        .find("\npub fn path2_native_hash_qrom_review_v1()")
+        .expect("Path 2 native hash/QROM review source start marker missing");
+    let review_end = source[review_start..]
+        .find("\nfn path2_native_hash_qrom_review_source_present_v1()")
+        .expect("Path 2 native hash/QROM review source end marker missing")
+        + review_start;
+    let review_window = &source[review_start..review_end];
+
+    let test_start = source
+        .find("\n    fn path2_native_hash_qrom_review_tracks_public_transcript_assumptions()")
+        .expect("Path 2 native hash/QROM review test start marker missing");
+    let test_end = source[test_start..]
+        .find(
+            "\n    fn path2_native_deployment_preflight_tracks_internal_productization_blockers()",
+        )
+        .expect("Path 2 native hash/QROM review test end marker missing")
+        + test_start;
+    let test_window = &source[test_start..test_end];
+
+    let struct_checks = [
+        "Path2NativeHashQromReviewV1",
+        "hash_function: &'static str",
+        "digest_bits: u16",
+        "target_security_bits: u16",
+        "deployment_quantum_hash_query_bound_log2",
+        "deployment_classical_hash_query_bound_log2",
+        "qrom_quadratic_loss_bits_at_deployment_bound",
+        "transcript_term_bits_after_qrom_loss",
+        "algebraic_challenge_bytes",
+        "challenge_hardening_bytes",
+        "algebraic_challenge_last_byte_mask",
+        "algebraic_challenge_bits_after_mask",
+        "total_challenge_bits_after_mask",
+        "action_collision_floor_bits",
+        "action_collision_quantum_bits_at_union_bound",
+        "action_collision_classical_bits_at_union_bound",
+        "selected_multi_target_horizon_log2",
+        "negative_control_horizon_log2",
+        "minimum_deployment_margin_bits",
+        "production_registry_entry_count",
+        "consensus_carrier_bytes",
+        "consensus_carrier_body_bytes",
+        "active_native_query_symbols: [&'static str; 14]",
+        "ordinary_hash_assumptions: [&'static str; 9]",
+        "hidden_witness_obligations_not_discharged_by_hash: [&'static str; 5]",
+    ];
+    let review_checks = [
+        "path2_native_hash_qrom_review_v1",
+        "let budget = path2_direct_query_budget_v1()",
+        "schema: PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA",
+        "SHA-256 modeled as domain-separated public random oracle/QROM surface",
+        "digest_bits: (DIGEST_BYTES * 8) as u16",
+        "target_security_bits: budget.target_security_bits",
+        "deployment_quantum_hash_query_bound_log2",
+        "deployment_classical_hash_query_bound_log2",
+        "qrom_quadratic_loss_bits_at_deployment_bound",
+        "transcript_term_bits_after_qrom_loss",
+        "algebraic_challenge_bytes",
+        "challenge_hardening_bytes",
+        "algebraic_challenge_last_byte_mask",
+        "total_challenge_bits_after_mask",
+        "action_collision_floor_bits",
+        "action_collision_quantum_bits_at_union_bound",
+        "action_collision_classical_bits_at_union_bound",
+        "selected_multi_target_horizon_log2",
+        "negative_control_horizon_log2",
+        "minimum_deployment_margin_bits",
+        "production_registered_domain_schema_constants().len()",
+        "PATH2_NATIVE_CONSENSUS_CARRIER_BYTES",
+        "PATH2_NATIVE_CONSENSUS_CARRIER_BODY_BYTES",
+        "q_native_checked_core_frame",
+        "q_native_consensus_carrier",
+        "q_native_preflight_report",
+        "q_native_projection_preimage_da",
+        "registered domain/schema strings separate public random-oracle queries",
+        "checked-core equation soundness",
+    ];
+    let test_checks = [
+        "path2_native_hash_qrom_review_tracks_public_transcript_assumptions",
+        "PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA",
+        "review.digest_bits, 256",
+        "review.target_security_bits, 128",
+        "review.deployment_quantum_hash_query_bound_log2, 16",
+        "review.deployment_classical_hash_query_bound_log2, 33",
+        "review.qrom_quadratic_loss_bits_at_deployment_bound, 32",
+        "review.transcript_term_bits_after_qrom_loss, 182",
+        "ALGEBRAIC_CHALLENGE_BYTES as u16",
+        "CHALLENGE_HARDENING_BYTES as u16",
+        "ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK",
+        "PATH2_FQ12_ACTION_COLLISION_FLOOR_BITS",
+        "PATH2_FQ12_ACTION_COLLISION_QUANTUM_BITS_AT_UNION_BOUND",
+        "PATH2_FQ12_ACTION_COLLISION_CLASSICAL_BITS_AT_UNION_BOUND",
+        "review.selected_multi_target_horizon_log2, 32",
+        "review.negative_control_horizon_log2, 54",
+        "path2_active_native_hash_budget_boundary_source_present_v1()",
+        "path2_auxiliary_fq12_qrom_horizon_complete_v1()",
+        "production_registered_domain_schema_constants().len()",
+        "PATH2_NATIVE_CONSENSUS_CARRIER_BYTES",
+        "PATH2_NATIVE_CONSENSUS_CARRIER_BODY_BYTES",
+        "q_native_public_key_identity",
+        "q_native_authorization_class",
+        "q_native_no_obstruction_flags",
+        "q_native_consensus_carrier",
+        "q_native_projection_preimage_da",
+        "!assumption.contains(\"witness\")",
+        "obligation.contains(\"checked-core\")",
+        "assert_no_active_native_private_material(&rendered)",
+        "rendered.contains(PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA)",
+        "rendered.contains(\"SHA-256\")",
+        "rendered.contains(\"not_discharged_by_hash\")",
+    ];
+
+    struct_checks
+        .iter()
+        .all(|marker| struct_window.contains(marker))
+        && review_checks
+            .iter()
+            .all(|marker| review_window.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| test_window.contains(marker))
+}
+
 fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
     let lean_source = include_str!("../../../Descender/Path2CheckedCoreByteBridge.lean");
     let native_source = include_str!("../../../Descender/Path2NativeAccountDesign.lean");
@@ -18616,6 +18754,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_VERIFIER_PREFLIGHT_REPORT",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_GLOBAL_DOMAIN_REGISTRY",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_HASH_QROM_REVIEW",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS",
@@ -18652,8 +18791,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     let verifier_preflight_report_present =
         path2_native_verifier_preflight_report_source_present_v1();
     let global_domain_registry_present = path2_native_global_domain_registry_source_present_v1();
-    let hash_qrom_review_present =
-        path2_native_hash_qrom_review_v1().schema == PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA;
+    let hash_qrom_review_present = path2_native_hash_qrom_review_source_present_v1();
     let facade_exports_present = path2_native_production_facade_exports_source_present_v1();
 
     let checked_core_composition_review_complete =
@@ -18687,6 +18825,9 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     }
     if !checked_core_composition_review_complete {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION);
+    }
+    if !hash_qrom_review_present {
+        internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HASH_QROM_REVIEW);
     }
     if !hash_qrom_deployment_horizon_complete {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON);
@@ -18778,6 +18919,8 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         Some("reject_active_native_global_domain_registry_source_open")
     } else if !deployment_preflight.checked_core_composition_review_complete {
         Some("reject_active_native_checked_core_composition_open")
+    } else if !deployment_preflight.hash_qrom_review_present {
+        Some("reject_active_native_hash_qrom_review_source_open")
     } else if !deployment_preflight.hash_qrom_deployment_horizon_complete {
         Some("reject_active_native_qrom_target_horizon_open")
     } else if !deployment_preflight.full_signature_execution_source_boundary_present {
@@ -36576,6 +36719,7 @@ mod tests {
         assert!(preflight.verifier_preflight_report_present);
         assert!(path2_native_global_domain_registry_source_present_v1());
         assert!(preflight.global_domain_registry_present);
+        assert!(path2_native_hash_qrom_review_source_present_v1());
         assert!(preflight.hash_qrom_review_present);
         assert!(path2_native_production_facade_exports_source_present_v1());
         assert!(preflight.facade_exports_present);
