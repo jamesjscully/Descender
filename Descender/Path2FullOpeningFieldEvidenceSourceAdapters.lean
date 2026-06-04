@@ -902,6 +902,72 @@ structure ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteSource
                               P.boundaryBreakFor b.context b breakEvent)
 
 /--
+Rust-shaped source for the canonical representative witness.
+
+The Rust constructor receives the concrete role-lift and assembly
+certificates. This source keeps that shape, while the adapter below recovers
+those certificates from the semantic opening using the active role-root,
+assembly-availability, and direct assembly-binding sources.
+-/
+structure ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessByteSource
+    (Parser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (P : Predicates) where
+  digestFrame :
+    ReviewedFq12NativeRepresentativeDigestFrame
+  hasCanonicalRepresentativeWitnessFromCertificates :
+    Boundary ->
+      ReviewedFq12HiddenSourcePayload ->
+        ReviewedFq12HiddenRelationExtractionCertificate ->
+          ReviewedFq12FullNativeOpeningCertificate ->
+            ReviewedFq12NativeRepresentativeAssemblyCertificate ->
+              HiddenRepresentative ->
+                Nat ->
+                  ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessCertificate ->
+                    Prop
+  canonicalRepresentativeWitnessAvailableFromCertificates :
+    forall {b : Boundary} {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening}
+        {h : HiddenRepresentative}
+        {liftCert : ReviewedFq12FullNativeOpeningCertificate}
+        {assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate},
+      P.reviewedFq12PayloadAccepts b payload ->
+        P.reviewedFq12PayloadProjectsFrom b payload ->
+          P.reviewedFq12PayloadHasExtractionCertificate b payload cert ->
+            P.reviewedFq12ExtractionCertificateValid b payload cert ->
+              P.reviewedFq12CertificateLiftsToOpening b payload cert
+                  opening ->
+                P.reviewedFq12PayloadHasRoleLiftCertificate
+                    b payload cert liftCert ->
+                  P.reviewedFq12RoleLiftCertificateValid
+                      b payload cert liftCert ->
+                    liftCert.opening = opening ->
+                      P.reviewedFq12OpeningHasAssemblyCertificate
+                          b payload cert opening assemblyCert ->
+                        P.reviewedFq12AssemblyCertificateValid
+                            b payload cert opening assemblyCert ->
+                          ReviewedFq12AssemblyCertificateBindsOpening
+                              payload cert opening assemblyCert ->
+                            FullNativeOpeningMatchesRepresentative opening h ->
+                              P.fullNativeOpeningAssemblesRepresentative
+                                  b payload cert opening h ->
+                                InFiber P b.context b h ->
+                                  P.localValid b.context h ->
+                                    P.descentConsistent b.context h ->
+                                      (exists frameBytes witness,
+                                        hasCanonicalRepresentativeWitnessFromCertificates
+                                            b payload cert liftCert
+                                            assemblyCert h frameBytes
+                                            witness ∧
+                                          ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteCertificate
+                                            Parser digestFrame b opening h
+                                            frameBytes witness) ∨
+                                      (exists breakEvent,
+                                        P.boundaryBreakFor b.context b
+                                          breakEvent)
+
+/--
 The canonical-representative byte source instantiates the semantic canonical
 representative source consumed by the active P2FS-001 route.
 -/
@@ -3427,6 +3493,79 @@ structure ReviewedFq12AssemblyCompatibilityLocalModelSource
     ReviewedFq12AssemblyAvailabilityLocalSource P
   compatibilitySource :
     ReviewedFq12CompatibilityAvailabilityExtractionRulesSource P
+
+/--
+Convert the Rust-shaped canonical representative witness source into the
+semantic byte source consumed by AP2-N001.
+
+The conversion is the point where the proof recovers the concrete role-lift
+certificate for the semantic opening, obtains the assembly certificate for
+that opening, and proves the assembly certificate binds the same opening before
+calling the Rust-shaped witness source.
+-/
+def canonical_representative_byte_source_of_witness_source_and_model
+    {Parser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {P : Predicates}
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (directAssemblyBinding :
+      ReviewedFq12ConcreteAssemblyFieldBindingOrBreak P)
+    (localModelSource :
+      ReviewedFq12AssemblyCompatibilityLocalModelSource P)
+    (Source :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessByteSource
+        Parser P) :
+    ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteSource
+      Parser P :=
+  let openingWitness :
+      ReviewedFq12OpeningRoleLiftWitnessSource P :=
+    opening_role_lift_witness_of_role_root_bridge_and_lift_functionality
+      roleRootLiftSource.roleRootFields.roleRootBridge
+      roleRootLiftSource.liftOpeningFunctionality
+  { digestFrame := Source.digestFrame
+    hasCanonicalRepresentativeWitness :=
+      fun b payload cert _opening h frameBytes witness =>
+        exists liftCert assemblyCert,
+          Source.hasCanonicalRepresentativeWitnessFromCertificates
+            b payload cert liftCert assemblyCert h frameBytes witness
+    canonicalRepresentativeWitnessAvailable := by
+      intro b payload cert opening h hAccept hProjects hHas hValid hLifts
+        hMatches hAssembles hFiber hLocal hDescent
+      rcases
+          openingWitness hAccept hProjects hHas hValid hLifts with
+        hLift | hLiftBreak
+      · rcases hLift with
+          ⟨liftCert, hHasLift, hLiftValid, hOpeningEq⟩
+        rcases
+            localModelSource.assemblySource.availability
+              hAccept hProjects hHas hValid hLifts with
+          hAssembly | hAssemblyBreak
+        · rcases hAssembly with
+            ⟨assemblyCert, hHasAssembly, hAssemblyValid⟩
+          rcases
+              directAssemblyBinding hAccept hProjects hHas hValid hLifts
+                hHasAssembly hAssemblyValid with
+            hBindsFields | hBindingBreak
+          · let hBinds :
+                ReviewedFq12AssemblyCertificateBindsOpening
+                  payload cert opening assemblyCert :=
+              binding_of_assembly_concrete_field_certificate hBindsFields
+            rcases
+                Source.canonicalRepresentativeWitnessAvailableFromCertificates
+                  hAccept hProjects hHas hValid hLifts hHasLift hLiftValid
+                  hOpeningEq hHasAssembly hAssemblyValid hBinds hMatches
+                  hAssembles hFiber hLocal hDescent with
+              hWitness | hWitnessBreak
+            · rcases hWitness with
+                ⟨frameBytes, witness, hHasWitness, hByte⟩
+              exact Or.inl
+                ⟨frameBytes, witness,
+                  ⟨liftCert, assemblyCert, hHasWitness⟩, hByte⟩
+            · exact Or.inr hWitnessBreak
+          · exact Or.inr hBindingBreak
+        · exact Or.inr hAssemblyBreak
+      · exact Or.inr hLiftBreak }
 
 /--
 Derive the representative canonical-digest source from lower-level selected
