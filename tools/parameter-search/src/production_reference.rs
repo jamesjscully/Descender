@@ -6764,6 +6764,11 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
 fn path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1() -> bool {
     let boundary_source =
         include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
+    if path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+        boundary_source,
+    ) {
+        return false;
+    }
     let theorem_name = "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation";
     let Some(theorem_start) = boundary_source.find(&format!("\ntheorem {theorem_name}")) else {
         return false;
@@ -6778,6 +6783,26 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1() ->
         theorem_source,
         theorem_name,
     )
+}
+
+fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+    boundary_source: &str,
+) -> bool {
+    let selected_source_names = [
+        "selectedRustPayloadProjectionLaw",
+        "selectedRustExtractionCertificateAvailability",
+        "selectedRustRoleRootLiftSource",
+        "selectedRustSourceRouteByteSource",
+        "selectedRustAssemblySource",
+        "selectedRustCompatibilitySource",
+        "selectedRustSharedFrameWitnessSources",
+    ];
+    let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
+    selected_source_names.iter().any(|name| {
+        forbidden_declaration_kinds
+            .iter()
+            .any(|kind| boundary_source.contains(&format!("\n{kind} {name}")))
+    })
 }
 
 fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
@@ -42197,6 +42222,22 @@ theorem {theorem_name}
             path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &concrete_theorem,
                 theorem_name
+            )
+        );
+
+        let stubbed_boundary_source = r#"
+axiom selectedRustPayloadProjectionLaw : payload_projection_law
+constant selectedRustExtractionCertificateAvailability : extraction_certificate_availability
+opaque selectedRustRoleRootLiftSource : role_root_lift_source
+"#;
+        assert!(
+            path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+                stubbed_boundary_source
+            )
+        );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+                "def selectedRustPayloadProjectionLaw := proved_payload_projection_law"
             )
         );
     }
