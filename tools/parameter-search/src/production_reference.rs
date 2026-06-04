@@ -19993,6 +19993,8 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "Path 2 native signer/verifier checked-core evidence was not verified",
         "hash_qrom_deployment_horizon_complete",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON",
+        "full_signature_execution_source_instantiated",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE",
         "signer_verifier_pipeline_present",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
         "constant_time_audit_complete",
@@ -20038,6 +20040,7 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "checked_core_byte_instantiation_evidence_verified",
         "evidence.verifier_public_boundary_accepted",
         "evidence.verifier_production_accepted",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
         "path2_native_signer_verifier_evidence_keeps_productization_gates_separate",
         "no constant-time claim for private signing or keygen",
@@ -20940,6 +20943,11 @@ pub fn path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_
         .hash_qrom_deployment_horizon_complete
     {
         PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON
+    } else if !verdict
+        .deployment_preflight
+        .full_signature_execution_source_instantiated
+    {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE
     } else if !verdict
         .deployment_preflight
         .signer_verifier_pipeline_present
@@ -39770,6 +39778,10 @@ end Path2FullSpendConcrete
         assert_ne!(
             evidence.smallest_remaining_productization_gate,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON
+        );
+        assert_ne!(
+            evidence.smallest_remaining_productization_gate,
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE
         );
         assert_ne!(
             evidence.smallest_remaining_productization_gate,
