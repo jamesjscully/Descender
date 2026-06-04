@@ -4552,6 +4552,80 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_c
     P I.toCanonicalRepresentativeWitnessBytePackagedInputs
 
 /--
+Assemble the fully byte-shaped active source-route package from its six
+concrete source records.
+
+This is the direct AP2-N001 instantiation target: once the selected Rust/model
+proof supplies these six records, the active hidden-source semantics theorem is
+closed without using the aggregate verifier object as an assembly premise.
+-/
+def reviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeByteAndWitnessPackagedSourceRouteInputsOfSources
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (selectedSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P)
+    (directAssemblyBinding :
+      ReviewedFq12ConcreteAssemblyFieldBindingOrBreak P)
+    (localModelSource :
+      ReviewedFq12AssemblyCompatibilityLocalModelSource P)
+    (canonicalRepresentativeByteSource :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteSource
+        CanonicalParser P)
+    (nativeDigestFrameWitnessByteSource :
+      ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource
+        WitnessParser P) :
+    ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeByteAndWitnessPackagedSourceRouteInputs
+      FieldParser RouteParser CanonicalParser WitnessParser P :=
+  { roleRootLiftSource := roleRootLiftSource
+    selectedSource := selectedSource
+    directAssemblyBinding := directAssemblyBinding
+    localModelSource := localModelSource
+    canonicalRepresentativeByteSource := canonicalRepresentativeByteSource
+    nativeDigestFrameWitnessByteSource :=
+      nativeDigestFrameWitnessByteSource }
+
+/--
+P2FS-001 closure from the six selected Rust/model AP2-N001 source records.
+-/
+theorem reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_byte_and_witness_sources
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (selectedSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P)
+    (directAssemblyBinding :
+      ReviewedFq12ConcreteAssemblyFieldBindingOrBreak P)
+    (localModelSource :
+      ReviewedFq12AssemblyCompatibilityLocalModelSource P)
+    (canonicalRepresentativeByteSource :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteSource
+        CanonicalParser P)
+    (nativeDigestFrameWitnessByteSource :
+      ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource
+        WitnessParser P) :
+    ReviewedFq12ExtractionCertificateSoundness P :=
+  reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_byte_and_witness_packaged_source_route_inputs
+    P
+    (reviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeByteAndWitnessPackagedSourceRouteInputsOfSources
+      roleRootLiftSource selectedSource directAssemblyBinding localModelSource
+      canonicalRepresentativeByteSource nativeDigestFrameWitnessByteSource)
+
+/--
 Selected-Rust packaged source-route adapter using the existing concrete
 field/local source records for the local model.
 
