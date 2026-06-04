@@ -6675,6 +6675,214 @@ fn path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1() -> bool
             .all(|marker| test_source.contains(marker))
 }
 
+fn path2_creation_statement_bridge_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+    let statement_start = source
+        .find("\npub fn path2_creation_hidden_source_statement_v1_from_reviewed(")
+        .expect("Path 2 creation statement bridge source start marker missing");
+    let statement_end = source[statement_start..]
+        .find("\npub fn path2_creation_hidden_source_statement_v1_digest(")
+        .expect("Path 2 creation statement bridge source end marker missing")
+        + statement_start;
+    let statement_source = &source[statement_start..statement_end];
+
+    let statement_frame_start = source
+        .find("\npub fn path2_creation_hidden_source_statement_v1_frame(")
+        .expect("Path 2 creation statement frame source start marker missing");
+    let statement_frame_end = source[statement_frame_start..]
+        .find("\nfn path2_pad_observed_bitmap(")
+        .expect("Path 2 creation statement frame source end marker missing")
+        + statement_frame_start;
+    let statement_frame_source = &source[statement_frame_start..statement_frame_end];
+
+    let binding_start = source
+        .find("\npub fn path2_creation_proof_binding_v1(")
+        .expect("Path 2 creation proof binding source start marker missing");
+    let binding_end = source[binding_start..]
+        .find("\npub fn path2_creation_native_role_root_commitment_v1(")
+        .expect("Path 2 creation proof binding source end marker missing")
+        + binding_start;
+    let binding_source = &source[binding_start..binding_end];
+
+    let binding_frame_start = source
+        .find("\npub fn path2_creation_proof_binding_v1_frame(")
+        .expect("Path 2 creation proof binding frame start marker missing");
+    let binding_frame_end = source[binding_frame_start..]
+        .find("\npub fn path2_creation_proof_binding_v1_digest(")
+        .expect("Path 2 creation proof binding frame end marker missing")
+        + binding_frame_start;
+    let binding_frame_source = &source[binding_frame_start..binding_frame_end];
+
+    let non_circular_test_start = source
+        .find("\n    fn path2_creation_statement_must_not_be_signature_dependent()")
+        .expect("Path 2 creation non-circular regression start marker missing");
+    let non_circular_test_end = source[non_circular_test_start..]
+        .find("\n    fn path2_creation_hidden_source_statement_v1_is_canonical_and_non_circular()")
+        .expect("Path 2 creation non-circular regression end marker missing")
+        + non_circular_test_start;
+    let non_circular_test_source = &source[non_circular_test_start..non_circular_test_end];
+
+    let canonical_test_start = source
+        .find("\n    fn path2_creation_hidden_source_statement_v1_is_canonical_and_non_circular()")
+        .expect("Path 2 creation canonical regression start marker missing");
+    let canonical_test_end = source[canonical_test_start..]
+        .find("\n    fn assert_no_selected_projection_material(")
+        .expect("Path 2 creation canonical regression end marker missing")
+        + canonical_test_start;
+    let canonical_test_source = &source[canonical_test_start..canonical_test_end];
+
+    let binding_test_start = source
+        .find("\n    fn path2_creation_proof_binding_digest_rejects_rebinding()")
+        .expect("Path 2 creation proof binding regression start marker missing");
+    let binding_test_end = source[binding_test_start..]
+        .find("\n    fn path2_prevalidated_slot_leaf_v2_binds_creation_proof_binding_digest()")
+        .expect("Path 2 creation proof binding regression end marker missing")
+        + binding_test_start;
+    let binding_test_source = &source[binding_test_start..binding_test_end];
+
+    let statement_checks = [
+        "frame_version: PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_FRAME_VERSION",
+        "profile_version_digest: leaf.profile_version_digest",
+        "account_id: leaf.account_id",
+        "public_key_identity: leaf.public_key_identity",
+        "slot_id: leaf.slot_id",
+        "verifier_version_digest: leaf.verifier_version_digest",
+        "account_state_root_before: leaf.account_state_root_before",
+        "opening_commitment: leaf.opening_commitment",
+        "pad_seed_digest: leaf.pad_seed_digest",
+        "lifecycle_anchor: leaf.lifecycle_anchor",
+        "witness_commitment: reviewed_statement.witness_commitment",
+        "randomizer_commitment: reviewed_statement.randomizer_commitment",
+        "pad_opening_statement_digest: reviewed_statement.pad_opening_statement.digest",
+        "pad_observed_block_count: reviewed_statement\n            .pad_opening_statement\n            .observed_block_count as u64",
+        "pad_observed_bitmap: path2_pad_observed_bitmap(",
+        "active_lane_profile_digest: Sha256::digest(PROFILE.as_bytes()).into()",
+        "aggregation_context_digest: [0_u8; DIGEST_BYTES]",
+        "statement.digest = path2_creation_hidden_source_statement_v1_digest(&statement)",
+    ];
+    let statement_frame_checks = [
+        "PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_DOMAIN.as_bytes()",
+        "b\"frame_version\"",
+        "b\"profile_version_digest\"",
+        "b\"account_id\"",
+        "b\"public_key_identity\"",
+        "b\"slot_id\"",
+        "b\"verifier_version_digest\"",
+        "b\"account_state_root_before\"",
+        "b\"opening_commitment\"",
+        "b\"pad_seed_digest\"",
+        "b\"lifecycle_anchor\"",
+        "b\"witness_commitment\"",
+        "b\"randomizer_commitment\"",
+        "b\"pad_opening_statement_digest\"",
+        "b\"pad_observed_block_count\"",
+        "b\"pad_observed_bitmap\"",
+        "b\"active_lane_profile_digest\"",
+        "b\"aggregation_context_digest\"",
+    ];
+    let binding_checks = [
+        "let native_role_root_commitment = path2_creation_native_role_root_commitment_v1(",
+        "&packed_witness_commitment",
+        "&randomizer_commitment",
+        "&pad_source_commitment",
+        "&leaf.opening_commitment",
+        "&projection_relation_commitment",
+        "&gauge_commitment",
+        "schema: PATH2_CREATION_PROOF_BINDING_SCHEMA",
+        "proof_binding_version: 1",
+        "account_id: leaf.account_id",
+        "public_key_identity: leaf.public_key_identity",
+        "slot_id: leaf.slot_id",
+        "verifier_version_digest: leaf.verifier_version_digest",
+        "account_state_root_before: leaf.account_state_root_before",
+        "lifecycle_anchor: leaf.lifecycle_anchor",
+        "opening_tuple_commitment: leaf.opening_commitment",
+        "native_role_root_commitment,",
+        "creation_statement_digest: leaf.hidden_source_statement_digest",
+        "binding.digest = path2_creation_proof_binding_v1_digest(&binding)",
+    ];
+    let binding_frame_checks = [
+        "b\"proof_binding_version\"",
+        "b\"account_id\"",
+        "b\"public_key_identity\"",
+        "b\"slot_id\"",
+        "b\"verifier_version_digest\"",
+        "b\"account_state_root_before\"",
+        "b\"lifecycle_anchor\"",
+        "b\"packed_witness_commitment\"",
+        "b\"randomizer_commitment\"",
+        "b\"pad_source_commitment\"",
+        "b\"opening_tuple_commitment\"",
+        "b\"projection_relation_commitment\"",
+        "b\"gauge_commitment\"",
+        "b\"native_role_root_commitment\"",
+        "b\"creation_statement_digest\"",
+        "b\"aggregation_context_digest\"",
+    ];
+    let non_circular_test_checks = [
+        "assert_ne!(\n            fixture.statement.digest, leaf.hidden_source_statement_digest",
+        "Path 2 leaf must bind the non-circular creation statement",
+        "path2_creation_hidden_source_statement_v1_from_reviewed(&leaf, &fixture.statement)",
+        "signature_rebound.signature_digest[0] ^= 1",
+        "legacy reviewed Fq12 statement rebinding must not become the Path 2 creation digest",
+        "message_rebound.message_digest[0] ^= 1",
+        "legacy reviewed Fq12 message rebinding must not become the Path 2 creation digest",
+    ];
+    let canonical_test_checks = [
+        "PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_FRAME_VERSION",
+        "PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_DOMAIN.as_bytes()",
+        "window == b\"message_digest\"",
+        "window == b\"signature_digest\"",
+        "signature_rebound.signature_digest[0] ^= 1",
+        "message_rebound.message_digest[0] ^= 1",
+        "pad_rebound.pad_opening_statement.digest[0] ^= 1",
+        "assert_ne!(",
+    ];
+    let binding_test_checks = [
+        "path2_creation_proof_binding_v1(",
+        "path2_creation_proof_binding_v1_digest(&binding)",
+        "PATH2_CREATION_PROOF_BINDING_SCHEMA.as_bytes()",
+        "mutations.push((\"account_id\", account))",
+        "mutations.push((\"public_key_identity\", public_key))",
+        "mutations.push((\"slot_id\", slot))",
+        "mutations.push((\"verifier_version_digest\", verifier))",
+        "mutations.push((\"account_state_root_before\", state_root))",
+        "mutations.push((\"lifecycle_anchor\", lifecycle))",
+        "mutations.push((\"packed_witness_commitment\", witness))",
+        "mutations.push((\"randomizer_commitment\", randomizer))",
+        "mutations.push((\"pad_source_commitment\", pad_source))",
+        "mutations.push((\"opening_tuple_commitment\", opening))",
+        "mutations.push((\"projection_relation_commitment\", projection))",
+        "mutations.push((\"gauge_commitment\", gauge))",
+        "mutations.push((\"native_role_root_commitment\", role_root))",
+        "mutations.push((\"creation_statement_digest\", statement))",
+        "mutations.push((\"aggregation_context_digest\", aggregation))",
+        "Path 2 creation proof binding digest failed to bind {label}",
+    ];
+
+    statement_checks
+        .iter()
+        .all(|marker| statement_source.contains(marker))
+        && statement_frame_checks
+            .iter()
+            .all(|marker| statement_frame_source.contains(marker))
+        && binding_checks
+            .iter()
+            .all(|marker| binding_source.contains(marker))
+        && binding_frame_checks
+            .iter()
+            .all(|marker| binding_frame_source.contains(marker))
+        && non_circular_test_checks
+            .iter()
+            .all(|marker| non_circular_test_source.contains(marker))
+        && canonical_test_checks
+            .iter()
+            .all(|marker| canonical_test_source.contains(marker))
+        && binding_test_checks
+            .iter()
+            .all(|marker| binding_test_source.contains(marker))
+}
+
 fn path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
     let constructor_start = source
@@ -6790,7 +6998,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         hidden_source_payload_binding_source_present
             && selected_hidden_relation_extraction_certificate_present;
     let rust_no_partial_export_negative_controls_present = true;
-    let path2_creation_statement_bridge_present = true;
+    let path2_creation_statement_bridge_present =
+        path2_creation_statement_bridge_source_present_v1();
     let native_boundary_digest_payload_binding_complete =
         hidden_source_payload_binding_source_present;
     let full_native_opening_role_lift_certificate_present =
@@ -38792,6 +39001,7 @@ mod tests {
         assert!(audit.rust_statement_rebinding_negative_controls_present);
         assert!(audit.rust_no_partial_export_negative_controls_present);
         assert!(audit.path2_creation_statement_bridge_present);
+        assert!(path2_creation_statement_bridge_source_present_v1());
         assert!(audit.native_boundary_digest_payload_binding_complete);
         assert!(path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1());
         assert!(audit.selected_hidden_relation_extraction_certificate_present);

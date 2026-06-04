@@ -179,6 +179,12 @@ check requires native-boundary assembly, leaf/bundle equality checks, reviewed
 statement and opening recomputation, carrier and checked-core digest binding,
 payload frame labels, verifier reconstruction, and the native-boundary rebound
 regression.
+The creation-statement bridge flag is now source-inspected by
+`path2_creation_statement_bridge_source_present_v1`, which pins the non-circular
+creation statement, creation-statement frame, creation-proof binding/native
+role-root inputs, and regressions showing message/signature rebinding does not
+become the Path 2 creation digest while pad/proof-binding field mutations remain
+digest-visible.
 The Lean source-route endpoint flags are now source-inspected by
 `lean_path2_reviewed_fq12_source_route_endpoint_surface_present_v1`, which pins
 the base source-route closure theorem, boundary/factored wrappers, selected-Rust

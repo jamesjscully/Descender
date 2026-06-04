@@ -251,6 +251,12 @@ native boundary, bind the prevalidated leaf to the projection bundle, recompute
 the reviewed creation statement and opening commitment, digest the carrier and
 checked-core frame/proof bytes, frame every payload field, and reject rebound
 payloads by verifier reconstruction.
+The creation-statement bridge flag is now source-inspected by
+`path2_creation_statement_bridge_source_present_v1`, covering the non-circular
+creation statement derived from the prevalidated leaf plus reviewed pad/witness
+commitments, the creation-statement frame labels, the creation-proof binding and
+native role-root inputs, and regressions that message/signature rebinding does
+not change the creation digest while pad and proof-binding field mutations do.
 The Lean source-route endpoint flags are now source-inspected by
 `lean_path2_reviewed_fq12_source_route_endpoint_surface_present_v1`, covering
 the source-route local-instantiation theorem, boundary/factored selected-Rust
