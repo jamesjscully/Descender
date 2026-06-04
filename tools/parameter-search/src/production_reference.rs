@@ -7444,7 +7444,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let rust_native_representative_digest_frame_witness_api_present =
         path2_reviewed_fq12_native_representative_digest_frame_witness_api_present_v1();
     let rust_concrete_role_root_field_binding_present =
-        path2_reviewed_fq12_role_root_lift_source_present_v1();
+        path2_reviewed_fq12_concrete_role_root_field_binding_source_present_v1();
     let rust_certificate_lift_opening_functionality_present =
         path2_reviewed_fq12_certificate_lift_opening_functionality_source_present_v1();
     let rust_full_native_opening_canonical_representative_source_present =
@@ -8693,6 +8693,147 @@ fn path2_reviewed_fq12_role_root_lift_source_present_v1() -> bool {
         && full_opening_verify_source
             .contains("path2_reviewed_fq12_full_native_opening_certificate_v1_digest(cert)?")
         && full_opening_verify_source.contains("!= cert.role_lift_certificate_digest")
+}
+
+fn path2_reviewed_fq12_concrete_role_root_field_binding_source_present_v1() -> bool {
+    let rust_source = include_str!("production_reference.rs");
+    let lean_concrete_role_root = include_str!("../../../Descender/Path2RoleRootConcrete.lean");
+    let lean_source_adapters =
+        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
+
+    let full_opening_source_start = rust_source
+        .find("\npub fn path2_reviewed_fq12_full_native_opening_certificate_v1(")
+        .expect("Path 2 reviewed Fq12 full-native-opening source start marker missing");
+    let full_opening_source_end = rust_source[full_opening_source_start..]
+        .find("\npub fn path2_reviewed_fq12_full_native_opening_digest_v1(")
+        .expect("Path 2 reviewed Fq12 full-native-opening digest start marker missing")
+        + full_opening_source_start;
+    let full_opening_source = &rust_source[full_opening_source_start..full_opening_source_end];
+
+    let evidence_source_start = rust_source
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_evidence_v1(")
+        .expect("Path 2 reviewed Fq12 field evidence source start marker missing");
+    let evidence_source_end = rust_source[evidence_source_start..]
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_evidence_v1_frame(")
+        .expect("Path 2 reviewed Fq12 field evidence frame start marker missing")
+        + evidence_source_start;
+    let evidence_source = &rust_source[evidence_source_start..evidence_source_end];
+
+    let assembly_binding_start = rust_source
+        .find("\npub fn path2_reviewed_fq12_assembly_binds_full_opening_fields_v1(")
+        .expect("Path 2 reviewed Fq12 assembly field-binding source start marker missing");
+    let assembly_binding_end = rust_source[assembly_binding_start..]
+        .find("\npub fn path2_reviewed_fq12_compatibility_binds_same_representative_fields_v1(")
+        .expect("Path 2 reviewed Fq12 assembly field-binding source end marker missing")
+        + assembly_binding_start;
+    let assembly_binding_source = &rust_source[assembly_binding_start..assembly_binding_end];
+
+    let test_start = rust_source
+        .find("\n    fn path2_reviewed_fq12_full_native_opening_certificate_binds_all_roles()")
+        .expect("Path 2 reviewed Fq12 role-root field-binding regression start marker missing");
+    let test_end = rust_source[test_start..]
+        .find(
+            "\n    fn path2_reviewed_fq12_full_native_opening_certificate_rejects_role_root_rebinding()",
+        )
+        .expect("Path 2 reviewed Fq12 role-root field-binding regression end marker missing")
+        + test_start;
+    let test_source = &rust_source[test_start..test_end];
+
+    let lean_concrete_markers = [
+        "ReviewedFq12CreationPayloadNativeRoleRootFieldEqualityCertificate",
+        "ReviewedFq12CreationPayloadNativeRoleRootFieldBinding",
+        "reviewed_fq12_creation_payload_pins_native_role_root_of_field_binding",
+        "reviewed_fq12_opening_native_role_root_eq_of_binds",
+        "FullNativeOpeningNonRootRoleFieldEqualityCertificate",
+        "ReviewedFq12NativeRoleRootNonRootFieldBinding",
+        "reviewed_fq12_native_role_root_pins_full_opening_roles_of_field_binding",
+        "ReviewedFq12ConcreteRoleRootFieldBindingCertificate",
+        "roleRootBridge",
+        "creationPayloadNativeRoleRootBinding",
+        "nativeRoleRootNonRootFieldBinding",
+        "reviewed_fq12_nonaggregate_role_root_binding_from_concrete_fields",
+    ];
+    let lean_adapter_markers = [
+        "roleRootFields :\n    ReviewedFq12ConcreteRoleRootFieldBindingCertificate P",
+        "reviewed_fq12_nonaggregate_role_root_binding_from_concrete_fields\n        P I.roleRootFields",
+        "ReviewedFq12RoleRootFunctionalLiftSource",
+        "roleRootLiftSource.roleRootFields.roleRootBridge",
+    ];
+    let role_root_bridge_checks = [
+        "let expected_role_root = path2_creation_native_role_root_commitment_v1(",
+        "if creation_binding.native_role_root_commitment != expected_role_root",
+        "native_role_root_commitment: creation_binding.native_role_root_commitment",
+        "cert.role_lift_certificate_digest =",
+        "path2_reviewed_fq12_full_native_opening_certificate_v1_digest(&cert)?",
+    ];
+    let concrete_field_checks = [
+        "let expected_native_role_root_commitment = path2_creation_native_role_root_commitment_v1(",
+        "creation_binding.native_role_root_commitment != expected_native_role_root_commitment",
+        "full_opening_cert.native_role_root_commitment != expected_native_role_root_commitment",
+        "assembly_cert.native_role_root_commitment != expected_native_role_root_commitment",
+        "full_opening_cert.local_section_digest != assembly_cert.local_section_digest",
+        "full_opening_cert.packed_residues_digest != creation_binding.packed_witness_commitment",
+        "full_opening_cert.packed_residues_digest != assembly_cert.packed_residues_digest",
+        "full_opening_cert.randomizer_digest != creation_binding.randomizer_commitment",
+        "full_opening_cert.randomizer_digest != assembly_cert.randomizer_digest",
+        "full_opening_cert.selected_account_projection_digest",
+        "!= extraction_cert.account_projection_digest",
+        "!= assembly_cert.selected_account_projection_digest",
+        "full_opening_cert.pad_source_digest != creation_binding.pad_source_commitment",
+        "full_opening_cert.pad_source_digest != assembly_cert.pad_source_digest",
+        "full_opening_cert.opening_tuple_digest != creation_binding.opening_tuple_commitment",
+        "full_opening_cert.opening_tuple_digest != assembly_cert.opening_tuple_digest",
+        "full_opening_cert.projection_relation_digest",
+        "!= creation_binding.projection_relation_commitment",
+        "full_opening_cert.projection_relation_digest != assembly_cert.projection_relation_digest",
+        "full_opening_cert.lifecycle_slot_digest != assembly_cert.lifecycle_slot_digest",
+        "full_opening_cert.trace_witness_digest != assembly_cert.trace_witness_digest",
+        "full_opening_cert.gauge_digest != creation_binding.gauge_commitment",
+        "full_opening_cert.gauge_digest != assembly_cert.gauge_digest",
+        "full_opening_cert.full_opening_digest != assembly_cert.full_opening_digest",
+    ];
+    let assembly_binding_checks = [
+        "assembly_cert.native_role_root_commitment\n            == full_opening_cert.native_role_root_commitment",
+        "assembly_cert.full_opening_digest == full_opening_cert.full_opening_digest",
+        "assembly_cert.local_section_digest == full_opening_cert.local_section_digest",
+        "assembly_cert.packed_residues_digest == full_opening_cert.packed_residues_digest",
+        "assembly_cert.randomizer_digest == full_opening_cert.randomizer_digest",
+        "assembly_cert.selected_account_projection_digest\n            == full_opening_cert.selected_account_projection_digest",
+        "assembly_cert.pad_source_digest == full_opening_cert.pad_source_digest",
+        "assembly_cert.opening_tuple_digest == full_opening_cert.opening_tuple_digest",
+        "assembly_cert.projection_relation_digest == full_opening_cert.projection_relation_digest",
+        "assembly_cert.lifecycle_slot_digest == full_opening_cert.lifecycle_slot_digest",
+        "assembly_cert.trace_witness_digest == full_opening_cert.trace_witness_digest",
+        "assembly_cert.gauge_digest == full_opening_cert.gauge_digest",
+    ];
+    let negative_control_checks = [
+        "bad_role_root_field_evidence.expected_native_role_root_commitment[0] ^= 1",
+        "\"Path 2 full opening field evidence role-root mismatch\"",
+        "bad_assembly_role_root.native_role_root_commitment[0] ^= 1",
+        "bad_role_root_compatibility_cert",
+        "bad_assembly_opening_field.local_section_digest[0] ^= 1",
+        "assert!(!path2_reviewed_fq12_assembly_binds_full_opening_fields_v1(",
+        "\"Path 2 full opening field evidence opening field mismatch\"",
+    ];
+
+    lean_concrete_markers
+        .iter()
+        .all(|marker| lean_concrete_role_root.contains(marker))
+        && lean_adapter_markers
+            .iter()
+            .all(|marker| lean_source_adapters.contains(marker))
+        && role_root_bridge_checks
+            .iter()
+            .all(|marker| full_opening_source.contains(marker))
+        && concrete_field_checks
+            .iter()
+            .all(|marker| evidence_source.contains(marker))
+        && assembly_binding_checks
+            .iter()
+            .all(|marker| assembly_binding_source.contains(marker))
+        && negative_control_checks
+            .iter()
+            .all(|marker| test_source.contains(marker))
 }
 
 fn path2_reviewed_fq12_certificate_lift_opening_functionality_source_present_v1() -> bool {
@@ -40639,6 +40780,7 @@ mod tests {
         );
         assert!(audit.selected_rust_canonical_byte_and_witness_package_surfaces_present);
         assert!(audit.rust_concrete_role_root_field_binding_present);
+        assert!(path2_reviewed_fq12_concrete_role_root_field_binding_source_present_v1());
         assert!(audit.rust_certificate_lift_opening_functionality_present);
         assert!(path2_reviewed_fq12_certificate_lift_opening_functionality_source_present_v1());
         assert!(path2_reviewed_fq12_role_root_lift_source_present_v1());
