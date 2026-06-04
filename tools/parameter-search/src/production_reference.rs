@@ -2197,6 +2197,13 @@ pub fn path2_native_checked_core_accept_v1(
     Ok(proof)
 }
 
+fn path2_native_checked_core_rejection_contains_v1(
+    result: Result<ProductionReviewedFq12AccountCarriedProof, String>,
+    marker: &str,
+) -> bool {
+    result.is_err_and(|err| err.contains(marker))
+}
+
 pub fn path2_native_checked_core_byte_instantiation_evidence_v1(
     bundle: &Path2NativeProjectionBundleV1,
     checked_core_proof_bytes: &[u8],
@@ -2229,48 +2236,52 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_v1(
         true
     } else {
         let short_proof = &checked_core_proof_bytes[..PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES - 1];
-        path2_native_checked_core_accept_v1(
-            &checked_core_frame,
-            &bundle.spend.checked_core_verifier_handle_digest,
-            short_proof,
+        path2_native_checked_core_rejection_contains_v1(
+            path2_native_checked_core_accept_v1(
+                &checked_core_frame,
+                &bundle.spend.checked_core_verifier_handle_digest,
+                short_proof,
+            ),
+            "Path 2 native checked-core proof has",
         )
-        .unwrap_err()
-        .contains("Path 2 native checked-core proof has")
     };
 
     let mut noncanonical_proof = checked_core_proof_bytes.to_vec();
     if let Some(last) = noncanonical_proof.last_mut() {
         *last |= 0xc0;
     }
-    let noncanonical_proof_rejected = path2_native_checked_core_accept_v1(
-        &checked_core_frame,
-        &bundle.spend.checked_core_verifier_handle_digest,
-        &noncanonical_proof,
-    )
-    .unwrap_err()
-    .contains("not canonical");
+    let noncanonical_proof_rejected = path2_native_checked_core_rejection_contains_v1(
+        path2_native_checked_core_accept_v1(
+            &checked_core_frame,
+            &bundle.spend.checked_core_verifier_handle_digest,
+            &noncanonical_proof,
+        ),
+        "not canonical",
+    );
 
     let mut commitment_mismatch_proof = checked_core_proof_bytes.to_vec();
     if let Some(first) = commitment_mismatch_proof.first_mut() {
         *first ^= 1;
     }
-    let commitment_mismatch_rejected = path2_native_checked_core_accept_v1(
-        &checked_core_frame,
-        &bundle.spend.checked_core_verifier_handle_digest,
-        &commitment_mismatch_proof,
-    )
-    .unwrap_err()
-    .contains("proof commitment mismatch");
+    let commitment_mismatch_rejected = path2_native_checked_core_rejection_contains_v1(
+        path2_native_checked_core_accept_v1(
+            &checked_core_frame,
+            &bundle.spend.checked_core_verifier_handle_digest,
+            &commitment_mismatch_proof,
+        ),
+        "proof commitment mismatch",
+    );
 
     let mut verifier_handle_mismatch = bundle.spend.checked_core_verifier_handle_digest;
     verifier_handle_mismatch[0] ^= 1;
-    let verifier_handle_mismatch_rejected = path2_native_checked_core_accept_v1(
-        &checked_core_frame,
-        &verifier_handle_mismatch,
-        checked_core_proof_bytes,
-    )
-    .unwrap_err()
-    .contains("sigma equation mismatch");
+    let verifier_handle_mismatch_rejected = path2_native_checked_core_rejection_contains_v1(
+        path2_native_checked_core_accept_v1(
+            &checked_core_frame,
+            &verifier_handle_mismatch,
+            checked_core_proof_bytes,
+        ),
+        "sigma equation mismatch",
+    );
 
     let proof_length_eq = checked_core_proof_bytes.len() == PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES;
     let proof_canonical = decoded_proof == accepted_proof;
@@ -18463,6 +18474,8 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "decoded_proof_commitment_eq",
         "hash_and_syndrome_eq",
         "verifier_handle_mismatch_rejected",
+        "path2_native_checked_core_rejection_contains_v1",
+        "result.is_err_and",
         "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
     ];
     let test_checks = [
@@ -19558,8 +19571,10 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
     let required_exports = [
         "Path2NativeConsensusCarrierV1",
         "Path2NativeConsensusCarrierPreflightReportV1",
+        "Path2NativeCheckedCoreByteInstantiationEvidenceV1",
         "Path2NativeDeploymentPreflightV1",
         "Path2NativeVerifierPipelineVerdictV1",
+        "PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA",
         "path2_native_consensus_carrier_v1_from_assembly",
         "validate_path2_native_consensus_carrier_v1",
         "path2_native_consensus_carrier_v1_bytes",
@@ -19571,6 +19586,8 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "path2_native_deployment_preflight_v1_digest",
         "verify_path2_native_deployment_pipeline_v1",
         "path2_native_verifier_pipeline_verdict_v1_digest",
+        "path2_native_checked_core_byte_instantiation_evidence_v1",
+        "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
         "public_native_account_view_v1",
         "public_native_account_view_v1_json",
         "public_native_spend_view_v1",
