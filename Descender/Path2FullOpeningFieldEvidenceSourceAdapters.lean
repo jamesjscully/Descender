@@ -4898,6 +4898,38 @@ structure ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs
       CanonicalParser WitnessParser P
 
 /--
+Assemble the selected implementation-oriented P2FS-001 package from the five
+source records that still need concrete Rust/model instantiation.
+-/
+def reviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputsOfSources
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (selectedSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P)
+    (assemblySource :
+      ReviewedFq12FieldConcreteAssemblyLocalSource P)
+    (compatibilitySource :
+      ReviewedFq12FieldConcreteCompatibilitySource P)
+    (witnessSources :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs
+      FieldParser RouteParser CanonicalParser WitnessParser P :=
+  { roleRootLiftSource := roleRootLiftSource
+    selectedSource := selectedSource
+    assemblySource := assemblySource
+    compatibilitySource := compatibilitySource
+    witnessSources := witnessSources }
+
+/--
 P2FS-001 closure from the concrete field/local sources and shared-frame witness
 sources used by the selected Rust implementation.
 -/
@@ -4918,6 +4950,37 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_share
     (assembly_compatibility_local_model_source_of_field_sources
       I.assemblySource I.compatibilitySource)
     I.witnessSources
+
+/--
+P2FS-001 closure from the five selected Rust/model source records that make up
+the field-local shared-frame implementation target.
+-/
+theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (selectedSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P)
+    (assemblySource :
+      ReviewedFq12FieldConcreteAssemblyLocalSource P)
+    (compatibilitySource :
+      ReviewedFq12FieldConcreteCompatibilitySource P)
+    (witnessSources :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12ExtractionCertificateSoundness P :=
+  reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_inputs
+    P
+    (reviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputsOfSources
+      roleRootLiftSource selectedSource assemblySource compatibilitySource
+      witnessSources)
 
 /--
 Selected-Rust packaged source-route adapter using the existing concrete
