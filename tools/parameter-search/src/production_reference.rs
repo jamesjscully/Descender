@@ -7348,11 +7348,20 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "selectedRustSharedFrameWitnessSources",
     ];
     let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
-    selected_source_names.iter().any(|name| {
+    let forbidden_declaration_stub = selected_source_names.iter().any(|name| {
         forbidden_declaration_kinds
             .iter()
             .any(|kind| boundary_source.contains(&format!("\n{kind} {name}")))
-    })
+    });
+    let forbidden_variable_stub = boundary_source
+        .match_indices("\nvariable")
+        .map(|(index, _)| &boundary_source[index..boundary_source.len().min(index + 512)])
+        .any(|variable_window| {
+            selected_source_names
+                .iter()
+                .any(|name| variable_window.contains(name))
+        });
+    forbidden_declaration_stub || forbidden_variable_stub
 }
 
 fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
@@ -43964,6 +43973,16 @@ opaque selectedRustRoleRootLiftSource : role_root_lift_source
         assert!(
             path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
                 stubbed_boundary_source
+            )
+        );
+        let variable_stubbed_boundary_source = r#"
+variable
+  (selectedRustPayloadProjectionLaw : payload_projection_law)
+  (selectedRustSourceRouteByteSource : selected_source)
+"#;
+        assert!(
+            path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+                variable_stubbed_boundary_source
             )
         );
         assert!(
