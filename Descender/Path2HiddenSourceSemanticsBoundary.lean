@@ -289,5 +289,28 @@ theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_mo
     I.roleRootLiftSource I.selectedSource I.assemblySource
     I.compatibilitySource I.witnessSources
 
+/--
+The accepted-spend boundary field closes from the same single concrete model
+input record.
+-/
+theorem with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs
+    (B : NativeAcceptedSpendSoundnessBoundary)
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (I :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    (NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure
+      B P).hiddenSourceProofSemanticsClosed :=
+  with_reviewed_fq12_hidden_source_closure_closed
+    B
+    (reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+      P I)
+
 end Path2HiddenSourceSemanticsBoundary
 end Descender
