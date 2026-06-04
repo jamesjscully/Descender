@@ -6112,6 +6112,7 @@ pub struct Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     pub lean_selected_rust_field_local_digest_frame_witness_byte_component_endpoint_present: bool,
     pub active_field_local_digest_frame_witness_byte_component_surfaces_present: bool,
     pub lean_hidden_source_boundary_adapter_present: bool,
+    pub lean_active_five_source_boundary_route_present: bool,
     pub selected_rust_canonical_byte_and_witness_package_surfaces_present: bool,
     pub rust_concrete_role_root_field_binding_present: bool,
     pub rust_certificate_lift_opening_functionality_present: bool,
@@ -6711,6 +6712,34 @@ fn lean_path2_hidden_source_boundary_adapter_present_v1() -> bool {
     .iter()
     .all(|marker| boundary_source.contains(marker))
         && root_source.contains("import Descender.Path2HiddenSourceSemanticsBoundary")
+}
+
+fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
+    let boundary_source =
+        include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
+    let route_start = boundary_source
+        .find("\ntheorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources")
+        .expect("Lean Path 2 active five-source boundary route theorem start marker missing");
+    let route_end = boundary_source[route_start..]
+        .find("\nend Path2HiddenSourceSemanticsBoundary")
+        .expect("Lean Path 2 active five-source boundary route theorem end marker missing")
+        + route_start;
+    let route_source = &boundary_source[route_start..route_end];
+
+    [
+        "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources",
+        "ReviewedFq12RoleRootFunctionalLiftSource",
+        "SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource",
+        "ReviewedFq12FieldConcreteAssemblyLocalSource",
+        "ReviewedFq12FieldConcreteCompatibilitySource",
+        "ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources",
+        "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_digest_frame_witness_byte_component_inputs",
+        "reviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputsOfSources",
+        "roleRootLiftSource selectedSource assemblySource compatibilitySource",
+        "witnessSources",
+    ]
+    .iter()
+    .all(|marker| route_source.contains(marker))
 }
 
 fn path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1() -> bool {
@@ -7775,6 +7804,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         lean_selected_rust_field_local_digest_frame_witness_byte_component_endpoint_present_v1();
     let lean_hidden_source_boundary_adapter_present =
         lean_path2_hidden_source_boundary_adapter_present_v1();
+    let lean_active_five_source_boundary_route_present =
+        lean_path2_active_five_source_boundary_route_present_v1();
     let rust_native_representative_digest_frame_witness_api_present =
         path2_reviewed_fq12_native_representative_digest_frame_witness_api_present_v1();
     let rust_concrete_role_root_field_binding_present =
@@ -7880,6 +7911,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         && rust_extraction_certificate_availability_present
         && selected_hidden_relation_extraction_certificate_present
         && lean_hidden_source_boundary_adapter_present
+        && lean_active_five_source_boundary_route_present
         && active_field_local_digest_frame_witness_byte_component_surfaces_present
         && hidden_relation_verifier_implemented
         && extractor_theorem_instantiated;
@@ -7921,6 +7953,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         lean_selected_rust_field_local_digest_frame_witness_byte_component_endpoint_present,
         active_field_local_digest_frame_witness_byte_component_surfaces_present,
         lean_hidden_source_boundary_adapter_present,
+        lean_active_five_source_boundary_route_present,
         selected_rust_canonical_byte_and_witness_package_surfaces_present,
         rust_concrete_role_root_field_binding_present,
         rust_certificate_lift_opening_functionality_present,
@@ -28927,6 +28960,11 @@ fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit_frame(
     );
     append_u64(
         &mut frame,
+        b"lean_active_five_source_boundary_route_present",
+        u64::from(audit.lean_active_five_source_boundary_route_present),
+    );
+    append_u64(
+        &mut frame,
         b"selected_rust_canonical_byte_and_witness_package_surfaces_present",
         u64::from(audit.selected_rust_canonical_byte_and_witness_package_surfaces_present),
     );
@@ -41541,6 +41579,8 @@ mod tests {
         assert!(audit.active_field_local_digest_frame_witness_byte_component_surfaces_present);
         assert!(audit.lean_hidden_source_boundary_adapter_present);
         assert!(lean_path2_hidden_source_boundary_adapter_present_v1());
+        assert!(audit.lean_active_five_source_boundary_route_present);
+        assert!(lean_path2_active_five_source_boundary_route_present_v1());
         assert!(audit.selected_rust_canonical_byte_and_witness_package_surfaces_present);
         assert!(audit.rust_concrete_role_root_field_binding_present);
         assert!(path2_reviewed_fq12_concrete_role_root_field_binding_source_present_v1());
@@ -41927,6 +41967,21 @@ mod tests {
         assert_eq!(
             validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
                 &missing_hidden_source_boundary_adapter
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
+        );
+
+        let mut missing_active_five_source_boundary_route = audit.clone();
+        missing_active_five_source_boundary_route.lean_active_five_source_boundary_route_present =
+            false;
+        missing_active_five_source_boundary_route.digest =
+            path2_reviewed_fq12_hidden_source_semantics_bridge_audit_digest(
+                &missing_active_five_source_boundary_route,
+            );
+        assert_eq!(
+            validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
+                &missing_active_five_source_boundary_route
             )
             .unwrap_err(),
             "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
