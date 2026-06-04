@@ -18321,6 +18321,83 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
             .all(|marker| test_source.contains(marker))
 }
 
+fn path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
+    lean_source: &str,
+) -> bool {
+    let selected_source_facts = [
+        "selectedRustCheckedCoreAcceptorAccepts",
+        "selectedRustCheckedCoreParserMatchesNative",
+        "selectedRustCheckedCoreProofLengthEq",
+        "selectedRustCheckedCoreProofCanonical",
+        "selectedRustCheckedCoreDecodedProofCommitment",
+        "selectedRustCheckedCoreParsedResponseSyndrome",
+        "selectedRustCheckedCoreFrameBytes",
+        "selectedRustCheckedCoreVerifierHandleEq",
+        "selectedRustCheckedCoreParserEquality",
+        "selectedRustCheckedCoreHashAndSyndrome",
+    ];
+    let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
+    let forbidden_declaration_stub = selected_source_facts.iter().any(|fact| {
+        forbidden_declaration_kinds
+            .iter()
+            .any(|kind| lean_source.contains(&format!("\n{kind} {fact}")))
+    });
+    let forbidden_variable_stub = lean_source
+        .match_indices("\nvariable")
+        .map(|(index, _)| &lean_source[index..lean_source.len().min(index + 512)])
+        .any(|variable_window| {
+            selected_source_facts
+                .iter()
+                .any(|fact| variable_window.contains(fact))
+        });
+    forbidden_declaration_stub || forbidden_variable_stub
+}
+
+fn path2_native_checked_core_selected_rust_instantiation_present_v1() -> bool {
+    let lean_source = include_str!("../../../Descender/Path2CheckedCoreByteBridge.lean");
+    if path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(lean_source) {
+        return false;
+    }
+
+    let Some(instantiation_start) =
+        lean_source.find("\ntheorem selectedRustCheckedCoreByteSource_instantiation_v1")
+    else {
+        return false;
+    };
+    let instantiation_end = lean_source[instantiation_start..]
+        .find("\nend Path2CheckedCoreByteBridge")
+        .map(|offset| instantiation_start + offset)
+        .unwrap_or(lean_source.len());
+    let instantiation_source = &lean_source[instantiation_start..instantiation_end];
+
+    let instantiation_checks = [
+        "selectedRustCheckedCoreByteSource_instantiation_v1",
+        "selectedRustCheckedCoreByteSource_valid_or_named_break",
+        "SelectedRustCheckedCoreByteSource",
+        "Path2NativeCheckedCoreAcceptV1Bridge",
+        "Path2NativeCheckedCoreAcceptV1Soundness",
+        "rustAcceptorAccepts := selectedRustCheckedCoreAcceptorAccepts",
+        "parserMatchesNative := selectedRustCheckedCoreParserMatchesNative",
+        "proof_length_eq := selectedRustCheckedCoreProofLengthEq",
+        "proof_canonical := selectedRustCheckedCoreProofCanonical",
+        "decoded_proof_commitment := selectedRustCheckedCoreDecodedProofCommitment",
+        "parsed_response_syndrome := selectedRustCheckedCoreParsedResponseSyndrome",
+        "frame_bytes := selectedRustCheckedCoreFrameBytes",
+        "verifier_handle_eq := selectedRustCheckedCoreVerifierHandleEq",
+        "parser_equality := selectedRustCheckedCoreParserEquality",
+        "hash_and_syndrome := selectedRustCheckedCoreHashAndSyndrome",
+    ];
+
+    instantiation_checks
+        .iter()
+        .all(|marker| instantiation_source.contains(marker))
+}
+
+fn path2_native_checked_core_composition_complete_v1() -> bool {
+    path2_native_checked_core_byte_bridge_source_present_v1()
+        && path2_native_checked_core_selected_rust_instantiation_present_v1()
+}
+
 fn path2_active_native_hash_budget_boundary_source_present_v1() -> bool {
     let budget_source = include_str!("../../../Descender/Path2HashBudget.lean");
     let domain_source = include_str!("../../../Descender/Path2HashDomainAndMultiTarget.lean");
@@ -19663,7 +19740,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     let facade_exports_present = path2_native_production_facade_exports_source_present_v1();
 
     let checked_core_composition_review_complete =
-        path2_native_checked_core_byte_bridge_source_present_v1();
+        path2_native_checked_core_composition_complete_v1();
     let hash_qrom_deployment_horizon_complete = path2_auxiliary_fq12_qrom_horizon_complete_v1();
     let full_signature_execution_source_boundary_present =
         path2_full_signature_execution_source_boundary_present_v1();
@@ -20299,6 +20376,11 @@ pub fn path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_
         &output.checked_core_proof_bytes,
     );
     let smallest_remaining_productization_gate = if !verdict
+        .deployment_preflight
+        .checked_core_composition_review_complete
+    {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION
+    } else if !verdict
         .deployment_preflight
         .hash_qrom_deployment_horizon_complete
     {
@@ -37586,7 +37668,7 @@ mod tests {
     fn path2_native_deployment_preflight_tracks_internal_productization_blockers() {
         let preflight = path2_native_deployment_preflight_v1();
         assert_eq!(preflight.schema, PATH2_NATIVE_DEPLOYMENT_PREFLIGHT_SCHEMA);
-        assert!(preflight.proof_side_public_boundary_preflight_complete);
+        assert!(!preflight.proof_side_public_boundary_preflight_complete);
         assert_eq!(
             preflight.proof_side_public_boundary_preflight_complete,
             preflight.projection_encoders_present
@@ -37631,7 +37713,19 @@ mod tests {
         assert_eq!(preflight.signer_private_state_bytes_max, 416);
         assert_eq!(preflight.spend_signature_impact_bytes_max, 32);
         assert!(path2_native_checked_core_byte_bridge_source_present_v1());
-        assert!(preflight.checked_core_composition_review_complete);
+        assert!(
+            path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
+                "\nvariable\n  (selectedRustCheckedCoreAcceptorAccepts : acceptor_fact)\n  (selectedRustCheckedCoreHashAndSyndrome : hash_fact)\n"
+            )
+        );
+        assert!(
+            !path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
+                "\ndef selectedRustCheckedCoreAcceptorAccepts := proved_acceptor_fact\n"
+            )
+        );
+        assert!(!path2_native_checked_core_selected_rust_instantiation_present_v1());
+        assert!(!path2_native_checked_core_composition_complete_v1());
+        assert!(!preflight.checked_core_composition_review_complete);
         assert!(preflight.hash_qrom_deployment_horizon_complete);
         assert!(path2_full_signature_execution_source_boundary_present_v1());
         assert!(preflight.full_signature_execution_source_boundary_present);
@@ -37650,6 +37744,7 @@ mod tests {
         assert_eq!(
             preflight.internal_blockers,
             vec![
+                PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
@@ -37688,7 +37783,7 @@ mod tests {
         assert!(!verdict.production_accepted);
         assert_eq!(
             verdict.rejection_code,
-            Some("reject_active_native_pipeline_not_productized")
+            Some("reject_active_native_checked_core_composition_open")
         );
         assert_eq!(verdict.consensus_carrier_digest, Some(carrier_digest));
         assert_eq!(
@@ -38585,15 +38680,16 @@ mod tests {
         assert!(!evidence.verifier_production_accepted);
         assert_eq!(
             evidence.verifier_rejection_code,
-            Some("reject_active_native_pipeline_not_productized")
+            Some("reject_active_native_checked_core_composition_open")
         );
         assert_eq!(
             evidence.smallest_remaining_productization_gate,
-            PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION
         );
         assert_eq!(
             evidence.deployment_blockers,
             vec![
+                PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
@@ -38632,9 +38728,13 @@ mod tests {
         assert!(!evidence.verifier_production_accepted);
         assert_eq!(
             evidence.verifier_rejection_code,
-            Some("reject_active_native_pipeline_not_productized")
+            Some("reject_active_native_checked_core_composition_open")
         );
         assert_eq!(
+            evidence.smallest_remaining_productization_gate,
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION
+        );
+        assert_ne!(
             evidence.smallest_remaining_productization_gate,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE
         );
@@ -38677,6 +38777,7 @@ mod tests {
         );
         let rendered = serde_json::to_string(&evidence).unwrap();
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON));
+        assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE));
