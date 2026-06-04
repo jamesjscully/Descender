@@ -94,6 +94,8 @@ pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION: &str =
     "active native checked-core equation soundness is not composed into verifier acceptance";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON: &str =
     "active native QROM multi-target horizon is not priced for the requested deployment scale";
+pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE: &str =
+    "active native full-signature execution source is not bound to accepted-spend soundness";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME: &str =
     "active native constant-time signer, sampler, keygen, and verifier audit remains open";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE: &str =
@@ -2996,6 +2998,7 @@ pub struct Path2NativeDeploymentPreflightV1 {
     pub spend_signature_impact_bytes_max: u16,
     pub checked_core_composition_review_complete: bool,
     pub hash_qrom_deployment_horizon_complete: bool,
+    pub full_signature_execution_source_boundary_present: bool,
     pub signer_verifier_pipeline_present: bool,
     pub constant_time_audit_complete: bool,
     pub storage_lifecycle_hardening_complete: bool,
@@ -17709,6 +17712,87 @@ pub fn path2_auxiliary_fq12_qrom_horizon_complete_v1() -> bool {
         && path2_active_native_hash_budget_boundary_source_present_v1()
 }
 
+fn path2_full_signature_execution_source_boundary_present_v1() -> bool {
+    let full_spend_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+
+    let source_start = full_spend_source
+        .find("\nstructure ConcreteFullSignatureExecutionSource")
+        .expect("Lean Path 2 full-signature execution source start marker missing");
+    let source_end = full_spend_source[source_start..]
+        .find("\n/-- Full-game predicates using a production execution source")
+        .expect("Lean Path 2 full-signature execution source end marker missing")
+        + source_start;
+    let source_window = &full_spend_source[source_start..source_end];
+
+    let execution_predicates_start = full_spend_source
+        .find("\ndef concreteFullGamePredicatesFromExecution")
+        .expect("Lean Path 2 execution full-game predicate source start marker missing");
+    let execution_predicates_end = full_spend_source[execution_predicates_start..]
+        .find("\n/-- A production execution source supplies")
+        .expect("Lean Path 2 execution full-game predicate source end marker missing")
+        + execution_predicates_start;
+    let execution_predicates_window =
+        &full_spend_source[execution_predicates_start..execution_predicates_end];
+
+    let soundness_start = full_spend_source
+        .find("\ndef concreteFullForgeryToAcceptedSpendSoundnessFromExecution")
+        .expect("Lean Path 2 full-forgery execution soundness start marker missing");
+    let soundness_end = full_spend_source[soundness_start..]
+        .find("\n/--\nProduction full-game lift using an explicit execution source.")
+        .expect("Lean Path 2 full-forgery execution soundness end marker missing")
+        + soundness_start;
+    let soundness_window = &full_spend_source[soundness_start..soundness_end];
+
+    let theorem_start = full_spend_source
+        .find("\ntheorem concrete_fullExecutionImpliesAcceptedSpendForgery")
+        .expect("Lean Path 2 full-execution theorem start marker missing");
+    let theorem_end = full_spend_source[theorem_start..]
+        .find("\n/-- Full-game success supplies an accepted spend for the concrete carrier.")
+        .expect("Lean Path 2 full-execution theorem end marker missing")
+        + theorem_start;
+    let theorem_window = &full_spend_source[theorem_start..theorem_end];
+
+    let source_checks = [
+        "executionSucceeds :\n    Path2FullSpendGame.FullForgeryRun concreteTypes -> Prop",
+        "success_implies_verifier_accept_or_break :",
+        "executionSucceeds run ->",
+        "ConcreteSpendVerificationAccepts C run.spend ∨",
+        "Path2FullSpendGame.HasBreak (concretePredicates C) run.spend",
+    ];
+    let predicate_checks = [
+        "concreteFullGamePredicatesFromExecution",
+        "ConcreteFullSignatureExecutionSource C",
+        "fullSignatureForgerySucceeds := Source.executionSucceeds",
+    ];
+    let soundness_checks = [
+        "concreteFullForgeryToAcceptedSpendSoundnessFromExecution",
+        "Path2FullSpendGame.FullForgeryToAcceptedSpendSoundness",
+        "concreteFullGamePredicatesFromExecution C Source",
+        "Source.success_implies_verifier_accept_or_break hSuccess",
+    ];
+    let theorem_checks = [
+        "concrete_fullExecutionImpliesAcceptedSpendForgery",
+        "ConcreteFullSignatureExecutionSource C",
+        "hSuccess : Source.executionSucceeds run",
+        "Path2FullSpendGame.fullForgeryImpliesAcceptedSpendForgery",
+        "concreteFullForgeryToAcceptedSpendSoundnessFromExecution C Source",
+        "concreteDirectAcceptedSpendSoundness C",
+    ];
+
+    source_checks
+        .iter()
+        .all(|marker| source_window.contains(marker))
+        && predicate_checks
+            .iter()
+            .all(|marker| execution_predicates_window.contains(marker))
+        && soundness_checks
+            .iter()
+            .all(|marker| soundness_window.contains(marker))
+        && theorem_checks
+            .iter()
+            .all(|marker| theorem_window.contains(marker))
+}
+
 pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV1 {
     let proof_side_public_boundary_preflight_complete = true;
     let projection_encoders_present = true;
@@ -17726,6 +17810,8 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     let checked_core_composition_review_complete =
         path2_native_checked_core_byte_bridge_source_present_v1();
     let hash_qrom_deployment_horizon_complete = path2_auxiliary_fq12_qrom_horizon_complete_v1();
+    let full_signature_execution_source_boundary_present =
+        path2_full_signature_execution_source_boundary_present_v1();
     let signer_verifier_pipeline_present = false;
     let constant_time_audit_complete = false;
     let storage_lifecycle_hardening_complete = false;
@@ -17736,6 +17822,9 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     }
     if !hash_qrom_deployment_horizon_complete {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON);
+    }
+    if !full_signature_execution_source_boundary_present {
+        internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE);
     }
     if !signer_verifier_pipeline_present {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE);
@@ -17767,6 +17856,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         spend_signature_impact_bytes_max: 32,
         checked_core_composition_review_complete,
         hash_qrom_deployment_horizon_complete,
+        full_signature_execution_source_boundary_present,
         signer_verifier_pipeline_present,
         constant_time_audit_complete,
         storage_lifecycle_hardening_complete,
@@ -17801,6 +17891,8 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         verifier_preflight.rejection_code
     } else if !deployment_preflight.hash_qrom_deployment_horizon_complete {
         Some("reject_active_native_qrom_target_horizon_open")
+    } else if !deployment_preflight.full_signature_execution_source_boundary_present {
+        Some("reject_active_native_full_signature_execution_source_open")
     } else if !deployment_preflight.signer_verifier_pipeline_present {
         Some("reject_active_native_pipeline_not_productized")
     } else if !deployment_preflight.constant_time_audit_complete {
@@ -35603,6 +35695,8 @@ mod tests {
         assert!(path2_native_checked_core_byte_bridge_source_present_v1());
         assert!(preflight.checked_core_composition_review_complete);
         assert!(preflight.hash_qrom_deployment_horizon_complete);
+        assert!(path2_full_signature_execution_source_boundary_present_v1());
+        assert!(preflight.full_signature_execution_source_boundary_present);
         assert!(!preflight.signer_verifier_pipeline_present);
         assert!(!preflight.constant_time_audit_complete);
         assert!(!preflight.storage_lifecycle_hardening_complete);
