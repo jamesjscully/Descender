@@ -679,6 +679,19 @@ selected transparent endpoint composes into `AccountAdmissionSoundness` once
 accepted account creation supplies the selected view/profile/policies.
 Rust now digest-binds that Lean account-admission adapter through
 `lean_account_admission_adapter_endpoint_present`.
+The legacy reviewed-Fq12 production preflight report no longer treats its
+hidden-source callback, readiness-report/verdict, deployability assertion,
+active-lane projection-carrier, pad-seed/spent-digest invariant, and
+fail-closed deployment-verifier presence bits as unconditional literals. Those
+bits are now derived from source-inspection gates over the active reviewed-Fq12
+callback boundaries, readiness/deployability report constructors and
+validators, selected projection-carrier tuple verifier, masked projection
+candidate verifier, soundness certificate, digest-only storage/spent-ledger
+regressions, and no-selected-material negative controls. This is report-surface
+hardening only: the active target remains the Path 2 native / reviewed-Fq12
+active-lane projection-carrier route, and production deployment remains
+fail-closed until the hidden-source semantics, signer/verifier productization,
+constant-time, storage, and external-review gates are closed.
 
 ## Findings
 

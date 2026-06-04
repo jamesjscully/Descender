@@ -6001,6 +6001,494 @@ pub fn verify_default_deployment_callback_boundaries() -> Result<(), String> {
     )
 }
 
+fn production_deployment_callback_boundary_source_present_v1(boundary: &str) -> bool {
+    let Some(classification) = production_callback_boundary_classification(boundary) else {
+        return false;
+    };
+    classification.deployment_facing
+        && classification.error_policy == ProductionCallbackErrorPolicy::SanitizedFixedPublicErrors
+}
+
+fn reviewed_fq12_hidden_source_proof_callback_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let wrapper_start = source
+        .find("\npub fn verify_reviewed_fq12_account_carried_hidden_source_proof<F>(")
+        .expect("reviewed Fq12 hidden-source proof callback source start marker missing");
+    let wrapper_end = source[wrapper_start..]
+        .find(
+            "\npub fn verify_reviewed_fq12_account_carried_hidden_source_proof_with_transcript<F>(",
+        )
+        .expect("reviewed Fq12 hidden-source proof callback source end marker missing")
+        + wrapper_start;
+    let wrapper_window = &source[wrapper_start..wrapper_end];
+
+    let test_start = source
+        .find("\n    fn reviewed_fq12_account_carried_sigma_equation_checks_action_relation()")
+        .expect("reviewed Fq12 hidden-source proof callback test start marker missing");
+    let test_end = source[test_start..]
+        .find("\n    fn reviewed_fq12_packed_witness_rejects_malformed_opening_fields()")
+        .expect("reviewed Fq12 hidden-source proof callback test end marker missing")
+        + test_start;
+    let test_window = &source[test_start..test_end];
+
+    let wrapper_checks = [
+        "verify_reviewed_fq12_account_carried_hidden_source_proof_with_transcript(",
+        "|statement, proof, _transcript| verify_hidden_source_proof(statement, proof)",
+    ];
+    let test_checks = [
+        "verify_reviewed_fq12_account_carried_hidden_source_proof(",
+        "reviewed_fq12_hidden_source_proof_transcript_digest(statement, proof)",
+        "PRODUCTION_HIDDEN_SOURCE_PROOF_FAILURE_REASON",
+        "private proof error must not escape",
+    ];
+
+    production_deployment_callback_boundary_source_present_v1(
+        "verify_reviewed_fq12_account_carried_hidden_source_proof",
+    ) && wrapper_checks
+        .iter()
+        .all(|marker| wrapper_window.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| test_window.contains(marker))
+}
+
+fn reviewed_fq12_hidden_source_proof_transcript_callback_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let callback_start = source
+        .find(
+            "\npub fn verify_reviewed_fq12_account_carried_hidden_source_proof_with_transcript<F>(",
+        )
+        .expect("reviewed Fq12 hidden-source transcript callback source start marker missing");
+    let callback_end = source[callback_start..]
+        .find(
+            "\npub fn verify_reviewed_fq12_account_carried_signature_carried_hidden_source_proof<F>(",
+        )
+        .expect("reviewed Fq12 hidden-source transcript callback source end marker missing")
+        + callback_start;
+    let callback_window = &source[callback_start..callback_end];
+
+    let test_start = source
+        .find("\n    fn reviewed_fq12_account_carried_sigma_equation_checks_action_relation()")
+        .expect("reviewed Fq12 hidden-source transcript callback test start marker missing");
+    let test_end = source[test_start..]
+        .find("\n    fn reviewed_fq12_packed_witness_rejects_malformed_opening_fields()")
+        .expect("reviewed Fq12 hidden-source transcript callback test end marker missing")
+        + test_start;
+    let test_window = &source[test_start..test_end];
+
+    let callback_checks = [
+        "reviewed_fq12_account_carried_hidden_source_statement(",
+        "reviewed_fq12_hidden_source_proof_transcript(&statement, proof)",
+        "verify_hidden_source_proof(&statement, proof, &transcript).map_err(|_|",
+        "PRODUCTION_HIDDEN_SOURCE_PROOF_FAILURE_REASON",
+        "Ok(statement)",
+    ];
+    let test_checks = [
+        "verify_reviewed_fq12_account_carried_signature_carried_hidden_source_proof_with_transcript(",
+        "assert_eq!(*transcript, proof_transcript_object)",
+        "verify_reviewed_fq12_account_carried_hidden_source_proof(",
+        "private proof error must not escape",
+    ];
+
+    PRODUCTION_DEPLOYMENT_REQUIRED_CALLBACK_BOUNDARIES
+        .contains(&"verify_reviewed_fq12_account_carried_hidden_source_proof_with_transcript")
+        && production_deployment_callback_boundary_source_present_v1(
+            "verify_reviewed_fq12_account_carried_hidden_source_proof_with_transcript",
+        )
+        && callback_checks
+            .iter()
+            .all(|marker| callback_window.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| test_window.contains(marker))
+}
+
+fn reviewed_fq12_hidden_source_readiness_report_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let report_start = source
+        .find("\npub fn reviewed_fq12_hidden_source_proof_readiness_report(")
+        .expect("reviewed Fq12 hidden-source readiness report source start marker missing");
+    let report_end = source[report_start..]
+        .find("\npub fn reviewed_fq12_hidden_source_proof_readiness_report_digest(")
+        .expect("reviewed Fq12 hidden-source readiness report source end marker missing")
+        + report_start;
+    let report_window = &source[report_start..report_end];
+
+    let validator_start = source
+        .find("\npub fn validate_reviewed_fq12_hidden_source_proof_readiness_report(")
+        .expect("reviewed Fq12 hidden-source readiness report validator marker missing");
+    let validator_end = source[validator_start..]
+        .find("\npub fn reviewed_fq12_hidden_source_proof_readiness_verdict(")
+        .expect("reviewed Fq12 hidden-source readiness report validator end marker missing")
+        + validator_start;
+    let validator_window = &source[validator_start..validator_end];
+
+    let test_start = source
+        .find("\n    fn reviewed_fq12_account_carried_sigma_equation_checks_action_relation()")
+        .expect("reviewed Fq12 hidden-source readiness report test start marker missing");
+    let test_end = source[test_start..]
+        .find("\n    fn reviewed_fq12_packed_witness_rejects_malformed_opening_fields()")
+        .expect("reviewed Fq12 hidden-source readiness report test end marker missing")
+        + test_start;
+    let test_window = &source[test_start..test_end];
+
+    let report_checks = [
+        "reviewed_fq12_deployment_blocker_report_digest(deployment_report)",
+        "reviewed_fq12_hidden_source_proof_semantics_gate(deployment_report)?",
+        "reviewed_fq12_hidden_source_proof_acceptance_contract(&semantics_gate)?",
+        "reviewed_fq12_hidden_source_proof_acceptance_obligation_report(&acceptance_contract)?",
+        "validate_reviewed_fq12_hidden_source_proof_acceptance_obligation_report(",
+        "deployment_ready = semantics_gate.semantics_bridge_complete",
+        "&& semantics_gate.acceptance_implemented",
+        "&& acceptance_contract.all_obligations_implemented",
+        "&& obligation_report.all_obligations_implemented",
+        "report.digest = reviewed_fq12_hidden_source_proof_readiness_report_digest(&report)",
+    ];
+    let validator_checks = [
+        "let expected = reviewed_fq12_hidden_source_proof_readiness_report(deployment_report)?;",
+        "if expected != *readiness_report",
+        "reviewed Fq12 hidden-source proof readiness report mismatch",
+    ];
+    let test_checks = [
+        "reviewed_fq12_hidden_source_proof_readiness_report(&deployment_report)",
+        "assert!(!readiness_report.deployment_ready)",
+        "validate_reviewed_fq12_hidden_source_proof_readiness_report(",
+        "stale_bridge_audit_readiness_report.semantics_bridge_audit_digest[0] ^= 1",
+    ];
+
+    report_checks
+        .iter()
+        .all(|marker| report_window.contains(marker))
+        && validator_checks
+            .iter()
+            .all(|marker| validator_window.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| test_window.contains(marker))
+}
+
+fn reviewed_fq12_hidden_source_readiness_verdict_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let verdict_start = source
+        .find("\npub fn reviewed_fq12_hidden_source_proof_readiness_verdict(")
+        .expect("reviewed Fq12 hidden-source readiness verdict source start marker missing");
+    let verdict_end = source[verdict_start..]
+        .find("\npub fn reviewed_fq12_hidden_source_proof_readiness_verdict_digest(")
+        .expect("reviewed Fq12 hidden-source readiness verdict source end marker missing")
+        + verdict_start;
+    let verdict_window = &source[verdict_start..verdict_end];
+
+    let validator_start = source
+        .find("\npub fn validate_reviewed_fq12_hidden_source_proof_readiness_verdict(")
+        .expect("reviewed Fq12 hidden-source readiness verdict validator marker missing");
+    let validator_end = source[validator_start..]
+        .find("\npub fn require_reviewed_fq12_hidden_source_proof_deployable_verdict(")
+        .expect("reviewed Fq12 hidden-source readiness verdict validator end marker missing")
+        + validator_start;
+    let validator_window = &source[validator_start..validator_end];
+
+    let test_start = source
+        .find("\n    fn reviewed_fq12_account_carried_sigma_equation_checks_action_relation()")
+        .expect("reviewed Fq12 hidden-source readiness verdict test start marker missing");
+    let test_end = source[test_start..]
+        .find("\n    fn reviewed_fq12_packed_witness_rejects_malformed_opening_fields()")
+        .expect("reviewed Fq12 hidden-source readiness verdict test end marker missing")
+        + test_start;
+    let test_window = &source[test_start..test_end];
+
+    let verdict_checks = [
+        "if readiness_report.deployment_ready",
+        "REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_READINESS_VERDICT_DEPLOYABLE",
+        "REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_READINESS_VERDICT_BLOCKED",
+        "missing_obligation_count: readiness_report.missing_obligation_count",
+        "readiness_verdict.digest =\n        reviewed_fq12_hidden_source_proof_readiness_verdict_digest(&readiness_verdict)",
+    ];
+    let validator_checks = [
+        "let expected = reviewed_fq12_hidden_source_proof_readiness_verdict(readiness_report)?;",
+        "if expected != *verdict",
+        "reviewed Fq12 hidden-source proof readiness verdict mismatch",
+    ];
+    let test_checks = [
+        "reviewed_fq12_hidden_source_proof_readiness_verdict(&readiness_report)",
+        "REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_READINESS_VERDICT_BLOCKED",
+        "validate_reviewed_fq12_hidden_source_proof_readiness_verdict(",
+        "malformed_verdict.missing_obligation_count = 0",
+    ];
+
+    reviewed_fq12_hidden_source_readiness_report_source_present_v1()
+        && verdict_checks
+            .iter()
+            .all(|marker| verdict_window.contains(marker))
+        && validator_checks
+            .iter()
+            .all(|marker| validator_window.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| test_window.contains(marker))
+}
+
+fn reviewed_fq12_hidden_source_deployability_assertion_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let assertion_start = source
+        .find("\npub fn require_reviewed_fq12_hidden_source_proof_deployable_verdict(")
+        .expect("reviewed Fq12 hidden-source deployability assertion start marker missing");
+    let assertion_end = source[assertion_start..]
+        .find("\npub fn verify_reviewed_fq12_hidden_source_proof_acceptance_contract(")
+        .expect("reviewed Fq12 hidden-source deployability assertion end marker missing")
+        + assertion_start;
+    let assertion_window = &source[assertion_start..assertion_end];
+
+    let test_start = source
+        .find("\n    fn reviewed_fq12_account_carried_sigma_equation_checks_action_relation()")
+        .expect("reviewed Fq12 hidden-source deployability assertion test start marker missing");
+    let test_end = source[test_start..]
+        .find("\n    fn reviewed_fq12_packed_witness_rejects_malformed_opening_fields()")
+        .expect("reviewed Fq12 hidden-source deployability assertion test end marker missing")
+        + test_start;
+    let test_window = &source[test_start..test_end];
+
+    let assertion_checks = [
+        "validate_reviewed_fq12_hidden_source_proof_readiness_verdict(readiness_report, verdict)?;",
+        "verdict.verdict != REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_READINESS_VERDICT_DEPLOYABLE",
+        "!verdict.deployment_ready",
+        "verdict.missing_obligation_count != 0",
+        "return Err(verdict.blocker.to_string())",
+    ];
+    let test_checks = [
+        "require_reviewed_fq12_hidden_source_proof_deployable_verdict(",
+        "PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS",
+        "require_reviewed_fq12_account_carried_signature_carried_deployable(",
+    ];
+
+    reviewed_fq12_hidden_source_readiness_verdict_source_present_v1()
+        && assertion_checks
+            .iter()
+            .all(|marker| assertion_window.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| test_window.contains(marker))
+}
+
+fn reviewed_fq12_active_lane_projection_carrier_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let opening_start = source
+        .find("\npub fn verify_reviewed_fq12_state_assisted_account_witness_projection_opening(")
+        .expect("reviewed Fq12 active-lane opening source start marker missing");
+    let opening_end = source[opening_start..]
+        .find("\npub fn reviewed_fq12_state_assisted_projection_carrier_binding(")
+        .expect("reviewed Fq12 active-lane opening source end marker missing")
+        + opening_start;
+    let opening_window = &source[opening_start..opening_end];
+
+    let carrier_start = source
+        .find("\npub fn reviewed_fq12_state_assisted_projection_carrier_binding(")
+        .expect("reviewed Fq12 active-lane carrier source start marker missing");
+    let carrier_end = source[carrier_start..]
+        .find(
+            "\npub fn verify_reviewed_fq12_state_assisted_masked_witness_state18_slot_projection_carrier_tuple(",
+        )
+        .expect("reviewed Fq12 active-lane carrier source end marker missing")
+        + carrier_start;
+    let carrier_window = &source[carrier_start..carrier_end];
+
+    let slot_tuple_start = source
+        .find(
+            "\npub fn verify_reviewed_fq12_state_assisted_masked_witness_state18_slot_projection_carrier_tuple(",
+        )
+        .expect("reviewed Fq12 active-lane slot tuple source start marker missing");
+    let slot_tuple_end = source[slot_tuple_start..]
+        .find("\npub fn production_selected_projection_candidate_timing_fixture(")
+        .expect("reviewed Fq12 active-lane slot tuple source end marker missing")
+        + slot_tuple_start;
+    let slot_tuple_window = &source[slot_tuple_start..slot_tuple_end];
+
+    let verifier_start = source
+        .find("\npub fn verify_reviewed_fq12_state_assisted_masked_projection_candidate_verifier(")
+        .expect("reviewed Fq12 active-lane verifier source start marker missing");
+    let verifier_end = source[verifier_start..]
+        .find(
+            "\npub fn verify_reviewed_fq12_state_assisted_masked_projection_soundness_certificate(",
+        )
+        .expect("reviewed Fq12 active-lane verifier source end marker missing")
+        + verifier_start;
+    let verifier_window = &source[verifier_start..verifier_end];
+
+    let certificate_start = source
+        .find(
+            "\npub fn verify_reviewed_fq12_state_assisted_masked_projection_soundness_certificate(",
+        )
+        .expect("reviewed Fq12 active-lane certificate source start marker missing");
+    let certificate_end = source[certificate_start..]
+        .find("\npub fn sign_with_account_binding<F>(")
+        .expect("reviewed Fq12 active-lane certificate source end marker missing")
+        + certificate_start;
+    let certificate_window = &source[certificate_start..certificate_end];
+
+    let selected_tests_start = source
+        .find("\n    fn selected_projection_valid_308_byte_fixture_accepts()")
+        .expect("reviewed Fq12 active-lane selected projection test start marker missing");
+    let selected_tests_end = source[selected_tests_start..]
+        .find("\n    fn path2_creation_relation_replay_accepts_reviewed_active_lane_certificate()")
+        .expect("reviewed Fq12 active-lane selected projection test end marker missing")
+        + selected_tests_start;
+    let selected_tests_window = &source[selected_tests_start..selected_tests_end];
+
+    let storage_tests_start = source
+        .find("\n    fn masked_projection_wrong_pad_seed_rejects_without_partial_opening()")
+        .expect("reviewed Fq12 active-lane storage test start marker missing");
+    let storage_tests_end = source[storage_tests_start..]
+        .find("\n    fn selected_projection_materializers_are_not_public_pre_spend_api()")
+        .expect("reviewed Fq12 active-lane storage test end marker missing")
+        + storage_tests_start;
+    let storage_tests_window = &source[storage_tests_start..storage_tests_end];
+
+    let opening_checks = [
+        "verify_reviewed_fq12_state_assisted_slot_opening(slot, opening)?",
+        "reviewed_fq12_hidden_source_statement_digest(statement) != statement.digest",
+        "statement.slot_id as u64 != opening.slot_id",
+        "statement.witness_commitment != opening.account_witness_commitment",
+        "reviewed_fq12_account_witness_projection_opening_digest(account_witness_opening_frame)?",
+        "actual_opening_digest != opening.witness_opening_digest",
+    ];
+    let carrier_checks = [
+        "REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN.as_bytes()",
+        "carrier_handle_secret_digest",
+        "statement_digest",
+        "signature_digest",
+        "public_key_digest",
+        "message_digest",
+        "slot_id",
+        "lane_symbol",
+        "lane_coefficient",
+        "lane_value",
+        "HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES",
+        "HIDDEN_SOURCE_FALLBACK_PROJECTION_TRANSCRIPT_BINDING_BYTES",
+        "verify_reviewed_fq12_state_assisted_pad_seed_opening(",
+        "verify_hidden_source_fallback_hidden_material_frame_projection_or_export(",
+        "Export(_) =>",
+        "reviewed Fq12 projection carrier check bytes mismatch",
+        "reviewed Fq12 projection carrier transcript binding mismatch",
+    ];
+    let slot_tuple_checks = [
+        "verify_reviewed_fq12_state_assisted_masked_witness_state18_packed_witness_opening(",
+        "expected_pad_seed_digest != opening.pad_seed_digest",
+        "verify_reviewed_fq12_pad_opening_statement_witness(",
+        "verify_hidden_source_fallback_hidden_material_frame_projection_or_export(",
+        "Export(_) =>",
+        "reviewed Fq12 projection carrier check bytes mismatch",
+        "reviewed Fq12 projection carrier transcript binding mismatch",
+    ];
+    let verifier_checks = [
+        "decode_reviewed_fq12_account_carried_with_fallback_projection(",
+        "verify_reviewed_fq12_state_assisted_checked_core(",
+        "reviewed_fq12_state_assisted_hidden_source_statement(",
+        "if &expected_statement != statement",
+        "verify_reviewed_fq12_state_assisted_masked_witness_state18_slot_projection_carrier_tuple(",
+        "reviewed_fq12_selected_projection_public_reject(err)",
+        "Ok(parts)",
+    ];
+    let certificate_checks = [
+        "verify_reviewed_fq12_state_assisted_masked_projection_candidate_verifier(",
+        "verify_reviewed_fq12_state_assisted_slot_opening(slot, opening)",
+        "verify_reviewed_fq12_state_assisted_masked_witness_state18_packed_witness_opening(",
+        "account_witness_projection_opening_frame",
+        "pad_seed_digest: reviewed_fq12_pad_seed_opening_digest(pad_seed)",
+        "carrier_lanes: decoded_carrier.lanes",
+        "carrier_check_bytes: decoded_carrier.check_bytes",
+        "carrier_transcript_binding: decoded_carrier.transcript_binding",
+    ];
+    let selected_test_checks = [
+        "selected_projection_valid_308_byte_fixture_accepts",
+        "selected_projection_timing_fixture_accepts",
+        "selected_projection_reject_carrier_lane_mutation",
+        "selected_projection_reject_carrier_check_mutation",
+        "selected_projection_reject_carrier_transcript_binding_mutation",
+        "selected_projection_reject_account_state_rebinding",
+        "selected_projection_reject_pad_seed_rebinding",
+        "selected_projection_reject_checked_core_mismatch",
+        "verify_reviewed_fq12_state_assisted_masked_projection_candidate_verifier(",
+    ];
+    let storage_test_checks = [
+        "masked_projection_wrong_pad_seed_rejects_without_partial_opening",
+        "masked_projection_carrier_rebinding_rejects_without_export",
+        "selected_projection_spent_replay_rejects_digest_only_no_opening",
+        "pad seed digest is already in spent ledger",
+        "state_assisted_account_state_checked_records_no_selected_material",
+        "selected_projection_lifecycle_snapshot_roundtrips_digest_only",
+        "assert_no_selected_projection_material",
+    ];
+
+    opening_checks
+        .iter()
+        .all(|marker| opening_window.contains(marker))
+        && carrier_checks
+            .iter()
+            .all(|marker| carrier_window.contains(marker))
+        && slot_tuple_checks
+            .iter()
+            .all(|marker| slot_tuple_window.contains(marker))
+        && verifier_checks
+            .iter()
+            .all(|marker| verifier_window.contains(marker))
+        && certificate_checks
+            .iter()
+            .all(|marker| certificate_window.contains(marker))
+        && selected_test_checks
+            .iter()
+            .all(|marker| selected_tests_window.contains(marker))
+        && storage_test_checks
+            .iter()
+            .all(|marker| storage_tests_window.contains(marker))
+        && path2_reviewed_fq12_no_partial_export_negative_controls_source_present_v1()
+}
+
+fn reviewed_fq12_fail_closed_deployment_verifier_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let verifier_start = source
+        .find(
+            "\npub fn verify_reviewed_fq12_account_carried_signature_carried_deployment_verifier(",
+        )
+        .expect("reviewed Fq12 fail-closed deployment verifier source start marker missing");
+    let verifier_end = source[verifier_start..]
+        .find("\npub fn verify_reviewed_fq12_account_carried_sigma_equation(")
+        .expect("reviewed Fq12 fail-closed deployment verifier source end marker missing")
+        + verifier_start;
+    let verifier_window = &source[verifier_start..verifier_end];
+
+    let test_start = source
+        .find("\n    fn reviewed_fq12_account_carried_sigma_equation_checks_action_relation()")
+        .expect("reviewed Fq12 fail-closed deployment verifier test start marker missing");
+    let test_end = source[test_start..]
+        .find("\n    fn reviewed_fq12_packed_witness_rejects_malformed_opening_fields()")
+        .expect("reviewed Fq12 fail-closed deployment verifier test end marker missing")
+        + test_start;
+    let test_window = &source[test_start..test_end];
+
+    let verifier_checks = [
+        "reviewed_fq12_account_carried_signature_carried_deployment_blocker_report(",
+        "Err(ProductionAccountBindingError::new(",
+        "report.blocker",
+    ];
+    let test_checks = [
+        "verify_reviewed_fq12_account_carried_signature_carried_deployment_verifier(",
+        "PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS",
+    ];
+
+    verifier_checks
+        .iter()
+        .all(|marker| verifier_window.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| test_window.contains(marker))
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ProductionDeploymentPreflight {
     pub callback_boundaries_ok: bool,
@@ -6182,8 +6670,10 @@ pub fn production_deployment_preflight() -> ProductionDeploymentPreflight {
     let reviewed_fq12_fallback_projection_codec_present =
         REVIEWED_FQ12_ACCOUNT_CARRIED_WITH_FALLBACK_PROJECTION_BYTES == 314
             && HIDDEN_SOURCE_FALLBACK_PROJECTION_CARRIER_BYTES == 56;
-    let reviewed_fq12_hidden_source_proof_callback_present = true;
-    let reviewed_fq12_hidden_source_proof_transcript_callback_present = true;
+    let reviewed_fq12_hidden_source_proof_callback_present =
+        reviewed_fq12_hidden_source_proof_callback_source_present_v1();
+    let reviewed_fq12_hidden_source_proof_transcript_callback_present =
+        reviewed_fq12_hidden_source_proof_transcript_callback_source_present_v1();
     let hidden_source_semantics_bridge_audit =
         path2_reviewed_fq12_hidden_source_semantics_bridge_audit();
     let reviewed_fq12_hidden_source_semantics_bridge_audit_present =
@@ -6194,21 +6684,35 @@ pub fn production_deployment_preflight() -> ProductionDeploymentPreflight {
     let reviewed_fq12_hidden_source_semantics_bridge_complete =
         reviewed_fq12_hidden_source_semantics_bridge_audit_present
             && hidden_source_semantics_bridge_audit.semantics_bridge_complete;
-    let reviewed_fq12_hidden_source_readiness_report_present = true;
-    let reviewed_fq12_hidden_source_readiness_verdict_present = true;
-    let reviewed_fq12_hidden_source_deployability_assertion_present = true;
-    let reviewed_fq12_active_lane_relation_certificate_present = true;
-    let reviewed_fq12_account_witness_projection_opening_binding_present = true;
+    let reviewed_fq12_hidden_source_readiness_report_present =
+        reviewed_fq12_hidden_source_readiness_report_source_present_v1();
+    let reviewed_fq12_hidden_source_readiness_verdict_present =
+        reviewed_fq12_hidden_source_readiness_verdict_source_present_v1();
+    let reviewed_fq12_hidden_source_deployability_assertion_present =
+        reviewed_fq12_hidden_source_deployability_assertion_source_present_v1();
+    let reviewed_fq12_active_lane_projection_carrier_source_present =
+        reviewed_fq12_active_lane_projection_carrier_source_present_v1();
+    let reviewed_fq12_active_lane_relation_certificate_present =
+        reviewed_fq12_active_lane_projection_carrier_source_present;
+    let reviewed_fq12_account_witness_projection_opening_binding_present =
+        reviewed_fq12_active_lane_projection_carrier_source_present;
     let reviewed_fq12_direct_expanded_opening_path_archived =
         HIDDEN_SOURCE_FALLBACK_DIRECT_EXPANDED_OPENING_DEPLOYMENT_STATUS
             .starts_with("archived_non_deployment_path:");
-    let reviewed_fq12_pad_opening_witness_binding_present = true;
-    let reviewed_fq12_state_assisted_projection_carrier_tuple_binding_present = true;
-    let reviewed_fq12_state_assisted_pad_seed_digest_account_invariant_present = true;
-    let reviewed_fq12_selected_projection_spent_pad_seed_digest_invariant_present = true;
-    let reviewed_fq12_target_chain_pad_seed_digest_commit_validation_present = true;
-    let reviewed_fq12_fail_closed_deployment_verifier_present = true;
-    let reviewed_fq12_state_assisted_masked_projection_candidate_verifier_present = true;
+    let reviewed_fq12_pad_opening_witness_binding_present =
+        reviewed_fq12_active_lane_projection_carrier_source_present;
+    let reviewed_fq12_state_assisted_projection_carrier_tuple_binding_present =
+        reviewed_fq12_active_lane_projection_carrier_source_present;
+    let reviewed_fq12_state_assisted_pad_seed_digest_account_invariant_present =
+        reviewed_fq12_active_lane_projection_carrier_source_present;
+    let reviewed_fq12_selected_projection_spent_pad_seed_digest_invariant_present =
+        reviewed_fq12_active_lane_projection_carrier_source_present;
+    let reviewed_fq12_target_chain_pad_seed_digest_commit_validation_present =
+        reviewed_fq12_active_lane_projection_carrier_source_present;
+    let reviewed_fq12_fail_closed_deployment_verifier_present =
+        reviewed_fq12_fail_closed_deployment_verifier_source_present_v1();
+    let reviewed_fq12_state_assisted_masked_projection_candidate_verifier_present =
+        reviewed_fq12_active_lane_projection_carrier_source_present;
     let reviewed_fq12_deployment_verifier_present = false;
     let executable_matches_reviewed_target = LINEAR_SIGMA_TARGET_TRANSACTION_SIGNATURE_BYTES
         == REVIEWED_TARGET_TRANSACTION_SIGNATURE_BYTES;
