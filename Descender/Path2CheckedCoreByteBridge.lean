@@ -402,5 +402,37 @@ theorem checkedCoreByteCertificate_checkedCoreAccepts
   path2_native_checked_core_accepts_checkedCoreAccepts Bridge
     (checkedCoreByteCertificate_accepts_native_v1 C)
 
+/--
+The selected Rust byte source plus the native V1 bridge feeds the abstract
+checked-core predicate directly, or returns one of the named byte/parser/frame
+or domain residuals.
+-/
+theorem selectedRustCheckedCoreByteSource_checkedCoreAccepts_or_named_break
+    {M : MeaningProjection}
+    {Proj : PublicProjections}
+    {V : VerifierPredicates}
+    {F : NativeCheckedCoreFrameFields}
+    (Bridge : Path2NativeCheckedCoreAcceptV1Bridge M Proj V F)
+    {P : CheckedCoreProofByteParser}
+    (Source :
+      SelectedRustCheckedCoreByteSource
+        Bridge.nativeFrameBinding Bridge.verifierHandleFields P V)
+    {q : Boundary} {msg state : Nat}
+    {evidence : NativeCheckedCoreSpendEvidence}
+    (h :
+      SelectedRustCheckedCoreByteSourceAcceptOrBreak
+        Source q msg state evidence) :
+    Bridge.reduction.checkedCoreAccepts q msg state
+        evidence.toCheckedCoreSpendEvidence ∨
+      CheckedCoreByteBridgeBreakAlternatives V q := by
+  cases h with
+  | inl hAccept =>
+      exact Or.inl
+        (path2_native_checked_core_accepts_checkedCoreAccepts Bridge
+          (checkedCoreByteCertificate_accepts_native_v1
+            (selectedRustCheckedCoreByteSource_certificate Source hAccept)))
+  | inr hBreak =>
+      exact Or.inr hBreak
+
 end Path2CheckedCoreByteBridge
 end Descender
