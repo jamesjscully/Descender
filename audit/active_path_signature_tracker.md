@@ -283,6 +283,11 @@ and shared witness byte obligations.
 The Rust audit tracks this theorem with its own component-endpoint bit, so the
 bridge gate is no longer satisfied merely by the older packaged or shared-frame
 markers.
+The raw-component audit now also separates
+`rust_certificate_lift_opening_functionality_present` from the role-root field
+binding flag: it source-inspects the deterministic full-opening lift
+constructor/verifier and the opening-field rebinding regressions instead of
+aliasing the broader role-root helper.
 
 Lean now also exposes
 `reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_byte_and_witness_sources`,

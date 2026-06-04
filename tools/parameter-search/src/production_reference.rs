@@ -7441,7 +7441,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let rust_concrete_role_root_field_binding_present =
         path2_reviewed_fq12_role_root_lift_source_present_v1();
     let rust_certificate_lift_opening_functionality_present =
-        rust_concrete_role_root_field_binding_present;
+        path2_reviewed_fq12_certificate_lift_opening_functionality_source_present_v1();
     let rust_full_native_opening_canonical_representative_source_present =
         path2_reviewed_fq12_full_native_opening_canonical_representative_source_present_v1();
     let rust_full_native_opening_canonical_representative_witness_byte_source_present =
@@ -8664,6 +8664,72 @@ fn path2_reviewed_fq12_role_root_lift_source_present_v1() -> bool {
         && full_opening_verify_source
             .contains("path2_reviewed_fq12_full_native_opening_certificate_v1_digest(cert)?")
         && full_opening_verify_source.contains("!= cert.role_lift_certificate_digest")
+}
+
+fn path2_reviewed_fq12_certificate_lift_opening_functionality_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+    let full_opening_source_start = source
+        .find("\npub fn path2_reviewed_fq12_full_native_opening_certificate_v1(")
+        .expect("Path 2 reviewed Fq12 full-native-opening source start marker missing");
+    let full_opening_source_end = source[full_opening_source_start..]
+        .find("\npub fn path2_reviewed_fq12_full_native_opening_digest_v1(")
+        .expect("Path 2 reviewed Fq12 full-native-opening source end marker missing")
+        + full_opening_source_start;
+    let full_opening_source = &source[full_opening_source_start..full_opening_source_end];
+
+    let full_opening_verify_start = source
+        .find("\npub fn verify_path2_reviewed_fq12_full_native_opening_certificate_v1(")
+        .expect("Path 2 reviewed Fq12 full-native-opening verifier start marker missing");
+    let full_opening_verify_end = source[full_opening_verify_start..]
+        .find("\npub fn path2_reviewed_fq12_native_representative_digest_v1(")
+        .expect("Path 2 reviewed Fq12 full-native-opening verifier end marker missing")
+        + full_opening_verify_start;
+    let full_opening_verify_source = &source[full_opening_verify_start..full_opening_verify_end];
+
+    let test_start = source
+        .find("\n    fn path2_reviewed_fq12_full_native_opening_certificate_binds_all_roles()")
+        .expect("Path 2 reviewed Fq12 lift functionality regression start marker missing");
+    let test_end = source[test_start..]
+        .find(
+            "\n    fn path2_reviewed_fq12_full_native_opening_certificate_rejects_role_root_rebinding()",
+        )
+        .expect("Path 2 reviewed Fq12 lift functionality regression end marker missing")
+        + test_start;
+    let test_source = &source[test_start..test_end];
+
+    [
+        "let local_section_digest = assembly.p_account_digest",
+        "let packed_residues_digest = creation_binding.packed_witness_commitment",
+        "let randomizer_digest = creation_binding.randomizer_commitment",
+        "let selected_account_projection_digest = extraction_cert.account_projection_digest",
+        "let pad_source_digest = creation_binding.pad_source_commitment",
+        "let opening_tuple_digest = creation_binding.opening_tuple_commitment",
+        "let projection_relation_digest = creation_binding.projection_relation_commitment",
+        "let lifecycle_slot_digest = assembly.p_lifecycle_digest",
+        "let trace_witness_digest = assembly.p_transcript_digest",
+        "let gauge_digest = private_fiber.gauge_digest",
+        "let full_opening_digest = path2_reviewed_fq12_full_native_opening_digest_v1(",
+        "let mut cert = Path2ReviewedFq12FullNativeOpeningCertificateV1 {",
+        "cert.role_lift_certificate_digest =",
+        "path2_reviewed_fq12_full_native_opening_certificate_v1_digest(&cert)?",
+    ]
+    .iter()
+    .all(|marker| full_opening_source.contains(marker))
+        && full_opening_verify_source
+            .contains("let expected = path2_reviewed_fq12_full_native_opening_certificate_v1(")
+        && full_opening_verify_source.contains("if expected != *cert")
+        && [
+            "bad_projection_digest_cert.selected_account_projection_digest[0] ^= 1",
+            "bad_projection_digest_cert.full_opening_digest =",
+            "bad_projection_digest_cert.role_lift_certificate_digest =",
+            "\"Path 2 full native opening certificate mismatch\"",
+            "rebound.gauge_digest[0] ^= 1",
+            "rebound.full_opening_digest =",
+            "rebound.role_lift_certificate_digest =",
+            "operational_cert, cert",
+        ]
+        .iter()
+        .all(|marker| test_source.contains(marker))
 }
 
 fn path2_reviewed_fq12_independent_direct_assembly_binding_source_present_v1() -> bool {
@@ -39748,6 +39814,7 @@ mod tests {
         assert!(audit.selected_rust_canonical_byte_and_witness_package_surfaces_present);
         assert!(audit.rust_concrete_role_root_field_binding_present);
         assert!(audit.rust_certificate_lift_opening_functionality_present);
+        assert!(path2_reviewed_fq12_certificate_lift_opening_functionality_source_present_v1());
         assert!(path2_reviewed_fq12_role_root_lift_source_present_v1());
         assert!(audit.rust_assembly_representative_digest_lookup_source_present);
         assert!(audit.rust_representative_canonical_digest_source_present);
