@@ -25,6 +25,9 @@ structure Path2DirectQueryBudgetV1 where
   algebraicChallengeLastByteUsableBits : Nat
   algebraicChallengeBitsAfterMask : Nat
   totalChallengeBitsAfterMask : Nat
+  actionCollisionFloorBits : Nat
+  actionCollisionQuantumBitsAtUnionBound : Nat
+  actionCollisionClassicalBitsAtUnionBound : Nat
   minimumDeploymentMarginBits : Nat
   qBatchActive : Bool
   qBatchInactive : qBatchActive = false
@@ -33,6 +36,10 @@ structure Path2DirectQueryBudgetV1 where
   totalChallengeBitsIncludeHardening :
     totalChallengeBitsAfterMask =
       algebraicChallengeBitsAfterMask + 8 * challengeHardeningBytes
+  actionCollisionQuantumMeetsTarget :
+    targetSecurityBits ≤ actionCollisionQuantumBitsAtUnionBound
+  actionCollisionClassicalMeetsTarget :
+    targetSecurityBits ≤ actionCollisionClassicalBitsAtUnionBound
   transcriptTermExceedsTargetPlusMargin :
     transcriptTermBitsAfterQromLoss >
       targetSecurityBits + minimumDeploymentMarginBits
@@ -54,11 +61,16 @@ def path2DirectQueryBudgetV1 : Path2DirectQueryBudgetV1 where
   algebraicChallengeLastByteUsableBits := 6
   algebraicChallengeBitsAfterMask := 182
   totalChallengeBitsAfterMask := 214
+  actionCollisionFloorBits := 163
+  actionCollisionQuantumBitsAtUnionBound := 131
+  actionCollisionClassicalBitsAtUnionBound := 130
   minimumDeploymentMarginBits := 53
   qBatchActive := false
   qBatchInactive := rfl
   algebraicChallengeBitsMatchTranscript := rfl
   totalChallengeBitsIncludeHardening := by native_decide
+  actionCollisionQuantumMeetsTarget := by native_decide
+  actionCollisionClassicalMeetsTarget := by native_decide
   transcriptTermExceedsTargetPlusMargin := by native_decide
 
 /-- Lean mirror of the native public hash/QROM review caps. -/
@@ -117,6 +129,21 @@ def AuxiliaryFq12ChallengeShapeComplete
     B.totalChallengeBitsAfterMask =
       B.algebraicChallengeBitsAfterMask + 8 * B.challengeHardeningBytes
 
+/--
+Action-collision budget for the widened Fq12 action.
+
+The `163`-bit floor is the algebraic bad-event floor.  Under the selected
+union-safe deployment query bounds it leaves 131 quantum bits and 130 classical
+bits, both above the 128-bit target.
+-/
+def Fq12ActionCollisionBudgetPriced
+    (B : Path2DirectQueryBudgetV1) : Prop :=
+  B.actionCollisionFloorBits = 163 ∧
+    B.actionCollisionQuantumBitsAtUnionBound = 131 ∧
+    B.actionCollisionClassicalBitsAtUnionBound = 130 ∧
+    B.targetSecurityBits ≤ B.actionCollisionQuantumBitsAtUnionBound ∧
+    B.targetSecurityBits ≤ B.actionCollisionClassicalBitsAtUnionBound
+
 theorem path2_direct_query_budget_keeps_q_batch_inactive :
     path2DirectQueryBudgetV1.qBatchActive = false :=
   path2DirectQueryBudgetV1.qBatchInactive
@@ -141,6 +168,12 @@ theorem path2_direct_query_budget_auxiliary_fq12_challenge_shape_complete :
   ⟨rfl, rfl, rfl, rfl, rfl,
     path2_direct_query_budget_challenge_bits_match_transcript,
     path2DirectQueryBudgetV1.totalChallengeBitsIncludeHardening⟩
+
+theorem path2_direct_query_budget_fq12_action_collision_budget_priced :
+    Fq12ActionCollisionBudgetPriced path2DirectQueryBudgetV1 :=
+  ⟨rfl, rfl, rfl,
+    path2DirectQueryBudgetV1.actionCollisionQuantumMeetsTarget,
+    path2DirectQueryBudgetV1.actionCollisionClassicalMeetsTarget⟩
 
 theorem path2_direct_query_budget_priced :
     DirectQueryBudgetPriced path2DirectQueryBudgetV1 :=

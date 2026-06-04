@@ -255,6 +255,8 @@ structure ActiveHashDomainAndMultiTargetCertificate where
     DirectQueryBudgetPriced directBudget
   auxiliaryFq12ChallengeShapeComplete :
     Path2HashBudget.AuxiliaryFq12ChallengeShapeComplete directBudget
+  fq12ActionCollisionBudgetPriced :
+    Path2HashBudget.Fq12ActionCollisionBudgetPriced directBudget
   checkedCoreFrameDomainSeparated :
     CheckedCoreFrameDomainSeparated registry
   hiddenSourceFrameDomainSeparated :
@@ -294,6 +296,11 @@ theorem active_auxiliaryFq12ChallengeShapeComplete
     Path2HashBudget.AuxiliaryFq12ChallengeShapeComplete C.directBudget :=
   C.auxiliaryFq12ChallengeShapeComplete
 
+theorem active_fq12ActionCollisionBudgetPriced
+    (C : ActiveHashDomainAndMultiTargetCertificate) :
+    Path2HashBudget.Fq12ActionCollisionBudgetPriced C.directBudget :=
+  C.fq12ActionCollisionBudgetPriced
+
 theorem native_multiTargetLossPriced
     (C : ActiveHashDomainAndMultiTargetCertificate) :
     C.toNativeHashBudgetBoundary.multiTargetLossPriced :=
@@ -322,6 +329,8 @@ def activePath2HashDomainAndMultiTargetCertificate :
     path2_direct_query_budget_priced
   auxiliaryFq12ChallengeShapeComplete :=
     path2_direct_query_budget_auxiliary_fq12_challenge_shape_complete
+  fq12ActionCollisionBudgetPriced :=
+    path2_direct_query_budget_fq12_action_collision_budget_priced
   checkedCoreFrameDomainSeparated :=
     active_checkedCoreFrameDomainSeparated
   hiddenSourceFrameDomainSeparated :=
@@ -354,6 +363,12 @@ theorem activeNativeHashBudgetBoundary_auxiliaryFq12ChallengeShapeComplete :
       activePath2HashDomainAndMultiTargetCertificate.directBudget :=
   activePath2HashDomainAndMultiTargetCertificate
     |>.active_auxiliaryFq12ChallengeShapeComplete
+
+theorem activeNativeHashBudgetBoundary_fq12ActionCollisionBudgetPriced :
+    Path2HashBudget.Fq12ActionCollisionBudgetPriced
+      activePath2HashDomainAndMultiTargetCertificate.directBudget :=
+  activePath2HashDomainAndMultiTargetCertificate
+    |>.active_fq12ActionCollisionBudgetPriced
 
 theorem activeNativeHashBudgetBoundary_multiTargetLossPriced :
     activeNativeHashBudgetBoundary.multiTargetLossPriced :=

@@ -143,6 +143,9 @@ pub const CHALLENGE_HARDENING_BYTES: usize = 4;
 pub const CHALLENGE_BYTES: usize = ALGEBRAIC_CHALLENGE_BYTES + CHALLENGE_HARDENING_BYTES;
 pub const CHALLENGE_BITS_PER_REP: usize = 5;
 pub const ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK: u8 = 0x3f;
+pub const PATH2_FQ12_ACTION_COLLISION_FLOOR_BITS: u16 = 163;
+pub const PATH2_FQ12_ACTION_COLLISION_QUANTUM_BITS_AT_UNION_BOUND: u16 = 131;
+pub const PATH2_FQ12_ACTION_COLLISION_CLASSICAL_BITS_AT_UNION_BOUND: u16 = 130;
 pub const RESPONSE_BOUND: i16 = 48;
 pub const LOCAL_SYNDROME_SLOPE: u16 = 50;
 pub const ACTIVE_RESPONSE_BYTES: usize = 52;
@@ -2931,6 +2934,9 @@ pub struct Path2DirectQueryBudgetV1 {
     pub algebraic_challenge_last_byte_mask: u8,
     pub algebraic_challenge_bits_after_mask: u16,
     pub total_challenge_bits_after_mask: u16,
+    pub action_collision_floor_bits: u16,
+    pub action_collision_quantum_bits_at_union_bound: u16,
+    pub action_collision_classical_bits_at_union_bound: u16,
     pub selected_multi_target_horizon_log2: u16,
     pub negative_control_horizon_log2: u16,
     pub minimum_deployment_margin_bits: u16,
@@ -2955,6 +2961,9 @@ pub struct Path2NativeHashQromReviewV1 {
     pub algebraic_challenge_last_byte_mask: u8,
     pub algebraic_challenge_bits_after_mask: u16,
     pub total_challenge_bits_after_mask: u16,
+    pub action_collision_floor_bits: u16,
+    pub action_collision_quantum_bits_at_union_bound: u16,
+    pub action_collision_classical_bits_at_union_bound: u16,
     pub selected_multi_target_horizon_log2: u16,
     pub negative_control_horizon_log2: u16,
     pub minimum_deployment_margin_bits: u16,
@@ -17004,6 +17013,11 @@ pub fn path2_direct_query_budget_v1() -> Path2DirectQueryBudgetV1 {
         algebraic_challenge_last_byte_mask: ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK,
         algebraic_challenge_bits_after_mask,
         total_challenge_bits_after_mask,
+        action_collision_floor_bits: PATH2_FQ12_ACTION_COLLISION_FLOOR_BITS,
+        action_collision_quantum_bits_at_union_bound:
+            PATH2_FQ12_ACTION_COLLISION_QUANTUM_BITS_AT_UNION_BOUND,
+        action_collision_classical_bits_at_union_bound:
+            PATH2_FQ12_ACTION_COLLISION_CLASSICAL_BITS_AT_UNION_BOUND,
         selected_multi_target_horizon_log2: 32,
         negative_control_horizon_log2: 54,
         minimum_deployment_margin_bits: 53,
@@ -17060,6 +17074,11 @@ pub fn path2_native_hash_qrom_review_v1() -> Path2NativeHashQromReviewV1 {
         algebraic_challenge_last_byte_mask: budget.algebraic_challenge_last_byte_mask,
         algebraic_challenge_bits_after_mask: budget.algebraic_challenge_bits_after_mask,
         total_challenge_bits_after_mask: budget.total_challenge_bits_after_mask,
+        action_collision_floor_bits: budget.action_collision_floor_bits,
+        action_collision_quantum_bits_at_union_bound: budget
+            .action_collision_quantum_bits_at_union_bound,
+        action_collision_classical_bits_at_union_bound: budget
+            .action_collision_classical_bits_at_union_bound,
         selected_multi_target_horizon_log2: budget.selected_multi_target_horizon_log2,
         negative_control_horizon_log2: budget.negative_control_horizon_log2,
         minimum_deployment_margin_bits: budget.minimum_deployment_margin_bits,
@@ -17112,6 +17131,9 @@ pub fn path2_auxiliary_fq12_qrom_horizon_complete_v1() -> bool {
         && review.algebraic_challenge_bits_after_mask == 182
         && review.total_challenge_bits_after_mask == 214
         && review.algebraic_challenge_bits_after_mask == review.transcript_term_bits_after_qrom_loss
+        && review.action_collision_floor_bits == 163
+        && review.action_collision_quantum_bits_at_union_bound >= review.target_security_bits
+        && review.action_collision_classical_bits_at_union_bound >= review.target_security_bits
         && review.selected_multi_target_horizon_log2 == 32
         && review.selected_multi_target_horizon_log2 <= review.minimum_deployment_margin_bits
         && review.negative_control_horizon_log2 > review.minimum_deployment_margin_bits
@@ -34862,6 +34884,7 @@ mod tests {
         assert!(serialized.contains("q_transparent_trace_commit"));
         assert!(serialized.contains("q_transparent_query_row"));
         assert!(serialized.contains("q_transparent_merkle_open"));
+        assert!(serialized.contains("\"action_collision_floor_bits\":163"));
         assert!(serialized.contains("\"inactive_query_symbols\":[\"q_batch\"]"));
     }
 
@@ -34889,6 +34912,22 @@ mod tests {
         );
         assert_eq!(review.algebraic_challenge_bits_after_mask, 182);
         assert_eq!(review.total_challenge_bits_after_mask, 214);
+        assert_eq!(
+            review.action_collision_floor_bits,
+            PATH2_FQ12_ACTION_COLLISION_FLOOR_BITS
+        );
+        assert_eq!(
+            review.action_collision_quantum_bits_at_union_bound,
+            PATH2_FQ12_ACTION_COLLISION_QUANTUM_BITS_AT_UNION_BOUND
+        );
+        assert_eq!(
+            review.action_collision_classical_bits_at_union_bound,
+            PATH2_FQ12_ACTION_COLLISION_CLASSICAL_BITS_AT_UNION_BOUND
+        );
+        assert!(review.action_collision_quantum_bits_at_union_bound >= review.target_security_bits);
+        assert!(
+            review.action_collision_classical_bits_at_union_bound >= review.target_security_bits
+        );
         assert_eq!(review.selected_multi_target_horizon_log2, 32);
         assert_eq!(review.negative_control_horizon_log2, 54);
         assert!(path2_auxiliary_fq12_qrom_horizon_complete_v1());
