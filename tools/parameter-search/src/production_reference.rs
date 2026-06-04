@@ -6617,8 +6617,18 @@ fn lean_selected_rust_field_local_shared_digest_frame_witness_source_endpoint_pr
 
 fn lean_selected_rust_field_local_digest_frame_witness_byte_component_endpoint_present_v1() -> bool
 {
-    let source =
+    let full_source =
         include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
+    let source_start = full_source
+        .find("\ntheorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_components")
+        .expect("selected Rust field-local digest-frame witness byte component theorem start missing");
+    let source_end = full_source[source_start..]
+        .find("\nstructure ReviewedFq12SelectedRustFieldLocalPackagedSourceRouteInputs")
+        .expect(
+            "selected Rust field-local digest-frame witness byte component theorem end missing",
+        )
+        + source_start;
+    let source = &full_source[source_start..source_end];
     [
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_components",
         "ReviewedFq12ConcreteRoleRootFieldBindingCertificate",
