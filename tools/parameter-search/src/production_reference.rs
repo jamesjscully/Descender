@@ -3257,6 +3257,7 @@ pub struct Path2NativeDeploymentPreflightV1 {
     pub checked_core_composition_review_complete: bool,
     pub hash_qrom_deployment_horizon_complete: bool,
     pub full_signature_execution_source_boundary_present: bool,
+    pub full_signature_execution_source_instantiated: bool,
     pub no_export_serializer_boundary_present: bool,
     pub signer_verifier_pipeline_present: bool,
     pub constant_time_audit_complete: bool,
@@ -19013,6 +19014,50 @@ fn path2_full_signature_execution_source_boundary_present_v1() -> bool {
             .all(|marker| theorem_window.contains(marker))
 }
 
+fn path2_full_signature_execution_source_instantiated_v1() -> bool {
+    let full_spend_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    path2_full_signature_execution_source_instantiated_in_source_v1(full_spend_source)
+}
+
+fn path2_full_signature_execution_source_instantiated_in_source_v1(
+    full_spend_source: &str,
+) -> bool {
+    let Some(instantiation_start) =
+        full_spend_source.find("\ntheorem concreteFullSignatureExecutionSource_instantiation_v1")
+    else {
+        return false;
+    };
+    let instantiation_end = full_spend_source[instantiation_start..]
+        .find("\nend Path2FullSpendConcrete")
+        .map(|offset| instantiation_start + offset)
+        .unwrap_or(full_spend_source.len());
+    let instantiation_source = &full_spend_source[instantiation_start..instantiation_end];
+    let theorem_header_end = instantiation_source
+        .find(":= by")
+        .or_else(|| instantiation_source.find(" where"))
+        .unwrap_or(instantiation_source.len().min(1024));
+    let theorem_header = &instantiation_source[..theorem_header_end];
+    if theorem_header.contains("ConcreteFullSignatureExecutionSource")
+        || theorem_header.contains("ConcreteGameConfig")
+    {
+        return false;
+    }
+
+    let instantiation_checks = [
+        "concreteFullSignatureExecutionSource_instantiation_v1",
+        "let selectedRustFullExecutionSource :",
+        "ConcreteFullSignatureExecutionSource",
+        "executionSucceeds :=",
+        "success_implies_verifier_accept_or_break :=",
+        "concrete_fullExecutionAcceptedSpendLift",
+        "NativeFullSignatureSecurityBoundary.withConcreteFullExecutionSource",
+        "full_signature_with_concrete_full_execution_source_lift",
+    ];
+    instantiation_checks
+        .iter()
+        .all(|marker| instantiation_source.contains(marker))
+}
+
 fn path2_no_export_serializer_boundary_present_v1() -> bool {
     let no_export_source = include_str!("../../../Descender/Path2NoExport.lean");
     let concrete_source = include_str!("../../../Descender/Path2NoExportConcrete.lean");
@@ -20176,6 +20221,8 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     let hash_qrom_deployment_horizon_complete = path2_auxiliary_fq12_qrom_horizon_complete_v1();
     let full_signature_execution_source_boundary_present =
         path2_full_signature_execution_source_boundary_present_v1();
+    let full_signature_execution_source_instantiated =
+        path2_full_signature_execution_source_instantiated_v1();
     let no_export_serializer_boundary_present = path2_no_export_serializer_boundary_present_v1();
     let proof_side_public_boundary_preflight_complete = projection_encoders_present
         && checked_core_frame_present
@@ -20187,6 +20234,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         && checked_core_composition_review_complete
         && hash_qrom_deployment_horizon_complete
         && full_signature_execution_source_boundary_present
+        && full_signature_execution_source_instantiated
         && no_export_serializer_boundary_present;
     let signer_verifier_pipeline_present = path2_native_signer_verifier_pipeline_productized_v1();
     let constant_time_audit_complete = path2_native_constant_time_audit_complete_v1();
@@ -20221,7 +20269,9 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     if !hash_qrom_deployment_horizon_complete {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON);
     }
-    if !full_signature_execution_source_boundary_present {
+    if !full_signature_execution_source_boundary_present
+        || !full_signature_execution_source_instantiated
+    {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE);
     }
     if !no_export_serializer_boundary_present {
@@ -20261,6 +20311,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         checked_core_composition_review_complete,
         hash_qrom_deployment_horizon_complete,
         full_signature_execution_source_boundary_present,
+        full_signature_execution_source_instantiated,
         no_export_serializer_boundary_present,
         signer_verifier_pipeline_present,
         constant_time_audit_complete,
@@ -20312,7 +20363,9 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         Some("reject_active_native_hash_qrom_review_source_open")
     } else if !deployment_preflight.hash_qrom_deployment_horizon_complete {
         Some("reject_active_native_qrom_target_horizon_open")
-    } else if !deployment_preflight.full_signature_execution_source_boundary_present {
+    } else if !deployment_preflight.full_signature_execution_source_boundary_present
+        || !deployment_preflight.full_signature_execution_source_instantiated
+    {
         Some("reject_active_native_full_signature_execution_source_open")
     } else if !deployment_preflight.no_export_serializer_boundary_present {
         Some("reject_active_native_no_export_serializer_boundary_open")
@@ -38177,6 +38230,7 @@ mod tests {
                 && preflight.checked_core_composition_review_complete
                 && preflight.hash_qrom_deployment_horizon_complete
                 && preflight.full_signature_execution_source_boundary_present
+                && preflight.full_signature_execution_source_instantiated
                 && preflight.no_export_serializer_boundary_present
         );
         assert!(path2_native_projection_encoder_source_boundary_present_v1());
@@ -38291,6 +38345,37 @@ end Path2CheckedCoreByteBridge
         assert!(preflight.hash_qrom_deployment_horizon_complete);
         assert!(path2_full_signature_execution_source_boundary_present_v1());
         assert!(preflight.full_signature_execution_source_boundary_present);
+        let assumed_full_execution_source = r#"
+theorem concreteFullSignatureExecutionSource_instantiation_v1
+    (Source : ConcreteFullSignatureExecutionSource C) :
+    ConcreteFullExecutionAcceptedSpendLift C Source := by
+  exact concrete_fullExecutionAcceptedSpendLift C Source
+end Path2FullSpendConcrete
+"#;
+        assert!(
+            !path2_full_signature_execution_source_instantiated_in_source_v1(
+                assumed_full_execution_source
+            )
+        );
+        let assumed_full_execution_config = r#"
+theorem concreteFullSignatureExecutionSource_instantiation_v1
+    (C : ConcreteGameConfig) :
+    ConcreteFullExecutionAcceptedSpendLift C selectedRustFullExecutionSource := by
+  let selectedRustFullExecutionSource :
+      ConcreteFullSignatureExecutionSource C :=
+    { executionSucceeds := selectedRustExecutionSucceeds
+      success_implies_verifier_accept_or_break :=
+        selectedRustSuccessImpliesVerifierAcceptOrBreak }
+  exact concrete_fullExecutionAcceptedSpendLift C selectedRustFullExecutionSource
+end Path2FullSpendConcrete
+"#;
+        assert!(
+            !path2_full_signature_execution_source_instantiated_in_source_v1(
+                assumed_full_execution_config
+            )
+        );
+        assert!(!path2_full_signature_execution_source_instantiated_v1());
+        assert!(!preflight.full_signature_execution_source_instantiated);
         assert!(path2_no_export_serializer_boundary_present_v1());
         assert!(preflight.no_export_serializer_boundary_present);
         assert!(path2_native_signer_verifier_pipeline_source_present_v1());
@@ -38307,6 +38392,7 @@ end Path2CheckedCoreByteBridge
             preflight.internal_blockers,
             vec![
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION,
+                PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
@@ -39404,6 +39490,7 @@ end Path2CheckedCoreByteBridge
             evidence.deployment_blockers,
             vec![
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION,
+                PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
@@ -39488,6 +39575,11 @@ end Path2CheckedCoreByteBridge
         assert!(
             evidence
                 .deployment_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
+        );
+        assert!(
+            evidence
+                .deployment_blockers
                 .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME)
         );
         assert!(
@@ -39508,6 +39600,7 @@ end Path2CheckedCoreByteBridge
         let rendered = serde_json::to_string(&evidence).unwrap();
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
+        assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE));
