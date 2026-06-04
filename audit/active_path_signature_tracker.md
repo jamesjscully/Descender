@@ -232,55 +232,28 @@ the base source-route closure theorem, boundary/factored wrappers, selected-Rust
 source-route byte-source wrapper, compact/local functional-lift wrappers,
 packaged route, direct-assembly representative/shared/native-frame wrappers, and
 the field/local adapter theorem.
-Rust hidden-source semantics audit now digest-binds the narrowed source-route
-surface with `lean_source_route_local_instantiation_endpoint_present`,
-`lean_boundary_availability_concrete_role_root_source_route_endpoint_present`,
-`lean_factored_boundary_availability_concrete_role_root_source_route_endpoint_present`,
-`lean_selected_rust_source_route_byte_source_endpoint_present`,
-`lean_selected_rust_factored_concrete_local_source_route_endpoint_present`,
-`lean_selected_rust_factored_concrete_local_functional_lift_source_route_endpoint_present`,
-`lean_selected_rust_concrete_local_functional_lift_source_route_endpoint_present`,
-`lean_selected_rust_packaged_source_route_endpoint_present`,
-`lean_selected_rust_direct_assembly_native_digest_frame_packaged_source_route_endpoint_present`,
-`lean_selected_rust_field_local_packaged_source_route_adapter_present`,
-`rust_concrete_role_root_field_binding_present`,
-`rust_certificate_lift_opening_functionality_present`,
-`rust_assembly_representative_digest_lookup_source_present`,
-`rust_representative_canonical_digest_source_present`,
-`rust_full_native_opening_canonical_representative_source_present`,
-`rust_full_native_opening_representative_frame_source_present`,
-`lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present`,
-`rust_representative_digest_functionality_source_present`,
-`rust_assembly_representative_frame_source_present`,
-`rust_shared_representative_frame_source_present`,
-`rust_native_representative_digest_frame_source_present`,
-`rust_shared_digest_frame_witness_byte_source_contract_present`,
-`rust_constructed_assembly_compatibility_witness_source_present`,
-`rust_compatibility_route_witness_source_present`,
-`rust_assembly_compatibility_local_model_source_present`,
-`rust_full_opening_field_evidence_present`,
-`rust_full_opening_source_route_present`,
-`rust_selected_source_route_byte_source_contract_present`,
-`rust_source_route_byte_parser_frame_certificates_present`, and
-`rust_source_route_negative_controls_present`, while still keeping
+Rust hidden-source semantics audit now digest-binds the raw active AP2-N001
+surface as
+`active_field_local_digest_frame_witness_byte_component_surfaces_present`.
+That gate mirrors
+`reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_components`:
+concrete role-root field binding, selected lift functionality, selected
+source-route byte evidence, field/local assembly and compatibility components,
+and the canonical plus assembly witness byte sources pinned to one
+representative digest frame. Older source-route/package adapter booleans remain
+digest-recorded as supporting evidence, but `semantics_bridge_complete` no
+longer treats them as separate active-path blockers. The bridge still keeps
 `extractor_theorem_instantiated = false` and
-`semantics_bridge_complete = false`. The production hidden-source semantics
-gate/readiness report now also carry the bridge-audit digest and the
-`semantics_bridge_complete` bit, so the deployability chain is digest-bound to
-the narrowed active-path audit and remains blocked independently of the
-acceptance-obligation bitmap. The top-level production preflight now also
-reports the hidden-source semantics bridge audit as present and the bridge as
-incomplete, keeping the hidden-source semantics blocker visible in the active
-deployment surface.
+`semantics_bridge_complete = false`; the production hidden-source semantics
+gate/readiness report carries the bridge-audit digest and completion bit, so
+the deployability chain remains fail-closed on the active theorem-instantiation
+obligation.
 
-The bridge audit now also hash-binds the AP2-N001 byte-shaped package surface:
-`selected_rust_canonical_byte_and_witness_package_surfaces_present` is true
-only when the active role-root/lift source, selected source-route byte endpoint,
-direct assembly binding source, local assembly/compatibility model source,
-canonical representative source, native representative digest-frame source, and
-Rust digest-frame witness API are all present. This is still a surface gate,
-not a theorem-instantiation claim; `extractor_theorem_instantiated` remains the
-final blocker.
+The bridge audit still hash-binds the AP2-N001 byte-shaped convenience package
+surface. `selected_rust_canonical_byte_and_witness_package_surfaces_present`
+now requires the raw role-root side package directly, but it remains a
+supporting surface gate, not a theorem-instantiation claim;
+`extractor_theorem_instantiated` is the final hidden-source semantics blocker.
 The Rust audit now also carries
 `rust_full_native_opening_canonical_representative_witness_byte_source_present`
 separately, so the Rust-shaped canonical witness source required by the latest
