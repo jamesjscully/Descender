@@ -402,6 +402,7 @@ pub use descender_parameter_search::production_reference::{
     verify_hidden_source_fallback_pad_prf_seed_or_export,
     verify_hidden_source_fallback_projection_public_bridge,
     verify_hidden_source_fallback_response_link_kernel_or_export,
+    verify_path2_native_checked_core_byte_instantiation_evidence_v1,
     verify_path2_native_consensus_carrier_v1_against_bundle,
     verify_path2_native_deployment_pipeline_v1, verify_public_local_fiber_consistency,
     verify_public_pad_opening_consistency, verify_reviewed_account_carried_account_binding,

@@ -2342,6 +2342,19 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_v1_digest(
         .map_err(|err| format!("encode Path 2 native checked-core byte evidence: {err}"))
 }
 
+pub fn verify_path2_native_checked_core_byte_instantiation_evidence_v1(
+    bundle: &Path2NativeProjectionBundleV1,
+    checked_core_proof_bytes: &[u8],
+    evidence: &Path2NativeCheckedCoreByteInstantiationEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let expected =
+        path2_native_checked_core_byte_instantiation_evidence_v1(bundle, checked_core_proof_bytes)?;
+    if expected != *evidence {
+        return Err("Path 2 native checked-core byte evidence mismatch".to_string());
+    }
+    path2_native_checked_core_byte_instantiation_evidence_v1_digest(evidence)
+}
+
 fn validate_path2_native_context_fields(
     native_boundary_version: u16,
     parameter_set_id: u16,
@@ -18500,10 +18513,15 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "path2_native_checked_core_rejection_contains_v1",
         "result.is_err_and",
         "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
+        "verify_path2_native_checked_core_byte_instantiation_evidence_v1",
+        "if expected != *evidence",
     ];
     let test_checks = [
         "path2_native_checked_core_accept_pins_canonical_proof_bytes_before_acceptance",
         "path2_native_checked_core_byte_instantiation_evidence_reports_component_facts",
+        "verify_path2_native_checked_core_byte_instantiation_evidence_v1",
+        "tampered_digest_evidence.checked_core_proof_bytes_digest",
+        "tampered_bool_evidence.hash_and_syndrome_eq",
         "assert!(evidence.hash_and_syndrome_eq)",
         "short_proof",
         "noncanonical_proof",
@@ -19625,6 +19643,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "path2_native_verifier_pipeline_verdict_v1_digest",
         "path2_native_checked_core_byte_instantiation_evidence_v1",
         "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
+        "verify_path2_native_checked_core_byte_instantiation_evidence_v1",
         "public_native_account_view_v1",
         "public_native_account_view_v1_json",
         "public_native_spend_view_v1",
@@ -38447,6 +38466,39 @@ end Path2CheckedCoreByteBridge
         assert_ne!(
             path2_native_checked_core_byte_instantiation_evidence_v1_digest(&evidence).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        assert_eq!(
+            verify_path2_native_checked_core_byte_instantiation_evidence_v1(
+                &bundle,
+                &proof_bytes,
+                &evidence,
+            )
+            .unwrap(),
+            path2_native_checked_core_byte_instantiation_evidence_v1_digest(&evidence).unwrap()
+        );
+
+        let mut tampered_digest_evidence = evidence;
+        tampered_digest_evidence.checked_core_proof_bytes_digest[0] ^= 1;
+        assert_eq!(
+            verify_path2_native_checked_core_byte_instantiation_evidence_v1(
+                &bundle,
+                &proof_bytes,
+                &tampered_digest_evidence,
+            )
+            .unwrap_err(),
+            "Path 2 native checked-core byte evidence mismatch"
+        );
+
+        let mut tampered_bool_evidence = evidence;
+        tampered_bool_evidence.hash_and_syndrome_eq = false;
+        assert_eq!(
+            verify_path2_native_checked_core_byte_instantiation_evidence_v1(
+                &bundle,
+                &proof_bytes,
+                &tampered_bool_evidence,
+            )
+            .unwrap_err(),
+            "Path 2 native checked-core byte evidence mismatch"
         );
 
         let rendered = serde_json::to_string(&evidence).unwrap();
