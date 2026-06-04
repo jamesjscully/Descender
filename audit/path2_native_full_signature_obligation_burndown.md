@@ -237,6 +237,11 @@ also source-inspected by
 `path2_reviewed_fq12_full_opening_field_evidence_source_present_v1`,
 `path2_reviewed_fq12_full_opening_source_route_source_present_v1`, and
 `path2_reviewed_fq12_source_route_negative_controls_present_v1`.
+The selected hidden-relation extraction-certificate flag is source-inspected by
+`path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1`,
+covering payload digest checks, statement/opening/pad binding,
+account-witness opening-frame recomputation, certificate framing, and the
+statement-rebinding regression.
 The top-level production preflight also reports that audit as present while
 keeping the bridge incomplete, so the hidden-source semantics blocker remains
 visible in the active deployment surface.

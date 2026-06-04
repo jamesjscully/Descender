@@ -6488,6 +6488,102 @@ fn lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route
     .all(|marker| source.contains(marker))
 }
 
+fn path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+    let constructor_start = source
+        .find("\npub fn path2_reviewed_fq12_hidden_relation_extraction_certificate_v1(")
+        .expect("Path 2 reviewed Fq12 extraction certificate source start marker missing");
+    let constructor_end = source[constructor_start..]
+        .find("\npub fn path2_reviewed_fq12_hidden_relation_extraction_certificate_v1_frame(")
+        .expect("Path 2 reviewed Fq12 extraction certificate source end marker missing")
+        + constructor_start;
+    let constructor_source = &source[constructor_start..constructor_end];
+
+    let frame_start = source
+        .find("\npub fn path2_reviewed_fq12_hidden_relation_extraction_certificate_v1_frame(")
+        .expect("Path 2 reviewed Fq12 extraction certificate frame source start marker missing");
+    let frame_end = source[frame_start..]
+        .find("\npub fn path2_reviewed_fq12_hidden_relation_extraction_certificate_v1_digest(")
+        .expect("Path 2 reviewed Fq12 extraction certificate frame source end marker missing")
+        + frame_start;
+    let frame_source = &source[frame_start..frame_end];
+
+    let test_start = source
+        .find(
+            "\n    fn path2_reviewed_fq12_hidden_relation_extraction_certificate_binds_accepted_tuple()",
+        )
+        .expect("Path 2 reviewed Fq12 extraction certificate regression source start marker missing");
+    let test_end = source[test_start..]
+        .find("\n    fn path2_reviewed_fq12_full_native_opening_certificate_binds_all_roles()")
+        .expect("Path 2 reviewed Fq12 extraction certificate regression source end marker missing")
+        + test_start;
+    let test_source = &source[test_start..test_end];
+
+    let constructor_checks = [
+        "payload_binding.schema != PATH2_REVIEWED_FQ12_HIDDEN_SOURCE_PAYLOAD_BINDING_DOMAIN",
+        "path2_reviewed_fq12_hidden_source_payload_binding_v1_digest(payload_binding)?",
+        "!= payload_binding.payload_digest",
+        "payload_binding.slot_id != soundness.slot_id as u64",
+        "payload_binding.reviewed_active_lane_statement_digest != soundness.statement_digest",
+        "payload_binding.opening_commitment != soundness.opening_commitment",
+        "payload_binding.pad_seed_digest != soundness.pad_seed_digest",
+        "HiddenSourceFallbackProjectionAccountWitnessOpening",
+        "selected_source_values: soundness.packed_witness_opening.account_projection",
+        "encode_hidden_source_fallback_account_witness_opening_frame(&account_witness_opening)?",
+        "if expected_frame != soundness.account_witness_projection_opening_frame",
+        "account_projection_digest: digest_u16_slice(",
+        "&soundness.packed_witness_opening.account_projection",
+        "account_witness_opening_frame_digest: Sha256::digest(",
+        "&soundness.account_witness_projection_opening_frame",
+        "carrier_lanes_digest: digest_u16_slice(&soundness.carrier_lanes)",
+        "checked_core_challenge: soundness.checked_core_challenge",
+        "checked_core_witness_syndrome_digest: digest_u16_slice(",
+        "&soundness.checked_core_witness_syndrome",
+        "checked_core_response_syndrome_digest: digest_u16_slice(",
+        "&soundness.checked_core_response_syndrome",
+        "path2_reviewed_fq12_hidden_relation_extraction_certificate_v1_digest(&cert)?",
+    ];
+    let frame_checks = [
+        "if cert.schema != PATH2_REVIEWED_FQ12_HIDDEN_RELATION_EXTRACTION_CERTIFICATE_DOMAIN",
+        "b\"payload_binding_digest\"",
+        "b\"native_boundary_digest\"",
+        "b\"slot_id\"",
+        "b\"hidden_source_statement_digest\"",
+        "b\"reviewed_active_lane_statement_digest\"",
+        "b\"opening_commitment\"",
+        "b\"pad_seed_digest\"",
+        "b\"account_projection_digest\"",
+        "b\"account_witness_opening_frame_digest\"",
+        "b\"carrier_lanes_digest\"",
+        "b\"checked_core_challenge\"",
+        "b\"checked_core_witness_syndrome_digest\"",
+        "b\"checked_core_response_syndrome_digest\"",
+    ];
+    let test_checks = [
+        "verify_reviewed_fq12_state_assisted_masked_projection_soundness_certificate(",
+        "path2_reviewed_fq12_hidden_relation_extraction_certificate_v1(",
+        "assert_eq!(cert.payload_binding_digest, payload_binding.payload_digest)",
+        "cert.native_boundary_digest",
+        "assert_eq!(cert.slot_id, payload_binding.slot_id)",
+        "cert.account_projection_digest",
+        "digest_u16_slice(&fixture.account_projection)",
+        "cert.extraction_certificate_digest",
+        "path2_reviewed_fq12_hidden_relation_extraction_certificate_v1_digest(&cert).unwrap()",
+        "rebound.statement_digest[0] ^= 1",
+        "\"Path 2 extraction certificate statement digest mismatch\"",
+    ];
+
+    constructor_checks
+        .iter()
+        .all(|marker| constructor_source.contains(marker))
+        && frame_checks
+            .iter()
+            .all(|marker| frame_source.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| test_source.contains(marker))
+}
+
 pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
 -> Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     let lean_payload_interface_pinned = true;
@@ -6499,7 +6595,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let rust_no_partial_export_negative_controls_present = true;
     let path2_creation_statement_bridge_present = true;
     let native_boundary_digest_payload_binding_complete = true;
-    let selected_hidden_relation_extraction_certificate_present = true;
+    let selected_hidden_relation_extraction_certificate_present =
+        path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1();
     let full_native_opening_role_lift_certificate_present = true;
     let lean_source_route_local_instantiation_endpoint_present = true;
     let lean_boundary_availability_concrete_role_root_source_route_endpoint_present = true;
@@ -6554,7 +6651,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         path2_reviewed_fq12_full_opening_source_route_source_present_v1();
     let rust_source_route_negative_controls_present =
         path2_reviewed_fq12_source_route_negative_controls_present_v1();
-    let hidden_relation_verifier_implemented = true;
+    let hidden_relation_verifier_implemented =
+        selected_hidden_relation_extraction_certificate_present;
     let extractor_theorem_instantiated = false;
     let semantics_bridge_complete = lean_payload_interface_pinned
         && rust_accepting_certificate_wrapper_present
@@ -38489,6 +38587,7 @@ mod tests {
         assert!(audit.path2_creation_statement_bridge_present);
         assert!(audit.native_boundary_digest_payload_binding_complete);
         assert!(audit.selected_hidden_relation_extraction_certificate_present);
+        assert!(path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1());
         assert!(audit.full_native_opening_role_lift_certificate_present);
         assert!(audit.lean_source_route_local_instantiation_endpoint_present);
         assert!(audit.lean_boundary_availability_concrete_role_root_source_route_endpoint_present);
