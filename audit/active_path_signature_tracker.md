@@ -248,6 +248,7 @@ surface with `lean_source_route_local_instantiation_endpoint_present`,
 `rust_assembly_representative_frame_source_present`,
 `rust_shared_representative_frame_source_present`,
 `rust_native_representative_digest_frame_source_present`,
+`rust_shared_digest_frame_witness_byte_source_contract_present`,
 `rust_constructed_assembly_compatibility_witness_source_present`,
 `rust_compatibility_route_witness_source_present`,
 `rust_assembly_compatibility_local_model_source_present`,
@@ -284,6 +285,15 @@ It also carries
 source-inspects that the canonical representative witness and assembly
 digest-frame witness recompute the representative digest from the same
 `path2_reviewed_fq12_native_representative_digest_v1` argument list.
+The shared witness-byte package is now tracked separately as
+`rust_shared_digest_frame_witness_byte_source_contract_present`, backed by
+`path2_reviewed_fq12_shared_digest_frame_witness_byte_source_contract_present_v1`.
+That helper pins the Lean
+`ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources` package and its
+two digest-frame equalities to the Rust canonical representative witness and
+assembly digest-frame witness constructors, frames, and verifier
+reconstruction. This keeps the raw-component theorem's shared-frame equalities
+from being hidden behind the broader "same native frame" source check.
 The audit now also carries a dedicated marker bit for
 `reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources`,
 so the active five-source endpoint is checked directly rather than only through
