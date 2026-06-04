@@ -3204,6 +3204,7 @@ pub struct Path2NativeVerifierPipelineVerdictV1 {
     pub production_accepted: bool,
     pub rejection_code: Option<&'static str>,
     pub consensus_carrier_digest: Option<[u8; DIGEST_BYTES]>,
+    pub checked_core_byte_instantiation_evidence_digest: Option<[u8; DIGEST_BYTES]>,
     pub native_boundary_digest: [u8; DIGEST_BYTES],
     pub verifier_preflight_report: Path2NativeConsensusCarrierPreflightReportV1,
     pub deployment_preflight: Path2NativeDeploymentPreflightV1,
@@ -18950,6 +18951,9 @@ fn path2_no_export_serializer_boundary_present_v1() -> bool {
     ];
     let verifier_test_checks = [
         "path2_native_verifier_pipeline_is_public_only_and_fail_closed_until_productized",
+        "checked_core_byte_instantiation_evidence_digest",
+        "path2_native_checked_core_byte_instantiation_evidence_v1",
+        "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
         "assert_no_active_native_private_material(&rendered)",
         "!rendered.contains(\"message_digest\")",
         "!rendered.contains(\"proof_commitment\")",
@@ -20125,6 +20129,15 @@ pub fn verify_path2_native_deployment_pipeline_v1(
     } else {
         None
     };
+    let checked_core_byte_instantiation_evidence_digest = if public_boundary_accepted {
+        path2_native_checked_core_byte_instantiation_evidence_v1(bundle, checked_core_proof_bytes)
+            .and_then(|evidence| {
+                path2_native_checked_core_byte_instantiation_evidence_v1_digest(&evidence)
+            })
+            .ok()
+    } else {
+        None
+    };
 
     Path2NativeVerifierPipelineVerdictV1 {
         schema: PATH2_NATIVE_VERIFIER_PIPELINE_VERDICT_SCHEMA,
@@ -20132,6 +20145,7 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         production_accepted,
         rejection_code,
         consensus_carrier_digest: verifier_preflight.carrier_digest,
+        checked_core_byte_instantiation_evidence_digest,
         native_boundary_digest: carrier.native_boundary_digest,
         verifier_preflight_report: verifier_preflight,
         deployment_preflight,
@@ -38051,6 +38065,18 @@ end Path2CheckedCoreByteBridge
             Some("reject_active_native_checked_core_composition_open")
         );
         assert_eq!(verdict.consensus_carrier_digest, Some(carrier_digest));
+        let checked_core_report =
+            path2_native_checked_core_byte_instantiation_evidence_v1(&bundle, &proof_bytes)
+                .unwrap();
+        assert_eq!(
+            verdict.checked_core_byte_instantiation_evidence_digest,
+            Some(
+                path2_native_checked_core_byte_instantiation_evidence_v1_digest(
+                    &checked_core_report,
+                )
+                .unwrap()
+            )
+        );
         assert_eq!(
             verdict.native_boundary_digest,
             assembly.native_boundary_digest
@@ -38071,6 +38097,10 @@ end Path2CheckedCoreByteBridge
         assert_eq!(
             rejected.rejection_code,
             Some("reject_carrier_bundle_mismatch")
+        );
+        assert_eq!(
+            rejected.checked_core_byte_instantiation_evidence_digest,
+            None
         );
 
         for rendered in [
