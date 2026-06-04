@@ -294,6 +294,13 @@ two digest-frame equalities to the Rust canonical representative witness and
 assembly digest-frame witness constructors, frames, and verifier
 reconstruction. This keeps the raw-component theorem's shared-frame equalities
 from being hidden behind the broader "same native frame" source check.
+The representative-digest functionality flag is also source-inspected now:
+`rust_representative_digest_functionality_source_present` is backed by
+`path2_reviewed_fq12_representative_digest_functionality_source_present_v1`,
+which pins the Lean
+`ReviewedFq12FullNativeOpeningRepresentativeDigestFunctionalitySource`
+uniqueness theorem to the selected Rust shared-frame witness contract rather
+than aliasing the broader canonical-representative source.
 The audit now also carries a dedicated marker bit for
 `reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources`,
 so the active five-source endpoint is checked directly rather than only through

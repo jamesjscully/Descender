@@ -7465,7 +7465,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let rust_full_native_opening_representative_frame_source_present =
         rust_full_native_opening_canonical_representative_source_present;
     let rust_representative_digest_functionality_source_present =
-        rust_full_native_opening_representative_frame_source_present;
+        path2_reviewed_fq12_representative_digest_functionality_source_present_v1();
     let rust_assembly_representative_frame_source_present =
         path2_reviewed_fq12_native_representative_digest_frame_source_present_v1();
     let rust_shared_representative_frame_source_present =
@@ -10180,6 +10180,29 @@ fn path2_reviewed_fq12_shared_digest_frame_witness_byte_source_contract_present_
         )
         && canonical_verify_source
             .contains("!= witness.canonical_representative_witness_digest")
+}
+
+fn path2_reviewed_fq12_representative_digest_functionality_source_present_v1() -> bool {
+    let lean_source =
+        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
+    let lean_checks = [
+        "def ReviewedFq12FullNativeOpeningRepresentativeDigestFunctionalitySource",
+        "structure ReviewedFq12FullNativeOpeningRepresentativeFrameSource",
+        "theorem representative_digest_functionality_of_representative_frame_source",
+        "frameSource.representativeDigestCanonical",
+        "hLeftCanonical.trans hRightCanonical.symm",
+        "structure ReviewedFq12SelectedRustSharedRepresentativeFrameSource",
+        "representative_frame_source_of_canonical_representative_source",
+        "ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessByteSource",
+        "canonical_representative_byte_source_of_witness_source_and_model",
+    ];
+
+    lean_checks
+        .iter()
+        .all(|marker| lean_source.contains(marker))
+        && path2_reviewed_fq12_full_native_opening_canonical_representative_source_present_v1()
+        && path2_reviewed_fq12_full_native_opening_canonical_representative_witness_source_present_v1()
+        && path2_reviewed_fq12_shared_digest_frame_witness_byte_source_contract_present_v1()
 }
 
 pub fn path2_reviewed_fq12_native_representative_digest_frame_witness_v1(
@@ -40507,6 +40530,7 @@ mod tests {
         assert!(path2_reviewed_fq12_shared_digest_frame_witness_byte_source_contract_present_v1());
         assert!(audit.rust_full_native_opening_representative_frame_source_present);
         assert!(audit.rust_representative_digest_functionality_source_present);
+        assert!(path2_reviewed_fq12_representative_digest_functionality_source_present_v1());
         assert!(audit.rust_assembly_representative_frame_source_present);
         assert!(audit.rust_shared_representative_frame_source_present);
         assert!(audit.rust_native_representative_digest_frame_source_present);
