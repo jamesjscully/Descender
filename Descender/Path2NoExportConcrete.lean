@@ -200,5 +200,44 @@ theorem activeSerializerAllowlist_boundaryNoExportClosed
       activeSerializerAllowlist_activeNativeNoExportClosure
         NoExport Cert)
 
+/--
+Install concrete active serializer allowlisting into the active full-signature
+boundary, preserving every other proof obligation.
+-/
+def NativeFullSignatureSecurityBoundary.withActiveSerializerNoExportClosure
+    (B : NativeFullSignatureSecurityBoundary)
+    {Policy : PublicOutputPolicy}
+    {S : ActiveTaggedSerializer}
+    (NoExport : PublicOutputNoExport Policy)
+    (Cert : ActiveSerializerAllowlistCertificate Policy S) :
+    NativeFullSignatureSecurityBoundary :=
+  { B with
+    acceptedSpendSoundness :=
+      Path2NoExport.NativeAcceptedSpendSoundnessBoundary.withActiveNoExportClosure
+        B.acceptedSpendSoundness (Policy := Policy) (S.surfaces)
+    fullSignatureSecurityClaimComplete := by
+      rcases B.fullSignatureSecurityClaimComplete with
+        ⟨hKeygen, hSigning, hCompleteness, hVerifier, hFullGame,
+          hHiddenSource, hCheckedCore, hLifecycle, _hNoExport,
+          hCheckedCoreDomain, hHiddenSourceDomain, hQueryBudget,
+          hMultiTarget⟩
+      exact
+        ⟨hKeygen, hSigning, hCompleteness, hVerifier, hFullGame,
+          hHiddenSource, hCheckedCore, hLifecycle,
+          activeSerializerAllowlist_activeNativeNoExportClosure NoExport Cert,
+          hCheckedCoreDomain, hHiddenSourceDomain, hQueryBudget,
+          hMultiTarget⟩ }
+
+/-- The full-signature wrapper exposes exactly the concrete no-export closure. -/
+theorem full_signature_with_active_serializer_no_export_closed
+    (B : NativeFullSignatureSecurityBoundary)
+    {Policy : PublicOutputPolicy}
+    {S : ActiveTaggedSerializer}
+    (NoExport : PublicOutputNoExport Policy)
+    (Cert : ActiveSerializerAllowlistCertificate Policy S) :
+    (NativeFullSignatureSecurityBoundary.withActiveSerializerNoExportClosure
+      B NoExport Cert).acceptedSpendSoundness.noExportClosed :=
+  activeSerializerAllowlist_activeNativeNoExportClosure NoExport Cert
+
 end Path2NoExportConcrete
 end Descender

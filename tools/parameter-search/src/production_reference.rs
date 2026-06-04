@@ -19095,6 +19095,9 @@ fn path2_no_export_serializer_boundary_present_v1() -> bool {
         "activeSerializerAllowlist_activeNativeNoExportClosure",
         "activeSerializerAllowlist_boundaryNoExportClosed",
         "withActiveNoExportClosure",
+        "NativeFullSignatureSecurityBoundary.withActiveSerializerNoExportClosure",
+        "full_signature_with_active_serializer_no_export_closed",
+        "acceptedSpendSoundness.noExportClosed",
     ];
     let rust_no_private_checks = [
         "assert_no_active_native_private_material",
