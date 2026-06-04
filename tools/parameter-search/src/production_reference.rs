@@ -90,6 +90,8 @@ pub const PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA: &str =
     "Descender.Path2.NativeStorageLifecycleHardeningScope.v1";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE: &str =
     "active native signer/verifier pipeline is not productionized end-to-end";
+pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSENSUS_CARRIER: &str =
+    "active native consensus carrier source boundary is not pinned";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION: &str =
     "active native checked-core equation soundness is not composed into verifier acceptance";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON: &str =
@@ -17990,12 +17992,128 @@ fn path2_no_export_serializer_boundary_present_v1() -> bool {
             .all(|marker| storage_test_window.contains(marker))
 }
 
+fn path2_native_consensus_carrier_source_boundary_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let constructor_start = source
+        .find("\npub fn path2_native_consensus_carrier_v1_from_assembly(")
+        .expect("Path 2 native consensus carrier constructor start marker missing");
+    let constructor_end = source[constructor_start..]
+        .find("\npub fn validate_path2_native_consensus_carrier_v1(")
+        .expect("Path 2 native consensus carrier constructor end marker missing")
+        + constructor_start;
+    let constructor_window = &source[constructor_start..constructor_end];
+
+    let serializer_start = source
+        .find("\npub fn validate_path2_native_consensus_carrier_v1(")
+        .expect("Path 2 native consensus carrier serializer start marker missing");
+    let serializer_end = source[serializer_start..]
+        .find("\npub fn verify_path2_native_consensus_carrier_v1_against_bundle(")
+        .expect("Path 2 native consensus carrier serializer end marker missing")
+        + serializer_start;
+    let serializer_window = &source[serializer_start..serializer_end];
+
+    let verifier_start = source
+        .find("\npub fn verify_path2_native_consensus_carrier_v1_against_bundle(")
+        .expect("Path 2 native consensus carrier verifier start marker missing");
+    let verifier_end = source[verifier_start..]
+        .find("\npub fn path2_native_consensus_carrier_preflight_report_v1(")
+        .expect("Path 2 native consensus carrier verifier end marker missing")
+        + verifier_start;
+    let verifier_window = &source[verifier_start..verifier_end];
+
+    let preflight_start = source
+        .find("\npub fn path2_native_consensus_carrier_preflight_report_v1(")
+        .expect("Path 2 native consensus carrier preflight start marker missing");
+    let preflight_end = source[preflight_start..]
+        .find("\npub fn path2_native_deployment_preflight_v1(")
+        .expect("Path 2 native consensus carrier preflight end marker missing")
+        + preflight_start;
+    let preflight_window = &source[preflight_start..preflight_end];
+
+    let tests_start = source
+        .find("\n    fn path2_native_consensus_carrier_v1_is_canonical_hybrid_surface()")
+        .expect("Path 2 native consensus carrier tests start marker missing");
+    let tests_end = source[tests_start..]
+        .find("\n    fn path2_native_deployment_preflight_tracks_internal_productization_blockers")
+        .expect("Path 2 native consensus carrier tests end marker missing")
+        + tests_start;
+    let tests_window = &source[tests_start..tests_end];
+
+    let constructor_checks = [
+        "path2_native_consensus_carrier_v1_from_assembly",
+        "carrier_version: PATH2_NATIVE_CONSENSUS_CARRIER_VERSION",
+        "native_boundary_digest: assembly.native_boundary_digest",
+        "p_context_digest: assembly.p_context_digest",
+        "p_account_digest: assembly.p_account_digest",
+        "p_spend_digest: assembly.p_spend_digest",
+        "p_lifecycle_digest: assembly.p_lifecycle_digest",
+        "p_state_digest: assembly.p_state_digest",
+        "p_transcript_digest: assembly.p_transcript_digest",
+        "projection_preimage_da_digest",
+    ];
+    let serializer_checks = [
+        "validate_path2_native_consensus_carrier_v1",
+        "PATH2_NATIVE_CONSENSUS_CARRIER_DOMAIN",
+        "PATH2_NATIVE_CONSENSUS_CARRIER_BYTES",
+        "path2_native_consensus_carrier_v1_bytes",
+        "path2_native_consensus_carrier_v1_digest",
+        "decode_path2_native_consensus_carrier_v1",
+        "bytes.starts_with(PATH2_NATIVE_CONSENSUS_CARRIER_DOMAIN.as_bytes())",
+        "validate_path2_native_context_fields",
+    ];
+    let verifier_checks = [
+        "verify_path2_native_consensus_carrier_v1_against_bundle",
+        "validate_path2_native_consensus_carrier_v1(carrier)?",
+        "assemble_path2_native_boundary_v1(bundle, checked_core_proof_bytes)?",
+        "path2_native_projection_preimage_da_digest_v1(bundle)?",
+        "path2_native_consensus_carrier_v1_from_assembly",
+        "carrier != &expected",
+    ];
+    let preflight_checks = [
+        "path2_native_consensus_carrier_preflight_report_v1",
+        "carrier_digest",
+        "recomputed_native_boundary_digest",
+        "reject_invalid_carrier_context",
+        "reject_carrier_bundle_mismatch",
+        "reject_projection_preimage_da_noncanonical",
+        "reject_projection_bundle_inconsistent",
+        "native_boundary_digest: carrier.native_boundary_digest",
+        "projection_preimage_da_digest: carrier.projection_preimage_da_digest",
+    ];
+    let test_checks = [
+        "path2_native_consensus_carrier_v1_is_canonical_hybrid_surface",
+        "path2_native_consensus_carrier_v1_rejects_bad_context_and_mutates",
+        "path2_native_consensus_carrier_preflight_recomputes_bundle",
+        "path2_native_consensus_carrier_preflight_rejects_mismatches",
+        "path2_native_consensus_carrier_preflight_reports_do_not_export_private_material",
+        "reject_carrier_bundle_mismatch",
+        "assert_no_active_native_private_material(&rendered)",
+    ];
+
+    constructor_checks
+        .iter()
+        .all(|marker| constructor_window.contains(marker))
+        && serializer_checks
+            .iter()
+            .all(|marker| serializer_window.contains(marker))
+        && verifier_checks
+            .iter()
+            .all(|marker| verifier_window.contains(marker))
+        && preflight_checks
+            .iter()
+            .all(|marker| preflight_window.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| tests_window.contains(marker))
+}
+
 pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV1 {
     let proof_side_public_boundary_preflight_complete = true;
     let projection_encoders_present = true;
     let checked_core_frame_present = true;
     let public_view_serializers_present = true;
-    let consensus_carrier_present = PATH2_NATIVE_CONSENSUS_CARRIER_BODY_BYTES == 330;
+    let consensus_carrier_present = path2_native_consensus_carrier_source_boundary_present_v1();
     let verifier_preflight_report_present = true;
     let global_domain_registry_present = production_registered_domain_schema_constants()
         .iter()
@@ -18015,6 +18133,9 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     let storage_lifecycle_hardening_complete = false;
 
     let mut internal_blockers = Vec::new();
+    if !consensus_carrier_present {
+        internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSENSUS_CARRIER);
+    }
     if !checked_core_composition_review_complete {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION);
     }
@@ -18091,6 +18212,10 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         public_boundary_accepted && deployment_preflight.internal_deployment_ready;
     let rejection_code = if !public_boundary_accepted {
         verifier_preflight.rejection_code
+    } else if !deployment_preflight.consensus_carrier_present {
+        Some("reject_active_native_consensus_carrier_source_open")
+    } else if !deployment_preflight.checked_core_composition_review_complete {
+        Some("reject_active_native_checked_core_composition_open")
     } else if !deployment_preflight.hash_qrom_deployment_horizon_complete {
         Some("reject_active_native_qrom_target_horizon_open")
     } else if !deployment_preflight.full_signature_execution_source_boundary_present {
@@ -35878,6 +36003,7 @@ mod tests {
         assert!(preflight.projection_encoders_present);
         assert!(preflight.checked_core_frame_present);
         assert!(preflight.public_view_serializers_present);
+        assert!(path2_native_consensus_carrier_source_boundary_present_v1());
         assert!(preflight.consensus_carrier_present);
         assert!(preflight.verifier_preflight_report_present);
         assert!(preflight.global_domain_registry_present);
