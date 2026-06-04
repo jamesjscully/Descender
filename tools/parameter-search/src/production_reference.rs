@@ -6727,7 +6727,16 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
     let route_source = &boundary_source[route_start..route_end];
 
     [
+        "ReviewedFq12SelectedRustModelFiveSourceClosureInputs",
+        "payloadProjectsFrom :",
+        "certificateAvailability :",
+        "roleRootLiftSource :",
+        "selectedSource :",
+        "assemblySource :",
+        "compatibilitySource :",
+        "witnessSources :",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources",
+        "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs",
         "ReviewedFq12RoleRootFunctionalLiftSource",
         "SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource",
         "ReviewedFq12FieldConcreteAssemblyLocalSource",

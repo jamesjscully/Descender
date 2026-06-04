@@ -188,6 +188,44 @@ theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_loc
       P I)
 
 /--
+Single record for the concrete model inputs needed by the active five-source
+hidden-source boundary route.
+
+This is intentionally not the final Rust/model instantiation theorem.  It is a
+target shape for that theorem: once the implementation supplies this record,
+the boundary closes by the existing five-source route.
+-/
+structure ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+    (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)
+    (RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser)
+    (CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
+    (P : Predicates) where
+  payloadProjectsFrom :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload},
+      P.reviewedFq12PayloadAccepts b payload ->
+        payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+          payload.slotId = b.context.slotId ->
+        P.reviewedFq12PayloadProjectsFrom b payload
+  certificateAvailability :
+    ReviewedFq12ExtractionCertificateAvailability P
+  roleRootLiftSource :
+    ReviewedFq12RoleRootFunctionalLiftSource P
+  selectedSource :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+      FieldParser RouteParser P
+  assemblySource :
+    ReviewedFq12FieldConcreteAssemblyLocalSource P
+  compatibilitySource :
+    ReviewedFq12FieldConcreteCompatibilitySource P
+  witnessSources :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+      CanonicalParser WitnessParser P
+
+/--
 Active AP2-N001 boundary closure from the five selected Rust/model source
 records.
 
@@ -230,6 +268,26 @@ theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_loc
     (reviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputsOfSources
       roleRootLiftSource selectedSource assemblySource compatibilitySource
       witnessSources)
+
+/--
+Active AP2-N001 boundary closure from the single concrete model input record.
+-/
+theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (I :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P :=
+  reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources
+    P I.payloadProjectsFrom I.certificateAvailability
+    I.roleRootLiftSource I.selectedSource I.assemblySource
+    I.compatibilitySource I.witnessSources
 
 end Path2HiddenSourceSemanticsBoundary
 end Descender
