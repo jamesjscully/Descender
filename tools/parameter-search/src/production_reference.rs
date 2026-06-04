@@ -17123,6 +17123,81 @@ pub fn path2_native_hash_qrom_review_v1() -> Path2NativeHashQromReviewV1 {
     }
 }
 
+fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
+    let lean_source = include_str!("../../../Descender/Path2CheckedCoreByteBridge.lean");
+    let rust_source = include_str!("production_reference.rs");
+
+    let accept_start = rust_source
+        .find("\npub fn path2_native_checked_core_accept_v1(")
+        .expect("Path 2 native checked-core accept source start marker missing");
+    let accept_end = rust_source[accept_start..]
+        .find("\nfn validate_path2_native_context_fields(")
+        .expect("Path 2 native checked-core accept source end marker missing")
+        + accept_start;
+    let accept_source = &rust_source[accept_start..accept_end];
+
+    let test_start = rust_source
+        .find("\n    fn path2_native_checked_core_accept_pins_canonical_proof_bytes_before_acceptance()")
+        .expect("Path 2 native checked-core accept regression source start marker missing");
+    let test_end = rust_source[test_start..]
+        .find(
+            "\n    fn path2_native_honest_constructor_from_secret_material_derives_private_fiber()",
+        )
+        .expect("Path 2 native checked-core accept regression source end marker missing")
+        + test_start;
+    let test_source = &rust_source[test_start..test_end];
+
+    let lean_checks = [
+        "structure SelectedRustCheckedCoreByteSource",
+        "rustAcceptorAccepts",
+        "parserMatchesNative",
+        "proof_length_eq",
+        "proof_canonical",
+        "decoded_proof_commitment",
+        "parsed_response_syndrome",
+        "frame_bytes",
+        "verifier_handle_eq",
+        "parser_equality",
+        "hash_and_syndrome",
+        "selectedRustCheckedCoreByteSource_certificate",
+        "selectedRustCheckedCoreByteSource_accept_or_named_break",
+        "checkedCoreByteCertificate_accepts_native_v1",
+        "checkedCoreByteCertificate_checkedCoreAccepts",
+        "CheckedCoreByteBridgeBreakAlternatives",
+    ];
+    let accept_checks = [
+        "validate_path2_native_checked_core_frame_v1(checked_core_frame)?;",
+        "checked_core_proof_bytes.len() != PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES",
+        "decode_reviewed_fq12_account_carried_proof(checked_core_proof_bytes)",
+        "proof.proof_commitment != checked_core_frame.proof_commitment",
+        "path2_native_checked_core_frame_v1_challenge(checked_core_frame)?",
+        "reviewed_fq12_account_carried_response_syndrome(&proof.masked_quotient_response)",
+        "reviewed_fq12_state_assisted_expected_response_syndrome(",
+        "checked_core_verifier_handle_digest",
+        "actual != expected",
+        "Ok(proof)",
+    ];
+    let test_checks = [
+        "path2_native_checked_core_accept_pins_canonical_proof_bytes_before_acceptance",
+        "short_proof",
+        "noncanonical_proof",
+        "commitment_mismatch_proof",
+        "path2_native_checked_core_proof_generation_uses_assembly_frame_derivation",
+        "path2_native_checked_core_frame_v1_challenge(&assembly.checked_core_frame)",
+        "path2_native_checked_core_frame_v1_challenge(&derived_frame)",
+    ];
+
+    lean_checks
+        .iter()
+        .all(|marker| lean_source.contains(marker))
+        && accept_checks
+            .iter()
+            .all(|marker| accept_source.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| test_source.contains(marker))
+}
+
 pub fn path2_auxiliary_fq12_qrom_horizon_complete_v1() -> bool {
     let review = path2_native_hash_qrom_review_v1();
     review.algebraic_challenge_bytes == 23
@@ -17153,7 +17228,8 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         path2_native_hash_qrom_review_v1().schema == PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA;
     let facade_exports_present = true;
 
-    let checked_core_composition_review_complete = true;
+    let checked_core_composition_review_complete =
+        path2_native_checked_core_byte_bridge_source_present_v1();
     let hash_qrom_deployment_horizon_complete = path2_auxiliary_fq12_qrom_horizon_complete_v1();
     let signer_verifier_pipeline_present = false;
     let constant_time_audit_complete = false;
@@ -35018,6 +35094,7 @@ mod tests {
         assert_eq!(preflight.signer_private_state_bytes_min, 128);
         assert_eq!(preflight.signer_private_state_bytes_max, 416);
         assert_eq!(preflight.spend_signature_impact_bytes_max, 32);
+        assert!(path2_native_checked_core_byte_bridge_source_present_v1());
         assert!(preflight.checked_core_composition_review_complete);
         assert!(preflight.hash_qrom_deployment_horizon_complete);
         assert!(!preflight.signer_verifier_pipeline_present);
