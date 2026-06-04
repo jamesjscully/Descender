@@ -313,6 +313,12 @@ The shared-representative-frame flag is source-inspected now too:
 `ReviewedFq12SelectedRustSharedRepresentativeFrameSource` record, its
 representative/assembly projections, and the direct-assembly shared-frame
 endpoint instead of only conjoining the two separate frame-source flags.
+The full-native-opening representative-frame flag is also split from the
+canonical-representative flag:
+`rust_full_native_opening_representative_frame_source_present` now checks
+`representative_frame_source_of_canonical_representative_source` and the
+matching canonical witness gates rather than aliasing the broader canonical
+representative source.
 The audit now also carries a dedicated marker bit for
 `reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources`,
 so the active five-source endpoint is checked directly rather than only through
