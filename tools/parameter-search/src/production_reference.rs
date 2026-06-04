@@ -18782,7 +18782,6 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
 }
 
 pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV1 {
-    let proof_side_public_boundary_preflight_complete = true;
     let projection_encoders_present = path2_native_projection_encoder_source_boundary_present_v1();
     let checked_core_frame_present = path2_native_checked_core_frame_source_boundary_present_v1();
     let public_view_serializers_present =
@@ -18800,6 +18799,17 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     let full_signature_execution_source_boundary_present =
         path2_full_signature_execution_source_boundary_present_v1();
     let no_export_serializer_boundary_present = path2_no_export_serializer_boundary_present_v1();
+    let proof_side_public_boundary_preflight_complete = projection_encoders_present
+        && checked_core_frame_present
+        && public_view_serializers_present
+        && consensus_carrier_present
+        && verifier_preflight_report_present
+        && global_domain_registry_present
+        && hash_qrom_review_present
+        && checked_core_composition_review_complete
+        && hash_qrom_deployment_horizon_complete
+        && full_signature_execution_source_boundary_present
+        && no_export_serializer_boundary_present;
     let signer_verifier_pipeline_present = false;
     let constant_time_audit_complete = false;
     let storage_lifecycle_hardening_complete = false;
@@ -36707,6 +36717,20 @@ mod tests {
         let preflight = path2_native_deployment_preflight_v1();
         assert_eq!(preflight.schema, PATH2_NATIVE_DEPLOYMENT_PREFLIGHT_SCHEMA);
         assert!(preflight.proof_side_public_boundary_preflight_complete);
+        assert_eq!(
+            preflight.proof_side_public_boundary_preflight_complete,
+            preflight.projection_encoders_present
+                && preflight.checked_core_frame_present
+                && preflight.public_view_serializers_present
+                && preflight.consensus_carrier_present
+                && preflight.verifier_preflight_report_present
+                && preflight.global_domain_registry_present
+                && preflight.hash_qrom_review_present
+                && preflight.checked_core_composition_review_complete
+                && preflight.hash_qrom_deployment_horizon_complete
+                && preflight.full_signature_execution_source_boundary_present
+                && preflight.no_export_serializer_boundary_present
+        );
         assert!(path2_native_projection_encoder_source_boundary_present_v1());
         assert!(preflight.projection_encoders_present);
         assert!(path2_native_checked_core_frame_source_boundary_present_v1());
