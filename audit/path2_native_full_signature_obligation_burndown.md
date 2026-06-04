@@ -242,6 +242,12 @@ The selected hidden-relation extraction-certificate flag is source-inspected by
 covering payload digest checks, statement/opening/pad binding,
 account-witness opening-frame recomputation, certificate framing, and the
 statement-rebinding regression.
+The Lean source-route endpoint flags are now source-inspected by
+`lean_path2_reviewed_fq12_source_route_endpoint_surface_present_v1`, covering
+the source-route local-instantiation theorem, boundary/factored selected-Rust
+wrappers, compact/local functional-lift wrappers, packaged source-route wrapper,
+direct-assembly representative/shared/native-frame wrappers, and the field/local
+adapter theorem.
 The top-level production preflight also reports that audit as present while
 keeping the bridge incomplete, so the hidden-source semantics blocker remains
 visible in the active deployment surface.

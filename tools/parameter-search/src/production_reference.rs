@@ -6452,6 +6452,63 @@ pub fn production_deployment_preflight_certificate_digest(
     .into()
 }
 
+fn lean_path2_reviewed_fq12_source_route_endpoint_surface_present_v1() -> bool {
+    let source_adapters =
+        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
+    let byte_bridge =
+        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceByteBridge.lean");
+    let adapter_markers = [
+        "ReviewedFq12SourceRouteLocalInstantiationInputs",
+        "ReviewedFq12SourceRouteLocalInstantiationInputs.toDeployableInputs",
+        "reviewed_fq12_certificate_soundness_from_source_route_local_instantiation_inputs",
+        "ReviewedFq12BoundaryAvailabilityConcreteRoleRootSourceRouteInputs",
+        "ReviewedFq12BoundaryAvailabilityConcreteRoleRootSourceRouteInputs.toConcreteRoleRootInputs",
+        "reviewed_fq12_certificate_soundness_from_boundary_availability_concrete_role_root_source_route_inputs",
+        "ReviewedFq12FactoredBoundaryAvailabilityConcreteRoleRootSourceRouteInputs",
+        "ReviewedFq12FactoredBoundaryAvailabilityConcreteRoleRootSourceRouteInputs.toBoundaryInputs",
+        "reviewed_fq12_certificate_soundness_from_factored_boundary_availability_concrete_role_root_source_route_inputs",
+        "ReviewedFq12SelectedRustFactoredBoundaryAvailabilityConcreteRoleRootSourceRouteInputs",
+        "ReviewedFq12SelectedRustFactoredBoundaryAvailabilityConcreteRoleRootSourceRouteInputs.toFactoredInputs",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_factored_boundary_availability_concrete_role_root_source_route_inputs",
+        "ReviewedFq12SelectedRustFactoredConcreteLocalSourceRouteInputs",
+        "ReviewedFq12SelectedRustFactoredConcreteLocalSourceRouteInputs.toSelectedRustFactoredInputs",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_factored_concrete_local_source_route_inputs",
+        "ReviewedFq12SelectedRustFactoredConcreteLocalFunctionalLiftSourceRouteInputs",
+        "ReviewedFq12SelectedRustFactoredConcreteLocalFunctionalLiftSourceRouteInputs.toConcreteLocalInputs",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_factored_concrete_local_functional_lift_source_route_inputs",
+        "ReviewedFq12SelectedRustConcreteLocalFunctionalLiftSourceRouteInputs",
+        "ReviewedFq12SelectedRustConcreteLocalFunctionalLiftSourceRouteInputs.toFactoredFunctionalLiftInputs",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_concrete_local_functional_lift_source_route_inputs",
+        "ReviewedFq12RoleRootFunctionalLiftSource",
+        "ReviewedFq12AssemblyCompatibilityLocalModelSource",
+        "ReviewedFq12SelectedRustPackagedSourceRouteInputs",
+        "ReviewedFq12SelectedRustPackagedSourceRouteInputs.toConcreteLocalFunctionalLiftInputs",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_packaged_source_route_inputs",
+        "ReviewedFq12SelectedRustDirectAssemblyRepresentativeFramePackagedSourceRouteInputs",
+        "ReviewedFq12SelectedRustDirectAssemblyRepresentativeFramePackagedSourceRouteInputs.toDirectAssemblyCanonicalRepresentativePackagedInputs",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_representative_frame_packaged_source_route_inputs",
+        "ReviewedFq12SelectedRustDirectAssemblySharedRepresentativeFramePackagedSourceRouteInputs",
+        "ReviewedFq12SelectedRustDirectAssemblySharedRepresentativeFramePackagedSourceRouteInputs.toDirectAssemblyRepresentativeFramePackagedInputs",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_shared_representative_frame_packaged_source_route_inputs",
+        "ReviewedFq12SelectedRustDirectAssemblyNativeDigestFramePackagedSourceRouteInputs",
+        "ReviewedFq12SelectedRustDirectAssemblyNativeDigestFramePackagedSourceRouteInputs.toSharedRepresentativeFramePackagedInputs",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_native_digest_frame_packaged_source_route_inputs",
+        "ReviewedFq12SelectedRustFieldLocalPackagedSourceRouteInputs",
+        "ReviewedFq12SelectedRustFieldLocalPackagedSourceRouteInputs.toPackagedInputs",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_packaged_source_route_inputs",
+    ];
+    let byte_bridge_markers = [
+        "SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource",
+        "SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource.toBytePredicateSource",
+    ];
+    adapter_markers
+        .iter()
+        .all(|marker| source_adapters.contains(marker))
+        && byte_bridge_markers
+            .iter()
+            .all(|marker| byte_bridge.contains(marker))
+}
+
 fn lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1()
 -> bool {
     let source =
@@ -6599,24 +6656,34 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1();
     let full_native_opening_role_lift_certificate_present =
         path2_reviewed_fq12_role_root_lift_source_present_v1();
-    let lean_source_route_local_instantiation_endpoint_present = true;
-    let lean_boundary_availability_concrete_role_root_source_route_endpoint_present = true;
-    let lean_factored_boundary_availability_concrete_role_root_source_route_endpoint_present = true;
-    let lean_selected_rust_source_route_byte_source_endpoint_present = true;
-    let lean_selected_rust_factored_concrete_local_source_route_endpoint_present = true;
+    let lean_source_route_endpoint_surface_present =
+        lean_path2_reviewed_fq12_source_route_endpoint_surface_present_v1();
+    let lean_source_route_local_instantiation_endpoint_present =
+        lean_source_route_endpoint_surface_present;
+    let lean_boundary_availability_concrete_role_root_source_route_endpoint_present =
+        lean_source_route_endpoint_surface_present;
+    let lean_factored_boundary_availability_concrete_role_root_source_route_endpoint_present =
+        lean_source_route_endpoint_surface_present;
+    let lean_selected_rust_source_route_byte_source_endpoint_present =
+        lean_source_route_endpoint_surface_present;
+    let lean_selected_rust_factored_concrete_local_source_route_endpoint_present =
+        lean_source_route_endpoint_surface_present;
     let lean_selected_rust_factored_concrete_local_functional_lift_source_route_endpoint_present =
-        true;
-    let lean_selected_rust_concrete_local_functional_lift_source_route_endpoint_present = true;
-    let lean_selected_rust_packaged_source_route_endpoint_present = true;
+        lean_source_route_endpoint_surface_present;
+    let lean_selected_rust_concrete_local_functional_lift_source_route_endpoint_present =
+        lean_source_route_endpoint_surface_present;
+    let lean_selected_rust_packaged_source_route_endpoint_present =
+        lean_source_route_endpoint_surface_present;
     let lean_selected_rust_direct_assembly_representative_frame_packaged_source_route_endpoint_present =
-        true;
+        lean_source_route_endpoint_surface_present;
     let lean_selected_rust_direct_assembly_shared_representative_frame_packaged_source_route_endpoint_present =
-        true;
+        lean_source_route_endpoint_surface_present;
     let lean_selected_rust_direct_assembly_native_digest_frame_packaged_source_route_endpoint_present =
-        true;
+        lean_source_route_endpoint_surface_present;
     let lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present =
         lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1();
-    let lean_selected_rust_field_local_packaged_source_route_adapter_present = true;
+    let lean_selected_rust_field_local_packaged_source_route_adapter_present =
+        lean_source_route_endpoint_surface_present;
     let rust_concrete_role_root_field_binding_present =
         path2_reviewed_fq12_role_root_lift_source_present_v1();
     let rust_certificate_lift_opening_functionality_present =
@@ -38591,6 +38658,7 @@ mod tests {
         assert!(path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1());
         assert!(audit.full_native_opening_role_lift_certificate_present);
         assert!(audit.lean_source_route_local_instantiation_endpoint_present);
+        assert!(lean_path2_reviewed_fq12_source_route_endpoint_surface_present_v1());
         assert!(audit.lean_boundary_availability_concrete_role_root_source_route_endpoint_present);
         assert!(
             audit
