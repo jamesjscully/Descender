@@ -18979,6 +18979,11 @@ fn path2_full_signature_execution_source_boundary_present_v1() -> bool {
         "executionSucceeds run ->",
         "ConcreteSpendVerificationAccepts C run.spend ∨",
         "Path2FullSpendGame.HasBreak (concretePredicates C) run.spend",
+        "SelectedRustFullExecutionSourceCertificate",
+        "selectedRustFullExecutionSourceVerified",
+        "selectedRustExecutionSucceeds",
+        "selectedRustSuccessImpliesVerifierAcceptOrBreak",
+        "SelectedRustFullExecutionSourceCertificate.toExecutionSource",
     ];
     let predicate_checks = [
         "concreteFullGamePredicatesFromExecution",
@@ -19042,18 +19047,55 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         .or_else(|| instantiation_source.find(" where"))
         .unwrap_or(instantiation_source.len().min(1024));
     let theorem_header = &instantiation_source[..theorem_header_end];
-    if theorem_header.contains("ConcreteFullSignatureExecutionSource")
-        || theorem_header.contains("ConcreteGameConfig")
+    let forbidden_header_terms = [
+        "ConcreteFullSignatureExecutionSource",
+        "ConcreteGameConfig",
+        "SelectedRustFullExecutionSourceCertificate",
+        "selectedRustFullExecutionSourceVerified",
+        "selectedRustExecutionSucceeds",
+        "selectedRustSuccessImpliesVerifierAcceptOrBreak",
+    ];
+    if forbidden_header_terms
+        .iter()
+        .any(|term| theorem_header.contains(term))
     {
+        return false;
+    }
+    let forbidden_declaration_terms = [
+        "selectedRustFullExecutionSourceVerified",
+        "selectedRustExecutionSucceeds",
+        "selectedRustSuccessImpliesVerifierAcceptOrBreak",
+    ];
+    let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
+    if forbidden_declaration_terms.iter().any(|term| {
+        forbidden_declaration_kinds
+            .iter()
+            .any(|kind| full_spend_source.contains(&format!("\n{kind} {term}")))
+    }) {
+        return false;
+    }
+    let forbidden_variable_stub = full_spend_source
+        .match_indices("\nvariable")
+        .map(|(index, _)| &full_spend_source[index..full_spend_source.len().min(index + 512)])
+        .any(|variable_window| {
+            forbidden_declaration_terms
+                .iter()
+                .any(|term| variable_window.contains(term))
+        });
+    if forbidden_variable_stub {
         return false;
     }
 
     let instantiation_checks = [
         "concreteFullSignatureExecutionSource_instantiation_v1",
+        "let selectedRustFullExecutionCertificate :",
+        "SelectedRustFullExecutionSourceCertificate",
+        "selectedRustFullExecutionSourceVerified :=",
+        "selectedRustExecutionSucceeds :=",
+        "selectedRustSuccessImpliesVerifierAcceptOrBreak :=",
         "let selectedRustFullExecutionSource :",
         "ConcreteFullSignatureExecutionSource",
-        "executionSucceeds :=",
-        "success_implies_verifier_accept_or_break :=",
+        "SelectedRustFullExecutionSourceCertificate.toExecutionSource selectedRustFullExecutionCertificate",
         "concrete_fullExecutionAcceptedSpendLift",
         "NativeFullSignatureSecurityBoundary.withConcreteFullExecutionSource",
         "full_signature_with_concrete_full_execution_source_lift",
@@ -38459,6 +38501,67 @@ end Path2FullSpendConcrete
         assert!(
             !path2_full_signature_execution_source_instantiated_in_source_v1(
                 assumed_full_execution_config
+            )
+        );
+        let assumed_full_execution_certificate = r#"
+theorem concreteFullSignatureExecutionSource_instantiation_v1
+    (selectedRustFullExecutionCertificate :
+      SelectedRustFullExecutionSourceCertificate selectedRustConcreteGameConfig) :
+    ConcreteFullExecutionAcceptedSpendLift
+      selectedRustConcreteGameConfig
+      (SelectedRustFullExecutionSourceCertificate.toExecutionSource
+        selectedRustFullExecutionCertificate) := by
+  let selectedRustFullExecutionSource :
+      ConcreteFullSignatureExecutionSource selectedRustConcreteGameConfig :=
+    SelectedRustFullExecutionSourceCertificate.toExecutionSource selectedRustFullExecutionCertificate
+  exact concrete_fullExecutionAcceptedSpendLift
+    selectedRustConcreteGameConfig selectedRustFullExecutionSource
+end Path2FullSpendConcrete
+"#;
+        assert!(
+            !path2_full_signature_execution_source_instantiated_in_source_v1(
+                assumed_full_execution_certificate
+            )
+        );
+        let local_full_execution_source_without_certificate = r#"
+theorem concreteFullSignatureExecutionSource_instantiation_v1 :
+    ConcreteFullExecutionAcceptedSpendLift
+      selectedRustConcreteGameConfig selectedRustFullExecutionSource := by
+  let selectedRustFullExecutionSource :
+      ConcreteFullSignatureExecutionSource selectedRustConcreteGameConfig :=
+    { executionSucceeds := selectedRustExecutionSucceeds
+      success_implies_verifier_accept_or_break :=
+        selectedRustSuccessImpliesVerifierAcceptOrBreak }
+  exact concrete_fullExecutionAcceptedSpendLift
+    selectedRustConcreteGameConfig selectedRustFullExecutionSource
+end Path2FullSpendConcrete
+"#;
+        assert!(
+            !path2_full_signature_execution_source_instantiated_in_source_v1(
+                local_full_execution_source_without_certificate
+            )
+        );
+        let assumed_full_execution_bits = r#"
+theorem concreteFullSignatureExecutionSource_instantiation_v1
+    (selectedRustFullExecutionSourceVerified : execution_verified) :
+    ConcreteFullExecutionAcceptedSpendLift
+      selectedRustConcreteGameConfig selectedRustFullExecutionSource := by
+  let selectedRustFullExecutionCertificate :
+      SelectedRustFullExecutionSourceCertificate selectedRustConcreteGameConfig :=
+    { selectedRustFullExecutionSourceVerified := selectedRustFullExecutionSourceVerified
+      selectedRustExecutionSucceeds := selectedRustExecutionSucceeds
+      selectedRustSuccessImpliesVerifierAcceptOrBreak :=
+        selectedRustSuccessImpliesVerifierAcceptOrBreak }
+  let selectedRustFullExecutionSource :
+      ConcreteFullSignatureExecutionSource selectedRustConcreteGameConfig :=
+    SelectedRustFullExecutionSourceCertificate.toExecutionSource selectedRustFullExecutionCertificate
+  exact concrete_fullExecutionAcceptedSpendLift
+    selectedRustConcreteGameConfig selectedRustFullExecutionSource
+end Path2FullSpendConcrete
+"#;
+        assert!(
+            !path2_full_signature_execution_source_instantiated_in_source_v1(
+                assumed_full_execution_bits
             )
         );
         assert!(!path2_full_signature_execution_source_instantiated_v1());

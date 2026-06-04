@@ -424,6 +424,38 @@ structure ConcreteFullSignatureExecutionSource
         ConcreteSpendVerificationAccepts C run.spend ∨
           Path2FullSpendGame.HasBreak (concretePredicates C) run.spend
 
+/--
+Selected Rust/model evidence certificate for production full-signature
+execution.
+
+The final AP2-N003 instantiation must prove that the real production execution
+surface has been verified, then expose the execution-success predicate and the
+bridge from success into concrete verifier acceptance or a named break. This
+record prevents the deployment-closing theorem from constructing
+`ConcreteFullSignatureExecutionSource` without naming the production evidence
+it depends on.
+-/
+structure SelectedRustFullExecutionSourceCertificate
+    (C : ConcreteGameConfig) where
+  selectedRustFullExecutionSourceVerified : Prop
+  selectedRustExecutionSucceeds :
+    Path2FullSpendGame.FullForgeryRun concreteTypes -> Prop
+  selectedRustSuccessImpliesVerifierAcceptOrBreak :
+    forall {run},
+      selectedRustExecutionSucceeds run ->
+        ConcreteSpendVerificationAccepts C run.spend ∨
+          Path2FullSpendGame.HasBreak (concretePredicates C) run.spend
+
+/-- Convert selected Rust production execution evidence into the theorem source. -/
+def SelectedRustFullExecutionSourceCertificate.toExecutionSource
+    {C : ConcreteGameConfig}
+    (Cert : SelectedRustFullExecutionSourceCertificate C) :
+    ConcreteFullSignatureExecutionSource C where
+  executionSucceeds :=
+    Cert.selectedRustExecutionSucceeds
+  success_implies_verifier_accept_or_break :=
+    Cert.selectedRustSuccessImpliesVerifierAcceptOrBreak
+
 /-- Full-game predicates using a production execution source instead of the tautological carrier. -/
 def concreteFullGamePredicatesFromExecution
     (C : ConcreteGameConfig)
