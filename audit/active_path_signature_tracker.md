@@ -168,6 +168,15 @@ The field/source-route Rust flags are also source-inspected:
 `path2_reviewed_fq12_source_route_negative_controls_present_v1` pin field
 evidence construction/framing/verification, route construction/framing/verification,
 and the active stale-digest, aggregate-source, and rebinding regressions.
+The audit now also carries
+`rust_selected_source_route_byte_source_contract_present`, backed by
+`path2_reviewed_fq12_selected_source_route_byte_source_contract_present_v1`,
+which ties the Lean
+`SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource` contract to the
+Rust field-evidence/source-route constructors, frame labels, verifier
+reconstruction, and source-route negative controls. This keeps the raw
+AP2-N001 component theorem from treating generic route-source evidence as the
+selected byte-source contract.
 The selected extraction-certificate flag is now source-inspected by
 `path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1`,
 which pins payload digest checks, statement/opening/pad binding,
@@ -235,7 +244,8 @@ surface with `lean_source_route_local_instantiation_endpoint_present`,
 `rust_compatibility_route_witness_source_present`,
 `rust_assembly_compatibility_local_model_source_present`,
 `rust_full_opening_field_evidence_present`,
-`rust_full_opening_source_route_present`, and
+`rust_full_opening_source_route_present`,
+`rust_selected_source_route_byte_source_contract_present`, and
 `rust_source_route_negative_controls_present`, while still keeping
 `extractor_theorem_instantiated = false` and
 `semantics_bridge_complete = false`. The production hidden-source semantics

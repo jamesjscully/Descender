@@ -6108,6 +6108,7 @@ pub struct Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     pub rust_compatibility_field_extraction_components_present: bool,
     pub rust_full_opening_field_evidence_present: bool,
     pub rust_full_opening_source_route_present: bool,
+    pub rust_selected_source_route_byte_source_contract_present: bool,
     pub rust_source_route_negative_controls_present: bool,
     pub hidden_relation_verifier_implemented: bool,
     pub extractor_theorem_instantiated: bool,
@@ -7484,6 +7485,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         path2_reviewed_fq12_full_opening_field_evidence_source_present_v1();
     let rust_full_opening_source_route_present =
         path2_reviewed_fq12_full_opening_source_route_source_present_v1();
+    let rust_selected_source_route_byte_source_contract_present =
+        path2_reviewed_fq12_selected_source_route_byte_source_contract_present_v1();
     let rust_source_route_negative_controls_present =
         path2_reviewed_fq12_source_route_negative_controls_present_v1();
     let selected_rust_canonical_byte_and_witness_package_surfaces_present =
@@ -7496,6 +7499,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
             && rust_assembly_compatibility_local_model_source_present
             && rust_assembly_field_local_native_components_present
             && rust_compatibility_field_extraction_components_present
+            && rust_selected_source_route_byte_source_contract_present
             && rust_full_native_opening_canonical_representative_source_present
             && rust_full_native_opening_canonical_representative_witness_byte_source_present
             && rust_canonical_representative_witness_negative_controls_present
@@ -7553,6 +7557,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         && rust_compatibility_field_extraction_components_present
         && rust_full_opening_field_evidence_present
         && rust_full_opening_source_route_present
+        && rust_selected_source_route_byte_source_contract_present
         && rust_source_route_negative_controls_present
         && hidden_relation_verifier_implemented
         && extractor_theorem_instantiated;
@@ -7613,6 +7618,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         rust_compatibility_field_extraction_components_present,
         rust_full_opening_field_evidence_present,
         rust_full_opening_source_route_present,
+        rust_selected_source_route_byte_source_contract_present,
         rust_source_route_negative_controls_present,
         hidden_relation_verifier_implemented,
         extractor_theorem_instantiated,
@@ -9410,6 +9416,123 @@ fn path2_reviewed_fq12_full_opening_source_route_source_present_v1() -> bool {
             .contains("path2_reviewed_fq12_full_opening_field_evidence_v1_digest(evidence)?")
         && adapter_source.contains("== evidence.field_evidence_digest")
         && route_checks
+            .iter()
+            .all(|marker| route_source.contains(marker))
+        && route_frame_checks
+            .iter()
+            .all(|marker| route_frame_source.contains(marker))
+        && route_verify_source
+            .contains("let expected = path2_reviewed_fq12_full_opening_field_source_route_v1(")
+        && route_verify_source.contains("if expected != *source_route")
+        && route_verify_source.contains(
+            "path2_reviewed_fq12_full_opening_field_source_route_v1_digest(source_route)?",
+        )
+        && route_verify_source.contains("!= source_route.source_route_digest")
+}
+
+fn path2_reviewed_fq12_selected_source_route_byte_source_contract_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+    let lean_source =
+        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceByteBridge.lean");
+
+    let route_start = source
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_source_route_v1(")
+        .expect("Path 2 reviewed Fq12 source-route source start marker missing");
+    let route_end = source[route_start..]
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_source_route_v1_frame(")
+        .expect("Path 2 reviewed Fq12 source-route source end marker missing")
+        + route_start;
+    let route_source = &source[route_start..route_end];
+
+    let route_frame_start = source
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_source_route_v1_frame(")
+        .expect("Path 2 reviewed Fq12 source-route frame source start marker missing");
+    let route_frame_end = source[route_frame_start..]
+        .find("\npub fn path2_reviewed_fq12_full_opening_field_source_route_v1_digest(")
+        .expect("Path 2 reviewed Fq12 source-route frame source end marker missing")
+        + route_frame_start;
+    let route_frame_source = &source[route_frame_start..route_frame_end];
+
+    let route_verify_start = source
+        .find("\npub fn verify_path2_reviewed_fq12_full_opening_field_source_route_v1(")
+        .expect("Path 2 reviewed Fq12 source-route verifier source start marker missing");
+    let route_verify_end = source[route_verify_start..]
+        .find("\npub fn path2_reviewed_fq12_full_opening_bridge_certificate_v1(")
+        .expect("Path 2 reviewed Fq12 source-route verifier source end marker missing")
+        + route_verify_start;
+    let route_verify_source = &source[route_verify_start..route_verify_end];
+
+    let lean_checks = [
+        "structure SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource",
+        "rustSourceRouteFrame",
+        "sourceRouteAvailable",
+        "fieldByteCertificate",
+        "routeByteCertificate",
+        "fieldBinds",
+        "sourceRouteBinds",
+        "SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource.toBytePredicateSource",
+        "ReviewedFq12FullOpeningFieldEvidenceByteCertificate",
+        "ReviewedFq12FullOpeningFieldSourceRouteByteCertificate",
+        "ReviewedFq12FullOpeningFieldEvidenceBinds",
+        "ReviewedFq12FullOpeningFieldSourceRouteBinds",
+    ];
+    let route_constructor_checks = [
+        "payload_binding: &Path2ReviewedFq12HiddenSourcePayloadBindingV1",
+        "extraction_cert: &Path2ReviewedFq12HiddenRelationExtractionCertificateV1",
+        "creation_binding: &Path2CreationProofBindingV1",
+        "full_opening_cert: &Path2ReviewedFq12FullNativeOpeningCertificateV1",
+        "assembly_cert: &Path2ReviewedFq12NativeRepresentativeAssemblyCertificateV1",
+        "compatibility_cert: &Path2ReviewedFq12ExtractionCompatibilityCertificateV1",
+        "field_evidence: &Path2ReviewedFq12FullOpeningFieldEvidenceV1",
+        "path2_reviewed_fq12_assembly_binds_full_opening_fields_v1(assembly_cert, full_opening_cert)",
+        "path2_reviewed_fq12_compatibility_binds_same_representative_fields_v1(",
+        "path2_reviewed_fq12_field_evidence_is_adapter_only_v1(",
+        "verify_path2_reviewed_fq12_full_opening_field_evidence_v1(",
+        "payload_binding_digest: payload_binding.payload_digest",
+        "extraction_certificate_digest: extraction_cert.extraction_certificate_digest",
+        "creation_proof_binding_digest: creation_binding.digest",
+        "role_lift_certificate_digest: full_opening_cert.role_lift_certificate_digest",
+        "assembly_certificate_digest: assembly_cert.assembly_certificate_digest",
+        "compatibility_certificate_digest: compatibility_cert.compatibility_certificate_digest",
+        "field_evidence_digest: field_evidence.field_evidence_digest",
+        "native_boundary_digest: full_opening_cert.native_boundary_digest",
+        "native_role_root_commitment: full_opening_cert.native_role_root_commitment",
+        "full_opening_digest: full_opening_cert.full_opening_digest",
+        "representative_digest: assembly_cert.representative_digest",
+        "selected_account_projection_digest: full_opening_cert.selected_account_projection_digest",
+        "aggregate_bridge_used_as_source: field_evidence.aggregate_bridge_used_as_source",
+        "path2_reviewed_fq12_full_opening_field_source_route_v1_digest(&source_route)?",
+    ];
+    let route_frame_checks = [
+        "PATH2_REVIEWED_FQ12_FULL_OPENING_FIELD_SOURCE_ROUTE_DOMAIN",
+        "if !source_route.assembly_is_full_opening_field_certificate",
+        "if !source_route.compatibility_is_same_representative_field_certificate",
+        "if !source_route.field_evidence_is_adapter_only",
+        "if source_route.aggregate_bridge_used_as_source",
+        "b\"payload_binding_digest\"",
+        "b\"extraction_certificate_digest\"",
+        "b\"creation_proof_binding_digest\"",
+        "b\"role_lift_certificate_digest\"",
+        "b\"assembly_certificate_digest\"",
+        "b\"compatibility_certificate_digest\"",
+        "b\"field_evidence_digest\"",
+        "b\"native_role_root_commitment\"",
+        "b\"full_opening_digest\"",
+        "b\"representative_digest\"",
+        "b\"selected_account_projection_digest\"",
+        "b\"assembly_is_full_opening_field_certificate\"",
+        "b\"compatibility_is_same_representative_field_certificate\"",
+        "b\"field_evidence_is_adapter_only\"",
+        "b\"aggregate_bridge_used_as_source\"",
+    ];
+
+    path2_reviewed_fq12_full_opening_field_evidence_source_present_v1()
+        && path2_reviewed_fq12_full_opening_source_route_source_present_v1()
+        && path2_reviewed_fq12_source_route_negative_controls_present_v1()
+        && lean_checks
+            .iter()
+            .all(|marker| lean_source.contains(marker))
+        && route_constructor_checks
             .iter()
             .all(|marker| route_source.contains(marker))
         && route_frame_checks
@@ -27729,6 +27852,11 @@ fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit_frame(
     );
     append_u64(
         &mut frame,
+        b"rust_selected_source_route_byte_source_contract_present",
+        u64::from(audit.rust_selected_source_route_byte_source_contract_present),
+    );
+    append_u64(
+        &mut frame,
         b"rust_source_route_negative_controls_present",
         u64::from(audit.rust_source_route_negative_controls_present),
     );
@@ -40080,6 +40208,8 @@ mod tests {
         assert!(path2_reviewed_fq12_full_opening_field_evidence_source_present_v1());
         assert!(audit.rust_full_opening_source_route_present);
         assert!(path2_reviewed_fq12_full_opening_source_route_source_present_v1());
+        assert!(audit.rust_selected_source_route_byte_source_contract_present);
+        assert!(path2_reviewed_fq12_selected_source_route_byte_source_contract_present_v1());
         assert!(audit.rust_source_route_negative_controls_present);
         assert!(path2_reviewed_fq12_source_route_negative_controls_present_v1());
         assert!(audit.hidden_relation_verifier_implemented);
@@ -40112,6 +40242,21 @@ mod tests {
         assert_eq!(
             validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
                 &missing_source_route
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
+        );
+
+        let mut missing_selected_source_route_contract = audit.clone();
+        missing_selected_source_route_contract
+            .rust_selected_source_route_byte_source_contract_present = false;
+        missing_selected_source_route_contract.digest =
+            path2_reviewed_fq12_hidden_source_semantics_bridge_audit_digest(
+                &missing_selected_source_route_contract,
+            );
+        assert_eq!(
+            validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
+                &missing_selected_source_route_contract
             )
             .unwrap_err(),
             "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
