@@ -3245,6 +3245,7 @@ pub struct Path2NativeVerifierPipelineVerdictV1 {
     pub rejection_code: Option<&'static str>,
     pub consensus_carrier_digest: Option<[u8; DIGEST_BYTES]>,
     pub checked_core_byte_instantiation_evidence_digest: Option<[u8; DIGEST_BYTES]>,
+    pub checked_core_byte_instantiation_evidence_verified: bool,
     pub native_boundary_digest: [u8; DIGEST_BYTES],
     pub verifier_preflight_report: Path2NativeConsensusCarrierPreflightReportV1,
     pub deployment_preflight: Path2NativeDeploymentPreflightV1,
@@ -3259,6 +3260,7 @@ pub struct Path2NativeSignerVerifierPipelineEvidenceV1 {
     pub carrier_digest: [u8; DIGEST_BYTES],
     pub checked_core_proof_digest: [u8; DIGEST_BYTES],
     pub checked_core_byte_instantiation_evidence_digest: [u8; DIGEST_BYTES],
+    pub checked_core_byte_instantiation_evidence_verified: bool,
     pub native_boundary_digest: [u8; DIGEST_BYTES],
     pub verifier_public_boundary_accepted: bool,
     pub verifier_production_accepted: bool,
@@ -19766,7 +19768,9 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "path2_native_checked_core_byte_instantiation_evidence_v1",
         "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
         "checked_core_byte_instantiation_evidence_digest",
+        "checked_core_byte_instantiation_evidence_verified",
         "verify_path2_native_deployment_pipeline_v1",
+        "Path 2 native signer/verifier checked-core evidence was not verified",
         "hash_qrom_deployment_horizon_complete",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON",
         "signer_verifier_pipeline_present",
@@ -19811,6 +19815,7 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "path2_native_prevalidated_honest_flow_reaches_selected_verifier_public_acceptance",
         "PATH2_NATIVE_SIGNER_VERIFIER_PIPELINE_EVIDENCE_SCHEMA",
         "checked_core_byte_instantiation_evidence_digest",
+        "checked_core_byte_instantiation_evidence_verified",
         "evidence.verifier_public_boundary_accepted",
         "evidence.verifier_production_accepted",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
@@ -20196,6 +20201,8 @@ pub fn verify_path2_native_deployment_pipeline_v1(
     };
     let checked_core_byte_instantiation_evidence_digest =
         verifier_preflight.checked_core_byte_instantiation_evidence_digest;
+    let checked_core_byte_instantiation_evidence_verified =
+        verifier_preflight.checked_core_byte_instantiation_evidence_verified;
 
     Path2NativeVerifierPipelineVerdictV1 {
         schema: PATH2_NATIVE_VERIFIER_PIPELINE_VERDICT_SCHEMA,
@@ -20204,6 +20211,7 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         rejection_code,
         consensus_carrier_digest: verifier_preflight.carrier_digest,
         checked_core_byte_instantiation_evidence_digest,
+        checked_core_byte_instantiation_evidence_verified,
         native_boundary_digest: carrier.native_boundary_digest,
         verifier_preflight_report: verifier_preflight,
         deployment_preflight,
@@ -20686,6 +20694,14 @@ pub fn path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_
         &output.projection_bundle,
         &output.checked_core_proof_bytes,
     );
+    if !verdict.checked_core_byte_instantiation_evidence_verified
+        || Some(checked_core_byte_instantiation_evidence_digest)
+            != verdict.checked_core_byte_instantiation_evidence_digest
+    {
+        return Err(
+            "Path 2 native signer/verifier checked-core evidence was not verified".to_string(),
+        );
+    }
     let smallest_remaining_productization_gate = if !verdict
         .deployment_preflight
         .checked_core_composition_review_complete
@@ -20720,6 +20736,8 @@ pub fn path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_
         carrier_digest: output.constructed.signer_public_output.carrier_digest,
         checked_core_proof_digest,
         checked_core_byte_instantiation_evidence_digest,
+        checked_core_byte_instantiation_evidence_verified: verdict
+            .checked_core_byte_instantiation_evidence_verified,
         native_boundary_digest: output.constructed.boundary_meaning.native_boundary_digest,
         verifier_public_boundary_accepted: verdict.public_boundary_accepted,
         verifier_production_accepted: verdict.production_accepted,
@@ -38174,6 +38192,13 @@ end Path2CheckedCoreByteBridge
                 .verifier_preflight_report
                 .checked_core_byte_instantiation_evidence_digest
         );
+        assert!(verdict.checked_core_byte_instantiation_evidence_verified);
+        assert_eq!(
+            verdict.checked_core_byte_instantiation_evidence_verified,
+            verdict
+                .verifier_preflight_report
+                .checked_core_byte_instantiation_evidence_verified
+        );
         assert_eq!(
             verdict.native_boundary_digest,
             assembly.native_boundary_digest
@@ -38199,6 +38224,7 @@ end Path2CheckedCoreByteBridge
             rejected.checked_core_byte_instantiation_evidence_digest,
             None
         );
+        assert!(!rejected.checked_core_byte_instantiation_evidence_verified);
 
         for rendered in [
             serde_json::to_string(&verdict).unwrap(),
@@ -39162,6 +39188,7 @@ end Path2CheckedCoreByteBridge
             evidence.checked_core_byte_instantiation_evidence_digest,
             [0_u8; DIGEST_BYTES]
         );
+        assert!(evidence.checked_core_byte_instantiation_evidence_verified);
         assert_ne!(evidence.native_boundary_digest, [0_u8; DIGEST_BYTES]);
         assert!(evidence.verifier_public_boundary_accepted);
         assert!(!evidence.verifier_production_accepted);
