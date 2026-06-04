@@ -6609,7 +6609,9 @@ fn lean_selected_rust_field_local_shared_digest_frame_witness_source_endpoint_pr
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_inputs",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_sources",
+        "ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_components",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_component_inputs",
     ]
     .iter()
     .all(|marker| source.contains(marker))
@@ -6620,8 +6622,10 @@ fn lean_selected_rust_field_local_digest_frame_witness_byte_component_endpoint_p
     let full_source =
         include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
     let source_start = full_source
-        .find("\ntheorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_components")
-        .expect("selected Rust field-local digest-frame witness byte component theorem start missing");
+        .find("\nstructure ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs")
+        .expect(
+            "selected Rust field-local digest-frame witness byte component input start missing",
+        );
     let source_end = full_source[source_start..]
         .find("\nstructure ReviewedFq12SelectedRustFieldLocalPackagedSourceRouteInputs")
         .expect(
@@ -6630,7 +6634,19 @@ fn lean_selected_rust_field_local_digest_frame_witness_byte_component_endpoint_p
         + source_start;
     let source = &full_source[source_start..source_end];
     [
+        "ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs",
+        "roleRootFields :",
+        "liftOpeningFunctionality :",
+        "selectedSource :",
+        "assemblyAvailability :",
+        "assemblyFieldBinding :",
+        "assemblyLocalPredicates :",
+        "assemblyNativeValidity :",
+        "compatibilityAvailability :",
+        "compatibilityFieldBinding :",
+        "compatibilityExtractionRules :",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_components",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_component_inputs",
         "ReviewedFq12ConcreteRoleRootFieldBindingCertificate",
         "ReviewedFq12CertificateLiftOpeningFunctionality",
         "SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource",
@@ -6663,7 +6679,10 @@ fn lean_path2_hidden_source_boundary_adapter_present_v1() -> bool {
         "with_reviewed_fq12_hidden_source_closure_closed",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_extraction_soundness",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_digest_frame_witness_byte_components",
+        "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_digest_frame_witness_byte_component_inputs",
+        "ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_components",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_component_inputs",
         "hiddenSourceProofSemanticsClosed",
         "Path2NativeBoundary.Boundary",
     ]

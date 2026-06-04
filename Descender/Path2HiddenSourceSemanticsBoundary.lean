@@ -152,5 +152,40 @@ theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_loc
       canonicalRepresentativeWitnessByteSource canonical_digest_frame_eq
       nativeDigestFrameWitnessByteSource assembly_digest_frame_eq)
 
+/--
+Active AP2-N001 boundary closure from the named raw selected Rust/model source
+component package.
+
+This is the certificate-shaped version of
+`reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_digest_frame_witness_byte_components`.
+It keeps the production boundary aligned with the single Rust audit gate that
+must eventually flip `extractor_theorem_instantiated`.
+-/
+theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_digest_frame_witness_byte_component_inputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (payloadProjectsFrom :
+      forall {b : Path2NativeBoundary.Boundary}
+          {payload : ReviewedFq12HiddenSourcePayload},
+        P.reviewedFq12PayloadAccepts b payload ->
+          payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+            payload.slotId = b.context.slotId ->
+          P.reviewedFq12PayloadProjectsFrom b payload)
+    (certificateAvailability :
+      ReviewedFq12ExtractionCertificateAvailability P)
+    (I :
+      ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P :=
+  reviewed_fq12_hidden_source_proof_semantics_closed_from_extraction_soundness
+    P payloadProjectsFrom certificateAvailability
+    (reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_component_inputs
+      P I)
+
 end Path2HiddenSourceSemanticsBoundary
 end Descender

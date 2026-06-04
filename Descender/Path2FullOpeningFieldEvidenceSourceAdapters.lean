@@ -5054,6 +5054,56 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_diges
       assembly_digest_frame_eq := assembly_digest_frame_eq }
 
 /--
+Named AP2-N001 raw component package.
+
+This record is the proof-side shape of the active Rust hidden-source semantics
+audit gate: every field corresponds to one concrete Rust/model source surface
+or to the same-frame witness evidence required by the selected representative
+digest route.
+-/
+structure ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs
+    (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)
+    (RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser)
+    (CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
+    (P : Predicates) where
+  roleRootFields :
+    ReviewedFq12ConcreteRoleRootFieldBindingCertificate P
+  liftOpeningFunctionality :
+    ReviewedFq12CertificateLiftOpeningFunctionality P
+  selectedSource :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+      FieldParser RouteParser P
+  assemblyAvailability :
+    ReviewedFq12RepresentativeAssemblyCertificateAvailability P
+  assemblyFieldBinding :
+    ReviewedFq12ConcreteAssemblyFieldBindingOrBreak P
+  assemblyLocalPredicates :
+    ReviewedFq12AssemblyConstructedLocalPredicatesOrBreak P
+  assemblyNativeValidity :
+    ReviewedFq12AssemblyConstructedNativeValidityOrBreak P
+  compatibilityAvailability :
+    ReviewedFq12ExtractionCompatibilityCertificateAvailability P
+  compatibilityFieldBinding :
+    ReviewedFq12ConcreteCompatibilityFieldBindingOrBreak P
+  compatibilityExtractionRules :
+    SameRepresentativeConcreteExtractionPredicates P
+  digestFrame :
+    ReviewedFq12NativeRepresentativeDigestFrame
+  canonicalRepresentativeWitnessByteSource :
+    ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessByteSource
+      CanonicalParser P
+  canonical_digest_frame_eq :
+    canonicalRepresentativeWitnessByteSource.digestFrame = digestFrame
+  nativeDigestFrameWitnessByteSource :
+    ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource
+      WitnessParser P
+  assembly_digest_frame_eq :
+    nativeDigestFrameWitnessByteSource.digestFrame = digestFrame
+
+/--
 P2FS-001 closure from the raw source components remaining in the selected
 Rust/model route. This is the concrete checklist behind the field-local
 shared-frame theorem: role-root/lift facts, selected source-route bytes,
@@ -5117,6 +5167,29 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_diges
     digestFrame canonicalRepresentativeWitnessByteSource
     canonical_digest_frame_eq nativeDigestFrameWitnessByteSource
     assembly_digest_frame_eq
+
+/--
+P2FS-001 closure from the named AP2-N001 raw component package.
+-/
+theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_component_inputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (I :
+      ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12ExtractionCertificateSoundness P :=
+  reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_components
+    P I.roleRootFields I.liftOpeningFunctionality I.selectedSource
+    I.assemblyAvailability I.assemblyFieldBinding I.assemblyLocalPredicates
+    I.assemblyNativeValidity I.compatibilityAvailability
+    I.compatibilityFieldBinding I.compatibilityExtractionRules I.digestFrame
+    I.canonicalRepresentativeWitnessByteSource I.canonical_digest_frame_eq
+    I.nativeDigestFrameWitnessByteSource I.assembly_digest_frame_eq
 
 /--
 Selected-Rust packaged source-route adapter using the existing concrete
