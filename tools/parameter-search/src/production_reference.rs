@@ -18781,6 +18781,150 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
             .all(|marker| test_window.contains(marker))
 }
 
+fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let public_output_start = source
+        .find("\npub fn path2_native_signer_pipeline_public_output_v1(")
+        .expect("Path 2 native signer public output source start marker missing");
+    let public_output_end = source[public_output_start..]
+        .find("\npub fn path2_native_signer_pipeline_public_output_v1_digest(")
+        .expect("Path 2 native signer public output source end marker missing")
+        + public_output_start;
+    let public_output_window = &source[public_output_start..public_output_end];
+
+    let evidence_start = source
+        .find("\npub fn path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_root_v1(")
+        .expect("Path 2 native signer/verifier evidence source start marker missing");
+    let evidence_end = source[evidence_start..]
+        .find("\npub fn path2_native_signer_execution_report_from_public_input_os_entropy_v1(")
+        .expect("Path 2 native signer/verifier evidence source end marker missing")
+        + evidence_start;
+    let evidence_window = &source[evidence_start..evidence_end];
+
+    let honest_scope_start = source
+        .find("\npub fn path2_native_honest_constructor_scope_v1()")
+        .expect("Path 2 native honest constructor scope source start marker missing");
+    let honest_scope_end = source[honest_scope_start..]
+        .find("\npub fn path2_native_honest_constructor_scope_v1_digest(")
+        .expect("Path 2 native honest constructor scope source end marker missing")
+        + honest_scope_start;
+    let honest_scope_window = &source[honest_scope_start..honest_scope_end];
+
+    let keygen_scope_start = source
+        .find("\npub fn path2_native_signer_keygen_productization_scope_v1()")
+        .expect("Path 2 native signer keygen scope source start marker missing");
+    let keygen_scope_end = source[keygen_scope_start..]
+        .find("\npub fn path2_native_signer_keygen_productization_scope_v1_digest(")
+        .expect("Path 2 native signer keygen scope source end marker missing")
+        + keygen_scope_start;
+    let keygen_scope_window = &source[keygen_scope_start..keygen_scope_end];
+
+    let test_start = source
+        .find("\n    fn path2_native_signer_pipeline_public_output_is_public_and_verifier_compatible()")
+        .expect("Path 2 native signer/verifier pipeline tests start marker missing");
+    let test_end = source[test_start..]
+        .find("\n    fn path2_native_public_input_os_entropy_report_prevalidates_before_entropy()")
+        .expect("Path 2 native signer/verifier pipeline tests end marker missing")
+        + test_start;
+    let test_window = &source[test_start..test_end];
+
+    let public_output_checks = [
+        "path2_native_signer_pipeline_public_output_v1",
+        "assemble_path2_native_boundary_v1(bundle, checked_core_proof_bytes)?",
+        "path2_native_projection_preimage_da_digest_v1(bundle)?",
+        "path2_native_consensus_carrier_v1_from_assembly",
+        "path2_native_consensus_carrier_v1_digest(&carrier)?",
+        "Sha256::digest(checked_core_proof_bytes)",
+        "u16::try_from(checked_core_proof_bytes.len())",
+        "path2_native_deployment_preflight_v1()",
+        "deployment_preflight.signer_verifier_pipeline_present",
+        "deployment_preflight.constant_time_audit_complete",
+        "reject_active_native_signer_not_productized",
+        "Path2NativeSignerPipelinePublicOutputV1",
+    ];
+    let evidence_checks = [
+        "path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_root_v1",
+        "path2_native_honest_constructor_from_prevalidated_entropy_root_v1",
+        "path2_native_signer_pipeline_public_output_v1_digest",
+        "Sha256::digest(output.checked_core_proof_bytes)",
+        "verify_path2_native_deployment_pipeline_v1",
+        "hash_qrom_deployment_horizon_complete",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON",
+        "signer_verifier_pipeline_present",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
+        "constant_time_audit_complete",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME",
+        "storage_lifecycle_hardening_complete",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE",
+        "prevalidation_accepted: true",
+        "constructor_succeeded: true",
+        "verifier_public_boundary_accepted: verdict.public_boundary_accepted",
+        "verifier_production_accepted: verdict.production_accepted",
+        "deployment_blockers: verdict.deployment_preflight.internal_blockers",
+        "no production acceptance claim while deployment preflight remains blocked",
+        "no constant-time claim for private signing or keygen",
+        "no target-chain storage lifecycle hardening claim",
+    ];
+    let honest_scope_checks = [
+        "path2_native_honest_constructor_scope_v1",
+        "complete: false",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
+        "Path2NativeProjectionBundleV1",
+        "Path2NativeConsensusCarrierV1",
+        "Path2NativeSignerPipelinePublicOutputV1",
+        "honest_constructor_verifier_compatibility_harness",
+        "no deployment claim for unproductized honest native constructor",
+    ];
+    let keygen_scope_checks = [
+        "path2_native_signer_keygen_productization_scope_v1",
+        "productized: false",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
+        "os_csprng_or_approved_drbg_root",
+        "construct_from_os_entropy_root_without_public_secret_export",
+        "fail_closed_until_productized_harness",
+        "no claim that signer/keygen is productized before constant-time audit",
+    ];
+    let test_checks = [
+        "path2_native_signer_pipeline_public_output_is_public_and_verifier_compatible",
+        "reject_active_native_signer_not_productized",
+        "verify_path2_native_deployment_pipeline_v1",
+        "assert_no_active_native_private_material",
+        "path2_native_prevalidated_honest_flow_reaches_selected_verifier_public_acceptance",
+        "PATH2_NATIVE_SIGNER_VERIFIER_PIPELINE_EVIDENCE_SCHEMA",
+        "evidence.verifier_public_boundary_accepted",
+        "evidence.verifier_production_accepted",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
+        "path2_native_signer_verifier_evidence_keeps_productization_gates_separate",
+        "no constant-time claim for private signing or keygen",
+        "no target-chain storage lifecycle hardening claim",
+    ];
+
+    public_output_checks
+        .iter()
+        .all(|marker| public_output_window.contains(marker))
+        && evidence_checks
+            .iter()
+            .all(|marker| evidence_window.contains(marker))
+        && honest_scope_checks
+            .iter()
+            .all(|marker| honest_scope_window.contains(marker))
+        && keygen_scope_checks
+            .iter()
+            .all(|marker| keygen_scope_window.contains(marker))
+        && test_checks
+            .iter()
+            .all(|marker| test_window.contains(marker))
+}
+
+fn path2_native_signer_verifier_pipeline_productized_v1() -> bool {
+    let honest_scope = path2_native_honest_constructor_scope_v1();
+    let keygen_scope = path2_native_signer_keygen_productization_scope_v1();
+    path2_native_signer_verifier_pipeline_source_present_v1()
+        && honest_scope.complete
+        && keygen_scope.productized
+}
+
 pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV1 {
     let projection_encoders_present = path2_native_projection_encoder_source_boundary_present_v1();
     let checked_core_frame_present = path2_native_checked_core_frame_source_boundary_present_v1();
@@ -18810,7 +18954,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         && hash_qrom_deployment_horizon_complete
         && full_signature_execution_source_boundary_present
         && no_export_serializer_boundary_present;
-    let signer_verifier_pipeline_present = false;
+    let signer_verifier_pipeline_present = path2_native_signer_verifier_pipeline_productized_v1();
     let constant_time_audit_complete = false;
     let storage_lifecycle_hardening_complete = false;
 
@@ -36767,6 +36911,8 @@ mod tests {
         assert!(preflight.full_signature_execution_source_boundary_present);
         assert!(path2_no_export_serializer_boundary_present_v1());
         assert!(preflight.no_export_serializer_boundary_present);
+        assert!(path2_native_signer_verifier_pipeline_source_present_v1());
+        assert!(!path2_native_signer_verifier_pipeline_productized_v1());
         assert!(!preflight.signer_verifier_pipeline_present);
         assert!(!preflight.constant_time_audit_complete);
         assert!(!preflight.storage_lifecycle_hardening_complete);
