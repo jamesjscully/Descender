@@ -18570,6 +18570,13 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break",
         "SelectedRustCheckedCoreByteInstantiationInputs",
         "selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1",
+        "SelectedRustCheckedCoreCompositionClosure",
+        "selectedRustCheckedCoreCompositionClosure_from_instantiation_inputs",
+        "NativeAcceptedSpendSoundnessBoundary.withSelectedRustCheckedCoreClosure",
+        "accepted_spend_with_selected_rust_checked_core_closure_closed",
+        "NativeFullSignatureSecurityBoundary.withSelectedRustCheckedCoreClosure",
+        "full_signature_with_selected_rust_checked_core_closure_closed",
+        "acceptedSpendSoundness.checkedCoreCompositionClosed",
     ];
     let native_soundness_checks = [
         "structure Path2NativeCheckedCoreAcceptV1Soundness",

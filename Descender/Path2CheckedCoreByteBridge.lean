@@ -661,5 +661,158 @@ theorem selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_nam
     (selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1 Inputs)
     h
 
+/--
+Checked-core closure proposition supplied by the selected Rust/model component
+package.
+
+This is the proof obligation installed into the active accepted-spend boundary:
+every selected Rust checked-core accept either gives valid checked-core
+evidence or names the byte/parser/frame/domain/equation residual that prevents
+using the accept as proof evidence.
+-/
+def SelectedRustCheckedCoreCompositionClosure
+    {M : MeaningProjection}
+    {Proj : PublicProjections}
+    {V : VerifierPredicates}
+    {F : NativeCheckedCoreFrameFields}
+    (Bridge : Path2NativeCheckedCoreAcceptV1Bridge M Proj V F)
+    (Soundness :
+      Path2NativeCheckedCoreAcceptV1Soundness
+        V F Bridge.nativeFrameBinding Bridge.verifierHandleFields)
+    {P : CheckedCoreProofByteParser}
+    (Inputs :
+      SelectedRustCheckedCoreByteInstantiationInputs
+        Bridge.nativeFrameBinding Bridge.verifierHandleFields P V) : Prop :=
+  forall {q : Boundary} {msg state : Nat}
+      {evidence : NativeCheckedCoreSpendEvidence},
+    SelectedRustCheckedCoreByteSourceAcceptOrBreak
+        (selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1 Inputs)
+        q msg state evidence ->
+      Soundness.validCheckedCoreEvidence q msg state evidence ∨
+        CheckedCoreByteAndEquationBreakAlternatives V q
+
+/--
+The selected Rust/model component package closes checked-core composition up to
+the named residual breaks.
+-/
+theorem selectedRustCheckedCoreCompositionClosure_from_instantiation_inputs
+    {M : MeaningProjection}
+    {Proj : PublicProjections}
+    {V : VerifierPredicates}
+    {F : NativeCheckedCoreFrameFields}
+    (Bridge : Path2NativeCheckedCoreAcceptV1Bridge M Proj V F)
+    (Soundness :
+      Path2NativeCheckedCoreAcceptV1Soundness
+        V F Bridge.nativeFrameBinding Bridge.verifierHandleFields)
+    {P : CheckedCoreProofByteParser}
+    (Inputs :
+      SelectedRustCheckedCoreByteInstantiationInputs
+        Bridge.nativeFrameBinding Bridge.verifierHandleFields P V) :
+    SelectedRustCheckedCoreCompositionClosure Bridge Soundness Inputs := by
+  intro q msg state evidence hAcceptOrBreak
+  exact
+    selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break
+      Bridge Soundness Inputs hAcceptOrBreak
+
+/--
+Install selected Rust/model checked-core closure into the active accepted-spend
+boundary, preserving every other proof obligation.
+-/
+def NativeAcceptedSpendSoundnessBoundary.withSelectedRustCheckedCoreClosure
+    (B : NativeAcceptedSpendSoundnessBoundary)
+    {M : MeaningProjection}
+    {Proj : PublicProjections}
+    {V : VerifierPredicates}
+    {F : NativeCheckedCoreFrameFields}
+    (Bridge : Path2NativeCheckedCoreAcceptV1Bridge M Proj V F)
+    (Soundness :
+      Path2NativeCheckedCoreAcceptV1Soundness
+        V F Bridge.nativeFrameBinding Bridge.verifierHandleFields)
+    {P : CheckedCoreProofByteParser}
+    (Inputs :
+      SelectedRustCheckedCoreByteInstantiationInputs
+        Bridge.nativeFrameBinding Bridge.verifierHandleFields P V) :
+    NativeAcceptedSpendSoundnessBoundary :=
+  { B with
+    checkedCoreCompositionClosed :=
+      SelectedRustCheckedCoreCompositionClosure Bridge Soundness Inputs }
+
+/-- The accepted-spend wrapper exposes exactly the selected checked-core closure. -/
+theorem accepted_spend_with_selected_rust_checked_core_closure_closed
+    (B : NativeAcceptedSpendSoundnessBoundary)
+    {M : MeaningProjection}
+    {Proj : PublicProjections}
+    {V : VerifierPredicates}
+    {F : NativeCheckedCoreFrameFields}
+    (Bridge : Path2NativeCheckedCoreAcceptV1Bridge M Proj V F)
+    (Soundness :
+      Path2NativeCheckedCoreAcceptV1Soundness
+        V F Bridge.nativeFrameBinding Bridge.verifierHandleFields)
+    {P : CheckedCoreProofByteParser}
+    (Inputs :
+      SelectedRustCheckedCoreByteInstantiationInputs
+        Bridge.nativeFrameBinding Bridge.verifierHandleFields P V) :
+    (NativeAcceptedSpendSoundnessBoundary.withSelectedRustCheckedCoreClosure
+      B Bridge Soundness Inputs).checkedCoreCompositionClosed :=
+  selectedRustCheckedCoreCompositionClosure_from_instantiation_inputs
+    Bridge Soundness Inputs
+
+/--
+Install selected Rust/model checked-core closure into the active full-signature
+boundary, preserving every other full-signature proof obligation.
+-/
+def NativeFullSignatureSecurityBoundary.withSelectedRustCheckedCoreClosure
+    (B : NativeFullSignatureSecurityBoundary)
+    {M : MeaningProjection}
+    {Proj : PublicProjections}
+    {V : VerifierPredicates}
+    {F : NativeCheckedCoreFrameFields}
+    (Bridge : Path2NativeCheckedCoreAcceptV1Bridge M Proj V F)
+    (Soundness :
+      Path2NativeCheckedCoreAcceptV1Soundness
+        V F Bridge.nativeFrameBinding Bridge.verifierHandleFields)
+    {P : CheckedCoreProofByteParser}
+    (Inputs :
+      SelectedRustCheckedCoreByteInstantiationInputs
+        Bridge.nativeFrameBinding Bridge.verifierHandleFields P V) :
+    NativeFullSignatureSecurityBoundary :=
+  { B with
+    acceptedSpendSoundness :=
+      NativeAcceptedSpendSoundnessBoundary.withSelectedRustCheckedCoreClosure
+        B.acceptedSpendSoundness Bridge Soundness Inputs
+    fullSignatureSecurityClaimComplete := by
+      rcases B.fullSignatureSecurityClaimComplete with
+        ⟨hKeygen, hSigning, hCompleteness, hVerifier, hFullGame,
+          hHiddenSource, _hCheckedCore, hLifecycle, hNoExport,
+          hCheckedCoreDomain, hHiddenSourceDomain, hQueryBudget,
+          hMultiTarget⟩
+      exact
+        ⟨hKeygen, hSigning, hCompleteness, hVerifier, hFullGame,
+          hHiddenSource,
+          selectedRustCheckedCoreCompositionClosure_from_instantiation_inputs
+            Bridge Soundness Inputs,
+          hLifecycle, hNoExport, hCheckedCoreDomain, hHiddenSourceDomain,
+          hQueryBudget, hMultiTarget⟩ }
+
+/-- The full-signature wrapper exposes exactly the selected checked-core closure. -/
+theorem full_signature_with_selected_rust_checked_core_closure_closed
+    (B : NativeFullSignatureSecurityBoundary)
+    {M : MeaningProjection}
+    {Proj : PublicProjections}
+    {V : VerifierPredicates}
+    {F : NativeCheckedCoreFrameFields}
+    (Bridge : Path2NativeCheckedCoreAcceptV1Bridge M Proj V F)
+    (Soundness :
+      Path2NativeCheckedCoreAcceptV1Soundness
+        V F Bridge.nativeFrameBinding Bridge.verifierHandleFields)
+    {P : CheckedCoreProofByteParser}
+    (Inputs :
+      SelectedRustCheckedCoreByteInstantiationInputs
+        Bridge.nativeFrameBinding Bridge.verifierHandleFields P V) :
+    (NativeFullSignatureSecurityBoundary.withSelectedRustCheckedCoreClosure
+      B Bridge Soundness Inputs).acceptedSpendSoundness.checkedCoreCompositionClosed :=
+  selectedRustCheckedCoreCompositionClosure_from_instantiation_inputs
+    Bridge Soundness Inputs
+
 end Path2CheckedCoreByteBridge
 end Descender
