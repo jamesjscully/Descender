@@ -17401,7 +17401,44 @@ pub fn path2_native_hash_qrom_review_v1() -> Path2NativeHashQromReviewV1 {
 
 fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
     let lean_source = include_str!("../../../Descender/Path2CheckedCoreByteBridge.lean");
+    let native_source = include_str!("../../../Descender/Path2NativeAccountDesign.lean");
     let rust_source = include_str!("production_reference.rs");
+
+    let byte_source_start = lean_source
+        .find("\nstructure SelectedRustCheckedCoreByteSource")
+        .expect("Lean Path 2 selected Rust checked-core byte source marker missing");
+    let byte_source_end = lean_source[byte_source_start..]
+        .find("\n/--\nA selected Rust accept result is enough")
+        .expect("Lean Path 2 selected Rust checked-core byte source end marker missing")
+        + byte_source_start;
+    let byte_source = &lean_source[byte_source_start..byte_source_end];
+
+    let accept_endpoint_start = lean_source
+        .find("\ntheorem selectedRustCheckedCoreByteSource_checkedCoreAccepts_or_named_break")
+        .expect("Lean Path 2 selected Rust checked-core accepts endpoint marker missing");
+    let accept_endpoint_end = lean_source[accept_endpoint_start..]
+        .find("\n/--\nThe selected Rust byte source, native V1 bridge")
+        .expect("Lean Path 2 selected Rust checked-core accepts endpoint end marker missing")
+        + accept_endpoint_start;
+    let accept_endpoint_source = &lean_source[accept_endpoint_start..accept_endpoint_end];
+
+    let valid_endpoint_start = lean_source
+        .find("\ntheorem selectedRustCheckedCoreByteSource_valid_or_named_break")
+        .expect("Lean Path 2 selected Rust checked-core valid endpoint marker missing");
+    let valid_endpoint_end = lean_source[valid_endpoint_start..]
+        .find("\nend Path2CheckedCoreByteBridge")
+        .expect("Lean Path 2 selected Rust checked-core valid endpoint end marker missing")
+        + valid_endpoint_start;
+    let valid_endpoint_source = &lean_source[valid_endpoint_start..valid_endpoint_end];
+
+    let native_soundness_start = native_source
+        .find("\nstructure Path2NativeCheckedCoreAcceptV1Soundness")
+        .expect("Lean Path 2 native checked-core soundness source marker missing");
+    let native_soundness_end = native_source[native_soundness_start..]
+        .find("\n/-- Field-level public view surface emitted")
+        .expect("Lean Path 2 native checked-core soundness source end marker missing")
+        + native_soundness_start;
+    let native_soundness_source = &native_source[native_soundness_start..native_soundness_end];
 
     let accept_start = rust_source
         .find("\npub fn path2_native_checked_core_accept_v1(")
@@ -17423,8 +17460,7 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         + test_start;
     let test_source = &rust_source[test_start..test_end];
 
-    let lean_checks = [
-        "structure SelectedRustCheckedCoreByteSource",
+    let byte_source_checks = [
         "rustAcceptorAccepts",
         "parserMatchesNative",
         "proof_length_eq",
@@ -17435,14 +17471,34 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "verifier_handle_eq",
         "parser_equality",
         "hash_and_syndrome",
-        "selectedRustCheckedCoreByteSource_certificate",
-        "selectedRustCheckedCoreByteSource_accept_or_named_break",
-        "checkedCoreByteCertificate_accepts_native_v1",
-        "checkedCoreByteCertificate_checkedCoreAccepts",
+    ];
+    let accept_endpoint_checks = [
         "selectedRustCheckedCoreByteSource_checkedCoreAccepts_or_named_break",
-        "selectedRustCheckedCoreByteSource_valid_or_named_break",
-        "CheckedCoreByteAndEquationBreakAlternatives",
+        "Path2NativeCheckedCoreAcceptV1Bridge",
+        "SelectedRustCheckedCoreByteSource",
+        "SelectedRustCheckedCoreByteSourceAcceptOrBreak",
+        "path2_native_checked_core_accepts_checkedCoreAccepts",
+        "checkedCoreByteCertificate_accepts_native_v1",
+        "selectedRustCheckedCoreByteSource_certificate",
         "CheckedCoreByteBridgeBreakAlternatives",
+    ];
+    let valid_endpoint_checks = [
+        "selectedRustCheckedCoreByteSource_valid_or_named_break",
+        "Path2NativeCheckedCoreAcceptV1Soundness",
+        "CheckedCoreByteAndEquationBreakAlternatives",
+        "path2_native_checked_core_accept_valid_or_named_break",
+        "checkedCoreEquationBreak_to_byteAndEquation",
+        "checkedCoreFrameBreak_to_byteAndEquation",
+        "checkedCoreDomainBreak_to_byteAndEquation",
+        "checkedCoreParserBreak_to_byteAndEquation",
+        "checkedCoreByteBreakAlternatives_to_byteAndEquation",
+        "Soundness.validCheckedCoreEvidence",
+    ];
+    let native_soundness_checks = [
+        "structure Path2NativeCheckedCoreAcceptV1Soundness",
+        "validCheckedCoreEvidence",
+        "accept_valid_or_named_break",
+        "Path2NativeCheckedCoreAcceptV1 B H q msg state evidence",
     ];
     let accept_checks = [
         "validate_path2_native_checked_core_frame_v1(checked_core_frame)?;",
@@ -17466,9 +17522,18 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "path2_native_checked_core_frame_v1_challenge(&derived_frame)",
     ];
 
-    lean_checks
+    byte_source_checks
         .iter()
-        .all(|marker| lean_source.contains(marker))
+        .all(|marker| byte_source.contains(marker))
+        && accept_endpoint_checks
+            .iter()
+            .all(|marker| accept_endpoint_source.contains(marker))
+        && valid_endpoint_checks
+            .iter()
+            .all(|marker| valid_endpoint_source.contains(marker))
+        && native_soundness_checks
+            .iter()
+            .all(|marker| native_soundness_source.contains(marker))
         && accept_checks
             .iter()
             .all(|marker| accept_source.contains(marker))
