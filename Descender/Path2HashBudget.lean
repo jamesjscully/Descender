@@ -20,9 +20,19 @@ structure Path2DirectQueryBudgetV1 where
   deploymentClassicalHashQueryBoundLog2 : Nat
   qromQuadraticLossBitsAtDeploymentBound : Nat
   transcriptTermBitsAfterQromLoss : Nat
+  algebraicChallengeBytes : Nat
+  challengeHardeningBytes : Nat
+  algebraicChallengeLastByteUsableBits : Nat
+  algebraicChallengeBitsAfterMask : Nat
+  totalChallengeBitsAfterMask : Nat
   minimumDeploymentMarginBits : Nat
   qBatchActive : Bool
   qBatchInactive : qBatchActive = false
+  algebraicChallengeBitsMatchTranscript :
+    algebraicChallengeBitsAfterMask = transcriptTermBitsAfterQromLoss
+  totalChallengeBitsIncludeHardening :
+    totalChallengeBitsAfterMask =
+      algebraicChallengeBitsAfterMask + 8 * challengeHardeningBytes
   transcriptTermExceedsTargetPlusMargin :
     transcriptTermBitsAfterQromLoss >
       targetSecurityBits + minimumDeploymentMarginBits
@@ -39,9 +49,16 @@ def path2DirectQueryBudgetV1 : Path2DirectQueryBudgetV1 where
   deploymentClassicalHashQueryBoundLog2 := 33
   qromQuadraticLossBitsAtDeploymentBound := 32
   transcriptTermBitsAfterQromLoss := 182
+  algebraicChallengeBytes := 23
+  challengeHardeningBytes := 4
+  algebraicChallengeLastByteUsableBits := 6
+  algebraicChallengeBitsAfterMask := 182
+  totalChallengeBitsAfterMask := 214
   minimumDeploymentMarginBits := 53
   qBatchActive := false
   qBatchInactive := rfl
+  algebraicChallengeBitsMatchTranscript := rfl
+  totalChallengeBitsIncludeHardening := by native_decide
   transcriptTermExceedsTargetPlusMargin := by native_decide
 
 /-- Lean mirror of the native public hash/QROM review caps. -/
@@ -90,6 +107,15 @@ theorem path2_direct_query_budget_transcript_exceeds_target_plus_margin :
       path2DirectQueryBudgetV1.targetSecurityBits +
         path2DirectQueryBudgetV1.minimumDeploymentMarginBits :=
   path2DirectQueryBudgetV1.transcriptTermExceedsTargetPlusMargin
+
+theorem path2_direct_query_budget_challenge_bits_match_transcript :
+    path2DirectQueryBudgetV1.algebraicChallengeBitsAfterMask =
+      path2DirectQueryBudgetV1.transcriptTermBitsAfterQromLoss :=
+  path2DirectQueryBudgetV1.algebraicChallengeBitsMatchTranscript
+
+theorem path2_direct_query_budget_total_challenge_bits_after_mask :
+    path2DirectQueryBudgetV1.totalChallengeBitsAfterMask = 214 := by
+  rfl
 
 theorem path2_direct_query_budget_priced :
     DirectQueryBudgetPriced path2DirectQueryBudgetV1 :=

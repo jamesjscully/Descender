@@ -2926,6 +2926,13 @@ pub struct Path2DirectQueryBudgetV1 {
     pub deployment_classical_hash_query_bound_log2: u16,
     pub qrom_quadratic_loss_bits_at_deployment_bound: u16,
     pub transcript_term_bits_after_qrom_loss: u16,
+    pub algebraic_challenge_bytes: u16,
+    pub challenge_hardening_bytes: u16,
+    pub algebraic_challenge_last_byte_mask: u8,
+    pub algebraic_challenge_bits_after_mask: u16,
+    pub total_challenge_bits_after_mask: u16,
+    pub selected_multi_target_horizon_log2: u16,
+    pub negative_control_horizon_log2: u16,
     pub minimum_deployment_margin_bits: u16,
     pub active_query_symbols: [&'static str; 15],
     pub inactive_query_symbols: [&'static str; 1],
@@ -2943,6 +2950,13 @@ pub struct Path2NativeHashQromReviewV1 {
     pub deployment_classical_hash_query_bound_log2: u16,
     pub qrom_quadratic_loss_bits_at_deployment_bound: u16,
     pub transcript_term_bits_after_qrom_loss: u16,
+    pub algebraic_challenge_bytes: u16,
+    pub challenge_hardening_bytes: u16,
+    pub algebraic_challenge_last_byte_mask: u8,
+    pub algebraic_challenge_bits_after_mask: u16,
+    pub total_challenge_bits_after_mask: u16,
+    pub selected_multi_target_horizon_log2: u16,
+    pub negative_control_horizon_log2: u16,
     pub minimum_deployment_margin_bits: u16,
     pub production_registry_entry_count: u16,
     pub consensus_carrier_bytes: u16,
@@ -16972,6 +16986,11 @@ pub fn path2_public_admission_view_v1_json(
 }
 
 pub fn path2_direct_query_budget_v1() -> Path2DirectQueryBudgetV1 {
+    let algebraic_challenge_bits_after_mask = ((ALGEBRAIC_CHALLENGE_BYTES - 1) * 8
+        + ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK.count_ones() as usize)
+        as u16;
+    let total_challenge_bits_after_mask =
+        algebraic_challenge_bits_after_mask + (CHALLENGE_HARDENING_BYTES * 8) as u16;
     Path2DirectQueryBudgetV1 {
         schema: PATH2_DIRECT_QUERY_BUDGET_SCHEMA,
         mode: "direct_single_slot",
@@ -16980,6 +16999,13 @@ pub fn path2_direct_query_budget_v1() -> Path2DirectQueryBudgetV1 {
         deployment_classical_hash_query_bound_log2: 33,
         qrom_quadratic_loss_bits_at_deployment_bound: 32,
         transcript_term_bits_after_qrom_loss: 182,
+        algebraic_challenge_bytes: ALGEBRAIC_CHALLENGE_BYTES as u16,
+        challenge_hardening_bytes: CHALLENGE_HARDENING_BYTES as u16,
+        algebraic_challenge_last_byte_mask: ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK,
+        algebraic_challenge_bits_after_mask,
+        total_challenge_bits_after_mask,
+        selected_multi_target_horizon_log2: 32,
+        negative_control_horizon_log2: 54,
         minimum_deployment_margin_bits: 53,
         active_query_symbols: [
             "q_leaf",
@@ -17029,6 +17055,13 @@ pub fn path2_native_hash_qrom_review_v1() -> Path2NativeHashQromReviewV1 {
         qrom_quadratic_loss_bits_at_deployment_bound: budget
             .qrom_quadratic_loss_bits_at_deployment_bound,
         transcript_term_bits_after_qrom_loss: budget.transcript_term_bits_after_qrom_loss,
+        algebraic_challenge_bytes: budget.algebraic_challenge_bytes,
+        challenge_hardening_bytes: budget.challenge_hardening_bytes,
+        algebraic_challenge_last_byte_mask: budget.algebraic_challenge_last_byte_mask,
+        algebraic_challenge_bits_after_mask: budget.algebraic_challenge_bits_after_mask,
+        total_challenge_bits_after_mask: budget.total_challenge_bits_after_mask,
+        selected_multi_target_horizon_log2: budget.selected_multi_target_horizon_log2,
+        negative_control_horizon_log2: budget.negative_control_horizon_log2,
         minimum_deployment_margin_bits: budget.minimum_deployment_margin_bits,
         production_registry_entry_count: production_registered_domain_schema_constants().len()
             as u16,
@@ -17071,6 +17104,19 @@ pub fn path2_native_hash_qrom_review_v1() -> Path2NativeHashQromReviewV1 {
     }
 }
 
+pub fn path2_auxiliary_fq12_qrom_horizon_complete_v1() -> bool {
+    let review = path2_native_hash_qrom_review_v1();
+    review.algebraic_challenge_bytes == 23
+        && review.challenge_hardening_bytes == 4
+        && review.algebraic_challenge_last_byte_mask == 0x3f
+        && review.algebraic_challenge_bits_after_mask == 182
+        && review.total_challenge_bits_after_mask == 214
+        && review.algebraic_challenge_bits_after_mask == review.transcript_term_bits_after_qrom_loss
+        && review.selected_multi_target_horizon_log2 == 32
+        && review.selected_multi_target_horizon_log2 <= review.minimum_deployment_margin_bits
+        && review.negative_control_horizon_log2 > review.minimum_deployment_margin_bits
+}
+
 pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV1 {
     let proof_side_public_boundary_preflight_complete = true;
     let projection_encoders_present = true;
@@ -17086,8 +17132,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     let facade_exports_present = true;
 
     let checked_core_composition_review_complete = true;
-    let hash_qrom_deployment_horizon_complete =
-        path2_native_hash_qrom_review_v1().minimum_deployment_margin_bits > 1;
+    let hash_qrom_deployment_horizon_complete = path2_auxiliary_fq12_qrom_horizon_complete_v1();
     let signer_verifier_pipeline_present = false;
     let constant_time_audit_complete = false;
     let storage_lifecycle_hardening_complete = false;
@@ -34752,6 +34797,19 @@ mod tests {
         assert_eq!(budget.deployment_classical_hash_query_bound_log2, 33);
         assert_eq!(budget.qrom_quadratic_loss_bits_at_deployment_bound, 32);
         assert_eq!(budget.transcript_term_bits_after_qrom_loss, 182);
+        assert_eq!(budget.algebraic_challenge_bytes, 23);
+        assert_eq!(budget.challenge_hardening_bytes, 4);
+        assert_eq!(budget.algebraic_challenge_last_byte_mask, 0x3f);
+        assert_eq!(budget.algebraic_challenge_bits_after_mask, 182);
+        assert_eq!(budget.total_challenge_bits_after_mask, 214);
+        assert_eq!(budget.selected_multi_target_horizon_log2, 32);
+        assert_eq!(budget.negative_control_horizon_log2, 54);
+        assert_eq!(
+            budget.algebraic_challenge_bits_after_mask,
+            budget.transcript_term_bits_after_qrom_loss
+        );
+        assert!(budget.selected_multi_target_horizon_log2 <= budget.minimum_deployment_margin_bits);
+        assert!(budget.negative_control_horizon_log2 > budget.minimum_deployment_margin_bits);
         assert_eq!(budget.minimum_deployment_margin_bits, 53);
         assert!(budget.active_query_symbols.contains(&"q_leaf"));
         assert!(budget.active_query_symbols.contains(&"q_auth"));
@@ -34817,6 +34875,23 @@ mod tests {
         assert_eq!(review.deployment_classical_hash_query_bound_log2, 33);
         assert_eq!(review.qrom_quadratic_loss_bits_at_deployment_bound, 32);
         assert_eq!(review.transcript_term_bits_after_qrom_loss, 182);
+        assert_eq!(
+            review.algebraic_challenge_bytes,
+            ALGEBRAIC_CHALLENGE_BYTES as u16
+        );
+        assert_eq!(
+            review.challenge_hardening_bytes,
+            CHALLENGE_HARDENING_BYTES as u16
+        );
+        assert_eq!(
+            review.algebraic_challenge_last_byte_mask,
+            ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK
+        );
+        assert_eq!(review.algebraic_challenge_bits_after_mask, 182);
+        assert_eq!(review.total_challenge_bits_after_mask, 214);
+        assert_eq!(review.selected_multi_target_horizon_log2, 32);
+        assert_eq!(review.negative_control_horizon_log2, 54);
+        assert!(path2_auxiliary_fq12_qrom_horizon_complete_v1());
         assert!(
             review.transcript_term_bits_after_qrom_loss
                 >= review.target_security_bits + review.minimum_deployment_margin_bits
