@@ -312,5 +312,64 @@ theorem with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_s
     (reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
       P I)
 
+/--
+Use reviewed-Fq12 hidden-source closure inside the full active Path 2 signature
+boundary, preserving every other full-signature proof obligation.
+-/
+def NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+    (B : NativeFullSignatureSecurityBoundary)
+    (P : Predicates)
+    (Closed : ReviewedFq12HiddenSourceProofSemanticsClosed P) :
+    NativeFullSignatureSecurityBoundary :=
+  { B with
+    acceptedSpendSoundness :=
+      NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure
+        B.acceptedSpendSoundness P
+    fullSignatureSecurityClaimComplete := by
+      rcases B.fullSignatureSecurityClaimComplete with
+        ⟨hKeygen, hSigning, hCompleteness, hVerifier, hFullGame,
+          _hHiddenSource, hCheckedCore, hLifecycle, hNoExport,
+          hCheckedCoreDomain, hHiddenSourceDomain, hQueryBudget,
+          hMultiTarget⟩
+      exact
+        ⟨hKeygen, hSigning, hCompleteness, hVerifier, hFullGame,
+          Closed, hCheckedCore, hLifecycle, hNoExport,
+          hCheckedCoreDomain, hHiddenSourceDomain, hQueryBudget,
+          hMultiTarget⟩ }
+
+/-- The full-signature wrapper exposes exactly the supplied reviewed-Fq12 closure. -/
+theorem full_signature_with_reviewed_fq12_hidden_source_closure_closed
+    (B : NativeFullSignatureSecurityBoundary)
+    {P : Predicates}
+    (Closed : ReviewedFq12HiddenSourceProofSemanticsClosed P) :
+    (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+      B P Closed).acceptedSpendSoundness.hiddenSourceProofSemanticsClosed :=
+  Closed
+
+/--
+The full-signature boundary can consume the same selected Rust/model five-source
+record used by the accepted-spend boundary adapter.
+-/
+theorem full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs
+    (B : NativeFullSignatureSecurityBoundary)
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (I :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+      B P
+      (reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+        P I)).acceptedSpendSoundness.hiddenSourceProofSemanticsClosed :=
+  full_signature_with_reviewed_fq12_hidden_source_closure_closed
+    B
+    (reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+      P I)
+
 end Path2HiddenSourceSemanticsBoundary
 end Descender

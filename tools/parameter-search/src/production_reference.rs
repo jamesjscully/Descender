@@ -7511,6 +7511,8 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs",
         "with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs",
+        "NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure",
+        "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs",
         "NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure",
         "hiddenSourceProofSemanticsClosed",
         "ReviewedFq12RoleRootFunctionalLiftSource",
