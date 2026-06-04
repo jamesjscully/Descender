@@ -6767,12 +6767,8 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1() ->
     [
         theorem_name,
         "ReviewedFq12HiddenSourceProofSemanticsClosed",
-        "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources",
-        "ReviewedFq12RoleRootFunctionalLiftSource",
-        "SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource",
-        "ReviewedFq12FieldConcreteAssemblyLocalSource",
-        "ReviewedFq12FieldConcreteCompatibilitySource",
-        "ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources",
+        "ReviewedFq12SelectedRustModelFiveSourceClosureInputs",
+        "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs",
     ]
     .iter()
     .all(|marker| theorem_source.contains(marker))
