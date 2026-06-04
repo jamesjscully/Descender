@@ -10481,6 +10481,9 @@ fn path2_reviewed_fq12_shared_digest_frame_witness_byte_source_contract_present_
         "assembly_digest_frame_eq",
         "nativeDigestFrameWitnessByteSource.digestFrame = digestFrame",
         "reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_shared_digest_frame_witness_sources",
+        "rcases witnessSources with",
+        "cases canonical_digest_frame_eq",
+        "cases assembly_digest_frame_eq",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_sources",
     ];

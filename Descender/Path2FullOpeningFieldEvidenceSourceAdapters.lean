@@ -4861,11 +4861,37 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_s
     (witnessSources :
       ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
         CanonicalParser WitnessParser P) :
-    ReviewedFq12ExtractionCertificateSoundness P :=
-  reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_witness_and_digest_frame_sources
-    P roleRootLiftSource selectedSource directAssemblyBinding localModelSource
-    witnessSources.canonicalRepresentativeWitnessByteSource
-    witnessSources.nativeDigestFrameWitnessByteSource
+    ReviewedFq12ExtractionCertificateSoundness P := by
+  rcases witnessSources with
+    ⟨digestFrame, canonicalRepresentativeWitnessByteSource,
+      canonical_digest_frame_eq, nativeDigestFrameWitnessByteSource,
+      assembly_digest_frame_eq⟩
+  let canonicalRepresentativeWitnessByteSourceOnSharedFrame :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessByteSource
+        CanonicalParser P :=
+    { digestFrame := digestFrame
+      hasCanonicalRepresentativeWitnessFromCertificates :=
+        canonicalRepresentativeWitnessByteSource.hasCanonicalRepresentativeWitnessFromCertificates
+      canonicalRepresentativeWitnessAvailableFromCertificates := by
+        cases canonical_digest_frame_eq
+        exact
+          canonicalRepresentativeWitnessByteSource.canonicalRepresentativeWitnessAvailableFromCertificates }
+  let nativeDigestFrameWitnessByteSourceOnSharedFrame :
+      ReviewedFq12SelectedRustAssemblyRepresentativeFrameWitnessByteSource
+        WitnessParser P :=
+    { digestFrame := digestFrame
+      hasDigestFrameWitness :=
+        nativeDigestFrameWitnessByteSource.hasDigestFrameWitness
+      digestFrameWitnessAvailable := by
+        cases assembly_digest_frame_eq
+        exact nativeDigestFrameWitnessByteSource.digestFrameWitnessAvailable }
+  intro b payload cert hAccept hProjects hHas hValid
+  exact
+    reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_witness_and_digest_frame_sources
+      P roleRootLiftSource selectedSource directAssemblyBinding localModelSource
+      canonicalRepresentativeWitnessByteSourceOnSharedFrame
+      nativeDigestFrameWitnessByteSourceOnSharedFrame
+      hAccept hProjects hHas hValid
 
 /--
 Selected-Rust source-route inputs using existing concrete field/local sources
