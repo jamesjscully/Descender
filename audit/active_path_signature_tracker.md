@@ -288,6 +288,10 @@ The raw-component audit now also separates
 binding flag: it source-inspects the deterministic full-opening lift
 constructor/verifier and the opening-field rebinding regressions instead of
 aliasing the broader role-root helper.
+It also separates assembly field/local/native components and compatibility
+field/extraction components from the broader local-model helper, so the raw
+component theorem's assembly and compatibility premises are visible as distinct
+hash-bound audit flags.
 
 Lean now also exposes
 `reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_canonical_representative_byte_and_witness_sources`,
