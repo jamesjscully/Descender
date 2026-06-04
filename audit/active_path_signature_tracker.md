@@ -308,6 +308,11 @@ markers against the Rust shared witness-frame contract, and
 `rust_assembly_representative_digest_lookup_source_present` checks
 `assembly_representative_digest_lookup_of_canonical_digest_source` rather than
 aliasing the canonical representative flag.
+The shared-representative-frame flag is source-inspected now too:
+`rust_shared_representative_frame_source_present` checks the Lean
+`ReviewedFq12SelectedRustSharedRepresentativeFrameSource` record, its
+representative/assembly projections, and the direct-assembly shared-frame
+endpoint instead of only conjoining the two separate frame-source flags.
 The audit now also carries a dedicated marker bit for
 `reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources`,
 so the active five-source endpoint is checked directly rather than only through

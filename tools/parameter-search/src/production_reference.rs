@@ -7469,8 +7469,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let rust_assembly_representative_frame_source_present =
         path2_reviewed_fq12_native_representative_digest_frame_source_present_v1();
     let rust_shared_representative_frame_source_present =
-        rust_full_native_opening_representative_frame_source_present
-            && rust_assembly_representative_frame_source_present;
+        path2_reviewed_fq12_shared_representative_frame_source_present_v1();
     let rust_native_representative_digest_frame_source_present =
         path2_reviewed_fq12_native_representative_digest_frame_source_present_v1();
     let rust_constructed_assembly_compatibility_witness_source_present =
@@ -10245,6 +10244,30 @@ fn path2_reviewed_fq12_assembly_representative_digest_lookup_source_present_v1()
     lean_checks
         .iter()
         .all(|marker| lean_source.contains(marker))
+        && path2_reviewed_fq12_representative_canonical_digest_source_present_v1()
+}
+
+fn path2_reviewed_fq12_shared_representative_frame_source_present_v1() -> bool {
+    let lean_source =
+        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
+    let lean_checks = [
+        "structure ReviewedFq12SelectedRustSharedRepresentativeFrameSource",
+        "representativeDigestCanonical",
+        "assemblyCertificateDigestCanonical",
+        "def representative_frame_source_of_shared_representative_frame_source",
+        "source.representativeDigestCanonical",
+        "def assembly_frame_source_of_shared_representative_frame_source",
+        "source.assemblyCertificateDigestCanonical",
+        "def representative_canonical_digest_source_of_shared_representative_frame_source",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_shared_representative_frame_packaged_source_route_inputs",
+        "ReviewedFq12SelectedRustDirectAssemblySharedRepresentativeFramePackagedSourceRouteInputs",
+    ];
+
+    lean_checks
+        .iter()
+        .all(|marker| lean_source.contains(marker))
+        && path2_reviewed_fq12_full_native_opening_canonical_representative_source_present_v1()
+        && path2_reviewed_fq12_native_representative_digest_frame_source_present_v1()
         && path2_reviewed_fq12_representative_canonical_digest_source_present_v1()
 }
 
@@ -40578,6 +40601,7 @@ mod tests {
         assert!(path2_reviewed_fq12_representative_digest_functionality_source_present_v1());
         assert!(audit.rust_assembly_representative_frame_source_present);
         assert!(audit.rust_shared_representative_frame_source_present);
+        assert!(path2_reviewed_fq12_shared_representative_frame_source_present_v1());
         assert!(audit.rust_native_representative_digest_frame_source_present);
         assert!(path2_reviewed_fq12_native_representative_digest_frame_source_present_v1());
         assert!(audit.rust_native_representative_digest_frame_witness_api_present);
