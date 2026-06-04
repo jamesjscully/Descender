@@ -6489,6 +6489,33 @@ fn reviewed_fq12_fail_closed_deployment_verifier_source_present_v1() -> bool {
             .all(|marker| test_window.contains(marker))
 }
 
+fn reviewed_fq12_deployment_verifier_productized_v1(
+    hidden_source_semantics_bridge_complete: bool,
+) -> bool {
+    let source = include_str!("production_reference.rs");
+
+    let verifier_start = source
+        .find(
+            "\npub fn verify_reviewed_fq12_account_carried_signature_carried_deployment_verifier(",
+        )
+        .expect("reviewed Fq12 deployment verifier source start marker missing");
+    let verifier_end = source[verifier_start..]
+        .find("\npub fn verify_reviewed_fq12_account_carried_sigma_equation(")
+        .expect("reviewed Fq12 deployment verifier source end marker missing")
+        + verifier_start;
+    let verifier_window = &source[verifier_start..verifier_end];
+
+    let still_fail_closed = verifier_window.contains("Err(ProductionAccountBindingError::new(")
+        && verifier_window.contains("report.blocker")
+        && !verifier_window.contains("Ok(report.context.statement)");
+
+    hidden_source_semantics_bridge_complete
+        && reviewed_fq12_hidden_source_deployability_assertion_source_present_v1()
+        && reviewed_fq12_active_lane_projection_carrier_source_present_v1()
+        && reviewed_fq12_fail_closed_deployment_verifier_source_present_v1()
+        && !still_fail_closed
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ProductionDeploymentPreflight {
     pub callback_boundaries_ok: bool,
@@ -6713,7 +6740,10 @@ pub fn production_deployment_preflight() -> ProductionDeploymentPreflight {
         reviewed_fq12_fail_closed_deployment_verifier_source_present_v1();
     let reviewed_fq12_state_assisted_masked_projection_candidate_verifier_present =
         reviewed_fq12_active_lane_projection_carrier_source_present;
-    let reviewed_fq12_deployment_verifier_present = false;
+    let reviewed_fq12_deployment_verifier_present =
+        reviewed_fq12_deployment_verifier_productized_v1(
+            reviewed_fq12_hidden_source_semantics_bridge_complete,
+        );
     let executable_matches_reviewed_target = LINEAR_SIGMA_TARGET_TRANSACTION_SIGNATURE_BYTES
         == REVIEWED_TARGET_TRANSACTION_SIGNATURE_BYTES;
     let mut blockers = Vec::new();
@@ -46687,6 +46717,10 @@ opaque selectedRustRoleRootLiftSource : role_root_lift_source
             preflight.reviewed_fq12_state_assisted_masked_projection_candidate_verifier_present
         );
         assert!(!preflight.reviewed_fq12_deployment_verifier_present);
+        assert!(reviewed_fq12_fail_closed_deployment_verifier_source_present_v1());
+        assert!(!reviewed_fq12_deployment_verifier_productized_v1(
+            preflight.reviewed_fq12_hidden_source_semantics_bridge_complete
+        ));
         assert!(!preflight.executable_matches_reviewed_target);
         assert!(!preflight.deployment_ready);
         assert!(

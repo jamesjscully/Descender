@@ -687,11 +687,14 @@ bits are now derived from source-inspection gates over the active reviewed-Fq12
 callback boundaries, readiness/deployability report constructors and
 validators, selected projection-carrier tuple verifier, masked projection
 candidate verifier, soundness certificate, digest-only storage/spent-ledger
-regressions, and no-selected-material negative controls. This is report-surface
-hardening only: the active target remains the Path 2 native / reviewed-Fq12
-active-lane projection-carrier route, and production deployment remains
-fail-closed until the hidden-source semantics, signer/verifier productization,
-constant-time, storage, and external-review gates are closed.
+regressions, and no-selected-material negative controls. Its final
+`reviewed_fq12_deployment_verifier_present` bit is also derived from a
+productization helper that requires hidden-source semantics closure and rejects
+the current fail-closed verifier body. This is report-surface hardening only:
+the active target remains the Path 2 native / reviewed-Fq12 active-lane
+projection-carrier route, and production deployment remains fail-closed until
+the hidden-source semantics, signer/verifier productization, constant-time,
+storage, and external-review gates are closed.
 
 ## Findings
 
