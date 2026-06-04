@@ -328,6 +328,11 @@ against direct assembly binding plus assembly/compatibility component helpers.
 `compatibility_route_witness_source_of_assembly_field_binding_local_model_and_digest_lookup`,
 including the representative-digest lookup source, instead of aliasing the
 constructed-compatibility flag.
+`rust_assembly_compatibility_local_model_source_present` is also split back to
+the broad local-model helper
+`path2_reviewed_fq12_assembly_compatibility_local_model_source_present_v1`,
+so local-model presence is not implied solely by the constructed-compatibility
+adapter.
 The audit now also carries a dedicated marker bit for
 `reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources`,
 so the active five-source endpoint is checked directly rather than only through

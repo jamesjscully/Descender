@@ -7479,7 +7479,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let rust_compatibility_route_witness_source_present =
         path2_reviewed_fq12_compatibility_route_witness_source_present_v1();
     let rust_assembly_compatibility_local_model_source_present =
-        rust_constructed_assembly_compatibility_witness_source_present;
+        path2_reviewed_fq12_assembly_compatibility_local_model_source_present_v1();
     let rust_assembly_field_local_native_components_present =
         path2_reviewed_fq12_assembly_field_local_native_components_present_v1();
     let rust_compatibility_field_extraction_components_present =
