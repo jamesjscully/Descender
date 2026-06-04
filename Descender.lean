@@ -52,6 +52,7 @@ import Descender.Path2FullOpeningFieldEvidenceComposition
 import Descender.Path2FullOpeningSourceBridge
 import Descender.Path2FullOpeningSourceConcrete
 import Descender.Path2FullOpeningFieldEvidenceSourceAdapters
+import Descender.Path2HiddenSourceSemanticsBoundary
 import Descender.Path2CheckedCoreByteBridge
 import Descender.Path2FullSpendGame
 import Descender.Path2FullSpendConcrete
