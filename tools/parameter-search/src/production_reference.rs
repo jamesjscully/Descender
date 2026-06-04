@@ -6597,7 +6597,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
     let native_boundary_digest_payload_binding_complete = true;
     let selected_hidden_relation_extraction_certificate_present =
         path2_reviewed_fq12_hidden_relation_extraction_certificate_source_present_v1();
-    let full_native_opening_role_lift_certificate_present = true;
+    let full_native_opening_role_lift_certificate_present =
+        path2_reviewed_fq12_role_root_lift_source_present_v1();
     let lean_source_route_local_instantiation_endpoint_present = true;
     let lean_boundary_availability_concrete_role_root_source_route_endpoint_present = true;
     let lean_factored_boundary_availability_concrete_role_root_source_route_endpoint_present = true;
