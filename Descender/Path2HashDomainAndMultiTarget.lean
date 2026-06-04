@@ -253,6 +253,8 @@ structure ActiveHashDomainAndMultiTargetCertificate where
   horizon : ActiveMultiTargetHorizon
   directQueryBudgetPriced :
     DirectQueryBudgetPriced directBudget
+  auxiliaryFq12ChallengeShapeComplete :
+    Path2HashBudget.AuxiliaryFq12ChallengeShapeComplete directBudget
   checkedCoreFrameDomainSeparated :
     CheckedCoreFrameDomainSeparated registry
   hiddenSourceFrameDomainSeparated :
@@ -287,6 +289,11 @@ theorem native_queryBudgetPriced
     C.toNativeHashBudgetBoundary.queryBudgetPriced :=
   C.directQueryBudgetPriced
 
+theorem active_auxiliaryFq12ChallengeShapeComplete
+    (C : ActiveHashDomainAndMultiTargetCertificate) :
+    Path2HashBudget.AuxiliaryFq12ChallengeShapeComplete C.directBudget :=
+  C.auxiliaryFq12ChallengeShapeComplete
+
 theorem native_multiTargetLossPriced
     (C : ActiveHashDomainAndMultiTargetCertificate) :
     C.toNativeHashBudgetBoundary.multiTargetLossPriced :=
@@ -313,6 +320,8 @@ def activePath2HashDomainAndMultiTargetCertificate :
   horizon := activeLaneAccountHorizonV1
   directQueryBudgetPriced :=
     path2_direct_query_budget_priced
+  auxiliaryFq12ChallengeShapeComplete :=
+    path2_direct_query_budget_auxiliary_fq12_challenge_shape_complete
   checkedCoreFrameDomainSeparated :=
     active_checkedCoreFrameDomainSeparated
   hiddenSourceFrameDomainSeparated :=
@@ -339,6 +348,12 @@ theorem activeNativeHashBudgetBoundary_queryBudgetPriced :
     activeNativeHashBudgetBoundary.queryBudgetPriced :=
   activePath2HashDomainAndMultiTargetCertificate
     |>.native_queryBudgetPriced
+
+theorem activeNativeHashBudgetBoundary_auxiliaryFq12ChallengeShapeComplete :
+    Path2HashBudget.AuxiliaryFq12ChallengeShapeComplete
+      activePath2HashDomainAndMultiTargetCertificate.directBudget :=
+  activePath2HashDomainAndMultiTargetCertificate
+    |>.active_auxiliaryFq12ChallengeShapeComplete
 
 theorem activeNativeHashBudgetBoundary_multiTargetLossPriced :
     activeNativeHashBudgetBoundary.multiTargetLossPriced :=

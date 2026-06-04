@@ -39240,6 +39240,130 @@ mod tests {
     }
 
     #[test]
+    fn path2_checked_core_authorization_consumes_auxiliary_challenge_bytes_in_fq12_action() {
+        let (fixture, leaf, _evidence, _certificate) = path2_creation_relation_replay_fixture();
+        let witness_commitment = fixture
+            .account
+            .get_slot(leaf.slot_id as u32)
+            .unwrap()
+            .commitment()
+            .witness_commitment();
+        let authorization = path2_slot_authorization_digest(&leaf).unwrap();
+        let responses = ProductionCompactResponses {
+            active_free: [[0_i16; LOCAL_FREE]; REPS],
+        };
+        let signature = sign_path2_reviewed_fq12_authorization_checked_core(
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &leaf.account_id,
+            &leaf.account_state_root_before,
+            &authorization,
+            leaf.slot_id as u32,
+            &fixture.pad_seed,
+            &responses,
+        )
+        .unwrap();
+        let parts = decode_reviewed_fq12_account_carried_signature(signature.as_bytes()).unwrap();
+        let challenge = path2_checked_core_authorization_challenge_bytes(
+            fixture.public_key.as_bytes(),
+            fixture.message,
+            &leaf.account_id,
+            &leaf.account_state_root_before,
+            leaf.slot_id as u32,
+            &witness_commitment,
+            &authorization,
+            &parts.proof.proof_commitment,
+        );
+        assert_eq!(
+            parts.challenge,
+            decode_challenge(&challenge).expect("signed challenge is compact-canonical")
+        );
+
+        let mut auxiliary_algebraic_rebound = challenge;
+        auxiliary_algebraic_rebound[17] ^= 1;
+        assert_eq!(
+            decode_challenge(&challenge).unwrap(),
+            decode_challenge(&auxiliary_algebraic_rebound).unwrap(),
+            "byte 17 is outside the 130-bit compact block/sign prefix"
+        );
+        assert_ne!(
+            reviewed_fq12_challenge_action_vector(&challenge),
+            reviewed_fq12_challenge_action_vector(&auxiliary_algebraic_rebound),
+            "auxiliary algebraic challenge bytes must feed the Fq12 action"
+        );
+        let mut nonzero_witness_syndrome = [0_u16; REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS];
+        nonzero_witness_syndrome[0] = 1;
+        let nonzero_witness_commitment =
+            pack_reviewed_fq12_account_carried_syndrome_digest(&nonzero_witness_syndrome).unwrap();
+        let synthetic_randomizer_commitment = pack_reviewed_fq12_account_carried_syndrome_digest(
+            &[7_u16; REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS],
+        )
+        .unwrap();
+        assert_ne!(
+            reviewed_fq12_state_assisted_expected_response_syndrome(
+                &challenge,
+                &nonzero_witness_commitment,
+                &synthetic_randomizer_commitment,
+            )
+            .unwrap(),
+            reviewed_fq12_state_assisted_expected_response_syndrome(
+                &auxiliary_algebraic_rebound,
+                &nonzero_witness_commitment,
+                &synthetic_randomizer_commitment,
+            )
+            .unwrap(),
+            "auxiliary algebraic challenge bytes must affect the checked-core equation"
+        );
+
+        let mut hardening_rebound = challenge;
+        hardening_rebound[ALGEBRAIC_CHALLENGE_BYTES] ^= 1;
+        assert_eq!(
+            decode_challenge(&challenge).unwrap(),
+            decode_challenge(&hardening_rebound).unwrap(),
+            "hardening bytes are outside the compact block/sign prefix"
+        );
+        assert_ne!(
+            reviewed_fq12_challenge_action_vector(&challenge),
+            reviewed_fq12_challenge_action_vector(&hardening_rebound),
+            "hardening challenge bytes must feed the Fq12 action"
+        );
+        assert_ne!(
+            reviewed_fq12_state_assisted_expected_response_syndrome(
+                &challenge,
+                &nonzero_witness_commitment,
+                &synthetic_randomizer_commitment,
+            )
+            .unwrap(),
+            reviewed_fq12_state_assisted_expected_response_syndrome(
+                &hardening_rebound,
+                &nonzero_witness_commitment,
+                &synthetic_randomizer_commitment,
+            )
+            .unwrap(),
+            "hardening challenge bytes must affect the checked-core equation"
+        );
+
+        let mut rebound_signature = signature.as_bytes().to_vec();
+        rebound_signature[SLOT_ID_BYTES..SLOT_ID_BYTES + CHALLENGE_BYTES]
+            .copy_from_slice(&hardening_rebound);
+        assert_eq!(
+            verify_path2_checked_core_authorization(
+                &fixture.public_key,
+                fixture.message,
+                &fixture.account,
+                &leaf.account_id,
+                &leaf.account_state_root_before,
+                &authorization,
+                &ProductionSignature::new(rebound_signature),
+            )
+            .unwrap_err()
+            .reason(),
+            "Path 2 checked-core authorization challenge mismatch"
+        );
+    }
+
+    #[test]
     fn path2_direct_single_slot_spend_composes_admission_signature_and_consume_once() {
         let (fixture, leaf, evidence, certificate) = path2_creation_relation_replay_fixture();
         let authorization = path2_slot_authorization_digest(&leaf).unwrap();

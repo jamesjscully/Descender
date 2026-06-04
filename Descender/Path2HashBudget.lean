@@ -98,6 +98,25 @@ def DirectQueryBudgetPriced (B : Path2DirectQueryBudgetV1) : Prop :=
     B.transcriptTermBitsAfterQromLoss >
       B.targetSecurityBits + B.minimumDeploymentMarginBits
 
+/--
+The active auxiliary-Fq12 challenge shape used by the deployable Path 2 route.
+
+The compact block/sign decoder still consumes only the legacy 26-repetition
+prefix.  These facts pin the wider algebraic action and transcript hardening
+budget that the checked-core Fq12 equation consumes after that prefix.
+-/
+def AuxiliaryFq12ChallengeShapeComplete
+    (B : Path2DirectQueryBudgetV1) : Prop :=
+  B.algebraicChallengeBytes = 23 ∧
+    B.challengeHardeningBytes = 4 ∧
+    B.algebraicChallengeLastByteUsableBits = 6 ∧
+    B.algebraicChallengeBitsAfterMask = 182 ∧
+    B.totalChallengeBitsAfterMask = 214 ∧
+    B.algebraicChallengeBitsAfterMask =
+      B.transcriptTermBitsAfterQromLoss ∧
+    B.totalChallengeBitsAfterMask =
+      B.algebraicChallengeBitsAfterMask + 8 * B.challengeHardeningBytes
+
 theorem path2_direct_query_budget_keeps_q_batch_inactive :
     path2DirectQueryBudgetV1.qBatchActive = false :=
   path2DirectQueryBudgetV1.qBatchInactive
@@ -116,6 +135,12 @@ theorem path2_direct_query_budget_challenge_bits_match_transcript :
 theorem path2_direct_query_budget_total_challenge_bits_after_mask :
     path2DirectQueryBudgetV1.totalChallengeBitsAfterMask = 214 := by
   rfl
+
+theorem path2_direct_query_budget_auxiliary_fq12_challenge_shape_complete :
+    AuxiliaryFq12ChallengeShapeComplete path2DirectQueryBudgetV1 :=
+  ⟨rfl, rfl, rfl, rfl, rfl,
+    path2_direct_query_budget_challenge_bits_match_transcript,
+    path2DirectQueryBudgetV1.totalChallengeBitsIncludeHardening⟩
 
 theorem path2_direct_query_budget_priced :
     DirectQueryBudgetPriced path2DirectQueryBudgetV1 :=
