@@ -2817,7 +2817,7 @@ structure ReviewedFq12ConcreteRoleRootSourceRouteLocalInstantiationInputs
     ReviewedFq12FullOpeningFieldEvidenceLocalPredicateSource P
 
 /--
-Convert concrete role-root/source-route inputs to the current source-route
+Convert concrete role-root/source-route inputs to the source-route local
 instantiation package.
 -/
 def ReviewedFq12ConcreteRoleRootSourceRouteLocalInstantiationInputs.toInstantiationInputs
@@ -2857,10 +2857,10 @@ theorem reviewed_fq12_certificate_soundness_from_concrete_role_root_source_route
 /--
 Boundary-availability/concrete-role-root source-route inputs.
 
-This is the narrowest current active P2FS-001 wrapper: it consumes the base
-active boundary availability surfaces from `Path2NativeBoundary`, concrete
-role-root field binding from `Path2RoleRootConcrete`, and the source-route byte
-plus local predicate witnesses. The named availability records are recovered by
+This boundary-availability wrapper consumes the base active boundary
+availability surfaces from `Path2NativeBoundary`, concrete role-root field
+binding from `Path2RoleRootConcrete`, and the source-route byte plus local
+predicate witnesses. The named availability records are recovered by
 equivalence, not by an additional cryptographic assumption.
 -/
 structure ReviewedFq12BoundaryAvailabilityConcreteRoleRootSourceRouteInputs
@@ -4694,9 +4694,13 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_c
 Assemble the fully byte-shaped active source-route package from its six
 concrete source records.
 
-This is the direct AP2-N001 instantiation target: once the selected Rust/model
-proof supplies these six records, the active hidden-source semantics theorem is
-closed without using the aggregate verifier object as an assembly premise.
+This is the direct byte-shaped AP2-N001 adapter: once the selected Rust/model
+proof supplies these six records, it feeds the active hidden-source semantics
+theorem without using the aggregate verifier object as an assembly premise.
+The field/local shared-frame wrapper below is the preferred selected
+implementation target because it consumes the concrete field/local source
+records directly and pins both witness byte sources to one representative
+digest frame.
 -/
 def reviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeByteAndWitnessPackagedSourceRouteInputsOfSources
     {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
@@ -4768,8 +4772,8 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_c
 P2FS-001 closure from the Rust-shaped canonical representative witness source
 and the Rust digest-frame witness byte source.
 
-This is the concrete AP2-N001 target for the selected implementation: the
-canonical-representative side may be proved in the same shape as
+This is the Rust-witness-shaped AP2-N001 adapter: the canonical-representative
+side may be proved in the same shape as
 `Path2ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessV1`, while
 the theorem derives the semantic canonical byte source internally.
 -/
