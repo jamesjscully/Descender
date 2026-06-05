@@ -1017,6 +1017,12 @@ the selected report, digest, proof objects, and source records in the intended
 order. A regression where the boundary-base certificate constructor is called
 directly but with `otherBoundaryBaseEvidenceReport` instead of
 `selectedRustBoundaryBaseEvidenceReport` fails the gate.
+Selected declaration matching now checks an identifier boundary after the
+requested name. A synthetic otherwise-complete fixture where
+`selectedRustFiveSourceEvidenceReport` is replaced by
+`selectedRustFiveSourceEvidenceReportSpoof` fails
+`evidence_report_definitions_present`, so suffixed declarations cannot satisfy
+the AP2-N001 selected-definition checklist by prefix.
 
 ## Findings
 

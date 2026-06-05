@@ -8492,6 +8492,16 @@ fn lean_source_has_selected_rust_definition_with_markers_v1(
             boundary_source
                 .match_indices(start_marker)
                 .any(|(start, _)| {
+                    let name_end = start + start_marker.len();
+                    if boundary_source[name_end..]
+                        .chars()
+                        .next()
+                        .is_some_and(|next| {
+                            next.is_ascii_alphanumeric() || next == '_' || next == '\''
+                        })
+                    {
+                        return false;
+                    }
                     let declaration_window =
                         &boundary_source[start..boundary_source.len().min(start + 1536)];
                     let header_end = [":=", "\nwhere", " where"]
@@ -55741,6 +55751,17 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             complete_concrete_definition_checklist.missing_definition_category_count,
             0
         );
+        let suffixed_report_name_definition_source = complete_concrete_definition_source.replacen(
+            "def selectedRustFiveSourceEvidenceReport :",
+            "def selectedRustFiveSourceEvidenceReportSpoof :",
+            1,
+        );
+        let suffixed_report_name_definition_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                &suffixed_report_name_definition_source,
+            );
+        assert!(!suffixed_report_name_definition_checklist.evidence_report_definitions_present);
+        assert!(!suffixed_report_name_definition_checklist.all_definitions_present);
         let reversed_payload_projection_law_source = complete_concrete_definition_source.replace(
             "theorem selectedRustPayloadProjectionLaw :\n  P.reviewedFq12PayloadAccepts b payload ->\n  P.reviewedFq12PayloadProjectsFrom b payload :=",
             "theorem selectedRustPayloadProjectionLaw :\n  P.reviewedFq12PayloadProjectsFrom b payload ->\n  P.reviewedFq12PayloadAccepts b payload :=",
