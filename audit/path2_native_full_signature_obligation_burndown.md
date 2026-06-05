@@ -373,15 +373,19 @@ P2FS-002 checked-core evidence-constructor hardening: `SelectedRustCheckedCoreBy
 ## Immediate Priority
 
 By proof dependency, P2FS-001 remains the deepest active obligation. By
-redesign-risk ordering, P2FS-008/P2FS-007 come first because the current budget
-only supports the fail-closed `log2(T) <= 1` target horizon. Lean now proves the
-two-bit aggregate horizon unpriced under the current budget, and Rust preflight
-blocks production on the QROM target-horizon gate. Any broader deployment horizon
-must redesign parameters or query caps before a deployable security theorem can
-be claimed.
+redesign-risk ordering, P2FS-008/P2FS-007 still come first, but the old
+`log2(T) <= 1` horizon failure is no longer the active route assumption. The
+selected route is the auxiliary-Fq12 widened challenge plan: 26 compact
+repetitions, 23 algebraic challenge bytes with mask `0x3f`, 182 QROM-discounted
+algebraic challenge bits, 214 total challenge bits, strict margin 53, and an
+active aggregate horizon of `log2(T)=32`. The remaining work is to prove the
+full-forgery query-budget expression and multi-target pricing over that widened
+action, including the Fq12 action-collision floor and canonical byte-frame
+binding. Deployment remains fail-closed until those pricing theorems and the
+downstream proof gates close.
 
-After the target-horizon decision, return to P2FS-001. The abstract theorem
-shape is now in Lean. `Descender/Path2NativeBoundary.lean` defines
+After the widened-budget pricing proof pass, return to P2FS-001. The abstract
+theorem shape is now in Lean. `Descender/Path2NativeBoundary.lean` defines
 `ReviewedFq12HiddenSourcePayload`,
 `ReviewedFq12HiddenSourceSemanticsCertificate`, and
 `reviewed_fq12_hidden_source_semantics_closed_or_break`, which takes an
