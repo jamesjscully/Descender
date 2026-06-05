@@ -22813,9 +22813,69 @@ pub fn path2_native_signer_ct_source_audit_v1() -> Path2NativeSignerCtSourceAudi
 pub fn path2_native_signer_ct_source_audit_v1_digest(
     report: &Path2NativeSignerCtSourceAuditV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(report)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native signer CT source audit: {err}"))
+    Ok(Sha256::digest(path2_native_signer_ct_source_audit_v1_frame(report)).into())
+}
+
+pub fn path2_native_signer_ct_source_audit_v1_frame(
+    report: &Path2NativeSignerCtSourceAuditV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", report.schema.as_bytes());
+    append_frame(
+        &mut frame,
+        b"audited_function",
+        report.audited_function.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"source_shape_audit_complete",
+        u64::from(report.source_shape_audit_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"backend_audit_complete",
+        u64::from(report.backend_audit_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"fixed_attempt_loop_present",
+        u64::from(report.fixed_attempt_loop_present),
+    );
+    append_u64(
+        &mut frame,
+        b"deterministic_fallback_present",
+        u64::from(report.deterministic_fallback_present),
+    );
+    append_u64(
+        &mut frame,
+        b"mask_select_present",
+        u64::from(report.mask_select_present),
+    );
+    append_u64(
+        &mut frame,
+        b"no_runtime_modulo_or_division_tokens",
+        u64::from(report.no_runtime_modulo_or_division_tokens),
+    );
+    append_u64(
+        &mut frame,
+        b"no_sampler_exhaustion_error",
+        u64::from(report.no_sampler_exhaustion_error),
+    );
+    append_u64(
+        &mut frame,
+        b"fixed_digest_byte_loads_only",
+        u64::from(report.fixed_digest_byte_loads_only),
+    );
+    append_frame(
+        &mut frame,
+        b"source_window_digest",
+        &report.source_window_digest,
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    for non_claim in &report.explicit_non_claims {
+        append_frame(&mut frame, b"explicit_non_claim", non_claim.as_bytes());
+    }
+    frame
 }
 
 fn path2_native_signer_execution_report_has_no_private_digests_v1(
@@ -22907,7 +22967,7 @@ pub fn path2_native_signer_rejection_cleanup_audit_v1_digest(
 fn path2_native_signer_entropy_digest_source_window_v1() -> &'static str {
     let source = include_str!("production_reference.rs");
     let start = source
-        .find("fn path2_native_signer_entropy_digest_v1(")
+        .find("\nfn path2_native_signer_entropy_digest_v1(")
         .expect("Path 2 native signer entropy digest source start marker missing");
     let end = source[start..]
         .find("#[inline(never)]")
@@ -22931,7 +22991,7 @@ fn path2_native_secret_material_derivation_source_window_v1() -> &'static str {
 fn path2_native_secret_component_digest_source_window_v1() -> &'static str {
     let source = include_str!("production_reference.rs");
     let start = source
-        .find("fn path2_native_digest_secret_component_v1(")
+        .find("\nfn path2_native_digest_secret_component_v1(")
         .expect("Path 2 native secret component digest source start marker missing");
     let end = source[start..]
         .find("fn path2_native_private_fiber_from_secret_material_v1(")
@@ -42362,6 +42422,13 @@ end Path2NativeAccountDesign
         assert_ne!(
             path2_native_signer_ct_source_audit_v1_digest(&report).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        let report_frame = path2_native_signer_ct_source_audit_v1_frame(&report);
+        assert!(!report_frame.is_empty());
+        let report_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&report_frame).into();
+        assert_eq!(
+            path2_native_signer_ct_source_audit_v1_digest(&report).unwrap(),
+            report_frame_digest
         );
 
         let source_window = path2_native_signer_entropy_q_source_window_v1();
