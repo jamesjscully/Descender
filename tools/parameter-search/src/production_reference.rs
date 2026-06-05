@@ -3772,10 +3772,12 @@ pub struct Path2NativeHashByteDomainEvidenceV1 {
     pub schema: &'static str,
     pub checked_core_frame_domain: &'static str,
     pub hidden_source_frame_domain: &'static str,
+    pub hidden_source_proof_domain: &'static str,
     pub projection_carrier_domain: &'static str,
     pub account_lifecycle_domain: &'static str,
     pub checked_core_frame_domain_pinned: bool,
     pub hidden_source_frame_domain_pinned: bool,
+    pub hidden_source_proof_domain_pinned: bool,
     pub projection_carrier_domain_pinned: bool,
     pub account_lifecycle_domain_pinned: bool,
     pub all_domains_disjoint: bool,
@@ -7504,6 +7506,9 @@ pub struct Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
     pub hidden_source_frame_domain_matches_hash_evidence: bool,
     pub hidden_source_statement_frame_uses_hash_domain_field: bool,
     pub hidden_source_statement_digest_uses_hash_domain_frame: bool,
+    pub hidden_source_proof_domain_matches_hash_evidence: bool,
+    pub hidden_source_proof_transcript_frame_uses_hash_domain_field: bool,
+    pub hidden_source_proof_transcript_digest_uses_hash_domain_frame: bool,
     pub boundary_base_evidence_digest: [u8; DIGEST_BYTES],
     pub boundary_base_evidence_verified: bool,
     pub role_root_lift_evidence_digest: [u8; DIGEST_BYTES],
@@ -8260,6 +8265,9 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
         "hiddenSourceFrameDomainMatchesHashEvidence : Bool",
         "hiddenSourceStatementFrameUsesHashDomainField : Bool",
         "hiddenSourceStatementDigestUsesHashDomainFrame : Bool",
+        "hiddenSourceProofDomainMatchesHashEvidence : Bool",
+        "hiddenSourceProofTranscriptFrameUsesHashDomainField : Bool",
+        "hiddenSourceProofTranscriptDigestUsesHashDomainFrame : Bool",
         "boundaryBaseEvidenceDigest : ByteArray",
         "boundaryBaseEvidenceVerified : Bool",
         "roleRootLiftEvidenceDigest : ByteArray",
@@ -8451,6 +8459,9 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "hidden_source_frame_domain_matches_hash_evidence",
         "hidden_source_statement_frame_uses_hash_domain_field",
         "hidden_source_statement_digest_uses_hash_domain_frame",
+        "hidden_source_proof_domain_matches_hash_evidence",
+        "hidden_source_proof_transcript_frame_uses_hash_domain_field",
+        "hidden_source_proof_transcript_digest_uses_hash_domain_frame",
         "boundary_base_evidence_digest",
         "boundary_base_evidence_verified",
         "role_root_lift_evidence_digest",
@@ -8500,6 +8511,9 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "b\"hidden_source_frame_domain_matches_hash_evidence\"",
         "b\"hidden_source_statement_frame_uses_hash_domain_field\"",
         "b\"hidden_source_statement_digest_uses_hash_domain_frame\"",
+        "b\"hidden_source_proof_domain_matches_hash_evidence\"",
+        "b\"hidden_source_proof_transcript_frame_uses_hash_domain_field\"",
+        "b\"hidden_source_proof_transcript_digest_uses_hash_domain_frame\"",
         "b\"boundary_base_evidence_digest\"",
         "b\"boundary_base_evidence_verified\"",
         "b\"role_root_lift_evidence_digest\"",
@@ -8533,11 +8547,18 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "let hash_byte_domain_evidence = path2_native_hash_byte_domain_evidence_v1()",
         "verify_path2_native_hash_byte_domain_evidence_v1(&hash_byte_domain_evidence)?",
         ".hidden_source_frame_domain",
+        ".hidden_source_proof_domain",
         "REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN",
+        "REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN",
         "reviewed_fq12_hidden_source_statement_frame(&hidden_source_statement_probe)",
         "hidden_source_expected_domain_field",
         "hidden_source_statement_probe_frame.starts_with(&hidden_source_expected_domain_field)",
         "reviewed_fq12_hidden_source_statement_digest(&hidden_source_statement_probe)",
+        "reviewed_fq12_hidden_source_proof_transcript_frame",
+        "&hidden_source_proof_probe",
+        "hidden_source_proof_expected_domain_field",
+        ".starts_with(&hidden_source_proof_expected_domain_field)",
+        "reviewed_fq12_hidden_source_proof_transcript_digest",
         "schema_matches: true",
         "bridge_audit_validated: true",
         "bridge_audit_digest_bound: true",
@@ -8546,6 +8567,9 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "hidden_source_frame_domain_matches_hash_evidence",
         "hidden_source_statement_frame_uses_hash_domain_field",
         "hidden_source_statement_digest_uses_hash_domain_frame",
+        "hidden_source_proof_domain_matches_hash_evidence",
+        "hidden_source_proof_transcript_frame_uses_hash_domain_field",
+        "hidden_source_proof_transcript_digest_uses_hash_domain_frame",
         "boundary_base_evidence_digest",
         "boundary_base_evidence_verified: true",
         "role_root_lift_evidence_digest",
@@ -10404,6 +10428,35 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
     let hidden_source_statement_digest_uses_hash_domain_frame =
         reviewed_fq12_hidden_source_statement_digest(&hidden_source_statement_probe)
             == hidden_source_statement_probe_frame_digest;
+    let hidden_source_proof_domain_matches_hash_evidence = hash_byte_domain_evidence
+        .hidden_source_proof_domain
+        == REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN;
+    let hidden_source_proof_probe = ProductionReviewedFq12HiddenSourceProof::new(
+        [0_u8; REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_BYTES],
+    );
+    let hidden_source_proof_transcript_probe_frame =
+        reviewed_fq12_hidden_source_proof_transcript_frame(
+            &hidden_source_statement_probe,
+            &hidden_source_proof_probe,
+        );
+    let mut hidden_source_proof_expected_domain_field = Vec::new();
+    append_frame(
+        &mut hidden_source_proof_expected_domain_field,
+        b"domain",
+        hash_byte_domain_evidence
+            .hidden_source_proof_domain
+            .as_bytes(),
+    );
+    let hidden_source_proof_transcript_frame_uses_hash_domain_field =
+        hidden_source_proof_transcript_probe_frame
+            .starts_with(&hidden_source_proof_expected_domain_field);
+    let hidden_source_proof_transcript_probe_frame_digest: [u8; DIGEST_BYTES] =
+        Sha256::digest(&hidden_source_proof_transcript_probe_frame).into();
+    let hidden_source_proof_transcript_digest_uses_hash_domain_frame =
+        reviewed_fq12_hidden_source_proof_transcript_digest(
+            &hidden_source_statement_probe,
+            &hidden_source_proof_probe,
+        ) == hidden_source_proof_transcript_probe_frame_digest;
     let boundary_base_evidence = path2_reviewed_fq12_boundary_base_evidence_v1()?;
     let boundary_base_evidence_digest =
         verify_path2_reviewed_fq12_boundary_base_evidence_v1(&boundary_base_evidence)?;
@@ -10436,6 +10489,9 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
         hidden_source_frame_domain_matches_hash_evidence,
         hidden_source_statement_frame_uses_hash_domain_field,
         hidden_source_statement_digest_uses_hash_domain_frame,
+        hidden_source_proof_domain_matches_hash_evidence,
+        hidden_source_proof_transcript_frame_uses_hash_domain_field,
+        hidden_source_proof_transcript_digest_uses_hash_domain_frame,
         boundary_base_evidence_digest,
         boundary_base_evidence_verified: true,
         role_root_lift_evidence_digest,
@@ -10522,6 +10578,21 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1_frame(
         &mut frame,
         b"hidden_source_statement_digest_uses_hash_domain_frame",
         u64::from(evidence.hidden_source_statement_digest_uses_hash_domain_frame),
+    );
+    append_u64(
+        &mut frame,
+        b"hidden_source_proof_domain_matches_hash_evidence",
+        u64::from(evidence.hidden_source_proof_domain_matches_hash_evidence),
+    );
+    append_u64(
+        &mut frame,
+        b"hidden_source_proof_transcript_frame_uses_hash_domain_field",
+        u64::from(evidence.hidden_source_proof_transcript_frame_uses_hash_domain_field),
+    );
+    append_u64(
+        &mut frame,
+        b"hidden_source_proof_transcript_digest_uses_hash_domain_frame",
+        u64::from(evidence.hidden_source_proof_transcript_digest_uses_hash_domain_frame),
     );
     append_frame(
         &mut frame,
@@ -10671,6 +10742,9 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
         && evidence.hidden_source_frame_domain_matches_hash_evidence
         && evidence.hidden_source_statement_frame_uses_hash_domain_field
         && evidence.hidden_source_statement_digest_uses_hash_domain_frame
+        && evidence.hidden_source_proof_domain_matches_hash_evidence
+        && evidence.hidden_source_proof_transcript_frame_uses_hash_domain_field
+        && evidence.hidden_source_proof_transcript_digest_uses_hash_domain_frame
         && evidence.boundary_base_evidence_verified
         && evidence.role_root_lift_evidence_verified
         && evidence.selected_source_route_evidence_verified
@@ -21068,6 +21142,7 @@ pub fn path2_native_hash_byte_domain_evidence_v1() -> Path2NativeHashByteDomainE
     let domains = [
         PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN,
         REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN,
+        REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN,
         REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN,
         PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN,
     ];
@@ -21090,12 +21165,15 @@ pub fn path2_native_hash_byte_domain_evidence_v1() -> Path2NativeHashByteDomainE
         schema: PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA,
         checked_core_frame_domain: PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN,
         hidden_source_frame_domain: REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN,
+        hidden_source_proof_domain: REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN,
         projection_carrier_domain: REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN,
         account_lifecycle_domain: PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN,
         checked_core_frame_domain_pinned: PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN
             == "Descender.Path2.NativeCheckedCoreFrame.v1",
         hidden_source_frame_domain_pinned: REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN
             == "Descender.Signature.q12289.local_delta.reviewed_fq12_hidden_source_statement.v1",
+        hidden_source_proof_domain_pinned: REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN
+            == "Descender.Signature.q12289.local_delta.reviewed_fq12_hidden_source_proof.v1",
         projection_carrier_domain_pinned:
             REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN
                 == "Descender.Signature.q12289.local_delta.reviewed_fq12_state_assisted_projection_carrier_binding.v1",
@@ -21112,6 +21190,7 @@ pub fn path2_native_hash_byte_domain_evidence_all_facts_true(
 ) -> bool {
     evidence.checked_core_frame_domain_pinned
         && evidence.hidden_source_frame_domain_pinned
+        && evidence.hidden_source_proof_domain_pinned
         && evidence.projection_carrier_domain_pinned
         && evidence.account_lifecycle_domain_pinned
         && evidence.all_domains_disjoint
@@ -21136,6 +21215,11 @@ pub fn path2_native_hash_byte_domain_evidence_v1_frame(
     );
     append_frame(
         &mut frame,
+        b"hidden_source_proof_domain",
+        evidence.hidden_source_proof_domain.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
         b"projection_carrier_domain",
         evidence.projection_carrier_domain.as_bytes(),
     );
@@ -21153,6 +21237,11 @@ pub fn path2_native_hash_byte_domain_evidence_v1_frame(
         &mut frame,
         b"hidden_source_frame_domain_pinned",
         u64::from(evidence.hidden_source_frame_domain_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"hidden_source_proof_domain_pinned",
+        u64::from(evidence.hidden_source_proof_domain_pinned),
     );
     append_u64(
         &mut frame,
@@ -21190,6 +21279,7 @@ pub fn path2_native_hash_byte_domain_evidence_v1_digest(
     }
     if evidence.checked_core_frame_domain != PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN
         || evidence.hidden_source_frame_domain != REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN
+        || evidence.hidden_source_proof_domain != REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN
         || evidence.projection_carrier_domain
             != REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN
         || evidence.account_lifecycle_domain != PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN
@@ -22010,8 +22100,10 @@ fn path2_native_hash_byte_domain_evidence_source_present_v1() -> bool {
         "Path2NativeHashByteDomainEvidenceV1",
         "checked_core_frame_domain",
         "hidden_source_frame_domain",
+        "hidden_source_proof_domain",
         "projection_carrier_domain",
         "account_lifecycle_domain",
+        "hidden_source_proof_domain_pinned",
         "all_domains_disjoint",
         "all_domains_registered",
         "negative_control_duplicate_rejected",
@@ -22020,6 +22112,7 @@ fn path2_native_hash_byte_domain_evidence_source_present_v1() -> bool {
         "PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA",
         "PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN",
         "REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN",
+        "REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN",
         "REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN",
         "PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN",
         "production_registered_domain_schema_constants()",
@@ -44306,6 +44399,10 @@ mod tests {
             REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN
         );
         assert_eq!(
+            byte_domain_evidence.hidden_source_proof_domain,
+            REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN
+        );
+        assert_eq!(
             byte_domain_evidence.projection_carrier_domain,
             REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN
         );
@@ -54264,9 +54361,16 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(five_source_evidence.hidden_source_frame_domain_matches_hash_evidence);
         assert!(five_source_evidence.hidden_source_statement_frame_uses_hash_domain_field);
         assert!(five_source_evidence.hidden_source_statement_digest_uses_hash_domain_frame);
+        assert!(five_source_evidence.hidden_source_proof_domain_matches_hash_evidence);
+        assert!(five_source_evidence.hidden_source_proof_transcript_frame_uses_hash_domain_field);
+        assert!(five_source_evidence.hidden_source_proof_transcript_digest_uses_hash_domain_frame);
         assert_eq!(
             hash_byte_domain_evidence.hidden_source_frame_domain,
             REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN
+        );
+        assert_eq!(
+            hash_byte_domain_evidence.hidden_source_proof_domain,
+            REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN
         );
         let hidden_source_statement_probe = ProductionReviewedFq12HiddenSourceStatement {
             digest: [0_u8; DIGEST_BYTES],
@@ -54298,6 +54402,35 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert_eq!(
             reviewed_fq12_hidden_source_statement_digest(&hidden_source_statement_probe),
             hidden_source_statement_frame_digest
+        );
+        let hidden_source_proof_probe = ProductionReviewedFq12HiddenSourceProof::new(
+            [0_u8; REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_BYTES],
+        );
+        let hidden_source_proof_transcript_frame =
+            reviewed_fq12_hidden_source_proof_transcript_frame(
+                &hidden_source_statement_probe,
+                &hidden_source_proof_probe,
+            );
+        let mut hidden_source_proof_expected_domain_field = Vec::new();
+        append_frame(
+            &mut hidden_source_proof_expected_domain_field,
+            b"domain",
+            hash_byte_domain_evidence
+                .hidden_source_proof_domain
+                .as_bytes(),
+        );
+        assert!(
+            hidden_source_proof_transcript_frame
+                .starts_with(&hidden_source_proof_expected_domain_field)
+        );
+        let hidden_source_proof_transcript_frame_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(&hidden_source_proof_transcript_frame).into();
+        assert_eq!(
+            reviewed_fq12_hidden_source_proof_transcript_digest(
+                &hidden_source_statement_probe,
+                &hidden_source_proof_probe,
+            ),
+            hidden_source_proof_transcript_frame_digest
         );
         assert_eq!(
             five_source_evidence.boundary_base_evidence_digest,

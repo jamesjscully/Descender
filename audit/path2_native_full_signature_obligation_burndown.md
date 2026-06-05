@@ -75,10 +75,15 @@ that `hidden_source_frame_domain` equals
 `reviewed_fq12_hidden_source_statement_frame` starts with the length-delimited
 `domain` field from that evidence, and checks that the hidden-source statement
 digest is SHA-256 over the same frame. Lean mirrors these facts on
-`ReviewedFq12SelectedRustFiveSourceClosureEvidence`. This narrows P2FS-006 to
-the remaining proof-side consumption of the statement/proof/opening/pad/carrier
-byte evidence and direct/batch separation inside the final selected-Rust/model
-instantiation theorem; it does not complete hidden-source semantics by itself.
+`ReviewedFq12SelectedRustFiveSourceClosureEvidence`. Follow-up in the same
+thread added the companion `hidden_source_proof_domain` to
+`Path2NativeHashByteDomainEvidenceV1` and binds
+`reviewed_fq12_hidden_source_proof_transcript_frame` /
+`reviewed_fq12_hidden_source_proof_transcript_digest` to
+`REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN`. This narrows P2FS-006 to the
+remaining proof-side consumption of opening/pad/carrier byte evidence,
+direct/batch separation, and the final selected-Rust/model instantiation
+theorem; it does not complete hidden-source semantics by itself.
 
 2026-06-02 update: `Path2FullOpeningSourceConcrete.lean` now packages the
 deployable non-aggregate theorem route as `ReviewedFq12DeployableHiddenSourceInputs`. The remaining P2FS-001 proof inputs are
