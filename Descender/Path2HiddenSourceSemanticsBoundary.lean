@@ -702,6 +702,42 @@ theorem selectedRustSharedFrameWitnessEvidenceReport_not_factsAllTrue :
   simp [selectedRustSharedFrameWitnessEvidenceReport,
     ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport.FactsAllTrue]
 
+/--
+The current placeholder reports cannot supply the proof-bearing selected
+definitions required by the concrete-definition checklist.
+
+This theorem deliberately does not provide the selected proof definitions. It
+records the opposite fact: any attempt to close AP2-N001 with proofs for the
+current fail-closed reports is inconsistent.
+-/
+theorem selectedRustCurrentPlaceholderEvidenceProofDefinitions_impossible
+    (hFiveReport :
+      selectedRustFiveSourceEvidenceReport.ReportVerified)
+    (_hFiveFacts :
+      selectedRustFiveSourceEvidenceReport.FactsAllTrue)
+    (_hBoundaryReport :
+      selectedRustBoundaryBaseEvidenceReport.ReportVerified)
+    (_hBoundaryFacts :
+      selectedRustBoundaryBaseEvidenceReport.FactsAllTrue)
+    (_hRoleRootReport :
+      selectedRustRoleRootLiftEvidenceReport.ReportVerified)
+    (_hRoleRootFacts :
+      selectedRustRoleRootLiftEvidenceReport.FactsAllTrue)
+    (_hSourceRouteReport :
+      selectedRustSourceRouteEvidenceReport.ReportVerified)
+    (_hSourceRouteFacts :
+      selectedRustSourceRouteEvidenceReport.FactsAllTrue)
+    (_hFieldLocalReport :
+      selectedRustFieldLocalEvidenceReport.ReportVerified)
+    (_hFieldLocalFacts :
+      selectedRustFieldLocalEvidenceReport.FactsAllTrue)
+    (_hSharedFrameReport :
+      selectedRustSharedFrameWitnessEvidenceReport.ReportVerified)
+    (_hSharedFrameFacts :
+      selectedRustSharedFrameWitnessEvidenceReport.FactsAllTrue) :
+    False := by
+  exact selectedRustFiveSourceEvidenceReport_not_reportVerified hFiveReport
+
 /-- The current base-boundary placeholder report cannot certify a source. -/
 theorem selectedRustBoundaryBaseCertificate_not_from_current_placeholder_report
     {P : Predicates}

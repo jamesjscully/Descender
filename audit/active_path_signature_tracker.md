@@ -1073,6 +1073,11 @@ requires exact endpoint theorem names for
 `selectedRustCheckedCoreByteSource_checkedCoreAccepts_or_named_break` and
 `selectedRustCheckedCoreByteSource_valid_or_named_break`, so suffixed endpoint
 theorems cannot make the active byte bridge appear present.
+Active concrete-definition blocker note: Lean now states
+`selectedRustCurrentPlaceholderEvidenceProofDefinitions_impossible`, proving
+that the current fail-closed selected evidence reports cannot supply the
+proof-bearing definitions required by the checklist. This is not closure; it
+records that real verifier-backed evidence must replace the placeholders.
 
 ## Findings
 
