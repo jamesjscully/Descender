@@ -19895,6 +19895,8 @@ fn path2_full_signature_execution_source_instantiated_v1() -> bool {
 fn path2_full_signature_execution_source_instantiated_in_source_v1(
     full_spend_source: &str,
 ) -> bool {
+    let stripped_full_spend_source = lean_source_without_comments_and_strings_v1(full_spend_source);
+    let full_spend_source = stripped_full_spend_source.as_str();
     let Some(instantiation_start) =
         full_spend_source.find("\ntheorem concreteFullSignatureExecutionSource_instantiation_v1")
     else {
@@ -19910,6 +19912,33 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         .or_else(|| instantiation_source.find(" where"))
         .unwrap_or(instantiation_source.len().min(1024));
     let theorem_header = &instantiation_source[..theorem_header_end];
+    let header_has_assumed_term = |term: &str| -> bool {
+        let mut depth = 0_usize;
+        let mut binder_start = None;
+        for (index, ch) in theorem_header.char_indices() {
+            match ch {
+                '(' | '{' | '[' => {
+                    if depth == 0 {
+                        binder_start = Some(index);
+                    }
+                    depth += 1;
+                }
+                ')' | '}' | ']' if depth > 0 => {
+                    depth -= 1;
+                    if depth == 0 {
+                        if let Some(start) = binder_start {
+                            if theorem_header[start..=index].contains(term) {
+                                return true;
+                            }
+                        }
+                        binder_start = None;
+                    }
+                }
+                _ => {}
+            }
+        }
+        false
+    };
     let forbidden_header_terms = [
         "ConcreteFullSignatureExecutionSource",
         "ConcreteGameConfig",
@@ -19927,7 +19956,7 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
     ];
     if forbidden_header_terms
         .iter()
-        .any(|term| theorem_header.contains(term))
+        .any(|term| header_has_assumed_term(term))
     {
         return false;
     }
@@ -19939,16 +19968,22 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         "selectedRustSuccessImpliesVerifierAcceptOrBreak",
     ];
     let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
-    if forbidden_declaration_terms.iter().any(|term| {
-        forbidden_declaration_kinds
-            .iter()
-            .any(|kind| full_spend_source.contains(&format!("\n{kind} {term}")))
-    }) {
+    let forbidden_declaration_stub = forbidden_declaration_kinds.iter().any(|kind| {
+        full_spend_source
+            .match_indices(&format!("\n{kind}"))
+            .map(|(index, _)| &full_spend_source[index..full_spend_source.len().min(index + 1024)])
+            .any(|declaration_window| {
+                forbidden_declaration_terms
+                    .iter()
+                    .any(|term| declaration_window.contains(term))
+            })
+    });
+    if forbidden_declaration_stub {
         return false;
     }
     let forbidden_variable_stub = full_spend_source
         .match_indices("\nvariable")
-        .map(|(index, _)| &full_spend_source[index..full_spend_source.len().min(index + 512)])
+        .map(|(index, _)| &full_spend_source[index..full_spend_source.len().min(index + 1024)])
         .any(|variable_window| {
             forbidden_declaration_terms
                 .iter()
@@ -20001,6 +20036,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_v1() -> bool {
 fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
     account_design_source: &str,
 ) -> bool {
+    let stripped_account_design_source =
+        lean_source_without_comments_and_strings_v1(account_design_source);
+    let account_design_source = stripped_account_design_source.as_str();
     let Some(instantiation_start) = account_design_source
         .find("\ntheorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1")
     else {
@@ -20069,17 +20107,25 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "selectedRustAcceptedSpendForgeryLeBound",
     ];
     let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
-    if forbidden_declaration_terms.iter().any(|term| {
-        forbidden_declaration_kinds
-            .iter()
-            .any(|kind| account_design_source.contains(&format!("\n{kind} {term}")))
-    }) {
+    let forbidden_declaration_stub = forbidden_declaration_kinds.iter().any(|kind| {
+        account_design_source
+            .match_indices(&format!("\n{kind}"))
+            .map(|(index, _)| {
+                &account_design_source[index..account_design_source.len().min(index + 1024)]
+            })
+            .any(|declaration_window| {
+                forbidden_declaration_terms
+                    .iter()
+                    .any(|term| declaration_window.contains(term))
+            })
+    });
+    if forbidden_declaration_stub {
         return false;
     }
     let forbidden_variable_stub = account_design_source
         .match_indices("\nvariable")
         .map(|(index, _)| {
-            &account_design_source[index..account_design_source.len().min(index + 512)]
+            &account_design_source[index..account_design_source.len().min(index + 1024)]
         })
         .any(|variable_window| {
             forbidden_declaration_terms
@@ -42069,6 +42115,138 @@ end Path2FullSpendConcrete
                 assumed_full_signature_boundary
             )
         );
+        let comment_spoofed_full_execution = r#"
+theorem concreteFullSignatureExecutionSource_instantiation_v1 :
+    ConcreteFullExecutionAcceptedSpendLift
+      selectedRustConcreteGameConfig selectedRustFullExecutionSource := by
+  /-
+  let selectedRustFullExecutionCertificate :
+      SelectedRustFullExecutionSourceCertificate selectedRustConcreteGameConfig :=
+    { evidenceReport := selectedRustFullExecutionEvidenceReport
+      selectedRustFullExecutionSourceVerifiedProof := selectedRustFullExecutionSourceVerifiedProof
+      selectedRustFullExecutionFactsAllTrueProof := selectedRustFullExecutionFactsAllTrueProof
+      selectedRustExecutionSucceeds := selectedRustExecutionSucceeds
+      selectedRustSuccessImpliesVerifierAcceptOrBreak :=
+        selectedRustSuccessImpliesVerifierAcceptOrBreak }
+  let selectedRustFullExecutionSource :
+      ConcreteFullSignatureExecutionSource selectedRustConcreteGameConfig :=
+    SelectedRustFullExecutionSourceCertificate.toExecutionSource selectedRustFullExecutionCertificate
+  concrete_fullExecutionAcceptedSpendLift
+  NativeFullSignatureSecurityBoundary.withConcreteFullExecutionSource
+  full_signature_with_concrete_full_execution_source_lift
+  -/
+  trivial
+end Path2FullSpendConcrete
+"#;
+        assert!(
+            !path2_full_signature_execution_source_instantiated_in_source_v1(
+                comment_spoofed_full_execution
+            )
+        );
+        let string_spoofed_full_execution = r#"
+theorem concreteFullSignatureExecutionSource_instantiation_v1 :
+    ConcreteFullExecutionAcceptedSpendLift
+      selectedRustConcreteGameConfig selectedRustFullExecutionSource := by
+  let markerText :=
+    "let selectedRustFullExecutionCertificate :
+      SelectedRustFullExecutionSourceCertificate selectedRustConcreteGameConfig :=
+      { evidenceReport := selectedRustFullExecutionEvidenceReport
+        selectedRustFullExecutionSourceVerifiedProof := selectedRustFullExecutionSourceVerifiedProof
+        selectedRustFullExecutionFactsAllTrueProof := selectedRustFullExecutionFactsAllTrueProof
+        selectedRustExecutionSucceeds := selectedRustExecutionSucceeds
+        selectedRustSuccessImpliesVerifierAcceptOrBreak :=
+        selectedRustSuccessImpliesVerifierAcceptOrBreak }
+     let selectedRustFullExecutionSource :
+      ConcreteFullSignatureExecutionSource selectedRustConcreteGameConfig :=
+      SelectedRustFullExecutionSourceCertificate.toExecutionSource selectedRustFullExecutionCertificate
+     concrete_fullExecutionAcceptedSpendLift
+     NativeFullSignatureSecurityBoundary.withConcreteFullExecutionSource
+     full_signature_with_concrete_full_execution_source_lift"
+  trivial
+end Path2FullSpendConcrete
+"#;
+        assert!(
+            !path2_full_signature_execution_source_instantiated_in_source_v1(
+                string_spoofed_full_execution
+            )
+        );
+        let multiline_stubbed_full_execution = r#"
+opaque
+  selectedRustExecutionSucceeds :
+    Path2FullSpendGame.FullForgeryRun concreteTypes -> Prop
+theorem concreteFullSignatureExecutionSource_instantiation_v1 :
+    ConcreteFullExecutionAcceptedSpendLift
+      selectedRustConcreteGameConfig selectedRustFullExecutionSource := by
+  let selectedRustFullExecutionCertificate :
+      SelectedRustFullExecutionSourceCertificate selectedRustConcreteGameConfig :=
+    { evidenceReport := selectedRustFullExecutionEvidenceReport
+      selectedRustFullExecutionSourceVerifiedProof := selectedRustFullExecutionSourceVerifiedProof
+      selectedRustFullExecutionFactsAllTrueProof := selectedRustFullExecutionFactsAllTrueProof
+      selectedRustExecutionSucceeds := selectedRustExecutionSucceeds
+      selectedRustSuccessImpliesVerifierAcceptOrBreak :=
+        selectedRustSuccessImpliesVerifierAcceptOrBreak }
+  let selectedRustFullExecutionSource :
+      ConcreteFullSignatureExecutionSource selectedRustConcreteGameConfig :=
+    SelectedRustFullExecutionSourceCertificate.toExecutionSource selectedRustFullExecutionCertificate
+  let _lift :=
+    concrete_fullExecutionAcceptedSpendLift
+      selectedRustConcreteGameConfig selectedRustFullExecutionSource
+  let _fullBoundary :=
+    NativeFullSignatureSecurityBoundary.withConcreteFullExecutionSource
+      selectedRustNativeFullSignatureBoundary
+      selectedRustConcreteGameConfig
+      selectedRustFullExecutionSource
+  let _fullLift :=
+    full_signature_with_concrete_full_execution_source_lift
+      selectedRustNativeFullSignatureBoundary
+      selectedRustConcreteGameConfig
+      selectedRustFullExecutionSource
+  exact concrete_fullExecutionAcceptedSpendLift
+    selectedRustConcreteGameConfig selectedRustFullExecutionSource
+end Path2FullSpendConcrete
+"#;
+        assert!(
+            !path2_full_signature_execution_source_instantiated_in_source_v1(
+                multiline_stubbed_full_execution
+            )
+        );
+        let full_execution_instantiation_shape = r#"
+theorem concreteFullSignatureExecutionSource_instantiation_v1 :
+    ConcreteFullExecutionAcceptedSpendLift
+      selectedRustConcreteGameConfig selectedRustFullExecutionSource := by
+  let selectedRustFullExecutionCertificate :
+      SelectedRustFullExecutionSourceCertificate selectedRustConcreteGameConfig :=
+    { evidenceReport := selectedRustFullExecutionEvidenceReport
+      selectedRustFullExecutionSourceVerifiedProof := selectedRustFullExecutionSourceVerifiedProof
+      selectedRustFullExecutionFactsAllTrueProof := selectedRustFullExecutionFactsAllTrueProof
+      selectedRustExecutionSucceeds := selectedRustExecutionSucceeds
+      selectedRustSuccessImpliesVerifierAcceptOrBreak :=
+        selectedRustSuccessImpliesVerifierAcceptOrBreak }
+  let selectedRustFullExecutionSource :
+      ConcreteFullSignatureExecutionSource selectedRustConcreteGameConfig :=
+    SelectedRustFullExecutionSourceCertificate.toExecutionSource selectedRustFullExecutionCertificate
+  let _lift :=
+    concrete_fullExecutionAcceptedSpendLift
+      selectedRustConcreteGameConfig selectedRustFullExecutionSource
+  let _fullBoundary :=
+    NativeFullSignatureSecurityBoundary.withConcreteFullExecutionSource
+      selectedRustNativeFullSignatureBoundary
+      selectedRustConcreteGameConfig
+      selectedRustFullExecutionSource
+  let _fullLift :=
+    full_signature_with_concrete_full_execution_source_lift
+      selectedRustNativeFullSignatureBoundary
+      selectedRustConcreteGameConfig
+      selectedRustFullExecutionSource
+  exact concrete_fullExecutionAcceptedSpendLift
+    selectedRustConcreteGameConfig selectedRustFullExecutionSource
+end Path2FullSpendConcrete
+"#;
+        assert!(
+            path2_full_signature_execution_source_instantiated_in_source_v1(
+                full_execution_instantiation_shape
+            )
+        );
         assert!(!path2_full_signature_execution_source_instantiated_v1());
         assert!(!preflight.full_signature_execution_source_instantiated);
         let assumed_accepted_spend_boundary = r#"
@@ -42178,6 +42356,83 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 vacuous_accepted_spend_bound
+            )
+        );
+        let comment_spoofed_accepted_spend_bound = r#"
+theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
+    NativeAcceptedSpendSoundnessBoundary := by
+  /-
+  let selectedRustAcceptedSpendSoundnessCertificate :
+      SelectedRustAcceptedSpendSoundnessCertificate :=
+    { evidenceReport := selectedRustAcceptedSpendEvidenceReport
+      selectedRustAcceptedSpendBoundVerifiedProof :=
+        selectedRustAcceptedSpendBoundVerifiedProof
+      selectedRustAcceptedSpendFactsAllTrueProof :=
+        selectedRustAcceptedSpendFactsAllTrueProof
+      acceptedSpendForgeryProb := selectedRustAcceptedSpendForgeryProb
+      acceptedSpendForgeryBound := selectedRustAcceptedSpendForgeryBound
+      acceptedSpendForgery_le_bound := selectedRustAcceptedSpendForgeryLeBound }
+  SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+  -/
+  trivial
+end Path2NativeAccountDesign
+"#;
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                comment_spoofed_accepted_spend_bound
+            )
+        );
+        let string_spoofed_accepted_spend_bound = r#"
+theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
+    NativeAcceptedSpendSoundnessBoundary := by
+  let markerText :=
+    "let selectedRustAcceptedSpendSoundnessCertificate :
+      SelectedRustAcceptedSpendSoundnessCertificate :=
+      { evidenceReport := selectedRustAcceptedSpendEvidenceReport
+        selectedRustAcceptedSpendBoundVerifiedProof :=
+        selectedRustAcceptedSpendBoundVerifiedProof
+        selectedRustAcceptedSpendFactsAllTrueProof :=
+        selectedRustAcceptedSpendFactsAllTrueProof
+        acceptedSpendForgeryProb := selectedRustAcceptedSpendForgeryProb
+        acceptedSpendForgeryBound := selectedRustAcceptedSpendForgeryBound
+        acceptedSpendForgery_le_bound := selectedRustAcceptedSpendForgeryLeBound }
+     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary"
+  trivial
+end Path2NativeAccountDesign
+"#;
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                string_spoofed_accepted_spend_bound
+            )
+        );
+        let multiline_stubbed_accepted_spend_bound = r#"
+constant
+  selectedRustAcceptedSpendEvidenceReport :
+    SelectedRustAcceptedSpendSoundnessEvidenceReport
+theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
+    NativeAcceptedSpendSoundnessBoundary := by
+  let selectedRustAcceptedSpendSoundnessCertificate :
+      SelectedRustAcceptedSpendSoundnessCertificate :=
+    { evidenceReport := selectedRustAcceptedSpendEvidenceReport
+      selectedRustAcceptedSpendBoundVerifiedProof :=
+        selectedRustAcceptedSpendBoundVerifiedProof
+      selectedRustAcceptedSpendFactsAllTrueProof :=
+        selectedRustAcceptedSpendFactsAllTrueProof
+      acceptedSpendForgeryProb := selectedRustAcceptedSpendForgeryProb
+      acceptedSpendForgeryBound := selectedRustAcceptedSpendForgeryBound
+      acceptedSpendForgery_le_bound := selectedRustAcceptedSpendForgeryLeBound
+      hiddenSourceProofSemanticsClosed := selectedRustAcceptedSpendHiddenSourceClosed
+      checkedCoreCompositionClosed := selectedRustAcceptedSpendCheckedCoreClosed
+      lifecycleReplayClosed := selectedRustAcceptedSpendLifecycleClosed
+      noExportClosed := selectedRustAcceptedSpendNoExportClosed }
+  exact
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+      selectedRustAcceptedSpendSoundnessCertificate
+end Path2NativeAccountDesign
+"#;
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                multiline_stubbed_accepted_spend_bound
             )
         );
         let accepted_spend_instantiation_shape = r#"
