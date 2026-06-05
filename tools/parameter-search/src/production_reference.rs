@@ -3712,6 +3712,7 @@ pub struct Path2NativeDeploymentPreflightV1 {
     pub full_signature_execution_source_boundary_present: bool,
     pub full_signature_execution_source_instantiated: bool,
     pub full_signature_reduction_certificate_boundary_present: bool,
+    pub full_signature_reduction_certificate_instantiated: bool,
     pub accepted_spend_numeric_bound_instantiated: bool,
     pub no_export_serializer_boundary_present: bool,
     pub no_export_serializer_instantiated: bool,
@@ -21945,6 +21946,204 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         .all(|marker| certificate_source.contains(marker))
 }
 
+fn path2_full_signature_reduction_certificate_instantiated_v1() -> bool {
+    let account_design_source = include_str!("../../../Descender/Path2NativeAccountDesign.lean");
+    path2_full_signature_reduction_certificate_instantiated_in_source_v1(account_design_source)
+}
+
+fn path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+    account_design_source: &str,
+) -> bool {
+    let stripped_account_design_source =
+        lean_source_without_comments_and_strings_v1(account_design_source);
+    let account_design_source = stripped_account_design_source.as_str();
+    let Some(instantiation_start) = account_design_source
+        .find("\ntheorem selectedRustFullSignatureReductionBoundary_instantiation_v1")
+    else {
+        return false;
+    };
+    let instantiation_end = account_design_source[instantiation_start..]
+        .find("\nnamespace NativeFullSignatureSecurityBoundary")
+        .map(|offset| instantiation_start + offset)
+        .unwrap_or(account_design_source.len());
+    let instantiation_source = &account_design_source[instantiation_start..instantiation_end];
+    let theorem_header_end = instantiation_source
+        .find(":= by")
+        .or_else(|| instantiation_source.find(" where"))
+        .unwrap_or(instantiation_source.len().min(1024));
+    let theorem_header = &instantiation_source[..theorem_header_end];
+    let header_has_assumed_term = |term: &str| -> bool {
+        let mut depth = 0_usize;
+        let mut binder_start = None;
+        for (index, ch) in theorem_header.char_indices() {
+            match ch {
+                '(' | '{' | '[' => {
+                    if depth == 0 {
+                        binder_start = Some(index);
+                    }
+                    depth += 1;
+                }
+                ')' | '}' | ']' if depth > 0 => {
+                    depth -= 1;
+                    if depth == 0 {
+                        if let Some(start) = binder_start {
+                            if theorem_header[start..=index].contains(term) {
+                                return true;
+                            }
+                        }
+                        binder_start = None;
+                    }
+                }
+                _ => {}
+            }
+        }
+        false
+    };
+    let forbidden_header_terms = [
+        "NativeFullSignatureSecurityBoundary",
+        "SelectedRustFullSignatureReductionCertificate",
+        "SelectedRustFullSignatureReductionEvidenceReport",
+        "NativeAcceptedSpendSoundnessBoundary",
+        "NativeHashBudgetBoundary",
+        "selectedRustFullSignatureReductionEvidenceReport",
+        "selectedRustFullSignatureReductionEvidenceDigest",
+        "selectedRustFullSignatureReductionVerifiedProof",
+        "selectedRustFullSignatureReductionFactsAllTrueProof",
+        "selectedRustAcceptedSpendSoundness",
+        "selectedRustActiveHashBoundary",
+        "selectedRustSignatureForgerySuccessProb",
+        "selectedRustProductionSignatureForgerySuccessProb",
+        "selectedRustSignatureForgerySuccessProbPinned",
+        "selectedRustSignatureForgerySuccessLeAcceptedSpend",
+        "selectedRustFullSignatureKeygenModeled",
+        "selectedRustFullSignatureSigningOracleModeled",
+        "selectedRustFullSignatureCompletenessModeled",
+        "selectedRustVerifierRelationMatchesImplementation",
+        "selectedRustFullForgeryImpliesAcceptedSpendForgery",
+    ];
+    if forbidden_header_terms
+        .iter()
+        .any(|term| header_has_assumed_term(term))
+    {
+        return false;
+    }
+    let forbidden_declaration_terms = [
+        "selectedRustFullSignatureReductionEvidenceReport",
+        "selectedRustFullSignatureReductionEvidenceDigest",
+        "selectedRustFullSignatureReductionVerifiedProof",
+        "selectedRustFullSignatureReductionFactsAllTrueProof",
+        "selectedRustAcceptedSpendSoundness",
+        "selectedRustActiveHashBoundary",
+        "selectedRustSignatureForgerySuccessProb",
+        "selectedRustProductionSignatureForgerySuccessProb",
+        "selectedRustSignatureForgerySuccessProbPinned",
+        "selectedRustSignatureForgerySuccessLeAcceptedSpend",
+        "selectedRustFullSignatureKeygenModeledProof",
+        "selectedRustFullSignatureSigningOracleModeledProof",
+        "selectedRustFullSignatureCompletenessModeledProof",
+        "selectedRustVerifierRelationMatchesImplementationProof",
+        "selectedRustFullForgeryImpliesAcceptedSpendForgeryProof",
+        "selectedRustHiddenSourceProofSemanticsClosedProof",
+        "selectedRustCheckedCoreCompositionClosedProof",
+        "selectedRustLifecycleReplayClosedProof",
+        "selectedRustNoExportClosedProof",
+        "selectedRustCheckedCoreFrameDomainSeparatedProof",
+        "selectedRustHiddenSourceFrameDomainSeparatedProof",
+        "selectedRustQueryBudgetPricedProof",
+        "selectedRustMultiTargetLossPricedProof",
+    ];
+    let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
+    let forbidden_declaration_stub = forbidden_declaration_kinds.iter().any(|kind| {
+        account_design_source
+            .match_indices(&format!("\n{kind}"))
+            .map(|(index, _)| {
+                &account_design_source[index..account_design_source.len().min(index + 1536)]
+            })
+            .any(|declaration_window| {
+                forbidden_declaration_terms
+                    .iter()
+                    .any(|term| declaration_window.contains(term))
+            })
+    });
+    if forbidden_declaration_stub {
+        return false;
+    }
+    let forbidden_variable_stub = account_design_source
+        .match_indices("\nvariable")
+        .map(|(index, _)| {
+            &account_design_source[index..account_design_source.len().min(index + 1536)]
+        })
+        .any(|variable_window| {
+            forbidden_declaration_terms
+                .iter()
+                .any(|term| variable_window.contains(term))
+        });
+    if forbidden_variable_stub {
+        return false;
+    }
+    let forbidden_vacuous_terms = [
+        "evidenceReport := {",
+        "selectedRustFullSignatureReductionVerifiedProof := True.intro",
+        "selectedRustFullSignatureReductionFactsAllTrueProof := True.intro",
+        "let selectedRustFullSignatureReductionEvidenceReport : SelectedRustFullSignatureReductionEvidenceReport :=",
+        "let selectedRustFullSignatureReductionVerifiedProof := True.intro",
+        "let selectedRustFullSignatureReductionFactsAllTrueProof := True.intro",
+        "selectedRustFullSignatureReductionCertificate := {",
+        "selectedRustSignatureForgerySuccessProb := 0",
+        "selectedRustProductionSignatureForgerySuccessProb := 0",
+        "selectedRustFullSignatureKeygenModeled := True",
+        "selectedRustFullSignatureSigningOracleModeled := True",
+        "selectedRustFullSignatureCompletenessModeled := True",
+        "selectedRustVerifierRelationMatchesImplementation := True",
+        "selectedRustFullForgeryImpliesAcceptedSpendForgery := True",
+    ];
+    if forbidden_vacuous_terms
+        .iter()
+        .any(|term| instantiation_source.contains(term))
+    {
+        return false;
+    }
+
+    let instantiation_checks = [
+        "selectedRustFullSignatureReductionBoundary_instantiation_v1",
+        "let selectedRustFullSignatureReductionCertificate :",
+        "SelectedRustFullSignatureReductionCertificate",
+        "SelectedRustFullSignatureReductionCertificate.ofReportAndReduction",
+        "selectedRustFullSignatureReductionEvidenceReport",
+        "selectedRustFullSignatureReductionEvidenceDigest",
+        "selectedRustFullSignatureReductionVerifiedProof",
+        "selectedRustFullSignatureReductionFactsAllTrueProof",
+        "selectedRustAcceptedSpendSoundness",
+        "selectedRustActiveHashBoundary",
+        "selectedRustSignatureForgerySuccessProb",
+        "selectedRustProductionSignatureForgerySuccessProb",
+        "selectedRustSignatureForgerySuccessProbPinned",
+        "selectedRustSignatureForgerySuccessLeAcceptedSpend",
+        "selectedRustFullSignatureKeygenModeled",
+        "selectedRustFullSignatureKeygenModeledProof",
+        "selectedRustFullSignatureSigningOracleModeled",
+        "selectedRustFullSignatureSigningOracleModeledProof",
+        "selectedRustFullSignatureCompletenessModeled",
+        "selectedRustFullSignatureCompletenessModeledProof",
+        "selectedRustVerifierRelationMatchesImplementation",
+        "selectedRustVerifierRelationMatchesImplementationProof",
+        "selectedRustFullForgeryImpliesAcceptedSpendForgery",
+        "selectedRustFullForgeryImpliesAcceptedSpendForgeryProof",
+        "selectedRustHiddenSourceProofSemanticsClosedProof",
+        "selectedRustCheckedCoreCompositionClosedProof",
+        "selectedRustLifecycleReplayClosedProof",
+        "selectedRustNoExportClosedProof",
+        "selectedRustCheckedCoreFrameDomainSeparatedProof",
+        "selectedRustHiddenSourceFrameDomainSeparatedProof",
+        "selectedRustQueryBudgetPricedProof",
+        "selectedRustMultiTargetLossPricedProof",
+        "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
+    ];
+    instantiation_checks
+        .iter()
+        .all(|marker| instantiation_source.contains(marker))
+}
+
 fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
     account_design_source: &str,
 ) -> bool {
@@ -23303,6 +23502,7 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "hash_qrom_deployment_horizon_complete",
         "full_signature_execution_source_instantiated",
         "full_signature_reduction_certificate_boundary_present",
+        "full_signature_reduction_certificate_instantiated",
         "accepted_spend_numeric_bound_instantiated",
         "no_export_serializer_instantiated",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS",
@@ -23622,6 +23822,8 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         path2_full_signature_execution_source_instantiated_v1();
     let full_signature_reduction_certificate_boundary_present =
         path2_full_signature_reduction_certificate_boundary_present_v1();
+    let full_signature_reduction_certificate_instantiated =
+        path2_full_signature_reduction_certificate_instantiated_v1();
     let accepted_spend_numeric_bound_instantiated =
         path2_native_accepted_spend_numeric_bound_instantiated_v1();
     let no_export_serializer_boundary_present = path2_no_export_serializer_boundary_present_v1();
@@ -23638,6 +23840,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         && hash_qrom_deployment_horizon_complete
         && full_signature_execution_source_boundary_present
         && full_signature_reduction_certificate_boundary_present
+        && full_signature_reduction_certificate_instantiated
         && full_signature_execution_source_instantiated
         && accepted_spend_numeric_bound_instantiated
         && no_export_serializer_boundary_present
@@ -23687,6 +23890,10 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         internal_blockers
             .push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE);
     }
+    if !full_signature_reduction_certificate_instantiated {
+        internal_blockers
+            .push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE);
+    }
     if !accepted_spend_numeric_bound_instantiated {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND);
     }
@@ -23733,6 +23940,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         full_signature_execution_source_boundary_present,
         full_signature_execution_source_instantiated,
         full_signature_reduction_certificate_boundary_present,
+        full_signature_reduction_certificate_instantiated,
         accepted_spend_numeric_bound_instantiated,
         no_export_serializer_boundary_present,
         no_export_serializer_instantiated,
@@ -23885,6 +24093,11 @@ pub fn path2_native_deployment_preflight_v1_frame(
     );
     append_u64(
         &mut frame,
+        b"full_signature_reduction_certificate_instantiated",
+        u64::from(preflight.full_signature_reduction_certificate_instantiated),
+    );
+    append_u64(
+        &mut frame,
         b"accepted_spend_numeric_bound_instantiated",
         u64::from(preflight.accepted_spend_numeric_bound_instantiated),
     );
@@ -23942,6 +24155,8 @@ fn path2_native_smallest_remaining_deployment_gate_v1(
         PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE
     } else if !preflight.full_signature_reduction_certificate_boundary_present {
         PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE
+    } else if !preflight.full_signature_reduction_certificate_instantiated {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE
     } else if !preflight.accepted_spend_numeric_bound_instantiated {
         PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND
     } else if !preflight.no_export_serializer_instantiated {
@@ -23998,6 +24213,8 @@ pub fn verify_path2_native_deployment_pipeline_v1(
     {
         Some("reject_active_native_full_signature_execution_source_open")
     } else if !deployment_preflight.full_signature_reduction_certificate_boundary_present {
+        Some("reject_active_native_full_signature_reduction_certificate_open")
+    } else if !deployment_preflight.full_signature_reduction_certificate_instantiated {
         Some("reject_active_native_full_signature_reduction_certificate_open")
     } else if !deployment_preflight.accepted_spend_numeric_bound_instantiated {
         Some("reject_active_native_accepted_spend_numeric_bound_open")
@@ -43743,6 +43960,7 @@ def marker :=
                 && preflight.hash_qrom_deployment_horizon_complete
                 && preflight.full_signature_execution_source_boundary_present
                 && preflight.full_signature_reduction_certificate_boundary_present
+                && preflight.full_signature_reduction_certificate_instantiated
                 && preflight.full_signature_execution_source_instantiated
                 && preflight.accepted_spend_numeric_bound_instantiated
                 && preflight.no_export_serializer_boundary_present
@@ -44244,6 +44462,8 @@ end Path2CheckedCoreByteBridge
         assert!(preflight.full_signature_execution_source_boundary_present);
         assert!(path2_full_signature_reduction_certificate_boundary_present_v1());
         assert!(preflight.full_signature_reduction_certificate_boundary_present);
+        assert!(!path2_full_signature_reduction_certificate_instantiated_v1());
+        assert!(!preflight.full_signature_reduction_certificate_instantiated);
         let spoofed_full_signature_reduction_certificate = r#"
 /-
 structure SelectedRustFullSignatureReductionEvidenceReport where
@@ -44329,6 +44549,168 @@ end Path2NativeAccountDesign
         assert!(
             !path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
                 missing_hash_witness_full_signature_reduction_certificate
+            )
+        );
+        let assumed_full_signature_reduction_certificate = r#"
+theorem selectedRustFullSignatureReductionBoundary_instantiation_v1
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    NativeFullSignatureSecurityBoundary := by
+  exact
+    SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
+      Cert
+namespace NativeFullSignatureSecurityBoundary
+"#;
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                assumed_full_signature_reduction_certificate
+            )
+        );
+        let assumed_full_signature_boundary = r#"
+theorem selectedRustFullSignatureReductionBoundary_instantiation_v1
+    (B : NativeFullSignatureSecurityBoundary) :
+    NativeFullSignatureSecurityBoundary := by
+  exact B
+namespace NativeFullSignatureSecurityBoundary
+"#;
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                assumed_full_signature_boundary
+            )
+        );
+        let comment_spoofed_full_signature_reduction_instantiation = r#"
+theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
+    NativeFullSignatureSecurityBoundary := by
+  /-
+  let selectedRustFullSignatureReductionCertificate :
+      SelectedRustFullSignatureReductionCertificate :=
+    SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
+      selectedRustFullSignatureReductionEvidenceReport
+      selectedRustFullSignatureReductionEvidenceDigest
+      selectedRustFullSignatureReductionVerifiedProof
+      selectedRustFullSignatureReductionFactsAllTrueProof
+      selectedRustAcceptedSpendSoundness
+      selectedRustActiveHashBoundary
+      selectedRustSignatureForgerySuccessProb
+      selectedRustProductionSignatureForgerySuccessProb
+      selectedRustSignatureForgerySuccessProbPinned
+      selectedRustSignatureForgerySuccessLeAcceptedSpend
+      selectedRustFullSignatureKeygenModeled
+      selectedRustFullSignatureKeygenModeledProof
+      selectedRustFullSignatureSigningOracleModeled
+      selectedRustFullSignatureSigningOracleModeledProof
+      selectedRustFullSignatureCompletenessModeled
+      selectedRustFullSignatureCompletenessModeledProof
+      selectedRustVerifierRelationMatchesImplementation
+      selectedRustVerifierRelationMatchesImplementationProof
+      selectedRustFullForgeryImpliesAcceptedSpendForgery
+      selectedRustFullForgeryImpliesAcceptedSpendForgeryProof
+      selectedRustHiddenSourceProofSemanticsClosedProof
+      selectedRustCheckedCoreCompositionClosedProof
+      selectedRustLifecycleReplayClosedProof
+      selectedRustNoExportClosedProof
+      selectedRustCheckedCoreFrameDomainSeparatedProof
+      selectedRustHiddenSourceFrameDomainSeparatedProof
+      selectedRustQueryBudgetPricedProof
+      selectedRustMultiTargetLossPricedProof
+  SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
+  -/
+  trivial
+namespace NativeFullSignatureSecurityBoundary
+"#;
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                comment_spoofed_full_signature_reduction_instantiation
+            )
+        );
+        let multiline_stubbed_full_signature_reduction_instantiation = r#"
+constant
+  selectedRustFullSignatureReductionEvidenceReport :
+    SelectedRustFullSignatureReductionEvidenceReport
+theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
+    NativeFullSignatureSecurityBoundary := by
+  let selectedRustFullSignatureReductionCertificate :
+      SelectedRustFullSignatureReductionCertificate :=
+    SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
+      selectedRustFullSignatureReductionEvidenceReport
+      selectedRustFullSignatureReductionEvidenceDigest
+      selectedRustFullSignatureReductionVerifiedProof
+      selectedRustFullSignatureReductionFactsAllTrueProof
+      selectedRustAcceptedSpendSoundness
+      selectedRustActiveHashBoundary
+      selectedRustSignatureForgerySuccessProb
+      selectedRustProductionSignatureForgerySuccessProb
+      selectedRustSignatureForgerySuccessProbPinned
+      selectedRustSignatureForgerySuccessLeAcceptedSpend
+      selectedRustFullSignatureKeygenModeled
+      selectedRustFullSignatureKeygenModeledProof
+      selectedRustFullSignatureSigningOracleModeled
+      selectedRustFullSignatureSigningOracleModeledProof
+      selectedRustFullSignatureCompletenessModeled
+      selectedRustFullSignatureCompletenessModeledProof
+      selectedRustVerifierRelationMatchesImplementation
+      selectedRustVerifierRelationMatchesImplementationProof
+      selectedRustFullForgeryImpliesAcceptedSpendForgery
+      selectedRustFullForgeryImpliesAcceptedSpendForgeryProof
+      selectedRustHiddenSourceProofSemanticsClosedProof
+      selectedRustCheckedCoreCompositionClosedProof
+      selectedRustLifecycleReplayClosedProof
+      selectedRustNoExportClosedProof
+      selectedRustCheckedCoreFrameDomainSeparatedProof
+      selectedRustHiddenSourceFrameDomainSeparatedProof
+      selectedRustQueryBudgetPricedProof
+      selectedRustMultiTargetLossPricedProof
+  exact
+    SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
+      selectedRustFullSignatureReductionCertificate
+namespace NativeFullSignatureSecurityBoundary
+"#;
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                multiline_stubbed_full_signature_reduction_instantiation
+            )
+        );
+        let full_signature_reduction_instantiation_shape = r#"
+theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
+    NativeFullSignatureSecurityBoundary := by
+  let selectedRustFullSignatureReductionCertificate :
+      SelectedRustFullSignatureReductionCertificate :=
+    SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
+      selectedRustFullSignatureReductionEvidenceReport
+      selectedRustFullSignatureReductionEvidenceDigest
+      selectedRustFullSignatureReductionVerifiedProof
+      selectedRustFullSignatureReductionFactsAllTrueProof
+      selectedRustAcceptedSpendSoundness
+      selectedRustActiveHashBoundary
+      selectedRustSignatureForgerySuccessProb
+      selectedRustProductionSignatureForgerySuccessProb
+      selectedRustSignatureForgerySuccessProbPinned
+      selectedRustSignatureForgerySuccessLeAcceptedSpend
+      selectedRustFullSignatureKeygenModeled
+      selectedRustFullSignatureKeygenModeledProof
+      selectedRustFullSignatureSigningOracleModeled
+      selectedRustFullSignatureSigningOracleModeledProof
+      selectedRustFullSignatureCompletenessModeled
+      selectedRustFullSignatureCompletenessModeledProof
+      selectedRustVerifierRelationMatchesImplementation
+      selectedRustVerifierRelationMatchesImplementationProof
+      selectedRustFullForgeryImpliesAcceptedSpendForgery
+      selectedRustFullForgeryImpliesAcceptedSpendForgeryProof
+      selectedRustHiddenSourceProofSemanticsClosedProof
+      selectedRustCheckedCoreCompositionClosedProof
+      selectedRustLifecycleReplayClosedProof
+      selectedRustNoExportClosedProof
+      selectedRustCheckedCoreFrameDomainSeparatedProof
+      selectedRustHiddenSourceFrameDomainSeparatedProof
+      selectedRustQueryBudgetPricedProof
+      selectedRustMultiTargetLossPricedProof
+  exact
+    SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
+      selectedRustFullSignatureReductionCertificate
+namespace NativeFullSignatureSecurityBoundary
+"#;
+        assert!(
+            path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                full_signature_reduction_instantiation_shape
             )
         );
         let assumed_full_execution_source = r#"
@@ -45162,6 +45544,7 @@ end Path2NoExportConcrete
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE,
+                PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
