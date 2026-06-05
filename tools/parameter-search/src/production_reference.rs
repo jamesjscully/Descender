@@ -21589,10 +21589,12 @@ fn path2_full_signature_execution_source_boundary_present_v1() -> bool {
         "SelectedRustFullExecutionEvidenceReport.FactsAllTrue",
         "SelectedRustFullExecutionSourceCertificate",
         "evidenceReport",
+        "evidenceDigest",
         "selectedRustFullExecutionSourceVerifiedProof",
         "selectedRustFullExecutionFactsAllTrueProof",
         "selectedRustExecutionSucceeds",
         "selectedRustSuccessImpliesVerifierAcceptOrBreak",
+        "SelectedRustFullExecutionSourceCertificate.ofReportAndExecutionSource",
         "SelectedRustFullExecutionSourceCertificate.toExecutionSource",
     ];
     let predicate_checks = [
@@ -21692,6 +21694,7 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         "SelectedRustFullExecutionSourceCertificate",
         "SelectedRustFullExecutionEvidenceReport",
         "selectedRustFullExecutionEvidenceReport",
+        "selectedRustFullExecutionEvidenceDigest",
         "selectedRustFullExecutionSourceVerifiedProof",
         "selectedRustFullExecutionFactsAllTrueProof",
         "selectedRustExecutionSucceeds",
@@ -21709,6 +21712,7 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
     }
     let forbidden_declaration_terms = [
         "selectedRustFullExecutionEvidenceReport",
+        "selectedRustFullExecutionEvidenceDigest",
         "selectedRustFullExecutionSourceVerifiedProof",
         "selectedRustFullExecutionFactsAllTrueProof",
         "selectedRustExecutionSucceeds",
@@ -21746,6 +21750,7 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         "let selectedRustFullExecutionEvidenceReport : SelectedRustFullExecutionEvidenceReport :=",
         "let selectedRustFullExecutionSourceVerifiedProof := True.intro",
         "let selectedRustFullExecutionFactsAllTrueProof := True.intro",
+        "selectedRustFullExecutionCertificate := {",
     ];
     if forbidden_vacuous_execution_terms
         .iter()
@@ -21758,11 +21763,13 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         "concreteFullSignatureExecutionSource_instantiation_v1",
         "let selectedRustFullExecutionCertificate :",
         "SelectedRustFullExecutionSourceCertificate",
-        "evidenceReport := selectedRustFullExecutionEvidenceReport",
-        "selectedRustFullExecutionSourceVerifiedProof := selectedRustFullExecutionSourceVerifiedProof",
-        "selectedRustFullExecutionFactsAllTrueProof := selectedRustFullExecutionFactsAllTrueProof",
-        "selectedRustExecutionSucceeds := selectedRustExecutionSucceeds",
-        "selectedRustSuccessImpliesVerifierAcceptOrBreak :=\n        selectedRustSuccessImpliesVerifierAcceptOrBreak",
+        "SelectedRustFullExecutionSourceCertificate.ofReportAndExecutionSource",
+        "selectedRustFullExecutionEvidenceReport",
+        "selectedRustFullExecutionEvidenceDigest",
+        "selectedRustFullExecutionSourceVerifiedProof",
+        "selectedRustFullExecutionFactsAllTrueProof",
+        "selectedRustExecutionSucceeds",
+        "selectedRustSuccessImpliesVerifierAcceptOrBreak",
         "let selectedRustFullExecutionSource :",
         "ConcreteFullSignatureExecutionSource",
         "SelectedRustFullExecutionSourceCertificate.toExecutionSource selectedRustFullExecutionCertificate",
@@ -44053,12 +44060,13 @@ theorem concreteFullSignatureExecutionSource_instantiation_v1 :
   /-
   let selectedRustFullExecutionCertificate :
       SelectedRustFullExecutionSourceCertificate selectedRustConcreteGameConfig :=
-    { evidenceReport := selectedRustFullExecutionEvidenceReport
-      selectedRustFullExecutionSourceVerifiedProof := selectedRustFullExecutionSourceVerifiedProof
-      selectedRustFullExecutionFactsAllTrueProof := selectedRustFullExecutionFactsAllTrueProof
-      selectedRustExecutionSucceeds := selectedRustExecutionSucceeds
-      selectedRustSuccessImpliesVerifierAcceptOrBreak :=
-        selectedRustSuccessImpliesVerifierAcceptOrBreak }
+    SelectedRustFullExecutionSourceCertificate.ofReportAndExecutionSource
+      selectedRustFullExecutionEvidenceReport
+      selectedRustFullExecutionEvidenceDigest
+      selectedRustFullExecutionSourceVerifiedProof
+      selectedRustFullExecutionFactsAllTrueProof
+      selectedRustExecutionSucceeds
+      selectedRustSuccessImpliesVerifierAcceptOrBreak
   let selectedRustFullExecutionSource :
       ConcreteFullSignatureExecutionSource selectedRustConcreteGameConfig :=
     SelectedRustFullExecutionSourceCertificate.toExecutionSource selectedRustFullExecutionCertificate
@@ -44147,12 +44155,13 @@ theorem concreteFullSignatureExecutionSource_instantiation_v1 :
       selectedRustConcreteGameConfig selectedRustFullExecutionSource := by
   let selectedRustFullExecutionCertificate :
       SelectedRustFullExecutionSourceCertificate selectedRustConcreteGameConfig :=
-    { evidenceReport := selectedRustFullExecutionEvidenceReport
-      selectedRustFullExecutionSourceVerifiedProof := selectedRustFullExecutionSourceVerifiedProof
-      selectedRustFullExecutionFactsAllTrueProof := selectedRustFullExecutionFactsAllTrueProof
-      selectedRustExecutionSucceeds := selectedRustExecutionSucceeds
-      selectedRustSuccessImpliesVerifierAcceptOrBreak :=
-        selectedRustSuccessImpliesVerifierAcceptOrBreak }
+    SelectedRustFullExecutionSourceCertificate.ofReportAndExecutionSource
+      selectedRustFullExecutionEvidenceReport
+      selectedRustFullExecutionEvidenceDigest
+      selectedRustFullExecutionSourceVerifiedProof
+      selectedRustFullExecutionFactsAllTrueProof
+      selectedRustExecutionSucceeds
+      selectedRustSuccessImpliesVerifierAcceptOrBreak
   let selectedRustFullExecutionSource :
       ConcreteFullSignatureExecutionSource selectedRustConcreteGameConfig :=
     SelectedRustFullExecutionSourceCertificate.toExecutionSource selectedRustFullExecutionCertificate

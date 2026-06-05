@@ -471,6 +471,7 @@ it depends on.
 structure SelectedRustFullExecutionSourceCertificate
     (C : ConcreteGameConfig) where
   evidenceReport : SelectedRustFullExecutionEvidenceReport
+  evidenceDigest : ByteArray
   selectedRustFullExecutionSourceVerifiedProof :
     evidenceReport.ReportVerified
   selectedRustFullExecutionFactsAllTrueProof :
@@ -480,8 +481,35 @@ structure SelectedRustFullExecutionSourceCertificate
   selectedRustSuccessImpliesVerifierAcceptOrBreak :
     forall {run},
       selectedRustExecutionSucceeds run ->
-        ConcreteSpendVerificationAccepts C run.spend ∨
+      ConcreteSpendVerificationAccepts C run.spend ∨
           Path2FullSpendGame.HasBreak (concretePredicates C) run.spend
+
+/-- Named constructor for the selected Rust full-execution evidence certificate. -/
+def SelectedRustFullExecutionSourceCertificate.ofReportAndExecutionSource
+    {C : ConcreteGameConfig}
+    (evidenceReport : SelectedRustFullExecutionEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (selectedRustFullExecutionSourceVerifiedProof :
+      evidenceReport.ReportVerified)
+    (selectedRustFullExecutionFactsAllTrueProof :
+      evidenceReport.FactsAllTrue)
+    (selectedRustExecutionSucceeds :
+      Path2FullSpendGame.FullForgeryRun concreteTypes -> Prop)
+    (selectedRustSuccessImpliesVerifierAcceptOrBreak :
+      forall {run},
+        selectedRustExecutionSucceeds run ->
+          ConcreteSpendVerificationAccepts C run.spend ∨
+            Path2FullSpendGame.HasBreak (concretePredicates C) run.spend) :
+    SelectedRustFullExecutionSourceCertificate C where
+  evidenceReport := evidenceReport
+  evidenceDigest := evidenceDigest
+  selectedRustFullExecutionSourceVerifiedProof :=
+    selectedRustFullExecutionSourceVerifiedProof
+  selectedRustFullExecutionFactsAllTrueProof :=
+    selectedRustFullExecutionFactsAllTrueProof
+  selectedRustExecutionSucceeds := selectedRustExecutionSucceeds
+  selectedRustSuccessImpliesVerifierAcceptOrBreak :=
+    selectedRustSuccessImpliesVerifierAcceptOrBreak
 
 /-- Convert selected Rust production execution evidence into the theorem source. -/
 def SelectedRustFullExecutionSourceCertificate.toExecutionSource
