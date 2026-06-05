@@ -104,6 +104,8 @@ pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_VERIFIER_PREFLIGHT_REPORT: &str =
     "active native verifier preflight report is not source-pinned";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_GLOBAL_DOMAIN_REGISTRY: &str =
     "active native global domain registry is not source-pinned";
+pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS: &str =
+    "active native reviewed-Fq12 hidden-source semantics bridge is not instantiated";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION: &str =
     "active native checked-core equation soundness is not composed into verifier acceptance";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_HASH_QROM_REVIEW: &str =
@@ -3246,6 +3248,7 @@ pub struct Path2NativeDeploymentPreflightV1 {
     pub verifier_preflight_report_present: bool,
     pub global_domain_registry_present: bool,
     pub hash_qrom_review_present: bool,
+    pub hidden_source_semantics_bridge_complete: bool,
     pub facade_exports_present: bool,
     pub consensus_carrier_body_bytes: u16,
     pub consensus_carrier_bytes: u16,
@@ -19933,6 +19936,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSENSUS_CARRIER",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_VERIFIER_PREFLIGHT_REPORT",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_GLOBAL_DOMAIN_REGISTRY",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_HASH_QROM_REVIEW",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON",
@@ -20033,6 +20037,8 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "checked_core_byte_instantiation_evidence_verified",
         "verify_path2_native_deployment_pipeline_v1",
         "Path 2 native signer/verifier checked-core evidence was not verified",
+        "hidden_source_semantics_bridge_complete",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS",
         "hash_qrom_deployment_horizon_complete",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON",
         "full_signature_execution_source_instantiated",
@@ -20306,6 +20312,14 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         path2_native_verifier_preflight_report_source_present_v1();
     let global_domain_registry_present = path2_native_global_domain_registry_source_present_v1();
     let hash_qrom_review_present = path2_native_hash_qrom_review_source_present_v1();
+    let hidden_source_semantics_bridge_audit =
+        path2_reviewed_fq12_hidden_source_semantics_bridge_audit();
+    let hidden_source_semantics_bridge_complete =
+        validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
+            &hidden_source_semantics_bridge_audit,
+        )
+        .is_ok()
+            && hidden_source_semantics_bridge_audit.semantics_bridge_complete;
     let facade_exports_present = path2_native_production_facade_exports_source_present_v1();
 
     let checked_core_composition_review_complete =
@@ -20323,6 +20337,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         && verifier_preflight_report_present
         && global_domain_registry_present
         && hash_qrom_review_present
+        && hidden_source_semantics_bridge_complete
         && checked_core_composition_review_complete
         && hash_qrom_deployment_horizon_complete
         && full_signature_execution_source_boundary_present
@@ -20351,6 +20366,9 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     }
     if !global_domain_registry_present {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_GLOBAL_DOMAIN_REGISTRY);
+    }
+    if !hidden_source_semantics_bridge_complete {
+        internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS);
     }
     if !checked_core_composition_review_complete {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION);
@@ -20392,6 +20410,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         verifier_preflight_report_present,
         global_domain_registry_present,
         hash_qrom_review_present,
+        hidden_source_semantics_bridge_complete,
         facade_exports_present,
         consensus_carrier_body_bytes: PATH2_NATIVE_CONSENSUS_CARRIER_BODY_BYTES as u16,
         consensus_carrier_bytes: PATH2_NATIVE_CONSENSUS_CARRIER_BYTES as u16,
@@ -20449,6 +20468,8 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         Some("reject_active_native_verifier_preflight_report_source_open")
     } else if !deployment_preflight.global_domain_registry_present {
         Some("reject_active_native_global_domain_registry_source_open")
+    } else if !deployment_preflight.hidden_source_semantics_bridge_complete {
+        Some("reject_active_native_hidden_source_semantics_open")
     } else if !deployment_preflight.checked_core_composition_review_complete {
         Some("reject_active_native_checked_core_composition_open")
     } else if !deployment_preflight.hash_qrom_review_present {
@@ -20975,6 +20996,11 @@ pub fn path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_
         );
     }
     let smallest_remaining_productization_gate = if !verdict
+        .deployment_preflight
+        .hidden_source_semantics_bridge_complete
+    {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS
+    } else if !verdict
         .deployment_preflight
         .checked_core_composition_review_complete
     {
@@ -38323,6 +38349,7 @@ mod tests {
                 && preflight.verifier_preflight_report_present
                 && preflight.global_domain_registry_present
                 && preflight.hash_qrom_review_present
+                && preflight.hidden_source_semantics_bridge_complete
                 && preflight.checked_core_composition_review_complete
                 && preflight.hash_qrom_deployment_horizon_complete
                 && preflight.full_signature_execution_source_boundary_present
@@ -38343,6 +38370,7 @@ mod tests {
         assert!(preflight.global_domain_registry_present);
         assert!(path2_native_hash_qrom_review_source_present_v1());
         assert!(preflight.hash_qrom_review_present);
+        assert!(!preflight.hidden_source_semantics_bridge_complete);
         assert!(path2_native_production_facade_exports_source_present_v1());
         assert!(preflight.facade_exports_present);
         assert_eq!(
@@ -38701,6 +38729,7 @@ end Path2FullSpendConcrete
         assert_eq!(
             preflight.internal_blockers,
             vec![
+                PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
@@ -38720,6 +38749,7 @@ end Path2FullSpendConcrete
         let rendered = serde_json::to_string(&preflight).unwrap();
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_PREFLIGHT_SCHEMA));
         assert!(!rendered.contains("QROM multi-target horizon"));
+        assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
         assert!(rendered.contains("active native signer/verifier pipeline"));
     }
 
@@ -38741,7 +38771,7 @@ end Path2FullSpendConcrete
         assert!(!verdict.production_accepted);
         assert_eq!(
             verdict.rejection_code,
-            Some("reject_active_native_checked_core_composition_open")
+            Some("reject_active_native_hidden_source_semantics_open")
         );
         assert_eq!(verdict.consensus_carrier_digest, Some(carrier_digest));
         let checked_core_report =
@@ -39806,15 +39836,16 @@ end Path2FullSpendConcrete
         assert!(!evidence.verifier_production_accepted);
         assert_eq!(
             evidence.verifier_rejection_code,
-            Some("reject_active_native_checked_core_composition_open")
+            Some("reject_active_native_hidden_source_semantics_open")
         );
         assert_eq!(
             evidence.smallest_remaining_productization_gate,
-            PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS
         );
         assert_eq!(
             evidence.deployment_blockers,
             vec![
+                PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
@@ -39871,9 +39902,13 @@ end Path2FullSpendConcrete
         assert!(!evidence.verifier_production_accepted);
         assert_eq!(
             evidence.verifier_rejection_code,
-            Some("reject_active_native_checked_core_composition_open")
+            Some("reject_active_native_hidden_source_semantics_open")
         );
         assert_eq!(
+            evidence.smallest_remaining_productization_gate,
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS
+        );
+        assert_ne!(
             evidence.smallest_remaining_productization_gate,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION
         );
@@ -39896,6 +39931,11 @@ end Path2FullSpendConcrete
         assert_ne!(
             evidence.smallest_remaining_productization_gate,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE
+        );
+        assert!(
+            evidence
+                .deployment_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS)
         );
         assert!(
             evidence
@@ -39929,6 +39969,7 @@ end Path2FullSpendConcrete
         );
         let rendered = serde_json::to_string(&evidence).unwrap();
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON));
+        assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE));
