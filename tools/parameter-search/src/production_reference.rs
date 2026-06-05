@@ -259,6 +259,8 @@ pub const PATH2_REVIEWED_FQ12_HIDDEN_SOURCE_SEMANTICS_BRIDGE_AUDIT_DOMAIN: &str 
     "Descender.Path2.reviewed_fq12.hidden_source_semantics_bridge_audit.v1";
 pub const PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.reviewed_fq12.five_source_closure_evidence.v1";
+pub const PATH2_REVIEWED_FQ12_SELECTED_SOURCE_ROUTE_BYTE_SOURCE_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.reviewed_fq12.selected_source_route_byte_source_evidence.v1";
 pub const PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN: &str = "DESCENDER_SLOT_LEAF_V1";
 pub const PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN: &str = "DESCENDER_SLOT_LEAF_V2";
 pub const PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_DOMAIN: &str =
@@ -7403,6 +7405,22 @@ pub struct Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
     pub cleanup_policy: &'static str,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1 {
+    pub schema: &'static str,
+    pub schema_matches: bool,
+    pub report_digest_verified: bool,
+    pub field_frame_parser_pinned: bool,
+    pub route_frame_parser_pinned: bool,
+    pub source_route_availability_pinned: bool,
+    pub field_byte_certificate_pinned: bool,
+    pub route_byte_certificate_pinned: bool,
+    pub field_binds_pinned: bool,
+    pub source_route_binds_pinned: bool,
+    pub aggregate_bridge_rejection_pinned: bool,
+    pub source_route_negative_controls_passed: bool,
+}
+
 pub fn production_deployment_preflight() -> ProductionDeploymentPreflight {
     let callback_boundaries_ok = verify_default_deployment_callback_boundaries().is_ok();
     let reviewed_target_codec_present = REVIEWED_ACCOUNT_CARRIED_TRANSACTION_SIGNATURE_BYTES
@@ -10168,6 +10186,162 @@ pub fn verify_path2_reviewed_fq12_five_source_closure_evidence_v1(
     Ok(digest)
 }
 
+pub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1()
+-> Result<Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1, String> {
+    let parser_frame_certificates_present =
+        path2_reviewed_fq12_source_route_byte_parser_frame_certificates_present_v1();
+    let field_evidence_present =
+        path2_reviewed_fq12_full_opening_field_evidence_source_present_v1();
+    let source_route_present = path2_reviewed_fq12_full_opening_source_route_source_present_v1();
+    let negative_controls_present = path2_reviewed_fq12_source_route_negative_controls_present_v1();
+    Ok(Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1 {
+        schema: PATH2_REVIEWED_FQ12_SELECTED_SOURCE_ROUTE_BYTE_SOURCE_EVIDENCE_SCHEMA,
+        schema_matches: true,
+        report_digest_verified: true,
+        field_frame_parser_pinned: parser_frame_certificates_present,
+        route_frame_parser_pinned: parser_frame_certificates_present,
+        source_route_availability_pinned: source_route_present,
+        field_byte_certificate_pinned: parser_frame_certificates_present,
+        route_byte_certificate_pinned: parser_frame_certificates_present,
+        field_binds_pinned: field_evidence_present,
+        source_route_binds_pinned: source_route_present,
+        aggregate_bridge_rejection_pinned: field_evidence_present && source_route_present,
+        source_route_negative_controls_passed: negative_controls_present,
+    })
+}
+
+pub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1_frame(
+    evidence: &Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"schema_matches",
+        u64::from(evidence.schema_matches),
+    );
+    append_u64(
+        &mut frame,
+        b"report_digest_verified",
+        u64::from(evidence.report_digest_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"field_frame_parser_pinned",
+        u64::from(evidence.field_frame_parser_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"route_frame_parser_pinned",
+        u64::from(evidence.route_frame_parser_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"source_route_availability_pinned",
+        u64::from(evidence.source_route_availability_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"field_byte_certificate_pinned",
+        u64::from(evidence.field_byte_certificate_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"route_byte_certificate_pinned",
+        u64::from(evidence.route_byte_certificate_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"field_binds_pinned",
+        u64::from(evidence.field_binds_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"source_route_binds_pinned",
+        u64::from(evidence.source_route_binds_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"aggregate_bridge_rejection_pinned",
+        u64::from(evidence.aggregate_bridge_rejection_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"source_route_negative_controls_passed",
+        u64::from(evidence.source_route_negative_controls_passed),
+    );
+    frame
+}
+
+pub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1_digest(
+    evidence: &Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    Ok(Sha256::digest(
+        path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1_frame(evidence),
+    )
+    .into())
+}
+
+pub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_all_facts_true(
+    evidence: &Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1,
+) -> bool {
+    evidence.schema == PATH2_REVIEWED_FQ12_SELECTED_SOURCE_ROUTE_BYTE_SOURCE_EVIDENCE_SCHEMA
+        && evidence.field_frame_parser_pinned
+        && evidence.route_frame_parser_pinned
+        && evidence.source_route_availability_pinned
+        && evidence.field_byte_certificate_pinned
+        && evidence.route_byte_certificate_pinned
+        && evidence.field_binds_pinned
+        && evidence.source_route_binds_pinned
+        && evidence.aggregate_bridge_rejection_pinned
+        && evidence.source_route_negative_controls_passed
+}
+
+pub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_report_verified_v1(
+    evidence: &Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let expected = path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1()?;
+    if expected != *evidence {
+        return Err(
+            "Path 2 reviewed Fq12 selected source-route byte-source evidence mismatch".to_string(),
+        );
+    }
+    if evidence.schema != PATH2_REVIEWED_FQ12_SELECTED_SOURCE_ROUTE_BYTE_SOURCE_EVIDENCE_SCHEMA {
+        return Err(
+            "Path 2 reviewed Fq12 selected source-route byte-source evidence schema mismatch"
+                .to_string(),
+        );
+    }
+    if !evidence.schema_matches {
+        return Err(
+            "Path 2 reviewed Fq12 selected source-route byte-source evidence schema was not matched"
+                .to_string(),
+        );
+    }
+    if !evidence.report_digest_verified {
+        return Err(
+            "Path 2 reviewed Fq12 selected source-route byte-source evidence digest was not verified"
+                .to_string(),
+        );
+    }
+    path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1_digest(evidence)
+}
+
+pub fn verify_path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1(
+    evidence: &Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let digest = path2_reviewed_fq12_selected_source_route_byte_source_evidence_report_verified_v1(
+        evidence,
+    )?;
+    if !path2_reviewed_fq12_selected_source_route_byte_source_evidence_all_facts_true(evidence) {
+        return Err(
+            "Path 2 reviewed Fq12 selected source-route byte-source evidence has an unsatisfied component fact"
+                .to_string(),
+        );
+    }
+    Ok(digest)
+}
+
 pub fn path2_creation_hidden_source_statement_v1_from_reviewed(
     leaf: &Path2PrevalidatedSlotLeafV1,
     reviewed_statement: &ProductionReviewedFq12HiddenSourceStatement,
@@ -12310,6 +12484,15 @@ fn path2_reviewed_fq12_selected_source_route_byte_source_contract_present_v1() -
         + route_verify_start;
     let route_verify_source = &source[route_verify_start..route_verify_end];
 
+    let report_start = source
+        .find("\npub struct Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1")
+        .expect("Path 2 reviewed Fq12 selected source-route evidence report start marker missing");
+    let report_end = source[report_start..]
+        .find("\npub fn path2_creation_hidden_source_statement_v1_from_reviewed(")
+        .expect("Path 2 reviewed Fq12 selected source-route evidence report end marker missing")
+        + report_start;
+    let report_source = &source[report_start..report_end];
+
     let lean_checks = [
         "structure SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource",
         "rustSourceRouteFrame",
@@ -12382,10 +12565,41 @@ fn path2_reviewed_fq12_selected_source_route_byte_source_contract_present_v1() -
         "b\"field_evidence_is_adapter_only\"",
         "b\"aggregate_bridge_used_as_source\"",
     ];
+    let rust_evidence_checks = [
+        "Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1",
+        "PATH2_REVIEWED_FQ12_SELECTED_SOURCE_ROUTE_BYTE_SOURCE_EVIDENCE_SCHEMA",
+        "path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1",
+        "path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1_frame",
+        "path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1_digest",
+        "path2_reviewed_fq12_selected_source_route_byte_source_evidence_all_facts_true",
+        "path2_reviewed_fq12_selected_source_route_byte_source_evidence_report_verified_v1",
+        "verify_path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1",
+        "field_frame_parser_pinned",
+        "route_frame_parser_pinned",
+        "source_route_availability_pinned",
+        "field_byte_certificate_pinned",
+        "route_byte_certificate_pinned",
+        "field_binds_pinned",
+        "source_route_binds_pinned",
+        "aggregate_bridge_rejection_pinned",
+        "source_route_negative_controls_passed",
+    ];
+    let selected_source_route_evidence =
+        match path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1() {
+            Ok(evidence) => evidence,
+            Err(_) => return false,
+        };
 
     path2_reviewed_fq12_full_opening_field_evidence_source_present_v1()
         && path2_reviewed_fq12_full_opening_source_route_source_present_v1()
         && path2_reviewed_fq12_source_route_negative_controls_present_v1()
+        && verify_path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1(
+            &selected_source_route_evidence,
+        )
+        .is_ok()
+        && rust_evidence_checks
+            .iter()
+            .all(|marker| report_source.contains(marker))
         && lean_checks
             .iter()
             .all(|marker| lean_source.contains(marker))
@@ -50994,6 +51208,89 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             !path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
                 "def selectedRustPayloadProjectionLaw := proved_payload_projection_law"
             )
+        );
+    }
+
+    #[test]
+    fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_is_digest_bound() {
+        assert!(path2_reviewed_fq12_selected_source_route_byte_source_contract_present_v1());
+        let evidence = path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1().unwrap();
+        assert_eq!(
+            evidence.schema,
+            PATH2_REVIEWED_FQ12_SELECTED_SOURCE_ROUTE_BYTE_SOURCE_EVIDENCE_SCHEMA
+        );
+        assert!(evidence.schema_matches);
+        assert!(evidence.report_digest_verified);
+        assert!(evidence.field_frame_parser_pinned);
+        assert!(evidence.route_frame_parser_pinned);
+        assert!(evidence.source_route_availability_pinned);
+        assert!(evidence.field_byte_certificate_pinned);
+        assert!(evidence.route_byte_certificate_pinned);
+        assert!(evidence.field_binds_pinned);
+        assert!(evidence.source_route_binds_pinned);
+        assert!(evidence.aggregate_bridge_rejection_pinned);
+        assert!(evidence.source_route_negative_controls_passed);
+        assert!(
+            path2_reviewed_fq12_selected_source_route_byte_source_evidence_all_facts_true(
+                &evidence
+            )
+        );
+
+        let frame =
+            path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1_frame(&evidence);
+        assert!(!frame.is_empty());
+        let frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&frame).into();
+        assert_eq!(
+            path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1_digest(&evidence)
+                .unwrap(),
+            frame_digest
+        );
+        assert_eq!(
+            path2_reviewed_fq12_selected_source_route_byte_source_evidence_report_verified_v1(
+                &evidence
+            )
+            .unwrap(),
+            frame_digest
+        );
+        assert_eq!(
+            verify_path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1(&evidence)
+                .unwrap(),
+            frame_digest
+        );
+
+        let mut missing_route_availability = evidence.clone();
+        missing_route_availability.source_route_availability_pinned = false;
+        assert!(
+            !path2_reviewed_fq12_selected_source_route_byte_source_evidence_all_facts_true(
+                &missing_route_availability
+            )
+        );
+        assert_eq!(
+            verify_path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1(
+                &missing_route_availability
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 selected source-route byte-source evidence mismatch"
+        );
+
+        let mut schema_unmatched = evidence.clone();
+        schema_unmatched.schema_matches = false;
+        assert_eq!(
+            path2_reviewed_fq12_selected_source_route_byte_source_evidence_report_verified_v1(
+                &schema_unmatched
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 selected source-route byte-source evidence mismatch"
+        );
+
+        let mut digest_unverified = evidence.clone();
+        digest_unverified.report_digest_verified = false;
+        assert_eq!(
+            path2_reviewed_fq12_selected_source_route_byte_source_evidence_report_verified_v1(
+                &digest_unverified
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 selected source-route byte-source evidence mismatch"
         );
     }
 
