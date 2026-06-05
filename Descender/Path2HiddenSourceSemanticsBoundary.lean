@@ -2434,6 +2434,34 @@ theorem full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_ru
     Semantics.hiddenSourceClosure
 
 /--
+Once the active native-boundary semantics package is supplied, the existing
+full-signature theorem yields the active Path 2 forgery bound for the wrapped
+boundary.  This is still conditional on constructing the package; it does not
+introduce source records or close deployment by report evidence alone.
+-/
+theorem full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_semantics_package
+    (B : NativeFullSignatureSecurityBoundary)
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Semantics :
+      ReviewedFq12SelectedRustNativeBoundarySemanticsPackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+      B Semantics.predicates
+      Semantics.hiddenSourceClosure).fullSignatureSuccessProb <=
+      (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+        B Semantics.predicates
+        Semantics.hiddenSourceClosure).activePathForgeryBound :=
+  NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound
+    (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+      B Semantics.predicates
+      Semantics.hiddenSourceClosure)
+
+/--
 The full-signature boundary can consume the proof-bearing selected Rust/model
 five-source certificate directly.
 -/

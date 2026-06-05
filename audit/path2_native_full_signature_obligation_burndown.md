@@ -108,6 +108,18 @@ certificates on the final proof surface. This is still a target-shape
 hardening; the concrete selected-source definitions and final theorem remain
 open.
 
+2026-06-05 native-semantics package handoff update: the hidden-source boundary
+now names `ReviewedFq12SelectedRustNativeBoundarySemanticsPackage`, a package
+containing the active `Path2NativeBoundary.Predicates` instance plus the
+selected Rust/model source-record package for exactly that predicate set. Lean
+threads that package through accepted-spend closure, full-signature closure,
+and now
+`full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_semantics_package`,
+which applies the existing active-path forgery-bound theorem to the wrapped
+full-signature boundary. This is a target-shape reduction only. It does not
+construct the native-boundary predicate model or any of the seven raw selected
+source records, and the Rust manifest keeps those gaps fail-closed.
+
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It
 currently stays false, even while the five-source route/evidence surfaces are
