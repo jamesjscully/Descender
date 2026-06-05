@@ -8665,8 +8665,9 @@ fn path2_reviewed_fq12_payload_projection_law_source_present_v1() -> bool {
     let native_boundary_source = include_str!("../../../Descender/Path2NativeBoundary.lean");
     let rust_source = include_str!("production_reference.rs");
 
-    let boundary_theorem_source =
-        lean_path2_hidden_source_active_byte_component_theorem_source_v1(boundary_source);
+    let boundary_theorem_source = lean_source_without_comments_and_strings_v1(
+        lean_path2_hidden_source_active_byte_component_theorem_source_v1(boundary_source),
+    );
 
     let certificate_start = native_boundary_source
         .find("\nstructure ReviewedFq12HiddenSourceSemanticsCertificate")
@@ -8675,7 +8676,9 @@ fn path2_reviewed_fq12_payload_projection_law_source_present_v1() -> bool {
         .find("\n/--\nThe extraction bridge certificate derives")
         .expect("Lean Path 2 hidden-source semantics certificate end marker missing")
         + certificate_start;
-    let certificate_source = &native_boundary_source[certificate_start..certificate_end];
+    let certificate_source = lean_source_without_comments_and_strings_v1(
+        &native_boundary_source[certificate_start..certificate_end],
+    );
 
     let constructor_start = rust_source
         .find("\npub fn path2_reviewed_fq12_hidden_source_payload_binding_v1(")
@@ -9422,10 +9425,13 @@ fn path2_reviewed_fq12_extraction_certificate_availability_source_present_v1() -
         .find("\n/--\nThe remaining P2FS-001 theorem obligation")
         .expect("Lean Path 2 extraction certificate availability end marker missing")
         + availability_start;
-    let availability_source = &native_boundary_source[availability_start..availability_end];
+    let availability_source = lean_source_without_comments_and_strings_v1(
+        &native_boundary_source[availability_start..availability_end],
+    );
 
-    let boundary_source =
-        lean_path2_hidden_source_active_byte_component_theorem_source_v1(boundary_source);
+    let boundary_source = lean_source_without_comments_and_strings_v1(
+        lean_path2_hidden_source_active_byte_component_theorem_source_v1(boundary_source),
+    );
 
     let constructor_start = rust_source
         .find("\npub fn path2_reviewed_fq12_hidden_relation_extraction_certificate_v1(")
