@@ -7499,6 +7499,11 @@ pub struct Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
     pub bridge_audit_digest: [u8; DIGEST_BYTES],
     pub bridge_audit_digest_bound: bool,
     pub bridge_audit_validated: bool,
+    pub hash_byte_domain_evidence_digest: [u8; DIGEST_BYTES],
+    pub hash_byte_domain_evidence_verified: bool,
+    pub hidden_source_frame_domain_matches_hash_evidence: bool,
+    pub hidden_source_statement_frame_uses_hash_domain_field: bool,
+    pub hidden_source_statement_digest_uses_hash_domain_frame: bool,
     pub boundary_base_evidence_digest: [u8; DIGEST_BYTES],
     pub boundary_base_evidence_verified: bool,
     pub role_root_lift_evidence_digest: [u8; DIGEST_BYTES],
@@ -8250,6 +8255,11 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
         "schemaMatches : Bool",
         "bridgeAuditDigest : ByteArray",
         "bridgeAuditDigestBound : Bool",
+        "hashByteDomainEvidenceDigest : ByteArray",
+        "hashByteDomainEvidenceVerified : Bool",
+        "hiddenSourceFrameDomainMatchesHashEvidence : Bool",
+        "hiddenSourceStatementFrameUsesHashDomainField : Bool",
+        "hiddenSourceStatementDigestUsesHashDomainFrame : Bool",
         "boundaryBaseEvidenceDigest : ByteArray",
         "boundaryBaseEvidenceVerified : Bool",
         "roleRootLiftEvidenceDigest : ByteArray",
@@ -8436,6 +8446,11 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "bridge_audit_digest",
         "bridge_audit_digest_bound",
         "bridge_audit_validated",
+        "hash_byte_domain_evidence_digest",
+        "hash_byte_domain_evidence_verified",
+        "hidden_source_frame_domain_matches_hash_evidence",
+        "hidden_source_statement_frame_uses_hash_domain_field",
+        "hidden_source_statement_digest_uses_hash_domain_frame",
         "boundary_base_evidence_digest",
         "boundary_base_evidence_verified",
         "role_root_lift_evidence_digest",
@@ -8480,6 +8495,11 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "b\"bridge_audit_digest\"",
         "b\"bridge_audit_digest_bound\"",
         "b\"bridge_audit_validated\"",
+        "b\"hash_byte_domain_evidence_digest\"",
+        "b\"hash_byte_domain_evidence_verified\"",
+        "b\"hidden_source_frame_domain_matches_hash_evidence\"",
+        "b\"hidden_source_statement_frame_uses_hash_domain_field\"",
+        "b\"hidden_source_statement_digest_uses_hash_domain_frame\"",
         "b\"boundary_base_evidence_digest\"",
         "b\"boundary_base_evidence_verified\"",
         "b\"role_root_lift_evidence_digest\"",
@@ -8510,9 +8530,22 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1",
         "verify_path2_reviewed_fq12_five_source_closure_evidence_v1",
         "validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit",
+        "let hash_byte_domain_evidence = path2_native_hash_byte_domain_evidence_v1()",
+        "verify_path2_native_hash_byte_domain_evidence_v1(&hash_byte_domain_evidence)?",
+        ".hidden_source_frame_domain",
+        "REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN",
+        "reviewed_fq12_hidden_source_statement_frame(&hidden_source_statement_probe)",
+        "hidden_source_expected_domain_field",
+        "hidden_source_statement_probe_frame.starts_with(&hidden_source_expected_domain_field)",
+        "reviewed_fq12_hidden_source_statement_digest(&hidden_source_statement_probe)",
         "schema_matches: true",
         "bridge_audit_validated: true",
         "bridge_audit_digest_bound: true",
+        "hash_byte_domain_evidence_digest",
+        "hash_byte_domain_evidence_verified: true",
+        "hidden_source_frame_domain_matches_hash_evidence",
+        "hidden_source_statement_frame_uses_hash_domain_field",
+        "hidden_source_statement_digest_uses_hash_domain_frame",
         "boundary_base_evidence_digest",
         "boundary_base_evidence_verified: true",
         "role_root_lift_evidence_digest",
@@ -10334,6 +10367,43 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
 -> Result<Path2ReviewedFq12FiveSourceClosureEvidenceV1, String> {
     let audit = path2_reviewed_fq12_hidden_source_semantics_bridge_audit();
     validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(&audit)?;
+    let hash_byte_domain_evidence = path2_native_hash_byte_domain_evidence_v1();
+    let hash_byte_domain_evidence_digest =
+        verify_path2_native_hash_byte_domain_evidence_v1(&hash_byte_domain_evidence)?;
+    let hidden_source_frame_domain_matches_hash_evidence = hash_byte_domain_evidence
+        .hidden_source_frame_domain
+        == REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN;
+    let hidden_source_statement_probe = ProductionReviewedFq12HiddenSourceStatement {
+        digest: [0_u8; DIGEST_BYTES],
+        slot_id: 0,
+        witness_commitment: [0_u8; DIGEST_BYTES],
+        randomizer_commitment: [0_u8; DIGEST_BYTES],
+        public_key_digest: [0_u8; DIGEST_BYTES],
+        message_digest: [0_u8; DIGEST_BYTES],
+        signature_digest: [0_u8; DIGEST_BYTES],
+        pad_opening_statement: ProductionPublicPadOpeningStatement {
+            digest: [0_u8; DIGEST_BYTES],
+            observed_blocks: [false; GROUPS],
+            observed_block_count: 0,
+        },
+    };
+    let hidden_source_statement_probe_frame =
+        reviewed_fq12_hidden_source_statement_frame(&hidden_source_statement_probe);
+    let mut hidden_source_expected_domain_field = Vec::new();
+    append_frame(
+        &mut hidden_source_expected_domain_field,
+        b"domain",
+        hash_byte_domain_evidence
+            .hidden_source_frame_domain
+            .as_bytes(),
+    );
+    let hidden_source_statement_frame_uses_hash_domain_field =
+        hidden_source_statement_probe_frame.starts_with(&hidden_source_expected_domain_field);
+    let hidden_source_statement_probe_frame_digest: [u8; DIGEST_BYTES] =
+        Sha256::digest(&hidden_source_statement_probe_frame).into();
+    let hidden_source_statement_digest_uses_hash_domain_frame =
+        reviewed_fq12_hidden_source_statement_digest(&hidden_source_statement_probe)
+            == hidden_source_statement_probe_frame_digest;
     let boundary_base_evidence = path2_reviewed_fq12_boundary_base_evidence_v1()?;
     let boundary_base_evidence_digest =
         verify_path2_reviewed_fq12_boundary_base_evidence_v1(&boundary_base_evidence)?;
@@ -10361,6 +10431,11 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
         bridge_audit_digest: audit.digest,
         bridge_audit_digest_bound: true,
         bridge_audit_validated: true,
+        hash_byte_domain_evidence_digest,
+        hash_byte_domain_evidence_verified: true,
+        hidden_source_frame_domain_matches_hash_evidence,
+        hidden_source_statement_frame_uses_hash_domain_field,
+        hidden_source_statement_digest_uses_hash_domain_frame,
         boundary_base_evidence_digest,
         boundary_base_evidence_verified: true,
         role_root_lift_evidence_digest,
@@ -10422,6 +10497,31 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1_frame(
         &mut frame,
         b"bridge_audit_validated",
         u64::from(evidence.bridge_audit_validated),
+    );
+    append_frame(
+        &mut frame,
+        b"hash_byte_domain_evidence_digest",
+        &evidence.hash_byte_domain_evidence_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"hash_byte_domain_evidence_verified",
+        u64::from(evidence.hash_byte_domain_evidence_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"hidden_source_frame_domain_matches_hash_evidence",
+        u64::from(evidence.hidden_source_frame_domain_matches_hash_evidence),
+    );
+    append_u64(
+        &mut frame,
+        b"hidden_source_statement_frame_uses_hash_domain_field",
+        u64::from(evidence.hidden_source_statement_frame_uses_hash_domain_field),
+    );
+    append_u64(
+        &mut frame,
+        b"hidden_source_statement_digest_uses_hash_domain_frame",
+        u64::from(evidence.hidden_source_statement_digest_uses_hash_domain_frame),
     );
     append_frame(
         &mut frame,
@@ -10567,6 +10667,10 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
 ) -> bool {
     evidence.schema == PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA
         && evidence.bridge_audit_validated
+        && evidence.hash_byte_domain_evidence_verified
+        && evidence.hidden_source_frame_domain_matches_hash_evidence
+        && evidence.hidden_source_statement_frame_uses_hash_domain_field
+        && evidence.hidden_source_statement_digest_uses_hash_domain_frame
         && evidence.boundary_base_evidence_verified
         && evidence.role_root_lift_evidence_verified
         && evidence.selected_source_route_evidence_verified
@@ -54149,6 +54253,52 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert_eq!(five_source_evidence.bridge_audit_digest, audit.digest);
         assert!(five_source_evidence.bridge_audit_digest_bound);
         assert!(five_source_evidence.bridge_audit_validated);
+        let hash_byte_domain_evidence = path2_native_hash_byte_domain_evidence_v1();
+        let hash_byte_domain_evidence_digest =
+            verify_path2_native_hash_byte_domain_evidence_v1(&hash_byte_domain_evidence).unwrap();
+        assert_eq!(
+            five_source_evidence.hash_byte_domain_evidence_digest,
+            hash_byte_domain_evidence_digest
+        );
+        assert!(five_source_evidence.hash_byte_domain_evidence_verified);
+        assert!(five_source_evidence.hidden_source_frame_domain_matches_hash_evidence);
+        assert!(five_source_evidence.hidden_source_statement_frame_uses_hash_domain_field);
+        assert!(five_source_evidence.hidden_source_statement_digest_uses_hash_domain_frame);
+        assert_eq!(
+            hash_byte_domain_evidence.hidden_source_frame_domain,
+            REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN
+        );
+        let hidden_source_statement_probe = ProductionReviewedFq12HiddenSourceStatement {
+            digest: [0_u8; DIGEST_BYTES],
+            slot_id: 0,
+            witness_commitment: [0_u8; DIGEST_BYTES],
+            randomizer_commitment: [0_u8; DIGEST_BYTES],
+            public_key_digest: [0_u8; DIGEST_BYTES],
+            message_digest: [0_u8; DIGEST_BYTES],
+            signature_digest: [0_u8; DIGEST_BYTES],
+            pad_opening_statement: ProductionPublicPadOpeningStatement {
+                digest: [0_u8; DIGEST_BYTES],
+                observed_blocks: [false; GROUPS],
+                observed_block_count: 0,
+            },
+        };
+        let hidden_source_statement_frame =
+            reviewed_fq12_hidden_source_statement_frame(&hidden_source_statement_probe);
+        let mut hidden_source_expected_domain_field = Vec::new();
+        append_frame(
+            &mut hidden_source_expected_domain_field,
+            b"domain",
+            hash_byte_domain_evidence
+                .hidden_source_frame_domain
+                .as_bytes(),
+        );
+        assert!(hidden_source_statement_frame.starts_with(&hidden_source_expected_domain_field));
+        let hidden_source_statement_frame_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(&hidden_source_statement_frame).into();
+        assert_eq!(
+            reviewed_fq12_hidden_source_statement_digest(&hidden_source_statement_probe),
+            hidden_source_statement_frame_digest
+        );
         assert_eq!(
             five_source_evidence.boundary_base_evidence_digest,
             verify_path2_reviewed_fq12_boundary_base_evidence_v1(

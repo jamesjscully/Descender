@@ -66,6 +66,20 @@ This is the active replacement for trying to complete the q12289 FS-core
 full-game proof. The q12289 theorem remains useful as a reference shape, but it
 does not certify the current deployment verifier.
 
+2026-06-05 hidden-source byte-domain update: the selected Rust five-source
+closure evidence now consumes `Path2NativeHashByteDomainEvidenceV1` instead of
+leaving the reviewed-Fq12 hidden-source statement frame domain implicit. The
+Rust evidence carries the hash-domain evidence digest and verified bit, checks
+that `hidden_source_frame_domain` equals
+`REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN`, checks that
+`reviewed_fq12_hidden_source_statement_frame` starts with the length-delimited
+`domain` field from that evidence, and checks that the hidden-source statement
+digest is SHA-256 over the same frame. Lean mirrors these facts on
+`ReviewedFq12SelectedRustFiveSourceClosureEvidence`. This narrows P2FS-006 to
+the remaining proof-side consumption of the statement/proof/opening/pad/carrier
+byte evidence and direct/batch separation inside the final selected-Rust/model
+instantiation theorem; it does not complete hidden-source semantics by itself.
+
 2026-06-02 update: `Path2FullOpeningSourceConcrete.lean` now packages the
 deployable non-aggregate theorem route as `ReviewedFq12DeployableHiddenSourceInputs`. The remaining P2FS-001 proof inputs are
 no longer an abstract source-bridge instantiation; they are the concrete

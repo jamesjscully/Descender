@@ -239,6 +239,11 @@ structure ReviewedFq12SelectedRustFiveSourceClosureEvidence where
   schemaMatches : Bool
   bridgeAuditDigest : ByteArray
   bridgeAuditDigestBound : Bool
+  hashByteDomainEvidenceDigest : ByteArray
+  hashByteDomainEvidenceVerified : Bool
+  hiddenSourceFrameDomainMatchesHashEvidence : Bool
+  hiddenSourceStatementFrameUsesHashDomainField : Bool
+  hiddenSourceStatementDigestUsesHashDomainFrame : Bool
   boundaryBaseEvidenceDigest : ByteArray
   boundaryBaseEvidenceVerified : Bool
   roleRootLiftEvidenceDigest : ByteArray
@@ -270,6 +275,7 @@ def ReviewedFq12SelectedRustFiveSourceClosureEvidence.ReportVerified
     (E : ReviewedFq12SelectedRustFiveSourceClosureEvidence) : Prop :=
   E.schemaMatches = true ∧
   E.bridgeAuditDigestBound = true ∧
+  E.hashByteDomainEvidenceVerified = true ∧
   E.boundaryBaseEvidenceVerified = true ∧
   E.roleRootLiftEvidenceVerified = true ∧
   E.selectedSourceRouteEvidenceVerified = true ∧
@@ -282,6 +288,10 @@ def ReviewedFq12SelectedRustFiveSourceClosureEvidence.ReportVerified
 def ReviewedFq12SelectedRustFiveSourceClosureEvidence.FactsAllTrue
     (E : ReviewedFq12SelectedRustFiveSourceClosureEvidence) : Prop :=
   E.selectedRustModelFiveSourceInputsReady = true ∧
+  E.hashByteDomainEvidenceVerified = true ∧
+  E.hiddenSourceFrameDomainMatchesHashEvidence = true ∧
+  E.hiddenSourceStatementFrameUsesHashDomainField = true ∧
+  E.hiddenSourceStatementDigestUsesHashDomainFrame = true ∧
   E.boundaryBaseEvidenceVerified = true ∧
   E.roleRootLiftEvidenceVerified = true ∧
   E.selectedSourceRouteEvidenceVerified = true ∧
