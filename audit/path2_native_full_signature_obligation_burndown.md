@@ -80,10 +80,14 @@ thread added the companion `hidden_source_proof_domain` to
 `Path2NativeHashByteDomainEvidenceV1` and binds
 `reviewed_fq12_hidden_source_proof_transcript_frame` /
 `reviewed_fq12_hidden_source_proof_transcript_digest` to
-`REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN`. This narrows P2FS-006 to the
-remaining proof-side consumption of opening/pad/carrier byte evidence,
-direct/batch separation, and the final selected-Rust/model instantiation
-theorem; it does not complete hidden-source semantics by itself.
+`REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN`. The projection-carrier binding was
+then factored through `reviewed_fq12_state_assisted_projection_carrier_binding_frame`,
+and the five-source evidence now checks that this frame uses the
+`projection_carrier_domain` from the same hash byte-domain evidence and that
+its digest splits into the carrier check bytes plus transcript-binding bytes.
+This narrows P2FS-006 to the remaining proof-side consumption of opening/pad
+byte evidence, direct/batch separation, and the final selected-Rust/model
+instantiation theorem; it does not complete hidden-source semantics by itself.
 
 2026-06-02 update: `Path2FullOpeningSourceConcrete.lean` now packages the
 deployable non-aggregate theorem route as `ReviewedFq12DeployableHiddenSourceInputs`. The remaining P2FS-001 proof inputs are

@@ -6005,18 +6005,12 @@ pub fn verify_reviewed_fq12_state_assisted_masked_witness_state18_packed_witness
     Ok(packed_opening)
 }
 
-pub fn reviewed_fq12_state_assisted_projection_carrier_binding(
+pub fn reviewed_fq12_state_assisted_projection_carrier_binding_frame(
     opening_commitment: &[u8; DIGEST_BYTES],
     opening: &ProductionReviewedFq12StateAssistedOpening,
     statement: &ProductionReviewedFq12HiddenSourceStatement,
     projection_lanes: &[u16; HIDDEN_SOURCE_FALLBACK_PROJECTION_LANES],
-) -> Result<
-    (
-        [u8; HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES],
-        [u8; HIDDEN_SOURCE_FALLBACK_PROJECTION_TRANSCRIPT_BINDING_BYTES],
-    ),
-    String,
-> {
+) -> Result<Vec<u8>, String> {
     let statement_digest = reviewed_fq12_hidden_source_statement_digest(statement);
     if statement_digest != statement.digest {
         return Err(
@@ -6085,6 +6079,27 @@ pub fn reviewed_fq12_state_assisted_projection_carrier_binding(
         );
         append_frame(&mut frame, b"lane_value", &value.to_le_bytes());
     }
+    Ok(frame)
+}
+
+pub fn reviewed_fq12_state_assisted_projection_carrier_binding(
+    opening_commitment: &[u8; DIGEST_BYTES],
+    opening: &ProductionReviewedFq12StateAssistedOpening,
+    statement: &ProductionReviewedFq12HiddenSourceStatement,
+    projection_lanes: &[u16; HIDDEN_SOURCE_FALLBACK_PROJECTION_LANES],
+) -> Result<
+    (
+        [u8; HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES],
+        [u8; HIDDEN_SOURCE_FALLBACK_PROJECTION_TRANSCRIPT_BINDING_BYTES],
+    ),
+    String,
+> {
+    let frame = reviewed_fq12_state_assisted_projection_carrier_binding_frame(
+        opening_commitment,
+        opening,
+        statement,
+        projection_lanes,
+    )?;
     let digest = Sha256::digest(frame);
     let mut check_bytes = [0_u8; HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES];
     check_bytes.copy_from_slice(&digest[..HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES]);
@@ -7090,13 +7105,13 @@ fn reviewed_fq12_active_lane_projection_carrier_source_present_v1() -> bool {
         .find("\npub fn verify_reviewed_fq12_state_assisted_account_witness_projection_opening(")
         .expect("reviewed Fq12 active-lane opening source start marker missing");
     let opening_end = source[opening_start..]
-        .find("\npub fn reviewed_fq12_state_assisted_projection_carrier_binding(")
+        .find("\npub fn reviewed_fq12_state_assisted_projection_carrier_binding_frame(")
         .expect("reviewed Fq12 active-lane opening source end marker missing")
         + opening_start;
     let opening_window = &source[opening_start..opening_end];
 
     let carrier_start = source
-        .find("\npub fn reviewed_fq12_state_assisted_projection_carrier_binding(")
+        .find("\npub fn reviewed_fq12_state_assisted_projection_carrier_binding_frame(")
         .expect("reviewed Fq12 active-lane carrier source start marker missing");
     let carrier_end = source[carrier_start..]
         .find(
@@ -7509,6 +7524,9 @@ pub struct Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
     pub hidden_source_proof_domain_matches_hash_evidence: bool,
     pub hidden_source_proof_transcript_frame_uses_hash_domain_field: bool,
     pub hidden_source_proof_transcript_digest_uses_hash_domain_frame: bool,
+    pub projection_carrier_domain_matches_hash_evidence: bool,
+    pub projection_carrier_binding_frame_uses_hash_domain_field: bool,
+    pub projection_carrier_binding_digest_splits_to_check_and_transcript: bool,
     pub boundary_base_evidence_digest: [u8; DIGEST_BYTES],
     pub boundary_base_evidence_verified: bool,
     pub role_root_lift_evidence_digest: [u8; DIGEST_BYTES],
@@ -8268,6 +8286,9 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
         "hiddenSourceProofDomainMatchesHashEvidence : Bool",
         "hiddenSourceProofTranscriptFrameUsesHashDomainField : Bool",
         "hiddenSourceProofTranscriptDigestUsesHashDomainFrame : Bool",
+        "projectionCarrierDomainMatchesHashEvidence : Bool",
+        "projectionCarrierBindingFrameUsesHashDomainField : Bool",
+        "projectionCarrierBindingDigestSplitsToCheckAndTranscript : Bool",
         "boundaryBaseEvidenceDigest : ByteArray",
         "boundaryBaseEvidenceVerified : Bool",
         "roleRootLiftEvidenceDigest : ByteArray",
@@ -8462,6 +8483,9 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "hidden_source_proof_domain_matches_hash_evidence",
         "hidden_source_proof_transcript_frame_uses_hash_domain_field",
         "hidden_source_proof_transcript_digest_uses_hash_domain_frame",
+        "projection_carrier_domain_matches_hash_evidence",
+        "projection_carrier_binding_frame_uses_hash_domain_field",
+        "projection_carrier_binding_digest_splits_to_check_and_transcript",
         "boundary_base_evidence_digest",
         "boundary_base_evidence_verified",
         "role_root_lift_evidence_digest",
@@ -8514,6 +8538,9 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "b\"hidden_source_proof_domain_matches_hash_evidence\"",
         "b\"hidden_source_proof_transcript_frame_uses_hash_domain_field\"",
         "b\"hidden_source_proof_transcript_digest_uses_hash_domain_frame\"",
+        "b\"projection_carrier_domain_matches_hash_evidence\"",
+        "b\"projection_carrier_binding_frame_uses_hash_domain_field\"",
+        "b\"projection_carrier_binding_digest_splits_to_check_and_transcript\"",
         "b\"boundary_base_evidence_digest\"",
         "b\"boundary_base_evidence_verified\"",
         "b\"role_root_lift_evidence_digest\"",
@@ -8548,8 +8575,10 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "verify_path2_native_hash_byte_domain_evidence_v1(&hash_byte_domain_evidence)?",
         ".hidden_source_frame_domain",
         ".hidden_source_proof_domain",
+        ".projection_carrier_domain",
         "REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN",
         "REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN",
+        "REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN",
         "reviewed_fq12_hidden_source_statement_frame(&hidden_source_statement_probe)",
         "hidden_source_expected_domain_field",
         "hidden_source_statement_probe_frame.starts_with(&hidden_source_expected_domain_field)",
@@ -8559,6 +8588,11 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "hidden_source_proof_expected_domain_field",
         ".starts_with(&hidden_source_proof_expected_domain_field)",
         "reviewed_fq12_hidden_source_proof_transcript_digest",
+        "reviewed_fq12_state_assisted_projection_carrier_binding_frame",
+        "projection_carrier_expected_domain_field",
+        ".starts_with(&projection_carrier_expected_domain_field)",
+        "reviewed_fq12_state_assisted_projection_carrier_binding(",
+        "projection_carrier_binding_digest_splits_to_check_and_transcript",
         "schema_matches: true",
         "bridge_audit_validated: true",
         "bridge_audit_digest_bound: true",
@@ -8570,6 +8604,9 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "hidden_source_proof_domain_matches_hash_evidence",
         "hidden_source_proof_transcript_frame_uses_hash_domain_field",
         "hidden_source_proof_transcript_digest_uses_hash_domain_frame",
+        "projection_carrier_domain_matches_hash_evidence",
+        "projection_carrier_binding_frame_uses_hash_domain_field",
+        "projection_carrier_binding_digest_splits_to_check_and_transcript",
         "boundary_base_evidence_digest",
         "boundary_base_evidence_verified: true",
         "role_root_lift_evidence_digest",
@@ -10457,6 +10494,56 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
             &hidden_source_statement_probe,
             &hidden_source_proof_probe,
         ) == hidden_source_proof_transcript_probe_frame_digest;
+    let projection_carrier_domain_matches_hash_evidence = hash_byte_domain_evidence
+        .projection_carrier_domain
+        == REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN;
+    let mut projection_carrier_statement_probe = hidden_source_statement_probe;
+    projection_carrier_statement_probe.digest =
+        reviewed_fq12_hidden_source_statement_digest(&projection_carrier_statement_probe);
+    let projection_carrier_opening_probe = ProductionReviewedFq12StateAssistedOpening {
+        slot_id: projection_carrier_statement_probe.slot_id as u64,
+        account_witness_commitment: projection_carrier_statement_probe.witness_commitment,
+        account_randomizer_commitment: projection_carrier_statement_probe.randomizer_commitment,
+        restore_anchor_digest: [0_u8; DIGEST_BYTES],
+        witness_opening_digest: [0_u8; DIGEST_BYTES],
+        pad_seed_digest: [0_u8; DIGEST_BYTES],
+        carrier_handle_secret_digest: [0_u8; DIGEST_BYTES],
+    };
+    let projection_carrier_opening_commitment_probe = [0_u8; DIGEST_BYTES];
+    let projection_carrier_lanes_probe = [0_u16; HIDDEN_SOURCE_FALLBACK_PROJECTION_LANES];
+    let projection_carrier_binding_probe_frame =
+        reviewed_fq12_state_assisted_projection_carrier_binding_frame(
+            &projection_carrier_opening_commitment_probe,
+            &projection_carrier_opening_probe,
+            &projection_carrier_statement_probe,
+            &projection_carrier_lanes_probe,
+        )?;
+    let mut projection_carrier_expected_domain_field = Vec::new();
+    append_frame(
+        &mut projection_carrier_expected_domain_field,
+        b"domain",
+        hash_byte_domain_evidence
+            .projection_carrier_domain
+            .as_bytes(),
+    );
+    let projection_carrier_binding_frame_uses_hash_domain_field =
+        projection_carrier_binding_probe_frame
+            .starts_with(&projection_carrier_expected_domain_field);
+    let projection_carrier_binding_digest = Sha256::digest(&projection_carrier_binding_probe_frame);
+    let (projection_carrier_check_bytes, projection_carrier_transcript_binding) =
+        reviewed_fq12_state_assisted_projection_carrier_binding(
+            &projection_carrier_opening_commitment_probe,
+            &projection_carrier_opening_probe,
+            &projection_carrier_statement_probe,
+            &projection_carrier_lanes_probe,
+        )?;
+    let projection_carrier_binding_digest_splits_to_check_and_transcript =
+        &projection_carrier_binding_digest[..HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES]
+            == projection_carrier_check_bytes.as_slice()
+            && &projection_carrier_binding_digest[HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES
+                ..HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES
+                    + HIDDEN_SOURCE_FALLBACK_PROJECTION_TRANSCRIPT_BINDING_BYTES]
+                == projection_carrier_transcript_binding.as_slice();
     let boundary_base_evidence = path2_reviewed_fq12_boundary_base_evidence_v1()?;
     let boundary_base_evidence_digest =
         verify_path2_reviewed_fq12_boundary_base_evidence_v1(&boundary_base_evidence)?;
@@ -10492,6 +10579,9 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
         hidden_source_proof_domain_matches_hash_evidence,
         hidden_source_proof_transcript_frame_uses_hash_domain_field,
         hidden_source_proof_transcript_digest_uses_hash_domain_frame,
+        projection_carrier_domain_matches_hash_evidence,
+        projection_carrier_binding_frame_uses_hash_domain_field,
+        projection_carrier_binding_digest_splits_to_check_and_transcript,
         boundary_base_evidence_digest,
         boundary_base_evidence_verified: true,
         role_root_lift_evidence_digest,
@@ -10593,6 +10683,21 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1_frame(
         &mut frame,
         b"hidden_source_proof_transcript_digest_uses_hash_domain_frame",
         u64::from(evidence.hidden_source_proof_transcript_digest_uses_hash_domain_frame),
+    );
+    append_u64(
+        &mut frame,
+        b"projection_carrier_domain_matches_hash_evidence",
+        u64::from(evidence.projection_carrier_domain_matches_hash_evidence),
+    );
+    append_u64(
+        &mut frame,
+        b"projection_carrier_binding_frame_uses_hash_domain_field",
+        u64::from(evidence.projection_carrier_binding_frame_uses_hash_domain_field),
+    );
+    append_u64(
+        &mut frame,
+        b"projection_carrier_binding_digest_splits_to_check_and_transcript",
+        u64::from(evidence.projection_carrier_binding_digest_splits_to_check_and_transcript),
     );
     append_frame(
         &mut frame,
@@ -10745,6 +10850,9 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
         && evidence.hidden_source_proof_domain_matches_hash_evidence
         && evidence.hidden_source_proof_transcript_frame_uses_hash_domain_field
         && evidence.hidden_source_proof_transcript_digest_uses_hash_domain_frame
+        && evidence.projection_carrier_domain_matches_hash_evidence
+        && evidence.projection_carrier_binding_frame_uses_hash_domain_field
+        && evidence.projection_carrier_binding_digest_splits_to_check_and_transcript
         && evidence.boundary_base_evidence_verified
         && evidence.role_root_lift_evidence_verified
         && evidence.selected_source_route_evidence_verified
@@ -54364,6 +54472,11 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(five_source_evidence.hidden_source_proof_domain_matches_hash_evidence);
         assert!(five_source_evidence.hidden_source_proof_transcript_frame_uses_hash_domain_field);
         assert!(five_source_evidence.hidden_source_proof_transcript_digest_uses_hash_domain_frame);
+        assert!(five_source_evidence.projection_carrier_domain_matches_hash_evidence);
+        assert!(five_source_evidence.projection_carrier_binding_frame_uses_hash_domain_field);
+        assert!(
+            five_source_evidence.projection_carrier_binding_digest_splits_to_check_and_transcript
+        );
         assert_eq!(
             hash_byte_domain_evidence.hidden_source_frame_domain,
             REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN
@@ -54371,6 +54484,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert_eq!(
             hash_byte_domain_evidence.hidden_source_proof_domain,
             REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN
+        );
+        assert_eq!(
+            hash_byte_domain_evidence.projection_carrier_domain,
+            REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN
         );
         let hidden_source_statement_probe = ProductionReviewedFq12HiddenSourceStatement {
             digest: [0_u8; DIGEST_BYTES],
@@ -54431,6 +54548,58 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
                 &hidden_source_proof_probe,
             ),
             hidden_source_proof_transcript_frame_digest
+        );
+        let mut projection_carrier_statement_probe = hidden_source_statement_probe;
+        projection_carrier_statement_probe.digest =
+            reviewed_fq12_hidden_source_statement_digest(&projection_carrier_statement_probe);
+        let projection_carrier_opening_probe = ProductionReviewedFq12StateAssistedOpening {
+            slot_id: projection_carrier_statement_probe.slot_id as u64,
+            account_witness_commitment: projection_carrier_statement_probe.witness_commitment,
+            account_randomizer_commitment: projection_carrier_statement_probe.randomizer_commitment,
+            restore_anchor_digest: [0_u8; DIGEST_BYTES],
+            witness_opening_digest: [0_u8; DIGEST_BYTES],
+            pad_seed_digest: [0_u8; DIGEST_BYTES],
+            carrier_handle_secret_digest: [0_u8; DIGEST_BYTES],
+        };
+        let projection_carrier_opening_commitment_probe = [0_u8; DIGEST_BYTES];
+        let projection_carrier_lanes_probe = [0_u16; HIDDEN_SOURCE_FALLBACK_PROJECTION_LANES];
+        let projection_carrier_binding_frame =
+            reviewed_fq12_state_assisted_projection_carrier_binding_frame(
+                &projection_carrier_opening_commitment_probe,
+                &projection_carrier_opening_probe,
+                &projection_carrier_statement_probe,
+                &projection_carrier_lanes_probe,
+            )
+            .unwrap();
+        let mut projection_carrier_expected_domain_field = Vec::new();
+        append_frame(
+            &mut projection_carrier_expected_domain_field,
+            b"domain",
+            hash_byte_domain_evidence
+                .projection_carrier_domain
+                .as_bytes(),
+        );
+        assert!(
+            projection_carrier_binding_frame.starts_with(&projection_carrier_expected_domain_field)
+        );
+        let projection_carrier_binding_digest = Sha256::digest(&projection_carrier_binding_frame);
+        let (projection_carrier_check_bytes, projection_carrier_transcript_binding) =
+            reviewed_fq12_state_assisted_projection_carrier_binding(
+                &projection_carrier_opening_commitment_probe,
+                &projection_carrier_opening_probe,
+                &projection_carrier_statement_probe,
+                &projection_carrier_lanes_probe,
+            )
+            .unwrap();
+        assert_eq!(
+            &projection_carrier_binding_digest[..HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES],
+            projection_carrier_check_bytes.as_slice()
+        );
+        assert_eq!(
+            &projection_carrier_binding_digest[HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES
+                ..HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES
+                    + HIDDEN_SOURCE_FALLBACK_PROJECTION_TRANSCRIPT_BINDING_BYTES],
+            projection_carrier_transcript_binding.as_slice()
         );
         assert_eq!(
             five_source_evidence.boundary_base_evidence_digest,

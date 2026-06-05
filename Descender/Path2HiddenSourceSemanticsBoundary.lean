@@ -247,6 +247,9 @@ structure ReviewedFq12SelectedRustFiveSourceClosureEvidence where
   hiddenSourceProofDomainMatchesHashEvidence : Bool
   hiddenSourceProofTranscriptFrameUsesHashDomainField : Bool
   hiddenSourceProofTranscriptDigestUsesHashDomainFrame : Bool
+  projectionCarrierDomainMatchesHashEvidence : Bool
+  projectionCarrierBindingFrameUsesHashDomainField : Bool
+  projectionCarrierBindingDigestSplitsToCheckAndTranscript : Bool
   boundaryBaseEvidenceDigest : ByteArray
   boundaryBaseEvidenceVerified : Bool
   roleRootLiftEvidenceDigest : ByteArray
@@ -298,6 +301,9 @@ def ReviewedFq12SelectedRustFiveSourceClosureEvidence.FactsAllTrue
   E.hiddenSourceProofDomainMatchesHashEvidence = true ∧
   E.hiddenSourceProofTranscriptFrameUsesHashDomainField = true ∧
   E.hiddenSourceProofTranscriptDigestUsesHashDomainFrame = true ∧
+  E.projectionCarrierDomainMatchesHashEvidence = true ∧
+  E.projectionCarrierBindingFrameUsesHashDomainField = true ∧
+  E.projectionCarrierBindingDigestSplitsToCheckAndTranscript = true ∧
   E.boundaryBaseEvidenceVerified = true ∧
   E.roleRootLiftEvidenceVerified = true ∧
   E.selectedSourceRouteEvidenceVerified = true ∧
