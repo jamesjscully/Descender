@@ -55060,6 +55060,100 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
                  def selectedRustFiveSourceEvidenceDigest := spoof\n"
             )
         );
+        let spoofed_concrete_definition_source = r#"
+def marker_string :=
+  "def selectedRustFiveSourceEvidenceReport := spoof"
+/-
+def selectedRustBoundaryBaseEvidenceReport := spoof
+def selectedRustRoleRootLiftEvidenceReport := spoof
+def selectedRustSourceRouteEvidenceReport := spoof
+def selectedRustFieldLocalEvidenceReport := spoof
+def selectedRustSharedFrameWitnessEvidenceReport := spoof
+def selectedRustFiveSourceEvidenceDigest := spoof
+def selectedRustBoundaryBaseEvidenceDigest := spoof
+def selectedRustRoleRootLiftEvidenceDigest := spoof
+def selectedRustSourceRouteEvidenceDigest := spoof
+def selectedRustFieldLocalEvidenceDigest := spoof
+def selectedRustSharedFrameWitnessEvidenceDigest := spoof
+def selectedRustFiveSourceEvidenceReportVerifiedProof := spoof
+def selectedRustFiveSourceEvidenceFactsAllTrueProof := spoof
+def selectedRustBoundaryBaseEvidenceReportVerifiedProof := spoof
+def selectedRustBoundaryBaseEvidenceFactsAllTrueProof := spoof
+def selectedRustRoleRootLiftEvidenceReportVerifiedProof := spoof
+def selectedRustRoleRootLiftEvidenceFactsAllTrueProof := spoof
+def selectedRustSourceRouteEvidenceReportVerifiedProof := spoof
+def selectedRustSourceRouteEvidenceFactsAllTrueProof := spoof
+def selectedRustFieldLocalEvidenceReportVerifiedProof := spoof
+def selectedRustFieldLocalEvidenceFactsAllTrueProof := spoof
+def selectedRustSharedFrameWitnessEvidenceReportVerifiedProof := spoof
+def selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof := spoof
+def selectedRustPayloadProjectionLaw := spoof
+def selectedRustExtractionCertificateAvailability := spoof
+def selectedRustRoleRootLiftSource := spoof
+def selectedRustSourceRouteByteSource := spoof
+def selectedRustAssemblySource := spoof
+def selectedRustCompatibilitySource := spoof
+def selectedRustSharedFrameWitnessSources := spoof
+def selectedRustFiveSourceSubEvidenceDigestsMatchProof := spoof
+-/
+"#;
+        let spoofed_concrete_definition_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                spoofed_concrete_definition_source,
+            );
+        assert!(!spoofed_concrete_definition_checklist.all_definitions_present);
+        assert_eq!(
+            spoofed_concrete_definition_checklist.missing_definition_category_count,
+            5
+        );
+        let complete_concrete_definition_source = r#"
+def selectedRustFiveSourceEvidenceReport := selectedRustFiveSourceEvidenceReportValue
+def selectedRustBoundaryBaseEvidenceReport := selectedRustBoundaryBaseEvidenceReportValue
+def selectedRustRoleRootLiftEvidenceReport := selectedRustRoleRootLiftEvidenceReportValue
+def selectedRustSourceRouteEvidenceReport := selectedRustSourceRouteEvidenceReportValue
+def selectedRustFieldLocalEvidenceReport := selectedRustFieldLocalEvidenceReportValue
+def selectedRustSharedFrameWitnessEvidenceReport := selectedRustSharedFrameWitnessEvidenceReportValue
+def selectedRustFiveSourceEvidenceDigest := selectedRustFiveSourceEvidenceDigestValue
+def selectedRustBoundaryBaseEvidenceDigest := selectedRustBoundaryBaseEvidenceDigestValue
+def selectedRustRoleRootLiftEvidenceDigest := selectedRustRoleRootLiftEvidenceDigestValue
+def selectedRustSourceRouteEvidenceDigest := selectedRustSourceRouteEvidenceDigestValue
+def selectedRustFieldLocalEvidenceDigest := selectedRustFieldLocalEvidenceDigestValue
+def selectedRustSharedFrameWitnessEvidenceDigest := selectedRustSharedFrameWitnessEvidenceDigestValue
+theorem selectedRustFiveSourceEvidenceReportVerifiedProof := selectedRustFiveSourceEvidenceReportVerifiedProofValue
+theorem selectedRustFiveSourceEvidenceFactsAllTrueProof := selectedRustFiveSourceEvidenceFactsAllTrueProofValue
+theorem selectedRustBoundaryBaseEvidenceReportVerifiedProof := selectedRustBoundaryBaseEvidenceReportVerifiedProofValue
+theorem selectedRustBoundaryBaseEvidenceFactsAllTrueProof := selectedRustBoundaryBaseEvidenceFactsAllTrueProofValue
+theorem selectedRustRoleRootLiftEvidenceReportVerifiedProof := selectedRustRoleRootLiftEvidenceReportVerifiedProofValue
+theorem selectedRustRoleRootLiftEvidenceFactsAllTrueProof := selectedRustRoleRootLiftEvidenceFactsAllTrueProofValue
+theorem selectedRustSourceRouteEvidenceReportVerifiedProof := selectedRustSourceRouteEvidenceReportVerifiedProofValue
+theorem selectedRustSourceRouteEvidenceFactsAllTrueProof := selectedRustSourceRouteEvidenceFactsAllTrueProofValue
+theorem selectedRustFieldLocalEvidenceReportVerifiedProof := selectedRustFieldLocalEvidenceReportVerifiedProofValue
+theorem selectedRustFieldLocalEvidenceFactsAllTrueProof := selectedRustFieldLocalEvidenceFactsAllTrueProofValue
+theorem selectedRustSharedFrameWitnessEvidenceReportVerifiedProof := selectedRustSharedFrameWitnessEvidenceReportVerifiedProofValue
+theorem selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof := selectedRustSharedFrameWitnessEvidenceFactsAllTrueProofValue
+def selectedRustPayloadProjectionLaw := selectedRustPayloadProjectionLawValue
+def selectedRustExtractionCertificateAvailability := selectedRustExtractionCertificateAvailabilityValue
+def selectedRustRoleRootLiftSource := selectedRustRoleRootLiftSourceValue
+def selectedRustSourceRouteByteSource := selectedRustSourceRouteByteSourceValue
+def selectedRustAssemblySource := selectedRustAssemblySourceValue
+def selectedRustCompatibilitySource := selectedRustCompatibilitySourceValue
+def selectedRustSharedFrameWitnessSources := selectedRustSharedFrameWitnessSourcesValue
+theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof := selectedRustFiveSourceSubEvidenceDigestsMatchProofValue
+"#;
+        let complete_concrete_definition_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                complete_concrete_definition_source,
+            );
+        assert!(complete_concrete_definition_checklist.evidence_report_definitions_present);
+        assert!(complete_concrete_definition_checklist.evidence_digest_definitions_present);
+        assert!(complete_concrete_definition_checklist.evidence_proof_definitions_present);
+        assert!(complete_concrete_definition_checklist.source_record_definitions_present);
+        assert!(complete_concrete_definition_checklist.sub_evidence_digest_match_proof_present);
+        assert!(complete_concrete_definition_checklist.all_definitions_present);
+        assert_eq!(
+            complete_concrete_definition_checklist.missing_definition_category_count,
+            0
+        );
         assert!(path2_reviewed_fq12_five_source_closure_evidence_source_present_v1());
         let five_source_evidence = path2_reviewed_fq12_five_source_closure_evidence_v1().unwrap();
         assert_eq!(
