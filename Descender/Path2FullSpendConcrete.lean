@@ -421,8 +421,41 @@ structure ConcreteFullSignatureExecutionSource
   success_implies_verifier_accept_or_break :
     forall {run},
       executionSucceeds run ->
-        ConcreteSpendVerificationAccepts C run.spend ∨
+      ConcreteSpendVerificationAccepts C run.spend ∨
           Path2FullSpendGame.HasBreak (concretePredicates C) run.spend
+
+/--
+Lean mirror of the public selected-Rust full-execution evidence report.
+
+The final AP2-N003 instantiation should bind this report to the production
+EUF-CMA/blockchain execution surface, then use the verified facts to construct
+the execution source consumed by the concrete full-game lift.
+-/
+structure SelectedRustFullExecutionEvidenceReport where
+  schemaMatches : Bool
+  reportDigestVerified : Bool
+  productionExecutionSurfaceVerified : Bool
+  executionSuccessPredicatePinned : Bool
+  successImpliesVerifierAcceptOrBreak : Bool
+  concreteGameConfigPinned : Bool
+  nonTautologicalExecutionSource : Bool
+  namedBreaksExhaustive : Bool
+
+/-- The production full-execution report has the expected schema and digest. -/
+def SelectedRustFullExecutionEvidenceReport.ReportVerified
+    (E : SelectedRustFullExecutionEvidenceReport) : Prop :=
+  E.schemaMatches = true ∧
+  E.reportDigestVerified = true
+
+/-- All production full-execution source facts recorded by the report hold. -/
+def SelectedRustFullExecutionEvidenceReport.FactsAllTrue
+    (E : SelectedRustFullExecutionEvidenceReport) : Prop :=
+  E.productionExecutionSurfaceVerified = true ∧
+  E.executionSuccessPredicatePinned = true ∧
+  E.successImpliesVerifierAcceptOrBreak = true ∧
+  E.concreteGameConfigPinned = true ∧
+  E.nonTautologicalExecutionSource = true ∧
+  E.namedBreaksExhaustive = true
 
 /--
 Selected Rust/model evidence certificate for production full-signature
@@ -437,9 +470,11 @@ it depends on.
 -/
 structure SelectedRustFullExecutionSourceCertificate
     (C : ConcreteGameConfig) where
-  selectedRustFullExecutionSourceVerified : Prop
+  evidenceReport : SelectedRustFullExecutionEvidenceReport
   selectedRustFullExecutionSourceVerifiedProof :
-    selectedRustFullExecutionSourceVerified
+    evidenceReport.ReportVerified
+  selectedRustFullExecutionFactsAllTrueProof :
+    evidenceReport.FactsAllTrue
   selectedRustExecutionSucceeds :
     Path2FullSpendGame.FullForgeryRun concreteTypes -> Prop
   selectedRustSuccessImpliesVerifierAcceptOrBreak :
@@ -454,8 +489,10 @@ def SelectedRustFullExecutionSourceCertificate.toExecutionSource
     (Cert : SelectedRustFullExecutionSourceCertificate C) :
     ConcreteFullSignatureExecutionSource C where
   executionSucceeds := by
-    let _hVerified : Cert.selectedRustFullExecutionSourceVerified :=
+    let _hVerified : Cert.evidenceReport.ReportVerified :=
       Cert.selectedRustFullExecutionSourceVerifiedProof
+    let _hFacts : Cert.evidenceReport.FactsAllTrue :=
+      Cert.selectedRustFullExecutionFactsAllTrueProof
     exact Cert.selectedRustExecutionSucceeds
   success_implies_verifier_accept_or_break :=
     Cert.selectedRustSuccessImpliesVerifierAcceptOrBreak

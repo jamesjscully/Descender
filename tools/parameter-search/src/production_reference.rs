@@ -19829,9 +19829,21 @@ fn path2_full_signature_execution_source_boundary_present_v1() -> bool {
         "executionSucceeds run ->",
         "ConcreteSpendVerificationAccepts C run.spend ∨",
         "Path2FullSpendGame.HasBreak (concretePredicates C) run.spend",
+        "SelectedRustFullExecutionEvidenceReport",
+        "schemaMatches",
+        "reportDigestVerified",
+        "productionExecutionSurfaceVerified",
+        "executionSuccessPredicatePinned",
+        "successImpliesVerifierAcceptOrBreak",
+        "concreteGameConfigPinned",
+        "nonTautologicalExecutionSource",
+        "namedBreaksExhaustive",
+        "SelectedRustFullExecutionEvidenceReport.ReportVerified",
+        "SelectedRustFullExecutionEvidenceReport.FactsAllTrue",
         "SelectedRustFullExecutionSourceCertificate",
-        "selectedRustFullExecutionSourceVerified",
+        "evidenceReport",
         "selectedRustFullExecutionSourceVerifiedProof",
+        "selectedRustFullExecutionFactsAllTrueProof",
         "selectedRustExecutionSucceeds",
         "selectedRustSuccessImpliesVerifierAcceptOrBreak",
         "SelectedRustFullExecutionSourceCertificate.toExecutionSource",
@@ -19902,8 +19914,10 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         "ConcreteFullSignatureExecutionSource",
         "ConcreteGameConfig",
         "SelectedRustFullExecutionSourceCertificate",
-        "selectedRustFullExecutionSourceVerified",
+        "SelectedRustFullExecutionEvidenceReport",
+        "selectedRustFullExecutionEvidenceReport",
         "selectedRustFullExecutionSourceVerifiedProof",
+        "selectedRustFullExecutionFactsAllTrueProof",
         "selectedRustExecutionSucceeds",
         "selectedRustSuccessImpliesVerifierAcceptOrBreak",
         "NativeFullSignatureSecurityBoundary",
@@ -19918,8 +19932,9 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         return false;
     }
     let forbidden_declaration_terms = [
-        "selectedRustFullExecutionSourceVerified",
+        "selectedRustFullExecutionEvidenceReport",
         "selectedRustFullExecutionSourceVerifiedProof",
+        "selectedRustFullExecutionFactsAllTrueProof",
         "selectedRustExecutionSucceeds",
         "selectedRustSuccessImpliesVerifierAcceptOrBreak",
     ];
@@ -19943,11 +19958,12 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         return false;
     }
     let forbidden_vacuous_execution_terms = [
-        "selectedRustFullExecutionSourceVerified := True",
+        "evidenceReport := {",
         "selectedRustFullExecutionSourceVerifiedProof := True.intro",
-        "let selectedRustFullExecutionSourceVerified : Prop := True",
-        "let selectedRustFullExecutionSourceVerified := True",
+        "selectedRustFullExecutionFactsAllTrueProof := True.intro",
+        "let selectedRustFullExecutionEvidenceReport : SelectedRustFullExecutionEvidenceReport :=",
         "let selectedRustFullExecutionSourceVerifiedProof := True.intro",
+        "let selectedRustFullExecutionFactsAllTrueProof := True.intro",
     ];
     if forbidden_vacuous_execution_terms
         .iter()
@@ -19960,8 +19976,9 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         "concreteFullSignatureExecutionSource_instantiation_v1",
         "let selectedRustFullExecutionCertificate :",
         "SelectedRustFullExecutionSourceCertificate",
-        "selectedRustFullExecutionSourceVerified := selectedRustFullExecutionSourceVerified",
+        "evidenceReport := selectedRustFullExecutionEvidenceReport",
         "selectedRustFullExecutionSourceVerifiedProof := selectedRustFullExecutionSourceVerifiedProof",
+        "selectedRustFullExecutionFactsAllTrueProof := selectedRustFullExecutionFactsAllTrueProof",
         "selectedRustExecutionSucceeds := selectedRustExecutionSucceeds",
         "selectedRustSuccessImpliesVerifierAcceptOrBreak :=\n        selectedRustSuccessImpliesVerifierAcceptOrBreak",
         "let selectedRustFullExecutionSource :",
