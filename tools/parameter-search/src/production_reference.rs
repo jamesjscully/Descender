@@ -8669,10 +8669,19 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 markers,
             )
         });
-    let sub_evidence_digest_match_proof_present = lean_source_has_selected_rust_definition_v1(
-        &boundary_source,
-        "selectedRustFiveSourceSubEvidenceDigestsMatchProof",
-    );
+    let sub_evidence_digest_match_proof_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustFiveSourceSubEvidenceDigestsMatchProof",
+            &[
+                "SubEvidenceDigestsMatch",
+                "selectedRustBoundaryBaseCertificate",
+                "selectedRustRoleRootLiftSourceCertificate",
+                "selectedRustSourceRouteByteSourceCertificate",
+                "selectedRustFieldLocalSourceCertificate",
+                "selectedRustSharedFrameWitnessSourcesCertificate",
+            ],
+        );
     let all_definitions_present = evidence_report_definitions_present
         && evidence_digest_definitions_present
         && evidence_proof_definitions_present
@@ -55314,6 +55323,17 @@ def selectedRustSharedFrameWitnessSources := selectedRustSharedFrameWitnessSourc
             );
         assert!(!untyped_source_record_definition_checklist.source_record_definitions_present);
         assert!(!untyped_source_record_definition_checklist.all_definitions_present);
+        let untyped_sub_evidence_match_proof_source = r#"
+theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof := selectedRustFiveSourceSubEvidenceDigestsMatchProofValue
+"#;
+        let untyped_sub_evidence_match_proof_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                untyped_sub_evidence_match_proof_source,
+            );
+        assert!(
+            !untyped_sub_evidence_match_proof_checklist.sub_evidence_digest_match_proof_present
+        );
+        assert!(!untyped_sub_evidence_match_proof_checklist.all_definitions_present);
         let complete_concrete_definition_source = r#"
 def selectedRustFiveSourceEvidenceReport := selectedRustFiveSourceEvidenceReportValue
 def selectedRustBoundaryBaseEvidenceReport := selectedRustBoundaryBaseEvidenceReportValue
@@ -55385,7 +55405,14 @@ def selectedRustCompatibilitySource :
 def selectedRustSharedFrameWitnessSources :
   ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources CanonicalParser WitnessParser P :=
   selectedRustSharedFrameWitnessSourcesValue
-theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof := selectedRustFiveSourceSubEvidenceDigestsMatchProofValue
+theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
+  selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
+    selectedRustBoundaryBaseCertificate
+    selectedRustRoleRootLiftSourceCertificate
+    selectedRustSourceRouteByteSourceCertificate
+    selectedRustFieldLocalSourceCertificate
+    selectedRustSharedFrameWitnessSourcesCertificate :=
+  selectedRustFiveSourceSubEvidenceDigestsMatchProofValue
 "#;
         let complete_concrete_definition_checklist =
             path2_selected_rust_model_concrete_definition_checklist_from_source_v1(

@@ -167,6 +167,13 @@ compatibility, and shared-frame witness source. A name-only source-record
 fixture remains fail-closed, keeping the source-record category tied to the
 final certificate's expected source contracts.
 
+2026-06-05 sub-evidence match checklist hardening: the concrete-definition
+checklist now requires `selectedRustFiveSourceSubEvidenceDigestsMatchProof` to
+name `SubEvidenceDigestsMatch` and the five boundary-base, role-root/lift,
+source-route, field/local, and shared-witness certificates. A name-only theorem
+fixture remains fail-closed, keeping the aggregate digest-match proof tied to
+the constructor surface that consumes it.
+
 2026-06-02 update: `Path2FullOpeningSourceConcrete.lean` now packages the
 deployable non-aggregate theorem route as `ReviewedFq12DeployableHiddenSourceInputs`. The remaining P2FS-001 proof inputs are
 no longer an abstract source-bridge instantiation; they are the concrete
