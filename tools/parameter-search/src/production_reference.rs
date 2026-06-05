@@ -21203,6 +21203,7 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "evidence.verifier_public_boundary_accepted",
         "evidence.verifier_production_accepted",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
         "path2_native_signer_verifier_evidence_keeps_productization_gates_separate",
         "no constant-time claim for private signing or keygen",
@@ -43339,6 +43340,7 @@ end Path2NoExportConcrete
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND,
+                PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
@@ -43421,6 +43423,10 @@ end Path2NoExportConcrete
         );
         assert_ne!(
             evidence.smallest_remaining_productization_gate,
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS
+        );
+        assert_ne!(
+            evidence.smallest_remaining_productization_gate,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME
         );
         assert_ne!(
@@ -43446,6 +43452,11 @@ end Path2NoExportConcrete
             evidence
                 .deployment_blockers
                 .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND)
+        );
+        assert!(
+            evidence
+                .deployment_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS)
         );
         assert!(
             evidence
@@ -43480,6 +43491,7 @@ end Path2NoExportConcrete
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
+        assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE));
