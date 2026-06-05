@@ -8201,6 +8201,16 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "ReviewedFq12FieldConcreteCompatibilitySource",
         "ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources",
         "ReviewedFq12SelectedRustFiveSourceClosureEvidence",
+        "SelectedRustModelFiveSourceImplementation",
+        "SelectedRustModelFiveSourcePackage",
+        "SelectedRustModelFiveSourceEvidence",
+        "SelectedRustFiveSourceImplementation",
+        "SelectedRustFiveSourcePackage",
+        "SelectedRustFiveSourceCertificate",
+        "selectedRustModelFiveSourceImplementation :",
+        "selectedRustModelFiveSourcePackage :",
+        "selectedRustFiveSourceImplementation :",
+        "selectedRustFiveSourcePackage :",
         "selectedRustFiveSourceEvidenceReport :",
         "selectedRustFiveSourceEvidenceReportVerifiedProof :",
         "selectedRustFiveSourceEvidenceFactsAllTrueProof :",
@@ -48759,6 +48769,49 @@ theorem {theorem_name}
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &assumed_verification_bits_theorem,
+                theorem_name
+            )
+        );
+
+        let assumed_aggregate_package_theorem = format!(
+            r#"
+theorem {theorem_name}
+    (P : Predicates)
+    (selectedRustModelFiveSourceImplementation :
+      SelectedRustModelFiveSourceImplementation
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P := by
+  let selectedRustModelFiveSourceCertificate :
+      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    {{ evidenceReport := selectedRustFiveSourceEvidenceReport
+      evidenceReportVerifiedProof :=
+        selectedRustFiveSourceEvidenceReportVerifiedProof
+      evidenceFactsAllTrueProof :=
+        selectedRustFiveSourceEvidenceFactsAllTrueProof
+      payloadProjectsFrom := selectedRustModelFiveSourceImplementation.payloadProjectsFrom
+      certificateAvailability :=
+        selectedRustModelFiveSourceImplementation.certificateAvailability
+      roleRootLiftSource :=
+        selectedRustModelFiveSourceImplementation.roleRootLiftSource
+      selectedSource := selectedRustModelFiveSourceImplementation.selectedSource
+      assemblySource := selectedRustModelFiveSourceImplementation.assemblySource
+      compatibilitySource :=
+        selectedRustModelFiveSourceImplementation.compatibilitySource
+      witnessSources := selectedRustModelFiveSourceImplementation.witnessSources }}
+  let selectedRustModelFiveSourceInputs :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
+      selectedRustModelFiveSourceCertificate
+  exact
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+      P selectedRustModelFiveSourceInputs
+"#
+        );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &assumed_aggregate_package_theorem,
                 theorem_name
             )
         );
