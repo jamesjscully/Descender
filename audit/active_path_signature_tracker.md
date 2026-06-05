@@ -1005,6 +1005,13 @@ evidence report/proof declarations. An all-true
 facts-all-true proof definitions is treated as a forbidden source stub, matching
 the existing aggregate, boundary-base, role-root/lift, field/local, and
 shared-witness vacuity checks.
+The final extractor theorem source gate now requires each local selected
+certificate variable to be bound directly by its named constructor. A regression
+where `ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources`
+is present but assigned to a differently named local, while
+`selectedRustBoundaryBaseCertificate` appears later, fails the final theorem
+gate. This blocks constructor-name laundering in the future AP2-N001 theorem
+shape.
 
 ## Findings
 

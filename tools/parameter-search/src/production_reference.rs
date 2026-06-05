@@ -9585,6 +9585,12 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
     }
 
     let required_constructor_bindings = [
+        "let selectedRustBoundaryBaseCertificate := ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources",
+        "let selectedRustRoleRootLiftSourceCertificate := ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource",
+        "let selectedRustSourceRouteByteSourceCertificate := SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource",
+        "let selectedRustFieldLocalSourceCertificate := ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources",
+        "let selectedRustSharedFrameWitnessSourcesCertificate := ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources",
+        "let selectedRustModelFiveSourceCertificate : ReviewedFq12SelectedRustModelFiveSourceClosureCertificate",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates",
         "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources",
         "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource",
@@ -54637,6 +54643,17 @@ theorem {theorem_name}
         assert!(
             path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &concrete_constructor_certificate_theorem,
+                theorem_name
+            )
+        );
+        let renamed_boundary_certificate_constructor_theorem =
+            concrete_constructor_certificate_theorem.replace(
+                "let selectedRustBoundaryBaseCertificate :=\n    ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources",
+                "let constructedRustBoundaryBaseCertificate :=\n    ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources",
+            );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &renamed_boundary_certificate_constructor_theorem,
                 theorem_name
             )
         );
