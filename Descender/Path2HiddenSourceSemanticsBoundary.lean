@@ -2265,6 +2265,21 @@ def ReviewedFq12RoleLiftValidityBindsExtractionTarget
       ReviewedFq12RoleLiftCertificateBindsExtraction payload cert liftCert
 
 /--
+Concrete predicate-model obligation connecting role-lift opening to the
+certificate-lift relation consumed by downstream native-opening obligations.
+-/
+def ReviewedFq12RoleLiftOpeningImpliesCertificateLiftTarget
+    (P : Predicates) : Prop :=
+  forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {liftCert : ReviewedFq12FullNativeOpeningCertificate}
+      {opening : FullNativeRepresentativeOpening},
+    P.reviewedFq12RoleLiftCertificateOpens
+        b payload cert liftCert opening ->
+      P.reviewedFq12CertificateLiftsToOpening b payload cert opening
+
+/--
 Selected Rust native-boundary predicate-model import target.
 
 The full-spend concrete predicates are not this object: they live over concrete
@@ -2298,6 +2313,8 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
     ReviewedFq12PayloadExtractionNativeValid predicates
   roleLiftValidityBindsExtraction :
     ReviewedFq12RoleLiftValidityBindsExtractionTarget predicates
+  roleLiftOpeningImpliesCertificateLift :
+    ReviewedFq12RoleLiftOpeningImpliesCertificateLiftTarget predicates
   reviewedFq12PayloadAcceptanceModeled : Prop
   reviewedFq12PayloadAcceptanceModeledProof :
     reviewedFq12PayloadAcceptanceModeled

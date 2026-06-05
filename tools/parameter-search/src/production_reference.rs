@@ -7556,6 +7556,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_payload_extraction_fiber_target_present: bool,
     pub native_boundary_payload_extraction_native_valid_target_present: bool,
     pub native_boundary_role_lift_validity_binds_extraction_target_present: bool,
+    pub native_boundary_role_lift_opening_certificate_lift_target_present: bool,
     pub native_boundary_semantics_package_target_present: bool,
     pub native_boundary_semantics_source_package_target_present: bool,
     pub native_boundary_semantics_package_handoff_present: bool,
@@ -8732,6 +8733,15 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
+    let native_boundary_role_lift_opening_certificate_lift_target_present = [
+        "ReviewedFq12RoleLiftOpeningImpliesCertificateLiftTarget",
+        "roleLiftOpeningImpliesCertificateLift",
+        "P.reviewedFq12RoleLiftCertificateOpens",
+        "b payload cert liftCert opening",
+        "P.reviewedFq12CertificateLiftsToOpening b payload cert opening",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
     let native_boundary_semantics_package_target_present = [
         "ReviewedFq12SelectedRustNativeBoundarySemanticsPackage",
         "predicates : Predicates",
@@ -9108,6 +9118,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_payload_extraction_fiber_target_present,
         native_boundary_payload_extraction_native_valid_target_present,
         native_boundary_role_lift_validity_binds_extraction_target_present,
+        native_boundary_role_lift_opening_certificate_lift_target_present,
         native_boundary_semantics_package_target_present,
         native_boundary_semantics_source_package_target_present,
         native_boundary_semantics_package_handoff_present,
@@ -56446,6 +56457,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(
             source_record_subcheck
                 .native_boundary_role_lift_validity_binds_extraction_target_present
+        );
+        assert!(
+            source_record_subcheck
+                .native_boundary_role_lift_opening_certificate_lift_target_present
         );
         assert!(source_record_subcheck.native_boundary_semantics_package_target_present);
         assert!(source_record_subcheck.native_boundary_semantics_source_package_target_present);
