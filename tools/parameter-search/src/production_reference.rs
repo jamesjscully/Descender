@@ -21068,8 +21068,10 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "SelectedRustCheckedCoreByteEvidenceReport.FactsAllTrue",
         "SelectedRustCheckedCoreByteEvidenceCertificate",
         "evidenceReport",
+        "evidenceDigest",
         "evidenceReportVerifiedProof",
         "evidenceFactsAllTrueProof",
+        "SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents",
         "SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs",
         "SelectedRustCheckedCoreByteInstantiationInputs",
         "selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1",
@@ -21187,6 +21189,7 @@ fn path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
     let lean_source = lean_source_without_comments_and_strings_v1(lean_source);
     let selected_source_facts = [
         "selectedRustCheckedCoreEvidenceReport",
+        "selectedRustCheckedCoreEvidenceDigest",
         "selectedRustCheckedCoreEvidenceReportVerifiedProof",
         "selectedRustCheckedCoreEvidenceFactsAllTrueProof",
         "selectedRustCheckedCoreAcceptorAccepts",
@@ -21322,6 +21325,7 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
         "let selectedRustCheckedCoreEvidenceReport : SelectedRustCheckedCoreByteEvidenceReport :=",
         "let selectedRustCheckedCoreEvidenceReportVerifiedProof := True.intro",
         "let selectedRustCheckedCoreEvidenceFactsAllTrueProof := True.intro",
+        "selectedRustCheckedCoreEvidenceCertificate := {",
     ];
     if forbidden_vacuous_evidence_terms
         .iter()
@@ -21338,9 +21342,11 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
         "Path2NativeCheckedCoreAcceptV1Soundness",
         "let selectedRustCheckedCoreEvidenceCertificate :",
         "SelectedRustCheckedCoreByteEvidenceCertificate",
-        "evidenceReport := selectedRustCheckedCoreEvidenceReport",
-        "evidenceReportVerifiedProof := selectedRustCheckedCoreEvidenceReportVerifiedProof",
-        "evidenceFactsAllTrueProof := selectedRustCheckedCoreEvidenceFactsAllTrueProof",
+        "SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents",
+        "selectedRustCheckedCoreEvidenceReport",
+        "selectedRustCheckedCoreEvidenceDigest",
+        "selectedRustCheckedCoreEvidenceReportVerifiedProof",
+        "selectedRustCheckedCoreEvidenceFactsAllTrueProof",
         "let selectedRustCheckedCoreInputs :",
         "SelectedRustCheckedCoreByteInstantiationInputs",
         "SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs selectedRustCheckedCoreEvidenceCertificate",

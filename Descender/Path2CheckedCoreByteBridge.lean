@@ -465,9 +465,10 @@ structure SelectedRustCheckedCoreByteEvidenceCertificate
     {F : NativeCheckedCoreFrameFields}
     (B : NativeCheckedCoreFrameBinding F)
     (H : NativeCheckedCoreVerifierHandleFields)
-    (P : CheckedCoreProofByteParser)
-    (V : VerifierPredicates) where
+  (P : CheckedCoreProofByteParser)
+  (V : VerifierPredicates) where
   evidenceReport : SelectedRustCheckedCoreByteEvidenceReport
+  evidenceDigest : ByteArray
   evidenceReportVerifiedProof : evidenceReport.ReportVerified
   evidenceFactsAllTrueProof : evidenceReport.FactsAllTrue
   evidenceSelectedRustCheckedCoreAcceptorAccepts :
@@ -511,6 +512,84 @@ structure SelectedRustCheckedCoreByteEvidenceCertificate
     forall {q msg state evidence},
       evidenceSelectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
         HashAndSyndromeEquality H evidence
+
+/-- Named constructor for the selected Rust checked-core evidence certificate. -/
+def SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents
+    {F : NativeCheckedCoreFrameFields}
+    {B : NativeCheckedCoreFrameBinding F}
+    {H : NativeCheckedCoreVerifierHandleFields}
+    {P : CheckedCoreProofByteParser}
+    {V : VerifierPredicates}
+    (evidenceReport : SelectedRustCheckedCoreByteEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (evidenceReportVerifiedProof : evidenceReport.ReportVerified)
+    (evidenceFactsAllTrueProof : evidenceReport.FactsAllTrue)
+    (evidenceSelectedRustCheckedCoreAcceptorAccepts :
+      Boundary -> Nat -> Nat -> NativeCheckedCoreSpendEvidence -> Prop)
+    (evidenceSelectedRustCheckedCoreParserMatchesNative :
+      ParserMatchesNativeHandle P H)
+    (evidenceSelectedRustCheckedCoreProofLengthEq :
+      forall {q msg state evidence},
+        evidenceSelectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          P.proofByteLength evidence.checkedCoreProofBytes =
+            H.requiredProofByteLength)
+    (evidenceSelectedRustCheckedCoreProofCanonical :
+      forall {q msg state evidence},
+        evidenceSelectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          P.proofBytesCanonical evidence.checkedCoreProofBytes)
+    (evidenceSelectedRustCheckedCoreDecodedProofCommitment :
+      forall {q msg state evidence},
+        evidenceSelectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          DecodedProofCommitment P
+            evidence.checkedCoreProofBytes evidence.proofCommitment)
+    (evidenceSelectedRustCheckedCoreParsedResponseSyndrome :
+      forall {q msg state evidence},
+        evidenceSelectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          ParsedResponseSyndrome P
+            evidence.checkedCoreProofBytes evidence.actualResponseSyndrome)
+    (evidenceSelectedRustCheckedCoreFrameBytes :
+      forall {q msg state evidence},
+        evidenceSelectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          FrameBytes B q msg state evidence.proofCommitment
+            evidence.checkedCoreFrame)
+    (evidenceSelectedRustCheckedCoreVerifierHandleEq :
+      forall {q msg state evidence},
+        evidenceSelectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          evidence.checkedCoreVerifierHandleDigest =
+            H.checkedCoreVerifierHandleDigest q)
+    (evidenceSelectedRustCheckedCoreParserEquality :
+      forall {q msg state evidence},
+        evidenceSelectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          ParserEquality P evidence.checkedCoreProofBytes evidence)
+    (evidenceSelectedRustCheckedCoreHashAndSyndrome :
+      forall {q msg state evidence},
+        evidenceSelectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          HashAndSyndromeEquality H evidence) :
+    SelectedRustCheckedCoreByteEvidenceCertificate B H P V where
+  evidenceReport := evidenceReport
+  evidenceDigest := evidenceDigest
+  evidenceReportVerifiedProof := evidenceReportVerifiedProof
+  evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
+  evidenceSelectedRustCheckedCoreAcceptorAccepts :=
+    evidenceSelectedRustCheckedCoreAcceptorAccepts
+  evidenceSelectedRustCheckedCoreParserMatchesNative :=
+    evidenceSelectedRustCheckedCoreParserMatchesNative
+  evidenceSelectedRustCheckedCoreProofLengthEq :=
+    evidenceSelectedRustCheckedCoreProofLengthEq
+  evidenceSelectedRustCheckedCoreProofCanonical :=
+    evidenceSelectedRustCheckedCoreProofCanonical
+  evidenceSelectedRustCheckedCoreDecodedProofCommitment :=
+    evidenceSelectedRustCheckedCoreDecodedProofCommitment
+  evidenceSelectedRustCheckedCoreParsedResponseSyndrome :=
+    evidenceSelectedRustCheckedCoreParsedResponseSyndrome
+  evidenceSelectedRustCheckedCoreFrameBytes :=
+    evidenceSelectedRustCheckedCoreFrameBytes
+  evidenceSelectedRustCheckedCoreVerifierHandleEq :=
+    evidenceSelectedRustCheckedCoreVerifierHandleEq
+  evidenceSelectedRustCheckedCoreParserEquality :=
+    evidenceSelectedRustCheckedCoreParserEquality
+  evidenceSelectedRustCheckedCoreHashAndSyndrome :=
+    evidenceSelectedRustCheckedCoreHashAndSyndrome
 
 /-- Convert the verified public evidence certificate into component inputs. -/
 def SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs
