@@ -2424,6 +2424,48 @@ def FactsAllTrue
 end ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport
 
 /--
+Selected Rust native-boundary predicate-model report mirrored from the public
+Rust evidence.
+
+This report is verified but intentionally not fact-complete: the concrete
+native-boundary predicate model has not been imported yet.
+-/
+def selectedRustNativeBoundaryPredicateModelEvidenceReport :
+    ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport where
+  schemaMatches := true
+  reportDigestVerified := true
+  activeBoundaryPredicateModelPinned := false
+  payloadAcceptanceModelPinned := false
+  extractionCertificateModelPinned := false
+  fullOpeningAndAssemblyModelPinned := false
+  compatibilityAndExtractionModelPinned := false
+  nativeBoundaryBreakModelPinned := false
+  nativeBoundaryPredicateRecordComplete := true
+  activeVerifierRoutePinned := true
+  predicateNegativeControlsPassed := false
+
+/-- Concrete digest of the public Rust native-boundary predicate-model report. -/
+def selectedRustNativeBoundaryPredicateModelEvidenceDigest : ByteArray :=
+  ByteArray.mk #[151, 75, 3, 20, 197, 107, 83, 245, 254, 197, 7, 108, 254,
+    204, 14, 137, 144, 226, 122, 107, 22, 65, 86, 115, 157, 222, 126, 79,
+    186, 53, 68, 24]
+
+/-- The selected predicate-model report is schema/digest verified. -/
+theorem selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof :
+    selectedRustNativeBoundaryPredicateModelEvidenceReport.ReportVerified := by
+  simp [selectedRustNativeBoundaryPredicateModelEvidenceReport,
+    ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport.ReportVerified]
+
+/--
+The current selected predicate-model report cannot supply the facts proof
+needed by the final certificate.
+-/
+theorem selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible :
+    ¬ selectedRustNativeBoundaryPredicateModelEvidenceReport.FactsAllTrue := by
+  intro hFacts
+  exact Bool.false_eq_true.mp hFacts.1
+
+/--
 Selected Rust native-boundary predicate-model import target.
 
 The full-spend concrete predicates are not this object: they live over concrete

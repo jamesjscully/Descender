@@ -206,6 +206,12 @@ fail-closed: report verification succeeds, but `all_facts` is false because
 `concrete_predicate_model_present`, `active_boundary_predicate_model_pinned`,
 and the derived pinned model facts remain false until the concrete active
 `Path2NativeBoundary.Predicates` interpretation is imported.
+Lean mirrors that public report as
+`selectedRustNativeBoundaryPredicateModelEvidenceReport`, records
+`selectedRustNativeBoundaryPredicateModelEvidenceDigest`, and proves the report
+verification predicate. It also proves the current `FactsAllTrue` obligation is
+impossible, so the predicate-model certificate category remains open rather
+than being closed by a report-only artifact.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It

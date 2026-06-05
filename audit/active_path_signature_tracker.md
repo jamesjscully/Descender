@@ -1244,6 +1244,10 @@ Rust now emits the matching
 is digest/schema verified in the manifest but remains fail-closed:
 `predicate_model` all-facts is false because no concrete native-boundary
 predicate model is present.
+Lean now mirrors that report and digest as
+`selectedRustNativeBoundaryPredicateModelEvidenceReport` and
+`selectedRustNativeBoundaryPredicateModelEvidenceDigest`, with a proof that
+the current report is verified and a proof that `FactsAllTrue` is impossible.
 This pins the current failure mode as a missing concrete native-boundary
 semantics import, not a missing byte/digest evidence report.
 Lean now names that import target as
