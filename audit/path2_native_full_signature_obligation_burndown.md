@@ -522,6 +522,17 @@ file still has no `selectedRustRoleRootLiftSource` and no constructor-bound
 does not prove either semantic obligation. The manifest now exposes
 `role_root_lift_report_only_not_source_record_closure = true`, with a fixture
 regression pinning the fail-closed distinction.
+All-five source-record audit: the source-record subcheck now exposes matching
+report-only guards for boundary-base, role-root/lift, source-route,
+field/local, and shared-witness evidence. The active manifest reports all five
+guards true, while `missing_selected_source_record_count = 12`. This is the
+current proof-completeness frontier: verified evidence reports are in Lean,
+but the raw source records (`selectedRustPayloadProjectionLaw`,
+`selectedRustExtractionCertificateAvailability`,
+`selectedRustRoleRootLiftSource`, `selectedRustSourceRouteByteSource`,
+`selectedRustAssemblySource`, `selectedRustCompatibilitySource`, and
+`selectedRustSharedFrameWitnessSources`) plus their five named source
+certificates still have to be imported from the active Rust/model route.
 
 P2FS-001 latest hardening: `ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources` is now the named Lean constructor for the final selected Rust/model certificate. The certificate now carries an aggregate five-source `evidenceDigest`, and the Rust `extractor_theorem_instantiated` gate requires the future final theorem to use that constructor with the verified five-source evidence report, aggregate evidence digest, all-true facts proof, and selected source packages before deriving `toClosureInputs`; a raw certificate record literal, empty digest literal, `sorry`, or `admit` no longer satisfies the AP2-N001 source gate.
 

@@ -7549,6 +7549,9 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub package_sub_evidence_match_reduction_present: bool,
     pub boundary_base_report_only_not_source_record_closure: bool,
     pub role_root_lift_report_only_not_source_record_closure: bool,
+    pub source_route_report_only_not_source_record_closure: bool,
+    pub field_local_report_only_not_source_record_closure: bool,
+    pub shared_witness_report_only_not_source_record_closure: bool,
     pub payload_projection_law_definition_present: bool,
     pub extraction_certificate_availability_definition_present: bool,
     pub role_root_lift_source_definition_present: bool,
@@ -8634,6 +8637,60 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             "selectedRustRoleRootLiftEvidenceFactsAllTrueProof",
             &["selectedRustRoleRootLiftEvidenceReport.FactsAllTrue"],
         );
+    let source_route_report_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustSourceRouteEvidenceReport",
+            &["SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport"],
+        );
+    let source_route_report_verified_proof_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustSourceRouteEvidenceReportVerifiedProof",
+            &["selectedRustSourceRouteEvidenceReport.ReportVerified"],
+        );
+    let source_route_report_facts_proof_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustSourceRouteEvidenceFactsAllTrueProof",
+            &["selectedRustSourceRouteEvidenceReport.FactsAllTrue"],
+        );
+    let field_local_report_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustFieldLocalEvidenceReport",
+            &["ReviewedFq12SelectedRustFieldLocalEvidenceReport"],
+        );
+    let field_local_report_verified_proof_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustFieldLocalEvidenceReportVerifiedProof",
+            &["selectedRustFieldLocalEvidenceReport.ReportVerified"],
+        );
+    let field_local_report_facts_proof_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustFieldLocalEvidenceFactsAllTrueProof",
+            &["selectedRustFieldLocalEvidenceReport.FactsAllTrue"],
+        );
+    let shared_witness_report_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustSharedFrameWitnessEvidenceReport",
+            &["ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport"],
+        );
+    let shared_witness_report_verified_proof_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustSharedFrameWitnessEvidenceReportVerifiedProof",
+            &["selectedRustSharedFrameWitnessEvidenceReport.ReportVerified"],
+        );
+    let shared_witness_report_facts_proof_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof",
+            &["selectedRustSharedFrameWitnessEvidenceReport.FactsAllTrue"],
+        );
     let payload_projection_law_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -8749,6 +8806,23 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             && role_root_lift_report_facts_proof_present
             && !role_root_lift_source_definition_present
             && !role_root_lift_certificate_constructor_bound;
+    let source_route_report_only_not_source_record_closure = source_route_report_definition_present
+        && source_route_report_verified_proof_present
+        && source_route_report_facts_proof_present
+        && !source_route_byte_source_definition_present
+        && !source_route_certificate_constructor_bound;
+    let field_local_report_only_not_source_record_closure = field_local_report_definition_present
+        && field_local_report_verified_proof_present
+        && field_local_report_facts_proof_present
+        && !assembly_source_definition_present
+        && !compatibility_source_definition_present
+        && !field_local_certificate_constructor_bound;
+    let shared_witness_report_only_not_source_record_closure =
+        shared_witness_report_definition_present
+            && shared_witness_report_verified_proof_present
+            && shared_witness_report_facts_proof_present
+            && !shared_frame_witness_sources_definition_present
+            && !shared_witness_certificate_constructor_bound;
     let missing_selected_source_record_count = [
         payload_projection_law_definition_present,
         extraction_certificate_availability_definition_present,
@@ -8771,6 +8845,9 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         package_sub_evidence_match_reduction_present,
         boundary_base_report_only_not_source_record_closure,
         role_root_lift_report_only_not_source_record_closure,
+        source_route_report_only_not_source_record_closure,
+        field_local_report_only_not_source_record_closure,
+        shared_witness_report_only_not_source_record_closure,
         payload_projection_law_definition_present,
         extraction_certificate_availability_definition_present,
         role_root_lift_source_definition_present,
@@ -56066,6 +56143,9 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(source_record_subcheck.package_sub_evidence_match_reduction_present);
         assert!(source_record_subcheck.boundary_base_report_only_not_source_record_closure);
         assert!(source_record_subcheck.role_root_lift_report_only_not_source_record_closure);
+        assert!(source_record_subcheck.source_route_report_only_not_source_record_closure);
+        assert!(source_record_subcheck.field_local_report_only_not_source_record_closure);
+        assert!(source_record_subcheck.shared_witness_report_only_not_source_record_closure);
         assert!(!source_record_subcheck.payload_projection_law_definition_present);
         assert!(!source_record_subcheck.extraction_certificate_availability_definition_present);
         assert!(!source_record_subcheck.role_root_lift_source_definition_present);
@@ -56313,6 +56393,71 @@ theorem selectedRustRoleRootLiftEvidenceFactsAllTrueProof :
         assert!(!role_root_lift_report_only_subcheck.role_root_lift_source_definition_present);
         assert!(!role_root_lift_report_only_subcheck.role_root_lift_certificate_constructor_bound);
         assert!(!role_root_lift_report_only_subcheck.all_selected_source_records_present);
+        let source_route_report_only_source = r#"
+def selectedRustSourceRouteEvidenceReport :
+  SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport :=
+  selectedRustSourceRouteEvidenceReportValue
+theorem selectedRustSourceRouteEvidenceReportVerifiedProof :
+  selectedRustSourceRouteEvidenceReport.ReportVerified :=
+  selectedRustSourceRouteEvidenceReportVerifiedProofValue
+theorem selectedRustSourceRouteEvidenceFactsAllTrueProof :
+  selectedRustSourceRouteEvidenceReport.FactsAllTrue :=
+  selectedRustSourceRouteEvidenceFactsAllTrueProofValue
+"#;
+        let source_route_report_only_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                source_route_report_only_source,
+            );
+        assert!(
+            source_route_report_only_subcheck.source_route_report_only_not_source_record_closure
+        );
+        assert!(!source_route_report_only_subcheck.source_route_byte_source_definition_present);
+        assert!(!source_route_report_only_subcheck.source_route_certificate_constructor_bound);
+        assert!(!source_route_report_only_subcheck.all_selected_source_records_present);
+        let field_local_report_only_source = r#"
+def selectedRustFieldLocalEvidenceReport :
+  ReviewedFq12SelectedRustFieldLocalEvidenceReport :=
+  selectedRustFieldLocalEvidenceReportValue
+theorem selectedRustFieldLocalEvidenceReportVerifiedProof :
+  selectedRustFieldLocalEvidenceReport.ReportVerified :=
+  selectedRustFieldLocalEvidenceReportVerifiedProofValue
+theorem selectedRustFieldLocalEvidenceFactsAllTrueProof :
+  selectedRustFieldLocalEvidenceReport.FactsAllTrue :=
+  selectedRustFieldLocalEvidenceFactsAllTrueProofValue
+"#;
+        let field_local_report_only_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                field_local_report_only_source,
+            );
+        assert!(field_local_report_only_subcheck.field_local_report_only_not_source_record_closure);
+        assert!(!field_local_report_only_subcheck.assembly_source_definition_present);
+        assert!(!field_local_report_only_subcheck.compatibility_source_definition_present);
+        assert!(!field_local_report_only_subcheck.field_local_certificate_constructor_bound);
+        assert!(!field_local_report_only_subcheck.all_selected_source_records_present);
+        let shared_witness_report_only_source = r#"
+def selectedRustSharedFrameWitnessEvidenceReport :
+  ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport :=
+  selectedRustSharedFrameWitnessEvidenceReportValue
+theorem selectedRustSharedFrameWitnessEvidenceReportVerifiedProof :
+  selectedRustSharedFrameWitnessEvidenceReport.ReportVerified :=
+  selectedRustSharedFrameWitnessEvidenceReportVerifiedProofValue
+theorem selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof :
+  selectedRustSharedFrameWitnessEvidenceReport.FactsAllTrue :=
+  selectedRustSharedFrameWitnessEvidenceFactsAllTrueProofValue
+"#;
+        let shared_witness_report_only_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                shared_witness_report_only_source,
+            );
+        assert!(
+            shared_witness_report_only_subcheck
+                .shared_witness_report_only_not_source_record_closure
+        );
+        assert!(
+            !shared_witness_report_only_subcheck.shared_frame_witness_sources_definition_present
+        );
+        assert!(!shared_witness_report_only_subcheck.shared_witness_certificate_constructor_bound);
+        assert!(!shared_witness_report_only_subcheck.all_selected_source_records_present);
         let untyped_source_record_definition_source = r#"
 def selectedRustPayloadProjectionLaw := selectedRustPayloadProjectionLawValue
 def selectedRustExtractionCertificateAvailability := selectedRustExtractionCertificateAvailabilityValue
@@ -56568,6 +56713,13 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(
             !complete_source_record_subcheck.role_root_lift_report_only_not_source_record_closure
         );
+        assert!(
+            !complete_source_record_subcheck.source_route_report_only_not_source_record_closure
+        );
+        assert!(!complete_source_record_subcheck.field_local_report_only_not_source_record_closure);
+        assert!(
+            !complete_source_record_subcheck.shared_witness_report_only_not_source_record_closure
+        );
         assert!(complete_source_record_subcheck.payload_projection_law_definition_present);
         assert!(
             complete_source_record_subcheck.extraction_certificate_availability_definition_present
@@ -56575,6 +56727,13 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(complete_source_record_subcheck.boundary_base_certificate_constructor_bound);
         assert!(complete_source_record_subcheck.role_root_lift_source_definition_present);
         assert!(complete_source_record_subcheck.role_root_lift_certificate_constructor_bound);
+        assert!(complete_source_record_subcheck.source_route_byte_source_definition_present);
+        assert!(complete_source_record_subcheck.source_route_certificate_constructor_bound);
+        assert!(complete_source_record_subcheck.assembly_source_definition_present);
+        assert!(complete_source_record_subcheck.compatibility_source_definition_present);
+        assert!(complete_source_record_subcheck.field_local_certificate_constructor_bound);
+        assert!(complete_source_record_subcheck.shared_frame_witness_sources_definition_present);
+        assert!(complete_source_record_subcheck.shared_witness_certificate_constructor_bound);
         assert!(complete_source_record_subcheck.all_selected_source_records_present);
         let anonymous_certificate_definition_source = complete_concrete_definition_source.replacen(
             "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources\n    selectedRustBoundaryBaseEvidenceReport\n    selectedRustBoundaryBaseEvidenceDigest\n    selectedRustBoundaryBaseEvidenceReportVerifiedProof\n    selectedRustBoundaryBaseEvidenceFactsAllTrueProof\n    selectedRustPayloadProjectionLaw\n    selectedRustExtractionCertificateAvailability",

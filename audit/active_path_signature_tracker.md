@@ -1177,6 +1177,16 @@ now emits
 `role_root_lift_report_only_not_source_record_closure = true` for the active
 file and has a fixture proving that report/proof imports alone do not satisfy
 the selected source gate.
+All selected source categories now have the same explicit report-only guard.
+The active manifest reports true for
+`boundary_base_report_only_not_source_record_closure`,
+`role_root_lift_report_only_not_source_record_closure`,
+`source_route_report_only_not_source_record_closure`,
+`field_local_report_only_not_source_record_closure`, and
+`shared_witness_report_only_not_source_record_closure`. This confirms the
+current state precisely: all five selected evidence reports/proofs are
+imported and verified, but none of the seven raw selected source records or
+five constructor-bound source certificates exists yet.
 
 ## Findings
 
