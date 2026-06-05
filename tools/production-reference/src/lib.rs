@@ -305,6 +305,7 @@ pub use descender_parameter_search::production_reference::{
     path2_native_projection_preimage_da_digest_v1, path2_native_projection_preimage_da_v1_bytes,
     path2_native_public_key_identity_digest_v1, path2_native_signer_pipeline_public_output_v1,
     path2_native_signer_pipeline_public_output_v1_digest,
+    path2_native_signer_pipeline_public_output_v1_frame,
     path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_root_v1,
     path2_native_signer_verifier_pipeline_evidence_v1_digest,
     path2_native_signer_verifier_pipeline_evidence_v1_frame,

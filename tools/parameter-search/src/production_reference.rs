@@ -20831,6 +20831,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "path2_native_verifier_pipeline_verdict_v1_digest",
         "Path2NativeSignerVerifierPipelineEvidenceV1",
         "path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_root_v1",
+        "path2_native_signer_pipeline_public_output_v1_frame",
         "path2_native_signer_verifier_pipeline_evidence_v1_frame",
         "path2_native_signer_verifier_pipeline_evidence_v1_digest",
         "path2_native_checked_core_byte_instantiation_evidence_v1",
@@ -20896,6 +20897,15 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         + public_output_start;
     let public_output_window = &source[public_output_start..public_output_end];
 
+    let public_output_frame_start = source
+        .find("\npub fn path2_native_signer_pipeline_public_output_v1_digest(")
+        .expect("Path 2 native signer public output frame source start marker missing");
+    let public_output_frame_end = source[public_output_frame_start..]
+        .find("\nfn path2_native_signer_entropy_digest_v1(")
+        .expect("Path 2 native signer public output frame source end marker missing")
+        + public_output_frame_start;
+    let public_output_frame_window = &source[public_output_frame_start..public_output_frame_end];
+
     let evidence_frame_start = source
         .find("\npub fn path2_native_signer_verifier_pipeline_evidence_v1_frame(")
         .expect("Path 2 native signer/verifier evidence frame source start marker missing");
@@ -20953,6 +20963,12 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "deployment_preflight.internal_deployment_ready",
         "reject_active_native_signer_not_productized",
         "Path2NativeSignerPipelinePublicOutputV1",
+    ];
+    let public_output_frame_checks = [
+        "path2_native_signer_pipeline_public_output_v1_frame",
+        "path2_native_signer_pipeline_public_output_v1_digest",
+        "path2_native_consensus_carrier_v1_bytes(&output.carrier)?",
+        "deployment_preflight_digest",
     ];
     let evidence_checks = [
         "path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_root_v1",
@@ -21035,6 +21051,8 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "assert_no_active_native_private_material",
         "path2_native_prevalidated_honest_flow_reaches_selected_verifier_public_acceptance",
         "PATH2_NATIVE_SIGNER_VERIFIER_PIPELINE_EVIDENCE_SCHEMA",
+        "path2_native_signer_pipeline_public_output_v1_frame",
+        "Sha256::digest(&output_frame)",
         "path2_native_signer_verifier_pipeline_evidence_v1_frame",
         "Sha256::digest(&evidence_frame)",
         "checked_core_byte_instantiation_evidence_digest",
@@ -21054,6 +21072,9 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
     public_output_checks
         .iter()
         .all(|marker| public_output_window.contains(marker))
+        && public_output_frame_checks
+            .iter()
+            .all(|marker| public_output_frame_window.contains(marker))
         && evidence_checks
             .iter()
             .all(|marker| evidence_window.contains(marker))
@@ -21924,9 +21945,55 @@ pub fn path2_native_signer_pipeline_public_output_v1(
 pub fn path2_native_signer_pipeline_public_output_v1_digest(
     output: &Path2NativeSignerPipelinePublicOutputV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(output)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native signer pipeline public output: {err}"))
+    Ok(Sha256::digest(path2_native_signer_pipeline_public_output_v1_frame(output)?).into())
+}
+
+pub fn path2_native_signer_pipeline_public_output_v1_frame(
+    output: &Path2NativeSignerPipelinePublicOutputV1,
+) -> Result<Vec<u8>, String> {
+    let carrier_bytes = path2_native_consensus_carrier_v1_bytes(&output.carrier)?;
+    let deployment_preflight_digest =
+        path2_native_deployment_preflight_v1_digest(&output.deployment_preflight)?;
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", output.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"signer_pipeline_ready",
+        u64::from(output.signer_pipeline_ready),
+    );
+    append_u64(
+        &mut frame,
+        b"rejection_code_present",
+        u64::from(output.rejection_code.is_some()),
+    );
+    if let Some(code) = output.rejection_code {
+        append_frame(&mut frame, b"rejection_code", code.as_bytes());
+    }
+    append_frame(&mut frame, b"carrier", &carrier_bytes);
+    append_frame(&mut frame, b"carrier_digest", &output.carrier_digest);
+    append_frame(&mut frame, b"core_proof_digest", &output.core_proof_digest);
+    append_u64(&mut frame, b"core_proof_len", output.core_proof_len as u64);
+    append_frame(
+        &mut frame,
+        b"projection_preimage_da_digest",
+        &output.projection_preimage_da_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"native_boundary_digest",
+        &output.native_boundary_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"p_transcript_digest",
+        &output.p_transcript_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"deployment_preflight_digest",
+        &deployment_preflight_digest,
+    );
+    Ok(frame)
 }
 
 fn path2_native_signer_entropy_digest_v1(
@@ -40452,6 +40519,13 @@ end Path2NativeAccountDesign
         assert_ne!(
             path2_native_signer_pipeline_public_output_v1_digest(&output).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        let output_frame = path2_native_signer_pipeline_public_output_v1_frame(&output).unwrap();
+        assert!(!output_frame.is_empty());
+        let output_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&output_frame).into();
+        assert_eq!(
+            path2_native_signer_pipeline_public_output_v1_digest(&output).unwrap(),
+            output_frame_digest
         );
 
         let verifier_verdict =
