@@ -3526,6 +3526,7 @@ structure ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate
     (P : Predicates) where
   evidenceReport :
     ReviewedFq12SelectedRustRoleRootLiftEvidenceReport
+  evidenceDigest : ByteArray
   evidenceReportVerifiedProof :
     evidenceReport.ReportVerified
   evidenceFactsAllTrueProof :
@@ -3909,6 +3910,7 @@ structure ReviewedFq12SelectedRustFieldLocalEvidenceCertificate
     (P : Predicates) where
   evidenceReport :
     ReviewedFq12SelectedRustFieldLocalEvidenceReport
+  evidenceDigest : ByteArray
   evidenceReportVerifiedProof :
     evidenceReport.ReportVerified
   evidenceFactsAllTrueProof :
@@ -5060,6 +5062,7 @@ structure ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
     (P : Predicates) where
   evidenceReport :
     ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport
+  evidenceDigest : ByteArray
   evidenceReportVerifiedProof :
     evidenceReport.ReportVerified
   evidenceFactsAllTrueProof :

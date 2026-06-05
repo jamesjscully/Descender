@@ -8492,6 +8492,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "selectedRustFiveSourceEvidenceReport",
         "selectedRustFiveSourceEvidenceReportVerifiedProof",
         "selectedRustFiveSourceEvidenceFactsAllTrueProof",
+        "selectedRustFiveSourceSubEvidenceDigestsMatchProof",
     ];
     let declaration_block_contains_name = |kind: &str, name: &str| -> bool {
         boundary_source
@@ -8797,6 +8798,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "selectedRustFiveSourceEvidenceReport :",
         "selectedRustFiveSourceEvidenceReportVerifiedProof :",
         "selectedRustFiveSourceEvidenceFactsAllTrueProof :",
+        "selectedRustFiveSourceSubEvidenceDigestsMatchProof :",
         "selectedRustPayloadProjectionLaw :",
         "selectedRustExtractionCertificateAvailability :",
         "selectedRustBoundaryBaseCertificate :",
@@ -8841,6 +8843,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "selectedRustFiveSourceEvidenceReport",
         "selectedRustFiveSourceEvidenceReportVerifiedProof",
         "selectedRustFiveSourceEvidenceFactsAllTrueProof",
+        "selectedRustFiveSourceSubEvidenceDigestsMatchProof",
         "selectedRustBoundaryBaseCertificate",
         "selectedRustRoleRootLiftSourceCertificate",
         "selectedRustSourceRouteByteSourceCertificate",
@@ -51970,6 +51973,7 @@ theorem {theorem_name}
       selectedRustSourceRouteByteSourceCertificate
       selectedRustFieldLocalSourceCertificate
       selectedRustSharedFrameWitnessSourcesCertificate
+      selectedRustFiveSourceSubEvidenceDigestsMatchProof
   let selectedRustModelFiveSourceInputs :
       ReviewedFq12SelectedRustModelFiveSourceClosureInputs
         FieldParser RouteParser CanonicalParser WitnessParser P :=
@@ -52005,6 +52009,7 @@ theorem {theorem_name}
       selectedRustSourceRouteByteSourceCertificate
       selectedRustFieldLocalSourceCertificate
       selectedRustSharedFrameWitnessSourcesCertificate
+      selectedRustFiveSourceSubEvidenceDigestsMatchProof
   let selectedRustModelFiveSourceInputs :
       ReviewedFq12SelectedRustModelFiveSourceClosureInputs
         FieldParser RouteParser CanonicalParser WitnessParser P :=
@@ -52039,6 +52044,7 @@ theorem {theorem_name}
       selectedRustSourceRouteByteSourceCertificate
       selectedRustFieldLocalSourceCertificate
       selectedRustSharedFrameWitnessSourcesCertificate
+      selectedRustFiveSourceSubEvidenceDigestsMatchProof
   let selectedRustModelFiveSourceInputs :
       ReviewedFq12SelectedRustModelFiveSourceClosureInputs
         FieldParser RouteParser CanonicalParser WitnessParser P :=

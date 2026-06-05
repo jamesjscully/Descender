@@ -344,6 +344,7 @@ structure ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate
     (P : Predicates) where
   evidenceReport :
     ReviewedFq12SelectedRustBoundaryBaseEvidenceReport
+  evidenceDigest : ByteArray
   evidenceReportVerifiedProof :
     evidenceReport.ReportVerified
   evidenceFactsAllTrueProof :
@@ -389,6 +390,39 @@ def toCertificateAvailability
   Cert.certificateAvailability
 
 end ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate
+
+/--
+The aggregate five-source report names the exact public evidence reports that
+back each certificate consumed by the final AP2-N001 constructor.
+-/
+def ReviewedFq12SelectedRustFiveSourceClosureEvidence.SubEvidenceDigestsMatch
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (E : ReviewedFq12SelectedRustFiveSourceClosureEvidence)
+    (boundaryBaseCertificate :
+      ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P)
+    (roleRootLiftCertificate :
+      ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P)
+    (selectedSourceRouteCertificate :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+        FieldParser RouteParser P)
+    (fieldLocalCertificate :
+      ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P)
+    (witnessSourcesCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) : Prop :=
+  E.boundaryBaseEvidenceDigest = boundaryBaseCertificate.evidenceDigest ∧
+  E.roleRootLiftEvidenceDigest = roleRootLiftCertificate.evidenceDigest ∧
+  E.selectedSourceRouteEvidenceDigest =
+    selectedSourceRouteCertificate.evidenceDigest ∧
+  E.fieldLocalEvidenceDigest = fieldLocalCertificate.evidenceDigest ∧
+  E.sharedDigestFrameWitnessEvidenceDigest =
+    witnessSourcesCertificate.evidenceDigest
 
 /--
 Proof-bearing selected Rust/model certificate for the active five-source
@@ -751,8 +785,19 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBound
     (witnessSourcesCertificate :
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P) :
+    evidenceReport.SubEvidenceDigestsMatch
+      boundaryBaseCertificate roleRootLiftCertificate
+      selectedSourceRouteCertificate fieldLocalCertificate
+      witnessSourcesCertificate ->
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
       FieldParser RouteParser CanonicalParser WitnessParser P :=
+  fun subEvidenceDigestsMatchProof =>
+  let _hSubEvidenceDigestsMatch :
+      evidenceReport.SubEvidenceDigestsMatch
+        boundaryBaseCertificate roleRootLiftCertificate
+        selectedSourceRouteCertificate fieldLocalCertificate
+        witnessSourcesCertificate :=
+    subEvidenceDigestsMatchProof
   ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources
     evidenceReport evidenceReportVerifiedProof evidenceFactsAllTrueProof
     boundaryBaseCertificate.toPayloadProjectsFrom

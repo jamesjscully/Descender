@@ -806,6 +806,7 @@ structure SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
     (P : Predicates) where
   evidenceReport :
     SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport
+  evidenceDigest : ByteArray
   evidenceReportVerifiedProof :
     evidenceReport.ReportVerified
   evidenceFactsAllTrueProof :
