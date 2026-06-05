@@ -1129,6 +1129,16 @@ Lean proofs that those imported reports satisfy `ReportVerified` and
 verifier-backed values; final closure remains fail-closed because the selected
 source-record certificates, the aggregate/sub-certificate digest-match proof,
 and the aggregate digest self-reference are still unresolved.
+Active source-record route note: the remaining constructive import target is
+the selected Rust direct-assembly/canonical-representative package
+`ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeByteAndWitnessPackagedSourceRouteInputs`.
+The first nontrivial sub-constructor is
+`ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteSource`: Rust has the
+canonical witness/frame evidence, but Lean still needs the selected parser
+source that turns accepted semantic openings into canonical representative
+witness byte certificates. The assembly digest-frame witness source proves
+assembly-frame recomputation; it cannot by itself prove representative
+canonicality or uniqueness.
 
 ## Findings
 
