@@ -158,6 +158,9 @@ fn main() -> Result<(), String> {
             "native_boundary_payload_extraction_native_valid_target_present":
                 source_record_subcheck
                     .native_boundary_payload_extraction_native_valid_target_present,
+            "native_boundary_role_lift_validity_binds_extraction_target_present":
+                source_record_subcheck
+                    .native_boundary_role_lift_validity_binds_extraction_target_present,
             "native_boundary_semantics_package_target_present":
                 source_record_subcheck.native_boundary_semantics_package_target_present,
             "native_boundary_semantics_source_package_target_present":

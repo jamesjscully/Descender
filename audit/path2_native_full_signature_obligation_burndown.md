@@ -150,6 +150,10 @@ to land in the native boundary fiber for that boundary.
 `ReviewedFq12PayloadExtractionNativeValid` additionally requires extracted
 payload representatives to satisfy the native local-valid and
 descent-consistent predicates for the boundary context.
+`ReviewedFq12RoleLiftValidityBindsExtractionTarget` requires valid role-lift
+certificates to satisfy the native bridge relation
+`ReviewedFq12RoleLiftCertificateBindsExtraction`, tying full-native openings
+back to the same selected extraction certificate and payload.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It

@@ -2250,6 +2250,21 @@ def ReviewedFq12PayloadExtractionNativeValid
         P.descentConsistent b.context h
 
 /--
+Concrete predicate-model obligation for valid role-lift certificates.
+
+The role-lift validity predicate must bind the full native opening certificate
+back to the selected extraction certificate and payload that produced it.
+-/
+def ReviewedFq12RoleLiftValidityBindsExtractionTarget
+    (P : Predicates) : Prop :=
+  forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {liftCert : ReviewedFq12FullNativeOpeningCertificate},
+    P.reviewedFq12RoleLiftCertificateValid b payload cert liftCert ->
+      ReviewedFq12RoleLiftCertificateBindsExtraction payload cert liftCert
+
+/--
 Selected Rust native-boundary predicate-model import target.
 
 The full-spend concrete predicates are not this object: they live over concrete
@@ -2281,6 +2296,8 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
     ReviewedFq12PayloadExtractionInBoundaryFiber predicates
   payloadExtractionNativeValid :
     ReviewedFq12PayloadExtractionNativeValid predicates
+  roleLiftValidityBindsExtraction :
+    ReviewedFq12RoleLiftValidityBindsExtractionTarget predicates
   reviewedFq12PayloadAcceptanceModeled : Prop
   reviewedFq12PayloadAcceptanceModeledProof :
     reviewedFq12PayloadAcceptanceModeled
