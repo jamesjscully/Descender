@@ -511,6 +511,13 @@ The manifest reports these three package-reduction checks true, so once the
 seven raw selected source records exist, the closure path is mechanical. It
 does not change the fail-closed status because the package itself is still not
 instantiated.
+Lean now also exposes the package handoff all the way to the boundary fields:
+`with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_source_record_package`
+and
+`full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_source_record_package`.
+The focused Rust audit gate requires these package-handoff markers. The only
+remaining non-mechanical step is still the concrete native-boundary semantics
+package/source-record import.
 Boundary-base source audit: report verification is not the payload projection
 law or extraction-certificate availability theorem. The active file currently
 has verifier-backed boundary-base evidence, but no

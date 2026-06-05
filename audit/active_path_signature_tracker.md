@@ -1166,6 +1166,13 @@ routes the package directly into hidden-source semantics closure. The manifest
 reports all three package-reduction booleans true. This is still fail-closed:
 the theorem consumes a genuine source-record package and does not construct
 one from evidence reports.
+The source-record package also now reaches both handoff surfaces:
+`with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_source_record_package`
+for accepted-spend soundness and
+`full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_source_record_package`
+for the active full-signature boundary. The Rust focused audit gate requires
+these markers, so the package route cannot regress back to loose input-record
+handoff without being detected.
 Boundary-base source check: a direct scan of the active Lean path shows the
 selected boundary-base report and its `ReportVerified`/`FactsAllTrue` proofs
 are evidence only. They do not construct
