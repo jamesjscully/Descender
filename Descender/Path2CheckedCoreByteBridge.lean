@@ -422,6 +422,9 @@ structure SelectedRustCheckedCoreByteEvidenceReport where
   verifierHandleEq : Bool
   parserEquality : Bool
   hashAndSyndromeEq : Bool
+  hashByteDomainEvidenceVerified : Bool
+  hashByteDomainEvidenceDigestPinned : Bool
+  hashByteDomainEvidenceFactsAllTrue : Bool
   shortProofRejected : Bool
   noncanonicalProofRejected : Bool
   commitmentMismatchRejected : Bool
@@ -446,6 +449,9 @@ def SelectedRustCheckedCoreByteEvidenceReport.FactsAllTrue
   E.verifierHandleEq = true ∧
   E.parserEquality = true ∧
   E.hashAndSyndromeEq = true ∧
+  E.hashByteDomainEvidenceVerified = true ∧
+  E.hashByteDomainEvidenceDigestPinned = true ∧
+  E.hashByteDomainEvidenceFactsAllTrue = true ∧
   E.shortProofRejected = true ∧
   E.noncanonicalProofRejected = true ∧
   E.commitmentMismatchRejected = true ∧
@@ -469,6 +475,7 @@ structure SelectedRustCheckedCoreByteEvidenceCertificate
   (V : VerifierPredicates) where
   evidenceReport : SelectedRustCheckedCoreByteEvidenceReport
   evidenceDigest : ByteArray
+  hashByteDomainEvidenceDigest : ByteArray
   evidenceReportVerifiedProof : evidenceReport.ReportVerified
   evidenceFactsAllTrueProof : evidenceReport.FactsAllTrue
   evidenceSelectedRustCheckedCoreAcceptorAccepts :
@@ -527,6 +534,7 @@ def SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents
     {V : VerifierPredicates}
     (evidenceReport : SelectedRustCheckedCoreByteEvidenceReport)
     (evidenceDigest : ByteArray)
+    (hashByteDomainEvidenceDigest : ByteArray)
     (evidenceReportVerifiedProof : evidenceReport.ReportVerified)
     (evidenceFactsAllTrueProof : evidenceReport.FactsAllTrue)
     (evidenceSelectedRustCheckedCoreAcceptorAccepts :
@@ -578,6 +586,7 @@ def SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents
     SelectedRustCheckedCoreByteEvidenceCertificate B H P V where
   evidenceReport := evidenceReport
   evidenceDigest := evidenceDigest
+  hashByteDomainEvidenceDigest := hashByteDomainEvidenceDigest
   evidenceReportVerifiedProof := evidenceReportVerifiedProof
   evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
   evidenceSelectedRustCheckedCoreAcceptorAccepts :=

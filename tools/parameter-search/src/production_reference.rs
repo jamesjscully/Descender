@@ -1938,6 +1938,9 @@ pub struct Path2NativeCheckedCoreByteInstantiationEvidenceV1 {
     pub noncanonical_proof_rejected: bool,
     pub commitment_mismatch_rejected: bool,
     pub verifier_handle_mismatch_rejected: bool,
+    pub hash_byte_domain_evidence_digest: [u8; DIGEST_BYTES],
+    pub hash_byte_domain_evidence_verified: bool,
+    pub hash_byte_domain_evidence_facts_all_true: bool,
     pub checked_core_frame_digest: [u8; DIGEST_BYTES],
     pub checked_core_proof_bytes_digest: [u8; DIGEST_BYTES],
     pub checked_core_verifier_handle_digest: [u8; DIGEST_BYTES],
@@ -2551,6 +2554,11 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_v1(
         && parsed_response_syndrome_eq;
     let hash_and_syndrome_eq = actual_response_syndrome == expected_response_syndrome;
     let parser_matches_native_handle = proof_length_eq && proof_canonical;
+    let hash_byte_domain_evidence = path2_native_hash_byte_domain_evidence_v1();
+    let hash_byte_domain_evidence_digest =
+        verify_path2_native_hash_byte_domain_evidence_v1(&hash_byte_domain_evidence)?;
+    let hash_byte_domain_evidence_facts_all_true =
+        path2_native_hash_byte_domain_evidence_all_facts_true(&hash_byte_domain_evidence);
 
     Ok(Path2NativeCheckedCoreByteInstantiationEvidenceV1 {
         schema: PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA,
@@ -2569,6 +2577,9 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_v1(
         noncanonical_proof_rejected,
         commitment_mismatch_rejected,
         verifier_handle_mismatch_rejected,
+        hash_byte_domain_evidence_digest,
+        hash_byte_domain_evidence_verified: true,
+        hash_byte_domain_evidence_facts_all_true,
         checked_core_frame_digest,
         checked_core_proof_bytes_digest: Sha256::digest(checked_core_proof_bytes).into(),
         checked_core_verifier_handle_digest: bundle.spend.checked_core_verifier_handle_digest,
@@ -2659,6 +2670,21 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_v1_frame(
     );
     append_frame(
         &mut frame,
+        b"hash_byte_domain_evidence_digest",
+        &evidence.hash_byte_domain_evidence_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"hash_byte_domain_evidence_verified",
+        u64::from(evidence.hash_byte_domain_evidence_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"hash_byte_domain_evidence_facts_all_true",
+        u64::from(evidence.hash_byte_domain_evidence_facts_all_true),
+    );
+    append_frame(
+        &mut frame,
         b"checked_core_frame_digest",
         &evidence.checked_core_frame_digest,
     );
@@ -2702,6 +2728,12 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_v1_digest(
 pub fn path2_native_checked_core_byte_instantiation_evidence_all_facts_true(
     evidence: &Path2NativeCheckedCoreByteInstantiationEvidenceV1,
 ) -> bool {
+    let expected_hash_byte_domain_evidence = path2_native_hash_byte_domain_evidence_v1();
+    let Ok(expected_hash_byte_domain_evidence_digest) =
+        verify_path2_native_hash_byte_domain_evidence_v1(&expected_hash_byte_domain_evidence)
+    else {
+        return false;
+    };
     evidence.schema == PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA
         && evidence.accepted
         && evidence.checked_core_acceptor_accepts
@@ -2718,6 +2750,9 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_all_facts_true(
         && evidence.noncanonical_proof_rejected
         && evidence.commitment_mismatch_rejected
         && evidence.verifier_handle_mismatch_rejected
+        && evidence.hash_byte_domain_evidence_digest == expected_hash_byte_domain_evidence_digest
+        && evidence.hash_byte_domain_evidence_verified
+        && evidence.hash_byte_domain_evidence_facts_all_true
         && evidence.proof_byte_len as usize == PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES
 }
 
@@ -21243,6 +21278,10 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "SelectedRustCheckedCoreByteEvidenceCertificate",
         "evidenceReport",
         "evidenceDigest",
+        "hashByteDomainEvidenceDigest",
+        "hashByteDomainEvidenceVerified",
+        "hashByteDomainEvidenceDigestPinned",
+        "hashByteDomainEvidenceFactsAllTrue",
         "evidenceReportVerifiedProof",
         "evidenceFactsAllTrueProof",
         "evidenceSelectedRustProductionCheckedCoreAcceptorAccepts",
@@ -21308,9 +21347,17 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "decoded_proof_commitment_eq",
         "hash_and_syndrome_eq",
         "verifier_handle_mismatch_rejected",
+        "let hash_byte_domain_evidence = path2_native_hash_byte_domain_evidence_v1()",
+        "verify_path2_native_hash_byte_domain_evidence_v1(&hash_byte_domain_evidence)?",
+        "hash_byte_domain_evidence_digest",
+        "hash_byte_domain_evidence_verified: true",
+        "hash_byte_domain_evidence_facts_all_true",
         "path2_native_checked_core_rejection_contains_v1",
         "result.is_err_and",
         "path2_native_checked_core_byte_instantiation_evidence_v1_frame",
+        "b\"hash_byte_domain_evidence_digest\"",
+        "b\"hash_byte_domain_evidence_verified\"",
+        "b\"hash_byte_domain_evidence_facts_all_true\"",
         "b\"checked_core_frame_digest\"",
         "b\"checked_core_proof_bytes_digest\"",
         "b\"checked_core_verifier_handle_digest\"",
@@ -21328,8 +21375,11 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "verify_path2_native_checked_core_byte_instantiation_evidence_v1",
         "path2_native_checked_core_byte_instantiation_evidence_all_facts_true",
         "tampered_digest_evidence.checked_core_proof_bytes_digest",
+        "tampered_hash_domain_evidence.hash_byte_domain_evidence_digest",
         "tampered_bool_evidence.hash_and_syndrome_eq",
         "untrue_fact_evidence.verifier_handle_eq",
+        "assert!(evidence.hash_byte_domain_evidence_verified)",
+        "assert!(evidence.hash_byte_domain_evidence_facts_all_true)",
         "assert!(evidence.hash_and_syndrome_eq)",
         "short_proof",
         "noncanonical_proof",
@@ -21366,6 +21416,7 @@ fn path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
     let selected_source_facts = [
         "selectedRustCheckedCoreEvidenceReport",
         "selectedRustCheckedCoreEvidenceDigest",
+        "selectedRustHashByteDomainEvidenceDigest",
         "selectedRustCheckedCoreEvidenceReportVerifiedProof",
         "selectedRustCheckedCoreEvidenceFactsAllTrueProof",
         "selectedRustCheckedCoreAcceptorAccepts",
@@ -21462,6 +21513,7 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
         "selectedRustCheckedCoreEvidenceReport",
         "selectedRustCheckedCoreEvidenceReportVerifiedProof",
         "selectedRustCheckedCoreEvidenceFactsAllTrueProof",
+        "selectedRustHashByteDomainEvidenceDigest",
         "selectedRustCheckedCoreAcceptorAccepts",
         "selectedRustCheckedCoreParserMatchesNative",
         "selectedRustCheckedCoreProofLengthEq",
@@ -21527,6 +21579,7 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
         "SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents",
         "selectedRustCheckedCoreEvidenceReport",
         "selectedRustCheckedCoreEvidenceDigest",
+        "selectedRustHashByteDomainEvidenceDigest",
         "selectedRustCheckedCoreEvidenceReportVerifiedProof",
         "selectedRustCheckedCoreEvidenceFactsAllTrueProof",
         "selectedRustCheckedCoreAcceptorAccepts",
@@ -44665,6 +44718,7 @@ theorem selectedRustCheckedCoreByteSource_instantiation_v1 :
     SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents
       selectedRustCheckedCoreEvidenceReport
       selectedRustCheckedCoreEvidenceDigest
+      selectedRustHashByteDomainEvidenceDigest
       selectedRustCheckedCoreEvidenceReportVerifiedProof
       selectedRustCheckedCoreEvidenceFactsAllTrueProof
       selectedRustCheckedCoreAcceptorAccepts
@@ -44702,6 +44756,7 @@ theorem selectedRustCheckedCoreByteSource_instantiation_v1 :
     SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents
       selectedRustCheckedCoreEvidenceReport
       selectedRustCheckedCoreEvidenceDigest
+      selectedRustHashByteDomainEvidenceDigest
       selectedRustCheckedCoreEvidenceReportVerifiedProof
       selectedRustCheckedCoreEvidenceFactsAllTrueProof
       selectedRustCheckedCoreAcceptorAccepts
@@ -46252,6 +46307,15 @@ end Path2NoExportConcrete
         assert!(evidence.noncanonical_proof_rejected);
         assert!(evidence.commitment_mismatch_rejected);
         assert!(evidence.verifier_handle_mismatch_rejected);
+        let hash_byte_domain_evidence = path2_native_hash_byte_domain_evidence_v1();
+        let hash_byte_domain_evidence_digest =
+            verify_path2_native_hash_byte_domain_evidence_v1(&hash_byte_domain_evidence).unwrap();
+        assert_eq!(
+            evidence.hash_byte_domain_evidence_digest,
+            hash_byte_domain_evidence_digest
+        );
+        assert!(evidence.hash_byte_domain_evidence_verified);
+        assert!(evidence.hash_byte_domain_evidence_facts_all_true);
         assert_eq!(
             evidence.proof_byte_len as usize,
             PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES
@@ -46325,6 +46389,18 @@ end Path2NoExportConcrete
                 &bundle,
                 &proof_bytes,
                 &tampered_digest_evidence,
+            )
+            .unwrap_err(),
+            "Path 2 native checked-core byte evidence mismatch"
+        );
+
+        let mut tampered_hash_domain_evidence = evidence;
+        tampered_hash_domain_evidence.hash_byte_domain_evidence_digest[0] ^= 1;
+        assert_eq!(
+            verify_path2_native_checked_core_byte_instantiation_evidence_v1(
+                &bundle,
+                &proof_bytes,
+                &tampered_hash_domain_evidence,
             )
             .unwrap_err(),
             "Path 2 native checked-core byte evidence mismatch"
