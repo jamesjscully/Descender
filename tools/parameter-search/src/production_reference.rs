@@ -3475,6 +3475,7 @@ pub struct Path2NativeDeploymentPreflightV1 {
     pub full_signature_execution_source_instantiated: bool,
     pub accepted_spend_numeric_bound_instantiated: bool,
     pub no_export_serializer_boundary_present: bool,
+    pub no_export_serializer_instantiated: bool,
     pub signer_verifier_pipeline_present: bool,
     pub constant_time_audit_complete: bool,
     pub storage_lifecycle_hardening_complete: bool,
@@ -20212,6 +20213,126 @@ fn path2_no_export_serializer_boundary_present_v1() -> bool {
             .all(|marker| storage_test_window.contains(marker))
 }
 
+fn path2_no_export_serializer_instantiated_v1() -> bool {
+    let concrete_source = include_str!("../../../Descender/Path2NoExportConcrete.lean");
+    path2_no_export_serializer_instantiated_in_source_v1(concrete_source)
+}
+
+fn path2_no_export_serializer_instantiated_in_source_v1(concrete_source: &str) -> bool {
+    let Some(instantiation_start) =
+        concrete_source.find("\ntheorem selectedRustActiveNoExportSerializer_instantiation_v1")
+    else {
+        return false;
+    };
+    let instantiation_end = concrete_source[instantiation_start..]
+        .find("\nend Path2NoExportConcrete")
+        .map(|offset| instantiation_start + offset)
+        .unwrap_or(concrete_source.len());
+    let instantiation_source = &concrete_source[instantiation_start..instantiation_end];
+    let theorem_header_end = instantiation_source
+        .find(":= by")
+        .or_else(|| instantiation_source.find(" where"))
+        .unwrap_or(instantiation_source.len().min(1024));
+    let theorem_header = &instantiation_source[..theorem_header_end];
+    let header_has_assumed_term = |term: &str| -> bool {
+        let mut depth = 0_usize;
+        let mut binder_start = None;
+        for (index, ch) in theorem_header.char_indices() {
+            match ch {
+                '(' | '{' | '[' => {
+                    if depth == 0 {
+                        binder_start = Some(index);
+                    }
+                    depth += 1;
+                }
+                ')' | '}' | ']' if depth > 0 => {
+                    depth -= 1;
+                    if depth == 0 {
+                        if let Some(start) = binder_start {
+                            if theorem_header[start..=index].contains(term) {
+                                return true;
+                            }
+                        }
+                        binder_start = None;
+                    }
+                }
+                _ => {}
+            }
+        }
+        false
+    };
+    let forbidden_header_terms = [
+        "NativeFullSignatureSecurityBoundary",
+        "NativeAcceptedSpendSoundnessBoundary",
+        "PublicOutputNoExport",
+        "ActiveSerializerAllowlistCertificate",
+        "ActiveTaggedSerializer",
+        "PublicOutputPolicy",
+        "selectedRustActiveNoExportPolicy",
+        "selectedRustActiveSerializer",
+        "selectedRustActiveNoExport",
+        "selectedRustActiveSerializerAllowlistCertificate",
+        "selectedRustAcceptOutputConforms",
+        "selectedRustRejectOutputConforms",
+        "selectedRustStorageOutputConforms",
+    ];
+    if forbidden_header_terms
+        .iter()
+        .any(|term| header_has_assumed_term(term))
+    {
+        return false;
+    }
+    let forbidden_declaration_terms = [
+        "selectedRustActiveNoExportPolicy",
+        "selectedRustActiveSerializer",
+        "selectedRustActiveNoExport",
+        "selectedRustActiveSerializerAllowlistCertificate",
+        "selectedRustAcceptOutputConforms",
+        "selectedRustRejectOutputConforms",
+        "selectedRustStorageOutputConforms",
+    ];
+    let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
+    if forbidden_declaration_terms.iter().any(|term| {
+        forbidden_declaration_kinds
+            .iter()
+            .any(|kind| concrete_source.contains(&format!("\n{kind} {term}")))
+    }) {
+        return false;
+    }
+    let forbidden_variable_stub = concrete_source
+        .match_indices("\nvariable")
+        .map(|(index, _)| &concrete_source[index..concrete_source.len().min(index + 512)])
+        .any(|variable_window| {
+            forbidden_declaration_terms
+                .iter()
+                .any(|term| variable_window.contains(term))
+        });
+    if forbidden_variable_stub {
+        return false;
+    }
+
+    let instantiation_checks = [
+        "selectedRustActiveNoExportSerializer_instantiation_v1",
+        "let selectedRustActiveNoExportPolicy :",
+        "PublicOutputPolicy",
+        "let selectedRustActiveSerializer :",
+        "ActiveTaggedSerializer",
+        "let selectedRustActiveNoExport :",
+        "PublicOutputNoExport selectedRustActiveNoExportPolicy",
+        "let selectedRustActiveSerializerAllowlistCertificate :",
+        "ActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer",
+        "accept_allowed := selectedRustAcceptOutputConforms",
+        "reject_allowed := selectedRustRejectOutputConforms",
+        "storage_allowed := selectedRustStorageOutputConforms",
+        "activeSerializerAllowlist_activeNativeNoExportClosure",
+        "NativeFullSignatureSecurityBoundary.withActiveSerializerNoExportClosure",
+        "full_signature_with_active_serializer_no_export_closed",
+    ];
+    instantiation_checks
+        .iter()
+        .all(|marker| instantiation_source.contains(marker))
+}
+
 fn path2_native_projection_encoder_source_boundary_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
 
@@ -21351,6 +21472,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     let accepted_spend_numeric_bound_instantiated =
         path2_native_accepted_spend_numeric_bound_instantiated_v1();
     let no_export_serializer_boundary_present = path2_no_export_serializer_boundary_present_v1();
+    let no_export_serializer_instantiated = path2_no_export_serializer_instantiated_v1();
     let proof_side_public_boundary_preflight_complete = projection_encoders_present
         && checked_core_frame_present
         && public_view_serializers_present
@@ -21364,7 +21486,8 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         && full_signature_execution_source_boundary_present
         && full_signature_execution_source_instantiated
         && accepted_spend_numeric_bound_instantiated
-        && no_export_serializer_boundary_present;
+        && no_export_serializer_boundary_present
+        && no_export_serializer_instantiated;
     let signer_verifier_pipeline_present = path2_native_signer_verifier_pipeline_productized_v1();
     let constant_time_audit_complete = path2_native_constant_time_audit_complete_v1();
     let storage_lifecycle_hardening_complete =
@@ -21409,7 +21532,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     if !accepted_spend_numeric_bound_instantiated {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND);
     }
-    if !no_export_serializer_boundary_present {
+    if !no_export_serializer_boundary_present || !no_export_serializer_instantiated {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS);
     }
     if !facade_exports_present {
@@ -21453,6 +21576,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         full_signature_execution_source_instantiated,
         accepted_spend_numeric_bound_instantiated,
         no_export_serializer_boundary_present,
+        no_export_serializer_instantiated,
         signer_verifier_pipeline_present,
         constant_time_audit_complete,
         storage_lifecycle_hardening_complete,
@@ -21607,6 +21731,11 @@ pub fn path2_native_deployment_preflight_v1_frame(
     );
     append_u64(
         &mut frame,
+        b"no_export_serializer_instantiated",
+        u64::from(preflight.no_export_serializer_instantiated),
+    );
+    append_u64(
+        &mut frame,
         b"signer_verifier_pipeline_present",
         u64::from(preflight.signer_verifier_pipeline_present),
     );
@@ -21678,7 +21807,9 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         Some("reject_active_native_full_signature_execution_source_open")
     } else if !deployment_preflight.accepted_spend_numeric_bound_instantiated {
         Some("reject_active_native_accepted_spend_numeric_bound_open")
-    } else if !deployment_preflight.no_export_serializer_boundary_present {
+    } else if !deployment_preflight.no_export_serializer_boundary_present
+        || !deployment_preflight.no_export_serializer_instantiated
+    {
         Some("reject_active_native_no_export_serializer_boundary_open")
     } else if !deployment_preflight.facade_exports_present {
         Some("reject_active_native_facade_exports_open")
@@ -41304,6 +41435,7 @@ mod tests {
                 && preflight.full_signature_execution_source_instantiated
                 && preflight.accepted_spend_numeric_bound_instantiated
                 && preflight.no_export_serializer_boundary_present
+                && preflight.no_export_serializer_instantiated
         );
         assert!(path2_native_projection_encoder_source_boundary_present_v1());
         assert!(preflight.projection_encoders_present);
@@ -41904,6 +42036,69 @@ end Path2NativeAccountDesign
         assert!(!preflight.accepted_spend_numeric_bound_instantiated);
         assert!(path2_no_export_serializer_boundary_present_v1());
         assert!(preflight.no_export_serializer_boundary_present);
+        let assumed_no_export_boundary = r#"
+theorem selectedRustActiveNoExportSerializer_instantiation_v1
+    (B : NativeFullSignatureSecurityBoundary)
+    (NoExport : PublicOutputNoExport Policy)
+    (Cert : ActiveSerializerAllowlistCertificate Policy S) :
+    (NativeFullSignatureSecurityBoundary.withActiveSerializerNoExportClosure
+      B NoExport Cert).acceptedSpendSoundness.noExportClosed := by
+  exact full_signature_with_active_serializer_no_export_closed B NoExport Cert
+end Path2NoExportConcrete
+"#;
+        assert!(!path2_no_export_serializer_instantiated_in_source_v1(
+            assumed_no_export_boundary
+        ));
+        let assumed_no_export_certificate = r#"
+theorem selectedRustActiveNoExportSerializer_instantiation_v1
+    (selectedRustActiveNoExport : PublicOutputNoExport selectedRustActiveNoExportPolicy)
+    (selectedRustActiveSerializerAllowlistCertificate :
+      ActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer) :
+    ActiveNativeNoExportClosure selectedRustActiveNoExportPolicy selectedRustActiveSerializer.surfaces := by
+  exact activeSerializerAllowlist_activeNativeNoExportClosure
+    selectedRustActiveNoExport selectedRustActiveSerializerAllowlistCertificate
+end Path2NoExportConcrete
+"#;
+        assert!(!path2_no_export_serializer_instantiated_in_source_v1(
+            assumed_no_export_certificate
+        ));
+        let no_export_instantiation_shape = r#"
+theorem selectedRustActiveNoExportSerializer_instantiation_v1 :
+    ActiveNativeNoExportClosure selectedRustActiveNoExportPolicy selectedRustActiveSerializer.surfaces := by
+  let selectedRustActiveNoExportPolicy :
+      PublicOutputPolicy := selectedRustActiveNoExportPolicy
+  let selectedRustActiveSerializer :
+      ActiveTaggedSerializer := selectedRustActiveSerializer
+  let selectedRustActiveNoExport :
+      PublicOutputNoExport selectedRustActiveNoExportPolicy :=
+    selectedRustActiveNoExport
+  let selectedRustActiveSerializerAllowlistCertificate :
+      ActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer :=
+    { accept_allowed := selectedRustAcceptOutputConforms
+      reject_allowed := selectedRustRejectOutputConforms
+      storage_allowed := selectedRustStorageOutputConforms }
+  let _closed :=
+    activeSerializerAllowlist_activeNativeNoExportClosure
+      selectedRustActiveNoExport selectedRustActiveSerializerAllowlistCertificate
+  let _fullBoundary :=
+    NativeFullSignatureSecurityBoundary.withActiveSerializerNoExportClosure
+      selectedRustNativeFullSignatureBoundary
+      selectedRustActiveNoExport
+      selectedRustActiveSerializerAllowlistCertificate
+  let _fullClosed :=
+    full_signature_with_active_serializer_no_export_closed
+      selectedRustNativeFullSignatureBoundary
+      selectedRustActiveNoExport
+      selectedRustActiveSerializerAllowlistCertificate
+  exact activeSerializerAllowlist_activeNativeNoExportClosure
+    selectedRustActiveNoExport selectedRustActiveSerializerAllowlistCertificate
+end Path2NoExportConcrete
+"#;
+        assert!(path2_no_export_serializer_instantiated_in_source_v1(
+            no_export_instantiation_shape
+        ));
+        assert!(!path2_no_export_serializer_instantiated_v1());
+        assert!(!preflight.no_export_serializer_instantiated);
         assert!(path2_native_signer_verifier_pipeline_source_present_v1());
         assert!(!path2_native_signer_verifier_pipeline_productized_v1());
         assert!(!preflight.signer_verifier_pipeline_present);
@@ -41921,6 +42116,7 @@ end Path2NativeAccountDesign
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND,
+                PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
@@ -41947,6 +42143,7 @@ end Path2NativeAccountDesign
         assert!(!rendered.contains("QROM multi-target horizon"));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
+        assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS));
         assert!(rendered.contains("active native signer/verifier pipeline"));
     }
 
