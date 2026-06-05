@@ -145,6 +145,8 @@ binding discipline to the separately consumed certificate-validity predicate.
 `ReviewedFq12CertificateExtractionImpliesPayloadExtraction` ties certificate
 extraction to payload extraction for the same hidden representative, preventing
 the two extraction predicates from drifting apart in the selected model.
+`ReviewedFq12PayloadExtractionInBoundaryFiber` then requires payload extraction
+to land in the native boundary fiber for that boundary.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It

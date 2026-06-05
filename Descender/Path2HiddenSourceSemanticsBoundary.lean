@@ -2219,6 +2219,21 @@ def ReviewedFq12CertificateExtractionImpliesPayloadExtraction
       P.reviewedFq12PayloadExtracts b payload h
 
 /--
+Concrete predicate-model obligation that payload extraction lands in the native
+boundary fiber.
+
+This prevents a selected model from satisfying payload extraction with a hidden
+representative unrelated to the boundary whose digest/slot the payload claims.
+-/
+def ReviewedFq12PayloadExtractionInBoundaryFiber
+    (P : Predicates) : Prop :=
+  forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {h : HiddenRepresentative},
+    P.reviewedFq12PayloadExtracts b payload h ->
+      InFiber P b.context b h
+
+/--
 Selected Rust native-boundary predicate-model import target.
 
 The full-spend concrete predicates are not this object: they live over concrete
@@ -2246,6 +2261,8 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
     ReviewedFq12ExtractionCertificateValidityMatchesPayload predicates
   certificateExtractionImpliesPayloadExtraction :
     ReviewedFq12CertificateExtractionImpliesPayloadExtraction predicates
+  payloadExtractionInBoundaryFiber :
+    ReviewedFq12PayloadExtractionInBoundaryFiber predicates
   reviewedFq12PayloadAcceptanceModeled : Prop
   reviewedFq12PayloadAcceptanceModeledProof :
     reviewedFq12PayloadAcceptanceModeled
