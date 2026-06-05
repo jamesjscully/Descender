@@ -55754,13 +55754,13 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         );
         assert!(concrete_definition_checklist.evidence_report_definitions_present);
         assert!(concrete_definition_checklist.evidence_digest_definitions_present);
-        assert!(!concrete_definition_checklist.evidence_proof_definitions_present);
+        assert!(concrete_definition_checklist.evidence_proof_definitions_present);
         assert!(!concrete_definition_checklist.source_record_definitions_present);
         assert!(!concrete_definition_checklist.sub_evidence_digest_match_proof_present);
         assert!(!concrete_definition_checklist.all_definitions_present);
         assert_eq!(
             concrete_definition_checklist.missing_definition_category_count,
-            3
+            2
         );
         assert!(!audit.selected_rust_model_concrete_definitions_present);
         assert!(
@@ -56472,7 +56472,13 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         );
         let hidden_source_boundary_source =
             include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
-        assert_eq!(
+        // The aggregate five-source report digest includes the bridge-audit
+        // digest, and the bridge audit hashes this Lean source file.  The
+        // Lean file also carries the aggregate digest literal, so naively
+        // hard-coding the Rust aggregate digest back into Lean moves the
+        // digest again.  Keep this explicit until the selected source-record
+        // import route breaks that self-reference.
+        assert_ne!(
             lean_selected_rust_byte_array_digest_constant(
                 hidden_source_boundary_source,
                 "selectedRustFiveSourceEvidenceDigest"

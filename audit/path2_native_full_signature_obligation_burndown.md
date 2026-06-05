@@ -441,11 +441,11 @@ parameter or route redesign, not by theorem dependency order.
 
 P2FS-001 concrete-definition blocker note: Lean now includes
 `selectedRustCurrentPlaceholderEvidenceProofDefinitions_impossible`, proving
-that the current fail-closed selected evidence reports cannot supply the
+that the retained fail-closed placeholder evidence reports cannot supply the
 proof-bearing report/facts definitions required by the concrete-definition
-checklist. This preserves the three missing manifest categories until real
-verifier-backed source records and digest-match proofs replace the placeholder
-reports.
+checklist. This is now a negative control only: the active selected
+report/proof names have moved to verifier-backed aliases, while source records
+and digest-match proofs remain missing.
 Lean also includes
 `selectedRustCurrentPlaceholderSourceRecordCertificates_impossible`, proving
 that selected source-record certificates over the current placeholder component
@@ -463,8 +463,9 @@ replacement the next safe step, separate from source-record/digest-match
 closure.
 Lean now imports those report values under `verifierBacked...` names and proves
 their `ReportVerified`/`FactsAllTrue` predicates. The active `selectedRust...`
-report names remain the fail-closed placeholders until source records and
-digest-match proof are ready to move together.
+report names now alias those verifier-backed values; source-record
+certificates, aggregate/sub-certificate digest matching, and aggregate digest
+self-reference remain fail-closed.
 
 P2FS-001 latest hardening: `ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources` is now the named Lean constructor for the final selected Rust/model certificate. The certificate now carries an aggregate five-source `evidenceDigest`, and the Rust `extractor_theorem_instantiated` gate requires the future final theorem to use that constructor with the verified five-source evidence report, aggregate evidence digest, all-true facts proof, and selected source packages before deriving `toClosureInputs`; a raw certificate record literal, empty digest literal, `sorry`, or `admit` no longer satisfies the AP2-N001 source gate.
 
@@ -500,13 +501,21 @@ digests. The current active output verifies all six Rust evidence reports and
 all component facts, but keeps AP2-N001 fail-closed:
 `extractor_theorem_instantiated = false`,
 `semantics_bridge_complete = false`, checklist digest
-`8bbee8ac85364ceff4f2141e37ba550c0fb3d7c1526cce390c2c7e9033a4740a`, and
-missing categories `evidence_proof_definitions`,
-`source_record_definitions`, and `sub_evidence_digest_match_proof`. The
-highest-risk next proof-completeness step is therefore not additional Rust
-evidence collection; it is a verifier-backed Lean import route for those
-proof/source definitions that avoids vacuous all-true report literals and keeps
-the aggregate/sub-certificate digest match non-circular.
+`f40bb2869f37e27f7a1870940893a8fd8df2e8b4c16aebb1d4832a2da1907673`, and
+missing categories `source_record_definitions` and
+`sub_evidence_digest_match_proof`. The selected Lean report/proof definitions
+now alias verifier-backed Rust evidence, so the highest-risk remaining proof
+work is to import selected source-record certificates and prove the aggregate
+five-source report's sub-digests match those five certificates.
+The aggregate digest import also exposed a source-hash circularity constraint:
+the current Rust aggregate evidence digest is
+`146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the
+current bridge-audit digest inside that report is
+`ae4a87958c5c0479df16f77b3e8467870dbdbec3e90c6410bcb79f4fac0c0e54`, but
+hard-coding either value back into the Lean source would change the source
+hash and therefore change the report. The source-record import route must
+break that self-reference instead of treating the aggregate digest literal as
+a stable Lean constant.
 
 P2FS-001 selected report fail-closed sanity: Lean now proves that every current
 selected AP2-N001 report placeholder fails both `ReportVerified` and

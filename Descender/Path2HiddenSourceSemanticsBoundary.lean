@@ -506,7 +506,7 @@ and verified in Lean.  The `ReportVerified` and `FactsAllTrue` proofs remain
 separate selected definitions that must be supplied before the certificate can
 close AP2-N001.
 -/
-def selectedRustFiveSourceEvidenceReport :
+def placeholderSelectedRustFiveSourceEvidenceReport :
     ReviewedFq12SelectedRustFiveSourceClosureEvidence where
   schemaMatches := false
   bridgeAuditDigest := ByteArray.mk #[]
@@ -561,7 +561,7 @@ def selectedRustFiveSourceEvidenceReport :
   semanticsBridgeComplete := false
 
 /-- Concrete selected Rust/model base-boundary report value, still fail-closed. -/
-def selectedRustBoundaryBaseEvidenceReport :
+def placeholderSelectedRustBoundaryBaseEvidenceReport :
     ReviewedFq12SelectedRustBoundaryBaseEvidenceReport where
   schemaMatches := false
   reportDigestVerified := false
@@ -571,7 +571,7 @@ def selectedRustBoundaryBaseEvidenceReport :
   boundaryBaseNegativeControlsPassed := false
 
 /-- Concrete selected Rust/model role-root/lift report value, still fail-closed. -/
-def selectedRustRoleRootLiftEvidenceReport :
+def placeholderSelectedRustRoleRootLiftEvidenceReport :
     ReviewedFq12SelectedRustRoleRootLiftEvidenceReport where
   schemaMatches := false
   reportDigestVerified := false
@@ -581,7 +581,7 @@ def selectedRustRoleRootLiftEvidenceReport :
   roleRootNegativeControlsPassed := false
 
 /-- Concrete selected Rust/model source-route report value, still fail-closed. -/
-def selectedRustSourceRouteEvidenceReport :
+def placeholderSelectedRustSourceRouteEvidenceReport :
     SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport where
   schemaMatches := false
   reportDigestVerified := false
@@ -596,7 +596,7 @@ def selectedRustSourceRouteEvidenceReport :
   sourceRouteNegativeControlsPassed := false
 
 /-- Concrete selected Rust/model field/local report value, still fail-closed. -/
-def selectedRustFieldLocalEvidenceReport :
+def placeholderSelectedRustFieldLocalEvidenceReport :
     ReviewedFq12SelectedRustFieldLocalEvidenceReport where
   schemaMatches := false
   reportDigestVerified := false
@@ -610,7 +610,7 @@ def selectedRustFieldLocalEvidenceReport :
   fieldLocalNegativeControlsPassed := false
 
 /-- Concrete selected Rust/model shared-witness report value, still fail-closed. -/
-def selectedRustSharedFrameWitnessEvidenceReport :
+def placeholderSelectedRustSharedFrameWitnessEvidenceReport :
     ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport where
   schemaMatches := false
   reportDigestVerified := false
@@ -818,81 +818,189 @@ theorem verifierBackedSelectedRustSharedFrameWitnessEvidenceReport_ready :
     ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport.FactsAllTrue]
 
 /--
-The current selected five-source report is intentionally not proof-bearing.
+Active selected Rust/model five-source report.
+
+This now points to the verifier-backed public Rust evidence report. It still
+does not close AP2-N001 by itself: source records and the sub-evidence
+digest-match proof remain separate selected definitions.
+-/
+def selectedRustFiveSourceEvidenceReport :
+    ReviewedFq12SelectedRustFiveSourceClosureEvidence :=
+  verifierBackedSelectedRustFiveSourceEvidenceReport
+
+/-- Active selected Rust/model base-boundary report. -/
+def selectedRustBoundaryBaseEvidenceReport :
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceReport :=
+  verifierBackedSelectedRustBoundaryBaseEvidenceReport
+
+/-- Active selected Rust/model role-root/lift report. -/
+def selectedRustRoleRootLiftEvidenceReport :
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceReport :=
+  verifierBackedSelectedRustRoleRootLiftEvidenceReport
+
+/-- Active selected Rust/model source-route report. -/
+def selectedRustSourceRouteEvidenceReport :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport :=
+  verifierBackedSelectedRustSourceRouteEvidenceReport
+
+/-- Active selected Rust/model field/local report. -/
+def selectedRustFieldLocalEvidenceReport :
+    ReviewedFq12SelectedRustFieldLocalEvidenceReport :=
+  verifierBackedSelectedRustFieldLocalEvidenceReport
+
+/-- Active selected Rust/model shared-frame witness report. -/
+def selectedRustSharedFrameWitnessEvidenceReport :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport :=
+  verifierBackedSelectedRustSharedFrameWitnessEvidenceReport
+
+/-- Proof that the active selected aggregate report is verifier-backed. -/
+theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
+    selectedRustFiveSourceEvidenceReport.ReportVerified := by
+  simpa [selectedRustFiveSourceEvidenceReport] using
+    verifierBackedSelectedRustFiveSourceEvidenceReport_reportVerified
+
+/-- Proof that all non-closing active aggregate report facts hold. -/
+theorem selectedRustFiveSourceEvidenceFactsAllTrueProof :
+    selectedRustFiveSourceEvidenceReport.FactsAllTrue := by
+  simpa [selectedRustFiveSourceEvidenceReport] using
+    verifierBackedSelectedRustFiveSourceEvidenceReport_factsAllTrue
+
+/-- Proof that the active base-boundary report is verifier-backed. -/
+theorem selectedRustBoundaryBaseEvidenceReportVerifiedProof :
+    selectedRustBoundaryBaseEvidenceReport.ReportVerified := by
+  simpa [selectedRustBoundaryBaseEvidenceReport] using
+    verifierBackedSelectedRustBoundaryBaseEvidenceReport_ready.1
+
+/-- Proof that all active base-boundary report facts hold. -/
+theorem selectedRustBoundaryBaseEvidenceFactsAllTrueProof :
+    selectedRustBoundaryBaseEvidenceReport.FactsAllTrue := by
+  simpa [selectedRustBoundaryBaseEvidenceReport] using
+    verifierBackedSelectedRustBoundaryBaseEvidenceReport_ready.2
+
+/-- Proof that the active role-root/lift report is verifier-backed. -/
+theorem selectedRustRoleRootLiftEvidenceReportVerifiedProof :
+    selectedRustRoleRootLiftEvidenceReport.ReportVerified := by
+  simpa [selectedRustRoleRootLiftEvidenceReport] using
+    verifierBackedSelectedRustRoleRootLiftEvidenceReport_ready.1
+
+/-- Proof that all active role-root/lift report facts hold. -/
+theorem selectedRustRoleRootLiftEvidenceFactsAllTrueProof :
+    selectedRustRoleRootLiftEvidenceReport.FactsAllTrue := by
+  simpa [selectedRustRoleRootLiftEvidenceReport] using
+    verifierBackedSelectedRustRoleRootLiftEvidenceReport_ready.2
+
+/-- Proof that the active source-route report is verifier-backed. -/
+theorem selectedRustSourceRouteEvidenceReportVerifiedProof :
+    selectedRustSourceRouteEvidenceReport.ReportVerified := by
+  simpa [selectedRustSourceRouteEvidenceReport] using
+    verifierBackedSelectedRustSourceRouteEvidenceReport_ready.1
+
+/-- Proof that all active source-route report facts hold. -/
+theorem selectedRustSourceRouteEvidenceFactsAllTrueProof :
+    selectedRustSourceRouteEvidenceReport.FactsAllTrue := by
+  simpa [selectedRustSourceRouteEvidenceReport] using
+    verifierBackedSelectedRustSourceRouteEvidenceReport_ready.2
+
+/-- Proof that the active field/local report is verifier-backed. -/
+theorem selectedRustFieldLocalEvidenceReportVerifiedProof :
+    selectedRustFieldLocalEvidenceReport.ReportVerified := by
+  simpa [selectedRustFieldLocalEvidenceReport] using
+    verifierBackedSelectedRustFieldLocalEvidenceReport_ready.1
+
+/-- Proof that all active field/local report facts hold. -/
+theorem selectedRustFieldLocalEvidenceFactsAllTrueProof :
+    selectedRustFieldLocalEvidenceReport.FactsAllTrue := by
+  simpa [selectedRustFieldLocalEvidenceReport] using
+    verifierBackedSelectedRustFieldLocalEvidenceReport_ready.2
+
+/-- Proof that the active shared-frame witness report is verifier-backed. -/
+theorem selectedRustSharedFrameWitnessEvidenceReportVerifiedProof :
+    selectedRustSharedFrameWitnessEvidenceReport.ReportVerified := by
+  simpa [selectedRustSharedFrameWitnessEvidenceReport] using
+    verifierBackedSelectedRustSharedFrameWitnessEvidenceReport_ready.1
+
+/-- Proof that all active shared-frame witness report facts hold. -/
+theorem selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof :
+    selectedRustSharedFrameWitnessEvidenceReport.FactsAllTrue := by
+  simpa [selectedRustSharedFrameWitnessEvidenceReport] using
+    verifierBackedSelectedRustSharedFrameWitnessEvidenceReport_ready.2
+
+/--
+The old placeholder five-source report is intentionally not proof-bearing.
 
 These negative lemmas are sanity checks for the fail-closed boundary: the
 future AP2-N001 theorem must replace the selected report/proof source with
 verifier-backed evidence, not reuse this placeholder report as if it were
 verified.
 -/
-theorem selectedRustFiveSourceEvidenceReport_not_reportVerified :
-    ¬ selectedRustFiveSourceEvidenceReport.ReportVerified := by
-  simp [selectedRustFiveSourceEvidenceReport,
+theorem placeholderSelectedRustFiveSourceEvidenceReport_not_reportVerified :
+    ¬ placeholderSelectedRustFiveSourceEvidenceReport.ReportVerified := by
+  simp [placeholderSelectedRustFiveSourceEvidenceReport,
     ReviewedFq12SelectedRustFiveSourceClosureEvidence.ReportVerified]
 
-theorem selectedRustFiveSourceEvidenceReport_not_factsAllTrue :
-    ¬ selectedRustFiveSourceEvidenceReport.FactsAllTrue := by
-  simp [selectedRustFiveSourceEvidenceReport,
+theorem placeholderSelectedRustFiveSourceEvidenceReport_not_factsAllTrue :
+    ¬ placeholderSelectedRustFiveSourceEvidenceReport.FactsAllTrue := by
+  simp [placeholderSelectedRustFiveSourceEvidenceReport,
     ReviewedFq12SelectedRustFiveSourceClosureEvidence.FactsAllTrue]
 
 /-- The current base-boundary report is intentionally fail-closed. -/
-theorem selectedRustBoundaryBaseEvidenceReport_not_reportVerified :
-    ¬ selectedRustBoundaryBaseEvidenceReport.ReportVerified := by
-  simp [selectedRustBoundaryBaseEvidenceReport,
+theorem placeholderSelectedRustBoundaryBaseEvidenceReport_not_reportVerified :
+    ¬ placeholderSelectedRustBoundaryBaseEvidenceReport.ReportVerified := by
+  simp [placeholderSelectedRustBoundaryBaseEvidenceReport,
     ReviewedFq12SelectedRustBoundaryBaseEvidenceReport.ReportVerified]
 
 /-- The current base-boundary report does not prove its component facts. -/
-theorem selectedRustBoundaryBaseEvidenceReport_not_factsAllTrue :
-    ¬ selectedRustBoundaryBaseEvidenceReport.FactsAllTrue := by
-  simp [selectedRustBoundaryBaseEvidenceReport,
+theorem placeholderSelectedRustBoundaryBaseEvidenceReport_not_factsAllTrue :
+    ¬ placeholderSelectedRustBoundaryBaseEvidenceReport.FactsAllTrue := by
+  simp [placeholderSelectedRustBoundaryBaseEvidenceReport,
     ReviewedFq12SelectedRustBoundaryBaseEvidenceReport.FactsAllTrue]
 
 /-- The current role-root/lift report is intentionally fail-closed. -/
-theorem selectedRustRoleRootLiftEvidenceReport_not_reportVerified :
-    ¬ selectedRustRoleRootLiftEvidenceReport.ReportVerified := by
-  simp [selectedRustRoleRootLiftEvidenceReport,
+theorem placeholderSelectedRustRoleRootLiftEvidenceReport_not_reportVerified :
+    ¬ placeholderSelectedRustRoleRootLiftEvidenceReport.ReportVerified := by
+  simp [placeholderSelectedRustRoleRootLiftEvidenceReport,
     ReviewedFq12SelectedRustRoleRootLiftEvidenceReport.ReportVerified]
 
 /-- The current role-root/lift report does not prove its component facts. -/
-theorem selectedRustRoleRootLiftEvidenceReport_not_factsAllTrue :
-    ¬ selectedRustRoleRootLiftEvidenceReport.FactsAllTrue := by
-  simp [selectedRustRoleRootLiftEvidenceReport,
+theorem placeholderSelectedRustRoleRootLiftEvidenceReport_not_factsAllTrue :
+    ¬ placeholderSelectedRustRoleRootLiftEvidenceReport.FactsAllTrue := by
+  simp [placeholderSelectedRustRoleRootLiftEvidenceReport,
     ReviewedFq12SelectedRustRoleRootLiftEvidenceReport.FactsAllTrue]
 
 /-- The current source-route report is intentionally fail-closed. -/
-theorem selectedRustSourceRouteEvidenceReport_not_reportVerified :
-    ¬ selectedRustSourceRouteEvidenceReport.ReportVerified := by
-  simp [selectedRustSourceRouteEvidenceReport,
+theorem placeholderSelectedRustSourceRouteEvidenceReport_not_reportVerified :
+    ¬ placeholderSelectedRustSourceRouteEvidenceReport.ReportVerified := by
+  simp [placeholderSelectedRustSourceRouteEvidenceReport,
     SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport.ReportVerified]
 
 /-- The current source-route report does not prove its component facts. -/
-theorem selectedRustSourceRouteEvidenceReport_not_factsAllTrue :
-    ¬ selectedRustSourceRouteEvidenceReport.FactsAllTrue := by
-  simp [selectedRustSourceRouteEvidenceReport,
+theorem placeholderSelectedRustSourceRouteEvidenceReport_not_factsAllTrue :
+    ¬ placeholderSelectedRustSourceRouteEvidenceReport.FactsAllTrue := by
+  simp [placeholderSelectedRustSourceRouteEvidenceReport,
     SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport.FactsAllTrue]
 
 /-- The current field/local report is intentionally fail-closed. -/
-theorem selectedRustFieldLocalEvidenceReport_not_reportVerified :
-    ¬ selectedRustFieldLocalEvidenceReport.ReportVerified := by
-  simp [selectedRustFieldLocalEvidenceReport,
+theorem placeholderSelectedRustFieldLocalEvidenceReport_not_reportVerified :
+    ¬ placeholderSelectedRustFieldLocalEvidenceReport.ReportVerified := by
+  simp [placeholderSelectedRustFieldLocalEvidenceReport,
     ReviewedFq12SelectedRustFieldLocalEvidenceReport.ReportVerified]
 
 /-- The current field/local report does not prove its component facts. -/
-theorem selectedRustFieldLocalEvidenceReport_not_factsAllTrue :
-    ¬ selectedRustFieldLocalEvidenceReport.FactsAllTrue := by
-  simp [selectedRustFieldLocalEvidenceReport,
+theorem placeholderSelectedRustFieldLocalEvidenceReport_not_factsAllTrue :
+    ¬ placeholderSelectedRustFieldLocalEvidenceReport.FactsAllTrue := by
+  simp [placeholderSelectedRustFieldLocalEvidenceReport,
     ReviewedFq12SelectedRustFieldLocalEvidenceReport.FactsAllTrue]
 
 /-- The current shared-frame witness report is intentionally fail-closed. -/
-theorem selectedRustSharedFrameWitnessEvidenceReport_not_reportVerified :
-    ¬ selectedRustSharedFrameWitnessEvidenceReport.ReportVerified := by
-  simp [selectedRustSharedFrameWitnessEvidenceReport,
+theorem placeholderSelectedRustSharedFrameWitnessEvidenceReport_not_reportVerified :
+    ¬ placeholderSelectedRustSharedFrameWitnessEvidenceReport.ReportVerified := by
+  simp [placeholderSelectedRustSharedFrameWitnessEvidenceReport,
     ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport.ReportVerified]
 
 /-- The current shared-frame witness report does not prove its component facts. -/
-theorem selectedRustSharedFrameWitnessEvidenceReport_not_factsAllTrue :
-    ¬ selectedRustSharedFrameWitnessEvidenceReport.FactsAllTrue := by
-  simp [selectedRustSharedFrameWitnessEvidenceReport,
+theorem placeholderSelectedRustSharedFrameWitnessEvidenceReport_not_factsAllTrue :
+    ¬ placeholderSelectedRustSharedFrameWitnessEvidenceReport.FactsAllTrue := by
+  simp [placeholderSelectedRustSharedFrameWitnessEvidenceReport,
     ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport.FactsAllTrue]
 
 /--
@@ -905,40 +1013,40 @@ current fail-closed reports is inconsistent.
 -/
 theorem selectedRustCurrentPlaceholderEvidenceProofDefinitions_impossible
     (hFiveReport :
-      selectedRustFiveSourceEvidenceReport.ReportVerified)
+      placeholderSelectedRustFiveSourceEvidenceReport.ReportVerified)
     (_hFiveFacts :
-      selectedRustFiveSourceEvidenceReport.FactsAllTrue)
+      placeholderSelectedRustFiveSourceEvidenceReport.FactsAllTrue)
     (_hBoundaryReport :
-      selectedRustBoundaryBaseEvidenceReport.ReportVerified)
+      placeholderSelectedRustBoundaryBaseEvidenceReport.ReportVerified)
     (_hBoundaryFacts :
-      selectedRustBoundaryBaseEvidenceReport.FactsAllTrue)
+      placeholderSelectedRustBoundaryBaseEvidenceReport.FactsAllTrue)
     (_hRoleRootReport :
-      selectedRustRoleRootLiftEvidenceReport.ReportVerified)
+      placeholderSelectedRustRoleRootLiftEvidenceReport.ReportVerified)
     (_hRoleRootFacts :
-      selectedRustRoleRootLiftEvidenceReport.FactsAllTrue)
+      placeholderSelectedRustRoleRootLiftEvidenceReport.FactsAllTrue)
     (_hSourceRouteReport :
-      selectedRustSourceRouteEvidenceReport.ReportVerified)
+      placeholderSelectedRustSourceRouteEvidenceReport.ReportVerified)
     (_hSourceRouteFacts :
-      selectedRustSourceRouteEvidenceReport.FactsAllTrue)
+      placeholderSelectedRustSourceRouteEvidenceReport.FactsAllTrue)
     (_hFieldLocalReport :
-      selectedRustFieldLocalEvidenceReport.ReportVerified)
+      placeholderSelectedRustFieldLocalEvidenceReport.ReportVerified)
     (_hFieldLocalFacts :
-      selectedRustFieldLocalEvidenceReport.FactsAllTrue)
+      placeholderSelectedRustFieldLocalEvidenceReport.FactsAllTrue)
     (_hSharedFrameReport :
-      selectedRustSharedFrameWitnessEvidenceReport.ReportVerified)
+      placeholderSelectedRustSharedFrameWitnessEvidenceReport.ReportVerified)
     (_hSharedFrameFacts :
-      selectedRustSharedFrameWitnessEvidenceReport.FactsAllTrue) :
+      placeholderSelectedRustSharedFrameWitnessEvidenceReport.FactsAllTrue) :
     False := by
-  exact selectedRustFiveSourceEvidenceReport_not_reportVerified hFiveReport
+  exact placeholderSelectedRustFiveSourceEvidenceReport_not_reportVerified hFiveReport
 
 /-- The current base-boundary placeholder report cannot certify a source. -/
 theorem selectedRustBoundaryBaseCertificate_not_from_current_placeholder_report
     {P : Predicates}
     (Cert : ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P)
     (hReport :
-      Cert.evidenceReport = selectedRustBoundaryBaseEvidenceReport) :
+      Cert.evidenceReport = placeholderSelectedRustBoundaryBaseEvidenceReport) :
     False := by
-  exact selectedRustBoundaryBaseEvidenceReport_not_reportVerified
+  exact placeholderSelectedRustBoundaryBaseEvidenceReport_not_reportVerified
     (hReport ▸ Cert.evidenceReportVerifiedProof)
 
 /-- The current role-root/lift placeholder report cannot certify a source. -/
@@ -946,9 +1054,9 @@ theorem selectedRustRoleRootLiftCertificate_not_from_current_placeholder_report
     {P : Predicates}
     (Cert : ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P)
     (hReport :
-      Cert.evidenceReport = selectedRustRoleRootLiftEvidenceReport) :
+      Cert.evidenceReport = placeholderSelectedRustRoleRootLiftEvidenceReport) :
     False := by
-  exact selectedRustRoleRootLiftEvidenceReport_not_reportVerified
+  exact placeholderSelectedRustRoleRootLiftEvidenceReport_not_reportVerified
     (hReport ▸ Cert.evidenceReportVerifiedProof)
 
 /-- The current source-route placeholder report cannot certify a byte source. -/
@@ -960,9 +1068,9 @@ theorem selectedRustSourceRouteCertificate_not_from_current_placeholder_report
       SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
         FieldParser RouteParser P)
     (hReport :
-      Cert.evidenceReport = selectedRustSourceRouteEvidenceReport) :
+      Cert.evidenceReport = placeholderSelectedRustSourceRouteEvidenceReport) :
     False := by
-  exact selectedRustSourceRouteEvidenceReport_not_reportVerified
+  exact placeholderSelectedRustSourceRouteEvidenceReport_not_reportVerified
     (hReport ▸ Cert.evidenceReportVerifiedProof)
 
 /-- The current field/local placeholder report cannot certify sources. -/
@@ -970,9 +1078,9 @@ theorem selectedRustFieldLocalCertificate_not_from_current_placeholder_report
     {P : Predicates}
     (Cert : ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P)
     (hReport :
-      Cert.evidenceReport = selectedRustFieldLocalEvidenceReport) :
+      Cert.evidenceReport = placeholderSelectedRustFieldLocalEvidenceReport) :
     False := by
-  exact selectedRustFieldLocalEvidenceReport_not_reportVerified
+  exact placeholderSelectedRustFieldLocalEvidenceReport_not_reportVerified
     (hReport ▸ Cert.evidenceReportVerifiedProof)
 
 /-- The current shared-witness placeholder report cannot certify sources. -/
@@ -986,9 +1094,9 @@ theorem selectedRustSharedFrameWitnessCertificate_not_from_current_placeholder_r
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P)
     (hReport :
-      Cert.evidenceReport = selectedRustSharedFrameWitnessEvidenceReport) :
+      Cert.evidenceReport = placeholderSelectedRustSharedFrameWitnessEvidenceReport) :
     False := by
-  exact selectedRustSharedFrameWitnessEvidenceReport_not_reportVerified
+  exact placeholderSelectedRustSharedFrameWitnessEvidenceReport_not_reportVerified
     (hReport ▸ Cert.evidenceReportVerifiedProof)
 
 /--
@@ -1021,19 +1129,19 @@ theorem selectedRustCurrentPlaceholderSourceRecordCertificates_impossible
         CanonicalParser WitnessParser P)
     (hBoundaryReport :
       boundaryBaseCertificate.evidenceReport =
-        selectedRustBoundaryBaseEvidenceReport)
+        placeholderSelectedRustBoundaryBaseEvidenceReport)
     (_hRoleRootReport :
       roleRootLiftCertificate.evidenceReport =
-        selectedRustRoleRootLiftEvidenceReport)
+        placeholderSelectedRustRoleRootLiftEvidenceReport)
     (_hSourceRouteReport :
       selectedSourceRouteCertificate.evidenceReport =
-        selectedRustSourceRouteEvidenceReport)
+        placeholderSelectedRustSourceRouteEvidenceReport)
     (_hFieldLocalReport :
       fieldLocalCertificate.evidenceReport =
-        selectedRustFieldLocalEvidenceReport)
+        placeholderSelectedRustFieldLocalEvidenceReport)
     (_hWitnessReport :
       witnessSourcesCertificate.evidenceReport =
-        selectedRustSharedFrameWitnessEvidenceReport) :
+        placeholderSelectedRustSharedFrameWitnessEvidenceReport) :
     False := by
   exact selectedRustBoundaryBaseCertificate_not_from_current_placeholder_report
     boundaryBaseCertificate hBoundaryReport
@@ -1068,7 +1176,7 @@ theorem selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_forces_empt
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P}
     (hMatch :
-      selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
+      placeholderSelectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
         boundaryBaseCertificate roleRootLiftCertificate
         selectedSourceRouteCertificate fieldLocalCertificate
         witnessSourcesCertificate) :
@@ -1079,7 +1187,7 @@ theorem selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_forces_empt
       witnessSourcesCertificate.evidenceDigest = ByteArray.mk #[] := by
   rcases hMatch with
     ⟨hBoundary, hRoleRoot, hSourceRoute, hFieldLocal, hWitness⟩
-  simp [selectedRustFiveSourceEvidenceReport] at hBoundary hRoleRoot hSourceRoute hFieldLocal hWitness
+  simp [placeholderSelectedRustFiveSourceEvidenceReport] at hBoundary hRoleRoot hSourceRoute hFieldLocal hWitness
   exact
     ⟨hBoundary.symm, hRoleRoot.symm, hSourceRoute.symm,
       hFieldLocal.symm, hWitness.symm⟩
@@ -1159,7 +1267,7 @@ theorem selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_incompatibl
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P}
     (hMatch :
-      selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
+      placeholderSelectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
         boundaryBaseCertificate roleRootLiftCertificate
         selectedSourceRouteCertificate fieldLocalCertificate
         witnessSourcesCertificate)
@@ -1229,7 +1337,7 @@ theorem selectedRustCurrentPlaceholderSubEvidenceDigestMatchProof_impossible
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P}
     (hMatch :
-      selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
+      placeholderSelectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
         boundaryBaseCertificate roleRootLiftCertificate
         selectedSourceRouteCertificate fieldLocalCertificate
         witnessSourcesCertificate)
@@ -1321,9 +1429,9 @@ theorem selectedRustModelFiveSourceCertificate_not_from_current_placeholder_repo
       ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
         FieldParser RouteParser CanonicalParser WitnessParser P)
     (hReport :
-      Cert.evidenceReport = selectedRustFiveSourceEvidenceReport) :
+      Cert.evidenceReport = placeholderSelectedRustFiveSourceEvidenceReport) :
     False := by
-  exact selectedRustFiveSourceEvidenceReport_not_reportVerified
+  exact placeholderSelectedRustFiveSourceEvidenceReport_not_reportVerified
     (hReport ▸ Cert.evidenceReportVerifiedProof)
 
 /-- Convert a proof-bearing selected Rust/model certificate into closure inputs. -/

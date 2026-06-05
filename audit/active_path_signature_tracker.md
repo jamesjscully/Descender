@@ -909,11 +909,24 @@ confirms that all six selected Rust evidence reports verify and have all facts
 true, while the Lean closure remains fail-closed with
 `extractor_theorem_instantiated = false`,
 `semantics_bridge_complete = false`, checklist digest
-`8bbee8ac85364ceff4f2141e37ba550c0fb3d7c1526cce390c2c7e9033a4740a`, and
-exactly three missing active categories: `evidence_proof_definitions`,
-`source_record_definitions`, and `sub_evidence_digest_match_proof`. This keeps
-the next AP2-N001 step focused on verifier-backed Lean proof/source imports
-rather than changing the Rust evidence reports or reviving any inactive path.
+`f40bb2869f37e27f7a1870940893a8fd8df2e8b4c16aebb1d4832a2da1907673`, and
+exactly two missing active categories: `source_record_definitions` and
+`sub_evidence_digest_match_proof`. The selected Lean report/proof definitions
+now alias verifier-backed Rust evidence, so `evidence_proof_definitions` is no
+longer a blocker. The remaining proof-completeness work is to import the
+selected source-record certificates and prove that the aggregate five-source
+report's sub-digests match the five component certificates, without reviving
+any inactive path.
+The current selected aggregate evidence digest is
+`146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the
+current bridge-audit digest embedded in the Rust-generated aggregate report is
+`ae4a87958c5c0479df16f77b3e8467870dbdbec3e90c6410bcb79f4fac0c0e54`.
+This exposed a closure-design constraint: naively hard-coding the aggregate
+evidence digest or bridge-audit digest back into the Lean file changes the
+Lean source that the bridge audit hashes, which in turn changes the Rust
+aggregate digest. Treat those aggregate literals as externally witnessed
+source-record data until the source-record import route breaks that
+self-reference; do not chase them as if they were stable proof constants.
 Lean now also states negative sanity lemmas for the current selected AP2-N001
 report placeholders: each selected report is proved not to satisfy
 `ReportVerified` and not to satisfy `FactsAllTrue`. These lemmas are not the
@@ -1075,9 +1088,10 @@ requires exact endpoint theorem names for
 theorems cannot make the active byte bridge appear present.
 Active concrete-definition blocker note: Lean now states
 `selectedRustCurrentPlaceholderEvidenceProofDefinitions_impossible`, proving
-that the current fail-closed selected evidence reports cannot supply the
-proof-bearing definitions required by the checklist. This is not closure; it
-records that real verifier-backed evidence must replace the placeholders.
+that the retained fail-closed placeholder evidence reports cannot supply the
+proof-bearing definitions required by the checklist. This is now a negative
+control only: the active selected report/proof names have moved to
+verifier-backed aliases.
 Active source-record blocker note: Lean now also states
 `selectedRustCurrentPlaceholderSourceRecordCertificates_impossible`, proving
 that source certificates over the current placeholder component reports cannot
@@ -1096,8 +1110,10 @@ without flipping final closure.
 Active Lean evidence import note: `Path2HiddenSourceSemanticsBoundary.lean`
 now contains verifier-backed report values under `verifierBacked...` names, plus
 Lean proofs that those imported reports satisfy `ReportVerified` and
-`FactsAllTrue`. The active `selectedRust...` reports remain placeholders, so the
-concrete-definition checklist and final closure remain fail-closed.
+`FactsAllTrue`. The active `selectedRust...` report names now alias those
+verifier-backed values; final closure remains fail-closed because the selected
+source-record certificates, the aggregate/sub-certificate digest-match proof,
+and the aggregate digest self-reference are still unresolved.
 
 ## Findings
 
