@@ -7547,6 +7547,7 @@ pub struct Path2SelectedRustModelConcreteDefinitionChecklistV1 {
 pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub source_record_package_surface_present: bool,
     pub package_sub_evidence_match_reduction_present: bool,
+    pub boundary_base_report_only_not_source_record_closure: bool,
     pub payload_projection_law_definition_present: bool,
     pub extraction_certificate_availability_definition_present: bool,
     pub role_root_lift_source_definition_present: bool,
@@ -8592,11 +8593,28 @@ fn lean_source_selected_rust_definition_body_contains_marker_v1(
     })
 }
 
-pub fn path2_selected_rust_model_source_record_subcheck_v1()
--> Path2SelectedRustModelSourceRecordSubcheckV1 {
-    let boundary_source =
-        include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
+pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
+    boundary_source: &str,
+) -> Path2SelectedRustModelSourceRecordSubcheckV1 {
     let boundary_source = lean_source_without_comments_and_strings_v1(boundary_source);
+    let boundary_base_report_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustBoundaryBaseEvidenceReport",
+            &["ReviewedFq12SelectedRustBoundaryBaseEvidenceReport"],
+        );
+    let boundary_base_report_verified_proof_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustBoundaryBaseEvidenceReportVerifiedProof",
+            &["selectedRustBoundaryBaseEvidenceReport.ReportVerified"],
+        );
+    let boundary_base_report_facts_proof_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustBoundaryBaseEvidenceFactsAllTrueProof",
+            &["selectedRustBoundaryBaseEvidenceReport.FactsAllTrue"],
+        );
     let payload_projection_law_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -8699,6 +8717,13 @@ pub fn path2_selected_rust_model_source_record_subcheck_v1()
         lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1();
     let byte_and_witness_packaged_route_endpoint_present =
         canonical_witness_to_byte_source_adapter_present;
+    let boundary_base_report_only_not_source_record_closure =
+        boundary_base_report_definition_present
+            && boundary_base_report_verified_proof_present
+            && boundary_base_report_facts_proof_present
+            && !payload_projection_law_definition_present
+            && !extraction_certificate_availability_definition_present
+            && !boundary_base_certificate_constructor_bound;
     let missing_selected_source_record_count = [
         payload_projection_law_definition_present,
         extraction_certificate_availability_definition_present,
@@ -8719,6 +8744,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_v1()
     Path2SelectedRustModelSourceRecordSubcheckV1 {
         source_record_package_surface_present,
         package_sub_evidence_match_reduction_present,
+        boundary_base_report_only_not_source_record_closure,
         payload_projection_law_definition_present,
         extraction_certificate_availability_definition_present,
         role_root_lift_source_definition_present,
@@ -8736,6 +8762,13 @@ pub fn path2_selected_rust_model_source_record_subcheck_v1()
         missing_selected_source_record_count,
         all_selected_source_records_present: missing_selected_source_record_count == 0,
     }
+}
+
+pub fn path2_selected_rust_model_source_record_subcheck_v1()
+-> Path2SelectedRustModelSourceRecordSubcheckV1 {
+    let boundary_source =
+        include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
+    path2_selected_rust_model_source_record_subcheck_from_source_v1(boundary_source)
 }
 
 pub fn path2_selected_rust_model_concrete_definition_checklist_v1()
@@ -56005,6 +56038,7 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
         assert!(source_record_subcheck.source_record_package_surface_present);
         assert!(source_record_subcheck.package_sub_evidence_match_reduction_present);
+        assert!(source_record_subcheck.boundary_base_report_only_not_source_record_closure);
         assert!(!source_record_subcheck.payload_projection_law_definition_present);
         assert!(!source_record_subcheck.extraction_certificate_availability_definition_present);
         assert!(!source_record_subcheck.role_root_lift_source_definition_present);
@@ -56205,6 +56239,31 @@ theorem selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof :
             !split_report_predicate_proof_definition_checklist.evidence_proof_definitions_present
         );
         assert!(!split_report_predicate_proof_definition_checklist.all_definitions_present);
+        let boundary_base_report_only_source = r#"
+def selectedRustBoundaryBaseEvidenceReport :
+  ReviewedFq12SelectedRustBoundaryBaseEvidenceReport :=
+  selectedRustBoundaryBaseEvidenceReportValue
+theorem selectedRustBoundaryBaseEvidenceReportVerifiedProof :
+  selectedRustBoundaryBaseEvidenceReport.ReportVerified :=
+  selectedRustBoundaryBaseEvidenceReportVerifiedProofValue
+theorem selectedRustBoundaryBaseEvidenceFactsAllTrueProof :
+  selectedRustBoundaryBaseEvidenceReport.FactsAllTrue :=
+  selectedRustBoundaryBaseEvidenceFactsAllTrueProofValue
+"#;
+        let boundary_base_report_only_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                boundary_base_report_only_source,
+            );
+        assert!(
+            boundary_base_report_only_subcheck.boundary_base_report_only_not_source_record_closure
+        );
+        assert!(!boundary_base_report_only_subcheck.payload_projection_law_definition_present);
+        assert!(
+            !boundary_base_report_only_subcheck
+                .extraction_certificate_availability_definition_present
+        );
+        assert!(!boundary_base_report_only_subcheck.boundary_base_certificate_constructor_bound);
+        assert!(!boundary_base_report_only_subcheck.all_selected_source_records_present);
         let untyped_source_record_definition_source = r#"
 def selectedRustPayloadProjectionLaw := selectedRustPayloadProjectionLawValue
 def selectedRustExtractionCertificateAvailability := selectedRustExtractionCertificateAvailabilityValue
@@ -56450,6 +56509,19 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             complete_concrete_definition_checklist.missing_definition_category_count,
             0
         );
+        let complete_source_record_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                complete_concrete_definition_source,
+            );
+        assert!(
+            !complete_source_record_subcheck.boundary_base_report_only_not_source_record_closure
+        );
+        assert!(complete_source_record_subcheck.payload_projection_law_definition_present);
+        assert!(
+            complete_source_record_subcheck.extraction_certificate_availability_definition_present
+        );
+        assert!(complete_source_record_subcheck.boundary_base_certificate_constructor_bound);
+        assert!(complete_source_record_subcheck.all_selected_source_records_present);
         let anonymous_certificate_definition_source = complete_concrete_definition_source.replacen(
             "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources\n    selectedRustBoundaryBaseEvidenceReport\n    selectedRustBoundaryBaseEvidenceDigest\n    selectedRustBoundaryBaseEvidenceReportVerifiedProof\n    selectedRustBoundaryBaseEvidenceFactsAllTrueProof\n    selectedRustPayloadProjectionLaw\n    selectedRustExtractionCertificateAvailability",
             "selectedRustBoundaryBaseCertificateValue",

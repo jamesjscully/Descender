@@ -1157,6 +1157,16 @@ The manifest reports `source_record_package_surface_present = true` and
 `package_sub_evidence_match_reduction_present = true`; this reduces the
 remaining source-record work to importing the raw selected sources themselves,
 while leaving aggregate evidence-digest closure separate.
+Boundary-base source check: a direct scan of the active Lean path shows the
+selected boundary-base report and its `ReportVerified`/`FactsAllTrue` proofs
+are evidence only. They do not construct
+`selectedRustPayloadProjectionLaw`,
+`selectedRustExtractionCertificateAvailability`, or
+`selectedRustBoundaryBaseCertificate`; those are semantic selected-source
+records over the concrete `Predicates` interpretation. The Rust subcheck now
+emits `boundary_base_report_only_not_source_record_closure = true` for the
+current active file, with a regression showing the flag clears only when the
+raw source terms and named boundary-base certificate constructor are present.
 
 ## Findings
 

@@ -503,6 +503,16 @@ report/digest/proof/source constructors, and
 derives the aggregate sub-evidence match from selected component digest
 equalities. The manifest now reports both package-surface booleans true, while
 the twelve concrete selected source bindings remain absent.
+Boundary-base source audit: report verification is not the payload projection
+law or extraction-certificate availability theorem. The active file currently
+has verifier-backed boundary-base evidence, but no
+`selectedRustPayloadProjectionLaw`, no
+`selectedRustExtractionCertificateAvailability`, and no constructor-bound
+`selectedRustBoundaryBaseCertificate`. The manifest now exposes this exact
+state as `boundary_base_report_only_not_source_record_closure = true`, and the
+Rust regression checks that a report-only fixture remains fail-closed while a
+fixture with the raw sources plus named certificate constructor clears the
+flag.
 
 P2FS-001 latest hardening: `ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources` is now the named Lean constructor for the final selected Rust/model certificate. The certificate now carries an aggregate five-source `evidenceDigest`, and the Rust `extractor_theorem_instantiated` gate requires the future final theorem to use that constructor with the verified five-source evidence report, aggregate evidence digest, all-true facts proof, and selected source packages before deriving `toClosureInputs`; a raw certificate record literal, empty digest literal, `sorry`, or `admit` no longer satisfies the AP2-N001 source gate.
 
