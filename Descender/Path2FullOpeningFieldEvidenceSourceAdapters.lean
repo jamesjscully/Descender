@@ -3536,6 +3536,25 @@ structure ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate
 
 namespace ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate
 
+/-- Named constructor for the role-root/lift evidence certificate. -/
+def ofReportAndSource
+    {P : Predicates}
+    (evidenceReport :
+      ReviewedFq12SelectedRustRoleRootLiftEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (evidenceReportVerifiedProof :
+      evidenceReport.ReportVerified)
+    (evidenceFactsAllTrueProof :
+      evidenceReport.FactsAllTrue)
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P) :
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P where
+  evidenceReport := evidenceReport
+  evidenceDigest := evidenceDigest
+  evidenceReportVerifiedProof := evidenceReportVerifiedProof
+  evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
+  roleRootLiftSource := roleRootLiftSource
+
 /-- Expose the role-root/lift source only after consuming report proofs. -/
 def toRoleRootLiftSource
     {P : Predicates}
@@ -3921,6 +3940,28 @@ structure ReviewedFq12SelectedRustFieldLocalEvidenceCertificate
     ReviewedFq12FieldConcreteCompatibilitySource P
 
 namespace ReviewedFq12SelectedRustFieldLocalEvidenceCertificate
+
+/-- Named constructor for the field/local evidence certificate. -/
+def ofReportAndSources
+    {P : Predicates}
+    (evidenceReport :
+      ReviewedFq12SelectedRustFieldLocalEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (evidenceReportVerifiedProof :
+      evidenceReport.ReportVerified)
+    (evidenceFactsAllTrueProof :
+      evidenceReport.FactsAllTrue)
+    (assemblySource :
+      ReviewedFq12FieldConcreteAssemblyLocalSource P)
+    (compatibilitySource :
+      ReviewedFq12FieldConcreteCompatibilitySource P) :
+    ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P where
+  evidenceReport := evidenceReport
+  evidenceDigest := evidenceDigest
+  evidenceReportVerifiedProof := evidenceReportVerifiedProof
+  evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
+  assemblySource := assemblySource
+  compatibilitySource := compatibilitySource
 
 /-- Expose the assembly source only after consuming report proofs. -/
 def toAssemblySource
@@ -5072,6 +5113,31 @@ structure ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
       CanonicalParser WitnessParser P
 
 namespace ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+
+/-- Named constructor for the shared digest-frame witness evidence certificate. -/
+def ofReportAndSources
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (evidenceReport :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (evidenceReportVerifiedProof :
+      evidenceReport.ReportVerified)
+    (evidenceFactsAllTrueProof :
+      evidenceReport.FactsAllTrue)
+    (witnessSources :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+      CanonicalParser WitnessParser P where
+  evidenceReport := evidenceReport
+  evidenceDigest := evidenceDigest
+  evidenceReportVerifiedProof := evidenceReportVerifiedProof
+  evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
+  witnessSources := witnessSources
 
 /-- Expose the shared witness sources only after consuming report proofs. -/
 def toWitnessSources

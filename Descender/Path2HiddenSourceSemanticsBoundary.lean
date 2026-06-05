@@ -361,6 +361,33 @@ structure ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate
 
 namespace ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate
 
+/-- Named constructor for the base-boundary evidence certificate. -/
+def ofReportAndSources
+    {P : Predicates}
+    (evidenceReport :
+      ReviewedFq12SelectedRustBoundaryBaseEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (evidenceReportVerifiedProof :
+      evidenceReport.ReportVerified)
+    (evidenceFactsAllTrueProof :
+      evidenceReport.FactsAllTrue)
+    (payloadProjectsFrom :
+      forall {b : Path2NativeBoundary.Boundary}
+          {payload : ReviewedFq12HiddenSourcePayload},
+        P.reviewedFq12PayloadAccepts b payload ->
+          payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+            payload.slotId = b.context.slotId ->
+          P.reviewedFq12PayloadProjectsFrom b payload)
+    (certificateAvailability :
+      ReviewedFq12ExtractionCertificateAvailability P) :
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P where
+  evidenceReport := evidenceReport
+  evidenceDigest := evidenceDigest
+  evidenceReportVerifiedProof := evidenceReportVerifiedProof
+  evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
+  payloadProjectsFrom := payloadProjectsFrom
+  certificateAvailability := certificateAvailability
+
 /-- Expose payload projection only after consuming report proofs. -/
 def toPayloadProjectsFrom
     {P : Predicates}

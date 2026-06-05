@@ -817,6 +817,29 @@ structure SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
 
 namespace SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
 
+/-- Named constructor for the selected source-route evidence certificate. -/
+def ofReportAndSource
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {P : Predicates}
+    (evidenceReport :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (evidenceReportVerifiedProof :
+      evidenceReport.ReportVerified)
+    (evidenceFactsAllTrueProof :
+      evidenceReport.FactsAllTrue)
+    (selectedSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P) :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+      FieldParser RouteParser P where
+  evidenceReport := evidenceReport
+  evidenceDigest := evidenceDigest
+  evidenceReportVerifiedProof := evidenceReportVerifiedProof
+  evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
+  selectedSource := selectedSource
+
 /-- Expose the selected byte source only after consuming the report proofs. -/
 def toByteSource
     {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
