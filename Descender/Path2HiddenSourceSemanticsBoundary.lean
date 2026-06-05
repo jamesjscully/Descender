@@ -2168,6 +2168,10 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
   activeBoundaryPredicateModelPinned : Prop
   activeBoundaryPredicateModelPinnedProof :
     activeBoundaryPredicateModelPinned
+  payloadAcceptanceNotVacuous :
+    ¬ (forall b payload, ¬ predicates.reviewedFq12PayloadAccepts b payload)
+  boundaryBreaksNotUniversal :
+    ¬ (forall c b breakEvent, predicates.boundaryBreakFor c b breakEvent)
   reviewedFq12PayloadAcceptanceModeled : Prop
   reviewedFq12PayloadAcceptanceModeledProof :
     reviewedFq12PayloadAcceptanceModeled
