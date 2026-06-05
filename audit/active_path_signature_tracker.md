@@ -914,6 +914,12 @@ exactly three missing active categories: `evidence_proof_definitions`,
 `source_record_definitions`, and `sub_evidence_digest_match_proof`. This keeps
 the next AP2-N001 step focused on verifier-backed Lean proof/source imports
 rather than changing the Rust evidence reports or reviving any inactive path.
+Lean now also states negative sanity lemmas for the current selected AP2-N001
+report placeholders: each selected report is proved not to satisfy
+`ReportVerified` and not to satisfy `FactsAllTrue`. These lemmas are not the
+future proof objects and intentionally do not reduce the checklist missing
+count; they make explicit that the present Lean report definitions are
+fail-closed targets, not usable evidence.
 
 ## Findings
 

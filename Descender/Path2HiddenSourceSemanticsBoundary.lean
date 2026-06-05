@@ -624,6 +624,84 @@ def selectedRustSharedFrameWitnessEvidenceReport :
   digestFrameWitnessVerifierPinned := false
   sharedDigestFrameNegativeControlsPassed := false
 
+/--
+The current selected five-source report is intentionally not proof-bearing.
+
+These negative lemmas are sanity checks for the fail-closed boundary: the
+future AP2-N001 theorem must replace the selected report/proof source with
+verifier-backed evidence, not reuse this placeholder report as if it were
+verified.
+-/
+theorem selectedRustFiveSourceEvidenceReport_not_reportVerified :
+    ¬ selectedRustFiveSourceEvidenceReport.ReportVerified := by
+  simp [selectedRustFiveSourceEvidenceReport,
+    ReviewedFq12SelectedRustFiveSourceClosureEvidence.ReportVerified]
+
+theorem selectedRustFiveSourceEvidenceReport_not_factsAllTrue :
+    ¬ selectedRustFiveSourceEvidenceReport.FactsAllTrue := by
+  simp [selectedRustFiveSourceEvidenceReport,
+    ReviewedFq12SelectedRustFiveSourceClosureEvidence.FactsAllTrue]
+
+/-- The current base-boundary report is intentionally fail-closed. -/
+theorem selectedRustBoundaryBaseEvidenceReport_not_reportVerified :
+    ¬ selectedRustBoundaryBaseEvidenceReport.ReportVerified := by
+  simp [selectedRustBoundaryBaseEvidenceReport,
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceReport.ReportVerified]
+
+/-- The current base-boundary report does not prove its component facts. -/
+theorem selectedRustBoundaryBaseEvidenceReport_not_factsAllTrue :
+    ¬ selectedRustBoundaryBaseEvidenceReport.FactsAllTrue := by
+  simp [selectedRustBoundaryBaseEvidenceReport,
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceReport.FactsAllTrue]
+
+/-- The current role-root/lift report is intentionally fail-closed. -/
+theorem selectedRustRoleRootLiftEvidenceReport_not_reportVerified :
+    ¬ selectedRustRoleRootLiftEvidenceReport.ReportVerified := by
+  simp [selectedRustRoleRootLiftEvidenceReport,
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceReport.ReportVerified]
+
+/-- The current role-root/lift report does not prove its component facts. -/
+theorem selectedRustRoleRootLiftEvidenceReport_not_factsAllTrue :
+    ¬ selectedRustRoleRootLiftEvidenceReport.FactsAllTrue := by
+  simp [selectedRustRoleRootLiftEvidenceReport,
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceReport.FactsAllTrue]
+
+/-- The current source-route report is intentionally fail-closed. -/
+theorem selectedRustSourceRouteEvidenceReport_not_reportVerified :
+    ¬ selectedRustSourceRouteEvidenceReport.ReportVerified := by
+  simp [selectedRustSourceRouteEvidenceReport,
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport.ReportVerified]
+
+/-- The current source-route report does not prove its component facts. -/
+theorem selectedRustSourceRouteEvidenceReport_not_factsAllTrue :
+    ¬ selectedRustSourceRouteEvidenceReport.FactsAllTrue := by
+  simp [selectedRustSourceRouteEvidenceReport,
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport.FactsAllTrue]
+
+/-- The current field/local report is intentionally fail-closed. -/
+theorem selectedRustFieldLocalEvidenceReport_not_reportVerified :
+    ¬ selectedRustFieldLocalEvidenceReport.ReportVerified := by
+  simp [selectedRustFieldLocalEvidenceReport,
+    ReviewedFq12SelectedRustFieldLocalEvidenceReport.ReportVerified]
+
+/-- The current field/local report does not prove its component facts. -/
+theorem selectedRustFieldLocalEvidenceReport_not_factsAllTrue :
+    ¬ selectedRustFieldLocalEvidenceReport.FactsAllTrue := by
+  simp [selectedRustFieldLocalEvidenceReport,
+    ReviewedFq12SelectedRustFieldLocalEvidenceReport.FactsAllTrue]
+
+/-- The current shared-frame witness report is intentionally fail-closed. -/
+theorem selectedRustSharedFrameWitnessEvidenceReport_not_reportVerified :
+    ¬ selectedRustSharedFrameWitnessEvidenceReport.ReportVerified := by
+  simp [selectedRustSharedFrameWitnessEvidenceReport,
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport.ReportVerified]
+
+/-- The current shared-frame witness report does not prove its component facts. -/
+theorem selectedRustSharedFrameWitnessEvidenceReport_not_factsAllTrue :
+    ¬ selectedRustSharedFrameWitnessEvidenceReport.FactsAllTrue := by
+  simp [selectedRustSharedFrameWitnessEvidenceReport,
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport.FactsAllTrue]
+
 /-- Concrete digest of the public Rust five-source evidence report. -/
 def selectedRustFiveSourceEvidenceDigest : ByteArray :=
   ByteArray.mk #[11, 182, 157, 92, 3, 36, 31, 145, 79, 21, 67, 87, 94, 61,
