@@ -197,15 +197,24 @@ fn main() -> Result<(), String> {
                 source_record_subcheck.native_boundary_semantics_package_target_present,
             "native_boundary_semantics_source_package_target_present":
                 source_record_subcheck.native_boundary_semantics_source_package_target_present,
+            "native_boundary_certified_semantics_source_package_target_present":
+                source_record_subcheck
+                    .native_boundary_certified_semantics_source_package_target_present,
             "native_boundary_semantics_package_handoff_present":
                 source_record_subcheck.native_boundary_semantics_package_handoff_present,
             "native_boundary_semantics_source_package_handoff_present":
                 source_record_subcheck.native_boundary_semantics_source_package_handoff_present,
+            "native_boundary_certified_semantics_source_package_handoff_present":
+                source_record_subcheck
+                    .native_boundary_certified_semantics_source_package_handoff_present,
             "native_boundary_semantics_package_bound_handoff_present":
                 source_record_subcheck.native_boundary_semantics_package_bound_handoff_present,
             "native_boundary_semantics_source_package_bound_handoff_present":
                 source_record_subcheck
                     .native_boundary_semantics_source_package_bound_handoff_present,
+            "native_boundary_certified_semantics_source_package_bound_handoff_present":
+                source_record_subcheck
+                    .native_boundary_certified_semantics_source_package_bound_handoff_present,
             "full_spend_concrete_predicates_are_separate_model":
                 source_record_subcheck.full_spend_concrete_predicates_are_separate_model,
             "native_boundary_concrete_predicate_model_present":

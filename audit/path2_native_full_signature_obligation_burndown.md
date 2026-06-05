@@ -191,6 +191,14 @@ and binding obligation currently required by the predicate-model source. Its
 does not close AP2-N001; it makes the missing concrete Rust predicate-model
 certificate the next named import rather than a collection of bare `Prop`
 labels.
+The route is now wired into
+`ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage`, which
+contains the predicate-model certificate and the selected source-record package
+for `predicateModelCertificate.toSource.toPredicates`. That certified package
+has accepted-spend, full-signature, and active-forgery-bound handoffs. The
+manifest exposes these as the certified semantics-source package target,
+handoff, and bound-handoff bits, all while
+`native_boundary_concrete_predicate_model_present` remains false.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It

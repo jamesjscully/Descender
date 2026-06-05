@@ -2658,6 +2658,27 @@ structure ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage
       FieldParser RouteParser CanonicalParser WitnessParser
         predicateModel.toPredicates
 
+/--
+Certificate-shaped native-boundary semantics import target.
+
+This is the preferred active AP2-N001 import shape: a proof-bearing selected
+Rust predicate-model certificate, followed by source records for exactly the
+predicate interpretation exposed through that certificate.
+-/
+structure ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+    (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)
+    (RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser)
+    (CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser) where
+  predicateModelCertificate :
+    ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate
+  sourceRecords :
+    ReviewedFq12SelectedRustModelSourceRecordPackage
+      FieldParser RouteParser CanonicalParser WitnessParser
+        predicateModelCertificate.toSource.toPredicates
+
 namespace ReviewedFq12SelectedRustNativeBoundarySemanticsPackage
 
 /-- Hidden-source closure from a concrete native-boundary semantics package. -/
@@ -2715,6 +2736,48 @@ def hiddenSourceClosure
   (Package.toSemanticsPackage).hiddenSourceClosure
 
 end ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage
+
+namespace ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+
+/--
+Forget the predicate-model certificate into the older source-shaped semantics
+package.  This keeps existing closure reductions reusable while making the
+preferred import boundary certificate-shaped.
+-/
+def toSemanticsSourcePackage
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Package :
+      ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage
+      FieldParser RouteParser CanonicalParser WitnessParser where
+  predicateModel := Package.predicateModelCertificate.toSource
+  sourceRecords := Package.sourceRecords
+
+/--
+Hidden-source closure supplied by the certificate-shaped semantics source
+package.
+-/
+def hiddenSourceClosure
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Package :
+      ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed
+      Package.predicateModelCertificate.toSource.toPredicates :=
+  (Package.toSemanticsSourcePackage).hiddenSourceClosure
+
+end ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
 
 /--
 Active AP2-N001 boundary closure from the single concrete model input record.
@@ -2845,6 +2908,28 @@ theorem with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_bound
         FieldParser RouteParser CanonicalParser WitnessParser) :
     (NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure
       B Package.predicateModel.toPredicates).hiddenSourceProofSemanticsClosed :=
+  with_reviewed_fq12_hidden_source_closure_closed
+    B
+    Package.hiddenSourceClosure
+
+/--
+The accepted-spend boundary field closes from a certificate-shaped
+native-boundary semantics package.
+-/
+theorem with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_certified_semantics_source_package
+    (B : NativeAcceptedSpendSoundnessBoundary)
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Package :
+      ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    (NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure
+      B Package.predicateModelCertificate.toSource.toPredicates
+        ).hiddenSourceProofSemanticsClosed :=
   with_reviewed_fq12_hidden_source_closure_closed
     B
     Package.hiddenSourceClosure
@@ -3001,6 +3086,28 @@ theorem full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_ru
     Package.hiddenSourceClosure
 
 /--
+The full-signature boundary can consume a certificate-shaped native-boundary
+semantics source package directly.
+-/
+theorem full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_certified_semantics_source_package
+    (B : NativeFullSignatureSecurityBoundary)
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Package :
+      ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+      B Package.predicateModelCertificate.toSource.toPredicates
+      Package.hiddenSourceClosure).acceptedSpendSoundness.hiddenSourceProofSemanticsClosed :=
+  full_signature_with_reviewed_fq12_hidden_source_closure_closed
+    B
+    Package.hiddenSourceClosure
+
+/--
 Once the active native-boundary semantics package is supplied, the existing
 full-signature theorem yields the active Path 2 forgery bound for the wrapped
 boundary.  This is still conditional on constructing the package; it does not
@@ -3053,6 +3160,32 @@ theorem full_signature_active_path_forgery_bound_from_selected_rust_native_bound
   NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound
     (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
       B Package.predicateModel.toPredicates
+      Package.hiddenSourceClosure)
+
+/--
+The certificate-shaped native-boundary semantics source package also reaches
+the active Path 2 forgery bound.
+-/
+theorem full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_certified_semantics_source_package
+    (B : NativeFullSignatureSecurityBoundary)
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Package :
+      ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+      B Package.predicateModelCertificate.toSource.toPredicates
+      Package.hiddenSourceClosure).fullSignatureSuccessProb <=
+      (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+        B Package.predicateModelCertificate.toSource.toPredicates
+        Package.hiddenSourceClosure).activePathForgeryBound :=
+  NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound
+    (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+      B Package.predicateModelCertificate.toSource.toPredicates
       Package.hiddenSourceClosure)
 
 /--

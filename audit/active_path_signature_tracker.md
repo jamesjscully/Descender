@@ -1233,6 +1233,11 @@ The target route now names the proof-bearing replacement surface:
 `native_boundary_predicate_model_certificate_to_source_present = true`.
 The certificate is the intended import object for the concrete active Rust
 native-boundary predicate interpretation before source records are supplied.
+That route is now packaged as
+`ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage`, and
+the manifest reports certified-package target, handoff, and bound-handoff bits
+as true. It still remains conditional on importing the concrete certificate
+and source records.
 This pins the current failure mode as a missing concrete native-boundary
 semantics import, not a missing byte/digest evidence report.
 Lean now names that import target as
