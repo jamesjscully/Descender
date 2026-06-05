@@ -303,6 +303,8 @@ pub const PATH2_SLOT_CONSUME_SINGLE_DOMAIN: &str = "DESCENDER_SLOT_CONSUME_SINGL
 pub const PATH2_PUBLIC_ADMISSION_VIEW_SCHEMA: &str = "DESCENDER_PATH2_PUBLIC_ADMISSION_VIEW_V1";
 pub const PATH2_DIRECT_QUERY_BUDGET_SCHEMA: &str = "DESCENDER_PATH2_DIRECT_QUERY_BUDGET_V1";
 pub const PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA: &str = "Descender.Path2.NativeHashQromReview.v1";
+pub const PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.NativeHashByteDomainEvidence.v1";
 pub const PATH2_DIRECT_CREATION_PROOF_PAYLOAD_SCHEMA: &str =
     "DESCENDER_PATH2_DIRECT_CREATION_PROOF_PAYLOAD_V1";
 pub const PATH2_CREATION_PROOF_BINDING_SCHEMA: &str = "DESCENDER_PATH2_CREATION_PROOF_BINDING_V1";
@@ -3682,6 +3684,22 @@ pub struct Path2NativeHashQromReviewV1 {
     pub active_native_query_symbols: [&'static str; 14],
     pub ordinary_hash_assumptions: [&'static str; 9],
     pub hidden_witness_obligations_not_discharged_by_hash: [&'static str; 5],
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2NativeHashByteDomainEvidenceV1 {
+    pub schema: &'static str,
+    pub checked_core_frame_domain: &'static str,
+    pub hidden_source_frame_domain: &'static str,
+    pub projection_carrier_domain: &'static str,
+    pub account_lifecycle_domain: &'static str,
+    pub checked_core_frame_domain_pinned: bool,
+    pub hidden_source_frame_domain_pinned: bool,
+    pub projection_carrier_domain_pinned: bool,
+    pub account_lifecycle_domain_pinned: bool,
+    pub all_domains_disjoint: bool,
+    pub all_domains_registered: bool,
+    pub negative_control_duplicate_rejected: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -20861,6 +20879,154 @@ pub fn path2_native_hash_qrom_review_v1() -> Path2NativeHashQromReviewV1 {
     }
 }
 
+pub fn path2_native_hash_byte_domain_evidence_v1() -> Path2NativeHashByteDomainEvidenceV1 {
+    let domains = [
+        PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN,
+        REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN,
+        REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN,
+        PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN,
+    ];
+    let registered = production_registered_domain_schema_constants();
+    let all_domains_registered = domains.iter().all(|domain| {
+        registered
+            .iter()
+            .any(|(_, registered)| registered == domain)
+    });
+    let mut seen = BTreeSet::new();
+    let all_domains_disjoint = domains.iter().all(|domain| seen.insert(*domain));
+    let mut duplicate_seen = BTreeSet::new();
+    let negative_control_duplicate_rejected = ![
+        PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN,
+        PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN,
+    ]
+    .iter()
+    .all(|domain| duplicate_seen.insert(*domain));
+    Path2NativeHashByteDomainEvidenceV1 {
+        schema: PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA,
+        checked_core_frame_domain: PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN,
+        hidden_source_frame_domain: REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN,
+        projection_carrier_domain: REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN,
+        account_lifecycle_domain: PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN,
+        checked_core_frame_domain_pinned: PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN
+            == "Descender.Path2.NativeCheckedCoreFrame.v1",
+        hidden_source_frame_domain_pinned: REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN
+            == "Descender.Signature.q12289.local_delta.reviewed_fq12_hidden_source_statement.v1",
+        projection_carrier_domain_pinned:
+            REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN
+                == "Descender.Signature.q12289.local_delta.reviewed_fq12_state_assisted_projection_carrier_binding.v1",
+        account_lifecycle_domain_pinned: PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN
+            == "Descender.Path2.NativeProjection.Lifecycle.v1",
+        all_domains_disjoint,
+        all_domains_registered,
+        negative_control_duplicate_rejected,
+    }
+}
+
+pub fn path2_native_hash_byte_domain_evidence_all_facts_true(
+    evidence: &Path2NativeHashByteDomainEvidenceV1,
+) -> bool {
+    evidence.checked_core_frame_domain_pinned
+        && evidence.hidden_source_frame_domain_pinned
+        && evidence.projection_carrier_domain_pinned
+        && evidence.account_lifecycle_domain_pinned
+        && evidence.all_domains_disjoint
+        && evidence.all_domains_registered
+        && evidence.negative_control_duplicate_rejected
+}
+
+pub fn path2_native_hash_byte_domain_evidence_v1_frame(
+    evidence: &Path2NativeHashByteDomainEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_frame(
+        &mut frame,
+        b"checked_core_frame_domain",
+        evidence.checked_core_frame_domain.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"hidden_source_frame_domain",
+        evidence.hidden_source_frame_domain.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"projection_carrier_domain",
+        evidence.projection_carrier_domain.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"account_lifecycle_domain",
+        evidence.account_lifecycle_domain.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_frame_domain_pinned",
+        u64::from(evidence.checked_core_frame_domain_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"hidden_source_frame_domain_pinned",
+        u64::from(evidence.hidden_source_frame_domain_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"projection_carrier_domain_pinned",
+        u64::from(evidence.projection_carrier_domain_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"account_lifecycle_domain_pinned",
+        u64::from(evidence.account_lifecycle_domain_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"all_domains_disjoint",
+        u64::from(evidence.all_domains_disjoint),
+    );
+    append_u64(
+        &mut frame,
+        b"all_domains_registered",
+        u64::from(evidence.all_domains_registered),
+    );
+    append_u64(
+        &mut frame,
+        b"negative_control_duplicate_rejected",
+        u64::from(evidence.negative_control_duplicate_rejected),
+    );
+    frame
+}
+
+pub fn path2_native_hash_byte_domain_evidence_v1_digest(
+    evidence: &Path2NativeHashByteDomainEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    if evidence.schema != PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA {
+        return Err("Path 2 native hash byte-domain evidence schema mismatch".to_string());
+    }
+    if evidence.checked_core_frame_domain != PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN
+        || evidence.hidden_source_frame_domain != REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN
+        || evidence.projection_carrier_domain
+            != REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN
+        || evidence.account_lifecycle_domain != PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN
+    {
+        return Err("Path 2 native hash byte-domain evidence domain mismatch".to_string());
+    }
+    if !path2_native_hash_byte_domain_evidence_all_facts_true(evidence) {
+        return Err("Path 2 native hash byte-domain evidence facts are incomplete".to_string());
+    }
+    Ok(Sha256::digest(path2_native_hash_byte_domain_evidence_v1_frame(evidence)).into())
+}
+
+pub fn verify_path2_native_hash_byte_domain_evidence_v1(
+    evidence: &Path2NativeHashByteDomainEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let expected = path2_native_hash_byte_domain_evidence_v1();
+    if evidence != &expected {
+        return Err("Path 2 native hash byte-domain evidence mismatch".to_string());
+    }
+    path2_native_hash_byte_domain_evidence_v1_digest(evidence)
+}
+
 fn path2_native_hash_qrom_review_source_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
 
@@ -21596,8 +21762,66 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
         && domain_source.contains("theorem fiftyFourBitAggregateTargetHorizon_not_priced")
 }
 
+fn path2_native_hash_byte_domain_evidence_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+    let Some(struct_start) = source.find("\npub struct Path2NativeHashByteDomainEvidenceV1") else {
+        return false;
+    };
+    let Some(struct_end_offset) =
+        source[struct_start..].find("\npub struct Path2NativeDeploymentPreflightV1")
+    else {
+        return false;
+    };
+    let struct_end = struct_start + struct_end_offset;
+    let struct_window = &source[struct_start..struct_end];
+
+    let Some(function_start) = source.find("\npub fn path2_native_hash_byte_domain_evidence_v1()")
+    else {
+        return false;
+    };
+    let Some(function_end_offset) =
+        source[function_start..].find("\nfn path2_native_hash_qrom_review_source_present_v1")
+    else {
+        return false;
+    };
+    let function_end = function_start + function_end_offset;
+    let function_window = &source[function_start..function_end];
+
+    let struct_checks = [
+        "Path2NativeHashByteDomainEvidenceV1",
+        "checked_core_frame_domain",
+        "hidden_source_frame_domain",
+        "projection_carrier_domain",
+        "account_lifecycle_domain",
+        "all_domains_disjoint",
+        "all_domains_registered",
+        "negative_control_duplicate_rejected",
+    ];
+    let function_checks = [
+        "PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA",
+        "PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN",
+        "REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN",
+        "REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN",
+        "PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN",
+        "production_registered_domain_schema_constants()",
+        "BTreeSet::new()",
+        "path2_native_hash_byte_domain_evidence_all_facts_true",
+        "path2_native_hash_byte_domain_evidence_v1_frame",
+        "path2_native_hash_byte_domain_evidence_v1_digest",
+        "verify_path2_native_hash_byte_domain_evidence_v1",
+        "negative_control_duplicate_rejected",
+    ];
+    struct_checks
+        .iter()
+        .all(|marker| struct_window.contains(marker))
+        && function_checks
+            .iter()
+            .all(|marker| function_window.contains(marker))
+}
+
 pub fn path2_auxiliary_fq12_qrom_horizon_complete_v1() -> bool {
     let review = path2_native_hash_qrom_review_v1();
+    let byte_domain_evidence = path2_native_hash_byte_domain_evidence_v1();
     review.algebraic_challenge_bytes == 23
         && review.challenge_hardening_bytes == 4
         && review.algebraic_challenge_last_byte_mask == 0x3f
@@ -21611,6 +21835,8 @@ pub fn path2_auxiliary_fq12_qrom_horizon_complete_v1() -> bool {
         && review.selected_multi_target_horizon_log2 <= review.minimum_deployment_margin_bits
         && review.negative_control_horizon_log2 > review.minimum_deployment_margin_bits
         && path2_active_native_hash_budget_boundary_source_present_v1()
+        && path2_native_hash_byte_domain_evidence_source_present_v1()
+        && verify_path2_native_hash_byte_domain_evidence_v1(&byte_domain_evidence).is_ok()
 }
 
 fn path2_full_signature_execution_source_boundary_present_v1() -> bool {
@@ -23193,6 +23419,7 @@ fn path2_native_global_domain_registry_source_present_v1() -> bool {
         "PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN",
         "PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA",
         "PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA",
+        "PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA",
     ];
     let active_test_checks = [
         "path2_active_native_domains_and_public_schemas_are_unique",
@@ -23235,7 +23462,7 @@ fn path2_native_global_domain_registry_source_present_v1() -> bool {
         "PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA",
         "PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA",
         "PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA",
-        "active_native_values.len(), 37",
+        "active_native_values.len(), 38",
         "label.starts_with(\"PATH2_NATIVE_\") || label.starts_with(\"PATH2_PUBLIC_NATIVE_\")",
         "active native registry value collides with non-native",
     ];
@@ -23276,11 +23503,13 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "Path2NativeConsensusCarrierPreflightReportV1",
         "Path2NativeCheckedCoreByteInstantiationEvidenceV1",
         "Path2NativeNoExportSerializerEvidenceV1",
+        "Path2NativeHashByteDomainEvidenceV1",
         "Path2ReviewedFq12FiveSourceClosureEvidenceV1",
         "Path2NativeDeploymentPreflightV1",
         "Path2NativeVerifierPipelineVerdictV1",
         "PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA",
         "PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA",
+        "PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA",
         "PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA",
         "path2_native_consensus_carrier_v1_from_assembly",
         "validate_path2_native_consensus_carrier_v1",
@@ -23294,6 +23523,11 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "path2_native_deployment_preflight_v1",
         "path2_native_deployment_preflight_v1_frame",
         "path2_native_deployment_preflight_v1_digest",
+        "path2_native_hash_byte_domain_evidence_v1",
+        "path2_native_hash_byte_domain_evidence_all_facts_true",
+        "path2_native_hash_byte_domain_evidence_v1_frame",
+        "path2_native_hash_byte_domain_evidence_v1_digest",
+        "verify_path2_native_hash_byte_domain_evidence_v1",
         "verify_path2_native_deployment_pipeline_v1",
         "path2_native_verifier_pipeline_verdict_v1_frame",
         "path2_native_verifier_pipeline_verdict_v1_digest",
@@ -27598,6 +27832,10 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA",
             PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA,
+        ),
+        (
+            "PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA",
+            PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA,
         ),
         (
             "PATH2_DIRECT_CREATION_PROOF_PAYLOAD_SCHEMA",
@@ -41887,7 +42125,7 @@ mod tests {
             })
             .map(|(_, value)| *value)
             .collect();
-        assert_eq!(active_native_values.len(), 37);
+        assert_eq!(active_native_values.len(), 38);
         for active in active_native_values {
             for (label, value) in &registry {
                 if label.starts_with("PATH2_NATIVE_") || label.starts_with("PATH2_PUBLIC_NATIVE_") {
@@ -43834,6 +44072,45 @@ mod tests {
         assert_eq!(review.selected_multi_target_horizon_log2, 32);
         assert_eq!(review.negative_control_horizon_log2, 54);
         assert!(path2_active_native_hash_budget_boundary_source_present_v1());
+        assert!(path2_native_hash_byte_domain_evidence_source_present_v1());
+        let byte_domain_evidence = path2_native_hash_byte_domain_evidence_v1();
+        assert_eq!(
+            byte_domain_evidence.schema,
+            PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA
+        );
+        assert_eq!(
+            byte_domain_evidence.checked_core_frame_domain,
+            PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN
+        );
+        assert_eq!(
+            byte_domain_evidence.hidden_source_frame_domain,
+            REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN
+        );
+        assert_eq!(
+            byte_domain_evidence.projection_carrier_domain,
+            REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN
+        );
+        assert_eq!(
+            byte_domain_evidence.account_lifecycle_domain,
+            PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN
+        );
+        assert!(path2_native_hash_byte_domain_evidence_all_facts_true(
+            &byte_domain_evidence
+        ));
+        let byte_domain_digest =
+            path2_native_hash_byte_domain_evidence_v1_digest(&byte_domain_evidence).unwrap();
+        assert_eq!(
+            verify_path2_native_hash_byte_domain_evidence_v1(&byte_domain_evidence).unwrap(),
+            byte_domain_digest
+        );
+        let mut tampered_byte_domain_evidence = byte_domain_evidence.clone();
+        tampered_byte_domain_evidence.hidden_source_frame_domain =
+            PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN;
+        tampered_byte_domain_evidence.all_domains_disjoint = false;
+        assert!(
+            verify_path2_native_hash_byte_domain_evidence_v1(&tampered_byte_domain_evidence)
+                .is_err()
+        );
         assert!(path2_auxiliary_fq12_qrom_horizon_complete_v1());
         let commented_budget_markers = r#"
 /-
