@@ -982,6 +982,12 @@ current placeholder aggregate report cannot match certificates carrying the
 selected public Rust digest constants; replacing the placeholder with
 verifier-backed selected evidence is a real proof obligation, not a naming
 cleanup.
+Lean now also proves
+`selectedRustModelFiveSourceCertificate_not_from_current_placeholder_report`:
+no final selected Rust/model five-source certificate can carry the current
+placeholder aggregate report, because the certificate contains a
+`ReportVerified` proof and the placeholder report is already proved not
+verified.
 
 ## Findings
 

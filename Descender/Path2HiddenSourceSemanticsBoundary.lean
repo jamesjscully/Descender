@@ -911,6 +911,30 @@ structure ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
     ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
       CanonicalParser WitnessParser P
 
+/--
+No final selected Rust/model certificate can carry the current placeholder
+aggregate evidence report.
+
+The certificate contains a proof of `ReportVerified`; the placeholder report is
+proved not to satisfy that predicate.
+-/
+theorem selectedRustModelFiveSourceCertificate_not_from_current_placeholder_report
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+        FieldParser RouteParser CanonicalParser WitnessParser P)
+    (hReport :
+      Cert.evidenceReport = selectedRustFiveSourceEvidenceReport) :
+    False := by
+  exact selectedRustFiveSourceEvidenceReport_not_reportVerified
+    (hReport ▸ Cert.evidenceReportVerifiedProof)
+
 /-- Convert a proof-bearing selected Rust/model certificate into closure inputs. -/
 def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
     {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
