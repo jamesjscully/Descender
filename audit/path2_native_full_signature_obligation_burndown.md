@@ -159,6 +159,14 @@ fixture with all proof names but no report/predicate type shape still leaves
 the proof-object category false. This keeps the remaining proof blocker from
 being satisfied by untyped aliases.
 
+2026-06-05 source-record checklist hardening: the concrete-definition checklist
+now requires selected source-record declarations to mention the active source
+type or predicate they provide: payload projection, extraction availability,
+role-root/lift, source-route byte source, field/local assembly,
+compatibility, and shared-frame witness source. A name-only source-record
+fixture remains fail-closed, keeping the source-record category tied to the
+final certificate's expected source contracts.
+
 2026-06-02 update: `Path2FullOpeningSourceConcrete.lean` now packages the
 deployable non-aggregate theorem route as `ReviewedFq12DeployableHiddenSourceInputs`. The remaining P2FS-001 proof inputs are
 no longer an abstract source-bridge instantiation; they are the concrete
