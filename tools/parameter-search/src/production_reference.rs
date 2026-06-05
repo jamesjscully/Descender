@@ -3296,6 +3296,101 @@ pub fn path2_native_consensus_carrier_preflight_report_v1(
     }
 }
 
+pub fn path2_native_consensus_carrier_preflight_report_v1_frame(
+    report: &Path2NativeConsensusCarrierPreflightReportV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", report.schema.as_bytes());
+    append_u64(&mut frame, b"accepted", u64::from(report.accepted));
+    append_u64(
+        &mut frame,
+        b"rejection_code_present",
+        u64::from(report.rejection_code.is_some()),
+    );
+    if let Some(code) = report.rejection_code {
+        append_frame(&mut frame, b"rejection_code", code.as_bytes());
+    }
+    append_u64(
+        &mut frame,
+        b"carrier_digest_present",
+        u64::from(report.carrier_digest.is_some()),
+    );
+    if let Some(digest) = report.carrier_digest {
+        append_frame(&mut frame, b"carrier_digest", &digest);
+    }
+    append_u64(
+        &mut frame,
+        b"recomputed_native_boundary_digest_present",
+        u64::from(report.recomputed_native_boundary_digest.is_some()),
+    );
+    if let Some(digest) = report.recomputed_native_boundary_digest {
+        append_frame(&mut frame, b"recomputed_native_boundary_digest", &digest);
+    }
+    append_u64(
+        &mut frame,
+        b"checked_core_byte_instantiation_evidence_digest_present",
+        u64::from(
+            report
+                .checked_core_byte_instantiation_evidence_digest
+                .is_some(),
+        ),
+    );
+    if let Some(digest) = report.checked_core_byte_instantiation_evidence_digest {
+        append_frame(
+            &mut frame,
+            b"checked_core_byte_instantiation_evidence_digest",
+            &digest,
+        );
+    }
+    append_u64(
+        &mut frame,
+        b"checked_core_byte_instantiation_evidence_verified",
+        u64::from(report.checked_core_byte_instantiation_evidence_verified),
+    );
+    append_frame(
+        &mut frame,
+        b"native_boundary_digest",
+        &report.native_boundary_digest,
+    );
+    append_frame(&mut frame, b"p_context_digest", &report.p_context_digest);
+    append_frame(&mut frame, b"p_account_digest", &report.p_account_digest);
+    append_frame(&mut frame, b"p_spend_digest", &report.p_spend_digest);
+    append_frame(
+        &mut frame,
+        b"p_lifecycle_digest",
+        &report.p_lifecycle_digest,
+    );
+    append_frame(&mut frame, b"p_state_digest", &report.p_state_digest);
+    append_frame(
+        &mut frame,
+        b"p_transcript_digest",
+        &report.p_transcript_digest,
+    );
+    append_frame(&mut frame, b"public_state_root", &report.public_state_root);
+    append_frame(
+        &mut frame,
+        b"obstruction_flags_digest",
+        &report.obstruction_flags_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"projection_preimage_da_digest",
+        &report.projection_preimage_da_digest,
+    );
+    frame
+}
+
+pub fn path2_native_consensus_carrier_preflight_report_v1_digest(
+    report: &Path2NativeConsensusCarrierPreflightReportV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    Ok(
+        Sha256::digest(path2_native_consensus_carrier_preflight_report_v1_frame(
+            report,
+        ))
+        .into(),
+    )
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2DirectQueryBudgetV1 {
     pub schema: &'static str,
@@ -20524,6 +20619,12 @@ fn path2_native_verifier_preflight_report_source_present_v1() -> bool {
         "reject_projection_bundle_inconsistent",
         "schema: PATH2_NATIVE_CONSENSUS_PREFLIGHT_REPORT_SCHEMA",
         "carrier_digest",
+        "path2_native_consensus_carrier_preflight_report_v1_frame",
+        "path2_native_consensus_carrier_preflight_report_v1_digest",
+        "rejection_code_present",
+        "carrier_digest_present",
+        "recomputed_native_boundary_digest_present",
+        "checked_core_byte_instantiation_evidence_digest_present",
         "native_boundary_digest: carrier.native_boundary_digest",
         "projection_preimage_da_digest: carrier.projection_preimage_da_digest",
     ];
@@ -20538,6 +20639,8 @@ fn path2_native_verifier_preflight_report_source_present_v1() -> bool {
         "accepted_report.recomputed_native_boundary_digest",
         "accepted_report.checked_core_byte_instantiation_evidence_digest",
         "accepted_report.checked_core_byte_instantiation_evidence_verified",
+        "path2_native_consensus_carrier_preflight_report_v1_frame",
+        "Sha256::digest(&accepted_report_frame)",
         "bad_carrier_report.checked_core_byte_instantiation_evidence_digest",
         "bad_carrier_report.checked_core_byte_instantiation_evidence_verified",
         "bad_context_report.checked_core_byte_instantiation_evidence_digest",
@@ -20718,10 +20821,13 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "decode_path2_native_consensus_carrier_v1",
         "verify_path2_native_consensus_carrier_v1_against_bundle",
         "path2_native_consensus_carrier_preflight_report_v1",
+        "path2_native_consensus_carrier_preflight_report_v1_frame",
+        "path2_native_consensus_carrier_preflight_report_v1_digest",
         "path2_native_deployment_preflight_v1",
         "path2_native_deployment_preflight_v1_frame",
         "path2_native_deployment_preflight_v1_digest",
         "verify_path2_native_deployment_pipeline_v1",
+        "path2_native_verifier_pipeline_verdict_v1_frame",
         "path2_native_verifier_pipeline_verdict_v1_digest",
         "Path2NativeSignerVerifierPipelineEvidenceV1",
         "path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_root_v1",
@@ -21576,9 +21682,101 @@ pub fn verify_path2_native_deployment_pipeline_v1(
 pub fn path2_native_verifier_pipeline_verdict_v1_digest(
     verdict: &Path2NativeVerifierPipelineVerdictV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(verdict)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native verifier pipeline verdict: {err}"))
+    Ok(Sha256::digest(path2_native_verifier_pipeline_verdict_v1_frame(verdict)?).into())
+}
+
+pub fn path2_native_verifier_pipeline_verdict_v1_frame(
+    verdict: &Path2NativeVerifierPipelineVerdictV1,
+) -> Result<Vec<u8>, String> {
+    let verifier_preflight_report_digest =
+        path2_native_consensus_carrier_preflight_report_v1_digest(
+            &verdict.verifier_preflight_report,
+        )?;
+    let deployment_preflight_digest =
+        path2_native_deployment_preflight_v1_digest(&verdict.deployment_preflight)?;
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", verdict.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"public_boundary_accepted",
+        u64::from(verdict.public_boundary_accepted),
+    );
+    append_u64(
+        &mut frame,
+        b"production_accepted",
+        u64::from(verdict.production_accepted),
+    );
+    append_u64(
+        &mut frame,
+        b"rejection_code_present",
+        u64::from(verdict.rejection_code.is_some()),
+    );
+    if let Some(code) = verdict.rejection_code {
+        append_frame(&mut frame, b"rejection_code", code.as_bytes());
+    }
+    append_u64(
+        &mut frame,
+        b"consensus_carrier_digest_present",
+        u64::from(verdict.consensus_carrier_digest.is_some()),
+    );
+    if let Some(digest) = verdict.consensus_carrier_digest {
+        append_frame(&mut frame, b"consensus_carrier_digest", &digest);
+    }
+    append_u64(
+        &mut frame,
+        b"checked_core_byte_instantiation_evidence_digest_present",
+        u64::from(
+            verdict
+                .checked_core_byte_instantiation_evidence_digest
+                .is_some(),
+        ),
+    );
+    if let Some(digest) = verdict.checked_core_byte_instantiation_evidence_digest {
+        append_frame(
+            &mut frame,
+            b"checked_core_byte_instantiation_evidence_digest",
+            &digest,
+        );
+    }
+    append_u64(
+        &mut frame,
+        b"checked_core_byte_instantiation_evidence_verified",
+        u64::from(verdict.checked_core_byte_instantiation_evidence_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"five_source_closure_evidence_digest_present",
+        u64::from(verdict.five_source_closure_evidence_digest.is_some()),
+    );
+    if let Some(digest) = verdict.five_source_closure_evidence_digest {
+        append_frame(&mut frame, b"five_source_closure_evidence_digest", &digest);
+    }
+    append_u64(
+        &mut frame,
+        b"five_source_closure_evidence_verified",
+        u64::from(verdict.five_source_closure_evidence_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"five_source_closure_evidence_facts_all_true",
+        u64::from(verdict.five_source_closure_evidence_facts_all_true),
+    );
+    append_frame(
+        &mut frame,
+        b"native_boundary_digest",
+        &verdict.native_boundary_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"verifier_preflight_report_digest",
+        &verifier_preflight_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"deployment_preflight_digest",
+        &deployment_preflight_digest,
+    );
+    Ok(frame)
 }
 
 pub fn path2_native_signer_verifier_pipeline_evidence_v1_frame(
@@ -37705,6 +37903,15 @@ mod tests {
             )
         );
         assert!(accepted_report.checked_core_byte_instantiation_evidence_verified);
+        let accepted_report_frame =
+            path2_native_consensus_carrier_preflight_report_v1_frame(&accepted_report);
+        assert!(!accepted_report_frame.is_empty());
+        let accepted_report_frame_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(&accepted_report_frame).into();
+        assert_eq!(
+            path2_native_consensus_carrier_preflight_report_v1_digest(&accepted_report).unwrap(),
+            accepted_report_frame_digest
+        );
 
         let mut bad_carrier = carrier;
         bad_carrier.p_state_digest[0] ^= 1;
@@ -40148,6 +40355,13 @@ end Path2NativeAccountDesign
         assert_ne!(
             path2_native_verifier_pipeline_verdict_v1_digest(&verdict).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        let verdict_frame = path2_native_verifier_pipeline_verdict_v1_frame(&verdict).unwrap();
+        assert!(!verdict_frame.is_empty());
+        let verdict_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&verdict_frame).into();
+        assert_eq!(
+            path2_native_verifier_pipeline_verdict_v1_digest(&verdict).unwrap(),
+            verdict_frame_digest
         );
 
         let mut bad_carrier = carrier;
