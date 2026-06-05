@@ -21392,58 +21392,92 @@ fn path2_active_native_hash_budget_boundary_source_present_v1() -> bool {
     let budget_source = include_str!("../../../Descender/Path2HashBudget.lean");
     let domain_source = include_str!("../../../Descender/Path2HashDomainAndMultiTarget.lean");
 
-    let budget_start = budget_source
-        .find("\ndef path2DirectQueryBudgetV1 : Path2DirectQueryBudgetV1 where")
-        .expect("Lean Path 2 direct query budget source start marker missing");
-    let budget_end = budget_source[budget_start..]
-        .find("\n/-- Lean mirror of the native public hash/QROM review caps.")
-        .expect("Lean Path 2 direct query budget source end marker missing")
-        + budget_start;
+    path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
+        budget_source,
+        domain_source,
+    )
+}
+
+fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
+    budget_source: &str,
+    domain_source: &str,
+) -> bool {
+    let stripped_budget_source = lean_source_without_comments_and_strings_v1(budget_source);
+    let stripped_domain_source = lean_source_without_comments_and_strings_v1(domain_source);
+    let budget_source = stripped_budget_source.as_str();
+    let domain_source = stripped_domain_source.as_str();
+
+    let Some(budget_start) =
+        budget_source.find("\ndef path2DirectQueryBudgetV1 : Path2DirectQueryBudgetV1 where")
+    else {
+        return false;
+    };
+    let Some(budget_end_offset) =
+        budget_source[budget_start..].find("\nstructure Path2NativeHashQromReviewV1")
+    else {
+        return false;
+    };
+    let budget_end = budget_end_offset + budget_start;
     let budget_window = &budget_source[budget_start..budget_end];
 
-    let shape_start = budget_source
-        .find("\ndef AuxiliaryFq12ChallengeShapeComplete")
-        .expect("Lean Path 2 auxiliary Fq12 shape source start marker missing");
-    let shape_end = budget_source[shape_start..]
-        .find("\n/--\nAction-collision budget")
-        .expect("Lean Path 2 auxiliary Fq12 shape source end marker missing")
-        + shape_start;
+    let Some(shape_start) = budget_source.find("\ndef AuxiliaryFq12ChallengeShapeComplete") else {
+        return false;
+    };
+    let Some(shape_end_offset) =
+        budget_source[shape_start..].find("\ndef Fq12ActionCollisionBudgetPriced")
+    else {
+        return false;
+    };
+    let shape_end = shape_end_offset + shape_start;
     let shape_window = &budget_source[shape_start..shape_end];
 
-    let collision_start = budget_source
-        .find("\ndef Fq12ActionCollisionBudgetPriced")
-        .expect("Lean Path 2 Fq12 action-collision source start marker missing");
-    let collision_end = budget_source[collision_start..]
+    let Some(collision_start) = budget_source.find("\ndef Fq12ActionCollisionBudgetPriced") else {
+        return false;
+    };
+    let Some(collision_end_offset) = budget_source[collision_start..]
         .find("\ntheorem path2_direct_query_budget_keeps_q_batch_inactive")
-        .expect("Lean Path 2 Fq12 action-collision source end marker missing")
-        + collision_start;
+    else {
+        return false;
+    };
+    let collision_end = collision_end_offset + collision_start;
     let collision_window = &budget_source[collision_start..collision_end];
 
-    let horizon_start = domain_source
-        .find("\ndef activeLaneAccountHorizonV1 : ActiveMultiTargetHorizon where")
-        .expect("Lean Path 2 active horizon source start marker missing");
-    let horizon_end = domain_source[horizon_start..]
-        .find("\n/--\nFifty-four-bit aggregate target horizon")
-        .expect("Lean Path 2 active horizon source end marker missing")
-        + horizon_start;
+    let Some(horizon_start) =
+        domain_source.find("\ndef activeLaneAccountHorizonV1 : ActiveMultiTargetHorizon where")
+    else {
+        return false;
+    };
+    let Some(horizon_end_offset) =
+        domain_source[horizon_start..].find("\ndef fiftyFourBitAggregateTargetHorizonV1")
+    else {
+        return false;
+    };
+    let horizon_end = horizon_end_offset + horizon_start;
     let horizon_window = &domain_source[horizon_start..horizon_end];
 
-    let byte_domain_start = domain_source
-        .find("\ndef activeHashByteDomainInstantiationV1")
-        .expect("Lean Path 2 active byte-domain instantiation start marker missing");
-    let byte_domain_end = domain_source[byte_domain_start..]
-        .find("\n/--\nExplicit aggregate-target horizon")
-        .expect("Lean Path 2 active byte-domain instantiation end marker missing")
-        + byte_domain_start;
+    let Some(byte_domain_start) = domain_source.find("\ndef activeHashByteDomainInstantiationV1")
+    else {
+        return false;
+    };
+    let Some(byte_domain_end_offset) =
+        domain_source[byte_domain_start..].find("\nstructure ActiveMultiTargetHorizon")
+    else {
+        return false;
+    };
+    let byte_domain_end = byte_domain_end_offset + byte_domain_start;
     let byte_domain_window = &domain_source[byte_domain_start..byte_domain_end];
 
-    let boundary_start = domain_source
-        .find("\ndef activePath2HashDomainAndMultiTargetCertificate")
-        .expect("Lean Path 2 active hash certificate source start marker missing");
-    let boundary_end = domain_source[boundary_start..]
-        .find("\nend Path2HashDomainAndMultiTarget")
-        .expect("Lean Path 2 active hash certificate source end marker missing")
-        + boundary_start;
+    let Some(boundary_start) =
+        domain_source.find("\ndef activePath2HashDomainAndMultiTargetCertificate")
+    else {
+        return false;
+    };
+    let Some(boundary_end_offset) =
+        domain_source[boundary_start..].find("\nend Path2HashDomainAndMultiTarget")
+    else {
+        return false;
+    };
+    let boundary_end = boundary_end_offset + boundary_start;
     let boundary_window = &domain_source[boundary_start..boundary_end];
 
     let budget_checks = [
@@ -21460,6 +21494,8 @@ fn path2_active_native_hash_budget_boundary_source_present_v1() -> bool {
         "actionCollisionClassicalBitsAtUnionBound := 130",
         "minimumDeploymentMarginBits := 53",
         "qBatchActive := false",
+        "actionCollisionQuantumMeetsTarget := by native_decide",
+        "actionCollisionClassicalMeetsTarget := by native_decide",
     ];
     let shape_checks = [
         "B.algebraicChallengeBytes = 23",
@@ -21474,8 +21510,6 @@ fn path2_active_native_hash_budget_boundary_source_present_v1() -> bool {
         "B.actionCollisionFloorBits = 163",
         "B.actionCollisionQuantumBitsAtUnionBound = 131",
         "B.actionCollisionClassicalBitsAtUnionBound = 130",
-        "B.targetSecurityBits ≤ B.actionCollisionQuantumBitsAtUnionBound",
-        "B.targetSecurityBits ≤ B.actionCollisionClassicalBitsAtUnionBound",
     ];
     let horizon_checks = [
         "accountHorizonLog2 := 32",
@@ -43477,6 +43511,51 @@ mod tests {
         assert_eq!(review.negative_control_horizon_log2, 54);
         assert!(path2_active_native_hash_budget_boundary_source_present_v1());
         assert!(path2_auxiliary_fq12_qrom_horizon_complete_v1());
+        let commented_budget_markers = r#"
+/-
+def path2DirectQueryBudgetV1 : Path2DirectQueryBudgetV1 where
+def AuxiliaryFq12ChallengeShapeComplete
+def Fq12ActionCollisionBudgetPriced
+theorem path2_direct_query_budget_keeps_q_batch_inactive
+/-- Lean mirror of the native public hash/QROM review caps.
+-/
+"#;
+        let commented_domain_markers = r#"
+/-
+def activeLaneAccountHorizonV1 : ActiveMultiTargetHorizon where
+def activeHashByteDomainInstantiationV1
+def activePath2HashDomainAndMultiTargetCertificate
+theorem fiftyFourBitAggregateTargetHorizon_not_priced
+end Path2HashDomainAndMultiTarget
+-/
+"#;
+        assert!(
+            !path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
+                commented_budget_markers,
+                commented_domain_markers
+            )
+        );
+        let string_budget_markers = r#"
+def marker :=
+  "def path2DirectQueryBudgetV1 : Path2DirectQueryBudgetV1 where
+   def AuxiliaryFq12ChallengeShapeComplete
+   def Fq12ActionCollisionBudgetPriced
+   theorem path2_direct_query_budget_keeps_q_batch_inactive"
+"#;
+        let string_domain_markers = r#"
+def marker :=
+  "def activeLaneAccountHorizonV1 : ActiveMultiTargetHorizon where
+   def activeHashByteDomainInstantiationV1
+   def activePath2HashDomainAndMultiTargetCertificate
+   theorem fiftyFourBitAggregateTargetHorizon_not_priced
+   end Path2HashDomainAndMultiTarget"
+"#;
+        assert!(
+            !path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
+                string_budget_markers,
+                string_domain_markers
+            )
+        );
         assert!(
             review.transcript_term_bits_after_qrom_loss
                 >= review.target_security_bits + review.minimum_deployment_margin_bits
