@@ -226,14 +226,60 @@ structure ReviewedFq12SelectedRustModelFiveSourceClosureInputs
       CanonicalParser WitnessParser P
 
 /--
+Lean mirror of the public five-source closure evidence report.
+
+The final extractor theorem should consume proofs tied to this report shape,
+not arbitrary propositions. The status bits are recorded with the report but
+are intentionally not part of `FactsAllTrue`: they describe whether the final
+extractor theorem has been instantiated, while the readiness facts are the
+evidence consumed by that future theorem.
+-/
+structure ReviewedFq12SelectedRustFiveSourceClosureEvidence where
+  bridgeAuditValidated : Bool
+  selectedRustModelFiveSourceInputsReady : Bool
+  rustPayloadProjectionLawPresent : Bool
+  rustExtractionCertificateAvailabilityPresent : Bool
+  roleRootLiftSourcePresent : Bool
+  selectedSourceRouteByteSourcePresent : Bool
+  assemblyFieldLocalNativeComponentsPresent : Bool
+  compatibilityFieldExtractionComponentsPresent : Bool
+  sharedDigestFrameWitnessByteSourceContractPresent : Bool
+  activeFieldLocalDigestFrameWitnessByteComponentSurfacesPresent : Bool
+  leanActiveFiveSourceBoundaryRoutePresent : Bool
+  leanFullSignatureHiddenSourceHandoffPresent : Bool
+  extractorTheoremInstantiated : Bool
+  semanticsBridgeComplete : Bool
+
+/-- The report has been validated against the public Rust evidence surface. -/
+def ReviewedFq12SelectedRustFiveSourceClosureEvidence.ReportVerified
+    (E : ReviewedFq12SelectedRustFiveSourceClosureEvidence) : Prop :=
+  E.bridgeAuditValidated = true
+
+/-- All non-closing five-source readiness facts recorded by the report hold. -/
+def ReviewedFq12SelectedRustFiveSourceClosureEvidence.FactsAllTrue
+    (E : ReviewedFq12SelectedRustFiveSourceClosureEvidence) : Prop :=
+  E.selectedRustModelFiveSourceInputsReady = true ∧
+  E.rustPayloadProjectionLawPresent = true ∧
+  E.rustExtractionCertificateAvailabilityPresent = true ∧
+  E.roleRootLiftSourcePresent = true ∧
+  E.selectedSourceRouteByteSourcePresent = true ∧
+  E.assemblyFieldLocalNativeComponentsPresent = true ∧
+  E.compatibilityFieldExtractionComponentsPresent = true ∧
+  E.sharedDigestFrameWitnessByteSourceContractPresent = true ∧
+  E.activeFieldLocalDigestFrameWitnessByteComponentSurfacesPresent = true ∧
+  E.leanActiveFiveSourceBoundaryRoutePresent = true ∧
+  E.leanFullSignatureHiddenSourceHandoffPresent = true
+
+/--
 Proof-bearing selected Rust/model certificate for the active five-source
 hidden-source closure input record.
 
 The final AP2-N001 instantiation theorem should construct this certificate from
 reviewed implementation/model evidence, then derive the closure inputs through
 `toClosureInputs`.  This keeps the preflight gate from accepting a theorem that
-locally assembles the seven source fields without also carrying an explicit
-verified public evidence report and proof that all report facts are true.
+locally assembles the seven source fields without also carrying a structured,
+verified public evidence report and proof that all report readiness facts are
+true.
 -/
 structure ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
     (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)
@@ -243,12 +289,12 @@ structure ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
     (WitnessParser :
       ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
     (P : Predicates) where
-  evidenceReportVerified : Prop
+  evidenceReport :
+    ReviewedFq12SelectedRustFiveSourceClosureEvidence
   evidenceReportVerifiedProof :
-    evidenceReportVerified
-  evidenceFactsAllTrue : Prop
+    evidenceReport.ReportVerified
   evidenceFactsAllTrueProof :
-    evidenceFactsAllTrue
+    evidenceReport.FactsAllTrue
   payloadProjectsFrom :
     forall {b : Path2NativeBoundary.Boundary}
         {payload : ReviewedFq12HiddenSourcePayload},
@@ -286,9 +332,9 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
     ReviewedFq12SelectedRustModelFiveSourceClosureInputs
       FieldParser RouteParser CanonicalParser WitnessParser P where
   payloadProjectsFrom := by
-    let _hReport : Cert.evidenceReportVerified :=
+    let _hReport : Cert.evidenceReport.ReportVerified :=
       Cert.evidenceReportVerifiedProof
-    let _hFacts : Cert.evidenceFactsAllTrue :=
+    let _hFacts : Cert.evidenceReport.FactsAllTrue :=
       Cert.evidenceFactsAllTrueProof
     intro b payload hAccept hProjection
     exact Cert.payloadProjectsFrom hAccept hProjection
