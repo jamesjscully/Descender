@@ -6950,7 +6950,9 @@ pub struct Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
     pub schema: &'static str,
+    pub schema_matches: bool,
     pub bridge_audit_digest: [u8; DIGEST_BYTES],
+    pub bridge_audit_digest_bound: bool,
     pub bridge_audit_validated: bool,
     pub report_digest_verified: bool,
     pub selected_rust_model_five_source_inputs_ready: bool,
@@ -7727,7 +7729,9 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
 
     let struct_checks = [
         "Path2ReviewedFq12FiveSourceClosureEvidenceV1",
+        "schema_matches",
         "bridge_audit_digest",
+        "bridge_audit_digest_bound",
         "bridge_audit_validated",
         "report_digest_verified",
         "selected_rust_model_five_source_inputs_ready",
@@ -7753,7 +7757,9 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1",
         "verify_path2_reviewed_fq12_five_source_closure_evidence_v1",
         "validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit",
+        "schema_matches: true",
         "bridge_audit_validated: true",
+        "bridge_audit_digest_bound: true",
         "report_digest_verified: true",
         "selected_rust_model_five_source_inputs_ready: audit",
         "rust_payload_projection_law_present: audit.rust_payload_projection_law_present",
@@ -9337,7 +9343,9 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
     validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(&audit)?;
     Ok(Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
         schema: PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA,
+        schema_matches: true,
         bridge_audit_digest: audit.digest,
+        bridge_audit_digest_bound: true,
         bridge_audit_validated: true,
         report_digest_verified: true,
         selected_rust_model_five_source_inputs_ready: audit
@@ -9402,6 +9410,16 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1(
     if evidence.schema != PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA {
         return Err(
             "Path 2 reviewed Fq12 five-source closure evidence schema mismatch".to_string(),
+        );
+    }
+    if !evidence.schema_matches {
+        return Err(
+            "Path 2 reviewed Fq12 five-source closure evidence schema was not matched".to_string(),
+        );
+    }
+    if !evidence.bridge_audit_digest_bound {
+        return Err(
+            "Path 2 reviewed Fq12 five-source bridge audit digest was not bound".to_string(),
         );
     }
     if !evidence.bridge_audit_validated {
@@ -46528,7 +46546,9 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             five_source_evidence.schema,
             PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA
         );
+        assert!(five_source_evidence.schema_matches);
         assert_eq!(five_source_evidence.bridge_audit_digest, audit.digest);
+        assert!(five_source_evidence.bridge_audit_digest_bound);
         assert!(five_source_evidence.bridge_audit_validated);
         assert!(five_source_evidence.report_digest_verified);
         assert!(five_source_evidence.selected_rust_model_five_source_inputs_ready);
@@ -46579,6 +46599,34 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert_eq!(
             verify_path2_reviewed_fq12_five_source_closure_evidence_v1(
                 &tampered_five_source_evidence
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 five-source closure evidence mismatch"
+        );
+        let mut schema_unmatched_five_source_evidence = five_source_evidence.clone();
+        schema_unmatched_five_source_evidence.schema_matches = false;
+        assert!(
+            path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
+                &schema_unmatched_five_source_evidence
+            )
+        );
+        assert_eq!(
+            path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1(
+                &schema_unmatched_five_source_evidence
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 five-source closure evidence mismatch"
+        );
+        let mut digest_unbound_five_source_evidence = five_source_evidence.clone();
+        digest_unbound_five_source_evidence.bridge_audit_digest_bound = false;
+        assert!(
+            path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
+                &digest_unbound_five_source_evidence
+            )
+        );
+        assert_eq!(
+            path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1(
+                &digest_unbound_five_source_evidence
             )
             .unwrap_err(),
             "Path 2 reviewed Fq12 five-source closure evidence mismatch"
