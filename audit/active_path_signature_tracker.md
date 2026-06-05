@@ -968,6 +968,13 @@ regression fixture where a theorem mentions `selectedRustBoundaryBaseEvidenceRep
 in an unrelated premise but proves `otherBoundaryBaseEvidenceReport.ReportVerified`
 fails `evidence_proof_definitions_present`, so future AP2-N001 proof imports
 must prove the selected report predicates directly.
+The sub-evidence digest-match checklist now follows the same exact-predicate
+rule: the proof declaration header/type must contain
+`selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch`. A split-marker
+fixture that mentions `selectedRustFiveSourceEvidenceReport` in an unrelated
+premise while proving `otherFiveSourceEvidenceReport.SubEvidenceDigestsMatch`
+fails the category, so the digest-match proof must bind the selected aggregate
+report directly.
 
 ## Findings
 
