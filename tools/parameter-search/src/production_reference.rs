@@ -2341,12 +2341,122 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_v1(
     })
 }
 
+pub fn path2_native_checked_core_byte_instantiation_evidence_v1_frame(
+    evidence: &Path2NativeCheckedCoreByteInstantiationEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_u64(&mut frame, b"accepted", u64::from(evidence.accepted));
+    append_u64(
+        &mut frame,
+        b"checked_core_acceptor_accepts",
+        u64::from(evidence.checked_core_acceptor_accepts),
+    );
+    append_u64(
+        &mut frame,
+        b"parser_matches_native_handle",
+        u64::from(evidence.parser_matches_native_handle),
+    );
+    append_u64(
+        &mut frame,
+        b"proof_length_eq",
+        u64::from(evidence.proof_length_eq),
+    );
+    append_u64(
+        &mut frame,
+        b"proof_canonical",
+        u64::from(evidence.proof_canonical),
+    );
+    append_u64(
+        &mut frame,
+        b"decoded_proof_commitment_eq",
+        u64::from(evidence.decoded_proof_commitment_eq),
+    );
+    append_u64(
+        &mut frame,
+        b"parsed_response_syndrome_eq",
+        u64::from(evidence.parsed_response_syndrome_eq),
+    );
+    append_u64(
+        &mut frame,
+        b"frame_bytes_eq",
+        u64::from(evidence.frame_bytes_eq),
+    );
+    append_u64(
+        &mut frame,
+        b"verifier_handle_eq",
+        u64::from(evidence.verifier_handle_eq),
+    );
+    append_u64(
+        &mut frame,
+        b"parser_equality",
+        u64::from(evidence.parser_equality),
+    );
+    append_u64(
+        &mut frame,
+        b"hash_and_syndrome_eq",
+        u64::from(evidence.hash_and_syndrome_eq),
+    );
+    append_u64(
+        &mut frame,
+        b"short_proof_rejected",
+        u64::from(evidence.short_proof_rejected),
+    );
+    append_u64(
+        &mut frame,
+        b"noncanonical_proof_rejected",
+        u64::from(evidence.noncanonical_proof_rejected),
+    );
+    append_u64(
+        &mut frame,
+        b"commitment_mismatch_rejected",
+        u64::from(evidence.commitment_mismatch_rejected),
+    );
+    append_u64(
+        &mut frame,
+        b"verifier_handle_mismatch_rejected",
+        u64::from(evidence.verifier_handle_mismatch_rejected),
+    );
+    append_frame(
+        &mut frame,
+        b"checked_core_frame_digest",
+        &evidence.checked_core_frame_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"checked_core_proof_bytes_digest",
+        &evidence.checked_core_proof_bytes_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"checked_core_verifier_handle_digest",
+        &evidence.checked_core_verifier_handle_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"checked_core_challenge",
+        &evidence.checked_core_challenge,
+    );
+    append_u64(
+        &mut frame,
+        b"proof_byte_len",
+        evidence.proof_byte_len as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"cleanup_policy",
+        evidence.cleanup_policy.as_bytes(),
+    );
+    frame
+}
+
 pub fn path2_native_checked_core_byte_instantiation_evidence_v1_digest(
     evidence: &Path2NativeCheckedCoreByteInstantiationEvidenceV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(evidence)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native checked-core byte evidence: {err}"))
+    Ok(
+        Sha256::digest(path2_native_checked_core_byte_instantiation_evidence_v1_frame(evidence))
+            .into(),
+    )
 }
 
 pub fn path2_native_checked_core_byte_instantiation_evidence_all_facts_true(
@@ -19171,6 +19281,12 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "verifier_handle_mismatch_rejected",
         "path2_native_checked_core_rejection_contains_v1",
         "result.is_err_and",
+        "path2_native_checked_core_byte_instantiation_evidence_v1_frame",
+        "b\"checked_core_frame_digest\"",
+        "b\"checked_core_proof_bytes_digest\"",
+        "b\"checked_core_verifier_handle_digest\"",
+        "b\"checked_core_challenge\"",
+        "b\"cleanup_policy\"",
         "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
         "path2_native_checked_core_byte_instantiation_evidence_all_facts_true",
         "verify_path2_native_checked_core_byte_instantiation_evidence_v1",
@@ -20608,6 +20724,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "path2_native_verifier_pipeline_verdict_v1_digest",
         "path2_native_checked_core_byte_instantiation_evidence_v1",
         "path2_native_checked_core_byte_instantiation_evidence_all_facts_true",
+        "path2_native_checked_core_byte_instantiation_evidence_v1_frame",
         "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
         "verify_path2_native_checked_core_byte_instantiation_evidence_v1",
         "path2_reviewed_fq12_five_source_closure_evidence_v1",
@@ -40051,6 +40168,14 @@ end Path2NativeAccountDesign
         assert_ne!(
             path2_native_checked_core_byte_instantiation_evidence_v1_digest(&evidence).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        let evidence_frame =
+            path2_native_checked_core_byte_instantiation_evidence_v1_frame(&evidence);
+        assert!(!evidence_frame.is_empty());
+        let evidence_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&evidence_frame).into();
+        assert_eq!(
+            path2_native_checked_core_byte_instantiation_evidence_v1_digest(&evidence).unwrap(),
+            evidence_frame_digest
         );
         assert!(path2_native_checked_core_byte_instantiation_evidence_all_facts_true(&evidence));
         assert_eq!(

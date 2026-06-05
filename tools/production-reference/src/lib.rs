@@ -289,6 +289,7 @@ pub use descender_parameter_search::production_reference::{
     path2_native_checked_core_byte_instantiation_evidence_all_facts_true,
     path2_native_checked_core_byte_instantiation_evidence_v1,
     path2_native_checked_core_byte_instantiation_evidence_v1_digest,
+    path2_native_checked_core_byte_instantiation_evidence_v1_frame,
     path2_native_checked_core_frame_v1_bytes, path2_native_checked_core_frame_v1_challenge,
     path2_native_checked_core_frame_v1_digest, path2_native_consensus_carrier_preflight_report_v1,
     path2_native_consensus_carrier_v1_bytes, path2_native_consensus_carrier_v1_digest,
