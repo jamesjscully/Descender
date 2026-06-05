@@ -1050,6 +1050,11 @@ Active accepted-spend numeric-bound gate note: the
 the same exact theorem-name and all-candidate pattern. This keeps a suffixed
 theorem spoof from closing the active accepted-spend bound gate, while allowing
 a later exact selected theorem to satisfy the future source closure.
+Active no-export serializer gate note: the
+`selectedRustActiveNoExportSerializer_instantiation_v1` scanner now also uses
+exact theorem-name matching across all candidates, so a suffixed no-export
+theorem cannot close the active serializer gate and a later exact theorem
+remains reachable.
 
 ## Findings
 

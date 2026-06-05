@@ -24004,21 +24004,82 @@ fn path2_no_export_serializer_instantiated_v1() -> bool {
 fn path2_no_export_serializer_instantiated_in_source_v1(concrete_source: &str) -> bool {
     let stripped_concrete_source = lean_source_without_comments_and_strings_v1(concrete_source);
     let concrete_source = stripped_concrete_source.as_str();
-    let Some(instantiation_start) =
-        concrete_source.find("\ntheorem selectedRustActiveNoExportSerializer_instantiation_v1")
-    else {
+    let theorem_name = "selectedRustActiveNoExportSerializer_instantiation_v1";
+    let forbidden_declaration_terms = [
+        "selectedRustActiveNoExportPolicy",
+        "selectedRustActiveSerializer",
+        "selectedRustActiveNoExport",
+        "selectedRustActiveSerializerAllowlistCertificate",
+        "selectedRustActiveSerializerEvidenceReport",
+        "selectedRustActiveSerializerEvidenceDigest",
+        "selectedRustActiveSerializerEvidenceReportVerifiedProof",
+        "selectedRustActiveSerializerEvidenceFactsAllTrueProof",
+        "selectedRustAcceptOutputConforms",
+        "selectedRustRejectOutputConforms",
+        "selectedRustStorageOutputConforms",
+    ];
+    let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
+    let forbidden_declaration_stub = forbidden_declaration_kinds.iter().any(|kind| {
+        concrete_source
+            .match_indices(&format!("\n{kind}"))
+            .map(|(index, _)| &concrete_source[index..concrete_source.len().min(index + 1024)])
+            .any(|declaration_window| {
+                forbidden_declaration_terms
+                    .iter()
+                    .any(|term| declaration_window.contains(term))
+            })
+    });
+    if forbidden_declaration_stub {
         return false;
-    };
-    let instantiation_end = concrete_source[instantiation_start..]
-        .find("\nend Path2NoExportConcrete")
-        .map(|offset| instantiation_start + offset)
-        .unwrap_or(concrete_source.len());
-    let instantiation_source = &concrete_source[instantiation_start..instantiation_end];
+    }
+    let forbidden_variable_stub = concrete_source
+        .match_indices("\nvariable")
+        .map(|(index, _)| &concrete_source[index..concrete_source.len().min(index + 1024)])
+        .any(|variable_window| {
+            forbidden_declaration_terms
+                .iter()
+                .any(|term| variable_window.contains(term))
+        });
+    if forbidden_variable_stub {
+        return false;
+    }
+    let theorem_start_marker = format!("\ntheorem {theorem_name}");
+    concrete_source
+        .match_indices(&theorem_start_marker)
+        .any(|(instantiation_start, _)| {
+            let instantiation_end = concrete_source[instantiation_start..]
+                .find("\nend Path2NoExportConcrete")
+                .map(|offset| instantiation_start + offset)
+                .unwrap_or(concrete_source.len());
+            let instantiation_source = &concrete_source[instantiation_start..instantiation_end];
+            path2_no_export_serializer_instantiation_candidate_source_v1(
+                instantiation_source,
+                theorem_name,
+            )
+        })
+}
+
+fn path2_no_export_serializer_instantiation_candidate_source_v1(
+    instantiation_source: &str,
+    theorem_name: &str,
+) -> bool {
     let theorem_header_end = instantiation_source
         .find(":= by")
         .or_else(|| instantiation_source.find(" where"))
         .unwrap_or(instantiation_source.len().min(1024));
     let theorem_header = &instantiation_source[..theorem_header_end];
+    let theorem_start_marker = format!("\ntheorem {theorem_name}");
+    let Some(theorem_start) = theorem_header.find(&theorem_start_marker) else {
+        return false;
+    };
+    let theorem_name_end = theorem_start + theorem_start_marker.len();
+    if theorem_header[theorem_name_end..]
+        .chars()
+        .next()
+        .is_some_and(|next| next.is_ascii_alphanumeric() || next == '_' || next == '\'')
+    {
+        return false;
+    }
     let header_has_assumed_term = |term: &str| -> bool {
         let mut depth = 0_usize;
         let mut binder_start = None;
@@ -24069,44 +24130,6 @@ fn path2_no_export_serializer_instantiated_in_source_v1(concrete_source: &str) -
         .iter()
         .any(|term| header_has_assumed_term(term))
     {
-        return false;
-    }
-    let forbidden_declaration_terms = [
-        "selectedRustActiveNoExportPolicy",
-        "selectedRustActiveSerializer",
-        "selectedRustActiveNoExport",
-        "selectedRustActiveSerializerAllowlistCertificate",
-        "selectedRustActiveSerializerEvidenceReport",
-        "selectedRustActiveSerializerEvidenceDigest",
-        "selectedRustActiveSerializerEvidenceReportVerifiedProof",
-        "selectedRustActiveSerializerEvidenceFactsAllTrueProof",
-        "selectedRustAcceptOutputConforms",
-        "selectedRustRejectOutputConforms",
-        "selectedRustStorageOutputConforms",
-    ];
-    let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
-    let forbidden_declaration_stub = forbidden_declaration_kinds.iter().any(|kind| {
-        concrete_source
-            .match_indices(&format!("\n{kind}"))
-            .map(|(index, _)| &concrete_source[index..concrete_source.len().min(index + 1024)])
-            .any(|declaration_window| {
-                forbidden_declaration_terms
-                    .iter()
-                    .any(|term| declaration_window.contains(term))
-            })
-    });
-    if forbidden_declaration_stub {
-        return false;
-    }
-    let forbidden_variable_stub = concrete_source
-        .match_indices("\nvariable")
-        .map(|(index, _)| &concrete_source[index..concrete_source.len().min(index + 1024)])
-        .any(|variable_window| {
-            forbidden_declaration_terms
-                .iter()
-                .any(|term| variable_window.contains(term))
-        });
-    if forbidden_variable_stub {
         return false;
     }
     let forbidden_vacuous_terms = [
@@ -47214,6 +47237,21 @@ end Path2NoExportConcrete
 "#;
         assert!(path2_no_export_serializer_instantiated_in_source_v1(
             no_export_instantiation_shape
+        ));
+        let suffixed_no_export_instantiation = no_export_instantiation_shape.replacen(
+            "theorem selectedRustActiveNoExportSerializer_instantiation_v1",
+            "theorem selectedRustActiveNoExportSerializer_instantiation_v1Spoof",
+            1,
+        );
+        assert!(!path2_no_export_serializer_instantiated_in_source_v1(
+            &suffixed_no_export_instantiation
+        ));
+        let suffixed_then_exact_no_export_instantiation = format!(
+            "{}\n{}",
+            suffixed_no_export_instantiation, no_export_instantiation_shape
+        );
+        assert!(path2_no_export_serializer_instantiated_in_source_v1(
+            &suffixed_then_exact_no_export_instantiation
         ));
         assert!(!path2_no_export_serializer_instantiated_v1());
         assert!(!preflight.no_export_serializer_instantiated);
