@@ -999,6 +999,12 @@ requires `P.reviewedFq12PayloadAccepts` before
 `P.reviewedFq12PayloadProjectsFrom`; a synthetic complete fixture with the
 payload theorem reversed still has its report/digest/proof and digest-match
 categories present, but fails `source_record_definitions_present`.
+The AP2-N001 anti-stub filter now also rejects vacuous selected source-route
+evidence report/proof declarations. An all-true
+`selectedRustSourceRouteEvidenceReport` with trivial report-verification and
+facts-all-true proof definitions is treated as a forbidden source stub, matching
+the existing aggregate, boundary-base, role-root/lift, field/local, and
+shared-witness vacuity checks.
 
 ## Findings
 

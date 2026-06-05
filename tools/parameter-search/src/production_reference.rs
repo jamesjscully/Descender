@@ -9374,6 +9374,31 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "theorem",
         "selectedRustBoundaryBaseEvidenceFactsAllTrueProof",
         &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+    ) || declaration_has_normalized_marker(
+        "def",
+        "selectedRustSourceRouteEvidenceReport",
+        &[
+            "schemaMatches:=true",
+            "reportDigestVerified:=true",
+            "sourceRouteAvailabilityPinned:=true",
+            "sourceRouteNegativeControlsPassed:=true",
+        ],
+    ) || declaration_has_normalized_marker(
+        "def",
+        "selectedRustSourceRouteEvidenceReportVerifiedProof",
+        &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+    ) || declaration_has_normalized_marker(
+        "theorem",
+        "selectedRustSourceRouteEvidenceReportVerifiedProof",
+        &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+    ) || declaration_has_normalized_marker(
+        "def",
+        "selectedRustSourceRouteEvidenceFactsAllTrueProof",
+        &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+    ) || declaration_has_normalized_marker(
+        "theorem",
+        "selectedRustSourceRouteEvidenceFactsAllTrueProof",
+        &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
     );
     forbidden_declaration_stub
         || forbidden_variable_stub
@@ -54760,6 +54785,28 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(
             path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
                 vacuous_verified_variant_boundary_source
+            )
+        );
+        let vacuous_source_route_evidence_boundary_source = r#"
+def selectedRustSourceRouteEvidenceReport :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport :=
+  { schemaMatches := true
+    reportDigestVerified := true
+    fieldFrameParserPinned := true
+    routeFrameParserPinned := true
+    sourceRouteAvailabilityPinned := true
+    fieldByteCertificatePinned := true
+    routeByteCertificatePinned := true
+    fieldBindsPinned := true
+    sourceRouteBindsPinned := true
+    aggregateBridgeRejectionPinned := true
+    sourceRouteNegativeControlsPassed := true }
+def selectedRustSourceRouteEvidenceReportVerifiedProof := True.intro
+def selectedRustSourceRouteEvidenceFactsAllTrueProof := True.intro
+"#;
+        assert!(
+            path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+                vacuous_source_route_evidence_boundary_source
             )
         );
         let sorry_stubbed_boundary_source = r#"
