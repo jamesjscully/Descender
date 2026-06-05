@@ -42,6 +42,8 @@ pub const PATH2_NATIVE_VERIFIER_PIPELINE_VERDICT_SCHEMA: &str =
     "Descender.Path2.NativeVerifierPipelineVerdict.v1";
 pub const PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeCheckedCoreByteInstantiationEvidence.v1";
+pub const PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.NativeNoExportSerializerEvidence.v1";
 pub const PATH2_NATIVE_SIGNER_VERIFIER_PIPELINE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeSignerVerifierPipelineEvidence.v1";
 pub const PATH2_NATIVE_SIGNER_PIPELINE_PUBLIC_OUTPUT_SCHEMA: &str =
@@ -1930,6 +1932,24 @@ pub struct Path2NativeCheckedCoreByteInstantiationEvidenceV1 {
     pub cleanup_policy: &'static str,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2NativeNoExportSerializerEvidenceV1 {
+    pub schema: &'static str,
+    pub schema_matches: bool,
+    pub report_digest_verified: bool,
+    pub active_output_tags_pinned: bool,
+    pub public_output_policy_pinned: bool,
+    pub accept_serializer_bound: bool,
+    pub reject_serializer_bound: bool,
+    pub storage_serializer_bound: bool,
+    pub denylist_exclusion_checked: bool,
+    pub serializer_negative_controls_passed: bool,
+    pub accept_output_digest: [u8; DIGEST_BYTES],
+    pub reject_output_digest: [u8; DIGEST_BYTES],
+    pub storage_output_digest: [u8; DIGEST_BYTES],
+    pub cleanup_policy: &'static str,
+}
+
 pub fn validate_path2_native_checked_core_frame_v1(
     frame: &Path2NativeCheckedCoreFrameV1,
 ) -> Result<(), String> {
@@ -2170,6 +2190,212 @@ pub fn public_native_spend_view_v1(
 
 pub fn public_native_spend_view_v1_json(view: &PublicNativeSpendViewV1) -> Result<String, String> {
     serde_json::to_string(view).map_err(|err| format!("encode public native spend view: {err}"))
+}
+
+fn path2_active_native_public_output_has_no_private_material_v1(rendered: &str) -> bool {
+    let forbidden_markers = [
+        "AuthorizationLocal",
+        "private_signing",
+        "private_trapdoor",
+        "raw_pad_seed",
+        "pad_seed",
+        "pad_source",
+        "opening_tuple",
+        "opening_commitment",
+        "opening_preimage",
+        "unmasked_projection",
+        "account_projection",
+        "gauge",
+        "randomizer",
+        "blinding",
+        "transparent_query_opening",
+        "range_witness",
+        "digit_witness",
+        "carrier_transcript_binding",
+        "projection_carrier",
+        "checked_core_signature_or_proof_bytes",
+    ];
+    forbidden_markers
+        .iter()
+        .all(|marker| !rendered.contains(marker))
+}
+
+pub fn path2_native_no_export_serializer_evidence_v1(
+    accept_output: &str,
+    reject_output: &str,
+    storage_output: &str,
+) -> Path2NativeNoExportSerializerEvidenceV1 {
+    let accept_output_digest: [u8; DIGEST_BYTES] = Sha256::digest(accept_output.as_bytes()).into();
+    let reject_output_digest: [u8; DIGEST_BYTES] = Sha256::digest(reject_output.as_bytes()).into();
+    let storage_output_digest: [u8; DIGEST_BYTES] =
+        Sha256::digest(storage_output.as_bytes()).into();
+    let active_output_tags_pinned = accept_output.contains(PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA)
+        && reject_output.contains(PATH2_NATIVE_VERIFIER_PIPELINE_VERDICT_SCHEMA)
+        && storage_output.contains(PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA);
+    let accept_has_allowlisted_surface = accept_output.contains("native_boundary_digest")
+        && accept_output.contains("checked_core_frame_digest")
+        && accept_output.contains("checked_core_proof_bytes_digest")
+        && accept_output.contains("checked_core_proof_byte_len")
+        && !accept_output.contains("proof_bytes\":[");
+    let reject_has_allowlisted_surface = reject_output.contains("public_boundary_accepted")
+        && reject_output.contains("production_accepted")
+        && reject_output.contains("rejection_code")
+        && !reject_output.contains("\"production_accepted\":true");
+    let storage_has_allowlisted_surface = storage_output.contains("target_chain_storage_artifacts")
+        && storage_output.contains("lifecycle_safety_artifacts")
+        && storage_output.contains("data_availability_artifacts")
+        && storage_output.contains("restore_reorg_artifacts")
+        && storage_output.contains("\"hardening_complete\":false");
+    let denylist_exclusion_checked =
+        path2_active_native_public_output_has_no_private_material_v1(accept_output)
+            && path2_active_native_public_output_has_no_private_material_v1(reject_output)
+            && path2_active_native_public_output_has_no_private_material_v1(storage_output);
+    let serializer_negative_controls_passed =
+        !path2_active_native_public_output_has_no_private_material_v1(
+            "raw_pad_seed opening_preimage unmasked_projection transparent_query_opening",
+        );
+    let public_output_policy_pinned = active_output_tags_pinned
+        && accept_has_allowlisted_surface
+        && reject_has_allowlisted_surface
+        && storage_has_allowlisted_surface
+        && denylist_exclusion_checked;
+    Path2NativeNoExportSerializerEvidenceV1 {
+        schema: PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA,
+        schema_matches: true,
+        report_digest_verified: accept_output_digest != [0_u8; DIGEST_BYTES]
+            && reject_output_digest != [0_u8; DIGEST_BYTES]
+            && storage_output_digest != [0_u8; DIGEST_BYTES],
+        active_output_tags_pinned,
+        public_output_policy_pinned,
+        accept_serializer_bound: accept_has_allowlisted_surface,
+        reject_serializer_bound: reject_has_allowlisted_surface,
+        storage_serializer_bound: storage_has_allowlisted_surface,
+        denylist_exclusion_checked,
+        serializer_negative_controls_passed,
+        accept_output_digest,
+        reject_output_digest,
+        storage_output_digest,
+        cleanup_policy: "active native accept/reject/storage serializer evidence is digest-only and denylist-screened",
+    }
+}
+
+pub fn path2_native_no_export_serializer_evidence_v1_frame(
+    evidence: &Path2NativeNoExportSerializerEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"schema_matches",
+        u64::from(evidence.schema_matches),
+    );
+    append_u64(
+        &mut frame,
+        b"report_digest_verified",
+        u64::from(evidence.report_digest_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"active_output_tags_pinned",
+        u64::from(evidence.active_output_tags_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"public_output_policy_pinned",
+        u64::from(evidence.public_output_policy_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"accept_serializer_bound",
+        u64::from(evidence.accept_serializer_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"reject_serializer_bound",
+        u64::from(evidence.reject_serializer_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"storage_serializer_bound",
+        u64::from(evidence.storage_serializer_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"denylist_exclusion_checked",
+        u64::from(evidence.denylist_exclusion_checked),
+    );
+    append_u64(
+        &mut frame,
+        b"serializer_negative_controls_passed",
+        u64::from(evidence.serializer_negative_controls_passed),
+    );
+    append_frame(
+        &mut frame,
+        b"accept_output_digest",
+        &evidence.accept_output_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"reject_output_digest",
+        &evidence.reject_output_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"storage_output_digest",
+        &evidence.storage_output_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"cleanup_policy",
+        evidence.cleanup_policy.as_bytes(),
+    );
+    frame
+}
+
+pub fn path2_native_no_export_serializer_evidence_v1_digest(
+    evidence: &Path2NativeNoExportSerializerEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    Ok(
+        Sha256::digest(path2_native_no_export_serializer_evidence_v1_frame(
+            evidence,
+        ))
+        .into(),
+    )
+}
+
+pub fn path2_native_no_export_serializer_evidence_all_facts_true(
+    evidence: &Path2NativeNoExportSerializerEvidenceV1,
+) -> bool {
+    evidence.schema == PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA
+        && evidence.schema_matches
+        && evidence.report_digest_verified
+        && evidence.active_output_tags_pinned
+        && evidence.public_output_policy_pinned
+        && evidence.accept_serializer_bound
+        && evidence.reject_serializer_bound
+        && evidence.storage_serializer_bound
+        && evidence.denylist_exclusion_checked
+        && evidence.serializer_negative_controls_passed
+}
+
+pub fn verify_path2_native_no_export_serializer_evidence_v1(
+    accept_output: &str,
+    reject_output: &str,
+    storage_output: &str,
+    evidence: &Path2NativeNoExportSerializerEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let expected =
+        path2_native_no_export_serializer_evidence_v1(accept_output, reject_output, storage_output);
+    if expected != *evidence {
+        return Err("Path 2 native no-export serializer evidence mismatch".to_string());
+    }
+    if !path2_native_no_export_serializer_evidence_all_facts_true(evidence) {
+        return Err(
+            "Path 2 native no-export serializer evidence has an unsatisfied component fact"
+                .to_string(),
+        );
+    }
+    path2_native_no_export_serializer_evidence_v1_digest(evidence)
 }
 
 pub fn path2_native_checked_core_accept_v1(
@@ -20230,6 +20456,15 @@ fn path2_no_export_serializer_boundary_present_v1() -> bool {
         + storage_test_start;
     let storage_test_window = &rust_source[storage_test_start..storage_test_end];
 
+    let evidence_start = rust_source
+        .find("\npub fn path2_native_no_export_serializer_evidence_v1(")
+        .expect("Rust active native no-export evidence source start marker missing");
+    let evidence_end = rust_source[evidence_start..]
+        .find("\npub fn path2_native_checked_core_accept_v1(")
+        .expect("Rust active native no-export evidence source end marker missing")
+        + evidence_start;
+    let evidence_window = &rust_source[evidence_start..evidence_end];
+
     let conformance_checks = [
         "accept_conforms",
         "reject_conforms",
@@ -20301,6 +20536,26 @@ fn path2_no_export_serializer_boundary_present_v1() -> bool {
         "lifecycle_safety_artifacts",
         "hardening_complete",
     ];
+    let evidence_checks = [
+        "path2_native_no_export_serializer_evidence_v1",
+        "PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA",
+        "Path2NativeNoExportSerializerEvidenceV1",
+        "active_output_tags_pinned",
+        "public_output_policy_pinned",
+        "accept_serializer_bound",
+        "reject_serializer_bound",
+        "storage_serializer_bound",
+        "denylist_exclusion_checked",
+        "serializer_negative_controls_passed",
+        "path2_active_native_public_output_has_no_private_material_v1",
+        "PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA",
+        "PATH2_NATIVE_VERIFIER_PIPELINE_VERDICT_SCHEMA",
+        "PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA",
+        "path2_native_no_export_serializer_evidence_v1_frame",
+        "path2_native_no_export_serializer_evidence_v1_digest",
+        "path2_native_no_export_serializer_evidence_all_facts_true",
+        "verify_path2_native_no_export_serializer_evidence_v1",
+    ];
 
     conformance_checks
         .iter()
@@ -20320,6 +20575,9 @@ fn path2_no_export_serializer_boundary_present_v1() -> bool {
         && storage_test_checks
             .iter()
             .all(|marker| storage_test_window.contains(marker))
+        && evidence_checks
+            .iter()
+            .all(|marker| evidence_window.contains(marker))
 }
 
 fn path2_no_export_serializer_instantiated_v1() -> bool {
@@ -21094,10 +21352,12 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "Path2NativeConsensusCarrierV1",
         "Path2NativeConsensusCarrierPreflightReportV1",
         "Path2NativeCheckedCoreByteInstantiationEvidenceV1",
+        "Path2NativeNoExportSerializerEvidenceV1",
         "Path2ReviewedFq12FiveSourceClosureEvidenceV1",
         "Path2NativeDeploymentPreflightV1",
         "Path2NativeVerifierPipelineVerdictV1",
         "PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA",
+        "PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA",
         "PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA",
         "path2_native_consensus_carrier_v1_from_assembly",
         "validate_path2_native_consensus_carrier_v1",
@@ -21124,6 +21384,11 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "path2_native_checked_core_byte_instantiation_evidence_v1_frame",
         "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
         "verify_path2_native_checked_core_byte_instantiation_evidence_v1",
+        "path2_native_no_export_serializer_evidence_v1",
+        "path2_native_no_export_serializer_evidence_all_facts_true",
+        "path2_native_no_export_serializer_evidence_v1_frame",
+        "path2_native_no_export_serializer_evidence_v1_digest",
+        "verify_path2_native_no_export_serializer_evidence_v1",
         "path2_reviewed_fq12_five_source_closure_evidence_v1",
         "path2_reviewed_fq12_five_source_closure_evidence_all_facts_true",
         "path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1",
@@ -38842,6 +39107,115 @@ mod tests {
                 .unwrap_err()
                 .contains("checked-core proof has")
         );
+    }
+
+    #[test]
+    fn path2_native_no_export_serializer_evidence_reports_component_facts() {
+        let bundle = native_projection_bundle_fixture();
+        let proof_bytes = native_checked_core_proof_fixture();
+        let spend_view =
+            public_native_spend_view_v1(&path2_native_checked_core_frame_fixture(), &proof_bytes)
+                .unwrap();
+        let accept_output = public_native_spend_view_v1_json(&spend_view).unwrap();
+
+        let da_digest = path2_native_projection_preimage_da_digest_v1(&bundle).unwrap();
+        let assembly = assemble_path2_native_boundary_v1(&bundle, &proof_bytes).unwrap();
+        let mut carrier = path2_native_consensus_carrier_v1_from_assembly(&assembly, da_digest);
+        carrier.p_spend_digest[0] ^= 1;
+        let rejected = verify_path2_native_deployment_pipeline_v1(&carrier, &bundle, &proof_bytes);
+        assert!(!rejected.public_boundary_accepted);
+        assert!(!rejected.production_accepted);
+        let reject_output = serde_json::to_string(&rejected).unwrap();
+
+        let storage_scope = path2_native_storage_lifecycle_hardening_scope_v1();
+        let storage_output = serde_json::to_string(&storage_scope).unwrap();
+
+        let evidence = path2_native_no_export_serializer_evidence_v1(
+            &accept_output,
+            &reject_output,
+            &storage_output,
+        );
+        assert_eq!(
+            evidence.schema,
+            PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA
+        );
+        assert!(evidence.schema_matches);
+        assert!(evidence.report_digest_verified);
+        assert!(evidence.active_output_tags_pinned);
+        assert!(evidence.public_output_policy_pinned);
+        assert!(evidence.accept_serializer_bound);
+        assert!(evidence.reject_serializer_bound);
+        assert!(evidence.storage_serializer_bound);
+        assert!(evidence.denylist_exclusion_checked);
+        assert!(evidence.serializer_negative_controls_passed);
+        assert!(path2_native_no_export_serializer_evidence_all_facts_true(
+            &evidence
+        ));
+        assert_ne!(
+            path2_native_no_export_serializer_evidence_v1_digest(&evidence).unwrap(),
+            [0_u8; DIGEST_BYTES]
+        );
+        assert_eq!(
+            verify_path2_native_no_export_serializer_evidence_v1(
+                &accept_output,
+                &reject_output,
+                &storage_output,
+                &evidence,
+            )
+            .unwrap(),
+            path2_native_no_export_serializer_evidence_v1_digest(&evidence).unwrap()
+        );
+
+        let evidence_frame = path2_native_no_export_serializer_evidence_v1_frame(&evidence);
+        let expected_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&evidence_frame).into();
+        assert_eq!(
+            path2_native_no_export_serializer_evidence_v1_digest(&evidence).unwrap(),
+            expected_frame_digest
+        );
+
+        let mut tampered_digest_evidence = evidence;
+        tampered_digest_evidence.accept_output_digest[0] ^= 1;
+        assert_eq!(
+            verify_path2_native_no_export_serializer_evidence_v1(
+                &accept_output,
+                &reject_output,
+                &storage_output,
+                &tampered_digest_evidence,
+            )
+            .unwrap_err(),
+            "Path 2 native no-export serializer evidence mismatch"
+        );
+
+        let mut untrue_fact_evidence = evidence;
+        untrue_fact_evidence.denylist_exclusion_checked = false;
+        assert!(!path2_native_no_export_serializer_evidence_all_facts_true(
+            &untrue_fact_evidence
+        ));
+        assert_eq!(
+            verify_path2_native_no_export_serializer_evidence_v1(
+                &accept_output,
+                &reject_output,
+                &storage_output,
+                &untrue_fact_evidence,
+            )
+            .unwrap_err(),
+            "Path 2 native no-export serializer evidence mismatch"
+        );
+
+        let private_accept_output = format!("{accept_output} raw_pad_seed");
+        let private_evidence = path2_native_no_export_serializer_evidence_v1(
+            &private_accept_output,
+            &reject_output,
+            &storage_output,
+        );
+        assert!(!private_evidence.denylist_exclusion_checked);
+        assert!(!path2_native_no_export_serializer_evidence_all_facts_true(
+            &private_evidence
+        ));
+
+        let rendered = serde_json::to_string(&evidence).unwrap();
+        assert!(rendered.contains(PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA));
+        assert_no_active_native_private_material(&rendered);
     }
 
     fn native_projection_fixtures() -> (
