@@ -1597,6 +1597,7 @@ numeric bound from being silently supplied as an arbitrary boundary field.
 -/
 structure SelectedRustAcceptedSpendSoundnessCertificate where
   evidenceReport : SelectedRustAcceptedSpendSoundnessEvidenceReport
+  evidenceDigest : ByteArray
   selectedRustAcceptedSpendBoundVerifiedProof :
     evidenceReport.ReportVerified
   selectedRustAcceptedSpendFactsAllTrueProof :
@@ -1609,6 +1610,37 @@ structure SelectedRustAcceptedSpendSoundnessCertificate where
   checkedCoreCompositionClosed : Prop
   lifecycleReplayClosed : Prop
   noExportClosed : Prop
+
+/-- Named constructor for the selected Rust accepted-spend numeric certificate. -/
+def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
+    (evidenceReport : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (selectedRustAcceptedSpendBoundVerifiedProof :
+      evidenceReport.ReportVerified)
+    (selectedRustAcceptedSpendFactsAllTrueProof :
+      evidenceReport.FactsAllTrue)
+    (acceptedSpendForgeryProb : ℝ)
+    (acceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgery_le_bound :
+      acceptedSpendForgeryProb <= acceptedSpendForgeryBound)
+    (hiddenSourceProofSemanticsClosed : Prop)
+    (checkedCoreCompositionClosed : Prop)
+    (lifecycleReplayClosed : Prop)
+    (noExportClosed : Prop) :
+    SelectedRustAcceptedSpendSoundnessCertificate where
+  evidenceReport := evidenceReport
+  evidenceDigest := evidenceDigest
+  selectedRustAcceptedSpendBoundVerifiedProof :=
+    selectedRustAcceptedSpendBoundVerifiedProof
+  selectedRustAcceptedSpendFactsAllTrueProof :=
+    selectedRustAcceptedSpendFactsAllTrueProof
+  acceptedSpendForgeryProb := acceptedSpendForgeryProb
+  acceptedSpendForgeryBound := acceptedSpendForgeryBound
+  acceptedSpendForgery_le_bound := acceptedSpendForgery_le_bound
+  hiddenSourceProofSemanticsClosed := hiddenSourceProofSemanticsClosed
+  checkedCoreCompositionClosed := checkedCoreCompositionClosed
+  lifecycleReplayClosed := lifecycleReplayClosed
+  noExportClosed := noExportClosed
 
 /-- Convert selected Rust accepted-spend numeric evidence into the boundary. -/
 def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary

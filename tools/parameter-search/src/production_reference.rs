@@ -21840,6 +21840,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "SelectedRustAcceptedSpendSoundnessCertificate",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport",
         "selectedRustAcceptedSpendEvidenceReport",
+        "selectedRustAcceptedSpendEvidenceDigest",
         "selectedRustAcceptedSpendBoundVerifiedProof",
         "selectedRustAcceptedSpendFactsAllTrueProof",
         "acceptedSpendForgeryProb",
@@ -21854,6 +21855,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
     }
     let forbidden_declaration_terms = [
         "selectedRustAcceptedSpendEvidenceReport",
+        "selectedRustAcceptedSpendEvidenceDigest",
         "selectedRustAcceptedSpendBoundVerifiedProof",
         "selectedRustAcceptedSpendFactsAllTrueProof",
         "selectedRustAcceptedSpendForgeryProb",
@@ -21896,6 +21898,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "let selectedRustAcceptedSpendEvidenceReport : SelectedRustAcceptedSpendSoundnessEvidenceReport :=",
         "let selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
         "let selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
+        "selectedRustAcceptedSpendSoundnessCertificate := {",
     ];
     if forbidden_vacuous_terms
         .iter()
@@ -21908,12 +21911,14 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1",
         "let selectedRustAcceptedSpendSoundnessCertificate :",
         "SelectedRustAcceptedSpendSoundnessCertificate",
-        "evidenceReport := selectedRustAcceptedSpendEvidenceReport",
-        "selectedRustAcceptedSpendBoundVerifiedProof :=",
-        "selectedRustAcceptedSpendFactsAllTrueProof :=",
-        "acceptedSpendForgeryProb := selectedRustAcceptedSpendForgeryProb",
-        "acceptedSpendForgeryBound := selectedRustAcceptedSpendForgeryBound",
-        "acceptedSpendForgery_le_bound := selectedRustAcceptedSpendForgeryLeBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound",
+        "selectedRustAcceptedSpendEvidenceReport",
+        "selectedRustAcceptedSpendEvidenceDigest",
+        "selectedRustAcceptedSpendBoundVerifiedProof",
+        "selectedRustAcceptedSpendFactsAllTrueProof",
+        "selectedRustAcceptedSpendForgeryProb",
+        "selectedRustAcceptedSpendForgeryBound",
+        "selectedRustAcceptedSpendForgeryLeBound",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
     ];
     instantiation_checks
@@ -44380,18 +44385,18 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     NativeAcceptedSpendSoundnessBoundary := by
   let selectedRustAcceptedSpendSoundnessCertificate :
       SelectedRustAcceptedSpendSoundnessCertificate :=
-    { evidenceReport := selectedRustAcceptedSpendEvidenceReport
-      selectedRustAcceptedSpendBoundVerifiedProof :=
-        selectedRustAcceptedSpendBoundVerifiedProof
-      selectedRustAcceptedSpendFactsAllTrueProof :=
-        selectedRustAcceptedSpendFactsAllTrueProof
-      acceptedSpendForgeryProb := selectedRustAcceptedSpendForgeryProb
-      acceptedSpendForgeryBound := selectedRustAcceptedSpendForgeryBound
-      acceptedSpendForgery_le_bound := selectedRustAcceptedSpendForgeryLeBound
-      hiddenSourceProofSemanticsClosed := selectedRustAcceptedSpendHiddenSourceClosed
-      checkedCoreCompositionClosed := selectedRustAcceptedSpendCheckedCoreClosed
-      lifecycleReplayClosed := selectedRustAcceptedSpendLifecycleClosed
-      noExportClosed := selectedRustAcceptedSpendNoExportClosed }
+    SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
+      selectedRustAcceptedSpendEvidenceReport
+      selectedRustAcceptedSpendEvidenceDigest
+      selectedRustAcceptedSpendBoundVerifiedProof
+      selectedRustAcceptedSpendFactsAllTrueProof
+      selectedRustAcceptedSpendForgeryProb
+      selectedRustAcceptedSpendForgeryBound
+      selectedRustAcceptedSpendForgeryLeBound
+      selectedRustAcceptedSpendHiddenSourceClosed
+      selectedRustAcceptedSpendCheckedCoreClosed
+      selectedRustAcceptedSpendLifecycleClosed
+      selectedRustAcceptedSpendNoExportClosed
   exact
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
       selectedRustAcceptedSpendSoundnessCertificate
