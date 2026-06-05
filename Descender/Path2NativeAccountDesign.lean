@@ -1555,6 +1555,48 @@ structure NativeAcceptedSpendSoundnessBoundary where
   noExportClosed : Prop
 
 /--
+Selected Rust/model certificate for the accepted-spend numeric soundness layer.
+
+The active full-signature theorem is only cryptographically meaningful after
+the real selected verifier/model supplies the accepted-spend probability,
+deployment bound, and proof of the inequality.  This certificate keeps that
+numeric bound from being silently supplied as an arbitrary boundary field.
+-/
+structure SelectedRustAcceptedSpendSoundnessCertificate where
+  selectedRustAcceptedSpendBoundVerified : Prop
+  selectedRustAcceptedSpendBoundVerifiedProof :
+    selectedRustAcceptedSpendBoundVerified
+  acceptedSpendForgeryProb : ℝ
+  acceptedSpendForgeryBound : ℝ
+  acceptedSpendForgery_le_bound :
+    acceptedSpendForgeryProb <= acceptedSpendForgeryBound
+  hiddenSourceProofSemanticsClosed : Prop
+  checkedCoreCompositionClosed : Prop
+  lifecycleReplayClosed : Prop
+  noExportClosed : Prop
+
+/-- Convert selected Rust accepted-spend numeric evidence into the boundary. -/
+def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    NativeAcceptedSpendSoundnessBoundary where
+  acceptedSpendForgeryProb :=
+    Cert.acceptedSpendForgeryProb
+  acceptedSpendForgeryBound :=
+    Cert.acceptedSpendForgeryBound
+  acceptedSpendForgery_le_bound := by
+    let _hVerified : Cert.selectedRustAcceptedSpendBoundVerified :=
+      Cert.selectedRustAcceptedSpendBoundVerifiedProof
+    exact Cert.acceptedSpendForgery_le_bound
+  hiddenSourceProofSemanticsClosed :=
+    Cert.hiddenSourceProofSemanticsClosed
+  checkedCoreCompositionClosed :=
+    Cert.checkedCoreCompositionClosed
+  lifecycleReplayClosed :=
+    Cert.lifecycleReplayClosed
+  noExportClosed :=
+    Cert.noExportClosed
+
+/--
 Full-signature boundary for the currently selected Path 2 native/Fq12 route.
 
 Constructing this record is the active deployable-signature proof target.  It

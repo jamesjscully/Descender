@@ -114,6 +114,8 @@ pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON: &str =
     "active native QROM multi-target horizon is not priced for the requested deployment scale";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE: &str =
     "active native full-signature execution source is not bound to accepted-spend soundness";
+pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND: &str =
+    "active native accepted-spend numeric soundness bound is not instantiated";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS: &str =
     "active native accept/reject/storage serializers are not bound to no-export allowlist";
 pub const PATH2_NATIVE_DEPLOYMENT_BLOCKER_FACADE_EXPORTS: &str =
@@ -3261,6 +3263,7 @@ pub struct Path2NativeDeploymentPreflightV1 {
     pub hash_qrom_deployment_horizon_complete: bool,
     pub full_signature_execution_source_boundary_present: bool,
     pub full_signature_execution_source_instantiated: bool,
+    pub accepted_spend_numeric_bound_instantiated: bool,
     pub no_export_serializer_boundary_present: bool,
     pub signer_verifier_pipeline_present: bool,
     pub constant_time_audit_complete: bool,
@@ -19151,6 +19154,129 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         .all(|marker| instantiation_source.contains(marker))
 }
 
+fn path2_native_accepted_spend_numeric_bound_instantiated_v1() -> bool {
+    let account_design_source = include_str!("../../../Descender/Path2NativeAccountDesign.lean");
+    path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(account_design_source)
+}
+
+fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+    account_design_source: &str,
+) -> bool {
+    let Some(instantiation_start) = account_design_source
+        .find("\ntheorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1")
+    else {
+        return false;
+    };
+    let instantiation_end = account_design_source[instantiation_start..]
+        .find("\nend Path2NativeAccountDesign")
+        .map(|offset| instantiation_start + offset)
+        .unwrap_or(account_design_source.len());
+    let instantiation_source = &account_design_source[instantiation_start..instantiation_end];
+    let theorem_header_end = instantiation_source
+        .find(":= by")
+        .or_else(|| instantiation_source.find(" where"))
+        .unwrap_or(instantiation_source.len().min(1024));
+    let theorem_header = &instantiation_source[..theorem_header_end];
+    let header_has_assumed_term = |term: &str| -> bool {
+        let mut depth = 0_usize;
+        let mut binder_start = None;
+        for (index, ch) in theorem_header.char_indices() {
+            match ch {
+                '(' | '{' | '[' => {
+                    if depth == 0 {
+                        binder_start = Some(index);
+                    }
+                    depth += 1;
+                }
+                ')' | '}' | ']' if depth > 0 => {
+                    depth -= 1;
+                    if depth == 0 {
+                        if let Some(start) = binder_start {
+                            if theorem_header[start..=index].contains(term) {
+                                return true;
+                            }
+                        }
+                        binder_start = None;
+                    }
+                }
+                _ => {}
+            }
+        }
+        false
+    };
+    let forbidden_header_terms = [
+        "NativeAcceptedSpendSoundnessBoundary",
+        "SelectedRustAcceptedSpendSoundnessCertificate",
+        "selectedRustAcceptedSpendBoundVerified",
+        "selectedRustAcceptedSpendBoundVerifiedProof",
+        "acceptedSpendForgeryProb",
+        "acceptedSpendForgeryBound",
+        "acceptedSpendForgery_le_bound",
+    ];
+    if forbidden_header_terms
+        .iter()
+        .any(|term| header_has_assumed_term(term))
+    {
+        return false;
+    }
+    let forbidden_declaration_terms = [
+        "selectedRustAcceptedSpendBoundVerified",
+        "selectedRustAcceptedSpendBoundVerifiedProof",
+        "selectedRustAcceptedSpendForgeryProb",
+        "selectedRustAcceptedSpendForgeryBound",
+        "selectedRustAcceptedSpendForgeryLeBound",
+    ];
+    let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
+    if forbidden_declaration_terms.iter().any(|term| {
+        forbidden_declaration_kinds
+            .iter()
+            .any(|kind| account_design_source.contains(&format!("\n{kind} {term}")))
+    }) {
+        return false;
+    }
+    let forbidden_variable_stub = account_design_source
+        .match_indices("\nvariable")
+        .map(|(index, _)| {
+            &account_design_source[index..account_design_source.len().min(index + 512)]
+        })
+        .any(|variable_window| {
+            forbidden_declaration_terms
+                .iter()
+                .any(|term| variable_window.contains(term))
+        });
+    if forbidden_variable_stub {
+        return false;
+    }
+    let forbidden_vacuous_terms = [
+        "selectedRustAcceptedSpendBoundVerified := True",
+        "selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
+        "let selectedRustAcceptedSpendBoundVerified : Prop := True",
+        "let selectedRustAcceptedSpendBoundVerified := True",
+        "let selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
+    ];
+    if forbidden_vacuous_terms
+        .iter()
+        .any(|term| instantiation_source.contains(term))
+    {
+        return false;
+    }
+
+    let instantiation_checks = [
+        "selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1",
+        "let selectedRustAcceptedSpendSoundnessCertificate :",
+        "SelectedRustAcceptedSpendSoundnessCertificate",
+        "selectedRustAcceptedSpendBoundVerified := selectedRustAcceptedSpendBoundVerified",
+        "selectedRustAcceptedSpendBoundVerifiedProof :=",
+        "acceptedSpendForgeryProb := selectedRustAcceptedSpendForgeryProb",
+        "acceptedSpendForgeryBound := selectedRustAcceptedSpendForgeryBound",
+        "acceptedSpendForgery_le_bound := selectedRustAcceptedSpendForgeryLeBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
+    ];
+    instantiation_checks
+        .iter()
+        .all(|marker| instantiation_source.contains(marker))
+}
+
 fn path2_no_export_serializer_boundary_present_v1() -> bool {
     let no_export_source = include_str!("../../../Descender/Path2NoExport.lean");
     let concrete_source = include_str!("../../../Descender/Path2NoExportConcrete.lean");
@@ -19941,6 +20067,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_HASH_QROM_REVIEW",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_FACADE_EXPORTS",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
@@ -20043,6 +20170,8 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON",
         "full_signature_execution_source_instantiated",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE",
+        "accepted_spend_numeric_bound_instantiated",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND",
         "signer_verifier_pipeline_present",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
         "constant_time_audit_complete",
@@ -20329,6 +20458,8 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         path2_full_signature_execution_source_boundary_present_v1();
     let full_signature_execution_source_instantiated =
         path2_full_signature_execution_source_instantiated_v1();
+    let accepted_spend_numeric_bound_instantiated =
+        path2_native_accepted_spend_numeric_bound_instantiated_v1();
     let no_export_serializer_boundary_present = path2_no_export_serializer_boundary_present_v1();
     let proof_side_public_boundary_preflight_complete = projection_encoders_present
         && checked_core_frame_present
@@ -20342,6 +20473,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         && hash_qrom_deployment_horizon_complete
         && full_signature_execution_source_boundary_present
         && full_signature_execution_source_instantiated
+        && accepted_spend_numeric_bound_instantiated
         && no_export_serializer_boundary_present;
     let signer_verifier_pipeline_present = path2_native_signer_verifier_pipeline_productized_v1();
     let constant_time_audit_complete = path2_native_constant_time_audit_complete_v1();
@@ -20384,6 +20516,9 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE);
     }
+    if !accepted_spend_numeric_bound_instantiated {
+        internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND);
+    }
     if !no_export_serializer_boundary_present {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS);
     }
@@ -20423,6 +20558,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         hash_qrom_deployment_horizon_complete,
         full_signature_execution_source_boundary_present,
         full_signature_execution_source_instantiated,
+        accepted_spend_numeric_bound_instantiated,
         no_export_serializer_boundary_present,
         signer_verifier_pipeline_present,
         constant_time_audit_complete,
@@ -20480,6 +20616,8 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         || !deployment_preflight.full_signature_execution_source_instantiated
     {
         Some("reject_active_native_full_signature_execution_source_open")
+    } else if !deployment_preflight.accepted_spend_numeric_bound_instantiated {
+        Some("reject_active_native_accepted_spend_numeric_bound_open")
     } else if !deployment_preflight.no_export_serializer_boundary_present {
         Some("reject_active_native_no_export_serializer_boundary_open")
     } else if !deployment_preflight.facade_exports_present {
@@ -21015,6 +21153,11 @@ pub fn path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_
         .full_signature_execution_source_instantiated
     {
         PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE
+    } else if !verdict
+        .deployment_preflight
+        .accepted_spend_numeric_bound_instantiated
+    {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND
     } else if !verdict
         .deployment_preflight
         .signer_verifier_pipeline_present
@@ -38354,6 +38497,7 @@ mod tests {
                 && preflight.hash_qrom_deployment_horizon_complete
                 && preflight.full_signature_execution_source_boundary_present
                 && preflight.full_signature_execution_source_instantiated
+                && preflight.accepted_spend_numeric_bound_instantiated
                 && preflight.no_export_serializer_boundary_present
         );
         assert!(path2_native_projection_encoder_source_boundary_present_v1());
@@ -38714,6 +38858,133 @@ end Path2FullSpendConcrete
         );
         assert!(!path2_full_signature_execution_source_instantiated_v1());
         assert!(!preflight.full_signature_execution_source_instantiated);
+        let assumed_accepted_spend_boundary = r#"
+theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1
+    (B : NativeAcceptedSpendSoundnessBoundary) :
+    NativeAcceptedSpendSoundnessBoundary := by
+  exact B
+end Path2NativeAccountDesign
+"#;
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                assumed_accepted_spend_boundary
+            )
+        );
+        let assumed_accepted_spend_certificate = r#"
+theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1
+    (selectedRustAcceptedSpendSoundnessCertificate :
+      SelectedRustAcceptedSpendSoundnessCertificate) :
+    NativeAcceptedSpendSoundnessBoundary := by
+  exact
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+      selectedRustAcceptedSpendSoundnessCertificate
+end Path2NativeAccountDesign
+"#;
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                assumed_accepted_spend_certificate
+            )
+        );
+        let assumed_accepted_spend_bound_bits = r#"
+theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1
+    (selectedRustAcceptedSpendBoundVerified : Prop)
+    (selectedRustAcceptedSpendBoundVerifiedProof :
+      selectedRustAcceptedSpendBoundVerified)
+    (acceptedSpendForgeryProb : ℝ)
+    (acceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgery_le_bound :
+      acceptedSpendForgeryProb <= acceptedSpendForgeryBound) :
+    NativeAcceptedSpendSoundnessBoundary := by
+  let selectedRustAcceptedSpendSoundnessCertificate :
+      SelectedRustAcceptedSpendSoundnessCertificate :=
+    { selectedRustAcceptedSpendBoundVerified := selectedRustAcceptedSpendBoundVerified
+      selectedRustAcceptedSpendBoundVerifiedProof := selectedRustAcceptedSpendBoundVerifiedProof
+      acceptedSpendForgeryProb := selectedRustAcceptedSpendForgeryProb
+      acceptedSpendForgeryBound := selectedRustAcceptedSpendForgeryBound
+      acceptedSpendForgery_le_bound := selectedRustAcceptedSpendForgeryLeBound
+      hiddenSourceProofSemanticsClosed := selectedRustAcceptedSpendHiddenSourceClosed
+      checkedCoreCompositionClosed := selectedRustAcceptedSpendCheckedCoreClosed
+      lifecycleReplayClosed := selectedRustAcceptedSpendLifecycleClosed
+      noExportClosed := selectedRustAcceptedSpendNoExportClosed }
+  exact
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+      selectedRustAcceptedSpendSoundnessCertificate
+end Path2NativeAccountDesign
+"#;
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                assumed_accepted_spend_bound_bits
+            )
+        );
+        let local_accepted_spend_boundary_without_certificate = r#"
+theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
+    NativeAcceptedSpendSoundnessBoundary := by
+  exact
+    { acceptedSpendForgeryProb := selectedRustAcceptedSpendForgeryProb
+      acceptedSpendForgeryBound := selectedRustAcceptedSpendForgeryBound
+      acceptedSpendForgery_le_bound := selectedRustAcceptedSpendForgeryLeBound
+      hiddenSourceProofSemanticsClosed := selectedRustAcceptedSpendHiddenSourceClosed
+      checkedCoreCompositionClosed := selectedRustAcceptedSpendCheckedCoreClosed
+      lifecycleReplayClosed := selectedRustAcceptedSpendLifecycleClosed
+      noExportClosed := selectedRustAcceptedSpendNoExportClosed }
+end Path2NativeAccountDesign
+"#;
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                local_accepted_spend_boundary_without_certificate
+            )
+        );
+        let vacuous_accepted_spend_bound = r#"
+theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
+    NativeAcceptedSpendSoundnessBoundary := by
+  let selectedRustAcceptedSpendSoundnessCertificate :
+      SelectedRustAcceptedSpendSoundnessCertificate :=
+    { selectedRustAcceptedSpendBoundVerified := True
+      selectedRustAcceptedSpendBoundVerifiedProof := True.intro
+      acceptedSpendForgeryProb := selectedRustAcceptedSpendForgeryProb
+      acceptedSpendForgeryBound := selectedRustAcceptedSpendForgeryBound
+      acceptedSpendForgery_le_bound := selectedRustAcceptedSpendForgeryLeBound
+      hiddenSourceProofSemanticsClosed := selectedRustAcceptedSpendHiddenSourceClosed
+      checkedCoreCompositionClosed := selectedRustAcceptedSpendCheckedCoreClosed
+      lifecycleReplayClosed := selectedRustAcceptedSpendLifecycleClosed
+      noExportClosed := selectedRustAcceptedSpendNoExportClosed }
+  exact
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+      selectedRustAcceptedSpendSoundnessCertificate
+end Path2NativeAccountDesign
+"#;
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                vacuous_accepted_spend_bound
+            )
+        );
+        let accepted_spend_instantiation_shape = r#"
+theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
+    NativeAcceptedSpendSoundnessBoundary := by
+  let selectedRustAcceptedSpendSoundnessCertificate :
+      SelectedRustAcceptedSpendSoundnessCertificate :=
+    { selectedRustAcceptedSpendBoundVerified := selectedRustAcceptedSpendBoundVerified
+      selectedRustAcceptedSpendBoundVerifiedProof :=
+        selectedRustAcceptedSpendBoundVerifiedProof
+      acceptedSpendForgeryProb := selectedRustAcceptedSpendForgeryProb
+      acceptedSpendForgeryBound := selectedRustAcceptedSpendForgeryBound
+      acceptedSpendForgery_le_bound := selectedRustAcceptedSpendForgeryLeBound
+      hiddenSourceProofSemanticsClosed := selectedRustAcceptedSpendHiddenSourceClosed
+      checkedCoreCompositionClosed := selectedRustAcceptedSpendCheckedCoreClosed
+      lifecycleReplayClosed := selectedRustAcceptedSpendLifecycleClosed
+      noExportClosed := selectedRustAcceptedSpendNoExportClosed }
+  exact
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+      selectedRustAcceptedSpendSoundnessCertificate
+end Path2NativeAccountDesign
+"#;
+        assert!(
+            path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                accepted_spend_instantiation_shape
+            )
+        );
+        assert!(!path2_native_accepted_spend_numeric_bound_instantiated_v1());
+        assert!(!preflight.accepted_spend_numeric_bound_instantiated);
         assert!(path2_no_export_serializer_boundary_present_v1());
         assert!(preflight.no_export_serializer_boundary_present);
         assert!(path2_native_signer_verifier_pipeline_source_present_v1());
@@ -38732,6 +39003,7 @@ end Path2FullSpendConcrete
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE,
+                PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
@@ -38750,6 +39022,7 @@ end Path2FullSpendConcrete
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_PREFLIGHT_SCHEMA));
         assert!(!rendered.contains("QROM multi-target horizon"));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
+        assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
         assert!(rendered.contains("active native signer/verifier pipeline"));
     }
 
@@ -38872,6 +39145,12 @@ end Path2FullSpendConcrete
                 .deployment_preflight
                 .internal_blockers
                 .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
+        );
+        assert!(
+            output
+                .deployment_preflight
+                .internal_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND)
         );
         assert_eq!(
             output.native_boundary_digest,
@@ -39848,6 +40127,7 @@ end Path2FullSpendConcrete
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE,
+                PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
@@ -39926,6 +40206,10 @@ end Path2FullSpendConcrete
         );
         assert_ne!(
             evidence.smallest_remaining_productization_gate,
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND
+        );
+        assert_ne!(
+            evidence.smallest_remaining_productization_gate,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME
         );
         assert_ne!(
@@ -39946,6 +40230,11 @@ end Path2FullSpendConcrete
             evidence
                 .deployment_blockers
                 .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
+        );
+        assert!(
+            evidence
+                .deployment_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND)
         );
         assert!(
             evidence
@@ -39972,6 +40261,7 @@ end Path2FullSpendConcrete
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE));
+        assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE));
