@@ -21593,6 +21593,8 @@ fn path2_full_signature_execution_source_boundary_present_v1() -> bool {
         "selectedRustFullExecutionSourceVerifiedProof",
         "selectedRustFullExecutionFactsAllTrueProof",
         "selectedRustExecutionSucceeds",
+        "selectedRustProductionExecutionSucceeds",
+        "selectedRustExecutionPredicatePinnedProof",
         "selectedRustSuccessImpliesVerifierAcceptOrBreak",
         "SelectedRustFullExecutionSourceCertificate.ofReportAndExecutionSource",
         "SelectedRustFullExecutionSourceCertificate.toExecutionSource",
@@ -21698,6 +21700,8 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         "selectedRustFullExecutionSourceVerifiedProof",
         "selectedRustFullExecutionFactsAllTrueProof",
         "selectedRustExecutionSucceeds",
+        "selectedRustProductionExecutionSucceeds",
+        "selectedRustExecutionPredicatePinnedProof",
         "selectedRustSuccessImpliesVerifierAcceptOrBreak",
         "NativeFullSignatureSecurityBoundary",
         "NativeAcceptedSpendSoundnessBoundary",
@@ -21716,6 +21720,8 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         "selectedRustFullExecutionSourceVerifiedProof",
         "selectedRustFullExecutionFactsAllTrueProof",
         "selectedRustExecutionSucceeds",
+        "selectedRustProductionExecutionSucceeds",
+        "selectedRustExecutionPredicatePinnedProof",
         "selectedRustSuccessImpliesVerifierAcceptOrBreak",
     ];
     let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
@@ -21751,6 +21757,10 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         "let selectedRustFullExecutionSourceVerifiedProof := True.intro",
         "let selectedRustFullExecutionFactsAllTrueProof := True.intro",
         "selectedRustFullExecutionCertificate := {",
+        "selectedRustExecutionSucceeds := fun _ => False",
+        "selectedRustProductionExecutionSucceeds := fun _ => False",
+        "let selectedRustExecutionSucceeds := fun _ => False",
+        "let selectedRustProductionExecutionSucceeds := fun _ => False",
     ];
     if forbidden_vacuous_execution_terms
         .iter()
@@ -21769,6 +21779,8 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         "selectedRustFullExecutionSourceVerifiedProof",
         "selectedRustFullExecutionFactsAllTrueProof",
         "selectedRustExecutionSucceeds",
+        "selectedRustProductionExecutionSucceeds",
+        "selectedRustExecutionPredicatePinnedProof",
         "selectedRustSuccessImpliesVerifierAcceptOrBreak",
         "let selectedRustFullExecutionSource :",
         "ConcreteFullSignatureExecutionSource",
@@ -44083,6 +44095,8 @@ theorem concreteFullSignatureExecutionSource_instantiation_v1 :
       selectedRustFullExecutionSourceVerifiedProof
       selectedRustFullExecutionFactsAllTrueProof
       selectedRustExecutionSucceeds
+      selectedRustProductionExecutionSucceeds
+      selectedRustExecutionPredicatePinnedProof
       selectedRustSuccessImpliesVerifierAcceptOrBreak
   let selectedRustFullExecutionSource :
       ConcreteFullSignatureExecutionSource selectedRustConcreteGameConfig :=
@@ -44166,6 +44180,35 @@ end Path2FullSpendConcrete
                 multiline_stubbed_full_execution
             )
         );
+        let vacuous_false_full_execution_predicate = r#"
+theorem concreteFullSignatureExecutionSource_instantiation_v1 :
+    ConcreteFullExecutionAcceptedSpendLift
+      selectedRustConcreteGameConfig selectedRustFullExecutionSource := by
+  let selectedRustExecutionSucceeds := fun _ => False
+  let selectedRustProductionExecutionSucceeds := fun _ => False
+  let selectedRustFullExecutionCertificate :
+      SelectedRustFullExecutionSourceCertificate selectedRustConcreteGameConfig :=
+    SelectedRustFullExecutionSourceCertificate.ofReportAndExecutionSource
+      selectedRustFullExecutionEvidenceReport
+      selectedRustFullExecutionEvidenceDigest
+      selectedRustFullExecutionSourceVerifiedProof
+      selectedRustFullExecutionFactsAllTrueProof
+      selectedRustExecutionSucceeds
+      selectedRustProductionExecutionSucceeds
+      selectedRustExecutionPredicatePinnedProof
+      selectedRustSuccessImpliesVerifierAcceptOrBreak
+  let selectedRustFullExecutionSource :
+      ConcreteFullSignatureExecutionSource selectedRustConcreteGameConfig :=
+    SelectedRustFullExecutionSourceCertificate.toExecutionSource selectedRustFullExecutionCertificate
+  exact concrete_fullExecutionAcceptedSpendLift
+    selectedRustConcreteGameConfig selectedRustFullExecutionSource
+end Path2FullSpendConcrete
+"#;
+        assert!(
+            !path2_full_signature_execution_source_instantiated_in_source_v1(
+                vacuous_false_full_execution_predicate
+            )
+        );
         let full_execution_instantiation_shape = r#"
 theorem concreteFullSignatureExecutionSource_instantiation_v1 :
     ConcreteFullExecutionAcceptedSpendLift
@@ -44178,6 +44221,8 @@ theorem concreteFullSignatureExecutionSource_instantiation_v1 :
       selectedRustFullExecutionSourceVerifiedProof
       selectedRustFullExecutionFactsAllTrueProof
       selectedRustExecutionSucceeds
+      selectedRustProductionExecutionSucceeds
+      selectedRustExecutionPredicatePinnedProof
       selectedRustSuccessImpliesVerifierAcceptOrBreak
   let selectedRustFullExecutionSource :
       ConcreteFullSignatureExecutionSource selectedRustConcreteGameConfig :=

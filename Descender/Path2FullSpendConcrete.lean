@@ -478,6 +478,10 @@ structure SelectedRustFullExecutionSourceCertificate
     evidenceReport.FactsAllTrue
   selectedRustExecutionSucceeds :
     Path2FullSpendGame.FullForgeryRun concreteTypes -> Prop
+  selectedRustProductionExecutionSucceeds :
+    Path2FullSpendGame.FullForgeryRun concreteTypes -> Prop
+  selectedRustExecutionPredicatePinnedProof :
+    selectedRustExecutionSucceeds = selectedRustProductionExecutionSucceeds
   selectedRustSuccessImpliesVerifierAcceptOrBreak :
     forall {run},
       selectedRustExecutionSucceeds run ->
@@ -495,6 +499,10 @@ def SelectedRustFullExecutionSourceCertificate.ofReportAndExecutionSource
       evidenceReport.FactsAllTrue)
     (selectedRustExecutionSucceeds :
       Path2FullSpendGame.FullForgeryRun concreteTypes -> Prop)
+    (selectedRustProductionExecutionSucceeds :
+      Path2FullSpendGame.FullForgeryRun concreteTypes -> Prop)
+    (selectedRustExecutionPredicatePinnedProof :
+      selectedRustExecutionSucceeds = selectedRustProductionExecutionSucceeds)
     (selectedRustSuccessImpliesVerifierAcceptOrBreak :
       forall {run},
         selectedRustExecutionSucceeds run ->
@@ -508,6 +516,10 @@ def SelectedRustFullExecutionSourceCertificate.ofReportAndExecutionSource
   selectedRustFullExecutionFactsAllTrueProof :=
     selectedRustFullExecutionFactsAllTrueProof
   selectedRustExecutionSucceeds := selectedRustExecutionSucceeds
+  selectedRustProductionExecutionSucceeds :=
+    selectedRustProductionExecutionSucceeds
+  selectedRustExecutionPredicatePinnedProof :=
+    selectedRustExecutionPredicatePinnedProof
   selectedRustSuccessImpliesVerifierAcceptOrBreak :=
     selectedRustSuccessImpliesVerifierAcceptOrBreak
 
@@ -521,6 +533,10 @@ def SelectedRustFullExecutionSourceCertificate.toExecutionSource
       Cert.selectedRustFullExecutionSourceVerifiedProof
     let _hFacts : Cert.evidenceReport.FactsAllTrue :=
       Cert.selectedRustFullExecutionFactsAllTrueProof
+    let _hPinned :
+        Cert.selectedRustExecutionSucceeds =
+          Cert.selectedRustProductionExecutionSucceeds :=
+      Cert.selectedRustExecutionPredicatePinnedProof
     exact Cert.selectedRustExecutionSucceeds
   success_implies_verifier_accept_or_break :=
     Cert.selectedRustSuccessImpliesVerifierAcceptOrBreak
