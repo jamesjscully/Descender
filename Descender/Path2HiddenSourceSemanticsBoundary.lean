@@ -784,6 +784,85 @@ def selectedRustSharedFrameWitnessEvidenceDigest : ByteArray :=
     222, 142, 228, 226, 178, 182, 64, 109, 54, 74, 46, 221, 67, 139, 195,
     204, 133, 122, 244, 215]
 
+/-- The selected public Rust evidence digests are concrete non-empty digests. -/
+theorem selectedRustEvidenceDigests_nonempty :
+    selectedRustFiveSourceEvidenceDigest ≠ ByteArray.mk #[] ∧
+      selectedRustBoundaryBaseEvidenceDigest ≠ ByteArray.mk #[] ∧
+      selectedRustRoleRootLiftEvidenceDigest ≠ ByteArray.mk #[] ∧
+      selectedRustSourceRouteEvidenceDigest ≠ ByteArray.mk #[] ∧
+      selectedRustFieldLocalEvidenceDigest ≠ ByteArray.mk #[] ∧
+      selectedRustSharedFrameWitnessEvidenceDigest ≠ ByteArray.mk #[] := by
+  decide
+
+/--
+The current placeholder aggregate report cannot digest-match certificates whose
+certificate digests are the selected public Rust evidence digests.
+
+This is the proof-level counterpart to the fail-closed manifest state: the
+named selected digest constants are non-empty, while the placeholder aggregate
+report would force every matched certificate digest to be empty.
+-/
+theorem selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_incompatible_with_selected_certificate_digests
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    {boundaryBaseCertificate :
+      ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P}
+    {roleRootLiftCertificate :
+      ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P}
+    {selectedSourceRouteCertificate :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+        FieldParser RouteParser P}
+    {fieldLocalCertificate :
+      ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P}
+    {witnessSourcesCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P}
+    (hMatch :
+      selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
+        boundaryBaseCertificate roleRootLiftCertificate
+        selectedSourceRouteCertificate fieldLocalCertificate
+        witnessSourcesCertificate)
+    (hBoundaryDigest :
+      boundaryBaseCertificate.evidenceDigest =
+        selectedRustBoundaryBaseEvidenceDigest)
+    (hRoleRootDigest :
+      roleRootLiftCertificate.evidenceDigest =
+        selectedRustRoleRootLiftEvidenceDigest)
+    (hSourceRouteDigest :
+      selectedSourceRouteCertificate.evidenceDigest =
+        selectedRustSourceRouteEvidenceDigest)
+    (hFieldLocalDigest :
+      fieldLocalCertificate.evidenceDigest =
+        selectedRustFieldLocalEvidenceDigest)
+    (hWitnessDigest :
+      witnessSourcesCertificate.evidenceDigest =
+        selectedRustSharedFrameWitnessEvidenceDigest) :
+    False := by
+  rcases
+      selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_forces_empty_certificate_digests
+        hMatch with
+    ⟨hBoundaryEmpty, hRoleRootEmpty, hSourceRouteEmpty, hFieldLocalEmpty,
+      hWitnessEmpty⟩
+  have hSelectedCertificateDigestsEmpty :
+      selectedRustBoundaryBaseEvidenceDigest = ByteArray.mk #[] ∧
+        selectedRustRoleRootLiftEvidenceDigest = ByteArray.mk #[] ∧
+        selectedRustSourceRouteEvidenceDigest = ByteArray.mk #[] ∧
+        selectedRustFieldLocalEvidenceDigest = ByteArray.mk #[] ∧
+        selectedRustSharedFrameWitnessEvidenceDigest = ByteArray.mk #[] := by
+    exact
+      ⟨hBoundaryDigest.symm.trans hBoundaryEmpty,
+        hRoleRootDigest.symm.trans hRoleRootEmpty,
+        hSourceRouteDigest.symm.trans hSourceRouteEmpty,
+        hFieldLocalDigest.symm.trans hFieldLocalEmpty,
+        hWitnessDigest.symm.trans hWitnessEmpty⟩
+  exact selectedRustEvidenceDigests_nonempty.2.1
+    hSelectedCertificateDigestsEmpty.1
+
 /--
 Proof-bearing selected Rust/model certificate for the active five-source
 hidden-source closure input record.

@@ -975,6 +975,13 @@ fixture that mentions `selectedRustFiveSourceEvidenceReport` in an unrelated
 premise while proving `otherFiveSourceEvidenceReport.SubEvidenceDigestsMatch`
 fails the category, so the digest-match proof must bind the selected aggregate
 report directly.
+Lean now also proves `selectedRustEvidenceDigests_nonempty` and
+`selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_incompatible_with_selected_certificate_digests`.
+Together with the earlier placeholder digest-match lemma, this shows that the
+current placeholder aggregate report cannot match certificates carrying the
+selected public Rust digest constants; replacing the placeholder with
+verifier-backed selected evidence is a real proof obligation, not a naming
+cleanup.
 
 ## Findings
 
