@@ -20745,13 +20745,18 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         five_source_closure_evidence.as_ref().and_then(|evidence| {
             path2_reviewed_fq12_five_source_closure_evidence_v1_digest(evidence).ok()
         });
-    let five_source_closure_evidence_verified =
-        five_source_closure_evidence
-            .as_ref()
-            .is_some_and(|evidence| {
-                verify_path2_reviewed_fq12_five_source_closure_evidence_v1(evidence).ok()
-                    == five_source_closure_evidence_digest
-            });
+    let five_source_closure_evidence_verified = match (
+        five_source_closure_evidence.as_ref(),
+        five_source_closure_evidence_digest,
+    ) {
+        (Some(evidence), Some(expected_digest)) => {
+            matches!(
+                verify_path2_reviewed_fq12_five_source_closure_evidence_v1(evidence),
+                Ok(verified_digest) if verified_digest == expected_digest
+            )
+        }
+        _ => false,
+    };
     let facade_exports_present = path2_native_production_facade_exports_source_present_v1();
 
     let checked_core_composition_review_complete =
