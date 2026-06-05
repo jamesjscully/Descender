@@ -1034,6 +1034,12 @@ active boundary source and lets the exact-name helper reject suffixed
 candidates. A regression with a suffixed spoof before an exact valid theorem
 still accepts the exact theorem, avoiding a fail-closed false negative when
 nearby diagnostic/spoof declarations exist.
+Active full-signature reduction gate note: the
+`selectedRustFullSignatureReductionBoundary_instantiation_v1` scanner now uses
+the same exact theorem-name and all-candidate pattern. A suffixed theorem name
+is rejected, while a suffixed spoof before an exact valid theorem still lets the
+exact theorem satisfy the gate. This keeps the downstream active deployability
+gate robust without changing its current fail-closed status.
 
 ## Findings
 
