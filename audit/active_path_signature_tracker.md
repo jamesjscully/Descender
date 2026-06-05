@@ -1225,6 +1225,11 @@ Lean now names that import target as
 concrete `Path2NativeBoundary.Predicates` value plus the selected source-record
 package for that exact predicate interpretation, and exposes
 `.hiddenSourceClosure`.
+The same semantics package now has accepted-spend and full-signature handoff
+theorems, and the manifest reports
+`native_boundary_semantics_package_handoff_present = true`. This means the
+path from the future concrete native-boundary semantics package to the active
+full-signature boundary is now mechanical; the package itself remains absent.
 
 ## Findings
 

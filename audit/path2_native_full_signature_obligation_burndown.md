@@ -568,6 +568,10 @@ Lean now names the target package:
 `ReviewedFq12SelectedRustNativeBoundarySemanticsPackage`, carrying the
 concrete native-boundary `Predicates` interpretation and the selected
 source-record package tied to that exact interpretation.
+That target now reaches both boundary handoff surfaces, and the manifest
+reports `native_boundary_semantics_package_handoff_present = true`. The
+remaining missing object is still the concrete native-boundary semantics
+package itself.
 
 P2FS-001 latest hardening: `ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources` is now the named Lean constructor for the final selected Rust/model certificate. The certificate now carries an aggregate five-source `evidenceDigest`, and the Rust `extractor_theorem_instantiated` gate requires the future final theorem to use that constructor with the verified five-source evidence report, aggregate evidence digest, all-true facts proof, and selected source packages before deriving `toClosureInputs`; a raw certificate record literal, empty digest literal, `sorry`, or `admit` no longer satisfies the AP2-N001 source gate.
 

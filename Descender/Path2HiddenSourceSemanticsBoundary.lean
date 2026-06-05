@@ -2284,6 +2284,27 @@ theorem with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_source
       P Package)
 
 /--
+The accepted-spend boundary field closes from a concrete native-boundary
+semantics package.
+-/
+theorem with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_package
+    (B : NativeAcceptedSpendSoundnessBoundary)
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Semantics :
+      ReviewedFq12SelectedRustNativeBoundarySemanticsPackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    (NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure
+      B Semantics.predicates).hiddenSourceProofSemanticsClosed :=
+  with_reviewed_fq12_hidden_source_closure_closed
+    B
+    Semantics.hiddenSourceClosure
+
+/--
 The accepted-spend boundary field closes from the proof-bearing selected
 Rust/model five-source certificate.
 -/
@@ -2389,6 +2410,28 @@ theorem full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_ru
     B
     (reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package
       P Package)
+
+/--
+The full-signature boundary can consume a concrete native-boundary semantics
+package directly.
+-/
+theorem full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_package
+    (B : NativeFullSignatureSecurityBoundary)
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Semantics :
+      ReviewedFq12SelectedRustNativeBoundarySemanticsPackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+      B Semantics.predicates
+      Semantics.hiddenSourceClosure).acceptedSpendSoundness.hiddenSourceProofSemanticsClosed :=
+  full_signature_with_reviewed_fq12_hidden_source_closure_closed
+    B
+    Semantics.hiddenSourceClosure
 
 /--
 The full-signature boundary can consume the proof-bearing selected Rust/model
