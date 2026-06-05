@@ -1738,6 +1738,226 @@ structure NativeFullSignatureSecurityBoundary where
       hashBoundary.queryBudgetPriced ∧
       hashBoundary.multiTargetLossPriced
 
+/--
+Lean mirror of the selected Rust full-signature reduction evidence report.
+
+The final deployable theorem must bind the signature-forgery probability,
+accepted-spend reduction inequality, and active hash/QROM budget to reviewed
+production evidence before constructing `NativeFullSignatureSecurityBoundary`.
+-/
+structure SelectedRustFullSignatureReductionEvidenceReport where
+  schemaMatches : Bool
+  reportDigestVerified : Bool
+  productionSignatureProbabilityPinned : Bool
+  signatureToAcceptedSpendInequalityProved : Bool
+  acceptedSpendProbabilityLinked : Bool
+  fullExecutionSourceConsumed : Bool
+  activeHashBoundaryConsumed : Bool
+  allActiveQuerySymbolsPriced : Bool
+  multiTargetHorizonPriced : Bool
+  verifierGameMatchesProductionExecution : Bool
+
+/-- The full-signature reduction report has the expected schema and digest. -/
+def SelectedRustFullSignatureReductionEvidenceReport.ReportVerified
+    (E : SelectedRustFullSignatureReductionEvidenceReport) : Prop :=
+  E.schemaMatches = true ∧
+  E.reportDigestVerified = true
+
+/-- Every production full-signature reduction fact recorded by the report holds. -/
+def SelectedRustFullSignatureReductionEvidenceReport.FactsAllTrue
+    (E : SelectedRustFullSignatureReductionEvidenceReport) : Prop :=
+  E.productionSignatureProbabilityPinned = true ∧
+  E.signatureToAcceptedSpendInequalityProved = true ∧
+  E.acceptedSpendProbabilityLinked = true ∧
+  E.fullExecutionSourceConsumed = true ∧
+  E.activeHashBoundaryConsumed = true ∧
+  E.allActiveQuerySymbolsPriced = true ∧
+  E.multiTargetHorizonPriced = true ∧
+  E.verifierGameMatchesProductionExecution = true
+
+/--
+Selected Rust/model certificate for the full-signature reduction layer.
+
+This certificate is the non-raw route into `NativeFullSignatureSecurityBoundary`.
+It keeps the production signature success probability, the inequality into the
+accepted-spend game, and the active hash/QROM budget in one reviewed package.
+-/
+structure SelectedRustFullSignatureReductionCertificate where
+  evidenceReport : SelectedRustFullSignatureReductionEvidenceReport
+  evidenceDigest : ByteArray
+  selectedRustFullSignatureReductionVerifiedProof :
+    evidenceReport.ReportVerified
+  selectedRustFullSignatureReductionFactsAllTrueProof :
+    evidenceReport.FactsAllTrue
+  acceptedSpendSoundness : NativeAcceptedSpendSoundnessBoundary
+  hashBoundary : NativeHashBudgetBoundary
+  signatureForgerySuccessProb : ℝ
+  productionSignatureForgerySuccessProb : ℝ
+  signatureForgerySuccessProbPinned :
+    signatureForgerySuccessProb = productionSignatureForgerySuccessProb
+  signatureForgerySuccess_le_acceptedSpend :
+    signatureForgerySuccessProb <=
+      acceptedSpendSoundness.acceptedSpendForgeryProb
+  keygenDistributionModeled : Prop
+  keygenDistributionModeledProof : keygenDistributionModeled
+  signingOracleModeled : Prop
+  signingOracleModeledProof : signingOracleModeled
+  completenessModeled : Prop
+  completenessModeledProof : completenessModeled
+  verifierRelationMatchesImplementation : Prop
+  verifierRelationMatchesImplementationProof :
+    verifierRelationMatchesImplementation
+  fullForgeryImpliesAcceptedSpendForgery : Prop
+  fullForgeryImpliesAcceptedSpendForgeryProof :
+    fullForgeryImpliesAcceptedSpendForgery
+  hiddenSourceProofSemanticsClosedProof :
+    acceptedSpendSoundness.hiddenSourceProofSemanticsClosed
+  checkedCoreCompositionClosedProof :
+    acceptedSpendSoundness.checkedCoreCompositionClosed
+  lifecycleReplayClosedProof :
+    acceptedSpendSoundness.lifecycleReplayClosed
+  noExportClosedProof :
+    acceptedSpendSoundness.noExportClosed
+  checkedCoreFrameDomainSeparatedProof :
+    hashBoundary.checkedCoreFrameDomainSeparated
+  hiddenSourceFrameDomainSeparatedProof :
+    hashBoundary.hiddenSourceFrameDomainSeparated
+  queryBudgetPricedProof :
+    hashBoundary.queryBudgetPriced
+  multiTargetLossPricedProof :
+    hashBoundary.multiTargetLossPriced
+
+/-- Named constructor for the selected Rust full-signature reduction certificate. -/
+def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
+    (evidenceReport : SelectedRustFullSignatureReductionEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (selectedRustFullSignatureReductionVerifiedProof :
+      evidenceReport.ReportVerified)
+    (selectedRustFullSignatureReductionFactsAllTrueProof :
+      evidenceReport.FactsAllTrue)
+    (acceptedSpendSoundness : NativeAcceptedSpendSoundnessBoundary)
+    (hashBoundary : NativeHashBudgetBoundary)
+    (signatureForgerySuccessProb : ℝ)
+    (productionSignatureForgerySuccessProb : ℝ)
+    (signatureForgerySuccessProbPinned :
+      signatureForgerySuccessProb = productionSignatureForgerySuccessProb)
+    (signatureForgerySuccess_le_acceptedSpend :
+      signatureForgerySuccessProb <=
+        acceptedSpendSoundness.acceptedSpendForgeryProb)
+    (keygenDistributionModeled : Prop)
+    (keygenDistributionModeledProof : keygenDistributionModeled)
+    (signingOracleModeled : Prop)
+    (signingOracleModeledProof : signingOracleModeled)
+    (completenessModeled : Prop)
+    (completenessModeledProof : completenessModeled)
+    (verifierRelationMatchesImplementation : Prop)
+    (verifierRelationMatchesImplementationProof :
+      verifierRelationMatchesImplementation)
+    (fullForgeryImpliesAcceptedSpendForgery : Prop)
+    (fullForgeryImpliesAcceptedSpendForgeryProof :
+      fullForgeryImpliesAcceptedSpendForgery)
+    (hiddenSourceProofSemanticsClosedProof :
+      acceptedSpendSoundness.hiddenSourceProofSemanticsClosed)
+    (checkedCoreCompositionClosedProof :
+      acceptedSpendSoundness.checkedCoreCompositionClosed)
+    (lifecycleReplayClosedProof :
+      acceptedSpendSoundness.lifecycleReplayClosed)
+    (noExportClosedProof :
+      acceptedSpendSoundness.noExportClosed)
+    (checkedCoreFrameDomainSeparatedProof :
+      hashBoundary.checkedCoreFrameDomainSeparated)
+    (hiddenSourceFrameDomainSeparatedProof :
+      hashBoundary.hiddenSourceFrameDomainSeparated)
+    (queryBudgetPricedProof :
+      hashBoundary.queryBudgetPriced)
+    (multiTargetLossPricedProof :
+      hashBoundary.multiTargetLossPriced) :
+    SelectedRustFullSignatureReductionCertificate where
+  evidenceReport := evidenceReport
+  evidenceDigest := evidenceDigest
+  selectedRustFullSignatureReductionVerifiedProof :=
+    selectedRustFullSignatureReductionVerifiedProof
+  selectedRustFullSignatureReductionFactsAllTrueProof :=
+    selectedRustFullSignatureReductionFactsAllTrueProof
+  acceptedSpendSoundness := acceptedSpendSoundness
+  hashBoundary := hashBoundary
+  signatureForgerySuccessProb := signatureForgerySuccessProb
+  productionSignatureForgerySuccessProb :=
+    productionSignatureForgerySuccessProb
+  signatureForgerySuccessProbPinned :=
+    signatureForgerySuccessProbPinned
+  signatureForgerySuccess_le_acceptedSpend :=
+    signatureForgerySuccess_le_acceptedSpend
+  keygenDistributionModeled := keygenDistributionModeled
+  keygenDistributionModeledProof := keygenDistributionModeledProof
+  signingOracleModeled := signingOracleModeled
+  signingOracleModeledProof := signingOracleModeledProof
+  completenessModeled := completenessModeled
+  completenessModeledProof := completenessModeledProof
+  verifierRelationMatchesImplementation :=
+    verifierRelationMatchesImplementation
+  verifierRelationMatchesImplementationProof :=
+    verifierRelationMatchesImplementationProof
+  fullForgeryImpliesAcceptedSpendForgery :=
+    fullForgeryImpliesAcceptedSpendForgery
+  fullForgeryImpliesAcceptedSpendForgeryProof :=
+    fullForgeryImpliesAcceptedSpendForgeryProof
+  hiddenSourceProofSemanticsClosedProof :=
+    hiddenSourceProofSemanticsClosedProof
+  checkedCoreCompositionClosedProof := checkedCoreCompositionClosedProof
+  lifecycleReplayClosedProof := lifecycleReplayClosedProof
+  noExportClosedProof := noExportClosedProof
+  checkedCoreFrameDomainSeparatedProof :=
+    checkedCoreFrameDomainSeparatedProof
+  hiddenSourceFrameDomainSeparatedProof :=
+    hiddenSourceFrameDomainSeparatedProof
+  queryBudgetPricedProof := queryBudgetPricedProof
+  multiTargetLossPricedProof := multiTargetLossPricedProof
+
+/-- Convert selected Rust full-signature reduction evidence into the boundary. -/
+def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    NativeFullSignatureSecurityBoundary where
+  acceptedSpendSoundness := Cert.acceptedSpendSoundness
+  hashBoundary := Cert.hashBoundary
+  keygenDistributionModeled := Cert.keygenDistributionModeled
+  signingOracleModeled := Cert.signingOracleModeled
+  completenessModeled := Cert.completenessModeled
+  verifierRelationMatchesImplementation :=
+    Cert.verifierRelationMatchesImplementation
+  fullForgeryImpliesAcceptedSpendForgery :=
+    Cert.fullForgeryImpliesAcceptedSpendForgery
+  signatureForgerySuccessProb := Cert.signatureForgerySuccessProb
+  signatureForgerySuccess_le_acceptedSpend := by
+    let _hVerified : Cert.evidenceReport.ReportVerified :=
+      Cert.selectedRustFullSignatureReductionVerifiedProof
+    let _hFacts : Cert.evidenceReport.FactsAllTrue :=
+      Cert.selectedRustFullSignatureReductionFactsAllTrueProof
+    let _hSigPinned :
+        Cert.signatureForgerySuccessProb =
+          Cert.productionSignatureForgerySuccessProb :=
+      Cert.signatureForgerySuccessProbPinned
+    exact Cert.signatureForgerySuccess_le_acceptedSpend
+  fullSignatureSecurityClaimComplete := by
+    let _hVerified : Cert.evidenceReport.ReportVerified :=
+      Cert.selectedRustFullSignatureReductionVerifiedProof
+    let _hFacts : Cert.evidenceReport.FactsAllTrue :=
+      Cert.selectedRustFullSignatureReductionFactsAllTrueProof
+    exact
+      ⟨Cert.keygenDistributionModeledProof,
+        Cert.signingOracleModeledProof,
+        Cert.completenessModeledProof,
+        Cert.verifierRelationMatchesImplementationProof,
+        Cert.fullForgeryImpliesAcceptedSpendForgeryProof,
+        Cert.hiddenSourceProofSemanticsClosedProof,
+        Cert.checkedCoreCompositionClosedProof,
+        Cert.lifecycleReplayClosedProof,
+        Cert.noExportClosedProof,
+        Cert.checkedCoreFrameDomainSeparatedProof,
+        Cert.hiddenSourceFrameDomainSeparatedProof,
+        Cert.queryBudgetPricedProof,
+        Cert.multiTargetLossPricedProof⟩
+
 namespace NativeFullSignatureSecurityBoundary
 
 def fullSignatureSuccessProb
