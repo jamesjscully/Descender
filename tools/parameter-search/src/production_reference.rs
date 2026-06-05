@@ -20719,6 +20719,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "verify_path2_native_consensus_carrier_v1_against_bundle",
         "path2_native_consensus_carrier_preflight_report_v1",
         "path2_native_deployment_preflight_v1",
+        "path2_native_deployment_preflight_v1_frame",
         "path2_native_deployment_preflight_v1_digest",
         "verify_path2_native_deployment_pipeline_v1",
         "path2_native_verifier_pipeline_verdict_v1_digest",
@@ -21317,9 +21318,176 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
 pub fn path2_native_deployment_preflight_v1_digest(
     preflight: &Path2NativeDeploymentPreflightV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(preflight)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native deployment preflight: {err}"))
+    Ok(Sha256::digest(path2_native_deployment_preflight_v1_frame(preflight)).into())
+}
+
+pub fn path2_native_deployment_preflight_v1_frame(
+    preflight: &Path2NativeDeploymentPreflightV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", preflight.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"proof_side_public_boundary_preflight_complete",
+        u64::from(preflight.proof_side_public_boundary_preflight_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"projection_encoders_present",
+        u64::from(preflight.projection_encoders_present),
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_frame_present",
+        u64::from(preflight.checked_core_frame_present),
+    );
+    append_u64(
+        &mut frame,
+        b"public_view_serializers_present",
+        u64::from(preflight.public_view_serializers_present),
+    );
+    append_u64(
+        &mut frame,
+        b"consensus_carrier_present",
+        u64::from(preflight.consensus_carrier_present),
+    );
+    append_u64(
+        &mut frame,
+        b"verifier_preflight_report_present",
+        u64::from(preflight.verifier_preflight_report_present),
+    );
+    append_u64(
+        &mut frame,
+        b"global_domain_registry_present",
+        u64::from(preflight.global_domain_registry_present),
+    );
+    append_u64(
+        &mut frame,
+        b"hash_qrom_review_present",
+        u64::from(preflight.hash_qrom_review_present),
+    );
+    append_u64(
+        &mut frame,
+        b"hidden_source_semantics_bridge_complete",
+        u64::from(preflight.hidden_source_semantics_bridge_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"five_source_closure_evidence_digest_present",
+        u64::from(preflight.five_source_closure_evidence_digest.is_some()),
+    );
+    if let Some(digest) = preflight.five_source_closure_evidence_digest {
+        append_frame(&mut frame, b"five_source_closure_evidence_digest", &digest);
+    }
+    append_u64(
+        &mut frame,
+        b"five_source_closure_evidence_verified",
+        u64::from(preflight.five_source_closure_evidence_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"five_source_closure_evidence_facts_all_true",
+        u64::from(preflight.five_source_closure_evidence_facts_all_true),
+    );
+    append_u64(
+        &mut frame,
+        b"facade_exports_present",
+        u64::from(preflight.facade_exports_present),
+    );
+    append_u64(
+        &mut frame,
+        b"consensus_carrier_body_bytes",
+        preflight.consensus_carrier_body_bytes as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"consensus_carrier_bytes",
+        preflight.consensus_carrier_bytes as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"account_state_bytes_min",
+        preflight.account_state_bytes_min as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"account_state_bytes_max",
+        preflight.account_state_bytes_max as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"signer_private_state_bytes_min",
+        preflight.signer_private_state_bytes_min as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"signer_private_state_bytes_max",
+        preflight.signer_private_state_bytes_max as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"spend_signature_impact_bytes_max",
+        preflight.spend_signature_impact_bytes_max as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_composition_review_complete",
+        u64::from(preflight.checked_core_composition_review_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"hash_qrom_deployment_horizon_complete",
+        u64::from(preflight.hash_qrom_deployment_horizon_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"full_signature_execution_source_boundary_present",
+        u64::from(preflight.full_signature_execution_source_boundary_present),
+    );
+    append_u64(
+        &mut frame,
+        b"full_signature_execution_source_instantiated",
+        u64::from(preflight.full_signature_execution_source_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_spend_numeric_bound_instantiated",
+        u64::from(preflight.accepted_spend_numeric_bound_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"no_export_serializer_boundary_present",
+        u64::from(preflight.no_export_serializer_boundary_present),
+    );
+    append_u64(
+        &mut frame,
+        b"signer_verifier_pipeline_present",
+        u64::from(preflight.signer_verifier_pipeline_present),
+    );
+    append_u64(
+        &mut frame,
+        b"constant_time_audit_complete",
+        u64::from(preflight.constant_time_audit_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"storage_lifecycle_hardening_complete",
+        u64::from(preflight.storage_lifecycle_hardening_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"internal_deployment_ready",
+        u64::from(preflight.internal_deployment_ready),
+    );
+    append_u64(
+        &mut frame,
+        b"internal_blockers_len",
+        preflight.internal_blockers.len() as u64,
+    );
+    for blocker in &preflight.internal_blockers {
+        append_frame(&mut frame, b"internal_blocker", blocker.as_bytes());
+    }
+    frame
 }
 
 pub fn verify_path2_native_deployment_pipeline_v1(
@@ -39887,6 +40055,13 @@ end Path2NativeAccountDesign
         assert_ne!(
             path2_native_deployment_preflight_v1_digest(&preflight).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        let preflight_frame = path2_native_deployment_preflight_v1_frame(&preflight);
+        assert!(!preflight_frame.is_empty());
+        let preflight_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&preflight_frame).into();
+        assert_eq!(
+            path2_native_deployment_preflight_v1_digest(&preflight).unwrap(),
+            preflight_frame_digest
         );
         let rendered = serde_json::to_string(&preflight).unwrap();
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_PREFLIGHT_SCHEMA));
