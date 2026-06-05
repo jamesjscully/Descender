@@ -7660,7 +7660,17 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
                 .iter()
                 .any(|name| variable_window.contains(name))
         });
-    forbidden_declaration_stub || forbidden_variable_stub
+    let forbidden_vacuous_verification_stub_terms = [
+        "\ndef selectedRustModelFiveSourceVerified : Prop := True",
+        "\ndef selectedRustModelFiveSourceVerified := True",
+        "\ntheorem selectedRustModelFiveSourceVerified : True",
+        "\ndef selectedRustModelFiveSourceVerifiedProof := True.intro",
+        "\ntheorem selectedRustModelFiveSourceVerifiedProof : selectedRustModelFiveSourceVerified := True.intro",
+    ];
+    let forbidden_vacuous_verification_stub = forbidden_vacuous_verification_stub_terms
+        .iter()
+        .any(|term| boundary_source.contains(term));
+    forbidden_declaration_stub || forbidden_variable_stub || forbidden_vacuous_verification_stub
 }
 
 fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
@@ -45731,6 +45741,25 @@ variable
         assert!(
             path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
                 variable_stubbed_boundary_source
+            )
+        );
+        let vacuous_verified_def_boundary_source = r#"
+def selectedRustModelFiveSourceVerified : Prop := True
+def selectedRustModelFiveSourceVerifiedProof := True.intro
+"#;
+        assert!(
+            path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+                vacuous_verified_def_boundary_source
+            )
+        );
+        let vacuous_verified_theorem_boundary_source = r#"
+theorem selectedRustModelFiveSourceVerified : True := True.intro
+theorem selectedRustModelFiveSourceVerifiedProof :
+    selectedRustModelFiveSourceVerified := True.intro
+"#;
+        assert!(
+            path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+                vacuous_verified_theorem_boundary_source
             )
         );
         assert!(
