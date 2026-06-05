@@ -8515,6 +8515,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "selectedRustSharedFrameWitnessEvidenceReportVerifiedProof",
         "selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof",
         "selectedRustFiveSourceEvidenceReport",
+        "selectedRustFiveSourceEvidenceDigest",
         "selectedRustFiveSourceEvidenceReportVerifiedProof",
         "selectedRustFiveSourceEvidenceFactsAllTrueProof",
         "selectedRustFiveSourceSubEvidenceDigestsMatchProof",
@@ -8821,6 +8822,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "selectedRustFiveSourceImplementation :",
         "selectedRustFiveSourcePackage :",
         "selectedRustFiveSourceEvidenceReport :",
+        "selectedRustFiveSourceEvidenceDigest :",
         "selectedRustFiveSourceEvidenceReportVerifiedProof :",
         "selectedRustFiveSourceEvidenceFactsAllTrueProof :",
         "selectedRustFiveSourceSubEvidenceDigestsMatchProof :",
@@ -8869,6 +8871,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
     let forbidden_vacuous_terms = [
         "evidenceReport := {",
         "evidenceReport := ⟨",
+        "evidenceDigest := ByteArray.empty",
         "evidenceReportVerifiedProof := True.intro",
         "evidenceFactsAllTrueProof := True.intro",
         "let selectedRustFiveSourceEvidenceReport :",
@@ -8896,6 +8899,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources",
         "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources",
         "selectedRustFiveSourceEvidenceReport",
+        "selectedRustFiveSourceEvidenceDigest",
         "selectedRustFiveSourceEvidenceReportVerifiedProof",
         "selectedRustFiveSourceEvidenceFactsAllTrueProof",
         "selectedRustFiveSourceSubEvidenceDigestsMatchProof",
@@ -52181,6 +52185,7 @@ theorem {theorem_name}
         FieldParser RouteParser CanonicalParser WitnessParser P :=
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources
       selectedRustFiveSourceEvidenceReport
+      selectedRustFiveSourceEvidenceDigest
       selectedRustFiveSourceEvidenceReportVerifiedProof
       selectedRustFiveSourceEvidenceFactsAllTrueProof
       selectedRustPayloadProjectionLaw
@@ -52217,6 +52222,7 @@ theorem {theorem_name}
         FieldParser RouteParser CanonicalParser WitnessParser P :=
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourceRouteCertificate
       selectedRustFiveSourceEvidenceReport
+      selectedRustFiveSourceEvidenceDigest
       selectedRustFiveSourceEvidenceReportVerifiedProof
       selectedRustFiveSourceEvidenceFactsAllTrueProof
       selectedRustPayloadProjectionLaw
@@ -52253,6 +52259,7 @@ theorem {theorem_name}
         FieldParser RouteParser CanonicalParser WitnessParser P :=
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourceRouteAndWitnessCertificates
       selectedRustFiveSourceEvidenceReport
+      selectedRustFiveSourceEvidenceDigest
       selectedRustFiveSourceEvidenceReportVerifiedProof
       selectedRustFiveSourceEvidenceFactsAllTrueProof
       selectedRustPayloadProjectionLaw
@@ -52289,6 +52296,7 @@ theorem {theorem_name}
         FieldParser RouteParser CanonicalParser WitnessParser P :=
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourceRouteFieldLocalAndWitnessCertificates
       selectedRustFiveSourceEvidenceReport
+      selectedRustFiveSourceEvidenceDigest
       selectedRustFiveSourceEvidenceReportVerifiedProof
       selectedRustFiveSourceEvidenceFactsAllTrueProof
       selectedRustPayloadProjectionLaw
@@ -52325,6 +52333,7 @@ theorem {theorem_name}
         FieldParser RouteParser CanonicalParser WitnessParser P :=
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndRoleRootSourceRouteFieldLocalAndWitnessCertificates
       selectedRustFiveSourceEvidenceReport
+      selectedRustFiveSourceEvidenceDigest
       selectedRustFiveSourceEvidenceReportVerifiedProof
       selectedRustFiveSourceEvidenceFactsAllTrueProof
       selectedRustPayloadProjectionLaw
@@ -52398,6 +52407,7 @@ theorem {theorem_name}
         FieldParser RouteParser CanonicalParser WitnessParser P :=
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates
       selectedRustFiveSourceEvidenceReport
+      selectedRustFiveSourceEvidenceDigest
       selectedRustFiveSourceEvidenceReportVerifiedProof
       selectedRustFiveSourceEvidenceFactsAllTrueProof
       selectedRustBoundaryBaseCertificate
@@ -52419,6 +52429,14 @@ theorem {theorem_name}
         assert!(
             path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &concrete_constructor_certificate_theorem,
+                theorem_name
+            )
+        );
+        let missing_aggregate_digest_constructor_theorem = concrete_constructor_certificate_theorem
+            .replace("      selectedRustFiveSourceEvidenceDigest\n", "");
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &missing_aggregate_digest_constructor_theorem,
                 theorem_name
             )
         );

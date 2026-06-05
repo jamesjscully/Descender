@@ -472,6 +472,7 @@ structure ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
     (P : Predicates) where
   evidenceReport :
     ReviewedFq12SelectedRustFiveSourceClosureEvidence
+  evidenceDigest : ByteArray
   evidenceReportVerifiedProof :
     evidenceReport.ReportVerified
   evidenceFactsAllTrueProof :
@@ -550,6 +551,7 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourc
     {P : Predicates}
     (evidenceReport :
       ReviewedFq12SelectedRustFiveSourceClosureEvidence)
+    (evidenceDigest : ByteArray)
     (evidenceReportVerifiedProof :
       evidenceReport.ReportVerified)
     (evidenceFactsAllTrueProof :
@@ -578,6 +580,7 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourc
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
       FieldParser RouteParser CanonicalParser WitnessParser P where
   evidenceReport := evidenceReport
+  evidenceDigest := evidenceDigest
   evidenceReportVerifiedProof := evidenceReportVerifiedProof
   evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
   payloadProjectsFrom := payloadProjectsFrom
@@ -603,6 +606,7 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourc
     {P : Predicates}
     (evidenceReport :
       ReviewedFq12SelectedRustFiveSourceClosureEvidence)
+    (evidenceDigest : ByteArray)
     (evidenceReportVerifiedProof :
       evidenceReport.ReportVerified)
     (evidenceFactsAllTrueProof :
@@ -631,7 +635,7 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourc
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
       FieldParser RouteParser CanonicalParser WitnessParser P :=
   ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources
-    evidenceReport evidenceReportVerifiedProof evidenceFactsAllTrueProof
+    evidenceReport evidenceDigest evidenceReportVerifiedProof evidenceFactsAllTrueProof
     payloadProjectsFrom certificateAvailability roleRootLiftSource
     selectedSourceRouteCertificate.toByteSource assemblySource compatibilitySource
     witnessSources
@@ -651,6 +655,7 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourc
     {P : Predicates}
     (evidenceReport :
       ReviewedFq12SelectedRustFiveSourceClosureEvidence)
+    (evidenceDigest : ByteArray)
     (evidenceReportVerifiedProof :
       evidenceReport.ReportVerified)
     (evidenceFactsAllTrueProof :
@@ -679,7 +684,7 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourc
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
       FieldParser RouteParser CanonicalParser WitnessParser P :=
   ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources
-    evidenceReport evidenceReportVerifiedProof evidenceFactsAllTrueProof
+    evidenceReport evidenceDigest evidenceReportVerifiedProof evidenceFactsAllTrueProof
     payloadProjectsFrom certificateAvailability roleRootLiftSource
     selectedSourceRouteCertificate.toByteSource assemblySource compatibilitySource
     witnessSourcesCertificate.toWitnessSources
@@ -699,6 +704,7 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourc
     {P : Predicates}
     (evidenceReport :
       ReviewedFq12SelectedRustFiveSourceClosureEvidence)
+    (evidenceDigest : ByteArray)
     (evidenceReportVerifiedProof :
       evidenceReport.ReportVerified)
     (evidenceFactsAllTrueProof :
@@ -725,7 +731,7 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourc
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
       FieldParser RouteParser CanonicalParser WitnessParser P :=
   ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources
-    evidenceReport evidenceReportVerifiedProof evidenceFactsAllTrueProof
+    evidenceReport evidenceDigest evidenceReportVerifiedProof evidenceFactsAllTrueProof
     payloadProjectsFrom certificateAvailability roleRootLiftSource
     selectedSourceRouteCertificate.toByteSource
     fieldLocalCertificate.toAssemblySource
@@ -747,6 +753,7 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndRoleR
     {P : Predicates}
     (evidenceReport :
       ReviewedFq12SelectedRustFiveSourceClosureEvidence)
+    (evidenceDigest : ByteArray)
     (evidenceReportVerifiedProof :
       evidenceReport.ReportVerified)
     (evidenceFactsAllTrueProof :
@@ -773,7 +780,7 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndRoleR
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
       FieldParser RouteParser CanonicalParser WitnessParser P :=
   ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources
-    evidenceReport evidenceReportVerifiedProof evidenceFactsAllTrueProof
+    evidenceReport evidenceDigest evidenceReportVerifiedProof evidenceFactsAllTrueProof
     payloadProjectsFrom certificateAvailability
     roleRootLiftCertificate.toRoleRootLiftSource
     selectedSourceRouteCertificate.toByteSource
@@ -796,6 +803,7 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBound
     {P : Predicates}
     (evidenceReport :
       ReviewedFq12SelectedRustFiveSourceClosureEvidence)
+    (evidenceDigest : ByteArray)
     (evidenceReportVerifiedProof :
       evidenceReport.ReportVerified)
     (evidenceFactsAllTrueProof :
@@ -826,7 +834,7 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBound
         witnessSourcesCertificate :=
     subEvidenceDigestsMatchProof
   ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources
-    evidenceReport evidenceReportVerifiedProof evidenceFactsAllTrueProof
+    evidenceReport evidenceDigest evidenceReportVerifiedProof evidenceFactsAllTrueProof
     boundaryBaseCertificate.toPayloadProjectsFrom
     boundaryBaseCertificate.toCertificateAvailability
     roleRootLiftCertificate.toRoleRootLiftSource
