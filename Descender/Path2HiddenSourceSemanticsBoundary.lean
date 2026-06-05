@@ -2184,6 +2184,24 @@ def ReviewedFq12ExtractionCertificateMatchesPayload
             cert.reviewedStatementDigest = payload.statementDigest
 
 /--
+Concrete predicate-model obligation for valid selected extraction
+certificates.
+
+The validity predicate is consumed separately from certificate availability, so
+it must carry the same native-boundary and payload binding discipline.
+-/
+def ReviewedFq12ExtractionCertificateValidityMatchesPayload
+    (P : Predicates) : Prop :=
+  forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate},
+    P.reviewedFq12ExtractionCertificateValid b payload cert ->
+      cert.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+        cert.slotId = b.context.slotId ∧
+          cert.creationStatementDigest = payload.creationStatementDigest ∧
+            cert.reviewedStatementDigest = payload.statementDigest
+
+/--
 Selected Rust native-boundary predicate-model import target.
 
 The full-spend concrete predicates are not this object: they live over concrete
@@ -2207,6 +2225,8 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
     ReviewedFq12PayloadAcceptanceMatchesBoundary predicates
   extractionCertificateMatchesPayload :
     ReviewedFq12ExtractionCertificateMatchesPayload predicates
+  extractionCertificateValidityMatchesPayload :
+    ReviewedFq12ExtractionCertificateValidityMatchesPayload predicates
   reviewedFq12PayloadAcceptanceModeled : Prop
   reviewedFq12PayloadAcceptanceModeledProof :
     reviewedFq12PayloadAcceptanceModeled

@@ -140,6 +140,8 @@ The predicate-model target also now records concrete binding obligations:
 payloads to the native boundary digest and slot, while
 `ReviewedFq12ExtractionCertificateMatchesPayload` ties extraction certificates
 to the same boundary and payload statement digests.
+`ReviewedFq12ExtractionCertificateValidityMatchesPayload` applies the same
+binding discipline to the separately consumed certificate-validity predicate.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It
