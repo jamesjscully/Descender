@@ -261,6 +261,8 @@ pub const PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.reviewed_fq12.five_source_closure_evidence.v1";
 pub const PATH2_REVIEWED_FQ12_BOUNDARY_BASE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.reviewed_fq12.boundary_base_evidence.v1";
+pub const PATH2_REVIEWED_FQ12_ROLE_ROOT_LIFT_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.reviewed_fq12.role_root_lift_evidence.v1";
 pub const PATH2_REVIEWED_FQ12_SELECTED_SOURCE_ROUTE_BYTE_SOURCE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.reviewed_fq12.selected_source_route_byte_source_evidence.v1";
 pub const PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN: &str = "DESCENDER_SLOT_LEAF_V1";
@@ -7419,6 +7421,17 @@ pub struct Path2ReviewedFq12BoundaryBaseEvidenceV1 {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2ReviewedFq12RoleRootLiftEvidenceV1 {
+    pub schema: &'static str,
+    pub schema_matches: bool,
+    pub report_digest_verified: bool,
+    pub concrete_role_root_field_binding_pinned: bool,
+    pub selected_lift_functionality_pinned: bool,
+    pub role_root_bridge_pinned: bool,
+    pub role_root_negative_controls_passed: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1 {
     pub schema: &'static str,
     pub schema_matches: bool,
@@ -10375,6 +10388,119 @@ pub fn verify_path2_reviewed_fq12_boundary_base_evidence_v1(
     Ok(digest)
 }
 
+pub fn path2_reviewed_fq12_role_root_lift_evidence_v1()
+-> Result<Path2ReviewedFq12RoleRootLiftEvidenceV1, String> {
+    let concrete_role_root_field_binding_pinned =
+        path2_reviewed_fq12_concrete_role_root_field_binding_source_present_v1();
+    let selected_lift_functionality_pinned =
+        path2_reviewed_fq12_certificate_lift_opening_functionality_source_present_v1();
+    Ok(Path2ReviewedFq12RoleRootLiftEvidenceV1 {
+        schema: PATH2_REVIEWED_FQ12_ROLE_ROOT_LIFT_EVIDENCE_SCHEMA,
+        schema_matches: true,
+        report_digest_verified: true,
+        concrete_role_root_field_binding_pinned,
+        selected_lift_functionality_pinned,
+        role_root_bridge_pinned: concrete_role_root_field_binding_pinned,
+        role_root_negative_controls_passed: concrete_role_root_field_binding_pinned
+            && selected_lift_functionality_pinned,
+    })
+}
+
+pub fn path2_reviewed_fq12_role_root_lift_evidence_v1_frame(
+    evidence: &Path2ReviewedFq12RoleRootLiftEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"schema_matches",
+        u64::from(evidence.schema_matches),
+    );
+    append_u64(
+        &mut frame,
+        b"report_digest_verified",
+        u64::from(evidence.report_digest_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"concrete_role_root_field_binding_pinned",
+        u64::from(evidence.concrete_role_root_field_binding_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"selected_lift_functionality_pinned",
+        u64::from(evidence.selected_lift_functionality_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"role_root_bridge_pinned",
+        u64::from(evidence.role_root_bridge_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"role_root_negative_controls_passed",
+        u64::from(evidence.role_root_negative_controls_passed),
+    );
+    frame
+}
+
+pub fn path2_reviewed_fq12_role_root_lift_evidence_v1_digest(
+    evidence: &Path2ReviewedFq12RoleRootLiftEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    Ok(
+        Sha256::digest(path2_reviewed_fq12_role_root_lift_evidence_v1_frame(
+            evidence,
+        ))
+        .into(),
+    )
+}
+
+pub fn path2_reviewed_fq12_role_root_lift_evidence_all_facts_true(
+    evidence: &Path2ReviewedFq12RoleRootLiftEvidenceV1,
+) -> bool {
+    evidence.schema == PATH2_REVIEWED_FQ12_ROLE_ROOT_LIFT_EVIDENCE_SCHEMA
+        && evidence.concrete_role_root_field_binding_pinned
+        && evidence.selected_lift_functionality_pinned
+        && evidence.role_root_bridge_pinned
+        && evidence.role_root_negative_controls_passed
+}
+
+pub fn path2_reviewed_fq12_role_root_lift_evidence_report_verified_v1(
+    evidence: &Path2ReviewedFq12RoleRootLiftEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let expected = path2_reviewed_fq12_role_root_lift_evidence_v1()?;
+    if expected != *evidence {
+        return Err("Path 2 reviewed Fq12 role-root/lift evidence mismatch".to_string());
+    }
+    if evidence.schema != PATH2_REVIEWED_FQ12_ROLE_ROOT_LIFT_EVIDENCE_SCHEMA {
+        return Err("Path 2 reviewed Fq12 role-root/lift evidence schema mismatch".to_string());
+    }
+    if !evidence.schema_matches {
+        return Err(
+            "Path 2 reviewed Fq12 role-root/lift evidence schema was not matched".to_string(),
+        );
+    }
+    if !evidence.report_digest_verified {
+        return Err(
+            "Path 2 reviewed Fq12 role-root/lift evidence digest was not verified".to_string(),
+        );
+    }
+    path2_reviewed_fq12_role_root_lift_evidence_v1_digest(evidence)
+}
+
+pub fn verify_path2_reviewed_fq12_role_root_lift_evidence_v1(
+    evidence: &Path2ReviewedFq12RoleRootLiftEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let digest = path2_reviewed_fq12_role_root_lift_evidence_report_verified_v1(evidence)?;
+    if !path2_reviewed_fq12_role_root_lift_evidence_all_facts_true(evidence) {
+        return Err(
+            "Path 2 reviewed Fq12 role-root/lift evidence has an unsatisfied component fact"
+                .to_string(),
+        );
+    }
+    Ok(digest)
+}
+
 pub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1()
 -> Result<Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1, String> {
     let parser_frame_certificates_present =
@@ -11491,6 +11617,31 @@ fn path2_reviewed_fq12_native_representative_digest_frame_witness_api_present_v1
 
 fn path2_reviewed_fq12_role_root_lift_source_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
+    let role_root_evidence_start = source
+        .find("\npub struct Path2ReviewedFq12RoleRootLiftEvidenceV1")
+        .expect("Path 2 reviewed Fq12 role-root/lift evidence report start marker missing");
+    let role_root_evidence_end = source[role_root_evidence_start..]
+        .find("\n\n#[derive(Clone, Debug, PartialEq, Eq, Serialize)]")
+        .expect("Path 2 reviewed Fq12 role-root/lift evidence report end marker missing")
+        + role_root_evidence_start;
+    let role_root_evidence_struct_source =
+        &source[role_root_evidence_start..role_root_evidence_end];
+
+    let role_root_evidence_function_start = source
+        .find("\npub fn path2_reviewed_fq12_role_root_lift_evidence_v1")
+        .expect("Path 2 reviewed Fq12 role-root/lift evidence function start marker missing");
+    let role_root_evidence_function_end = source[role_root_evidence_function_start..]
+        .find("\npub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1")
+        .expect("Path 2 reviewed Fq12 role-root/lift evidence function end marker missing")
+        + role_root_evidence_function_start;
+    let role_root_evidence_function_source =
+        &source[role_root_evidence_function_start..role_root_evidence_function_end];
+
+    let role_root_evidence = match path2_reviewed_fq12_role_root_lift_evidence_v1() {
+        Ok(evidence) => evidence,
+        Err(_) => return false,
+    };
+
     let full_opening_source_start = source
         .find("\npub fn path2_reviewed_fq12_full_native_opening_certificate_v1(")
         .expect("Path 2 reviewed Fq12 full-native-opening source start marker missing");
@@ -11527,6 +11678,31 @@ fn path2_reviewed_fq12_role_root_lift_source_present_v1() -> bool {
         + full_opening_verify_start;
     let full_opening_verify_source = &source[full_opening_verify_start..full_opening_verify_end];
 
+    let role_root_evidence_struct_checks = [
+        "Path2ReviewedFq12RoleRootLiftEvidenceV1",
+        "schema_matches",
+        "report_digest_verified",
+        "concrete_role_root_field_binding_pinned",
+        "selected_lift_functionality_pinned",
+        "role_root_bridge_pinned",
+        "role_root_negative_controls_passed",
+    ];
+    let role_root_evidence_function_checks = [
+        "PATH2_REVIEWED_FQ12_ROLE_ROOT_LIFT_EVIDENCE_SCHEMA",
+        "path2_reviewed_fq12_role_root_lift_evidence_v1",
+        "path2_reviewed_fq12_role_root_lift_evidence_v1_frame",
+        "path2_reviewed_fq12_role_root_lift_evidence_v1_digest",
+        "path2_reviewed_fq12_role_root_lift_evidence_all_facts_true",
+        "path2_reviewed_fq12_role_root_lift_evidence_report_verified_v1",
+        "verify_path2_reviewed_fq12_role_root_lift_evidence_v1",
+        "path2_reviewed_fq12_concrete_role_root_field_binding_source_present_v1",
+        "path2_reviewed_fq12_certificate_lift_opening_functionality_source_present_v1",
+        "b\"concrete_role_root_field_binding_pinned\"",
+        "b\"selected_lift_functionality_pinned\"",
+        "b\"role_root_bridge_pinned\"",
+        "b\"role_root_negative_controls_passed\"",
+    ];
+
     [
         "&creation_binding.packed_witness_commitment",
         "&creation_binding.randomizer_commitment",
@@ -11537,6 +11713,13 @@ fn path2_reviewed_fq12_role_root_lift_source_present_v1() -> bool {
     ]
     .iter()
     .all(|marker| full_opening_source.contains(marker))
+        && role_root_evidence_struct_checks
+            .iter()
+            .all(|marker| role_root_evidence_struct_source.contains(marker))
+        && role_root_evidence_function_checks
+            .iter()
+            .all(|marker| role_root_evidence_function_source.contains(marker))
+        && verify_path2_reviewed_fq12_role_root_lift_evidence_v1(&role_root_evidence).is_ok()
         && full_opening_source
             .contains("let expected_role_root = path2_creation_native_role_root_commitment_v1(")
         && full_opening_source
@@ -51461,6 +51644,69 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             path2_reviewed_fq12_boundary_base_evidence_report_verified_v1(&digest_unverified)
                 .unwrap_err(),
             "Path 2 reviewed Fq12 boundary-base evidence mismatch"
+        );
+    }
+
+    #[test]
+    fn path2_reviewed_fq12_role_root_lift_evidence_is_digest_bound() {
+        assert!(path2_reviewed_fq12_concrete_role_root_field_binding_source_present_v1());
+        assert!(path2_reviewed_fq12_certificate_lift_opening_functionality_source_present_v1());
+        let evidence = path2_reviewed_fq12_role_root_lift_evidence_v1().unwrap();
+        assert_eq!(
+            evidence.schema,
+            PATH2_REVIEWED_FQ12_ROLE_ROOT_LIFT_EVIDENCE_SCHEMA
+        );
+        assert!(evidence.schema_matches);
+        assert!(evidence.report_digest_verified);
+        assert!(evidence.concrete_role_root_field_binding_pinned);
+        assert!(evidence.selected_lift_functionality_pinned);
+        assert!(evidence.role_root_bridge_pinned);
+        assert!(evidence.role_root_negative_controls_passed);
+        assert!(path2_reviewed_fq12_role_root_lift_evidence_all_facts_true(
+            &evidence
+        ));
+
+        let frame = path2_reviewed_fq12_role_root_lift_evidence_v1_frame(&evidence);
+        assert!(!frame.is_empty());
+        let frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&frame).into();
+        assert_eq!(
+            path2_reviewed_fq12_role_root_lift_evidence_v1_digest(&evidence).unwrap(),
+            frame_digest
+        );
+        assert_eq!(
+            path2_reviewed_fq12_role_root_lift_evidence_report_verified_v1(&evidence).unwrap(),
+            frame_digest
+        );
+        assert_eq!(
+            verify_path2_reviewed_fq12_role_root_lift_evidence_v1(&evidence).unwrap(),
+            frame_digest
+        );
+
+        let mut missing_role_root_binding = evidence.clone();
+        missing_role_root_binding.concrete_role_root_field_binding_pinned = false;
+        assert!(!path2_reviewed_fq12_role_root_lift_evidence_all_facts_true(
+            &missing_role_root_binding
+        ));
+        assert_eq!(
+            verify_path2_reviewed_fq12_role_root_lift_evidence_v1(&missing_role_root_binding)
+                .unwrap_err(),
+            "Path 2 reviewed Fq12 role-root/lift evidence mismatch"
+        );
+
+        let mut schema_unmatched = evidence.clone();
+        schema_unmatched.schema_matches = false;
+        assert_eq!(
+            path2_reviewed_fq12_role_root_lift_evidence_report_verified_v1(&schema_unmatched)
+                .unwrap_err(),
+            "Path 2 reviewed Fq12 role-root/lift evidence mismatch"
+        );
+
+        let mut digest_unverified = evidence.clone();
+        digest_unverified.report_digest_verified = false;
+        assert_eq!(
+            path2_reviewed_fq12_role_root_lift_evidence_report_verified_v1(&digest_unverified)
+                .unwrap_err(),
+            "Path 2 reviewed Fq12 role-root/lift evidence mismatch"
         );
     }
 
