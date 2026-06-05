@@ -20276,6 +20276,8 @@ fn path2_no_export_serializer_instantiated_v1() -> bool {
 }
 
 fn path2_no_export_serializer_instantiated_in_source_v1(concrete_source: &str) -> bool {
+    let stripped_concrete_source = lean_source_without_comments_and_strings_v1(concrete_source);
+    let concrete_source = stripped_concrete_source.as_str();
     let Some(instantiation_start) =
         concrete_source.find("\ntheorem selectedRustActiveNoExportSerializer_instantiation_v1")
     else {
@@ -20349,16 +20351,22 @@ fn path2_no_export_serializer_instantiated_in_source_v1(concrete_source: &str) -
         "selectedRustStorageOutputConforms",
     ];
     let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
-    if forbidden_declaration_terms.iter().any(|term| {
-        forbidden_declaration_kinds
-            .iter()
-            .any(|kind| concrete_source.contains(&format!("\n{kind} {term}")))
-    }) {
+    let forbidden_declaration_stub = forbidden_declaration_kinds.iter().any(|kind| {
+        concrete_source
+            .match_indices(&format!("\n{kind}"))
+            .map(|(index, _)| &concrete_source[index..concrete_source.len().min(index + 1024)])
+            .any(|declaration_window| {
+                forbidden_declaration_terms
+                    .iter()
+                    .any(|term| declaration_window.contains(term))
+            })
+    });
+    if forbidden_declaration_stub {
         return false;
     }
     let forbidden_variable_stub = concrete_source
         .match_indices("\nvariable")
-        .map(|(index, _)| &concrete_source[index..concrete_source.len().min(index + 512)])
+        .map(|(index, _)| &concrete_source[index..concrete_source.len().min(index + 1024)])
         .any(|variable_window| {
             forbidden_declaration_terms
                 .iter()
@@ -42228,6 +42236,96 @@ end Path2NoExportConcrete
 "#;
         assert!(!path2_no_export_serializer_instantiated_in_source_v1(
             assumed_no_export_certificate
+        ));
+        let comment_spoofed_no_export_instantiation = r#"
+theorem selectedRustActiveNoExportSerializer_instantiation_v1 :
+    ActiveNativeNoExportClosure selectedRustActiveNoExportPolicy selectedRustActiveSerializer.surfaces := by
+  /-
+  let selectedRustActiveNoExportPolicy :
+      PublicOutputPolicy := selectedRustActiveNoExportPolicy
+  let selectedRustActiveSerializer :
+      ActiveTaggedSerializer := selectedRustActiveSerializer
+  let selectedRustActiveNoExport :
+      PublicOutputNoExport selectedRustActiveNoExportPolicy :=
+    selectedRustActiveNoExport
+  let selectedRustActiveSerializerAllowlistCertificate :
+      ActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer :=
+    { accept_allowed := selectedRustAcceptOutputConforms
+      reject_allowed := selectedRustRejectOutputConforms
+      storage_allowed := selectedRustStorageOutputConforms }
+  activeSerializerAllowlist_activeNativeNoExportClosure
+  NativeFullSignatureSecurityBoundary.withActiveSerializerNoExportClosure
+  full_signature_with_active_serializer_no_export_closed
+  -/
+  trivial
+end Path2NoExportConcrete
+"#;
+        assert!(!path2_no_export_serializer_instantiated_in_source_v1(
+            comment_spoofed_no_export_instantiation
+        ));
+        let string_spoofed_no_export_instantiation = r#"
+theorem selectedRustActiveNoExportSerializer_instantiation_v1 :
+    ActiveNativeNoExportClosure selectedRustActiveNoExportPolicy selectedRustActiveSerializer.surfaces := by
+  let markerText :=
+    "let selectedRustActiveNoExportPolicy :
+      PublicOutputPolicy := selectedRustActiveNoExportPolicy
+     let selectedRustActiveSerializer :
+      ActiveTaggedSerializer := selectedRustActiveSerializer
+     let selectedRustActiveNoExport :
+      PublicOutputNoExport selectedRustActiveNoExportPolicy :=
+      selectedRustActiveNoExport
+     let selectedRustActiveSerializerAllowlistCertificate :
+      ActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer :=
+      { accept_allowed := selectedRustAcceptOutputConforms
+        reject_allowed := selectedRustRejectOutputConforms
+        storage_allowed := selectedRustStorageOutputConforms }
+     activeSerializerAllowlist_activeNativeNoExportClosure
+     NativeFullSignatureSecurityBoundary.withActiveSerializerNoExportClosure
+     full_signature_with_active_serializer_no_export_closed"
+  trivial
+end Path2NoExportConcrete
+"#;
+        assert!(!path2_no_export_serializer_instantiated_in_source_v1(
+            string_spoofed_no_export_instantiation
+        ));
+        let multiline_stubbed_no_export_source = r#"
+axiom
+  selectedRustAcceptOutputConforms :
+    forall q sig msg state, selectedRustActiveNoExportPolicy.outputConforms
+      (selectedRustActiveSerializer.acceptOutputOf q sig msg state)
+theorem selectedRustActiveNoExportSerializer_instantiation_v1 :
+    ActiveNativeNoExportClosure selectedRustActiveNoExportPolicy selectedRustActiveSerializer.surfaces := by
+  let selectedRustActiveNoExportPolicy :
+      PublicOutputPolicy := selectedRustActiveNoExportPolicy
+  let selectedRustActiveSerializer :
+      ActiveTaggedSerializer := selectedRustActiveSerializer
+  let selectedRustActiveNoExport :
+      PublicOutputNoExport selectedRustActiveNoExportPolicy :=
+    selectedRustActiveNoExport
+  let selectedRustActiveSerializerAllowlistCertificate :
+      ActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer :=
+    { accept_allowed := selectedRustAcceptOutputConforms
+      reject_allowed := selectedRustRejectOutputConforms
+      storage_allowed := selectedRustStorageOutputConforms }
+  let _closed :=
+    activeSerializerAllowlist_activeNativeNoExportClosure
+      selectedRustActiveNoExport selectedRustActiveSerializerAllowlistCertificate
+  let _fullBoundary :=
+    NativeFullSignatureSecurityBoundary.withActiveSerializerNoExportClosure
+      selectedRustNativeFullSignatureBoundary
+      selectedRustActiveNoExport
+      selectedRustActiveSerializerAllowlistCertificate
+  let _fullClosed :=
+    full_signature_with_active_serializer_no_export_closed
+      selectedRustNativeFullSignatureBoundary
+      selectedRustActiveNoExport
+      selectedRustActiveSerializerAllowlistCertificate
+  exact activeSerializerAllowlist_activeNativeNoExportClosure
+    selectedRustActiveNoExport selectedRustActiveSerializerAllowlistCertificate
+end Path2NoExportConcrete
+"#;
+        assert!(!path2_no_export_serializer_instantiated_in_source_v1(
+            multiline_stubbed_no_export_source
         ));
         let no_export_instantiation_shape = r#"
 theorem selectedRustActiveNoExportSerializer_instantiation_v1 :
