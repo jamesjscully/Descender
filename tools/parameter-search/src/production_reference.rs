@@ -6952,6 +6952,7 @@ pub struct Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
     pub schema: &'static str,
     pub bridge_audit_digest: [u8; DIGEST_BYTES],
     pub bridge_audit_validated: bool,
+    pub report_digest_verified: bool,
     pub selected_rust_model_five_source_inputs_ready: bool,
     pub rust_payload_projection_law_present: bool,
     pub rust_extraction_certificate_availability_present: bool,
@@ -7728,6 +7729,7 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "Path2ReviewedFq12FiveSourceClosureEvidenceV1",
         "bridge_audit_digest",
         "bridge_audit_validated",
+        "report_digest_verified",
         "selected_rust_model_five_source_inputs_ready",
         "rust_payload_projection_law_present",
         "rust_extraction_certificate_availability_present",
@@ -7752,6 +7754,7 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "verify_path2_reviewed_fq12_five_source_closure_evidence_v1",
         "validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit",
         "bridge_audit_validated: true",
+        "report_digest_verified: true",
         "selected_rust_model_five_source_inputs_ready: audit",
         "rust_payload_projection_law_present: audit.rust_payload_projection_law_present",
         "rust_extraction_certificate_availability_present: audit",
@@ -9336,6 +9339,7 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
         schema: PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA,
         bridge_audit_digest: audit.digest,
         bridge_audit_validated: true,
+        report_digest_verified: true,
         selected_rust_model_five_source_inputs_ready: audit
             .selected_rust_model_five_source_inputs_ready,
         rust_payload_projection_law_present: audit.rust_payload_projection_law_present,
@@ -9402,6 +9406,11 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1(
     }
     if !evidence.bridge_audit_validated {
         return Err("Path 2 reviewed Fq12 five-source bridge audit was not validated".to_string());
+    }
+    if !evidence.report_digest_verified {
+        return Err(
+            "Path 2 reviewed Fq12 five-source closure evidence digest was not verified".to_string(),
+        );
     }
     path2_reviewed_fq12_five_source_closure_evidence_v1_digest(evidence)
 }
@@ -46521,6 +46530,7 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         );
         assert_eq!(five_source_evidence.bridge_audit_digest, audit.digest);
         assert!(five_source_evidence.bridge_audit_validated);
+        assert!(five_source_evidence.report_digest_verified);
         assert!(five_source_evidence.selected_rust_model_five_source_inputs_ready);
         assert!(five_source_evidence.rust_payload_projection_law_present);
         assert!(five_source_evidence.rust_extraction_certificate_availability_present);
@@ -46569,6 +46579,20 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert_eq!(
             verify_path2_reviewed_fq12_five_source_closure_evidence_v1(
                 &tampered_five_source_evidence
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 five-source closure evidence mismatch"
+        );
+        let mut digest_unverified_five_source_evidence = five_source_evidence.clone();
+        digest_unverified_five_source_evidence.report_digest_verified = false;
+        assert!(
+            path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
+                &digest_unverified_five_source_evidence
+            )
+        );
+        assert_eq!(
+            path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1(
+                &digest_unverified_five_source_evidence
             )
             .unwrap_err(),
             "Path 2 reviewed Fq12 five-source closure evidence mismatch"
