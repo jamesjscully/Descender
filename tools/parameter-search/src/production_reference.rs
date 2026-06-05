@@ -11067,9 +11067,12 @@ fn path2_reviewed_fq12_role_root_lift_source_present_v1() -> bool {
 
 fn path2_reviewed_fq12_concrete_role_root_field_binding_source_present_v1() -> bool {
     let rust_source = include_str!("production_reference.rs");
-    let lean_concrete_role_root = include_str!("../../../Descender/Path2RoleRootConcrete.lean");
-    let lean_source_adapters =
-        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
+    let lean_concrete_role_root = lean_source_without_comments_and_strings_v1(include_str!(
+        "../../../Descender/Path2RoleRootConcrete.lean"
+    ));
+    let lean_source_adapters = lean_source_without_comments_and_strings_v1(include_str!(
+        "../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean"
+    ));
 
     let full_opening_source_start = rust_source
         .find("\npub fn path2_reviewed_fq12_full_native_opening_certificate_v1(")
@@ -11552,8 +11555,9 @@ fn path2_reviewed_fq12_assembly_compatibility_local_model_source_present_v1() ->
 
 fn path2_reviewed_fq12_assembly_field_local_native_components_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
-    let lean_source =
-        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
+    let lean_source = lean_source_without_comments_and_strings_v1(include_str!(
+        "../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean"
+    ));
     let assembly_start = source
         .find("\npub fn path2_reviewed_fq12_native_representative_assembly_certificate_v1(")
         .expect("Path 2 reviewed Fq12 assembly certificate source start marker missing");
@@ -11715,8 +11719,9 @@ fn path2_reviewed_fq12_assembly_field_local_native_components_present_v1() -> bo
 
 fn path2_reviewed_fq12_compatibility_field_extraction_components_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
-    let lean_source =
-        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
+    let lean_source = lean_source_without_comments_and_strings_v1(include_str!(
+        "../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean"
+    ));
     let compatibility_start = source
         .find("\npub fn path2_reviewed_fq12_extraction_compatibility_certificate_v1(")
         .expect("Path 2 reviewed Fq12 compatibility certificate source start marker missing");
@@ -12075,8 +12080,9 @@ fn path2_reviewed_fq12_full_opening_source_route_source_present_v1() -> bool {
 
 fn path2_reviewed_fq12_selected_source_route_byte_source_contract_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
-    let lean_source =
-        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceByteBridge.lean");
+    let lean_source = lean_source_without_comments_and_strings_v1(include_str!(
+        "../../../Descender/Path2FullOpeningFieldEvidenceByteBridge.lean"
+    ));
 
     let route_start = source
         .find("\npub fn path2_reviewed_fq12_full_opening_field_source_route_v1(")
@@ -12192,8 +12198,9 @@ fn path2_reviewed_fq12_selected_source_route_byte_source_contract_present_v1() -
 
 fn path2_reviewed_fq12_source_route_byte_parser_frame_certificates_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
-    let lean_source =
-        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceByteBridge.lean");
+    let lean_source = lean_source_without_comments_and_strings_v1(include_str!(
+        "../../../Descender/Path2FullOpeningFieldEvidenceByteBridge.lean"
+    ));
 
     let field_frame_start = source
         .find("\npub fn path2_reviewed_fq12_full_opening_field_evidence_v1_frame(")
@@ -12659,8 +12666,9 @@ fn path2_reviewed_fq12_canonical_and_digest_witnesses_share_native_frame_source_
 
 fn path2_reviewed_fq12_shared_digest_frame_witness_byte_source_contract_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
-    let lean_source =
-        include_str!("../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean");
+    let lean_source = lean_source_without_comments_and_strings_v1(include_str!(
+        "../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean"
+    ));
 
     let digest_witness_start = source
         .find("\npub fn path2_reviewed_fq12_native_representative_digest_frame_witness_v1(")
