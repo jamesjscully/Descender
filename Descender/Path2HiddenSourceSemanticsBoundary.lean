@@ -702,6 +702,66 @@ theorem selectedRustSharedFrameWitnessEvidenceReport_not_factsAllTrue :
   simp [selectedRustSharedFrameWitnessEvidenceReport,
     ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport.FactsAllTrue]
 
+/-- The current base-boundary placeholder report cannot certify a source. -/
+theorem selectedRustBoundaryBaseCertificate_not_from_current_placeholder_report
+    {P : Predicates}
+    (Cert : ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P)
+    (hReport :
+      Cert.evidenceReport = selectedRustBoundaryBaseEvidenceReport) :
+    False := by
+  exact selectedRustBoundaryBaseEvidenceReport_not_reportVerified
+    (hReport ▸ Cert.evidenceReportVerifiedProof)
+
+/-- The current role-root/lift placeholder report cannot certify a source. -/
+theorem selectedRustRoleRootLiftCertificate_not_from_current_placeholder_report
+    {P : Predicates}
+    (Cert : ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P)
+    (hReport :
+      Cert.evidenceReport = selectedRustRoleRootLiftEvidenceReport) :
+    False := by
+  exact selectedRustRoleRootLiftEvidenceReport_not_reportVerified
+    (hReport ▸ Cert.evidenceReportVerifiedProof)
+
+/-- The current source-route placeholder report cannot certify a byte source. -/
+theorem selectedRustSourceRouteCertificate_not_from_current_placeholder_report
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {P : Predicates}
+    (Cert :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+        FieldParser RouteParser P)
+    (hReport :
+      Cert.evidenceReport = selectedRustSourceRouteEvidenceReport) :
+    False := by
+  exact selectedRustSourceRouteEvidenceReport_not_reportVerified
+    (hReport ▸ Cert.evidenceReportVerifiedProof)
+
+/-- The current field/local placeholder report cannot certify sources. -/
+theorem selectedRustFieldLocalCertificate_not_from_current_placeholder_report
+    {P : Predicates}
+    (Cert : ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P)
+    (hReport :
+      Cert.evidenceReport = selectedRustFieldLocalEvidenceReport) :
+    False := by
+  exact selectedRustFieldLocalEvidenceReport_not_reportVerified
+    (hReport ▸ Cert.evidenceReportVerifiedProof)
+
+/-- The current shared-witness placeholder report cannot certify sources. -/
+theorem selectedRustSharedFrameWitnessCertificate_not_from_current_placeholder_report
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P)
+    (hReport :
+      Cert.evidenceReport = selectedRustSharedFrameWitnessEvidenceReport) :
+    False := by
+  exact selectedRustSharedFrameWitnessEvidenceReport_not_reportVerified
+    (hReport ▸ Cert.evidenceReportVerifiedProof)
+
 /--
 Any sub-evidence match proof for the current placeholder aggregate report would
 force every consumed certificate digest to be empty.

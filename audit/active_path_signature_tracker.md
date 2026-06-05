@@ -988,6 +988,11 @@ no final selected Rust/model five-source certificate can carry the current
 placeholder aggregate report, because the certificate contains a
 `ReportVerified` proof and the placeholder report is already proved not
 verified.
+Lean now extends the same sanity check to all five per-source certificates:
+boundary-base, role-root/lift, selected source-route, field/local, and
+shared-witness certificates cannot carry their current placeholder selected
+reports. Each certificate exposes sources only behind `ReportVerified`, while
+each placeholder report is proved not verified.
 
 ## Findings
 
