@@ -88,9 +88,13 @@ its digest splits into the carrier check bytes plus transcript-binding bytes.
 The same evidence object now also carries the account-witness opening,
 pad-seed opening, and pad-opening-view domains; the five-source evidence checks
 the corresponding named frame helpers and public pad-opening frame hash to the
-digests consumed by the active path. This narrows P2FS-006 to direct/batch
-separation and the final selected-Rust/model instantiation theorem; it does not
-complete hidden-source semantics by itself.
+digests consumed by the active path. Follow-up direct-mode hardening now records
+that the selected `Path2DirectQueryBudgetV1` schema/mode are active, `q_batch`
+is excluded from active query symbols, `q_batch` is listed as inactive, optional
+aggregation terms remain `q_batch`-only, and the Lean
+`path2_direct_query_budget_keeps_q_batch_inactive` surface is present. This
+narrows P2FS-006 to the final selected-Rust/model instantiation theorem; it
+does not complete hidden-source semantics by itself.
 
 2026-06-02 update: `Path2FullOpeningSourceConcrete.lean` now packages the
 deployable non-aggregate theorem route as `ReviewedFq12DeployableHiddenSourceInputs`. The remaining P2FS-001 proof inputs are

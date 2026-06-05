@@ -256,6 +256,12 @@ structure ReviewedFq12SelectedRustFiveSourceClosureEvidence where
   padSeedOpeningDigestUsesHashDomainFrame : Bool
   padOpeningViewDomainMatchesHashEvidence : Bool
   padOpeningStatementDigestUsesHashDomainFrame : Bool
+  directQueryBudgetSchemaMatches : Bool
+  directQueryBudgetModeIsDirectSingleSlot : Bool
+  directQueryBudgetExcludesQBatchFromActiveSymbols : Bool
+  directQueryBudgetMarksQBatchInactive : Bool
+  directQueryBudgetOptionalAggregationTermsQBatchOnly : Bool
+  leanDirectQueryBudgetKeepsQBatchInactivePresent : Bool
   boundaryBaseEvidenceDigest : ByteArray
   boundaryBaseEvidenceVerified : Bool
   roleRootLiftEvidenceDigest : ByteArray
@@ -316,6 +322,12 @@ def ReviewedFq12SelectedRustFiveSourceClosureEvidence.FactsAllTrue
   E.padSeedOpeningDigestUsesHashDomainFrame = true ∧
   E.padOpeningViewDomainMatchesHashEvidence = true ∧
   E.padOpeningStatementDigestUsesHashDomainFrame = true ∧
+  E.directQueryBudgetSchemaMatches = true ∧
+  E.directQueryBudgetModeIsDirectSingleSlot = true ∧
+  E.directQueryBudgetExcludesQBatchFromActiveSymbols = true ∧
+  E.directQueryBudgetMarksQBatchInactive = true ∧
+  E.directQueryBudgetOptionalAggregationTermsQBatchOnly = true ∧
+  E.leanDirectQueryBudgetKeepsQBatchInactivePresent = true ∧
   E.boundaryBaseEvidenceVerified = true ∧
   E.roleRootLiftEvidenceVerified = true ∧
   E.selectedSourceRouteEvidenceVerified = true ∧

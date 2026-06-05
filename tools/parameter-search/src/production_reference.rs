@@ -7550,6 +7550,12 @@ pub struct Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
     pub pad_seed_opening_digest_uses_hash_domain_frame: bool,
     pub pad_opening_view_domain_matches_hash_evidence: bool,
     pub pad_opening_statement_digest_uses_hash_domain_frame: bool,
+    pub direct_query_budget_schema_matches: bool,
+    pub direct_query_budget_mode_is_direct_single_slot: bool,
+    pub direct_query_budget_excludes_q_batch_from_active_symbols: bool,
+    pub direct_query_budget_marks_q_batch_inactive: bool,
+    pub direct_query_budget_optional_aggregation_terms_q_batch_only: bool,
+    pub lean_direct_query_budget_keeps_q_batch_inactive_present: bool,
     pub boundary_base_evidence_digest: [u8; DIGEST_BYTES],
     pub boundary_base_evidence_verified: bool,
     pub role_root_lift_evidence_digest: [u8; DIGEST_BYTES],
@@ -8318,6 +8324,12 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
         "padSeedOpeningDigestUsesHashDomainFrame : Bool",
         "padOpeningViewDomainMatchesHashEvidence : Bool",
         "padOpeningStatementDigestUsesHashDomainFrame : Bool",
+        "directQueryBudgetSchemaMatches : Bool",
+        "directQueryBudgetModeIsDirectSingleSlot : Bool",
+        "directQueryBudgetExcludesQBatchFromActiveSymbols : Bool",
+        "directQueryBudgetMarksQBatchInactive : Bool",
+        "directQueryBudgetOptionalAggregationTermsQBatchOnly : Bool",
+        "leanDirectQueryBudgetKeepsQBatchInactivePresent : Bool",
         "boundaryBaseEvidenceDigest : ByteArray",
         "boundaryBaseEvidenceVerified : Bool",
         "roleRootLiftEvidenceDigest : ByteArray",
@@ -8521,6 +8533,12 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "pad_seed_opening_digest_uses_hash_domain_frame",
         "pad_opening_view_domain_matches_hash_evidence",
         "pad_opening_statement_digest_uses_hash_domain_frame",
+        "direct_query_budget_schema_matches",
+        "direct_query_budget_mode_is_direct_single_slot",
+        "direct_query_budget_excludes_q_batch_from_active_symbols",
+        "direct_query_budget_marks_q_batch_inactive",
+        "direct_query_budget_optional_aggregation_terms_q_batch_only",
+        "lean_direct_query_budget_keeps_q_batch_inactive_present",
         "boundary_base_evidence_digest",
         "boundary_base_evidence_verified",
         "role_root_lift_evidence_digest",
@@ -8582,6 +8600,12 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "b\"pad_seed_opening_digest_uses_hash_domain_frame\"",
         "b\"pad_opening_view_domain_matches_hash_evidence\"",
         "b\"pad_opening_statement_digest_uses_hash_domain_frame\"",
+        "b\"direct_query_budget_schema_matches\"",
+        "b\"direct_query_budget_mode_is_direct_single_slot\"",
+        "b\"direct_query_budget_excludes_q_batch_from_active_symbols\"",
+        "b\"direct_query_budget_marks_q_batch_inactive\"",
+        "b\"direct_query_budget_optional_aggregation_terms_q_batch_only\"",
+        "b\"lean_direct_query_budget_keeps_q_batch_inactive_present\"",
         "b\"boundary_base_evidence_digest\"",
         "b\"boundary_base_evidence_verified\"",
         "b\"role_root_lift_evidence_digest\"",
@@ -8649,6 +8673,15 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "public_pad_opening_statement_frame",
         "pad_opening_view_expected_domain_field",
         "public_pad_opening_statement_from_consistency",
+        "let direct_query_budget = path2_direct_query_budget_v1()",
+        "direct_query_budget.schema == PATH2_DIRECT_QUERY_BUDGET_SCHEMA",
+        "direct_query_budget.mode == \"direct_single_slot\"",
+        "direct_query_budget_excludes_q_batch_from_active_symbols = !direct_query_budget",
+        ".active_query_symbols",
+        ".contains(&\"q_batch\")",
+        "direct_query_budget.inactive_query_symbols == [\"q_batch\"]",
+        ".optional_aggregation_terms",
+        "path2_active_native_hash_budget_boundary_source_present_v1()",
         "schema_matches: true",
         "bridge_audit_validated: true",
         "bridge_audit_digest_bound: true",
@@ -8669,6 +8702,12 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "pad_seed_opening_digest_uses_hash_domain_frame",
         "pad_opening_view_domain_matches_hash_evidence",
         "pad_opening_statement_digest_uses_hash_domain_frame",
+        "direct_query_budget_schema_matches",
+        "direct_query_budget_mode_is_direct_single_slot",
+        "direct_query_budget_excludes_q_batch_from_active_symbols",
+        "direct_query_budget_marks_q_batch_inactive",
+        "direct_query_budget_optional_aggregation_terms_q_batch_only",
+        "lean_direct_query_budget_keeps_q_batch_inactive_present",
         "boundary_base_evidence_digest",
         "boundary_base_evidence_verified: true",
         "role_root_lift_evidence_digest",
@@ -10671,6 +10710,26 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
     let pad_opening_statement_digest_uses_hash_domain_frame = pad_opening_statement_probe_frame
         .starts_with(&pad_opening_view_expected_domain_field)
         && pad_opening_statement_probe.digest == pad_opening_statement_probe_frame_digest;
+    let direct_query_budget = path2_direct_query_budget_v1();
+    let direct_query_budget_schema_matches =
+        direct_query_budget.schema == PATH2_DIRECT_QUERY_BUDGET_SCHEMA;
+    let direct_query_budget_mode_is_direct_single_slot =
+        direct_query_budget.mode == "direct_single_slot";
+    let direct_query_budget_excludes_q_batch_from_active_symbols = !direct_query_budget
+        .active_query_symbols
+        .contains(&"q_batch");
+    let direct_query_budget_marks_q_batch_inactive =
+        direct_query_budget.inactive_query_symbols == ["q_batch"];
+    let direct_query_budget_optional_aggregation_terms_q_batch_only = direct_query_budget
+        .direct_advantage_terms
+        .iter()
+        .all(|term| !term.contains("q_batch"))
+        && direct_query_budget
+            .optional_aggregation_terms
+            .iter()
+            .all(|term| term.contains("q_batch"));
+    let lean_direct_query_budget_keeps_q_batch_inactive_present =
+        path2_active_native_hash_budget_boundary_source_present_v1();
     let boundary_base_evidence = path2_reviewed_fq12_boundary_base_evidence_v1()?;
     let boundary_base_evidence_digest =
         verify_path2_reviewed_fq12_boundary_base_evidence_v1(&boundary_base_evidence)?;
@@ -10715,6 +10774,12 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
         pad_seed_opening_digest_uses_hash_domain_frame,
         pad_opening_view_domain_matches_hash_evidence,
         pad_opening_statement_digest_uses_hash_domain_frame,
+        direct_query_budget_schema_matches,
+        direct_query_budget_mode_is_direct_single_slot,
+        direct_query_budget_excludes_q_batch_from_active_symbols,
+        direct_query_budget_marks_q_batch_inactive,
+        direct_query_budget_optional_aggregation_terms_q_batch_only,
+        lean_direct_query_budget_keeps_q_batch_inactive_present,
         boundary_base_evidence_digest,
         boundary_base_evidence_verified: true,
         role_root_lift_evidence_digest,
@@ -10861,6 +10926,36 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1_frame(
         &mut frame,
         b"pad_opening_statement_digest_uses_hash_domain_frame",
         u64::from(evidence.pad_opening_statement_digest_uses_hash_domain_frame),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_query_budget_schema_matches",
+        u64::from(evidence.direct_query_budget_schema_matches),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_query_budget_mode_is_direct_single_slot",
+        u64::from(evidence.direct_query_budget_mode_is_direct_single_slot),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_query_budget_excludes_q_batch_from_active_symbols",
+        u64::from(evidence.direct_query_budget_excludes_q_batch_from_active_symbols),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_query_budget_marks_q_batch_inactive",
+        u64::from(evidence.direct_query_budget_marks_q_batch_inactive),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_query_budget_optional_aggregation_terms_q_batch_only",
+        u64::from(evidence.direct_query_budget_optional_aggregation_terms_q_batch_only),
+    );
+    append_u64(
+        &mut frame,
+        b"lean_direct_query_budget_keeps_q_batch_inactive_present",
+        u64::from(evidence.lean_direct_query_budget_keeps_q_batch_inactive_present),
     );
     append_frame(
         &mut frame,
@@ -11022,6 +11117,12 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
         && evidence.pad_seed_opening_digest_uses_hash_domain_frame
         && evidence.pad_opening_view_domain_matches_hash_evidence
         && evidence.pad_opening_statement_digest_uses_hash_domain_frame
+        && evidence.direct_query_budget_schema_matches
+        && evidence.direct_query_budget_mode_is_direct_single_slot
+        && evidence.direct_query_budget_excludes_q_batch_from_active_symbols
+        && evidence.direct_query_budget_marks_q_batch_inactive
+        && evidence.direct_query_budget_optional_aggregation_terms_q_batch_only
+        && evidence.lean_direct_query_budget_keeps_q_batch_inactive_present
         && evidence.boundary_base_evidence_verified
         && evidence.role_root_lift_evidence_verified
         && evidence.selected_source_route_evidence_verified
@@ -54729,6 +54830,12 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(five_source_evidence.pad_seed_opening_digest_uses_hash_domain_frame);
         assert!(five_source_evidence.pad_opening_view_domain_matches_hash_evidence);
         assert!(five_source_evidence.pad_opening_statement_digest_uses_hash_domain_frame);
+        assert!(five_source_evidence.direct_query_budget_schema_matches);
+        assert!(five_source_evidence.direct_query_budget_mode_is_direct_single_slot);
+        assert!(five_source_evidence.direct_query_budget_excludes_q_batch_from_active_symbols);
+        assert!(five_source_evidence.direct_query_budget_marks_q_batch_inactive);
+        assert!(five_source_evidence.direct_query_budget_optional_aggregation_terms_q_batch_only);
+        assert!(five_source_evidence.lean_direct_query_budget_keeps_q_batch_inactive_present);
         assert_eq!(
             hash_byte_domain_evidence.hidden_source_frame_domain,
             REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN
@@ -55032,6 +55139,20 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert_eq!(
             verify_path2_reviewed_fq12_five_source_closure_evidence_v1(
                 &tampered_five_source_evidence
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 five-source closure evidence mismatch"
+        );
+        let mut batch_active_five_source_evidence = five_source_evidence.clone();
+        batch_active_five_source_evidence.direct_query_budget_marks_q_batch_inactive = false;
+        assert!(
+            !path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
+                &batch_active_five_source_evidence
+            )
+        );
+        assert_eq!(
+            verify_path2_reviewed_fq12_five_source_closure_evidence_v1(
+                &batch_active_five_source_evidence
             )
             .unwrap_err(),
             "Path 2 reviewed Fq12 five-source closure evidence mismatch"
