@@ -451,6 +451,12 @@ Lean also includes
 that selected source-record certificates over the current placeholder component
 reports are inconsistent. This documents the `source_record_definitions` gap
 without flipping it.
+The concrete-definition checklist now requires each selected source-certificate
+definition to call its named constructor with the selected report, digest,
+report-verification proof, facts proof, and raw source arguments. A regression
+fixture where `selectedRustBoundaryBaseCertificate` is replaced by an anonymous
+certificate value leaves `source_record_definitions_present = false`, so the
+category cannot be satisfied by a type-correct but unbound certificate literal.
 `selectedRustCurrentPlaceholderSubEvidenceDigestMatchProof_impossible` now
 names the matching blocker for `sub_evidence_digest_match_proof`: the
 placeholder aggregate report cannot digest-match selected public Rust component

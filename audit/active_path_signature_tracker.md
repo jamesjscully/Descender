@@ -1096,6 +1096,13 @@ Active source-record blocker note: Lean now also states
 `selectedRustCurrentPlaceholderSourceRecordCertificates_impossible`, proving
 that source certificates over the current placeholder component reports cannot
 populate the selected Rust/model source-record package.
+The concrete-definition checklist now also requires the five selected
+source-certificate definitions to be built by their named constructors with
+the selected report, digest, report-verification proof, facts proof, and raw
+source arguments. A regression fixture that replaces
+`selectedRustBoundaryBaseCertificate` with an anonymous certificate value keeps
+`source_record_definitions_present = false`, so this category cannot be closed
+by type-correct but unbound certificate literals.
 Active sub-evidence blocker note: Lean now states
 `selectedRustCurrentPlaceholderSubEvidenceDigestMatchProof_impossible`, proving
 that the current placeholder aggregate report cannot provide the checklist's

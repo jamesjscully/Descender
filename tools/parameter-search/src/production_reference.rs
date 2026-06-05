@@ -8527,6 +8527,49 @@ fn lean_source_has_selected_rust_definition_with_markers_v1(
     })
 }
 
+fn lean_source_selected_rust_definition_body_contains_marker_v1(
+    boundary_source: &str,
+    name: &str,
+    marker: &str,
+) -> bool {
+    ["def", "theorem"].iter().any(|kind| {
+        let public_start = format!("\n{kind} {name}");
+        let private_start = format!("\nprivate {kind} {name}");
+        [public_start, private_start].iter().any(|start_marker| {
+            boundary_source
+                .match_indices(start_marker)
+                .any(|(start, _)| {
+                    let name_end = start + start_marker.len();
+                    if boundary_source[name_end..]
+                        .chars()
+                        .next()
+                        .is_some_and(|next| {
+                            next.is_ascii_alphanumeric() || next == '_' || next == '\''
+                        })
+                    {
+                        return false;
+                    }
+                    let declaration_window =
+                        &boundary_source[start..boundary_source.len().min(start + 4096)];
+                    let Some(body_start) = [":=", "\nwhere", " where"]
+                        .iter()
+                        .filter_map(|body_marker| {
+                            declaration_window
+                                .find(body_marker)
+                                .map(|offset| offset + body_marker.len())
+                        })
+                        .min()
+                    else {
+                        return false;
+                    };
+                    let body_window = &declaration_window[body_start..];
+                    let normalized_body = body_window.split_whitespace().collect::<String>();
+                    normalized_body.contains(&marker.split_whitespace().collect::<String>())
+                })
+        })
+    })
+}
+
 pub fn path2_selected_rust_model_concrete_definition_checklist_v1()
 -> Path2SelectedRustModelConcreteDefinitionChecklistV1 {
     let boundary_source =
@@ -8722,6 +8765,35 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 &boundary_source,
                 name,
                 markers,
+            )
+        }) && [
+            (
+                "selectedRustBoundaryBaseCertificate",
+                "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources selectedRustBoundaryBaseEvidenceReport selectedRustBoundaryBaseEvidenceDigest selectedRustBoundaryBaseEvidenceReportVerifiedProof selectedRustBoundaryBaseEvidenceFactsAllTrueProof selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability",
+            ),
+            (
+                "selectedRustRoleRootLiftSourceCertificate",
+                "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource selectedRustRoleRootLiftEvidenceReport selectedRustRoleRootLiftEvidenceDigest selectedRustRoleRootLiftEvidenceReportVerifiedProof selectedRustRoleRootLiftEvidenceFactsAllTrueProof selectedRustRoleRootLiftSource",
+            ),
+            (
+                "selectedRustSourceRouteByteSourceCertificate",
+                "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource selectedRustSourceRouteEvidenceReport selectedRustSourceRouteEvidenceDigest selectedRustSourceRouteEvidenceReportVerifiedProof selectedRustSourceRouteEvidenceFactsAllTrueProof selectedRustSourceRouteByteSource",
+            ),
+            (
+                "selectedRustFieldLocalSourceCertificate",
+                "ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources selectedRustFieldLocalEvidenceReport selectedRustFieldLocalEvidenceDigest selectedRustFieldLocalEvidenceReportVerifiedProof selectedRustFieldLocalEvidenceFactsAllTrueProof selectedRustAssemblySource selectedRustCompatibilitySource",
+            ),
+            (
+                "selectedRustSharedFrameWitnessSourcesCertificate",
+                "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof selectedRustSharedFrameWitnessSources",
+            ),
+        ]
+        .iter()
+        .all(|(name, marker)| {
+            lean_source_selected_rust_definition_body_contains_marker_v1(
+                &boundary_source,
+                name,
+                marker,
             )
         });
     let sub_evidence_digest_match_proof_present =
@@ -56125,19 +56197,46 @@ def selectedRustSharedFrameWitnessSources :
   selectedRustSharedFrameWitnessSourcesValue
 def selectedRustBoundaryBaseCertificate :
   ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P :=
-  selectedRustBoundaryBaseCertificateValue
+  ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources
+    selectedRustBoundaryBaseEvidenceReport
+    selectedRustBoundaryBaseEvidenceDigest
+    selectedRustBoundaryBaseEvidenceReportVerifiedProof
+    selectedRustBoundaryBaseEvidenceFactsAllTrueProof
+    selectedRustPayloadProjectionLaw
+    selectedRustExtractionCertificateAvailability
 def selectedRustRoleRootLiftSourceCertificate :
   ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P :=
-  selectedRustRoleRootLiftSourceCertificateValue
+  ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource
+    selectedRustRoleRootLiftEvidenceReport
+    selectedRustRoleRootLiftEvidenceDigest
+    selectedRustRoleRootLiftEvidenceReportVerifiedProof
+    selectedRustRoleRootLiftEvidenceFactsAllTrueProof
+    selectedRustRoleRootLiftSource
 def selectedRustSourceRouteByteSourceCertificate :
   SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate FieldParser RouteParser P :=
-  selectedRustSourceRouteByteSourceCertificateValue
+  SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource
+    selectedRustSourceRouteEvidenceReport
+    selectedRustSourceRouteEvidenceDigest
+    selectedRustSourceRouteEvidenceReportVerifiedProof
+    selectedRustSourceRouteEvidenceFactsAllTrueProof
+    selectedRustSourceRouteByteSource
 def selectedRustFieldLocalSourceCertificate :
   ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P :=
-  selectedRustFieldLocalSourceCertificateValue
+  ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources
+    selectedRustFieldLocalEvidenceReport
+    selectedRustFieldLocalEvidenceDigest
+    selectedRustFieldLocalEvidenceReportVerifiedProof
+    selectedRustFieldLocalEvidenceFactsAllTrueProof
+    selectedRustAssemblySource
+    selectedRustCompatibilitySource
 def selectedRustSharedFrameWitnessSourcesCertificate :
   ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate CanonicalParser WitnessParser P :=
-  selectedRustSharedFrameWitnessSourcesCertificateValue
+  ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources
+    selectedRustSharedFrameWitnessEvidenceReport
+    selectedRustSharedFrameWitnessEvidenceDigest
+    selectedRustSharedFrameWitnessEvidenceReportVerifiedProof
+    selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof
+    selectedRustSharedFrameWitnessSources
 theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
   selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
     selectedRustBoundaryBaseCertificate
@@ -56161,6 +56260,17 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             complete_concrete_definition_checklist.missing_definition_category_count,
             0
         );
+        let anonymous_certificate_definition_source = complete_concrete_definition_source.replacen(
+            "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources\n    selectedRustBoundaryBaseEvidenceReport\n    selectedRustBoundaryBaseEvidenceDigest\n    selectedRustBoundaryBaseEvidenceReportVerifiedProof\n    selectedRustBoundaryBaseEvidenceFactsAllTrueProof\n    selectedRustPayloadProjectionLaw\n    selectedRustExtractionCertificateAvailability",
+            "selectedRustBoundaryBaseCertificateValue",
+            1,
+        );
+        let anonymous_certificate_definition_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                &anonymous_certificate_definition_source,
+            );
+        assert!(!anonymous_certificate_definition_checklist.source_record_definitions_present);
+        assert!(!anonymous_certificate_definition_checklist.all_definitions_present);
         let suffixed_report_name_definition_source = complete_concrete_definition_source.replacen(
             "def selectedRustFiveSourceEvidenceReport :",
             "def selectedRustFiveSourceEvidenceReportSpoof :",
