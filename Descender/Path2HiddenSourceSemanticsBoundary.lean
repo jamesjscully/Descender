@@ -236,6 +236,7 @@ evidence consumed by that future theorem.
 -/
 structure ReviewedFq12SelectedRustFiveSourceClosureEvidence where
   schemaMatches : Bool
+  bridgeAuditDigest : ByteArray
   bridgeAuditDigestBound : Bool
   reportDigestVerified : Bool
   bridgeAuditValidated : Bool

@@ -7578,6 +7578,7 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
         "witnessSources :",
         "ReviewedFq12SelectedRustFiveSourceClosureEvidence",
         "schemaMatches : Bool",
+        "bridgeAuditDigest : ByteArray",
         "bridgeAuditDigestBound : Bool",
         "reportDigestVerified : Bool",
         "bridgeAuditValidated : Bool",
@@ -7802,6 +7803,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "selectedRustFiveSourceEvidenceReport",
         &[
             "bridgeAuditValidated:=true",
+            "bridgeAuditDigest:=ByteArray.empty",
             "bridgeAuditDigestBound:=true",
             "reportDigestVerified:=true",
             "selectedRustModelFiveSourceInputsReady:=true",
@@ -46015,6 +46017,7 @@ theorem {theorem_name}
         FieldParser RouteParser CanonicalParser WitnessParser P :=
     {{ evidenceReport :=
         {{ schemaMatches := true
+          bridgeAuditDigest := ByteArray.empty
           bridgeAuditDigestBound := true
           reportDigestVerified := true
           bridgeAuditValidated := true
@@ -46136,6 +46139,7 @@ def selectedRustFiveSourceEvidenceReport :
     ReviewedFq12SelectedRustFiveSourceClosureEvidence :=
   { bridgeAuditValidated := true
     schemaMatches := true
+    bridgeAuditDigest := ByteArray.empty
     bridgeAuditDigestBound := true
     reportDigestVerified := true
     selectedRustModelFiveSourceInputsReady := true
