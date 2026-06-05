@@ -7493,6 +7493,7 @@ pub struct Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     pub lean_active_five_source_boundary_route_present: bool,
     pub lean_full_signature_hidden_source_handoff_present: bool,
     pub selected_rust_model_five_source_inputs_ready: bool,
+    pub selected_rust_model_concrete_definitions_present: bool,
     pub selected_rust_canonical_byte_and_witness_package_surfaces_present: bool,
     pub rust_concrete_role_root_field_binding_present: bool,
     pub rust_certificate_lift_opening_functionality_present: bool,
@@ -8442,6 +8443,65 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1() ->
         theorem_source,
         theorem_name,
     )
+}
+
+fn path2_reviewed_fq12_selected_rust_model_concrete_definitions_present_v1() -> bool {
+    let boundary_source =
+        include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
+    path2_reviewed_fq12_selected_rust_model_concrete_definitions_present_in_source_v1(
+        boundary_source,
+    )
+}
+
+fn path2_reviewed_fq12_selected_rust_model_concrete_definitions_present_in_source_v1(
+    boundary_source: &str,
+) -> bool {
+    if path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+        boundary_source,
+    ) {
+        return false;
+    }
+    let boundary_source = lean_source_without_comments_and_strings_v1(boundary_source);
+    let required_definitions = [
+        "selectedRustFiveSourceEvidenceReport",
+        "selectedRustFiveSourceEvidenceDigest",
+        "selectedRustFiveSourceEvidenceReportVerifiedProof",
+        "selectedRustFiveSourceEvidenceFactsAllTrueProof",
+        "selectedRustFiveSourceSubEvidenceDigestsMatchProof",
+        "selectedRustBoundaryBaseEvidenceReport",
+        "selectedRustBoundaryBaseEvidenceDigest",
+        "selectedRustBoundaryBaseEvidenceReportVerifiedProof",
+        "selectedRustBoundaryBaseEvidenceFactsAllTrueProof",
+        "selectedRustPayloadProjectionLaw",
+        "selectedRustExtractionCertificateAvailability",
+        "selectedRustRoleRootLiftEvidenceReport",
+        "selectedRustRoleRootLiftEvidenceDigest",
+        "selectedRustRoleRootLiftEvidenceReportVerifiedProof",
+        "selectedRustRoleRootLiftEvidenceFactsAllTrueProof",
+        "selectedRustRoleRootLiftSource",
+        "selectedRustSourceRouteEvidenceReport",
+        "selectedRustSourceRouteEvidenceDigest",
+        "selectedRustSourceRouteEvidenceReportVerifiedProof",
+        "selectedRustSourceRouteEvidenceFactsAllTrueProof",
+        "selectedRustSourceRouteByteSource",
+        "selectedRustFieldLocalEvidenceReport",
+        "selectedRustFieldLocalEvidenceDigest",
+        "selectedRustFieldLocalEvidenceReportVerifiedProof",
+        "selectedRustFieldLocalEvidenceFactsAllTrueProof",
+        "selectedRustAssemblySource",
+        "selectedRustCompatibilitySource",
+        "selectedRustSharedFrameWitnessEvidenceReport",
+        "selectedRustSharedFrameWitnessEvidenceDigest",
+        "selectedRustSharedFrameWitnessEvidenceReportVerifiedProof",
+        "selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof",
+        "selectedRustSharedFrameWitnessSources",
+    ];
+    required_definitions.iter().all(|name| {
+        ["def", "theorem"].iter().any(|kind| {
+            boundary_source.contains(&format!("\n{kind} {name}"))
+                || boundary_source.contains(&format!("\nprivate {kind} {name}"))
+        })
+    })
 }
 
 fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool {
@@ -10403,6 +10463,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         && rust_assembly_field_local_native_components_present
         && rust_compatibility_field_extraction_components_present
         && rust_shared_digest_frame_witness_byte_source_contract_present;
+    let selected_rust_model_concrete_definitions_present =
+        path2_reviewed_fq12_selected_rust_model_concrete_definitions_present_v1();
     let hidden_relation_verifier_implemented =
         selected_hidden_relation_extraction_certificate_present;
     let extractor_theorem_instantiated =
@@ -10424,6 +10486,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         && lean_full_signature_hidden_source_handoff_present
         && active_field_local_digest_frame_witness_byte_component_surfaces_present
         && selected_rust_model_five_source_inputs_ready
+        && selected_rust_model_concrete_definitions_present
         && hidden_relation_verifier_implemented
         && extractor_theorem_instantiated;
     let blocker = if semantics_bridge_complete {
@@ -10467,6 +10530,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         lean_active_five_source_boundary_route_present,
         lean_full_signature_hidden_source_handoff_present,
         selected_rust_model_five_source_inputs_ready,
+        selected_rust_model_concrete_definitions_present,
         selected_rust_canonical_byte_and_witness_package_surfaces_present,
         rust_concrete_role_root_field_binding_present,
         rust_certificate_lift_opening_functionality_present,
@@ -38417,6 +38481,11 @@ fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit_frame(
     );
     append_u64(
         &mut frame,
+        b"selected_rust_model_concrete_definitions_present",
+        u64::from(audit.selected_rust_model_concrete_definitions_present),
+    );
+    append_u64(
+        &mut frame,
         b"selected_rust_canonical_byte_and_witness_package_surfaces_present",
         u64::from(audit.selected_rust_canonical_byte_and_witness_package_surfaces_present),
     );
@@ -54791,6 +54860,8 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(audit.lean_full_signature_hidden_source_handoff_present);
         assert!(lean_path2_full_signature_hidden_source_handoff_present_v1());
         assert!(audit.selected_rust_model_five_source_inputs_ready);
+        assert!(!audit.selected_rust_model_concrete_definitions_present);
+        assert!(!path2_reviewed_fq12_selected_rust_model_concrete_definitions_present_v1());
         assert!(path2_reviewed_fq12_five_source_closure_evidence_source_present_v1());
         let five_source_evidence = path2_reviewed_fq12_five_source_closure_evidence_v1().unwrap();
         assert_eq!(
@@ -55648,6 +55719,21 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert_eq!(
             validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
                 &missing_model_five_source_inputs
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
+        );
+
+        let mut falsely_present_concrete_definitions = audit.clone();
+        falsely_present_concrete_definitions.selected_rust_model_concrete_definitions_present =
+            true;
+        falsely_present_concrete_definitions.digest =
+            path2_reviewed_fq12_hidden_source_semantics_bridge_audit_digest(
+                &falsely_present_concrete_definitions,
+            );
+        assert_eq!(
+            validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
+                &falsely_present_concrete_definitions
             )
             .unwrap_err(),
             "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"

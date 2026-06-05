@@ -108,6 +108,16 @@ certificates on the final proof surface. This is still a target-shape
 hardening; the concrete selected-source definitions and final theorem remain
 open.
 
+2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
+separate `selected_rust_model_concrete_definitions_present` status bit. It
+currently stays false, even while the five-source route/evidence surfaces are
+ready, because the active Lean module does not yet define the selected Rust
+five-source evidence reports, evidence digests, per-source proof objects,
+source records, or the aggregate/sub-evidence digest-match proof as concrete
+`def`/`theorem` declarations. This bit is part of
+`semantics_bridge_complete` and is digest-bound in the audit frame, but it is
+not treated as a non-closing readiness fact.
+
 2026-06-02 update: `Path2FullOpeningSourceConcrete.lean` now packages the
 deployable non-aggregate theorem route as `ReviewedFq12DeployableHiddenSourceInputs`. The remaining P2FS-001 proof inputs are
 no longer an abstract source-bridge instantiation; they are the concrete
