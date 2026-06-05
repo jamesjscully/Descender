@@ -2280,6 +2280,40 @@ def ReviewedFq12RoleLiftOpeningImpliesCertificateLiftTarget
       P.reviewedFq12CertificateLiftsToOpening b payload cert opening
 
 /--
+Concrete predicate-model obligation for valid native assembly certificates.
+
+Assembly-certificate validity must bind the certificate to the same payload,
+extraction certificate, and full native opening that it is claimed to assemble.
+-/
+def ReviewedFq12AssemblyValidityBindsOpeningTarget
+    (P : Predicates) : Prop :=
+  forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {opening : FullNativeRepresentativeOpening}
+      {assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate},
+    P.reviewedFq12AssemblyCertificateValid
+        b payload cert opening assemblyCert ->
+      ReviewedFq12AssemblyCertificateBindsOpening
+        payload cert opening assemblyCert
+
+/--
+Concrete predicate-model obligation connecting assembly-certificate assembly to
+full-native-opening assembly for the same hidden representative.
+-/
+def ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget
+    (P : Predicates) : Prop :=
+  forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {opening : FullNativeRepresentativeOpening}
+      {assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate}
+      {h : HiddenRepresentative},
+    P.reviewedFq12AssemblyCertificateAssembles
+        b payload cert opening assemblyCert h ->
+      P.fullNativeOpeningAssemblesRepresentative b payload cert opening h
+
+/--
 Selected Rust native-boundary predicate-model import target.
 
 The full-spend concrete predicates are not this object: they live over concrete
@@ -2315,6 +2349,10 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
     ReviewedFq12RoleLiftValidityBindsExtractionTarget predicates
   roleLiftOpeningImpliesCertificateLift :
     ReviewedFq12RoleLiftOpeningImpliesCertificateLiftTarget predicates
+  assemblyValidityBindsOpening :
+    ReviewedFq12AssemblyValidityBindsOpeningTarget predicates
+  assemblyCertificateImpliesFullNativeAssembly :
+    ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget predicates
   reviewedFq12PayloadAcceptanceModeled : Prop
   reviewedFq12PayloadAcceptanceModeledProof :
     reviewedFq12PayloadAcceptanceModeled

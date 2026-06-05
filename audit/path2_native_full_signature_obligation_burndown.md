@@ -157,6 +157,10 @@ back to the same selected extraction certificate and payload.
 `ReviewedFq12RoleLiftOpeningImpliesCertificateLiftTarget` then ties the
 role-lift opening predicate to `reviewedFq12CertificateLiftsToOpening` for the
 same full native opening.
+`ReviewedFq12AssemblyValidityBindsOpeningTarget` requires valid native assembly
+certificates to bind to the opened tuple, and
+`ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget` ties
+assembly-certificate assembly to `fullNativeOpeningAssemblesRepresentative`.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It
