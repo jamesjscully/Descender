@@ -22695,9 +22695,72 @@ pub fn path2_native_signer_constant_time_stage_report_from_reports_v1(
 pub fn path2_native_signer_constant_time_stage_report_v1_digest(
     report: &Path2NativeSignerConstantTimeStageReportV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(report)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native signer constant-time stage report: {err}"))
+    Ok(
+        Sha256::digest(path2_native_signer_constant_time_stage_report_v1_frame(
+            report,
+        )?)
+        .into(),
+    )
+}
+
+pub fn path2_native_signer_constant_time_stage_report_v1_frame(
+    report: &Path2NativeSignerConstantTimeStageReportV1,
+) -> Result<Vec<u8>, String> {
+    let deployment_preflight_digest =
+        path2_native_deployment_preflight_v1_digest(&report.deployment_preflight)?;
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", report.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"audit_complete",
+        u64::from(report.audit_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"fixed_public_schedule_required",
+        u64::from(report.fixed_public_schedule_required),
+    );
+    append_u64(
+        &mut frame,
+        b"current_implementation_claims_constant_time",
+        u64::from(report.current_implementation_claims_constant_time),
+    );
+    append_u64(&mut frame, b"stage_count", report.stage_count as u64);
+    for label in &report.stage_labels {
+        append_frame(&mut frame, b"stage_label", label.as_bytes());
+    }
+    append_frame(
+        &mut frame,
+        b"success_execution_report_digest",
+        &report.success_execution_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"rejection_execution_report_digest",
+        &report.rejection_execution_report_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"success_rejection_same_stage_shape",
+        u64::from(report.success_rejection_same_stage_shape),
+    );
+    append_u64(
+        &mut frame,
+        b"rejection_codes_public_only",
+        u64::from(report.rejection_codes_public_only),
+    );
+    append_frame(
+        &mut frame,
+        b"cleanup_policy",
+        report.cleanup_policy.as_bytes(),
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    append_frame(
+        &mut frame,
+        b"deployment_preflight_digest",
+        &deployment_preflight_digest,
+    );
+    Ok(frame)
 }
 
 fn path2_native_signer_entropy_q_source_window_v1() -> &'static str {
@@ -42186,6 +42249,14 @@ end Path2NativeAccountDesign
         assert_ne!(
             path2_native_signer_constant_time_stage_report_v1_digest(&report).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        let report_frame =
+            path2_native_signer_constant_time_stage_report_v1_frame(&report).unwrap();
+        assert!(!report_frame.is_empty());
+        let report_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&report_frame).into();
+        assert_eq!(
+            path2_native_signer_constant_time_stage_report_v1_digest(&report).unwrap(),
+            report_frame_digest
         );
 
         let rendered = serde_json::to_string(&report).unwrap();
