@@ -1012,6 +1012,11 @@ is present but assigned to a differently named local, while
 `selectedRustBoundaryBaseCertificate` appears later, fails the final theorem
 gate. This blocks constructor-name laundering in the future AP2-N001 theorem
 shape.
+The same final theorem gate now also requires each constructor call to consume
+the selected report, digest, proof objects, and source records in the intended
+order. A regression where the boundary-base certificate constructor is called
+directly but with `otherBoundaryBaseEvidenceReport` instead of
+`selectedRustBoundaryBaseEvidenceReport` fails the gate.
 
 ## Findings
 
