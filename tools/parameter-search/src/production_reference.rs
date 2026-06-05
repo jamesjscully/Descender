@@ -7527,7 +7527,7 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
     let boundary_source =
         include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
     let route_start = boundary_source
-        .find("\ntheorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources")
+        .find("\nstructure ReviewedFq12SelectedRustModelFiveSourceClosureInputs")
         .expect("Lean Path 2 active five-source boundary route theorem start marker missing");
     let route_end = boundary_source[route_start..]
         .find("\nend Path2HiddenSourceSemanticsBoundary")
@@ -7544,6 +7544,10 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
         "assemblySource :",
         "compatibilitySource :",
         "witnessSources :",
+        "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate",
+        "selectedRustModelFiveSourceVerified",
+        "selectedRustModelFiveSourceVerifiedProof",
+        "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs",
         "with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs",
@@ -7639,6 +7643,8 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "selectedRustAssemblySource",
         "selectedRustCompatibilitySource",
         "selectedRustSharedFrameWitnessSources",
+        "selectedRustModelFiveSourceVerified",
+        "selectedRustModelFiveSourceVerifiedProof",
     ];
     let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
     let forbidden_declaration_stub = selected_source_names.iter().any(|name| {
@@ -7674,12 +7680,15 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "compatibilitySource :",
         "witnessSources :",
         "ReviewedFq12SelectedRustModelFiveSourceClosureInputs",
+        "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate",
         "ReviewedFq12ExtractionCertificateAvailability",
         "ReviewedFq12RoleRootFunctionalLiftSource",
         "SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource",
         "ReviewedFq12FieldConcreteAssemblyLocalSource",
         "ReviewedFq12FieldConcreteCompatibilitySource",
         "ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources",
+        "selectedRustModelFiveSourceVerified :",
+        "selectedRustModelFiveSourceVerifiedProof :",
         "selectedRustPayloadProjectionLaw :",
         "selectedRustExtractionCertificateAvailability :",
         "selectedRustRoleRootLiftSource :",
@@ -7694,11 +7703,26 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
     {
         return false;
     }
+    let forbidden_vacuous_terms = [
+        "selectedRustModelFiveSourceVerified := True",
+        "selectedRustModelFiveSourceVerifiedProof := True.intro",
+        "let selectedRustModelFiveSourceVerified : Prop := True",
+        "let selectedRustModelFiveSourceVerified := True",
+        "let selectedRustModelFiveSourceVerifiedProof := True.intro",
+    ];
+    if forbidden_vacuous_terms
+        .iter()
+        .any(|marker| theorem_source.contains(marker))
+    {
+        return false;
+    }
 
     let normalized_source = theorem_source.split_whitespace().collect::<String>();
     let contains_normalized =
         |marker: &str| normalized_source.contains(&marker.split_whitespace().collect::<String>());
     let required_source_bindings = [
+        "selectedRustModelFiveSourceVerified := selectedRustModelFiveSourceVerified",
+        "selectedRustModelFiveSourceVerifiedProof := selectedRustModelFiveSourceVerifiedProof",
         "payloadProjectsFrom := selectedRustPayloadProjectionLaw",
         "certificateAvailability := selectedRustExtractionCertificateAvailability",
         "roleRootLiftSource := selectedRustRoleRootLiftSource",
@@ -7717,6 +7741,10 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
     [
         theorem_name,
         "ReviewedFq12HiddenSourceProofSemanticsClosed",
+        "let selectedRustModelFiveSourceCertificate :",
+        "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate",
+        "selectedRustModelFiveSourceVerified :=",
+        "selectedRustModelFiveSourceVerifiedProof :=",
         "let selectedRustModelFiveSourceInputs :",
         "ReviewedFq12SelectedRustModelFiveSourceClosureInputs",
         "payloadProjectsFrom :=",
@@ -7726,6 +7754,8 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "assemblySource :=",
         "compatibilitySource :=",
         "witnessSources :=",
+        "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs",
+        "selectedRustModelFiveSourceCertificate",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs",
         "selectedRustModelFiveSourceInputs",
     ]
@@ -45523,7 +45553,7 @@ theorem {theorem_name}
             )
         );
 
-        let concrete_theorem = format!(
+        let direct_record_construction = format!(
             r#"
 theorem {theorem_name}
     (P : Predicates) :
@@ -45544,8 +45574,140 @@ theorem {theorem_name}
 "#
         );
         assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &direct_record_construction,
+                theorem_name
+            )
+        );
+
+        let assumed_certificate_theorem = format!(
+            r#"
+theorem {theorem_name}
+    (P : Predicates)
+    (selectedRustModelFiveSourceCertificate :
+      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P := by
+  let selectedRustModelFiveSourceInputs :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
+      selectedRustModelFiveSourceCertificate
+  exact
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+      P selectedRustModelFiveSourceInputs
+"#
+        );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &assumed_certificate_theorem,
+                theorem_name
+            )
+        );
+
+        let assumed_verification_bits_theorem = format!(
+            r#"
+theorem {theorem_name}
+    (P : Predicates)
+    (selectedRustModelFiveSourceVerified : Prop)
+    (selectedRustModelFiveSourceVerifiedProof :
+      selectedRustModelFiveSourceVerified) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P := by
+  let selectedRustModelFiveSourceCertificate :
+      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    {{ selectedRustModelFiveSourceVerified := selectedRustModelFiveSourceVerified
+      selectedRustModelFiveSourceVerifiedProof :=
+        selectedRustModelFiveSourceVerifiedProof
+      payloadProjectsFrom := selectedRustPayloadProjectionLaw
+      certificateAvailability := selectedRustExtractionCertificateAvailability
+      roleRootLiftSource := selectedRustRoleRootLiftSource
+      selectedSource := selectedRustSourceRouteByteSource
+      assemblySource := selectedRustAssemblySource
+      compatibilitySource := selectedRustCompatibilitySource
+      witnessSources := selectedRustSharedFrameWitnessSources }}
+  let selectedRustModelFiveSourceInputs :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
+      selectedRustModelFiveSourceCertificate
+  exact
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+      P selectedRustModelFiveSourceInputs
+"#
+        );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &assumed_verification_bits_theorem,
+                theorem_name
+            )
+        );
+
+        let vacuous_certificate_theorem = format!(
+            r#"
+theorem {theorem_name}
+    (P : Predicates) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P := by
+  let selectedRustModelFiveSourceCertificate :
+      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    {{ selectedRustModelFiveSourceVerified := True
+      selectedRustModelFiveSourceVerifiedProof := True.intro
+      payloadProjectsFrom := selectedRustPayloadProjectionLaw
+      certificateAvailability := selectedRustExtractionCertificateAvailability
+      roleRootLiftSource := selectedRustRoleRootLiftSource
+      selectedSource := selectedRustSourceRouteByteSource
+      assemblySource := selectedRustAssemblySource
+      compatibilitySource := selectedRustCompatibilitySource
+      witnessSources := selectedRustSharedFrameWitnessSources }}
+  let selectedRustModelFiveSourceInputs :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
+      selectedRustModelFiveSourceCertificate
+  exact
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+      P selectedRustModelFiveSourceInputs
+"#
+        );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &vacuous_certificate_theorem,
+                theorem_name
+            )
+        );
+
+        let concrete_certificate_theorem = format!(
+            r#"
+theorem {theorem_name}
+    (P : Predicates) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P := by
+  let selectedRustModelFiveSourceCertificate :
+      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    {{ selectedRustModelFiveSourceVerified := selectedRustModelFiveSourceVerified
+      selectedRustModelFiveSourceVerifiedProof :=
+        selectedRustModelFiveSourceVerifiedProof
+      payloadProjectsFrom := selectedRustPayloadProjectionLaw
+      certificateAvailability := selectedRustExtractionCertificateAvailability
+      roleRootLiftSource := selectedRustRoleRootLiftSource
+      selectedSource := selectedRustSourceRouteByteSource
+      assemblySource := selectedRustAssemblySource
+      compatibilitySource := selectedRustCompatibilitySource
+      witnessSources := selectedRustSharedFrameWitnessSources }}
+  let selectedRustModelFiveSourceInputs :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
+      selectedRustModelFiveSourceCertificate
+  exact
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+      P selectedRustModelFiveSourceInputs
+"#
+        );
+        assert!(
             path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
-                &concrete_theorem,
+                &concrete_certificate_theorem,
                 theorem_name
             )
         );
@@ -45554,6 +45716,7 @@ theorem {theorem_name}
 axiom selectedRustPayloadProjectionLaw : payload_projection_law
 constant selectedRustExtractionCertificateAvailability : extraction_certificate_availability
 opaque selectedRustRoleRootLiftSource : role_root_lift_source
+axiom selectedRustModelFiveSourceVerified : Prop
 "#;
         assert!(
             path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(

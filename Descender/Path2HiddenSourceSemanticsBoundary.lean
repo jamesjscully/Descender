@@ -226,6 +226,81 @@ structure ReviewedFq12SelectedRustModelFiveSourceClosureInputs
       CanonicalParser WitnessParser P
 
 /--
+Proof-bearing selected Rust/model certificate for the active five-source
+hidden-source closure input record.
+
+The final AP2-N001 instantiation theorem should construct this certificate from
+reviewed implementation/model evidence, then derive the closure inputs through
+`toClosureInputs`.  This keeps the preflight gate from accepting a theorem that
+locally assembles the seven source fields without also carrying an explicit
+selected-Rust verification proposition and proof.
+-/
+structure ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+    (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)
+    (RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser)
+    (CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
+    (P : Predicates) where
+  selectedRustModelFiveSourceVerified : Prop
+  selectedRustModelFiveSourceVerifiedProof :
+    selectedRustModelFiveSourceVerified
+  payloadProjectsFrom :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload},
+      P.reviewedFq12PayloadAccepts b payload ->
+        payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+          payload.slotId = b.context.slotId ->
+        P.reviewedFq12PayloadProjectsFrom b payload
+  certificateAvailability :
+    ReviewedFq12ExtractionCertificateAvailability P
+  roleRootLiftSource :
+    ReviewedFq12RoleRootFunctionalLiftSource P
+  selectedSource :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+      FieldParser RouteParser P
+  assemblySource :
+    ReviewedFq12FieldConcreteAssemblyLocalSource P
+  compatibilitySource :
+    ReviewedFq12FieldConcreteCompatibilitySource P
+  witnessSources :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+      CanonicalParser WitnessParser P
+
+/-- Convert a proof-bearing selected Rust/model certificate into closure inputs. -/
+def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+      FieldParser RouteParser CanonicalParser WitnessParser P where
+  payloadProjectsFrom := by
+    let _hVerified : Cert.selectedRustModelFiveSourceVerified :=
+      Cert.selectedRustModelFiveSourceVerifiedProof
+    intro b payload hAccept hProjection
+    exact Cert.payloadProjectsFrom hAccept hProjection
+  certificateAvailability :=
+    Cert.certificateAvailability
+  roleRootLiftSource :=
+    Cert.roleRootLiftSource
+  selectedSource :=
+    Cert.selectedSource
+  assemblySource :=
+    Cert.assemblySource
+  compatibilitySource :=
+    Cert.compatibilitySource
+  witnessSources :=
+    Cert.witnessSources
+
+/--
 Active AP2-N001 boundary closure from the five selected Rust/model source
 records.
 
