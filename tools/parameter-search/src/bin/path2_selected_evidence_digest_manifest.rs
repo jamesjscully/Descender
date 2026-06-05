@@ -130,6 +130,10 @@ fn main() -> Result<(), String> {
             "missing_definition_categories": missing_definition_categories,
         },
         "source_record_subcheck": {
+            "source_record_package_surface_present":
+                source_record_subcheck.source_record_package_surface_present,
+            "package_sub_evidence_match_reduction_present":
+                source_record_subcheck.package_sub_evidence_match_reduction_present,
             "payload_projection_law_definition_present":
                 source_record_subcheck.payload_projection_law_definition_present,
             "extraction_certificate_availability_definition_present":

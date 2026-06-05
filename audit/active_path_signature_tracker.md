@@ -1147,6 +1147,16 @@ certificate definitions are absent. It also reports
 `byte_and_witness_packaged_route_endpoint_present = true`, confirming that the
 Lean adapter route exists and the remaining work is importing concrete
 selected source records, not inventing another endpoint.
+Lean now also exposes
+`ReviewedFq12SelectedRustModelSourceRecordPackage`, a generic package for the
+seven raw selected source records. Its projections build the five selected
+source certificates by their named constructors, and
+`ReviewedFq12SelectedRustModelSourceRecordPackage.subEvidenceDigestsMatch`
+derives the aggregate sub-evidence match from the selected component digests.
+The manifest reports `source_record_package_surface_present = true` and
+`package_sub_evidence_match_reduction_present = true`; this reduces the
+remaining source-record work to importing the raw selected sources themselves,
+while leaving aggregate evidence-digest closure separate.
 
 ## Findings
 

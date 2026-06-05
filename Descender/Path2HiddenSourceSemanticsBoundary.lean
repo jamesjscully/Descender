@@ -1849,6 +1849,178 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBound
     witnessSourcesCertificate.toWitnessSources
 
 /--
+Selected Rust/model source-record package before final aggregate-digest
+closure.
+
+This is the proof-facing shape of the remaining `source_record_definitions`
+work.  It contains exactly the seven raw selected source records that must be
+imported from the active Rust/model route.  The namespace projections below
+show that, once these raw records exist, the five public evidence certificates
+and the aggregate sub-evidence digest match are constructor consequences.
+-/
+structure ReviewedFq12SelectedRustModelSourceRecordPackage
+    (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)
+    (RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser)
+    (CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
+    (P : Predicates) where
+  payloadProjectionLaw :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload},
+      P.reviewedFq12PayloadAccepts b payload ->
+        payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+          payload.slotId = b.context.slotId ->
+        P.reviewedFq12PayloadProjectsFrom b payload
+  extractionCertificateAvailability :
+    ReviewedFq12ExtractionCertificateAvailability P
+  roleRootLiftSource :
+    ReviewedFq12RoleRootFunctionalLiftSource P
+  selectedSourceRouteByteSource :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+      FieldParser RouteParser P
+  assemblySource :
+    ReviewedFq12FieldConcreteAssemblyLocalSource P
+  compatibilitySource :
+    ReviewedFq12FieldConcreteCompatibilitySource P
+  sharedFrameWitnessSources :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+      CanonicalParser WitnessParser P
+
+namespace ReviewedFq12SelectedRustModelSourceRecordPackage
+
+/-- Constructor-bound boundary/base certificate from selected raw sources. -/
+def boundaryBaseCertificate
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Package :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P :=
+  ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources
+    selectedRustBoundaryBaseEvidenceReport
+    selectedRustBoundaryBaseEvidenceDigest
+    selectedRustBoundaryBaseEvidenceReportVerifiedProof
+    selectedRustBoundaryBaseEvidenceFactsAllTrueProof
+    Package.payloadProjectionLaw
+    Package.extractionCertificateAvailability
+
+/-- Constructor-bound role-root/lift certificate from selected raw sources. -/
+def roleRootLiftSourceCertificate
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Package :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P :=
+  ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource
+    selectedRustRoleRootLiftEvidenceReport
+    selectedRustRoleRootLiftEvidenceDigest
+    selectedRustRoleRootLiftEvidenceReportVerifiedProof
+    selectedRustRoleRootLiftEvidenceFactsAllTrueProof
+    Package.roleRootLiftSource
+
+/-- Constructor-bound source-route byte-source certificate. -/
+def sourceRouteByteSourceCertificate
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Package :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+      FieldParser RouteParser P :=
+  SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource
+    selectedRustSourceRouteEvidenceReport
+    selectedRustSourceRouteEvidenceDigest
+    selectedRustSourceRouteEvidenceReportVerifiedProof
+    selectedRustSourceRouteEvidenceFactsAllTrueProof
+    Package.selectedSourceRouteByteSource
+
+/-- Constructor-bound field/local certificate. -/
+def fieldLocalSourceCertificate
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Package :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P :=
+  ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources
+    selectedRustFieldLocalEvidenceReport
+    selectedRustFieldLocalEvidenceDigest
+    selectedRustFieldLocalEvidenceReportVerifiedProof
+    selectedRustFieldLocalEvidenceFactsAllTrueProof
+    Package.assemblySource
+    Package.compatibilitySource
+
+/-- Constructor-bound shared-frame witness certificate. -/
+def sharedFrameWitnessSourcesCertificate
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Package :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+      CanonicalParser WitnessParser P :=
+  ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources
+    selectedRustSharedFrameWitnessEvidenceReport
+    selectedRustSharedFrameWitnessEvidenceDigest
+    selectedRustSharedFrameWitnessEvidenceReportVerifiedProof
+    selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof
+    Package.sharedFrameWitnessSources
+
+/--
+The selected aggregate report digest-matches the constructor-bound certificates
+derived from a selected source-record package.
+-/
+theorem subEvidenceDigestsMatch
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Package :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
+      Package.boundaryBaseCertificate
+      Package.roleRootLiftSourceCertificate
+      Package.sourceRouteByteSourceCertificate
+      Package.fieldLocalSourceCertificate
+      Package.sharedFrameWitnessSourcesCertificate :=
+  selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_of_selected_certificate_digests
+    (by rfl) (by rfl) (by rfl) (by rfl) (by rfl)
+
+end ReviewedFq12SelectedRustModelSourceRecordPackage
+
+/--
 Active AP2-N001 boundary closure from the five selected Rust/model source
 records.
 

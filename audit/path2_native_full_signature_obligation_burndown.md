@@ -494,6 +494,15 @@ source-certificate definitions are all still absent. The same subcheck reports
 the canonical-witness-to-byte-source adapter and byte/witness packaged route
 endpoint as present, so the next work is concrete selected source import, not
 another route theorem.
+Lean now provides
+`ReviewedFq12SelectedRustModelSourceRecordPackage`, which packages the seven
+raw selected source records before final aggregate-digest closure. The package
+projections construct all five selected source certificates with the named
+report/digest/proof/source constructors, and
+`ReviewedFq12SelectedRustModelSourceRecordPackage.subEvidenceDigestsMatch`
+derives the aggregate sub-evidence match from selected component digest
+equalities. The manifest now reports both package-surface booleans true, while
+the twelve concrete selected source bindings remain absent.
 
 P2FS-001 latest hardening: `ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources` is now the named Lean constructor for the final selected Rust/model certificate. The certificate now carries an aggregate five-source `evidenceDigest`, and the Rust `extractor_theorem_instantiated` gate requires the future final theorem to use that constructor with the verified five-source evidence report, aggregate evidence digest, all-true facts proof, and selected source packages before deriving `toClosureInputs`; a raw certificate record literal, empty digest literal, `sorry`, or `admit` no longer satisfies the AP2-N001 source gate.
 

@@ -7545,6 +7545,8 @@ pub struct Path2SelectedRustModelConcreteDefinitionChecklistV1 {
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
+    pub source_record_package_surface_present: bool,
+    pub package_sub_evidence_match_reduction_present: bool,
     pub payload_projection_law_definition_present: bool,
     pub extraction_certificate_availability_definition_present: bool,
     pub role_root_lift_source_definition_present: bool,
@@ -8670,6 +8672,29 @@ pub fn path2_selected_rust_model_source_record_subcheck_v1()
             "selectedRustSharedFrameWitnessSourcesCertificate",
             "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof selectedRustSharedFrameWitnessSources",
         );
+    let source_record_package_surface_present = [
+        "ReviewedFq12SelectedRustModelSourceRecordPackage",
+        "payloadProjectionLaw",
+        "extractionCertificateAvailability",
+        "roleRootLiftSource",
+        "selectedSourceRouteByteSource",
+        "assemblySource",
+        "compatibilitySource",
+        "sharedFrameWitnessSources",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
+    let package_sub_evidence_match_reduction_present = [
+        "theorem subEvidenceDigestsMatch",
+        "selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_of_selected_certificate_digests",
+        "Package.boundaryBaseCertificate",
+        "Package.roleRootLiftSourceCertificate",
+        "Package.sourceRouteByteSourceCertificate",
+        "Package.fieldLocalSourceCertificate",
+        "Package.sharedFrameWitnessSourcesCertificate",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
     let canonical_witness_to_byte_source_adapter_present =
         lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1();
     let byte_and_witness_packaged_route_endpoint_present =
@@ -8692,6 +8717,8 @@ pub fn path2_selected_rust_model_source_record_subcheck_v1()
     .filter(|present| !**present)
     .count() as u8;
     Path2SelectedRustModelSourceRecordSubcheckV1 {
+        source_record_package_surface_present,
+        package_sub_evidence_match_reduction_present,
         payload_projection_law_definition_present,
         extraction_certificate_availability_definition_present,
         role_root_lift_source_definition_present,
@@ -55976,6 +56003,8 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             2
         );
         let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
+        assert!(source_record_subcheck.source_record_package_surface_present);
+        assert!(source_record_subcheck.package_sub_evidence_match_reduction_present);
         assert!(!source_record_subcheck.payload_projection_law_definition_present);
         assert!(!source_record_subcheck.extraction_certificate_availability_definition_present);
         assert!(!source_record_subcheck.role_root_lift_source_definition_present);
