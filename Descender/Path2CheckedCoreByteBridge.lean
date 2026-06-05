@@ -418,7 +418,9 @@ structure SelectedRustCheckedCoreByteEvidenceCertificate
     (P : CheckedCoreProofByteParser)
     (V : VerifierPredicates) where
   evidenceReportVerified : Prop
+  evidenceReportVerifiedProof : evidenceReportVerified
   evidenceFactsAllTrue : Prop
+  evidenceFactsAllTrueProof : evidenceFactsAllTrue
   evidenceSelectedRustCheckedCoreAcceptorAccepts :
     Boundary -> Nat -> Nat -> NativeCheckedCoreSpendEvidence -> Prop
   evidenceSelectedRustCheckedCoreParserMatchesNative :
@@ -470,8 +472,12 @@ def SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs
     {V : VerifierPredicates}
     (Cert : SelectedRustCheckedCoreByteEvidenceCertificate B H P V) :
     SelectedRustCheckedCoreByteInstantiationInputs B H P V where
-  selectedRustCheckedCoreAcceptorAccepts :=
-    Cert.evidenceSelectedRustCheckedCoreAcceptorAccepts
+  selectedRustCheckedCoreAcceptorAccepts := by
+    let _hReport : Cert.evidenceReportVerified :=
+      Cert.evidenceReportVerifiedProof
+    let _hFacts : Cert.evidenceFactsAllTrue :=
+      Cert.evidenceFactsAllTrueProof
+    exact Cert.evidenceSelectedRustCheckedCoreAcceptorAccepts
   selectedRustCheckedCoreParserMatchesNative :=
     Cert.evidenceSelectedRustCheckedCoreParserMatchesNative
   selectedRustCheckedCoreProofLengthEq :=

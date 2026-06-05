@@ -18544,7 +18544,9 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "hash_and_syndrome",
         "SelectedRustCheckedCoreByteEvidenceCertificate",
         "evidenceReportVerified",
+        "evidenceReportVerifiedProof",
         "evidenceFactsAllTrue",
+        "evidenceFactsAllTrueProof",
         "SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs",
         "SelectedRustCheckedCoreByteInstantiationInputs",
         "selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1",
@@ -18655,7 +18657,9 @@ fn path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
 ) -> bool {
     let selected_source_facts = [
         "selectedRustCheckedCoreEvidenceReportVerified",
+        "selectedRustCheckedCoreEvidenceReportVerifiedProof",
         "selectedRustCheckedCoreEvidenceFactsAllTrue",
+        "selectedRustCheckedCoreEvidenceFactsAllTrueProof",
         "selectedRustCheckedCoreAcceptorAccepts",
         "selectedRustCheckedCoreParserMatchesNative",
         "selectedRustCheckedCoreProofLengthEq",
@@ -18709,7 +18713,9 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
 
     let selected_source_facts = [
         "selectedRustCheckedCoreEvidenceReportVerified",
+        "selectedRustCheckedCoreEvidenceReportVerifiedProof",
         "selectedRustCheckedCoreEvidenceFactsAllTrue",
+        "selectedRustCheckedCoreEvidenceFactsAllTrueProof",
         "selectedRustCheckedCoreAcceptorAccepts",
         "selectedRustCheckedCoreParserMatchesNative",
         "selectedRustCheckedCoreProofLengthEq",
@@ -18739,6 +18745,24 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
     {
         return false;
     }
+    let forbidden_vacuous_evidence_terms = [
+        "evidenceReportVerified := True",
+        "evidenceReportVerifiedProof := True.intro",
+        "evidenceFactsAllTrue := True",
+        "evidenceFactsAllTrueProof := True.intro",
+        "let selectedRustCheckedCoreEvidenceReportVerified : Prop := True",
+        "let selectedRustCheckedCoreEvidenceReportVerified := True",
+        "let selectedRustCheckedCoreEvidenceReportVerifiedProof := True.intro",
+        "let selectedRustCheckedCoreEvidenceFactsAllTrue : Prop := True",
+        "let selectedRustCheckedCoreEvidenceFactsAllTrue := True",
+        "let selectedRustCheckedCoreEvidenceFactsAllTrueProof := True.intro",
+    ];
+    if forbidden_vacuous_evidence_terms
+        .iter()
+        .any(|term| instantiation_source.contains(term))
+    {
+        return false;
+    }
 
     let instantiation_checks = [
         "selectedRustCheckedCoreByteSource_instantiation_v1",
@@ -18749,7 +18773,9 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
         "let selectedRustCheckedCoreEvidenceCertificate :",
         "SelectedRustCheckedCoreByteEvidenceCertificate",
         "evidenceReportVerified := selectedRustCheckedCoreEvidenceReportVerified",
+        "evidenceReportVerifiedProof := selectedRustCheckedCoreEvidenceReportVerifiedProof",
         "evidenceFactsAllTrue := selectedRustCheckedCoreEvidenceFactsAllTrue",
+        "evidenceFactsAllTrueProof := selectedRustCheckedCoreEvidenceFactsAllTrueProof",
         "let selectedRustCheckedCoreInputs :",
         "SelectedRustCheckedCoreByteInstantiationInputs",
         "SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs selectedRustCheckedCoreEvidenceCertificate",
@@ -18981,6 +19007,7 @@ fn path2_full_signature_execution_source_boundary_present_v1() -> bool {
         "Path2FullSpendGame.HasBreak (concretePredicates C) run.spend",
         "SelectedRustFullExecutionSourceCertificate",
         "selectedRustFullExecutionSourceVerified",
+        "selectedRustFullExecutionSourceVerifiedProof",
         "selectedRustExecutionSucceeds",
         "selectedRustSuccessImpliesVerifierAcceptOrBreak",
         "SelectedRustFullExecutionSourceCertificate.toExecutionSource",
@@ -19052,6 +19079,7 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
         "ConcreteGameConfig",
         "SelectedRustFullExecutionSourceCertificate",
         "selectedRustFullExecutionSourceVerified",
+        "selectedRustFullExecutionSourceVerifiedProof",
         "selectedRustExecutionSucceeds",
         "selectedRustSuccessImpliesVerifierAcceptOrBreak",
     ];
@@ -19063,6 +19091,7 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
     }
     let forbidden_declaration_terms = [
         "selectedRustFullExecutionSourceVerified",
+        "selectedRustFullExecutionSourceVerifiedProof",
         "selectedRustExecutionSucceeds",
         "selectedRustSuccessImpliesVerifierAcceptOrBreak",
     ];
@@ -19085,12 +19114,26 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
     if forbidden_variable_stub {
         return false;
     }
+    let forbidden_vacuous_execution_terms = [
+        "selectedRustFullExecutionSourceVerified := True",
+        "selectedRustFullExecutionSourceVerifiedProof := True.intro",
+        "let selectedRustFullExecutionSourceVerified : Prop := True",
+        "let selectedRustFullExecutionSourceVerified := True",
+        "let selectedRustFullExecutionSourceVerifiedProof := True.intro",
+    ];
+    if forbidden_vacuous_execution_terms
+        .iter()
+        .any(|term| instantiation_source.contains(term))
+    {
+        return false;
+    }
 
     let instantiation_checks = [
         "concreteFullSignatureExecutionSource_instantiation_v1",
         "let selectedRustFullExecutionCertificate :",
         "SelectedRustFullExecutionSourceCertificate",
         "selectedRustFullExecutionSourceVerified := selectedRustFullExecutionSourceVerified",
+        "selectedRustFullExecutionSourceVerifiedProof := selectedRustFullExecutionSourceVerifiedProof",
         "selectedRustExecutionSucceeds := selectedRustExecutionSucceeds",
         "selectedRustSuccessImpliesVerifierAcceptOrBreak :=\n        selectedRustSuccessImpliesVerifierAcceptOrBreak",
         "let selectedRustFullExecutionSource :",
@@ -38416,12 +38459,18 @@ end Path2CheckedCoreByteBridge
         let evidence_bits_assumed_instantiation = r#"
 theorem selectedRustCheckedCoreByteSource_instantiation_v1
     (selectedRustCheckedCoreEvidenceReportVerified : evidence_verified)
-    (selectedRustCheckedCoreEvidenceFactsAllTrue : evidence_facts_true) :
+    (selectedRustCheckedCoreEvidenceReportVerifiedProof :
+      selectedRustCheckedCoreEvidenceReportVerified)
+    (selectedRustCheckedCoreEvidenceFactsAllTrue : evidence_facts_true)
+    (selectedRustCheckedCoreEvidenceFactsAllTrueProof :
+      selectedRustCheckedCoreEvidenceFactsAllTrue) :
     SelectedRustCheckedCoreByteSource B H P V := by
   let selectedRustCheckedCoreEvidenceCertificate :
       SelectedRustCheckedCoreByteEvidenceCertificate B H P V :=
     { evidenceReportVerified := selectedRustCheckedCoreEvidenceReportVerified
+      evidenceReportVerifiedProof := selectedRustCheckedCoreEvidenceReportVerifiedProof
       evidenceFactsAllTrue := selectedRustCheckedCoreEvidenceFactsAllTrue
+      evidenceFactsAllTrueProof := selectedRustCheckedCoreEvidenceFactsAllTrueProof
       evidenceSelectedRustCheckedCoreAcceptorAccepts := selectedRustCheckedCoreAcceptorAccepts
       evidenceSelectedRustCheckedCoreParserMatchesNative := selectedRustCheckedCoreParserMatchesNative
       evidenceSelectedRustCheckedCoreProofLengthEq := selectedRustCheckedCoreProofLengthEq
@@ -38445,6 +38494,44 @@ end Path2CheckedCoreByteBridge
         assert!(
             !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
                 evidence_bits_assumed_instantiation
+            )
+        );
+        let vacuous_evidence_bits = r#"
+theorem selectedRustCheckedCoreByteSource_instantiation_v1 :
+    SelectedRustCheckedCoreByteSource B H P V := by
+  let selectedRustCheckedCoreEvidenceReportVerified : Prop := True
+  let selectedRustCheckedCoreEvidenceReportVerifiedProof := True.intro
+  let selectedRustCheckedCoreEvidenceFactsAllTrue : Prop := True
+  let selectedRustCheckedCoreEvidenceFactsAllTrueProof := True.intro
+  let selectedRustCheckedCoreEvidenceCertificate :
+      SelectedRustCheckedCoreByteEvidenceCertificate B H P V :=
+    { evidenceReportVerified := selectedRustCheckedCoreEvidenceReportVerified
+      evidenceReportVerifiedProof := selectedRustCheckedCoreEvidenceReportVerifiedProof
+      evidenceFactsAllTrue := selectedRustCheckedCoreEvidenceFactsAllTrue
+      evidenceFactsAllTrueProof := selectedRustCheckedCoreEvidenceFactsAllTrueProof
+      evidenceSelectedRustCheckedCoreAcceptorAccepts := selectedRustCheckedCoreAcceptorAccepts
+      evidenceSelectedRustCheckedCoreParserMatchesNative := selectedRustCheckedCoreParserMatchesNative
+      evidenceSelectedRustCheckedCoreProofLengthEq := selectedRustCheckedCoreProofLengthEq
+      evidenceSelectedRustCheckedCoreProofCanonical := selectedRustCheckedCoreProofCanonical
+      evidenceSelectedRustCheckedCoreDecodedProofCommitment := selectedRustCheckedCoreDecodedProofCommitment
+      evidenceSelectedRustCheckedCoreParsedResponseSyndrome := selectedRustCheckedCoreParsedResponseSyndrome
+      evidenceSelectedRustCheckedCoreFrameBytes := selectedRustCheckedCoreFrameBytes
+      evidenceSelectedRustCheckedCoreVerifierHandleEq := selectedRustCheckedCoreVerifierHandleEq
+      evidenceSelectedRustCheckedCoreParserEquality := selectedRustCheckedCoreParserEquality
+      evidenceSelectedRustCheckedCoreHashAndSyndrome := selectedRustCheckedCoreHashAndSyndrome }
+  let selectedRustCheckedCoreInputs :
+      SelectedRustCheckedCoreByteInstantiationInputs B H P V :=
+    SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs selectedRustCheckedCoreEvidenceCertificate
+  exact selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1 selectedRustCheckedCoreInputs
+theorem selectedRustCheckedCoreByteSource_valid_or_named_break := trivial
+theorem Path2NativeCheckedCoreAcceptV1Bridge := trivial
+theorem Path2NativeCheckedCoreAcceptV1Soundness := trivial
+theorem selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break := trivial
+end Path2CheckedCoreByteBridge
+"#;
+        assert!(
+            !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
+                vacuous_evidence_bits
             )
         );
         let local_inputs_without_evidence_certificate = r#"
@@ -38549,12 +38636,16 @@ end Path2FullSpendConcrete
         );
         let assumed_full_execution_bits = r#"
 theorem concreteFullSignatureExecutionSource_instantiation_v1
-    (selectedRustFullExecutionSourceVerified : execution_verified) :
+    (selectedRustFullExecutionSourceVerified : execution_verified)
+    (selectedRustFullExecutionSourceVerifiedProof :
+      selectedRustFullExecutionSourceVerified) :
     ConcreteFullExecutionAcceptedSpendLift
       selectedRustConcreteGameConfig selectedRustFullExecutionSource := by
   let selectedRustFullExecutionCertificate :
       SelectedRustFullExecutionSourceCertificate selectedRustConcreteGameConfig :=
     { selectedRustFullExecutionSourceVerified := selectedRustFullExecutionSourceVerified
+      selectedRustFullExecutionSourceVerifiedProof :=
+        selectedRustFullExecutionSourceVerifiedProof
       selectedRustExecutionSucceeds := selectedRustExecutionSucceeds
       selectedRustSuccessImpliesVerifierAcceptOrBreak :=
         selectedRustSuccessImpliesVerifierAcceptOrBreak }
@@ -38577,6 +38668,7 @@ theorem concreteFullSignatureExecutionSource_instantiation_v1 :
   let selectedRustFullExecutionCertificate :
       SelectedRustFullExecutionSourceCertificate selectedRustConcreteGameConfig :=
     { selectedRustFullExecutionSourceVerified := True
+      selectedRustFullExecutionSourceVerifiedProof := True.intro
       selectedRustExecutionSucceeds := selectedRustExecutionSucceeds
       selectedRustSuccessImpliesVerifierAcceptOrBreak :=
         selectedRustSuccessImpliesVerifierAcceptOrBreak }

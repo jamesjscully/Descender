@@ -438,6 +438,8 @@ it depends on.
 structure SelectedRustFullExecutionSourceCertificate
     (C : ConcreteGameConfig) where
   selectedRustFullExecutionSourceVerified : Prop
+  selectedRustFullExecutionSourceVerifiedProof :
+    selectedRustFullExecutionSourceVerified
   selectedRustExecutionSucceeds :
     Path2FullSpendGame.FullForgeryRun concreteTypes -> Prop
   selectedRustSuccessImpliesVerifierAcceptOrBreak :
@@ -451,8 +453,10 @@ def SelectedRustFullExecutionSourceCertificate.toExecutionSource
     {C : ConcreteGameConfig}
     (Cert : SelectedRustFullExecutionSourceCertificate C) :
     ConcreteFullSignatureExecutionSource C where
-  executionSucceeds :=
-    Cert.selectedRustExecutionSucceeds
+  executionSucceeds := by
+    let _hVerified : Cert.selectedRustFullExecutionSourceVerified :=
+      Cert.selectedRustFullExecutionSourceVerifiedProof
+    exact Cert.selectedRustExecutionSucceeds
   success_implies_verifier_accept_or_break :=
     Cert.selectedRustSuccessImpliesVerifierAcceptOrBreak
 
