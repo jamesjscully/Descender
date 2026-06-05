@@ -10,6 +10,10 @@ use descender_parameter_search::production_reference::{
     path2_reviewed_fq12_five_source_closure_evidence_all_facts_true,
     path2_reviewed_fq12_five_source_closure_evidence_v1,
     path2_reviewed_fq12_five_source_closure_evidence_v1_digest,
+    path2_reviewed_fq12_native_boundary_predicate_model_evidence_all_facts_true,
+    path2_reviewed_fq12_native_boundary_predicate_model_evidence_report_verified_v1,
+    path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1,
+    path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1_digest,
     path2_reviewed_fq12_role_root_lift_evidence_all_facts_true,
     path2_reviewed_fq12_role_root_lift_evidence_v1,
     path2_reviewed_fq12_role_root_lift_evidence_v1_digest,
@@ -42,6 +46,11 @@ fn main() -> Result<(), String> {
     let source_route = path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1()?;
     let field_local = path2_reviewed_fq12_field_local_evidence_v1()?;
     let shared_witness = path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1()?;
+    let predicate_model = path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1()?;
+    let predicate_model_report_digest =
+        path2_reviewed_fq12_native_boundary_predicate_model_evidence_report_verified_v1(
+            &predicate_model,
+        )?;
     let concrete_definition_checklist =
         path2_selected_rust_model_concrete_definition_checklist_v1();
     let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
@@ -88,6 +97,11 @@ fn main() -> Result<(), String> {
                     &shared_witness
                 )?
             ),
+            "selectedRustNativeBoundaryPredicateModelEvidenceDigest": hex_encode(
+                &path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1_digest(
+                    &predicate_model
+                )?
+            ),
         },
         "all_facts": {
             "five_source": path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
@@ -110,6 +124,22 @@ fn main() -> Result<(), String> {
                 path2_reviewed_fq12_shared_digest_frame_witness_evidence_all_facts_true(
                     &shared_witness
                 ),
+            "predicate_model":
+                path2_reviewed_fq12_native_boundary_predicate_model_evidence_all_facts_true(
+                    &predicate_model
+                ),
+        },
+        "predicate_model_evidence": {
+            "report_digest": hex_encode(&predicate_model_report_digest),
+            "report_verified": true,
+            "active_boundary_predicate_model_pinned":
+                predicate_model.active_boundary_predicate_model_pinned,
+            "concrete_predicate_model_present":
+                predicate_model.concrete_predicate_model_present,
+            "certified_semantics_source_package_target_present":
+                predicate_model.certified_semantics_source_package_target_present,
+            "predicate_negative_controls_passed":
+                predicate_model.predicate_negative_controls_passed,
         },
         "closing_status": {
             "extractor_theorem_instantiated": five_source.extractor_theorem_instantiated,

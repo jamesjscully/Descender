@@ -199,6 +199,13 @@ has accepted-spend, full-signature, and active-forgery-bound handoffs. The
 manifest exposes these as the certified semantics-source package target,
 handoff, and bound-handoff bits, all while
 `native_boundary_concrete_predicate_model_present` remains false.
+Rust now also emits
+`Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1`, a schema/digest
+verified report for this predicate-model surface. It is intentionally
+fail-closed: report verification succeeds, but `all_facts` is false because
+`concrete_predicate_model_present`, `active_boundary_predicate_model_pinned`,
+and the derived pinned model facts remain false until the concrete active
+`Path2NativeBoundary.Predicates` interpretation is imported.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It

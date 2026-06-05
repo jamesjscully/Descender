@@ -1239,6 +1239,11 @@ That route is now packaged as
 the manifest reports certified-package target, handoff, and bound-handoff bits
 as true. It still remains conditional on importing the concrete certificate
 and source records.
+Rust now emits the matching
+`Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1` report. The report
+is digest/schema verified in the manifest but remains fail-closed:
+`predicate_model` all-facts is false because no concrete native-boundary
+predicate model is present.
 This pins the current failure mode as a missing concrete native-boundary
 semantics import, not a missing byte/digest evidence report.
 Lean now names that import target as

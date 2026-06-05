@@ -273,6 +273,8 @@ pub const PATH2_REVIEWED_FQ12_SHARED_DIGEST_FRAME_WITNESS_EVIDENCE_SCHEMA: &str 
     "Descender.Path2.reviewed_fq12.shared_digest_frame_witness_evidence.v1";
 pub const PATH2_REVIEWED_FQ12_SELECTED_SOURCE_ROUTE_BYTE_SOURCE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.reviewed_fq12.selected_source_route_byte_source_evidence.v1";
+pub const PATH2_REVIEWED_FQ12_NATIVE_BOUNDARY_PREDICATE_MODEL_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.reviewed_fq12.native_boundary_predicate_model_evidence.v1";
 pub const PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN: &str = "DESCENDER_SLOT_LEAF_V1";
 pub const PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN: &str = "DESCENDER_SLOT_LEAF_V2";
 pub const PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_DOMAIN: &str =
@@ -7734,6 +7736,24 @@ pub struct Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1 {
     pub source_route_negative_controls_passed: bool,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1 {
+    pub schema: &'static str,
+    pub schema_matches: bool,
+    pub report_digest_verified: bool,
+    pub active_boundary_predicate_model_pinned: bool,
+    pub payload_acceptance_model_pinned: bool,
+    pub extraction_certificate_model_pinned: bool,
+    pub full_opening_and_assembly_model_pinned: bool,
+    pub compatibility_and_extraction_model_pinned: bool,
+    pub native_boundary_break_model_pinned: bool,
+    pub native_boundary_predicate_record_complete: bool,
+    pub active_verifier_route_pinned: bool,
+    pub predicate_negative_controls_passed: bool,
+    pub concrete_predicate_model_present: bool,
+    pub certified_semantics_source_package_target_present: bool,
+}
+
 pub fn production_deployment_preflight() -> ProductionDeploymentPreflight {
     let callback_boundaries_ok = verify_default_deployment_callback_boundaries().is_ok();
     let reviewed_target_codec_present = REVIEWED_ACCOUNT_CARRIED_TRANSACTION_SIGNATURE_BYTES
@@ -13234,6 +13254,205 @@ pub fn verify_path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1(
     if !path2_reviewed_fq12_selected_source_route_byte_source_evidence_all_facts_true(evidence) {
         return Err(
             "Path 2 reviewed Fq12 selected source-route byte-source evidence has an unsatisfied component fact"
+                .to_string(),
+        );
+    }
+    Ok(digest)
+}
+
+pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1()
+-> Result<Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1, String> {
+    let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
+    let concrete_predicate_model_present =
+        source_record_subcheck.native_boundary_concrete_predicate_model_present;
+    Ok(Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1 {
+        schema: PATH2_REVIEWED_FQ12_NATIVE_BOUNDARY_PREDICATE_MODEL_EVIDENCE_SCHEMA,
+        schema_matches: true,
+        report_digest_verified: true,
+        active_boundary_predicate_model_pinned: concrete_predicate_model_present,
+        payload_acceptance_model_pinned: concrete_predicate_model_present
+            && source_record_subcheck
+                .native_boundary_payload_acceptance_boundary_match_target_present,
+        extraction_certificate_model_pinned: concrete_predicate_model_present
+            && source_record_subcheck
+                .native_boundary_extraction_certificate_payload_match_target_present
+            && source_record_subcheck
+                .native_boundary_extraction_certificate_validity_match_target_present
+            && source_record_subcheck
+                .native_boundary_certificate_extraction_payload_consistency_target_present,
+        full_opening_and_assembly_model_pinned: concrete_predicate_model_present
+            && source_record_subcheck
+                .native_boundary_role_lift_validity_binds_extraction_target_present
+            && source_record_subcheck
+                .native_boundary_role_lift_opening_certificate_lift_target_present
+            && source_record_subcheck
+                .native_boundary_assembly_validity_binds_opening_target_present
+            && source_record_subcheck
+                .native_boundary_assembly_certificate_full_native_target_present
+            && source_record_subcheck
+                .native_boundary_full_opening_bridge_digest_binds_target_present,
+        compatibility_and_extraction_model_pinned: concrete_predicate_model_present
+            && source_record_subcheck.native_boundary_compatibility_validity_binds_target_present
+            && source_record_subcheck
+                .native_boundary_compatibility_extraction_reviewed_target_present,
+        native_boundary_break_model_pinned: concrete_predicate_model_present
+            && source_record_subcheck.native_boundary_break_antivacuity_target_present,
+        native_boundary_predicate_record_complete: source_record_subcheck
+            .native_boundary_predicates_record_present,
+        active_verifier_route_pinned: source_record_subcheck
+            .native_boundary_certified_semantics_source_package_target_present
+            && source_record_subcheck
+                .native_boundary_certified_semantics_source_package_handoff_present
+            && source_record_subcheck
+                .native_boundary_certified_semantics_source_package_bound_handoff_present,
+        predicate_negative_controls_passed: source_record_subcheck
+            .native_boundary_payload_acceptance_antivacuity_target_present
+            && source_record_subcheck.native_boundary_break_antivacuity_target_present
+            && !source_record_subcheck
+                .native_boundary_predicate_model_generic_evidence_labels_present,
+        concrete_predicate_model_present,
+        certified_semantics_source_package_target_present: source_record_subcheck
+            .native_boundary_certified_semantics_source_package_target_present,
+    })
+}
+
+pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1_frame(
+    evidence: &Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"schema_matches",
+        u64::from(evidence.schema_matches),
+    );
+    append_u64(
+        &mut frame,
+        b"report_digest_verified",
+        u64::from(evidence.report_digest_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"active_boundary_predicate_model_pinned",
+        u64::from(evidence.active_boundary_predicate_model_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"payload_acceptance_model_pinned",
+        u64::from(evidence.payload_acceptance_model_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"extraction_certificate_model_pinned",
+        u64::from(evidence.extraction_certificate_model_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"full_opening_and_assembly_model_pinned",
+        u64::from(evidence.full_opening_and_assembly_model_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"compatibility_and_extraction_model_pinned",
+        u64::from(evidence.compatibility_and_extraction_model_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"native_boundary_break_model_pinned",
+        u64::from(evidence.native_boundary_break_model_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"native_boundary_predicate_record_complete",
+        u64::from(evidence.native_boundary_predicate_record_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"active_verifier_route_pinned",
+        u64::from(evidence.active_verifier_route_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"predicate_negative_controls_passed",
+        u64::from(evidence.predicate_negative_controls_passed),
+    );
+    append_u64(
+        &mut frame,
+        b"concrete_predicate_model_present",
+        u64::from(evidence.concrete_predicate_model_present),
+    );
+    append_u64(
+        &mut frame,
+        b"certified_semantics_source_package_target_present",
+        u64::from(evidence.certified_semantics_source_package_target_present),
+    );
+    frame
+}
+
+pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1_digest(
+    evidence: &Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    Ok(Sha256::digest(
+        path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1_frame(evidence),
+    )
+    .into())
+}
+
+pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_all_facts_true(
+    evidence: &Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1,
+) -> bool {
+    evidence.schema == PATH2_REVIEWED_FQ12_NATIVE_BOUNDARY_PREDICATE_MODEL_EVIDENCE_SCHEMA
+        && evidence.active_boundary_predicate_model_pinned
+        && evidence.payload_acceptance_model_pinned
+        && evidence.extraction_certificate_model_pinned
+        && evidence.full_opening_and_assembly_model_pinned
+        && evidence.compatibility_and_extraction_model_pinned
+        && evidence.native_boundary_break_model_pinned
+        && evidence.native_boundary_predicate_record_complete
+        && evidence.active_verifier_route_pinned
+        && evidence.predicate_negative_controls_passed
+        && evidence.concrete_predicate_model_present
+        && evidence.certified_semantics_source_package_target_present
+}
+
+pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_report_verified_v1(
+    evidence: &Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let expected = path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1()?;
+    if expected != *evidence {
+        return Err(
+            "Path 2 reviewed Fq12 native-boundary predicate-model evidence mismatch".to_string(),
+        );
+    }
+    if evidence.schema != PATH2_REVIEWED_FQ12_NATIVE_BOUNDARY_PREDICATE_MODEL_EVIDENCE_SCHEMA {
+        return Err(
+            "Path 2 reviewed Fq12 native-boundary predicate-model evidence schema mismatch"
+                .to_string(),
+        );
+    }
+    if !evidence.schema_matches {
+        return Err(
+            "Path 2 reviewed Fq12 native-boundary predicate-model evidence schema was not matched"
+                .to_string(),
+        );
+    }
+    if !evidence.report_digest_verified {
+        return Err(
+            "Path 2 reviewed Fq12 native-boundary predicate-model evidence digest was not verified"
+                .to_string(),
+        );
+    }
+    path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1_digest(evidence)
+}
+
+pub fn verify_path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1(
+    evidence: &Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let digest =
+        path2_reviewed_fq12_native_boundary_predicate_model_evidence_report_verified_v1(evidence)?;
+    if !path2_reviewed_fq12_native_boundary_predicate_model_evidence_all_facts_true(evidence) {
+        return Err(
+            "Path 2 reviewed Fq12 native-boundary predicate-model evidence has an unsatisfied component fact"
                 .to_string(),
         );
     }
@@ -56663,6 +56882,44 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert_eq!(
             concrete_definition_checklist.missing_definition_category_count,
             3
+        );
+        let predicate_model_evidence =
+            path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1().unwrap();
+        assert_eq!(
+            predicate_model_evidence.schema,
+            PATH2_REVIEWED_FQ12_NATIVE_BOUNDARY_PREDICATE_MODEL_EVIDENCE_SCHEMA
+        );
+        assert!(predicate_model_evidence.schema_matches);
+        assert!(predicate_model_evidence.report_digest_verified);
+        assert!(predicate_model_evidence.native_boundary_predicate_record_complete);
+        assert!(predicate_model_evidence.active_verifier_route_pinned);
+        assert!(predicate_model_evidence.certified_semantics_source_package_target_present);
+        assert!(!predicate_model_evidence.concrete_predicate_model_present);
+        assert!(!predicate_model_evidence.active_boundary_predicate_model_pinned);
+        assert!(!predicate_model_evidence.predicate_negative_controls_passed);
+        assert!(
+            !path2_reviewed_fq12_native_boundary_predicate_model_evidence_all_facts_true(
+                &predicate_model_evidence
+            )
+        );
+        let predicate_model_evidence_digest =
+            path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1_digest(
+                &predicate_model_evidence,
+            )
+            .unwrap();
+        assert_eq!(
+            path2_reviewed_fq12_native_boundary_predicate_model_evidence_report_verified_v1(
+                &predicate_model_evidence,
+            )
+            .unwrap(),
+            predicate_model_evidence_digest
+        );
+        assert_eq!(
+            verify_path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1(
+                &predicate_model_evidence,
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 native-boundary predicate-model evidence has an unsatisfied component fact"
         );
         let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
         assert!(source_record_subcheck.native_boundary_predicates_record_present);
