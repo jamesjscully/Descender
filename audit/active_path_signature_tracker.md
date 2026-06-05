@@ -947,6 +947,14 @@ any `SubEvidenceDigestsMatch` proof against the current placeholder aggregate
 report forces all five consumed certificate `evidenceDigest` fields to be
 `ByteArray.mk #[]`. This makes the placeholder/non-empty Rust digest mismatch
 explicit in the proof layer without introducing any future proof-object names.
+The final extractor-gate regression now treats the certificate endpoint as the
+only accepted production-facing route: the positive fixture calls
+`reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate`
+directly with `selectedRustModelFiveSourceCertificate`, while the older route
+that derives `toClosureInputs` and calls the input theorem is an explicit
+negative fixture. This keeps the source gate aligned with the proof-bearing
+certificate boundary rather than accepting a syntactic detour through raw
+inputs.
 
 ## Findings
 
