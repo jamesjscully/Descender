@@ -1214,11 +1214,17 @@ whose fields are exactly the seven source records for the `P` consumed by the
 hidden-source boundary theorem.
 The selected evidence manifest now exposes this predicate-model blocker
 directly: `native_boundary_predicates_record_present = true`,
+`native_boundary_semantics_package_target_present = true`,
 `full_spend_concrete_predicates_are_separate_model = true`,
 `native_boundary_concrete_predicate_model_present = false`, and
 `selected_source_records_blocked_on_native_boundary_predicate_model = true`.
 This pins the current failure mode as a missing concrete native-boundary
 semantics import, not a missing byte/digest evidence report.
+Lean now names that import target as
+`ReviewedFq12SelectedRustNativeBoundarySemanticsPackage`: it contains the
+concrete `Path2NativeBoundary.Predicates` value plus the selected source-record
+package for that exact predicate interpretation, and exposes
+`.hiddenSourceClosure`.
 
 ## Findings
 

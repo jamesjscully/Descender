@@ -2153,6 +2153,46 @@ theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_mo
     Package.sharedFrameWitnessSources
 
 /--
+Concrete native-boundary semantics import target for the selected Rust path.
+
+This is the next non-mechanical object the active proof needs: not merely
+verified evidence reports, but the actual native-boundary predicate
+interpretation and the seven selected source records for that exact
+interpretation.
+-/
+structure ReviewedFq12SelectedRustNativeBoundarySemanticsPackage
+    (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)
+    (RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser)
+    (CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser) where
+  predicates : Predicates
+  sourceRecords :
+    ReviewedFq12SelectedRustModelSourceRecordPackage
+      FieldParser RouteParser CanonicalParser WitnessParser predicates
+
+namespace ReviewedFq12SelectedRustNativeBoundarySemanticsPackage
+
+/-- Hidden-source closure from a concrete native-boundary semantics package. -/
+def hiddenSourceClosure
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Semantics :
+      ReviewedFq12SelectedRustNativeBoundarySemanticsPackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed Semantics.predicates :=
+  reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package
+    Semantics.predicates
+    Semantics.sourceRecords
+
+end ReviewedFq12SelectedRustNativeBoundarySemanticsPackage
+
+/--
 Active AP2-N001 boundary closure from the single concrete model input record.
 -/
 theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs

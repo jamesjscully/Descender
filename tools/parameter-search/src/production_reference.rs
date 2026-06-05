@@ -7546,6 +7546,7 @@ pub struct Path2SelectedRustModelConcreteDefinitionChecklistV1 {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_predicates_record_present: bool,
+    pub native_boundary_semantics_package_target_present: bool,
     pub full_spend_concrete_predicates_are_separate_model: bool,
     pub native_boundary_concrete_predicate_model_present: bool,
     pub selected_source_records_blocked_on_native_boundary_predicate_model: bool,
@@ -8628,6 +8629,17 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| native_boundary_source.contains(marker));
+    let native_boundary_semantics_package_target_present = [
+        "ReviewedFq12SelectedRustNativeBoundarySemanticsPackage",
+        "predicates : Predicates",
+        "sourceRecords :",
+        "ReviewedFq12SelectedRustModelSourceRecordPackage",
+        "def hiddenSourceClosure",
+        "ReviewedFq12HiddenSourceProofSemanticsClosed Semantics.predicates",
+        "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
     let full_spend_concrete_predicates_are_separate_model = [
         "def concretePredicates",
         "Path2FullSpendGame.Predicates concreteTypes",
@@ -8932,6 +8944,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             && missing_selected_source_record_count > 0;
     Path2SelectedRustModelSourceRecordSubcheckV1 {
         native_boundary_predicates_record_present,
+        native_boundary_semantics_package_target_present,
         full_spend_concrete_predicates_are_separate_model,
         native_boundary_concrete_predicate_model_present,
         selected_source_records_blocked_on_native_boundary_predicate_model,
@@ -56237,6 +56250,7 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         );
         let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
         assert!(source_record_subcheck.native_boundary_predicates_record_present);
+        assert!(source_record_subcheck.native_boundary_semantics_package_target_present);
         assert!(source_record_subcheck.full_spend_concrete_predicates_are_separate_model);
         assert!(!source_record_subcheck.native_boundary_concrete_predicate_model_present);
         assert!(
