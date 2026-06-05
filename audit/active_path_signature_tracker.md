@@ -936,6 +936,11 @@ proof-bearing source certificates:
 blind spot where a synthetic complete fixture could define raw sources and
 mention certificate names in the digest-match theorem without declaring the
 certificate values that the final AP2-N001 route consumes.
+The sub-evidence digest-match proof category now also requires the theorem
+header/type to mention `selectedRustFiveSourceEvidenceReport`. A regression
+fixture with the right certificate names but `otherFiveSourceEvidenceReport`
+fails the checklist, so `selectedRustFiveSourceSubEvidenceDigestsMatchProof`
+cannot satisfy the concrete-definition gate for the wrong aggregate report.
 
 ## Findings
 
