@@ -24450,9 +24450,45 @@ pub fn path2_native_honest_constructor_scope_v1() -> Path2NativeHonestConstructo
 pub fn path2_native_honest_constructor_scope_v1_digest(
     scope: &Path2NativeHonestConstructorScopeV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(scope)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native honest constructor scope: {err}"))
+    Ok(Sha256::digest(path2_native_honest_constructor_scope_v1_frame(scope)).into())
+}
+
+fn append_static_str_items(out: &mut Vec<u8>, label: &[u8], items: &[&'static str]) {
+    for item in items {
+        append_frame(out, label, item.as_bytes());
+    }
+}
+
+pub fn path2_native_honest_constructor_scope_v1_frame(
+    scope: &Path2NativeHonestConstructorScopeV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", scope.schema.as_bytes());
+    append_u64(&mut frame, b"complete", u64::from(scope.complete));
+    append_frame(&mut frame, b"blocker", scope.blocker.as_bytes());
+    append_static_str_items(
+        &mut frame,
+        b"private_fiber_component",
+        &scope.private_fiber_components,
+    );
+    append_static_str_items(
+        &mut frame,
+        b"public_boundary_output",
+        &scope.public_boundary_outputs,
+    );
+    append_static_str_items(
+        &mut frame,
+        b"meaning_invariance_law",
+        &scope.meaning_invariance_laws,
+    );
+    append_static_str_items(&mut frame, b"required_artifact", &scope.required_artifacts);
+    append_static_str_items(&mut frame, b"required_harness", &scope.required_harnesses);
+    append_static_str_items(
+        &mut frame,
+        b"explicit_non_claim",
+        &scope.explicit_non_claims,
+    );
+    frame
 }
 
 pub fn path2_native_signer_keygen_productization_scope_v1()
@@ -24514,9 +24550,44 @@ pub fn path2_native_signer_keygen_productization_scope_v1()
 pub fn path2_native_signer_keygen_productization_scope_v1_digest(
     scope: &Path2NativeSignerKeygenProductizationScopeV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(scope)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native signer/keygen productization scope: {err}"))
+    Ok(
+        Sha256::digest(path2_native_signer_keygen_productization_scope_v1_frame(
+            scope,
+        ))
+        .into(),
+    )
+}
+
+pub fn path2_native_signer_keygen_productization_scope_v1_frame(
+    scope: &Path2NativeSignerKeygenProductizationScopeV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", scope.schema.as_bytes());
+    append_u64(&mut frame, b"productized", u64::from(scope.productized));
+    append_frame(&mut frame, b"blocker", scope.blocker.as_bytes());
+    append_static_str_items(&mut frame, b"entropy_source", &scope.entropy_sources);
+    append_static_str_items(
+        &mut frame,
+        b"secret_ownership_rule",
+        &scope.secret_ownership_rules,
+    );
+    append_static_str_items(
+        &mut frame,
+        b"constructor_contract",
+        &scope.constructor_contracts,
+    );
+    append_static_str_items(
+        &mut frame,
+        b"zeroization_requirement",
+        &scope.zeroization_requirements,
+    );
+    append_static_str_items(&mut frame, b"required_harness", &scope.required_harnesses);
+    append_static_str_items(
+        &mut frame,
+        b"explicit_non_claim",
+        &scope.explicit_non_claims,
+    );
+    frame
 }
 
 pub fn path2_native_constant_time_audit_scope_v1() -> Path2NativeConstantTimeAuditScopeV1 {
@@ -24561,9 +24632,37 @@ pub fn path2_native_constant_time_audit_scope_v1() -> Path2NativeConstantTimeAud
 pub fn path2_native_constant_time_audit_scope_v1_digest(
     scope: &Path2NativeConstantTimeAuditScopeV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(scope)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native constant-time audit scope: {err}"))
+    Ok(Sha256::digest(path2_native_constant_time_audit_scope_v1_frame(scope)).into())
+}
+
+pub fn path2_native_constant_time_audit_scope_v1_frame(
+    scope: &Path2NativeConstantTimeAuditScopeV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", scope.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"audit_complete",
+        u64::from(scope.audit_complete),
+    );
+    append_frame(&mut frame, b"blocker", scope.blocker.as_bytes());
+    append_static_str_items(
+        &mut frame,
+        b"secret_dependent_operation",
+        &scope.secret_dependent_operations,
+    );
+    append_static_str_items(
+        &mut frame,
+        b"public_variable_length_operation",
+        &scope.public_variable_length_operations,
+    );
+    append_static_str_items(&mut frame, b"required_artifact", &scope.required_artifacts);
+    append_static_str_items(
+        &mut frame,
+        b"explicit_non_claim",
+        &scope.explicit_non_claims,
+    );
+    frame
 }
 
 pub fn path2_native_storage_lifecycle_hardening_scope_v1()
@@ -24625,9 +24724,52 @@ pub fn path2_native_storage_lifecycle_hardening_scope_v1()
 pub fn path2_native_storage_lifecycle_hardening_scope_v1_digest(
     scope: &Path2NativeStorageLifecycleHardeningScopeV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(scope)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native storage/lifecycle hardening scope: {err}"))
+    Ok(
+        Sha256::digest(path2_native_storage_lifecycle_hardening_scope_v1_frame(
+            scope,
+        ))
+        .into(),
+    )
+}
+
+pub fn path2_native_storage_lifecycle_hardening_scope_v1_frame(
+    scope: &Path2NativeStorageLifecycleHardeningScopeV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", scope.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"hardening_complete",
+        u64::from(scope.hardening_complete),
+    );
+    append_frame(&mut frame, b"blocker", scope.blocker.as_bytes());
+    append_static_str_items(
+        &mut frame,
+        b"target_chain_storage_artifact",
+        &scope.target_chain_storage_artifacts,
+    );
+    append_static_str_items(
+        &mut frame,
+        b"lifecycle_safety_artifact",
+        &scope.lifecycle_safety_artifacts,
+    );
+    append_static_str_items(
+        &mut frame,
+        b"data_availability_artifact",
+        &scope.data_availability_artifacts,
+    );
+    append_static_str_items(
+        &mut frame,
+        b"restore_reorg_artifact",
+        &scope.restore_reorg_artifacts,
+    );
+    append_static_str_items(&mut frame, b"required_harness", &scope.required_harnesses);
+    append_static_str_items(
+        &mut frame,
+        b"explicit_non_claim",
+        &scope.explicit_non_claims,
+    );
+    frame
 }
 
 pub fn path2_registered_domain_constants() -> [&'static str; 34] {
@@ -43255,6 +43397,12 @@ end Path2NativeAccountDesign
             path2_native_honest_constructor_scope_v1_digest(&scope).unwrap(),
             [0_u8; DIGEST_BYTES]
         );
+        let expected_frame_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(path2_native_honest_constructor_scope_v1_frame(&scope)).into();
+        assert_eq!(
+            path2_native_honest_constructor_scope_v1_digest(&scope).unwrap(),
+            expected_frame_digest
+        );
         let rendered = serde_json::to_string(&scope).unwrap();
         assert!(rendered.contains(PATH2_NATIVE_HONEST_CONSTRUCTOR_SCOPE_SCHEMA));
         assert!(rendered.contains("meaning_of_fiber_projection_bridge"));
@@ -43316,6 +43464,14 @@ end Path2NativeAccountDesign
             path2_native_signer_keygen_productization_scope_v1_digest(&scope).unwrap(),
             [0_u8; DIGEST_BYTES]
         );
+        let expected_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(
+            path2_native_signer_keygen_productization_scope_v1_frame(&scope),
+        )
+        .into();
+        assert_eq!(
+            path2_native_signer_keygen_productization_scope_v1_digest(&scope).unwrap(),
+            expected_frame_digest
+        );
         let rendered = serde_json::to_string(&scope).unwrap();
         assert!(rendered.contains(PATH2_NATIVE_SIGNER_KEYGEN_PRODUCTIZATION_SCOPE_SCHEMA));
         assert!(rendered.contains("owned_buffers_zeroized_before_release"));
@@ -43372,6 +43528,12 @@ end Path2NativeAccountDesign
         assert_ne!(
             path2_native_constant_time_audit_scope_v1_digest(&scope).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        let expected_frame_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(path2_native_constant_time_audit_scope_v1_frame(&scope)).into();
+        assert_eq!(
+            path2_native_constant_time_audit_scope_v1_digest(&scope).unwrap(),
+            expected_frame_digest
         );
         let rendered = serde_json::to_string(&scope).unwrap();
         assert!(rendered.contains(PATH2_NATIVE_CONSTANT_TIME_AUDIT_SCOPE_SCHEMA));
@@ -43489,6 +43651,14 @@ end Path2NativeAccountDesign
         assert_ne!(
             path2_native_storage_lifecycle_hardening_scope_v1_digest(&scope).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        let expected_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(
+            path2_native_storage_lifecycle_hardening_scope_v1_frame(&scope),
+        )
+        .into();
+        assert_eq!(
+            path2_native_storage_lifecycle_hardening_scope_v1_digest(&scope).unwrap(),
+            expected_frame_digest
         );
         let rendered = serde_json::to_string(&scope).unwrap();
         assert!(rendered.contains(PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA));
