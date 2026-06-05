@@ -8488,8 +8488,17 @@ fn lean_source_has_selected_rust_definition_with_markers_v1(
             boundary_source
                 .match_indices(start_marker)
                 .any(|(start, _)| {
-                    let window = &boundary_source[start..boundary_source.len().min(start + 768)];
-                    markers.iter().all(|marker| window.contains(marker))
+                    let declaration_window =
+                        &boundary_source[start..boundary_source.len().min(start + 1536)];
+                    let header_end = [":=", "\nwhere", " where"]
+                        .iter()
+                        .filter_map(|marker| declaration_window.find(marker))
+                        .min()
+                        .unwrap_or(declaration_window.len());
+                    let declaration_header = &declaration_window[..header_end];
+                    markers
+                        .iter()
+                        .all(|marker| declaration_header.contains(marker))
                 })
         })
     })
@@ -55372,6 +55381,28 @@ def selectedRustSharedFrameWitnessSources := selectedRustSharedFrameWitnessSourc
             );
         assert!(!untyped_source_record_definition_checklist.source_record_definitions_present);
         assert!(!untyped_source_record_definition_checklist.all_definitions_present);
+        let body_only_source_record_definition_source = r#"
+def selectedRustPayloadProjectionLaw := by
+  exact reviewedFq12PayloadAccepts reviewedFq12PayloadProjectsFrom
+def selectedRustExtractionCertificateAvailability := by
+  exact ReviewedFq12ExtractionCertificateAvailability
+def selectedRustRoleRootLiftSource := by
+  exact ReviewedFq12RoleRootFunctionalLiftSource
+def selectedRustSourceRouteByteSource := by
+  exact SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+def selectedRustAssemblySource := by
+  exact ReviewedFq12FieldConcreteAssemblyLocalSource
+def selectedRustCompatibilitySource := by
+  exact ReviewedFq12FieldConcreteCompatibilitySource
+def selectedRustSharedFrameWitnessSources := by
+  exact ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+"#;
+        let body_only_source_record_definition_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                body_only_source_record_definition_source,
+            );
+        assert!(!body_only_source_record_definition_checklist.source_record_definitions_present);
+        assert!(!body_only_source_record_definition_checklist.all_definitions_present);
         let untyped_sub_evidence_match_proof_source = r#"
 theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof := selectedRustFiveSourceSubEvidenceDigestsMatchProofValue
 "#;

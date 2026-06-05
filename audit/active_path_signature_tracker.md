@@ -920,6 +920,12 @@ report placeholders: each selected report is proved not to satisfy
 future proof objects and intentionally do not reduce the checklist missing
 count; they make explicit that the present Lean report definitions are
 fail-closed targets, not usable evidence.
+The concrete-definition checklist now inspects only the selected declaration
+header/type before `:=` or `where` when looking for report/proof/source markers.
+A body-only source-record spoof fixture with every required AP2-N001 source
+type marker in the definition bodies still leaves
+`source_record_definitions_present = false`, so future source-record closure
+must put the active types on the selected declarations themselves.
 
 ## Findings
 
