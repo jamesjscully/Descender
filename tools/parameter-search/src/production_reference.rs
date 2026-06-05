@@ -23224,17 +23224,182 @@ pub fn path2_native_signer_sha256_call_schedule_audit_v1()
 pub fn path2_native_signer_sha256_call_schedule_audit_v1_digest(
     report: &Path2NativeSignerSha256CallScheduleAuditV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(report)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native signer SHA-256 call schedule audit: {err}"))
+    Ok(
+        Sha256::digest(path2_native_signer_sha256_call_schedule_audit_v1_frame(
+            report,
+        ))
+        .into(),
+    )
+}
+
+pub fn path2_native_signer_sha256_call_schedule_audit_v1_frame(
+    report: &Path2NativeSignerSha256CallScheduleAuditV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", report.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"audit_complete",
+        u64::from(report.audit_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"source_schedule_complete",
+        u64::from(report.source_schedule_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"sha256_backend_constant_time_claim_complete",
+        u64::from(report.sha256_backend_constant_time_claim_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"entropy_seed_digest_calls",
+        report.entropy_seed_digest_calls as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"q_sampler_invocations",
+        report.q_sampler_invocations as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"q_sampler_digest_attempts_per_invocation",
+        report.q_sampler_digest_attempts_per_invocation as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"q_sampler_total_digest_calls",
+        report.q_sampler_total_digest_calls as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"total_entropy_digest_calls",
+        report.total_entropy_digest_calls as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"secret_component_digest_calls",
+        report.secret_component_digest_calls as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"secret_component_labels_are_static",
+        u64::from(report.secret_component_labels_are_static),
+    );
+    append_u64(
+        &mut frame,
+        b"secret_component_seeds_zeroized_after_digest",
+        u64::from(report.secret_component_seeds_zeroized_after_digest),
+    );
+    append_u64(
+        &mut frame,
+        b"no_secret_dependent_sha_loop_bounds",
+        u64::from(report.no_secret_dependent_sha_loop_bounds),
+    );
+    append_frame(
+        &mut frame,
+        b"entropy_schedule_source_digest",
+        &report.entropy_schedule_source_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"secret_component_source_digest",
+        &report.secret_component_source_digest,
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    for non_claim in &report.explicit_non_claims {
+        append_frame(&mut frame, b"explicit_non_claim", non_claim.as_bytes());
+    }
+    frame
 }
 
 pub fn path2_native_signer_sha256_boundary_audit_v1_digest(
     report: &Path2NativeSignerSha256BoundaryAuditV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(report)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native signer SHA-256 boundary audit: {err}"))
+    Ok(Sha256::digest(path2_native_signer_sha256_boundary_audit_v1_frame(report)).into())
+}
+
+pub fn path2_native_signer_sha256_boundary_audit_v1_frame(
+    report: &Path2NativeSignerSha256BoundaryAuditV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", report.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"audit_complete",
+        u64::from(report.audit_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"source_boundary_complete",
+        u64::from(report.source_boundary_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"sha256_backend_constant_time_claim_complete",
+        u64::from(report.sha256_backend_constant_time_claim_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"digest_domain_frame_present",
+        u64::from(report.digest_domain_frame_present),
+    );
+    append_u64(
+        &mut frame,
+        b"digest_label_frame_present",
+        u64::from(report.digest_label_frame_present),
+    );
+    append_u64(
+        &mut frame,
+        b"digest_public_binding_frame_present",
+        u64::from(report.digest_public_binding_frame_present),
+    );
+    append_u64(
+        &mut frame,
+        b"digest_owned_entropy_frames_present",
+        u64::from(report.digest_owned_entropy_frames_present),
+    );
+    append_u64(
+        &mut frame,
+        b"digest_counter_frame_present",
+        u64::from(report.digest_counter_frame_present),
+    );
+    append_u64(
+        &mut frame,
+        b"public_binding_fixed_six_digest_words",
+        u64::from(report.public_binding_fixed_six_digest_words),
+    );
+    append_u64(
+        &mut frame,
+        b"derivation_labels_are_static_public",
+        u64::from(report.derivation_labels_are_static_public),
+    );
+    append_u64(
+        &mut frame,
+        b"q_sampler_fixed_digest_call_schedule",
+        u64::from(report.q_sampler_fixed_digest_call_schedule),
+    );
+    append_u64(
+        &mut frame,
+        b"secret_dependent_sha_input_lengths_absent",
+        u64::from(report.secret_dependent_sha_input_lengths_absent),
+    );
+    append_frame(
+        &mut frame,
+        b"entropy_digest_source_digest",
+        &report.entropy_digest_source_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"secret_derivation_source_digest",
+        &report.secret_derivation_source_digest,
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    for non_claim in &report.explicit_non_claims {
+        append_frame(&mut frame, b"explicit_non_claim", non_claim.as_bytes());
+    }
+    frame
 }
 
 fn path2_native_signer_os_entropy_source_window_v1() -> &'static str {
@@ -42281,6 +42446,13 @@ end Path2NativeAccountDesign
             path2_native_signer_sha256_boundary_audit_v1_digest(&audit).unwrap(),
             [0_u8; DIGEST_BYTES]
         );
+        let audit_frame = path2_native_signer_sha256_boundary_audit_v1_frame(&audit);
+        assert!(!audit_frame.is_empty());
+        let audit_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&audit_frame).into();
+        assert_eq!(
+            path2_native_signer_sha256_boundary_audit_v1_digest(&audit).unwrap(),
+            audit_frame_digest
+        );
         assert_eq!(audit.blocker, PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME);
 
         let digest_source = path2_native_signer_entropy_digest_source_window_v1();
@@ -42340,6 +42512,13 @@ end Path2NativeAccountDesign
         assert_ne!(
             path2_native_signer_sha256_call_schedule_audit_v1_digest(&audit).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        let audit_frame = path2_native_signer_sha256_call_schedule_audit_v1_frame(&audit);
+        assert!(!audit_frame.is_empty());
+        let audit_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&audit_frame).into();
+        assert_eq!(
+            path2_native_signer_sha256_call_schedule_audit_v1_digest(&audit).unwrap(),
+            audit_frame_digest
         );
         assert_eq!(audit.blocker, PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME);
 
