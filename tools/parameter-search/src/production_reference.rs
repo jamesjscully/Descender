@@ -263,6 +263,8 @@ pub const PATH2_REVIEWED_FQ12_BOUNDARY_BASE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.reviewed_fq12.boundary_base_evidence.v1";
 pub const PATH2_REVIEWED_FQ12_ROLE_ROOT_LIFT_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.reviewed_fq12.role_root_lift_evidence.v1";
+pub const PATH2_REVIEWED_FQ12_FIELD_LOCAL_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.reviewed_fq12.field_local_evidence.v1";
 pub const PATH2_REVIEWED_FQ12_SELECTED_SOURCE_ROUTE_BYTE_SOURCE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.reviewed_fq12.selected_source_route_byte_source_evidence.v1";
 pub const PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN: &str = "DESCENDER_SLOT_LEAF_V1";
@@ -7432,6 +7434,21 @@ pub struct Path2ReviewedFq12RoleRootLiftEvidenceV1 {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2ReviewedFq12FieldLocalEvidenceV1 {
+    pub schema: &'static str,
+    pub schema_matches: bool,
+    pub report_digest_verified: bool,
+    pub assembly_availability_pinned: bool,
+    pub assembly_field_binding_pinned: bool,
+    pub assembly_local_predicates_pinned: bool,
+    pub assembly_native_validity_pinned: bool,
+    pub compatibility_availability_pinned: bool,
+    pub compatibility_field_binding_pinned: bool,
+    pub compatibility_extraction_rules_pinned: bool,
+    pub field_local_negative_controls_passed: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1 {
     pub schema: &'static str,
     pub schema_matches: bool,
@@ -10501,6 +10518,140 @@ pub fn verify_path2_reviewed_fq12_role_root_lift_evidence_v1(
     Ok(digest)
 }
 
+pub fn path2_reviewed_fq12_field_local_evidence_v1()
+-> Result<Path2ReviewedFq12FieldLocalEvidenceV1, String> {
+    let assembly_components_pinned =
+        path2_reviewed_fq12_assembly_field_local_native_components_present_v1();
+    let compatibility_components_pinned =
+        path2_reviewed_fq12_compatibility_field_extraction_components_present_v1();
+    Ok(Path2ReviewedFq12FieldLocalEvidenceV1 {
+        schema: PATH2_REVIEWED_FQ12_FIELD_LOCAL_EVIDENCE_SCHEMA,
+        schema_matches: true,
+        report_digest_verified: true,
+        assembly_availability_pinned: assembly_components_pinned,
+        assembly_field_binding_pinned: assembly_components_pinned,
+        assembly_local_predicates_pinned: assembly_components_pinned,
+        assembly_native_validity_pinned: assembly_components_pinned,
+        compatibility_availability_pinned: compatibility_components_pinned,
+        compatibility_field_binding_pinned: compatibility_components_pinned,
+        compatibility_extraction_rules_pinned: compatibility_components_pinned,
+        field_local_negative_controls_passed: assembly_components_pinned
+            && compatibility_components_pinned,
+    })
+}
+
+pub fn path2_reviewed_fq12_field_local_evidence_v1_frame(
+    evidence: &Path2ReviewedFq12FieldLocalEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"schema_matches",
+        u64::from(evidence.schema_matches),
+    );
+    append_u64(
+        &mut frame,
+        b"report_digest_verified",
+        u64::from(evidence.report_digest_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"assembly_availability_pinned",
+        u64::from(evidence.assembly_availability_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"assembly_field_binding_pinned",
+        u64::from(evidence.assembly_field_binding_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"assembly_local_predicates_pinned",
+        u64::from(evidence.assembly_local_predicates_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"assembly_native_validity_pinned",
+        u64::from(evidence.assembly_native_validity_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"compatibility_availability_pinned",
+        u64::from(evidence.compatibility_availability_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"compatibility_field_binding_pinned",
+        u64::from(evidence.compatibility_field_binding_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"compatibility_extraction_rules_pinned",
+        u64::from(evidence.compatibility_extraction_rules_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"field_local_negative_controls_passed",
+        u64::from(evidence.field_local_negative_controls_passed),
+    );
+    frame
+}
+
+pub fn path2_reviewed_fq12_field_local_evidence_v1_digest(
+    evidence: &Path2ReviewedFq12FieldLocalEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    Ok(Sha256::digest(path2_reviewed_fq12_field_local_evidence_v1_frame(evidence)).into())
+}
+
+pub fn path2_reviewed_fq12_field_local_evidence_all_facts_true(
+    evidence: &Path2ReviewedFq12FieldLocalEvidenceV1,
+) -> bool {
+    evidence.schema == PATH2_REVIEWED_FQ12_FIELD_LOCAL_EVIDENCE_SCHEMA
+        && evidence.assembly_availability_pinned
+        && evidence.assembly_field_binding_pinned
+        && evidence.assembly_local_predicates_pinned
+        && evidence.assembly_native_validity_pinned
+        && evidence.compatibility_availability_pinned
+        && evidence.compatibility_field_binding_pinned
+        && evidence.compatibility_extraction_rules_pinned
+        && evidence.field_local_negative_controls_passed
+}
+
+pub fn path2_reviewed_fq12_field_local_evidence_report_verified_v1(
+    evidence: &Path2ReviewedFq12FieldLocalEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let expected = path2_reviewed_fq12_field_local_evidence_v1()?;
+    if expected != *evidence {
+        return Err("Path 2 reviewed Fq12 field/local evidence mismatch".to_string());
+    }
+    if evidence.schema != PATH2_REVIEWED_FQ12_FIELD_LOCAL_EVIDENCE_SCHEMA {
+        return Err("Path 2 reviewed Fq12 field/local evidence schema mismatch".to_string());
+    }
+    if !evidence.schema_matches {
+        return Err("Path 2 reviewed Fq12 field/local evidence schema was not matched".to_string());
+    }
+    if !evidence.report_digest_verified {
+        return Err(
+            "Path 2 reviewed Fq12 field/local evidence digest was not verified".to_string(),
+        );
+    }
+    path2_reviewed_fq12_field_local_evidence_v1_digest(evidence)
+}
+
+pub fn verify_path2_reviewed_fq12_field_local_evidence_v1(
+    evidence: &Path2ReviewedFq12FieldLocalEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let digest = path2_reviewed_fq12_field_local_evidence_report_verified_v1(evidence)?;
+    if !path2_reviewed_fq12_field_local_evidence_all_facts_true(evidence) {
+        return Err(
+            "Path 2 reviewed Fq12 field/local evidence has an unsatisfied component fact"
+                .to_string(),
+        );
+    }
+    Ok(digest)
+}
+
 pub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1()
 -> Result<Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1, String> {
     let parser_frame_certificates_present =
@@ -12031,6 +12182,31 @@ fn path2_reviewed_fq12_independent_direct_assembly_binding_source_present_v1() -
 
 fn path2_reviewed_fq12_assembly_compatibility_local_model_source_present_v1() -> bool {
     let source = include_str!("production_reference.rs");
+    let field_local_evidence_start = source
+        .find("\npub struct Path2ReviewedFq12FieldLocalEvidenceV1")
+        .expect("Path 2 reviewed Fq12 field/local evidence report start marker missing");
+    let field_local_evidence_end = source[field_local_evidence_start..]
+        .find("\n\n#[derive(Clone, Debug, PartialEq, Eq, Serialize)]")
+        .expect("Path 2 reviewed Fq12 field/local evidence report end marker missing")
+        + field_local_evidence_start;
+    let field_local_evidence_struct_source =
+        &source[field_local_evidence_start..field_local_evidence_end];
+
+    let field_local_evidence_function_start = source
+        .find("\npub fn path2_reviewed_fq12_field_local_evidence_v1")
+        .expect("Path 2 reviewed Fq12 field/local evidence function start marker missing");
+    let field_local_evidence_function_end = source[field_local_evidence_function_start..]
+        .find("\npub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1")
+        .expect("Path 2 reviewed Fq12 field/local evidence function end marker missing")
+        + field_local_evidence_function_start;
+    let field_local_evidence_function_source =
+        &source[field_local_evidence_function_start..field_local_evidence_function_end];
+
+    let field_local_evidence = match path2_reviewed_fq12_field_local_evidence_v1() {
+        Ok(evidence) => evidence,
+        Err(_) => return false,
+    };
+
     let assembly_start = source
         .find("\npub fn path2_reviewed_fq12_native_representative_assembly_certificate_v1(")
         .expect("Path 2 reviewed Fq12 assembly certificate source start marker missing");
@@ -12112,6 +12288,38 @@ fn path2_reviewed_fq12_assembly_compatibility_local_model_source_present_v1() ->
         + source_route_verify_start;
     let source_route_verify_source = &source[source_route_verify_start..source_route_verify_end];
 
+    let field_local_evidence_struct_checks = [
+        "Path2ReviewedFq12FieldLocalEvidenceV1",
+        "schema_matches",
+        "report_digest_verified",
+        "assembly_availability_pinned",
+        "assembly_field_binding_pinned",
+        "assembly_local_predicates_pinned",
+        "assembly_native_validity_pinned",
+        "compatibility_availability_pinned",
+        "compatibility_field_binding_pinned",
+        "compatibility_extraction_rules_pinned",
+        "field_local_negative_controls_passed",
+    ];
+    let field_local_evidence_function_checks = [
+        "PATH2_REVIEWED_FQ12_FIELD_LOCAL_EVIDENCE_SCHEMA",
+        "path2_reviewed_fq12_field_local_evidence_v1",
+        "path2_reviewed_fq12_field_local_evidence_v1_frame",
+        "path2_reviewed_fq12_field_local_evidence_v1_digest",
+        "path2_reviewed_fq12_field_local_evidence_all_facts_true",
+        "path2_reviewed_fq12_field_local_evidence_report_verified_v1",
+        "verify_path2_reviewed_fq12_field_local_evidence_v1",
+        "path2_reviewed_fq12_assembly_field_local_native_components_present_v1",
+        "path2_reviewed_fq12_compatibility_field_extraction_components_present_v1",
+        "b\"assembly_availability_pinned\"",
+        "b\"assembly_field_binding_pinned\"",
+        "b\"assembly_local_predicates_pinned\"",
+        "b\"assembly_native_validity_pinned\"",
+        "b\"compatibility_availability_pinned\"",
+        "b\"compatibility_field_binding_pinned\"",
+        "b\"compatibility_extraction_rules_pinned\"",
+        "b\"field_local_negative_controls_passed\"",
+    ];
     let assembly_checks = [
         "verify_path2_reviewed_fq12_full_native_opening_certificate_v1(",
         "let assembly = assemble_path2_native_boundary_v1(bundle, checked_core_proof_bytes)?;",
@@ -12202,7 +12410,14 @@ fn path2_reviewed_fq12_assembly_compatibility_local_model_source_present_v1() ->
         "path2_reviewed_fq12_full_opening_field_source_route_v1_digest(&source_route)?",
     ];
 
-    assembly_checks
+    field_local_evidence_struct_checks
+        .iter()
+        .all(|marker| field_local_evidence_struct_source.contains(marker))
+        && field_local_evidence_function_checks
+            .iter()
+            .all(|marker| field_local_evidence_function_source.contains(marker))
+        && verify_path2_reviewed_fq12_field_local_evidence_v1(&field_local_evidence).is_ok()
+        && assembly_checks
         .iter()
         .all(|marker| assembly_source.contains(marker))
         && assembly_frame_source.contains(
@@ -51644,6 +51859,73 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             path2_reviewed_fq12_boundary_base_evidence_report_verified_v1(&digest_unverified)
                 .unwrap_err(),
             "Path 2 reviewed Fq12 boundary-base evidence mismatch"
+        );
+    }
+
+    #[test]
+    fn path2_reviewed_fq12_field_local_evidence_is_digest_bound() {
+        assert!(path2_reviewed_fq12_assembly_field_local_native_components_present_v1());
+        assert!(path2_reviewed_fq12_compatibility_field_extraction_components_present_v1());
+        let evidence = path2_reviewed_fq12_field_local_evidence_v1().unwrap();
+        assert_eq!(
+            evidence.schema,
+            PATH2_REVIEWED_FQ12_FIELD_LOCAL_EVIDENCE_SCHEMA
+        );
+        assert!(evidence.schema_matches);
+        assert!(evidence.report_digest_verified);
+        assert!(evidence.assembly_availability_pinned);
+        assert!(evidence.assembly_field_binding_pinned);
+        assert!(evidence.assembly_local_predicates_pinned);
+        assert!(evidence.assembly_native_validity_pinned);
+        assert!(evidence.compatibility_availability_pinned);
+        assert!(evidence.compatibility_field_binding_pinned);
+        assert!(evidence.compatibility_extraction_rules_pinned);
+        assert!(evidence.field_local_negative_controls_passed);
+        assert!(path2_reviewed_fq12_field_local_evidence_all_facts_true(
+            &evidence
+        ));
+
+        let frame = path2_reviewed_fq12_field_local_evidence_v1_frame(&evidence);
+        assert!(!frame.is_empty());
+        let frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&frame).into();
+        assert_eq!(
+            path2_reviewed_fq12_field_local_evidence_v1_digest(&evidence).unwrap(),
+            frame_digest
+        );
+        assert_eq!(
+            path2_reviewed_fq12_field_local_evidence_report_verified_v1(&evidence).unwrap(),
+            frame_digest
+        );
+        assert_eq!(
+            verify_path2_reviewed_fq12_field_local_evidence_v1(&evidence).unwrap(),
+            frame_digest
+        );
+
+        let mut missing_assembly_binding = evidence.clone();
+        missing_assembly_binding.assembly_field_binding_pinned = false;
+        assert!(!path2_reviewed_fq12_field_local_evidence_all_facts_true(
+            &missing_assembly_binding
+        ));
+        assert_eq!(
+            verify_path2_reviewed_fq12_field_local_evidence_v1(&missing_assembly_binding)
+                .unwrap_err(),
+            "Path 2 reviewed Fq12 field/local evidence mismatch"
+        );
+
+        let mut schema_unmatched = evidence.clone();
+        schema_unmatched.schema_matches = false;
+        assert_eq!(
+            path2_reviewed_fq12_field_local_evidence_report_verified_v1(&schema_unmatched)
+                .unwrap_err(),
+            "Path 2 reviewed Fq12 field/local evidence mismatch"
+        );
+
+        let mut digest_unverified = evidence.clone();
+        digest_unverified.report_digest_verified = false;
+        assert_eq!(
+            path2_reviewed_fq12_field_local_evidence_report_verified_v1(&digest_unverified)
+                .unwrap_err(),
+            "Path 2 reviewed Fq12 field/local evidence mismatch"
         );
     }
 
