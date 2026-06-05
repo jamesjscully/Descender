@@ -21846,6 +21846,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "acceptedSpendForgeryProb",
         "acceptedSpendForgeryBound",
         "acceptedSpendForgery_le_bound",
+        "selectedRustAcceptedSpendHiddenSourceClosed",
+        "selectedRustAcceptedSpendCheckedCoreClosed",
+        "selectedRustAcceptedSpendLifecycleClosed",
+        "selectedRustAcceptedSpendNoExportClosed",
     ];
     if forbidden_header_terms
         .iter()
@@ -21861,6 +21865,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "selectedRustAcceptedSpendForgeryProb",
         "selectedRustAcceptedSpendForgeryBound",
         "selectedRustAcceptedSpendForgeryLeBound",
+        "selectedRustAcceptedSpendHiddenSourceClosed",
+        "selectedRustAcceptedSpendCheckedCoreClosed",
+        "selectedRustAcceptedSpendLifecycleClosed",
+        "selectedRustAcceptedSpendNoExportClosed",
     ];
     let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
     let forbidden_declaration_stub = forbidden_declaration_kinds.iter().any(|kind| {
@@ -21919,6 +21927,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "selectedRustAcceptedSpendForgeryProb",
         "selectedRustAcceptedSpendForgeryBound",
         "selectedRustAcceptedSpendForgeryLeBound",
+        "selectedRustAcceptedSpendHiddenSourceClosed",
+        "selectedRustAcceptedSpendCheckedCoreClosed",
+        "selectedRustAcceptedSpendLifecycleClosed",
+        "selectedRustAcceptedSpendNoExportClosed",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
     ];
     instantiation_checks
@@ -44378,6 +44390,33 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 multiline_stubbed_accepted_spend_bound
+            )
+        );
+        let vacuous_constructor_accepted_spend_closures = r#"
+theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
+    NativeAcceptedSpendSoundnessBoundary := by
+  let selectedRustAcceptedSpendSoundnessCertificate :
+      SelectedRustAcceptedSpendSoundnessCertificate :=
+    SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
+      selectedRustAcceptedSpendEvidenceReport
+      selectedRustAcceptedSpendEvidenceDigest
+      selectedRustAcceptedSpendBoundVerifiedProof
+      selectedRustAcceptedSpendFactsAllTrueProof
+      selectedRustAcceptedSpendForgeryProb
+      selectedRustAcceptedSpendForgeryBound
+      selectedRustAcceptedSpendForgeryLeBound
+      True
+      True
+      True
+      True
+  exact
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+      selectedRustAcceptedSpendSoundnessCertificate
+end Path2NativeAccountDesign
+"#;
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                vacuous_constructor_accepted_spend_closures
             )
         );
         let accepted_spend_instantiation_shape = r#"
