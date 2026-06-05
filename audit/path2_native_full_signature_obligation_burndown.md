@@ -171,6 +171,15 @@ predicates.
 aggregate full-opening bridge digest certificate validity predicate to enforce
 the digest binding across payload, extraction, role-lift, assembly, and
 compatibility certificates.
+The same predicate-model source still carries six generic `Prop` evidence
+labels: one active-model pin plus five modeled-surface labels for payload
+acceptance, extraction certificates, full opening/assembly, compatibility, and
+boundary breaks. The selected evidence manifest now counts these explicitly as
+`native_boundary_predicate_model_remaining_generic_evidence_label_count = 6`.
+Those labels are not closure facts; AP2-N001 remains blocked until they are
+replaced or justified by a concrete active `Path2NativeBoundary.Predicates`
+interpretation, or by an equivalent theorem package for exactly the predicate
+model consumed by the hidden-source boundary.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It

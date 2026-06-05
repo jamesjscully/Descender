@@ -2387,6 +2387,14 @@ acceptance or universal breaks.
 -/
 structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
   predicates : Predicates
+  /--
+  Non-closing evidence labels for the selected Rust predicate model.
+
+  These labels record the remaining import boundary: they do not identify a
+  concrete Rust predicate interpretation by themselves.  Cryptographic closure
+  still requires a concrete `Path2NativeBoundary.Predicates` value, or an
+  equivalent theorem package, for the active verifier.
+  -/
   activeBoundaryPredicateModelPinned : Prop
   activeBoundaryPredicateModelPinnedProof :
     activeBoundaryPredicateModelPinned

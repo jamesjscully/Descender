@@ -1222,6 +1222,11 @@ directly: `native_boundary_predicates_record_present = true`,
 `full_spend_concrete_predicates_are_separate_model = true`,
 `native_boundary_concrete_predicate_model_present = false`, and
 `selected_source_records_blocked_on_native_boundary_predicate_model = true`.
+It also reports
+`native_boundary_predicate_model_remaining_generic_evidence_label_count = 6`,
+covering the active-model pin plus the five modeled-surface labels still
+represented as generic `Prop` fields in the active predicate-model source
+target. These labels are target placeholders, not cryptographic closure facts.
 This pins the current failure mode as a missing concrete native-boundary
 semantics import, not a missing byte/digest evidence report.
 Lean now names that import target as
