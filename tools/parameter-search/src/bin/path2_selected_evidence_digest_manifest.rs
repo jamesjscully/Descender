@@ -53,6 +53,9 @@ fn main() -> Result<(), String> {
     if !concrete_definition_checklist.evidence_proof_definitions_present {
         missing_definition_categories.push("evidence_proof_definitions");
     }
+    if !concrete_definition_checklist.predicate_model_certificate_definitions_present {
+        missing_definition_categories.push("predicate_model_certificate_definitions");
+    }
     if !concrete_definition_checklist.source_record_definitions_present {
         missing_definition_categories.push("source_record_definitions");
     }
@@ -121,6 +124,8 @@ fn main() -> Result<(), String> {
                 concrete_definition_checklist.evidence_digest_definitions_present,
             "evidence_proof_definitions_present":
                 concrete_definition_checklist.evidence_proof_definitions_present,
+            "predicate_model_certificate_definitions_present":
+                concrete_definition_checklist.predicate_model_certificate_definitions_present,
             "source_record_definitions_present":
                 concrete_definition_checklist.source_record_definitions_present,
             "sub_evidence_digest_match_proof_present":

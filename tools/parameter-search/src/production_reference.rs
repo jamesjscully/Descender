@@ -7537,6 +7537,7 @@ pub struct Path2SelectedRustModelConcreteDefinitionChecklistV1 {
     pub evidence_report_definitions_present: bool,
     pub evidence_digest_definitions_present: bool,
     pub evidence_proof_definitions_present: bool,
+    pub predicate_model_certificate_definitions_present: bool,
     pub source_record_definitions_present: bool,
     pub sub_evidence_digest_match_proof_present: bool,
     pub all_definitions_present: bool,
@@ -9350,10 +9351,11 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             evidence_report_definitions_present: false,
             evidence_digest_definitions_present: false,
             evidence_proof_definitions_present: false,
+            predicate_model_certificate_definitions_present: false,
             source_record_definitions_present: false,
             sub_evidence_digest_match_proof_present: false,
             all_definitions_present: false,
-            missing_definition_category_count: 5,
+            missing_definition_category_count: 6,
         };
     }
     let boundary_source = lean_source_without_comments_and_strings_v1(boundary_source);
@@ -9497,6 +9499,28 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             &["ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate"][..],
         ),
     ];
+    let predicate_model_certificate_definitions = [
+        (
+            "selectedRustNativeBoundaryPredicateModelEvidenceReport",
+            &["ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport"][..],
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelEvidenceDigest",
+            &["ByteArray"][..],
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof",
+            &["selectedRustNativeBoundaryPredicateModelEvidenceReport.ReportVerified"][..],
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
+            &["selectedRustNativeBoundaryPredicateModelEvidenceReport.FactsAllTrue"][..],
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            &["ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate"][..],
+        ),
+    ];
     let evidence_report_definitions_present =
         evidence_report_definitions.iter().all(|(name, markers)| {
             lean_source_has_selected_rust_definition_with_markers_v1(
@@ -9558,6 +9582,41 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 marker,
             )
         });
+    let predicate_model_certificate_definitions_present = predicate_model_certificate_definitions
+        .iter()
+        .all(|(name, markers)| {
+            lean_source_has_selected_rust_definition_with_markers_v1(
+                &boundary_source,
+                name,
+                markers,
+            )
+        })
+        && [
+            (
+                "selectedRustNativeBoundaryPredicateModelCertificate",
+                "selectedRustNativeBoundaryPredicateModelEvidenceReport",
+            ),
+            (
+                "selectedRustNativeBoundaryPredicateModelCertificate",
+                "selectedRustNativeBoundaryPredicateModelEvidenceDigest",
+            ),
+            (
+                "selectedRustNativeBoundaryPredicateModelCertificate",
+                "selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof",
+            ),
+            (
+                "selectedRustNativeBoundaryPredicateModelCertificate",
+                "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
+            ),
+        ]
+        .iter()
+        .all(|(name, marker)| {
+            lean_source_selected_rust_definition_body_contains_marker_v1(
+                &boundary_source,
+                name,
+                marker,
+            )
+        });
     let sub_evidence_digest_match_proof_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -9574,12 +9633,14 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
     let all_definitions_present = evidence_report_definitions_present
         && evidence_digest_definitions_present
         && evidence_proof_definitions_present
+        && predicate_model_certificate_definitions_present
         && source_record_definitions_present
         && sub_evidence_digest_match_proof_present;
     let missing_definition_category_count = [
         evidence_report_definitions_present,
         evidence_digest_definitions_present,
         evidence_proof_definitions_present,
+        predicate_model_certificate_definitions_present,
         source_record_definitions_present,
         sub_evidence_digest_match_proof_present,
     ]
@@ -9591,6 +9652,7 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         evidence_report_definitions_present,
         evidence_digest_definitions_present,
         evidence_proof_definitions_present,
+        predicate_model_certificate_definitions_present,
         source_record_definitions_present,
         sub_evidence_digest_match_proof_present,
         all_definitions_present,
@@ -9617,6 +9679,11 @@ pub fn path2_selected_rust_model_concrete_definition_checklist_v1_frame(
         &mut frame,
         b"evidence_proof_definitions_present",
         u64::from(checklist.evidence_proof_definitions_present),
+    );
+    append_u64(
+        &mut frame,
+        b"predicate_model_certificate_definitions_present",
+        u64::from(checklist.predicate_model_certificate_definitions_present),
     );
     append_u64(
         &mut frame,
@@ -56589,12 +56656,13 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(concrete_definition_checklist.evidence_report_definitions_present);
         assert!(concrete_definition_checklist.evidence_digest_definitions_present);
         assert!(concrete_definition_checklist.evidence_proof_definitions_present);
+        assert!(!concrete_definition_checklist.predicate_model_certificate_definitions_present);
         assert!(!concrete_definition_checklist.source_record_definitions_present);
         assert!(!concrete_definition_checklist.sub_evidence_digest_match_proof_present);
         assert!(!concrete_definition_checklist.all_definitions_present);
         assert_eq!(
             concrete_definition_checklist.missing_definition_category_count,
-            2
+            3
         );
         let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
         assert!(source_record_subcheck.native_boundary_predicates_record_present);
@@ -56764,7 +56832,7 @@ def selectedRustFiveSourceSubEvidenceDigestsMatchProof := spoof
         assert!(!spoofed_concrete_definition_checklist.all_definitions_present);
         assert_eq!(
             spoofed_concrete_definition_checklist.missing_definition_category_count,
-            5
+            6
         );
         let untyped_report_definition_source = r#"
 def selectedRustFiveSourceEvidenceReport := selectedRustFiveSourceEvidenceReportValue
@@ -57164,6 +57232,47 @@ theorem selectedRustSharedFrameWitnessEvidenceReportVerifiedProof :
 theorem selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof :
   selectedRustSharedFrameWitnessEvidenceReport.FactsAllTrue :=
   selectedRustSharedFrameWitnessEvidenceFactsAllTrueProofValue
+def selectedRustNativeBoundaryPredicateModelEvidenceReport :
+  ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport :=
+  selectedRustNativeBoundaryPredicateModelEvidenceReportValue
+def selectedRustNativeBoundaryPredicateModelEvidenceDigest : ByteArray :=
+  selectedRustNativeBoundaryPredicateModelEvidenceDigestValue
+theorem selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof :
+  selectedRustNativeBoundaryPredicateModelEvidenceReport.ReportVerified :=
+  selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProofValue
+theorem selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof :
+  selectedRustNativeBoundaryPredicateModelEvidenceReport.FactsAllTrue :=
+  selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProofValue
+def selectedRustNativeBoundaryPredicateModelCertificate :
+  ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate where
+  evidenceReport := selectedRustNativeBoundaryPredicateModelEvidenceReport
+  evidenceDigest := selectedRustNativeBoundaryPredicateModelEvidenceDigest
+  evidenceReportVerifiedProof :=
+    selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof
+  evidenceFactsAllTrueProof :=
+    selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof
+  predicates := P
+  payloadAcceptanceNotVacuous := selectedRustPayloadAcceptanceNotVacuousValue
+  boundaryBreaksNotUniversal := selectedRustBoundaryBreaksNotUniversalValue
+  payloadAcceptanceMatchesBoundary := selectedRustPayloadAcceptanceMatchesBoundaryValue
+  extractionCertificateMatchesPayload := selectedRustExtractionCertificateMatchesPayloadValue
+  extractionCertificateValidityMatchesPayload :=
+    selectedRustExtractionCertificateValidityMatchesPayloadValue
+  certificateExtractionImpliesPayloadExtraction :=
+    selectedRustCertificateExtractionImpliesPayloadExtractionValue
+  payloadExtractionInBoundaryFiber := selectedRustPayloadExtractionInBoundaryFiberValue
+  payloadExtractionNativeValid := selectedRustPayloadExtractionNativeValidValue
+  roleLiftValidityBindsExtraction := selectedRustRoleLiftValidityBindsExtractionValue
+  roleLiftOpeningImpliesCertificateLift :=
+    selectedRustRoleLiftOpeningImpliesCertificateLiftValue
+  assemblyValidityBindsOpening := selectedRustAssemblyValidityBindsOpeningValue
+  assemblyCertificateImpliesFullNativeAssembly :=
+    selectedRustAssemblyCertificateImpliesFullNativeAssemblyValue
+  compatibilityValidityBinds := selectedRustCompatibilityValidityBindsValue
+  compatibilityExtractionImpliesReviewedExtraction :=
+    selectedRustCompatibilityExtractionImpliesReviewedExtractionValue
+  fullOpeningBridgeDigestValidityBinds :=
+    selectedRustFullOpeningBridgeDigestValidityBindsValue
 theorem selectedRustPayloadProjectionLaw :
   P.reviewedFq12PayloadAccepts b payload ->
   P.reviewedFq12PayloadProjectsFrom b payload :=
@@ -57244,6 +57353,9 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(complete_concrete_definition_checklist.evidence_report_definitions_present);
         assert!(complete_concrete_definition_checklist.evidence_digest_definitions_present);
         assert!(complete_concrete_definition_checklist.evidence_proof_definitions_present);
+        assert!(
+            complete_concrete_definition_checklist.predicate_model_certificate_definitions_present
+        );
         assert!(complete_concrete_definition_checklist.source_record_definitions_present);
         assert!(complete_concrete_definition_checklist.sub_evidence_digest_match_proof_present);
         assert!(complete_concrete_definition_checklist.all_definitions_present);

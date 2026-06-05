@@ -143,7 +143,7 @@ AP2-N001 certificate-route note: `Descender/Path2HiddenSourceSemanticsBoundary.l
 
 AP2-N001 concrete-definition blocker note: the hidden-source semantics bridge audit now separately records `selected_rust_model_concrete_definitions_present`. It is false on the active tree: the certificate route, source surfaces, fail-closed selected evidence-report definitions, and selected evidence-digest constants are present, but the concrete Lean `def`/`theorem` declarations for per-source proofs, source records, and sub-evidence digest match proof have not been added. The bit is included in the bridge-complete conjunction and digest frame, while `selected_rust_model_five_source_inputs_ready` remains the non-closing readiness bit for audited surfaces.
 
-AP2-N001 concrete-definition checklist note: Rust now exposes `Path2SelectedRustModelConcreteDefinitionChecklistV1`, a digest-bound checklist for the five concrete-definition categories needed by the final selected Rust/model theorem: evidence reports, evidence digests, report/facts proofs, source records, and the sub-evidence digest-match proof. The checklist is carried by digest/verified bit in the hidden-source semantics bridge audit. This keeps the next proof task concrete without treating the absence of definitions as a failure of the already-audited route/evidence surfaces.
+AP2-N001 concrete-definition checklist note: Rust now exposes `Path2SelectedRustModelConcreteDefinitionChecklistV1`, a digest-bound checklist for the concrete-definition categories needed by the final selected Rust/model theorem: evidence reports, evidence digests, report/facts proofs, the native-boundary predicate-model certificate, source records, and the sub-evidence digest-match proof. The checklist is carried by digest/verified bit in the hidden-source semantics bridge audit. This keeps the next proof task concrete without treating the absence of definitions as a failure of the already-audited route/evidence surfaces.
 
 AP2-N001 checklist facade note: the curated `tools/production-reference` facade now exports the selected Rust/model concrete-definition checklist schema, type, constructor, frame, digest, and verifier. `path2_native_production_facade_exports_source_present_v1` pins those exports, and the facade crate test checks the current fail-closed state plus canonical checklist digest verification. This makes the concrete-definition blocker visible to deployability tooling without exposing selected-material helpers or changing the final theorem status.
 
@@ -914,7 +914,8 @@ true, while the Lean closure remains fail-closed with
 `extractor_theorem_instantiated = false`,
 `semantics_bridge_complete = false`, checklist digest
 `f40bb2869f37e27f7a1870940893a8fd8df2e8b4c16aebb1d4832a2da1907673`, and
-exactly two missing active categories: `source_record_definitions` and
+exactly three missing active categories:
+`predicate_model_certificate_definitions`, `source_record_definitions`, and
 `sub_evidence_digest_match_proof`. The selected Lean report/proof definitions
 now alias verifier-backed Rust evidence, so `evidence_proof_definitions` is no
 longer a blocker. The remaining proof-completeness work is to import the

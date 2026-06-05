@@ -214,10 +214,10 @@ not treated as a non-closing readiness fact.
 blocker is now backed by
 `Path2SelectedRustModelConcreteDefinitionChecklistV1`. The checklist is
 digest-bound in the bridge audit and splits the final-definition work into
-five categories: selected Rust five-source evidence reports, evidence digests,
-report/facts proof objects, concrete source records, and the aggregate
-sub-evidence digest-match proof. The final theorem target is now mechanically
-visible.
+six categories: selected Rust five-source evidence reports, evidence digests,
+report/facts proof objects, the native-boundary predicate-model certificate,
+concrete source records, and the aggregate sub-evidence digest-match proof.
+The final theorem target is now mechanically visible.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
@@ -700,8 +700,9 @@ all component facts, but keeps AP2-N001 fail-closed:
 `extractor_theorem_instantiated = false`,
 `semantics_bridge_complete = false`, checklist digest
 `f40bb2869f37e27f7a1870940893a8fd8df2e8b4c16aebb1d4832a2da1907673`, and
-missing categories `source_record_definitions` and
-`sub_evidence_digest_match_proof`. The selected Lean report/proof definitions
+missing categories `predicate_model_certificate_definitions`,
+`source_record_definitions`, and `sub_evidence_digest_match_proof`. The
+selected Lean report/proof definitions
 now alias verifier-backed Rust evidence, so the highest-risk remaining proof
 work is to import selected source-record certificates and prove the aggregate
 five-source report's sub-digests match those five certificates.
