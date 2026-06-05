@@ -425,6 +425,9 @@ structure SelectedRustCheckedCoreByteEvidenceReport where
   hashByteDomainEvidenceVerified : Bool
   hashByteDomainEvidenceDigestPinned : Bool
   hashByteDomainEvidenceFactsAllTrue : Bool
+  checkedCoreFrameDomainMatchesHashEvidence : Bool
+  checkedCoreFrameBytesUseHashDomainPrefix : Bool
+  checkedCoreChallengeUsesHashDomainFrame : Bool
   shortProofRejected : Bool
   noncanonicalProofRejected : Bool
   commitmentMismatchRejected : Bool
@@ -452,6 +455,9 @@ def SelectedRustCheckedCoreByteEvidenceReport.FactsAllTrue
   E.hashByteDomainEvidenceVerified = true ∧
   E.hashByteDomainEvidenceDigestPinned = true ∧
   E.hashByteDomainEvidenceFactsAllTrue = true ∧
+  E.checkedCoreFrameDomainMatchesHashEvidence = true ∧
+  E.checkedCoreFrameBytesUseHashDomainPrefix = true ∧
+  E.checkedCoreChallengeUsesHashDomainFrame = true ∧
   E.shortProofRejected = true ∧
   E.noncanonicalProofRejected = true ∧
   E.commitmentMismatchRejected = true ∧

@@ -1941,6 +1941,9 @@ pub struct Path2NativeCheckedCoreByteInstantiationEvidenceV1 {
     pub hash_byte_domain_evidence_digest: [u8; DIGEST_BYTES],
     pub hash_byte_domain_evidence_verified: bool,
     pub hash_byte_domain_evidence_facts_all_true: bool,
+    pub checked_core_frame_domain_matches_hash_evidence: bool,
+    pub checked_core_frame_bytes_use_hash_domain_prefix: bool,
+    pub checked_core_challenge_uses_hash_domain_frame: bool,
     pub checked_core_frame_digest: [u8; DIGEST_BYTES],
     pub checked_core_proof_bytes_digest: [u8; DIGEST_BYTES],
     pub checked_core_verifier_handle_digest: [u8; DIGEST_BYTES],
@@ -2559,6 +2562,16 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_v1(
         verify_path2_native_hash_byte_domain_evidence_v1(&hash_byte_domain_evidence)?;
     let hash_byte_domain_evidence_facts_all_true =
         path2_native_hash_byte_domain_evidence_all_facts_true(&hash_byte_domain_evidence);
+    let checked_core_frame_domain_matches_hash_evidence = hash_byte_domain_evidence
+        .checked_core_frame_domain
+        == PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN;
+    let checked_core_frame_bytes_use_hash_domain_prefix = checked_core_frame_bytes.starts_with(
+        hash_byte_domain_evidence
+            .checked_core_frame_domain
+            .as_bytes(),
+    );
+    let checked_core_challenge_uses_hash_domain_frame =
+        checked_core_challenge == hash_frame_to_challenge_bytes(&checked_core_frame_bytes);
 
     Ok(Path2NativeCheckedCoreByteInstantiationEvidenceV1 {
         schema: PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA,
@@ -2580,6 +2593,9 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_v1(
         hash_byte_domain_evidence_digest,
         hash_byte_domain_evidence_verified: true,
         hash_byte_domain_evidence_facts_all_true,
+        checked_core_frame_domain_matches_hash_evidence,
+        checked_core_frame_bytes_use_hash_domain_prefix,
+        checked_core_challenge_uses_hash_domain_frame,
         checked_core_frame_digest,
         checked_core_proof_bytes_digest: Sha256::digest(checked_core_proof_bytes).into(),
         checked_core_verifier_handle_digest: bundle.spend.checked_core_verifier_handle_digest,
@@ -2683,6 +2699,21 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_v1_frame(
         b"hash_byte_domain_evidence_facts_all_true",
         u64::from(evidence.hash_byte_domain_evidence_facts_all_true),
     );
+    append_u64(
+        &mut frame,
+        b"checked_core_frame_domain_matches_hash_evidence",
+        u64::from(evidence.checked_core_frame_domain_matches_hash_evidence),
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_frame_bytes_use_hash_domain_prefix",
+        u64::from(evidence.checked_core_frame_bytes_use_hash_domain_prefix),
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_challenge_uses_hash_domain_frame",
+        u64::from(evidence.checked_core_challenge_uses_hash_domain_frame),
+    );
     append_frame(
         &mut frame,
         b"checked_core_frame_digest",
@@ -2753,6 +2784,9 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_all_facts_true(
         && evidence.hash_byte_domain_evidence_digest == expected_hash_byte_domain_evidence_digest
         && evidence.hash_byte_domain_evidence_verified
         && evidence.hash_byte_domain_evidence_facts_all_true
+        && evidence.checked_core_frame_domain_matches_hash_evidence
+        && evidence.checked_core_frame_bytes_use_hash_domain_prefix
+        && evidence.checked_core_challenge_uses_hash_domain_frame
         && evidence.proof_byte_len as usize == PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES
 }
 
@@ -21282,6 +21316,9 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "hashByteDomainEvidenceVerified",
         "hashByteDomainEvidenceDigestPinned",
         "hashByteDomainEvidenceFactsAllTrue",
+        "checkedCoreFrameDomainMatchesHashEvidence",
+        "checkedCoreFrameBytesUseHashDomainPrefix",
+        "checkedCoreChallengeUsesHashDomainFrame",
         "evidenceReportVerifiedProof",
         "evidenceFactsAllTrueProof",
         "evidenceSelectedRustProductionCheckedCoreAcceptorAccepts",
@@ -21352,12 +21389,18 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "hash_byte_domain_evidence_digest",
         "hash_byte_domain_evidence_verified: true",
         "hash_byte_domain_evidence_facts_all_true",
+        "checked_core_frame_domain_matches_hash_evidence",
+        "checked_core_frame_bytes_use_hash_domain_prefix",
+        "checked_core_challenge_uses_hash_domain_frame",
         "path2_native_checked_core_rejection_contains_v1",
         "result.is_err_and",
         "path2_native_checked_core_byte_instantiation_evidence_v1_frame",
         "b\"hash_byte_domain_evidence_digest\"",
         "b\"hash_byte_domain_evidence_verified\"",
         "b\"hash_byte_domain_evidence_facts_all_true\"",
+        "b\"checked_core_frame_domain_matches_hash_evidence\"",
+        "b\"checked_core_frame_bytes_use_hash_domain_prefix\"",
+        "b\"checked_core_challenge_uses_hash_domain_frame\"",
         "b\"checked_core_frame_digest\"",
         "b\"checked_core_proof_bytes_digest\"",
         "b\"checked_core_verifier_handle_digest\"",
@@ -21380,6 +21423,9 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "untrue_fact_evidence.verifier_handle_eq",
         "assert!(evidence.hash_byte_domain_evidence_verified)",
         "assert!(evidence.hash_byte_domain_evidence_facts_all_true)",
+        "assert!(evidence.checked_core_frame_domain_matches_hash_evidence)",
+        "assert!(evidence.checked_core_frame_bytes_use_hash_domain_prefix)",
+        "assert!(evidence.checked_core_challenge_uses_hash_domain_frame)",
         "assert!(evidence.hash_and_syndrome_eq)",
         "short_proof",
         "noncanonical_proof",
@@ -46316,11 +46362,28 @@ end Path2NoExportConcrete
         );
         assert!(evidence.hash_byte_domain_evidence_verified);
         assert!(evidence.hash_byte_domain_evidence_facts_all_true);
+        assert!(evidence.checked_core_frame_domain_matches_hash_evidence);
+        assert!(evidence.checked_core_frame_bytes_use_hash_domain_prefix);
+        assert!(evidence.checked_core_challenge_uses_hash_domain_frame);
         assert_eq!(
             evidence.proof_byte_len as usize,
             PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES
         );
         assert_ne!(evidence.checked_core_frame_digest, [0_u8; DIGEST_BYTES]);
+        let (_, checked_core_frame) = path2_native_derive_boundary_frame_v1(&bundle).unwrap();
+        let checked_core_frame_bytes =
+            path2_native_checked_core_frame_v1_bytes(&checked_core_frame).unwrap();
+        assert!(
+            checked_core_frame_bytes.starts_with(
+                hash_byte_domain_evidence
+                    .checked_core_frame_domain
+                    .as_bytes()
+            )
+        );
+        assert_eq!(
+            evidence.checked_core_challenge,
+            hash_frame_to_challenge_bytes(&checked_core_frame_bytes)
+        );
         assert_ne!(
             evidence.checked_core_proof_bytes_digest,
             [0_u8; DIGEST_BYTES]
