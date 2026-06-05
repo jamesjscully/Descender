@@ -154,6 +154,14 @@ fn main() -> Result<(), String> {
                 concrete_definition_checklist.evidence_digest_definitions_present,
             "evidence_proof_definitions_present":
                 concrete_definition_checklist.evidence_proof_definitions_present,
+            "predicate_model_report_surface_definitions_present":
+                concrete_definition_checklist
+                    .predicate_model_report_surface_definitions_present,
+            "predicate_model_facts_proof_definition_present":
+                concrete_definition_checklist
+                    .predicate_model_facts_proof_definition_present,
+            "predicate_model_certificate_definition_present":
+                concrete_definition_checklist.predicate_model_certificate_definition_present,
             "predicate_model_certificate_definitions_present":
                 concrete_definition_checklist.predicate_model_certificate_definitions_present,
             "source_record_definitions_present":

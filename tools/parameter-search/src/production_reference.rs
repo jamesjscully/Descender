@@ -7539,6 +7539,9 @@ pub struct Path2SelectedRustModelConcreteDefinitionChecklistV1 {
     pub evidence_report_definitions_present: bool,
     pub evidence_digest_definitions_present: bool,
     pub evidence_proof_definitions_present: bool,
+    pub predicate_model_report_surface_definitions_present: bool,
+    pub predicate_model_facts_proof_definition_present: bool,
+    pub predicate_model_certificate_definition_present: bool,
     pub predicate_model_certificate_definitions_present: bool,
     pub source_record_definitions_present: bool,
     pub sub_evidence_digest_match_proof_present: bool,
@@ -9371,6 +9374,9 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             evidence_report_definitions_present: false,
             evidence_digest_definitions_present: false,
             evidence_proof_definitions_present: false,
+            predicate_model_report_surface_definitions_present: false,
+            predicate_model_facts_proof_definition_present: false,
+            predicate_model_certificate_definition_present: false,
             predicate_model_certificate_definitions_present: false,
             source_record_definitions_present: false,
             sub_evidence_digest_match_proof_present: false,
@@ -9519,7 +9525,7 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             &["ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate"][..],
         ),
     ];
-    let predicate_model_certificate_definitions = [
+    let predicate_model_report_surface_definitions = [
         (
             "selectedRustNativeBoundaryPredicateModelEvidenceReport",
             &["ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport"][..],
@@ -9532,13 +9538,31 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             "selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof",
             &["selectedRustNativeBoundaryPredicateModelEvidenceReport.ReportVerified"][..],
         ),
+    ];
+    let predicate_model_facts_proof_definition = (
+        "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
+        &["selectedRustNativeBoundaryPredicateModelEvidenceReport.FactsAllTrue"][..],
+    );
+    let predicate_model_certificate_definition = (
+        "selectedRustNativeBoundaryPredicateModelCertificate",
+        &["ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate"][..],
+    );
+    let predicate_model_certificate_definition_body_markers = [
         (
-            "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
-            &["selectedRustNativeBoundaryPredicateModelEvidenceReport.FactsAllTrue"][..],
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustNativeBoundaryPredicateModelEvidenceReport",
         ),
         (
             "selectedRustNativeBoundaryPredicateModelCertificate",
-            &["ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate"][..],
+            "selectedRustNativeBoundaryPredicateModelEvidenceDigest",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
         ),
     ];
     let evidence_report_definitions_present =
@@ -9602,41 +9626,40 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 marker,
             )
         });
-    let predicate_model_certificate_definitions_present = predicate_model_certificate_definitions
-        .iter()
-        .all(|(name, markers)| {
-            lean_source_has_selected_rust_definition_with_markers_v1(
-                &boundary_source,
-                name,
-                markers,
-            )
-        })
-        && [
-            (
-                "selectedRustNativeBoundaryPredicateModelCertificate",
-                "selectedRustNativeBoundaryPredicateModelEvidenceReport",
-            ),
-            (
-                "selectedRustNativeBoundaryPredicateModelCertificate",
-                "selectedRustNativeBoundaryPredicateModelEvidenceDigest",
-            ),
-            (
-                "selectedRustNativeBoundaryPredicateModelCertificate",
-                "selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof",
-            ),
-            (
-                "selectedRustNativeBoundaryPredicateModelCertificate",
-                "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
-            ),
-        ]
-        .iter()
-        .all(|(name, marker)| {
-            lean_source_selected_rust_definition_body_contains_marker_v1(
-                &boundary_source,
-                name,
-                marker,
-            )
-        });
+    let predicate_model_report_surface_definitions_present =
+        predicate_model_report_surface_definitions
+            .iter()
+            .all(|(name, markers)| {
+                lean_source_has_selected_rust_definition_with_markers_v1(
+                    &boundary_source,
+                    name,
+                    markers,
+                )
+            });
+    let predicate_model_facts_proof_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            predicate_model_facts_proof_definition.0,
+            predicate_model_facts_proof_definition.1,
+        );
+    let predicate_model_certificate_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            predicate_model_certificate_definition.0,
+            predicate_model_certificate_definition.1,
+        ) && predicate_model_certificate_definition_body_markers
+            .iter()
+            .all(|(name, marker)| {
+                lean_source_selected_rust_definition_body_contains_marker_v1(
+                    &boundary_source,
+                    name,
+                    marker,
+                )
+            });
+    let predicate_model_certificate_definitions_present =
+        predicate_model_report_surface_definitions_present
+            && predicate_model_facts_proof_definition_present
+            && predicate_model_certificate_definition_present;
     let sub_evidence_digest_match_proof_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -9672,6 +9695,9 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         evidence_report_definitions_present,
         evidence_digest_definitions_present,
         evidence_proof_definitions_present,
+        predicate_model_report_surface_definitions_present,
+        predicate_model_facts_proof_definition_present,
+        predicate_model_certificate_definition_present,
         predicate_model_certificate_definitions_present,
         source_record_definitions_present,
         sub_evidence_digest_match_proof_present,
@@ -9699,6 +9725,21 @@ pub fn path2_selected_rust_model_concrete_definition_checklist_v1_frame(
         &mut frame,
         b"evidence_proof_definitions_present",
         u64::from(checklist.evidence_proof_definitions_present),
+    );
+    append_u64(
+        &mut frame,
+        b"predicate_model_report_surface_definitions_present",
+        u64::from(checklist.predicate_model_report_surface_definitions_present),
+    );
+    append_u64(
+        &mut frame,
+        b"predicate_model_facts_proof_definition_present",
+        u64::from(checklist.predicate_model_facts_proof_definition_present),
+    );
+    append_u64(
+        &mut frame,
+        b"predicate_model_certificate_definition_present",
+        u64::from(checklist.predicate_model_certificate_definition_present),
     );
     append_u64(
         &mut frame,
@@ -56875,6 +56916,9 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(concrete_definition_checklist.evidence_report_definitions_present);
         assert!(concrete_definition_checklist.evidence_digest_definitions_present);
         assert!(concrete_definition_checklist.evidence_proof_definitions_present);
+        assert!(concrete_definition_checklist.predicate_model_report_surface_definitions_present);
+        assert!(!concrete_definition_checklist.predicate_model_facts_proof_definition_present);
+        assert!(!concrete_definition_checklist.predicate_model_certificate_definition_present);
         assert!(!concrete_definition_checklist.predicate_model_certificate_definitions_present);
         assert!(!concrete_definition_checklist.source_record_definitions_present);
         assert!(!concrete_definition_checklist.sub_evidence_digest_match_proof_present);
@@ -57611,6 +57655,16 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(complete_concrete_definition_checklist.evidence_digest_definitions_present);
         assert!(complete_concrete_definition_checklist.evidence_proof_definitions_present);
         assert!(
+            complete_concrete_definition_checklist
+                .predicate_model_report_surface_definitions_present
+        );
+        assert!(
+            complete_concrete_definition_checklist.predicate_model_facts_proof_definition_present
+        );
+        assert!(
+            complete_concrete_definition_checklist.predicate_model_certificate_definition_present
+        );
+        assert!(
             complete_concrete_definition_checklist.predicate_model_certificate_definitions_present
         );
         assert!(complete_concrete_definition_checklist.source_record_definitions_present);
@@ -57974,13 +58028,11 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         );
         let hidden_source_boundary_source =
             include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
-        // The aggregate five-source report digest includes the bridge-audit
-        // digest, and the bridge audit hashes this Lean source file.  The
-        // Lean file also carries the aggregate digest literal, so naively
-        // hard-coding the Rust aggregate digest back into Lean moves the
-        // digest again.  Keep this explicit until the selected source-record
-        // import route breaks that self-reference.
-        assert_ne!(
+        // The verifier-backed aggregate report digest mirrors the current
+        // Rust-selected evidence frame. It remains non-closing because the
+        // predicate-model facts proof, source records, and sub-evidence match
+        // proof are still absent.
+        assert_eq!(
             lean_selected_rust_byte_array_digest_constant(
                 hidden_source_boundary_source,
                 "selectedRustFiveSourceEvidenceDigest"

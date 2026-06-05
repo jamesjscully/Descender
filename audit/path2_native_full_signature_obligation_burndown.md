@@ -212,6 +212,11 @@ Lean mirrors that public report as
 verification predicate. It also proves the current `FactsAllTrue` obligation is
 impossible, so the predicate-model certificate category remains open rather
 than being closed by a report-only artifact.
+The concrete-definition checklist now exposes this split directly:
+`predicate_model_report_surface_definitions_present = true`, while
+`predicate_model_facts_proof_definition_present = false`,
+`predicate_model_certificate_definition_present = false`, and the aggregate
+`predicate_model_certificate_definitions_present = false`.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It

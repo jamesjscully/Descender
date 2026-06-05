@@ -1248,6 +1248,8 @@ Lean now mirrors that report and digest as
 `selectedRustNativeBoundaryPredicateModelEvidenceReport` and
 `selectedRustNativeBoundaryPredicateModelEvidenceDigest`, with a proof that
 the current report is verified and a proof that `FactsAllTrue` is impossible.
+The concrete-definition checklist records this as a completed predicate-model
+report surface but keeps the facts-proof and certificate sub-bits false.
 This pins the current failure mode as a missing concrete native-boundary
 semantics import, not a missing byte/digest evidence report.
 Lean now names that import target as
