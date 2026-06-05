@@ -549,6 +549,13 @@ next constructive input is therefore a concrete active native-boundary
 predicate interpretation, or an equivalent theorem package that supplies the
 seven selected source records for the exact `P` used by the hidden-source
 boundary.
+The selected evidence manifest now makes this machine-checkable:
+`native_boundary_predicates_record_present = true`,
+`full_spend_concrete_predicates_are_separate_model = true`,
+`native_boundary_concrete_predicate_model_present = false`, and
+`selected_source_records_blocked_on_native_boundary_predicate_model = true`.
+The missing proof object is therefore the concrete native-boundary semantics
+package for the active verifier, not another evidence digest import.
 
 P2FS-001 latest hardening: `ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources` is now the named Lean constructor for the final selected Rust/model certificate. The certificate now carries an aggregate five-source `evidenceDigest`, and the Rust `extractor_theorem_instantiated` gate requires the future final theorem to use that constructor with the verified five-source evidence report, aggregate evidence digest, all-true facts proof, and selected source packages before deriving `toClosureInputs`; a raw certificate record literal, empty digest literal, `sorry`, or `admit` no longer satisfies the AP2-N001 source gate.
 

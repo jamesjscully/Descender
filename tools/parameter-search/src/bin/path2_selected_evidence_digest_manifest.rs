@@ -130,6 +130,15 @@ fn main() -> Result<(), String> {
             "missing_definition_categories": missing_definition_categories,
         },
         "source_record_subcheck": {
+            "native_boundary_predicates_record_present":
+                source_record_subcheck.native_boundary_predicates_record_present,
+            "full_spend_concrete_predicates_are_separate_model":
+                source_record_subcheck.full_spend_concrete_predicates_are_separate_model,
+            "native_boundary_concrete_predicate_model_present":
+                source_record_subcheck.native_boundary_concrete_predicate_model_present,
+            "selected_source_records_blocked_on_native_boundary_predicate_model":
+                source_record_subcheck
+                    .selected_source_records_blocked_on_native_boundary_predicate_model,
             "source_record_package_surface_present":
                 source_record_subcheck.source_record_package_surface_present,
             "package_sub_evidence_match_reduction_present":

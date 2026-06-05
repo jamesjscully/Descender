@@ -1205,6 +1205,13 @@ evidence report. It must either provide the concrete native-boundary predicate
 interpretation for the active Rust verifier, or provide a theorem package
 whose fields are exactly the seven source records for the `P` consumed by the
 hidden-source boundary theorem.
+The selected evidence manifest now exposes this predicate-model blocker
+directly: `native_boundary_predicates_record_present = true`,
+`full_spend_concrete_predicates_are_separate_model = true`,
+`native_boundary_concrete_predicate_model_present = false`, and
+`selected_source_records_blocked_on_native_boundary_predicate_model = true`.
+This pins the current failure mode as a missing concrete native-boundary
+semantics import, not a missing byte/digest evidence report.
 
 ## Findings
 

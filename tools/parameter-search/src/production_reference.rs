@@ -7545,6 +7545,10 @@ pub struct Path2SelectedRustModelConcreteDefinitionChecklistV1 {
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
+    pub native_boundary_predicates_record_present: bool,
+    pub full_spend_concrete_predicates_are_separate_model: bool,
+    pub native_boundary_concrete_predicate_model_present: bool,
+    pub selected_source_records_blocked_on_native_boundary_predicate_model: bool,
     pub source_record_package_surface_present: bool,
     pub package_sub_evidence_match_reduction_present: bool,
     pub package_to_closure_inputs_reduction_present: bool,
@@ -8604,6 +8608,41 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     boundary_source: &str,
 ) -> Path2SelectedRustModelSourceRecordSubcheckV1 {
     let boundary_source = lean_source_without_comments_and_strings_v1(boundary_source);
+    let native_boundary_source = lean_source_without_comments_and_strings_v1(include_str!(
+        "../../../Descender/Path2NativeBoundary.lean"
+    ));
+    let full_spend_concrete_source = lean_source_without_comments_and_strings_v1(include_str!(
+        "../../../Descender/Path2FullSpendConcrete.lean"
+    ));
+    let native_boundary_predicates_record_present = [
+        "structure Predicates where",
+        "reviewedFq12PayloadAccepts",
+        "reviewedFq12PayloadProjectsFrom",
+        "reviewedFq12PayloadHasExtractionCertificate",
+        "reviewedFq12ExtractionCertificateValid",
+        "boundaryBreakFor",
+    ]
+    .iter()
+    .all(|marker| native_boundary_source.contains(marker));
+    let full_spend_concrete_predicates_are_separate_model = [
+        "def concretePredicates",
+        "Path2FullSpendGame.Predicates concreteTypes",
+        "def concreteFullGamePredicates",
+        "Path2FullSpendGame.FullGamePredicates concreteTypes",
+        "toPredicates := concretePredicates C",
+    ]
+    .iter()
+    .all(|marker| full_spend_concrete_source.contains(marker));
+    let native_boundary_concrete_predicate_model_present = [
+        "def selectedRustNativeBoundaryPredicates",
+        "Path2NativeBoundary.Predicates",
+        "reviewedFq12PayloadAccepts :=",
+        "reviewedFq12PayloadProjectsFrom :=",
+        "reviewedFq12PayloadHasExtractionCertificate :=",
+        "reviewedFq12ExtractionCertificateValid :=",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
     let boundary_base_report_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -8882,7 +8921,16 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     .iter()
     .filter(|present| !**present)
     .count() as u8;
+    let selected_source_records_blocked_on_native_boundary_predicate_model =
+        native_boundary_predicates_record_present
+            && full_spend_concrete_predicates_are_separate_model
+            && !native_boundary_concrete_predicate_model_present
+            && missing_selected_source_record_count > 0;
     Path2SelectedRustModelSourceRecordSubcheckV1 {
+        native_boundary_predicates_record_present,
+        full_spend_concrete_predicates_are_separate_model,
+        native_boundary_concrete_predicate_model_present,
+        selected_source_records_blocked_on_native_boundary_predicate_model,
         source_record_package_surface_present,
         package_sub_evidence_match_reduction_present,
         package_to_closure_inputs_reduction_present,
@@ -56184,6 +56232,13 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             2
         );
         let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
+        assert!(source_record_subcheck.native_boundary_predicates_record_present);
+        assert!(source_record_subcheck.full_spend_concrete_predicates_are_separate_model);
+        assert!(!source_record_subcheck.native_boundary_concrete_predicate_model_present);
+        assert!(
+            source_record_subcheck
+                .selected_source_records_blocked_on_native_boundary_predicate_model
+        );
         assert!(source_record_subcheck.source_record_package_surface_present);
         assert!(source_record_subcheck.package_sub_evidence_match_reduction_present);
         assert!(source_record_subcheck.package_to_closure_inputs_reduction_present);
