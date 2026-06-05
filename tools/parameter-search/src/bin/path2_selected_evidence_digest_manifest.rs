@@ -17,6 +17,8 @@ use descender_parameter_search::production_reference::{
     path2_reviewed_fq12_shared_digest_frame_witness_evidence_all_facts_true,
     path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1,
     path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1_digest,
+    path2_selected_rust_model_concrete_definition_checklist_v1,
+    verify_path2_selected_rust_model_concrete_definition_checklist_v1,
 };
 use serde_json::json;
 
@@ -37,6 +39,22 @@ fn main() -> Result<(), String> {
     let source_route = path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1()?;
     let field_local = path2_reviewed_fq12_field_local_evidence_v1()?;
     let shared_witness = path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1()?;
+    let concrete_definition_checklist =
+        path2_selected_rust_model_concrete_definition_checklist_v1();
+    let concrete_definition_checklist_digest =
+        verify_path2_selected_rust_model_concrete_definition_checklist_v1(
+            &concrete_definition_checklist,
+        )?;
+    let mut missing_definition_categories = Vec::new();
+    if !concrete_definition_checklist.evidence_proof_definitions_present {
+        missing_definition_categories.push("evidence_proof_definitions");
+    }
+    if !concrete_definition_checklist.source_record_definitions_present {
+        missing_definition_categories.push("source_record_definitions");
+    }
+    if !concrete_definition_checklist.sub_evidence_digest_match_proof_present {
+        missing_definition_categories.push("sub_evidence_digest_match_proof");
+    }
 
     let payload = json!({
         "schema": "Descender.Path2.reviewed_fq12.selected_evidence_digest_manifest.v1",
@@ -89,6 +107,25 @@ fn main() -> Result<(), String> {
         "closing_status": {
             "extractor_theorem_instantiated": five_source.extractor_theorem_instantiated,
             "semantics_bridge_complete": five_source.semantics_bridge_complete,
+        },
+        "concrete_definition_checklist": {
+            "digest": hex_encode(&concrete_definition_checklist_digest),
+            "verified": true,
+            "evidence_report_definitions_present":
+                concrete_definition_checklist.evidence_report_definitions_present,
+            "evidence_digest_definitions_present":
+                concrete_definition_checklist.evidence_digest_definitions_present,
+            "evidence_proof_definitions_present":
+                concrete_definition_checklist.evidence_proof_definitions_present,
+            "source_record_definitions_present":
+                concrete_definition_checklist.source_record_definitions_present,
+            "sub_evidence_digest_match_proof_present":
+                concrete_definition_checklist.sub_evidence_digest_match_proof_present,
+            "all_definitions_present":
+                concrete_definition_checklist.all_definitions_present,
+            "missing_definition_category_count":
+                concrete_definition_checklist.missing_definition_category_count,
+            "missing_definition_categories": missing_definition_categories,
         },
     });
 

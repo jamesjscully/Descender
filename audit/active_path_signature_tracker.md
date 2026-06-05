@@ -903,6 +903,17 @@ the active target remains the Path 2 native / reviewed-Fq12 active-lane
 projection-carrier route, and production deployment remains fail-closed until
 the hidden-source semantics, signer/verifier productization, constant-time,
 storage, and external-review gates are closed.
+The selected AP2-N001 evidence digest manifest now also emits the concrete
+definition checklist digest and missing categories. Current manifest output
+confirms that all six selected Rust evidence reports verify and have all facts
+true, while the Lean closure remains fail-closed with
+`extractor_theorem_instantiated = false`,
+`semantics_bridge_complete = false`, checklist digest
+`8bbee8ac85364ceff4f2141e37ba550c0fb3d7c1526cce390c2c7e9033a4740a`, and
+exactly three missing active categories: `evidence_proof_definitions`,
+`source_record_definitions`, and `sub_evidence_digest_match_proof`. This keeps
+the next AP2-N001 step focused on verifier-backed Lean proof/source imports
+rather than changing the Rust evidence reports or reviving any inactive path.
 
 ## Findings
 
