@@ -23859,6 +23859,18 @@ fn path2_no_export_serializer_boundary_present_v1() -> bool {
     let concrete_source = include_str!("../../../Descender/Path2NoExportConcrete.lean");
     let rust_source = include_str!("production_reference.rs");
 
+    path2_no_export_serializer_boundary_present_in_sources_v1(
+        no_export_source,
+        concrete_source,
+        rust_source,
+    )
+}
+
+fn path2_no_export_serializer_boundary_present_in_sources_v1(
+    no_export_source: &str,
+    concrete_source: &str,
+    rust_source: &str,
+) -> bool {
     let conformance_start = no_export_source
         .find("\nstructure ActiveNativeOutputConformance")
         .expect("Lean Path 2 no-export conformance source start marker missing");
@@ -23868,9 +23880,16 @@ fn path2_no_export_serializer_boundary_present_v1() -> bool {
         + conformance_start;
     let conformance_window = &no_export_source[conformance_start..conformance_end];
 
-    let closure_start = no_export_source
-        .find("\ntheorem active_native_no_export_closure_from_public_output_no_export")
-        .expect("Lean Path 2 no-export closure source start marker missing");
+    let closure_marker = "\ntheorem active_native_no_export_closure_from_public_output_no_export";
+    let Some(closure_start) = no_export_source
+        .match_indices(closure_marker)
+        .find(|(index, _)| {
+            lean_declaration_marker_has_exact_name_v1(no_export_source, *index, closure_marker)
+        })
+        .map(|(index, _)| index)
+    else {
+        return false;
+    };
     let closure_end = no_export_source[closure_start..]
         .find("\n/--\nUse an active no-export closure")
         .expect("Lean Path 2 no-export closure source end marker missing")
@@ -47112,6 +47131,29 @@ end Path2NativeAccountDesign
         assert!(!preflight.accepted_spend_numeric_bound_instantiated);
         assert!(path2_no_export_serializer_boundary_present_v1());
         assert!(preflight.no_export_serializer_boundary_present);
+        let no_export_source = include_str!("../../../Descender/Path2NoExport.lean");
+        let no_export_concrete_source =
+            include_str!("../../../Descender/Path2NoExportConcrete.lean");
+        let production_reference_source = include_str!("production_reference.rs");
+        let suffixed_no_export_boundary_source = no_export_source.replacen(
+            "theorem active_native_no_export_closure_from_public_output_no_export",
+            "theorem active_native_no_export_closure_from_public_output_no_exportSpoof",
+            1,
+        );
+        assert!(!path2_no_export_serializer_boundary_present_in_sources_v1(
+            &suffixed_no_export_boundary_source,
+            no_export_concrete_source,
+            production_reference_source,
+        ));
+        let suffixed_then_exact_no_export_boundary_source = format!(
+            "{}\n{}",
+            suffixed_no_export_boundary_source, no_export_source
+        );
+        assert!(path2_no_export_serializer_boundary_present_in_sources_v1(
+            &suffixed_then_exact_no_export_boundary_source,
+            no_export_concrete_source,
+            production_reference_source,
+        ));
         let assumed_no_export_boundary = r#"
 theorem selectedRustActiveNoExportSerializer_instantiation_v1
     (B : NativeFullSignatureSecurityBoundary)

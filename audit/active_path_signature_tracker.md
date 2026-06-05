@@ -1064,6 +1064,10 @@ Active full-execution boundary note: the
 `concrete_fullExecutionImpliesAcceptedSpendForgery` boundary-presence check now
 requires an exact theorem declaration name in the active Lean source. A suffixed
 boundary theorem cannot make the full-execution source surface appear present.
+Active no-export boundary note: the
+`active_native_no_export_closure_from_public_output_no_export` boundary check
+now also requires an exact theorem declaration name before the active serializer
+boundary can be marked present.
 
 ## Findings
 
