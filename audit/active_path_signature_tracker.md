@@ -1060,6 +1060,10 @@ Active checked-core selected-source gate note: the
 theorem-name matching across all candidates. A suffixed checked-core source
 theorem cannot satisfy the active composition gate or mask a later exact
 selected Rust byte-source instantiation.
+Active full-execution boundary note: the
+`concrete_fullExecutionImpliesAcceptedSpendForgery` boundary-presence check now
+requires an exact theorem declaration name in the active Lean source. A suffixed
+boundary theorem cannot make the full-execution source surface appear present.
 
 ## Findings
 

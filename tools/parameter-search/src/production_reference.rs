@@ -9494,6 +9494,17 @@ fn lean_source_without_comments_and_strings_v1(source: &str) -> String {
     stripped
 }
 
+fn lean_declaration_marker_has_exact_name_v1(
+    source: &str,
+    marker_start: usize,
+    marker: &str,
+) -> bool {
+    source[marker_start + marker.len()..]
+        .chars()
+        .next()
+        .is_none_or(|next| !(next.is_ascii_alphanumeric() || next == '_' || next == '\''))
+}
+
 fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
     theorem_source: &str,
     theorem_name: &str,
@@ -23066,6 +23077,12 @@ pub fn path2_auxiliary_fq12_qrom_horizon_complete_v1() -> bool {
 fn path2_full_signature_execution_source_boundary_present_v1() -> bool {
     let full_spend_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
 
+    path2_full_signature_execution_source_boundary_present_in_source_v1(full_spend_source)
+}
+
+fn path2_full_signature_execution_source_boundary_present_in_source_v1(
+    full_spend_source: &str,
+) -> bool {
     let source_start = full_spend_source
         .find("\nstructure ConcreteFullSignatureExecutionSource")
         .expect("Lean Path 2 full-signature execution source start marker missing");
@@ -23094,9 +23111,16 @@ fn path2_full_signature_execution_source_boundary_present_v1() -> bool {
         + soundness_start;
     let soundness_window = &full_spend_source[soundness_start..soundness_end];
 
-    let theorem_start = full_spend_source
-        .find("\ntheorem concrete_fullExecutionImpliesAcceptedSpendForgery")
-        .expect("Lean Path 2 full-execution theorem start marker missing");
+    let theorem_marker = "\ntheorem concrete_fullExecutionImpliesAcceptedSpendForgery";
+    let Some(theorem_start) = full_spend_source
+        .match_indices(theorem_marker)
+        .find(|(index, _)| {
+            lean_declaration_marker_has_exact_name_v1(full_spend_source, *index, theorem_marker)
+        })
+        .map(|(index, _)| index)
+    else {
+        return false;
+    };
     let theorem_end = full_spend_source[theorem_start..]
         .find("\n/-- Full-game success supplies an accepted spend for the concrete carrier.")
         .expect("Lean Path 2 full-execution theorem end marker missing")
@@ -46155,6 +46179,27 @@ end Path2CheckedCoreByteBridge
         assert!(preflight.hash_qrom_deployment_horizon_complete);
         assert!(path2_full_signature_execution_source_boundary_present_v1());
         assert!(preflight.full_signature_execution_source_boundary_present);
+        let full_spend_concrete_source =
+            include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+        let suffixed_full_execution_boundary_source = full_spend_concrete_source.replacen(
+            "theorem concrete_fullExecutionImpliesAcceptedSpendForgery",
+            "theorem concrete_fullExecutionImpliesAcceptedSpendForgerySpoof",
+            1,
+        );
+        assert!(
+            !path2_full_signature_execution_source_boundary_present_in_source_v1(
+                &suffixed_full_execution_boundary_source
+            )
+        );
+        let suffixed_then_exact_full_execution_boundary_source = format!(
+            "{}\n{}",
+            suffixed_full_execution_boundary_source, full_spend_concrete_source
+        );
+        assert!(
+            path2_full_signature_execution_source_boundary_present_in_source_v1(
+                &suffixed_then_exact_full_execution_boundary_source
+            )
+        );
         assert!(path2_full_signature_reduction_certificate_boundary_present_v1());
         assert!(preflight.full_signature_reduction_certificate_boundary_present);
         assert!(!path2_full_signature_reduction_certificate_instantiated_v1());
