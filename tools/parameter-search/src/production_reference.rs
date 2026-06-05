@@ -7577,6 +7577,10 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
         "compatibilitySource :",
         "witnessSources :",
         "ReviewedFq12SelectedRustFiveSourceClosureEvidence",
+        "schemaMatches : Bool",
+        "bridgeAuditDigestBound : Bool",
+        "reportDigestVerified : Bool",
+        "bridgeAuditValidated : Bool",
         "ReviewedFq12SelectedRustFiveSourceClosureEvidence.ReportVerified",
         "ReviewedFq12SelectedRustFiveSourceClosureEvidence.FactsAllTrue",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate",
@@ -7798,6 +7802,8 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "selectedRustFiveSourceEvidenceReport",
         &[
             "bridgeAuditValidated:=true",
+            "bridgeAuditDigestBound:=true",
+            "reportDigestVerified:=true",
             "selectedRustModelFiveSourceInputsReady:=true",
             "leanFullSignatureHiddenSourceHandoffPresent:=true",
         ],
@@ -46008,7 +46014,10 @@ theorem {theorem_name}
       ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
         FieldParser RouteParser CanonicalParser WitnessParser P :=
     {{ evidenceReport :=
-        {{ bridgeAuditValidated := true
+        {{ schemaMatches := true
+          bridgeAuditDigestBound := true
+          reportDigestVerified := true
+          bridgeAuditValidated := true
           selectedRustModelFiveSourceInputsReady := true
           rustPayloadProjectionLawPresent := true
           rustExtractionCertificateAvailabilityPresent := true
@@ -46126,6 +46135,9 @@ variable
 def selectedRustFiveSourceEvidenceReport :
     ReviewedFq12SelectedRustFiveSourceClosureEvidence :=
   { bridgeAuditValidated := true
+    schemaMatches := true
+    bridgeAuditDigestBound := true
+    reportDigestVerified := true
     selectedRustModelFiveSourceInputsReady := true
     rustPayloadProjectionLawPresent := true
     rustExtractionCertificateAvailabilityPresent := true

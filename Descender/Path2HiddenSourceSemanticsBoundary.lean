@@ -235,6 +235,9 @@ extractor theorem has been instantiated, while the readiness facts are the
 evidence consumed by that future theorem.
 -/
 structure ReviewedFq12SelectedRustFiveSourceClosureEvidence where
+  schemaMatches : Bool
+  bridgeAuditDigestBound : Bool
+  reportDigestVerified : Bool
   bridgeAuditValidated : Bool
   selectedRustModelFiveSourceInputsReady : Bool
   rustPayloadProjectionLawPresent : Bool
@@ -253,6 +256,9 @@ structure ReviewedFq12SelectedRustFiveSourceClosureEvidence where
 /-- The report has been validated against the public Rust evidence surface. -/
 def ReviewedFq12SelectedRustFiveSourceClosureEvidence.ReportVerified
     (E : ReviewedFq12SelectedRustFiveSourceClosureEvidence) : Prop :=
+  E.schemaMatches = true ∧
+  E.bridgeAuditDigestBound = true ∧
+  E.reportDigestVerified = true ∧
   E.bridgeAuditValidated = true
 
 /-- All non-closing five-source readiness facts recorded by the report hold. -/
