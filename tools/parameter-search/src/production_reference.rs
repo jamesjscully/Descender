@@ -7752,6 +7752,7 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
     let function_checks = [
         "PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA",
         "path2_reviewed_fq12_five_source_closure_evidence_v1",
+        "path2_reviewed_fq12_five_source_closure_evidence_v1_frame",
         "path2_reviewed_fq12_five_source_closure_evidence_v1_digest",
         "path2_reviewed_fq12_five_source_closure_evidence_all_facts_true",
         "path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1",
@@ -9377,12 +9378,118 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
     })
 }
 
+pub fn path2_reviewed_fq12_five_source_closure_evidence_v1_frame(
+    evidence: &Path2ReviewedFq12FiveSourceClosureEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"schema_matches",
+        u64::from(evidence.schema_matches),
+    );
+    append_frame(
+        &mut frame,
+        b"bridge_audit_digest",
+        &evidence.bridge_audit_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"bridge_audit_digest_bound",
+        u64::from(evidence.bridge_audit_digest_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"bridge_audit_validated",
+        u64::from(evidence.bridge_audit_validated),
+    );
+    append_u64(
+        &mut frame,
+        b"report_digest_verified",
+        u64::from(evidence.report_digest_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"selected_rust_model_five_source_inputs_ready",
+        u64::from(evidence.selected_rust_model_five_source_inputs_ready),
+    );
+    append_u64(
+        &mut frame,
+        b"rust_payload_projection_law_present",
+        u64::from(evidence.rust_payload_projection_law_present),
+    );
+    append_u64(
+        &mut frame,
+        b"rust_extraction_certificate_availability_present",
+        u64::from(evidence.rust_extraction_certificate_availability_present),
+    );
+    append_u64(
+        &mut frame,
+        b"role_root_lift_source_present",
+        u64::from(evidence.role_root_lift_source_present),
+    );
+    append_u64(
+        &mut frame,
+        b"selected_source_route_byte_source_present",
+        u64::from(evidence.selected_source_route_byte_source_present),
+    );
+    append_u64(
+        &mut frame,
+        b"assembly_field_local_native_components_present",
+        u64::from(evidence.assembly_field_local_native_components_present),
+    );
+    append_u64(
+        &mut frame,
+        b"compatibility_field_extraction_components_present",
+        u64::from(evidence.compatibility_field_extraction_components_present),
+    );
+    append_u64(
+        &mut frame,
+        b"shared_digest_frame_witness_byte_source_contract_present",
+        u64::from(evidence.shared_digest_frame_witness_byte_source_contract_present),
+    );
+    append_u64(
+        &mut frame,
+        b"active_field_local_digest_frame_witness_byte_component_surfaces_present",
+        u64::from(evidence.active_field_local_digest_frame_witness_byte_component_surfaces_present),
+    );
+    append_u64(
+        &mut frame,
+        b"lean_active_five_source_boundary_route_present",
+        u64::from(evidence.lean_active_five_source_boundary_route_present),
+    );
+    append_u64(
+        &mut frame,
+        b"lean_full_signature_hidden_source_handoff_present",
+        u64::from(evidence.lean_full_signature_hidden_source_handoff_present),
+    );
+    append_u64(
+        &mut frame,
+        b"extractor_theorem_instantiated",
+        u64::from(evidence.extractor_theorem_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"semantics_bridge_complete",
+        u64::from(evidence.semantics_bridge_complete),
+    );
+    append_frame(
+        &mut frame,
+        b"cleanup_policy",
+        evidence.cleanup_policy.as_bytes(),
+    );
+    frame
+}
+
 pub fn path2_reviewed_fq12_five_source_closure_evidence_v1_digest(
     evidence: &Path2ReviewedFq12FiveSourceClosureEvidenceV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(evidence)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 five-source closure evidence: {err}"))
+    Ok(
+        Sha256::digest(path2_reviewed_fq12_five_source_closure_evidence_v1_frame(
+            evidence,
+        ))
+        .into(),
+    )
 }
 
 pub fn path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
@@ -20486,6 +20593,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "path2_reviewed_fq12_five_source_closure_evidence_v1",
         "path2_reviewed_fq12_five_source_closure_evidence_all_facts_true",
         "path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1",
+        "path2_reviewed_fq12_five_source_closure_evidence_v1_frame",
         "path2_reviewed_fq12_five_source_closure_evidence_v1_digest",
         "verify_path2_reviewed_fq12_five_source_closure_evidence_v1",
         "public_native_account_view_v1",
@@ -46613,6 +46721,16 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             path2_reviewed_fq12_five_source_closure_evidence_v1_digest(&five_source_evidence)
                 .unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        let five_source_frame =
+            path2_reviewed_fq12_five_source_closure_evidence_v1_frame(&five_source_evidence);
+        assert!(!five_source_frame.is_empty());
+        let five_source_frame_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(&five_source_frame).into();
+        assert_eq!(
+            path2_reviewed_fq12_five_source_closure_evidence_v1_digest(&five_source_evidence)
+                .unwrap(),
+            five_source_frame_digest
         );
         assert_eq!(
             path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1(
