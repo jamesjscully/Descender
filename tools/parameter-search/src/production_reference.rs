@@ -7724,6 +7724,7 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "path2_reviewed_fq12_five_source_closure_evidence_v1",
         "path2_reviewed_fq12_five_source_closure_evidence_v1_digest",
         "path2_reviewed_fq12_five_source_closure_evidence_all_facts_true",
+        "path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1",
         "verify_path2_reviewed_fq12_five_source_closure_evidence_v1",
         "validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit",
         "bridge_audit_validated: true",
@@ -9299,20 +9300,35 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
         && evidence.lean_full_signature_hidden_source_handoff_present
 }
 
-pub fn verify_path2_reviewed_fq12_five_source_closure_evidence_v1(
+pub fn path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1(
     evidence: &Path2ReviewedFq12FiveSourceClosureEvidenceV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
     let expected = path2_reviewed_fq12_five_source_closure_evidence_v1()?;
     if expected != *evidence {
         return Err("Path 2 reviewed Fq12 five-source closure evidence mismatch".to_string());
     }
+    if evidence.schema != PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA {
+        return Err(
+            "Path 2 reviewed Fq12 five-source closure evidence schema mismatch".to_string(),
+        );
+    }
+    if !evidence.bridge_audit_validated {
+        return Err("Path 2 reviewed Fq12 five-source bridge audit was not validated".to_string());
+    }
+    path2_reviewed_fq12_five_source_closure_evidence_v1_digest(evidence)
+}
+
+pub fn verify_path2_reviewed_fq12_five_source_closure_evidence_v1(
+    evidence: &Path2ReviewedFq12FiveSourceClosureEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let digest = path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1(evidence)?;
     if !path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(evidence) {
         return Err(
             "Path 2 reviewed Fq12 five-source closure evidence has an unsatisfied component fact"
                 .to_string(),
         );
     }
-    path2_reviewed_fq12_five_source_closure_evidence_v1_digest(evidence)
+    Ok(digest)
 }
 
 pub fn path2_creation_hidden_source_statement_v1_from_reviewed(
@@ -20351,6 +20367,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "verify_path2_native_checked_core_byte_instantiation_evidence_v1",
         "path2_reviewed_fq12_five_source_closure_evidence_v1",
         "path2_reviewed_fq12_five_source_closure_evidence_all_facts_true",
+        "path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1",
         "path2_reviewed_fq12_five_source_closure_evidence_v1_digest",
         "verify_path2_reviewed_fq12_five_source_closure_evidence_v1",
         "public_native_account_view_v1",
@@ -20772,7 +20789,7 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
     ) {
         (Some(evidence), Some(expected_digest)) => {
             matches!(
-                verify_path2_reviewed_fq12_five_source_closure_evidence_v1(evidence),
+                path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1(evidence),
                 Ok(verified_digest) if verified_digest == expected_digest
             )
         }
@@ -46315,6 +46332,14 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             path2_reviewed_fq12_five_source_closure_evidence_v1_digest(&five_source_evidence)
                 .unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        assert_eq!(
+            path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1(
+                &five_source_evidence
+            )
+            .unwrap(),
+            path2_reviewed_fq12_five_source_closure_evidence_v1_digest(&five_source_evidence)
+                .unwrap()
         );
         assert_eq!(
             verify_path2_reviewed_fq12_five_source_closure_evidence_v1(&five_source_evidence)

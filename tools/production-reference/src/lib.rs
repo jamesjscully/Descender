@@ -308,6 +308,7 @@ pub use descender_parameter_search::production_reference::{
     path2_native_transcript_projection_v1_bytes, path2_native_transcript_projection_v1_digest,
     path2_native_verifier_pipeline_verdict_v1_digest,
     path2_reviewed_fq12_five_source_closure_evidence_all_facts_true,
+    path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1,
     path2_reviewed_fq12_five_source_closure_evidence_v1,
     path2_reviewed_fq12_five_source_closure_evidence_v1_digest,
     production_callback_boundary_classification, production_canonical_node_store_conformance_check,
