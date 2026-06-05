@@ -255,6 +255,8 @@ pub const PRODUCTION_DEPLOYMENT_PREFLIGHT_CERTIFICATE_DOMAIN: &str =
     "Descender.Signature.q12289.local_delta.production_deployment_preflight_certificate.v1";
 pub const PATH2_REVIEWED_FQ12_HIDDEN_SOURCE_SEMANTICS_BRIDGE_AUDIT_DOMAIN: &str =
     "Descender.Path2.reviewed_fq12.hidden_source_semantics_bridge_audit.v1";
+pub const PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.reviewed_fq12.five_source_closure_evidence.v1";
 pub const PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN: &str = "DESCENDER_SLOT_LEAF_V1";
 pub const PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN: &str = "DESCENDER_SLOT_LEAF_V2";
 pub const PATH2_CREATION_HIDDEN_SOURCE_STATEMENT_DOMAIN: &str =
@@ -6936,6 +6938,27 @@ pub struct Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     pub blocker: &'static str,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
+    pub schema: &'static str,
+    pub bridge_audit_digest: [u8; DIGEST_BYTES],
+    pub bridge_audit_validated: bool,
+    pub selected_rust_model_five_source_inputs_ready: bool,
+    pub rust_payload_projection_law_present: bool,
+    pub rust_extraction_certificate_availability_present: bool,
+    pub role_root_lift_source_present: bool,
+    pub selected_source_route_byte_source_present: bool,
+    pub assembly_field_local_native_components_present: bool,
+    pub compatibility_field_extraction_components_present: bool,
+    pub shared_digest_frame_witness_byte_source_contract_present: bool,
+    pub active_field_local_digest_frame_witness_byte_component_surfaces_present: bool,
+    pub lean_active_five_source_boundary_route_present: bool,
+    pub lean_full_signature_hidden_source_handoff_present: bool,
+    pub extractor_theorem_instantiated: bool,
+    pub semantics_bridge_complete: bool,
+    pub cleanup_policy: &'static str,
+}
+
 pub fn production_deployment_preflight() -> ProductionDeploymentPreflight {
     let callback_boundaries_ok = verify_default_deployment_callback_boundaries().is_ok();
     let reviewed_target_codec_present = REVIEWED_ACCOUNT_CARRIED_TRANSACTION_SIGNATURE_BYTES
@@ -7611,6 +7634,9 @@ fn lean_path2_full_signature_hidden_source_handoff_present_v1() -> bool {
 fn path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1() -> bool {
     let boundary_source =
         include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
+    if !path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() {
+        return false;
+    }
     if path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
         boundary_source,
     ) {
@@ -7630,6 +7656,79 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1() ->
         theorem_source,
         theorem_name,
     )
+}
+
+fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool {
+    let source = include_str!("production_reference.rs");
+    let Some(struct_start) =
+        source.find("\npub struct Path2ReviewedFq12FiveSourceClosureEvidenceV1")
+    else {
+        return false;
+    };
+    let struct_end = source[struct_start..]
+        .find("\n\npub fn production_deployment_preflight")
+        .map(|offset| struct_start + offset)
+        .unwrap_or(source.len());
+    let struct_source = &source[struct_start..struct_end];
+
+    let Some(function_start) =
+        source.find("\npub fn path2_reviewed_fq12_five_source_closure_evidence_v1")
+    else {
+        return false;
+    };
+    let function_end = source[function_start..]
+        .find("\npub fn path2_creation_hidden_source_statement_v1_from_reviewed")
+        .map(|offset| function_start + offset)
+        .unwrap_or(source.len());
+    let function_source = &source[function_start..function_end];
+
+    let struct_checks = [
+        "Path2ReviewedFq12FiveSourceClosureEvidenceV1",
+        "bridge_audit_digest",
+        "bridge_audit_validated",
+        "selected_rust_model_five_source_inputs_ready",
+        "rust_payload_projection_law_present",
+        "rust_extraction_certificate_availability_present",
+        "role_root_lift_source_present",
+        "selected_source_route_byte_source_present",
+        "assembly_field_local_native_components_present",
+        "compatibility_field_extraction_components_present",
+        "shared_digest_frame_witness_byte_source_contract_present",
+        "active_field_local_digest_frame_witness_byte_component_surfaces_present",
+        "lean_active_five_source_boundary_route_present",
+        "lean_full_signature_hidden_source_handoff_present",
+        "extractor_theorem_instantiated",
+        "semantics_bridge_complete",
+        "cleanup_policy",
+    ];
+    let function_checks = [
+        "PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA",
+        "path2_reviewed_fq12_five_source_closure_evidence_v1",
+        "path2_reviewed_fq12_five_source_closure_evidence_v1_digest",
+        "path2_reviewed_fq12_five_source_closure_evidence_all_facts_true",
+        "verify_path2_reviewed_fq12_five_source_closure_evidence_v1",
+        "validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit",
+        "bridge_audit_validated: true",
+        "selected_rust_model_five_source_inputs_ready: audit",
+        "rust_payload_projection_law_present: audit.rust_payload_projection_law_present",
+        "rust_extraction_certificate_availability_present: audit",
+        "role_root_lift_source_present: audit.full_native_opening_role_lift_certificate_present",
+        "selected_source_route_byte_source_present: audit",
+        "assembly_field_local_native_components_present: audit",
+        "compatibility_field_extraction_components_present: audit",
+        "shared_digest_frame_witness_byte_source_contract_present: audit",
+        "active_field_local_digest_frame_witness_byte_component_surfaces_present: audit",
+        "lean_active_five_source_boundary_route_present: audit",
+        "lean_full_signature_hidden_source_handoff_present: audit",
+        "extractor_theorem_instantiated: audit.extractor_theorem_instantiated",
+        "semantics_bridge_complete: audit.semantics_bridge_complete",
+    ];
+    struct_checks
+        .iter()
+        .all(|marker| struct_source.contains(marker))
+        && function_checks
+            .iter()
+            .all(|marker| function_source.contains(marker))
 }
 
 fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
@@ -9077,6 +9176,82 @@ pub fn validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
         );
     }
     Ok(())
+}
+
+pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
+-> Result<Path2ReviewedFq12FiveSourceClosureEvidenceV1, String> {
+    let audit = path2_reviewed_fq12_hidden_source_semantics_bridge_audit();
+    validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(&audit)?;
+    Ok(Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
+        schema: PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA,
+        bridge_audit_digest: audit.digest,
+        bridge_audit_validated: true,
+        selected_rust_model_five_source_inputs_ready: audit
+            .selected_rust_model_five_source_inputs_ready,
+        rust_payload_projection_law_present: audit.rust_payload_projection_law_present,
+        rust_extraction_certificate_availability_present: audit
+            .rust_extraction_certificate_availability_present,
+        role_root_lift_source_present: audit.full_native_opening_role_lift_certificate_present,
+        selected_source_route_byte_source_present: audit
+            .rust_selected_source_route_byte_source_contract_present,
+        assembly_field_local_native_components_present: audit
+            .rust_assembly_field_local_native_components_present,
+        compatibility_field_extraction_components_present: audit
+            .rust_compatibility_field_extraction_components_present,
+        shared_digest_frame_witness_byte_source_contract_present: audit
+            .rust_shared_digest_frame_witness_byte_source_contract_present,
+        active_field_local_digest_frame_witness_byte_component_surfaces_present: audit
+            .active_field_local_digest_frame_witness_byte_component_surfaces_present,
+        lean_active_five_source_boundary_route_present: audit
+            .lean_active_five_source_boundary_route_present,
+        lean_full_signature_hidden_source_handoff_present: audit
+            .lean_full_signature_hidden_source_handoff_present,
+        extractor_theorem_instantiated: audit.extractor_theorem_instantiated,
+        semantics_bridge_complete: audit.semantics_bridge_complete,
+        cleanup_policy: "five-source closure evidence is public, digest-bound, and records proof-closure status separately",
+    })
+}
+
+pub fn path2_reviewed_fq12_five_source_closure_evidence_v1_digest(
+    evidence: &Path2ReviewedFq12FiveSourceClosureEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    serde_json::to_vec(evidence)
+        .map(|bytes| Sha256::digest(bytes).into())
+        .map_err(|err| format!("encode Path 2 five-source closure evidence: {err}"))
+}
+
+pub fn path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
+    evidence: &Path2ReviewedFq12FiveSourceClosureEvidenceV1,
+) -> bool {
+    evidence.schema == PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA
+        && evidence.bridge_audit_validated
+        && evidence.selected_rust_model_five_source_inputs_ready
+        && evidence.rust_payload_projection_law_present
+        && evidence.rust_extraction_certificate_availability_present
+        && evidence.role_root_lift_source_present
+        && evidence.selected_source_route_byte_source_present
+        && evidence.assembly_field_local_native_components_present
+        && evidence.compatibility_field_extraction_components_present
+        && evidence.shared_digest_frame_witness_byte_source_contract_present
+        && evidence.active_field_local_digest_frame_witness_byte_component_surfaces_present
+        && evidence.lean_active_five_source_boundary_route_present
+        && evidence.lean_full_signature_hidden_source_handoff_present
+}
+
+pub fn verify_path2_reviewed_fq12_five_source_closure_evidence_v1(
+    evidence: &Path2ReviewedFq12FiveSourceClosureEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let expected = path2_reviewed_fq12_five_source_closure_evidence_v1()?;
+    if expected != *evidence {
+        return Err("Path 2 reviewed Fq12 five-source closure evidence mismatch".to_string());
+    }
+    if !path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(evidence) {
+        return Err(
+            "Path 2 reviewed Fq12 five-source closure evidence has an unsatisfied component fact"
+                .to_string(),
+        );
+    }
+    path2_reviewed_fq12_five_source_closure_evidence_v1_digest(evidence)
 }
 
 pub fn path2_creation_hidden_source_statement_v1_from_reviewed(
@@ -20093,9 +20268,11 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "Path2NativeConsensusCarrierV1",
         "Path2NativeConsensusCarrierPreflightReportV1",
         "Path2NativeCheckedCoreByteInstantiationEvidenceV1",
+        "Path2ReviewedFq12FiveSourceClosureEvidenceV1",
         "Path2NativeDeploymentPreflightV1",
         "Path2NativeVerifierPipelineVerdictV1",
         "PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA",
+        "PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA",
         "path2_native_consensus_carrier_v1_from_assembly",
         "validate_path2_native_consensus_carrier_v1",
         "path2_native_consensus_carrier_v1_bytes",
@@ -20111,6 +20288,10 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "path2_native_checked_core_byte_instantiation_evidence_all_facts_true",
         "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
         "verify_path2_native_checked_core_byte_instantiation_evidence_v1",
+        "path2_reviewed_fq12_five_source_closure_evidence_v1",
+        "path2_reviewed_fq12_five_source_closure_evidence_all_facts_true",
+        "path2_reviewed_fq12_five_source_closure_evidence_v1_digest",
+        "verify_path2_reviewed_fq12_five_source_closure_evidence_v1",
         "public_native_account_view_v1",
         "public_native_account_view_v1_json",
         "public_native_spend_view_v1",
@@ -45887,6 +46068,58 @@ theorem selectedRustModelFiveSourceVerifiedProof :
         assert!(audit.lean_full_signature_hidden_source_handoff_present);
         assert!(lean_path2_full_signature_hidden_source_handoff_present_v1());
         assert!(audit.selected_rust_model_five_source_inputs_ready);
+        assert!(path2_reviewed_fq12_five_source_closure_evidence_source_present_v1());
+        let five_source_evidence = path2_reviewed_fq12_five_source_closure_evidence_v1().unwrap();
+        assert_eq!(
+            five_source_evidence.schema,
+            PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA
+        );
+        assert_eq!(five_source_evidence.bridge_audit_digest, audit.digest);
+        assert!(five_source_evidence.bridge_audit_validated);
+        assert!(five_source_evidence.selected_rust_model_five_source_inputs_ready);
+        assert!(five_source_evidence.rust_payload_projection_law_present);
+        assert!(five_source_evidence.rust_extraction_certificate_availability_present);
+        assert!(five_source_evidence.role_root_lift_source_present);
+        assert!(five_source_evidence.selected_source_route_byte_source_present);
+        assert!(five_source_evidence.assembly_field_local_native_components_present);
+        assert!(five_source_evidence.compatibility_field_extraction_components_present);
+        assert!(five_source_evidence.shared_digest_frame_witness_byte_source_contract_present);
+        assert!(
+            five_source_evidence
+                .active_field_local_digest_frame_witness_byte_component_surfaces_present
+        );
+        assert!(five_source_evidence.lean_active_five_source_boundary_route_present);
+        assert!(five_source_evidence.lean_full_signature_hidden_source_handoff_present);
+        assert!(!five_source_evidence.extractor_theorem_instantiated);
+        assert!(!five_source_evidence.semantics_bridge_complete);
+        assert!(
+            path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(&five_source_evidence)
+        );
+        assert_ne!(
+            path2_reviewed_fq12_five_source_closure_evidence_v1_digest(&five_source_evidence)
+                .unwrap(),
+            [0_u8; DIGEST_BYTES]
+        );
+        assert_eq!(
+            verify_path2_reviewed_fq12_five_source_closure_evidence_v1(&five_source_evidence)
+                .unwrap(),
+            path2_reviewed_fq12_five_source_closure_evidence_v1_digest(&five_source_evidence)
+                .unwrap()
+        );
+        let mut tampered_five_source_evidence = five_source_evidence.clone();
+        tampered_five_source_evidence.rust_payload_projection_law_present = false;
+        assert!(
+            !path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
+                &tampered_five_source_evidence
+            )
+        );
+        assert_eq!(
+            verify_path2_reviewed_fq12_five_source_closure_evidence_v1(
+                &tampered_five_source_evidence
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 five-source closure evidence mismatch"
+        );
         assert!(audit.selected_rust_canonical_byte_and_witness_package_surfaces_present);
         assert!(audit.rust_concrete_role_root_field_binding_present);
         assert!(path2_reviewed_fq12_concrete_role_root_field_binding_source_present_v1());
