@@ -259,6 +259,8 @@ pub const PATH2_REVIEWED_FQ12_HIDDEN_SOURCE_SEMANTICS_BRIDGE_AUDIT_DOMAIN: &str 
     "Descender.Path2.reviewed_fq12.hidden_source_semantics_bridge_audit.v1";
 pub const PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.reviewed_fq12.five_source_closure_evidence.v1";
+pub const PATH2_REVIEWED_FQ12_BOUNDARY_BASE_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.reviewed_fq12.boundary_base_evidence.v1";
 pub const PATH2_REVIEWED_FQ12_SELECTED_SOURCE_ROUTE_BYTE_SOURCE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.reviewed_fq12.selected_source_route_byte_source_evidence.v1";
 pub const PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN: &str = "DESCENDER_SLOT_LEAF_V1";
@@ -7406,6 +7408,17 @@ pub struct Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2ReviewedFq12BoundaryBaseEvidenceV1 {
+    pub schema: &'static str,
+    pub schema_matches: bool,
+    pub report_digest_verified: bool,
+    pub payload_projection_law_pinned: bool,
+    pub extraction_certificate_availability_pinned: bool,
+    pub native_boundary_payload_binding_pinned: bool,
+    pub boundary_base_negative_controls_passed: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1 {
     pub schema: &'static str,
     pub schema_matches: bool,
@@ -8182,6 +8195,17 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         .unwrap_or(source.len());
     let struct_source = &source[struct_start..struct_end];
 
+    let Some(boundary_base_struct_start) =
+        source.find("\npub struct Path2ReviewedFq12BoundaryBaseEvidenceV1")
+    else {
+        return false;
+    };
+    let boundary_base_struct_end = source[boundary_base_struct_start..]
+        .find("\n\n#[derive(Clone, Debug, PartialEq, Eq, Serialize)]")
+        .map(|offset| boundary_base_struct_start + offset)
+        .unwrap_or(source.len());
+    let boundary_base_struct_source = &source[boundary_base_struct_start..boundary_base_struct_end];
+
     let Some(function_start) =
         source.find("\npub fn path2_reviewed_fq12_five_source_closure_evidence_v1")
     else {
@@ -8192,6 +8216,23 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         .map(|offset| function_start + offset)
         .unwrap_or(source.len());
     let function_source = &source[function_start..function_end];
+
+    let Some(boundary_base_function_start) =
+        source.find("\npub fn path2_reviewed_fq12_boundary_base_evidence_v1")
+    else {
+        return false;
+    };
+    let boundary_base_function_end = source[boundary_base_function_start..]
+        .find("\npub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1")
+        .map(|offset| boundary_base_function_start + offset)
+        .unwrap_or(source.len());
+    let boundary_base_function_source =
+        &source[boundary_base_function_start..boundary_base_function_end];
+
+    let boundary_base_evidence = match path2_reviewed_fq12_boundary_base_evidence_v1() {
+        Ok(evidence) => evidence,
+        Err(_) => return false,
+    };
 
     let struct_checks = [
         "Path2ReviewedFq12FiveSourceClosureEvidenceV1",
@@ -8214,6 +8255,15 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "extractor_theorem_instantiated",
         "semantics_bridge_complete",
         "cleanup_policy",
+    ];
+    let boundary_base_struct_checks = [
+        "Path2ReviewedFq12BoundaryBaseEvidenceV1",
+        "schema_matches",
+        "report_digest_verified",
+        "payload_projection_law_pinned",
+        "extraction_certificate_availability_pinned",
+        "native_boundary_payload_binding_pinned",
+        "boundary_base_negative_controls_passed",
     ];
     let function_checks = [
         "PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA",
@@ -8262,12 +8312,35 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "extractor_theorem_instantiated: audit.extractor_theorem_instantiated",
         "semantics_bridge_complete: audit.semantics_bridge_complete",
     ];
+    let boundary_base_function_checks = [
+        "PATH2_REVIEWED_FQ12_BOUNDARY_BASE_EVIDENCE_SCHEMA",
+        "path2_reviewed_fq12_boundary_base_evidence_v1",
+        "path2_reviewed_fq12_boundary_base_evidence_v1_frame",
+        "path2_reviewed_fq12_boundary_base_evidence_v1_digest",
+        "path2_reviewed_fq12_boundary_base_evidence_all_facts_true",
+        "path2_reviewed_fq12_boundary_base_evidence_report_verified_v1",
+        "verify_path2_reviewed_fq12_boundary_base_evidence_v1",
+        "path2_reviewed_fq12_payload_projection_law_source_present_v1",
+        "path2_reviewed_fq12_extraction_certificate_availability_source_present_v1",
+        "path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1",
+        "b\"payload_projection_law_pinned\"",
+        "b\"extraction_certificate_availability_pinned\"",
+        "b\"native_boundary_payload_binding_pinned\"",
+        "b\"boundary_base_negative_controls_passed\"",
+    ];
     struct_checks
         .iter()
         .all(|marker| struct_source.contains(marker))
+        && boundary_base_struct_checks
+            .iter()
+            .all(|marker| boundary_base_struct_source.contains(marker))
         && function_checks
             .iter()
             .all(|marker| function_source.contains(marker))
+        && boundary_base_function_checks
+            .iter()
+            .all(|marker| boundary_base_function_source.contains(marker))
+        && verify_path2_reviewed_fq12_boundary_base_evidence_v1(&boundary_base_evidence).is_ok()
 }
 
 fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
@@ -10180,6 +10253,122 @@ pub fn verify_path2_reviewed_fq12_five_source_closure_evidence_v1(
     if !path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(evidence) {
         return Err(
             "Path 2 reviewed Fq12 five-source closure evidence has an unsatisfied component fact"
+                .to_string(),
+        );
+    }
+    Ok(digest)
+}
+
+pub fn path2_reviewed_fq12_boundary_base_evidence_v1()
+-> Result<Path2ReviewedFq12BoundaryBaseEvidenceV1, String> {
+    let payload_projection_law_pinned =
+        path2_reviewed_fq12_payload_projection_law_source_present_v1();
+    let extraction_certificate_availability_pinned =
+        path2_reviewed_fq12_extraction_certificate_availability_source_present_v1();
+    let native_boundary_payload_binding_pinned =
+        path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1();
+    Ok(Path2ReviewedFq12BoundaryBaseEvidenceV1 {
+        schema: PATH2_REVIEWED_FQ12_BOUNDARY_BASE_EVIDENCE_SCHEMA,
+        schema_matches: true,
+        report_digest_verified: true,
+        payload_projection_law_pinned,
+        extraction_certificate_availability_pinned,
+        native_boundary_payload_binding_pinned,
+        boundary_base_negative_controls_passed: payload_projection_law_pinned
+            && extraction_certificate_availability_pinned
+            && native_boundary_payload_binding_pinned,
+    })
+}
+
+pub fn path2_reviewed_fq12_boundary_base_evidence_v1_frame(
+    evidence: &Path2ReviewedFq12BoundaryBaseEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"schema_matches",
+        u64::from(evidence.schema_matches),
+    );
+    append_u64(
+        &mut frame,
+        b"report_digest_verified",
+        u64::from(evidence.report_digest_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"payload_projection_law_pinned",
+        u64::from(evidence.payload_projection_law_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"extraction_certificate_availability_pinned",
+        u64::from(evidence.extraction_certificate_availability_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"native_boundary_payload_binding_pinned",
+        u64::from(evidence.native_boundary_payload_binding_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"boundary_base_negative_controls_passed",
+        u64::from(evidence.boundary_base_negative_controls_passed),
+    );
+    frame
+}
+
+pub fn path2_reviewed_fq12_boundary_base_evidence_v1_digest(
+    evidence: &Path2ReviewedFq12BoundaryBaseEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    Ok(
+        Sha256::digest(path2_reviewed_fq12_boundary_base_evidence_v1_frame(
+            evidence,
+        ))
+        .into(),
+    )
+}
+
+pub fn path2_reviewed_fq12_boundary_base_evidence_all_facts_true(
+    evidence: &Path2ReviewedFq12BoundaryBaseEvidenceV1,
+) -> bool {
+    evidence.schema == PATH2_REVIEWED_FQ12_BOUNDARY_BASE_EVIDENCE_SCHEMA
+        && evidence.payload_projection_law_pinned
+        && evidence.extraction_certificate_availability_pinned
+        && evidence.native_boundary_payload_binding_pinned
+        && evidence.boundary_base_negative_controls_passed
+}
+
+pub fn path2_reviewed_fq12_boundary_base_evidence_report_verified_v1(
+    evidence: &Path2ReviewedFq12BoundaryBaseEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let expected = path2_reviewed_fq12_boundary_base_evidence_v1()?;
+    if expected != *evidence {
+        return Err("Path 2 reviewed Fq12 boundary-base evidence mismatch".to_string());
+    }
+    if evidence.schema != PATH2_REVIEWED_FQ12_BOUNDARY_BASE_EVIDENCE_SCHEMA {
+        return Err("Path 2 reviewed Fq12 boundary-base evidence schema mismatch".to_string());
+    }
+    if !evidence.schema_matches {
+        return Err(
+            "Path 2 reviewed Fq12 boundary-base evidence schema was not matched".to_string(),
+        );
+    }
+    if !evidence.report_digest_verified {
+        return Err(
+            "Path 2 reviewed Fq12 boundary-base evidence digest was not verified".to_string(),
+        );
+    }
+    path2_reviewed_fq12_boundary_base_evidence_v1_digest(evidence)
+}
+
+pub fn verify_path2_reviewed_fq12_boundary_base_evidence_v1(
+    evidence: &Path2ReviewedFq12BoundaryBaseEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let digest = path2_reviewed_fq12_boundary_base_evidence_report_verified_v1(evidence)?;
+    if !path2_reviewed_fq12_boundary_base_evidence_all_facts_true(evidence) {
+        return Err(
+            "Path 2 reviewed Fq12 boundary-base evidence has an unsatisfied component fact"
                 .to_string(),
         );
     }
@@ -51208,6 +51397,70 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             !path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
                 "def selectedRustPayloadProjectionLaw := proved_payload_projection_law"
             )
+        );
+    }
+
+    #[test]
+    fn path2_reviewed_fq12_boundary_base_evidence_is_digest_bound() {
+        assert!(path2_reviewed_fq12_hidden_source_payload_binding_source_present_v1());
+        assert!(path2_reviewed_fq12_payload_projection_law_source_present_v1());
+        assert!(path2_reviewed_fq12_extraction_certificate_availability_source_present_v1());
+        let evidence = path2_reviewed_fq12_boundary_base_evidence_v1().unwrap();
+        assert_eq!(
+            evidence.schema,
+            PATH2_REVIEWED_FQ12_BOUNDARY_BASE_EVIDENCE_SCHEMA
+        );
+        assert!(evidence.schema_matches);
+        assert!(evidence.report_digest_verified);
+        assert!(evidence.payload_projection_law_pinned);
+        assert!(evidence.extraction_certificate_availability_pinned);
+        assert!(evidence.native_boundary_payload_binding_pinned);
+        assert!(evidence.boundary_base_negative_controls_passed);
+        assert!(path2_reviewed_fq12_boundary_base_evidence_all_facts_true(
+            &evidence
+        ));
+
+        let frame = path2_reviewed_fq12_boundary_base_evidence_v1_frame(&evidence);
+        assert!(!frame.is_empty());
+        let frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&frame).into();
+        assert_eq!(
+            path2_reviewed_fq12_boundary_base_evidence_v1_digest(&evidence).unwrap(),
+            frame_digest
+        );
+        assert_eq!(
+            path2_reviewed_fq12_boundary_base_evidence_report_verified_v1(&evidence).unwrap(),
+            frame_digest
+        );
+        assert_eq!(
+            verify_path2_reviewed_fq12_boundary_base_evidence_v1(&evidence).unwrap(),
+            frame_digest
+        );
+
+        let mut missing_projection_law = evidence.clone();
+        missing_projection_law.payload_projection_law_pinned = false;
+        assert!(!path2_reviewed_fq12_boundary_base_evidence_all_facts_true(
+            &missing_projection_law
+        ));
+        assert_eq!(
+            verify_path2_reviewed_fq12_boundary_base_evidence_v1(&missing_projection_law)
+                .unwrap_err(),
+            "Path 2 reviewed Fq12 boundary-base evidence mismatch"
+        );
+
+        let mut schema_unmatched = evidence.clone();
+        schema_unmatched.schema_matches = false;
+        assert_eq!(
+            path2_reviewed_fq12_boundary_base_evidence_report_verified_v1(&schema_unmatched)
+                .unwrap_err(),
+            "Path 2 reviewed Fq12 boundary-base evidence mismatch"
+        );
+
+        let mut digest_unverified = evidence.clone();
+        digest_unverified.report_digest_verified = false;
+        assert_eq!(
+            path2_reviewed_fq12_boundary_base_evidence_report_verified_v1(&digest_unverified)
+                .unwrap_err(),
+            "Path 2 reviewed Fq12 boundary-base evidence mismatch"
         );
     }
 
