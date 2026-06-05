@@ -180,6 +180,17 @@ Those labels are not closure facts; AP2-N001 remains blocked until they are
 replaced or justified by a concrete active `Path2NativeBoundary.Predicates`
 interpretation, or by an equivalent theorem package for exactly the predicate
 model consumed by the hidden-source boundary.
+Follow-up target shaping now names that replacement object explicitly:
+`ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport` records
+the public predicate-model report bits, and
+`ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate` carries the
+report/digest proofs, the concrete `Predicates` value, and every non-vacuity
+and binding obligation currently required by the predicate-model source. Its
+`.toSource` adapter is the intended handoff into
+`ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage`. This still
+does not close AP2-N001; it makes the missing concrete Rust predicate-model
+certificate the next named import rather than a collection of bare `Prop`
+labels.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It

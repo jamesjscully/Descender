@@ -2375,6 +2375,55 @@ def ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget
         payload cert liftCert assemblyCert compatCert bridgeCert
 
 /--
+Public evidence report for the selected Rust native-boundary predicate model.
+
+This report is the structured replacement target for the remaining generic
+model labels.  It still does not construct the predicate interpretation; a
+closing proof must provide a certificate tying this report to the concrete
+`Path2NativeBoundary.Predicates` value used by the active verifier.
+-/
+structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport
+    where
+  schemaMatches : Bool
+  reportDigestVerified : Bool
+  activeBoundaryPredicateModelPinned : Bool
+  payloadAcceptanceModelPinned : Bool
+  extractionCertificateModelPinned : Bool
+  fullOpeningAndAssemblyModelPinned : Bool
+  compatibilityAndExtractionModelPinned : Bool
+  nativeBoundaryBreakModelPinned : Bool
+  nativeBoundaryPredicateRecordComplete : Bool
+  activeVerifierRoutePinned : Bool
+  predicateNegativeControlsPassed : Bool
+
+namespace ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport
+
+/-- The selected predicate-model report has been schema/digest checked. -/
+def ReportVerified
+    (E :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport) :
+    Prop :=
+  E.schemaMatches = true ∧
+    E.reportDigestVerified = true
+
+/-- All public selected predicate-model facts recorded by the report hold. -/
+def FactsAllTrue
+    (E :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport) :
+    Prop :=
+  E.activeBoundaryPredicateModelPinned = true ∧
+    E.payloadAcceptanceModelPinned = true ∧
+      E.extractionCertificateModelPinned = true ∧
+        E.fullOpeningAndAssemblyModelPinned = true ∧
+          E.compatibilityAndExtractionModelPinned = true ∧
+            E.nativeBoundaryBreakModelPinned = true ∧
+              E.nativeBoundaryPredicateRecordComplete = true ∧
+                E.activeVerifierRoutePinned = true ∧
+                  E.predicateNegativeControlsPassed = true
+
+end ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport
+
+/--
 Selected Rust native-boundary predicate-model import target.
 
 The full-spend concrete predicates are not this object: they live over concrete
@@ -2454,6 +2503,121 @@ def toPredicates
   Model.predicates
 
 end ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource
+
+/--
+Proof-bearing selected Rust native-boundary predicate-model certificate.
+
+This is the object a cryptographically closed AP2-N001 route should import
+before constructing the semantics source package: public report/digest proofs,
+the concrete predicate interpretation, and every non-vacuity/binding obligation
+needed by the hidden-source boundary.
+-/
+structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate
+    where
+  evidenceReport :
+    ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport
+  evidenceDigest : ByteArray
+  evidenceReportVerifiedProof :
+    evidenceReport.ReportVerified
+  evidenceFactsAllTrueProof :
+    evidenceReport.FactsAllTrue
+  predicates : Predicates
+  payloadAcceptanceNotVacuous :
+    ¬ (forall b payload, ¬ predicates.reviewedFq12PayloadAccepts b payload)
+  boundaryBreaksNotUniversal :
+    ¬ (forall c b breakEvent, predicates.boundaryBreakFor c b breakEvent)
+  payloadAcceptanceMatchesBoundary :
+    ReviewedFq12PayloadAcceptanceMatchesBoundary predicates
+  extractionCertificateMatchesPayload :
+    ReviewedFq12ExtractionCertificateMatchesPayload predicates
+  extractionCertificateValidityMatchesPayload :
+    ReviewedFq12ExtractionCertificateValidityMatchesPayload predicates
+  certificateExtractionImpliesPayloadExtraction :
+    ReviewedFq12CertificateExtractionImpliesPayloadExtraction predicates
+  payloadExtractionInBoundaryFiber :
+    ReviewedFq12PayloadExtractionInBoundaryFiber predicates
+  payloadExtractionNativeValid :
+    ReviewedFq12PayloadExtractionNativeValid predicates
+  roleLiftValidityBindsExtraction :
+    ReviewedFq12RoleLiftValidityBindsExtractionTarget predicates
+  roleLiftOpeningImpliesCertificateLift :
+    ReviewedFq12RoleLiftOpeningImpliesCertificateLiftTarget predicates
+  assemblyValidityBindsOpening :
+    ReviewedFq12AssemblyValidityBindsOpeningTarget predicates
+  assemblyCertificateImpliesFullNativeAssembly :
+    ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget predicates
+  compatibilityValidityBinds :
+    ReviewedFq12CompatibilityValidityBindsTarget predicates
+  compatibilityExtractionImpliesReviewedExtraction :
+    ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget
+      predicates
+  fullOpeningBridgeDigestValidityBinds :
+    ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget predicates
+
+namespace ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate
+
+/--
+Forget a proof-bearing predicate-model certificate into the existing source
+record target consumed by the semantics source package.
+-/
+def toSource
+    (Cert :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate) :
+    ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
+  predicates := Cert.predicates
+  activeBoundaryPredicateModelPinned :=
+    Cert.evidenceReport.activeBoundaryPredicateModelPinned = true
+  activeBoundaryPredicateModelPinnedProof :=
+    Cert.evidenceFactsAllTrueProof.1
+  payloadAcceptanceNotVacuous := Cert.payloadAcceptanceNotVacuous
+  boundaryBreaksNotUniversal := Cert.boundaryBreaksNotUniversal
+  payloadAcceptanceMatchesBoundary :=
+    Cert.payloadAcceptanceMatchesBoundary
+  extractionCertificateMatchesPayload :=
+    Cert.extractionCertificateMatchesPayload
+  extractionCertificateValidityMatchesPayload :=
+    Cert.extractionCertificateValidityMatchesPayload
+  certificateExtractionImpliesPayloadExtraction :=
+    Cert.certificateExtractionImpliesPayloadExtraction
+  payloadExtractionInBoundaryFiber :=
+    Cert.payloadExtractionInBoundaryFiber
+  payloadExtractionNativeValid :=
+    Cert.payloadExtractionNativeValid
+  roleLiftValidityBindsExtraction :=
+    Cert.roleLiftValidityBindsExtraction
+  roleLiftOpeningImpliesCertificateLift :=
+    Cert.roleLiftOpeningImpliesCertificateLift
+  assemblyValidityBindsOpening :=
+    Cert.assemblyValidityBindsOpening
+  assemblyCertificateImpliesFullNativeAssembly :=
+    Cert.assemblyCertificateImpliesFullNativeAssembly
+  compatibilityValidityBinds := Cert.compatibilityValidityBinds
+  compatibilityExtractionImpliesReviewedExtraction :=
+    Cert.compatibilityExtractionImpliesReviewedExtraction
+  fullOpeningBridgeDigestValidityBinds :=
+    Cert.fullOpeningBridgeDigestValidityBinds
+  reviewedFq12PayloadAcceptanceModeled :=
+    Cert.evidenceReport.payloadAcceptanceModelPinned = true
+  reviewedFq12PayloadAcceptanceModeledProof :=
+    Cert.evidenceFactsAllTrueProof.2.1
+  reviewedFq12ExtractionCertificateModelModeled :=
+    Cert.evidenceReport.extractionCertificateModelPinned = true
+  reviewedFq12ExtractionCertificateModelModeledProof :=
+    Cert.evidenceFactsAllTrueProof.2.2.1
+  reviewedFq12FullOpeningAndAssemblyModelModeled :=
+    Cert.evidenceReport.fullOpeningAndAssemblyModelPinned = true
+  reviewedFq12FullOpeningAndAssemblyModelModeledProof :=
+    Cert.evidenceFactsAllTrueProof.2.2.2.1
+  reviewedFq12CompatibilityAndExtractionModelModeled :=
+    Cert.evidenceReport.compatibilityAndExtractionModelPinned = true
+  reviewedFq12CompatibilityAndExtractionModelModeledProof :=
+    Cert.evidenceFactsAllTrueProof.2.2.2.2.1
+  nativeBoundaryBreakModelModeled :=
+    Cert.evidenceReport.nativeBoundaryBreakModelPinned = true
+  nativeBoundaryBreakModelModeledProof :=
+    Cert.evidenceFactsAllTrueProof.2.2.2.2.2.1
+
+end ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate
 
 /--
 Concrete native-boundary semantics import target for the selected Rust path.

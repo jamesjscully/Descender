@@ -1227,6 +1227,12 @@ It also reports
 covering the active-model pin plus the five modeled-surface labels still
 represented as generic `Prop` fields in the active predicate-model source
 target. These labels are target placeholders, not cryptographic closure facts.
+The target route now names the proof-bearing replacement surface:
+`native_boundary_predicate_model_evidence_report_target_present = true`,
+`native_boundary_predicate_model_certificate_target_present = true`, and
+`native_boundary_predicate_model_certificate_to_source_present = true`.
+The certificate is the intended import object for the concrete active Rust
+native-boundary predicate interpretation before source records are supplied.
 This pins the current failure mode as a missing concrete native-boundary
 semantics import, not a missing byte/digest evidence report.
 Lean now names that import target as

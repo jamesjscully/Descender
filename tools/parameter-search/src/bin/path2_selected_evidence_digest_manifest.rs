@@ -136,6 +136,14 @@ fn main() -> Result<(), String> {
                 source_record_subcheck.native_boundary_predicates_record_present,
             "native_boundary_predicate_model_source_target_present":
                 source_record_subcheck.native_boundary_predicate_model_source_target_present,
+            "native_boundary_predicate_model_evidence_report_target_present":
+                source_record_subcheck
+                    .native_boundary_predicate_model_evidence_report_target_present,
+            "native_boundary_predicate_model_certificate_target_present":
+                source_record_subcheck.native_boundary_predicate_model_certificate_target_present,
+            "native_boundary_predicate_model_certificate_to_source_present":
+                source_record_subcheck
+                    .native_boundary_predicate_model_certificate_to_source_present,
             "native_boundary_predicate_model_generic_evidence_labels_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_generic_evidence_labels_present,

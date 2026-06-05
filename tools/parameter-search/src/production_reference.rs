@@ -7547,6 +7547,9 @@ pub struct Path2SelectedRustModelConcreteDefinitionChecklistV1 {
 pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_predicates_record_present: bool,
     pub native_boundary_predicate_model_source_target_present: bool,
+    pub native_boundary_predicate_model_evidence_report_target_present: bool,
+    pub native_boundary_predicate_model_certificate_target_present: bool,
+    pub native_boundary_predicate_model_certificate_to_source_present: bool,
     pub native_boundary_predicate_model_generic_evidence_labels_present: bool,
     pub native_boundary_predicate_model_remaining_generic_evidence_label_count: u8,
     pub native_boundary_payload_acceptance_antivacuity_target_present: bool,
@@ -8666,6 +8669,52 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
+    let native_boundary_predicate_model_evidence_report_target_present = [
+        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
+        "schemaMatches : Bool",
+        "reportDigestVerified : Bool",
+        "activeBoundaryPredicateModelPinned : Bool",
+        "payloadAcceptanceModelPinned : Bool",
+        "extractionCertificateModelPinned : Bool",
+        "fullOpeningAndAssemblyModelPinned : Bool",
+        "compatibilityAndExtractionModelPinned : Bool",
+        "nativeBoundaryBreakModelPinned : Bool",
+        "nativeBoundaryPredicateRecordComplete : Bool",
+        "activeVerifierRoutePinned : Bool",
+        "predicateNegativeControlsPassed : Bool",
+        "def ReportVerified",
+        "def FactsAllTrue",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_predicate_model_certificate_target_present = [
+        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+        "evidenceReport :",
+        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
+        "evidenceDigest : ByteArray",
+        "evidenceReportVerifiedProof",
+        "evidenceFactsAllTrueProof",
+        "predicates : Predicates",
+        "payloadAcceptanceNotVacuous",
+        "boundaryBreaksNotUniversal",
+        "payloadAcceptanceMatchesBoundary",
+        "fullOpeningBridgeDigestValidityBinds",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_predicate_model_certificate_to_source_present = [
+        "namespace ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+        "def toSource",
+        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
+        "Cert.evidenceReport.activeBoundaryPredicateModelPinned = true",
+        "Cert.evidenceFactsAllTrueProof.1",
+        "Cert.evidenceReport.payloadAcceptanceModelPinned = true",
+        "Cert.evidenceFactsAllTrueProof.2.1",
+        "Cert.evidenceReport.nativeBoundaryBreakModelPinned = true",
+        "Cert.evidenceFactsAllTrueProof.2.2.2.2.2.1",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
     let native_boundary_predicate_model_generic_evidence_label_markers = [
         "activeBoundaryPredicateModelPinned : Prop",
         "reviewedFq12PayloadAcceptanceModeled : Prop",
@@ -9181,6 +9230,9 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     Path2SelectedRustModelSourceRecordSubcheckV1 {
         native_boundary_predicates_record_present,
         native_boundary_predicate_model_source_target_present,
+        native_boundary_predicate_model_evidence_report_target_present,
+        native_boundary_predicate_model_certificate_target_present,
+        native_boundary_predicate_model_certificate_to_source_present,
         native_boundary_predicate_model_generic_evidence_labels_present,
         native_boundary_predicate_model_remaining_generic_evidence_label_count,
         native_boundary_payload_acceptance_antivacuity_target_present,
@@ -56510,6 +56562,13 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
         assert!(source_record_subcheck.native_boundary_predicates_record_present);
         assert!(source_record_subcheck.native_boundary_predicate_model_source_target_present);
+        assert!(
+            source_record_subcheck.native_boundary_predicate_model_evidence_report_target_present
+        );
+        assert!(source_record_subcheck.native_boundary_predicate_model_certificate_target_present);
+        assert!(
+            source_record_subcheck.native_boundary_predicate_model_certificate_to_source_present
+        );
         assert!(
             source_record_subcheck.native_boundary_predicate_model_generic_evidence_labels_present
         );
