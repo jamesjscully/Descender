@@ -498,6 +498,133 @@ def ReviewedFq12SelectedRustFiveSourceClosureEvidence.SubEvidenceDigestsMatch
     witnessSourcesCertificate.evidenceDigest
 
 /--
+Concrete selected Rust/model five-source report value.
+
+This is intentionally fail-closed: it gives the final theorem a named selected
+report target without proving that the public Rust evidence has been imported
+and verified in Lean.  The `ReportVerified` and `FactsAllTrue` proofs remain
+separate selected definitions that must be supplied before the certificate can
+close AP2-N001.
+-/
+def selectedRustFiveSourceEvidenceReport :
+    ReviewedFq12SelectedRustFiveSourceClosureEvidence where
+  schemaMatches := false
+  bridgeAuditDigest := ByteArray.mk #[]
+  bridgeAuditDigestBound := false
+  hashByteDomainEvidenceDigest := ByteArray.mk #[]
+  hashByteDomainEvidenceVerified := false
+  hiddenSourceFrameDomainMatchesHashEvidence := false
+  hiddenSourceStatementFrameUsesHashDomainField := false
+  hiddenSourceStatementDigestUsesHashDomainFrame := false
+  hiddenSourceProofDomainMatchesHashEvidence := false
+  hiddenSourceProofTranscriptFrameUsesHashDomainField := false
+  hiddenSourceProofTranscriptDigestUsesHashDomainFrame := false
+  projectionCarrierDomainMatchesHashEvidence := false
+  projectionCarrierBindingFrameUsesHashDomainField := false
+  projectionCarrierBindingDigestSplitsToCheckAndTranscript := false
+  accountWitnessOpeningDomainMatchesHashEvidence := false
+  accountWitnessOpeningDigestUsesHashDomainFrame := false
+  padSeedOpeningDomainMatchesHashEvidence := false
+  padSeedOpeningDigestUsesHashDomainFrame := false
+  padOpeningViewDomainMatchesHashEvidence := false
+  padOpeningStatementDigestUsesHashDomainFrame := false
+  directQueryBudgetSchemaMatches := false
+  directQueryBudgetModeIsDirectSingleSlot := false
+  directQueryBudgetExcludesQBatchFromActiveSymbols := false
+  directQueryBudgetMarksQBatchInactive := false
+  directQueryBudgetOptionalAggregationTermsQBatchOnly := false
+  leanDirectQueryBudgetKeepsQBatchInactivePresent := false
+  boundaryBaseEvidenceDigest := ByteArray.mk #[]
+  boundaryBaseEvidenceVerified := false
+  roleRootLiftEvidenceDigest := ByteArray.mk #[]
+  roleRootLiftEvidenceVerified := false
+  selectedSourceRouteEvidenceDigest := ByteArray.mk #[]
+  selectedSourceRouteEvidenceVerified := false
+  fieldLocalEvidenceDigest := ByteArray.mk #[]
+  fieldLocalEvidenceVerified := false
+  sharedDigestFrameWitnessEvidenceDigest := ByteArray.mk #[]
+  sharedDigestFrameWitnessEvidenceVerified := false
+  reportDigestVerified := false
+  bridgeAuditValidated := false
+  selectedRustModelFiveSourceInputsReady := false
+  rustPayloadProjectionLawPresent := false
+  rustExtractionCertificateAvailabilityPresent := false
+  roleRootLiftSourcePresent := false
+  selectedSourceRouteByteSourcePresent := false
+  assemblyFieldLocalNativeComponentsPresent := false
+  compatibilityFieldExtractionComponentsPresent := false
+  sharedDigestFrameWitnessByteSourceContractPresent := false
+  activeFieldLocalDigestFrameWitnessByteComponentSurfacesPresent := false
+  leanActiveFiveSourceBoundaryRoutePresent := false
+  leanFullSignatureHiddenSourceHandoffPresent := false
+  extractorTheoremInstantiated := false
+  semanticsBridgeComplete := false
+
+/-- Concrete selected Rust/model base-boundary report value, still fail-closed. -/
+def selectedRustBoundaryBaseEvidenceReport :
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceReport where
+  schemaMatches := false
+  reportDigestVerified := false
+  payloadProjectionLawPinned := false
+  extractionCertificateAvailabilityPinned := false
+  nativeBoundaryPayloadBindingPinned := false
+  boundaryBaseNegativeControlsPassed := false
+
+/-- Concrete selected Rust/model role-root/lift report value, still fail-closed. -/
+def selectedRustRoleRootLiftEvidenceReport :
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceReport where
+  schemaMatches := false
+  reportDigestVerified := false
+  concreteRoleRootFieldBindingPinned := false
+  selectedLiftFunctionalityPinned := false
+  roleRootBridgePinned := false
+  roleRootNegativeControlsPassed := false
+
+/-- Concrete selected Rust/model source-route report value, still fail-closed. -/
+def selectedRustSourceRouteEvidenceReport :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport where
+  schemaMatches := false
+  reportDigestVerified := false
+  fieldFrameParserPinned := false
+  routeFrameParserPinned := false
+  sourceRouteAvailabilityPinned := false
+  fieldByteCertificatePinned := false
+  routeByteCertificatePinned := false
+  fieldBindsPinned := false
+  sourceRouteBindsPinned := false
+  aggregateBridgeRejectionPinned := false
+  sourceRouteNegativeControlsPassed := false
+
+/-- Concrete selected Rust/model field/local report value, still fail-closed. -/
+def selectedRustFieldLocalEvidenceReport :
+    ReviewedFq12SelectedRustFieldLocalEvidenceReport where
+  schemaMatches := false
+  reportDigestVerified := false
+  assemblyAvailabilityPinned := false
+  assemblyFieldBindingPinned := false
+  assemblyLocalPredicatesPinned := false
+  assemblyNativeValidityPinned := false
+  compatibilityAvailabilityPinned := false
+  compatibilityFieldBindingPinned := false
+  compatibilityExtractionRulesPinned := false
+  fieldLocalNegativeControlsPassed := false
+
+/-- Concrete selected Rust/model shared-witness report value, still fail-closed. -/
+def selectedRustSharedFrameWitnessEvidenceReport :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport where
+  schemaMatches := false
+  reportDigestVerified := false
+  canonicalWitnessParserPinned := false
+  digestFrameWitnessParserPinned := false
+  sharedDigestFramePinned := false
+  canonicalWitnessByteCertificatePinned := false
+  digestFrameWitnessByteCertificatePinned := false
+  representativeDigestFrameSourcePinned := false
+  canonicalWitnessVerifierPinned := false
+  digestFrameWitnessVerifierPinned := false
+  sharedDigestFrameNegativeControlsPassed := false
+
+/--
 Proof-bearing selected Rust/model certificate for the active five-source
 hidden-source closure input record.
 

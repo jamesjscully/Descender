@@ -124,16 +124,24 @@ blocker is now backed by
 digest-bound in the bridge audit and splits the final-definition work into
 five categories: selected Rust five-source evidence reports, evidence digests,
 report/facts proof objects, concrete source records, and the aggregate
-sub-evidence digest-match proof. The current active tree reports all five
-categories missing, so the final theorem target is now mechanically visible.
+sub-evidence digest-match proof. The final theorem target is now mechanically
+visible.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
 verifier, and the Path 2 deployment facade source gate requires those exports.
 The facade crate test checks that the current public checklist remains
-canonical and fail-closed with all five concrete-definition categories missing.
+canonical and fail-closed.
 This exposes the next proof blocker to deployment tooling while keeping
 selected-source helpers out of the curated facade.
+
+2026-06-05 selected-report definition update: Lean now defines the six selected
+Rust/model evidence report values named by the checklist. They are explicit
+fail-closed report values: verification and component bits remain false, and no
+`ReportVerified`, `FactsAllTrue`, selected source-record, evidence-digest, or
+sub-evidence digest-match proof is supplied. The checklist therefore moves from
+five missing categories to four while preserving the AP2-N001 fail-closed
+bridge status.
 
 2026-06-02 update: `Path2FullOpeningSourceConcrete.lean` now packages the
 deployable non-aggregate theorem route as `ReviewedFq12DeployableHiddenSourceInputs`. The remaining P2FS-001 proof inputs are

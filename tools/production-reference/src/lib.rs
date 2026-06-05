@@ -1490,13 +1490,13 @@ mod tests {
             selected_source_checklist.schema,
             PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA
         );
-        assert!(!selected_source_checklist.evidence_report_definitions_present);
+        assert!(selected_source_checklist.evidence_report_definitions_present);
         assert!(!selected_source_checklist.evidence_digest_definitions_present);
         assert!(!selected_source_checklist.evidence_proof_definitions_present);
         assert!(!selected_source_checklist.source_record_definitions_present);
         assert!(!selected_source_checklist.sub_evidence_digest_match_proof_present);
         assert!(!selected_source_checklist.all_definitions_present);
-        assert_eq!(selected_source_checklist.missing_definition_category_count, 5);
+        assert_eq!(selected_source_checklist.missing_definition_category_count, 4);
         assert!(!path2_selected_rust_model_concrete_definition_checklist_v1_frame(
             &selected_source_checklist
         )

@@ -55049,7 +55049,7 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             concrete_definition_checklist.schema,
             PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA
         );
-        assert!(!concrete_definition_checklist.evidence_report_definitions_present);
+        assert!(concrete_definition_checklist.evidence_report_definitions_present);
         assert!(!concrete_definition_checklist.evidence_digest_definitions_present);
         assert!(!concrete_definition_checklist.evidence_proof_definitions_present);
         assert!(!concrete_definition_checklist.source_record_definitions_present);
@@ -55057,7 +55057,7 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(!concrete_definition_checklist.all_definitions_present);
         assert_eq!(
             concrete_definition_checklist.missing_definition_category_count,
-            5
+            4
         );
         assert!(!audit.selected_rust_model_concrete_definitions_present);
         assert!(
