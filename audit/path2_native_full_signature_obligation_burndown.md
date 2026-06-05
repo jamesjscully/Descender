@@ -152,6 +152,13 @@ aggregate and sub-evidence digests. The concrete-definition checklist now has
 report and digest categories present, with proof objects, source records, and
 the aggregate sub-evidence digest-match proof still missing.
 
+2026-06-05 proof-definition checklist hardening: the concrete-definition
+checklist now requires selected proof declarations to name both their selected
+report and the exact `ReportVerified` or `FactsAllTrue` predicate. A regression
+fixture with all proof names but no report/predicate type shape still leaves
+the proof-object category false. This keeps the remaining proof blocker from
+being satisfied by untyped aliases.
+
 2026-06-02 update: `Path2FullOpeningSourceConcrete.lean` now packages the
 deployable non-aggregate theorem route as `ReviewedFq12DeployableHiddenSourceInputs`. The remaining P2FS-001 proof inputs are
 no longer an abstract source-bridge instantiation; they are the concrete
