@@ -8440,25 +8440,36 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1() ->
     if !path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() {
         return false;
     }
+    let theorem_name = "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation";
+    path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_from_boundary_source_v1(
+        boundary_source,
+        theorem_name,
+    )
+}
+
+fn path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_from_boundary_source_v1(
+    boundary_source: &str,
+    theorem_name: &str,
+) -> bool {
     if path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
         boundary_source,
     ) {
         return false;
     }
-    let theorem_name = "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation";
-    let Some(theorem_start) = boundary_source.find(&format!("\ntheorem {theorem_name}")) else {
-        return false;
-    };
-    let theorem_end = boundary_source[theorem_start..]
-        .find("\nend Path2HiddenSourceSemanticsBoundary")
-        .map(|offset| theorem_start + offset)
-        .unwrap_or(boundary_source.len());
-    let theorem_source = &boundary_source[theorem_start..theorem_end];
-
-    path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
-        theorem_source,
-        theorem_name,
-    )
+    let theorem_start_marker = format!("\ntheorem {theorem_name}");
+    boundary_source
+        .match_indices(&theorem_start_marker)
+        .any(|(theorem_start, _)| {
+            let theorem_end = boundary_source[theorem_start..]
+                .find("\nend Path2HiddenSourceSemanticsBoundary")
+                .map(|offset| theorem_start + offset)
+                .unwrap_or(boundary_source.len());
+            let theorem_source = &boundary_source[theorem_start..theorem_end];
+            path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                theorem_source,
+                theorem_name,
+            )
+        })
 }
 
 #[cfg(test)]
@@ -54683,6 +54694,16 @@ theorem {theorem_name}
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &suffixed_theorem_name_constructor_theorem,
+                theorem_name
+            )
+        );
+        let suffixed_then_exact_boundary_source = format!(
+            "{}\n{}",
+            suffixed_theorem_name_constructor_theorem, concrete_constructor_certificate_theorem
+        );
+        assert!(
+            path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_from_boundary_source_v1(
+                &suffixed_then_exact_boundary_source,
                 theorem_name
             )
         );

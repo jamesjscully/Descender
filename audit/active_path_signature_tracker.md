@@ -1029,6 +1029,11 @@ the theorem declaration renamed to
 `reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiationSpoof`
 is rejected, so a suffixed theorem cannot satisfy `extractor_theorem_instantiated`
 by prefix.
+The final theorem scanner now checks every candidate theorem prefix in the
+active boundary source and lets the exact-name helper reject suffixed
+candidates. A regression with a suffixed spoof before an exact valid theorem
+still accepts the exact theorem, avoiding a fail-closed false negative when
+nearby diagnostic/spoof declarations exist.
 
 ## Findings
 
