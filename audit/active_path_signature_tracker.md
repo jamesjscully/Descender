@@ -1108,6 +1108,14 @@ Active sub-evidence blocker note: Lean now states
 that the current placeholder aggregate report cannot provide the checklist's
 sub-evidence digest-match proof for certificates carrying the selected public
 Rust evidence digests.
+Lean also states
+`selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_of_selected_certificate_digests`:
+the active verifier-backed aggregate report digest-matches any five selected
+source certificates whose `evidenceDigest` fields equal the selected component
+digests. This reduces the remaining sub-evidence proof work to certificate
+construction and per-certificate digest equality; it intentionally does not
+create `selectedRustFiveSourceSubEvidenceDigestsMatchProof` while the selected
+certificates are still absent.
 Active evidence import note: `path2_selected_evidence_report_manifest` now
 prints the full selected Rust evidence report values, not only digests. The
 manifest shows all six report/fact sets verify while

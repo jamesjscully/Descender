@@ -1239,6 +1239,76 @@ theorem selectedRustEvidenceDigests_nonempty :
   decide
 
 /--
+The verifier-backed active aggregate report digest-matches any five selected
+source certificates whose certificate digests are the selected public Rust
+component evidence digests.
+
+This does not construct the selected source certificates. It isolates the
+remaining `sub_evidence_digest_match_proof` work to proving that those future
+certificates carry the selected component digests.
+-/
+theorem selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_of_selected_certificate_digests
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    {boundaryBaseCertificate :
+      ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P}
+    {roleRootLiftCertificate :
+      ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P}
+    {selectedSourceRouteCertificate :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+        FieldParser RouteParser P}
+    {fieldLocalCertificate :
+      ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P}
+    {witnessSourcesCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P}
+    (hBoundaryDigest :
+      boundaryBaseCertificate.evidenceDigest =
+        selectedRustBoundaryBaseEvidenceDigest)
+    (hRoleRootDigest :
+      roleRootLiftCertificate.evidenceDigest =
+        selectedRustRoleRootLiftEvidenceDigest)
+    (hSourceRouteDigest :
+      selectedSourceRouteCertificate.evidenceDigest =
+        selectedRustSourceRouteEvidenceDigest)
+    (hFieldLocalDigest :
+      fieldLocalCertificate.evidenceDigest =
+        selectedRustFieldLocalEvidenceDigest)
+    (hWitnessDigest :
+      witnessSourcesCertificate.evidenceDigest =
+        selectedRustSharedFrameWitnessEvidenceDigest) :
+    selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
+      boundaryBaseCertificate roleRootLiftCertificate
+      selectedSourceRouteCertificate fieldLocalCertificate
+      witnessSourcesCertificate := by
+  exact
+    ⟨by
+      simpa [selectedRustFiveSourceEvidenceReport,
+        verifierBackedSelectedRustFiveSourceEvidenceReport,
+        selectedRustBoundaryBaseEvidenceDigest] using hBoundaryDigest.symm,
+    by
+      simpa [selectedRustFiveSourceEvidenceReport,
+        verifierBackedSelectedRustFiveSourceEvidenceReport,
+        selectedRustRoleRootLiftEvidenceDigest] using hRoleRootDigest.symm,
+    by
+      simpa [selectedRustFiveSourceEvidenceReport,
+        verifierBackedSelectedRustFiveSourceEvidenceReport,
+        selectedRustSourceRouteEvidenceDigest] using hSourceRouteDigest.symm,
+    by
+      simpa [selectedRustFiveSourceEvidenceReport,
+        verifierBackedSelectedRustFiveSourceEvidenceReport,
+        selectedRustFieldLocalEvidenceDigest] using hFieldLocalDigest.symm,
+    by
+      simpa [selectedRustFiveSourceEvidenceReport,
+        verifierBackedSelectedRustFiveSourceEvidenceReport,
+        selectedRustSharedFrameWitnessEvidenceDigest] using hWitnessDigest.symm⟩
+
+/--
 The current placeholder aggregate report cannot digest-match certificates whose
 certificate digests are the selected public Rust evidence digests.
 

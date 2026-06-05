@@ -461,6 +461,13 @@ category cannot be satisfied by a type-correct but unbound certificate literal.
 names the matching blocker for `sub_evidence_digest_match_proof`: the
 placeholder aggregate report cannot digest-match selected public Rust component
 evidence digests.
+Lean also proves
+`selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_of_selected_certificate_digests`.
+For the active verifier-backed aggregate report, any five selected source
+certificates whose `evidenceDigest` fields equal the selected component digest
+constants satisfy `SubEvidenceDigestsMatch`. This does not close the checklist
+yet, because `selectedRustFiveSourceSubEvidenceDigestsMatchProof` still depends
+on importing the selected source certificates themselves.
 Rust now has `path2_selected_evidence_report_manifest`, a source utility that
 prints the full selected evidence reports. Its first run confirms all six
 report/fact sets verify, while `extractor_theorem_instantiated` and
