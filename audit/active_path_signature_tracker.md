@@ -1087,6 +1087,12 @@ Active sub-evidence blocker note: Lean now states
 that the current placeholder aggregate report cannot provide the checklist's
 sub-evidence digest-match proof for certificates carrying the selected public
 Rust evidence digests.
+Active evidence import note: `path2_selected_evidence_report_manifest` now
+prints the full selected Rust evidence report values, not only digests. The
+manifest shows all six report/fact sets verify while
+`extractor_theorem_instantiated` and `semantics_bridge_complete` remain false,
+which is the next safe import target for replacing Lean placeholder reports
+without flipping final closure.
 
 ## Findings
 
