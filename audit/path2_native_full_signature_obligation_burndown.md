@@ -161,6 +161,12 @@ same full native opening.
 certificates to bind to the opened tuple, and
 `ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget` ties
 assembly-certificate assembly to `fullNativeOpeningAssemblesRepresentative`.
+`ReviewedFq12CompatibilityValidityBindsTarget` requires valid compatibility
+certificates to bind to the same payload, extraction certificate, opening, and
+representative, while
+`ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget` ties
+compatibility-certificate extraction to both reviewed-Fq12 extraction
+predicates.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It

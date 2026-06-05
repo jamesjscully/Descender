@@ -2314,6 +2314,45 @@ def ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget
       P.fullNativeOpeningAssemblesRepresentative b payload cert opening h
 
 /--
+Concrete predicate-model obligation for valid extraction-compatibility
+certificates.
+
+Compatibility-certificate validity must bind the certificate to the same
+payload, extraction certificate, full native opening, and assembled hidden
+representative.
+-/
+def ReviewedFq12CompatibilityValidityBindsTarget
+    (P : Predicates) : Prop :=
+  forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {opening : FullNativeRepresentativeOpening}
+      {h : HiddenRepresentative}
+      {compatCert : ReviewedFq12ExtractionCompatibilityCertificate},
+    P.reviewedFq12ExtractionCompatibilityCertificateValid
+        b payload cert opening h compatCert ->
+      ReviewedFq12ExtractionCompatibilityCertificateBinds
+        payload cert opening h compatCert
+
+/--
+Concrete predicate-model obligation connecting compatibility-certificate
+extraction to the two reviewed-Fq12 extraction predicates for the same hidden
+representative.
+-/
+def ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget
+    (P : Predicates) : Prop :=
+  forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {opening : FullNativeRepresentativeOpening}
+      {h : HiddenRepresentative}
+      {compatCert : ReviewedFq12ExtractionCompatibilityCertificate},
+    P.reviewedFq12ExtractionCompatibilityCertificateExtracts
+        b payload cert opening h compatCert ->
+      P.reviewedFq12CertificateExtracts b payload cert h ∧
+        P.reviewedFq12PayloadExtracts b payload h
+
+/--
 Selected Rust native-boundary predicate-model import target.
 
 The full-spend concrete predicates are not this object: they live over concrete
@@ -2353,6 +2392,11 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
     ReviewedFq12AssemblyValidityBindsOpeningTarget predicates
   assemblyCertificateImpliesFullNativeAssembly :
     ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget predicates
+  compatibilityValidityBinds :
+    ReviewedFq12CompatibilityValidityBindsTarget predicates
+  compatibilityExtractionImpliesReviewedExtraction :
+    ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget
+      predicates
   reviewedFq12PayloadAcceptanceModeled : Prop
   reviewedFq12PayloadAcceptanceModeledProof :
     reviewedFq12PayloadAcceptanceModeled

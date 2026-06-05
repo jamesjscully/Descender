@@ -170,6 +170,12 @@ fn main() -> Result<(), String> {
             "native_boundary_assembly_certificate_full_native_target_present":
                 source_record_subcheck
                     .native_boundary_assembly_certificate_full_native_target_present,
+            "native_boundary_compatibility_validity_binds_target_present":
+                source_record_subcheck
+                    .native_boundary_compatibility_validity_binds_target_present,
+            "native_boundary_compatibility_extraction_reviewed_target_present":
+                source_record_subcheck
+                    .native_boundary_compatibility_extraction_reviewed_target_present,
             "native_boundary_semantics_package_target_present":
                 source_record_subcheck.native_boundary_semantics_package_target_present,
             "native_boundary_semantics_source_package_target_present":

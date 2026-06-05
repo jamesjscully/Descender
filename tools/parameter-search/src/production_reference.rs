@@ -7559,6 +7559,8 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_role_lift_opening_certificate_lift_target_present: bool,
     pub native_boundary_assembly_validity_binds_opening_target_present: bool,
     pub native_boundary_assembly_certificate_full_native_target_present: bool,
+    pub native_boundary_compatibility_validity_binds_target_present: bool,
+    pub native_boundary_compatibility_extraction_reviewed_target_present: bool,
     pub native_boundary_semantics_package_target_present: bool,
     pub native_boundary_semantics_source_package_target_present: bool,
     pub native_boundary_semantics_package_handoff_present: bool,
@@ -8763,6 +8765,26 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
+    let native_boundary_compatibility_validity_binds_target_present = [
+        "ReviewedFq12CompatibilityValidityBindsTarget",
+        "compatibilityValidityBinds",
+        "P.reviewedFq12ExtractionCompatibilityCertificateValid",
+        "b payload cert opening h compatCert",
+        "ReviewedFq12ExtractionCompatibilityCertificateBinds",
+        "payload cert opening h compatCert",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_compatibility_extraction_reviewed_target_present = [
+        "ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget",
+        "compatibilityExtractionImpliesReviewedExtraction",
+        "P.reviewedFq12ExtractionCompatibilityCertificateExtracts",
+        "b payload cert opening h compatCert",
+        "P.reviewedFq12CertificateExtracts b payload cert h",
+        "P.reviewedFq12PayloadExtracts b payload h",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
     let native_boundary_semantics_package_target_present = [
         "ReviewedFq12SelectedRustNativeBoundarySemanticsPackage",
         "predicates : Predicates",
@@ -9142,6 +9164,8 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_role_lift_opening_certificate_lift_target_present,
         native_boundary_assembly_validity_binds_opening_target_present,
         native_boundary_assembly_certificate_full_native_target_present,
+        native_boundary_compatibility_validity_binds_target_present,
+        native_boundary_compatibility_extraction_reviewed_target_present,
         native_boundary_semantics_package_target_present,
         native_boundary_semantics_source_package_target_present,
         native_boundary_semantics_package_handoff_present,
@@ -56490,6 +56514,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         );
         assert!(
             source_record_subcheck.native_boundary_assembly_certificate_full_native_target_present
+        );
+        assert!(source_record_subcheck.native_boundary_compatibility_validity_binds_target_present);
+        assert!(
+            source_record_subcheck.native_boundary_compatibility_extraction_reviewed_target_present
         );
         assert!(source_record_subcheck.native_boundary_semantics_package_target_present);
         assert!(source_record_subcheck.native_boundary_semantics_source_package_target_present);
