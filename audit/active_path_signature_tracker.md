@@ -1055,6 +1055,11 @@ Active no-export serializer gate note: the
 exact theorem-name matching across all candidates, so a suffixed no-export
 theorem cannot close the active serializer gate and a later exact theorem
 remains reachable.
+Active checked-core selected-source gate note: the
+`selectedRustCheckedCoreByteSource_instantiation_v1` scanner now uses exact
+theorem-name matching across all candidates. A suffixed checked-core source
+theorem cannot satisfy the active composition gate or mask a later exact
+selected Rust byte-source instantiation.
 
 ## Findings
 

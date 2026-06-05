@@ -22628,17 +22628,28 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
         return false;
     }
     let lean_source = lean_source_without_comments_and_strings_v1(lean_source);
+    let theorem_name = "selectedRustCheckedCoreByteSource_instantiation_v1";
+    let theorem_start_marker = format!("\ntheorem {theorem_name}");
 
-    let Some(instantiation_start) =
-        lean_source.find("\ntheorem selectedRustCheckedCoreByteSource_instantiation_v1")
-    else {
-        return false;
-    };
-    let instantiation_end = lean_source[instantiation_start..]
-        .find("\nend Path2CheckedCoreByteBridge")
-        .map(|offset| instantiation_start + offset)
-        .unwrap_or(lean_source.len());
-    let instantiation_source = &lean_source[instantiation_start..instantiation_end];
+    lean_source
+        .match_indices(&theorem_start_marker)
+        .any(|(instantiation_start, _)| {
+            let instantiation_end = lean_source[instantiation_start..]
+                .find("\nend Path2CheckedCoreByteBridge")
+                .map(|offset| instantiation_start + offset)
+                .unwrap_or(lean_source.len());
+            let instantiation_source = &lean_source[instantiation_start..instantiation_end];
+            path2_native_checked_core_selected_rust_instantiation_candidate_source_v1(
+                instantiation_source,
+                theorem_name,
+            )
+        })
+}
+
+fn path2_native_checked_core_selected_rust_instantiation_candidate_source_v1(
+    instantiation_source: &str,
+    theorem_name: &str,
+) -> bool {
     let normalized_instantiation_source =
         instantiation_source.split_whitespace().collect::<String>();
     let contains_normalized = |marker: &str| {
@@ -22666,6 +22677,18 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
         .or_else(|| instantiation_source.find(" where"))
         .unwrap_or(instantiation_source.len().min(1024));
     let theorem_header = &instantiation_source[..theorem_header_end];
+    let theorem_start_marker = format!("\ntheorem {theorem_name}");
+    let Some(theorem_start) = theorem_header.find(&theorem_start_marker) else {
+        return false;
+    };
+    let theorem_name_end = theorem_start + theorem_start_marker.len();
+    if theorem_header[theorem_name_end..]
+        .chars()
+        .next()
+        .is_some_and(|next| next.is_ascii_alphanumeric() || next == '_' || next == '\'')
+    {
+        return false;
+    }
     let forbidden_theorem_parameter = selected_source_facts.iter().any(|fact| {
         ["(", "{", "["]
             .iter()
@@ -46105,6 +46128,25 @@ end Path2CheckedCoreByteBridge
         assert!(
             path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
                 checked_core_instantiation_shape
+            )
+        );
+        let suffixed_checked_core_instantiation = checked_core_instantiation_shape.replacen(
+            "theorem selectedRustCheckedCoreByteSource_instantiation_v1",
+            "theorem selectedRustCheckedCoreByteSource_instantiation_v1Spoof",
+            1,
+        );
+        assert!(
+            !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
+                &suffixed_checked_core_instantiation
+            )
+        );
+        let suffixed_then_exact_checked_core_instantiation = format!(
+            "{}\n{}",
+            suffixed_checked_core_instantiation, checked_core_instantiation_shape
+        );
+        assert!(
+            path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
+                &suffixed_then_exact_checked_core_instantiation
             )
         );
         assert!(!path2_native_checked_core_selected_rust_instantiation_present_v1());
