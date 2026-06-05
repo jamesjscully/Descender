@@ -1555,6 +1555,39 @@ structure NativeAcceptedSpendSoundnessBoundary where
   noExportClosed : Prop
 
 /--
+Lean mirror of the selected Rust accepted-spend numeric evidence report.
+
+The deployable theorem must bind the accepted-spend probability, bound,
+inequality proof, and prerequisite closure facts to reviewed production
+evidence before constructing the active accepted-spend boundary.
+-/
+structure SelectedRustAcceptedSpendSoundnessEvidenceReport where
+  schemaMatches : Bool
+  reportDigestVerified : Bool
+  acceptedSpendNumericBoundPriced : Bool
+  acceptedSpendInequalityProved : Bool
+  hiddenSourceClosureReady : Bool
+  checkedCoreClosureReady : Bool
+  lifecycleReplayClosureReady : Bool
+  noExportClosureReady : Bool
+
+/-- The accepted-spend numeric report has the expected schema and digest. -/
+def SelectedRustAcceptedSpendSoundnessEvidenceReport.ReportVerified
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport) : Prop :=
+  E.schemaMatches = true ∧
+  E.reportDigestVerified = true
+
+/-- All accepted-spend numeric and prerequisite closure facts are true. -/
+def SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport) : Prop :=
+  E.acceptedSpendNumericBoundPriced = true ∧
+  E.acceptedSpendInequalityProved = true ∧
+  E.hiddenSourceClosureReady = true ∧
+  E.checkedCoreClosureReady = true ∧
+  E.lifecycleReplayClosureReady = true ∧
+  E.noExportClosureReady = true
+
+/--
 Selected Rust/model certificate for the accepted-spend numeric soundness layer.
 
 The active full-signature theorem is only cryptographically meaningful after
@@ -1563,9 +1596,11 @@ deployment bound, and proof of the inequality.  This certificate keeps that
 numeric bound from being silently supplied as an arbitrary boundary field.
 -/
 structure SelectedRustAcceptedSpendSoundnessCertificate where
-  selectedRustAcceptedSpendBoundVerified : Prop
+  evidenceReport : SelectedRustAcceptedSpendSoundnessEvidenceReport
   selectedRustAcceptedSpendBoundVerifiedProof :
-    selectedRustAcceptedSpendBoundVerified
+    evidenceReport.ReportVerified
+  selectedRustAcceptedSpendFactsAllTrueProof :
+    evidenceReport.FactsAllTrue
   acceptedSpendForgeryProb : ℝ
   acceptedSpendForgeryBound : ℝ
   acceptedSpendForgery_le_bound :
@@ -1584,8 +1619,10 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
   acceptedSpendForgeryBound :=
     Cert.acceptedSpendForgeryBound
   acceptedSpendForgery_le_bound := by
-    let _hVerified : Cert.selectedRustAcceptedSpendBoundVerified :=
+    let _hVerified : Cert.evidenceReport.ReportVerified :=
       Cert.selectedRustAcceptedSpendBoundVerifiedProof
+    let _hFacts : Cert.evidenceReport.FactsAllTrue :=
+      Cert.selectedRustAcceptedSpendFactsAllTrueProof
     exact Cert.acceptedSpendForgery_le_bound
   hiddenSourceProofSemanticsClosed :=
     Cert.hiddenSourceProofSemanticsClosed

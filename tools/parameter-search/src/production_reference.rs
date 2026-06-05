@@ -20046,8 +20046,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
     let forbidden_header_terms = [
         "NativeAcceptedSpendSoundnessBoundary",
         "SelectedRustAcceptedSpendSoundnessCertificate",
-        "selectedRustAcceptedSpendBoundVerified",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport",
+        "selectedRustAcceptedSpendEvidenceReport",
         "selectedRustAcceptedSpendBoundVerifiedProof",
+        "selectedRustAcceptedSpendFactsAllTrueProof",
         "acceptedSpendForgeryProb",
         "acceptedSpendForgeryBound",
         "acceptedSpendForgery_le_bound",
@@ -20059,8 +20061,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         return false;
     }
     let forbidden_declaration_terms = [
-        "selectedRustAcceptedSpendBoundVerified",
+        "selectedRustAcceptedSpendEvidenceReport",
         "selectedRustAcceptedSpendBoundVerifiedProof",
+        "selectedRustAcceptedSpendFactsAllTrueProof",
         "selectedRustAcceptedSpendForgeryProb",
         "selectedRustAcceptedSpendForgeryBound",
         "selectedRustAcceptedSpendForgeryLeBound",
@@ -20087,11 +20090,12 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         return false;
     }
     let forbidden_vacuous_terms = [
-        "selectedRustAcceptedSpendBoundVerified := True",
+        "evidenceReport := {",
         "selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
-        "let selectedRustAcceptedSpendBoundVerified : Prop := True",
-        "let selectedRustAcceptedSpendBoundVerified := True",
+        "selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
+        "let selectedRustAcceptedSpendEvidenceReport : SelectedRustAcceptedSpendSoundnessEvidenceReport :=",
         "let selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
+        "let selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
     ];
     if forbidden_vacuous_terms
         .iter()
@@ -20104,8 +20108,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1",
         "let selectedRustAcceptedSpendSoundnessCertificate :",
         "SelectedRustAcceptedSpendSoundnessCertificate",
-        "selectedRustAcceptedSpendBoundVerified := selectedRustAcceptedSpendBoundVerified",
+        "evidenceReport := selectedRustAcceptedSpendEvidenceReport",
         "selectedRustAcceptedSpendBoundVerifiedProof :=",
+        "selectedRustAcceptedSpendFactsAllTrueProof :=",
         "acceptedSpendForgeryProb := selectedRustAcceptedSpendForgeryProb",
         "acceptedSpendForgeryBound := selectedRustAcceptedSpendForgeryBound",
         "acceptedSpendForgery_le_bound := selectedRustAcceptedSpendForgeryLeBound",
@@ -42139,8 +42144,17 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     NativeAcceptedSpendSoundnessBoundary := by
   let selectedRustAcceptedSpendSoundnessCertificate :
       SelectedRustAcceptedSpendSoundnessCertificate :=
-    { selectedRustAcceptedSpendBoundVerified := True
+    { evidenceReport :=
+        { schemaMatches := true
+          reportDigestVerified := true
+          acceptedSpendNumericBoundPriced := true
+          acceptedSpendInequalityProved := true
+          hiddenSourceClosureReady := true
+          checkedCoreClosureReady := true
+          lifecycleReplayClosureReady := true
+          noExportClosureReady := true }
       selectedRustAcceptedSpendBoundVerifiedProof := True.intro
+      selectedRustAcceptedSpendFactsAllTrueProof := True.intro
       acceptedSpendForgeryProb := selectedRustAcceptedSpendForgeryProb
       acceptedSpendForgeryBound := selectedRustAcceptedSpendForgeryBound
       acceptedSpendForgery_le_bound := selectedRustAcceptedSpendForgeryLeBound
@@ -42163,9 +42177,11 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     NativeAcceptedSpendSoundnessBoundary := by
   let selectedRustAcceptedSpendSoundnessCertificate :
       SelectedRustAcceptedSpendSoundnessCertificate :=
-    { selectedRustAcceptedSpendBoundVerified := selectedRustAcceptedSpendBoundVerified
+    { evidenceReport := selectedRustAcceptedSpendEvidenceReport
       selectedRustAcceptedSpendBoundVerifiedProof :=
         selectedRustAcceptedSpendBoundVerifiedProof
+      selectedRustAcceptedSpendFactsAllTrueProof :=
+        selectedRustAcceptedSpendFactsAllTrueProof
       acceptedSpendForgeryProb := selectedRustAcceptedSpendForgeryProb
       acceptedSpendForgeryBound := selectedRustAcceptedSpendForgeryBound
       acceptedSpendForgery_le_bound := selectedRustAcceptedSpendForgeryLeBound
