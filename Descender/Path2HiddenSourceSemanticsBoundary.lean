@@ -239,6 +239,16 @@ structure ReviewedFq12SelectedRustFiveSourceClosureEvidence where
   schemaMatches : Bool
   bridgeAuditDigest : ByteArray
   bridgeAuditDigestBound : Bool
+  boundaryBaseEvidenceDigest : ByteArray
+  boundaryBaseEvidenceVerified : Bool
+  roleRootLiftEvidenceDigest : ByteArray
+  roleRootLiftEvidenceVerified : Bool
+  selectedSourceRouteEvidenceDigest : ByteArray
+  selectedSourceRouteEvidenceVerified : Bool
+  fieldLocalEvidenceDigest : ByteArray
+  fieldLocalEvidenceVerified : Bool
+  sharedDigestFrameWitnessEvidenceDigest : ByteArray
+  sharedDigestFrameWitnessEvidenceVerified : Bool
   reportDigestVerified : Bool
   bridgeAuditValidated : Bool
   selectedRustModelFiveSourceInputsReady : Bool
@@ -260,6 +270,11 @@ def ReviewedFq12SelectedRustFiveSourceClosureEvidence.ReportVerified
     (E : ReviewedFq12SelectedRustFiveSourceClosureEvidence) : Prop :=
   E.schemaMatches = true ∧
   E.bridgeAuditDigestBound = true ∧
+  E.boundaryBaseEvidenceVerified = true ∧
+  E.roleRootLiftEvidenceVerified = true ∧
+  E.selectedSourceRouteEvidenceVerified = true ∧
+  E.fieldLocalEvidenceVerified = true ∧
+  E.sharedDigestFrameWitnessEvidenceVerified = true ∧
   E.reportDigestVerified = true ∧
   E.bridgeAuditValidated = true
 
@@ -267,6 +282,11 @@ def ReviewedFq12SelectedRustFiveSourceClosureEvidence.ReportVerified
 def ReviewedFq12SelectedRustFiveSourceClosureEvidence.FactsAllTrue
     (E : ReviewedFq12SelectedRustFiveSourceClosureEvidence) : Prop :=
   E.selectedRustModelFiveSourceInputsReady = true ∧
+  E.boundaryBaseEvidenceVerified = true ∧
+  E.roleRootLiftEvidenceVerified = true ∧
+  E.selectedSourceRouteEvidenceVerified = true ∧
+  E.fieldLocalEvidenceVerified = true ∧
+  E.sharedDigestFrameWitnessEvidenceVerified = true ∧
   E.rustPayloadProjectionLawPresent = true ∧
   E.rustExtractionCertificateAvailabilityPresent = true ∧
   E.roleRootLiftSourcePresent = true ∧

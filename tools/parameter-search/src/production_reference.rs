@@ -7396,6 +7396,16 @@ pub struct Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
     pub bridge_audit_digest: [u8; DIGEST_BYTES],
     pub bridge_audit_digest_bound: bool,
     pub bridge_audit_validated: bool,
+    pub boundary_base_evidence_digest: [u8; DIGEST_BYTES],
+    pub boundary_base_evidence_verified: bool,
+    pub role_root_lift_evidence_digest: [u8; DIGEST_BYTES],
+    pub role_root_lift_evidence_verified: bool,
+    pub selected_source_route_evidence_digest: [u8; DIGEST_BYTES],
+    pub selected_source_route_evidence_verified: bool,
+    pub field_local_evidence_digest: [u8; DIGEST_BYTES],
+    pub field_local_evidence_verified: bool,
+    pub shared_digest_frame_witness_evidence_digest: [u8; DIGEST_BYTES],
+    pub shared_digest_frame_witness_evidence_verified: bool,
     pub report_digest_verified: bool,
     pub selected_rust_model_five_source_inputs_ready: bool,
     pub rust_payload_projection_law_present: bool,
@@ -8281,6 +8291,24 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         Ok(evidence) => evidence,
         Err(_) => return false,
     };
+    let role_root_lift_evidence = match path2_reviewed_fq12_role_root_lift_evidence_v1() {
+        Ok(evidence) => evidence,
+        Err(_) => return false,
+    };
+    let selected_source_route_evidence =
+        match path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1() {
+            Ok(evidence) => evidence,
+            Err(_) => return false,
+        };
+    let field_local_evidence = match path2_reviewed_fq12_field_local_evidence_v1() {
+        Ok(evidence) => evidence,
+        Err(_) => return false,
+    };
+    let shared_digest_frame_witness_evidence =
+        match path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1() {
+            Ok(evidence) => evidence,
+            Err(_) => return false,
+        };
 
     let struct_checks = [
         "Path2ReviewedFq12FiveSourceClosureEvidenceV1",
@@ -8288,6 +8316,16 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "bridge_audit_digest",
         "bridge_audit_digest_bound",
         "bridge_audit_validated",
+        "boundary_base_evidence_digest",
+        "boundary_base_evidence_verified",
+        "role_root_lift_evidence_digest",
+        "role_root_lift_evidence_verified",
+        "selected_source_route_evidence_digest",
+        "selected_source_route_evidence_verified",
+        "field_local_evidence_digest",
+        "field_local_evidence_verified",
+        "shared_digest_frame_witness_evidence_digest",
+        "shared_digest_frame_witness_evidence_verified",
         "report_digest_verified",
         "selected_rust_model_five_source_inputs_ready",
         "rust_payload_projection_law_present",
@@ -8322,6 +8360,16 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "b\"bridge_audit_digest\"",
         "b\"bridge_audit_digest_bound\"",
         "b\"bridge_audit_validated\"",
+        "b\"boundary_base_evidence_digest\"",
+        "b\"boundary_base_evidence_verified\"",
+        "b\"role_root_lift_evidence_digest\"",
+        "b\"role_root_lift_evidence_verified\"",
+        "b\"selected_source_route_evidence_digest\"",
+        "b\"selected_source_route_evidence_verified\"",
+        "b\"field_local_evidence_digest\"",
+        "b\"field_local_evidence_verified\"",
+        "b\"shared_digest_frame_witness_evidence_digest\"",
+        "b\"shared_digest_frame_witness_evidence_verified\"",
         "b\"report_digest_verified\"",
         "b\"selected_rust_model_five_source_inputs_ready\"",
         "b\"rust_payload_projection_law_present\"",
@@ -8345,6 +8393,16 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "schema_matches: true",
         "bridge_audit_validated: true",
         "bridge_audit_digest_bound: true",
+        "boundary_base_evidence_digest",
+        "boundary_base_evidence_verified: true",
+        "role_root_lift_evidence_digest",
+        "role_root_lift_evidence_verified: true",
+        "selected_source_route_evidence_digest",
+        "selected_source_route_evidence_verified: true",
+        "field_local_evidence_digest",
+        "field_local_evidence_verified: true",
+        "shared_digest_frame_witness_evidence_digest",
+        "shared_digest_frame_witness_evidence_verified: true",
         "report_digest_verified: true",
         "selected_rust_model_five_source_inputs_ready: audit",
         "rust_payload_projection_law_present: audit.rust_payload_projection_law_present",
@@ -8389,6 +8447,16 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
             .iter()
             .all(|marker| boundary_base_function_source.contains(marker))
         && verify_path2_reviewed_fq12_boundary_base_evidence_v1(&boundary_base_evidence).is_ok()
+        && verify_path2_reviewed_fq12_role_root_lift_evidence_v1(&role_root_lift_evidence).is_ok()
+        && verify_path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1(
+            &selected_source_route_evidence,
+        )
+        .is_ok()
+        && verify_path2_reviewed_fq12_field_local_evidence_v1(&field_local_evidence).is_ok()
+        && verify_path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1(
+            &shared_digest_frame_witness_evidence,
+        )
+        .is_ok()
 }
 
 fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
@@ -10096,12 +10164,43 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
 -> Result<Path2ReviewedFq12FiveSourceClosureEvidenceV1, String> {
     let audit = path2_reviewed_fq12_hidden_source_semantics_bridge_audit();
     validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(&audit)?;
+    let boundary_base_evidence = path2_reviewed_fq12_boundary_base_evidence_v1()?;
+    let boundary_base_evidence_digest =
+        verify_path2_reviewed_fq12_boundary_base_evidence_v1(&boundary_base_evidence)?;
+    let role_root_lift_evidence = path2_reviewed_fq12_role_root_lift_evidence_v1()?;
+    let role_root_lift_evidence_digest =
+        verify_path2_reviewed_fq12_role_root_lift_evidence_v1(&role_root_lift_evidence)?;
+    let selected_source_route_evidence =
+        path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1()?;
+    let selected_source_route_evidence_digest =
+        verify_path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1(
+            &selected_source_route_evidence,
+        )?;
+    let field_local_evidence = path2_reviewed_fq12_field_local_evidence_v1()?;
+    let field_local_evidence_digest =
+        verify_path2_reviewed_fq12_field_local_evidence_v1(&field_local_evidence)?;
+    let shared_digest_frame_witness_evidence =
+        path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1()?;
+    let shared_digest_frame_witness_evidence_digest =
+        verify_path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1(
+            &shared_digest_frame_witness_evidence,
+        )?;
     Ok(Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
         schema: PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA,
         schema_matches: true,
         bridge_audit_digest: audit.digest,
         bridge_audit_digest_bound: true,
         bridge_audit_validated: true,
+        boundary_base_evidence_digest,
+        boundary_base_evidence_verified: true,
+        role_root_lift_evidence_digest,
+        role_root_lift_evidence_verified: true,
+        selected_source_route_evidence_digest,
+        selected_source_route_evidence_verified: true,
+        field_local_evidence_digest,
+        field_local_evidence_verified: true,
+        shared_digest_frame_witness_evidence_digest,
+        shared_digest_frame_witness_evidence_verified: true,
         report_digest_verified: true,
         selected_rust_model_five_source_inputs_ready: audit
             .selected_rust_model_five_source_inputs_ready,
@@ -10153,6 +10252,56 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1_frame(
         &mut frame,
         b"bridge_audit_validated",
         u64::from(evidence.bridge_audit_validated),
+    );
+    append_frame(
+        &mut frame,
+        b"boundary_base_evidence_digest",
+        &evidence.boundary_base_evidence_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"boundary_base_evidence_verified",
+        u64::from(evidence.boundary_base_evidence_verified),
+    );
+    append_frame(
+        &mut frame,
+        b"role_root_lift_evidence_digest",
+        &evidence.role_root_lift_evidence_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"role_root_lift_evidence_verified",
+        u64::from(evidence.role_root_lift_evidence_verified),
+    );
+    append_frame(
+        &mut frame,
+        b"selected_source_route_evidence_digest",
+        &evidence.selected_source_route_evidence_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"selected_source_route_evidence_verified",
+        u64::from(evidence.selected_source_route_evidence_verified),
+    );
+    append_frame(
+        &mut frame,
+        b"field_local_evidence_digest",
+        &evidence.field_local_evidence_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"field_local_evidence_verified",
+        u64::from(evidence.field_local_evidence_verified),
+    );
+    append_frame(
+        &mut frame,
+        b"shared_digest_frame_witness_evidence_digest",
+        &evidence.shared_digest_frame_witness_evidence_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"shared_digest_frame_witness_evidence_verified",
+        u64::from(evidence.shared_digest_frame_witness_evidence_verified),
     );
     append_u64(
         &mut frame,
@@ -10248,6 +10397,11 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
 ) -> bool {
     evidence.schema == PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA
         && evidence.bridge_audit_validated
+        && evidence.boundary_base_evidence_verified
+        && evidence.role_root_lift_evidence_verified
+        && evidence.selected_source_route_evidence_verified
+        && evidence.field_local_evidence_verified
+        && evidence.shared_digest_frame_witness_evidence_verified
         && evidence.selected_rust_model_five_source_inputs_ready
         && evidence.rust_payload_projection_law_present
         && evidence.rust_extraction_certificate_availability_present
@@ -10285,6 +10439,16 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1(
     }
     if !evidence.bridge_audit_validated {
         return Err("Path 2 reviewed Fq12 five-source bridge audit was not validated".to_string());
+    }
+    if !evidence.boundary_base_evidence_verified
+        || !evidence.role_root_lift_evidence_verified
+        || !evidence.selected_source_route_evidence_verified
+        || !evidence.field_local_evidence_verified
+        || !evidence.shared_digest_frame_witness_evidence_verified
+    {
+        return Err(
+            "Path 2 reviewed Fq12 five-source sub-evidence report was not verified".to_string(),
+        );
     }
     if !evidence.report_digest_verified {
         return Err(
@@ -52502,6 +52666,46 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert_eq!(five_source_evidence.bridge_audit_digest, audit.digest);
         assert!(five_source_evidence.bridge_audit_digest_bound);
         assert!(five_source_evidence.bridge_audit_validated);
+        assert_eq!(
+            five_source_evidence.boundary_base_evidence_digest,
+            verify_path2_reviewed_fq12_boundary_base_evidence_v1(
+                &path2_reviewed_fq12_boundary_base_evidence_v1().unwrap()
+            )
+            .unwrap()
+        );
+        assert!(five_source_evidence.boundary_base_evidence_verified);
+        assert_eq!(
+            five_source_evidence.role_root_lift_evidence_digest,
+            verify_path2_reviewed_fq12_role_root_lift_evidence_v1(
+                &path2_reviewed_fq12_role_root_lift_evidence_v1().unwrap()
+            )
+            .unwrap()
+        );
+        assert!(five_source_evidence.role_root_lift_evidence_verified);
+        assert_eq!(
+            five_source_evidence.selected_source_route_evidence_digest,
+            verify_path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1(
+                &path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1().unwrap()
+            )
+            .unwrap()
+        );
+        assert!(five_source_evidence.selected_source_route_evidence_verified);
+        assert_eq!(
+            five_source_evidence.field_local_evidence_digest,
+            verify_path2_reviewed_fq12_field_local_evidence_v1(
+                &path2_reviewed_fq12_field_local_evidence_v1().unwrap()
+            )
+            .unwrap()
+        );
+        assert!(five_source_evidence.field_local_evidence_verified);
+        assert_eq!(
+            five_source_evidence.shared_digest_frame_witness_evidence_digest,
+            verify_path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1(
+                &path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1().unwrap()
+            )
+            .unwrap()
+        );
+        assert!(five_source_evidence.shared_digest_frame_witness_evidence_verified);
         assert!(five_source_evidence.report_digest_verified);
         assert!(five_source_evidence.selected_rust_model_five_source_inputs_ready);
         assert!(five_source_evidence.rust_payload_projection_law_present);
@@ -52603,6 +52807,29 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert_eq!(
             path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1(
                 &digest_unverified_five_source_evidence
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 five-source closure evidence mismatch"
+        );
+        let mut sub_evidence_unverified_five_source_evidence = five_source_evidence.clone();
+        sub_evidence_unverified_five_source_evidence.field_local_evidence_verified = false;
+        assert!(
+            !path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
+                &sub_evidence_unverified_five_source_evidence
+            )
+        );
+        assert_eq!(
+            path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1(
+                &sub_evidence_unverified_five_source_evidence
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 five-source closure evidence mismatch"
+        );
+        let mut stale_sub_digest_five_source_evidence = five_source_evidence.clone();
+        stale_sub_digest_five_source_evidence.boundary_base_evidence_digest[0] ^= 1;
+        assert_eq!(
+            path2_reviewed_fq12_five_source_closure_evidence_report_verified_v1(
+                &stale_sub_digest_five_source_evidence
             )
             .unwrap_err(),
             "Path 2 reviewed Fq12 five-source closure evidence mismatch"
