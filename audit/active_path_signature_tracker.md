@@ -1196,6 +1196,15 @@ The active manifest reports true for
 current state precisely: all five selected evidence reports/proofs are
 imported and verified, but none of the seven raw selected source records or
 five constructor-bound source certificates exists yet.
+Concrete predicate-model check: the existing concrete full-spend package
+`Path2FullSpendConcrete.concretePredicates` instantiates
+`Path2FullSpendGame.Predicates`, not `Path2NativeBoundary.Predicates`. The
+seven remaining selected source records are all propositions over a
+`Path2NativeBoundary.Predicates` value, so the next import cannot be another
+evidence report. It must either provide the concrete native-boundary predicate
+interpretation for the active Rust verifier, or provide a theorem package
+whose fields are exactly the seven source records for the `P` consumed by the
+hidden-source boundary theorem.
 
 ## Findings
 

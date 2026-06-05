@@ -541,6 +541,14 @@ but the raw source records (`selectedRustPayloadProjectionLaw`,
 `selectedRustAssemblySource`, `selectedRustCompatibilitySource`, and
 `selectedRustSharedFrameWitnessSources`) plus their five named source
 certificates still have to be imported from the active Rust/model route.
+Predicate-model audit: the concrete full-spend package currently visible in
+Lean instantiates `Path2FullSpendGame.Predicates`; it does not instantiate the
+`Path2NativeBoundary.Predicates` record used by P2FS-001. The selected source
+records are semantic theorems over that native-boundary predicate record. The
+next constructive input is therefore a concrete active native-boundary
+predicate interpretation, or an equivalent theorem package that supplies the
+seven selected source records for the exact `P` used by the hidden-source
+boundary.
 
 P2FS-001 latest hardening: `ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources` is now the named Lean constructor for the final selected Rust/model certificate. The certificate now carries an aggregate five-source `evidenceDigest`, and the Rust `extractor_theorem_instantiated` gate requires the future final theorem to use that constructor with the verified five-source evidence report, aggregate evidence digest, all-true facts proof, and selected source packages before deriving `toClosureInputs`; a raw certificate record literal, empty digest literal, `sorry`, or `admit` no longer satisfies the AP2-N001 source gate.
 
