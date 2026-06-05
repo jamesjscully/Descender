@@ -941,6 +941,12 @@ header/type to mention `selectedRustFiveSourceEvidenceReport`. A regression
 fixture with the right certificate names but `otherFiveSourceEvidenceReport`
 fails the checklist, so `selectedRustFiveSourceSubEvidenceDigestsMatchProof`
 cannot satisfy the concrete-definition gate for the wrong aggregate report.
+Lean now proves
+`selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_forces_empty_certificate_digests`:
+any `SubEvidenceDigestsMatch` proof against the current placeholder aggregate
+report forces all five consumed certificate `evidenceDigest` fields to be
+`ByteArray.mk #[]`. This makes the placeholder/non-empty Rust digest mismatch
+explicit in the proof layer without introducing any future proof-object names.
 
 ## Findings
 

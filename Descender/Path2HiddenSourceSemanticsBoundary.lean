@@ -702,6 +702,52 @@ theorem selectedRustSharedFrameWitnessEvidenceReport_not_factsAllTrue :
   simp [selectedRustSharedFrameWitnessEvidenceReport,
     ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport.FactsAllTrue]
 
+/--
+Any sub-evidence match proof for the current placeholder aggregate report would
+force every consumed certificate digest to be empty.
+
+The public Rust evidence digests below are non-empty concrete byte arrays, so
+the future AP2-N001 instantiation must replace this placeholder aggregate
+report with verifier-backed selected evidence before the digest-match proof can
+be useful.
+-/
+theorem selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_forces_empty_certificate_digests
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    {boundaryBaseCertificate :
+      ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P}
+    {roleRootLiftCertificate :
+      ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P}
+    {selectedSourceRouteCertificate :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+        FieldParser RouteParser P}
+    {fieldLocalCertificate :
+      ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P}
+    {witnessSourcesCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P}
+    (hMatch :
+      selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
+        boundaryBaseCertificate roleRootLiftCertificate
+        selectedSourceRouteCertificate fieldLocalCertificate
+        witnessSourcesCertificate) :
+    boundaryBaseCertificate.evidenceDigest = ByteArray.mk #[] ∧
+      roleRootLiftCertificate.evidenceDigest = ByteArray.mk #[] ∧
+      selectedSourceRouteCertificate.evidenceDigest = ByteArray.mk #[] ∧
+      fieldLocalCertificate.evidenceDigest = ByteArray.mk #[] ∧
+      witnessSourcesCertificate.evidenceDigest = ByteArray.mk #[] := by
+  rcases hMatch with
+    ⟨hBoundary, hRoleRoot, hSourceRoute, hFieldLocal, hWitness⟩
+  simp [selectedRustFiveSourceEvidenceReport] at hBoundary hRoleRoot hSourceRoute hFieldLocal hWitness
+  exact
+    ⟨hBoundary.symm, hRoleRoot.symm, hSourceRoute.symm,
+      hFieldLocal.symm, hWitness.symm⟩
+
 /-- Concrete digest of the public Rust five-source evidence report. -/
 def selectedRustFiveSourceEvidenceDigest : ByteArray :=
   ByteArray.mk #[11, 182, 157, 92, 3, 36, 31, 145, 79, 21, 67, 87, 94, 61,
