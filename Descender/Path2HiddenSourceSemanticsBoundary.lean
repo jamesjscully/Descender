@@ -250,6 +250,12 @@ structure ReviewedFq12SelectedRustFiveSourceClosureEvidence where
   projectionCarrierDomainMatchesHashEvidence : Bool
   projectionCarrierBindingFrameUsesHashDomainField : Bool
   projectionCarrierBindingDigestSplitsToCheckAndTranscript : Bool
+  accountWitnessOpeningDomainMatchesHashEvidence : Bool
+  accountWitnessOpeningDigestUsesHashDomainFrame : Bool
+  padSeedOpeningDomainMatchesHashEvidence : Bool
+  padSeedOpeningDigestUsesHashDomainFrame : Bool
+  padOpeningViewDomainMatchesHashEvidence : Bool
+  padOpeningStatementDigestUsesHashDomainFrame : Bool
   boundaryBaseEvidenceDigest : ByteArray
   boundaryBaseEvidenceVerified : Bool
   roleRootLiftEvidenceDigest : ByteArray
@@ -304,6 +310,12 @@ def ReviewedFq12SelectedRustFiveSourceClosureEvidence.FactsAllTrue
   E.projectionCarrierDomainMatchesHashEvidence = true ∧
   E.projectionCarrierBindingFrameUsesHashDomainField = true ∧
   E.projectionCarrierBindingDigestSplitsToCheckAndTranscript = true ∧
+  E.accountWitnessOpeningDomainMatchesHashEvidence = true ∧
+  E.accountWitnessOpeningDigestUsesHashDomainFrame = true ∧
+  E.padSeedOpeningDomainMatchesHashEvidence = true ∧
+  E.padSeedOpeningDigestUsesHashDomainFrame = true ∧
+  E.padOpeningViewDomainMatchesHashEvidence = true ∧
+  E.padOpeningStatementDigestUsesHashDomainFrame = true ∧
   E.boundaryBaseEvidenceVerified = true ∧
   E.roleRootLiftEvidenceVerified = true ∧
   E.selectedSourceRouteEvidenceVerified = true ∧

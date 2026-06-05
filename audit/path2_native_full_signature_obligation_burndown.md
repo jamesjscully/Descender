@@ -85,9 +85,12 @@ then factored through `reviewed_fq12_state_assisted_projection_carrier_binding_f
 and the five-source evidence now checks that this frame uses the
 `projection_carrier_domain` from the same hash byte-domain evidence and that
 its digest splits into the carrier check bytes plus transcript-binding bytes.
-This narrows P2FS-006 to the remaining proof-side consumption of opening/pad
-byte evidence, direct/batch separation, and the final selected-Rust/model
-instantiation theorem; it does not complete hidden-source semantics by itself.
+The same evidence object now also carries the account-witness opening,
+pad-seed opening, and pad-opening-view domains; the five-source evidence checks
+the corresponding named frame helpers and public pad-opening frame hash to the
+digests consumed by the active path. This narrows P2FS-006 to direct/batch
+separation and the final selected-Rust/model instantiation theorem; it does not
+complete hidden-source semantics by itself.
 
 2026-06-02 update: `Path2FullOpeningSourceConcrete.lean` now packages the
 deployable non-aggregate theorem route as `ReviewedFq12DeployableHiddenSourceInputs`. The remaining P2FS-001 proof inputs are

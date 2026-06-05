@@ -3773,11 +3773,17 @@ pub struct Path2NativeHashByteDomainEvidenceV1 {
     pub checked_core_frame_domain: &'static str,
     pub hidden_source_frame_domain: &'static str,
     pub hidden_source_proof_domain: &'static str,
+    pub account_witness_opening_domain: &'static str,
+    pub pad_seed_opening_domain: &'static str,
+    pub pad_opening_view_domain: &'static str,
     pub projection_carrier_domain: &'static str,
     pub account_lifecycle_domain: &'static str,
     pub checked_core_frame_domain_pinned: bool,
     pub hidden_source_frame_domain_pinned: bool,
     pub hidden_source_proof_domain_pinned: bool,
+    pub account_witness_opening_domain_pinned: bool,
+    pub pad_seed_opening_domain_pinned: bool,
+    pub pad_opening_view_domain_pinned: bool,
     pub projection_carrier_domain_pinned: bool,
     pub account_lifecycle_domain_pinned: bool,
     pub all_domains_disjoint: bool,
@@ -5583,9 +5589,9 @@ pub fn verify_hidden_source_fallback_expanded_opening_state_slot_frame(
     }
 }
 
-pub fn reviewed_fq12_account_witness_projection_opening_digest(
+pub fn reviewed_fq12_account_witness_projection_opening_frame(
     account_witness_opening_frame: &[u8],
-) -> Result<[u8; DIGEST_BYTES], String> {
+) -> Result<Vec<u8>, String> {
     let account_witness_opening =
         decode_hidden_source_fallback_account_witness_opening_frame(account_witness_opening_frame)?;
     let semantic_value =
@@ -5618,7 +5624,18 @@ pub fn reviewed_fq12_account_witness_projection_opening_digest(
         b"expanded_opening_commitment",
         &expanded_opening_commitment,
     );
-    Ok(Sha256::digest(frame).into())
+    Ok(frame)
+}
+
+pub fn reviewed_fq12_account_witness_projection_opening_digest(
+    account_witness_opening_frame: &[u8],
+) -> Result<[u8; DIGEST_BYTES], String> {
+    Ok(
+        Sha256::digest(reviewed_fq12_account_witness_projection_opening_frame(
+            account_witness_opening_frame,
+        )?)
+        .into(),
+    )
 }
 
 pub fn reviewed_fq12_packed_witness_state18_projection_opening(
@@ -7527,6 +7544,12 @@ pub struct Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
     pub projection_carrier_domain_matches_hash_evidence: bool,
     pub projection_carrier_binding_frame_uses_hash_domain_field: bool,
     pub projection_carrier_binding_digest_splits_to_check_and_transcript: bool,
+    pub account_witness_opening_domain_matches_hash_evidence: bool,
+    pub account_witness_opening_digest_uses_hash_domain_frame: bool,
+    pub pad_seed_opening_domain_matches_hash_evidence: bool,
+    pub pad_seed_opening_digest_uses_hash_domain_frame: bool,
+    pub pad_opening_view_domain_matches_hash_evidence: bool,
+    pub pad_opening_statement_digest_uses_hash_domain_frame: bool,
     pub boundary_base_evidence_digest: [u8; DIGEST_BYTES],
     pub boundary_base_evidence_verified: bool,
     pub role_root_lift_evidence_digest: [u8; DIGEST_BYTES],
@@ -8289,6 +8312,12 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
         "projectionCarrierDomainMatchesHashEvidence : Bool",
         "projectionCarrierBindingFrameUsesHashDomainField : Bool",
         "projectionCarrierBindingDigestSplitsToCheckAndTranscript : Bool",
+        "accountWitnessOpeningDomainMatchesHashEvidence : Bool",
+        "accountWitnessOpeningDigestUsesHashDomainFrame : Bool",
+        "padSeedOpeningDomainMatchesHashEvidence : Bool",
+        "padSeedOpeningDigestUsesHashDomainFrame : Bool",
+        "padOpeningViewDomainMatchesHashEvidence : Bool",
+        "padOpeningStatementDigestUsesHashDomainFrame : Bool",
         "boundaryBaseEvidenceDigest : ByteArray",
         "boundaryBaseEvidenceVerified : Bool",
         "roleRootLiftEvidenceDigest : ByteArray",
@@ -8486,6 +8515,12 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "projection_carrier_domain_matches_hash_evidence",
         "projection_carrier_binding_frame_uses_hash_domain_field",
         "projection_carrier_binding_digest_splits_to_check_and_transcript",
+        "account_witness_opening_domain_matches_hash_evidence",
+        "account_witness_opening_digest_uses_hash_domain_frame",
+        "pad_seed_opening_domain_matches_hash_evidence",
+        "pad_seed_opening_digest_uses_hash_domain_frame",
+        "pad_opening_view_domain_matches_hash_evidence",
+        "pad_opening_statement_digest_uses_hash_domain_frame",
         "boundary_base_evidence_digest",
         "boundary_base_evidence_verified",
         "role_root_lift_evidence_digest",
@@ -8541,6 +8576,12 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "b\"projection_carrier_domain_matches_hash_evidence\"",
         "b\"projection_carrier_binding_frame_uses_hash_domain_field\"",
         "b\"projection_carrier_binding_digest_splits_to_check_and_transcript\"",
+        "b\"account_witness_opening_domain_matches_hash_evidence\"",
+        "b\"account_witness_opening_digest_uses_hash_domain_frame\"",
+        "b\"pad_seed_opening_domain_matches_hash_evidence\"",
+        "b\"pad_seed_opening_digest_uses_hash_domain_frame\"",
+        "b\"pad_opening_view_domain_matches_hash_evidence\"",
+        "b\"pad_opening_statement_digest_uses_hash_domain_frame\"",
         "b\"boundary_base_evidence_digest\"",
         "b\"boundary_base_evidence_verified\"",
         "b\"role_root_lift_evidence_digest\"",
@@ -8576,9 +8617,15 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         ".hidden_source_frame_domain",
         ".hidden_source_proof_domain",
         ".projection_carrier_domain",
+        ".account_witness_opening_domain",
+        ".pad_seed_opening_domain",
+        ".pad_opening_view_domain",
         "REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN",
         "REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN",
         "REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN",
+        "REVIEWED_FQ12_ACCOUNT_WITNESS_PROJECTION_OPENING_DOMAIN",
+        "REVIEWED_FQ12_PAD_SEED_OPENING_DOMAIN",
+        "REVIEWED_FQ12_PAD_OPENING_VIEW_DOMAIN",
         "reviewed_fq12_hidden_source_statement_frame(&hidden_source_statement_probe)",
         "hidden_source_expected_domain_field",
         "hidden_source_statement_probe_frame.starts_with(&hidden_source_expected_domain_field)",
@@ -8593,6 +8640,15 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         ".starts_with(&projection_carrier_expected_domain_field)",
         "reviewed_fq12_state_assisted_projection_carrier_binding(",
         "projection_carrier_binding_digest_splits_to_check_and_transcript",
+        "reviewed_fq12_account_witness_projection_opening_frame",
+        "account_witness_opening_expected_domain_field",
+        "reviewed_fq12_account_witness_projection_opening_digest",
+        "reviewed_fq12_pad_seed_opening_frame",
+        "pad_seed_opening_expected_domain_field",
+        "reviewed_fq12_pad_seed_opening_digest",
+        "public_pad_opening_statement_frame",
+        "pad_opening_view_expected_domain_field",
+        "public_pad_opening_statement_from_consistency",
         "schema_matches: true",
         "bridge_audit_validated: true",
         "bridge_audit_digest_bound: true",
@@ -8607,6 +8663,12 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
         "projection_carrier_domain_matches_hash_evidence",
         "projection_carrier_binding_frame_uses_hash_domain_field",
         "projection_carrier_binding_digest_splits_to_check_and_transcript",
+        "account_witness_opening_domain_matches_hash_evidence",
+        "account_witness_opening_digest_uses_hash_domain_frame",
+        "pad_seed_opening_domain_matches_hash_evidence",
+        "pad_seed_opening_digest_uses_hash_domain_frame",
+        "pad_opening_view_domain_matches_hash_evidence",
+        "pad_opening_statement_digest_uses_hash_domain_frame",
         "boundary_base_evidence_digest",
         "boundary_base_evidence_verified: true",
         "role_root_lift_evidence_digest",
@@ -10544,6 +10606,71 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
                 ..HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES
                     + HIDDEN_SOURCE_FALLBACK_PROJECTION_TRANSCRIPT_BINDING_BYTES]
                 == projection_carrier_transcript_binding.as_slice();
+    let account_witness_opening_domain_matches_hash_evidence = hash_byte_domain_evidence
+        .account_witness_opening_domain
+        == REVIEWED_FQ12_ACCOUNT_WITNESS_PROJECTION_OPENING_DOMAIN;
+    let account_witness_opening_probe = HiddenSourceFallbackProjectionAccountWitnessOpening {
+        selected_source_values: [0_u16; HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES],
+    };
+    let account_witness_opening_probe_frame =
+        encode_hidden_source_fallback_account_witness_opening_frame(
+            &account_witness_opening_probe,
+        )?;
+    let account_witness_opening_digest_probe_frame =
+        reviewed_fq12_account_witness_projection_opening_frame(
+            &account_witness_opening_probe_frame,
+        )?;
+    let mut account_witness_opening_expected_domain_field = Vec::new();
+    append_frame(
+        &mut account_witness_opening_expected_domain_field,
+        b"domain",
+        hash_byte_domain_evidence
+            .account_witness_opening_domain
+            .as_bytes(),
+    );
+    let account_witness_opening_probe_frame_digest: [u8; DIGEST_BYTES] =
+        Sha256::digest(&account_witness_opening_digest_probe_frame).into();
+    let account_witness_opening_digest_uses_hash_domain_frame =
+        account_witness_opening_digest_probe_frame
+            .starts_with(&account_witness_opening_expected_domain_field)
+            && reviewed_fq12_account_witness_projection_opening_digest(
+                &account_witness_opening_probe_frame,
+            )? == account_witness_opening_probe_frame_digest;
+    let pad_seed_opening_domain_matches_hash_evidence =
+        hash_byte_domain_evidence.pad_seed_opening_domain == REVIEWED_FQ12_PAD_SEED_OPENING_DOMAIN;
+    let pad_seed_probe = [0_u8; REVIEWED_FQ12_PAD_SEED_BYTES];
+    let pad_seed_opening_probe_frame = reviewed_fq12_pad_seed_opening_frame(&pad_seed_probe);
+    let mut pad_seed_opening_expected_domain_field = Vec::new();
+    append_frame(
+        &mut pad_seed_opening_expected_domain_field,
+        b"domain",
+        hash_byte_domain_evidence.pad_seed_opening_domain.as_bytes(),
+    );
+    let pad_seed_opening_probe_frame_digest: [u8; DIGEST_BYTES] =
+        Sha256::digest(&pad_seed_opening_probe_frame).into();
+    let pad_seed_opening_digest_uses_hash_domain_frame = pad_seed_opening_probe_frame
+        .starts_with(&pad_seed_opening_expected_domain_field)
+        && reviewed_fq12_pad_seed_opening_digest(&pad_seed_probe)
+            == pad_seed_opening_probe_frame_digest;
+    let pad_opening_view_domain_matches_hash_evidence =
+        hash_byte_domain_evidence.pad_opening_view_domain == REVIEWED_FQ12_PAD_OPENING_VIEW_DOMAIN;
+    let pad_opening_consistency_probe =
+        reviewed_fq12_pad_opening_consistency_from_seed(&pad_seed_probe, &[false; GROUPS]);
+    let pad_opening_statement_probe =
+        public_pad_opening_statement_from_consistency(&pad_opening_consistency_probe);
+    let pad_opening_statement_probe_frame =
+        public_pad_opening_statement_frame(&pad_opening_consistency_probe);
+    let mut pad_opening_view_expected_domain_field = Vec::new();
+    append_frame(
+        &mut pad_opening_view_expected_domain_field,
+        b"domain",
+        hash_byte_domain_evidence.pad_opening_view_domain.as_bytes(),
+    );
+    let pad_opening_statement_probe_frame_digest: [u8; DIGEST_BYTES] =
+        Sha256::digest(&pad_opening_statement_probe_frame).into();
+    let pad_opening_statement_digest_uses_hash_domain_frame = pad_opening_statement_probe_frame
+        .starts_with(&pad_opening_view_expected_domain_field)
+        && pad_opening_statement_probe.digest == pad_opening_statement_probe_frame_digest;
     let boundary_base_evidence = path2_reviewed_fq12_boundary_base_evidence_v1()?;
     let boundary_base_evidence_digest =
         verify_path2_reviewed_fq12_boundary_base_evidence_v1(&boundary_base_evidence)?;
@@ -10582,6 +10709,12 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1()
         projection_carrier_domain_matches_hash_evidence,
         projection_carrier_binding_frame_uses_hash_domain_field,
         projection_carrier_binding_digest_splits_to_check_and_transcript,
+        account_witness_opening_domain_matches_hash_evidence,
+        account_witness_opening_digest_uses_hash_domain_frame,
+        pad_seed_opening_domain_matches_hash_evidence,
+        pad_seed_opening_digest_uses_hash_domain_frame,
+        pad_opening_view_domain_matches_hash_evidence,
+        pad_opening_statement_digest_uses_hash_domain_frame,
         boundary_base_evidence_digest,
         boundary_base_evidence_verified: true,
         role_root_lift_evidence_digest,
@@ -10698,6 +10831,36 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_v1_frame(
         &mut frame,
         b"projection_carrier_binding_digest_splits_to_check_and_transcript",
         u64::from(evidence.projection_carrier_binding_digest_splits_to_check_and_transcript),
+    );
+    append_u64(
+        &mut frame,
+        b"account_witness_opening_domain_matches_hash_evidence",
+        u64::from(evidence.account_witness_opening_domain_matches_hash_evidence),
+    );
+    append_u64(
+        &mut frame,
+        b"account_witness_opening_digest_uses_hash_domain_frame",
+        u64::from(evidence.account_witness_opening_digest_uses_hash_domain_frame),
+    );
+    append_u64(
+        &mut frame,
+        b"pad_seed_opening_domain_matches_hash_evidence",
+        u64::from(evidence.pad_seed_opening_domain_matches_hash_evidence),
+    );
+    append_u64(
+        &mut frame,
+        b"pad_seed_opening_digest_uses_hash_domain_frame",
+        u64::from(evidence.pad_seed_opening_digest_uses_hash_domain_frame),
+    );
+    append_u64(
+        &mut frame,
+        b"pad_opening_view_domain_matches_hash_evidence",
+        u64::from(evidence.pad_opening_view_domain_matches_hash_evidence),
+    );
+    append_u64(
+        &mut frame,
+        b"pad_opening_statement_digest_uses_hash_domain_frame",
+        u64::from(evidence.pad_opening_statement_digest_uses_hash_domain_frame),
     );
     append_frame(
         &mut frame,
@@ -10853,6 +11016,12 @@ pub fn path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
         && evidence.projection_carrier_domain_matches_hash_evidence
         && evidence.projection_carrier_binding_frame_uses_hash_domain_field
         && evidence.projection_carrier_binding_digest_splits_to_check_and_transcript
+        && evidence.account_witness_opening_domain_matches_hash_evidence
+        && evidence.account_witness_opening_digest_uses_hash_domain_frame
+        && evidence.pad_seed_opening_domain_matches_hash_evidence
+        && evidence.pad_seed_opening_digest_uses_hash_domain_frame
+        && evidence.pad_opening_view_domain_matches_hash_evidence
+        && evidence.pad_opening_statement_digest_uses_hash_domain_frame
         && evidence.boundary_base_evidence_verified
         && evidence.role_root_lift_evidence_verified
         && evidence.selected_source_route_evidence_verified
@@ -21251,6 +21420,9 @@ pub fn path2_native_hash_byte_domain_evidence_v1() -> Path2NativeHashByteDomainE
         PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN,
         REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN,
         REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN,
+        REVIEWED_FQ12_ACCOUNT_WITNESS_PROJECTION_OPENING_DOMAIN,
+        REVIEWED_FQ12_PAD_SEED_OPENING_DOMAIN,
+        REVIEWED_FQ12_PAD_OPENING_VIEW_DOMAIN,
         REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN,
         PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN,
     ];
@@ -21274,6 +21446,9 @@ pub fn path2_native_hash_byte_domain_evidence_v1() -> Path2NativeHashByteDomainE
         checked_core_frame_domain: PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN,
         hidden_source_frame_domain: REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN,
         hidden_source_proof_domain: REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN,
+        account_witness_opening_domain: REVIEWED_FQ12_ACCOUNT_WITNESS_PROJECTION_OPENING_DOMAIN,
+        pad_seed_opening_domain: REVIEWED_FQ12_PAD_SEED_OPENING_DOMAIN,
+        pad_opening_view_domain: REVIEWED_FQ12_PAD_OPENING_VIEW_DOMAIN,
         projection_carrier_domain: REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN,
         account_lifecycle_domain: PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN,
         checked_core_frame_domain_pinned: PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN
@@ -21282,6 +21457,13 @@ pub fn path2_native_hash_byte_domain_evidence_v1() -> Path2NativeHashByteDomainE
             == "Descender.Signature.q12289.local_delta.reviewed_fq12_hidden_source_statement.v1",
         hidden_source_proof_domain_pinned: REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN
             == "Descender.Signature.q12289.local_delta.reviewed_fq12_hidden_source_proof.v1",
+        account_witness_opening_domain_pinned:
+            REVIEWED_FQ12_ACCOUNT_WITNESS_PROJECTION_OPENING_DOMAIN
+                == "Descender.Signature.q12289.local_delta.reviewed_fq12_account_witness_projection_opening.v1",
+        pad_seed_opening_domain_pinned: REVIEWED_FQ12_PAD_SEED_OPENING_DOMAIN
+            == "Descender.Signature.q12289.local_delta.reviewed_fq12_pad_seed_opening.v1",
+        pad_opening_view_domain_pinned: REVIEWED_FQ12_PAD_OPENING_VIEW_DOMAIN
+            == "Descender.Signature.q12289.local_delta.reviewed_fq12_pad_opening_view.v1",
         projection_carrier_domain_pinned:
             REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN
                 == "Descender.Signature.q12289.local_delta.reviewed_fq12_state_assisted_projection_carrier_binding.v1",
@@ -21299,6 +21481,9 @@ pub fn path2_native_hash_byte_domain_evidence_all_facts_true(
     evidence.checked_core_frame_domain_pinned
         && evidence.hidden_source_frame_domain_pinned
         && evidence.hidden_source_proof_domain_pinned
+        && evidence.account_witness_opening_domain_pinned
+        && evidence.pad_seed_opening_domain_pinned
+        && evidence.pad_opening_view_domain_pinned
         && evidence.projection_carrier_domain_pinned
         && evidence.account_lifecycle_domain_pinned
         && evidence.all_domains_disjoint
@@ -21328,6 +21513,21 @@ pub fn path2_native_hash_byte_domain_evidence_v1_frame(
     );
     append_frame(
         &mut frame,
+        b"account_witness_opening_domain",
+        evidence.account_witness_opening_domain.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"pad_seed_opening_domain",
+        evidence.pad_seed_opening_domain.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"pad_opening_view_domain",
+        evidence.pad_opening_view_domain.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
         b"projection_carrier_domain",
         evidence.projection_carrier_domain.as_bytes(),
     );
@@ -21350,6 +21550,21 @@ pub fn path2_native_hash_byte_domain_evidence_v1_frame(
         &mut frame,
         b"hidden_source_proof_domain_pinned",
         u64::from(evidence.hidden_source_proof_domain_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"account_witness_opening_domain_pinned",
+        u64::from(evidence.account_witness_opening_domain_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"pad_seed_opening_domain_pinned",
+        u64::from(evidence.pad_seed_opening_domain_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"pad_opening_view_domain_pinned",
+        u64::from(evidence.pad_opening_view_domain_pinned),
     );
     append_u64(
         &mut frame,
@@ -21388,6 +21603,10 @@ pub fn path2_native_hash_byte_domain_evidence_v1_digest(
     if evidence.checked_core_frame_domain != PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN
         || evidence.hidden_source_frame_domain != REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN
         || evidence.hidden_source_proof_domain != REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN
+        || evidence.account_witness_opening_domain
+            != REVIEWED_FQ12_ACCOUNT_WITNESS_PROJECTION_OPENING_DOMAIN
+        || evidence.pad_seed_opening_domain != REVIEWED_FQ12_PAD_SEED_OPENING_DOMAIN
+        || evidence.pad_opening_view_domain != REVIEWED_FQ12_PAD_OPENING_VIEW_DOMAIN
         || evidence.projection_carrier_domain
             != REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN
         || evidence.account_lifecycle_domain != PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN
@@ -22209,9 +22428,15 @@ fn path2_native_hash_byte_domain_evidence_source_present_v1() -> bool {
         "checked_core_frame_domain",
         "hidden_source_frame_domain",
         "hidden_source_proof_domain",
+        "account_witness_opening_domain",
+        "pad_seed_opening_domain",
+        "pad_opening_view_domain",
         "projection_carrier_domain",
         "account_lifecycle_domain",
         "hidden_source_proof_domain_pinned",
+        "account_witness_opening_domain_pinned",
+        "pad_seed_opening_domain_pinned",
+        "pad_opening_view_domain_pinned",
         "all_domains_disjoint",
         "all_domains_registered",
         "negative_control_duplicate_rejected",
@@ -22221,6 +22446,9 @@ fn path2_native_hash_byte_domain_evidence_source_present_v1() -> bool {
         "PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN",
         "REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN",
         "REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN",
+        "REVIEWED_FQ12_ACCOUNT_WITNESS_PROJECTION_OPENING_DOMAIN",
+        "REVIEWED_FQ12_PAD_SEED_OPENING_DOMAIN",
+        "REVIEWED_FQ12_PAD_OPENING_VIEW_DOMAIN",
         "REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN",
         "PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN",
         "production_registered_domain_schema_constants()",
@@ -29899,6 +30127,12 @@ pub fn verify_reviewed_fq12_pad_opening_statement_witness(
 pub fn reviewed_fq12_pad_seed_opening_digest(
     pad_seed: &[u8; REVIEWED_FQ12_PAD_SEED_BYTES],
 ) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(reviewed_fq12_pad_seed_opening_frame(pad_seed)).into()
+}
+
+pub fn reviewed_fq12_pad_seed_opening_frame(
+    pad_seed: &[u8; REVIEWED_FQ12_PAD_SEED_BYTES],
+) -> Vec<u8> {
     let mut frame = Vec::new();
     append_frame(
         &mut frame,
@@ -29915,7 +30149,7 @@ pub fn reviewed_fq12_pad_seed_opening_digest(
         REVIEWED_FQ12_PAD_SEED_BYTES as u64,
     );
     append_frame(&mut frame, b"pad_seed", pad_seed);
-    Sha256::digest(frame).into()
+    frame
 }
 
 pub fn verify_reviewed_fq12_pad_seed_opening(
@@ -44511,6 +44745,18 @@ mod tests {
             REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_DOMAIN
         );
         assert_eq!(
+            byte_domain_evidence.account_witness_opening_domain,
+            REVIEWED_FQ12_ACCOUNT_WITNESS_PROJECTION_OPENING_DOMAIN
+        );
+        assert_eq!(
+            byte_domain_evidence.pad_seed_opening_domain,
+            REVIEWED_FQ12_PAD_SEED_OPENING_DOMAIN
+        );
+        assert_eq!(
+            byte_domain_evidence.pad_opening_view_domain,
+            REVIEWED_FQ12_PAD_OPENING_VIEW_DOMAIN
+        );
+        assert_eq!(
             byte_domain_evidence.projection_carrier_domain,
             REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN
         );
@@ -54477,6 +54723,12 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(
             five_source_evidence.projection_carrier_binding_digest_splits_to_check_and_transcript
         );
+        assert!(five_source_evidence.account_witness_opening_domain_matches_hash_evidence);
+        assert!(five_source_evidence.account_witness_opening_digest_uses_hash_domain_frame);
+        assert!(five_source_evidence.pad_seed_opening_domain_matches_hash_evidence);
+        assert!(five_source_evidence.pad_seed_opening_digest_uses_hash_domain_frame);
+        assert!(five_source_evidence.pad_opening_view_domain_matches_hash_evidence);
+        assert!(five_source_evidence.pad_opening_statement_digest_uses_hash_domain_frame);
         assert_eq!(
             hash_byte_domain_evidence.hidden_source_frame_domain,
             REVIEWED_FQ12_HIDDEN_SOURCE_STATEMENT_DOMAIN
@@ -54488,6 +54740,18 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert_eq!(
             hash_byte_domain_evidence.projection_carrier_domain,
             REVIEWED_FQ12_STATE_ASSISTED_PROJECTION_CARRIER_BINDING_DOMAIN
+        );
+        assert_eq!(
+            hash_byte_domain_evidence.account_witness_opening_domain,
+            REVIEWED_FQ12_ACCOUNT_WITNESS_PROJECTION_OPENING_DOMAIN
+        );
+        assert_eq!(
+            hash_byte_domain_evidence.pad_seed_opening_domain,
+            REVIEWED_FQ12_PAD_SEED_OPENING_DOMAIN
+        );
+        assert_eq!(
+            hash_byte_domain_evidence.pad_opening_view_domain,
+            REVIEWED_FQ12_PAD_OPENING_VIEW_DOMAIN
         );
         let hidden_source_statement_probe = ProductionReviewedFq12HiddenSourceStatement {
             digest: [0_u8; DIGEST_BYTES],
@@ -54600,6 +54864,74 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
                 ..HIDDEN_SOURCE_FALLBACK_PROJECTION_CHECK_BYTES
                     + HIDDEN_SOURCE_FALLBACK_PROJECTION_TRANSCRIPT_BINDING_BYTES],
             projection_carrier_transcript_binding.as_slice()
+        );
+        let account_witness_opening_probe = HiddenSourceFallbackProjectionAccountWitnessOpening {
+            selected_source_values: [0_u16; HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES],
+        };
+        let account_witness_opening_probe_frame =
+            encode_hidden_source_fallback_account_witness_opening_frame(
+                &account_witness_opening_probe,
+            )
+            .unwrap();
+        let account_witness_opening_digest_frame =
+            reviewed_fq12_account_witness_projection_opening_frame(
+                &account_witness_opening_probe_frame,
+            )
+            .unwrap();
+        let mut account_witness_opening_expected_domain_field = Vec::new();
+        append_frame(
+            &mut account_witness_opening_expected_domain_field,
+            b"domain",
+            hash_byte_domain_evidence
+                .account_witness_opening_domain
+                .as_bytes(),
+        );
+        assert!(
+            account_witness_opening_digest_frame
+                .starts_with(&account_witness_opening_expected_domain_field)
+        );
+        let account_witness_opening_frame_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(&account_witness_opening_digest_frame).into();
+        assert_eq!(
+            reviewed_fq12_account_witness_projection_opening_digest(
+                &account_witness_opening_probe_frame,
+            )
+            .unwrap(),
+            account_witness_opening_frame_digest
+        );
+        let pad_seed_probe = [0_u8; REVIEWED_FQ12_PAD_SEED_BYTES];
+        let pad_seed_opening_frame = reviewed_fq12_pad_seed_opening_frame(&pad_seed_probe);
+        let mut pad_seed_opening_expected_domain_field = Vec::new();
+        append_frame(
+            &mut pad_seed_opening_expected_domain_field,
+            b"domain",
+            hash_byte_domain_evidence.pad_seed_opening_domain.as_bytes(),
+        );
+        assert!(pad_seed_opening_frame.starts_with(&pad_seed_opening_expected_domain_field));
+        let pad_seed_opening_frame_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(&pad_seed_opening_frame).into();
+        assert_eq!(
+            reviewed_fq12_pad_seed_opening_digest(&pad_seed_probe),
+            pad_seed_opening_frame_digest
+        );
+        let pad_opening_consistency_probe =
+            reviewed_fq12_pad_opening_consistency_from_seed(&pad_seed_probe, &[false; GROUPS]);
+        let pad_opening_statement_probe =
+            public_pad_opening_statement_from_consistency(&pad_opening_consistency_probe);
+        let pad_opening_statement_frame =
+            public_pad_opening_statement_frame(&pad_opening_consistency_probe);
+        let mut pad_opening_view_expected_domain_field = Vec::new();
+        append_frame(
+            &mut pad_opening_view_expected_domain_field,
+            b"domain",
+            hash_byte_domain_evidence.pad_opening_view_domain.as_bytes(),
+        );
+        assert!(pad_opening_statement_frame.starts_with(&pad_opening_view_expected_domain_field));
+        let pad_opening_statement_frame_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(&pad_opening_statement_frame).into();
+        assert_eq!(
+            pad_opening_statement_probe.digest,
+            pad_opening_statement_frame_digest
         );
         assert_eq!(
             five_source_evidence.boundary_base_evidence_digest,
