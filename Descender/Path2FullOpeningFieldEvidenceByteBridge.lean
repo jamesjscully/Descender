@@ -745,6 +745,96 @@ structure SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
           payload cert liftCert assemblyCert compatCert fieldCert routeCert
 
 /--
+Lean mirror of the public selected source-route byte-source evidence report.
+
+This report is the AP2-N001 analogue of the checked-core byte evidence report:
+it records that the selected Rust field-evidence/source-route byte path pins the
+two parsers, availability theorem, semantic binding facts, aggregate-source
+rejection, and negative controls before a proof may expose the byte source to
+the five-source hidden-source closure theorem.
+-/
+structure SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport where
+  schemaMatches : Bool
+  reportDigestVerified : Bool
+  fieldFrameParserPinned : Bool
+  routeFrameParserPinned : Bool
+  sourceRouteAvailabilityPinned : Bool
+  fieldByteCertificatePinned : Bool
+  routeByteCertificatePinned : Bool
+  fieldBindsPinned : Bool
+  sourceRouteBindsPinned : Bool
+  aggregateBridgeRejectionPinned : Bool
+  sourceRouteNegativeControlsPassed : Bool
+
+namespace SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport
+
+/-- The public source-route byte evidence report has been digest/schema checked. -/
+def ReportVerified
+    (E : SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport) :
+    Prop :=
+  E.schemaMatches = true ∧
+    E.reportDigestVerified = true
+
+/-- Every selected source-route byte-source component fact recorded by the report holds. -/
+def FactsAllTrue
+    (E : SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport) :
+    Prop :=
+  E.fieldFrameParserPinned = true ∧
+    E.routeFrameParserPinned = true ∧
+    E.sourceRouteAvailabilityPinned = true ∧
+    E.fieldByteCertificatePinned = true ∧
+    E.routeByteCertificatePinned = true ∧
+    E.fieldBindsPinned = true ∧
+    E.sourceRouteBindsPinned = true ∧
+    E.aggregateBridgeRejectionPinned = true ∧
+    E.sourceRouteNegativeControlsPassed = true
+
+end SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport
+
+/--
+Proof-bearing selected Rust source-route byte-source certificate.
+
+The final AP2-N001 theorem should construct this certificate from public Rust
+evidence and then expose the underlying byte source through `toByteSource`.
+That prevents the five-source closure theorem from accepting a bare source
+record whose parser, frame, binding, and negative-control evidence has not been
+named at the proof boundary.
+-/
+structure SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+    (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)
+    (RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser)
+    (P : Predicates) where
+  evidenceReport :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport
+  evidenceReportVerifiedProof :
+    evidenceReport.ReportVerified
+  evidenceFactsAllTrueProof :
+    evidenceReport.FactsAllTrue
+  selectedSource :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+      FieldParser RouteParser P
+
+namespace SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+
+/-- Expose the selected byte source only after consuming the report proofs. -/
+def toByteSource
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {P : Predicates}
+    (Cert :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+        FieldParser RouteParser P) :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+      FieldParser RouteParser P :=
+  let _hReport : Cert.evidenceReport.ReportVerified :=
+    Cert.evidenceReportVerifiedProof
+  let _hFacts : Cert.evidenceReport.FactsAllTrue :=
+    Cert.evidenceFactsAllTrueProof
+  Cert.selectedSource
+
+end SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+
+/--
 Forget the selected-Rust wrapper into the generic source-route byte predicate
 source consumed by the AP2-N001 adapters.
 -/
