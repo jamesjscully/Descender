@@ -3253,6 +3253,9 @@ pub struct Path2NativeDeploymentPreflightV1 {
     pub global_domain_registry_present: bool,
     pub hash_qrom_review_present: bool,
     pub hidden_source_semantics_bridge_complete: bool,
+    pub five_source_closure_evidence_digest: Option<[u8; DIGEST_BYTES]>,
+    pub five_source_closure_evidence_verified: bool,
+    pub five_source_closure_evidence_facts_all_true: bool,
     pub facade_exports_present: bool,
     pub consensus_carrier_body_bytes: u16,
     pub consensus_carrier_bytes: u16,
@@ -3283,6 +3286,9 @@ pub struct Path2NativeVerifierPipelineVerdictV1 {
     pub consensus_carrier_digest: Option<[u8; DIGEST_BYTES]>,
     pub checked_core_byte_instantiation_evidence_digest: Option<[u8; DIGEST_BYTES]>,
     pub checked_core_byte_instantiation_evidence_verified: bool,
+    pub five_source_closure_evidence_digest: Option<[u8; DIGEST_BYTES]>,
+    pub five_source_closure_evidence_verified: bool,
+    pub five_source_closure_evidence_facts_all_true: bool,
     pub native_boundary_digest: [u8; DIGEST_BYTES],
     pub verifier_preflight_report: Path2NativeConsensusCarrierPreflightReportV1,
     pub deployment_preflight: Path2NativeDeploymentPreflightV1,
@@ -3298,6 +3304,9 @@ pub struct Path2NativeSignerVerifierPipelineEvidenceV1 {
     pub checked_core_proof_digest: [u8; DIGEST_BYTES],
     pub checked_core_byte_instantiation_evidence_digest: [u8; DIGEST_BYTES],
     pub checked_core_byte_instantiation_evidence_verified: bool,
+    pub five_source_closure_evidence_digest: Option<[u8; DIGEST_BYTES]>,
+    pub five_source_closure_evidence_verified: bool,
+    pub five_source_closure_evidence_facts_all_true: bool,
     pub native_boundary_digest: [u8; DIGEST_BYTES],
     pub verifier_public_boundary_accepted: bool,
     pub verifier_production_accepted: bool,
@@ -20433,6 +20442,9 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "path2_native_checked_core_byte_instantiation_evidence_v1_digest",
         "checked_core_byte_instantiation_evidence_digest",
         "checked_core_byte_instantiation_evidence_verified",
+        "five_source_closure_evidence_digest",
+        "five_source_closure_evidence_verified",
+        "five_source_closure_evidence_facts_all_true",
         "verify_path2_native_deployment_pipeline_v1",
         "Path 2 native signer/verifier checked-core evidence was not verified",
         "hidden_source_semantics_bridge_complete",
@@ -20453,6 +20465,8 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "constructor_succeeded: true",
         "verifier_public_boundary_accepted: verdict.public_boundary_accepted",
         "verifier_production_accepted: verdict.production_accepted",
+        "five_source_closure_evidence_digest: verdict.five_source_closure_evidence_digest",
+        "five_source_closure_evidence_verified: verdict.five_source_closure_evidence_verified",
         "deployment_blockers: verdict.deployment_preflight.internal_blockers",
         "no production acceptance claim while deployment preflight remains blocked",
         "no constant-time claim for private signing or keygen",
@@ -20486,6 +20500,9 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "PATH2_NATIVE_SIGNER_VERIFIER_PIPELINE_EVIDENCE_SCHEMA",
         "checked_core_byte_instantiation_evidence_digest",
         "checked_core_byte_instantiation_evidence_verified",
+        "five_source_closure_evidence_digest",
+        "five_source_closure_evidence_verified",
+        "five_source_closure_evidence_facts_all_true",
         "evidence.verifier_public_boundary_accepted",
         "evidence.verifier_production_accepted",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE",
@@ -20720,6 +20737,21 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         )
         .is_ok()
             && hidden_source_semantics_bridge_audit.semantics_bridge_complete;
+    let five_source_closure_evidence = path2_reviewed_fq12_five_source_closure_evidence_v1().ok();
+    let five_source_closure_evidence_facts_all_true = five_source_closure_evidence
+        .as_ref()
+        .is_some_and(path2_reviewed_fq12_five_source_closure_evidence_all_facts_true);
+    let five_source_closure_evidence_digest =
+        five_source_closure_evidence.as_ref().and_then(|evidence| {
+            path2_reviewed_fq12_five_source_closure_evidence_v1_digest(evidence).ok()
+        });
+    let five_source_closure_evidence_verified =
+        five_source_closure_evidence
+            .as_ref()
+            .is_some_and(|evidence| {
+                verify_path2_reviewed_fq12_five_source_closure_evidence_v1(evidence).ok()
+                    == five_source_closure_evidence_digest
+            });
     let facade_exports_present = path2_native_production_facade_exports_source_present_v1();
 
     let checked_core_composition_review_complete =
@@ -20817,6 +20849,9 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         global_domain_registry_present,
         hash_qrom_review_present,
         hidden_source_semantics_bridge_complete,
+        five_source_closure_evidence_digest,
+        five_source_closure_evidence_verified,
+        five_source_closure_evidence_facts_all_true,
         facade_exports_present,
         consensus_carrier_body_bytes: PATH2_NATIVE_CONSENSUS_CARRIER_BODY_BYTES as u16,
         consensus_carrier_bytes: PATH2_NATIVE_CONSENSUS_CARRIER_BYTES as u16,
@@ -20906,6 +20941,12 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         verifier_preflight.checked_core_byte_instantiation_evidence_digest;
     let checked_core_byte_instantiation_evidence_verified =
         verifier_preflight.checked_core_byte_instantiation_evidence_verified;
+    let five_source_closure_evidence_digest =
+        deployment_preflight.five_source_closure_evidence_digest;
+    let five_source_closure_evidence_verified =
+        deployment_preflight.five_source_closure_evidence_verified;
+    let five_source_closure_evidence_facts_all_true =
+        deployment_preflight.five_source_closure_evidence_facts_all_true;
 
     Path2NativeVerifierPipelineVerdictV1 {
         schema: PATH2_NATIVE_VERIFIER_PIPELINE_VERDICT_SCHEMA,
@@ -20915,6 +20956,9 @@ pub fn verify_path2_native_deployment_pipeline_v1(
         consensus_carrier_digest: verifier_preflight.carrier_digest,
         checked_core_byte_instantiation_evidence_digest,
         checked_core_byte_instantiation_evidence_verified,
+        five_source_closure_evidence_digest,
+        five_source_closure_evidence_verified,
+        five_source_closure_evidence_facts_all_true,
         native_boundary_digest: carrier.native_boundary_digest,
         verifier_preflight_report: verifier_preflight,
         deployment_preflight,
@@ -21455,6 +21499,10 @@ pub fn path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_
         checked_core_byte_instantiation_evidence_digest,
         checked_core_byte_instantiation_evidence_verified: verdict
             .checked_core_byte_instantiation_evidence_verified,
+        five_source_closure_evidence_digest: verdict.five_source_closure_evidence_digest,
+        five_source_closure_evidence_verified: verdict.five_source_closure_evidence_verified,
+        five_source_closure_evidence_facts_all_true: verdict
+            .five_source_closure_evidence_facts_all_true,
         native_boundary_digest: output.constructed.boundary_meaning.native_boundary_digest,
         verifier_public_boundary_accepted: verdict.public_boundary_accepted,
         verifier_production_accepted: verdict.production_accepted,
@@ -38786,6 +38834,18 @@ mod tests {
         assert!(path2_native_hash_qrom_review_source_present_v1());
         assert!(preflight.hash_qrom_review_present);
         assert!(!preflight.hidden_source_semantics_bridge_complete);
+        let five_source_evidence = path2_reviewed_fq12_five_source_closure_evidence_v1().unwrap();
+        let five_source_evidence_digest =
+            path2_reviewed_fq12_five_source_closure_evidence_v1_digest(&five_source_evidence)
+                .unwrap();
+        assert_eq!(
+            preflight.five_source_closure_evidence_digest,
+            Some(five_source_evidence_digest)
+        );
+        assert!(preflight.five_source_closure_evidence_verified);
+        assert!(preflight.five_source_closure_evidence_facts_all_true);
+        assert!(!five_source_evidence.extractor_theorem_instantiated);
+        assert!(!five_source_evidence.semantics_bridge_complete);
         assert!(path2_native_production_facade_exports_source_present_v1());
         assert!(preflight.facade_exports_present);
         assert_eq!(
@@ -39343,6 +39403,28 @@ end Path2NativeAccountDesign
                 .verifier_preflight_report
                 .checked_core_byte_instantiation_evidence_verified
         );
+        let five_source_evidence = path2_reviewed_fq12_five_source_closure_evidence_v1().unwrap();
+        let five_source_evidence_digest =
+            path2_reviewed_fq12_five_source_closure_evidence_v1_digest(&five_source_evidence)
+                .unwrap();
+        assert_eq!(
+            verdict.five_source_closure_evidence_digest,
+            Some(five_source_evidence_digest)
+        );
+        assert!(verdict.five_source_closure_evidence_verified);
+        assert!(verdict.five_source_closure_evidence_facts_all_true);
+        assert_eq!(
+            verdict.five_source_closure_evidence_digest,
+            verdict
+                .deployment_preflight
+                .five_source_closure_evidence_digest
+        );
+        assert_eq!(
+            verdict.five_source_closure_evidence_verified,
+            verdict
+                .deployment_preflight
+                .five_source_closure_evidence_verified
+        );
         assert_eq!(
             verdict.native_boundary_digest,
             assembly.native_boundary_digest
@@ -39369,6 +39451,9 @@ end Path2NativeAccountDesign
             None
         );
         assert!(!rejected.checked_core_byte_instantiation_evidence_verified);
+        assert!(rejected.five_source_closure_evidence_digest.is_some());
+        assert!(rejected.five_source_closure_evidence_verified);
+        assert!(rejected.five_source_closure_evidence_facts_all_true);
 
         for rendered in [
             serde_json::to_string(&verdict).unwrap(),
@@ -40381,6 +40466,13 @@ end Path2NativeAccountDesign
             [0_u8; DIGEST_BYTES]
         );
         assert!(evidence.checked_core_byte_instantiation_evidence_verified);
+        assert!(evidence.five_source_closure_evidence_digest.is_some());
+        assert_ne!(
+            evidence.five_source_closure_evidence_digest.unwrap(),
+            [0_u8; DIGEST_BYTES]
+        );
+        assert!(evidence.five_source_closure_evidence_verified);
+        assert!(evidence.five_source_closure_evidence_facts_all_true);
         assert_ne!(evidence.native_boundary_digest, [0_u8; DIGEST_BYTES]);
         assert!(evidence.verifier_public_boundary_accepted);
         assert!(!evidence.verifier_production_accepted);
