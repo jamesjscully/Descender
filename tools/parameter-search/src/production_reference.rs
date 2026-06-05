@@ -265,6 +265,8 @@ pub const PATH2_REVIEWED_FQ12_ROLE_ROOT_LIFT_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.reviewed_fq12.role_root_lift_evidence.v1";
 pub const PATH2_REVIEWED_FQ12_FIELD_LOCAL_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.reviewed_fq12.field_local_evidence.v1";
+pub const PATH2_REVIEWED_FQ12_SHARED_DIGEST_FRAME_WITNESS_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.reviewed_fq12.shared_digest_frame_witness_evidence.v1";
 pub const PATH2_REVIEWED_FQ12_SELECTED_SOURCE_ROUTE_BYTE_SOURCE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.reviewed_fq12.selected_source_route_byte_source_evidence.v1";
 pub const PATH2_PREVALIDATED_SLOT_LEAF_DOMAIN: &str = "DESCENDER_SLOT_LEAF_V1";
@@ -7449,6 +7451,22 @@ pub struct Path2ReviewedFq12FieldLocalEvidenceV1 {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2ReviewedFq12SharedDigestFrameWitnessEvidenceV1 {
+    pub schema: &'static str,
+    pub schema_matches: bool,
+    pub report_digest_verified: bool,
+    pub canonical_witness_parser_pinned: bool,
+    pub digest_frame_witness_parser_pinned: bool,
+    pub shared_digest_frame_pinned: bool,
+    pub canonical_witness_byte_certificate_pinned: bool,
+    pub digest_frame_witness_byte_certificate_pinned: bool,
+    pub representative_digest_frame_source_pinned: bool,
+    pub canonical_witness_verifier_pinned: bool,
+    pub digest_frame_witness_verifier_pinned: bool,
+    pub shared_digest_frame_negative_controls_passed: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1 {
     pub schema: &'static str,
     pub schema_matches: bool,
@@ -10652,6 +10670,166 @@ pub fn verify_path2_reviewed_fq12_field_local_evidence_v1(
     Ok(digest)
 }
 
+pub fn path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1()
+-> Result<Path2ReviewedFq12SharedDigestFrameWitnessEvidenceV1, String> {
+    let canonical_witness_pinned =
+        path2_reviewed_fq12_full_native_opening_canonical_representative_witness_source_present_v1(
+        );
+    let digest_frame_witness_pinned =
+        path2_reviewed_fq12_native_representative_digest_frame_witness_api_present_v1();
+    let shared_digest_frame_pinned =
+        path2_reviewed_fq12_canonical_and_digest_witnesses_share_native_frame_source_present_v1();
+    let representative_digest_frame_source_pinned =
+        path2_reviewed_fq12_native_representative_digest_frame_source_present_v1();
+    let negative_controls_pinned =
+        path2_reviewed_fq12_canonical_representative_witness_negative_controls_present_v1();
+    Ok(Path2ReviewedFq12SharedDigestFrameWitnessEvidenceV1 {
+        schema: PATH2_REVIEWED_FQ12_SHARED_DIGEST_FRAME_WITNESS_EVIDENCE_SCHEMA,
+        schema_matches: true,
+        report_digest_verified: true,
+        canonical_witness_parser_pinned: canonical_witness_pinned,
+        digest_frame_witness_parser_pinned: digest_frame_witness_pinned,
+        shared_digest_frame_pinned,
+        canonical_witness_byte_certificate_pinned: canonical_witness_pinned,
+        digest_frame_witness_byte_certificate_pinned: digest_frame_witness_pinned,
+        representative_digest_frame_source_pinned,
+        canonical_witness_verifier_pinned: canonical_witness_pinned,
+        digest_frame_witness_verifier_pinned: digest_frame_witness_pinned,
+        shared_digest_frame_negative_controls_passed: shared_digest_frame_pinned
+            && negative_controls_pinned,
+    })
+}
+
+pub fn path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1_frame(
+    evidence: &Path2ReviewedFq12SharedDigestFrameWitnessEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"schema_matches",
+        u64::from(evidence.schema_matches),
+    );
+    append_u64(
+        &mut frame,
+        b"report_digest_verified",
+        u64::from(evidence.report_digest_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"canonical_witness_parser_pinned",
+        u64::from(evidence.canonical_witness_parser_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"digest_frame_witness_parser_pinned",
+        u64::from(evidence.digest_frame_witness_parser_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"shared_digest_frame_pinned",
+        u64::from(evidence.shared_digest_frame_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"canonical_witness_byte_certificate_pinned",
+        u64::from(evidence.canonical_witness_byte_certificate_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"digest_frame_witness_byte_certificate_pinned",
+        u64::from(evidence.digest_frame_witness_byte_certificate_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"representative_digest_frame_source_pinned",
+        u64::from(evidence.representative_digest_frame_source_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"canonical_witness_verifier_pinned",
+        u64::from(evidence.canonical_witness_verifier_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"digest_frame_witness_verifier_pinned",
+        u64::from(evidence.digest_frame_witness_verifier_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"shared_digest_frame_negative_controls_passed",
+        u64::from(evidence.shared_digest_frame_negative_controls_passed),
+    );
+    frame
+}
+
+pub fn path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1_digest(
+    evidence: &Path2ReviewedFq12SharedDigestFrameWitnessEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    Ok(
+        Sha256::digest(path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1_frame(evidence))
+            .into(),
+    )
+}
+
+pub fn path2_reviewed_fq12_shared_digest_frame_witness_evidence_all_facts_true(
+    evidence: &Path2ReviewedFq12SharedDigestFrameWitnessEvidenceV1,
+) -> bool {
+    evidence.schema == PATH2_REVIEWED_FQ12_SHARED_DIGEST_FRAME_WITNESS_EVIDENCE_SCHEMA
+        && evidence.canonical_witness_parser_pinned
+        && evidence.digest_frame_witness_parser_pinned
+        && evidence.shared_digest_frame_pinned
+        && evidence.canonical_witness_byte_certificate_pinned
+        && evidence.digest_frame_witness_byte_certificate_pinned
+        && evidence.representative_digest_frame_source_pinned
+        && evidence.canonical_witness_verifier_pinned
+        && evidence.digest_frame_witness_verifier_pinned
+        && evidence.shared_digest_frame_negative_controls_passed
+}
+
+pub fn path2_reviewed_fq12_shared_digest_frame_witness_evidence_report_verified_v1(
+    evidence: &Path2ReviewedFq12SharedDigestFrameWitnessEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let expected = path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1()?;
+    if expected != *evidence {
+        return Err(
+            "Path 2 reviewed Fq12 shared digest-frame witness evidence mismatch".to_string(),
+        );
+    }
+    if evidence.schema != PATH2_REVIEWED_FQ12_SHARED_DIGEST_FRAME_WITNESS_EVIDENCE_SCHEMA {
+        return Err(
+            "Path 2 reviewed Fq12 shared digest-frame witness evidence schema mismatch".to_string(),
+        );
+    }
+    if !evidence.schema_matches {
+        return Err(
+            "Path 2 reviewed Fq12 shared digest-frame witness evidence schema was not matched"
+                .to_string(),
+        );
+    }
+    if !evidence.report_digest_verified {
+        return Err(
+            "Path 2 reviewed Fq12 shared digest-frame witness evidence digest was not verified"
+                .to_string(),
+        );
+    }
+    path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1_digest(evidence)
+}
+
+pub fn verify_path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1(
+    evidence: &Path2ReviewedFq12SharedDigestFrameWitnessEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let digest =
+        path2_reviewed_fq12_shared_digest_frame_witness_evidence_report_verified_v1(evidence)?;
+    if !path2_reviewed_fq12_shared_digest_frame_witness_evidence_all_facts_true(evidence) {
+        return Err(
+            "Path 2 reviewed Fq12 shared digest-frame witness evidence has an unsatisfied component fact"
+                .to_string(),
+        );
+    }
+    Ok(digest)
+}
+
 pub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1()
 -> Result<Path2ReviewedFq12SelectedSourceRouteByteSourceEvidenceV1, String> {
     let parser_frame_certificates_present =
@@ -13679,6 +13857,30 @@ fn path2_reviewed_fq12_shared_digest_frame_witness_byte_source_contract_present_
         "../../../Descender/Path2FullOpeningFieldEvidenceSourceAdapters.lean"
     ));
 
+    let shared_evidence_start = source
+        .find("\npub struct Path2ReviewedFq12SharedDigestFrameWitnessEvidenceV1")
+        .expect("Path 2 reviewed Fq12 shared witness evidence report start marker missing");
+    let shared_evidence_end = source[shared_evidence_start..]
+        .find("\n\n#[derive(Clone, Debug, PartialEq, Eq, Serialize)]")
+        .expect("Path 2 reviewed Fq12 shared witness evidence report end marker missing")
+        + shared_evidence_start;
+    let shared_evidence_struct_source = &source[shared_evidence_start..shared_evidence_end];
+
+    let shared_evidence_function_start = source
+        .find("\npub fn path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1")
+        .expect("Path 2 reviewed Fq12 shared witness evidence function start marker missing");
+    let shared_evidence_function_end = source[shared_evidence_function_start..]
+        .find("\npub fn path2_reviewed_fq12_selected_source_route_byte_source_evidence_v1")
+        .expect("Path 2 reviewed Fq12 shared witness evidence function end marker missing")
+        + shared_evidence_function_start;
+    let shared_evidence_function_source =
+        &source[shared_evidence_function_start..shared_evidence_function_end];
+
+    let shared_evidence = match path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1() {
+        Ok(evidence) => evidence,
+        Err(_) => return false,
+    };
+
     let digest_witness_start = source
         .find("\npub fn path2_reviewed_fq12_native_representative_digest_frame_witness_v1(")
         .expect("Path 2 reviewed Fq12 digest-frame witness source start marker missing");
@@ -13766,6 +13968,43 @@ fn path2_reviewed_fq12_shared_digest_frame_witness_byte_source_contract_present_
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_sources",
     ];
+    let shared_evidence_struct_checks = [
+        "Path2ReviewedFq12SharedDigestFrameWitnessEvidenceV1",
+        "schema_matches",
+        "report_digest_verified",
+        "canonical_witness_parser_pinned",
+        "digest_frame_witness_parser_pinned",
+        "shared_digest_frame_pinned",
+        "canonical_witness_byte_certificate_pinned",
+        "digest_frame_witness_byte_certificate_pinned",
+        "representative_digest_frame_source_pinned",
+        "canonical_witness_verifier_pinned",
+        "digest_frame_witness_verifier_pinned",
+        "shared_digest_frame_negative_controls_passed",
+    ];
+    let shared_evidence_function_checks = [
+        "PATH2_REVIEWED_FQ12_SHARED_DIGEST_FRAME_WITNESS_EVIDENCE_SCHEMA",
+        "path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1",
+        "path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1_frame",
+        "path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1_digest",
+        "path2_reviewed_fq12_shared_digest_frame_witness_evidence_all_facts_true",
+        "path2_reviewed_fq12_shared_digest_frame_witness_evidence_report_verified_v1",
+        "verify_path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1",
+        "path2_reviewed_fq12_full_native_opening_canonical_representative_witness_source_present_v1",
+        "path2_reviewed_fq12_native_representative_digest_frame_witness_api_present_v1",
+        "path2_reviewed_fq12_canonical_and_digest_witnesses_share_native_frame_source_present_v1",
+        "path2_reviewed_fq12_native_representative_digest_frame_source_present_v1",
+        "path2_reviewed_fq12_canonical_representative_witness_negative_controls_present_v1",
+        "b\"canonical_witness_parser_pinned\"",
+        "b\"digest_frame_witness_parser_pinned\"",
+        "b\"shared_digest_frame_pinned\"",
+        "b\"canonical_witness_byte_certificate_pinned\"",
+        "b\"digest_frame_witness_byte_certificate_pinned\"",
+        "b\"representative_digest_frame_source_pinned\"",
+        "b\"canonical_witness_verifier_pinned\"",
+        "b\"digest_frame_witness_verifier_pinned\"",
+        "b\"shared_digest_frame_negative_controls_passed\"",
+    ];
     let witness_constructor_checks = [
         "path2_reviewed_fq12_full_native_opening_certificate_v1_digest(full_opening_cert)?",
         "path2_reviewed_fq12_native_representative_assembly_certificate_v1_digest(assembly_cert)?",
@@ -13808,6 +14047,14 @@ fn path2_reviewed_fq12_shared_digest_frame_witness_byte_source_contract_present_
 
     path2_reviewed_fq12_canonical_and_digest_witnesses_share_native_frame_source_present_v1()
         && path2_reviewed_fq12_canonical_representative_witness_negative_controls_present_v1()
+        && shared_evidence_struct_checks
+            .iter()
+            .all(|marker| shared_evidence_struct_source.contains(marker))
+        && shared_evidence_function_checks
+            .iter()
+            .all(|marker| shared_evidence_function_source.contains(marker))
+        && verify_path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1(&shared_evidence)
+            .is_ok()
         && lean_contract_checks
             .iter()
             .all(|marker| lean_source.contains(marker))
@@ -51859,6 +52106,88 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             path2_reviewed_fq12_boundary_base_evidence_report_verified_v1(&digest_unverified)
                 .unwrap_err(),
             "Path 2 reviewed Fq12 boundary-base evidence mismatch"
+        );
+    }
+
+    #[test]
+    fn path2_reviewed_fq12_shared_digest_frame_witness_evidence_is_digest_bound() {
+        assert!(path2_reviewed_fq12_full_native_opening_canonical_representative_witness_source_present_v1());
+        assert!(path2_reviewed_fq12_native_representative_digest_frame_witness_api_present_v1());
+        assert!(
+            path2_reviewed_fq12_canonical_and_digest_witnesses_share_native_frame_source_present_v1(
+            )
+        );
+        assert!(
+            path2_reviewed_fq12_canonical_representative_witness_negative_controls_present_v1()
+        );
+        let evidence = path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1().unwrap();
+        assert_eq!(
+            evidence.schema,
+            PATH2_REVIEWED_FQ12_SHARED_DIGEST_FRAME_WITNESS_EVIDENCE_SCHEMA
+        );
+        assert!(evidence.schema_matches);
+        assert!(evidence.report_digest_verified);
+        assert!(evidence.canonical_witness_parser_pinned);
+        assert!(evidence.digest_frame_witness_parser_pinned);
+        assert!(evidence.shared_digest_frame_pinned);
+        assert!(evidence.canonical_witness_byte_certificate_pinned);
+        assert!(evidence.digest_frame_witness_byte_certificate_pinned);
+        assert!(evidence.representative_digest_frame_source_pinned);
+        assert!(evidence.canonical_witness_verifier_pinned);
+        assert!(evidence.digest_frame_witness_verifier_pinned);
+        assert!(evidence.shared_digest_frame_negative_controls_passed);
+        assert!(path2_reviewed_fq12_shared_digest_frame_witness_evidence_all_facts_true(&evidence));
+
+        let frame = path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1_frame(&evidence);
+        assert!(!frame.is_empty());
+        let frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&frame).into();
+        assert_eq!(
+            path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1_digest(&evidence).unwrap(),
+            frame_digest
+        );
+        assert_eq!(
+            path2_reviewed_fq12_shared_digest_frame_witness_evidence_report_verified_v1(&evidence)
+                .unwrap(),
+            frame_digest
+        );
+        assert_eq!(
+            verify_path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1(&evidence).unwrap(),
+            frame_digest
+        );
+
+        let mut missing_shared_frame = evidence.clone();
+        missing_shared_frame.shared_digest_frame_pinned = false;
+        assert!(
+            !path2_reviewed_fq12_shared_digest_frame_witness_evidence_all_facts_true(
+                &missing_shared_frame
+            )
+        );
+        assert_eq!(
+            verify_path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1(
+                &missing_shared_frame
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 shared digest-frame witness evidence mismatch"
+        );
+
+        let mut schema_unmatched = evidence.clone();
+        schema_unmatched.schema_matches = false;
+        assert_eq!(
+            path2_reviewed_fq12_shared_digest_frame_witness_evidence_report_verified_v1(
+                &schema_unmatched
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 shared digest-frame witness evidence mismatch"
+        );
+
+        let mut digest_unverified = evidence.clone();
+        digest_unverified.report_digest_verified = false;
+        assert_eq!(
+            path2_reviewed_fq12_shared_digest_frame_witness_evidence_report_verified_v1(
+                &digest_unverified
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 shared digest-frame witness evidence mismatch"
         );
     }
 
