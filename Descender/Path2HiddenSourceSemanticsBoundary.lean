@@ -2153,6 +2153,48 @@ theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_mo
     Package.sharedFrameWitnessSources
 
 /--
+Selected Rust native-boundary predicate-model import target.
+
+The full-spend concrete predicates are not this object: they live over concrete
+spend tuples.  The hidden-source boundary needs a predicate interpretation over
+`Path2NativeBoundary.Boundary`, reviewed-Fq12 payloads, extraction
+certificates, full native openings, assembly certificates, compatibility
+certificates, transparent views, traces, and slot authorizations.  This source
+record names that active interpretation without defining it by vacuous
+acceptance or universal breaks.
+-/
+structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
+  predicates : Predicates
+  activeBoundaryPredicateModelPinned : Prop
+  activeBoundaryPredicateModelPinnedProof :
+    activeBoundaryPredicateModelPinned
+  reviewedFq12PayloadAcceptanceModeled : Prop
+  reviewedFq12PayloadAcceptanceModeledProof :
+    reviewedFq12PayloadAcceptanceModeled
+  reviewedFq12ExtractionCertificateModelModeled : Prop
+  reviewedFq12ExtractionCertificateModelModeledProof :
+    reviewedFq12ExtractionCertificateModelModeled
+  reviewedFq12FullOpeningAndAssemblyModelModeled : Prop
+  reviewedFq12FullOpeningAndAssemblyModelModeledProof :
+    reviewedFq12FullOpeningAndAssemblyModelModeled
+  reviewedFq12CompatibilityAndExtractionModelModeled : Prop
+  reviewedFq12CompatibilityAndExtractionModelModeledProof :
+    reviewedFq12CompatibilityAndExtractionModelModeled
+  nativeBoundaryBreakModelModeled : Prop
+  nativeBoundaryBreakModelModeledProof :
+    nativeBoundaryBreakModelModeled
+
+namespace ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource
+
+/-- The predicate model consumed by the selected source-record package. -/
+def toPredicates
+    (Model : ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource) :
+    Predicates :=
+  Model.predicates
+
+end ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource
+
+/--
 Concrete native-boundary semantics import target for the selected Rust path.
 
 This is the next non-mechanical object the active proof needs: not merely
@@ -2171,6 +2213,25 @@ structure ReviewedFq12SelectedRustNativeBoundarySemanticsPackage
   sourceRecords :
     ReviewedFq12SelectedRustModelSourceRecordPackage
       FieldParser RouteParser CanonicalParser WitnessParser predicates
+
+/--
+Source-shaped native-boundary semantics import target.
+
+This variant keeps the predicate-model source explicit, then requires the
+selected source records over exactly `predicateModel.toPredicates`.
+-/
+structure ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage
+    (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)
+    (RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser)
+    (CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser) where
+  predicateModel : ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource
+  sourceRecords :
+    ReviewedFq12SelectedRustModelSourceRecordPackage
+      FieldParser RouteParser CanonicalParser WitnessParser
+        predicateModel.toPredicates
 
 namespace ReviewedFq12SelectedRustNativeBoundarySemanticsPackage
 
@@ -2191,6 +2252,44 @@ def hiddenSourceClosure
     Semantics.sourceRecords
 
 end ReviewedFq12SelectedRustNativeBoundarySemanticsPackage
+
+namespace ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage
+
+/--
+Forget the explicit predicate-model source into the existing native semantics
+package.
+-/
+def toSemanticsPackage
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Package :
+      ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    ReviewedFq12SelectedRustNativeBoundarySemanticsPackage
+      FieldParser RouteParser CanonicalParser WitnessParser where
+  predicates := Package.predicateModel.toPredicates
+  sourceRecords := Package.sourceRecords
+
+/-- Hidden-source closure supplied by the source-shaped semantics package. -/
+def hiddenSourceClosure
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Package :
+      ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed
+      Package.predicateModel.toPredicates :=
+  (Package.toSemanticsPackage).hiddenSourceClosure
+
+end ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage
 
 /--
 Active AP2-N001 boundary closure from the single concrete model input record.
@@ -2303,6 +2402,27 @@ theorem with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_bound
   with_reviewed_fq12_hidden_source_closure_closed
     B
     Semantics.hiddenSourceClosure
+
+/--
+The accepted-spend boundary field closes from a source-shaped native-boundary
+semantics package.
+-/
+theorem with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_source_package
+    (B : NativeAcceptedSpendSoundnessBoundary)
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Package :
+      ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    (NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure
+      B Package.predicateModel.toPredicates).hiddenSourceProofSemanticsClosed :=
+  with_reviewed_fq12_hidden_source_closure_closed
+    B
+    Package.hiddenSourceClosure
 
 /--
 The accepted-spend boundary field closes from the proof-bearing selected
@@ -2434,6 +2554,28 @@ theorem full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_ru
     Semantics.hiddenSourceClosure
 
 /--
+The full-signature boundary can consume a source-shaped native-boundary
+semantics package directly.
+-/
+theorem full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_source_package
+    (B : NativeFullSignatureSecurityBoundary)
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Package :
+      ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+      B Package.predicateModel.toPredicates
+      Package.hiddenSourceClosure).acceptedSpendSoundness.hiddenSourceProofSemanticsClosed :=
+  full_signature_with_reviewed_fq12_hidden_source_closure_closed
+    B
+    Package.hiddenSourceClosure
+
+/--
 Once the active native-boundary semantics package is supplied, the existing
 full-signature theorem yields the active Path 2 forgery bound for the wrapped
 boundary.  This is still conditional on constructing the package; it does not
@@ -2460,6 +2602,33 @@ theorem full_signature_active_path_forgery_bound_from_selected_rust_native_bound
     (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
       B Semantics.predicates
       Semantics.hiddenSourceClosure)
+
+/--
+The source-shaped native-boundary semantics package also reaches the active
+Path 2 forgery bound.  This remains conditional on importing the predicate
+model source and the selected source records for that exact model.
+-/
+theorem full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_semantics_source_package
+    (B : NativeFullSignatureSecurityBoundary)
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Package :
+      ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+      B Package.predicateModel.toPredicates
+      Package.hiddenSourceClosure).fullSignatureSuccessProb <=
+      (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+        B Package.predicateModel.toPredicates
+        Package.hiddenSourceClosure).activePathForgeryBound :=
+  NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound
+    (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+      B Package.predicateModel.toPredicates
+      Package.hiddenSourceClosure)
 
 /--
 The full-signature boundary can consume the proof-bearing selected Rust/model

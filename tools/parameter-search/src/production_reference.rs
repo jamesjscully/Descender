@@ -7546,9 +7546,13 @@ pub struct Path2SelectedRustModelConcreteDefinitionChecklistV1 {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_predicates_record_present: bool,
+    pub native_boundary_predicate_model_source_target_present: bool,
     pub native_boundary_semantics_package_target_present: bool,
+    pub native_boundary_semantics_source_package_target_present: bool,
     pub native_boundary_semantics_package_handoff_present: bool,
+    pub native_boundary_semantics_source_package_handoff_present: bool,
     pub native_boundary_semantics_package_bound_handoff_present: bool,
+    pub native_boundary_semantics_source_package_bound_handoff_present: bool,
     pub full_spend_concrete_predicates_are_separate_model: bool,
     pub native_boundary_concrete_predicate_model_present: bool,
     pub selected_source_records_blocked_on_native_boundary_predicate_model: bool,
@@ -8631,6 +8635,20 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| native_boundary_source.contains(marker));
+    let native_boundary_predicate_model_source_target_present = [
+        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
+        "predicates : Predicates",
+        "activeBoundaryPredicateModelPinned",
+        "reviewedFq12PayloadAcceptanceModeled",
+        "reviewedFq12ExtractionCertificateModelModeled",
+        "reviewedFq12FullOpeningAndAssemblyModelModeled",
+        "reviewedFq12CompatibilityAndExtractionModelModeled",
+        "nativeBoundaryBreakModelModeled",
+        "def toPredicates",
+        "Model.predicates",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
     let native_boundary_semantics_package_target_present = [
         "ReviewedFq12SelectedRustNativeBoundarySemanticsPackage",
         "predicates : Predicates",
@@ -8639,6 +8657,17 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         "def hiddenSourceClosure",
         "ReviewedFq12HiddenSourceProofSemanticsClosed Semantics.predicates",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_semantics_source_package_target_present = [
+        "ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage",
+        "predicateModel : ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
+        "predicateModel.toPredicates",
+        "sourceRecords :",
+        "def toSemanticsPackage",
+        "def hiddenSourceClosure",
+        "Package.toSemanticsPackage",
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
@@ -8652,10 +8681,30 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
+    let native_boundary_semantics_source_package_handoff_present = [
+        "with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_source_package",
+        "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_source_package",
+        "Package.predicateModel.toPredicates",
+        "Package.hiddenSourceClosure",
+        "NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure",
+        "NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
     let native_boundary_semantics_package_bound_handoff_present = [
         "full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_semantics_package",
         "Semantics.predicates",
         "Semantics.hiddenSourceClosure",
+        "fullSignatureSuccessProb",
+        "activePathForgeryBound",
+        "NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_semantics_source_package_bound_handoff_present = [
+        "full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_semantics_source_package",
+        "Package.predicateModel.toPredicates",
+        "Package.hiddenSourceClosure",
         "fullSignatureSuccessProb",
         "activePathForgeryBound",
         "NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound",
@@ -8966,9 +9015,13 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             && missing_selected_source_record_count > 0;
     Path2SelectedRustModelSourceRecordSubcheckV1 {
         native_boundary_predicates_record_present,
+        native_boundary_predicate_model_source_target_present,
         native_boundary_semantics_package_target_present,
+        native_boundary_semantics_source_package_target_present,
         native_boundary_semantics_package_handoff_present,
+        native_boundary_semantics_source_package_handoff_present,
         native_boundary_semantics_package_bound_handoff_present,
+        native_boundary_semantics_source_package_bound_handoff_present,
         full_spend_concrete_predicates_are_separate_model,
         native_boundary_concrete_predicate_model_present,
         selected_source_records_blocked_on_native_boundary_predicate_model,
@@ -56274,9 +56327,15 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         );
         let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
         assert!(source_record_subcheck.native_boundary_predicates_record_present);
+        assert!(source_record_subcheck.native_boundary_predicate_model_source_target_present);
         assert!(source_record_subcheck.native_boundary_semantics_package_target_present);
+        assert!(source_record_subcheck.native_boundary_semantics_source_package_target_present);
         assert!(source_record_subcheck.native_boundary_semantics_package_handoff_present);
+        assert!(source_record_subcheck.native_boundary_semantics_source_package_handoff_present);
         assert!(source_record_subcheck.native_boundary_semantics_package_bound_handoff_present);
+        assert!(
+            source_record_subcheck.native_boundary_semantics_source_package_bound_handoff_present
+        );
         assert!(source_record_subcheck.full_spend_concrete_predicates_are_separate_model);
         assert!(!source_record_subcheck.native_boundary_concrete_predicate_model_present);
         assert!(

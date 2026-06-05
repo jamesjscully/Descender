@@ -1,3 +1,5 @@
+#![recursion_limit = "256"]
+
 use descender_parameter_search::production_reference::{
     path2_reviewed_fq12_boundary_base_evidence_all_facts_true,
     path2_reviewed_fq12_boundary_base_evidence_v1,
@@ -132,12 +134,21 @@ fn main() -> Result<(), String> {
         "source_record_subcheck": {
             "native_boundary_predicates_record_present":
                 source_record_subcheck.native_boundary_predicates_record_present,
+            "native_boundary_predicate_model_source_target_present":
+                source_record_subcheck.native_boundary_predicate_model_source_target_present,
             "native_boundary_semantics_package_target_present":
                 source_record_subcheck.native_boundary_semantics_package_target_present,
+            "native_boundary_semantics_source_package_target_present":
+                source_record_subcheck.native_boundary_semantics_source_package_target_present,
             "native_boundary_semantics_package_handoff_present":
                 source_record_subcheck.native_boundary_semantics_package_handoff_present,
+            "native_boundary_semantics_source_package_handoff_present":
+                source_record_subcheck.native_boundary_semantics_source_package_handoff_present,
             "native_boundary_semantics_package_bound_handoff_present":
                 source_record_subcheck.native_boundary_semantics_package_bound_handoff_present,
+            "native_boundary_semantics_source_package_bound_handoff_present":
+                source_record_subcheck
+                    .native_boundary_semantics_source_package_bound_handoff_present,
             "full_spend_concrete_predicates_are_separate_model":
                 source_record_subcheck.full_spend_concrete_predicates_are_separate_model,
             "native_boundary_concrete_predicate_model_present":

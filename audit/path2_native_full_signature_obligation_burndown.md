@@ -120,6 +120,16 @@ full-signature boundary. This is a target-shape reduction only. It does not
 construct the native-boundary predicate model or any of the seven raw selected
 source records, and the Rust manifest keeps those gaps fail-closed.
 
+2026-06-05 predicate-model source-target update: Lean now also names
+`ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource` and
+`ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage`. This is the
+non-vacuous target shape for AP2-N001: first import the active selected Rust
+native-boundary predicate interpretation, then supply the seven selected source
+records over exactly `predicateModel.toPredicates`, then forget that source
+package into the existing semantics package. The Rust manifest records this
+target and its accepted-spend/full-signature/bound handoffs separately from
+`native_boundary_concrete_predicate_model_present`, which remains false.
+
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It
 currently stays false, even while the five-source route/evidence surfaces are
