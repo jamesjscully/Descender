@@ -1040,6 +1040,11 @@ the same exact theorem-name and all-candidate pattern. A suffixed theorem name
 is rejected, while a suffixed spoof before an exact valid theorem still lets the
 exact theorem satisfy the gate. This keeps the downstream active deployability
 gate robust without changing its current fail-closed status.
+Active full-execution source gate note: the
+`concreteFullSignatureExecutionSource_instantiation_v1` scanner now also uses
+exact theorem-name matching across all candidates. A suffixed spoof is rejected,
+but a suffixed spoof before an exact valid theorem still allows the real
+full-execution source instantiation to satisfy the gate.
 
 ## Findings
 
