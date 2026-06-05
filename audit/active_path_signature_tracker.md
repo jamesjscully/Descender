@@ -1078,6 +1078,10 @@ Active concrete-definition blocker note: Lean now states
 that the current fail-closed selected evidence reports cannot supply the
 proof-bearing definitions required by the checklist. This is not closure; it
 records that real verifier-backed evidence must replace the placeholders.
+Active source-record blocker note: Lean now also states
+`selectedRustCurrentPlaceholderSourceRecordCertificates_impossible`, proving
+that source certificates over the current placeholder component reports cannot
+populate the selected Rust/model source-record package.
 
 ## Findings
 

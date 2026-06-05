@@ -799,6 +799,53 @@ theorem selectedRustSharedFrameWitnessCertificate_not_from_current_placeholder_r
     (hReport ▸ Cert.evidenceReportVerifiedProof)
 
 /--
+The current placeholder reports cannot be the report sources for the component
+certificates required by the selected Rust/model source-record package.
+
+This records the source-record side of the fail-closed checklist: the future
+definitions must be backed by real selected evidence certificates, not
+certificates over the placeholder reports above.
+-/
+theorem selectedRustCurrentPlaceholderSourceRecordCertificates_impossible
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (boundaryBaseCertificate :
+      ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P)
+    (roleRootLiftCertificate :
+      ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P)
+    (selectedSourceRouteCertificate :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+        FieldParser RouteParser P)
+    (fieldLocalCertificate :
+      ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P)
+    (witnessSourcesCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P)
+    (hBoundaryReport :
+      boundaryBaseCertificate.evidenceReport =
+        selectedRustBoundaryBaseEvidenceReport)
+    (_hRoleRootReport :
+      roleRootLiftCertificate.evidenceReport =
+        selectedRustRoleRootLiftEvidenceReport)
+    (_hSourceRouteReport :
+      selectedSourceRouteCertificate.evidenceReport =
+        selectedRustSourceRouteEvidenceReport)
+    (_hFieldLocalReport :
+      fieldLocalCertificate.evidenceReport =
+        selectedRustFieldLocalEvidenceReport)
+    (_hWitnessReport :
+      witnessSourcesCertificate.evidenceReport =
+        selectedRustSharedFrameWitnessEvidenceReport) :
+    False := by
+  exact selectedRustBoundaryBaseCertificate_not_from_current_placeholder_report
+    boundaryBaseCertificate hBoundaryReport
+
+/--
 Any sub-evidence match proof for the current placeholder aggregate report would
 force every consumed certificate digest to be empty.
 
