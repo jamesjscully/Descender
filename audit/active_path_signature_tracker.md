@@ -993,6 +993,12 @@ boundary-base, role-root/lift, selected source-route, field/local, and
 shared-witness certificates cannot carry their current placeholder selected
 reports. Each certificate exposes sources only behind `ReportVerified`, while
 each placeholder report is proved not verified.
+The concrete-definition checklist now treats declaration markers as ordered
+header/type markers. The payload projection law source gate specifically
+requires `P.reviewedFq12PayloadAccepts` before
+`P.reviewedFq12PayloadProjectsFrom`; a synthetic complete fixture with the
+payload theorem reversed still has its report/digest/proof and digest-match
+categories present, but fails `source_record_definitions_present`.
 
 ## Findings
 

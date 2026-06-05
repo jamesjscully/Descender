@@ -8474,6 +8474,17 @@ fn lean_source_has_selected_rust_definition_with_markers_v1(
     name: &str,
     markers: &[&str],
 ) -> bool {
+    let markers_present_in_order = |declaration_header: &str| -> bool {
+        let mut cursor = 0;
+        markers.iter().all(|marker| {
+            declaration_header[cursor..]
+                .find(marker)
+                .is_some_and(|offset| {
+                    cursor += offset + marker.len();
+                    true
+                })
+        })
+    };
     ["def", "theorem"].iter().any(|kind| {
         let public_start = format!("\n{kind} {name}");
         let private_start = format!("\nprivate {kind} {name}");
@@ -8489,9 +8500,7 @@ fn lean_source_has_selected_rust_definition_with_markers_v1(
                         .min()
                         .unwrap_or(declaration_window.len());
                     let declaration_header = &declaration_window[..header_end];
-                    markers
-                        .iter()
-                        .all(|marker| declaration_header.contains(marker))
+                    markers_present_in_order(declaration_header)
                 })
         })
     })
@@ -8613,8 +8622,8 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         (
             "selectedRustPayloadProjectionLaw",
             &[
-                "reviewedFq12PayloadAccepts",
-                "reviewedFq12PayloadProjectsFrom",
+                "P.reviewedFq12PayloadAccepts",
+                "P.reviewedFq12PayloadProjectsFrom",
             ][..],
         ),
         (
@@ -55651,6 +55660,20 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             complete_concrete_definition_checklist.missing_definition_category_count,
             0
         );
+        let reversed_payload_projection_law_source = complete_concrete_definition_source.replace(
+            "theorem selectedRustPayloadProjectionLaw :\n  P.reviewedFq12PayloadAccepts b payload ->\n  P.reviewedFq12PayloadProjectsFrom b payload :=",
+            "theorem selectedRustPayloadProjectionLaw :\n  P.reviewedFq12PayloadProjectsFrom b payload ->\n  P.reviewedFq12PayloadAccepts b payload :=",
+        );
+        let reversed_payload_projection_law_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                &reversed_payload_projection_law_source,
+            );
+        assert!(reversed_payload_projection_law_checklist.evidence_report_definitions_present);
+        assert!(reversed_payload_projection_law_checklist.evidence_digest_definitions_present);
+        assert!(reversed_payload_projection_law_checklist.evidence_proof_definitions_present);
+        assert!(!reversed_payload_projection_law_checklist.source_record_definitions_present);
+        assert!(reversed_payload_projection_law_checklist.sub_evidence_digest_match_proof_present);
+        assert!(!reversed_payload_projection_law_checklist.all_definitions_present);
         assert!(path2_reviewed_fq12_five_source_closure_evidence_source_present_v1());
         let five_source_evidence = path2_reviewed_fq12_five_source_closure_evidence_v1().unwrap();
         assert_eq!(
