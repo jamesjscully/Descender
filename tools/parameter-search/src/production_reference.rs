@@ -21166,6 +21166,15 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         + evidence_frame_start;
     let evidence_frame_window = &source[evidence_frame_start..evidence_frame_end];
 
+    let gate_order_start = source
+        .find("\nfn path2_native_smallest_remaining_deployment_gate_v1(")
+        .expect("Path 2 native deployment gate-order source start marker missing");
+    let gate_order_end = source[gate_order_start..]
+        .find("\npub fn verify_path2_native_deployment_pipeline_v1(")
+        .expect("Path 2 native deployment gate-order source end marker missing")
+        + gate_order_start;
+    let gate_order_window = &source[gate_order_start..gate_order_end];
+
     let evidence_start = source
         .find("\npub fn path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_root_v1(")
         .expect("Path 2 native signer/verifier evidence source start marker missing");
@@ -21235,20 +21244,7 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "five_source_closure_evidence_facts_all_true",
         "verify_path2_native_deployment_pipeline_v1",
         "Path 2 native signer/verifier checked-core evidence was not verified",
-        "hidden_source_semantics_bridge_complete",
-        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS",
-        "hash_qrom_deployment_horizon_complete",
-        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON",
-        "full_signature_execution_source_instantiated",
-        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE",
-        "accepted_spend_numeric_bound_instantiated",
-        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND",
-        "signer_verifier_pipeline_present",
-        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
-        "constant_time_audit_complete",
-        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME",
-        "storage_lifecycle_hardening_complete",
-        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE",
+        "path2_native_smallest_remaining_deployment_gate_v1",
         "prevalidation_accepted: true",
         "constructor_succeeded: true",
         "verifier_public_boundary_accepted: verdict.public_boundary_accepted",
@@ -21275,6 +21271,20 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "explicit_non_claim",
         "Sha256::digest(",
         "path2_native_signer_verifier_pipeline_evidence_v1_frame(",
+    ];
+    let gate_order_checks = [
+        "path2_native_smallest_remaining_deployment_gate_v1",
+        "hidden_source_semantics_bridge_complete",
+        "checked_core_composition_review_complete",
+        "hash_qrom_deployment_horizon_complete",
+        "full_signature_execution_source_instantiated",
+        "accepted_spend_numeric_bound_instantiated",
+        "no_export_serializer_instantiated",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS",
+        "signer_verifier_pipeline_present",
+        "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
+        "constant_time_audit_complete",
+        "storage_lifecycle_hardening_complete",
     ];
     let honest_scope_checks = [
         "path2_native_honest_constructor_scope_v1",
@@ -21316,6 +21326,7 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS",
         "PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE",
+        "path2_native_smallest_remaining_deployment_gate_includes_no_export_before_productization",
         "path2_native_signer_verifier_evidence_keeps_productization_gates_separate",
         "no constant-time claim for private signing or keygen",
         "no target-chain storage lifecycle hardening claim",
@@ -21333,6 +21344,9 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         && evidence_frame_checks
             .iter()
             .all(|marker| evidence_frame_window.contains(marker))
+        && gate_order_checks
+            .iter()
+            .all(|marker| gate_order_window.contains(marker))
         && honest_scope_checks
             .iter()
             .all(|marker| honest_scope_window.contains(marker))
@@ -21875,6 +21889,32 @@ pub fn path2_native_deployment_preflight_v1_frame(
         append_frame(&mut frame, b"internal_blocker", blocker.as_bytes());
     }
     frame
+}
+
+fn path2_native_smallest_remaining_deployment_gate_v1(
+    preflight: &Path2NativeDeploymentPreflightV1,
+) -> &'static str {
+    if !preflight.hidden_source_semantics_bridge_complete {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS
+    } else if !preflight.checked_core_composition_review_complete {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION
+    } else if !preflight.hash_qrom_deployment_horizon_complete {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON
+    } else if !preflight.full_signature_execution_source_instantiated {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE
+    } else if !preflight.accepted_spend_numeric_bound_instantiated {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND
+    } else if !preflight.no_export_serializer_instantiated {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS
+    } else if !preflight.signer_verifier_pipeline_present {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE
+    } else if !preflight.constant_time_audit_complete {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME
+    } else if !preflight.storage_lifecycle_hardening_complete {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE
+    } else {
+        "no Path 2 native productization gate remains"
+    }
 }
 
 pub fn verify_path2_native_deployment_pipeline_v1(
@@ -22682,46 +22722,8 @@ pub fn path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_
             "Path 2 native signer/verifier checked-core evidence was not verified".to_string(),
         );
     }
-    let smallest_remaining_productization_gate = if !verdict
-        .deployment_preflight
-        .hidden_source_semantics_bridge_complete
-    {
-        PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS
-    } else if !verdict
-        .deployment_preflight
-        .checked_core_composition_review_complete
-    {
-        PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION
-    } else if !verdict
-        .deployment_preflight
-        .hash_qrom_deployment_horizon_complete
-    {
-        PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON
-    } else if !verdict
-        .deployment_preflight
-        .full_signature_execution_source_instantiated
-    {
-        PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE
-    } else if !verdict
-        .deployment_preflight
-        .accepted_spend_numeric_bound_instantiated
-    {
-        PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND
-    } else if !verdict
-        .deployment_preflight
-        .signer_verifier_pipeline_present
-    {
-        PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE
-    } else if !verdict.deployment_preflight.constant_time_audit_complete {
-        PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME
-    } else if !verdict
-        .deployment_preflight
-        .storage_lifecycle_hardening_complete
-    {
-        PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE
-    } else {
-        "no Path 2 native productization gate remains"
-    };
+    let smallest_remaining_productization_gate =
+        path2_native_smallest_remaining_deployment_gate_v1(&verdict.deployment_preflight);
 
     Ok(Path2NativeSignerVerifierPipelineEvidenceV1 {
         schema: PATH2_NATIVE_SIGNER_VERIFIER_PIPELINE_EVIDENCE_SCHEMA,
@@ -44017,6 +44019,31 @@ end Path2NoExportConcrete
         assert!(!rendered.contains("\"production_accepted\":true"));
         assert!(!rendered.contains("\"constant_time_audit_complete\":true"));
         assert!(!rendered.contains("\"storage_lifecycle_hardening_complete\":true"));
+    }
+
+    #[test]
+    fn path2_native_smallest_remaining_deployment_gate_includes_no_export_before_productization() {
+        let mut preflight = path2_native_deployment_preflight_v1();
+        preflight.hidden_source_semantics_bridge_complete = true;
+        preflight.checked_core_composition_review_complete = true;
+        preflight.hash_qrom_deployment_horizon_complete = true;
+        preflight.full_signature_execution_source_instantiated = true;
+        preflight.accepted_spend_numeric_bound_instantiated = true;
+        preflight.no_export_serializer_instantiated = false;
+        preflight.signer_verifier_pipeline_present = false;
+        preflight.constant_time_audit_complete = false;
+        preflight.storage_lifecycle_hardening_complete = false;
+
+        assert_eq!(
+            path2_native_smallest_remaining_deployment_gate_v1(&preflight),
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS
+        );
+
+        preflight.no_export_serializer_instantiated = true;
+        assert_eq!(
+            path2_native_smallest_remaining_deployment_gate_v1(&preflight),
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE
+        );
     }
 
     #[test]
