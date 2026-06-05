@@ -142,6 +142,90 @@ structure ActiveSerializerAllowlistCertificate
       Policy.outputConforms (S.storageOutputOf q)
 
 /--
+Digest-backed evidence report expected from the selected Rust active serializer
+audit before its allowlist facts can be installed into the Lean no-export
+closure.
+-/
+structure SelectedRustActiveSerializerAllowlistEvidenceReport where
+  schemaMatches : Bool
+  reportDigestVerified : Bool
+  activeOutputTagsPinned : Bool
+  publicOutputPolicyPinned : Bool
+  acceptSerializerBound : Bool
+  rejectSerializerBound : Bool
+  storageSerializerBound : Bool
+  denylistExclusionChecked : Bool
+  serializerNegativeControlsPassed : Bool
+
+namespace SelectedRustActiveSerializerAllowlistEvidenceReport
+
+/-- Report-level verification predicate for selected Rust no-export evidence. -/
+def ReportVerified
+    (R : SelectedRustActiveSerializerAllowlistEvidenceReport) : Prop :=
+  R.schemaMatches = true ∧
+    R.reportDigestVerified = true ∧
+    R.activeOutputTagsPinned = true ∧
+    R.publicOutputPolicyPinned = true
+
+/-- Component-fact predicate for selected Rust no-export evidence. -/
+def FactsAllTrue
+    (R : SelectedRustActiveSerializerAllowlistEvidenceReport) : Prop :=
+  R.acceptSerializerBound = true ∧
+    R.rejectSerializerBound = true ∧
+    R.storageSerializerBound = true ∧
+    R.denylistExclusionChecked = true ∧
+    R.serializerNegativeControlsPassed = true
+
+end SelectedRustActiveSerializerAllowlistEvidenceReport
+
+/--
+Selected Rust certificate for active public serializer no-export.
+
+The low-level allowlist facts are still ordinary Lean propositions, but this
+record forces the future selected Rust instantiation to carry a concrete
+report-shaped evidence object before exporting those facts to the active
+no-export bridge.
+-/
+structure SelectedRustActiveSerializerAllowlistCertificate
+    (Policy : PublicOutputPolicy)
+    (S : ActiveTaggedSerializer) where
+  evidenceReport : SelectedRustActiveSerializerAllowlistEvidenceReport
+  evidenceReportVerifiedProof : evidenceReport.ReportVerified
+  evidenceFactsAllTrueProof : evidenceReport.FactsAllTrue
+  selectedRustActiveNoExport : PublicOutputNoExport Policy
+  selectedRustAcceptOutputConforms :
+    forall q sig msg state,
+      Policy.outputConforms (S.acceptOutputOf q sig msg state)
+  selectedRustRejectOutputConforms :
+    forall q breakEvent,
+      Policy.outputConforms (S.rejectOutputOf q breakEvent)
+  selectedRustStorageOutputConforms :
+    forall q,
+      Policy.outputConforms (S.storageOutputOf q)
+
+namespace SelectedRustActiveSerializerAllowlistCertificate
+
+/-- Extract the public no-export rule from selected Rust evidence. -/
+def toPublicOutputNoExport
+    {Policy : PublicOutputPolicy}
+    {S : ActiveTaggedSerializer}
+    (Cert : SelectedRustActiveSerializerAllowlistCertificate Policy S) :
+    PublicOutputNoExport Policy :=
+  Cert.selectedRustActiveNoExport
+
+/-- Extract the low-level active serializer allowlist certificate. -/
+def toAllowlistCertificate
+    {Policy : PublicOutputPolicy}
+    {S : ActiveTaggedSerializer}
+    (Cert : SelectedRustActiveSerializerAllowlistCertificate Policy S) :
+    ActiveSerializerAllowlistCertificate Policy S :=
+  { accept_allowed := Cert.selectedRustAcceptOutputConforms
+    reject_allowed := Cert.selectedRustRejectOutputConforms
+    storage_allowed := Cert.selectedRustStorageOutputConforms }
+
+end SelectedRustActiveSerializerAllowlistCertificate
+
+/--
 The concrete serializer allowlist certificate instantiates the abstract active
 native output conformance predicate.
 -/

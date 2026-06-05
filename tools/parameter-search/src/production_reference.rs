@@ -20256,6 +20256,12 @@ fn path2_no_export_serializer_boundary_present_v1() -> bool {
         "rejectOutputOf",
         "storageOutputOf",
         "ActiveSerializerAllowlistCertificate",
+        "SelectedRustActiveSerializerAllowlistEvidenceReport",
+        "SelectedRustActiveSerializerAllowlistCertificate",
+        "ReportVerified",
+        "FactsAllTrue",
+        "toPublicOutputNoExport",
+        "toAllowlistCertificate",
         "accept_allowed",
         "reject_allowed",
         "storage_allowed",
@@ -20377,6 +20383,9 @@ fn path2_no_export_serializer_instantiated_in_source_v1(concrete_source: &str) -
         "selectedRustActiveSerializer",
         "selectedRustActiveNoExport",
         "selectedRustActiveSerializerAllowlistCertificate",
+        "selectedRustActiveSerializerEvidenceReport",
+        "selectedRustActiveSerializerEvidenceReportVerifiedProof",
+        "selectedRustActiveSerializerEvidenceFactsAllTrueProof",
         "selectedRustAcceptOutputConforms",
         "selectedRustRejectOutputConforms",
         "selectedRustStorageOutputConforms",
@@ -20392,6 +20401,9 @@ fn path2_no_export_serializer_instantiated_in_source_v1(concrete_source: &str) -
         "selectedRustActiveSerializer",
         "selectedRustActiveNoExport",
         "selectedRustActiveSerializerAllowlistCertificate",
+        "selectedRustActiveSerializerEvidenceReport",
+        "selectedRustActiveSerializerEvidenceReportVerifiedProof",
+        "selectedRustActiveSerializerEvidenceFactsAllTrueProof",
         "selectedRustAcceptOutputConforms",
         "selectedRustRejectOutputConforms",
         "selectedRustStorageOutputConforms",
@@ -20421,6 +20433,20 @@ fn path2_no_export_serializer_instantiated_in_source_v1(concrete_source: &str) -
     if forbidden_variable_stub {
         return false;
     }
+    let forbidden_vacuous_terms = [
+        "evidenceReport := {",
+        "evidenceReportVerifiedProof := True.intro",
+        "evidenceFactsAllTrueProof := True.intro",
+        "let selectedRustActiveSerializerEvidenceReport : SelectedRustActiveSerializerAllowlistEvidenceReport :=",
+        "let selectedRustActiveSerializerEvidenceReportVerifiedProof := True.intro",
+        "let selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro",
+    ];
+    if forbidden_vacuous_terms
+        .iter()
+        .any(|term| instantiation_source.contains(term))
+    {
+        return false;
+    }
 
     let instantiation_checks = [
         "selectedRustActiveNoExportSerializer_instantiation_v1",
@@ -20428,13 +20454,21 @@ fn path2_no_export_serializer_instantiated_in_source_v1(concrete_source: &str) -
         "PublicOutputPolicy",
         "let selectedRustActiveSerializer :",
         "ActiveTaggedSerializer",
+        "let selectedRustActiveSerializerAllowlistCertificate :",
+        "SelectedRustActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer",
+        "evidenceReport := selectedRustActiveSerializerEvidenceReport",
+        "evidenceReportVerifiedProof := selectedRustActiveSerializerEvidenceReportVerifiedProof",
+        "evidenceFactsAllTrueProof := selectedRustActiveSerializerEvidenceFactsAllTrueProof",
+        "selectedRustActiveNoExport := selectedRustActiveNoExport",
+        "selectedRustAcceptOutputConforms := selectedRustAcceptOutputConforms",
+        "selectedRustRejectOutputConforms := selectedRustRejectOutputConforms",
+        "selectedRustStorageOutputConforms := selectedRustStorageOutputConforms",
         "let selectedRustActiveNoExport :",
         "PublicOutputNoExport selectedRustActiveNoExportPolicy",
-        "let selectedRustActiveSerializerAllowlistCertificate :",
+        "SelectedRustActiveSerializerAllowlistCertificate.toPublicOutputNoExport",
+        "let selectedRustActiveSerializerAllowlist :",
         "ActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer",
-        "accept_allowed := selectedRustAcceptOutputConforms",
-        "reject_allowed := selectedRustRejectOutputConforms",
-        "storage_allowed := selectedRustStorageOutputConforms",
+        "SelectedRustActiveSerializerAllowlistCertificate.toAllowlistCertificate",
         "activeSerializerAllowlist_activeNativeNoExportClosure",
         "NativeFullSignatureSecurityBoundary.withActiveSerializerNoExportClosure",
         "full_signature_with_active_serializer_no_export_closed",
@@ -42556,33 +42590,82 @@ theorem selectedRustActiveNoExportSerializer_instantiation_v1 :
       PublicOutputPolicy := selectedRustActiveNoExportPolicy
   let selectedRustActiveSerializer :
       ActiveTaggedSerializer := selectedRustActiveSerializer
+  let selectedRustActiveSerializerAllowlistCertificate :
+      SelectedRustActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer :=
+    { evidenceReport := selectedRustActiveSerializerEvidenceReport
+      evidenceReportVerifiedProof := selectedRustActiveSerializerEvidenceReportVerifiedProof
+      evidenceFactsAllTrueProof := selectedRustActiveSerializerEvidenceFactsAllTrueProof
+      selectedRustActiveNoExport := selectedRustActiveNoExport
+      selectedRustAcceptOutputConforms := selectedRustAcceptOutputConforms
+      selectedRustRejectOutputConforms := selectedRustRejectOutputConforms
+      selectedRustStorageOutputConforms := selectedRustStorageOutputConforms }
   let selectedRustActiveNoExport :
       PublicOutputNoExport selectedRustActiveNoExportPolicy :=
-    selectedRustActiveNoExport
-  let selectedRustActiveSerializerAllowlistCertificate :
+    SelectedRustActiveSerializerAllowlistCertificate.toPublicOutputNoExport
+      selectedRustActiveSerializerAllowlistCertificate
+  let selectedRustActiveSerializerAllowlist :
       ActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer :=
-    { accept_allowed := selectedRustAcceptOutputConforms
-      reject_allowed := selectedRustRejectOutputConforms
-      storage_allowed := selectedRustStorageOutputConforms }
+    SelectedRustActiveSerializerAllowlistCertificate.toAllowlistCertificate
+      selectedRustActiveSerializerAllowlistCertificate
   let _closed :=
     activeSerializerAllowlist_activeNativeNoExportClosure
-      selectedRustActiveNoExport selectedRustActiveSerializerAllowlistCertificate
+      selectedRustActiveNoExport selectedRustActiveSerializerAllowlist
   let _fullBoundary :=
     NativeFullSignatureSecurityBoundary.withActiveSerializerNoExportClosure
       selectedRustNativeFullSignatureBoundary
       selectedRustActiveNoExport
-      selectedRustActiveSerializerAllowlistCertificate
+      selectedRustActiveSerializerAllowlist
   let _fullClosed :=
     full_signature_with_active_serializer_no_export_closed
       selectedRustNativeFullSignatureBoundary
       selectedRustActiveNoExport
-      selectedRustActiveSerializerAllowlistCertificate
+      selectedRustActiveSerializerAllowlist
   exact activeSerializerAllowlist_activeNativeNoExportClosure
-    selectedRustActiveNoExport selectedRustActiveSerializerAllowlistCertificate
+    selectedRustActiveNoExport selectedRustActiveSerializerAllowlist
 end Path2NoExportConcrete
 "#;
         assert!(!path2_no_export_serializer_instantiated_in_source_v1(
             multiline_stubbed_no_export_source
+        ));
+        let vacuous_no_export_report = r#"
+theorem selectedRustActiveNoExportSerializer_instantiation_v1 :
+    ActiveNativeNoExportClosure selectedRustActiveNoExportPolicy selectedRustActiveSerializer.surfaces := by
+  let selectedRustActiveNoExportPolicy :
+      PublicOutputPolicy := selectedRustActiveNoExportPolicy
+  let selectedRustActiveSerializer :
+      ActiveTaggedSerializer := selectedRustActiveSerializer
+  let selectedRustActiveSerializerAllowlistCertificate :
+      SelectedRustActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer :=
+    { evidenceReport :=
+        { schemaMatches := true
+          reportDigestVerified := true
+          activeOutputTagsPinned := true
+          publicOutputPolicyPinned := true
+          acceptSerializerBound := true
+          rejectSerializerBound := true
+          storageSerializerBound := true
+          denylistExclusionChecked := true
+          serializerNegativeControlsPassed := true }
+      evidenceReportVerifiedProof := True.intro
+      evidenceFactsAllTrueProof := True.intro
+      selectedRustActiveNoExport := selectedRustActiveNoExport
+      selectedRustAcceptOutputConforms := selectedRustAcceptOutputConforms
+      selectedRustRejectOutputConforms := selectedRustRejectOutputConforms
+      selectedRustStorageOutputConforms := selectedRustStorageOutputConforms }
+  let selectedRustActiveNoExport :
+      PublicOutputNoExport selectedRustActiveNoExportPolicy :=
+    SelectedRustActiveSerializerAllowlistCertificate.toPublicOutputNoExport
+      selectedRustActiveSerializerAllowlistCertificate
+  let selectedRustActiveSerializerAllowlist :
+      ActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer :=
+    SelectedRustActiveSerializerAllowlistCertificate.toAllowlistCertificate
+      selectedRustActiveSerializerAllowlistCertificate
+  exact activeSerializerAllowlist_activeNativeNoExportClosure
+    selectedRustActiveNoExport selectedRustActiveSerializerAllowlist
+end Path2NoExportConcrete
+"#;
+        assert!(!path2_no_export_serializer_instantiated_in_source_v1(
+            vacuous_no_export_report
         ));
         let no_export_instantiation_shape = r#"
 theorem selectedRustActiveNoExportSerializer_instantiation_v1 :
@@ -42591,29 +42674,38 @@ theorem selectedRustActiveNoExportSerializer_instantiation_v1 :
       PublicOutputPolicy := selectedRustActiveNoExportPolicy
   let selectedRustActiveSerializer :
       ActiveTaggedSerializer := selectedRustActiveSerializer
+  let selectedRustActiveSerializerAllowlistCertificate :
+      SelectedRustActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer :=
+    { evidenceReport := selectedRustActiveSerializerEvidenceReport
+      evidenceReportVerifiedProof := selectedRustActiveSerializerEvidenceReportVerifiedProof
+      evidenceFactsAllTrueProof := selectedRustActiveSerializerEvidenceFactsAllTrueProof
+      selectedRustActiveNoExport := selectedRustActiveNoExport
+      selectedRustAcceptOutputConforms := selectedRustAcceptOutputConforms
+      selectedRustRejectOutputConforms := selectedRustRejectOutputConforms
+      selectedRustStorageOutputConforms := selectedRustStorageOutputConforms }
   let selectedRustActiveNoExport :
       PublicOutputNoExport selectedRustActiveNoExportPolicy :=
-    selectedRustActiveNoExport
-  let selectedRustActiveSerializerAllowlistCertificate :
+    SelectedRustActiveSerializerAllowlistCertificate.toPublicOutputNoExport
+      selectedRustActiveSerializerAllowlistCertificate
+  let selectedRustActiveSerializerAllowlist :
       ActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer :=
-    { accept_allowed := selectedRustAcceptOutputConforms
-      reject_allowed := selectedRustRejectOutputConforms
-      storage_allowed := selectedRustStorageOutputConforms }
+    SelectedRustActiveSerializerAllowlistCertificate.toAllowlistCertificate
+      selectedRustActiveSerializerAllowlistCertificate
   let _closed :=
     activeSerializerAllowlist_activeNativeNoExportClosure
-      selectedRustActiveNoExport selectedRustActiveSerializerAllowlistCertificate
+      selectedRustActiveNoExport selectedRustActiveSerializerAllowlist
   let _fullBoundary :=
     NativeFullSignatureSecurityBoundary.withActiveSerializerNoExportClosure
       selectedRustNativeFullSignatureBoundary
       selectedRustActiveNoExport
-      selectedRustActiveSerializerAllowlistCertificate
+      selectedRustActiveSerializerAllowlist
   let _fullClosed :=
     full_signature_with_active_serializer_no_export_closed
       selectedRustNativeFullSignatureBoundary
       selectedRustActiveNoExport
-      selectedRustActiveSerializerAllowlistCertificate
+      selectedRustActiveSerializerAllowlist
   exact activeSerializerAllowlist_activeNativeNoExportClosure
-    selectedRustActiveNoExport selectedRustActiveSerializerAllowlistCertificate
+    selectedRustActiveNoExport selectedRustActiveSerializerAllowlist
 end Path2NoExportConcrete
 "#;
         assert!(path2_no_export_serializer_instantiated_in_source_v1(
