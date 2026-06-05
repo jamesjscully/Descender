@@ -19439,6 +19439,7 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
 fn path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
     lean_source: &str,
 ) -> bool {
+    let lean_source = lean_source_without_comments_and_strings_v1(lean_source);
     let selected_source_facts = [
         "selectedRustCheckedCoreEvidenceReportVerified",
         "selectedRustCheckedCoreEvidenceReportVerifiedProof",
@@ -19456,10 +19457,15 @@ fn path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
         "selectedRustCheckedCoreHashAndSyndrome",
     ];
     let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
-    let forbidden_declaration_stub = selected_source_facts.iter().any(|fact| {
-        forbidden_declaration_kinds
-            .iter()
-            .any(|kind| lean_source.contains(&format!("\n{kind} {fact}")))
+    let forbidden_declaration_stub = forbidden_declaration_kinds.iter().any(|kind| {
+        lean_source
+            .match_indices(&format!("\n{kind}"))
+            .map(|(index, _)| &lean_source[index..lean_source.len().min(index + 512)])
+            .any(|declaration_window| {
+                selected_source_facts
+                    .iter()
+                    .any(|fact| declaration_window.contains(fact))
+            })
     });
     let forbidden_variable_stub = lean_source
         .match_indices("\nvariable")
@@ -19469,7 +19475,37 @@ fn path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
                 .iter()
                 .any(|fact| variable_window.contains(fact))
         });
-    forbidden_declaration_stub || forbidden_variable_stub
+    let forbidden_vacuous_report_def = [
+        "def selectedRustCheckedCoreEvidenceReportVerified : Prop := True",
+        "def selectedRustCheckedCoreEvidenceReportVerified := True",
+        "def selectedRustCheckedCoreEvidenceReportVerifiedProof := True.intro",
+        "theorem selectedRustCheckedCoreEvidenceReportVerified : True := True.intro",
+        "def selectedRustCheckedCoreEvidenceFactsAllTrue : Prop := True",
+        "def selectedRustCheckedCoreEvidenceFactsAllTrue := True",
+        "def selectedRustCheckedCoreEvidenceFactsAllTrueProof := True.intro",
+        "theorem selectedRustCheckedCoreEvidenceFactsAllTrue : True := True.intro",
+    ]
+    .iter()
+    .any(|marker| lean_source.contains(marker));
+    let forbidden_vacuous_report_theorem = [
+        "theorem selectedRustCheckedCoreEvidenceReportVerifiedProof",
+        "theorem selectedRustCheckedCoreEvidenceFactsAllTrueProof",
+    ]
+    .iter()
+    .any(|marker| {
+        lean_source
+            .match_indices(marker)
+            .map(|(index, _)| &lean_source[index..lean_source.len().min(index + 512)])
+            .any(|theorem_window| {
+                theorem_window.contains(":= True.intro")
+                    || theorem_window.contains(":= by\n  trivial")
+                    || theorem_window.contains(":= by trivial")
+            })
+    });
+    forbidden_declaration_stub
+        || forbidden_variable_stub
+        || forbidden_vacuous_report_def
+        || forbidden_vacuous_report_theorem
 }
 
 fn path2_native_checked_core_selected_rust_instantiation_present_v1() -> bool {
@@ -19483,6 +19519,7 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
     if path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(lean_source) {
         return false;
     }
+    let lean_source = lean_source_without_comments_and_strings_v1(lean_source);
 
     let Some(instantiation_start) =
         lean_source.find("\ntheorem selectedRustCheckedCoreByteSource_instantiation_v1")
@@ -19494,6 +19531,11 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
         .map(|offset| instantiation_start + offset)
         .unwrap_or(lean_source.len());
     let instantiation_source = &lean_source[instantiation_start..instantiation_end];
+    let normalized_instantiation_source =
+        instantiation_source.split_whitespace().collect::<String>();
+    let contains_normalized = |marker: &str| {
+        normalized_instantiation_source.contains(&marker.split_whitespace().collect::<String>())
+    };
 
     let selected_source_facts = [
         "selectedRustCheckedCoreEvidenceReportVerified",
@@ -19548,7 +19590,7 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
     ];
     if forbidden_vacuous_evidence_terms
         .iter()
-        .any(|term| instantiation_source.contains(term))
+        .any(|term| instantiation_source.contains(term) || contains_normalized(term))
     {
         return false;
     }
@@ -19574,7 +19616,7 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
 
     instantiation_checks
         .iter()
-        .all(|marker| instantiation_source.contains(marker))
+        .all(|marker| instantiation_source.contains(marker) || contains_normalized(marker))
 }
 
 fn path2_native_checked_core_composition_complete_v1() -> bool {
@@ -41487,6 +41529,41 @@ mod tests {
             )
         );
         assert!(
+            path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
+                "\naxiom\n  selectedRustCheckedCoreEvidenceReportVerifiedProof : selectedRustCheckedCoreEvidenceReportVerified\n"
+            )
+        );
+        assert!(
+            path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
+                "\nconstant\n  selectedRustCheckedCoreParserEquality : parser_fact\n"
+            )
+        );
+        assert!(
+            path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
+                "\nopaque\n  selectedRustCheckedCoreHashAndSyndrome : hash_fact\n"
+            )
+        );
+        assert!(
+            path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
+                "\ndef selectedRustCheckedCoreEvidenceFactsAllTrue : Prop := True\n"
+            )
+        );
+        assert!(
+            path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
+                "\ntheorem selectedRustCheckedCoreEvidenceReportVerifiedProof : selectedRustCheckedCoreEvidenceReportVerified := by trivial\n"
+            )
+        );
+        assert!(
+            !path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
+                "\n/- axiom selectedRustCheckedCoreAcceptorAccepts : acceptor_fact -/\n"
+            )
+        );
+        assert!(
+            !path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
+                "\ndef checked_core_marker := \"constant selectedRustCheckedCoreHashAndSyndrome : hash_fact\"\n"
+            )
+        );
+        assert!(
             !path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
                 "\ndef selectedRustCheckedCoreAcceptorAccepts := proved_acceptor_fact\n"
             )
@@ -41723,6 +41800,59 @@ end Path2CheckedCoreByteBridge
         assert!(
             !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
                 vacuous_evidence_bits
+            )
+        );
+        let comment_spoofed_instantiation = r#"
+theorem selectedRustCheckedCoreByteSource_instantiation_v1 :
+    SelectedRustCheckedCoreByteSource B H P V := by
+  /-
+  selectedRustCheckedCoreByteSource_valid_or_named_break
+  Path2NativeCheckedCoreAcceptV1Bridge
+  Path2NativeCheckedCoreAcceptV1Soundness
+  let selectedRustCheckedCoreEvidenceCertificate :
+  SelectedRustCheckedCoreByteEvidenceCertificate
+  evidenceReportVerified := selectedRustCheckedCoreEvidenceReportVerified
+  evidenceReportVerifiedProof := selectedRustCheckedCoreEvidenceReportVerifiedProof
+  evidenceFactsAllTrue := selectedRustCheckedCoreEvidenceFactsAllTrue
+  evidenceFactsAllTrueProof := selectedRustCheckedCoreEvidenceFactsAllTrueProof
+  let selectedRustCheckedCoreInputs :
+  SelectedRustCheckedCoreByteInstantiationInputs
+  SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs selectedRustCheckedCoreEvidenceCertificate
+  selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1 selectedRustCheckedCoreInputs
+  selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break
+  -/
+  exact placeholder
+end Path2CheckedCoreByteBridge
+"#;
+        assert!(
+            !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
+                comment_spoofed_instantiation
+            )
+        );
+        let string_spoofed_instantiation = r#"
+theorem selectedRustCheckedCoreByteSource_instantiation_v1 :
+    SelectedRustCheckedCoreByteSource B H P V := by
+  let marker_blob :=
+    "selectedRustCheckedCoreByteSource_valid_or_named_break
+     Path2NativeCheckedCoreAcceptV1Bridge
+     Path2NativeCheckedCoreAcceptV1Soundness
+     let selectedRustCheckedCoreEvidenceCertificate :
+     SelectedRustCheckedCoreByteEvidenceCertificate
+     evidenceReportVerified := selectedRustCheckedCoreEvidenceReportVerified
+     evidenceReportVerifiedProof := selectedRustCheckedCoreEvidenceReportVerifiedProof
+     evidenceFactsAllTrue := selectedRustCheckedCoreEvidenceFactsAllTrue
+     evidenceFactsAllTrueProof := selectedRustCheckedCoreEvidenceFactsAllTrueProof
+     let selectedRustCheckedCoreInputs :
+     SelectedRustCheckedCoreByteInstantiationInputs
+     SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs selectedRustCheckedCoreEvidenceCertificate
+     selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1 selectedRustCheckedCoreInputs
+     selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break"
+  exact placeholder
+end Path2CheckedCoreByteBridge
+"#;
+        assert!(
+            !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
+                string_spoofed_instantiation
             )
         );
         let local_inputs_without_evidence_certificate = r#"
