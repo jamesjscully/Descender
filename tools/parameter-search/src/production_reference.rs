@@ -22516,9 +22516,87 @@ pub fn path2_native_signer_execution_report_from_os_entropy_v1(
 pub fn path2_native_signer_execution_report_v1_digest(
     report: &Path2NativeSignerExecutionReportV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(report)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native signer execution report: {err}"))
+    Ok(Sha256::digest(path2_native_signer_execution_report_v1_frame(report)?).into())
+}
+
+pub fn path2_native_signer_execution_report_v1_frame(
+    report: &Path2NativeSignerExecutionReportV1,
+) -> Result<Vec<u8>, String> {
+    let deployment_preflight_digest =
+        path2_native_deployment_preflight_v1_digest(&report.deployment_preflight)?;
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", report.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"constructor_succeeded",
+        u64::from(report.constructor_succeeded),
+    );
+    append_u64(
+        &mut frame,
+        b"public_boundary_accepted",
+        u64::from(report.public_boundary_accepted),
+    );
+    append_u64(
+        &mut frame,
+        b"production_accepted",
+        u64::from(report.production_accepted),
+    );
+    append_u64(
+        &mut frame,
+        b"rejection_code_present",
+        u64::from(report.rejection_code.is_some()),
+    );
+    if let Some(code) = report.rejection_code {
+        append_frame(&mut frame, b"rejection_code", code.as_bytes());
+    }
+    append_u64(
+        &mut frame,
+        b"signer_public_output_digest_present",
+        u64::from(report.signer_public_output_digest.is_some()),
+    );
+    if let Some(digest) = report.signer_public_output_digest {
+        append_frame(&mut frame, b"signer_public_output_digest", &digest);
+    }
+    append_u64(
+        &mut frame,
+        b"carrier_digest_present",
+        u64::from(report.carrier_digest.is_some()),
+    );
+    if let Some(digest) = report.carrier_digest {
+        append_frame(&mut frame, b"carrier_digest", &digest);
+    }
+    append_u64(
+        &mut frame,
+        b"native_boundary_digest_present",
+        u64::from(report.native_boundary_digest.is_some()),
+    );
+    if let Some(digest) = report.native_boundary_digest {
+        append_frame(&mut frame, b"native_boundary_digest", &digest);
+    }
+    append_u64(
+        &mut frame,
+        b"checked_core_proof_digest_present",
+        u64::from(report.checked_core_proof_digest.is_some()),
+    );
+    if let Some(digest) = report.checked_core_proof_digest {
+        append_frame(&mut frame, b"checked_core_proof_digest", &digest);
+    }
+    append_frame(
+        &mut frame,
+        b"cleanup_policy",
+        report.cleanup_policy.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"entropy_q_fixed_attempts",
+        report.entropy_q_fixed_attempts as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"deployment_preflight_digest",
+        &deployment_preflight_digest,
+    );
+    Ok(frame)
 }
 
 pub fn path2_native_signer_constant_time_stage_labels_v1()
@@ -41302,6 +41380,13 @@ end Path2NativeAccountDesign
             path2_native_signer_execution_report_v1_digest(&report).unwrap(),
             [0_u8; DIGEST_BYTES]
         );
+        let report_frame = path2_native_signer_execution_report_v1_frame(&report).unwrap();
+        assert!(!report_frame.is_empty());
+        let report_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&report_frame).into();
+        assert_eq!(
+            path2_native_signer_execution_report_v1_digest(&report).unwrap(),
+            report_frame_digest
+        );
 
         let rendered = serde_json::to_string(&report).unwrap();
         assert!(rendered.contains(PATH2_NATIVE_SIGNER_EXECUTION_REPORT_SCHEMA));
@@ -41334,6 +41419,13 @@ end Path2NativeAccountDesign
         assert_eq!(report.carrier_digest, None);
         assert_eq!(report.native_boundary_digest, None);
         assert_eq!(report.checked_core_proof_digest, None);
+        let report_frame = path2_native_signer_execution_report_v1_frame(&report).unwrap();
+        assert!(!report_frame.is_empty());
+        let report_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&report_frame).into();
+        assert_eq!(
+            path2_native_signer_execution_report_v1_digest(&report).unwrap(),
+            report_frame_digest
+        );
 
         let rendered = serde_json::to_string(&report).unwrap();
         assert_no_active_native_private_material(&rendered);
