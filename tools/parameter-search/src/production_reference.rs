@@ -22959,9 +22959,92 @@ pub fn path2_native_signer_rejection_cleanup_audit_v1(
 pub fn path2_native_signer_rejection_cleanup_audit_v1_digest(
     report: &Path2NativeSignerRejectionCleanupAuditV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(report)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native signer rejection cleanup audit: {err}"))
+    Ok(
+        Sha256::digest(path2_native_signer_rejection_cleanup_audit_v1_frame(
+            report,
+        )?)
+        .into(),
+    )
+}
+
+pub fn path2_native_signer_rejection_cleanup_audit_v1_frame(
+    report: &Path2NativeSignerRejectionCleanupAuditV1,
+) -> Result<Vec<u8>, String> {
+    let deployment_preflight_digest =
+        path2_native_deployment_preflight_v1_digest(&report.deployment_preflight)?;
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", report.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"audit_complete",
+        u64::from(report.audit_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"public_error_surface_complete",
+        u64::from(report.public_error_surface_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"cleanup_zeroization_claim_complete",
+        u64::from(report.cleanup_zeroization_claim_complete),
+    );
+    append_frame(
+        &mut frame,
+        b"success_report_digest",
+        &report.success_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"constructor_rejection_report_digest",
+        &report.constructor_rejection_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"entropy_rejection_report_digest",
+        &report.entropy_rejection_report_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"constructor_rejection_code_present",
+        u64::from(report.constructor_rejection_code.is_some()),
+    );
+    if let Some(code) = report.constructor_rejection_code {
+        append_frame(&mut frame, b"constructor_rejection_code", code.as_bytes());
+    }
+    append_u64(
+        &mut frame,
+        b"entropy_rejection_code_present",
+        u64::from(report.entropy_rejection_code.is_some()),
+    );
+    if let Some(code) = report.entropy_rejection_code {
+        append_frame(&mut frame, b"entropy_rejection_code", code.as_bytes());
+    }
+    append_u64(
+        &mut frame,
+        b"all_rejection_digests_absent",
+        u64::from(report.all_rejection_digests_absent),
+    );
+    append_u64(
+        &mut frame,
+        b"all_rejection_codes_public_only",
+        u64::from(report.all_rejection_codes_public_only),
+    );
+    append_u64(
+        &mut frame,
+        b"all_reports_private_material_absent",
+        u64::from(report.all_reports_private_material_absent),
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    append_frame(
+        &mut frame,
+        b"deployment_preflight_digest",
+        &deployment_preflight_digest,
+    );
+    for non_claim in &report.explicit_non_claims {
+        append_frame(&mut frame, b"explicit_non_claim", non_claim.as_bytes());
+    }
+    Ok(frame)
 }
 
 fn path2_native_signer_entropy_digest_source_window_v1() -> &'static str {
@@ -41946,6 +42029,13 @@ end Path2NativeAccountDesign
         assert_ne!(
             path2_native_signer_rejection_cleanup_audit_v1_digest(&audit).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        let audit_frame = path2_native_signer_rejection_cleanup_audit_v1_frame(&audit).unwrap();
+        assert!(!audit_frame.is_empty());
+        let audit_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&audit_frame).into();
+        assert_eq!(
+            path2_native_signer_rejection_cleanup_audit_v1_digest(&audit).unwrap(),
+            audit_frame_digest
         );
         assert_eq!(audit.blocker, PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME);
 
