@@ -39547,6 +39547,42 @@ mod tests {
         digest
     }
 
+    fn lean_selected_rust_byte_array_digest_constant(
+        boundary_source: &str,
+        name: &str,
+    ) -> [u8; DIGEST_BYTES] {
+        let boundary_source = lean_source_without_comments_and_strings_v1(boundary_source);
+        let declaration_start = boundary_source
+            .find(&format!("\ndef {name} : ByteArray :="))
+            .unwrap_or_else(|| panic!("missing Lean digest definition {name}"));
+        let declaration = &boundary_source[declaration_start..];
+        let byte_array_start = declaration
+            .find("ByteArray.mk #[")
+            .unwrap_or_else(|| panic!("missing ByteArray literal for {name}"))
+            + "ByteArray.mk #[".len();
+        let byte_array_end = declaration[byte_array_start..]
+            .find(']')
+            .unwrap_or_else(|| panic!("unterminated ByteArray literal for {name}"))
+            + byte_array_start;
+        let byte_values: Vec<u8> = declaration[byte_array_start..byte_array_end]
+            .split(',')
+            .filter_map(|part| {
+                let part = part.trim();
+                if part.is_empty() {
+                    None
+                } else {
+                    Some(
+                        part.parse::<u8>()
+                            .unwrap_or_else(|err| panic!("invalid byte in {name}: {err}")),
+                    )
+                }
+            })
+            .collect();
+        byte_values
+            .try_into()
+            .unwrap_or_else(|bytes: Vec<u8>| panic!("{name} has {} bytes", bytes.len()))
+    }
+
     #[test]
     fn account_commitment_layout_validates() {
         let witness = pack_q_syndrome_digest(&[1_u16; SIS_FULL_RESPONSE_PUBLIC_ROWS]);
@@ -55443,6 +55479,51 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof := selectedRustFiveSo
                 &path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1().unwrap()
             )
             .unwrap()
+        );
+        let hidden_source_boundary_source =
+            include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
+        assert_eq!(
+            lean_selected_rust_byte_array_digest_constant(
+                hidden_source_boundary_source,
+                "selectedRustFiveSourceEvidenceDigest"
+            ),
+            path2_reviewed_fq12_five_source_closure_evidence_v1_digest(&five_source_evidence)
+                .unwrap()
+        );
+        assert_eq!(
+            lean_selected_rust_byte_array_digest_constant(
+                hidden_source_boundary_source,
+                "selectedRustBoundaryBaseEvidenceDigest"
+            ),
+            five_source_evidence.boundary_base_evidence_digest
+        );
+        assert_eq!(
+            lean_selected_rust_byte_array_digest_constant(
+                hidden_source_boundary_source,
+                "selectedRustRoleRootLiftEvidenceDigest"
+            ),
+            five_source_evidence.role_root_lift_evidence_digest
+        );
+        assert_eq!(
+            lean_selected_rust_byte_array_digest_constant(
+                hidden_source_boundary_source,
+                "selectedRustSourceRouteEvidenceDigest"
+            ),
+            five_source_evidence.selected_source_route_evidence_digest
+        );
+        assert_eq!(
+            lean_selected_rust_byte_array_digest_constant(
+                hidden_source_boundary_source,
+                "selectedRustFieldLocalEvidenceDigest"
+            ),
+            five_source_evidence.field_local_evidence_digest
+        );
+        assert_eq!(
+            lean_selected_rust_byte_array_digest_constant(
+                hidden_source_boundary_source,
+                "selectedRustSharedFrameWitnessEvidenceDigest"
+            ),
+            five_source_evidence.shared_digest_frame_witness_evidence_digest
         );
         assert!(five_source_evidence.shared_digest_frame_witness_evidence_verified);
         assert!(five_source_evidence.report_digest_verified);

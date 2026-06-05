@@ -146,9 +146,11 @@ status.
 `path2_selected_evidence_digest_manifest`, a source-controlled digest manifest
 binary for the six public selected evidence reports. Lean mirrors the emitted
 digests as concrete `selectedRust*EvidenceDigest` byte-array definitions in
-`Path2HiddenSourceSemanticsBoundary.lean`. The concrete-definition checklist
-now has report and digest categories present, with proof objects, source
-records, and the aggregate sub-evidence digest-match proof still missing.
+`Path2HiddenSourceSemanticsBoundary.lean`; the hidden-source bridge regression
+now parses those Lean constants and checks them against the Rust-computed
+aggregate and sub-evidence digests. The concrete-definition checklist now has
+report and digest categories present, with proof objects, source records, and
+the aggregate sub-evidence digest-match proof still missing.
 
 2026-06-02 update: `Path2FullOpeningSourceConcrete.lean` now packages the
 deployable non-aggregate theorem route as `ReviewedFq12DeployableHiddenSourceInputs`. The remaining P2FS-001 proof inputs are
