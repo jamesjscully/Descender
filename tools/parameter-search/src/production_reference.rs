@@ -7846,13 +7846,29 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
     forbidden_declaration_stub || forbidden_variable_stub || forbidden_vacuous_verification_stub
 }
 
-fn lean_source_without_comments_v1(source: &str) -> String {
+fn lean_source_without_comments_and_strings_v1(source: &str) -> String {
     let mut stripped = String::with_capacity(source.len());
     let bytes = source.as_bytes();
     let mut idx = 0;
     let mut block_depth = 0_u32;
     let mut in_line_comment = false;
+    let mut in_string = false;
+    let mut string_escape = false;
     while idx < bytes.len() {
+        if in_string {
+            if bytes[idx] == b'\n' {
+                stripped.push('\n');
+                string_escape = false;
+            } else if string_escape {
+                string_escape = false;
+            } else if bytes[idx] == b'\\' {
+                string_escape = true;
+            } else if bytes[idx] == b'"' {
+                in_string = false;
+            }
+            idx += 1;
+            continue;
+        }
         if in_line_comment {
             if bytes[idx] == b'\n' {
                 in_line_comment = false;
@@ -7886,6 +7902,11 @@ fn lean_source_without_comments_v1(source: &str) -> String {
             idx += 2;
             continue;
         }
+        if bytes[idx] == b'"' {
+            in_string = true;
+            idx += 1;
+            continue;
+        }
         stripped.push(bytes[idx] as char);
         idx += 1;
     }
@@ -7896,7 +7917,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
     theorem_source: &str,
     theorem_name: &str,
 ) -> bool {
-    let theorem_source = lean_source_without_comments_v1(theorem_source);
+    let theorem_source = lean_source_without_comments_and_strings_v1(theorem_source);
     let Some(body_start) = theorem_source.find(":= ") else {
         return false;
     };
@@ -46156,6 +46177,40 @@ theorem {theorem_name}
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &commented_marker_theorem,
+                theorem_name
+            )
+        );
+
+        let string_marker_theorem = format!(
+            r#"
+theorem {theorem_name}
+    (P : Predicates) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P := by
+  let marker_blob :=
+    "let selectedRustModelFiveSourceCertificate :
+      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+      evidenceReport := selectedRustFiveSourceEvidenceReport
+      evidenceReportVerifiedProof := selectedRustFiveSourceEvidenceReportVerifiedProof
+      evidenceFactsAllTrueProof := selectedRustFiveSourceEvidenceFactsAllTrueProof
+      payloadProjectsFrom := selectedRustPayloadProjectionLaw
+      certificateAvailability := selectedRustExtractionCertificateAvailability
+      roleRootLiftSource := selectedRustRoleRootLiftSource
+      selectedSource := selectedRustSourceRouteByteSource
+      assemblySource := selectedRustAssemblySource
+      compatibilitySource := selectedRustCompatibilitySource
+      witnessSources := selectedRustSharedFrameWitnessSources
+      let selectedRustModelFiveSourceInputs :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
+      selectedRustModelFiveSourceCertificate
+      reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+      selectedRustModelFiveSourceInputs"
+  exact string_placeholder
+"#
+        );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &string_marker_theorem,
                 theorem_name
             )
         );
