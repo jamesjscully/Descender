@@ -473,6 +473,11 @@ structure SelectedRustCheckedCoreByteEvidenceCertificate
   evidenceFactsAllTrueProof : evidenceReport.FactsAllTrue
   evidenceSelectedRustCheckedCoreAcceptorAccepts :
     Boundary -> Nat -> Nat -> NativeCheckedCoreSpendEvidence -> Prop
+  evidenceSelectedRustProductionCheckedCoreAcceptorAccepts :
+    Boundary -> Nat -> Nat -> NativeCheckedCoreSpendEvidence -> Prop
+  evidenceSelectedRustCheckedCoreAcceptorPinnedProof :
+    evidenceSelectedRustCheckedCoreAcceptorAccepts =
+      evidenceSelectedRustProductionCheckedCoreAcceptorAccepts
   evidenceSelectedRustCheckedCoreParserMatchesNative :
     ParserMatchesNativeHandle P H
   evidenceSelectedRustCheckedCoreProofLengthEq :
@@ -526,6 +531,11 @@ def SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents
     (evidenceFactsAllTrueProof : evidenceReport.FactsAllTrue)
     (evidenceSelectedRustCheckedCoreAcceptorAccepts :
       Boundary -> Nat -> Nat -> NativeCheckedCoreSpendEvidence -> Prop)
+    (evidenceSelectedRustProductionCheckedCoreAcceptorAccepts :
+      Boundary -> Nat -> Nat -> NativeCheckedCoreSpendEvidence -> Prop)
+    (evidenceSelectedRustCheckedCoreAcceptorPinnedProof :
+      evidenceSelectedRustCheckedCoreAcceptorAccepts =
+        evidenceSelectedRustProductionCheckedCoreAcceptorAccepts)
     (evidenceSelectedRustCheckedCoreParserMatchesNative :
       ParserMatchesNativeHandle P H)
     (evidenceSelectedRustCheckedCoreProofLengthEq :
@@ -572,6 +582,10 @@ def SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents
   evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
   evidenceSelectedRustCheckedCoreAcceptorAccepts :=
     evidenceSelectedRustCheckedCoreAcceptorAccepts
+  evidenceSelectedRustProductionCheckedCoreAcceptorAccepts :=
+    evidenceSelectedRustProductionCheckedCoreAcceptorAccepts
+  evidenceSelectedRustCheckedCoreAcceptorPinnedProof :=
+    evidenceSelectedRustCheckedCoreAcceptorPinnedProof
   evidenceSelectedRustCheckedCoreParserMatchesNative :=
     evidenceSelectedRustCheckedCoreParserMatchesNative
   evidenceSelectedRustCheckedCoreProofLengthEq :=
@@ -605,6 +619,10 @@ def SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs
       Cert.evidenceReportVerifiedProof
     let _hFacts : Cert.evidenceReport.FactsAllTrue :=
       Cert.evidenceFactsAllTrueProof
+    let _hPinned :
+        Cert.evidenceSelectedRustCheckedCoreAcceptorAccepts =
+          Cert.evidenceSelectedRustProductionCheckedCoreAcceptorAccepts :=
+      Cert.evidenceSelectedRustCheckedCoreAcceptorPinnedProof
     exact Cert.evidenceSelectedRustCheckedCoreAcceptorAccepts
   selectedRustCheckedCoreParserMatchesNative :=
     Cert.evidenceSelectedRustCheckedCoreParserMatchesNative

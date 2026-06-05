@@ -21071,6 +21071,8 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "evidenceDigest",
         "evidenceReportVerifiedProof",
         "evidenceFactsAllTrueProof",
+        "evidenceSelectedRustProductionCheckedCoreAcceptorAccepts",
+        "evidenceSelectedRustCheckedCoreAcceptorPinnedProof",
         "SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents",
         "SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs",
         "SelectedRustCheckedCoreByteInstantiationInputs",
@@ -21193,6 +21195,8 @@ fn path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
         "selectedRustCheckedCoreEvidenceReportVerifiedProof",
         "selectedRustCheckedCoreEvidenceFactsAllTrueProof",
         "selectedRustCheckedCoreAcceptorAccepts",
+        "selectedRustProductionCheckedCoreAcceptorAccepts",
+        "selectedRustCheckedCoreAcceptorPinnedProof",
         "selectedRustCheckedCoreParserMatchesNative",
         "selectedRustCheckedCoreProofLengthEq",
         "selectedRustCheckedCoreProofCanonical",
@@ -21326,6 +21330,10 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
         "let selectedRustCheckedCoreEvidenceReportVerifiedProof := True.intro",
         "let selectedRustCheckedCoreEvidenceFactsAllTrueProof := True.intro",
         "selectedRustCheckedCoreEvidenceCertificate := {",
+        "selectedRustCheckedCoreAcceptorAccepts := fun _ _ _ _ => False",
+        "selectedRustProductionCheckedCoreAcceptorAccepts := fun _ _ _ _ => False",
+        "let selectedRustCheckedCoreAcceptorAccepts := fun _ _ _ _ => False",
+        "let selectedRustProductionCheckedCoreAcceptorAccepts := fun _ _ _ _ => False",
     ];
     if forbidden_vacuous_evidence_terms
         .iter()
@@ -21347,6 +21355,18 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
         "selectedRustCheckedCoreEvidenceDigest",
         "selectedRustCheckedCoreEvidenceReportVerifiedProof",
         "selectedRustCheckedCoreEvidenceFactsAllTrueProof",
+        "selectedRustCheckedCoreAcceptorAccepts",
+        "selectedRustProductionCheckedCoreAcceptorAccepts",
+        "selectedRustCheckedCoreAcceptorPinnedProof",
+        "selectedRustCheckedCoreParserMatchesNative",
+        "selectedRustCheckedCoreProofLengthEq",
+        "selectedRustCheckedCoreProofCanonical",
+        "selectedRustCheckedCoreDecodedProofCommitment",
+        "selectedRustCheckedCoreParsedResponseSyndrome",
+        "selectedRustCheckedCoreFrameBytes",
+        "selectedRustCheckedCoreVerifierHandleEq",
+        "selectedRustCheckedCoreParserEquality",
+        "selectedRustCheckedCoreHashAndSyndrome",
         "let selectedRustCheckedCoreInputs :",
         "SelectedRustCheckedCoreByteInstantiationInputs",
         "SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs selectedRustCheckedCoreEvidenceCertificate",
@@ -43933,6 +43953,82 @@ end Path2CheckedCoreByteBridge
         assert!(
             !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
                 local_inputs_without_evidence_certificate
+            )
+        );
+        let vacuous_checked_core_false_acceptor = r#"
+theorem selectedRustCheckedCoreByteSource_instantiation_v1 :
+    SelectedRustCheckedCoreByteSource B H P V := by
+  let selectedRustCheckedCoreAcceptorAccepts := fun _ _ _ _ => False
+  let selectedRustProductionCheckedCoreAcceptorAccepts := fun _ _ _ _ => False
+  let selectedRustCheckedCoreEvidenceCertificate :
+      SelectedRustCheckedCoreByteEvidenceCertificate B H P V :=
+    SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents
+      selectedRustCheckedCoreEvidenceReport
+      selectedRustCheckedCoreEvidenceDigest
+      selectedRustCheckedCoreEvidenceReportVerifiedProof
+      selectedRustCheckedCoreEvidenceFactsAllTrueProof
+      selectedRustCheckedCoreAcceptorAccepts
+      selectedRustProductionCheckedCoreAcceptorAccepts
+      selectedRustCheckedCoreAcceptorPinnedProof
+      selectedRustCheckedCoreParserMatchesNative
+      selectedRustCheckedCoreProofLengthEq
+      selectedRustCheckedCoreProofCanonical
+      selectedRustCheckedCoreDecodedProofCommitment
+      selectedRustCheckedCoreParsedResponseSyndrome
+      selectedRustCheckedCoreFrameBytes
+      selectedRustCheckedCoreVerifierHandleEq
+      selectedRustCheckedCoreParserEquality
+      selectedRustCheckedCoreHashAndSyndrome
+  let selectedRustCheckedCoreInputs :
+      SelectedRustCheckedCoreByteInstantiationInputs B H P V :=
+    SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs selectedRustCheckedCoreEvidenceCertificate
+  exact selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1 selectedRustCheckedCoreInputs
+theorem selectedRustCheckedCoreByteSource_valid_or_named_break := trivial
+theorem Path2NativeCheckedCoreAcceptV1Bridge := trivial
+theorem Path2NativeCheckedCoreAcceptV1Soundness := trivial
+theorem selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break := trivial
+end Path2CheckedCoreByteBridge
+"#;
+        assert!(
+            !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
+                vacuous_checked_core_false_acceptor
+            )
+        );
+        let checked_core_instantiation_shape = r#"
+theorem selectedRustCheckedCoreByteSource_instantiation_v1 :
+    SelectedRustCheckedCoreByteSource B H P V := by
+  let selectedRustCheckedCoreEvidenceCertificate :
+      SelectedRustCheckedCoreByteEvidenceCertificate B H P V :=
+    SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents
+      selectedRustCheckedCoreEvidenceReport
+      selectedRustCheckedCoreEvidenceDigest
+      selectedRustCheckedCoreEvidenceReportVerifiedProof
+      selectedRustCheckedCoreEvidenceFactsAllTrueProof
+      selectedRustCheckedCoreAcceptorAccepts
+      selectedRustProductionCheckedCoreAcceptorAccepts
+      selectedRustCheckedCoreAcceptorPinnedProof
+      selectedRustCheckedCoreParserMatchesNative
+      selectedRustCheckedCoreProofLengthEq
+      selectedRustCheckedCoreProofCanonical
+      selectedRustCheckedCoreDecodedProofCommitment
+      selectedRustCheckedCoreParsedResponseSyndrome
+      selectedRustCheckedCoreFrameBytes
+      selectedRustCheckedCoreVerifierHandleEq
+      selectedRustCheckedCoreParserEquality
+      selectedRustCheckedCoreHashAndSyndrome
+  let selectedRustCheckedCoreInputs :
+      SelectedRustCheckedCoreByteInstantiationInputs B H P V :=
+    SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs selectedRustCheckedCoreEvidenceCertificate
+  exact selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1 selectedRustCheckedCoreInputs
+theorem selectedRustCheckedCoreByteSource_valid_or_named_break := trivial
+theorem Path2NativeCheckedCoreAcceptV1Bridge := trivial
+theorem Path2NativeCheckedCoreAcceptV1Soundness := trivial
+theorem selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break := trivial
+end Path2CheckedCoreByteBridge
+"#;
+        assert!(
+            path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
+                checked_core_instantiation_shape
             )
         );
         assert!(!path2_native_checked_core_selected_rust_instantiation_present_v1());
