@@ -7547,6 +7547,9 @@ pub struct Path2SelectedRustModelConcreteDefinitionChecklistV1 {
 pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub source_record_package_surface_present: bool,
     pub package_sub_evidence_match_reduction_present: bool,
+    pub package_to_closure_inputs_reduction_present: bool,
+    pub package_to_byte_component_inputs_reduction_present: bool,
+    pub package_to_hidden_source_closure_reduction_present: bool,
     pub boundary_base_report_only_not_source_record_closure: bool,
     pub role_root_lift_report_only_not_source_record_closure: bool,
     pub source_route_report_only_not_source_record_closure: bool,
@@ -8789,6 +8792,45 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
+    let package_to_closure_inputs_reduction_present = [
+        "def toFiveSourceClosureInputs",
+        "ReviewedFq12SelectedRustModelFiveSourceClosureInputs",
+        "payloadProjectsFrom := Package.payloadProjectionLaw",
+        "certificateAvailability :=",
+        "Package.extractionCertificateAvailability",
+        "roleRootLiftSource := Package.roleRootLiftSource",
+        "selectedSource := Package.selectedSourceRouteByteSource",
+        "assemblySource := Package.assemblySource",
+        "compatibilitySource := Package.compatibilitySource",
+        "witnessSources := Package.sharedFrameWitnessSources",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
+    let package_to_byte_component_inputs_reduction_present = [
+        "def toByteComponentInputs",
+        "ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs",
+        "reviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputsOfSources",
+        "Package.roleRootLiftSource",
+        "Package.selectedSourceRouteByteSource",
+        "Package.assemblySource",
+        "Package.compatibilitySource",
+        "Package.sharedFrameWitnessSources",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
+    let package_to_hidden_source_closure_reduction_present = [
+        "theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package",
+        "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources",
+        "Package.payloadProjectionLaw",
+        "Package.extractionCertificateAvailability",
+        "Package.roleRootLiftSource",
+        "Package.selectedSourceRouteByteSource",
+        "Package.assemblySource",
+        "Package.compatibilitySource",
+        "Package.sharedFrameWitnessSources",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
     let canonical_witness_to_byte_source_adapter_present =
         lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1();
     let byte_and_witness_packaged_route_endpoint_present =
@@ -8843,6 +8885,9 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     Path2SelectedRustModelSourceRecordSubcheckV1 {
         source_record_package_surface_present,
         package_sub_evidence_match_reduction_present,
+        package_to_closure_inputs_reduction_present,
+        package_to_byte_component_inputs_reduction_present,
+        package_to_hidden_source_closure_reduction_present,
         boundary_base_report_only_not_source_record_closure,
         role_root_lift_report_only_not_source_record_closure,
         source_route_report_only_not_source_record_closure,
@@ -56141,6 +56186,9 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
         assert!(source_record_subcheck.source_record_package_surface_present);
         assert!(source_record_subcheck.package_sub_evidence_match_reduction_present);
+        assert!(source_record_subcheck.package_to_closure_inputs_reduction_present);
+        assert!(source_record_subcheck.package_to_byte_component_inputs_reduction_present);
+        assert!(source_record_subcheck.package_to_hidden_source_closure_reduction_present);
         assert!(source_record_subcheck.boundary_base_report_only_not_source_record_closure);
         assert!(source_record_subcheck.role_root_lift_report_only_not_source_record_closure);
         assert!(source_record_subcheck.source_route_report_only_not_source_record_closure);

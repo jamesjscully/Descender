@@ -503,6 +503,14 @@ report/digest/proof/source constructors, and
 derives the aggregate sub-evidence match from selected component digest
 equalities. The manifest now reports both package-surface booleans true, while
 the twelve concrete selected source bindings remain absent.
+The same package now has direct reductions to the active proof inputs:
+`toFiveSourceClosureInputs`,
+`toByteComponentInputs`, and
+`reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package`.
+The manifest reports these three package-reduction checks true, so once the
+seven raw selected source records exist, the closure path is mechanical. It
+does not change the fail-closed status because the package itself is still not
+instantiated.
 Boundary-base source audit: report verification is not the payload projection
 law or extraction-certificate availability theorem. The active file currently
 has verifier-backed boundary-base evidence, but no

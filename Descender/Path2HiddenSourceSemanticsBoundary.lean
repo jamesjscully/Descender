@@ -2018,6 +2018,65 @@ theorem subEvidenceDigestsMatch
   selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_of_selected_certificate_digests
     (by rfl) (by rfl) (by rfl) (by rfl) (by rfl)
 
+/--
+Forget a selected source-record package into the active five-source closure
+input record.
+
+This is only a projection. It does not instantiate any selected source; it
+keeps the future Rust/model import surface as one package while exposing the
+existing closure theorem shape.
+-/
+def toFiveSourceClosureInputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Package :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+      FieldParser RouteParser CanonicalParser WitnessParser P where
+  payloadProjectsFrom := Package.payloadProjectionLaw
+  certificateAvailability :=
+    Package.extractionCertificateAvailability
+  roleRootLiftSource := Package.roleRootLiftSource
+  selectedSource := Package.selectedSourceRouteByteSource
+  assemblySource := Package.assemblySource
+  compatibilitySource := Package.compatibilitySource
+  witnessSources := Package.sharedFrameWitnessSources
+
+/--
+Forget a selected source-record package into the active byte-component input
+record used by the field-local shared-frame theorem.
+
+This confirms that the package fields are exactly the implementation-oriented
+AP2-N001 component surface: role-root/lift, selected source-route bytes,
+assembly local source, compatibility local source, and shared-frame witness
+sources.
+-/
+def toByteComponentInputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Package :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs
+      FieldParser RouteParser CanonicalParser WitnessParser P :=
+  reviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputsOfSources
+    Package.roleRootLiftSource
+    Package.selectedSourceRouteByteSource
+    Package.assemblySource
+    Package.compatibilitySource
+    Package.sharedFrameWitnessSources
+
 end ReviewedFq12SelectedRustModelSourceRecordPackage
 
 /--
@@ -2063,6 +2122,35 @@ theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_loc
     (reviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputsOfSources
       roleRootLiftSource selectedSource assemblySource compatibilitySource
       witnessSources)
+
+/--
+Active AP2-N001 boundary closure from the selected source-record package.
+
+This is the same fail-closed route as the raw-source theorem above, with the
+seven selected sources kept in the package shape tracked by the Rust manifest.
+It should only be used after the concrete selected package is genuinely
+imported; evidence reports alone do not construct such a package.
+-/
+theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (Package :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P :=
+  reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources
+    P Package.payloadProjectionLaw
+    Package.extractionCertificateAvailability
+    Package.roleRootLiftSource
+    Package.selectedSourceRouteByteSource
+    Package.assemblySource
+    Package.compatibilitySource
+    Package.sharedFrameWitnessSources
 
 /--
 Active AP2-N001 boundary closure from the single concrete model input record.

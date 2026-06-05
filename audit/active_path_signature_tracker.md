@@ -1157,6 +1157,15 @@ The manifest reports `source_record_package_surface_present = true` and
 `package_sub_evidence_match_reduction_present = true`; this reduces the
 remaining source-record work to importing the raw selected sources themselves,
 while leaving aggregate evidence-digest closure separate.
+The package now also projects to the active closure/input surfaces:
+`toFiveSourceClosureInputs` builds the five-source closure input record,
+`toByteComponentInputs` builds the field-local shared-frame byte-component
+input record, and
+`reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package`
+routes the package directly into hidden-source semantics closure. The manifest
+reports all three package-reduction booleans true. This is still fail-closed:
+the theorem consumes a genuine source-record package and does not construct
+one from evidence reports.
 Boundary-base source check: a direct scan of the active Lean path shows the
 selected boundary-base report and its `ReportVerified`/`FactsAllTrue` proofs
 are evidence only. They do not construct

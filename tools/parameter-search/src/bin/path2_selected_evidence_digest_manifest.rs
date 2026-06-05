@@ -134,6 +134,12 @@ fn main() -> Result<(), String> {
                 source_record_subcheck.source_record_package_surface_present,
             "package_sub_evidence_match_reduction_present":
                 source_record_subcheck.package_sub_evidence_match_reduction_present,
+            "package_to_closure_inputs_reduction_present":
+                source_record_subcheck.package_to_closure_inputs_reduction_present,
+            "package_to_byte_component_inputs_reduction_present":
+                source_record_subcheck.package_to_byte_component_inputs_reduction_present,
+            "package_to_hidden_source_closure_reduction_present":
+                source_record_subcheck.package_to_hidden_source_closure_reduction_present,
             "boundary_base_report_only_not_source_record_closure":
                 source_record_subcheck.boundary_base_report_only_not_source_record_closure,
             "role_root_lift_report_only_not_source_record_closure":
