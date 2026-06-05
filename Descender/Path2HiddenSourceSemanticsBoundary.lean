@@ -2234,6 +2234,22 @@ def ReviewedFq12PayloadExtractionInBoundaryFiber
       InFiber P b.context b h
 
 /--
+Concrete predicate-model obligation that payload extraction satisfies the
+native local and descent predicates for the boundary context.
+
+This keeps the selected extraction relation aligned with the native validity
+conditions consumed by `ReviewedFq12HiddenSourcePayloadSoundness`.
+-/
+def ReviewedFq12PayloadExtractionNativeValid
+    (P : Predicates) : Prop :=
+  forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {h : HiddenRepresentative},
+    P.reviewedFq12PayloadExtracts b payload h ->
+      P.localValid b.context h ∧
+        P.descentConsistent b.context h
+
+/--
 Selected Rust native-boundary predicate-model import target.
 
 The full-spend concrete predicates are not this object: they live over concrete
@@ -2263,6 +2279,8 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
     ReviewedFq12CertificateExtractionImpliesPayloadExtraction predicates
   payloadExtractionInBoundaryFiber :
     ReviewedFq12PayloadExtractionInBoundaryFiber predicates
+  payloadExtractionNativeValid :
+    ReviewedFq12PayloadExtractionNativeValid predicates
   reviewedFq12PayloadAcceptanceModeled : Prop
   reviewedFq12PayloadAcceptanceModeledProof :
     reviewedFq12PayloadAcceptanceModeled

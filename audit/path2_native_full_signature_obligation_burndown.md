@@ -147,6 +147,9 @@ extraction to payload extraction for the same hidden representative, preventing
 the two extraction predicates from drifting apart in the selected model.
 `ReviewedFq12PayloadExtractionInBoundaryFiber` then requires payload extraction
 to land in the native boundary fiber for that boundary.
+`ReviewedFq12PayloadExtractionNativeValid` additionally requires extracted
+payload representatives to satisfy the native local-valid and
+descent-consistent predicates for the boundary context.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It
