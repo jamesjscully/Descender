@@ -21565,6 +21565,8 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
         "activeNativeHashBudgetBoundary_multiTargetLossPriced",
         "activeNativeHashBudgetBoundary_hashBoundaryProps",
         "activeHashDomainAndMultiTargetCertificate_byteDomainProps",
+        "NativeFullSignatureSecurityBoundary.withActiveHashBoundary",
+        "full_signature_with_active_hash_boundary_props",
         "byteDomainCertificate",
         "toInstantiation",
     ];

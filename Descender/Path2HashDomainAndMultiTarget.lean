@@ -5,6 +5,7 @@ namespace Descender
 namespace Path2HashDomainAndMultiTarget
 
 open Path2HashBudget
+open Path2NativeAccountDesign
 
 /-!
 # Path 2 Hash Domain and Multi-Target Boundary
@@ -573,6 +574,42 @@ theorem activeHashDomainAndMultiTargetCertificate_byteDomainProps :
           |>.toInstantiation) :=
   activePath2HashDomainAndMultiTargetCertificate
     |>.byteDomainProps
+
+/--
+Install the active hash/QROM/domain budget into a full active Path 2 signature
+boundary, preserving every non-hash proof obligation.
+-/
+def NativeFullSignatureSecurityBoundary.withActiveHashBoundary
+    (B : NativeFullSignatureSecurityBoundary) :
+    NativeFullSignatureSecurityBoundary :=
+  { B with
+    hashBoundary := activeNativeHashBudgetBoundary
+    fullSignatureSecurityClaimComplete := by
+      rcases B.fullSignatureSecurityClaimComplete with
+        ⟨hKeygen, hSigning, hCompleteness, hVerifier, hFullGame,
+          hHiddenSource, hCheckedCore, hLifecycle, hNoExport,
+          _hCheckedCoreDomain, _hHiddenSourceDomain, _hQueryBudget,
+          _hMultiTarget⟩
+      exact
+        ⟨hKeygen, hSigning, hCompleteness, hVerifier, hFullGame,
+          hHiddenSource, hCheckedCore, hLifecycle, hNoExport,
+          activeNativeHashBudgetBoundary_checkedCoreFrameDomainSeparated,
+          activeNativeHashBudgetBoundary_hiddenSourceFrameDomainSeparated,
+          activeNativeHashBudgetBoundary_queryBudgetPriced,
+          activeNativeHashBudgetBoundary_multiTargetLossPriced⟩ }
+
+/-- The full-signature wrapper exposes exactly the active hash-boundary props. -/
+theorem full_signature_with_active_hash_boundary_props
+    (B : NativeFullSignatureSecurityBoundary) :
+    (NativeFullSignatureSecurityBoundary.withActiveHashBoundary
+      B).hashBoundary.checkedCoreFrameDomainSeparated ∧
+      (NativeFullSignatureSecurityBoundary.withActiveHashBoundary
+        B).hashBoundary.hiddenSourceFrameDomainSeparated ∧
+      (NativeFullSignatureSecurityBoundary.withActiveHashBoundary
+        B).hashBoundary.queryBudgetPriced ∧
+      (NativeFullSignatureSecurityBoundary.withActiveHashBoundary
+        B).hashBoundary.multiTargetLossPriced :=
+  activeNativeHashBudgetBoundary_hashBoundaryProps
 
 end Path2HashDomainAndMultiTarget
 end Descender
