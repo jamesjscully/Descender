@@ -1068,6 +1068,11 @@ Active no-export boundary note: the
 `active_native_no_export_closure_from_public_output_no_export` boundary check
 now also requires an exact theorem declaration name before the active serializer
 boundary can be marked present.
+Active checked-core boundary note: the checked-core byte bridge source gate now
+requires exact endpoint theorem names for
+`selectedRustCheckedCoreByteSource_checkedCoreAccepts_or_named_break` and
+`selectedRustCheckedCoreByteSource_valid_or_named_break`, so suffixed endpoint
+theorems cannot make the active byte bridge appear present.
 
 ## Findings
 

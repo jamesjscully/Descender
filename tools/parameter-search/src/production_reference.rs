@@ -22334,6 +22334,18 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
     let native_source = include_str!("../../../Descender/Path2NativeAccountDesign.lean");
     let rust_source = include_str!("production_reference.rs");
 
+    path2_native_checked_core_byte_bridge_source_present_in_sources_v1(
+        lean_source,
+        native_source,
+        rust_source,
+    )
+}
+
+fn path2_native_checked_core_byte_bridge_source_present_in_sources_v1(
+    lean_source: &str,
+    native_source: &str,
+    rust_source: &str,
+) -> bool {
     let byte_source_start = lean_source
         .find("\nstructure SelectedRustCheckedCoreByteSource")
         .expect("Lean Path 2 selected Rust checked-core byte source marker missing");
@@ -22343,18 +22355,33 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         + byte_source_start;
     let byte_source = &lean_source[byte_source_start..byte_source_end];
 
-    let accept_endpoint_start = lean_source
-        .find("\ntheorem selectedRustCheckedCoreByteSource_checkedCoreAccepts_or_named_break")
-        .expect("Lean Path 2 selected Rust checked-core accepts endpoint marker missing");
+    let accept_endpoint_marker =
+        "\ntheorem selectedRustCheckedCoreByteSource_checkedCoreAccepts_or_named_break";
+    let Some(accept_endpoint_start) = lean_source
+        .match_indices(accept_endpoint_marker)
+        .find(|(index, _)| {
+            lean_declaration_marker_has_exact_name_v1(lean_source, *index, accept_endpoint_marker)
+        })
+        .map(|(index, _)| index)
+    else {
+        return false;
+    };
     let accept_endpoint_end = lean_source[accept_endpoint_start..]
         .find("\n/--\nThe selected Rust byte source, native V1 bridge")
         .expect("Lean Path 2 selected Rust checked-core accepts endpoint end marker missing")
         + accept_endpoint_start;
     let accept_endpoint_source = &lean_source[accept_endpoint_start..accept_endpoint_end];
 
-    let valid_endpoint_start = lean_source
-        .find("\ntheorem selectedRustCheckedCoreByteSource_valid_or_named_break")
-        .expect("Lean Path 2 selected Rust checked-core valid endpoint marker missing");
+    let valid_endpoint_marker = "\ntheorem selectedRustCheckedCoreByteSource_valid_or_named_break";
+    let Some(valid_endpoint_start) = lean_source
+        .match_indices(valid_endpoint_marker)
+        .find(|(index, _)| {
+            lean_declaration_marker_has_exact_name_v1(lean_source, *index, valid_endpoint_marker)
+        })
+        .map(|(index, _)| index)
+    else {
+        return false;
+    };
     let valid_endpoint_end = lean_source[valid_endpoint_start..]
         .find("\nend Path2CheckedCoreByteBridge")
         .expect("Lean Path 2 selected Rust checked-core valid endpoint end marker missing")
@@ -45726,6 +45753,47 @@ def marker :=
         assert_eq!(preflight.signer_private_state_bytes_max, 416);
         assert_eq!(preflight.spend_signature_impact_bytes_max, 32);
         assert!(path2_native_checked_core_byte_bridge_source_present_v1());
+        let checked_core_byte_bridge_source =
+            include_str!("../../../Descender/Path2CheckedCoreByteBridge.lean");
+        let native_account_design_source =
+            include_str!("../../../Descender/Path2NativeAccountDesign.lean");
+        let production_reference_source = include_str!("production_reference.rs");
+        let suffixed_checked_core_accept_endpoint_source = checked_core_byte_bridge_source
+            .replacen(
+                "theorem selectedRustCheckedCoreByteSource_checkedCoreAccepts_or_named_break",
+                "theorem selectedRustCheckedCoreByteSource_checkedCoreAccepts_or_named_breakSpoof",
+                1,
+            );
+        assert!(
+            !path2_native_checked_core_byte_bridge_source_present_in_sources_v1(
+                &suffixed_checked_core_accept_endpoint_source,
+                native_account_design_source,
+                production_reference_source,
+            )
+        );
+        let suffixed_checked_core_valid_endpoint_source = checked_core_byte_bridge_source.replacen(
+            "theorem selectedRustCheckedCoreByteSource_valid_or_named_break",
+            "theorem selectedRustCheckedCoreByteSource_valid_or_named_breakSpoof",
+            1,
+        );
+        assert!(
+            !path2_native_checked_core_byte_bridge_source_present_in_sources_v1(
+                &suffixed_checked_core_valid_endpoint_source,
+                native_account_design_source,
+                production_reference_source,
+            )
+        );
+        let suffixed_then_exact_checked_core_endpoint_source = format!(
+            "{}\n{}",
+            suffixed_checked_core_accept_endpoint_source, checked_core_byte_bridge_source
+        );
+        assert!(
+            path2_native_checked_core_byte_bridge_source_present_in_sources_v1(
+                &suffixed_then_exact_checked_core_endpoint_source,
+                native_account_design_source,
+                production_reference_source,
+            )
+        );
         assert!(
             path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
                 "\nvariable\n  (selectedRustCheckedCoreAcceptorAccepts : acceptor_fact)\n  (selectedRustCheckedCoreHashAndSyndrome : hash_fact)\n"
