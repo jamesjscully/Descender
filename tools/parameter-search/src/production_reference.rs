@@ -23500,9 +23500,101 @@ pub fn path2_native_signer_os_entropy_boundary_audit_v1()
 pub fn path2_native_signer_os_entropy_boundary_audit_v1_digest(
     report: &Path2NativeSignerOsEntropyBoundaryAuditV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(report)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native signer OS entropy boundary audit: {err}"))
+    Ok(
+        Sha256::digest(path2_native_signer_os_entropy_boundary_audit_v1_frame(
+            report,
+        ))
+        .into(),
+    )
+}
+
+pub fn path2_native_signer_os_entropy_boundary_audit_v1_frame(
+    report: &Path2NativeSignerOsEntropyBoundaryAuditV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", report.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"audit_complete",
+        u64::from(report.audit_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"source_boundary_complete",
+        u64::from(report.source_boundary_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"os_backend_health_claim_complete",
+        u64::from(report.os_backend_health_claim_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"zero_initialized_before_os_calls",
+        u64::from(report.zero_initialized_before_os_calls),
+    );
+    append_u64(
+        &mut frame,
+        b"exactly_two_os_entropy_calls",
+        u64::from(report.exactly_two_os_entropy_calls),
+    );
+    append_u64(
+        &mut frame,
+        b"root_call_before_nonce_call",
+        u64::from(report.root_call_before_nonce_call),
+    );
+    append_u64(
+        &mut frame,
+        b"zeroizes_after_first_failure",
+        u64::from(report.zeroizes_after_first_failure),
+    );
+    append_u64(
+        &mut frame,
+        b"zeroizes_after_second_failure",
+        u64::from(report.zeroizes_after_second_failure),
+    );
+    append_u64(
+        &mut frame,
+        b"no_partial_entropy_success",
+        u64::from(report.no_partial_entropy_success),
+    );
+    append_u64(
+        &mut frame,
+        b"no_backend_error_detail_exported",
+        u64::from(report.no_backend_error_detail_exported),
+    );
+    append_u64(
+        &mut frame,
+        b"public_execution_report_sanitizes_entropy_failure",
+        u64::from(report.public_execution_report_sanitizes_entropy_failure),
+    );
+    append_u64(
+        &mut frame,
+        b"entropy_failure_report_digest_absent",
+        u64::from(report.entropy_failure_report_digest_absent),
+    );
+    append_u64(
+        &mut frame,
+        b"entropy_failure_rejection_code_present",
+        u64::from(report.entropy_failure_rejection_code.is_some()),
+    );
+    if let Some(rejection_code) = report.entropy_failure_rejection_code {
+        append_frame(
+            &mut frame,
+            b"entropy_failure_rejection_code",
+            rejection_code.as_bytes(),
+        );
+    }
+    append_frame(
+        &mut frame,
+        b"source_window_digest",
+        &report.source_window_digest,
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    for non_claim in &report.explicit_non_claims {
+        append_frame(&mut frame, b"explicit_non_claim", non_claim.as_bytes());
+    }
+    frame
 }
 
 fn path2_native_private_fiber_cleanup_source_window_v1() -> &'static str {
@@ -23641,9 +23733,119 @@ pub fn path2_native_signer_runtime_cleanup_audit_v1() -> Path2NativeSignerRuntim
 pub fn path2_native_signer_runtime_cleanup_audit_v1_digest(
     report: &Path2NativeSignerRuntimeCleanupAuditV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(report)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native signer runtime cleanup audit: {err}"))
+    Ok(Sha256::digest(path2_native_signer_runtime_cleanup_audit_v1_frame(report)).into())
+}
+
+pub fn path2_native_signer_runtime_cleanup_audit_v1_frame(
+    report: &Path2NativeSignerRuntimeCleanupAuditV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", report.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"audit_complete",
+        u64::from(report.audit_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"source_cleanup_complete",
+        u64::from(report.source_cleanup_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"allocator_memory_inspection_complete",
+        u64::from(report.allocator_memory_inspection_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"owned_root_drop_present",
+        u64::from(report.owned_root_drop_present),
+    );
+    append_u64(
+        &mut frame,
+        b"owned_material_drop_present",
+        u64::from(report.owned_material_drop_present),
+    );
+    append_u64(
+        &mut frame,
+        b"root_explicit_success_zeroize_present",
+        u64::from(report.root_explicit_success_zeroize_present),
+    );
+    append_u64(
+        &mut frame,
+        b"root_failure_zeroize_present",
+        u64::from(report.root_failure_zeroize_present),
+    );
+    append_u64(
+        &mut frame,
+        b"seed_component_zeroize_present",
+        u64::from(report.seed_component_zeroize_present),
+    );
+    append_u64(
+        &mut frame,
+        b"signer_digest_uses_fixed_frame",
+        u64::from(report.signer_digest_uses_fixed_frame),
+    );
+    append_u64(
+        &mut frame,
+        b"constructor_digest_uses_fixed_frame",
+        u64::from(report.constructor_digest_uses_fixed_frame),
+    );
+    append_u64(
+        &mut frame,
+        b"signer_digest_fixed_frame_zeroize_present",
+        u64::from(report.signer_digest_fixed_frame_zeroize_present),
+    );
+    append_u64(
+        &mut frame,
+        b"constructor_digest_fixed_frame_zeroize_present",
+        u64::from(report.constructor_digest_fixed_frame_zeroize_present),
+    );
+    append_u64(
+        &mut frame,
+        b"private_fiber_success_zeroize_present",
+        u64::from(report.private_fiber_success_zeroize_present),
+    );
+    append_u64(
+        &mut frame,
+        b"private_fiber_error_zeroize_present",
+        u64::from(report.private_fiber_error_zeroize_present),
+    );
+    append_u64(
+        &mut frame,
+        b"volatile_byte_zeroize_present",
+        u64::from(report.volatile_byte_zeroize_present),
+    );
+    append_u64(
+        &mut frame,
+        b"volatile_word_zeroize_present",
+        u64::from(report.volatile_word_zeroize_present),
+    );
+    append_u64(
+        &mut frame,
+        b"volatile_fixed_frame_zeroize_present",
+        u64::from(report.volatile_fixed_frame_zeroize_present),
+    );
+    append_u64(
+        &mut frame,
+        b"compiler_fence_present",
+        u64::from(report.compiler_fence_present),
+    );
+    append_u64(
+        &mut frame,
+        b"public_failure_reports_digest_only",
+        u64::from(report.public_failure_reports_digest_only),
+    );
+    append_frame(
+        &mut frame,
+        b"cleanup_source_digest",
+        &report.cleanup_source_digest,
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    for non_claim in &report.explicit_non_claims {
+        append_frame(&mut frame, b"explicit_non_claim", non_claim.as_bytes());
+    }
+    frame
 }
 
 fn path2_native_function_source_window_v1(function_name: &str, next_marker: &str) -> &'static str {
@@ -23728,9 +23930,79 @@ pub fn path2_native_signer_production_routing_audit_v1() -> Path2NativeSignerPro
 pub fn path2_native_signer_production_routing_audit_v1_digest(
     report: &Path2NativeSignerProductionRoutingAuditV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(report)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native signer production routing audit: {err}"))
+    Ok(
+        Sha256::digest(path2_native_signer_production_routing_audit_v1_frame(
+            report,
+        ))
+        .into(),
+    )
+}
+
+pub fn path2_native_signer_production_routing_audit_v1_frame(
+    report: &Path2NativeSignerProductionRoutingAuditV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", report.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"audit_complete",
+        u64::from(report.audit_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"source_routing_complete",
+        u64::from(report.source_routing_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"production_public_input_entrypoint_present",
+        u64::from(report.production_public_input_entrypoint_present),
+    );
+    append_u64(
+        &mut frame,
+        b"production_public_input_entrypoint_prevalidates_first",
+        u64::from(report.production_public_input_entrypoint_prevalidates_first),
+    );
+    append_u64(
+        &mut frame,
+        b"production_public_input_entrypoint_avoids_direct_entropy",
+        u64::from(report.production_public_input_entrypoint_avoids_direct_entropy),
+    );
+    append_u64(
+        &mut frame,
+        b"prevalidated_os_entrypoint_acquires_entropy",
+        u64::from(report.prevalidated_os_entrypoint_acquires_entropy),
+    );
+    append_u64(
+        &mut frame,
+        b"prevalidated_private_entrypoint_requires_wrapper",
+        u64::from(report.prevalidated_private_entrypoint_requires_wrapper),
+    );
+    append_u64(
+        &mut frame,
+        b"invalid_public_input_rejected_before_entropy",
+        u64::from(report.invalid_public_input_rejected_before_entropy),
+    );
+    append_u64(
+        &mut frame,
+        b"legacy_direct_entrypoints_retained_for_negative_controls",
+        u64::from(report.legacy_direct_entrypoints_retained_for_negative_controls),
+    );
+    append_frame(
+        &mut frame,
+        b"public_input_entrypoint_source_digest",
+        &report.public_input_entrypoint_source_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"prevalidated_os_entrypoint_source_digest",
+        &report.prevalidated_os_entrypoint_source_digest,
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    for non_claim in &report.explicit_non_claims {
+        append_frame(&mut frame, b"explicit_non_claim", non_claim.as_bytes());
+    }
+    frame
 }
 
 fn path2_native_signer_ct_backend_script_bundle_v1() -> &'static str {
@@ -41453,6 +41725,12 @@ end Path2NativeAccountDesign
             path2_native_signer_runtime_cleanup_audit_v1_digest(&audit).unwrap(),
             [0_u8; DIGEST_BYTES]
         );
+        let expected_frame_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(path2_native_signer_runtime_cleanup_audit_v1_frame(&audit)).into();
+        assert_eq!(
+            path2_native_signer_runtime_cleanup_audit_v1_digest(&audit).unwrap(),
+            expected_frame_digest
+        );
         assert_eq!(audit.blocker, PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME);
 
         let cleanup_source = path2_native_private_fiber_cleanup_source_window_v1();
@@ -41513,6 +41791,14 @@ end Path2NativeAccountDesign
         assert_ne!(
             path2_native_signer_production_routing_audit_v1_digest(&audit).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        let expected_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(
+            path2_native_signer_production_routing_audit_v1_frame(&audit),
+        )
+        .into();
+        assert_eq!(
+            path2_native_signer_production_routing_audit_v1_digest(&audit).unwrap(),
+            expected_frame_digest
         );
         assert_eq!(audit.blocker, PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME);
 
@@ -41641,6 +41927,14 @@ end Path2NativeAccountDesign
         assert_ne!(
             path2_native_signer_os_entropy_boundary_audit_v1_digest(&audit).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        let expected_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(
+            path2_native_signer_os_entropy_boundary_audit_v1_frame(&audit),
+        )
+        .into();
+        assert_eq!(
+            path2_native_signer_os_entropy_boundary_audit_v1_digest(&audit).unwrap(),
+            expected_frame_digest
         );
         assert_eq!(audit.blocker, PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME);
 
