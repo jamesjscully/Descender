@@ -28754,6 +28754,70 @@ pub fn validate_production_target_chain_database_adapter_profile(
     profile.validate()
 }
 
+pub fn production_target_chain_database_adapter_profile_frame(
+    profile: &ProductionTargetChainDatabaseAdapterProfile,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", profile.schema.as_bytes());
+    append_frame(&mut frame, b"chain_id", profile.chain_id.as_bytes());
+    append_frame(
+        &mut frame,
+        b"canonical_database_engine",
+        profile.canonical_database_engine.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"transaction_semantics",
+        profile.transaction_semantics.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"trusted_anchor_placement",
+        profile.trusted_anchor_placement.as_bytes(),
+    );
+    append_frame(&mut frame, b"kv_namespace", profile.kv_namespace.as_bytes());
+    append_frame(
+        &mut frame,
+        b"lifecycle_value_schema",
+        profile.lifecycle_value_schema.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"spent_slots_value_schema",
+        profile.spent_slots_value_schema.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"trusted_anchor_value_schema",
+        profile.trusted_anchor_value_schema.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"public_key_identity",
+        profile.public_key_identity.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"spent_key_shape",
+        profile.spent_key_shape.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"external_storage_review_digest",
+        &profile.external_storage_review_digest,
+    );
+    frame
+}
+
+pub fn production_target_chain_database_adapter_profile_digest(
+    profile: &ProductionTargetChainDatabaseAdapterProfile,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(production_target_chain_database_adapter_profile_frame(
+        profile,
+    ))
+    .into()
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ProductionProfiledTargetChainKvDb<Kv> {
     profile: ProductionTargetChainDatabaseAdapterProfile,
@@ -29274,9 +29338,7 @@ impl ProductionLocalCanonicalNodeKvStore {
     }
 
     fn profile_digest(profile: &ProductionTargetChainDatabaseAdapterProfile) -> [u8; DIGEST_BYTES] {
-        let bytes = serde_json::to_vec(profile)
-            .expect("target-chain database adapter profile serializes deterministically");
-        Sha256::digest(bytes).into()
+        production_target_chain_database_adapter_profile_digest(profile)
     }
 
     fn load_entries(
@@ -43665,6 +43727,38 @@ end Path2NativeAccountDesign
         assert_no_active_native_private_material(&rendered);
         assert!(rendered.contains("da_missing_preimage_rejection"));
         assert!(rendered.contains("restore_anchor_not_account_restorable"));
+    }
+
+    #[test]
+    fn production_target_chain_database_adapter_profile_digest_uses_explicit_frame() {
+        let profile = ProductionTargetChainDatabaseAdapterProfile::new(
+            "path2-active-chain",
+            "production-postgres-serializable",
+            PRODUCTION_TRUSTED_RESTORE_ANCHOR_CHAIN_OBSERVED_PLACEMENT,
+            test_digest("external-storage-review"),
+        );
+        validate_production_target_chain_database_adapter_profile(&profile).unwrap();
+        let frame = production_target_chain_database_adapter_profile_frame(&profile);
+        assert!(!frame.is_empty());
+        assert!(
+            frame
+                .windows(b"schema".len())
+                .any(|window| window == b"schema")
+        );
+        let expected_digest: [u8; DIGEST_BYTES] = Sha256::digest(&frame).into();
+        assert_eq!(
+            production_target_chain_database_adapter_profile_digest(&profile),
+            expected_digest
+        );
+        assert_ne!(expected_digest, [0_u8; DIGEST_BYTES]);
+
+        let mut changed_profile = profile.clone();
+        changed_profile.chain_id = "path2-active-chain-fork".to_string();
+        validate_production_target_chain_database_adapter_profile(&changed_profile).unwrap();
+        assert_ne!(
+            production_target_chain_database_adapter_profile_digest(&profile),
+            production_target_chain_database_adapter_profile_digest(&changed_profile)
+        );
     }
 
     #[test]
