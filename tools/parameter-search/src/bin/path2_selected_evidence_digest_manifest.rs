@@ -18,6 +18,7 @@ use descender_parameter_search::production_reference::{
     path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1,
     path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1_digest,
     path2_selected_rust_model_concrete_definition_checklist_v1,
+    path2_selected_rust_model_source_record_subcheck_v1,
     verify_path2_selected_rust_model_concrete_definition_checklist_v1,
 };
 use serde_json::json;
@@ -41,6 +42,7 @@ fn main() -> Result<(), String> {
     let shared_witness = path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1()?;
     let concrete_definition_checklist =
         path2_selected_rust_model_concrete_definition_checklist_v1();
+    let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
     let concrete_definition_checklist_digest =
         verify_path2_selected_rust_model_concrete_definition_checklist_v1(
             &concrete_definition_checklist,
@@ -126,6 +128,41 @@ fn main() -> Result<(), String> {
             "missing_definition_category_count":
                 concrete_definition_checklist.missing_definition_category_count,
             "missing_definition_categories": missing_definition_categories,
+        },
+        "source_record_subcheck": {
+            "payload_projection_law_definition_present":
+                source_record_subcheck.payload_projection_law_definition_present,
+            "extraction_certificate_availability_definition_present":
+                source_record_subcheck
+                    .extraction_certificate_availability_definition_present,
+            "role_root_lift_source_definition_present":
+                source_record_subcheck.role_root_lift_source_definition_present,
+            "source_route_byte_source_definition_present":
+                source_record_subcheck.source_route_byte_source_definition_present,
+            "assembly_source_definition_present":
+                source_record_subcheck.assembly_source_definition_present,
+            "compatibility_source_definition_present":
+                source_record_subcheck.compatibility_source_definition_present,
+            "shared_frame_witness_sources_definition_present":
+                source_record_subcheck.shared_frame_witness_sources_definition_present,
+            "boundary_base_certificate_constructor_bound":
+                source_record_subcheck.boundary_base_certificate_constructor_bound,
+            "role_root_lift_certificate_constructor_bound":
+                source_record_subcheck.role_root_lift_certificate_constructor_bound,
+            "source_route_certificate_constructor_bound":
+                source_record_subcheck.source_route_certificate_constructor_bound,
+            "field_local_certificate_constructor_bound":
+                source_record_subcheck.field_local_certificate_constructor_bound,
+            "shared_witness_certificate_constructor_bound":
+                source_record_subcheck.shared_witness_certificate_constructor_bound,
+            "canonical_witness_to_byte_source_adapter_present":
+                source_record_subcheck.canonical_witness_to_byte_source_adapter_present,
+            "byte_and_witness_packaged_route_endpoint_present":
+                source_record_subcheck.byte_and_witness_packaged_route_endpoint_present,
+            "missing_selected_source_record_count":
+                source_record_subcheck.missing_selected_source_record_count,
+            "all_selected_source_records_present":
+                source_record_subcheck.all_selected_source_records_present,
         },
     });
 

@@ -487,6 +487,13 @@ the Rust canonical witness/frame evidence into Lean byte certificates for
 accepted semantic openings. The existing digest-frame witness source only
 discharges assembly-frame recomputation and cannot replace the representative
 canonicality source.
+`path2_selected_evidence_digest_manifest` now emits `source_record_subcheck`.
+The current subcheck reports `missing_selected_source_record_count = 12`: the
+seven raw selected source definitions and five constructor-bound selected
+source-certificate definitions are all still absent. The same subcheck reports
+the canonical-witness-to-byte-source adapter and byte/witness packaged route
+endpoint as present, so the next work is concrete selected source import, not
+another route theorem.
 
 P2FS-001 latest hardening: `ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources` is now the named Lean constructor for the final selected Rust/model certificate. The certificate now carries an aggregate five-source `evidenceDigest`, and the Rust `extractor_theorem_instantiated` gate requires the future final theorem to use that constructor with the verified five-source evidence report, aggregate evidence digest, all-true facts proof, and selected source packages before deriving `toClosureInputs`; a raw certificate record literal, empty digest literal, `sorry`, or `admit` no longer satisfies the AP2-N001 source gate.
 

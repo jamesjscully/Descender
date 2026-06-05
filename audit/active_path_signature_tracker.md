@@ -1139,6 +1139,14 @@ source that turns accepted semantic openings into canonical representative
 witness byte certificates. The assembly digest-frame witness source proves
 assembly-frame recomputation; it cannot by itself prove representative
 canonicality or uniqueness.
+The selected evidence digest manifest now includes `source_record_subcheck`.
+Current output reports `missing_selected_source_record_count = 12`: all seven
+raw selected source definitions and all five constructor-bound source
+certificate definitions are absent. It also reports
+`canonical_witness_to_byte_source_adapter_present = true` and
+`byte_and_witness_packaged_route_endpoint_present = true`, confirming that the
+Lean adapter route exists and the remaining work is importing concrete
+selected source records, not inventing another endpoint.
 
 ## Findings
 

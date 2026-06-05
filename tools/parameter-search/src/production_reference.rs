@@ -7544,6 +7544,26 @@ pub struct Path2SelectedRustModelConcreteDefinitionChecklistV1 {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
+    pub payload_projection_law_definition_present: bool,
+    pub extraction_certificate_availability_definition_present: bool,
+    pub role_root_lift_source_definition_present: bool,
+    pub source_route_byte_source_definition_present: bool,
+    pub assembly_source_definition_present: bool,
+    pub compatibility_source_definition_present: bool,
+    pub shared_frame_witness_sources_definition_present: bool,
+    pub boundary_base_certificate_constructor_bound: bool,
+    pub role_root_lift_certificate_constructor_bound: bool,
+    pub source_route_certificate_constructor_bound: bool,
+    pub field_local_certificate_constructor_bound: bool,
+    pub shared_witness_certificate_constructor_bound: bool,
+    pub canonical_witness_to_byte_source_adapter_present: bool,
+    pub byte_and_witness_packaged_route_endpoint_present: bool,
+    pub missing_selected_source_record_count: u8,
+    pub all_selected_source_records_present: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2ReviewedFq12FiveSourceClosureEvidenceV1 {
     pub schema: &'static str,
     pub schema_matches: bool,
@@ -8568,6 +8588,127 @@ fn lean_source_selected_rust_definition_body_contains_marker_v1(
                 })
         })
     })
+}
+
+pub fn path2_selected_rust_model_source_record_subcheck_v1()
+-> Path2SelectedRustModelSourceRecordSubcheckV1 {
+    let boundary_source =
+        include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
+    let boundary_source = lean_source_without_comments_and_strings_v1(boundary_source);
+    let payload_projection_law_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustPayloadProjectionLaw",
+            &[
+                "P.reviewedFq12PayloadAccepts",
+                "P.reviewedFq12PayloadProjectsFrom",
+            ],
+        );
+    let extraction_certificate_availability_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustExtractionCertificateAvailability",
+            &["ReviewedFq12ExtractionCertificateAvailability"],
+        );
+    let role_root_lift_source_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustRoleRootLiftSource",
+            &["ReviewedFq12RoleRootFunctionalLiftSource"],
+        );
+    let source_route_byte_source_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustSourceRouteByteSource",
+            &["SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource"],
+        );
+    let assembly_source_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustAssemblySource",
+            &["ReviewedFq12FieldConcreteAssemblyLocalSource"],
+        );
+    let compatibility_source_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustCompatibilitySource",
+            &["ReviewedFq12FieldConcreteCompatibilitySource"],
+        );
+    let shared_frame_witness_sources_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustSharedFrameWitnessSources",
+            &["ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources"],
+        );
+    let boundary_base_certificate_constructor_bound =
+        lean_source_selected_rust_definition_body_contains_marker_v1(
+            &boundary_source,
+            "selectedRustBoundaryBaseCertificate",
+            "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources selectedRustBoundaryBaseEvidenceReport selectedRustBoundaryBaseEvidenceDigest selectedRustBoundaryBaseEvidenceReportVerifiedProof selectedRustBoundaryBaseEvidenceFactsAllTrueProof selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability",
+        );
+    let role_root_lift_certificate_constructor_bound =
+        lean_source_selected_rust_definition_body_contains_marker_v1(
+            &boundary_source,
+            "selectedRustRoleRootLiftSourceCertificate",
+            "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource selectedRustRoleRootLiftEvidenceReport selectedRustRoleRootLiftEvidenceDigest selectedRustRoleRootLiftEvidenceReportVerifiedProof selectedRustRoleRootLiftEvidenceFactsAllTrueProof selectedRustRoleRootLiftSource",
+        );
+    let source_route_certificate_constructor_bound =
+        lean_source_selected_rust_definition_body_contains_marker_v1(
+            &boundary_source,
+            "selectedRustSourceRouteByteSourceCertificate",
+            "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource selectedRustSourceRouteEvidenceReport selectedRustSourceRouteEvidenceDigest selectedRustSourceRouteEvidenceReportVerifiedProof selectedRustSourceRouteEvidenceFactsAllTrueProof selectedRustSourceRouteByteSource",
+        );
+    let field_local_certificate_constructor_bound =
+        lean_source_selected_rust_definition_body_contains_marker_v1(
+            &boundary_source,
+            "selectedRustFieldLocalSourceCertificate",
+            "ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources selectedRustFieldLocalEvidenceReport selectedRustFieldLocalEvidenceDigest selectedRustFieldLocalEvidenceReportVerifiedProof selectedRustFieldLocalEvidenceFactsAllTrueProof selectedRustAssemblySource selectedRustCompatibilitySource",
+        );
+    let shared_witness_certificate_constructor_bound =
+        lean_source_selected_rust_definition_body_contains_marker_v1(
+            &boundary_source,
+            "selectedRustSharedFrameWitnessSourcesCertificate",
+            "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof selectedRustSharedFrameWitnessSources",
+        );
+    let canonical_witness_to_byte_source_adapter_present =
+        lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1();
+    let byte_and_witness_packaged_route_endpoint_present =
+        canonical_witness_to_byte_source_adapter_present;
+    let missing_selected_source_record_count = [
+        payload_projection_law_definition_present,
+        extraction_certificate_availability_definition_present,
+        role_root_lift_source_definition_present,
+        source_route_byte_source_definition_present,
+        assembly_source_definition_present,
+        compatibility_source_definition_present,
+        shared_frame_witness_sources_definition_present,
+        boundary_base_certificate_constructor_bound,
+        role_root_lift_certificate_constructor_bound,
+        source_route_certificate_constructor_bound,
+        field_local_certificate_constructor_bound,
+        shared_witness_certificate_constructor_bound,
+    ]
+    .iter()
+    .filter(|present| !**present)
+    .count() as u8;
+    Path2SelectedRustModelSourceRecordSubcheckV1 {
+        payload_projection_law_definition_present,
+        extraction_certificate_availability_definition_present,
+        role_root_lift_source_definition_present,
+        source_route_byte_source_definition_present,
+        assembly_source_definition_present,
+        compatibility_source_definition_present,
+        shared_frame_witness_sources_definition_present,
+        boundary_base_certificate_constructor_bound,
+        role_root_lift_certificate_constructor_bound,
+        source_route_certificate_constructor_bound,
+        field_local_certificate_constructor_bound,
+        shared_witness_certificate_constructor_bound,
+        canonical_witness_to_byte_source_adapter_present,
+        byte_and_witness_packaged_route_endpoint_present,
+        missing_selected_source_record_count,
+        all_selected_source_records_present: missing_selected_source_record_count == 0,
+    }
 }
 
 pub fn path2_selected_rust_model_concrete_definition_checklist_v1()
@@ -55834,6 +55975,26 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             concrete_definition_checklist.missing_definition_category_count,
             2
         );
+        let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
+        assert!(!source_record_subcheck.payload_projection_law_definition_present);
+        assert!(!source_record_subcheck.extraction_certificate_availability_definition_present);
+        assert!(!source_record_subcheck.role_root_lift_source_definition_present);
+        assert!(!source_record_subcheck.source_route_byte_source_definition_present);
+        assert!(!source_record_subcheck.assembly_source_definition_present);
+        assert!(!source_record_subcheck.compatibility_source_definition_present);
+        assert!(!source_record_subcheck.shared_frame_witness_sources_definition_present);
+        assert!(!source_record_subcheck.boundary_base_certificate_constructor_bound);
+        assert!(!source_record_subcheck.role_root_lift_certificate_constructor_bound);
+        assert!(!source_record_subcheck.source_route_certificate_constructor_bound);
+        assert!(!source_record_subcheck.field_local_certificate_constructor_bound);
+        assert!(!source_record_subcheck.shared_witness_certificate_constructor_bound);
+        assert!(source_record_subcheck.canonical_witness_to_byte_source_adapter_present);
+        assert!(source_record_subcheck.byte_and_witness_packaged_route_endpoint_present);
+        assert_eq!(
+            source_record_subcheck.missing_selected_source_record_count,
+            12
+        );
+        assert!(!source_record_subcheck.all_selected_source_records_present);
         assert!(!audit.selected_rust_model_concrete_definitions_present);
         assert!(
             !path2_reviewed_fq12_selected_rust_model_concrete_definitions_present_in_source_v1(
