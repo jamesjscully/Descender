@@ -138,10 +138,17 @@ selected-source helpers out of the curated facade.
 2026-06-05 selected-report definition update: Lean now defines the six selected
 Rust/model evidence report values named by the checklist. They are explicit
 fail-closed report values: verification and component bits remain false, and no
-`ReportVerified`, `FactsAllTrue`, selected source-record, evidence-digest, or
-sub-evidence digest-match proof is supplied. The checklist therefore moves from
-five missing categories to four while preserving the AP2-N001 fail-closed
-bridge status.
+`ReportVerified`, `FactsAllTrue`, selected source-record, or sub-evidence
+digest-match proof is supplied. This preserves the AP2-N001 fail-closed bridge
+status.
+
+2026-06-05 selected-evidence digest update: `tools/parameter-search` now has
+`path2_selected_evidence_digest_manifest`, a source-controlled digest manifest
+binary for the six public selected evidence reports. Lean mirrors the emitted
+digests as concrete `selectedRust*EvidenceDigest` byte-array definitions in
+`Path2HiddenSourceSemanticsBoundary.lean`. The concrete-definition checklist
+now has report and digest categories present, with proof objects, source
+records, and the aggregate sub-evidence digest-match proof still missing.
 
 2026-06-02 update: `Path2FullOpeningSourceConcrete.lean` now packages the
 deployable non-aggregate theorem route as `ReviewedFq12DeployableHiddenSourceInputs`. The remaining P2FS-001 proof inputs are

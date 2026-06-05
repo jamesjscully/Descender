@@ -624,6 +624,42 @@ def selectedRustSharedFrameWitnessEvidenceReport :
   digestFrameWitnessVerifierPinned := false
   sharedDigestFrameNegativeControlsPassed := false
 
+/-- Concrete digest of the public Rust five-source evidence report. -/
+def selectedRustFiveSourceEvidenceDigest : ByteArray :=
+  ByteArray.mk #[11, 182, 157, 92, 3, 36, 31, 145, 79, 21, 67, 87, 94, 61,
+    179, 222, 29, 139, 250, 234, 209, 76, 36, 53, 55, 85, 235, 149, 81, 89,
+    229, 30]
+
+/-- Concrete digest of the public Rust base-boundary evidence report. -/
+def selectedRustBoundaryBaseEvidenceDigest : ByteArray :=
+  ByteArray.mk #[6, 242, 163, 38, 135, 152, 231, 128, 79, 124, 169, 73,
+    131, 31, 237, 140, 69, 162, 33, 92, 67, 23, 21, 246, 42, 194, 70, 101,
+    92, 198, 134, 169]
+
+/-- Concrete digest of the public Rust role-root/lift evidence report. -/
+def selectedRustRoleRootLiftEvidenceDigest : ByteArray :=
+  ByteArray.mk #[112, 34, 58, 36, 253, 212, 82, 232, 205, 83, 113, 123,
+    199, 43, 87, 194, 42, 74, 217, 204, 35, 246, 18, 154, 63, 26, 237,
+    166, 20, 147, 7, 43]
+
+/-- Concrete digest of the public Rust selected source-route evidence report. -/
+def selectedRustSourceRouteEvidenceDigest : ByteArray :=
+  ByteArray.mk #[76, 112, 68, 95, 197, 248, 203, 97, 213, 12, 109, 225,
+    214, 130, 133, 63, 42, 106, 59, 59, 81, 82, 22, 111, 241, 35, 195,
+    73, 37, 227, 43, 127]
+
+/-- Concrete digest of the public Rust field/local evidence report. -/
+def selectedRustFieldLocalEvidenceDigest : ByteArray :=
+  ByteArray.mk #[169, 179, 188, 15, 137, 255, 36, 143, 125, 232, 213, 13,
+    180, 213, 106, 216, 158, 75, 59, 46, 32, 23, 118, 152, 244, 151, 38,
+    128, 245, 8, 172, 114]
+
+/-- Concrete digest of the public Rust shared-frame witness evidence report. -/
+def selectedRustSharedFrameWitnessEvidenceDigest : ByteArray :=
+  ByteArray.mk #[231, 221, 193, 212, 120, 26, 89, 161, 44, 144, 83, 244,
+    222, 142, 228, 226, 178, 182, 64, 109, 54, 74, 46, 221, 67, 139, 195,
+    204, 133, 122, 244, 215]
+
 /--
 Proof-bearing selected Rust/model certificate for the active five-source
 hidden-source closure input record.
