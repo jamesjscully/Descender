@@ -1007,6 +1007,61 @@ theorem selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_incompatibl
     hSelectedCertificateDigestsEmpty.1
 
 /--
+The current placeholder aggregate report cannot supply the checklist's
+sub-evidence digest-match proof for certificates carrying the selected public
+Rust evidence digests.
+
+This is the named blocker for the `sub_evidence_digest_match_proof` manifest
+category. The future proof must import verifier-backed aggregate evidence whose
+sub-digests equal the selected component evidence digests.
+-/
+theorem selectedRustCurrentPlaceholderSubEvidenceDigestMatchProof_impossible
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    {boundaryBaseCertificate :
+      ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P}
+    {roleRootLiftCertificate :
+      ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P}
+    {selectedSourceRouteCertificate :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+        FieldParser RouteParser P}
+    {fieldLocalCertificate :
+      ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P}
+    {witnessSourcesCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P}
+    (hMatch :
+      selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
+        boundaryBaseCertificate roleRootLiftCertificate
+        selectedSourceRouteCertificate fieldLocalCertificate
+        witnessSourcesCertificate)
+    (hBoundaryDigest :
+      boundaryBaseCertificate.evidenceDigest =
+        selectedRustBoundaryBaseEvidenceDigest)
+    (hRoleRootDigest :
+      roleRootLiftCertificate.evidenceDigest =
+        selectedRustRoleRootLiftEvidenceDigest)
+    (hSourceRouteDigest :
+      selectedSourceRouteCertificate.evidenceDigest =
+        selectedRustSourceRouteEvidenceDigest)
+    (hFieldLocalDigest :
+      fieldLocalCertificate.evidenceDigest =
+        selectedRustFieldLocalEvidenceDigest)
+    (hWitnessDigest :
+      witnessSourcesCertificate.evidenceDigest =
+        selectedRustSharedFrameWitnessEvidenceDigest) :
+    False := by
+  exact
+    selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_incompatible_with_selected_certificate_digests
+      hMatch hBoundaryDigest hRoleRootDigest hSourceRouteDigest
+      hFieldLocalDigest hWitnessDigest
+
+/--
 Proof-bearing selected Rust/model certificate for the active five-source
 hidden-source closure input record.
 

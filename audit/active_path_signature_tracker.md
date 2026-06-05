@@ -1082,6 +1082,11 @@ Active source-record blocker note: Lean now also states
 `selectedRustCurrentPlaceholderSourceRecordCertificates_impossible`, proving
 that source certificates over the current placeholder component reports cannot
 populate the selected Rust/model source-record package.
+Active sub-evidence blocker note: Lean now states
+`selectedRustCurrentPlaceholderSubEvidenceDigestMatchProof_impossible`, proving
+that the current placeholder aggregate report cannot provide the checklist's
+sub-evidence digest-match proof for certificates carrying the selected public
+Rust evidence digests.
 
 ## Findings
 
