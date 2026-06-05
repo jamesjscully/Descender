@@ -7758,15 +7758,23 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "selectedRustFiveSourceEvidenceFactsAllTrue",
         "selectedRustFiveSourceEvidenceFactsAllTrueProof",
     ];
+    let declaration_block_contains_name = |kind: &str, name: &str| -> bool {
+        boundary_source
+            .match_indices(&format!("\n{kind}"))
+            .any(|(index, _)| {
+                let window = &boundary_source[index..boundary_source.len().min(index + 1024)];
+                window.contains(name)
+            })
+    };
     let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
     let forbidden_declaration_stub = selected_source_names.iter().any(|name| {
         forbidden_declaration_kinds
             .iter()
-            .any(|kind| boundary_source.contains(&format!("\n{kind} {name}")))
+            .any(|kind| declaration_block_contains_name(kind, name))
     });
     let forbidden_variable_stub = boundary_source
         .match_indices("\nvariable")
-        .map(|(index, _)| &boundary_source[index..boundary_source.len().min(index + 512)])
+        .map(|(index, _)| &boundary_source[index..boundary_source.len().min(index + 1024)])
         .any(|variable_window| {
             selected_source_names
                 .iter()
@@ -46071,6 +46079,19 @@ axiom selectedRustFiveSourceEvidenceFactsAllTrue : Prop
         assert!(
             path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
                 stubbed_boundary_source
+            )
+        );
+        let multiline_stubbed_boundary_source = r#"
+axiom
+  selectedRustPayloadProjectionLaw : payload_projection_law
+constant
+  selectedRustExtractionCertificateAvailability : extraction_certificate_availability
+opaque
+  selectedRustFiveSourceEvidenceReportVerified : Prop
+"#;
+        assert!(
+            path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+                multiline_stubbed_boundary_source
             )
         );
         let variable_stubbed_boundary_source = r#"
