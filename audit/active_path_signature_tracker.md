@@ -1045,6 +1045,11 @@ Active full-execution source gate note: the
 exact theorem-name matching across all candidates. A suffixed spoof is rejected,
 but a suffixed spoof before an exact valid theorem still allows the real
 full-execution source instantiation to satisfy the gate.
+Active accepted-spend numeric-bound gate note: the
+`selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1` scanner now uses
+the same exact theorem-name and all-candidate pattern. This keeps a suffixed
+theorem spoof from closing the active accepted-spend bound gate, while allowing
+a later exact selected theorem to satisfy the future source closure.
 
 ## Findings
 

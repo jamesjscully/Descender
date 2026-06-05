@@ -23624,21 +23624,91 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
     let stripped_account_design_source =
         lean_source_without_comments_and_strings_v1(account_design_source);
     let account_design_source = stripped_account_design_source.as_str();
-    let Some(instantiation_start) = account_design_source
-        .find("\ntheorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1")
-    else {
+    let theorem_name = "selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1";
+    let forbidden_declaration_terms = [
+        "selectedRustAcceptedSpendEvidenceReport",
+        "selectedRustAcceptedSpendEvidenceDigest",
+        "selectedRustAcceptedSpendBoundVerifiedProof",
+        "selectedRustAcceptedSpendFactsAllTrueProof",
+        "selectedRustAcceptedSpendForgeryProb",
+        "selectedRustAcceptedSpendForgeryBound",
+        "selectedRustAcceptedSpendForgeryLeBound",
+        "selectedRustProductionAcceptedSpendForgeryProb",
+        "selectedRustProductionAcceptedSpendForgeryBound",
+        "selectedRustAcceptedSpendForgeryProbPinned",
+        "selectedRustAcceptedSpendForgeryBoundPinned",
+        "selectedRustAcceptedSpendHiddenSourceClosed",
+        "selectedRustAcceptedSpendCheckedCoreClosed",
+        "selectedRustAcceptedSpendLifecycleClosed",
+        "selectedRustAcceptedSpendNoExportClosed",
+    ];
+    let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
+    let forbidden_declaration_stub = forbidden_declaration_kinds.iter().any(|kind| {
+        account_design_source
+            .match_indices(&format!("\n{kind}"))
+            .map(|(index, _)| {
+                &account_design_source[index..account_design_source.len().min(index + 1024)]
+            })
+            .any(|declaration_window| {
+                forbidden_declaration_terms
+                    .iter()
+                    .any(|term| declaration_window.contains(term))
+            })
+    });
+    if forbidden_declaration_stub {
         return false;
-    };
-    let instantiation_end = account_design_source[instantiation_start..]
-        .find("\nend Path2NativeAccountDesign")
-        .map(|offset| instantiation_start + offset)
-        .unwrap_or(account_design_source.len());
-    let instantiation_source = &account_design_source[instantiation_start..instantiation_end];
+    }
+    let forbidden_variable_stub = account_design_source
+        .match_indices("\nvariable")
+        .map(|(index, _)| {
+            &account_design_source[index..account_design_source.len().min(index + 1024)]
+        })
+        .any(|variable_window| {
+            forbidden_declaration_terms
+                .iter()
+                .any(|term| variable_window.contains(term))
+        });
+    if forbidden_variable_stub {
+        return false;
+    }
+    let theorem_start_marker = format!("\ntheorem {theorem_name}");
+    account_design_source
+        .match_indices(&theorem_start_marker)
+        .any(|(instantiation_start, _)| {
+            let instantiation_end = account_design_source[instantiation_start..]
+                .find("\nend Path2NativeAccountDesign")
+                .map(|offset| instantiation_start + offset)
+                .unwrap_or(account_design_source.len());
+            let instantiation_source =
+                &account_design_source[instantiation_start..instantiation_end];
+            path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
+                instantiation_source,
+                theorem_name,
+            )
+        })
+}
+
+fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
+    instantiation_source: &str,
+    theorem_name: &str,
+) -> bool {
     let theorem_header_end = instantiation_source
         .find(":= by")
         .or_else(|| instantiation_source.find(" where"))
         .unwrap_or(instantiation_source.len().min(1024));
     let theorem_header = &instantiation_source[..theorem_header_end];
+    let theorem_start_marker = format!("\ntheorem {theorem_name}");
+    let Some(theorem_start) = theorem_header.find(&theorem_start_marker) else {
+        return false;
+    };
+    let theorem_name_end = theorem_start + theorem_start_marker.len();
+    if theorem_header[theorem_name_end..]
+        .chars()
+        .next()
+        .is_some_and(|next| next.is_ascii_alphanumeric() || next == '_' || next == '\'')
+    {
+        return false;
+    }
     let header_has_assumed_term = |term: &str| -> bool {
         let mut depth = 0_usize;
         let mut binder_start = None;
@@ -23690,52 +23760,6 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         .iter()
         .any(|term| header_has_assumed_term(term))
     {
-        return false;
-    }
-    let forbidden_declaration_terms = [
-        "selectedRustAcceptedSpendEvidenceReport",
-        "selectedRustAcceptedSpendEvidenceDigest",
-        "selectedRustAcceptedSpendBoundVerifiedProof",
-        "selectedRustAcceptedSpendFactsAllTrueProof",
-        "selectedRustAcceptedSpendForgeryProb",
-        "selectedRustAcceptedSpendForgeryBound",
-        "selectedRustAcceptedSpendForgeryLeBound",
-        "selectedRustProductionAcceptedSpendForgeryProb",
-        "selectedRustProductionAcceptedSpendForgeryBound",
-        "selectedRustAcceptedSpendForgeryProbPinned",
-        "selectedRustAcceptedSpendForgeryBoundPinned",
-        "selectedRustAcceptedSpendHiddenSourceClosed",
-        "selectedRustAcceptedSpendCheckedCoreClosed",
-        "selectedRustAcceptedSpendLifecycleClosed",
-        "selectedRustAcceptedSpendNoExportClosed",
-    ];
-    let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
-    let forbidden_declaration_stub = forbidden_declaration_kinds.iter().any(|kind| {
-        account_design_source
-            .match_indices(&format!("\n{kind}"))
-            .map(|(index, _)| {
-                &account_design_source[index..account_design_source.len().min(index + 1024)]
-            })
-            .any(|declaration_window| {
-                forbidden_declaration_terms
-                    .iter()
-                    .any(|term| declaration_window.contains(term))
-            })
-    });
-    if forbidden_declaration_stub {
-        return false;
-    }
-    let forbidden_variable_stub = account_design_source
-        .match_indices("\nvariable")
-        .map(|(index, _)| {
-            &account_design_source[index..account_design_source.len().min(index + 1024)]
-        })
-        .any(|variable_window| {
-            forbidden_declaration_terms
-                .iter()
-                .any(|term| variable_window.contains(term))
-        });
-    if forbidden_variable_stub {
         return false;
     }
     let forbidden_vacuous_terms = [
@@ -46953,6 +46977,25 @@ end Path2NativeAccountDesign
         assert!(
             path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 accepted_spend_instantiation_shape
+            )
+        );
+        let suffixed_accepted_spend_instantiation = accepted_spend_instantiation_shape.replacen(
+            "theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1",
+            "theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1Spoof",
+            1,
+        );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_accepted_spend_instantiation
+            )
+        );
+        let suffixed_then_exact_accepted_spend_instantiation = format!(
+            "{}\n{}",
+            suffixed_accepted_spend_instantiation, accepted_spend_instantiation_shape
+        );
+        assert!(
+            path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_then_exact_accepted_spend_instantiation
             )
         );
         assert!(!path2_native_accepted_spend_numeric_bound_instantiated_v1());
