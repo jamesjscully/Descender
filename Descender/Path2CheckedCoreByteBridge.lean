@@ -402,6 +402,56 @@ structure SelectedRustCheckedCoreByteInstantiationInputs
         HashAndSyndromeEquality H evidence
 
 /--
+Lean mirror of the public checked-core byte-instantiation evidence report.
+
+The Rust preflight exports this as a digest-only report.  The final selected
+Rust theorem should prove the report is verified and all component/negative
+control facts are true, then use those proofs to build the theorem-side
+certificate below.
+-/
+structure SelectedRustCheckedCoreByteEvidenceReport where
+  schemaMatches : Bool
+  reportDigestVerified : Bool
+  checkedCoreAcceptorAccepts : Bool
+  parserMatchesNativeHandle : Bool
+  proofLengthEq : Bool
+  proofCanonical : Bool
+  decodedProofCommitmentEq : Bool
+  parsedResponseSyndromeEq : Bool
+  frameBytesEq : Bool
+  verifierHandleEq : Bool
+  parserEquality : Bool
+  hashAndSyndromeEq : Bool
+  shortProofRejected : Bool
+  noncanonicalProofRejected : Bool
+  commitmentMismatchRejected : Bool
+  verifierHandleMismatchRejected : Bool
+
+/-- The checked-core byte evidence report has the expected schema and digest. -/
+def SelectedRustCheckedCoreByteEvidenceReport.ReportVerified
+    (E : SelectedRustCheckedCoreByteEvidenceReport) : Prop :=
+  E.schemaMatches = true ∧
+  E.reportDigestVerified = true
+
+/-- All checked-core byte component facts and negative controls are true. -/
+def SelectedRustCheckedCoreByteEvidenceReport.FactsAllTrue
+    (E : SelectedRustCheckedCoreByteEvidenceReport) : Prop :=
+  E.checkedCoreAcceptorAccepts = true ∧
+  E.parserMatchesNativeHandle = true ∧
+  E.proofLengthEq = true ∧
+  E.proofCanonical = true ∧
+  E.decodedProofCommitmentEq = true ∧
+  E.parsedResponseSyndromeEq = true ∧
+  E.frameBytesEq = true ∧
+  E.verifierHandleEq = true ∧
+  E.parserEquality = true ∧
+  E.hashAndSyndromeEq = true ∧
+  E.shortProofRejected = true ∧
+  E.noncanonicalProofRejected = true ∧
+  E.commitmentMismatchRejected = true ∧
+  E.verifierHandleMismatchRejected = true
+
+/--
 Selected Rust checked-core public evidence certificate.
 
 The Rust preflight emits a digest-only checked-core byte-instantiation evidence
@@ -417,10 +467,9 @@ structure SelectedRustCheckedCoreByteEvidenceCertificate
     (H : NativeCheckedCoreVerifierHandleFields)
     (P : CheckedCoreProofByteParser)
     (V : VerifierPredicates) where
-  evidenceReportVerified : Prop
-  evidenceReportVerifiedProof : evidenceReportVerified
-  evidenceFactsAllTrue : Prop
-  evidenceFactsAllTrueProof : evidenceFactsAllTrue
+  evidenceReport : SelectedRustCheckedCoreByteEvidenceReport
+  evidenceReportVerifiedProof : evidenceReport.ReportVerified
+  evidenceFactsAllTrueProof : evidenceReport.FactsAllTrue
   evidenceSelectedRustCheckedCoreAcceptorAccepts :
     Boundary -> Nat -> Nat -> NativeCheckedCoreSpendEvidence -> Prop
   evidenceSelectedRustCheckedCoreParserMatchesNative :
@@ -473,9 +522,9 @@ def SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs
     (Cert : SelectedRustCheckedCoreByteEvidenceCertificate B H P V) :
     SelectedRustCheckedCoreByteInstantiationInputs B H P V where
   selectedRustCheckedCoreAcceptorAccepts := by
-    let _hReport : Cert.evidenceReportVerified :=
+    let _hReport : Cert.evidenceReport.ReportVerified :=
       Cert.evidenceReportVerifiedProof
-    let _hFacts : Cert.evidenceFactsAllTrue :=
+    let _hFacts : Cert.evidenceReport.FactsAllTrue :=
       Cert.evidenceFactsAllTrueProof
     exact Cert.evidenceSelectedRustCheckedCoreAcceptorAccepts
   selectedRustCheckedCoreParserMatchesNative :=

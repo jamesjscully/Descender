@@ -19320,10 +19320,14 @@ fn path2_native_checked_core_byte_bridge_source_present_v1() -> bool {
         "verifier_handle_eq",
         "parser_equality",
         "hash_and_syndrome",
+        "SelectedRustCheckedCoreByteEvidenceReport",
+        "schemaMatches",
+        "reportDigestVerified",
+        "SelectedRustCheckedCoreByteEvidenceReport.ReportVerified",
+        "SelectedRustCheckedCoreByteEvidenceReport.FactsAllTrue",
         "SelectedRustCheckedCoreByteEvidenceCertificate",
-        "evidenceReportVerified",
+        "evidenceReport",
         "evidenceReportVerifiedProof",
-        "evidenceFactsAllTrue",
         "evidenceFactsAllTrueProof",
         "SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs",
         "SelectedRustCheckedCoreByteInstantiationInputs",
@@ -19441,9 +19445,8 @@ fn path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
 ) -> bool {
     let lean_source = lean_source_without_comments_and_strings_v1(lean_source);
     let selected_source_facts = [
-        "selectedRustCheckedCoreEvidenceReportVerified",
+        "selectedRustCheckedCoreEvidenceReport",
         "selectedRustCheckedCoreEvidenceReportVerifiedProof",
-        "selectedRustCheckedCoreEvidenceFactsAllTrue",
         "selectedRustCheckedCoreEvidenceFactsAllTrueProof",
         "selectedRustCheckedCoreAcceptorAccepts",
         "selectedRustCheckedCoreParserMatchesNative",
@@ -19476,14 +19479,10 @@ fn path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
                 .any(|fact| variable_window.contains(fact))
         });
     let forbidden_vacuous_report_def = [
-        "def selectedRustCheckedCoreEvidenceReportVerified : Prop := True",
-        "def selectedRustCheckedCoreEvidenceReportVerified := True",
+        "def selectedRustCheckedCoreEvidenceReport : SelectedRustCheckedCoreByteEvidenceReport := {",
+        "let selectedRustCheckedCoreEvidenceReport : SelectedRustCheckedCoreByteEvidenceReport :=",
         "def selectedRustCheckedCoreEvidenceReportVerifiedProof := True.intro",
-        "theorem selectedRustCheckedCoreEvidenceReportVerified : True := True.intro",
-        "def selectedRustCheckedCoreEvidenceFactsAllTrue : Prop := True",
-        "def selectedRustCheckedCoreEvidenceFactsAllTrue := True",
         "def selectedRustCheckedCoreEvidenceFactsAllTrueProof := True.intro",
-        "theorem selectedRustCheckedCoreEvidenceFactsAllTrue : True := True.intro",
     ]
     .iter()
     .any(|marker| lean_source.contains(marker));
@@ -19538,9 +19537,8 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
     };
 
     let selected_source_facts = [
-        "selectedRustCheckedCoreEvidenceReportVerified",
+        "selectedRustCheckedCoreEvidenceReport",
         "selectedRustCheckedCoreEvidenceReportVerifiedProof",
-        "selectedRustCheckedCoreEvidenceFactsAllTrue",
         "selectedRustCheckedCoreEvidenceFactsAllTrueProof",
         "selectedRustCheckedCoreAcceptorAccepts",
         "selectedRustCheckedCoreParserMatchesNative",
@@ -19577,15 +19575,11 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
         return false;
     }
     let forbidden_vacuous_evidence_terms = [
-        "evidenceReportVerified := True",
+        "evidenceReport := {",
         "evidenceReportVerifiedProof := True.intro",
-        "evidenceFactsAllTrue := True",
         "evidenceFactsAllTrueProof := True.intro",
-        "let selectedRustCheckedCoreEvidenceReportVerified : Prop := True",
-        "let selectedRustCheckedCoreEvidenceReportVerified := True",
+        "let selectedRustCheckedCoreEvidenceReport : SelectedRustCheckedCoreByteEvidenceReport :=",
         "let selectedRustCheckedCoreEvidenceReportVerifiedProof := True.intro",
-        "let selectedRustCheckedCoreEvidenceFactsAllTrue : Prop := True",
-        "let selectedRustCheckedCoreEvidenceFactsAllTrue := True",
         "let selectedRustCheckedCoreEvidenceFactsAllTrueProof := True.intro",
     ];
     if forbidden_vacuous_evidence_terms
@@ -19603,9 +19597,8 @@ fn path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
         "Path2NativeCheckedCoreAcceptV1Soundness",
         "let selectedRustCheckedCoreEvidenceCertificate :",
         "SelectedRustCheckedCoreByteEvidenceCertificate",
-        "evidenceReportVerified := selectedRustCheckedCoreEvidenceReportVerified",
+        "evidenceReport := selectedRustCheckedCoreEvidenceReport",
         "evidenceReportVerifiedProof := selectedRustCheckedCoreEvidenceReportVerifiedProof",
-        "evidenceFactsAllTrue := selectedRustCheckedCoreEvidenceFactsAllTrue",
         "evidenceFactsAllTrueProof := selectedRustCheckedCoreEvidenceFactsAllTrueProof",
         "let selectedRustCheckedCoreInputs :",
         "SelectedRustCheckedCoreByteInstantiationInputs",
@@ -41545,7 +41538,7 @@ mod tests {
         );
         assert!(
             path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
-                "\ndef selectedRustCheckedCoreEvidenceFactsAllTrue : Prop := True\n"
+                "\ndef selectedRustCheckedCoreEvidenceReport : SelectedRustCheckedCoreByteEvidenceReport := {\n  schemaMatches := true\n  reportDigestVerified := true\n}\n"
             )
         );
         assert!(
@@ -41662,9 +41655,8 @@ theorem selectedRustCheckedCoreByteSource_instantiation_v1
     SelectedRustCheckedCoreByteSource B H P V := by
   let selectedRustCheckedCoreEvidenceCertificate :
       SelectedRustCheckedCoreByteEvidenceCertificate B H P V :=
-    { evidenceReportVerified := selectedRustCheckedCoreEvidenceReportVerified
+    { evidenceReport := selectedRustCheckedCoreEvidenceReport
       evidenceReportVerifiedProof := selectedRustCheckedCoreEvidenceReportVerifiedProof
-      evidenceFactsAllTrue := selectedRustCheckedCoreEvidenceFactsAllTrue
       evidenceFactsAllTrueProof := selectedRustCheckedCoreEvidenceFactsAllTrueProof
       evidenceSelectedRustCheckedCoreAcceptorAccepts := selectedRustCheckedCoreAcceptorAccepts
       evidenceSelectedRustCheckedCoreParserMatchesNative := selectedRustCheckedCoreParserMatchesNative
@@ -41695,9 +41687,8 @@ theorem selectedRustCheckedCoreByteSource_instantiation_v1
     SelectedRustCheckedCoreByteSource B H P V := by
   let selectedRustCheckedCoreEvidenceCertificate :
       SelectedRustCheckedCoreByteEvidenceCertificate B H P V :=
-    { evidenceReportVerified := selectedRustCheckedCoreEvidenceReportVerified
+    { evidenceReport := selectedRustCheckedCoreEvidenceReport
       evidenceReportVerifiedProof := selectedRustCheckedCoreEvidenceReportVerifiedProof
-      evidenceFactsAllTrue := selectedRustCheckedCoreEvidenceFactsAllTrue
       evidenceFactsAllTrueProof := selectedRustCheckedCoreEvidenceFactsAllTrueProof
       evidenceSelectedRustCheckedCoreAcceptorAccepts := selectedRustCheckedCoreAcceptorAccepts
       evidenceSelectedRustCheckedCoreParserMatchesNative := selectedRustCheckedCoreParserMatchesNative
@@ -41726,18 +41717,17 @@ end Path2CheckedCoreByteBridge
         );
         let evidence_bits_assumed_instantiation = r#"
 theorem selectedRustCheckedCoreByteSource_instantiation_v1
-    (selectedRustCheckedCoreEvidenceReportVerified : evidence_verified)
+    (selectedRustCheckedCoreEvidenceReport :
+      SelectedRustCheckedCoreByteEvidenceReport)
     (selectedRustCheckedCoreEvidenceReportVerifiedProof :
-      selectedRustCheckedCoreEvidenceReportVerified)
-    (selectedRustCheckedCoreEvidenceFactsAllTrue : evidence_facts_true)
+      selectedRustCheckedCoreEvidenceReport.ReportVerified)
     (selectedRustCheckedCoreEvidenceFactsAllTrueProof :
-      selectedRustCheckedCoreEvidenceFactsAllTrue) :
+      selectedRustCheckedCoreEvidenceReport.FactsAllTrue) :
     SelectedRustCheckedCoreByteSource B H P V := by
   let selectedRustCheckedCoreEvidenceCertificate :
       SelectedRustCheckedCoreByteEvidenceCertificate B H P V :=
-    { evidenceReportVerified := selectedRustCheckedCoreEvidenceReportVerified
+    { evidenceReport := selectedRustCheckedCoreEvidenceReport
       evidenceReportVerifiedProof := selectedRustCheckedCoreEvidenceReportVerifiedProof
-      evidenceFactsAllTrue := selectedRustCheckedCoreEvidenceFactsAllTrue
       evidenceFactsAllTrueProof := selectedRustCheckedCoreEvidenceFactsAllTrueProof
       evidenceSelectedRustCheckedCoreAcceptorAccepts := selectedRustCheckedCoreAcceptorAccepts
       evidenceSelectedRustCheckedCoreParserMatchesNative := selectedRustCheckedCoreParserMatchesNative
@@ -41767,15 +41757,30 @@ end Path2CheckedCoreByteBridge
         let vacuous_evidence_bits = r#"
 theorem selectedRustCheckedCoreByteSource_instantiation_v1 :
     SelectedRustCheckedCoreByteSource B H P V := by
-  let selectedRustCheckedCoreEvidenceReportVerified : Prop := True
+  let selectedRustCheckedCoreEvidenceReport :
+      SelectedRustCheckedCoreByteEvidenceReport :=
+    { schemaMatches := true
+      reportDigestVerified := true
+      checkedCoreAcceptorAccepts := true
+      parserMatchesNativeHandle := true
+      proofLengthEq := true
+      proofCanonical := true
+      decodedProofCommitmentEq := true
+      parsedResponseSyndromeEq := true
+      frameBytesEq := true
+      verifierHandleEq := true
+      parserEquality := true
+      hashAndSyndromeEq := true
+      shortProofRejected := true
+      noncanonicalProofRejected := true
+      commitmentMismatchRejected := true
+      verifierHandleMismatchRejected := true }
   let selectedRustCheckedCoreEvidenceReportVerifiedProof := True.intro
-  let selectedRustCheckedCoreEvidenceFactsAllTrue : Prop := True
   let selectedRustCheckedCoreEvidenceFactsAllTrueProof := True.intro
   let selectedRustCheckedCoreEvidenceCertificate :
       SelectedRustCheckedCoreByteEvidenceCertificate B H P V :=
-    { evidenceReportVerified := selectedRustCheckedCoreEvidenceReportVerified
+    { evidenceReport := selectedRustCheckedCoreEvidenceReport
       evidenceReportVerifiedProof := selectedRustCheckedCoreEvidenceReportVerifiedProof
-      evidenceFactsAllTrue := selectedRustCheckedCoreEvidenceFactsAllTrue
       evidenceFactsAllTrueProof := selectedRustCheckedCoreEvidenceFactsAllTrueProof
       evidenceSelectedRustCheckedCoreAcceptorAccepts := selectedRustCheckedCoreAcceptorAccepts
       evidenceSelectedRustCheckedCoreParserMatchesNative := selectedRustCheckedCoreParserMatchesNative
@@ -41811,9 +41816,8 @@ theorem selectedRustCheckedCoreByteSource_instantiation_v1 :
   Path2NativeCheckedCoreAcceptV1Soundness
   let selectedRustCheckedCoreEvidenceCertificate :
   SelectedRustCheckedCoreByteEvidenceCertificate
-  evidenceReportVerified := selectedRustCheckedCoreEvidenceReportVerified
+  evidenceReport := selectedRustCheckedCoreEvidenceReport
   evidenceReportVerifiedProof := selectedRustCheckedCoreEvidenceReportVerifiedProof
-  evidenceFactsAllTrue := selectedRustCheckedCoreEvidenceFactsAllTrue
   evidenceFactsAllTrueProof := selectedRustCheckedCoreEvidenceFactsAllTrueProof
   let selectedRustCheckedCoreInputs :
   SelectedRustCheckedCoreByteInstantiationInputs
@@ -41838,9 +41842,8 @@ theorem selectedRustCheckedCoreByteSource_instantiation_v1 :
      Path2NativeCheckedCoreAcceptV1Soundness
      let selectedRustCheckedCoreEvidenceCertificate :
      SelectedRustCheckedCoreByteEvidenceCertificate
-     evidenceReportVerified := selectedRustCheckedCoreEvidenceReportVerified
+     evidenceReport := selectedRustCheckedCoreEvidenceReport
      evidenceReportVerifiedProof := selectedRustCheckedCoreEvidenceReportVerifiedProof
-     evidenceFactsAllTrue := selectedRustCheckedCoreEvidenceFactsAllTrue
      evidenceFactsAllTrueProof := selectedRustCheckedCoreEvidenceFactsAllTrueProof
      let selectedRustCheckedCoreInputs :
      SelectedRustCheckedCoreByteInstantiationInputs
