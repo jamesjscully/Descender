@@ -233,7 +233,7 @@ The final AP2-N001 instantiation theorem should construct this certificate from
 reviewed implementation/model evidence, then derive the closure inputs through
 `toClosureInputs`.  This keeps the preflight gate from accepting a theorem that
 locally assembles the seven source fields without also carrying an explicit
-selected-Rust verification proposition and proof.
+verified public evidence report and proof that all report facts are true.
 -/
 structure ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
     (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)
@@ -243,9 +243,12 @@ structure ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
     (WitnessParser :
       ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
     (P : Predicates) where
-  selectedRustModelFiveSourceVerified : Prop
-  selectedRustModelFiveSourceVerifiedProof :
-    selectedRustModelFiveSourceVerified
+  evidenceReportVerified : Prop
+  evidenceReportVerifiedProof :
+    evidenceReportVerified
+  evidenceFactsAllTrue : Prop
+  evidenceFactsAllTrueProof :
+    evidenceFactsAllTrue
   payloadProjectsFrom :
     forall {b : Path2NativeBoundary.Boundary}
         {payload : ReviewedFq12HiddenSourcePayload},
@@ -283,8 +286,10 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
     ReviewedFq12SelectedRustModelFiveSourceClosureInputs
       FieldParser RouteParser CanonicalParser WitnessParser P where
   payloadProjectsFrom := by
-    let _hVerified : Cert.selectedRustModelFiveSourceVerified :=
-      Cert.selectedRustModelFiveSourceVerifiedProof
+    let _hReport : Cert.evidenceReportVerified :=
+      Cert.evidenceReportVerifiedProof
+    let _hFacts : Cert.evidenceFactsAllTrue :=
+      Cert.evidenceFactsAllTrueProof
     intro b payload hAccept hProjection
     exact Cert.payloadProjectsFrom hAccept hProjection
   certificateAvailability :=
