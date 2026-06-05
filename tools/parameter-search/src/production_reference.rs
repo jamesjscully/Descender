@@ -7660,16 +7660,35 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
                 .iter()
                 .any(|name| variable_window.contains(name))
         });
-    let forbidden_vacuous_verification_stub_terms = [
-        "\ndef selectedRustModelFiveSourceVerified : Prop := True",
-        "\ndef selectedRustModelFiveSourceVerified := True",
-        "\ntheorem selectedRustModelFiveSourceVerified : True",
-        "\ndef selectedRustModelFiveSourceVerifiedProof := True.intro",
-        "\ntheorem selectedRustModelFiveSourceVerifiedProof : selectedRustModelFiveSourceVerified := True.intro",
-    ];
-    let forbidden_vacuous_verification_stub = forbidden_vacuous_verification_stub_terms
-        .iter()
-        .any(|term| boundary_source.contains(term));
+    let declaration_has_normalized_marker = |kind: &str, name: &str, markers: &[&str]| -> bool {
+        let declaration_start = format!("\n{kind} {name}");
+        boundary_source
+            .match_indices(&declaration_start)
+            .any(|(index, _)| {
+                let window = &boundary_source[index..boundary_source.len().min(index + 512)];
+                let normalized_window = window.split_whitespace().collect::<String>();
+                markers.iter().any(|marker| {
+                    normalized_window.contains(&marker.split_whitespace().collect::<String>())
+                })
+            })
+    };
+    let forbidden_vacuous_verification_stub = declaration_has_normalized_marker(
+        "def",
+        "selectedRustModelFiveSourceVerified",
+        &[":Prop:=True", ":=True", ":(True):=", ":=bytrivial"],
+    ) || declaration_has_normalized_marker(
+        "theorem",
+        "selectedRustModelFiveSourceVerified",
+        &[":True:=", ":(True):=", ":=bytrivial"],
+    ) || declaration_has_normalized_marker(
+        "def",
+        "selectedRustModelFiveSourceVerifiedProof",
+        &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+    ) || declaration_has_normalized_marker(
+        "theorem",
+        "selectedRustModelFiveSourceVerifiedProof",
+        &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+    );
     forbidden_declaration_stub || forbidden_variable_stub || forbidden_vacuous_verification_stub
 }
 
@@ -45760,6 +45779,17 @@ theorem selectedRustModelFiveSourceVerifiedProof :
         assert!(
             path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
                 vacuous_verified_theorem_boundary_source
+            )
+        );
+        let vacuous_verified_variant_boundary_source = r#"
+def selectedRustModelFiveSourceVerified : Prop := (True)
+theorem selectedRustModelFiveSourceVerifiedProof :
+    selectedRustModelFiveSourceVerified := by
+  trivial
+"#;
+        assert!(
+            path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+                vacuous_verified_variant_boundary_source
             )
         );
         assert!(
