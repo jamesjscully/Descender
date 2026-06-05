@@ -259,6 +259,8 @@ pub const PRODUCTION_DEPLOYMENT_PREFLIGHT_CERTIFICATE_DOMAIN: &str =
     "Descender.Signature.q12289.local_delta.production_deployment_preflight_certificate.v1";
 pub const PATH2_REVIEWED_FQ12_HIDDEN_SOURCE_SEMANTICS_BRIDGE_AUDIT_DOMAIN: &str =
     "Descender.Path2.reviewed_fq12.hidden_source_semantics_bridge_audit.v1";
+pub const PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA: &str =
+    "Descender.Path2.reviewed_fq12.selected_rust_model_concrete_definition_checklist.v1";
 pub const PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.reviewed_fq12.five_source_closure_evidence.v1";
 pub const PATH2_REVIEWED_FQ12_BOUNDARY_BASE_EVIDENCE_SCHEMA: &str =
@@ -7493,6 +7495,8 @@ pub struct Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     pub lean_active_five_source_boundary_route_present: bool,
     pub lean_full_signature_hidden_source_handoff_present: bool,
     pub selected_rust_model_five_source_inputs_ready: bool,
+    pub selected_rust_model_concrete_definition_checklist_digest: [u8; DIGEST_BYTES],
+    pub selected_rust_model_concrete_definition_checklist_verified: bool,
     pub selected_rust_model_concrete_definitions_present: bool,
     pub selected_rust_canonical_byte_and_witness_package_surfaces_present: bool,
     pub rust_concrete_role_root_field_binding_present: bool,
@@ -7525,6 +7529,18 @@ pub struct Path2ReviewedFq12HiddenSourceSemanticsBridgeAudit {
     pub extractor_theorem_instantiated: bool,
     pub semantics_bridge_complete: bool,
     pub blocker: &'static str,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2SelectedRustModelConcreteDefinitionChecklistV1 {
+    pub schema: &'static str,
+    pub evidence_report_definitions_present: bool,
+    pub evidence_digest_definitions_present: bool,
+    pub evidence_proof_definitions_present: bool,
+    pub source_record_definitions_present: bool,
+    pub sub_evidence_digest_match_proof_present: bool,
+    pub all_definitions_present: bool,
+    pub missing_definition_category_count: u8,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -8445,63 +8461,193 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1() ->
     )
 }
 
-fn path2_reviewed_fq12_selected_rust_model_concrete_definitions_present_v1() -> bool {
-    let boundary_source =
-        include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
-    path2_reviewed_fq12_selected_rust_model_concrete_definitions_present_in_source_v1(
-        boundary_source,
-    )
-}
-
+#[cfg(test)]
 fn path2_reviewed_fq12_selected_rust_model_concrete_definitions_present_in_source_v1(
     boundary_source: &str,
 ) -> bool {
+    path2_selected_rust_model_concrete_definition_checklist_from_source_v1(boundary_source)
+        .all_definitions_present
+}
+
+fn lean_source_has_selected_rust_definition_v1(boundary_source: &str, name: &str) -> bool {
+    ["def", "theorem"].iter().any(|kind| {
+        boundary_source.contains(&format!("\n{kind} {name}"))
+            || boundary_source.contains(&format!("\nprivate {kind} {name}"))
+    })
+}
+
+pub fn path2_selected_rust_model_concrete_definition_checklist_v1()
+-> Path2SelectedRustModelConcreteDefinitionChecklistV1 {
+    let boundary_source =
+        include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
+    path2_selected_rust_model_concrete_definition_checklist_from_source_v1(boundary_source)
+}
+
+fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+    boundary_source: &str,
+) -> Path2SelectedRustModelConcreteDefinitionChecklistV1 {
     if path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
         boundary_source,
     ) {
-        return false;
+        return Path2SelectedRustModelConcreteDefinitionChecklistV1 {
+            schema: PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA,
+            evidence_report_definitions_present: false,
+            evidence_digest_definitions_present: false,
+            evidence_proof_definitions_present: false,
+            source_record_definitions_present: false,
+            sub_evidence_digest_match_proof_present: false,
+            all_definitions_present: false,
+            missing_definition_category_count: 5,
+        };
     }
     let boundary_source = lean_source_without_comments_and_strings_v1(boundary_source);
-    let required_definitions = [
+    let evidence_report_definitions = [
         "selectedRustFiveSourceEvidenceReport",
+        "selectedRustBoundaryBaseEvidenceReport",
+        "selectedRustRoleRootLiftEvidenceReport",
+        "selectedRustSourceRouteEvidenceReport",
+        "selectedRustFieldLocalEvidenceReport",
+        "selectedRustSharedFrameWitnessEvidenceReport",
+    ];
+    let evidence_digest_definitions = [
         "selectedRustFiveSourceEvidenceDigest",
+        "selectedRustBoundaryBaseEvidenceDigest",
+        "selectedRustRoleRootLiftEvidenceDigest",
+        "selectedRustSourceRouteEvidenceDigest",
+        "selectedRustFieldLocalEvidenceDigest",
+        "selectedRustSharedFrameWitnessEvidenceDigest",
+    ];
+    let evidence_proof_definitions = [
         "selectedRustFiveSourceEvidenceReportVerifiedProof",
         "selectedRustFiveSourceEvidenceFactsAllTrueProof",
-        "selectedRustFiveSourceSubEvidenceDigestsMatchProof",
-        "selectedRustBoundaryBaseEvidenceReport",
-        "selectedRustBoundaryBaseEvidenceDigest",
         "selectedRustBoundaryBaseEvidenceReportVerifiedProof",
         "selectedRustBoundaryBaseEvidenceFactsAllTrueProof",
-        "selectedRustPayloadProjectionLaw",
-        "selectedRustExtractionCertificateAvailability",
-        "selectedRustRoleRootLiftEvidenceReport",
-        "selectedRustRoleRootLiftEvidenceDigest",
         "selectedRustRoleRootLiftEvidenceReportVerifiedProof",
         "selectedRustRoleRootLiftEvidenceFactsAllTrueProof",
-        "selectedRustRoleRootLiftSource",
-        "selectedRustSourceRouteEvidenceReport",
-        "selectedRustSourceRouteEvidenceDigest",
         "selectedRustSourceRouteEvidenceReportVerifiedProof",
         "selectedRustSourceRouteEvidenceFactsAllTrueProof",
-        "selectedRustSourceRouteByteSource",
-        "selectedRustFieldLocalEvidenceReport",
-        "selectedRustFieldLocalEvidenceDigest",
         "selectedRustFieldLocalEvidenceReportVerifiedProof",
         "selectedRustFieldLocalEvidenceFactsAllTrueProof",
-        "selectedRustAssemblySource",
-        "selectedRustCompatibilitySource",
-        "selectedRustSharedFrameWitnessEvidenceReport",
-        "selectedRustSharedFrameWitnessEvidenceDigest",
         "selectedRustSharedFrameWitnessEvidenceReportVerifiedProof",
         "selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof",
+    ];
+    let source_record_definitions = [
+        "selectedRustPayloadProjectionLaw",
+        "selectedRustExtractionCertificateAvailability",
+        "selectedRustRoleRootLiftSource",
+        "selectedRustSourceRouteByteSource",
+        "selectedRustAssemblySource",
+        "selectedRustCompatibilitySource",
         "selectedRustSharedFrameWitnessSources",
     ];
-    required_definitions.iter().all(|name| {
-        ["def", "theorem"].iter().any(|kind| {
-            boundary_source.contains(&format!("\n{kind} {name}"))
-                || boundary_source.contains(&format!("\nprivate {kind} {name}"))
-        })
-    })
+    let evidence_report_definitions_present = evidence_report_definitions
+        .iter()
+        .all(|name| lean_source_has_selected_rust_definition_v1(&boundary_source, name));
+    let evidence_digest_definitions_present = evidence_digest_definitions
+        .iter()
+        .all(|name| lean_source_has_selected_rust_definition_v1(&boundary_source, name));
+    let evidence_proof_definitions_present = evidence_proof_definitions
+        .iter()
+        .all(|name| lean_source_has_selected_rust_definition_v1(&boundary_source, name));
+    let source_record_definitions_present = source_record_definitions
+        .iter()
+        .all(|name| lean_source_has_selected_rust_definition_v1(&boundary_source, name));
+    let sub_evidence_digest_match_proof_present = lean_source_has_selected_rust_definition_v1(
+        &boundary_source,
+        "selectedRustFiveSourceSubEvidenceDigestsMatchProof",
+    );
+    let all_definitions_present = evidence_report_definitions_present
+        && evidence_digest_definitions_present
+        && evidence_proof_definitions_present
+        && source_record_definitions_present
+        && sub_evidence_digest_match_proof_present;
+    let missing_definition_category_count = [
+        evidence_report_definitions_present,
+        evidence_digest_definitions_present,
+        evidence_proof_definitions_present,
+        source_record_definitions_present,
+        sub_evidence_digest_match_proof_present,
+    ]
+    .iter()
+    .filter(|present| !**present)
+    .count() as u8;
+    Path2SelectedRustModelConcreteDefinitionChecklistV1 {
+        schema: PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA,
+        evidence_report_definitions_present,
+        evidence_digest_definitions_present,
+        evidence_proof_definitions_present,
+        source_record_definitions_present,
+        sub_evidence_digest_match_proof_present,
+        all_definitions_present,
+        missing_definition_category_count,
+    }
+}
+
+pub fn path2_selected_rust_model_concrete_definition_checklist_v1_frame(
+    checklist: &Path2SelectedRustModelConcreteDefinitionChecklistV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", checklist.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"evidence_report_definitions_present",
+        u64::from(checklist.evidence_report_definitions_present),
+    );
+    append_u64(
+        &mut frame,
+        b"evidence_digest_definitions_present",
+        u64::from(checklist.evidence_digest_definitions_present),
+    );
+    append_u64(
+        &mut frame,
+        b"evidence_proof_definitions_present",
+        u64::from(checklist.evidence_proof_definitions_present),
+    );
+    append_u64(
+        &mut frame,
+        b"source_record_definitions_present",
+        u64::from(checklist.source_record_definitions_present),
+    );
+    append_u64(
+        &mut frame,
+        b"sub_evidence_digest_match_proof_present",
+        u64::from(checklist.sub_evidence_digest_match_proof_present),
+    );
+    append_u64(
+        &mut frame,
+        b"all_definitions_present",
+        u64::from(checklist.all_definitions_present),
+    );
+    append_u64(
+        &mut frame,
+        b"missing_definition_category_count",
+        checklist.missing_definition_category_count as u64,
+    );
+    frame
+}
+
+pub fn path2_selected_rust_model_concrete_definition_checklist_v1_digest(
+    checklist: &Path2SelectedRustModelConcreteDefinitionChecklistV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_selected_rust_model_concrete_definition_checklist_v1_frame(checklist))
+        .into()
+}
+
+pub fn verify_path2_selected_rust_model_concrete_definition_checklist_v1(
+    checklist: &Path2SelectedRustModelConcreteDefinitionChecklistV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let expected = path2_selected_rust_model_concrete_definition_checklist_v1();
+    if expected != *checklist {
+        return Err(
+            "Path 2 selected Rust/model concrete definition checklist mismatch".to_string(),
+        );
+    }
+    if checklist.schema != PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA {
+        return Err(
+            "Path 2 selected Rust/model concrete definition checklist schema mismatch".to_string(),
+        );
+    }
+    Ok(path2_selected_rust_model_concrete_definition_checklist_v1_digest(checklist))
 }
 
 fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool {
@@ -10463,8 +10609,16 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         && rust_assembly_field_local_native_components_present
         && rust_compatibility_field_extraction_components_present
         && rust_shared_digest_frame_witness_byte_source_contract_present;
+    let selected_rust_model_concrete_definition_checklist =
+        path2_selected_rust_model_concrete_definition_checklist_v1();
+    let selected_rust_model_concrete_definition_checklist_digest =
+        verify_path2_selected_rust_model_concrete_definition_checklist_v1(
+            &selected_rust_model_concrete_definition_checklist,
+        )
+        .expect("constructed selected Rust/model concrete definition checklist must verify");
+    let selected_rust_model_concrete_definition_checklist_verified = true;
     let selected_rust_model_concrete_definitions_present =
-        path2_reviewed_fq12_selected_rust_model_concrete_definitions_present_v1();
+        selected_rust_model_concrete_definition_checklist.all_definitions_present;
     let hidden_relation_verifier_implemented =
         selected_hidden_relation_extraction_certificate_present;
     let extractor_theorem_instantiated =
@@ -10486,6 +10640,7 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         && lean_full_signature_hidden_source_handoff_present
         && active_field_local_digest_frame_witness_byte_component_surfaces_present
         && selected_rust_model_five_source_inputs_ready
+        && selected_rust_model_concrete_definition_checklist_verified
         && selected_rust_model_concrete_definitions_present
         && hidden_relation_verifier_implemented
         && extractor_theorem_instantiated;
@@ -10530,6 +10685,8 @@ pub fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit()
         lean_active_five_source_boundary_route_present,
         lean_full_signature_hidden_source_handoff_present,
         selected_rust_model_five_source_inputs_ready,
+        selected_rust_model_concrete_definition_checklist_digest,
+        selected_rust_model_concrete_definition_checklist_verified,
         selected_rust_model_concrete_definitions_present,
         selected_rust_canonical_byte_and_witness_package_surfaces_present,
         rust_concrete_role_root_field_binding_present,
@@ -38479,6 +38636,16 @@ fn path2_reviewed_fq12_hidden_source_semantics_bridge_audit_frame(
         b"selected_rust_model_five_source_inputs_ready",
         u64::from(audit.selected_rust_model_five_source_inputs_ready),
     );
+    append_frame(
+        &mut frame,
+        b"selected_rust_model_concrete_definition_checklist_digest",
+        &audit.selected_rust_model_concrete_definition_checklist_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"selected_rust_model_concrete_definition_checklist_verified",
+        u64::from(audit.selected_rust_model_concrete_definition_checklist_verified),
+    );
     append_u64(
         &mut frame,
         b"selected_rust_model_concrete_definitions_present",
@@ -54860,8 +55027,39 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(audit.lean_full_signature_hidden_source_handoff_present);
         assert!(lean_path2_full_signature_hidden_source_handoff_present_v1());
         assert!(audit.selected_rust_model_five_source_inputs_ready);
+        let concrete_definition_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_v1();
+        let concrete_definition_checklist_digest =
+            verify_path2_selected_rust_model_concrete_definition_checklist_v1(
+                &concrete_definition_checklist,
+            )
+            .unwrap();
+        assert_eq!(
+            audit.selected_rust_model_concrete_definition_checklist_digest,
+            concrete_definition_checklist_digest
+        );
+        assert!(audit.selected_rust_model_concrete_definition_checklist_verified);
+        assert_eq!(
+            concrete_definition_checklist.schema,
+            PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA
+        );
+        assert!(!concrete_definition_checklist.evidence_report_definitions_present);
+        assert!(!concrete_definition_checklist.evidence_digest_definitions_present);
+        assert!(!concrete_definition_checklist.evidence_proof_definitions_present);
+        assert!(!concrete_definition_checklist.source_record_definitions_present);
+        assert!(!concrete_definition_checklist.sub_evidence_digest_match_proof_present);
+        assert!(!concrete_definition_checklist.all_definitions_present);
+        assert_eq!(
+            concrete_definition_checklist.missing_definition_category_count,
+            5
+        );
         assert!(!audit.selected_rust_model_concrete_definitions_present);
-        assert!(!path2_reviewed_fq12_selected_rust_model_concrete_definitions_present_v1());
+        assert!(
+            !path2_reviewed_fq12_selected_rust_model_concrete_definitions_present_in_source_v1(
+                "\n/- def selectedRustFiveSourceEvidenceReport := spoof -/\n\
+                 def selectedRustFiveSourceEvidenceDigest := spoof\n"
+            )
+        );
         assert!(path2_reviewed_fq12_five_source_closure_evidence_source_present_v1());
         let five_source_evidence = path2_reviewed_fq12_five_source_closure_evidence_v1().unwrap();
         assert_eq!(
@@ -55734,6 +55932,20 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert_eq!(
             validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
                 &falsely_present_concrete_definitions
+            )
+            .unwrap_err(),
+            "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
+        );
+        let mut unverified_concrete_definition_checklist = audit.clone();
+        unverified_concrete_definition_checklist
+            .selected_rust_model_concrete_definition_checklist_verified = false;
+        unverified_concrete_definition_checklist.digest =
+            path2_reviewed_fq12_hidden_source_semantics_bridge_audit_digest(
+                &unverified_concrete_definition_checklist,
+            );
+        assert_eq!(
+            validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
+                &unverified_concrete_definition_checklist
             )
             .unwrap_err(),
             "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"

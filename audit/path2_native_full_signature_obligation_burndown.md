@@ -118,6 +118,15 @@ source records, or the aggregate/sub-evidence digest-match proof as concrete
 `semantics_bridge_complete` and is digest-bound in the audit frame, but it is
 not treated as a non-closing readiness fact.
 
+2026-06-05 concrete-definition checklist update: the concrete-definition
+blocker is now backed by
+`Path2SelectedRustModelConcreteDefinitionChecklistV1`. The checklist is
+digest-bound in the bridge audit and splits the final-definition work into
+five categories: selected Rust five-source evidence reports, evidence digests,
+report/facts proof objects, concrete source records, and the aggregate
+sub-evidence digest-match proof. The current active tree reports all five
+categories missing, so the final theorem target is now mechanically visible.
+
 2026-06-02 update: `Path2FullOpeningSourceConcrete.lean` now packages the
 deployable non-aggregate theorem route as `ReviewedFq12DeployableHiddenSourceInputs`. The remaining P2FS-001 proof inputs are
 no longer an abstract source-bridge instantiation; they are the concrete
