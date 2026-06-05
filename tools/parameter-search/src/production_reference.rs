@@ -8071,6 +8071,7 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourceRouteCertificate",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourceRouteAndWitnessCertificates",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourceRouteFieldLocalAndWitnessCertificates",
+        "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndRoleRootSourceRouteFieldLocalAndWitnessCertificates",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs",
         "with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs",
@@ -8257,6 +8258,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "selectedRustPayloadProjectionLaw",
         "selectedRustExtractionCertificateAvailability",
         "selectedRustRoleRootLiftSource",
+        "selectedRustRoleRootLiftSourceCertificate",
         "selectedRustSourceRouteByteSource",
         "selectedRustSourceRouteByteSourceCertificate",
         "selectedRustAssemblySource",
@@ -8267,6 +8269,9 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "selectedRustFieldLocalEvidenceReport",
         "selectedRustFieldLocalEvidenceReportVerifiedProof",
         "selectedRustFieldLocalEvidenceFactsAllTrueProof",
+        "selectedRustRoleRootLiftEvidenceReport",
+        "selectedRustRoleRootLiftEvidenceReportVerifiedProof",
+        "selectedRustRoleRootLiftEvidenceFactsAllTrueProof",
         "selectedRustSharedFrameWitnessEvidenceReport",
         "selectedRustSharedFrameWitnessEvidenceReportVerifiedProof",
         "selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof",
@@ -8408,6 +8413,32 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "theorem",
         "selectedRustFieldLocalEvidenceFactsAllTrueProof",
         &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+    ) || declaration_has_normalized_marker(
+        "def",
+        "selectedRustRoleRootLiftEvidenceReport",
+        &[
+            "schemaMatches:=true",
+            "reportDigestVerified:=true",
+            "concreteRoleRootFieldBindingPinned:=true",
+            "selectedLiftFunctionalityPinned:=true",
+            "roleRootNegativeControlsPassed:=true",
+        ],
+    ) || declaration_has_normalized_marker(
+        "def",
+        "selectedRustRoleRootLiftEvidenceReportVerifiedProof",
+        &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+    ) || declaration_has_normalized_marker(
+        "theorem",
+        "selectedRustRoleRootLiftEvidenceReportVerifiedProof",
+        &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+    ) || declaration_has_normalized_marker(
+        "def",
+        "selectedRustRoleRootLiftEvidenceFactsAllTrueProof",
+        &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+    ) || declaration_has_normalized_marker(
+        "theorem",
+        "selectedRustRoleRootLiftEvidenceFactsAllTrueProof",
+        &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
     );
     forbidden_declaration_stub
         || forbidden_variable_stub
@@ -8503,6 +8534,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate",
         "ReviewedFq12ExtractionCertificateAvailability",
         "ReviewedFq12RoleRootFunctionalLiftSource",
+        "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate",
         "SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource",
         "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate",
         "ReviewedFq12FieldConcreteAssemblyLocalSource",
@@ -8527,6 +8559,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "selectedRustPayloadProjectionLaw :",
         "selectedRustExtractionCertificateAvailability :",
         "selectedRustRoleRootLiftSource :",
+        "selectedRustRoleRootLiftSourceCertificate :",
         "selectedRustSourceRouteByteSource :",
         "selectedRustSourceRouteByteSourceCertificate :",
         "selectedRustAssemblySource :",
@@ -8562,13 +8595,13 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
     }
 
     let required_constructor_bindings = [
-        "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourceRouteFieldLocalAndWitnessCertificates",
+        "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndRoleRootSourceRouteFieldLocalAndWitnessCertificates",
         "selectedRustFiveSourceEvidenceReport",
         "selectedRustFiveSourceEvidenceReportVerifiedProof",
         "selectedRustFiveSourceEvidenceFactsAllTrueProof",
         "selectedRustPayloadProjectionLaw",
         "selectedRustExtractionCertificateAvailability",
-        "selectedRustRoleRootLiftSource",
+        "selectedRustRoleRootLiftSourceCertificate",
         "selectedRustSourceRouteByteSourceCertificate",
         "selectedRustFieldLocalSourceCertificate",
         "selectedRustSharedFrameWitnessSourcesCertificate",
@@ -8585,7 +8618,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "ReviewedFq12HiddenSourceProofSemanticsClosed",
         "let selectedRustModelFiveSourceCertificate :",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate",
-        "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourceRouteFieldLocalAndWitnessCertificates",
+        "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndRoleRootSourceRouteFieldLocalAndWitnessCertificates",
         "let selectedRustModelFiveSourceInputs :",
         "ReviewedFq12SelectedRustModelFiveSourceClosureInputs",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs",
@@ -11199,6 +11232,16 @@ fn path2_reviewed_fq12_concrete_role_root_field_binding_source_present_v1() -> b
         "reviewed_fq12_nonaggregate_role_root_binding_from_concrete_fields\n        P I.roleRootFields",
         "ReviewedFq12RoleRootFunctionalLiftSource",
         "roleRootLiftSource.roleRootFields.roleRootBridge",
+        "ReviewedFq12SelectedRustRoleRootLiftEvidenceReport",
+        "namespace ReviewedFq12SelectedRustRoleRootLiftEvidenceReport",
+        "def ReportVerified",
+        "def FactsAllTrue",
+        "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate",
+        "evidenceReportVerifiedProof",
+        "evidenceFactsAllTrueProof",
+        "roleRootLiftSource",
+        "namespace ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate",
+        "def toRoleRootLiftSource",
     ];
     let role_root_bridge_checks = [
         "let expected_role_root = path2_creation_native_role_root_commitment_v1(",
@@ -50663,7 +50706,7 @@ theorem {theorem_name}
             )
         );
 
-        let concrete_constructor_certificate_theorem = format!(
+        let raw_role_root_constructor_certificate_theorem = format!(
             r#"
 theorem {theorem_name}
     (P : Predicates) :
@@ -50678,6 +50721,41 @@ theorem {theorem_name}
       selectedRustPayloadProjectionLaw
       selectedRustExtractionCertificateAvailability
       selectedRustRoleRootLiftSource
+      selectedRustSourceRouteByteSourceCertificate
+      selectedRustFieldLocalSourceCertificate
+      selectedRustSharedFrameWitnessSourcesCertificate
+  let selectedRustModelFiveSourceInputs :
+      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
+      selectedRustModelFiveSourceCertificate
+  exact
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+      P selectedRustModelFiveSourceInputs
+"#
+        );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &raw_role_root_constructor_certificate_theorem,
+                theorem_name
+            )
+        );
+
+        let concrete_constructor_certificate_theorem = format!(
+            r#"
+theorem {theorem_name}
+    (P : Predicates) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P := by
+  let selectedRustModelFiveSourceCertificate :
+      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+        FieldParser RouteParser CanonicalParser WitnessParser P :=
+    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndRoleRootSourceRouteFieldLocalAndWitnessCertificates
+      selectedRustFiveSourceEvidenceReport
+      selectedRustFiveSourceEvidenceReportVerifiedProof
+      selectedRustFiveSourceEvidenceFactsAllTrueProof
+      selectedRustPayloadProjectionLaw
+      selectedRustExtractionCertificateAvailability
+      selectedRustRoleRootLiftSourceCertificate
       selectedRustSourceRouteByteSourceCertificate
       selectedRustFieldLocalSourceCertificate
       selectedRustSharedFrameWitnessSourcesCertificate

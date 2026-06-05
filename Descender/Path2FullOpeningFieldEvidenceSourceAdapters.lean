@@ -3481,6 +3481,74 @@ structure ReviewedFq12RoleRootFunctionalLiftSource
     ReviewedFq12CertificateLiftOpeningFunctionality P
 
 /--
+Lean mirror of the public role-root/lift source evidence report.
+
+This report records that the selected Rust/model role-root source pins both
+the concrete non-aggregate role-root field package and the selected
+certificate-lift functionality before the final AP2-N001 certificate may
+expose the combined role-root/lift source.
+-/
+structure ReviewedFq12SelectedRustRoleRootLiftEvidenceReport where
+  schemaMatches : Bool
+  reportDigestVerified : Bool
+  concreteRoleRootFieldBindingPinned : Bool
+  selectedLiftFunctionalityPinned : Bool
+  roleRootBridgePinned : Bool
+  roleRootNegativeControlsPassed : Bool
+
+namespace ReviewedFq12SelectedRustRoleRootLiftEvidenceReport
+
+/-- The public role-root/lift report has been digest/schema checked. -/
+def ReportVerified
+    (E : ReviewedFq12SelectedRustRoleRootLiftEvidenceReport) :
+    Prop :=
+  E.schemaMatches = true ∧
+    E.reportDigestVerified = true
+
+/-- Every selected role-root/lift component fact in the report holds. -/
+def FactsAllTrue
+    (E : ReviewedFq12SelectedRustRoleRootLiftEvidenceReport) :
+    Prop :=
+  E.concreteRoleRootFieldBindingPinned = true ∧
+    E.selectedLiftFunctionalityPinned = true ∧
+    E.roleRootBridgePinned = true ∧
+    E.roleRootNegativeControlsPassed = true
+
+end ReviewedFq12SelectedRustRoleRootLiftEvidenceReport
+
+/--
+Proof-bearing selected Rust role-root/lift source certificate.
+
+The final AP2-N001 theorem should use this certificate to expose the combined
+role-root/lift source rather than accepting that source as a raw assumption.
+-/
+structure ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate
+    (P : Predicates) where
+  evidenceReport :
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceReport
+  evidenceReportVerifiedProof :
+    evidenceReport.ReportVerified
+  evidenceFactsAllTrueProof :
+    evidenceReport.FactsAllTrue
+  roleRootLiftSource :
+    ReviewedFq12RoleRootFunctionalLiftSource P
+
+namespace ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate
+
+/-- Expose the role-root/lift source only after consuming report proofs. -/
+def toRoleRootLiftSource
+    {P : Predicates}
+    (Cert : ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P) :
+    ReviewedFq12RoleRootFunctionalLiftSource P :=
+  let _hReport : Cert.evidenceReport.ReportVerified :=
+    Cert.evidenceReportVerifiedProof
+  let _hFacts : Cert.evidenceReport.FactsAllTrue :=
+    Cert.evidenceFactsAllTrueProof
+  Cert.roleRootLiftSource
+
+end ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate
+
+/--
 Local model source for assembly and compatibility.
 
 This groups the non-byte local model facts left after selected source-route
