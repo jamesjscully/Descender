@@ -9492,6 +9492,18 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         return false;
     };
     let theorem_header = &theorem_source[..body_start];
+    let theorem_start_marker = format!("\ntheorem {theorem_name}");
+    let Some(theorem_start) = theorem_header.find(&theorem_start_marker) else {
+        return false;
+    };
+    let theorem_name_end = theorem_start + theorem_start_marker.len();
+    if theorem_header[theorem_name_end..]
+        .chars()
+        .next()
+        .is_some_and(|next| next.is_ascii_alphanumeric() || next == '_' || next == '\'')
+    {
+        return false;
+    }
     let forbidden_header_parameters = [
         "payloadProjectsFrom :",
         "certificateAvailability :",
@@ -54659,6 +54671,18 @@ theorem {theorem_name}
         assert!(
             path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &concrete_constructor_certificate_theorem,
+                theorem_name
+            )
+        );
+        let suffixed_theorem_name_constructor_theorem = concrete_constructor_certificate_theorem
+            .replacen(
+                &format!("theorem {theorem_name}"),
+                &format!("theorem {theorem_name}Spoof"),
+                1,
+            );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &suffixed_theorem_name_constructor_theorem,
                 theorem_name
             )
         );

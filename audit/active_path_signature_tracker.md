@@ -1023,6 +1023,12 @@ requested name. A synthetic otherwise-complete fixture where
 `selectedRustFiveSourceEvidenceReportSpoof` fails
 `evidence_report_definitions_present`, so suffixed declarations cannot satisfy
 the AP2-N001 selected-definition checklist by prefix.
+The final AP2-N001 theorem source gate now applies the same exact-name boundary
+to the future instantiation theorem. An otherwise-valid constructor fixture with
+the theorem declaration renamed to
+`reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiationSpoof`
+is rejected, so a suffixed theorem cannot satisfy `extractor_theorem_instantiated`
+by prefix.
 
 ## Findings
 
