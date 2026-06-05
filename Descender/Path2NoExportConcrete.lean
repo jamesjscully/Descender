@@ -190,6 +190,7 @@ structure SelectedRustActiveSerializerAllowlistCertificate
     (Policy : PublicOutputPolicy)
     (S : ActiveTaggedSerializer) where
   evidenceReport : SelectedRustActiveSerializerAllowlistEvidenceReport
+  evidenceDigest : ByteArray
   evidenceReportVerifiedProof : evidenceReport.ReportVerified
   evidenceFactsAllTrueProof : evidenceReport.FactsAllTrue
   selectedRustActiveNoExport : PublicOutputNoExport Policy
@@ -204,6 +205,34 @@ structure SelectedRustActiveSerializerAllowlistCertificate
       Policy.outputConforms (S.storageOutputOf q)
 
 namespace SelectedRustActiveSerializerAllowlistCertificate
+
+/-- Named constructor for selected Rust active serializer no-export evidence. -/
+def ofReportAndConformance
+    {Policy : PublicOutputPolicy}
+    {S : ActiveTaggedSerializer}
+    (evidenceReport : SelectedRustActiveSerializerAllowlistEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (evidenceReportVerifiedProof : evidenceReport.ReportVerified)
+    (evidenceFactsAllTrueProof : evidenceReport.FactsAllTrue)
+    (selectedRustActiveNoExport : PublicOutputNoExport Policy)
+    (selectedRustAcceptOutputConforms :
+      forall q sig msg state,
+        Policy.outputConforms (S.acceptOutputOf q sig msg state))
+    (selectedRustRejectOutputConforms :
+      forall q breakEvent,
+        Policy.outputConforms (S.rejectOutputOf q breakEvent))
+    (selectedRustStorageOutputConforms :
+      forall q,
+        Policy.outputConforms (S.storageOutputOf q)) :
+    SelectedRustActiveSerializerAllowlistCertificate Policy S where
+  evidenceReport := evidenceReport
+  evidenceDigest := evidenceDigest
+  evidenceReportVerifiedProof := evidenceReportVerifiedProof
+  evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
+  selectedRustActiveNoExport := selectedRustActiveNoExport
+  selectedRustAcceptOutputConforms := selectedRustAcceptOutputConforms
+  selectedRustRejectOutputConforms := selectedRustRejectOutputConforms
+  selectedRustStorageOutputConforms := selectedRustStorageOutputConforms
 
 /-- Extract the public no-export rule from selected Rust evidence. -/
 def toPublicOutputNoExport
