@@ -20722,6 +20722,10 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "path2_native_deployment_preflight_v1_digest",
         "verify_path2_native_deployment_pipeline_v1",
         "path2_native_verifier_pipeline_verdict_v1_digest",
+        "Path2NativeSignerVerifierPipelineEvidenceV1",
+        "path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_root_v1",
+        "path2_native_signer_verifier_pipeline_evidence_v1_frame",
+        "path2_native_signer_verifier_pipeline_evidence_v1_digest",
         "path2_native_checked_core_byte_instantiation_evidence_v1",
         "path2_native_checked_core_byte_instantiation_evidence_all_facts_true",
         "path2_native_checked_core_byte_instantiation_evidence_v1_frame",
@@ -20784,6 +20788,15 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         .expect("Path 2 native signer public output source end marker missing")
         + public_output_start;
     let public_output_window = &source[public_output_start..public_output_end];
+
+    let evidence_frame_start = source
+        .find("\npub fn path2_native_signer_verifier_pipeline_evidence_v1_frame(")
+        .expect("Path 2 native signer/verifier evidence frame source start marker missing");
+    let evidence_frame_end = source[evidence_frame_start..]
+        .find("\npub fn path2_native_signer_pipeline_public_output_v1(")
+        .expect("Path 2 native signer/verifier evidence frame source end marker missing")
+        + evidence_frame_start;
+    let evidence_frame_window = &source[evidence_frame_start..evidence_frame_end];
 
     let evidence_start = source
         .find("\npub fn path2_native_signer_verifier_pipeline_evidence_from_prevalidated_entropy_root_v1(")
@@ -20873,6 +20886,22 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "no constant-time claim for private signing or keygen",
         "no target-chain storage lifecycle hardening claim",
     ];
+    let evidence_frame_checks = [
+        "path2_native_signer_verifier_pipeline_evidence_v1_frame",
+        "path2_native_signer_verifier_pipeline_evidence_v1_digest",
+        "checked_core_byte_instantiation_evidence_digest",
+        "checked_core_byte_instantiation_evidence_verified",
+        "five_source_closure_evidence_digest_present",
+        "five_source_closure_evidence_digest",
+        "five_source_closure_evidence_verified",
+        "five_source_closure_evidence_facts_all_true",
+        "verifier_rejection_code_present",
+        "deployment_blockers_len",
+        "deployment_blocker",
+        "explicit_non_claim",
+        "Sha256::digest(",
+        "path2_native_signer_verifier_pipeline_evidence_v1_frame(",
+    ];
     let honest_scope_checks = [
         "path2_native_honest_constructor_scope_v1",
         "complete: false",
@@ -20899,6 +20928,8 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         "assert_no_active_native_private_material",
         "path2_native_prevalidated_honest_flow_reaches_selected_verifier_public_acceptance",
         "PATH2_NATIVE_SIGNER_VERIFIER_PIPELINE_EVIDENCE_SCHEMA",
+        "path2_native_signer_verifier_pipeline_evidence_v1_frame",
+        "Sha256::digest(&evidence_frame)",
         "checked_core_byte_instantiation_evidence_digest",
         "checked_core_byte_instantiation_evidence_verified",
         "five_source_closure_evidence_digest",
@@ -20919,6 +20950,9 @@ fn path2_native_signer_verifier_pipeline_source_present_v1() -> bool {
         && evidence_checks
             .iter()
             .all(|marker| evidence_window.contains(marker))
+        && evidence_frame_checks
+            .iter()
+            .all(|marker| evidence_frame_window.contains(marker))
         && honest_scope_checks
             .iter()
             .all(|marker| honest_scope_window.contains(marker))
@@ -21379,12 +21413,111 @@ pub fn path2_native_verifier_pipeline_verdict_v1_digest(
         .map_err(|err| format!("encode Path 2 native verifier pipeline verdict: {err}"))
 }
 
+pub fn path2_native_signer_verifier_pipeline_evidence_v1_frame(
+    evidence: &Path2NativeSignerVerifierPipelineEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"prevalidation_accepted",
+        u64::from(evidence.prevalidation_accepted),
+    );
+    append_u64(
+        &mut frame,
+        b"constructor_succeeded",
+        u64::from(evidence.constructor_succeeded),
+    );
+    append_frame(
+        &mut frame,
+        b"signer_public_output_digest",
+        &evidence.signer_public_output_digest,
+    );
+    append_frame(&mut frame, b"carrier_digest", &evidence.carrier_digest);
+    append_frame(
+        &mut frame,
+        b"checked_core_proof_digest",
+        &evidence.checked_core_proof_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"checked_core_byte_instantiation_evidence_digest",
+        &evidence.checked_core_byte_instantiation_evidence_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_byte_instantiation_evidence_verified",
+        u64::from(evidence.checked_core_byte_instantiation_evidence_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"five_source_closure_evidence_digest_present",
+        u64::from(evidence.five_source_closure_evidence_digest.is_some()),
+    );
+    if let Some(digest) = evidence.five_source_closure_evidence_digest {
+        append_frame(&mut frame, b"five_source_closure_evidence_digest", &digest);
+    }
+    append_u64(
+        &mut frame,
+        b"five_source_closure_evidence_verified",
+        u64::from(evidence.five_source_closure_evidence_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"five_source_closure_evidence_facts_all_true",
+        u64::from(evidence.five_source_closure_evidence_facts_all_true),
+    );
+    append_frame(
+        &mut frame,
+        b"native_boundary_digest",
+        &evidence.native_boundary_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"verifier_public_boundary_accepted",
+        u64::from(evidence.verifier_public_boundary_accepted),
+    );
+    append_u64(
+        &mut frame,
+        b"verifier_production_accepted",
+        u64::from(evidence.verifier_production_accepted),
+    );
+    append_u64(
+        &mut frame,
+        b"verifier_rejection_code_present",
+        u64::from(evidence.verifier_rejection_code.is_some()),
+    );
+    if let Some(code) = evidence.verifier_rejection_code {
+        append_frame(&mut frame, b"verifier_rejection_code", code.as_bytes());
+    }
+    append_frame(
+        &mut frame,
+        b"smallest_remaining_productization_gate",
+        evidence.smallest_remaining_productization_gate.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_blockers_len",
+        evidence.deployment_blockers.len() as u64,
+    );
+    for blocker in &evidence.deployment_blockers {
+        append_frame(&mut frame, b"deployment_blocker", blocker.as_bytes());
+    }
+    for non_claim in &evidence.explicit_non_claims {
+        append_frame(&mut frame, b"explicit_non_claim", non_claim.as_bytes());
+    }
+    frame
+}
+
 pub fn path2_native_signer_verifier_pipeline_evidence_v1_digest(
     evidence: &Path2NativeSignerVerifierPipelineEvidenceV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(evidence)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native signer/verifier pipeline evidence: {err}"))
+    Ok(
+        Sha256::digest(path2_native_signer_verifier_pipeline_evidence_v1_frame(
+            evidence,
+        ))
+        .into(),
+    )
 }
 
 pub fn path2_native_signer_pipeline_public_output_v1(
@@ -41032,6 +41165,13 @@ end Path2NativeAccountDesign
             evidence
                 .explicit_non_claims
                 .contains(&"no target-chain storage lifecycle hardening claim")
+        );
+        let evidence_frame = path2_native_signer_verifier_pipeline_evidence_v1_frame(&evidence);
+        assert!(!evidence_frame.is_empty());
+        let evidence_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&evidence_frame).into();
+        assert_eq!(
+            path2_native_signer_verifier_pipeline_evidence_v1_digest(&evidence).unwrap(),
+            evidence_frame_digest
         );
         let rendered = serde_json::to_string(&evidence).unwrap();
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON));
