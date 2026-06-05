@@ -8469,13 +8469,6 @@ fn path2_reviewed_fq12_selected_rust_model_concrete_definitions_present_in_sourc
         .all_definitions_present
 }
 
-fn lean_source_has_selected_rust_definition_v1(boundary_source: &str, name: &str) -> bool {
-    ["def", "theorem"].iter().any(|kind| {
-        boundary_source.contains(&format!("\n{kind} {name}"))
-            || boundary_source.contains(&format!("\nprivate {kind} {name}"))
-    })
-}
-
 fn lean_source_has_selected_rust_definition_with_markers_v1(
     boundary_source: &str,
     name: &str,
@@ -8569,12 +8562,15 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         ),
     ];
     let evidence_digest_definitions = [
-        "selectedRustFiveSourceEvidenceDigest",
-        "selectedRustBoundaryBaseEvidenceDigest",
-        "selectedRustRoleRootLiftEvidenceDigest",
-        "selectedRustSourceRouteEvidenceDigest",
-        "selectedRustFieldLocalEvidenceDigest",
-        "selectedRustSharedFrameWitnessEvidenceDigest",
+        ("selectedRustFiveSourceEvidenceDigest", &["ByteArray"][..]),
+        ("selectedRustBoundaryBaseEvidenceDigest", &["ByteArray"][..]),
+        ("selectedRustRoleRootLiftEvidenceDigest", &["ByteArray"][..]),
+        ("selectedRustSourceRouteEvidenceDigest", &["ByteArray"][..]),
+        ("selectedRustFieldLocalEvidenceDigest", &["ByteArray"][..]),
+        (
+            "selectedRustSharedFrameWitnessEvidenceDigest",
+            &["ByteArray"][..],
+        ),
     ];
     let evidence_proof_definitions = [
         (
@@ -8699,9 +8695,14 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 markers,
             )
         });
-    let evidence_digest_definitions_present = evidence_digest_definitions
-        .iter()
-        .all(|name| lean_source_has_selected_rust_definition_v1(&boundary_source, name));
+    let evidence_digest_definitions_present =
+        evidence_digest_definitions.iter().all(|(name, markers)| {
+            lean_source_has_selected_rust_definition_with_markers_v1(
+                &boundary_source,
+                name,
+                markers,
+            )
+        });
     let evidence_proof_definitions_present =
         evidence_proof_definitions
             .iter()
@@ -55390,7 +55391,7 @@ theorem selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof := selectedRustS
                 untyped_proof_definition_source,
             );
         assert!(untyped_proof_definition_checklist.evidence_report_definitions_present);
-        assert!(untyped_proof_definition_checklist.evidence_digest_definitions_present);
+        assert!(!untyped_proof_definition_checklist.evidence_digest_definitions_present);
         assert!(!untyped_proof_definition_checklist.evidence_proof_definitions_present);
         assert!(!untyped_proof_definition_checklist.all_definitions_present);
         let untyped_source_record_definition_source = r#"
@@ -55489,12 +55490,12 @@ def selectedRustFieldLocalEvidenceReport :
 def selectedRustSharedFrameWitnessEvidenceReport :
   ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport :=
   selectedRustSharedFrameWitnessEvidenceReportValue
-def selectedRustFiveSourceEvidenceDigest := selectedRustFiveSourceEvidenceDigestValue
-def selectedRustBoundaryBaseEvidenceDigest := selectedRustBoundaryBaseEvidenceDigestValue
-def selectedRustRoleRootLiftEvidenceDigest := selectedRustRoleRootLiftEvidenceDigestValue
-def selectedRustSourceRouteEvidenceDigest := selectedRustSourceRouteEvidenceDigestValue
-def selectedRustFieldLocalEvidenceDigest := selectedRustFieldLocalEvidenceDigestValue
-def selectedRustSharedFrameWitnessEvidenceDigest := selectedRustSharedFrameWitnessEvidenceDigestValue
+def selectedRustFiveSourceEvidenceDigest : ByteArray := selectedRustFiveSourceEvidenceDigestValue
+def selectedRustBoundaryBaseEvidenceDigest : ByteArray := selectedRustBoundaryBaseEvidenceDigestValue
+def selectedRustRoleRootLiftEvidenceDigest : ByteArray := selectedRustRoleRootLiftEvidenceDigestValue
+def selectedRustSourceRouteEvidenceDigest : ByteArray := selectedRustSourceRouteEvidenceDigestValue
+def selectedRustFieldLocalEvidenceDigest : ByteArray := selectedRustFieldLocalEvidenceDigestValue
+def selectedRustSharedFrameWitnessEvidenceDigest : ByteArray := selectedRustSharedFrameWitnessEvidenceDigestValue
 theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
   selectedRustFiveSourceEvidenceReport.ReportVerified :=
   selectedRustFiveSourceEvidenceReportVerifiedProofValue

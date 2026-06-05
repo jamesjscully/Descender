@@ -955,6 +955,11 @@ that derives `toClosureInputs` and calls the input theorem is an explicit
 negative fixture. This keeps the source gate aligned with the proof-bearing
 certificate boundary rather than accepting a syntactic detour through raw
 inputs.
+The evidence-digest definition checklist now requires each selected digest
+declaration to carry `ByteArray` in its header/type. Untyped digest-name
+definitions no longer satisfy `evidence_digest_definitions_present`; the real
+Lean selected digest constants continue to pass, and the manifest digest/state
+remain unchanged.
 
 ## Findings
 
