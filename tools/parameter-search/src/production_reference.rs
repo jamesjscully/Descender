@@ -7555,6 +7555,22 @@ fn lean_path2_hidden_source_boundary_adapter_present_v1() -> bool {
         && root_source.contains("import Descender.Path2HiddenSourceSemanticsBoundary")
 }
 
+const PATH2_REVIEWED_FQ12_ACTIVE_BYTE_COMPONENT_THEOREM_START_MARKER: &str = "\ntheorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_digest_frame_witness_byte_components";
+const PATH2_REVIEWED_FQ12_ACTIVE_BYTE_COMPONENT_INPUTS_THEOREM_START_MARKER: &str = "\ntheorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_digest_frame_witness_byte_component_inputs";
+
+fn lean_path2_hidden_source_active_byte_component_theorem_source_v1(boundary_source: &str) -> &str {
+    let theorem_start = boundary_source
+        .find(PATH2_REVIEWED_FQ12_ACTIVE_BYTE_COMPONENT_THEOREM_START_MARKER)
+        .expect("Lean Path 2 hidden-source active boundary theorem start marker missing");
+    let theorem_end = boundary_source
+        [theorem_start + PATH2_REVIEWED_FQ12_ACTIVE_BYTE_COMPONENT_THEOREM_START_MARKER.len()..]
+        .find(PATH2_REVIEWED_FQ12_ACTIVE_BYTE_COMPONENT_INPUTS_THEOREM_START_MARKER)
+        .expect("Lean Path 2 hidden-source active boundary theorem end marker missing")
+        + theorem_start
+        + PATH2_REVIEWED_FQ12_ACTIVE_BYTE_COMPONENT_THEOREM_START_MARKER.len();
+    &boundary_source[theorem_start..theorem_end]
+}
+
 fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
     let boundary_source =
         include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
@@ -8157,10 +8173,8 @@ fn path2_reviewed_fq12_payload_projection_law_source_present_v1() -> bool {
     let native_boundary_source = include_str!("../../../Descender/Path2NativeBoundary.lean");
     let rust_source = include_str!("production_reference.rs");
 
-    let boundary_theorem_start = boundary_source
-        .find("\ntheorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_digest_frame_witness_byte_components")
-        .expect("Lean Path 2 hidden-source active boundary theorem start marker missing");
-    let boundary_theorem_source = &boundary_source[boundary_theorem_start..];
+    let boundary_theorem_source =
+        lean_path2_hidden_source_active_byte_component_theorem_source_v1(boundary_source);
 
     let certificate_start = native_boundary_source
         .find("\nstructure ReviewedFq12HiddenSourceSemanticsCertificate")
@@ -8918,10 +8932,8 @@ fn path2_reviewed_fq12_extraction_certificate_availability_source_present_v1() -
         + availability_start;
     let availability_source = &native_boundary_source[availability_start..availability_end];
 
-    let boundary_start = boundary_source
-        .find("\ntheorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_digest_frame_witness_byte_components")
-        .expect("Lean Path 2 hidden-source active boundary theorem start marker missing");
-    let boundary_source = &boundary_source[boundary_start..];
+    let boundary_source =
+        lean_path2_hidden_source_active_byte_component_theorem_source_v1(boundary_source);
 
     let constructor_start = rust_source
         .find("\npub fn path2_reviewed_fq12_hidden_relation_extraction_certificate_v1(")
@@ -45882,6 +45894,26 @@ end Path2NativeAccountDesign
                 ProductionCallbackErrorPolicy::SanitizedFixedPublicErrors
             );
         }
+    }
+
+    #[test]
+    fn path2_active_byte_component_theorem_window_excludes_following_sources() {
+        let boundary_source =
+            include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
+        let theorem_source =
+            lean_path2_hidden_source_active_byte_component_theorem_source_v1(boundary_source);
+
+        assert!(theorem_source.contains("payloadProjectsFrom :"));
+        assert!(theorem_source.contains("certificateAvailability :"));
+        assert!(theorem_source.contains(
+            "reviewed_fq12_hidden_source_proof_semantics_closed_from_extraction_soundness"
+        ));
+        assert!(theorem_source.contains("P payloadProjectsFrom certificateAvailability"));
+        assert!(!theorem_source.contains(
+            "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_digest_frame_witness_byte_component_inputs"
+        ));
+        assert!(!theorem_source.contains("ReviewedFq12SelectedRustModelFiveSourceClosureInputs"));
+        assert!(!theorem_source.contains("ReviewedFq12SelectedRustFiveSourceClosureEvidence"));
     }
 
     #[test]
