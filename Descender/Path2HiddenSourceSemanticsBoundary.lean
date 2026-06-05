@@ -2153,6 +2153,37 @@ theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_mo
     Package.sharedFrameWitnessSources
 
 /--
+Concrete predicate-model obligation for accepted reviewed-Fq12 payloads.
+
+Acceptance must be tied to the native boundary being proven, not merely to a
+free-standing reviewed-Fq12 statement.
+-/
+def ReviewedFq12PayloadAcceptanceMatchesBoundary
+    (P : Predicates) : Prop :=
+  forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload},
+    P.reviewedFq12PayloadAccepts b payload ->
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+        payload.slotId = b.context.slotId
+
+/--
+Concrete predicate-model obligation for selected extraction certificates.
+
+The certificate relation must bind back to the same native boundary and the
+same reviewed/creation statement digests carried by the accepted payload.
+-/
+def ReviewedFq12ExtractionCertificateMatchesPayload
+    (P : Predicates) : Prop :=
+  forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate},
+    P.reviewedFq12PayloadHasExtractionCertificate b payload cert ->
+      cert.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+        cert.slotId = b.context.slotId ∧
+          cert.creationStatementDigest = payload.creationStatementDigest ∧
+            cert.reviewedStatementDigest = payload.statementDigest
+
+/--
 Selected Rust native-boundary predicate-model import target.
 
 The full-spend concrete predicates are not this object: they live over concrete
@@ -2172,6 +2203,10 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
     ¬ (forall b payload, ¬ predicates.reviewedFq12PayloadAccepts b payload)
   boundaryBreaksNotUniversal :
     ¬ (forall c b breakEvent, predicates.boundaryBreakFor c b breakEvent)
+  payloadAcceptanceMatchesBoundary :
+    ReviewedFq12PayloadAcceptanceMatchesBoundary predicates
+  extractionCertificateMatchesPayload :
+    ReviewedFq12ExtractionCertificateMatchesPayload predicates
   reviewedFq12PayloadAcceptanceModeled : Prop
   reviewedFq12PayloadAcceptanceModeledProof :
     reviewedFq12PayloadAcceptanceModeled

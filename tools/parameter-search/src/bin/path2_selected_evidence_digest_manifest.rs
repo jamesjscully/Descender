@@ -141,6 +141,12 @@ fn main() -> Result<(), String> {
                     .native_boundary_payload_acceptance_antivacuity_target_present,
             "native_boundary_break_antivacuity_target_present":
                 source_record_subcheck.native_boundary_break_antivacuity_target_present,
+            "native_boundary_payload_acceptance_boundary_match_target_present":
+                source_record_subcheck
+                    .native_boundary_payload_acceptance_boundary_match_target_present,
+            "native_boundary_extraction_certificate_payload_match_target_present":
+                source_record_subcheck
+                    .native_boundary_extraction_certificate_payload_match_target_present,
             "native_boundary_semantics_package_target_present":
                 source_record_subcheck.native_boundary_semantics_package_target_present,
             "native_boundary_semantics_source_package_target_present":

@@ -135,6 +135,11 @@ acceptance predicate, and `boundaryBreaksNotUniversal` rules out closing every
 semantic implication through a universal break predicate. The selected evidence
 manifest records these as separate subcheck bits, so target-shape readiness and
 anti-vacuity readiness remain independently visible.
+The predicate-model target also now records concrete binding obligations:
+`ReviewedFq12PayloadAcceptanceMatchesBoundary` ties accepted reviewed-Fq12
+payloads to the native boundary digest and slot, while
+`ReviewedFq12ExtractionCertificateMatchesPayload` ties extraction certificates
+to the same boundary and payload statement digests.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It
