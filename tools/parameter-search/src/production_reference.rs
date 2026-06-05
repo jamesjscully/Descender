@@ -7557,6 +7557,10 @@ fn lean_path2_hidden_source_boundary_adapter_present_v1() -> bool {
 
 const PATH2_REVIEWED_FQ12_ACTIVE_BYTE_COMPONENT_THEOREM_START_MARKER: &str = "\ntheorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_digest_frame_witness_byte_components";
 const PATH2_REVIEWED_FQ12_ACTIVE_BYTE_COMPONENT_INPUTS_THEOREM_START_MARKER: &str = "\ntheorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_digest_frame_witness_byte_component_inputs";
+const PATH2_REVIEWED_FQ12_MODEL_FIVE_SOURCE_INPUTS_START_MARKER: &str =
+    "\nstructure ReviewedFq12SelectedRustModelFiveSourceClosureInputs";
+const PATH2_REVIEWED_FQ12_FULL_SIGNATURE_HANDOFF_START_MARKER: &str =
+    "\ndef NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure";
 
 fn lean_path2_hidden_source_active_byte_component_theorem_source_v1(boundary_source: &str) -> &str {
     let theorem_start = boundary_source
@@ -7571,17 +7575,32 @@ fn lean_path2_hidden_source_active_byte_component_theorem_source_v1(boundary_sou
     &boundary_source[theorem_start..theorem_end]
 }
 
+fn lean_path2_active_five_source_boundary_route_source_v1(boundary_source: &str) -> String {
+    let route_start = boundary_source
+        .find(PATH2_REVIEWED_FQ12_MODEL_FIVE_SOURCE_INPUTS_START_MARKER)
+        .expect("Lean Path 2 active five-source boundary route start marker missing");
+    let route_end = boundary_source[route_start..]
+        .find(PATH2_REVIEWED_FQ12_FULL_SIGNATURE_HANDOFF_START_MARKER)
+        .expect("Lean Path 2 active five-source boundary route end marker missing")
+        + route_start;
+    lean_source_without_comments_and_strings_v1(&boundary_source[route_start..route_end])
+}
+
+fn lean_path2_full_signature_hidden_source_handoff_source_v1(boundary_source: &str) -> String {
+    let handoff_start = boundary_source
+        .find(PATH2_REVIEWED_FQ12_FULL_SIGNATURE_HANDOFF_START_MARKER)
+        .expect("Lean Path 2 full-signature hidden-source handoff start marker missing");
+    let handoff_end = boundary_source[handoff_start..]
+        .find("\nend Path2HiddenSourceSemanticsBoundary")
+        .expect("Lean Path 2 full-signature hidden-source handoff end marker missing")
+        + handoff_start;
+    lean_source_without_comments_and_strings_v1(&boundary_source[handoff_start..handoff_end])
+}
+
 fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
     let boundary_source =
         include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
-    let route_start = boundary_source
-        .find("\nstructure ReviewedFq12SelectedRustModelFiveSourceClosureInputs")
-        .expect("Lean Path 2 active five-source boundary route theorem start marker missing");
-    let route_end = boundary_source[route_start..]
-        .find("\nend Path2HiddenSourceSemanticsBoundary")
-        .expect("Lean Path 2 active five-source boundary route theorem end marker missing")
-        + route_start;
-    let route_source = &boundary_source[route_start..route_end];
+    let route_source = lean_path2_active_five_source_boundary_route_source_v1(boundary_source);
 
     [
         "ReviewedFq12SelectedRustModelFiveSourceClosureInputs",
@@ -7608,8 +7627,6 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs",
         "with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs",
-        "NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure",
-        "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs",
         "NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure",
         "hiddenSourceProofSemanticsClosed",
         "ReviewedFq12RoleRootFunctionalLiftSource",
@@ -7629,16 +7646,7 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
 fn lean_path2_full_signature_hidden_source_handoff_present_v1() -> bool {
     let boundary_source =
         include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
-    let Some(handoff_start) = boundary_source
-        .find("\ndef NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure")
-    else {
-        return false;
-    };
-    let handoff_end = boundary_source[handoff_start..]
-        .find("\nend Path2HiddenSourceSemanticsBoundary")
-        .map(|offset| handoff_start + offset)
-        .unwrap_or(boundary_source.len());
-    let handoff_source = &boundary_source[handoff_start..handoff_end];
+    let handoff_source = lean_path2_full_signature_hidden_source_handoff_source_v1(boundary_source);
 
     [
         "NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure",
@@ -45914,6 +45922,41 @@ end Path2NativeAccountDesign
         ));
         assert!(!theorem_source.contains("ReviewedFq12SelectedRustModelFiveSourceClosureInputs"));
         assert!(!theorem_source.contains("ReviewedFq12SelectedRustFiveSourceClosureEvidence"));
+    }
+
+    #[test]
+    fn path2_active_five_source_route_window_excludes_full_signature_handoff() {
+        let boundary_source =
+            include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
+        let route_source = lean_path2_active_five_source_boundary_route_source_v1(boundary_source);
+        let handoff_source =
+            lean_path2_full_signature_hidden_source_handoff_source_v1(boundary_source);
+
+        assert!(route_source.contains("ReviewedFq12SelectedRustModelFiveSourceClosureInputs"));
+        assert!(route_source.contains("ReviewedFq12SelectedRustFiveSourceClosureEvidence"));
+        assert!(route_source.contains(
+            "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources"
+        ));
+        assert!(route_source.contains(
+            "with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs"
+        ));
+        assert!(!route_source.contains(
+            "def NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure"
+        ));
+        assert!(!route_source.contains(
+            "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs"
+        ));
+
+        assert!(handoff_source.contains(
+            "def NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure"
+        ));
+        assert!(handoff_source.contains(
+            "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs"
+        ));
+        assert!(
+            !handoff_source
+                .contains("structure ReviewedFq12SelectedRustModelFiveSourceClosureInputs")
+        );
     }
 
     #[test]
