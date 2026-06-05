@@ -142,6 +142,11 @@ fail-closed report values: verification and component bits remain false, and no
 digest-match proof is supplied. This preserves the AP2-N001 fail-closed bridge
 status.
 
+2026-06-05 report-definition checklist hardening: the concrete-definition
+checklist now requires each selected report declaration to mention its expected
+Lean report type. A name-only report fixture remains fail-closed, keeping the
+report category tied to the selected Rust/model evidence-report structures.
+
 2026-06-05 selected-evidence digest update: `tools/parameter-search` now has
 `path2_selected_evidence_digest_manifest`, a source-controlled digest manifest
 binary for the six public selected evidence reports. Lean mirrors the emitted

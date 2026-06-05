@@ -8534,12 +8534,30 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
     }
     let boundary_source = lean_source_without_comments_and_strings_v1(boundary_source);
     let evidence_report_definitions = [
-        "selectedRustFiveSourceEvidenceReport",
-        "selectedRustBoundaryBaseEvidenceReport",
-        "selectedRustRoleRootLiftEvidenceReport",
-        "selectedRustSourceRouteEvidenceReport",
-        "selectedRustFieldLocalEvidenceReport",
-        "selectedRustSharedFrameWitnessEvidenceReport",
+        (
+            "selectedRustFiveSourceEvidenceReport",
+            &["ReviewedFq12SelectedRustFiveSourceClosureEvidence"][..],
+        ),
+        (
+            "selectedRustBoundaryBaseEvidenceReport",
+            &["ReviewedFq12SelectedRustBoundaryBaseEvidenceReport"][..],
+        ),
+        (
+            "selectedRustRoleRootLiftEvidenceReport",
+            &["ReviewedFq12SelectedRustRoleRootLiftEvidenceReport"][..],
+        ),
+        (
+            "selectedRustSourceRouteEvidenceReport",
+            &["SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport"][..],
+        ),
+        (
+            "selectedRustFieldLocalEvidenceReport",
+            &["ReviewedFq12SelectedRustFieldLocalEvidenceReport"][..],
+        ),
+        (
+            "selectedRustSharedFrameWitnessEvidenceReport",
+            &["ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport"][..],
+        ),
     ];
     let evidence_digest_definitions = [
         "selectedRustFiveSourceEvidenceDigest",
@@ -8644,9 +8662,14 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             &["ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources"][..],
         ),
     ];
-    let evidence_report_definitions_present = evidence_report_definitions
-        .iter()
-        .all(|name| lean_source_has_selected_rust_definition_v1(&boundary_source, name));
+    let evidence_report_definitions_present =
+        evidence_report_definitions.iter().all(|(name, markers)| {
+            lean_source_has_selected_rust_definition_with_markers_v1(
+                &boundary_source,
+                name,
+                markers,
+            )
+        });
     let evidence_digest_definitions_present = evidence_digest_definitions
         .iter()
         .all(|name| lean_source_has_selected_rust_definition_v1(&boundary_source, name));
@@ -55274,13 +55297,39 @@ def selectedRustFiveSourceSubEvidenceDigestsMatchProof := spoof
             spoofed_concrete_definition_checklist.missing_definition_category_count,
             5
         );
-        let untyped_proof_definition_source = r#"
+        let untyped_report_definition_source = r#"
 def selectedRustFiveSourceEvidenceReport := selectedRustFiveSourceEvidenceReportValue
 def selectedRustBoundaryBaseEvidenceReport := selectedRustBoundaryBaseEvidenceReportValue
 def selectedRustRoleRootLiftEvidenceReport := selectedRustRoleRootLiftEvidenceReportValue
 def selectedRustSourceRouteEvidenceReport := selectedRustSourceRouteEvidenceReportValue
 def selectedRustFieldLocalEvidenceReport := selectedRustFieldLocalEvidenceReportValue
 def selectedRustSharedFrameWitnessEvidenceReport := selectedRustSharedFrameWitnessEvidenceReportValue
+"#;
+        let untyped_report_definition_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                untyped_report_definition_source,
+            );
+        assert!(!untyped_report_definition_checklist.evidence_report_definitions_present);
+        assert!(!untyped_report_definition_checklist.all_definitions_present);
+        let untyped_proof_definition_source = r#"
+def selectedRustFiveSourceEvidenceReport :
+  ReviewedFq12SelectedRustFiveSourceClosureEvidence :=
+  selectedRustFiveSourceEvidenceReportValue
+def selectedRustBoundaryBaseEvidenceReport :
+  ReviewedFq12SelectedRustBoundaryBaseEvidenceReport :=
+  selectedRustBoundaryBaseEvidenceReportValue
+def selectedRustRoleRootLiftEvidenceReport :
+  ReviewedFq12SelectedRustRoleRootLiftEvidenceReport :=
+  selectedRustRoleRootLiftEvidenceReportValue
+def selectedRustSourceRouteEvidenceReport :
+  SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport :=
+  selectedRustSourceRouteEvidenceReportValue
+def selectedRustFieldLocalEvidenceReport :
+  ReviewedFq12SelectedRustFieldLocalEvidenceReport :=
+  selectedRustFieldLocalEvidenceReportValue
+def selectedRustSharedFrameWitnessEvidenceReport :
+  ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport :=
+  selectedRustSharedFrameWitnessEvidenceReportValue
 def selectedRustFiveSourceEvidenceDigest := selectedRustFiveSourceEvidenceDigestValue
 def selectedRustBoundaryBaseEvidenceDigest := selectedRustBoundaryBaseEvidenceDigestValue
 def selectedRustRoleRootLiftEvidenceDigest := selectedRustRoleRootLiftEvidenceDigestValue
@@ -55335,12 +55384,24 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof := selectedRustFiveSo
         );
         assert!(!untyped_sub_evidence_match_proof_checklist.all_definitions_present);
         let complete_concrete_definition_source = r#"
-def selectedRustFiveSourceEvidenceReport := selectedRustFiveSourceEvidenceReportValue
-def selectedRustBoundaryBaseEvidenceReport := selectedRustBoundaryBaseEvidenceReportValue
-def selectedRustRoleRootLiftEvidenceReport := selectedRustRoleRootLiftEvidenceReportValue
-def selectedRustSourceRouteEvidenceReport := selectedRustSourceRouteEvidenceReportValue
-def selectedRustFieldLocalEvidenceReport := selectedRustFieldLocalEvidenceReportValue
-def selectedRustSharedFrameWitnessEvidenceReport := selectedRustSharedFrameWitnessEvidenceReportValue
+def selectedRustFiveSourceEvidenceReport :
+  ReviewedFq12SelectedRustFiveSourceClosureEvidence :=
+  selectedRustFiveSourceEvidenceReportValue
+def selectedRustBoundaryBaseEvidenceReport :
+  ReviewedFq12SelectedRustBoundaryBaseEvidenceReport :=
+  selectedRustBoundaryBaseEvidenceReportValue
+def selectedRustRoleRootLiftEvidenceReport :
+  ReviewedFq12SelectedRustRoleRootLiftEvidenceReport :=
+  selectedRustRoleRootLiftEvidenceReportValue
+def selectedRustSourceRouteEvidenceReport :
+  SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport :=
+  selectedRustSourceRouteEvidenceReportValue
+def selectedRustFieldLocalEvidenceReport :
+  ReviewedFq12SelectedRustFieldLocalEvidenceReport :=
+  selectedRustFieldLocalEvidenceReportValue
+def selectedRustSharedFrameWitnessEvidenceReport :
+  ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport :=
+  selectedRustSharedFrameWitnessEvidenceReportValue
 def selectedRustFiveSourceEvidenceDigest := selectedRustFiveSourceEvidenceDigestValue
 def selectedRustBoundaryBaseEvidenceDigest := selectedRustBoundaryBaseEvidenceDigestValue
 def selectedRustRoleRootLiftEvidenceDigest := selectedRustRoleRootLiftEvidenceDigestValue
