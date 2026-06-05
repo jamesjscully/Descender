@@ -24218,9 +24218,182 @@ pub fn path2_native_signer_ct_evidence_ledger_v1() -> Path2NativeSignerCtEvidenc
 pub fn path2_native_signer_ct_evidence_ledger_v1_digest(
     ledger: &Path2NativeSignerCtEvidenceLedgerV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
-    serde_json::to_vec(ledger)
-        .map(|bytes| Sha256::digest(bytes).into())
-        .map_err(|err| format!("encode Path 2 native signer CT evidence ledger: {err}"))
+    Ok(Sha256::digest(path2_native_signer_ct_evidence_ledger_v1_frame(ledger)).into())
+}
+
+pub fn path2_native_signer_ct_evidence_ledger_v1_frame(
+    ledger: &Path2NativeSignerCtEvidenceLedgerV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", ledger.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"ledger_complete",
+        u64::from(ledger.ledger_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"source_evidence_complete",
+        u64::from(ledger.source_evidence_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"backend_evidence_scripts_pinned",
+        u64::from(ledger.backend_evidence_scripts_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"q_sampler_source_shape_complete",
+        u64::from(ledger.q_sampler_source_shape_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"q_sampler_release_backend_script_pinned",
+        u64::from(ledger.q_sampler_release_backend_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"sha256_boundary_source_complete",
+        u64::from(ledger.sha256_boundary_source_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"sha256_call_schedule_source_complete",
+        u64::from(ledger.sha256_call_schedule_source_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"sha256_dependency_backend_script_pinned",
+        u64::from(ledger.sha256_dependency_backend_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"sha256_source_backend_script_pinned",
+        u64::from(ledger.sha256_source_backend_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"sha256_release_backend_script_pinned",
+        u64::from(ledger.sha256_release_backend_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"sha256_soft_ct_shape_script_pinned",
+        u64::from(ledger.sha256_soft_ct_shape_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"private_sha256_ct_shape_script_pinned",
+        u64::from(ledger.private_sha256_ct_shape_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"sha256_private_hash_lifetime_audit_pinned",
+        u64::from(ledger.sha256_private_hash_lifetime_audit_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"register_residual_audit_script_pinned",
+        u64::from(ledger.register_residual_audit_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"register_scrub_policy_script_pinned",
+        u64::from(ledger.register_scrub_policy_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"target_host_timing_campaign_script_pinned",
+        u64::from(ledger.target_host_timing_campaign_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"target_host_campaign_promotion_gate_script_pinned",
+        u64::from(ledger.target_host_campaign_promotion_gate_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"digest_frame_release_backend_script_pinned",
+        u64::from(ledger.digest_frame_release_backend_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"zeroize_release_backend_script_pinned",
+        u64::from(ledger.zeroize_release_backend_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"runtime_cleanup_source_complete",
+        u64::from(ledger.runtime_cleanup_source_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"production_routing_source_complete",
+        u64::from(ledger.production_routing_source_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"production_routing_release_backend_script_pinned",
+        u64::from(ledger.production_routing_release_backend_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"prevalidated_timing_stability_script_pinned",
+        u64::from(ledger.prevalidated_timing_stability_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"ct_evidence_bundle_script_pinned",
+        u64::from(ledger.ct_evidence_bundle_script_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"ct_evidence_bundle_preserves_outputs_when_requested",
+        u64::from(ledger.ct_evidence_bundle_preserves_outputs_when_requested),
+    );
+    append_u64(
+        &mut frame,
+        b"timing_evidence_is_smoke_only",
+        u64::from(ledger.timing_evidence_is_smoke_only),
+    );
+    append_u64(
+        &mut frame,
+        b"sha256_backend_constant_time_claim_complete",
+        u64::from(ledger.sha256_backend_constant_time_claim_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"whole_signer_microarchitectural_timing_complete",
+        u64::from(ledger.whole_signer_microarchitectural_timing_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"register_and_internal_hash_state_lifetime_complete",
+        u64::from(ledger.register_and_internal_hash_state_lifetime_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"target_host_evidence_bundle_execution_complete",
+        u64::from(ledger.target_host_evidence_bundle_execution_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"constant_time_audit_complete",
+        u64::from(ledger.constant_time_audit_complete),
+    );
+    append_frame(
+        &mut frame,
+        b"backend_script_bundle_digest",
+        &ledger.backend_script_bundle_digest,
+    );
+    append_frame(&mut frame, b"blocker", ledger.blocker.as_bytes());
+    for blocker in &ledger.remaining_blockers {
+        append_frame(&mut frame, b"remaining_blocker", blocker.as_bytes());
+    }
+    for non_claim in &ledger.explicit_non_claims {
+        append_frame(&mut frame, b"explicit_non_claim", non_claim.as_bytes());
+    }
+    frame
 }
 
 pub fn path2_native_honest_constructor_scope_v1() -> Path2NativeHonestConstructorScopeV1 {
@@ -43255,6 +43428,12 @@ end Path2NativeAccountDesign
         assert_ne!(
             path2_native_signer_ct_evidence_ledger_v1_digest(&ledger).unwrap(),
             [0_u8; DIGEST_BYTES]
+        );
+        let expected_frame_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(path2_native_signer_ct_evidence_ledger_v1_frame(&ledger)).into();
+        assert_eq!(
+            path2_native_signer_ct_evidence_ledger_v1_digest(&ledger).unwrap(),
+            expected_frame_digest
         );
 
         let rendered = serde_json::to_string(&ledger).unwrap();
