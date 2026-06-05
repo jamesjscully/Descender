@@ -136,6 +136,11 @@ fn main() -> Result<(), String> {
                 source_record_subcheck.native_boundary_predicates_record_present,
             "native_boundary_predicate_model_source_target_present":
                 source_record_subcheck.native_boundary_predicate_model_source_target_present,
+            "native_boundary_payload_acceptance_antivacuity_target_present":
+                source_record_subcheck
+                    .native_boundary_payload_acceptance_antivacuity_target_present,
+            "native_boundary_break_antivacuity_target_present":
+                source_record_subcheck.native_boundary_break_antivacuity_target_present,
             "native_boundary_semantics_package_target_present":
                 source_record_subcheck.native_boundary_semantics_package_target_present,
             "native_boundary_semantics_source_package_target_present":

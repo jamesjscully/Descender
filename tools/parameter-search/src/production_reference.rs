@@ -7547,6 +7547,8 @@ pub struct Path2SelectedRustModelConcreteDefinitionChecklistV1 {
 pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_predicates_record_present: bool,
     pub native_boundary_predicate_model_source_target_present: bool,
+    pub native_boundary_payload_acceptance_antivacuity_target_present: bool,
+    pub native_boundary_break_antivacuity_target_present: bool,
     pub native_boundary_semantics_package_target_present: bool,
     pub native_boundary_semantics_source_package_target_present: bool,
     pub native_boundary_semantics_package_handoff_present: bool,
@@ -8639,10 +8641,6 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         "ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
         "predicates : Predicates",
         "activeBoundaryPredicateModelPinned",
-        "payloadAcceptanceNotVacuous",
-        "boundaryBreaksNotUniversal",
-        "predicates.reviewedFq12PayloadAccepts",
-        "predicates.boundaryBreakFor",
         "reviewedFq12PayloadAcceptanceModeled",
         "reviewedFq12ExtractionCertificateModelModeled",
         "reviewedFq12FullOpeningAndAssemblyModelModeled",
@@ -8653,6 +8651,16 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
+    let native_boundary_payload_acceptance_antivacuity_target_present = [
+        "payloadAcceptanceNotVacuous",
+        "predicates.reviewedFq12PayloadAccepts",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_break_antivacuity_target_present =
+        ["boundaryBreaksNotUniversal", "predicates.boundaryBreakFor"]
+            .iter()
+            .all(|marker| boundary_source.contains(marker));
     let native_boundary_semantics_package_target_present = [
         "ReviewedFq12SelectedRustNativeBoundarySemanticsPackage",
         "predicates : Predicates",
@@ -9020,6 +9028,8 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     Path2SelectedRustModelSourceRecordSubcheckV1 {
         native_boundary_predicates_record_present,
         native_boundary_predicate_model_source_target_present,
+        native_boundary_payload_acceptance_antivacuity_target_present,
+        native_boundary_break_antivacuity_target_present,
         native_boundary_semantics_package_target_present,
         native_boundary_semantics_source_package_target_present,
         native_boundary_semantics_package_handoff_present,
@@ -56332,6 +56342,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
         assert!(source_record_subcheck.native_boundary_predicates_record_present);
         assert!(source_record_subcheck.native_boundary_predicate_model_source_target_present);
+        assert!(
+            source_record_subcheck.native_boundary_payload_acceptance_antivacuity_target_present
+        );
+        assert!(source_record_subcheck.native_boundary_break_antivacuity_target_present);
         assert!(source_record_subcheck.native_boundary_semantics_package_target_present);
         assert!(source_record_subcheck.native_boundary_semantics_source_package_target_present);
         assert!(source_record_subcheck.native_boundary_semantics_package_handoff_present);
