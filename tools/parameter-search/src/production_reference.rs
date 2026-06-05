@@ -8670,6 +8670,26 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             "selectedRustSharedFrameWitnessSources",
             &["ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources"][..],
         ),
+        (
+            "selectedRustBoundaryBaseCertificate",
+            &["ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate"][..],
+        ),
+        (
+            "selectedRustRoleRootLiftSourceCertificate",
+            &["ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate"][..],
+        ),
+        (
+            "selectedRustSourceRouteByteSourceCertificate",
+            &["SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate"][..],
+        ),
+        (
+            "selectedRustFieldLocalSourceCertificate",
+            &["ReviewedFq12SelectedRustFieldLocalEvidenceCertificate"][..],
+        ),
+        (
+            "selectedRustSharedFrameWitnessSourcesCertificate",
+            &["ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate"][..],
+        ),
     ];
     let evidence_report_definitions_present =
         evidence_report_definitions.iter().all(|(name, markers)| {
@@ -55396,6 +55416,16 @@ def selectedRustCompatibilitySource := by
   exact ReviewedFq12FieldConcreteCompatibilitySource
 def selectedRustSharedFrameWitnessSources := by
   exact ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+def selectedRustBoundaryBaseCertificate := by
+  exact ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate
+def selectedRustRoleRootLiftSourceCertificate := by
+  exact ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate
+def selectedRustSourceRouteByteSourceCertificate := by
+  exact SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+def selectedRustFieldLocalSourceCertificate := by
+  exact ReviewedFq12SelectedRustFieldLocalEvidenceCertificate
+def selectedRustSharedFrameWitnessSourcesCertificate := by
+  exact ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
 "#;
         let body_only_source_record_definition_checklist =
             path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
@@ -55497,6 +55527,21 @@ def selectedRustCompatibilitySource :
 def selectedRustSharedFrameWitnessSources :
   ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources CanonicalParser WitnessParser P :=
   selectedRustSharedFrameWitnessSourcesValue
+def selectedRustBoundaryBaseCertificate :
+  ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P :=
+  selectedRustBoundaryBaseCertificateValue
+def selectedRustRoleRootLiftSourceCertificate :
+  ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P :=
+  selectedRustRoleRootLiftSourceCertificateValue
+def selectedRustSourceRouteByteSourceCertificate :
+  SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate FieldParser RouteParser P :=
+  selectedRustSourceRouteByteSourceCertificateValue
+def selectedRustFieldLocalSourceCertificate :
+  ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P :=
+  selectedRustFieldLocalSourceCertificateValue
+def selectedRustSharedFrameWitnessSourcesCertificate :
+  ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate CanonicalParser WitnessParser P :=
+  selectedRustSharedFrameWitnessSourcesCertificateValue
 theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
   selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
     selectedRustBoundaryBaseCertificate

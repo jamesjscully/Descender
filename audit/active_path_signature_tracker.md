@@ -926,6 +926,16 @@ A body-only source-record spoof fixture with every required AP2-N001 source
 type marker in the definition bodies still leaves
 `source_record_definitions_present = false`, so future source-record closure
 must put the active types on the selected declarations themselves.
+The same source-record category now also requires the five selected
+proof-bearing source certificates:
+`selectedRustBoundaryBaseCertificate`,
+`selectedRustRoleRootLiftSourceCertificate`,
+`selectedRustSourceRouteByteSourceCertificate`,
+`selectedRustFieldLocalSourceCertificate`, and
+`selectedRustSharedFrameWitnessSourcesCertificate`. This closes a checklist
+blind spot where a synthetic complete fixture could define raw sources and
+mention certificate names in the digest-match theorem without declaring the
+certificate values that the final AP2-N001 route consumes.
 
 ## Findings
 
