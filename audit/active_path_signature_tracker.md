@@ -960,6 +960,14 @@ declaration to carry `ByteArray` in its header/type. Untyped digest-name
 definitions no longer satisfy `evidence_digest_definitions_present`; the real
 Lean selected digest constants continue to pass, and the manifest digest/state
 remain unchanged.
+The evidence-proof definition checklist now requires the exact selected report
+predicate in each proof declaration header/type, for example
+`selectedRustFiveSourceEvidenceReport.ReportVerified`, instead of accepting
+the selected report name and predicate name as independent substrings. A
+regression fixture where a theorem mentions `selectedRustBoundaryBaseEvidenceReport`
+in an unrelated premise but proves `otherBoundaryBaseEvidenceReport.ReportVerified`
+fails `evidence_proof_definitions_present`, so future AP2-N001 proof imports
+must prove the selected report predicates directly.
 
 ## Findings
 

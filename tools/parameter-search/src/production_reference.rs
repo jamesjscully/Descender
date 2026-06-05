@@ -8497,19 +8497,6 @@ fn lean_source_has_selected_rust_definition_with_markers_v1(
     })
 }
 
-fn lean_source_has_selected_rust_typed_proof_definition_v1(
-    boundary_source: &str,
-    name: &str,
-    report_name: &str,
-    predicate_name: &str,
-) -> bool {
-    lean_source_has_selected_rust_definition_with_markers_v1(
-        boundary_source,
-        name,
-        &[report_name, predicate_name],
-    )
-}
-
 pub fn path2_selected_rust_model_concrete_definition_checklist_v1()
 -> Path2SelectedRustModelConcreteDefinitionChecklistV1 {
     let boundary_source =
@@ -8575,63 +8562,51 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
     let evidence_proof_definitions = [
         (
             "selectedRustFiveSourceEvidenceReportVerifiedProof",
-            "selectedRustFiveSourceEvidenceReport",
-            "ReportVerified",
+            &["selectedRustFiveSourceEvidenceReport.ReportVerified"][..],
         ),
         (
             "selectedRustFiveSourceEvidenceFactsAllTrueProof",
-            "selectedRustFiveSourceEvidenceReport",
-            "FactsAllTrue",
+            &["selectedRustFiveSourceEvidenceReport.FactsAllTrue"][..],
         ),
         (
             "selectedRustBoundaryBaseEvidenceReportVerifiedProof",
-            "selectedRustBoundaryBaseEvidenceReport",
-            "ReportVerified",
+            &["selectedRustBoundaryBaseEvidenceReport.ReportVerified"][..],
         ),
         (
             "selectedRustBoundaryBaseEvidenceFactsAllTrueProof",
-            "selectedRustBoundaryBaseEvidenceReport",
-            "FactsAllTrue",
+            &["selectedRustBoundaryBaseEvidenceReport.FactsAllTrue"][..],
         ),
         (
             "selectedRustRoleRootLiftEvidenceReportVerifiedProof",
-            "selectedRustRoleRootLiftEvidenceReport",
-            "ReportVerified",
+            &["selectedRustRoleRootLiftEvidenceReport.ReportVerified"][..],
         ),
         (
             "selectedRustRoleRootLiftEvidenceFactsAllTrueProof",
-            "selectedRustRoleRootLiftEvidenceReport",
-            "FactsAllTrue",
+            &["selectedRustRoleRootLiftEvidenceReport.FactsAllTrue"][..],
         ),
         (
             "selectedRustSourceRouteEvidenceReportVerifiedProof",
-            "selectedRustSourceRouteEvidenceReport",
-            "ReportVerified",
+            &["selectedRustSourceRouteEvidenceReport.ReportVerified"][..],
         ),
         (
             "selectedRustSourceRouteEvidenceFactsAllTrueProof",
-            "selectedRustSourceRouteEvidenceReport",
-            "FactsAllTrue",
+            &["selectedRustSourceRouteEvidenceReport.FactsAllTrue"][..],
         ),
         (
             "selectedRustFieldLocalEvidenceReportVerifiedProof",
-            "selectedRustFieldLocalEvidenceReport",
-            "ReportVerified",
+            &["selectedRustFieldLocalEvidenceReport.ReportVerified"][..],
         ),
         (
             "selectedRustFieldLocalEvidenceFactsAllTrueProof",
-            "selectedRustFieldLocalEvidenceReport",
-            "FactsAllTrue",
+            &["selectedRustFieldLocalEvidenceReport.FactsAllTrue"][..],
         ),
         (
             "selectedRustSharedFrameWitnessEvidenceReportVerifiedProof",
-            "selectedRustSharedFrameWitnessEvidenceReport",
-            "ReportVerified",
+            &["selectedRustSharedFrameWitnessEvidenceReport.ReportVerified"][..],
         ),
         (
             "selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof",
-            "selectedRustSharedFrameWitnessEvidenceReport",
-            "FactsAllTrue",
+            &["selectedRustSharedFrameWitnessEvidenceReport.FactsAllTrue"][..],
         ),
     ];
     let source_record_definitions = [
@@ -8704,16 +8679,13 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             )
         });
     let evidence_proof_definitions_present =
-        evidence_proof_definitions
-            .iter()
-            .all(|(name, report_name, predicate_name)| {
-                lean_source_has_selected_rust_typed_proof_definition_v1(
-                    &boundary_source,
-                    name,
-                    report_name,
-                    predicate_name,
-                )
-            });
+        evidence_proof_definitions.iter().all(|(name, markers)| {
+            lean_source_has_selected_rust_definition_with_markers_v1(
+                &boundary_source,
+                name,
+                markers,
+            )
+        });
     let source_record_definitions_present =
         source_record_definitions.iter().all(|(name, markers)| {
             lean_source_has_selected_rust_definition_with_markers_v1(
@@ -55394,6 +55366,74 @@ theorem selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof := selectedRustS
         assert!(!untyped_proof_definition_checklist.evidence_digest_definitions_present);
         assert!(!untyped_proof_definition_checklist.evidence_proof_definitions_present);
         assert!(!untyped_proof_definition_checklist.all_definitions_present);
+        let split_report_predicate_proof_definition_source = r#"
+def selectedRustFiveSourceEvidenceReport :
+  ReviewedFq12SelectedRustFiveSourceClosureEvidence :=
+  selectedRustFiveSourceEvidenceReportValue
+def selectedRustBoundaryBaseEvidenceReport :
+  ReviewedFq12SelectedRustBoundaryBaseEvidenceReport :=
+  selectedRustBoundaryBaseEvidenceReportValue
+def selectedRustRoleRootLiftEvidenceReport :
+  ReviewedFq12SelectedRustRoleRootLiftEvidenceReport :=
+  selectedRustRoleRootLiftEvidenceReportValue
+def selectedRustSourceRouteEvidenceReport :
+  SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport :=
+  selectedRustSourceRouteEvidenceReportValue
+def selectedRustFieldLocalEvidenceReport :
+  ReviewedFq12SelectedRustFieldLocalEvidenceReport :=
+  selectedRustFieldLocalEvidenceReportValue
+def selectedRustSharedFrameWitnessEvidenceReport :
+  ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport :=
+  selectedRustSharedFrameWitnessEvidenceReportValue
+theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
+  selectedRustFiveSourceEvidenceReport.ReportVerified :=
+  selectedRustFiveSourceEvidenceReportVerifiedProofValue
+theorem selectedRustFiveSourceEvidenceFactsAllTrueProof :
+  selectedRustFiveSourceEvidenceReport.FactsAllTrue :=
+  selectedRustFiveSourceEvidenceFactsAllTrueProofValue
+theorem selectedRustBoundaryBaseEvidenceReportVerifiedProof :
+  selectedRustBoundaryBaseEvidenceReport = selectedRustBoundaryBaseEvidenceReport ->
+  otherBoundaryBaseEvidenceReport.ReportVerified :=
+  selectedRustBoundaryBaseEvidenceReportVerifiedProofValue
+theorem selectedRustBoundaryBaseEvidenceFactsAllTrueProof :
+  selectedRustBoundaryBaseEvidenceReport.FactsAllTrue :=
+  selectedRustBoundaryBaseEvidenceFactsAllTrueProofValue
+theorem selectedRustRoleRootLiftEvidenceReportVerifiedProof :
+  selectedRustRoleRootLiftEvidenceReport.ReportVerified :=
+  selectedRustRoleRootLiftEvidenceReportVerifiedProofValue
+theorem selectedRustRoleRootLiftEvidenceFactsAllTrueProof :
+  selectedRustRoleRootLiftEvidenceReport.FactsAllTrue :=
+  selectedRustRoleRootLiftEvidenceFactsAllTrueProofValue
+theorem selectedRustSourceRouteEvidenceReportVerifiedProof :
+  selectedRustSourceRouteEvidenceReport.ReportVerified :=
+  selectedRustSourceRouteEvidenceReportVerifiedProofValue
+theorem selectedRustSourceRouteEvidenceFactsAllTrueProof :
+  selectedRustSourceRouteEvidenceReport.FactsAllTrue :=
+  selectedRustSourceRouteEvidenceFactsAllTrueProofValue
+theorem selectedRustFieldLocalEvidenceReportVerifiedProof :
+  selectedRustFieldLocalEvidenceReport.ReportVerified :=
+  selectedRustFieldLocalEvidenceReportVerifiedProofValue
+theorem selectedRustFieldLocalEvidenceFactsAllTrueProof :
+  selectedRustFieldLocalEvidenceReport.FactsAllTrue :=
+  selectedRustFieldLocalEvidenceFactsAllTrueProofValue
+theorem selectedRustSharedFrameWitnessEvidenceReportVerifiedProof :
+  selectedRustSharedFrameWitnessEvidenceReport.ReportVerified :=
+  selectedRustSharedFrameWitnessEvidenceReportVerifiedProofValue
+theorem selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof :
+  selectedRustSharedFrameWitnessEvidenceReport.FactsAllTrue :=
+  selectedRustSharedFrameWitnessEvidenceFactsAllTrueProofValue
+"#;
+        let split_report_predicate_proof_definition_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                split_report_predicate_proof_definition_source,
+            );
+        assert!(
+            split_report_predicate_proof_definition_checklist.evidence_report_definitions_present
+        );
+        assert!(
+            !split_report_predicate_proof_definition_checklist.evidence_proof_definitions_present
+        );
+        assert!(!split_report_predicate_proof_definition_checklist.all_definitions_present);
         let untyped_source_record_definition_source = r#"
 def selectedRustPayloadProjectionLaw := selectedRustPayloadProjectionLawValue
 def selectedRustExtractionCertificateAvailability := selectedRustExtractionCertificateAvailabilityValue
