@@ -32800,18 +32800,36 @@ impl ProductionTargetChainTransactionalKv for ProductionFileBackedTransactionalK
 fn encode_target_chain_kv_lifecycle_value(
     snapshot: ProductionReviewedFq12StateAssistedLifecycleSnapshot,
 ) -> Result<Vec<u8>, ProductionLifecycleError> {
-    serde_json::to_vec(&ProductionTargetChainKvLifecycleValue {
-        schema: PRODUCTION_TARGET_CHAIN_KV_LIFECYCLE_SCHEMA.to_string(),
-        snapshot,
-    })
-    .map_err(|err| {
-        ProductionLifecycleError::new(None, format!("encode target-chain lifecycle value: {err}"))
-    })
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PRODUCTION_TARGET_CHAIN_KV_LIFECYCLE_SCHEMA.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"snapshot",
+        &production_lifecycle_snapshot_frame(&snapshot),
+    );
+    Ok(frame)
 }
 
 fn decode_target_chain_kv_lifecycle_value(
     bytes: &[u8],
 ) -> Result<ProductionReviewedFq12StateAssistedLifecycleSnapshot, ProductionLifecycleError> {
+    if bytes.first() != Some(&b'{') {
+        let mut reader = ProductionKvFrameReader::new(bytes);
+        let schema = reader.read_utf8(b"schema")?;
+        if schema != PRODUCTION_TARGET_CHAIN_KV_LIFECYCLE_SCHEMA {
+            return Err(ProductionLifecycleError::new(
+                None,
+                "target-chain lifecycle schema mismatch",
+            ));
+        }
+        let snapshot = decode_production_lifecycle_snapshot_frame(reader.read_frame(b"snapshot")?)?;
+        reader.finish()?;
+        return Ok(snapshot);
+    }
     let value: ProductionTargetChainKvLifecycleValue =
         serde_json::from_slice(bytes).map_err(|err| {
             ProductionLifecycleError::new(
@@ -32831,21 +32849,46 @@ fn decode_target_chain_kv_lifecycle_value(
 fn encode_target_chain_kv_spent_slots_value(
     records: Vec<ProductionSpentSlotRecord>,
 ) -> Result<Vec<u8>, ProductionLifecycleError> {
-    serde_json::to_vec(&ProductionTargetChainKvSpentSlotsValue {
-        schema: PRODUCTION_TARGET_CHAIN_KV_SPENT_SCHEMA.to_string(),
-        records,
-    })
-    .map_err(|err| {
-        ProductionLifecycleError::new(
-            None,
-            format!("encode target-chain spent slots value: {err}"),
-        )
-    })
+    let records = ProductionSpentSlotLedger::from_records(records)?.to_records();
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PRODUCTION_TARGET_CHAIN_KV_SPENT_SCHEMA.as_bytes(),
+    );
+    append_u64(&mut frame, b"record_count", records.len() as u64);
+    for record in &records {
+        append_frame(
+            &mut frame,
+            b"spent_slot_record",
+            &production_spent_slot_record_frame(record),
+        );
+    }
+    Ok(frame)
 }
 
 fn decode_target_chain_kv_spent_slots_value(
     bytes: &[u8],
 ) -> Result<Vec<ProductionSpentSlotRecord>, ProductionLifecycleError> {
+    if bytes.first() != Some(&b'{') {
+        let mut reader = ProductionKvFrameReader::new(bytes);
+        let schema = reader.read_utf8(b"schema")?;
+        if schema != PRODUCTION_TARGET_CHAIN_KV_SPENT_SCHEMA {
+            return Err(ProductionLifecycleError::new(
+                None,
+                "target-chain spent slots schema mismatch",
+            ));
+        }
+        let record_count = reader.read_usize(b"record_count")?;
+        let mut records = Vec::with_capacity(record_count);
+        for _ in 0..record_count {
+            records.push(decode_production_spent_slot_record_frame(
+                reader.read_frame(b"spent_slot_record")?,
+            )?);
+        }
+        reader.finish()?;
+        return ProductionSpentSlotLedger::from_records(records).map(|ledger| ledger.to_records());
+    }
     let value: ProductionTargetChainKvSpentSlotsValue =
         serde_json::from_slice(bytes).map_err(|err| {
             ProductionLifecycleError::new(
@@ -32865,21 +32908,37 @@ fn decode_target_chain_kv_spent_slots_value(
 fn encode_target_chain_kv_trusted_anchor_value(
     record: ProductionTrustedRestoreAnchorRecord,
 ) -> Result<Vec<u8>, ProductionLifecycleError> {
-    serde_json::to_vec(&ProductionTargetChainKvTrustedAnchorValue {
-        schema: PRODUCTION_TARGET_CHAIN_KV_ANCHOR_SCHEMA.to_string(),
-        record,
-    })
-    .map_err(|err| {
-        ProductionLifecycleError::new(
-            None,
-            format!("encode target-chain trusted anchor value: {err}"),
-        )
-    })
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PRODUCTION_TARGET_CHAIN_KV_ANCHOR_SCHEMA.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"record",
+        &production_trusted_restore_anchor_record_frame(&record),
+    );
+    Ok(frame)
 }
 
 fn decode_target_chain_kv_trusted_anchor_value(
     bytes: &[u8],
 ) -> Result<ProductionTrustedRestoreAnchorRecord, ProductionLifecycleError> {
+    if bytes.first() != Some(&b'{') {
+        let mut reader = ProductionKvFrameReader::new(bytes);
+        let schema = reader.read_utf8(b"schema")?;
+        if schema != PRODUCTION_TARGET_CHAIN_KV_ANCHOR_SCHEMA {
+            return Err(ProductionLifecycleError::new(
+                None,
+                "target-chain trusted anchor schema mismatch",
+            ));
+        }
+        let record =
+            decode_production_trusted_restore_anchor_record_frame(reader.read_frame(b"record")?)?;
+        reader.finish()?;
+        return Ok(record);
+    }
     let value: ProductionTargetChainKvTrustedAnchorValue =
         serde_json::from_slice(bytes).map_err(|err| {
             ProductionLifecycleError::new(
@@ -32894,6 +32953,335 @@ fn decode_target_chain_kv_trusted_anchor_value(
         ));
     }
     Ok(value.record)
+}
+
+struct ProductionKvFrameReader<'a> {
+    bytes: &'a [u8],
+    offset: usize,
+}
+
+impl<'a> ProductionKvFrameReader<'a> {
+    fn new(bytes: &'a [u8]) -> Self {
+        Self { bytes, offset: 0 }
+    }
+
+    fn read_frame(&mut self, expected_label: &[u8]) -> Result<&'a [u8], ProductionLifecycleError> {
+        let label_len = self.read_u16_len("target-chain kv label length")?;
+        let label = self.read_bytes(label_len, "target-chain kv label")?;
+        if label != expected_label {
+            return Err(ProductionLifecycleError::new(
+                None,
+                format!(
+                    "target-chain kv frame label mismatch: expected {}, got {}",
+                    String::from_utf8_lossy(expected_label),
+                    String::from_utf8_lossy(label)
+                ),
+            ));
+        }
+        let data_len = self.read_u64_len("target-chain kv data length")?;
+        self.read_bytes(data_len, "target-chain kv frame data")
+    }
+
+    fn read_u64(&mut self, label: &[u8]) -> Result<u64, ProductionLifecycleError> {
+        let bytes = self.read_frame(label)?;
+        if bytes.len() != 8 {
+            return Err(ProductionLifecycleError::new(
+                None,
+                "target-chain kv u64 field length mismatch",
+            ));
+        }
+        Ok(u64::from_le_bytes(bytes.try_into().unwrap()))
+    }
+
+    fn read_u32(&mut self, label: &[u8]) -> Result<u32, ProductionLifecycleError> {
+        let value = self.read_u64(label)?;
+        u32::try_from(value).map_err(|_| {
+            ProductionLifecycleError::new(None, "target-chain kv u32 field out of range")
+        })
+    }
+
+    fn read_usize(&mut self, label: &[u8]) -> Result<usize, ProductionLifecycleError> {
+        let value = self.read_u64(label)?;
+        usize::try_from(value).map_err(|_| {
+            ProductionLifecycleError::new(None, "target-chain kv usize field out of range")
+        })
+    }
+
+    fn read_bool(&mut self, label: &[u8]) -> Result<bool, ProductionLifecycleError> {
+        match self.read_u64(label)? {
+            0 => Ok(false),
+            1 => Ok(true),
+            _ => Err(ProductionLifecycleError::new(
+                None,
+                "target-chain kv bool field must be 0 or 1",
+            )),
+        }
+    }
+
+    fn read_digest(
+        &mut self,
+        label: &[u8],
+    ) -> Result<[u8; DIGEST_BYTES], ProductionLifecycleError> {
+        let bytes = self.read_frame(label)?;
+        bytes.try_into().map_err(|_| {
+            ProductionLifecycleError::new(None, "target-chain kv digest field length mismatch")
+        })
+    }
+
+    fn read_utf8(&mut self, label: &[u8]) -> Result<String, ProductionLifecycleError> {
+        std::str::from_utf8(self.read_frame(label)?)
+            .map(|value| value.to_string())
+            .map_err(|err| {
+                ProductionLifecycleError::new(
+                    None,
+                    format!("target-chain kv utf8 field mismatch: {err}"),
+                )
+            })
+    }
+
+    fn finish(&self) -> Result<(), ProductionLifecycleError> {
+        if self.offset == self.bytes.len() {
+            Ok(())
+        } else {
+            Err(ProductionLifecycleError::new(
+                None,
+                "target-chain kv frame has trailing bytes",
+            ))
+        }
+    }
+
+    fn read_u16_len(&mut self, context: &str) -> Result<usize, ProductionLifecycleError> {
+        let bytes = self.read_bytes(2, context)?;
+        Ok(u16::from_le_bytes(bytes.try_into().unwrap()) as usize)
+    }
+
+    fn read_u64_len(&mut self, context: &str) -> Result<usize, ProductionLifecycleError> {
+        let bytes = self.read_bytes(8, context)?;
+        let value = u64::from_le_bytes(bytes.try_into().unwrap());
+        usize::try_from(value).map_err(|_| {
+            ProductionLifecycleError::new(None, "target-chain kv frame length out of range")
+        })
+    }
+
+    fn read_bytes(
+        &mut self,
+        len: usize,
+        context: &str,
+    ) -> Result<&'a [u8], ProductionLifecycleError> {
+        let end = self.offset.checked_add(len).ok_or_else(|| {
+            ProductionLifecycleError::new(None, "target-chain kv frame length overflow")
+        })?;
+        if end > self.bytes.len() {
+            return Err(ProductionLifecycleError::new(
+                None,
+                format!("truncated {context}"),
+            ));
+        }
+        let out = &self.bytes[self.offset..end];
+        self.offset = end;
+        Ok(out)
+    }
+}
+
+fn production_lifecycle_snapshot_frame(
+    snapshot: &ProductionReviewedFq12StateAssistedLifecycleSnapshot,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_u64(&mut frame, b"snapshot_sequence", snapshot.snapshot_sequence);
+    append_u64(
+        &mut frame,
+        b"next_reservation_epoch",
+        snapshot.next_reservation_epoch,
+    );
+    append_u64(
+        &mut frame,
+        b"account_slot_count",
+        snapshot.account_slots.len() as u64,
+    );
+    for slot in &snapshot.account_slots {
+        append_frame(
+            &mut frame,
+            b"account_slot",
+            &production_account_slot_record_frame(slot),
+        );
+    }
+    append_u64(
+        &mut frame,
+        b"active_reservation_count",
+        snapshot.active_reservations.len() as u64,
+    );
+    for reservation in &snapshot.active_reservations {
+        append_frame(
+            &mut frame,
+            b"active_reservation",
+            &production_slot_reservation_frame(reservation),
+        );
+    }
+    frame
+}
+
+fn decode_production_lifecycle_snapshot_frame(
+    bytes: &[u8],
+) -> Result<ProductionReviewedFq12StateAssistedLifecycleSnapshot, ProductionLifecycleError> {
+    let mut reader = ProductionKvFrameReader::new(bytes);
+    let snapshot_sequence = reader.read_u64(b"snapshot_sequence")?;
+    let next_reservation_epoch = reader.read_u64(b"next_reservation_epoch")?;
+    let account_slot_count = reader.read_usize(b"account_slot_count")?;
+    let mut account_slots = Vec::with_capacity(account_slot_count);
+    for _ in 0..account_slot_count {
+        account_slots.push(decode_production_account_slot_record_frame(
+            reader.read_frame(b"account_slot")?,
+        )?);
+    }
+    let active_reservation_count = reader.read_usize(b"active_reservation_count")?;
+    let mut active_reservations = Vec::with_capacity(active_reservation_count);
+    for _ in 0..active_reservation_count {
+        active_reservations.push(decode_production_slot_reservation_frame(
+            reader.read_frame(b"active_reservation")?,
+        )?);
+    }
+    reader.finish()?;
+    Ok(ProductionReviewedFq12StateAssistedLifecycleSnapshot {
+        account_slots,
+        active_reservations,
+        next_reservation_epoch,
+        snapshot_sequence,
+    })
+}
+
+fn production_account_slot_record_frame(
+    slot: &ProductionReviewedFq12StateAssistedAccountSlotRecord,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_u64(&mut frame, b"slot_id", slot.slot_id as u64);
+    append_frame(&mut frame, b"witness_commitment", &slot.witness_commitment);
+    append_frame(
+        &mut frame,
+        b"randomizer_commitment",
+        &slot.randomizer_commitment,
+    );
+    append_frame(
+        &mut frame,
+        b"hidden_source_opening_commitment",
+        &slot.hidden_source_opening_commitment,
+    );
+    append_frame(
+        &mut frame,
+        b"restore_anchor_digest",
+        &slot.restore_anchor_digest,
+    );
+    append_frame(&mut frame, b"pad_seed_digest", &slot.pad_seed_digest);
+    append_u64(&mut frame, b"unused", u64::from(slot.unused));
+    frame
+}
+
+fn decode_production_account_slot_record_frame(
+    bytes: &[u8],
+) -> Result<ProductionReviewedFq12StateAssistedAccountSlotRecord, ProductionLifecycleError> {
+    let mut reader = ProductionKvFrameReader::new(bytes);
+    let slot = ProductionReviewedFq12StateAssistedAccountSlotRecord {
+        slot_id: reader.read_u32(b"slot_id")?,
+        witness_commitment: reader.read_digest(b"witness_commitment")?,
+        randomizer_commitment: reader.read_digest(b"randomizer_commitment")?,
+        hidden_source_opening_commitment: reader
+            .read_digest(b"hidden_source_opening_commitment")?,
+        restore_anchor_digest: reader.read_digest(b"restore_anchor_digest")?,
+        pad_seed_digest: reader.read_digest(b"pad_seed_digest")?,
+        unused: reader.read_bool(b"unused")?,
+    };
+    reader.finish()?;
+    Ok(slot)
+}
+
+fn production_slot_reservation_frame(reservation: &ProductionSlotReservation) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_u64(&mut frame, b"slot_id", reservation.slot_id as u64);
+    append_u64(&mut frame, b"epoch", reservation.epoch);
+    frame
+}
+
+fn decode_production_slot_reservation_frame(
+    bytes: &[u8],
+) -> Result<ProductionSlotReservation, ProductionLifecycleError> {
+    let mut reader = ProductionKvFrameReader::new(bytes);
+    let reservation = ProductionSlotReservation {
+        slot_id: reader.read_u32(b"slot_id")?,
+        epoch: reader.read_u64(b"epoch")?,
+    };
+    reader.finish()?;
+    Ok(reservation)
+}
+
+fn production_spent_slot_record_frame(record: &ProductionSpentSlotRecord) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"public_key_sha256",
+        &record.key.public_key_sha256,
+    );
+    append_u64(&mut frame, b"slot_id", record.key.slot_id as u64);
+    append_u64(&mut frame, b"snapshot_sequence", record.snapshot_sequence);
+    append_frame(&mut frame, b"source", record.source.as_bytes());
+    append_u64(
+        &mut frame,
+        b"pad_seed_digest_present",
+        u64::from(record.pad_seed_digest.is_some()),
+    );
+    if let Some(pad_seed_digest) = record.pad_seed_digest {
+        append_frame(&mut frame, b"pad_seed_digest", &pad_seed_digest);
+    }
+    frame
+}
+
+fn decode_production_spent_slot_record_frame(
+    bytes: &[u8],
+) -> Result<ProductionSpentSlotRecord, ProductionLifecycleError> {
+    let mut reader = ProductionKvFrameReader::new(bytes);
+    let key = ProductionSpentSlotKey {
+        public_key_sha256: reader.read_digest(b"public_key_sha256")?,
+        slot_id: reader.read_u32(b"slot_id")?,
+    };
+    let snapshot_sequence = reader.read_u64(b"snapshot_sequence")?;
+    let source = reader.read_utf8(b"source")?;
+    let pad_seed_digest = if reader.read_bool(b"pad_seed_digest_present")? {
+        Some(reader.read_digest(b"pad_seed_digest")?)
+    } else {
+        None
+    };
+    reader.finish()?;
+    Ok(ProductionSpentSlotRecord {
+        key,
+        snapshot_sequence,
+        source,
+        pad_seed_digest,
+    })
+}
+
+fn production_trusted_restore_anchor_record_frame(
+    record: &ProductionTrustedRestoreAnchorRecord,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"public_key_sha256", &record.public_key_sha256);
+    append_u64(
+        &mut frame,
+        b"minimum_snapshot_sequence",
+        record.minimum_snapshot_sequence,
+    );
+    append_frame(&mut frame, b"placement", record.placement.as_bytes());
+    frame
+}
+
+fn decode_production_trusted_restore_anchor_record_frame(
+    bytes: &[u8],
+) -> Result<ProductionTrustedRestoreAnchorRecord, ProductionLifecycleError> {
+    let mut reader = ProductionKvFrameReader::new(bytes);
+    let record = ProductionTrustedRestoreAnchorRecord {
+        public_key_sha256: reader.read_digest(b"public_key_sha256")?,
+        minimum_snapshot_sequence: reader.read_u64(b"minimum_snapshot_sequence")?,
+        placement: reader.read_utf8(b"placement")?,
+    };
+    reader.finish()?;
+    Ok(record)
 }
 
 fn current_unix_nanos() -> Result<u64, ProductionLifecycleError> {
@@ -43758,6 +44146,92 @@ end Path2NativeAccountDesign
         assert_ne!(
             production_target_chain_database_adapter_profile_digest(&profile),
             production_target_chain_database_adapter_profile_digest(&changed_profile)
+        );
+    }
+
+    #[test]
+    fn production_target_chain_kv_values_use_framed_codec_with_json_fallback() {
+        let public_key = ProductionPublicKey::new(vec![0_u8; PK_BYTES]).unwrap();
+        let public_key_sha256 = ProductionSpentSlotLedger::key(&public_key, 0).public_key_sha256;
+        let slot_record = ProductionReviewedFq12StateAssistedAccountSlotRecord {
+            slot_id: 0,
+            witness_commitment: test_digest("kv-slot-witness"),
+            randomizer_commitment: test_digest("kv-slot-randomizer"),
+            hidden_source_opening_commitment: test_digest("kv-slot-opening"),
+            restore_anchor_digest: test_digest("kv-slot-restore"),
+            pad_seed_digest: test_digest("kv-slot-pad"),
+            unused: false,
+        };
+        let snapshot = ProductionReviewedFq12StateAssistedLifecycleSnapshot {
+            account_slots: vec![slot_record],
+            active_reservations: vec![ProductionSlotReservation {
+                slot_id: 0,
+                epoch: 7,
+            }],
+            next_reservation_epoch: 8,
+            snapshot_sequence: 9,
+        };
+        let lifecycle_bytes = encode_target_chain_kv_lifecycle_value(snapshot.clone()).unwrap();
+        assert_ne!(lifecycle_bytes.first(), Some(&b'{'));
+        assert_eq!(
+            decode_target_chain_kv_lifecycle_value(&lifecycle_bytes).unwrap(),
+            snapshot
+        );
+        let legacy_lifecycle_bytes = serde_json::to_vec(&ProductionTargetChainKvLifecycleValue {
+            schema: PRODUCTION_TARGET_CHAIN_KV_LIFECYCLE_SCHEMA.to_string(),
+            snapshot: snapshot.clone(),
+        })
+        .unwrap();
+        assert_eq!(
+            decode_target_chain_kv_lifecycle_value(&legacy_lifecycle_bytes).unwrap(),
+            snapshot
+        );
+
+        let spent_record = ProductionSpentSlotRecord {
+            key: ProductionSpentSlotKey {
+                public_key_sha256,
+                slot_id: 0,
+            },
+            snapshot_sequence: 9,
+            source: "selected_projection_consensus".to_string(),
+            pad_seed_digest: Some(test_digest("kv-spent-pad")),
+        };
+        let spent_bytes = encode_target_chain_kv_spent_slots_value(vec![spent_record.clone()])
+            .expect("framed spent slots encode");
+        assert_ne!(spent_bytes.first(), Some(&b'{'));
+        assert_eq!(
+            decode_target_chain_kv_spent_slots_value(&spent_bytes).unwrap(),
+            vec![spent_record.clone()]
+        );
+        let legacy_spent_bytes = serde_json::to_vec(&ProductionTargetChainKvSpentSlotsValue {
+            schema: PRODUCTION_TARGET_CHAIN_KV_SPENT_SCHEMA.to_string(),
+            records: vec![spent_record.clone()],
+        })
+        .unwrap();
+        assert_eq!(
+            decode_target_chain_kv_spent_slots_value(&legacy_spent_bytes).unwrap(),
+            vec![spent_record]
+        );
+
+        let anchor = ProductionTrustedRestoreAnchorRecord {
+            public_key_sha256,
+            minimum_snapshot_sequence: 9,
+            placement: PRODUCTION_TRUSTED_RESTORE_ANCHOR_CHAIN_OBSERVED_PLACEMENT.to_string(),
+        };
+        let anchor_bytes = encode_target_chain_kv_trusted_anchor_value(anchor.clone()).unwrap();
+        assert_ne!(anchor_bytes.first(), Some(&b'{'));
+        assert_eq!(
+            decode_target_chain_kv_trusted_anchor_value(&anchor_bytes).unwrap(),
+            anchor
+        );
+        let legacy_anchor_bytes = serde_json::to_vec(&ProductionTargetChainKvTrustedAnchorValue {
+            schema: PRODUCTION_TARGET_CHAIN_KV_ANCHOR_SCHEMA.to_string(),
+            record: anchor.clone(),
+        })
+        .unwrap();
+        assert_eq!(
+            decode_target_chain_kv_trusted_anchor_value(&legacy_anchor_bytes).unwrap(),
+            anchor
         );
     }
 
