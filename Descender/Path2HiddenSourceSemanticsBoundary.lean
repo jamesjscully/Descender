@@ -2353,6 +2353,28 @@ def ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget
         P.reviewedFq12PayloadExtracts b payload h
 
 /--
+Concrete predicate-model obligation for valid aggregate full-opening bridge
+digest certificates.
+
+The aggregate bridge object is only meaningful when its validity predicate
+enforces the byte-level digest binding across payload, extraction, role-lift,
+assembly, and compatibility certificates.
+-/
+def ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget
+    (P : Predicates) : Prop :=
+  forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {liftCert : ReviewedFq12FullNativeOpeningCertificate}
+      {assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate}
+      {compatCert : ReviewedFq12ExtractionCompatibilityCertificate}
+      {bridgeCert : ReviewedFq12FullOpeningBridgeDigestCertificate},
+    P.reviewedFq12FullOpeningBridgeDigestCertificateValid
+        b payload cert liftCert assemblyCert compatCert bridgeCert ->
+      ReviewedFq12FullOpeningBridgeDigestCertificateBinds
+        payload cert liftCert assemblyCert compatCert bridgeCert
+
+/--
 Selected Rust native-boundary predicate-model import target.
 
 The full-spend concrete predicates are not this object: they live over concrete
@@ -2397,6 +2419,8 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
   compatibilityExtractionImpliesReviewedExtraction :
     ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget
       predicates
+  fullOpeningBridgeDigestValidityBinds :
+    ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget predicates
   reviewedFq12PayloadAcceptanceModeled : Prop
   reviewedFq12PayloadAcceptanceModeledProof :
     reviewedFq12PayloadAcceptanceModeled

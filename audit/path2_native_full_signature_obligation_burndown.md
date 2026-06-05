@@ -167,6 +167,10 @@ representative, while
 `ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget` ties
 compatibility-certificate extraction to both reviewed-Fq12 extraction
 predicates.
+`ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget` requires the
+aggregate full-opening bridge digest certificate validity predicate to enforce
+the digest binding across payload, extraction, role-lift, assembly, and
+compatibility certificates.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It

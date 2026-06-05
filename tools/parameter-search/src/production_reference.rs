@@ -7561,6 +7561,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_assembly_certificate_full_native_target_present: bool,
     pub native_boundary_compatibility_validity_binds_target_present: bool,
     pub native_boundary_compatibility_extraction_reviewed_target_present: bool,
+    pub native_boundary_full_opening_bridge_digest_binds_target_present: bool,
     pub native_boundary_semantics_package_target_present: bool,
     pub native_boundary_semantics_source_package_target_present: bool,
     pub native_boundary_semantics_package_handoff_present: bool,
@@ -8785,6 +8786,16 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
+    let native_boundary_full_opening_bridge_digest_binds_target_present = [
+        "ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget",
+        "fullOpeningBridgeDigestValidityBinds",
+        "P.reviewedFq12FullOpeningBridgeDigestCertificateValid",
+        "b payload cert liftCert assemblyCert compatCert bridgeCert",
+        "ReviewedFq12FullOpeningBridgeDigestCertificateBinds",
+        "payload cert liftCert assemblyCert compatCert bridgeCert",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
     let native_boundary_semantics_package_target_present = [
         "ReviewedFq12SelectedRustNativeBoundarySemanticsPackage",
         "predicates : Predicates",
@@ -9166,6 +9177,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_assembly_certificate_full_native_target_present,
         native_boundary_compatibility_validity_binds_target_present,
         native_boundary_compatibility_extraction_reviewed_target_present,
+        native_boundary_full_opening_bridge_digest_binds_target_present,
         native_boundary_semantics_package_target_present,
         native_boundary_semantics_source_package_target_present,
         native_boundary_semantics_package_handoff_present,
@@ -56518,6 +56530,9 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(source_record_subcheck.native_boundary_compatibility_validity_binds_target_present);
         assert!(
             source_record_subcheck.native_boundary_compatibility_extraction_reviewed_target_present
+        );
+        assert!(
+            source_record_subcheck.native_boundary_full_opening_bridge_digest_binds_target_present
         );
         assert!(source_record_subcheck.native_boundary_semantics_package_target_present);
         assert!(source_record_subcheck.native_boundary_semantics_source_package_target_present);
