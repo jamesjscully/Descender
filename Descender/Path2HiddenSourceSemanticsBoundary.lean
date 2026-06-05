@@ -464,6 +464,54 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourc
     witnessSources
 
 /--
+Named constructor for the final selected Rust/model five-source certificate
+when both byte-shaped source records are supplied by public evidence-backed
+certificates.
+-/
+def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourceRouteAndWitnessCertificates
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (evidenceReport :
+      ReviewedFq12SelectedRustFiveSourceClosureEvidence)
+    (evidenceReportVerifiedProof :
+      evidenceReport.ReportVerified)
+    (evidenceFactsAllTrueProof :
+      evidenceReport.FactsAllTrue)
+    (payloadProjectsFrom :
+      forall {b : Path2NativeBoundary.Boundary}
+          {payload : ReviewedFq12HiddenSourcePayload},
+        P.reviewedFq12PayloadAccepts b payload ->
+          payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+            payload.slotId = b.context.slotId ->
+          P.reviewedFq12PayloadProjectsFrom b payload)
+    (certificateAvailability :
+      ReviewedFq12ExtractionCertificateAvailability P)
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (selectedSourceRouteCertificate :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+        FieldParser RouteParser P)
+    (assemblySource :
+      ReviewedFq12FieldConcreteAssemblyLocalSource P)
+    (compatibilitySource :
+      ReviewedFq12FieldConcreteCompatibilitySource P)
+    (witnessSourcesCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+      FieldParser RouteParser CanonicalParser WitnessParser P :=
+  ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources
+    evidenceReport evidenceReportVerifiedProof evidenceFactsAllTrueProof
+    payloadProjectsFrom certificateAvailability roleRootLiftSource
+    selectedSourceRouteCertificate.toByteSource assemblySource compatibilitySource
+    witnessSourcesCertificate.toWitnessSources
+
+/--
 Active AP2-N001 boundary closure from the five selected Rust/model source
 records.
 

@@ -4838,6 +4838,100 @@ structure ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
     nativeDigestFrameWitnessByteSource.digestFrame = digestFrame
 
 /--
+Lean mirror of the public shared digest-frame witness evidence report.
+
+The active AP2-N001 theorem consumes one Rust representative digest frame
+through two byte witnesses: the canonical-representative side and the assembly
+representative-frame side.  This report records that the selected Rust
+evidence pinned both parsers, both byte certificates, the shared digest-frame
+equality checks, verifier bindings, and negative controls before the raw
+witness source bundle may be exposed to the five-source closure certificate.
+-/
+structure ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport where
+  schemaMatches : Bool
+  reportDigestVerified : Bool
+  canonicalWitnessParserPinned : Bool
+  digestFrameWitnessParserPinned : Bool
+  sharedDigestFramePinned : Bool
+  canonicalWitnessByteCertificatePinned : Bool
+  digestFrameWitnessByteCertificatePinned : Bool
+  representativeDigestFrameSourcePinned : Bool
+  canonicalWitnessVerifierPinned : Bool
+  digestFrameWitnessVerifierPinned : Bool
+  sharedDigestFrameNegativeControlsPassed : Bool
+
+namespace ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport
+
+/-- The public shared witness report has been digest/schema checked. -/
+def ReportVerified
+    (E : ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport) :
+    Prop :=
+  E.schemaMatches = true ∧
+    E.reportDigestVerified = true
+
+/-- Every shared digest-frame witness component fact in the report holds. -/
+def FactsAllTrue
+    (E : ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport) :
+    Prop :=
+  E.canonicalWitnessParserPinned = true ∧
+    E.digestFrameWitnessParserPinned = true ∧
+    E.sharedDigestFramePinned = true ∧
+    E.canonicalWitnessByteCertificatePinned = true ∧
+    E.digestFrameWitnessByteCertificatePinned = true ∧
+    E.representativeDigestFrameSourcePinned = true ∧
+    E.canonicalWitnessVerifierPinned = true ∧
+    E.digestFrameWitnessVerifierPinned = true ∧
+    E.sharedDigestFrameNegativeControlsPassed = true
+
+end ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport
+
+/--
+Proof-bearing selected Rust shared digest-frame witness certificate.
+
+This keeps the AP2-N001 final theorem from accepting an arbitrary
+`ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources` value.  The
+future Rust/model instantiation must first supply public evidence and proofs
+that the evidence report was verified and all component checks passed.
+-/
+structure ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+    (CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
+    (P : Predicates) where
+  evidenceReport :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport
+  evidenceReportVerifiedProof :
+    evidenceReport.ReportVerified
+  evidenceFactsAllTrueProof :
+    evidenceReport.FactsAllTrue
+  witnessSources :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+      CanonicalParser WitnessParser P
+
+namespace ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+
+/-- Expose the shared witness sources only after consuming report proofs. -/
+def toWitnessSources
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+      CanonicalParser WitnessParser P :=
+  let _hReport : Cert.evidenceReport.ReportVerified :=
+    Cert.evidenceReportVerifiedProof
+  let _hFacts : Cert.evidenceReport.FactsAllTrue :=
+    Cert.evidenceFactsAllTrueProof
+  Cert.witnessSources
+
+end ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+
+/--
 P2FS-001 closure from selected Rust witness byte sources that are explicitly
 pinned to the same representative digest frame.
 -/
