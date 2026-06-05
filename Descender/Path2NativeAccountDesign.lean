@@ -1547,6 +1547,12 @@ spend forgeries under named bad events.
 structure NativeAcceptedSpendSoundnessBoundary where
   acceptedSpendForgeryProb : ℝ
   acceptedSpendForgeryBound : ℝ
+  productionAcceptedSpendForgeryProb : ℝ
+  productionAcceptedSpendForgeryBound : ℝ
+  acceptedSpendForgeryProbPinned :
+    acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb
+  acceptedSpendForgeryBoundPinned :
+    acceptedSpendForgeryBound = productionAcceptedSpendForgeryBound
   acceptedSpendForgery_le_bound :
     acceptedSpendForgeryProb <= acceptedSpendForgeryBound
   hiddenSourceProofSemanticsClosed : Prop
@@ -1604,6 +1610,12 @@ structure SelectedRustAcceptedSpendSoundnessCertificate where
     evidenceReport.FactsAllTrue
   acceptedSpendForgeryProb : ℝ
   acceptedSpendForgeryBound : ℝ
+  productionAcceptedSpendForgeryProb : ℝ
+  productionAcceptedSpendForgeryBound : ℝ
+  acceptedSpendForgeryProbPinned :
+    acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb
+  acceptedSpendForgeryBoundPinned :
+    acceptedSpendForgeryBound = productionAcceptedSpendForgeryBound
   acceptedSpendForgery_le_bound :
     acceptedSpendForgeryProb <= acceptedSpendForgeryBound
   hiddenSourceProofSemanticsClosed : Prop
@@ -1621,6 +1633,12 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
       evidenceReport.FactsAllTrue)
     (acceptedSpendForgeryProb : ℝ)
     (acceptedSpendForgeryBound : ℝ)
+    (productionAcceptedSpendForgeryProb : ℝ)
+    (productionAcceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgeryProbPinned :
+      acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb)
+    (acceptedSpendForgeryBoundPinned :
+      acceptedSpendForgeryBound = productionAcceptedSpendForgeryBound)
     (acceptedSpendForgery_le_bound :
       acceptedSpendForgeryProb <= acceptedSpendForgeryBound)
     (hiddenSourceProofSemanticsClosed : Prop)
@@ -1636,6 +1654,10 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
     selectedRustAcceptedSpendFactsAllTrueProof
   acceptedSpendForgeryProb := acceptedSpendForgeryProb
   acceptedSpendForgeryBound := acceptedSpendForgeryBound
+  productionAcceptedSpendForgeryProb := productionAcceptedSpendForgeryProb
+  productionAcceptedSpendForgeryBound := productionAcceptedSpendForgeryBound
+  acceptedSpendForgeryProbPinned := acceptedSpendForgeryProbPinned
+  acceptedSpendForgeryBoundPinned := acceptedSpendForgeryBoundPinned
   acceptedSpendForgery_le_bound := acceptedSpendForgery_le_bound
   hiddenSourceProofSemanticsClosed := hiddenSourceProofSemanticsClosed
   checkedCoreCompositionClosed := checkedCoreCompositionClosed
@@ -1650,11 +1672,27 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
     Cert.acceptedSpendForgeryProb
   acceptedSpendForgeryBound :=
     Cert.acceptedSpendForgeryBound
+  productionAcceptedSpendForgeryProb :=
+    Cert.productionAcceptedSpendForgeryProb
+  productionAcceptedSpendForgeryBound :=
+    Cert.productionAcceptedSpendForgeryBound
+  acceptedSpendForgeryProbPinned :=
+    Cert.acceptedSpendForgeryProbPinned
+  acceptedSpendForgeryBoundPinned :=
+    Cert.acceptedSpendForgeryBoundPinned
   acceptedSpendForgery_le_bound := by
     let _hVerified : Cert.evidenceReport.ReportVerified :=
       Cert.selectedRustAcceptedSpendBoundVerifiedProof
     let _hFacts : Cert.evidenceReport.FactsAllTrue :=
       Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hProbPinned :
+        Cert.acceptedSpendForgeryProb =
+          Cert.productionAcceptedSpendForgeryProb :=
+      Cert.acceptedSpendForgeryProbPinned
+    let _hBoundPinned :
+        Cert.acceptedSpendForgeryBound =
+          Cert.productionAcceptedSpendForgeryBound :=
+      Cert.acceptedSpendForgeryBoundPinned
     exact Cert.acceptedSpendForgery_le_bound
   hiddenSourceProofSemanticsClosed :=
     Cert.hiddenSourceProofSemanticsClosed

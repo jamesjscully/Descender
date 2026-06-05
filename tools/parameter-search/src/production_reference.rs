@@ -21878,6 +21878,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "acceptedSpendForgeryProb",
         "acceptedSpendForgeryBound",
         "acceptedSpendForgery_le_bound",
+        "selectedRustProductionAcceptedSpendForgeryProb",
+        "selectedRustProductionAcceptedSpendForgeryBound",
+        "selectedRustAcceptedSpendForgeryProbPinned",
+        "selectedRustAcceptedSpendForgeryBoundPinned",
         "selectedRustAcceptedSpendHiddenSourceClosed",
         "selectedRustAcceptedSpendCheckedCoreClosed",
         "selectedRustAcceptedSpendLifecycleClosed",
@@ -21897,6 +21901,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "selectedRustAcceptedSpendForgeryProb",
         "selectedRustAcceptedSpendForgeryBound",
         "selectedRustAcceptedSpendForgeryLeBound",
+        "selectedRustProductionAcceptedSpendForgeryProb",
+        "selectedRustProductionAcceptedSpendForgeryBound",
+        "selectedRustAcceptedSpendForgeryProbPinned",
+        "selectedRustAcceptedSpendForgeryBoundPinned",
         "selectedRustAcceptedSpendHiddenSourceClosed",
         "selectedRustAcceptedSpendCheckedCoreClosed",
         "selectedRustAcceptedSpendLifecycleClosed",
@@ -21939,6 +21947,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "let selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
         "let selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
         "selectedRustAcceptedSpendSoundnessCertificate := {",
+        "selectedRustAcceptedSpendForgeryProb := 0",
+        "selectedRustAcceptedSpendForgeryBound := 0",
     ];
     if forbidden_vacuous_terms
         .iter()
@@ -21959,6 +21969,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "selectedRustAcceptedSpendForgeryProb",
         "selectedRustAcceptedSpendForgeryBound",
         "selectedRustAcceptedSpendForgeryLeBound",
+        "selectedRustProductionAcceptedSpendForgeryProb",
+        "selectedRustProductionAcceptedSpendForgeryBound",
+        "selectedRustAcceptedSpendForgeryProbPinned",
+        "selectedRustAcceptedSpendForgeryBoundPinned",
         "selectedRustAcceptedSpendHiddenSourceClosed",
         "selectedRustAcceptedSpendCheckedCoreClosed",
         "selectedRustAcceptedSpendLifecycleClosed",
@@ -44552,6 +44566,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
       selectedRustAcceptedSpendFactsAllTrueProof
       selectedRustAcceptedSpendForgeryProb
       selectedRustAcceptedSpendForgeryBound
+      selectedRustProductionAcceptedSpendForgeryProb
+      selectedRustProductionAcceptedSpendForgeryBound
+      selectedRustAcceptedSpendForgeryProbPinned
+      selectedRustAcceptedSpendForgeryBoundPinned
       selectedRustAcceptedSpendForgeryLeBound
       True
       True
@@ -44567,6 +44585,37 @@ end Path2NativeAccountDesign
                 vacuous_constructor_accepted_spend_closures
             )
         );
+        let vacuous_constructor_accepted_spend_zero_bound = r#"
+theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
+    NativeAcceptedSpendSoundnessBoundary := by
+  let selectedRustAcceptedSpendSoundnessCertificate :
+      SelectedRustAcceptedSpendSoundnessCertificate :=
+    SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
+      selectedRustAcceptedSpendEvidenceReport
+      selectedRustAcceptedSpendEvidenceDigest
+      selectedRustAcceptedSpendBoundVerifiedProof
+      selectedRustAcceptedSpendFactsAllTrueProof
+      0
+      0
+      0
+      0
+      selectedRustAcceptedSpendForgeryProbPinned
+      selectedRustAcceptedSpendForgeryBoundPinned
+      selectedRustAcceptedSpendForgeryLeBound
+      selectedRustAcceptedSpendHiddenSourceClosed
+      selectedRustAcceptedSpendCheckedCoreClosed
+      selectedRustAcceptedSpendLifecycleClosed
+      selectedRustAcceptedSpendNoExportClosed
+  exact
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+      selectedRustAcceptedSpendSoundnessCertificate
+end Path2NativeAccountDesign
+"#;
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                vacuous_constructor_accepted_spend_zero_bound
+            )
+        );
         let accepted_spend_instantiation_shape = r#"
 theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     NativeAcceptedSpendSoundnessBoundary := by
@@ -44579,6 +44628,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
       selectedRustAcceptedSpendFactsAllTrueProof
       selectedRustAcceptedSpendForgeryProb
       selectedRustAcceptedSpendForgeryBound
+      selectedRustProductionAcceptedSpendForgeryProb
+      selectedRustProductionAcceptedSpendForgeryBound
+      selectedRustAcceptedSpendForgeryProbPinned
+      selectedRustAcceptedSpendForgeryBoundPinned
       selectedRustAcceptedSpendForgeryLeBound
       selectedRustAcceptedSpendHiddenSourceClosed
       selectedRustAcceptedSpendCheckedCoreClosed
