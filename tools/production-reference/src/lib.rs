@@ -89,7 +89,8 @@ pub use descender_parameter_search::production_reference::{
     PATH2_NATIVE_STORAGE_LIFECYCLE_HARDENING_SCOPE_SCHEMA,
     PATH2_NATIVE_VERIFIER_PIPELINE_VERDICT_SCHEMA, PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA,
     PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA, PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA,
-    PIVOT_COORDS, PK_BYTES, PK_PAYLOAD_BYTES, PK_SEED_BYTES, PRODUCTION_CALLBACK_BOUNDARIES,
+    PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA, PIVOT_COORDS, PK_BYTES,
+    PK_PAYLOAD_BYTES, PK_SEED_BYTES, PRODUCTION_CALLBACK_BOUNDARIES,
     PRODUCTION_DEPLOYMENT_BLOCKER_CALLBACK_BOUNDARIES, PRODUCTION_DEPLOYMENT_BLOCKER_CONSTANT_TIME,
     PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW, PRODUCTION_DEPLOYMENT_BLOCKER_FINAL_VERIFIER,
     PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS,
@@ -128,7 +129,8 @@ pub use descender_parameter_search::production_reference::{
     Path2NativeSignerVerifierPipelineEvidenceV1, Path2NativeSpendProjectionV1,
     Path2NativeStateProjectionV1, Path2NativeStorageLifecycleHardeningScopeV1,
     Path2NativeTranscriptProjectionV1, Path2NativeVerifierPipelineVerdictV1,
-    Path2ReviewedFq12FiveSourceClosureEvidenceV1, ProductionAccountBindingError,
+    Path2ReviewedFq12FiveSourceClosureEvidenceV1,
+    Path2SelectedRustModelConcreteDefinitionChecklistV1, ProductionAccountBindingError,
     ProductionAccountCommitment, ProductionAccountLifecycleManager, ProductionAccountSlot,
     ProductionAccountSlotRecord, ProductionAccountSlotSeed, ProductionAccountState,
     ProductionCallbackBoundaryClassification, ProductionCallbackErrorPolicy,
@@ -332,6 +334,9 @@ pub use descender_parameter_search::production_reference::{
     path2_reviewed_fq12_five_source_closure_evidence_v1,
     path2_reviewed_fq12_five_source_closure_evidence_v1_digest,
     path2_reviewed_fq12_five_source_closure_evidence_v1_frame,
+    path2_selected_rust_model_concrete_definition_checklist_v1,
+    path2_selected_rust_model_concrete_definition_checklist_v1_digest,
+    path2_selected_rust_model_concrete_definition_checklist_v1_frame,
     production_callback_boundary_classification, production_canonical_node_store_conformance_check,
     production_deployment_preflight, production_deployment_preflight_blocker_digest,
     production_deployment_preflight_blocker_report,
@@ -351,6 +356,7 @@ pub use descender_parameter_search::production_reference::{
     require_reviewed_fq12_account_carried_signature_carried_deployable,
     require_reviewed_fq12_hidden_source_proof_deployable_verdict,
     verify_path2_native_hash_byte_domain_evidence_v1,
+    verify_path2_selected_rust_model_concrete_definition_checklist_v1,
     reviewed_account_carried_matrix_entry, reviewed_account_carried_response_syndrome,
     reviewed_account_carried_response_syndrome_digest,
     reviewed_fq12_account_carried_expected_response_syndrome,
@@ -1478,6 +1484,33 @@ mod tests {
             preflight
                 .blockers
                 .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS)
+        );
+        let selected_source_checklist = path2_selected_rust_model_concrete_definition_checklist_v1();
+        assert_eq!(
+            selected_source_checklist.schema,
+            PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA
+        );
+        assert!(!selected_source_checklist.evidence_report_definitions_present);
+        assert!(!selected_source_checklist.evidence_digest_definitions_present);
+        assert!(!selected_source_checklist.evidence_proof_definitions_present);
+        assert!(!selected_source_checklist.source_record_definitions_present);
+        assert!(!selected_source_checklist.sub_evidence_digest_match_proof_present);
+        assert!(!selected_source_checklist.all_definitions_present);
+        assert_eq!(selected_source_checklist.missing_definition_category_count, 5);
+        assert!(!path2_selected_rust_model_concrete_definition_checklist_v1_frame(
+            &selected_source_checklist
+        )
+        .is_empty());
+        let selected_source_checklist_digest =
+            verify_path2_selected_rust_model_concrete_definition_checklist_v1(
+                &selected_source_checklist,
+            )
+            .expect("selected-source concrete-definition checklist is canonical");
+        assert_eq!(
+            selected_source_checklist_digest,
+            path2_selected_rust_model_concrete_definition_checklist_v1_digest(
+                &selected_source_checklist
+            )
         );
         let report = production_deployment_preflight_report();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
