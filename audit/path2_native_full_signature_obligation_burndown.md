@@ -142,6 +142,9 @@ payloads to the native boundary digest and slot, while
 to the same boundary and payload statement digests.
 `ReviewedFq12ExtractionCertificateValidityMatchesPayload` applies the same
 binding discipline to the separately consumed certificate-validity predicate.
+`ReviewedFq12CertificateExtractionImpliesPayloadExtraction` ties certificate
+extraction to payload extraction for the same hidden representative, preventing
+the two extraction predicates from drifting apart in the selected model.
 
 2026-06-05 concrete-definition blocker update: the Rust bridge audit now has a
 separate `selected_rust_model_concrete_definitions_present` status bit. It

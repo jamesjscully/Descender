@@ -2202,6 +2202,23 @@ def ReviewedFq12ExtractionCertificateValidityMatchesPayload
             cert.reviewedStatementDigest = payload.statementDigest
 
 /--
+Concrete predicate-model obligation connecting certificate extraction to
+payload extraction.
+
+The native soundness statement consumes both predicates for the same hidden
+representative, so the selected model must not let certificate extraction drift
+away from the payload extraction relation it is supposed to justify.
+-/
+def ReviewedFq12CertificateExtractionImpliesPayloadExtraction
+    (P : Predicates) : Prop :=
+  forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {h : HiddenRepresentative},
+    P.reviewedFq12CertificateExtracts b payload cert h ->
+      P.reviewedFq12PayloadExtracts b payload h
+
+/--
 Selected Rust native-boundary predicate-model import target.
 
 The full-spend concrete predicates are not this object: they live over concrete
@@ -2227,6 +2244,8 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
     ReviewedFq12ExtractionCertificateMatchesPayload predicates
   extractionCertificateValidityMatchesPayload :
     ReviewedFq12ExtractionCertificateValidityMatchesPayload predicates
+  certificateExtractionImpliesPayloadExtraction :
+    ReviewedFq12CertificateExtractionImpliesPayloadExtraction predicates
   reviewedFq12PayloadAcceptanceModeled : Prop
   reviewedFq12PayloadAcceptanceModeledProof :
     reviewedFq12PayloadAcceptanceModeled

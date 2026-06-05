@@ -7552,6 +7552,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_payload_acceptance_boundary_match_target_present: bool,
     pub native_boundary_extraction_certificate_payload_match_target_present: bool,
     pub native_boundary_extraction_certificate_validity_match_target_present: bool,
+    pub native_boundary_certificate_extraction_payload_consistency_target_present: bool,
     pub native_boundary_semantics_package_target_present: bool,
     pub native_boundary_semantics_source_package_target_present: bool,
     pub native_boundary_semantics_package_handoff_present: bool,
@@ -8695,6 +8696,14 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
+    let native_boundary_certificate_extraction_payload_consistency_target_present = [
+        "ReviewedFq12CertificateExtractionImpliesPayloadExtraction",
+        "certificateExtractionImpliesPayloadExtraction",
+        "P.reviewedFq12CertificateExtracts b payload cert h",
+        "P.reviewedFq12PayloadExtracts b payload h",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
     let native_boundary_semantics_package_target_present = [
         "ReviewedFq12SelectedRustNativeBoundarySemanticsPackage",
         "predicates : Predicates",
@@ -9067,6 +9076,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_payload_acceptance_boundary_match_target_present,
         native_boundary_extraction_certificate_payload_match_target_present,
         native_boundary_extraction_certificate_validity_match_target_present,
+        native_boundary_certificate_extraction_payload_consistency_target_present,
         native_boundary_semantics_package_target_present,
         native_boundary_semantics_source_package_target_present,
         native_boundary_semantics_package_handoff_present,
@@ -56393,6 +56403,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(
             source_record_subcheck
                 .native_boundary_extraction_certificate_validity_match_target_present
+        );
+        assert!(
+            source_record_subcheck
+                .native_boundary_certificate_extraction_payload_consistency_target_present
         );
         assert!(source_record_subcheck.native_boundary_semantics_package_target_present);
         assert!(source_record_subcheck.native_boundary_semantics_source_package_target_present);
