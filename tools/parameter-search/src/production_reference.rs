@@ -7786,6 +7786,8 @@ fn path2_reviewed_fq12_five_source_closure_evidence_source_present_v1() -> bool 
 fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
     boundary_source: &str,
 ) -> bool {
+    let stripped_boundary_source = lean_source_without_comments_and_strings_v1(boundary_source);
+    let boundary_source = stripped_boundary_source.as_str();
     let selected_source_names = [
         "selectedRustPayloadProjectionLaw",
         "selectedRustExtractionCertificateAvailability",
@@ -7836,6 +7838,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "def",
         "selectedRustFiveSourceEvidenceReport",
         &[
+            "schemaMatches:=true",
             "bridgeAuditValidated:=true",
             "bridgeAuditDigest:=ByteArray.empty",
             "bridgeAuditDigestBound:=true",
@@ -46390,11 +46393,47 @@ variable
                 variable_stubbed_boundary_source
             )
         );
+        let commented_stubbed_boundary_source = r#"
+/-
+axiom selectedRustPayloadProjectionLaw : payload_projection_law
+def selectedRustFiveSourceEvidenceReport :
+    ReviewedFq12SelectedRustFiveSourceClosureEvidence :=
+  { schemaMatches := true
+    bridgeAuditValidated := true
+    bridgeAuditDigest := ByteArray.empty
+    bridgeAuditDigestBound := true
+    reportDigestVerified := true
+    selectedRustModelFiveSourceInputsReady := true
+    leanFullSignatureHiddenSourceHandoffPresent := true }
+-/
+"#;
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+                commented_stubbed_boundary_source
+            )
+        );
+        let string_stubbed_boundary_source = r#"
+def marker_blob :=
+  "axiom selectedRustPayloadProjectionLaw : payload_projection_law
+   def selectedRustFiveSourceEvidenceReport :=
+     { schemaMatches := true
+       bridgeAuditValidated := true
+       bridgeAuditDigest := ByteArray.empty
+       bridgeAuditDigestBound := true
+       reportDigestVerified := true
+       selectedRustModelFiveSourceInputsReady := true
+       leanFullSignatureHiddenSourceHandoffPresent := true }"
+"#;
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+                string_stubbed_boundary_source
+            )
+        );
         let vacuous_verified_def_boundary_source = r#"
 def selectedRustFiveSourceEvidenceReport :
     ReviewedFq12SelectedRustFiveSourceClosureEvidence :=
-  { bridgeAuditValidated := true
-    schemaMatches := true
+  { schemaMatches := true
+    bridgeAuditValidated := true
     bridgeAuditDigest := ByteArray.empty
     bridgeAuditDigestBound := true
     reportDigestVerified := true
