@@ -8364,7 +8364,9 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs",
+        "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate",
         "with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs",
+        "with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_certificate",
         "ReviewedFq12SelectedRustBoundaryBaseEvidenceReport",
         "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate",
         "NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure",
@@ -8406,7 +8408,9 @@ fn lean_path2_full_signature_hidden_source_handoff_present_v1() -> bool {
         "hMultiTarget",
         "full_signature_with_reviewed_fq12_hidden_source_closure_closed",
         "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_inputs",
+        "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_certificate",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs",
+        "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate",
         "acceptedSpendSoundness.hiddenSourceProofSemanticsClosed",
     ]
     .iter()
@@ -9225,12 +9229,9 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "let selectedRustModelFiveSourceCertificate :",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates",
-        "let selectedRustModelFiveSourceInputs :",
-        "ReviewedFq12SelectedRustModelFiveSourceClosureInputs",
-        "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs",
         "selectedRustModelFiveSourceCertificate",
-        "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs",
-        "selectedRustModelFiveSourceInputs",
+        "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate",
+        "P selectedRustModelFiveSourceCertificate",
     ]
     .iter()
     .all(|marker| theorem_source.contains(marker))
@@ -53666,14 +53667,9 @@ theorem {theorem_name}
       ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
         FieldParser RouteParser CanonicalParser WitnessParser P) :
     ReviewedFq12HiddenSourceProofSemanticsClosed P := by
-  let selectedRustModelFiveSourceInputs :
-      ReviewedFq12SelectedRustModelFiveSourceClosureInputs
-        FieldParser RouteParser CanonicalParser WitnessParser P :=
-    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
-      selectedRustModelFiveSourceCertificate
   exact
-    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
-      P selectedRustModelFiveSourceInputs
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate
+      P selectedRustModelFiveSourceCertificate
 "#
         );
         assert!(

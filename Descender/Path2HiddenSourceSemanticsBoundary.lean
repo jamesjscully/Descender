@@ -954,6 +954,31 @@ theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_mo
     I.compatibilitySource I.witnessSources
 
 /--
+Active AP2-N001 boundary closure from the proof-bearing selected Rust/model
+five-source certificate.
+
+This keeps the public evidence report and per-source certificates on the
+closure surface until the final selected Rust/model theorem explicitly derives
+the concrete input record through `toClosureInputs`.
+-/
+theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (Cert :
+      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P :=
+  reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
+    P
+    (ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
+      Cert)
+
+/--
 The accepted-spend boundary field closes from the same single concrete model
 input record.
 -/
@@ -975,6 +1000,29 @@ theorem with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_s
     B
     (reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
       P I)
+
+/--
+The accepted-spend boundary field closes from the proof-bearing selected
+Rust/model five-source certificate.
+-/
+theorem with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_certificate
+    (B : NativeAcceptedSpendSoundnessBoundary)
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (Cert :
+      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    (NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure
+      B P).hiddenSourceProofSemanticsClosed :=
+  with_reviewed_fq12_hidden_source_closure_closed
+    B
+    (reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate
+      P Cert)
 
 /--
 Use reviewed-Fq12 hidden-source closure inside the full active Path 2 signature
@@ -1034,6 +1082,31 @@ theorem full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_ru
     B
     (reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs
       P I)
+
+/--
+The full-signature boundary can consume the proof-bearing selected Rust/model
+five-source certificate directly.
+-/
+theorem full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_model_five_source_certificate
+    (B : NativeFullSignatureSecurityBoundary)
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (Cert :
+      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure
+      B P
+      (reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate
+        P Cert)).acceptedSpendSoundness.hiddenSourceProofSemanticsClosed :=
+  full_signature_with_reviewed_fq12_hidden_source_closure_closed
+    B
+    (reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate
+      P Cert)
 
 end Path2HiddenSourceSemanticsBoundary
 end Descender

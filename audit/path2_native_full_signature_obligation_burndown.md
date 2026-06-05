@@ -96,6 +96,18 @@ aggregation terms remain `q_batch`-only, and the Lean
 narrows P2FS-006 to the final selected-Rust/model instantiation theorem; it
 does not complete hidden-source semantics by itself.
 
+2026-06-05 certificate-route update: the active boundary now has direct
+certificate-level adapters from
+`ReviewedFq12SelectedRustModelFiveSourceClosureCertificate` into hidden-source
+closure, accepted-spend closure, and the full-signature handoff. The Rust
+future-theorem source gate now requires the selected Rust/model instantiation
+to construct the all-certificate package and close through
+`reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate`,
+keeping the aggregate report, sub-evidence digest match, and per-source
+certificates on the final proof surface. This is still a target-shape
+hardening; the concrete selected-source definitions and final theorem remain
+open.
+
 2026-06-02 update: `Path2FullOpeningSourceConcrete.lean` now packages the
 deployable non-aggregate theorem route as `ReviewedFq12DeployableHiddenSourceInputs`. The remaining P2FS-001 proof inputs are
 no longer an abstract source-bridge instantiation; they are the concrete
