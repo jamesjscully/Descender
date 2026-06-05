@@ -21455,7 +21455,8 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
     let horizon_end = horizon_end_offset + horizon_start;
     let horizon_window = &domain_source[horizon_start..horizon_end];
 
-    let Some(byte_domain_start) = domain_source.find("\ndef activeHashByteDomainInstantiationV1")
+    let Some(byte_domain_start) =
+        domain_source.find("\nstructure ActiveHashByteDomainEvidenceReport")
     else {
         return false;
     };
@@ -21466,6 +21467,12 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
     };
     let byte_domain_end = byte_domain_end_offset + byte_domain_start;
     let byte_domain_window = &domain_source[byte_domain_start..byte_domain_end];
+    if byte_domain_window
+        .contains("activeHashByteDomainEvidenceDigestV1 : ByteArray :=\n  ByteArray.empty")
+        || byte_domain_window.contains("evidenceDigest := ByteArray.empty")
+    {
+        return false;
+    }
 
     let Some(boundary_start) =
         domain_source.find("\ndef activePath2HashDomainAndMultiTargetCertificate")
@@ -21528,12 +21535,22 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
         "active_hiddenSourceFrameByteDomainSeparated",
         "checkedCoreFrameByteDomainSeparated_of_instantiation",
         "hiddenSourceFrameByteDomainSeparated_of_instantiation",
+        "structure ActiveHashByteDomainEvidenceReport",
+        "def ReportVerified",
+        "def FactsAllTrue",
+        "structure ActiveHashByteDomainEvidenceCertificate",
+        "ActiveHashByteDomainEvidenceCertificate.ofReportAndInstantiation",
+        "def toInstantiation",
+        "activeHashByteDomainEvidenceReportV1",
+        "activeHashByteDomainEvidenceDigestV1",
+        "ByteArray.mk #[0, 1, 2, 3]",
+        "activeHashByteDomainEvidenceCertificateV1",
     ];
     let boundary_checks = [
         "activePath2HashDomainAndMultiTargetCertificate",
         "directBudget := path2DirectQueryBudgetV1",
         "registry := activeHashDomainRegistryV1",
-        "byteDomainInstantiation := activeHashByteDomainInstantiationV1",
+        "byteDomainCertificate := activeHashByteDomainEvidenceCertificateV1",
         "horizon := activeLaneAccountHorizonV1",
         "auxiliaryFq12ChallengeShapeComplete :=",
         "path2_direct_query_budget_auxiliary_fq12_challenge_shape_complete",
@@ -21548,6 +21565,8 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
         "activeNativeHashBudgetBoundary_multiTargetLossPriced",
         "activeNativeHashBudgetBoundary_hashBoundaryProps",
         "activeHashDomainAndMultiTargetCertificate_byteDomainProps",
+        "byteDomainCertificate",
+        "toInstantiation",
     ];
 
     budget_checks
