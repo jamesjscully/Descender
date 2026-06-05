@@ -136,6 +136,8 @@ fn main() -> Result<(), String> {
                 source_record_subcheck.package_sub_evidence_match_reduction_present,
             "boundary_base_report_only_not_source_record_closure":
                 source_record_subcheck.boundary_base_report_only_not_source_record_closure,
+            "role_root_lift_report_only_not_source_record_closure":
+                source_record_subcheck.role_root_lift_report_only_not_source_record_closure,
             "payload_projection_law_definition_present":
                 source_record_subcheck.payload_projection_law_definition_present,
             "extraction_certificate_availability_definition_present":

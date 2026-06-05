@@ -513,6 +513,15 @@ state as `boundary_base_report_only_not_source_record_closure = true`, and the
 Rust regression checks that a report-only fixture remains fail-closed while a
 fixture with the raw sources plus named certificate constructor clears the
 flag.
+Role-root/lift source audit: the same issue holds for the next selected source
+category. The verifier-backed role-root/lift report is present, but the active
+file still has no `selectedRustRoleRootLiftSource` and no constructor-bound
+`selectedRustRoleRootLiftSourceCertificate`. This source must supply
+`ReviewedFq12ConcreteRoleRootFieldBindingCertificate` plus
+`ReviewedFq12CertificateLiftOpeningFunctionality`; report verification alone
+does not prove either semantic obligation. The manifest now exposes
+`role_root_lift_report_only_not_source_record_closure = true`, with a fixture
+regression pinning the fail-closed distinction.
 
 P2FS-001 latest hardening: `ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources` is now the named Lean constructor for the final selected Rust/model certificate. The certificate now carries an aggregate five-source `evidenceDigest`, and the Rust `extractor_theorem_instantiated` gate requires the future final theorem to use that constructor with the verified five-source evidence report, aggregate evidence digest, all-true facts proof, and selected source packages before deriving `toClosureInputs`; a raw certificate record literal, empty digest literal, `sorry`, or `admit` no longer satisfies the AP2-N001 source gate.
 

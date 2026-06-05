@@ -1167,6 +1167,16 @@ records over the concrete `Predicates` interpretation. The Rust subcheck now
 emits `boundary_base_report_only_not_source_record_closure = true` for the
 current active file, with a regression showing the flag clears only when the
 raw source terms and named boundary-base certificate constructor are present.
+Role-root/lift source check: the selected role-root/lift report likewise
+verifies only the public evidence bits. It does not construct
+`selectedRustRoleRootLiftSource` or
+`selectedRustRoleRootLiftSourceCertificate`; the source itself is the pair of
+semantic obligations `ReviewedFq12ConcreteRoleRootFieldBindingCertificate` and
+`ReviewedFq12CertificateLiftOpeningFunctionality`. The source-record subcheck
+now emits
+`role_root_lift_report_only_not_source_record_closure = true` for the active
+file and has a fixture proving that report/proof imports alone do not satisfy
+the selected source gate.
 
 ## Findings
 
