@@ -625,6 +625,199 @@ def selectedRustSharedFrameWitnessEvidenceReport :
   sharedDigestFrameNegativeControlsPassed := false
 
 /--
+Verifier-backed Rust/model five-source report imported from
+`path2_selected_evidence_report_manifest`.
+
+This is deliberately not the active `selectedRustFiveSourceEvidenceReport`
+yet.  It proves the Rust report can inhabit the Lean report predicates while
+leaving the selected closure path fail-closed until source records and
+sub-evidence digest matching are imported.
+-/
+def verifierBackedSelectedRustFiveSourceEvidenceReport :
+    ReviewedFq12SelectedRustFiveSourceClosureEvidence where
+  schemaMatches := true
+  bridgeAuditDigest := ByteArray.mk #[51, 33, 224, 196, 154, 116, 199, 167,
+    197, 62, 32, 8, 120, 106, 136, 214, 53, 49, 106, 41, 49, 141, 154,
+    118, 224, 48, 174, 22, 219, 117, 211, 187]
+  bridgeAuditDigestBound := true
+  hashByteDomainEvidenceDigest := ByteArray.mk #[23, 215, 160, 136, 150, 70,
+    25, 35, 33, 177, 125, 177, 122, 119, 78, 13, 155, 114, 16, 80, 84,
+    123, 251, 239, 42, 10, 247, 17, 206, 228, 133, 89]
+  hashByteDomainEvidenceVerified := true
+  hiddenSourceFrameDomainMatchesHashEvidence := true
+  hiddenSourceStatementFrameUsesHashDomainField := true
+  hiddenSourceStatementDigestUsesHashDomainFrame := true
+  hiddenSourceProofDomainMatchesHashEvidence := true
+  hiddenSourceProofTranscriptFrameUsesHashDomainField := true
+  hiddenSourceProofTranscriptDigestUsesHashDomainFrame := true
+  projectionCarrierDomainMatchesHashEvidence := true
+  projectionCarrierBindingFrameUsesHashDomainField := true
+  projectionCarrierBindingDigestSplitsToCheckAndTranscript := true
+  accountWitnessOpeningDomainMatchesHashEvidence := true
+  accountWitnessOpeningDigestUsesHashDomainFrame := true
+  padSeedOpeningDomainMatchesHashEvidence := true
+  padSeedOpeningDigestUsesHashDomainFrame := true
+  padOpeningViewDomainMatchesHashEvidence := true
+  padOpeningStatementDigestUsesHashDomainFrame := true
+  directQueryBudgetSchemaMatches := true
+  directQueryBudgetModeIsDirectSingleSlot := true
+  directQueryBudgetExcludesQBatchFromActiveSymbols := true
+  directQueryBudgetMarksQBatchInactive := true
+  directQueryBudgetOptionalAggregationTermsQBatchOnly := true
+  leanDirectQueryBudgetKeepsQBatchInactivePresent := true
+  boundaryBaseEvidenceDigest := ByteArray.mk #[6, 242, 163, 38, 135, 152,
+    231, 128, 79, 124, 169, 73, 131, 31, 237, 140, 69, 162, 33, 92, 67,
+    23, 21, 246, 42, 194, 70, 101, 92, 198, 134, 169]
+  boundaryBaseEvidenceVerified := true
+  roleRootLiftEvidenceDigest := ByteArray.mk #[112, 34, 58, 36, 253, 212,
+    82, 232, 205, 83, 113, 123, 199, 43, 87, 194, 42, 74, 217, 204, 35,
+    246, 18, 154, 63, 26, 237, 166, 20, 147, 7, 43]
+  roleRootLiftEvidenceVerified := true
+  selectedSourceRouteEvidenceDigest := ByteArray.mk #[76, 112, 68, 95, 197,
+    248, 203, 97, 213, 12, 109, 225, 214, 130, 133, 63, 42, 106, 59, 59,
+    81, 82, 22, 111, 241, 35, 195, 73, 37, 227, 43, 127]
+  selectedSourceRouteEvidenceVerified := true
+  fieldLocalEvidenceDigest := ByteArray.mk #[169, 179, 188, 15, 137, 255,
+    36, 143, 125, 232, 213, 13, 180, 213, 106, 216, 158, 75, 59, 46, 32,
+    23, 118, 152, 244, 151, 38, 128, 245, 8, 172, 114]
+  fieldLocalEvidenceVerified := true
+  sharedDigestFrameWitnessEvidenceDigest := ByteArray.mk #[231, 221, 193,
+    212, 120, 26, 89, 161, 44, 144, 83, 244, 222, 142, 228, 226, 178,
+    182, 64, 109, 54, 74, 46, 221, 67, 139, 195, 204, 133, 122, 244, 215]
+  sharedDigestFrameWitnessEvidenceVerified := true
+  reportDigestVerified := true
+  bridgeAuditValidated := true
+  selectedRustModelFiveSourceInputsReady := true
+  rustPayloadProjectionLawPresent := true
+  rustExtractionCertificateAvailabilityPresent := true
+  roleRootLiftSourcePresent := true
+  selectedSourceRouteByteSourcePresent := true
+  assemblyFieldLocalNativeComponentsPresent := true
+  compatibilityFieldExtractionComponentsPresent := true
+  sharedDigestFrameWitnessByteSourceContractPresent := true
+  activeFieldLocalDigestFrameWitnessByteComponentSurfacesPresent := true
+  leanActiveFiveSourceBoundaryRoutePresent := true
+  leanFullSignatureHiddenSourceHandoffPresent := true
+  extractorTheoremInstantiated := false
+  semanticsBridgeComplete := false
+
+/-- Verifier-backed base-boundary report imported from Rust evidence. -/
+def verifierBackedSelectedRustBoundaryBaseEvidenceReport :
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceReport where
+  schemaMatches := true
+  reportDigestVerified := true
+  payloadProjectionLawPinned := true
+  extractionCertificateAvailabilityPinned := true
+  nativeBoundaryPayloadBindingPinned := true
+  boundaryBaseNegativeControlsPassed := true
+
+/-- Verifier-backed role-root/lift report imported from Rust evidence. -/
+def verifierBackedSelectedRustRoleRootLiftEvidenceReport :
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceReport where
+  schemaMatches := true
+  reportDigestVerified := true
+  concreteRoleRootFieldBindingPinned := true
+  selectedLiftFunctionalityPinned := true
+  roleRootBridgePinned := true
+  roleRootNegativeControlsPassed := true
+
+/-- Verifier-backed source-route report imported from Rust evidence. -/
+def verifierBackedSelectedRustSourceRouteEvidenceReport :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport where
+  schemaMatches := true
+  reportDigestVerified := true
+  fieldFrameParserPinned := true
+  routeFrameParserPinned := true
+  sourceRouteAvailabilityPinned := true
+  fieldByteCertificatePinned := true
+  routeByteCertificatePinned := true
+  fieldBindsPinned := true
+  sourceRouteBindsPinned := true
+  aggregateBridgeRejectionPinned := true
+  sourceRouteNegativeControlsPassed := true
+
+/-- Verifier-backed field/local report imported from Rust evidence. -/
+def verifierBackedSelectedRustFieldLocalEvidenceReport :
+    ReviewedFq12SelectedRustFieldLocalEvidenceReport where
+  schemaMatches := true
+  reportDigestVerified := true
+  assemblyAvailabilityPinned := true
+  assemblyFieldBindingPinned := true
+  assemblyLocalPredicatesPinned := true
+  assemblyNativeValidityPinned := true
+  compatibilityAvailabilityPinned := true
+  compatibilityFieldBindingPinned := true
+  compatibilityExtractionRulesPinned := true
+  fieldLocalNegativeControlsPassed := true
+
+/-- Verifier-backed shared-frame witness report imported from Rust evidence. -/
+def verifierBackedSelectedRustSharedFrameWitnessEvidenceReport :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport where
+  schemaMatches := true
+  reportDigestVerified := true
+  canonicalWitnessParserPinned := true
+  digestFrameWitnessParserPinned := true
+  sharedDigestFramePinned := true
+  canonicalWitnessByteCertificatePinned := true
+  digestFrameWitnessByteCertificatePinned := true
+  representativeDigestFrameSourcePinned := true
+  canonicalWitnessVerifierPinned := true
+  digestFrameWitnessVerifierPinned := true
+  sharedDigestFrameNegativeControlsPassed := true
+
+/-- The verifier-backed aggregate report satisfies the Lean verification predicate. -/
+theorem verifierBackedSelectedRustFiveSourceEvidenceReport_reportVerified :
+    verifierBackedSelectedRustFiveSourceEvidenceReport.ReportVerified := by
+  simp [verifierBackedSelectedRustFiveSourceEvidenceReport,
+    ReviewedFq12SelectedRustFiveSourceClosureEvidence.ReportVerified]
+
+/-- The verifier-backed aggregate report satisfies all non-closing readiness facts. -/
+theorem verifierBackedSelectedRustFiveSourceEvidenceReport_factsAllTrue :
+    verifierBackedSelectedRustFiveSourceEvidenceReport.FactsAllTrue := by
+  simp [verifierBackedSelectedRustFiveSourceEvidenceReport,
+    ReviewedFq12SelectedRustFiveSourceClosureEvidence.FactsAllTrue]
+
+/-- The verifier-backed base-boundary report satisfies the Lean predicates. -/
+theorem verifierBackedSelectedRustBoundaryBaseEvidenceReport_ready :
+    verifierBackedSelectedRustBoundaryBaseEvidenceReport.ReportVerified ∧
+      verifierBackedSelectedRustBoundaryBaseEvidenceReport.FactsAllTrue := by
+  simp [verifierBackedSelectedRustBoundaryBaseEvidenceReport,
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceReport.ReportVerified,
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceReport.FactsAllTrue]
+
+/-- The verifier-backed role-root/lift report satisfies the Lean predicates. -/
+theorem verifierBackedSelectedRustRoleRootLiftEvidenceReport_ready :
+    verifierBackedSelectedRustRoleRootLiftEvidenceReport.ReportVerified ∧
+      verifierBackedSelectedRustRoleRootLiftEvidenceReport.FactsAllTrue := by
+  simp [verifierBackedSelectedRustRoleRootLiftEvidenceReport,
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceReport.ReportVerified,
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceReport.FactsAllTrue]
+
+/-- The verifier-backed source-route report satisfies the Lean predicates. -/
+theorem verifierBackedSelectedRustSourceRouteEvidenceReport_ready :
+    verifierBackedSelectedRustSourceRouteEvidenceReport.ReportVerified ∧
+      verifierBackedSelectedRustSourceRouteEvidenceReport.FactsAllTrue := by
+  simp [verifierBackedSelectedRustSourceRouteEvidenceReport,
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport.ReportVerified,
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport.FactsAllTrue]
+
+/-- The verifier-backed field/local report satisfies the Lean predicates. -/
+theorem verifierBackedSelectedRustFieldLocalEvidenceReport_ready :
+    verifierBackedSelectedRustFieldLocalEvidenceReport.ReportVerified ∧
+      verifierBackedSelectedRustFieldLocalEvidenceReport.FactsAllTrue := by
+  simp [verifierBackedSelectedRustFieldLocalEvidenceReport,
+    ReviewedFq12SelectedRustFieldLocalEvidenceReport.ReportVerified,
+    ReviewedFq12SelectedRustFieldLocalEvidenceReport.FactsAllTrue]
+
+/-- The verifier-backed shared-frame witness report satisfies the Lean predicates. -/
+theorem verifierBackedSelectedRustSharedFrameWitnessEvidenceReport_ready :
+    verifierBackedSelectedRustSharedFrameWitnessEvidenceReport.ReportVerified ∧
+      verifierBackedSelectedRustSharedFrameWitnessEvidenceReport.FactsAllTrue := by
+  simp [verifierBackedSelectedRustSharedFrameWitnessEvidenceReport,
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport.ReportVerified,
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport.FactsAllTrue]
+
+/--
 The current selected five-source report is intentionally not proof-bearing.
 
 These negative lemmas are sanity checks for the fail-closed boundary: the

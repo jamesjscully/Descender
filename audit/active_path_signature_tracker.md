@@ -1093,6 +1093,11 @@ manifest shows all six report/fact sets verify while
 `extractor_theorem_instantiated` and `semantics_bridge_complete` remain false,
 which is the next safe import target for replacing Lean placeholder reports
 without flipping final closure.
+Active Lean evidence import note: `Path2HiddenSourceSemanticsBoundary.lean`
+now contains verifier-backed report values under `verifierBacked...` names, plus
+Lean proofs that those imported reports satisfy `ReportVerified` and
+`FactsAllTrue`. The active `selectedRust...` reports remain placeholders, so the
+concrete-definition checklist and final closure remain fail-closed.
 
 ## Findings
 

@@ -461,6 +461,10 @@ report/fact sets verify, while `extractor_theorem_instantiated` and
 `semantics_bridge_complete` remain false. That makes verifier-backed Lean report
 replacement the next safe step, separate from source-record/digest-match
 closure.
+Lean now imports those report values under `verifierBacked...` names and proves
+their `ReportVerified`/`FactsAllTrue` predicates. The active `selectedRust...`
+report names remain the fail-closed placeholders until source records and
+digest-match proof are ready to move together.
 
 P2FS-001 latest hardening: `ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources` is now the named Lean constructor for the final selected Rust/model certificate. The certificate now carries an aggregate five-source `evidenceDigest`, and the Rust `extractor_theorem_instantiated` gate requires the future final theorem to use that constructor with the verified five-source evidence report, aggregate evidence digest, all-true facts proof, and selected source packages before deriving `toClosureInputs`; a raw certificate record literal, empty digest literal, `sorry`, or `admit` no longer satisfies the AP2-N001 source gate.
 
