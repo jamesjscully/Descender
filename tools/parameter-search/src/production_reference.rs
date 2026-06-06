@@ -10697,6 +10697,8 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "let selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof := True.intro",
         "let selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof := True.intro",
         "let selectedRustNativeBoundaryPredicateModelCertificate := {",
+        "let selectedRustModelSourceRecordPackage := {",
+        "let selectedRustModelSourceRecordPackage := ⟨",
         "predicateModelCertificate := {",
         "sourceRecords := {",
     ];
@@ -10721,6 +10723,8 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof selectedRustSharedFrameWitnessSources",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates selectedRustFiveSourceEvidenceReport selectedRustFiveSourceEvidenceDigest selectedRustFiveSourceEvidenceReportVerifiedProof selectedRustFiveSourceEvidenceFactsAllTrueProof selectedRustBoundaryBaseCertificate selectedRustRoleRootLiftSourceCertificate selectedRustSourceRouteByteSourceCertificate selectedRustFieldLocalSourceCertificate selectedRustSharedFrameWitnessSourcesCertificate selectedRustFiveSourceSubEvidenceDigestsMatchProof",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates",
+        "let selectedRustModelSourceRecordPackage : ReviewedFq12SelectedRustModelSourceRecordPackage",
+        "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability selectedRustRoleRootLiftSource selectedRustSourceRouteByteSource selectedRustAssemblySource selectedRustCompatibilitySource selectedRustSharedFrameWitnessSources",
         "let selectedRustNativeBoundaryCertifiedSemanticsSourcePackage : ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
         "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage.ofCertificateAndSourceRecords selectedRustNativeBoundaryPredicateModelCertificate selectedRustModelSourceRecordPackage",
         "selectedRustNativeBoundaryPredicateModelEvidenceReport",
@@ -56314,6 +56318,18 @@ theorem {theorem_name}
       selectedRustSharedFrameWitnessEvidenceReportVerifiedProof
       selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof
       selectedRustSharedFrameWitnessSources
+  let selectedRustModelSourceRecordPackage :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser
+          selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+    ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources
+      selectedRustPayloadProjectionLaw
+      selectedRustExtractionCertificateAvailability
+      selectedRustRoleRootLiftSource
+      selectedRustSourceRouteByteSource
+      selectedRustAssemblySource
+      selectedRustCompatibilitySource
+      selectedRustSharedFrameWitnessSources
   let selectedRustModelFiveSourceCertificate :
       ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
         FieldParser RouteParser CanonicalParser WitnessParser P :=
@@ -56429,6 +56445,17 @@ theorem {theorem_name}
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &wrong_predicate_model_certificate_theorem,
+                theorem_name
+            )
+        );
+        let anonymous_source_record_package_theorem = concrete_constructor_certificate_theorem
+            .replace(
+                "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources",
+                "selectedRustModelSourceRecordPackageValue",
+            );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &anonymous_source_record_package_theorem,
                 theorem_name
             )
         );

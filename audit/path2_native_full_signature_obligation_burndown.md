@@ -281,6 +281,11 @@ definition to be over
 A complete-looking source package over a generic `P` no longer completes
 `source_record_definitions`, preventing source records from drifting away from
 the certified active native-boundary predicate model.
+The final theorem gate now also requires the theorem body itself to construct
+`selectedRustModelSourceRecordPackage` via
+`ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources`; merely naming a
+pre-existing source-record package no longer satisfies the AP2-N001 theorem
+source scanner.
 
 2026-06-05 certified semantics package constructor update:
 `ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage` now
