@@ -9558,66 +9558,114 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible Package.predicateModelCertificate hReport",
             4096,
         );
-    let native_boundary_semantics_package_handoff_present = [
-        "with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_package",
-        "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_package",
-        "Semantics.predicates",
-        "Semantics.hiddenSourceClosure",
-        "NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure",
-        "NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_semantics_source_package_handoff_present = [
-        "with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_source_package",
-        "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_source_package",
-        "Package.predicateModel.toPredicates",
-        "Package.hiddenSourceClosure",
-        "NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure",
-        "NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_certified_semantics_source_package_handoff_present = [
-        "with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_certified_semantics_source_package",
-        "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_certified_semantics_source_package",
-        "Package.predicateModelCertificate.toSource.toPredicates",
-        "Package.hiddenSourceClosure",
-        "NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure",
-        "NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_semantics_package_bound_handoff_present = [
-        "full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_semantics_package",
-        "Semantics.predicates",
-        "Semantics.hiddenSourceClosure",
-        "fullSignatureSuccessProb",
-        "activePathForgeryBound",
-        "NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_semantics_source_package_bound_handoff_present = [
-        "full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_semantics_source_package",
-        "Package.predicateModel.toPredicates",
-        "Package.hiddenSourceClosure",
-        "fullSignatureSuccessProb",
-        "activePathForgeryBound",
-        "NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_certified_semantics_source_package_bound_handoff_present = [
-        "full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_certified_semantics_source_package",
-        "Package.predicateModelCertificate.toSource.toPredicates",
-        "Package.hiddenSourceClosure",
-        "fullSignatureSuccessProb",
-        "activePathForgeryBound",
-        "NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_semantics_package_handoff_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_package",
+            &[
+                "NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure",
+                "B Semantics.predicates",
+                "hiddenSourceProofSemanticsClosed",
+            ],
+            "with_reviewed_fq12_hidden_source_closure_closed B Semantics.hiddenSourceClosure",
+            4096,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_package",
+            &[
+                "NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure",
+                "B Semantics.predicates",
+                "Semantics.hiddenSourceClosure",
+                "acceptedSpendSoundness.hiddenSourceProofSemanticsClosed",
+            ],
+            "full_signature_with_reviewed_fq12_hidden_source_closure_closed B Semantics.hiddenSourceClosure",
+            4096,
+        );
+    let native_boundary_semantics_source_package_handoff_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_source_package",
+            &[
+                "NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure",
+                "B Package.predicateModel.toPredicates",
+                "hiddenSourceProofSemanticsClosed",
+            ],
+            "with_reviewed_fq12_hidden_source_closure_closed B Package.hiddenSourceClosure",
+            4096,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_source_package",
+            &[
+                "NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure",
+                "B Package.predicateModel.toPredicates",
+                "Package.hiddenSourceClosure",
+                "acceptedSpendSoundness.hiddenSourceProofSemanticsClosed",
+            ],
+            "full_signature_with_reviewed_fq12_hidden_source_closure_closed B Package.hiddenSourceClosure",
+            4096,
+        );
+    let native_boundary_certified_semantics_source_package_handoff_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_certified_semantics_source_package",
+            &[
+                "NativeAcceptedSpendSoundnessBoundary.withReviewedFq12HiddenSourceClosure",
+                "B Package.predicateModelCertificate.toSource.toPredicates",
+                "hiddenSourceProofSemanticsClosed",
+            ],
+            "with_reviewed_fq12_hidden_source_closure_closed B Package.hiddenSourceClosure",
+            4096,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_certified_semantics_source_package",
+            &[
+                "NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure",
+                "B Package.predicateModelCertificate.toSource.toPredicates",
+                "Package.hiddenSourceClosure",
+                "acceptedSpendSoundness.hiddenSourceProofSemanticsClosed",
+            ],
+            "full_signature_with_reviewed_fq12_hidden_source_closure_closed B Package.hiddenSourceClosure",
+            4096,
+        );
+    let native_boundary_semantics_package_bound_handoff_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_semantics_package",
+            &[
+                "B Semantics.predicates",
+                "Semantics.hiddenSourceClosure",
+                "fullSignatureSuccessProb",
+                "activePathForgeryBound",
+            ],
+            "NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure B Semantics.predicates Semantics.hiddenSourceClosure)",
+            4096,
+        );
+    let native_boundary_semantics_source_package_bound_handoff_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_semantics_source_package",
+            &[
+                "B Package.predicateModel.toPredicates",
+                "Package.hiddenSourceClosure",
+                "fullSignatureSuccessProb",
+                "activePathForgeryBound",
+            ],
+            "NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure B Package.predicateModel.toPredicates Package.hiddenSourceClosure)",
+            4096,
+        );
+    let native_boundary_certified_semantics_source_package_bound_handoff_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_certified_semantics_source_package",
+            &[
+                "B Package.predicateModelCertificate.toSource.toPredicates",
+                "Package.hiddenSourceClosure",
+                "fullSignatureSuccessProb",
+                "activePathForgeryBound",
+            ],
+            "NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure B Package.predicateModelCertificate.toSource.toPredicates Package.hiddenSourceClosure)",
+            4096,
+        );
     let full_spend_concrete_predicates_are_separate_model = [
         "def concretePredicates",
         "Path2FullSpendGame.Predicates concreteTypes",
@@ -58654,6 +58702,22 @@ def toPredicates
         assert!(
             !aliased_compatibility_extraction_target_subcheck
                 .native_boundary_compatibility_extraction_reviewed_target_present
+        );
+        let aliased_semantics_bound_handoff_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound\n    (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure\n      B Semantics.predicates\n      Semantics.hiddenSourceClosure)",
+            "activePathForgeryBoundAlias\n\nexample : True := by\n  let _mentionedSemanticsBoundHandoff :=\n    NativeFullSignatureSecurityBoundary.fullSignatureSuccessProb_le_activePathForgeryBound\n      (NativeFullSignatureSecurityBoundary.withReviewedFq12HiddenSourceClosure\n        B Semantics.predicates\n        Semantics.hiddenSourceClosure)\n  trivial",
+            1,
+        );
+        let aliased_semantics_bound_handoff_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_semantics_bound_handoff_source,
+            );
+        assert!(
+            !aliased_semantics_bound_handoff_subcheck
+                .native_boundary_semantics_package_bound_handoff_present
         );
         assert!(
             source_record_subcheck.native_boundary_payload_acceptance_boundary_match_target_present

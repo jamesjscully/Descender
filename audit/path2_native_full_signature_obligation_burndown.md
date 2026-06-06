@@ -975,6 +975,14 @@ obligations that feed `full_opening_and_assembly_model_pinned` and
 role-lift opening and compatibility-extraction target bodies while moving the
 old markers into unused examples; both now fail closed, while the active
 manifest still reports those scoped target bits true on the live Lean source.
+The accepted-spend/full-signature handoff and active-bound handoff gates for
+the semantics package, source-shaped package, and certified source package are
+now declaration-scoped as well. Each gate checks the named theorem header and
+requires the theorem body to call the corresponding closure or
+`fullSignatureSuccessProb_le_activePathForgeryBound` theorem with the package's
+actual predicates and `hiddenSourceClosure`. A regression fixture aliases the
+semantics-package active-bound theorem body while moving the old markers into
+an unused example; the handoff bit now fails closed under that mutation.
 The aggregate digest import also exposed a source-hash circularity constraint:
 the current Rust aggregate evidence digest is
 `146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the
