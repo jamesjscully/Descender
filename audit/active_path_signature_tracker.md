@@ -1348,6 +1348,10 @@ The selected evidence manifest now emits every predicate-model all-facts input
 from the Rust evidence frame, not only the digest, top-level model bit, and
 negative-control bit. This makes the active blocker inspectable without
 changing the fail-closed status.
+The Rust source audit now scopes predicate-model source/report/certificate
+target detection to the named Lean declarations, with a split-marker negative
+fixture. Unrelated declarations can no longer contribute missing fields to
+these target bits.
 
 ## Findings
 

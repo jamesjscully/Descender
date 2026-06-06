@@ -351,6 +351,10 @@ fact-complete until the concrete native-boundary predicate model is imported.
 The selected evidence manifest now prints every predicate-model all-facts
 input, making the remaining false pins visible directly in the deployment
 artifact instead of only through the hashed evidence frame.
+The Rust source audit now checks the predicate-model source, evidence report,
+certificate, and `toSource` adapter in their named Lean declaration windows,
+with a split-marker regression so unrelated declarations cannot satisfy the
+target bits.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and

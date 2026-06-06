@@ -8622,6 +8622,87 @@ fn lean_source_has_selected_rust_definition_with_markers_v1(
     })
 }
 
+fn lean_source_has_named_declaration_with_markers_v1(
+    boundary_source: &str,
+    kind: &str,
+    name: &str,
+    markers: &[&str],
+    max_len: usize,
+) -> bool {
+    let normalized_markers = markers
+        .iter()
+        .map(|marker| marker.split_whitespace().collect::<String>())
+        .collect::<Vec<_>>();
+    let markers_present_in_order = |declaration_source: &str| -> bool {
+        let normalized_source = declaration_source.split_whitespace().collect::<String>();
+        let mut cursor = 0;
+        normalized_markers.iter().all(|marker| {
+            normalized_source[cursor..]
+                .find(marker)
+                .is_some_and(|offset| {
+                    cursor += offset + marker.len();
+                    true
+                })
+        })
+    };
+    let declaration_start = format!("{kind} {name}");
+    [declaration_start.clone(), format!("\n{declaration_start}")]
+        .iter()
+        .any(|start_marker| {
+            boundary_source
+                .match_indices(start_marker)
+                .any(|(start, _)| {
+                    let declaration_start_offset = if start_marker.starts_with('\n') {
+                        start + 1
+                    } else {
+                        start
+                    };
+                    if declaration_start_offset != 0
+                        && !boundary_source[..declaration_start_offset].ends_with('\n')
+                    {
+                        return false;
+                    }
+                    let name_end = declaration_start_offset + declaration_start.len();
+                    if boundary_source[name_end..]
+                        .chars()
+                        .next()
+                        .is_some_and(|next| {
+                            next.is_ascii_alphanumeric() || next == '_' || next == '\''
+                        })
+                    {
+                        return false;
+                    }
+                    let declaration_window = &boundary_source
+                        [declaration_start_offset..boundary_source.len().min(start + max_len)];
+                    let next_top_level_declaration = [
+                        "\nabbrev ",
+                        "\naxiom ",
+                        "\nclass ",
+                        "\nconstant ",
+                        "\ndef ",
+                        "\ninductive ",
+                        "\ninstance ",
+                        "\nnamespace ",
+                        "\nopaque ",
+                        "\nopen ",
+                        "\nprivate abbrev ",
+                        "\nprivate def ",
+                        "\nprivate theorem ",
+                        "\nsection ",
+                        "\nstructure ",
+                        "\ntheorem ",
+                        "\nvariable ",
+                    ]
+                    .iter()
+                    .filter_map(|marker| declaration_window[declaration_start.len()..].find(marker))
+                    .map(|offset| offset + declaration_start.len())
+                    .min()
+                    .unwrap_or(declaration_window.len());
+                    markers_present_in_order(&declaration_window[..next_top_level_declaration])
+                })
+        })
+}
+
 fn lean_source_selected_rust_definition_body_contains_marker_v1(
     boundary_source: &str,
     name: &str,
@@ -8723,69 +8804,119 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| native_boundary_source.contains(marker));
-    let native_boundary_predicate_model_source_target_present = [
-        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
-        "predicates : Predicates",
-        "payloadAcceptanceNotVacuous",
-        "boundaryBreaksNotUniversal",
-        "payloadAcceptanceMatchesBoundary",
-        "extractionCertificateMatchesPayload",
-        "certificateExtractionImpliesPayloadExtraction",
-        "fullOpeningBridgeDigestValidityBinds",
-        "def toPredicates",
-        "Model.predicates",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_predicate_model_evidence_report_target_present = [
-        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
-        "schemaMatches : Bool",
-        "reportDigestVerified : Bool",
-        "activeBoundaryPredicateModelPinned : Bool",
-        "payloadAcceptanceModelPinned : Bool",
-        "extractionCertificateModelPinned : Bool",
-        "fullOpeningAndAssemblyModelPinned : Bool",
-        "compatibilityAndExtractionModelPinned : Bool",
-        "nativeBoundaryBreakModelPinned : Bool",
-        "nativeBoundaryPredicateRecordComplete : Bool",
-        "activeVerifierRoutePinned : Bool",
-        "predicateNegativeControlsPassed : Bool",
-        "concretePredicateModelPresent : Bool",
-        "certifiedSemanticsSourcePackageTargetPresent : Bool",
-        "def ReportVerified",
-        "def FactsAllTrue",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_predicate_model_certificate_target_present = [
-        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
-        "def ofReportAndModel",
-        "evidenceReport :",
-        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
-        "evidenceDigest : ByteArray",
-        "evidenceReportVerifiedProof",
-        "evidenceFactsAllTrueProof",
-        "predicates : Predicates",
-        "payloadAcceptanceNotVacuous",
-        "boundaryBreaksNotUniversal",
-        "payloadAcceptanceMatchesBoundary",
-        "fullOpeningBridgeDigestValidityBinds",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_predicate_model_certificate_to_source_present = [
-        "namespace ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
-        "def toSource",
-        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
-        "payloadAcceptanceNotVacuous := Cert.payloadAcceptanceNotVacuous",
-        "boundaryBreaksNotUniversal := Cert.boundaryBreaksNotUniversal",
-        "payloadAcceptanceMatchesBoundary :=",
-        "Cert.payloadAcceptanceMatchesBoundary",
-        "fullOpeningBridgeDigestValidityBinds :=",
-        "Cert.fullOpeningBridgeDigestValidityBinds",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_predicate_model_source_target_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "structure",
+            "ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
+            &[
+                "predicates : Predicates",
+                "payloadAcceptanceNotVacuous",
+                "boundaryBreaksNotUniversal",
+                "payloadAcceptanceMatchesBoundary",
+                "extractionCertificateMatchesPayload",
+                "certificateExtractionImpliesPayloadExtraction",
+                "fullOpeningBridgeDigestValidityBinds",
+            ],
+            4096,
+        ) && lean_source_selected_rust_definition_body_contains_marker_v1(
+            &boundary_source,
+            "toPredicates",
+            "Model.predicates",
+        );
+    let native_boundary_predicate_model_evidence_report_target_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "structure",
+            "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
+            &[
+                "schemaMatches : Bool",
+                "reportDigestVerified : Bool",
+                "activeBoundaryPredicateModelPinned : Bool",
+                "payloadAcceptanceModelPinned : Bool",
+                "extractionCertificateModelPinned : Bool",
+                "fullOpeningAndAssemblyModelPinned : Bool",
+                "compatibilityAndExtractionModelPinned : Bool",
+                "nativeBoundaryBreakModelPinned : Bool",
+                "nativeBoundaryPredicateRecordComplete : Bool",
+                "activeVerifierRoutePinned : Bool",
+                "predicateNegativeControlsPassed : Bool",
+                "concretePredicateModelPresent : Bool",
+                "certifiedSemanticsSourcePackageTargetPresent : Bool",
+            ],
+            2048,
+        ) && lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "def",
+            "ReportVerified",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
+                "schemaMatches = true",
+                "reportDigestVerified = true",
+            ],
+            1536,
+        ) && lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "def",
+            "FactsAllTrue",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
+                "activeBoundaryPredicateModelPinned = true",
+                "payloadAcceptanceModelPinned = true",
+                "concretePredicateModelPresent = true",
+                "certifiedSemanticsSourcePackageTargetPresent = true",
+            ],
+            2048,
+        );
+    let native_boundary_predicate_model_certificate_target_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "structure",
+            "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+            &[
+                "evidenceReport :",
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
+                "evidenceDigest : ByteArray",
+                "evidenceReportVerifiedProof",
+                "evidenceFactsAllTrueProof",
+                "predicates : Predicates",
+                "payloadAcceptanceNotVacuous",
+                "boundaryBreaksNotUniversal",
+                "payloadAcceptanceMatchesBoundary",
+                "fullOpeningBridgeDigestValidityBinds",
+            ],
+            4096,
+        ) && lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "def",
+            "ofReportAndModel",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
+                "evidenceFactsAllTrueProof",
+                "payloadAcceptanceNotVacuous",
+                "fullOpeningBridgeDigestValidityBinds",
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate where",
+            ],
+            8192,
+        );
+    let native_boundary_predicate_model_certificate_to_source_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "def",
+            "toSource",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where",
+                "predicates := Cert.predicates",
+                "payloadAcceptanceNotVacuous := Cert.payloadAcceptanceNotVacuous",
+                "boundaryBreaksNotUniversal := Cert.boundaryBreaksNotUniversal",
+                "payloadAcceptanceMatchesBoundary",
+                "Cert.payloadAcceptanceMatchesBoundary",
+                "fullOpeningBridgeDigestValidityBinds",
+                "Cert.fullOpeningBridgeDigestValidityBinds",
+            ],
+            4096,
+        );
     let native_boundary_predicate_model_current_report_certificate_impossible_present = [
         "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible",
         "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
@@ -57445,6 +57576,62 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             source_record_subcheck.native_boundary_payload_acceptance_antivacuity_target_present
         );
         assert!(source_record_subcheck.native_boundary_break_antivacuity_target_present);
+        let split_predicate_model_target_source = r#"
+structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport where
+  schemaMatches : Bool
+
+structure UnrelatedPredicateModelEvidenceReportMarkers where
+  reportDigestVerified : Bool
+  activeBoundaryPredicateModelPinned : Bool
+  payloadAcceptanceModelPinned : Bool
+  extractionCertificateModelPinned : Bool
+  fullOpeningAndAssemblyModelPinned : Bool
+  compatibilityAndExtractionModelPinned : Bool
+  nativeBoundaryBreakModelPinned : Bool
+  nativeBoundaryPredicateRecordComplete : Bool
+  activeVerifierRoutePinned : Bool
+  predicateNegativeControlsPassed : Bool
+  concretePredicateModelPresent : Bool
+  certifiedSemanticsSourcePackageTargetPresent : Bool
+
+def ReportVerified
+    (E : ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport) :
+    Prop :=
+  E.schemaMatches = true
+
+def FactsAllTrue
+    (E : ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport) :
+    Prop :=
+  E.schemaMatches = true
+
+structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
+  predicates : Predicates
+
+structure UnrelatedPredicateModelSourceMarkers where
+  payloadAcceptanceNotVacuous : Prop
+  boundaryBreaksNotUniversal : Prop
+  payloadAcceptanceMatchesBoundary : Prop
+  extractionCertificateMatchesPayload : Prop
+  certificateExtractionImpliesPayloadExtraction : Prop
+  fullOpeningBridgeDigestValidityBinds : Prop
+
+def toPredicates
+    (Model : ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource) :
+    Predicates :=
+  Model.predicates
+"#;
+        let split_predicate_model_target_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                split_predicate_model_target_source,
+            );
+        assert!(
+            !split_predicate_model_target_subcheck
+                .native_boundary_predicate_model_evidence_report_target_present
+        );
+        assert!(
+            !split_predicate_model_target_subcheck
+                .native_boundary_predicate_model_source_target_present
+        );
         assert!(
             source_record_subcheck.native_boundary_payload_acceptance_boundary_match_target_present
         );
