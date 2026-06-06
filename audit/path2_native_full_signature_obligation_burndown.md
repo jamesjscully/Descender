@@ -274,6 +274,14 @@ as part of `source_record_definitions` and requires it to be built through
 completes that category. This makes the package consumed by the certified
 native-boundary semantics route constructor-bound, not merely type-shaped.
 
+2026-06-05 source-record predicate-binding update: the concrete-definition
+checklist now requires every selected source-record definition and certificate
+definition to be over
+`selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates`.
+A complete-looking source package over a generic `P` no longer completes
+`source_record_definitions`, preventing source records from drifting away from
+the certified active native-boundary predicate model.
+
 2026-06-05 certified semantics package constructor update:
 `ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage` now
 exposes named constructor `ofCertificateAndSourceRecords` for the

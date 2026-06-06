@@ -9099,45 +9099,65 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             "selectedRustPayloadProjectionLaw",
             &[
-                "P.reviewedFq12PayloadAccepts",
-                "P.reviewedFq12PayloadProjectsFrom",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+                "reviewedFq12PayloadAccepts",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+                "reviewedFq12PayloadProjectsFrom",
             ],
         );
     let extraction_certificate_availability_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
             "selectedRustExtractionCertificateAvailability",
-            &["ReviewedFq12ExtractionCertificateAvailability"],
+            &[
+                "ReviewedFq12ExtractionCertificateAvailability",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ],
         );
     let role_root_lift_source_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
             "selectedRustRoleRootLiftSource",
-            &["ReviewedFq12RoleRootFunctionalLiftSource"],
+            &[
+                "ReviewedFq12RoleRootFunctionalLiftSource",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ],
         );
     let source_route_byte_source_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
             "selectedRustSourceRouteByteSource",
-            &["SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource"],
+            &[
+                "SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ],
         );
     let assembly_source_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
             "selectedRustAssemblySource",
-            &["ReviewedFq12FieldConcreteAssemblyLocalSource"],
+            &[
+                "ReviewedFq12FieldConcreteAssemblyLocalSource",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ],
         );
     let compatibility_source_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
             "selectedRustCompatibilitySource",
-            &["ReviewedFq12FieldConcreteCompatibilitySource"],
+            &[
+                "ReviewedFq12FieldConcreteCompatibilitySource",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ],
         );
     let shared_frame_witness_sources_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
             "selectedRustSharedFrameWitnessSources",
-            &["ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources"],
+            &[
+                "ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ],
         );
     let boundary_base_certificate_constructor_bound =
         lean_source_selected_rust_definition_body_contains_marker_v1(
@@ -9479,57 +9499,95 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         (
             "selectedRustPayloadProjectionLaw",
             &[
-                "P.reviewedFq12PayloadAccepts",
-                "P.reviewedFq12PayloadProjectsFrom",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+                "reviewedFq12PayloadAccepts",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+                "reviewedFq12PayloadProjectsFrom",
             ][..],
         ),
         (
             "selectedRustExtractionCertificateAvailability",
-            &["ReviewedFq12ExtractionCertificateAvailability"][..],
+            &[
+                "ReviewedFq12ExtractionCertificateAvailability",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ][..],
         ),
         (
             "selectedRustRoleRootLiftSource",
-            &["ReviewedFq12RoleRootFunctionalLiftSource"][..],
+            &[
+                "ReviewedFq12RoleRootFunctionalLiftSource",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ][..],
         ),
         (
             "selectedRustSourceRouteByteSource",
-            &["SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource"][..],
+            &[
+                "SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ][..],
         ),
         (
             "selectedRustAssemblySource",
-            &["ReviewedFq12FieldConcreteAssemblyLocalSource"][..],
+            &[
+                "ReviewedFq12FieldConcreteAssemblyLocalSource",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ][..],
         ),
         (
             "selectedRustCompatibilitySource",
-            &["ReviewedFq12FieldConcreteCompatibilitySource"][..],
+            &[
+                "ReviewedFq12FieldConcreteCompatibilitySource",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ][..],
         ),
         (
             "selectedRustSharedFrameWitnessSources",
-            &["ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources"][..],
+            &[
+                "ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ][..],
         ),
         (
             "selectedRustBoundaryBaseCertificate",
-            &["ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate"][..],
+            &[
+                "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ][..],
         ),
         (
             "selectedRustRoleRootLiftSourceCertificate",
-            &["ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate"][..],
+            &[
+                "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ][..],
         ),
         (
             "selectedRustSourceRouteByteSourceCertificate",
-            &["SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate"][..],
+            &[
+                "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ][..],
         ),
         (
             "selectedRustFieldLocalSourceCertificate",
-            &["ReviewedFq12SelectedRustFieldLocalEvidenceCertificate"][..],
+            &[
+                "ReviewedFq12SelectedRustFieldLocalEvidenceCertificate",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ][..],
         ),
         (
             "selectedRustSharedFrameWitnessSourcesCertificate",
-            &["ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate"][..],
+            &[
+                "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ][..],
         ),
         (
             "selectedRustModelSourceRecordPackage",
-            &["ReviewedFq12SelectedRustModelSourceRecordPackage"][..],
+            &[
+                "ReviewedFq12SelectedRustModelSourceRecordPackage",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ][..],
         ),
     ];
     let predicate_model_report_surface_definitions = [
@@ -57689,29 +57747,38 @@ def selectedRustNativeBoundaryPredicateModelCertificate :
     selectedRustCompatibilityExtractionImpliesReviewedExtractionValue
     selectedRustFullOpeningBridgeDigestValidityBindsValue
 theorem selectedRustPayloadProjectionLaw :
-  P.reviewedFq12PayloadAccepts b payload ->
-  P.reviewedFq12PayloadProjectsFrom b payload :=
+  (selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates).reviewedFq12PayloadAccepts b payload ->
+  (selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates).reviewedFq12PayloadProjectsFrom b payload :=
   selectedRustPayloadProjectionLawValue
 def selectedRustExtractionCertificateAvailability :
-  ReviewedFq12ExtractionCertificateAvailability P :=
+  ReviewedFq12ExtractionCertificateAvailability
+    selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
   selectedRustExtractionCertificateAvailabilityValue
 def selectedRustRoleRootLiftSource :
-  ReviewedFq12RoleRootFunctionalLiftSource P :=
+  ReviewedFq12RoleRootFunctionalLiftSource
+    selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
   selectedRustRoleRootLiftSourceValue
 def selectedRustSourceRouteByteSource :
-  SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource FieldParser RouteParser P :=
+  SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+    FieldParser RouteParser
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
   selectedRustSourceRouteByteSourceValue
 def selectedRustAssemblySource :
-  ReviewedFq12FieldConcreteAssemblyLocalSource P :=
+  ReviewedFq12FieldConcreteAssemblyLocalSource
+    selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
   selectedRustAssemblySourceValue
 def selectedRustCompatibilitySource :
-  ReviewedFq12FieldConcreteCompatibilitySource P :=
+  ReviewedFq12FieldConcreteCompatibilitySource
+    selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
   selectedRustCompatibilitySourceValue
 def selectedRustSharedFrameWitnessSources :
-  ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources CanonicalParser WitnessParser P :=
+  ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+    CanonicalParser WitnessParser
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
   selectedRustSharedFrameWitnessSourcesValue
 def selectedRustBoundaryBaseCertificate :
-  ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P :=
+  ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate
+    selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
   ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources
     selectedRustBoundaryBaseEvidenceReport
     selectedRustBoundaryBaseEvidenceDigest
@@ -57720,7 +57787,8 @@ def selectedRustBoundaryBaseCertificate :
     selectedRustPayloadProjectionLaw
     selectedRustExtractionCertificateAvailability
 def selectedRustRoleRootLiftSourceCertificate :
-  ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P :=
+  ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate
+    selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
   ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource
     selectedRustRoleRootLiftEvidenceReport
     selectedRustRoleRootLiftEvidenceDigest
@@ -57728,7 +57796,9 @@ def selectedRustRoleRootLiftSourceCertificate :
     selectedRustRoleRootLiftEvidenceFactsAllTrueProof
     selectedRustRoleRootLiftSource
 def selectedRustSourceRouteByteSourceCertificate :
-  SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate FieldParser RouteParser P :=
+  SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+    FieldParser RouteParser
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
   SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource
     selectedRustSourceRouteEvidenceReport
     selectedRustSourceRouteEvidenceDigest
@@ -57736,7 +57806,8 @@ def selectedRustSourceRouteByteSourceCertificate :
     selectedRustSourceRouteEvidenceFactsAllTrueProof
     selectedRustSourceRouteByteSource
 def selectedRustFieldLocalSourceCertificate :
-  ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P :=
+  ReviewedFq12SelectedRustFieldLocalEvidenceCertificate
+    selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
   ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources
     selectedRustFieldLocalEvidenceReport
     selectedRustFieldLocalEvidenceDigest
@@ -57745,7 +57816,9 @@ def selectedRustFieldLocalSourceCertificate :
     selectedRustAssemblySource
     selectedRustCompatibilitySource
 def selectedRustSharedFrameWitnessSourcesCertificate :
-  ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate CanonicalParser WitnessParser P :=
+  ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+    CanonicalParser WitnessParser
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
   ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources
     selectedRustSharedFrameWitnessEvidenceReport
     selectedRustSharedFrameWitnessEvidenceDigest
@@ -57753,7 +57826,9 @@ def selectedRustSharedFrameWitnessSourcesCertificate :
     selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof
     selectedRustSharedFrameWitnessSources
 def selectedRustModelSourceRecordPackage :
-  ReviewedFq12SelectedRustModelSourceRecordPackage FieldParser RouteParser CanonicalParser WitnessParser P :=
+  ReviewedFq12SelectedRustModelSourceRecordPackage
+    FieldParser RouteParser CanonicalParser WitnessParser
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
   ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources
     selectedRustPayloadProjectionLaw
     selectedRustExtractionCertificateAvailability
@@ -57839,6 +57914,16 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             );
         assert!(!anonymous_sub_evidence_match_checklist.sub_evidence_digest_match_proof_present);
         assert!(!anonymous_sub_evidence_match_checklist.all_definitions_present);
+        let generic_predicate_source_record_source = complete_concrete_definition_source.replace(
+            "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            "P",
+        );
+        let generic_predicate_source_record_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                &generic_predicate_source_record_source,
+            );
+        assert!(!generic_predicate_source_record_checklist.source_record_definitions_present);
+        assert!(!generic_predicate_source_record_checklist.all_definitions_present);
         let complete_source_record_subcheck =
             path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 complete_concrete_definition_source,
@@ -57894,8 +57979,8 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(!suffixed_report_name_definition_checklist.evidence_report_definitions_present);
         assert!(!suffixed_report_name_definition_checklist.all_definitions_present);
         let reversed_payload_projection_law_source = complete_concrete_definition_source.replace(
-            "theorem selectedRustPayloadProjectionLaw :\n  P.reviewedFq12PayloadAccepts b payload ->\n  P.reviewedFq12PayloadProjectsFrom b payload :=",
-            "theorem selectedRustPayloadProjectionLaw :\n  P.reviewedFq12PayloadProjectsFrom b payload ->\n  P.reviewedFq12PayloadAccepts b payload :=",
+            "theorem selectedRustPayloadProjectionLaw :\n  (selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates).reviewedFq12PayloadAccepts b payload ->\n  (selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates).reviewedFq12PayloadProjectsFrom b payload :=",
+            "theorem selectedRustPayloadProjectionLaw :\n  (selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates).reviewedFq12PayloadProjectsFrom b payload ->\n  (selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates).reviewedFq12PayloadAccepts b payload :=",
         );
         let reversed_payload_projection_law_checklist =
             path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
