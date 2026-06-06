@@ -1993,6 +1993,12 @@ opening tuple to match the selected boundary fields (`liveStatusMarker` and
 `creationStatementDigest`), so the remaining coordinate audit is narrowed to
 whether those selected boundary fields are the right Lean names for the Rust
 native-boundary frame objects.
+The same principle now applies to account creation/admission:
+`selectedAccountCreateAccepts` no longer asserts
+`nativeBoundaryDigest = creationStatementDigest`, and `selectedAdmitted` no
+longer asserts `liveStatusMarker = slotId`. Those equalities are not Rust facts;
+context identity remains in the admission predicate, while native digest and
+slot binding stay in the payload/certificate acceptance route.
 The digest-identity instance has now been repaired in the Lean model:
 `HiddenRepresentative` and `FullNativeRepresentativeOpening` carry
 `nativeBoundaryDigest` separately from `representativeDigest`,

@@ -3441,14 +3441,12 @@ def selectedBoundaryBreakFor
 /-- Selected account-creation acceptance provider. -/
 def selectedAccountCreateAccepts
     (c : Context) (b : Path2NativeBoundary.Boundary) : Prop :=
-  b.context = c ∧
-    b.nativeBoundaryDigest = b.creationStatementDigest
+  b.context = c
 
 /-- Selected native-boundary admission provider. -/
 def selectedAdmitted
     (c : Context) (b : Path2NativeBoundary.Boundary) : Prop :=
-  selectedAccountCreateAccepts c b ∧
-    b.liveStatusMarker = c.slotId
+  selectedAccountCreateAccepts c b
 
 /-- Selected slot-authorization projection. -/
 def selectedSlotAuthorizationOf

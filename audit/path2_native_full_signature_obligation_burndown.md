@@ -1631,6 +1631,12 @@ scalar/context coordinates (`slotId`, `lifecycleAnchor`,
 lifecycle/opening tuple to the selected boundary fields, so the remaining
 model-alignment question is whether those selected boundary field names match
 the Rust native-boundary frame objects.
+Account/admission predicates were retargeted the same way:
+`selectedAccountCreateAccepts` only checks context identity, and
+`selectedAdmitted` delegates to that account-creation predicate. The removed
+`nativeBoundaryDigest = creationStatementDigest` and `liveStatusMarker = slotId`
+equalities were not active Rust facts; native digest and slot binding are
+handled by payload/certificate acceptance.
 The primary concrete digest-identity example is now repaired: Rust keeps
 `native_boundary_digest` and `representative_digest` separate, with the latter
 computed from the former plus opening fields. Lean now carries both fields in
