@@ -4711,9 +4711,109 @@ structure ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValiditySource
                       b opening) ∧
                   P.descentConsistent b.context
                     (reviewedFq12FullNativeOpeningCanonicalRepresentative
+                    (reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
+                      Cert.toWitnessSources.digestFrame)
+                      b opening)
+
+/--
+Equation-level source for canonical full-opening native validity.
+
+This splits the remaining canonical native-validity blocker into the exact
+three facts needed by `InFiber` and native validity: the predicate model's
+`boundaryOf` reconstructs the accepted boundary, its local-validity predicate
+accepts the canonical representative, and its descent predicate accepts the
+same representative.
+-/
+structure ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSource
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) where
+  canonicalFullOpeningBoundaryOf :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                P.boundaryOf b.context
+                    (reviewedFq12FullNativeOpeningCanonicalRepresentative
                       (reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
                         Cert.toWitnessSources.digestFrame)
-                      b opening)
+                      b opening) =
+                  b
+  canonicalFullOpeningLocalValid :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                P.localValid b.context
+                  (reviewedFq12FullNativeOpeningCanonicalRepresentative
+                    (reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
+                      Cert.toWitnessSources.digestFrame)
+                    b opening)
+  canonicalFullOpeningDescentConsistent :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                P.descentConsistent b.context
+                  (reviewedFq12FullNativeOpeningCanonicalRepresentative
+                    (reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
+                      Cert.toWitnessSources.digestFrame)
+                    b opening)
+
+/--
+The equation-level source is exactly sufficient for the canonical
+native-validity source consumed by the hard extraction law bundle.
+-/
+def reviewedFq12SharedWitnessCanonicalFullOpeningNativeValiditySourceOfEquations
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P)
+    (equations :
+      ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSource
+        Cert) :
+    ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValiditySource Cert where
+  canonicalFullOpeningInBoundaryFiber := by
+    intro b payload cert opening hPayloadBoundary hPayloadSlot hCertBoundary
+      hCertSlot hOpeningCommitment
+    exact
+      equations.canonicalFullOpeningBoundaryOf
+        hPayloadBoundary hPayloadSlot hCertBoundary hCertSlot
+        hOpeningCommitment
+  canonicalFullOpeningNativeValid := by
+    intro b payload cert opening hPayloadBoundary hPayloadSlot hCertBoundary
+      hCertSlot hOpeningCommitment
+    exact
+      ⟨equations.canonicalFullOpeningLocalValid
+          hPayloadBoundary hPayloadSlot hCertBoundary hCertSlot
+          hOpeningCommitment,
+        equations.canonicalFullOpeningDescentConsistent
+          hPayloadBoundary hPayloadSlot hCertBoundary hCertSlot
+          hOpeningCommitment⟩
 
 /--
 The canonical full-opening native-validity source derives the full-opening
@@ -5463,6 +5563,36 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
       sharedWitnessCertificate
 
 namespace ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+
+/--
+Construct the fixed-point source from the equation-level canonical
+native-validity evidence.
+-/
+def ofCanonicalNativeEquations
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (predicateFieldSources :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources)
+    (sharedWitnessCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser predicateFieldSources.toPredicates)
+    (predicatesFromSharedWitness :
+      (selectedRustNativeBoundaryPredicateFieldSources
+        sharedWitnessCertificate).toPredicates =
+        predicateFieldSources.toPredicates)
+    (canonicalNativeEquations :
+      ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSource
+        sharedWitnessCertificate) :
+    @ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+      CanonicalParser WitnessParser where
+  predicateFieldSources := predicateFieldSources
+  sharedWitnessCertificate := sharedWitnessCertificate
+  predicatesFromSharedWitness := predicatesFromSharedWitness
+  canonicalNativeSource :=
+    reviewedFq12SharedWitnessCanonicalFullOpeningNativeValiditySourceOfEquations
+      sharedWitnessCertificate canonicalNativeEquations
 
 /-- The selected hard fields of a fixed-point source are the shared-witness fields. -/
 theorem hardFieldSourcesFromSharedWitness

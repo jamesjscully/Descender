@@ -1941,6 +1941,17 @@ the public report/digest proofs, the field-source package certificate, and the
 fixed-point source instead of requiring every model law as an independent
 argument. The remaining concrete blocker is supplying that fixed-point source
 and `FactsAllTrue` report proof from real Rust/model evidence.
+The canonical native-validity input is now decomposed further:
+`ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSource`
+splits the remaining obligation into three source facts over the exact
+canonical representative: `boundaryOf` reconstructs the accepted boundary,
+`localValid` holds, and `descentConsistent` holds.
+`reviewedFq12SharedWitnessCanonicalFullOpeningNativeValiditySourceOfEquations`
+and `ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource.ofCanonicalNativeEquations`
+lift those three facts through the fixed-point route. The remaining evidence
+import is therefore concrete and narrow: prove those three canonical equations
+for the selected Rust predicate record and provide the report `FactsAllTrue`
+certificate.
 Tooling note: the Rust source scanner's direct-constant-lambda check now clamps
 source windows to a UTF-8 character boundary before slicing; the prior byte
 slice could panic when a window ended inside Lean's `∧` token. The broad
