@@ -1845,6 +1845,14 @@ bundle from the shared-witness field equality plus only
 `ReviewedFq12PayloadExtractionInBoundaryFiber` and
 `ReviewedFq12PayloadExtractionNativeValid`. The manifest tracks this with
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_law_reduction_present`.
+The remaining native-validity source is now explicit:
+`ReviewedFq12SharedWitnessFullOpeningNativeValiditySource` only has to prove
+fiber/local/descent for the full-opening assembly witness exposed by
+shared-witness payload extraction, and
+`reviewedFq12HardExtractionLawsOfSharedWitnessFullOpeningSource` turns that
+source plus the field equality into the full hard law bundle. The manifest
+tracks this with
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_full_opening_native_source_target_present`.
 
 ## Findings
 

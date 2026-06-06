@@ -7606,6 +7606,8 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
         bool,
     pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_law_reduction_present:
         bool,
+    pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_full_opening_native_source_target_present:
+        bool,
     pub native_boundary_predicate_model_core_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_transparent_trace_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present: bool,
@@ -9565,6 +9567,47 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             ],
             12288,
         );
+    let native_boundary_predicate_model_reviewed_fq12_hard_extraction_full_opening_native_source_target_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "structure",
+            "ReviewedFq12SharedWitnessFullOpeningNativeValiditySource",
+            &[
+                "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate",
+                "fullOpeningAssemblyInBoundaryFiber",
+                "selectedFullNativeOpeningAssemblesRepresentative",
+                "InFiber P b.context b h",
+                "fullOpeningAssemblyNativeValid",
+                "P.localValid b.context h",
+                "P.descentConsistent b.context h",
+            ],
+            8192,
+        ) && lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "theorem",
+            "reviewedFq12PayloadExtractionNativeLawsOfSharedWitnessFullOpeningSource",
+            &[
+                "ReviewedFq12SharedWitnessFullOpeningNativeValiditySource Cert",
+                "ReviewedFq12PayloadExtractionInBoundaryFiber P",
+                "ReviewedFq12PayloadExtractionNativeValid P",
+                "selectedReviewedFq12PayloadExtracts",
+                "hFullOpening",
+                "fullOpeningAssemblyInBoundaryFiber",
+                "fullOpeningAssemblyNativeValid",
+            ],
+            12288,
+        ) && lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "theorem",
+            "reviewedFq12HardExtractionLawsOfSharedWitnessFullOpeningSource",
+            &[
+                "ReviewedFq12SharedWitnessFullOpeningNativeValiditySource Cert",
+                "ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelLaws P",
+                "reviewedFq12PayloadExtractionNativeLawsOfSharedWitnessFullOpeningSource",
+                "reviewedFq12HardExtractionLawsOfSharedWitnessCertificate",
+            ],
+            8192,
+        );
     let native_boundary_predicate_model_evidence_report_target_present =
         lean_source_has_named_declaration_with_markers_v1(
             &boundary_source,
@@ -11209,6 +11252,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_certificate_route_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_model_certificate_target_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_law_reduction_present,
+        native_boundary_predicate_model_reviewed_fq12_hard_extraction_full_opening_native_source_target_present,
         native_boundary_predicate_model_core_provider_fields_defined_present,
         native_boundary_predicate_model_transparent_trace_provider_fields_defined_present,
         native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present,
@@ -60172,6 +60216,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(
             source_record_subcheck
                 .native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_law_reduction_present
+        );
+        assert!(
+            source_record_subcheck
+                .native_boundary_predicate_model_reviewed_fq12_hard_extraction_full_opening_native_source_target_present
         );
         assert!(
             !source_record_subcheck

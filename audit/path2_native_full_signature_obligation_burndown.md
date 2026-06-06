@@ -1586,3 +1586,11 @@ provider structurally. After the five-field equality is proved, the only
 remaining hard-law inputs are payload extraction in the boundary fiber and
 payload extraction native local/descent validity. The manifest tracks this as
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_law_reduction_present`.
+Those two remaining inputs are now shaped as a full-opening native-validity
+source:
+`ReviewedFq12SharedWitnessFullOpeningNativeValiditySource` proves
+fiber/local/descent for each full-opening assembly witness unpacked from
+shared-witness payload extraction, and
+`reviewedFq12HardExtractionLawsOfSharedWitnessFullOpeningSource` derives the
+full hard law bundle from that source. The manifest tracks this as
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_full_opening_native_source_target_present`.

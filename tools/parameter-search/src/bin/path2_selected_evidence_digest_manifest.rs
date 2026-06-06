@@ -323,6 +323,9 @@ fn main() -> Result<(), String> {
             "native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_law_reduction_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_law_reduction_present,
+            "native_boundary_predicate_model_reviewed_fq12_hard_extraction_full_opening_native_source_target_present":
+                source_record_subcheck
+                    .native_boundary_predicate_model_reviewed_fq12_hard_extraction_full_opening_native_source_target_present,
             "native_boundary_predicate_model_core_provider_fields_defined_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_core_provider_fields_defined_present,

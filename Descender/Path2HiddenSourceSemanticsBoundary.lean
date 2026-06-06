@@ -3860,6 +3860,114 @@ theorem reviewedFq12HardExtractionLawsOfSharedWitnessCertificate
         using hPayloadOfPredicates
 
 /--
+Native-validity source for the remaining hard-extraction payload laws.
+
+After the shared-witness hard fields are selected, payload extraction unpacks
+to a full native opening whose canonical representative is the extracted
+hidden representative. This source is exactly the remaining native-boundary
+evidence needed for that full-opening assembly witness.
+-/
+structure ReviewedFq12SharedWitnessFullOpeningNativeValiditySource
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) where
+  fullOpeningAssemblyInBoundaryFiber :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening}
+        {h : HiddenRepresentative},
+      (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+        Cert).selectedFullNativeOpeningAssemblesRepresentative
+          b payload cert opening h ->
+        InFiber P b.context b h
+  fullOpeningAssemblyNativeValid :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening}
+        {h : HiddenRepresentative},
+      (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+        Cert).selectedFullNativeOpeningAssemblesRepresentative
+          b payload cert opening h ->
+        P.localValid b.context h ∧
+          P.descentConsistent b.context h
+
+/--
+The shared-witness full-opening native-validity source discharges the two
+payload-extraction native laws once the selected hard fields are proved equal
+to the shared-witness hard fields.
+-/
+theorem reviewedFq12PayloadExtractionNativeLawsOfSharedWitnessFullOpeningSource
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P)
+    (hFields :
+      reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+          Cert =
+        reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates P)
+    (nativeSource :
+      ReviewedFq12SharedWitnessFullOpeningNativeValiditySource Cert) :
+    ReviewedFq12PayloadExtractionInBoundaryFiber P ∧
+      ReviewedFq12PayloadExtractionNativeValid P := by
+  constructor
+  · intro b payload h hPayload
+    have hPayloadFromShared :
+        (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+          Cert).selectedReviewedFq12PayloadExtracts b payload h := by
+      rw [hFields]
+      exact hPayload
+    rcases hPayloadFromShared with ⟨cert, hCertExtracts⟩
+    rcases hCertExtracts with ⟨opening, hFullOpening⟩
+    exact nativeSource.fullOpeningAssemblyInBoundaryFiber hFullOpening
+  · intro b payload h hPayload
+    have hPayloadFromShared :
+        (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+          Cert).selectedReviewedFq12PayloadExtracts b payload h := by
+      rw [hFields]
+      exact hPayload
+    rcases hPayloadFromShared with ⟨cert, hCertExtracts⟩
+    rcases hCertExtracts with ⟨opening, hFullOpening⟩
+    exact nativeSource.fullOpeningAssemblyNativeValid hFullOpening
+
+/--
+Full hard-extraction laws from the shared-witness field equality and the
+remaining full-opening native-validity source.
+-/
+theorem reviewedFq12HardExtractionLawsOfSharedWitnessFullOpeningSource
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P)
+    (hFields :
+      reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+          Cert =
+        reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates P)
+    (nativeSource :
+      ReviewedFq12SharedWitnessFullOpeningNativeValiditySource Cert) :
+    ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelLaws P := by
+  have hNativeLaws :=
+    reviewedFq12PayloadExtractionNativeLawsOfSharedWitnessFullOpeningSource
+      Cert hFields nativeSource
+  exact
+    reviewedFq12HardExtractionLawsOfSharedWitnessCertificate
+      Cert hFields hNativeLaws.1 hNativeLaws.2
+
+/--
 Proof-bearing hard-extraction predicate-model certificate sourced by the
 active shared digest-frame witness certificate.
 
