@@ -8819,15 +8819,7 @@ fn lean_source_module_has_non_stub_declarations_for_names_v1(
 ) -> bool {
     let stripped_source = lean_source_without_comments_and_strings_v1(lean_source);
     let lean_source = stripped_source.as_str();
-    let declaration_kinds = [
-        "abbrev",
-        "def",
-        "instance",
-        "private abbrev",
-        "private def",
-        "private theorem",
-        "theorem",
-    ];
+    let declaration_kinds = ["abbrev", "def", "private abbrev", "private def"];
     names.iter().all(|name| {
         declaration_kinds.iter().any(|kind| {
             let marker = format!("\n{kind} {name}");
@@ -58452,6 +58444,24 @@ def selectedSpendWitnessValid := selectedSpendWitnessValidValue
         );
         assert!(
             !vacuous_provider_native_boundary_model_subcheck
+                .native_boundary_concrete_predicate_model_present
+        );
+        let theorem_provider_native_boundary_model_source = complete_native_boundary_model_source
+            .replacen(
+                "def selectedReviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAcceptsValue",
+                "theorem selectedReviewedFq12PayloadAccepts : True := True.intro",
+                1,
+            );
+        let theorem_provider_native_boundary_model_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &theorem_provider_native_boundary_model_source,
+            );
+        assert!(
+            !theorem_provider_native_boundary_model_subcheck
+                .native_boundary_predicate_model_field_sources_defined_present
+        );
+        assert!(
+            !theorem_provider_native_boundary_model_subcheck
                 .native_boundary_concrete_predicate_model_present
         );
         let stubbed_native_boundary_model_source = format!(

@@ -1408,6 +1408,12 @@ stubs for the selected predicate-field providers used by
 `selectedRustNativeBoundaryPredicates`. The manifest exposes this as
 `native_boundary_predicate_model_stub_field_sources_present`, and the
 digest-bound negative-control bit requires it to be false.
+Those selected predicate-field providers must now be concrete `def`/`abbrev`
+value declarations; theorem- or instance-shaped declarations no longer satisfy
+the provider-completeness gate. A regression fixture replaces a critical
+reviewed-Fq12 provider with a theorem declaration and confirms that both
+`native_boundary_predicate_model_field_sources_defined_present` and the
+concrete-model bit remain false.
 The same subcheck now exposes
 `native_boundary_predicate_model_incomplete_proof_terms_present`; `sorry` or
 `admit` tokens outside comments/strings block concrete-model completion and

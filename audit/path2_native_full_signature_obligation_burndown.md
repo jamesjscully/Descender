@@ -397,6 +397,10 @@ The same detector now rejects module-level `axiom`, `constant`, `opaque`, or
 `selectedRustNativeBoundaryPredicates`. The manifest exposes this as
 `native_boundary_predicate_model_stub_field_sources_present`, and the
 digest-bound negative-control bit also requires it to be false.
+The provider-completeness detector now accepts only concrete `def`/`abbrev`
+value declarations for those selected predicate-field providers. A
+theorem-shaped replacement for a critical reviewed-Fq12 provider leaves both
+the provider-completeness bit and concrete active predicate-model bit false.
 It also exposes
 `native_boundary_predicate_model_incomplete_proof_terms_present`; `sorry` or
 `admit` tokens outside comments/strings now block concrete-model completion
