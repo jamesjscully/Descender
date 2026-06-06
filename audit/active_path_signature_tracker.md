@@ -1577,6 +1577,11 @@ obligation definitions for every native-boundary predicate target consumed by
 selected proof must expose the target proposition over
 `selectedRustNativeBoundaryPredicates`, and those names are blocked as
 `axiom`/`constant`/`opaque` stubs.
+The source-record definition category now requires every raw selected source
+definition to be the projection of its corresponding evidence/source binding
+object. This keeps the certificate route and the binding-backed package route
+definitionally aligned instead of allowing independent raw source terms to
+coexist with an unrelated `ofSourceBindings` package.
 
 ## Findings
 
