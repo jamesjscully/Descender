@@ -1273,6 +1273,11 @@ structure and methods directly, and requires the certified package
 `hiddenSourceClosure` body to start from
 `(Package.toSemanticsSourcePackage).hiddenSourceClosure`; unrelated marker
 placement or an alias-returning closure no longer satisfies that evidence bit.
+The older concrete/source-shaped semantics package target bits are now
+declaration-scoped too: the concrete package closure must start from the
+selected source-record package theorem, and the source-shaped package
+`toSemanticsPackage` projection must start from
+`Package.predicateModel.toPredicates` plus `Package.sourceRecords`.
 The same semantics package now has accepted-spend and full-signature handoff
 theorems, and the manifest reports
 `native_boundary_semantics_package_handoff_present = true`. This means the

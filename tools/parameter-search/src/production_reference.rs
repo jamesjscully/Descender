@@ -8791,6 +8791,97 @@ fn lean_source_selected_rust_definition_body_starts_with_marker_v1(
     })
 }
 
+fn lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+    boundary_source: &str,
+    name: &str,
+    header_markers: &[&str],
+    body_marker: &str,
+    max_body_len: usize,
+) -> bool {
+    let normalized_header_markers = header_markers
+        .iter()
+        .map(|marker| marker.split_whitespace().collect::<String>())
+        .collect::<Vec<_>>();
+    let normalized_body_marker = body_marker.split_whitespace().collect::<String>();
+    let header_markers_present_in_order = |declaration_header: &str| -> bool {
+        let normalized_header = declaration_header.split_whitespace().collect::<String>();
+        let mut cursor = 0;
+        normalized_header_markers.iter().all(|marker| {
+            normalized_header[cursor..]
+                .find(marker)
+                .is_some_and(|offset| {
+                    cursor += offset + marker.len();
+                    true
+                })
+        })
+    };
+    ["def", "theorem"].iter().any(|kind| {
+        let public_start = format!("\n{kind} {name}");
+        let private_start = format!("\nprivate {kind} {name}");
+        [public_start, private_start].iter().any(|start_marker| {
+            boundary_source
+                .match_indices(start_marker)
+                .any(|(start, _)| {
+                    let name_end = start + start_marker.len();
+                    if boundary_source[name_end..]
+                        .chars()
+                        .next()
+                        .is_some_and(|next| {
+                            next.is_ascii_alphanumeric() || next == '_' || next == '\''
+                        })
+                    {
+                        return false;
+                    }
+                    let declaration_window =
+                        &boundary_source[start..boundary_source.len().min(start + max_body_len)];
+                    let Some(body_start) = [":=", "\nwhere", " where"]
+                        .iter()
+                        .filter_map(|body_marker| {
+                            declaration_window
+                                .find(body_marker)
+                                .map(|offset| offset + body_marker.len())
+                        })
+                        .min()
+                    else {
+                        return false;
+                    };
+                    let declaration_header = &declaration_window[..body_start];
+                    if !header_markers_present_in_order(declaration_header) {
+                        return false;
+                    }
+                    let body_window = &declaration_window[body_start..];
+                    let next_top_level_declaration = [
+                        "\nabbrev ",
+                        "\naxiom ",
+                        "\nclass ",
+                        "\nconstant ",
+                        "\ndef ",
+                        "\ninductive ",
+                        "\ninstance ",
+                        "\nnamespace ",
+                        "\nopaque ",
+                        "\nopen ",
+                        "\nprivate abbrev ",
+                        "\nprivate def ",
+                        "\nprivate theorem ",
+                        "\nsection ",
+                        "\nstructure ",
+                        "\ntheorem ",
+                        "\nvariable ",
+                    ]
+                    .iter()
+                    .filter_map(|marker| body_window.find(marker))
+                    .min()
+                    .unwrap_or(body_window.len());
+                    let normalized_body = body_window[..next_top_level_declaration]
+                        .split_whitespace()
+                        .collect::<String>();
+                    normalized_body.starts_with(&normalized_body_marker)
+                })
+        })
+    })
+}
+
 fn lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
     boundary_source: &str,
     name: &str,
@@ -9283,28 +9374,59 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
-    let native_boundary_semantics_package_target_present = [
-        "ReviewedFq12SelectedRustNativeBoundarySemanticsPackage",
-        "predicates : Predicates",
-        "sourceRecords :",
-        "ReviewedFq12SelectedRustModelSourceRecordPackage",
-        "def hiddenSourceClosure",
-        "ReviewedFq12HiddenSourceProofSemanticsClosed Semantics.predicates",
-        "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_semantics_source_package_target_present = [
-        "ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage",
-        "predicateModel : ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
-        "predicateModel.toPredicates",
-        "sourceRecords :",
-        "def toSemanticsPackage",
-        "def hiddenSourceClosure",
-        "Package.toSemanticsPackage",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_semantics_package_target_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "structure",
+            "ReviewedFq12SelectedRustNativeBoundarySemanticsPackage",
+            &[
+                "predicates : Predicates",
+                "sourceRecords :",
+                "ReviewedFq12SelectedRustModelSourceRecordPackage",
+                "predicates",
+            ],
+            2048,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "hiddenSourceClosure",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundarySemanticsPackage",
+                "ReviewedFq12HiddenSourceProofSemanticsClosed Semantics.predicates",
+            ],
+            "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package Semantics.predicates Semantics.sourceRecords",
+            4096,
+        );
+    let native_boundary_semantics_source_package_target_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "structure",
+            "ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage",
+            &[
+                "predicateModel : ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
+                "sourceRecords :",
+                "ReviewedFq12SelectedRustModelSourceRecordPackage",
+                "predicateModel.toPredicates",
+            ],
+            2048,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "toSemanticsPackage",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage",
+                "ReviewedFq12SelectedRustNativeBoundarySemanticsPackage",
+            ],
+            "predicates := Package.predicateModel.toPredicates sourceRecords := Package.sourceRecords",
+            4096,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "hiddenSourceClosure",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage",
+                "ReviewedFq12HiddenSourceProofSemanticsClosed Package.predicateModel.toPredicates",
+            ],
+            "(Package.toSemanticsPackage).hiddenSourceClosure",
+            4096,
+        );
     let native_boundary_certified_semantics_source_package_target_present =
         lean_source_has_named_declaration_with_markers_v1(
             &boundary_source,
@@ -9334,7 +9456,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
                 "ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage",
             ],
-        ) && lean_source_has_selected_rust_definition_with_markers_v1(
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
             &boundary_source,
             "hiddenSourceClosure",
             &[
@@ -9342,9 +9464,6 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 "ReviewedFq12HiddenSourceProofSemanticsClosed",
                 "Package.predicateModelCertificate.toSource.toPredicates",
             ],
-        ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
-            &boundary_source,
-            "hiddenSourceClosure",
             "(Package.toSemanticsSourcePackage).hiddenSourceClosure",
             4096,
         );
@@ -58311,6 +58430,38 @@ def toPredicates
         assert!(
             !aliased_certified_package_closure_subcheck
                 .native_boundary_certified_semantics_source_package_target_present
+        );
+        let aliased_semantics_package_closure_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "  reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package\n    Semantics.predicates\n    Semantics.sourceRecords",
+            "  otherClosure\n\nexample : True := by\n  let _mentionedSemanticsPackageClosure :=\n    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package\n      Semantics.predicates\n      Semantics.sourceRecords\n  trivial",
+            1,
+        );
+        let aliased_semantics_package_closure_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_semantics_package_closure_source,
+            );
+        assert!(
+            !aliased_semantics_package_closure_subcheck
+                .native_boundary_semantics_package_target_present
+        );
+        let aliased_semantics_source_package_projection_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "  predicates := Package.predicateModel.toPredicates\n  sourceRecords := Package.sourceRecords",
+            "  predicates := otherPredicates\n  sourceRecords := Package.sourceRecords\n\nexample : True := by\n  let _mentionedSemanticsSourcePackageProjection :=\n    Package.predicateModel.toPredicates\n  trivial",
+            1,
+        );
+        let aliased_semantics_source_package_projection_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_semantics_source_package_projection_source,
+            );
+        assert!(
+            !aliased_semantics_source_package_projection_subcheck
+                .native_boundary_semantics_source_package_target_present
         );
         assert!(
             source_record_subcheck.native_boundary_payload_acceptance_boundary_match_target_present

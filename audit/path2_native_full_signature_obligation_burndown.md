@@ -285,6 +285,10 @@ The certified semantics source-package target bit is now scoped to the named
 structure/method declarations, with `hiddenSourceClosure` prefix-bound to
 `(Package.toSemanticsSourcePackage).hiddenSourceClosure`; alias-returning
 closures and unrelated marker placement are rejected.
+The concrete and source-shaped semantics package target bits are now scoped
+the same way: concrete closure must start from the selected source-record
+package theorem, and source-package projection must start from
+`Package.predicateModel.toPredicates` and `Package.sourceRecords`.
 The predicate-model certificate constructor check is now prefix-bound on
 `selectedRustNativeBoundaryPredicateModelCertificate` itself; an alias-bound
 certificate plus an unused `ofReportAndModel` mention no longer completes the
