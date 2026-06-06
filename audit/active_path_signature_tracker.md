@@ -1868,6 +1868,13 @@ that builds the certificate from the shared-witness certificate, the hard-field
 equality, and the canonical native-validity source, deriving the law bundle
 internally. The manifest tracks this with
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_model_certificate_constructor_present`.
+The hard route is now bridged back to the full predicate-model certificate:
+`hardExtractionSharedWitnessPackageForPredicateModelCertificate` and
+`hardExtractionSharedWitnessPackageFieldsMatchPredicateModelCertificate` show
+that a shared-witness hard certificate over `ModelCert.predicates` has the same
+hard provider fields as `ModelCert.toHardExtractionPredicateModelPackage`. The
+manifest tracks this with
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_predicate_model_bridge_present`.
 
 ## Findings
 

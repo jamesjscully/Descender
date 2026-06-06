@@ -4733,6 +4733,56 @@ def toSource
 end ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate
 
 /--
+Route a full predicate-model certificate through a shared-witness
+hard-extraction certificate over the same predicate interpretation.
+-/
+def hardExtractionSharedWitnessPackageForPredicateModelCertificate
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (ModelCert :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate)
+    (HardCert :
+      @ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate
+        CanonicalParser
+        WitnessParser
+        ModelCert.predicates) :
+    ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPackage :=
+  HardCert.toHardExtractionPredicateModelPackage
+
+/--
+The shared-witness hard package associated with a full predicate-model
+certificate has the same hard provider fields as the certificate's generic
+hard-package projection.
+
+This is the key consistency fact the final predicate-model route must consume:
+the shared-witness hard slice is not a parallel interpretation; it is the
+representative-producing reviewed-Fq12 slice of the selected predicate model.
+-/
+theorem hardExtractionSharedWitnessPackageFieldsMatchPredicateModelCertificate
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (ModelCert :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate)
+    (HardCert :
+      @ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate
+        CanonicalParser
+        WitnessParser
+        ModelCert.predicates) :
+    (hardExtractionSharedWitnessPackageForPredicateModelCertificate
+      ModelCert HardCert).fieldSources =
+      ModelCert.toHardExtractionPredicateModelPackage.fieldSources := by
+  dsimp [
+    hardExtractionSharedWitnessPackageForPredicateModelCertificate,
+    ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate.toHardExtractionPredicateModelPackage,
+    ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.toHardExtractionPredicateModelPackage
+  ]
+  exact HardCert.fieldSourcesFromSharedWitnessCertificate
+
+/--
 The current selected predicate-model report cannot back even the smaller
 field-source package certificate.
 
