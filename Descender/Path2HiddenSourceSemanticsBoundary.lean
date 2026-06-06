@@ -5435,6 +5435,137 @@ def toHardExtractionPredicateModelPackage
 end ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource
 
 /--
+Selected Rust predicate fixed-point source.
+
+This is the non-circular handoff shape for the final model import: it supplies
+field sources, a shared-witness certificate over exactly the predicates
+obtained from those field sources, a proof that the selected package built
+from that certificate has the same predicate record, and the canonical
+native-validity source for the same certificate.
+-/
+structure ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    where
+  predicateFieldSources :
+    ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources
+  sharedWitnessCertificate :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+      CanonicalParser WitnessParser predicateFieldSources.toPredicates
+  predicatesFromSharedWitness :
+    (selectedRustNativeBoundaryPredicateFieldSources
+      sharedWitnessCertificate).toPredicates =
+      predicateFieldSources.toPredicates
+  canonicalNativeSource :
+    ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValiditySource
+      sharedWitnessCertificate
+
+namespace ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+
+/-- The selected hard fields of a fixed-point source are the shared-witness fields. -/
+theorem hardFieldSourcesFromSharedWitness
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Source :
+      @ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+        CanonicalParser WitnessParser) :
+    reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+        Source.sharedWitnessCertificate =
+      reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates
+        Source.predicateFieldSources.toPredicates := by
+  exact
+    ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources.selectedHardFieldsFromSharedWitnessCertificate_toPredicates
+      Source.sharedWitnessCertificate |>.trans
+        (congrArg reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates
+          Source.predicatesFromSharedWitness)
+
+/--
+Build the hard-extraction certificate from a fixed-point source and its
+canonical native-validity witness.
+-/
+def toHardExtractionSharedWitnessPredicateModelCertificate
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Source :
+      @ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+        CanonicalParser WitnessParser) :
+    @ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate
+      CanonicalParser
+      WitnessParser
+      Source.predicateFieldSources.toPredicates :=
+  ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate.ofCanonicalNativeSource
+    Source.sharedWitnessCertificate
+    Source.hardFieldSourcesFromSharedWitness
+    Source.canonicalNativeSource
+
+/--
+Forget a fixed-point source into the predicate-model source consumed by the
+full selected Rust certificate.
+-/
+def toPredicateModelSource
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Source :
+      @ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+        CanonicalParser WitnessParser) :
+    ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
+  predicates := Source.predicateFieldSources.toPredicates
+  payloadAcceptanceNotVacuous := by
+    exact Source.predicatesFromSharedWitness ▸
+      selectedRustPayloadAcceptanceNotVacuous Source.sharedWitnessCertificate
+  boundaryBreaksNotUniversal := by
+    exact Source.predicatesFromSharedWitness ▸
+      selectedRustBoundaryBreaksNotUniversal Source.sharedWitnessCertificate
+  payloadAcceptanceMatchesBoundary := by
+    exact Source.predicatesFromSharedWitness ▸
+      selectedRustPayloadAcceptanceMatchesBoundary Source.sharedWitnessCertificate
+  extractionCertificateMatchesPayload := by
+    exact Source.predicatesFromSharedWitness ▸
+      selectedRustExtractionCertificateMatchesPayload
+        Source.sharedWitnessCertificate
+  extractionCertificateValidityMatchesPayload := by
+    exact Source.predicatesFromSharedWitness ▸
+      selectedRustExtractionCertificateValidityMatchesPayload
+        Source.sharedWitnessCertificate
+  certificateExtractionImpliesPayloadExtraction :=
+    Source.toHardExtractionSharedWitnessPredicateModelCertificate.laws.certificateExtractionImpliesPayloadExtraction
+  payloadExtractionInBoundaryFiber :=
+    Source.toHardExtractionSharedWitnessPredicateModelCertificate.laws.payloadExtractionInBoundaryFiber
+  payloadExtractionNativeValid :=
+    Source.toHardExtractionSharedWitnessPredicateModelCertificate.laws.payloadExtractionNativeValid
+  roleLiftValidityBindsExtraction := by
+    exact Source.predicatesFromSharedWitness ▸
+      selectedRustRoleLiftValidityBindsExtraction Source.sharedWitnessCertificate
+  roleLiftOpeningImpliesCertificateLift := by
+    exact Source.predicatesFromSharedWitness ▸
+      selectedRustRoleLiftOpeningImpliesCertificateLift
+        Source.sharedWitnessCertificate
+  assemblyValidityBindsOpening := by
+    exact Source.predicatesFromSharedWitness ▸
+      selectedRustAssemblyValidityBindsOpening Source.sharedWitnessCertificate
+  assemblyCertificateImpliesFullNativeAssembly :=
+    Source.toHardExtractionSharedWitnessPredicateModelCertificate.laws.assemblyCertificateImpliesFullNativeAssembly
+  compatibilityValidityBinds := by
+    exact Source.predicatesFromSharedWitness ▸
+      selectedRustCompatibilityValidityBinds Source.sharedWitnessCertificate
+  compatibilityExtractionImpliesReviewedExtraction :=
+    Source.toHardExtractionSharedWitnessPredicateModelCertificate.laws.compatibilityExtractionImpliesReviewedExtraction
+  fullOpeningBridgeDigestValidityBinds := by
+    exact Source.predicatesFromSharedWitness ▸
+      selectedRustFullOpeningBridgeDigestValidityBinds
+        Source.sharedWitnessCertificate
+
+end ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+
+/--
 Proof-bearing selected Rust native-boundary predicate-model certificate.
 
 This is the object a cryptographically closed AP2-N001 route should import

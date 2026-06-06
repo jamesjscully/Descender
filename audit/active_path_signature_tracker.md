@@ -1927,10 +1927,17 @@ the five hard reviewed-Fq12 extraction fields, and
 `selectedHardFieldsFromSharedWitnessCertificate_toPredicates` gives the
 constructor-facing equality against
 `reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates`. The remaining
-design point is no longer the hard-field equality itself; it is the concrete
-fixed-point/import route that supplies a shared-witness certificate over the
-same predicate record whose hard fields are sourced from that certificate, plus
-the canonical native-validity source for that record.
+design point is no longer the hard-field equality itself. Lean now names the
+fixed-point/import route as
+`ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource`: it carries
+the selected field-source package, a shared-witness certificate over that
+package's predicate record, predicate-level equality to the selected
+shared-witness-sourced package, and the canonical native-validity source.
+`toPredicateModelSource` reduces that fixed-point source to the full
+predicate-model source target, deriving the hard extraction law bundle through
+the shared-witness certificate. The remaining concrete blocker is supplying
+that fixed-point source and report-backed certificate from real Rust/model
+evidence.
 Tooling note: the Rust source scanner's direct-constant-lambda check now clamps
 source windows to a UTF-8 character boundary before slicing; the prior byte
 slice could panic when a window ended inside Lean's `∧` token. The broad
