@@ -9216,16 +9216,24 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             ],
             4096,
         );
-    let native_boundary_predicate_model_current_report_certificate_impossible_present = [
-        "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible",
-        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
-        "Cert.evidenceReport =",
-        "selectedRustNativeBoundaryPredicateModelEvidenceReport",
-        "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible",
-        "Cert.evidenceFactsAllTrueProof",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_predicate_model_current_report_certificate_impossible_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+                "Cert.evidenceReport =",
+                "selectedRustNativeBoundaryPredicateModelEvidenceReport",
+                "False",
+            ],
+            "by exact selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible",
+            4096,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible",
+            "Cert.evidenceFactsAllTrueProof",
+            4096,
+        );
     let native_boundary_predicate_model_generic_evidence_label_markers = [
         "activeBoundaryPredicateModelPinned : Prop",
         "reviewedFq12PayloadAcceptanceModeled : Prop",
@@ -9467,16 +9475,19 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             "(Package.toSemanticsSourcePackage).hiddenSourceClosure",
             4096,
         );
-    let native_boundary_certified_semantics_current_report_impossible_present = [
-        "selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_report_impossible",
-        "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
-        "Package.predicateModelCertificate.evidenceReport =",
-        "selectedRustNativeBoundaryPredicateModelEvidenceReport",
-        "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible",
-        "Package.predicateModelCertificate",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_certified_semantics_current_report_impossible_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_report_impossible",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
+                "Package.predicateModelCertificate.evidenceReport =",
+                "selectedRustNativeBoundaryPredicateModelEvidenceReport",
+                "False",
+            ],
+            "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible Package.predicateModelCertificate hReport",
+            4096,
+        );
     let native_boundary_semantics_package_handoff_present = [
         "with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_package",
         "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_package",
@@ -58462,6 +58473,38 @@ def toPredicates
         assert!(
             !aliased_semantics_source_package_projection_subcheck
                 .native_boundary_semantics_source_package_target_present
+        );
+        let aliased_predicate_model_current_report_guard_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "  exact selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible\n    (by simpa [hReport] using Cert.evidenceFactsAllTrueProof)",
+            "  exact impossibleGuardAlias\n\nexample : True := by\n  let _mentionedCurrentReportGuard :=\n    selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible\n      (by simpa [hReport] using Cert.evidenceFactsAllTrueProof)\n  trivial",
+            1,
+        );
+        let aliased_predicate_model_current_report_guard_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_predicate_model_current_report_guard_source,
+            );
+        assert!(
+            !aliased_predicate_model_current_report_guard_subcheck
+                .native_boundary_predicate_model_current_report_certificate_impossible_present
+        );
+        let aliased_certified_current_report_guard_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "  selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible\n    Package.predicateModelCertificate hReport",
+            "  impossibleGuardAlias\n\nexample : True := by\n  let _mentionedCertifiedCurrentReportGuard :=\n    selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible\n      Package.predicateModelCertificate hReport\n  trivial",
+            1,
+        );
+        let aliased_certified_current_report_guard_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_certified_current_report_guard_source,
+            );
+        assert!(
+            !aliased_certified_current_report_guard_subcheck
+                .native_boundary_certified_semantics_current_report_impossible_present
         );
         assert!(
             source_record_subcheck.native_boundary_payload_acceptance_boundary_match_target_present

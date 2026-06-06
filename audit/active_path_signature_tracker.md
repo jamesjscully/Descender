@@ -1377,11 +1377,18 @@ Lean now also proves
 any certificate whose report is the current selected predicate-model report
 contradicts the report's impossible `FactsAllTrue` proof. The Rust
 source-record subcheck and manifest expose this fail-closed guard.
+That guard bit is now theorem-scoped: the theorem body must start from
+`selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible`, and
+an alias-returning theorem plus an unused contradiction mention is rejected.
 The guard now propagates to the exact final-route package:
 `selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_report_impossible`
 rules out a certified semantics source package whose predicate-model
 certificate uses the current fail-closed report, and the manifest exposes that
 bit too.
+This certified-package guard is theorem-scoped in the same way and must route
+through
+`selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible`
+on `Package.predicateModelCertificate`.
 The `native_boundary_concrete_predicate_model_present` detector now requires
 the full active native-boundary reviewed-Fq12 predicate surface, including
 certificate extraction, role-lift, assembly, compatibility, full-opening bridge

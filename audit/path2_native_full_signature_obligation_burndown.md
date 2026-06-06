@@ -285,6 +285,12 @@ The certified semantics source-package target bit is now scoped to the named
 structure/method declarations, with `hiddenSourceClosure` prefix-bound to
 `(Package.toSemanticsSourcePackage).hiddenSourceClosure`; alias-returning
 closures and unrelated marker placement are rejected.
+The current-report impossible guards are now theorem-scoped too: the
+predicate-model certificate guard must start from
+`selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible`, and
+the certified-package guard must start from
+`selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible`
+on `Package.predicateModelCertificate`.
 The concrete and source-shaped semantics package target bits are now scoped
 the same way: concrete closure must start from the selected source-record
 package theorem, and source-package projection must start from
