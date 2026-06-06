@@ -2520,7 +2520,7 @@ def selectedRustNativeBoundaryPredicateModelEvidenceReport :
   fullOpeningAndAssemblyModelPinned := false
   compatibilityAndExtractionModelPinned := false
   nativeBoundaryBreakModelPinned := false
-  nativeBoundaryPredicateRecordComplete := true
+  nativeBoundaryPredicateRecordComplete := false
   activeVerifierRoutePinned := true
   predicateNegativeControlsPassed := true
   concretePredicateModelPresent := false
@@ -2528,9 +2528,9 @@ def selectedRustNativeBoundaryPredicateModelEvidenceReport :
 
 /-- Concrete digest of the public Rust native-boundary predicate-model report. -/
 def selectedRustNativeBoundaryPredicateModelEvidenceDigest : ByteArray :=
-  ByteArray.mk #[154, 70, 159, 59, 199, 45, 37, 2, 33, 218, 242, 185, 95,
-    20, 161, 58, 116, 80, 52, 181, 118, 165, 201, 47, 183, 167, 237, 47,
-    216, 153, 28, 15]
+  ByteArray.mk #[127, 52, 141, 26, 78, 247, 222, 18, 63, 134, 176, 207,
+    88, 251, 221, 115, 73, 21, 181, 123, 98, 63, 121, 253, 200, 102, 198,
+    30, 58, 155, 238, 74]
 
 /-- The selected predicate-model report is schema/digest verified. -/
 theorem selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof :

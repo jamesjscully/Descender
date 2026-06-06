@@ -374,6 +374,11 @@ It also requires concrete declarations for every selected predicate-field
 provider consumed by `selectedRustNativeBoundaryPredicates`. The manifest now
 exposes `native_boundary_predicate_model_field_sources_defined_present`; a
 field-complete record with dangling provider identifiers remains non-closing.
+That provider-definition requirement is now included in the digest-bound
+predicate-model evidence report by making
+`nativeBoundaryPredicateRecordComplete` require both the native predicate record
+surface and the selected provider definitions. The current Lean report/digest
+has that fact false, matching Rust.
 It now also rejects the obvious syntactic vacuity escape hatch: a field-complete
 `selectedRustNativeBoundaryPredicates` whose critical break, reviewed-Fq12
 certificate/extraction, payload-extraction, or spend predicates are filled by

@@ -1385,6 +1385,9 @@ provider consumed by `selectedRustNativeBoundaryPredicates`; a field-complete
 record with dangling provider identifiers no longer counts as the active
 predicate model. The manifest exposes this as
 `native_boundary_predicate_model_field_sources_defined_present`.
+That provider-definition requirement is now folded into the digest-bound
+predicate-model evidence report through `nativeBoundaryPredicateRecordComplete`;
+the current selected Lean report and digest mirror Rust with that bit false.
 It now also rejects the most direct vacuous literal model shapes inside
 `selectedRustNativeBoundaryPredicates`: universal break predicates,
 always-false reviewed-Fq12 payload acceptance, and constant-true reviewed-Fq12

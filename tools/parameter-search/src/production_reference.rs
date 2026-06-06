@@ -14030,7 +14030,8 @@ pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1()
         native_boundary_break_model_pinned: concrete_predicate_model_present
             && source_record_subcheck.native_boundary_break_antivacuity_target_present,
         native_boundary_predicate_record_complete: source_record_subcheck
-            .native_boundary_predicates_record_present,
+            .native_boundary_predicates_record_present
+            && source_record_subcheck.native_boundary_predicate_model_field_sources_defined_present,
         active_verifier_route_pinned: source_record_subcheck
             .native_boundary_certified_semantics_source_package_target_present
             && source_record_subcheck
@@ -57844,7 +57845,7 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         );
         assert!(predicate_model_evidence.schema_matches);
         assert!(predicate_model_evidence.report_digest_verified);
-        assert!(predicate_model_evidence.native_boundary_predicate_record_complete);
+        assert!(!predicate_model_evidence.native_boundary_predicate_record_complete);
         assert!(predicate_model_evidence.active_verifier_route_pinned);
         assert!(predicate_model_evidence.certified_semantics_source_package_target_present);
         assert!(!predicate_model_evidence.concrete_predicate_model_present);
