@@ -281,6 +281,10 @@ native-boundary semantics route constructor-bound, not merely type-shaped.
 `ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource.toPredicates` is
 now prefix-bound to `Model.predicates`; an alias return plus an unused
 `Model.predicates` mention no longer satisfies the source-target subcheck.
+The certified semantics source-package target bit is now scoped to the named
+structure/method declarations, with `hiddenSourceClosure` prefix-bound to
+`(Package.toSemanticsSourcePackage).hiddenSourceClosure`; alias-returning
+closures and unrelated marker placement are rejected.
 The predicate-model certificate constructor check is now prefix-bound on
 `selectedRustNativeBoundaryPredicateModelCertificate` itself; an alias-bound
 certificate plus an unused `ofReportAndModel` mention no longer completes the

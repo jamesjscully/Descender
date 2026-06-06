@@ -1268,6 +1268,11 @@ The predicate-model source projection is now prefix-bound as well:
 `ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource.toPredicates` must
 return `Model.predicates`; an alias return with an unused `Model.predicates`
 mention no longer satisfies the source-target subcheck.
+The certified semantics source-package target bit now inspects the named
+structure and methods directly, and requires the certified package
+`hiddenSourceClosure` body to start from
+`(Package.toSemanticsSourcePackage).hiddenSourceClosure`; unrelated marker
+placement or an alias-returning closure no longer satisfies that evidence bit.
 The same semantics package now has accepted-spend and full-signature handoff
 theorems, and the manifest reports
 `native_boundary_semantics_package_handoff_present = true`. This means the

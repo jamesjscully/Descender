@@ -9305,18 +9305,49 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
-    let native_boundary_certified_semantics_source_package_target_present = [
-        "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
-        "def ofCertificateAndSourceRecords",
-        "predicateModelCertificate :",
-        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
-        "predicateModelCertificate.toSource.toPredicates",
-        "def toSemanticsSourcePackage",
-        "def hiddenSourceClosure",
-        "Package.toSemanticsSourcePackage",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_certified_semantics_source_package_target_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "structure",
+            "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
+            &[
+                "predicateModelCertificate :",
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+                "sourceRecords :",
+                "ReviewedFq12SelectedRustModelSourceRecordPackage",
+                "predicateModelCertificate.toSource.toPredicates",
+            ],
+            2048,
+        ) && lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "ofCertificateAndSourceRecords",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+                "ReviewedFq12SelectedRustModelSourceRecordPackage",
+                "predicateModelCertificate.toSource.toPredicates",
+                "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
+            ],
+        ) && lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "toSemanticsSourcePackage",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
+                "ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage",
+            ],
+        ) && lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "hiddenSourceClosure",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
+                "ReviewedFq12HiddenSourceProofSemanticsClosed",
+                "Package.predicateModelCertificate.toSource.toPredicates",
+            ],
+        ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
+            &boundary_source,
+            "hiddenSourceClosure",
+            "(Package.toSemanticsSourcePackage).hiddenSourceClosure",
+            4096,
+        );
     let native_boundary_certified_semantics_current_report_impossible_present = [
         "selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_report_impossible",
         "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
@@ -58264,6 +58295,22 @@ def toPredicates
             );
         assert!(
             !aliased_to_predicates_subcheck.native_boundary_predicate_model_source_target_present
+        );
+        let aliased_certified_package_closure_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "  (Package.toSemanticsSourcePackage).hiddenSourceClosure",
+            "  otherClosure\n\nexample : True := by\n  let _mentionedCertifiedPackageClosure :=\n    (Package.toSemanticsSourcePackage).hiddenSourceClosure\n  trivial",
+            1,
+        );
+        let aliased_certified_package_closure_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_certified_package_closure_source,
+            );
+        assert!(
+            !aliased_certified_package_closure_subcheck
+                .native_boundary_certified_semantics_source_package_target_present
         );
         assert!(
             source_record_subcheck.native_boundary_payload_acceptance_boundary_match_target_present
