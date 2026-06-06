@@ -1139,6 +1139,9 @@ The Rust focused bridge regression now parses the ByteArray fields inside
 Rust evidence frame. This binds the imported bridge audit digest, hash-domain
 evidence digest, and five sub-evidence digests at the record-field level, not
 only through the public selected digest constants.
+It also compares all verifier-backed aggregate and sub-report boolean fields to
+their Rust evidence records, so source-audit coverage includes the fact flags
+that Lean imports before the final source-record/digest-match closure.
 Active source-record route note: the remaining constructive import target is
 the selected Rust direct-assembly/canonical-representative package
 `ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeByteAndWitnessPackagedSourceRouteInputs`.

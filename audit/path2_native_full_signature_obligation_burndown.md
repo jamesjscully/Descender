@@ -744,6 +744,9 @@ parses `verifierBackedSelectedRustFiveSourceEvidenceReport` and compares its
 bridge audit digest, hash-domain evidence digest, and five sub-evidence digests
 against the Rust-computed evidence values. This closes the stale-record-field
 blind spot without changing the remaining source-record/digest-match blockers.
+The same regression now compares all verifier-backed aggregate and sub-report
+boolean fields against the corresponding Rust evidence reports, so the imported
+Lean records cannot silently drift in either byte fields or fact flags.
 The concrete source-record route should target
 `ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeByteAndWitnessPackagedSourceRouteInputs`.
 The first proof object to instantiate is
