@@ -28228,7 +28228,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "AcceptedSpendNumericGame",
         "successProb_le_acceptedSpendOrBreakUnionBound",
         "PricedAcceptedSpendNumericCertificate",
-        "successProb_le_pricedBound",
+        "acceptedSpendProb_le_pricedBound",
         "selectedRustActiveNoExportSerializer_instantiation_v1",
         "activeSerializerAllowlist_boundaryNoExportClosed",
         "let selectedRustAcceptedSpendSoundnessCertificate :",
@@ -51774,7 +51774,7 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
   let _acceptedSpendUnionBound :=
     AcceptedSpendNumericGame.successProb_le_acceptedSpendOrBreakUnionBound
   let _acceptedSpendPricedCertificate :=
-    PricedAcceptedSpendNumericCertificate.successProb_le_pricedBound
+    PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_pricedBound
   let _acceptedSpendPricedBound :=
     AcceptedSpendNumericGame.successProb_le_pricedBound
   let _noExportInstantiation :=
@@ -51924,7 +51924,7 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
   let _acceptedSpendUnionBound :=
     AcceptedSpendNumericGame.successProb_le_acceptedSpendOrBreakUnionBound
   let _acceptedSpendPricedCertificate :=
-    PricedAcceptedSpendNumericCertificate.successProb_le_pricedBound
+    PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_pricedBound
   let _acceptedSpendPricedBound :=
     AcceptedSpendNumericGame.successProb_le_pricedBound
   let _noExportInstantiation :=

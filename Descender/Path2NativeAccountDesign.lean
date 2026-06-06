@@ -1616,7 +1616,7 @@ structure SelectedRustAcceptedSpendSoundnessCertificate where
   productionAcceptedSpendForgeryProb : ℝ
   productionAcceptedSpendForgeryBound : ℝ
   acceptedSpendForgeryProbMatchesGame :
-    acceptedSpendForgeryProb = pricedNumericCertificate.successProb
+    acceptedSpendForgeryProb = pricedNumericCertificate.acceptedSpendProb
   acceptedSpendForgeryBoundMatchesPriced :
     acceptedSpendForgeryBound = pricedNumericCertificate.pricedBound
   acceptedSpendForgeryProbPinned :
@@ -1643,7 +1643,7 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
     (productionAcceptedSpendForgeryProb : ℝ)
     (productionAcceptedSpendForgeryBound : ℝ)
     (acceptedSpendForgeryProbMatchesGame :
-      acceptedSpendForgeryProb = pricedNumericCertificate.successProb)
+      acceptedSpendForgeryProb = pricedNumericCertificate.acceptedSpendProb)
     (acceptedSpendForgeryBoundMatchesPriced :
       acceptedSpendForgeryBound = pricedNumericCertificate.pricedBound)
     (acceptedSpendForgeryProbPinned :
@@ -1706,10 +1706,10 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
       Cert.acceptedSpendForgeryBoundPinned
     calc
       Cert.acceptedSpendForgeryProb =
-          Cert.pricedNumericCertificate.successProb :=
+          Cert.pricedNumericCertificate.acceptedSpendProb :=
         Cert.acceptedSpendForgeryProbMatchesGame
       _ <= Cert.pricedNumericCertificate.pricedBound :=
-        Cert.pricedNumericCertificate.successProb_le_pricedBound
+        Cert.pricedNumericCertificate.acceptedSpendProb_le_pricedBound
       _ = Cert.acceptedSpendForgeryBound :=
         Cert.acceptedSpendForgeryBoundMatchesPriced.symm
   hiddenSourceProofSemanticsClosed :=

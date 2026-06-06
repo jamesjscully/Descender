@@ -1395,16 +1395,16 @@ handoff: `AcceptedSpendNumericGame` proves that full-signature success
 probability is bounded by the union over the reduced accepted-spend event and
 the finite family of named break events, while
 `PricedAcceptedSpendNumericCertificate` packages a concrete game with a
-production-priced upper bound and proves `successProb_le_pricedBound`. The
-accepted-spend source gate now requires this layer, so future closure must
-consume the probability game and priced-bound package rather than only raw `ℝ`
-fields.
+production-priced upper bound and proves `acceptedSpendProb_le_pricedBound` for
+the reduced accepted-spend event. The accepted-spend source gate now requires
+this layer, so future closure must consume the probability game and priced-bound
+package rather than only raw `ℝ` fields.
 `SelectedRustAcceptedSpendSoundnessCertificate` now carries that priced
 numeric certificate plus equality proofs from the exported probability/bound to
 the packaged game's success probability and priced bound. The conversion to
 `NativeAcceptedSpendSoundnessBoundary` derives `acceptedSpendForgery_le_bound`
-from `PricedAcceptedSpendNumericCertificate.successProb_le_pricedBound`; a
-standalone raw inequality proof is no longer an input to the selected
+from `PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_pricedBound`;
+a standalone raw inequality proof is no longer an input to the selected
 constructor.
 `Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
 active full-spend named breaks, so the numeric game can index its union bound by

@@ -136,10 +136,37 @@ def successProb (C : PricedAcceptedSpendNumericCertificate) : ℝ :=
   @AcceptedSpendNumericGame.successProb
     C.Outcome C.Break C.outcomeFintype C.breakFintype C.game
 
+/-- The reduced accepted-spend event probability of the packaged game. -/
+def acceptedSpendProb (C : PricedAcceptedSpendNumericCertificate) : ℝ :=
+  @AcceptedSpendNumericGame.acceptedSpendProb
+    C.Outcome C.Break C.outcomeFintype C.breakFintype C.game
+
 /-- The accepted-spend plus named-break union expression of the packaged game. -/
 def unionBound (C : PricedAcceptedSpendNumericCertificate) : ℝ :=
   @AcceptedSpendNumericGame.acceptedSpendOrBreakUnionBound
     C.Outcome C.Break C.outcomeFintype C.breakFintype C.game
+
+/-- The packaged accepted-spend event probability is below the union bound. -/
+theorem acceptedSpendProb_le_unionBound
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.acceptedSpendProb <= C.unionBound := by
+  letI : Fintype C.Outcome := C.outcomeFintype
+  letI : Fintype C.Break := C.breakFintype
+  letI : DecidableEq C.Break := C.breakDecidableEq
+  unfold acceptedSpendProb unionBound AcceptedSpendNumericGame.acceptedSpendProb
+    AcceptedSpendNumericGame.acceptedSpendOrBreakUnionBound
+  exact
+    Finset.single_le_sum
+      (by
+        intro event _hEvent
+        exact C.game.traceDist.acceptProb_nonneg (C.game.acceptedOrBreakEvent event))
+      (Finset.mem_univ (none : Option C.Break))
+
+/-- The packaged accepted-spend event probability is below the priced bound. -/
+theorem acceptedSpendProb_le_pricedBound
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.acceptedSpendProb <= C.pricedBound :=
+  le_trans C.acceptedSpendProb_le_unionBound C.unionBound_le_priced
 
 /-- The packaged full-signature success probability is below the priced bound. -/
 theorem successProb_le_pricedBound
