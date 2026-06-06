@@ -9189,6 +9189,29 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     .iter()
     .all(|marker| full_spend_concrete_source.contains(marker));
     let native_boundary_predicate_model_field_markers = [
+        "boundaryOf :=",
+        "localValid :=",
+        "descentConsistent :=",
+        "normRangeValid :=",
+        "blindingNoiseBounded :=",
+        "safeEquivalent :=",
+        "boundaryBreakFor :=",
+        "accountCreateAccepts :=",
+        "admitted :=",
+        "parentRootBindsPrivateRoles :=",
+        "roleRestrictionsAuthenticate :=",
+        "noExportHolds :=",
+        "roleAuthenticationMaterialSimulatable :=",
+        "maskFreshnessHolds :=",
+        "qromScheduleBound :=",
+        "qromExtractorRewindBound :=",
+        "rangeRowsBindRepresentative :=",
+        "rangeRowsBindTraceRepresentative :=",
+        "blindingRowsBoundRepresentative :=",
+        "blindingRowsBoundTraceRepresentative :=",
+        "transparentAccepts :=",
+        "transparentExtractsTrace :=",
+        "transparentExtracts :=",
         "reviewedFq12PayloadAccepts :=",
         "reviewedFq12PayloadProjectsFrom :=",
         "reviewedFq12PayloadHasExtractionCertificate :=",
@@ -9208,7 +9231,20 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         "reviewedFq12HasFullOpeningBridgeDigestCertificate :=",
         "reviewedFq12FullOpeningBridgeDigestCertificateValid :=",
         "reviewedFq12PayloadExtracts :=",
-        "boundaryBreakFor :=",
+        "traceOpensBoundary :=",
+        "tracesSafetyEquivalent :=",
+        "maskedOpeningsConsistent :=",
+        "traceRelationValid :=",
+        "traceAssemblesRepresentative :=",
+        "extractedRolesComplete :=",
+        "traceAssemblyRolesComplete :=",
+        "traceAssemblyDerivedRolesBound :=",
+        "traceAssemblyInFiber :=",
+        "traceAssemblyLocalValid :=",
+        "traceAssemblyDescentConsistent :=",
+        "slotAuthorizationOf :=",
+        "spendAccepts :=",
+        "spendWitnessValid :=",
     ];
     let native_boundary_concrete_predicate_model_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
@@ -9222,7 +9258,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                     &boundary_source,
                     "selectedRustNativeBoundaryPredicates",
                     marker,
-                    16384,
+                    32768,
                 )
             });
     let boundary_base_report_definition_present =
@@ -57702,7 +57738,32 @@ def toPredicates
 def selectedRustNativeBoundaryPredicates :
   Path2NativeBoundary.Predicates := by
   exact
-    { reviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAccepts
+    { boundaryOf := selectedBoundaryOf
+      localValid := selectedLocalValid
+      descentConsistent := selectedDescentConsistent
+      normRangeValid := selectedNormRangeValid
+      blindingNoiseBounded := selectedBlindingNoiseBounded
+      safeEquivalent := selectedSafeEquivalent
+      boundaryBreakFor := selectedBoundaryBreakFor
+      accountCreateAccepts := selectedAccountCreateAccepts
+      admitted := selectedAdmitted
+      parentRootBindsPrivateRoles := selectedParentRootBindsPrivateRoles
+      roleRestrictionsAuthenticate := selectedRoleRestrictionsAuthenticate
+      noExportHolds := selectedNoExportHolds
+      roleAuthenticationMaterialSimulatable :=
+        selectedRoleAuthenticationMaterialSimulatable
+      maskFreshnessHolds := selectedMaskFreshnessHolds
+      qromScheduleBound := selectedQromScheduleBound
+      qromExtractorRewindBound := selectedQromExtractorRewindBound
+      rangeRowsBindRepresentative := selectedRangeRowsBindRepresentative
+      rangeRowsBindTraceRepresentative := selectedRangeRowsBindTraceRepresentative
+      blindingRowsBoundRepresentative := selectedBlindingRowsBoundRepresentative
+      blindingRowsBoundTraceRepresentative :=
+        selectedBlindingRowsBoundTraceRepresentative
+      transparentAccepts := selectedTransparentAccepts
+      transparentExtractsTrace := selectedTransparentExtractsTrace
+      transparentExtracts := selectedTransparentExtracts
+      reviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAccepts
       reviewedFq12PayloadProjectsFrom := selectedReviewedFq12PayloadProjectsFrom
       reviewedFq12PayloadHasExtractionCertificate :=
         selectedReviewedFq12PayloadHasExtractionCertificate
@@ -57741,8 +57802,20 @@ def unrelatedNativeBoundaryPredicateMarkerBundle := by
         selectedReviewedFq12FullOpeningBridgeDigestCertificateValid
       reviewedFq12PayloadExtracts :=
         selectedReviewedFq12PayloadExtracts
-      boundaryBreakFor :=
-        selectedBoundaryBreakFor }
+      traceOpensBoundary := selectedTraceOpensBoundary
+      tracesSafetyEquivalent := selectedTracesSafetyEquivalent
+      maskedOpeningsConsistent := selectedMaskedOpeningsConsistent
+      traceRelationValid := selectedTraceRelationValid
+      traceAssemblesRepresentative := selectedTraceAssemblesRepresentative
+      extractedRolesComplete := selectedExtractedRolesComplete
+      traceAssemblyRolesComplete := selectedTraceAssemblyRolesComplete
+      traceAssemblyDerivedRolesBound := selectedTraceAssemblyDerivedRolesBound
+      traceAssemblyInFiber := selectedTraceAssemblyInFiber
+      traceAssemblyLocalValid := selectedTraceAssemblyLocalValid
+      traceAssemblyDescentConsistent := selectedTraceAssemblyDescentConsistent
+      slotAuthorizationOf := selectedSlotAuthorizationOf
+      spendAccepts := selectedSpendAccepts
+      spendWitnessValid := selectedSpendWitnessValid }
 "#;
         let partial_native_boundary_model_subcheck =
             path2_selected_rust_model_source_record_subcheck_from_source_v1(
@@ -57756,7 +57829,32 @@ def unrelatedNativeBoundaryPredicateMarkerBundle := by
 def selectedRustNativeBoundaryPredicates :
   Path2NativeBoundary.Predicates := by
   exact
-    { reviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAccepts
+    { boundaryOf := selectedBoundaryOf
+      localValid := selectedLocalValid
+      descentConsistent := selectedDescentConsistent
+      normRangeValid := selectedNormRangeValid
+      blindingNoiseBounded := selectedBlindingNoiseBounded
+      safeEquivalent := selectedSafeEquivalent
+      boundaryBreakFor := selectedBoundaryBreakFor
+      accountCreateAccepts := selectedAccountCreateAccepts
+      admitted := selectedAdmitted
+      parentRootBindsPrivateRoles := selectedParentRootBindsPrivateRoles
+      roleRestrictionsAuthenticate := selectedRoleRestrictionsAuthenticate
+      noExportHolds := selectedNoExportHolds
+      roleAuthenticationMaterialSimulatable :=
+        selectedRoleAuthenticationMaterialSimulatable
+      maskFreshnessHolds := selectedMaskFreshnessHolds
+      qromScheduleBound := selectedQromScheduleBound
+      qromExtractorRewindBound := selectedQromExtractorRewindBound
+      rangeRowsBindRepresentative := selectedRangeRowsBindRepresentative
+      rangeRowsBindTraceRepresentative := selectedRangeRowsBindTraceRepresentative
+      blindingRowsBoundRepresentative := selectedBlindingRowsBoundRepresentative
+      blindingRowsBoundTraceRepresentative :=
+        selectedBlindingRowsBoundTraceRepresentative
+      transparentAccepts := selectedTransparentAccepts
+      transparentExtractsTrace := selectedTransparentExtractsTrace
+      transparentExtracts := selectedTransparentExtracts
+      reviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAccepts
       reviewedFq12PayloadProjectsFrom := selectedReviewedFq12PayloadProjectsFrom
       reviewedFq12PayloadHasExtractionCertificate :=
         selectedReviewedFq12PayloadHasExtractionCertificate
@@ -57792,8 +57890,20 @@ def selectedRustNativeBoundaryPredicates :
         selectedReviewedFq12FullOpeningBridgeDigestCertificateValid
       reviewedFq12PayloadExtracts :=
         selectedReviewedFq12PayloadExtracts
-      boundaryBreakFor :=
-        selectedBoundaryBreakFor }
+      traceOpensBoundary := selectedTraceOpensBoundary
+      tracesSafetyEquivalent := selectedTracesSafetyEquivalent
+      maskedOpeningsConsistent := selectedMaskedOpeningsConsistent
+      traceRelationValid := selectedTraceRelationValid
+      traceAssemblesRepresentative := selectedTraceAssemblesRepresentative
+      extractedRolesComplete := selectedExtractedRolesComplete
+      traceAssemblyRolesComplete := selectedTraceAssemblyRolesComplete
+      traceAssemblyDerivedRolesBound := selectedTraceAssemblyDerivedRolesBound
+      traceAssemblyInFiber := selectedTraceAssemblyInFiber
+      traceAssemblyLocalValid := selectedTraceAssemblyLocalValid
+      traceAssemblyDescentConsistent := selectedTraceAssemblyDescentConsistent
+      slotAuthorizationOf := selectedSlotAuthorizationOf
+      spendAccepts := selectedSpendAccepts
+      spendWitnessValid := selectedSpendWitnessValid }
 "#;
         let complete_native_boundary_model_subcheck =
             path2_selected_rust_model_source_record_subcheck_from_source_v1(

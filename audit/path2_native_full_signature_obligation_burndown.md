@@ -355,6 +355,11 @@ The Rust source audit now checks the predicate-model source, evidence report,
 certificate, and `toSource` adapter in their named Lean declaration windows,
 with a split-marker regression so unrelated declarations cannot satisfy the
 target bits.
+The concrete predicate-model detector now requires the full
+`Path2NativeBoundary.Predicates` record surface, including account/admission,
+transparent-view, trace-assembly, slot-authorization, and spend predicates. A
+reviewed-Fq12-only selected record is no longer enough to flip the concrete
+model bit.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
