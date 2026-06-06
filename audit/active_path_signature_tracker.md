@@ -1776,6 +1776,13 @@ projecting it from the full predicate-source record. The manifest reports
 `native_boundary_predicate_model_reviewed_fq12_provider_family_target_present =
 true`, but the actual reviewed-Fq12 provider fields remain undefined and
 fail-closed.
+The source audit now also guards against a circular provider shortcut:
+reviewed-Fq12 selected predicate definitions are not allowed to count as
+concrete if they reach into the downstream source-record/source-route proof
+stack. Those theorems are `P`-parameterized and already assume the predicate
+fields, so they can discharge laws for an independently defined provider but
+cannot define the provider. The active manifest reports the circular-dependency
+bit false.
 
 ## Findings
 

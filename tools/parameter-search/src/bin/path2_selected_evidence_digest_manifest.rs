@@ -308,6 +308,9 @@ fn main() -> Result<(), String> {
             "native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present,
+            "native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present":
+                source_record_subcheck
+                    .native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present,
             "native_boundary_predicate_model_missing_provider_family_count":
                 source_record_subcheck
                     .native_boundary_predicate_model_missing_provider_family_count,

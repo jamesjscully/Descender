@@ -7593,6 +7593,8 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_predicate_model_core_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_transparent_trace_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present: bool,
+    pub native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present:
+        bool,
     pub native_boundary_predicate_model_missing_provider_family_count: u8,
     pub native_boundary_predicate_model_field_sources_defined_present: bool,
     pub native_boundary_predicate_model_field_source_package_present: bool,
@@ -10115,6 +10117,27 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             &native_boundary_predicate_model_reviewed_fq12_provider_field_names,
         );
+    let native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present =
+        native_boundary_predicate_model_reviewed_fq12_provider_field_names
+            .iter()
+            .any(|name| {
+                [
+                    "ReviewedFq12SelectedRustModelSourceRecordPackage",
+                    "ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs",
+                    "reviewed_fq12_certificate_soundness_from_selected_rust",
+                    "P.reviewedFq12PayloadAccepts",
+                    "predicateFieldSources.toPredicates.reviewedFq12PayloadAccepts",
+                ]
+                .iter()
+                .any(|marker| {
+                    lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+                        &boundary_source,
+                        name,
+                        marker,
+                        8192,
+                    )
+                })
+            });
     let native_boundary_predicate_model_missing_provider_family_count = [
         native_boundary_predicate_model_core_provider_fields_defined_present,
         native_boundary_predicate_model_transparent_trace_provider_fields_defined_present,
@@ -10263,6 +10286,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             && !native_boundary_predicate_model_forbidden_vacuous_literals_present
             && native_boundary_predicate_model_field_sources_defined_present
             && !native_boundary_predicate_model_forbidden_vacuous_field_sources_present
+            && !native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present
             && !native_boundary_predicate_model_stub_field_sources_present
             && !native_boundary_predicate_model_incomplete_proof_terms_present;
     let boundary_base_report_definition_present =
@@ -10833,6 +10857,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_predicate_model_core_provider_fields_defined_present,
         native_boundary_predicate_model_transparent_trace_provider_fields_defined_present,
         native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present,
+        native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present,
         native_boundary_predicate_model_missing_provider_family_count,
         native_boundary_predicate_model_field_sources_defined_present,
         native_boundary_predicate_model_field_source_package_present,
@@ -10963,6 +10988,27 @@ fn path2_selected_rust_model_concrete_predicate_model_present_from_source_v1(
             .iter()
             .map(String::as_str)
             .collect::<Vec<_>>();
+    let native_boundary_predicate_model_reviewed_fq12_provider_field_names = [
+        "selectedReviewedFq12PayloadAccepts",
+        "selectedReviewedFq12PayloadProjectsFrom",
+        "selectedReviewedFq12PayloadHasExtractionCertificate",
+        "selectedReviewedFq12ExtractionCertificateValid",
+        "selectedReviewedFq12CertificateExtracts",
+        "selectedReviewedFq12CertificateLiftsToOpening",
+        "selectedReviewedFq12PayloadHasRoleLiftCertificate",
+        "selectedReviewedFq12RoleLiftCertificateValid",
+        "selectedReviewedFq12RoleLiftCertificateOpens",
+        "selectedFullNativeOpeningAssemblesRepresentative",
+        "selectedReviewedFq12OpeningHasAssemblyCertificate",
+        "selectedReviewedFq12AssemblyCertificateValid",
+        "selectedReviewedFq12AssemblyCertificateAssembles",
+        "selectedReviewedFq12HasExtractionCompatibilityCertificate",
+        "selectedReviewedFq12ExtractionCompatibilityCertificateValid",
+        "selectedReviewedFq12ExtractionCompatibilityCertificateExtracts",
+        "selectedReviewedFq12HasFullOpeningBridgeDigestCertificate",
+        "selectedReviewedFq12FullOpeningBridgeDigestCertificateValid",
+        "selectedReviewedFq12PayloadExtracts",
+    ];
     let native_boundary_predicate_model_stub_field_sources_present =
         lean_source_module_has_forbidden_stubs_for_names_v1(
             &boundary_source,
@@ -11068,6 +11114,27 @@ fn path2_selected_rust_model_concrete_predicate_model_present_from_source_v1(
             });
     let native_boundary_predicate_model_incomplete_proof_terms_present =
         lean_source_has_incomplete_proof_token_v1(&boundary_source);
+    let native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present =
+        native_boundary_predicate_model_reviewed_fq12_provider_field_names
+            .iter()
+            .any(|name| {
+                [
+                    "ReviewedFq12SelectedRustModelSourceRecordPackage",
+                    "ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs",
+                    "reviewed_fq12_certificate_soundness_from_selected_rust",
+                    "P.reviewedFq12PayloadAccepts",
+                    "predicateFieldSources.toPredicates.reviewedFq12PayloadAccepts",
+                ]
+                .iter()
+                .any(|marker| {
+                    lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+                        &boundary_source,
+                        name,
+                        marker,
+                        8192,
+                    )
+                })
+            });
     let native_boundary_predicate_model_field_source_package_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -11113,6 +11180,7 @@ fn path2_selected_rust_model_concrete_predicate_model_present_from_source_v1(
     native_boundary_predicate_model_package_route_present
         && native_boundary_predicate_model_field_source_package_present
         && !native_boundary_predicate_model_forbidden_vacuous_field_sources_present
+        && !native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present
         && native_boundary_predicate_model_field_sources_defined_present
         && !native_boundary_predicate_model_stub_field_sources_present
         && !native_boundary_predicate_model_incomplete_proof_terms_present
@@ -60500,6 +60568,28 @@ def selectedRustNativeBoundaryPredicates :
         assert!(
             !complete_native_boundary_model_subcheck
                 .native_boundary_predicate_model_incomplete_proof_terms_present
+        );
+        assert!(
+            !complete_native_boundary_model_subcheck
+                .native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present
+        );
+        let circular_provider_native_boundary_model_source = complete_native_boundary_model_source
+            .replacen(
+                "def selectedReviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAcceptsValue",
+                "def selectedReviewedFq12PayloadAccepts := ReviewedFq12SelectedRustModelSourceRecordPackage",
+                1,
+            );
+        let circular_provider_native_boundary_model_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &circular_provider_native_boundary_model_source,
+            );
+        assert!(
+            circular_provider_native_boundary_model_subcheck
+                .native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present
+        );
+        assert!(
+            !circular_provider_native_boundary_model_subcheck
+                .native_boundary_concrete_predicate_model_present
         );
         let vacuous_native_boundary_model_source = complete_native_boundary_model_source
             .replacen(

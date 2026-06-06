@@ -1489,3 +1489,14 @@ true`, while
 false` and the missing provider-family count remains 3. That keeps the
 highest-risk provider family explicit without treating target-shaping work as a
 concrete selected predicate implementation.
+The scanner also now rejects a likely circular shortcut for this family: a
+selected reviewed-Fq12 predicate provider cannot be counted as concrete if its
+definition reaches into the downstream source-record/source-route theorem stack
+(`ReviewedFq12SelectedRustModelSourceRecordPackage`,
+`ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs`, or the
+`reviewed_fq12_certificate_soundness_from_selected_rust...` theorems). Those
+proofs are parameterized by `P` and already assume the predicate fields, so
+they can validate laws for a chosen provider but cannot define the provider
+itself. The current manifest reports
+`native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present =
+false`.
