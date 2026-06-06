@@ -1393,10 +1393,12 @@ provides non-vacuous numeric values and the corresponding inequality proof.
 `Path2AcceptedSpendProbability.lean` now adds the finite numeric layer for this
 handoff: `AcceptedSpendNumericGame` proves that full-signature success
 probability is bounded by the union over the reduced accepted-spend event and
-the finite family of named break events, and `successProb_le_pricedBound`
-threads any production-priced upper bound through that union expression. The
+the finite family of named break events, while
+`PricedAcceptedSpendNumericCertificate` packages a concrete game with a
+production-priced upper bound and proves `successProb_le_pricedBound`. The
 accepted-spend source gate now requires this layer, so future closure must
-consume the probability game rather than only raw `ℝ` fields.
+consume the probability game and priced-bound package rather than only raw `ℝ`
+fields.
 `selectedRustActiveNoExportSerializer_instantiation_v1` now follows the same
 exact-name/all-candidate pattern for the active no-export serializer gate.
 The full-execution boundary-presence check now also requires an exact

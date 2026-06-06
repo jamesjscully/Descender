@@ -108,6 +108,50 @@ theorem successProb_le_pricedBound
 
 end AcceptedSpendNumericGame
 
+/--
+Existential package for a production-priced accepted-spend numeric game.
+
+This is the object a selected implementation can eventually provide to the
+native certificate layer: a concrete finite outcome space, a finite named-break
+index, the accepted-spend numeric game over that space, and a proof that the
+finite union-bound expression is below the deployment-priced bound.
+-/
+structure PricedAcceptedSpendNumericCertificate where
+  Outcome : Type
+  Break : Type
+  outcomeFintype : Fintype Outcome
+  breakFintype : Fintype Break
+  breakDecidableEq : DecidableEq Break
+  game : @AcceptedSpendNumericGame Outcome Break outcomeFintype breakFintype
+  pricedBound : ℝ
+  unionBound_le_priced :
+    @AcceptedSpendNumericGame.acceptedSpendOrBreakUnionBound
+      Outcome Break outcomeFintype breakFintype game <=
+        pricedBound
+
+namespace PricedAcceptedSpendNumericCertificate
+
+/-- The full-signature success probability of the packaged game. -/
+def successProb (C : PricedAcceptedSpendNumericCertificate) : ℝ :=
+  @AcceptedSpendNumericGame.successProb
+    C.Outcome C.Break C.outcomeFintype C.breakFintype C.game
+
+/-- The accepted-spend plus named-break union expression of the packaged game. -/
+def unionBound (C : PricedAcceptedSpendNumericCertificate) : ℝ :=
+  @AcceptedSpendNumericGame.acceptedSpendOrBreakUnionBound
+    C.Outcome C.Break C.outcomeFintype C.breakFintype C.game
+
+/-- The packaged full-signature success probability is below the priced bound. -/
+theorem successProb_le_pricedBound
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.successProb <= C.pricedBound := by
+  exact
+    @AcceptedSpendNumericGame.successProb_le_pricedBound
+      C.Outcome C.Break C.outcomeFintype C.breakFintype C.breakDecidableEq
+      C.game C.pricedBound C.unionBound_le_priced
+
+end PricedAcceptedSpendNumericCertificate
+
 end
 
 end Path2AcceptedSpendProbability
