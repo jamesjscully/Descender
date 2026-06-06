@@ -948,13 +948,26 @@ digests. The current active output verifies all six Rust evidence reports and
 all component facts, but keeps AP2-N001 fail-closed:
 `extractor_theorem_instantiated = false`,
 `semantics_bridge_complete = false`, checklist digest
-`f40bb2869f37e27f7a1870940893a8fd8df2e8b4c16aebb1d4832a2da1907673`, and
+`1c833fe6fb4f15432aa0273176fb2faa41bf3c7e2bc85570e386848162d62582`, and
 missing categories `predicate_model_certificate_definitions`,
 `source_record_definitions`, and `sub_evidence_digest_match_proof`. The
 selected Lean report/proof definitions
 now alias verifier-backed Rust evidence, so the highest-risk remaining proof
 work is to import selected source-record certificates and prove the aggregate
 five-source report's sub-digests match those five certificates.
+The active source scanner now preserves UTF-8 Lean symbols during
+comment/string stripping, so conjunction-heavy propositions are checked against
+the actual stripped Lean source rather than byte-corrupted marker text. The
+early reviewed-Fq12 extraction-chain target gates for payload acceptance,
+extraction-certificate payload binding, extraction-certificate validity,
+certificate-to-payload extraction consistency, payload fiber membership, and
+payload native validity now require the named definition body to start with
+the concrete quantified obligation. Regression fixtures alias the live
+payload-acceptance and payload-native-valid target bodies while placing the old
+markers in unused examples; both fixtures fail closed. The current manifest
+still reports all six target bits true, while `predicate_model = false`,
+`missing_selected_source_record_count = 13`, and the three missing definition
+categories remain the real AP2-N001 blockers.
 The aggregate digest import also exposed a source-hash circularity constraint:
 the current Rust aggregate evidence digest is
 `146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the

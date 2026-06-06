@@ -9260,62 +9260,86 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         ["boundaryBreaksNotUniversal", "predicates.boundaryBreakFor"]
             .iter()
             .all(|marker| boundary_source.contains(marker));
-    let native_boundary_payload_acceptance_boundary_match_target_present = [
-        "ReviewedFq12PayloadAcceptanceMatchesBoundary",
-        "payloadAcceptanceMatchesBoundary",
-        "P.reviewedFq12PayloadAccepts b payload",
-        "payload.nativeBoundaryDigest = b.nativeBoundaryDigest",
-        "payload.slotId = b.context.slotId",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_extraction_certificate_payload_match_target_present = [
-        "ReviewedFq12ExtractionCertificateMatchesPayload",
-        "extractionCertificateMatchesPayload",
-        "P.reviewedFq12PayloadHasExtractionCertificate b payload cert",
-        "cert.nativeBoundaryDigest = b.nativeBoundaryDigest",
-        "cert.slotId = b.context.slotId",
-        "cert.creationStatementDigest = payload.creationStatementDigest",
-        "cert.reviewedStatementDigest = payload.statementDigest",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_extraction_certificate_validity_match_target_present = [
-        "ReviewedFq12ExtractionCertificateValidityMatchesPayload",
-        "extractionCertificateValidityMatchesPayload",
-        "P.reviewedFq12ExtractionCertificateValid b payload cert",
-        "cert.nativeBoundaryDigest = b.nativeBoundaryDigest",
-        "cert.slotId = b.context.slotId",
-        "cert.creationStatementDigest = payload.creationStatementDigest",
-        "cert.reviewedStatementDigest = payload.statementDigest",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_certificate_extraction_payload_consistency_target_present = [
-        "ReviewedFq12CertificateExtractionImpliesPayloadExtraction",
-        "certificateExtractionImpliesPayloadExtraction",
-        "P.reviewedFq12CertificateExtracts b payload cert h",
-        "P.reviewedFq12PayloadExtracts b payload h",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_payload_extraction_fiber_target_present = [
-        "ReviewedFq12PayloadExtractionInBoundaryFiber",
-        "payloadExtractionInBoundaryFiber",
-        "P.reviewedFq12PayloadExtracts b payload h",
-        "InFiber P b.context b h",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_payload_extraction_native_valid_target_present = [
-        "ReviewedFq12PayloadExtractionNativeValid",
-        "payloadExtractionNativeValid",
-        "P.reviewedFq12PayloadExtracts b payload h",
-        "P.localValid b.context h",
-        "P.descentConsistent b.context h",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_payload_acceptance_boundary_match_target_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ReviewedFq12PayloadAcceptanceMatchesBoundary",
+            &["(P : Predicates) : Prop"],
+            "forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload},
+    P.reviewedFq12PayloadAccepts b payload ->
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+        payload.slotId = b.context.slotId",
+            2048,
+        );
+    let native_boundary_extraction_certificate_payload_match_target_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ReviewedFq12ExtractionCertificateMatchesPayload",
+            &["(P : Predicates) : Prop"],
+            "forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate},
+    P.reviewedFq12PayloadHasExtractionCertificate b payload cert ->
+      cert.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+        cert.slotId = b.context.slotId ∧
+          cert.creationStatementDigest = payload.creationStatementDigest ∧
+            cert.reviewedStatementDigest = payload.statementDigest",
+            2048,
+        );
+    let native_boundary_extraction_certificate_validity_match_target_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ReviewedFq12ExtractionCertificateValidityMatchesPayload",
+            &["(P : Predicates) : Prop"],
+            "forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate},
+    P.reviewedFq12ExtractionCertificateValid b payload cert ->
+      cert.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+        cert.slotId = b.context.slotId ∧
+          cert.creationStatementDigest = payload.creationStatementDigest ∧
+            cert.reviewedStatementDigest = payload.statementDigest",
+            2048,
+        );
+    let native_boundary_certificate_extraction_payload_consistency_target_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ReviewedFq12CertificateExtractionImpliesPayloadExtraction",
+            &["(P : Predicates) : Prop"],
+            "forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {h : HiddenRepresentative},
+    P.reviewedFq12CertificateExtracts b payload cert h ->
+      P.reviewedFq12PayloadExtracts b payload h",
+            2048,
+        );
+    let native_boundary_payload_extraction_fiber_target_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ReviewedFq12PayloadExtractionInBoundaryFiber",
+            &["(P : Predicates) : Prop"],
+            "forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {h : HiddenRepresentative},
+    P.reviewedFq12PayloadExtracts b payload h ->
+      InFiber P b.context b h",
+            2048,
+        );
+    let native_boundary_payload_extraction_native_valid_target_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ReviewedFq12PayloadExtractionNativeValid",
+            &["(P : Predicates) : Prop"],
+            "forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {h : HiddenRepresentative},
+    P.reviewedFq12PayloadExtracts b payload h ->
+      P.localValid b.context h ∧
+        P.descentConsistent b.context h",
+            2048,
+        );
     let native_boundary_role_lift_validity_binds_extraction_target_present = [
         "ReviewedFq12RoleLiftValidityBindsExtractionTarget",
         "roleLiftValidityBindsExtraction",
@@ -11468,7 +11492,11 @@ fn lean_source_without_comments_and_strings_v1(source: &str) -> String {
             } else if bytes[idx] == b'"' {
                 in_string = false;
             }
-            idx += 1;
+            idx += source[idx..]
+                .chars()
+                .next()
+                .map(char::len_utf8)
+                .unwrap_or(1);
             continue;
         }
         if in_line_comment {
@@ -11476,7 +11504,11 @@ fn lean_source_without_comments_and_strings_v1(source: &str) -> String {
                 in_line_comment = false;
                 stripped.push('\n');
             }
-            idx += 1;
+            idx += source[idx..]
+                .chars()
+                .next()
+                .map(char::len_utf8)
+                .unwrap_or(1);
             continue;
         }
         if block_depth > 0 {
@@ -11490,7 +11522,11 @@ fn lean_source_without_comments_and_strings_v1(source: &str) -> String {
                 if bytes[idx] == b'\n' {
                     stripped.push('\n');
                 }
-                idx += 1;
+                idx += source[idx..]
+                    .chars()
+                    .next()
+                    .map(char::len_utf8)
+                    .unwrap_or(1);
             }
             continue;
         }
@@ -11509,8 +11545,11 @@ fn lean_source_without_comments_and_strings_v1(source: &str) -> String {
             idx += 1;
             continue;
         }
-        stripped.push(bytes[idx] as char);
-        idx += 1;
+        let Some(ch) = source[idx..].chars().next() else {
+            break;
+        };
+        stripped.push(ch);
+        idx += ch.len_utf8();
     }
     stripped
 }
@@ -58505,6 +58544,38 @@ def toPredicates
         assert!(
             !aliased_certified_current_report_guard_subcheck
                 .native_boundary_certified_semantics_current_report_impossible_present
+        );
+        let aliased_payload_acceptance_target_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "P.reviewedFq12PayloadAccepts b payload ->\n      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧\n        payload.slotId = b.context.slotId",
+            "payloadAcceptanceBoundaryMatchAlias\n\nexample : True := by\n  let _mentionedPayloadAcceptanceBoundaryMatch :=\n    P.reviewedFq12PayloadAccepts b payload ->\n      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧\n        payload.slotId = b.context.slotId\n  trivial",
+            1,
+        );
+        let aliased_payload_acceptance_target_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_payload_acceptance_target_source,
+            );
+        assert!(
+            !aliased_payload_acceptance_target_subcheck
+                .native_boundary_payload_acceptance_boundary_match_target_present
+        );
+        let aliased_payload_extraction_native_valid_target_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "P.reviewedFq12PayloadExtracts b payload h ->\n      P.localValid b.context h ∧\n        P.descentConsistent b.context h",
+            "payloadExtractionNativeValidAlias\n\nexample : True := by\n  let _mentionedPayloadExtractionNativeValid :=\n    P.reviewedFq12PayloadExtracts b payload h ->\n      P.localValid b.context h ∧\n        P.descentConsistent b.context h\n  trivial",
+            1,
+        );
+        let aliased_payload_extraction_native_valid_target_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_payload_extraction_native_valid_target_source,
+            );
+        assert!(
+            !aliased_payload_extraction_native_valid_target_subcheck
+                .native_boundary_payload_extraction_native_valid_target_present
         );
         assert!(
             source_record_subcheck.native_boundary_payload_acceptance_boundary_match_target_present

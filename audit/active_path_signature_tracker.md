@@ -1484,6 +1484,21 @@ It now also parses every boolean field in
 record against `Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1`. This
 keeps the current fail-closed predicate-model report byte/digest binding and
 its exposed blocker bits synchronized with Rust evidence.
+The active Path 2 source scanner now preserves UTF-8 Lean symbols while
+stripping comments and strings, so declaration-scoped gates can safely match
+Lean propositions containing `∧` without marker corruption. The early
+reviewed-Fq12 extraction-chain target checks for payload acceptance,
+extraction-certificate payload binding, extraction-certificate validity,
+certificate-to-payload extraction consistency, payload fiber membership, and
+payload native validity now require the named target definition body to start
+with the concrete quantified obligation. Regression fixtures alias the real
+payload-acceptance and payload-native-valid targets while moving the old
+markers into unused examples; both must now fail closed. The current manifest
+still reports these six target bits true for the active Lean source, while the
+actual closure blockers remain unchanged:
+`predicate_model = false`, `missing_selected_source_record_count = 13`, and
+missing categories `predicate_model_certificate_definitions`,
+`source_record_definitions`, and `sub_evidence_digest_match_proof`.
 
 ## Findings
 
