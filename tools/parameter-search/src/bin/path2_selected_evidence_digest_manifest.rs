@@ -286,6 +286,9 @@ fn main() -> Result<(), String> {
             "native_boundary_predicate_model_field_sources_defined_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_field_sources_defined_present,
+            "native_boundary_predicate_model_forbidden_vacuous_field_sources_present":
+                source_record_subcheck
+                    .native_boundary_predicate_model_forbidden_vacuous_field_sources_present,
             "native_boundary_predicate_model_stub_field_sources_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_stub_field_sources_present,

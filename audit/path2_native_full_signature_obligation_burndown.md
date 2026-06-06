@@ -379,6 +379,11 @@ predicate-model evidence report by making
 `nativeBoundaryPredicateRecordComplete` require both the native predicate record
 surface and the selected provider definitions. The current Lean report/digest
 has that fact false, matching Rust.
+The source audit now also rejects vacuous selected predicate-field provider
+bodies, such as defining `selectedReviewedFq12PayloadAccepts` as a
+constant-false predicate. The manifest exposes this as
+`native_boundary_predicate_model_forbidden_vacuous_field_sources_present`, and
+the digest-bound predicate-model negative-control bit requires it to be false.
 It now also rejects the obvious syntactic vacuity escape hatch: a field-complete
 `selectedRustNativeBoundaryPredicates` whose critical break, reviewed-Fq12
 certificate/extraction, payload-extraction, or spend predicates are filled by

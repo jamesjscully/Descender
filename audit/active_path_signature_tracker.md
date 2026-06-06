@@ -1388,6 +1388,12 @@ predicate model. The manifest exposes this as
 That provider-definition requirement is now folded into the digest-bound
 predicate-model evidence report through `nativeBoundaryPredicateRecordComplete`;
 the current selected Lean report and digest mirror Rust with that bit false.
+The source audit now also rejects vacuous selected predicate-field provider
+bodies, such as a provider definition of
+`selectedReviewedFq12PayloadAccepts` as a constant-false predicate. The manifest
+exposes this as
+`native_boundary_predicate_model_forbidden_vacuous_field_sources_present`, and
+the digest-bound predicate-model negative-control bit requires it to be false.
 It now also rejects the most direct vacuous literal model shapes inside
 `selectedRustNativeBoundaryPredicates`: universal break predicates,
 always-false reviewed-Fq12 payload acceptance, and constant-true reviewed-Fq12

@@ -7587,6 +7587,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub full_spend_concrete_predicates_are_separate_model: bool,
     pub native_boundary_predicate_model_forbidden_vacuous_literals_present: bool,
     pub native_boundary_predicate_model_field_sources_defined_present: bool,
+    pub native_boundary_predicate_model_forbidden_vacuous_field_sources_present: bool,
     pub native_boundary_predicate_model_stub_field_sources_present: bool,
     pub native_boundary_predicate_model_incomplete_proof_terms_present: bool,
     pub native_boundary_concrete_predicate_model_present: bool,
@@ -9414,6 +9415,87 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             &native_boundary_predicate_model_field_source_names,
         );
+    let native_boundary_predicate_model_forbidden_vacuous_field_sources_present = [
+        ("selectedBoundaryBreakFor", "fun _ _ _ => True"),
+        ("selectedReviewedFq12PayloadAccepts", "fun _ _ => False"),
+        ("selectedReviewedFq12PayloadProjectsFrom", "fun _ _ => True"),
+        (
+            "selectedReviewedFq12PayloadHasExtractionCertificate",
+            "fun _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12ExtractionCertificateValid",
+            "fun _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12CertificateExtracts",
+            "fun _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12CertificateLiftsToOpening",
+            "fun _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12PayloadHasRoleLiftCertificate",
+            "fun _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12RoleLiftCertificateValid",
+            "fun _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12RoleLiftCertificateOpens",
+            "fun _ _ _ _ _ => True",
+        ),
+        (
+            "selectedFullNativeOpeningAssemblesRepresentative",
+            "fun _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12OpeningHasAssemblyCertificate",
+            "fun _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12AssemblyCertificateValid",
+            "fun _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12AssemblyCertificateAssembles",
+            "fun _ _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12HasExtractionCompatibilityCertificate",
+            "fun _ _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12ExtractionCompatibilityCertificateValid",
+            "fun _ _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12ExtractionCompatibilityCertificateExtracts",
+            "fun _ _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12HasFullOpeningBridgeDigestCertificate",
+            "fun _ _ _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12FullOpeningBridgeDigestCertificateValid",
+            "fun _ _ _ _ _ _ _ => True",
+        ),
+        ("selectedReviewedFq12PayloadExtracts", "fun _ _ _ => True"),
+        ("selectedSpendAccepts", "fun _ _ => True"),
+        ("selectedSpendWitnessValid", "fun _ _ _ => True"),
+    ]
+    .iter()
+    .any(|(name, marker)| {
+        lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            name,
+            marker,
+            4096,
+        )
+    });
     let native_boundary_predicate_model_incomplete_proof_terms_present =
         lean_source_has_incomplete_proof_token_v1(&boundary_source);
     let native_boundary_concrete_predicate_model_present =
@@ -9433,6 +9515,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             })
             && !native_boundary_predicate_model_forbidden_vacuous_literals_present
             && native_boundary_predicate_model_field_sources_defined_present
+            && !native_boundary_predicate_model_forbidden_vacuous_field_sources_present
             && !native_boundary_predicate_model_stub_field_sources_present
             && !native_boundary_predicate_model_incomplete_proof_terms_present;
     let boundary_base_report_definition_present =
@@ -9803,6 +9886,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         full_spend_concrete_predicates_are_separate_model,
         native_boundary_predicate_model_forbidden_vacuous_literals_present,
         native_boundary_predicate_model_field_sources_defined_present,
+        native_boundary_predicate_model_forbidden_vacuous_field_sources_present,
         native_boundary_predicate_model_stub_field_sources_present,
         native_boundary_predicate_model_incomplete_proof_terms_present,
         native_boundary_concrete_predicate_model_present,
@@ -14045,6 +14129,8 @@ pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1()
                 .native_boundary_predicate_model_generic_evidence_labels_present
             && !source_record_subcheck
                 .native_boundary_predicate_model_forbidden_vacuous_literals_present
+            && !source_record_subcheck
+                .native_boundary_predicate_model_forbidden_vacuous_field_sources_present
             && !source_record_subcheck.native_boundary_predicate_model_stub_field_sources_present
             && !source_record_subcheck
                 .native_boundary_predicate_model_incomplete_proof_terms_present,
@@ -58029,6 +58115,10 @@ def toPredicates
         assert!(
             !source_record_subcheck.native_boundary_predicate_model_field_sources_defined_present
         );
+        assert!(
+            !source_record_subcheck
+                .native_boundary_predicate_model_forbidden_vacuous_field_sources_present
+        );
         assert!(!source_record_subcheck.native_boundary_predicate_model_stub_field_sources_present);
         assert!(
             !source_record_subcheck.native_boundary_predicate_model_incomplete_proof_terms_present
@@ -58309,6 +58399,10 @@ def selectedSpendWitnessValid := selectedSpendWitnessValidValue
         );
         assert!(
             !complete_native_boundary_model_subcheck
+                .native_boundary_predicate_model_forbidden_vacuous_field_sources_present
+        );
+        assert!(
+            !complete_native_boundary_model_subcheck
                 .native_boundary_predicate_model_forbidden_vacuous_literals_present
         );
         assert!(
@@ -58340,6 +58434,24 @@ def selectedSpendWitnessValid := selectedSpendWitnessValidValue
         );
         assert!(
             !vacuous_native_boundary_model_subcheck
+                .native_boundary_concrete_predicate_model_present
+        );
+        let vacuous_provider_native_boundary_model_source = complete_native_boundary_model_source
+            .replacen(
+                "def selectedReviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAcceptsValue",
+                "def selectedReviewedFq12PayloadAccepts := fun _ _ => False",
+                1,
+            );
+        let vacuous_provider_native_boundary_model_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &vacuous_provider_native_boundary_model_source,
+            );
+        assert!(
+            vacuous_provider_native_boundary_model_subcheck
+                .native_boundary_predicate_model_forbidden_vacuous_field_sources_present
+        );
+        assert!(
+            !vacuous_provider_native_boundary_model_subcheck
                 .native_boundary_concrete_predicate_model_present
         );
         let stubbed_native_boundary_model_source = format!(
