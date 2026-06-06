@@ -439,6 +439,14 @@ field-complete `Path2NativeBoundary.Predicates` literal is rejected, and the
 same vacuous-lambda detector scans the package body as well as the projected
 predicate model. The manifest exposes the package-route bit as
 `native_boundary_predicate_model_field_source_package_present`.
+The selected predicate-model certificate now carries that same package route:
+the certificate stores the selected field-source package, records
+`predicates = predicateFieldSources.toPredicates`, and the named constructor
+takes the field-source package before the model obligations. The Rust checklist
+rejects a selected certificate built directly from the raw
+`selectedRustNativeBoundaryPredicates` record, and
+`nativeBoundaryPredicateRecordComplete` now requires both concrete provider
+definitions and the package-route bit.
 The same detector now rejects module-level `axiom`, `constant`, `opaque`, or
 `variable` stubs for the selected predicate-field providers used by
 `selectedRustNativeBoundaryPredicates`. The manifest exposes this as

@@ -1408,6 +1408,16 @@ the package's `toPredicates` projection. A raw field-complete
 model gate, and the obvious vacuous-lambda detector also scans the field-source
 package body. The manifest exposes the package-route bit as
 `native_boundary_predicate_model_field_source_package_present`.
+The proof-bearing predicate-model certificate is now package-routed too:
+`ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate` carries the
+field-source package and records that its `predicates` value is the package's
+`toPredicates` projection. Its named constructor takes
+`selectedRustNativeBoundaryPredicateFieldSources`, not a raw
+`selectedRustNativeBoundaryPredicates` value, and the Rust checklist rejects
+the raw-predicate constructor route. The digest-bound
+`nativeBoundaryPredicateRecordComplete` fact now also requires the package
+route bit, so provider declarations alone cannot close the predicate-record
+fact.
 The Lean predicate-model evidence report now mirrors the Rust report's
 concrete-model and certified-semantics-package status fields as
 `concretePredicateModelPresent` and

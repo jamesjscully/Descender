@@ -3226,7 +3226,11 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate
     evidenceReport.ReportVerified
   evidenceFactsAllTrueProof :
     evidenceReport.FactsAllTrue
+  predicateFieldSources :
+    ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources
   predicates : Predicates
+  predicatesFromFieldSources :
+    predicates = predicateFieldSources.toPredicates
   payloadAcceptanceNotVacuous :
     ¬ (forall b payload, ¬ predicates.reviewedFq12PayloadAccepts b payload)
   boundaryBreaksNotUniversal :
@@ -3281,38 +3285,54 @@ def ofReportAndModel
       evidenceReport.ReportVerified)
     (evidenceFactsAllTrueProof :
       evidenceReport.FactsAllTrue)
-    (predicates : Predicates)
+    (predicateFieldSources :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources)
     (payloadAcceptanceNotVacuous :
-      ¬ (forall b payload, ¬ predicates.reviewedFq12PayloadAccepts b payload))
+      ¬ (forall b payload,
+        ¬ predicateFieldSources.toPredicates.reviewedFq12PayloadAccepts
+            b payload))
     (boundaryBreaksNotUniversal :
-      ¬ (forall c b breakEvent, predicates.boundaryBreakFor c b breakEvent))
+      ¬ (forall c b breakEvent,
+        predicateFieldSources.toPredicates.boundaryBreakFor c b breakEvent))
     (payloadAcceptanceMatchesBoundary :
-      ReviewedFq12PayloadAcceptanceMatchesBoundary predicates)
+      ReviewedFq12PayloadAcceptanceMatchesBoundary
+        predicateFieldSources.toPredicates)
     (extractionCertificateMatchesPayload :
-      ReviewedFq12ExtractionCertificateMatchesPayload predicates)
+      ReviewedFq12ExtractionCertificateMatchesPayload
+        predicateFieldSources.toPredicates)
     (extractionCertificateValidityMatchesPayload :
-      ReviewedFq12ExtractionCertificateValidityMatchesPayload predicates)
+      ReviewedFq12ExtractionCertificateValidityMatchesPayload
+        predicateFieldSources.toPredicates)
     (certificateExtractionImpliesPayloadExtraction :
-      ReviewedFq12CertificateExtractionImpliesPayloadExtraction predicates)
+      ReviewedFq12CertificateExtractionImpliesPayloadExtraction
+        predicateFieldSources.toPredicates)
     (payloadExtractionInBoundaryFiber :
-      ReviewedFq12PayloadExtractionInBoundaryFiber predicates)
+      ReviewedFq12PayloadExtractionInBoundaryFiber
+        predicateFieldSources.toPredicates)
     (payloadExtractionNativeValid :
-      ReviewedFq12PayloadExtractionNativeValid predicates)
+      ReviewedFq12PayloadExtractionNativeValid
+        predicateFieldSources.toPredicates)
     (roleLiftValidityBindsExtraction :
-      ReviewedFq12RoleLiftValidityBindsExtractionTarget predicates)
+      ReviewedFq12RoleLiftValidityBindsExtractionTarget
+        predicateFieldSources.toPredicates)
     (roleLiftOpeningImpliesCertificateLift :
-      ReviewedFq12RoleLiftOpeningImpliesCertificateLiftTarget predicates)
+      ReviewedFq12RoleLiftOpeningImpliesCertificateLiftTarget
+        predicateFieldSources.toPredicates)
     (assemblyValidityBindsOpening :
-      ReviewedFq12AssemblyValidityBindsOpeningTarget predicates)
+      ReviewedFq12AssemblyValidityBindsOpeningTarget
+        predicateFieldSources.toPredicates)
     (assemblyCertificateImpliesFullNativeAssembly :
-      ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget predicates)
+      ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget
+        predicateFieldSources.toPredicates)
     (compatibilityValidityBinds :
-      ReviewedFq12CompatibilityValidityBindsTarget predicates)
+      ReviewedFq12CompatibilityValidityBindsTarget
+        predicateFieldSources.toPredicates)
     (compatibilityExtractionImpliesReviewedExtraction :
       ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget
-        predicates)
+        predicateFieldSources.toPredicates)
     (fullOpeningBridgeDigestValidityBinds :
-      ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget predicates) :
+      ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget
+        predicateFieldSources.toPredicates) :
     ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate where
   evidenceReport := evidenceReport
   evidenceDigest := evidenceDigest
@@ -3320,7 +3340,9 @@ def ofReportAndModel
   evidenceDigestBound := evidenceDigestBound
   evidenceReportVerifiedProof := evidenceReportVerifiedProof
   evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
-  predicates := predicates
+  predicateFieldSources := predicateFieldSources
+  predicates := predicateFieldSources.toPredicates
+  predicatesFromFieldSources := rfl
   payloadAcceptanceNotVacuous := payloadAcceptanceNotVacuous
   boundaryBreaksNotUniversal := boundaryBreaksNotUniversal
   payloadAcceptanceMatchesBoundary := payloadAcceptanceMatchesBoundary
