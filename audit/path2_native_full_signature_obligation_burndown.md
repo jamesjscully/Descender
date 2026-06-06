@@ -1354,6 +1354,16 @@ same exact theorem-name and all-candidate scan pattern. A suffixed theorem is
 rejected, while a suffixed spoof before an exact theorem no longer creates a
 false negative for the future full-signature reduction certificate
 instantiation.
+The full-reduction instantiation gate now also scans the combined
+`Path2NativeAccountDesign.lean` and `Path2FullSpendConcrete.lean` sources and
+rejects a certificate-only theorem shape unless it consumes the concrete
+full-execution source theorem, the concrete full-execution lift, the accepted
+spend numeric-bound instantiation theorem, the accepted-spend certificate
+conversion, `activeNativeHashBudgetBoundary`, and
+`activeNativeHashBudgetBoundary_hashBoundaryProps`. This keeps the final
+reduction from closing in the upstream account-design layer with local shells
+instead of the active concrete execution source, numeric accepted-spend package,
+and active hash boundary.
 The same all-candidate exact-name scan now applies to
 `concreteFullSignatureExecutionSource_instantiation_v1`, so full-execution
 source closure also rejects suffixed theorem spoofs without making a later

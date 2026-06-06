@@ -27669,7 +27669,9 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
 
 fn path2_full_signature_reduction_certificate_instantiated_v1() -> bool {
     let account_design_source = include_str!("../../../Descender/Path2NativeAccountDesign.lean");
-    path2_full_signature_reduction_certificate_instantiated_in_source_v1(account_design_source)
+    let full_spend_concrete_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    let reduction_sources = format!("{account_design_source}\n{full_spend_concrete_source}");
+    path2_full_signature_reduction_certificate_instantiated_in_source_v1(&reduction_sources)
 }
 
 fn path2_full_signature_reduction_certificate_instantiated_in_source_v1(
@@ -27851,6 +27853,12 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
 
     let instantiation_checks = [
         "selectedRustFullSignatureReductionBoundary_instantiation_v1",
+        "concreteFullSignatureExecutionSource_instantiation_v1",
+        "full_signature_with_concrete_full_execution_source_lift",
+        "selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1",
+        "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
+        "activeNativeHashBudgetBoundary",
+        "activeNativeHashBudgetBoundary_hashBoundaryProps",
         "let selectedRustFullSignatureReductionCertificate :",
         "SelectedRustFullSignatureReductionCertificate",
         "SelectedRustFullSignatureReductionCertificate.ofReportAndReduction",
@@ -50804,9 +50812,66 @@ namespace NativeFullSignatureSecurityBoundary
                 multiline_stubbed_full_signature_reduction_instantiation
             )
         );
+        let full_signature_reduction_instantiation_without_prerequisites = r#"
+theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
+    NativeFullSignatureSecurityBoundary := by
+  let selectedRustFullSignatureReductionCertificate :
+      SelectedRustFullSignatureReductionCertificate :=
+    SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
+      selectedRustFullSignatureReductionEvidenceReport
+      selectedRustFullSignatureReductionEvidenceDigest
+      selectedRustFullSignatureReductionVerifiedProof
+      selectedRustFullSignatureReductionFactsAllTrueProof
+      selectedRustAcceptedSpendSoundness
+      selectedRustActiveHashBoundary
+      selectedRustSignatureForgerySuccessProb
+      selectedRustProductionSignatureForgerySuccessProb
+      selectedRustSignatureForgerySuccessProbPinned
+      selectedRustSignatureForgerySuccessLeAcceptedSpend
+      selectedRustFullSignatureKeygenModeled
+      selectedRustFullSignatureKeygenModeledProof
+      selectedRustFullSignatureSigningOracleModeled
+      selectedRustFullSignatureSigningOracleModeledProof
+      selectedRustFullSignatureCompletenessModeled
+      selectedRustFullSignatureCompletenessModeledProof
+      selectedRustVerifierRelationMatchesImplementation
+      selectedRustVerifierRelationMatchesImplementationProof
+      selectedRustFullForgeryImpliesAcceptedSpendForgery
+      selectedRustFullForgeryImpliesAcceptedSpendForgeryProof
+      selectedRustHiddenSourceProofSemanticsClosedProof
+      selectedRustCheckedCoreCompositionClosedProof
+      selectedRustLifecycleReplayClosedProof
+      selectedRustNoExportClosedProof
+      selectedRustCheckedCoreFrameDomainSeparatedProof
+      selectedRustHiddenSourceFrameDomainSeparatedProof
+      selectedRustQueryBudgetPricedProof
+      selectedRustMultiTargetLossPricedProof
+  exact
+    SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
+      selectedRustFullSignatureReductionCertificate
+namespace NativeFullSignatureSecurityBoundary
+"#;
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                full_signature_reduction_instantiation_without_prerequisites
+            )
+        );
         let full_signature_reduction_instantiation_shape = r#"
 theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     NativeFullSignatureSecurityBoundary := by
+  let _fullExecutionSourceGate :=
+    concreteFullSignatureExecutionSource_instantiation_v1
+  let _fullExecutionSourceLift :=
+    full_signature_with_concrete_full_execution_source_lift
+  let _acceptedSpendNumericGate :=
+    selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1
+  let selectedRustAcceptedSpendSoundness :=
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+      selectedRustAcceptedSpendSoundnessCertificate
+  let selectedRustActiveHashBoundary :=
+    activeNativeHashBudgetBoundary
+  let _activeHashBoundaryProps :=
+    activeNativeHashBudgetBoundary_hashBoundaryProps
   let selectedRustFullSignatureReductionCertificate :
       SelectedRustFullSignatureReductionCertificate :=
     SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
