@@ -2559,6 +2559,23 @@ def sharedFrameWitnessSourcesCertificate
       CanonicalParser WitnessParser P :=
   Package.sharedWitnessEvidenceSourceBinding.toCertificate
 
+/-- The package's shared witness source is exactly the certificate projection. -/
+theorem sharedFrameWitnessSourcesFromCertificate
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Package :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    Package.sharedFrameWitnessSources =
+      Package.sharedFrameWitnessSourcesCertificate.toWitnessSources := by
+  rw [Package.sharedFrameWitnessSourcesBound]
+  rfl
+
 /--
 The selected aggregate report digest-matches the constructor-bound certificates
 derived from a selected source-record package.
@@ -2650,7 +2667,7 @@ def toFiveSourceClosureInputs
   selectedSource := Package.selectedSourceRouteByteSource
   assemblySource := Package.assemblySource
   compatibilitySource := Package.compatibilitySource
-  witnessSources := Package.sharedFrameWitnessSources
+  witnessSources := Package.sharedFrameWitnessSourcesCertificate.toWitnessSources
 
 /--
 Forget a selected source-record package into the active byte-component input
@@ -2679,7 +2696,7 @@ def toByteComponentInputs
     Package.selectedSourceRouteByteSource
     Package.assemblySource
     Package.compatibilitySource
-    Package.sharedFrameWitnessSources
+    Package.sharedFrameWitnessSourcesCertificate.toWitnessSources
 
 /--
 Forget a selected source-record package into the preferred field/local
@@ -2709,7 +2726,7 @@ def toFieldLocalSharedDigestFrameWitnessInputs
     Package.selectedSourceRouteByteSource
     Package.assemblySource
     Package.compatibilitySource
-    Package.sharedFrameWitnessSources
+    Package.sharedFrameWitnessSourcesCertificate.toWitnessSources
 
 end ReviewedFq12SelectedRustModelSourceRecordPackage
 

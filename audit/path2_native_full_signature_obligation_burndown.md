@@ -1468,3 +1468,8 @@ The source-record package closure uses the same discipline: it now routes
 through `Package.sharedFrameWitnessSourcesCertificate` and the certificate-level
 hidden-source theorem, rather than detouring through raw five-source closure
 inputs.
+The package-to-input projections now also use
+`Package.sharedFrameWitnessSourcesCertificate.toWitnessSources`; Lean records
+the equality back to the raw package field with
+`sharedFrameWitnessSourcesFromCertificate`, and the Rust scanner requires this
+certificate projection shape.

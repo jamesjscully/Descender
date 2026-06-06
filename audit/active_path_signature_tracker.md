@@ -1758,6 +1758,11 @@ The source-record package hidden-source closure now calls the corresponding
 certificate-level boundary theorem with
 `Package.sharedFrameWitnessSourcesCertificate`; it no longer unwraps the
 package through five-source closure inputs solely to pass raw `I.witnessSources`.
+Package projections now route shared witness inputs through
+`Package.sharedFrameWitnessSourcesCertificate.toWitnessSources`, with
+`sharedFrameWitnessSourcesFromCertificate` recording equality to the raw package
+field. The scanner requires this certificate projection in the package-to-input
+reductions.
 
 ## Findings
 

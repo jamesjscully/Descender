@@ -10510,6 +10510,16 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         )
         && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
             &boundary_source,
+            "sharedFrameWitnessSourcesFromCertificate",
+            &[
+                "Package.sharedFrameWitnessSources =",
+                "Package.sharedFrameWitnessSourcesCertificate.toWitnessSources",
+            ],
+            "by rw [Package.sharedFrameWitnessSourcesBound] rfl",
+            4096,
+        )
+        && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
             "fiveSourceClosureCertificate",
             &["ReviewedFq12SelectedRustModelFiveSourceClosureCertificate"],
             "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates selectedRustFiveSourceEvidenceReport selectedRustFiveSourceEvidenceDigest rfl rfl selectedRustFiveSourceEvidenceReportVerifiedProof selectedRustFiveSourceEvidenceFactsAllTrueProof Package.boundaryBaseCertificate Package.roleRootLiftSourceCertificate Package.sourceRouteByteSourceCertificate Package.fieldLocalSourceCertificate Package.sharedFrameWitnessSourcesCertificate Package.subEvidenceDigestsMatch",
@@ -10560,7 +10570,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             "toFiveSourceClosureInputs",
             &["ReviewedFq12SelectedRustModelFiveSourceClosureInputs"],
-            "payloadProjectsFrom := Package.payloadProjectionLaw certificateAvailability := Package.extractionCertificateAvailability roleRootLiftSource := Package.roleRootLiftSource selectedSource := Package.selectedSourceRouteByteSource assemblySource := Package.assemblySource compatibilitySource := Package.compatibilitySource witnessSources := Package.sharedFrameWitnessSources",
+            "payloadProjectsFrom := Package.payloadProjectionLaw certificateAvailability := Package.extractionCertificateAvailability roleRootLiftSource := Package.roleRootLiftSource selectedSource := Package.selectedSourceRouteByteSource assemblySource := Package.assemblySource compatibilitySource := Package.compatibilitySource witnessSources := Package.sharedFrameWitnessSourcesCertificate.toWitnessSources",
             4096,
         );
     let package_to_byte_component_inputs_reduction_present =
@@ -10568,7 +10578,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             "toByteComponentInputs",
             &["ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs"],
-            "reviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputsOfSources Package.roleRootLiftSource Package.selectedSourceRouteByteSource Package.assemblySource Package.compatibilitySource Package.sharedFrameWitnessSources",
+            "reviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputsOfSources Package.roleRootLiftSource Package.selectedSourceRouteByteSource Package.assemblySource Package.compatibilitySource Package.sharedFrameWitnessSourcesCertificate.toWitnessSources",
             4096,
         );
     let package_to_field_local_shared_digest_frame_inputs_reduction_present =
@@ -10576,7 +10586,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             "toFieldLocalSharedDigestFrameWitnessInputs",
             &["ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs"],
-            "reviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputsOfSources Package.roleRootLiftSource Package.selectedSourceRouteByteSource Package.assemblySource Package.compatibilitySource Package.sharedFrameWitnessSources",
+            "reviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputsOfSources Package.roleRootLiftSource Package.selectedSourceRouteByteSource Package.assemblySource Package.compatibilitySource Package.sharedFrameWitnessSourcesCertificate.toWitnessSources",
             4096,
         );
     let package_to_hidden_source_closure_reduction_present =
