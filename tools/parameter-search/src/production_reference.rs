@@ -51203,8 +51203,8 @@ end Path2FullSpendConcrete
                 &suffixed_then_exact_full_execution_instantiation
             )
         );
-        assert!(!path2_full_signature_execution_source_instantiated_v1());
-        assert!(!preflight.full_signature_execution_source_instantiated);
+        assert!(path2_full_signature_execution_source_instantiated_v1());
+        assert!(preflight.full_signature_execution_source_instantiated);
         let assumed_accepted_spend_boundary = r#"
 theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1
     (B : NativeAcceptedSpendSoundnessBoundary) :
@@ -51773,7 +51773,6 @@ end Path2NoExportConcrete
         assert_eq!(
             preflight.internal_blockers,
             vec![
-                PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS,
@@ -51803,6 +51802,9 @@ end Path2NoExportConcrete
         assert!(!rendered.contains("QROM multi-target horizon"));
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
+        assert!(
+            !rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
+        );
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS));
         assert!(rendered.contains("active native signer/verifier pipeline"));
@@ -51826,7 +51828,7 @@ end Path2NoExportConcrete
         assert!(!verdict.production_accepted);
         assert_eq!(
             verdict.rejection_code,
-            Some("reject_active_native_full_signature_execution_source_open")
+            Some("reject_active_native_full_signature_reduction_certificate_open")
         );
         assert_eq!(verdict.consensus_carrier_digest, Some(carrier_digest));
         let checked_core_report =
@@ -51955,7 +51957,7 @@ end Path2NoExportConcrete
                 .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION)
         );
         assert!(
-            output
+            !output
                 .deployment_preflight
                 .internal_blockers
                 .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
@@ -53032,16 +53034,15 @@ end Path2NoExportConcrete
         assert!(!evidence.verifier_production_accepted);
         assert_eq!(
             evidence.verifier_rejection_code,
-            Some("reject_active_native_full_signature_execution_source_open")
+            Some("reject_active_native_full_signature_reduction_certificate_open")
         );
         assert_eq!(
             evidence.smallest_remaining_productization_gate,
-            PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE
         );
         assert_eq!(
             evidence.deployment_blockers,
             vec![
-                PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS,
@@ -53099,11 +53100,11 @@ end Path2NoExportConcrete
         assert!(!evidence.verifier_production_accepted);
         assert_eq!(
             evidence.verifier_rejection_code,
-            Some("reject_active_native_full_signature_execution_source_open")
+            Some("reject_active_native_full_signature_reduction_certificate_open")
         );
         assert_eq!(
             evidence.smallest_remaining_productization_gate,
-            PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE
         );
         assert_ne!(
             evidence.smallest_remaining_productization_gate,
@@ -53120,6 +53121,10 @@ end Path2NoExportConcrete
         assert_ne!(
             evidence.smallest_remaining_productization_gate,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON
+        );
+        assert_ne!(
+            evidence.smallest_remaining_productization_gate,
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE
         );
         assert_ne!(
             evidence.smallest_remaining_productization_gate,
@@ -53153,7 +53158,7 @@ end Path2NoExportConcrete
                 .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE)
         );
         assert!(
-            evidence
+            !evidence
                 .deployment_blockers
                 .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
         );
@@ -53198,7 +53203,9 @@ end Path2NoExportConcrete
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON));
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
-        assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE));
+        assert!(
+            !rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
+        );
         assert!(
             rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE)
         );

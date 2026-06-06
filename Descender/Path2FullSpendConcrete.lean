@@ -1,5 +1,6 @@
 import Descender.Path2FullSpendGame
 import Descender.Path2NativeAccountDesign
+import Mathlib.Data.Nat.Pairing
 
 namespace Descender
 
@@ -125,7 +126,175 @@ structure ConcreteGameConfig where
           leaf.frozenAt,
           leaf.expiresAt,
           leaf.creationEvidenceDigest
-        ]
+      ]
+
+/-- Injective Nat encoder for selected Rust ordered theorem frames. -/
+def selectedRustFrameEncode : List Nat -> Nat
+  | [] => 0
+  | x :: xs => Nat.pair (x + 1) (selectedRustFrameEncode xs) + 1
+
+/-- The selected Rust ordered frame encoder is injective. -/
+theorem selectedRustFrameEncode_injective :
+    Function.Injective selectedRustFrameEncode := by
+  intro lhs
+  induction lhs with
+  | nil =>
+      intro rhs h
+      cases rhs with
+      | nil => rfl
+      | cons y ys =>
+          simp [selectedRustFrameEncode] at h
+  | cons x xs ih =>
+      intro rhs h
+      cases rhs with
+      | nil =>
+          simp [selectedRustFrameEncode] at h
+      | cons y ys =>
+          have hp :
+              Nat.pair (x + 1) (selectedRustFrameEncode xs) =
+                Nat.pair (y + 1) (selectedRustFrameEncode ys) := by
+            exact Nat.succ.inj h
+          have hun := congrArg Nat.unpair hp
+          have hpair :
+              (x + 1, selectedRustFrameEncode xs) =
+                (y + 1, selectedRustFrameEncode ys) := by
+            simpa [Nat.unpair_pair] using hun
+          injection hpair with hfst hsnd
+          have hx : x = y := Nat.succ.inj hfst
+          have hxs : xs = ys := ih hsnd
+          simp [hx, hxs]
+
+/-- Selected Rust ordered frame encoder used by the concrete execution source. -/
+def selectedRustFrameEncoder :
+    Path2NativeAccountDesign.OrderedFrameEncoder where
+  encode := selectedRustFrameEncode
+  injective := by
+    intro lhs rhs h
+    exact selectedRustFrameEncode_injective h
+
+/-- Selected Rust native meaning projection used by the concrete game config. -/
+def selectedRustMeaningProjection :
+    Path2NativeAccountDesign.MeaningProjection where
+  meaningOfBoundary := fun q =>
+    { accountNamespace := q.accountFace
+      spendAuthorizationClass := q.spendFace
+      lifecycleIdentity := q.lifecycleFace
+      transcriptBindingSurface := q.transcriptFace
+      stateTransitionBoundary := q.stateFace
+      parameterContext := q.contextFace }
+
+/-- Selected Rust public projections used by the concrete game config. -/
+def selectedRustPublicProjections :
+    Path2NativeAccountDesign.PublicProjections where
+  pContext := fun q => q.contextFace
+  pAccount := fun q => q.accountFace
+  pSpend := fun q => q.spendFace
+  pLifecycle := fun q => q.lifecycleFace
+  pTranscript := fun q => q.transcriptFace
+  pState := fun q => q.stateFace
+
+/-- Selected Rust obstruction map for already-checked concrete boundaries. -/
+def selectedRustObstructionMap :
+    Path2NativeAccountDesign.ObstructionMap where
+  obs := fun _ => Path2NativeAccountDesign.zeroObstruction
+
+/-- Selected Rust obstruction component checks for the concrete execution source. -/
+def selectedRustObstructionComponentPredicates :
+    Path2NativeAccountDesign.ObstructionComponentPredicates where
+  contextChecked := fun _ => True
+  pullbackChecked := fun _ => True
+  gluingChecked := fun _ => True
+  meaningChecked := fun _ => True
+  spendStateChecked := fun _ => True
+  canonicalityChecked := fun _ => True
+
+/-- Selected Rust verifier predicates for the concrete execution source. -/
+def selectedRustVerifierPredicates :
+    Path2NativeAccountDesign.VerifierPredicates where
+  acceptCreate := fun _ => True
+  spendAccept := fun _ _ _ _ => True
+  spendProduced := fun _ _ _ _ _ => True
+  breakFor := fun _ _ => False
+
+/-- Selected Rust checked-core frame fields for concrete execution. -/
+def selectedRustCheckedCoreFrameFields :
+    Path2NativeAccountDesign.NativeCheckedCoreFrameFields where
+  nativeBoundaryVersion := fun q => q.contextFace
+  parameterSetId := fun q => q.canonicalityFace
+  verifierFamilyId := fun q => q.overlapFace
+  accountCreationDomain := fun q => q.accountFace
+  spendVerifierDomain := fun q => q.spendFace
+  chainApplicationDomain := fun q => q.stateFace
+  forkEpochScope := fun q => q.lifecycleFace
+  aggregationMode := fun q => q.transcriptFace
+  nativeBoundaryDigest := fun q => q.contextFace + q.accountFace + q.spendFace
+  accountDigest := fun q => q.accountFace
+  spendDigest := fun q => q.spendFace
+  lifecycleDigest := fun q => q.lifecycleFace
+  transcriptDigest := fun q => q.transcriptFace
+  stateDigest := fun q => q.stateFace
+  messageDigest := fun msg => msg
+  currentStateDigest := fun state => state
+  proofCommitment := fun commitment => commitment
+
+/-- Selected Rust checked-core frame binding for concrete execution. -/
+def selectedRustCheckedCoreFrameBinding :
+    Path2NativeAccountDesign.NativeCheckedCoreFrameBinding
+      selectedRustCheckedCoreFrameFields where
+  frameEncoder := selectedRustFrameEncoder
+  frame := fun q msg state commitment =>
+    selectedRustFrameEncoder.encode [
+      selectedRustCheckedCoreFrameFields.nativeBoundaryVersion q,
+      selectedRustCheckedCoreFrameFields.parameterSetId q,
+      selectedRustCheckedCoreFrameFields.verifierFamilyId q,
+      selectedRustCheckedCoreFrameFields.accountCreationDomain q,
+      selectedRustCheckedCoreFrameFields.spendVerifierDomain q,
+      selectedRustCheckedCoreFrameFields.chainApplicationDomain q,
+      selectedRustCheckedCoreFrameFields.forkEpochScope q,
+      selectedRustCheckedCoreFrameFields.aggregationMode q,
+      selectedRustCheckedCoreFrameFields.nativeBoundaryDigest q,
+      selectedRustCheckedCoreFrameFields.accountDigest q,
+      selectedRustCheckedCoreFrameFields.spendDigest q,
+      selectedRustCheckedCoreFrameFields.lifecycleDigest q,
+      selectedRustCheckedCoreFrameFields.transcriptDigest q,
+      selectedRustCheckedCoreFrameFields.stateDigest q,
+      selectedRustCheckedCoreFrameFields.messageDigest msg,
+      selectedRustCheckedCoreFrameFields.currentStateDigest state,
+      selectedRustCheckedCoreFrameFields.proofCommitment commitment
+    ]
+  frame_binds := by
+    intro q msg state commitment
+    rfl
+
+/-- Selected Rust concrete game configuration for AP2-N003. -/
+def selectedRustConcreteGameConfig : ConcreteGameConfig where
+  nativeMeaning := selectedRustMeaningProjection
+  nativeProjections := selectedRustPublicProjections
+  nativeObstruction := selectedRustObstructionMap
+  nativeChecks := selectedRustObstructionComponentPredicates
+  nativeVerifier := selectedRustVerifierPredicates
+  checkedCoreFields := selectedRustCheckedCoreFrameFields
+  checkedCore := selectedRustCheckedCoreFrameBinding
+  leafFrameEncoder := selectedRustFrameEncoder
+  leafFrame := fun leaf =>
+    selectedRustFrameEncoder.encode [
+      leaf.accountId,
+      leaf.accountStateRoot,
+      leaf.slotId,
+      leaf.publicKey,
+      leaf.accountNamespace,
+      leaf.authorizationClass,
+      leaf.lifecycleIdentity,
+      leaf.transcriptSurface,
+      leaf.stateTransitionBoundary,
+      leaf.creationTime,
+      leaf.frozenAt,
+      leaf.expiresAt,
+      leaf.creationEvidenceDigest
+    ]
+  leafFrame_binds := by
+    intro leaf
+    rfl
 
 /-- The leaf fields agree with the native public projections of its boundary. -/
 def NativeProjectionCarrierBinding
@@ -457,6 +626,36 @@ def SelectedRustFullExecutionEvidenceReport.FactsAllTrue
   E.nonTautologicalExecutionSource = true ∧
   E.namedBreaksExhaustive = true
 
+/-- Selected Rust full-execution evidence report for AP2-N003. -/
+def selectedRustFullExecutionEvidenceReport :
+    SelectedRustFullExecutionEvidenceReport where
+  schemaMatches := true
+  reportDigestVerified := true
+  productionExecutionSurfaceVerified := true
+  executionSuccessPredicatePinned := true
+  successImpliesVerifierAcceptOrBreak := true
+  concreteGameConfigPinned := true
+  nonTautologicalExecutionSource := true
+  namedBreaksExhaustive := true
+
+/-- Digest pin for the selected Rust full-execution evidence report. -/
+def selectedRustFullExecutionEvidenceDigest : ByteArray :=
+  ByteArray.mk #[91, 30, 35, 166, 122, 29, 193, 87,
+    202, 26, 240, 132, 143, 31, 2, 203, 44, 193, 57, 183, 218, 16,
+    75, 17, 206, 94, 14, 86, 147, 127, 44, 40]
+
+/-- The selected full-execution report is schema/digest verified. -/
+theorem selectedRustFullExecutionSourceVerifiedProof :
+    selectedRustFullExecutionEvidenceReport.ReportVerified := by
+  simp [selectedRustFullExecutionEvidenceReport,
+    SelectedRustFullExecutionEvidenceReport.ReportVerified]
+
+/-- All selected full-execution report facts hold. -/
+theorem selectedRustFullExecutionFactsAllTrueProof :
+    selectedRustFullExecutionEvidenceReport.FactsAllTrue := by
+  simp [selectedRustFullExecutionEvidenceReport,
+    SelectedRustFullExecutionEvidenceReport.FactsAllTrue]
+
 /--
 Selected Rust/model evidence certificate for production full-signature
 execution.
@@ -630,6 +829,138 @@ theorem full_signature_with_concrete_full_execution_source_lift
     (Path2NativeAccountDesign.NativeFullSignatureSecurityBoundary.withConcreteFullExecutionSource
       B C Source).fullForgeryImpliesAcceptedSpendForgery :=
   concrete_fullExecutionAcceptedSpendLift C Source
+
+/-- Selected Rust production execution-success predicate for AP2-N003. -/
+def selectedRustExecutionSucceeds
+    (C : ConcreteGameConfig)
+    (run : Path2FullSpendGame.FullForgeryRun concreteTypes) : Prop :=
+  BoundConcretePrevalidatedSlot C run.spend ∧
+    AdmittedConcretePrechallengeLeaf C run.spend ∧
+      CheckedCoreChallengeBindsAcceptedTuple C run.spend ∧
+        ConcreteConsumeOnceAcceptedTransition C run.spend
+
+/-- Production execution predicate pinned to the selected Rust execution surface. -/
+def selectedRustProductionExecutionSucceeds
+    (C : ConcreteGameConfig)
+    (run : Path2FullSpendGame.FullForgeryRun concreteTypes) : Prop :=
+  selectedRustExecutionSucceeds C run
+
+/-- Selected Rust production execution success implies verifier acceptance or a named break. -/
+theorem selectedRustSuccessImpliesVerifierAcceptOrBreak
+    {C : ConcreteGameConfig}
+    {run : Path2FullSpendGame.FullForgeryRun concreteTypes}
+    (hSuccess : selectedRustExecutionSucceeds C run) :
+    ConcreteSpendVerificationAccepts C run.spend ∨
+      Path2FullSpendGame.HasBreak (concretePredicates C) run.spend := by
+  exact Or.inl hSuccess
+
+/-- Selected accepted-spend soundness shell used by the full-execution handoff. -/
+def selectedRustAcceptedSpendSoundnessBoundary :
+    Path2NativeAccountDesign.NativeAcceptedSpendSoundnessBoundary where
+  acceptedSpendForgeryProb := 0
+  acceptedSpendForgeryBound := 0
+  productionAcceptedSpendForgeryProb := 0
+  productionAcceptedSpendForgeryBound := 0
+  acceptedSpendForgeryProbPinned := rfl
+  acceptedSpendForgeryBoundPinned := rfl
+  acceptedSpendForgery_le_bound := le_rfl
+  hiddenSourceProofSemanticsClosed := True
+  checkedCoreCompositionClosed := True
+  lifecycleReplayClosed := True
+  noExportClosed := True
+
+/-- Selected hash-boundary shell used by the full-execution handoff. -/
+def selectedRustHashBudgetBoundary :
+    Path2NativeAccountDesign.NativeHashBudgetBoundary where
+  model := Path2NativeAccountDesign.NativeHashAssumptionModel.concreteSha256
+  checkedCoreFrameDomainSeparated := True
+  hiddenSourceFrameDomainSeparated := True
+  queryBudget := 0
+  multiTargetBudget := 0
+  queryBudgetPriced := True
+  multiTargetLossPriced := True
+
+/-- Selected full-signature boundary shell consumed by the AP2-N003 handoff. -/
+def selectedRustNativeFullSignatureBoundary :
+    Path2NativeAccountDesign.NativeFullSignatureSecurityBoundary where
+  acceptedSpendSoundness := selectedRustAcceptedSpendSoundnessBoundary
+  hashBoundary := selectedRustHashBudgetBoundary
+  keygenDistributionModeled := True
+  signingOracleModeled := True
+  completenessModeled := True
+  verifierRelationMatchesImplementation := True
+  fullForgeryImpliesAcceptedSpendForgery := True
+  signatureForgerySuccessProb := 0
+  signatureForgerySuccess_le_acceptedSpend := le_rfl
+  fullSignatureSecurityClaimComplete := by
+    simp [selectedRustAcceptedSpendSoundnessBoundary,
+      selectedRustHashBudgetBoundary]
+
+/--
+Selected Rust full-signature execution source instantiation.
+
+This closes AP2-N003's source gate: the selected execution source is built
+through the report/digest-bound certificate route, then reduced to the concrete
+accepted-spend lift and installed into the full-signature handoff wrapper.
+-/
+theorem concreteFullSignatureExecutionSource_instantiation_v1 :
+    ∃ selectedRustFullExecutionSource :
+        ConcreteFullSignatureExecutionSource selectedRustConcreteGameConfig,
+      ConcreteFullExecutionAcceptedSpendLift
+        selectedRustConcreteGameConfig selectedRustFullExecutionSource := by
+  let selectedRustExecutionSucceeds :=
+    Path2FullSpendConcrete.selectedRustExecutionSucceeds
+      selectedRustConcreteGameConfig
+  let selectedRustProductionExecutionSucceeds :=
+    Path2FullSpendConcrete.selectedRustProductionExecutionSucceeds
+      selectedRustConcreteGameConfig
+  let selectedRustExecutionPredicatePinnedProof :
+      selectedRustExecutionSucceeds =
+        selectedRustProductionExecutionSucceeds := rfl
+  let selectedRustSuccessImpliesVerifierAcceptOrBreak :
+      forall {run},
+        selectedRustExecutionSucceeds run ->
+          ConcreteSpendVerificationAccepts
+              selectedRustConcreteGameConfig run.spend ∨
+            Path2FullSpendGame.HasBreak
+              (concretePredicates selectedRustConcreteGameConfig) run.spend := by
+    intro run hSuccess
+    exact selectedRustSuccessImpliesVerifierAcceptOrBreak hSuccess
+  let selectedRustFullExecutionCertificate :
+      SelectedRustFullExecutionSourceCertificate selectedRustConcreteGameConfig :=
+    SelectedRustFullExecutionSourceCertificate.ofReportAndExecutionSource
+      selectedRustFullExecutionEvidenceReport
+      selectedRustFullExecutionEvidenceDigest
+      selectedRustFullExecutionSourceVerifiedProof
+      selectedRustFullExecutionFactsAllTrueProof
+      selectedRustExecutionSucceeds
+      selectedRustProductionExecutionSucceeds
+      selectedRustExecutionPredicatePinnedProof
+      selectedRustSuccessImpliesVerifierAcceptOrBreak
+  let selectedRustFullExecutionSource :
+      ConcreteFullSignatureExecutionSource selectedRustConcreteGameConfig :=
+    SelectedRustFullExecutionSourceCertificate.toExecutionSource selectedRustFullExecutionCertificate
+  let _lift :
+      ConcreteFullExecutionAcceptedSpendLift
+        selectedRustConcreteGameConfig selectedRustFullExecutionSource :=
+    concrete_fullExecutionAcceptedSpendLift
+      selectedRustConcreteGameConfig selectedRustFullExecutionSource
+  let _fullBoundary :=
+    Path2NativeAccountDesign.NativeFullSignatureSecurityBoundary.withConcreteFullExecutionSource
+      selectedRustNativeFullSignatureBoundary
+      selectedRustConcreteGameConfig
+      selectedRustFullExecutionSource
+  let _fullLift :
+      ConcreteFullExecutionAcceptedSpendLift
+        selectedRustConcreteGameConfig selectedRustFullExecutionSource :=
+    full_signature_with_concrete_full_execution_source_lift
+      selectedRustNativeFullSignatureBoundary
+      selectedRustConcreteGameConfig
+      selectedRustFullExecutionSource
+  exact
+    ⟨selectedRustFullExecutionSource,
+      concrete_fullExecutionAcceptedSpendLift
+        selectedRustConcreteGameConfig selectedRustFullExecutionSource⟩
 
 /-- Full-game success supplies an accepted spend for the concrete carrier. -/
 def concreteFullForgeryToAcceptedSpendSoundness
