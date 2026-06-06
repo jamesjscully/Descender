@@ -1622,6 +1622,14 @@ projection digest comes from extracted account-projection lanes and
 `account_id` is the public account identity digest. Account binding remains in
 the native boundary/account projection reconstruction rather than this local
 validity predicate.
+The remaining canonical field equations show the same pattern more broadly:
+Rust's full-opening fields are digest commitments (`p_lifecycle_digest`,
+opening commitment, projection-carrier digest), while the current Lean selected
+model still compares them to scalar/context coordinates (`slotId`, live marker,
+`lifecycleAnchor`, `aggregationContextDigest`). This is an open model-alignment
+blocker. The next route should retarget `selectedBoundaryOf`,
+`selectedLocalValid`, and `selectedDescentConsistent` together to the actual
+Rust native-boundary frame instead of importing impossible equalities.
 The hard model certificate route now has a constructor:
 `ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate.ofCanonicalNativeSource`
 uses the shared-witness certificate, the field equality, and the canonical

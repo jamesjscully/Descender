@@ -1979,6 +1979,17 @@ account-projection lanes while `account_id` is the public account identity
 digest. That equality is not enforced by the active verifier and should not be
 part of the model; account binding is carried by native boundary reconstruction
 and the account projection digest instead.
+Continuing the same field audit exposed a broader coordinate mismatch that is
+still open: Rust sets `lifecycle_slot_digest = assembly.p_lifecycle_digest`,
+`opening_tuple_digest = creation_binding.opening_tuple_commitment`, and
+`projection_relation_digest = creation_binding.projection_relation_commitment`.
+The current selected Lean model still asks for those fields to equal
+context/live/descent coordinates such as `slotId`, `liveStatusMarker`,
+`lifecycleAnchor`, and `aggregationContextDigest`. Those are different Rust
+objects. The next proof step should retarget the selected `boundaryOf`,
+`localValid`, and `descentConsistent` definitions as one coordinated model
+change against the actual Rust native-boundary frame, rather than trying to
+prove impossible equalities one by one.
 Tooling note: the Rust source scanner's direct-constant-lambda check now clamps
 source windows to a UTF-8 character boundary before slicing; the prior byte
 slice could panic when a window ended inside Lean's `∧` token. The broad
