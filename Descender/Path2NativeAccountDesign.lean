@@ -1572,7 +1572,10 @@ structure SelectedRustAcceptedSpendSoundnessEvidenceReport where
   schemaMatches : Bool
   reportDigestVerified : Bool
   acceptedSpendNumericBoundPriced : Bool
-  acceptedSpendInequalityProved : Bool
+  finiteTraceSupportPriced : Bool
+  activeOutcomeCarrierPinned : Bool
+  activeBreakFamilyPinned : Bool
+  acceptedSpendUnionBoundPriced : Bool
   hiddenSourceClosureReady : Bool
   checkedCoreClosureReady : Bool
   lifecycleReplayClosureReady : Bool
@@ -1588,7 +1591,10 @@ def SelectedRustAcceptedSpendSoundnessEvidenceReport.ReportVerified
 def SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport) : Prop :=
   E.acceptedSpendNumericBoundPriced = true ∧
-  E.acceptedSpendInequalityProved = true ∧
+  E.finiteTraceSupportPriced = true ∧
+  E.activeOutcomeCarrierPinned = true ∧
+  E.activeBreakFamilyPinned = true ∧
+  E.acceptedSpendUnionBoundPriced = true ∧
   E.hiddenSourceClosureReady = true ∧
   E.checkedCoreClosureReady = true ∧
   E.lifecycleReplayClosureReady = true ∧

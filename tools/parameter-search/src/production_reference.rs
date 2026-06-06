@@ -28255,6 +28255,11 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "let selectedRustAcceptedSpendSoundnessCertificate :",
         "SelectedRustAcceptedSpendSoundnessCertificate",
         "SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound",
+        "acceptedSpendNumericBoundPriced",
+        "finiteTraceSupportPriced",
+        "activeOutcomeCarrierPinned",
+        "activeBreakFamilyPinned",
+        "acceptedSpendUnionBoundPriced",
         "selectedRustAcceptedSpendEvidenceReport",
         "selectedRustAcceptedSpendEvidenceDigest",
         "selectedRustAcceptedSpendBoundVerifiedProof",
@@ -51622,7 +51627,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
         { schemaMatches := true
           reportDigestVerified := true
           acceptedSpendNumericBoundPriced := true
-          acceptedSpendInequalityProved := true
+          finiteTraceSupportPriced := true
+          activeOutcomeCarrierPinned := true
+          activeBreakFamilyPinned := true
+          acceptedSpendUnionBoundPriced := true
           hiddenSourceClosureReady := true
           checkedCoreClosureReady := true
           lifecycleReplayClosureReady := true
@@ -51800,6 +51808,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     concrete_fullExecutionAcceptedSpendLift
   let _acceptedSpendNumericGame :=
     Path2AcceptedSpendProbability.AcceptedSpendNumericGame
+  let _acceptedSpendReportNumericBoundPriced :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendNumericBoundPriced
+  let _acceptedSpendReportFiniteTraceSupport :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.finiteTraceSupportPriced
+  let _acceptedSpendReportActiveOutcomeCarrier :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.activeOutcomeCarrierPinned
+  let _acceptedSpendReportActiveBreakFamily :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.activeBreakFamilyPinned
+  let _acceptedSpendReportUnionBoundPriced :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendUnionBoundPriced
   let _acceptedSpendFiniteTraceSupport :=
     PricedAcceptedSpendNumericCertificate.traceFintype
   let _acceptedSpendObservationMap :=
@@ -51978,6 +51996,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     concrete_fullExecutionAcceptedSpendLift
   let _acceptedSpendNumericGame :=
     Path2AcceptedSpendProbability.AcceptedSpendNumericGame
+  let _acceptedSpendReportNumericBoundPriced :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendNumericBoundPriced
+  let _acceptedSpendReportFiniteTraceSupport :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.finiteTraceSupportPriced
+  let _acceptedSpendReportActiveOutcomeCarrier :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.activeOutcomeCarrierPinned
+  let _acceptedSpendReportActiveBreakFamily :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.activeBreakFamilyPinned
+  let _acceptedSpendReportUnionBoundPriced :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendUnionBoundPriced
   let _acceptedSpendFiniteTraceSupport :=
     PricedAcceptedSpendNumericCertificate.traceFintype
   let _acceptedSpendObservationMap :=
