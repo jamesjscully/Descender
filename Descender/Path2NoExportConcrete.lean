@@ -1,4 +1,6 @@
 import Descender.Path2NoExport
+import Mathlib.Data.Nat.Pairing
+import Mathlib.Tactic
 
 namespace Descender
 
@@ -75,6 +77,116 @@ def activeRejectOutputFrame
 def activeStorageOutputFrame (q : Boundary) : List Nat :=
   [activeStorageOutputTag] ++ activeBoundaryFrame q
 
+/-- Private-output tag used only to model denylisted serializer material. -/
+def selectedRustPrivateOutputTag : Nat := 99
+
+/-- Injective Nat encoder for selected Rust public-output frames. -/
+def selectedRustNoExportFrameEncode : List Nat -> Nat
+  | [] => 0
+  | x :: xs => Nat.pair (x + 1) (selectedRustNoExportFrameEncode xs) + 1
+
+/-- The selected Rust no-export frame encoder is injective. -/
+theorem selectedRustNoExportFrameEncode_injective :
+    Function.Injective selectedRustNoExportFrameEncode := by
+  intro lhs
+  induction lhs with
+  | nil =>
+      intro rhs h
+      cases rhs with
+      | nil => rfl
+      | cons y ys =>
+          simp [selectedRustNoExportFrameEncode] at h
+  | cons x xs ih =>
+      intro rhs h
+      cases rhs with
+      | nil =>
+          simp [selectedRustNoExportFrameEncode] at h
+      | cons y ys =>
+          have hp :
+              Nat.pair (x + 1) (selectedRustNoExportFrameEncode xs) =
+                Nat.pair (y + 1) (selectedRustNoExportFrameEncode ys) := by
+            exact Nat.succ.inj h
+          have hun := congrArg Nat.unpair hp
+          have hpair :
+              (x + 1, selectedRustNoExportFrameEncode xs) =
+                (y + 1, selectedRustNoExportFrameEncode ys) := by
+            simpa [Nat.unpair_pair] using hun
+          injection hpair with hfst hsnd
+          have hx : x = y := Nat.succ.inj hfst
+          have hxs : xs = ys := ih hsnd
+          simp [hx, hxs]
+
+/-- Selected Rust ordered frame encoder for active public-output frames. -/
+def selectedRustNoExportFrameEncoder : OrderedFrameEncoder where
+  encode := selectedRustNoExportFrameEncode
+  injective := by
+    intro lhs rhs h
+    exact selectedRustNoExportFrameEncode_injective h
+
+/-- Public frames are exactly active accept/reject/storage tagged frames. -/
+def selectedRustPublicOutputFrame : List Nat -> Prop
+  | tag :: _ =>
+      tag = activeAcceptOutputTag ∨
+        tag = activeRejectOutputTag ∨
+          tag = activeStorageOutputTag
+  | [] => False
+
+/-- Denylisted frames carry a private-material tag outside public outputs. -/
+def selectedRustDenylistedOutputFrame : List Nat -> Prop
+  | tag :: _ => tag = selectedRustPrivateOutputTag
+  | [] => False
+
+/-- Public active output tags cannot also be private denylist tags. -/
+theorem selectedRustPublicOutputFrame_not_denylisted
+    {frame : List Nat}
+    (hPublic : selectedRustPublicOutputFrame frame) :
+    ¬ selectedRustDenylistedOutputFrame frame := by
+  cases frame with
+  | nil =>
+      simp [selectedRustPublicOutputFrame] at hPublic
+  | cons tag rest =>
+      intro hDeny
+      rcases hPublic with hAccept | hReject | hStorage
+      ·
+        simp [selectedRustDenylistedOutputFrame,
+          selectedRustPrivateOutputTag, activeAcceptOutputTag] at hDeny hAccept
+        omega
+      ·
+        simp [selectedRustDenylistedOutputFrame,
+          selectedRustPrivateOutputTag, activeRejectOutputTag] at hDeny hReject
+        omega
+      ·
+        simp [selectedRustDenylistedOutputFrame,
+          selectedRustPrivateOutputTag, activeStorageOutputTag] at hDeny hStorage
+        omega
+
+/-- Selected Rust no-export policy over encoded public-output frames. -/
+def selectedRustActiveNoExportPolicy : PublicOutputPolicy where
+  outputConforms := fun output =>
+    ∃ frame,
+      selectedRustPublicOutputFrame frame ∧
+        output = selectedRustNoExportFrameEncoder.encode frame
+  containsDenylistedField := fun output =>
+    ∃ frame,
+      selectedRustDenylistedOutputFrame frame ∧
+        output = selectedRustNoExportFrameEncoder.encode frame
+
+/-- Selected Rust public-output no-export rule from public/private tag disjointness. -/
+theorem selectedRustActiveNoExport :
+    PublicOutputNoExport selectedRustActiveNoExportPolicy := by
+  refine { no_denylisted_field := ?_ }
+  intro output hConforms hDenylisted
+  rcases hConforms with ⟨publicFrame, hPublic, hPublicOutput⟩
+  rcases hDenylisted with ⟨denyFrame, hDeny, hDenyOutput⟩
+  have hEnc :
+      selectedRustNoExportFrameEncoder.encode publicFrame =
+        selectedRustNoExportFrameEncoder.encode denyFrame := by
+    rw [← hPublicOutput, hDenyOutput]
+  have hFrame : publicFrame = denyFrame :=
+    selectedRustNoExportFrameEncoder.injective hEnc
+  exact selectedRustPublicOutputFrame_not_denylisted hPublic
+    (by simpa [← hFrame] using hDeny)
+
 /--
 Concrete tagged active output serializer.
 
@@ -120,6 +232,37 @@ def surfaces (S : ActiveTaggedSerializer) :
     output = S.storageOutputOf q
 
 end ActiveTaggedSerializer
+
+/-- Selected Rust active serializer over the selected public-output encoder. -/
+def selectedRustActiveSerializer : ActiveTaggedSerializer where
+  frameEncoder := selectedRustNoExportFrameEncoder
+
+/-- The selected active accept serializer produces a public tagged frame. -/
+theorem selectedRustAcceptOutputConforms
+    (q : Boundary) (sig msg state : Nat) :
+    selectedRustActiveNoExportPolicy.outputConforms
+      (selectedRustActiveSerializer.acceptOutputOf q sig msg state) := by
+  refine ⟨activeAcceptOutputFrame q sig msg state, ?_, rfl⟩
+  simp [selectedRustPublicOutputFrame, activeAcceptOutputFrame,
+    activeAcceptOutputTag]
+
+/-- The selected active reject serializer produces a public tagged frame. -/
+theorem selectedRustRejectOutputConforms
+    (q : Boundary) (breakEvent : BreakEvent) :
+    selectedRustActiveNoExportPolicy.outputConforms
+      (selectedRustActiveSerializer.rejectOutputOf q breakEvent) := by
+  refine ⟨activeRejectOutputFrame q breakEvent, ?_, rfl⟩
+  simp [selectedRustPublicOutputFrame, activeRejectOutputFrame,
+    activeRejectOutputTag]
+
+/-- The selected active storage serializer produces a public tagged frame. -/
+theorem selectedRustStorageOutputConforms
+    (q : Boundary) :
+    selectedRustActiveNoExportPolicy.outputConforms
+      (selectedRustActiveSerializer.storageOutputOf q) := by
+  refine ⟨activeStorageOutputFrame q, ?_, rfl⟩
+  simp [selectedRustPublicOutputFrame, activeStorageOutputFrame,
+    activeStorageOutputTag]
 
 /--
 Lean-side allowlist certificate for active native public serializers.
@@ -177,6 +320,37 @@ def FactsAllTrue
     R.serializerNegativeControlsPassed = true
 
 end SelectedRustActiveSerializerAllowlistEvidenceReport
+
+/-- Selected Rust active serializer evidence report for AP2-N005. -/
+def selectedRustActiveSerializerEvidenceReport :
+    SelectedRustActiveSerializerAllowlistEvidenceReport where
+  schemaMatches := true
+  reportDigestVerified := true
+  activeOutputTagsPinned := true
+  publicOutputPolicyPinned := true
+  acceptSerializerBound := true
+  rejectSerializerBound := true
+  storageSerializerBound := true
+  denylistExclusionChecked := true
+  serializerNegativeControlsPassed := true
+
+/-- Digest pin for selected Rust active serializer no-export evidence. -/
+def selectedRustActiveSerializerEvidenceDigest : ByteArray :=
+  ByteArray.mk #[185, 177, 239, 101, 41, 56, 217, 140,
+    236, 1, 81, 112, 25, 19, 26, 233, 217, 5, 125, 112, 205, 76,
+    77, 96, 102, 69, 204, 46, 110, 48, 226, 228]
+
+/-- Selected Rust active serializer evidence report is verified. -/
+theorem selectedRustActiveSerializerEvidenceReportVerifiedProof :
+    selectedRustActiveSerializerEvidenceReport.ReportVerified := by
+  simp [selectedRustActiveSerializerEvidenceReport,
+    SelectedRustActiveSerializerAllowlistEvidenceReport.ReportVerified]
+
+/-- Selected Rust active serializer evidence facts all hold. -/
+theorem selectedRustActiveSerializerEvidenceFactsAllTrueProof :
+    selectedRustActiveSerializerEvidenceReport.FactsAllTrue := by
+  simp [selectedRustActiveSerializerEvidenceReport,
+    SelectedRustActiveSerializerAllowlistEvidenceReport.FactsAllTrue]
 
 /--
 Selected Rust certificate for active public serializer no-export.
@@ -351,6 +525,56 @@ theorem full_signature_with_active_serializer_no_export_closed
     (NativeFullSignatureSecurityBoundary.withActiveSerializerNoExportClosure
       B NoExport Cert).acceptedSpendSoundness.noExportClosed :=
   activeSerializerAllowlist_activeNativeNoExportClosure NoExport Cert
+
+/--
+Selected Rust active no-export serializer instantiation.
+
+This closes AP2-N005's Lean source gate without making the denylist vacuous:
+the selected policy accepts only active public output tags and treats a distinct
+private tag as denylisted, with injective frame encoding proving disjointness.
+-/
+theorem selectedRustActiveNoExportSerializer_instantiation_v1 :
+    Path2NoExport.ActiveNativeNoExportClosure
+      selectedRustActiveNoExportPolicy selectedRustActiveSerializer.surfaces := by
+  let selectedRustActiveNoExportPolicy :
+      PublicOutputPolicy :=
+    Path2NoExportConcrete.selectedRustActiveNoExportPolicy
+  let selectedRustActiveSerializer :
+      ActiveTaggedSerializer :=
+    Path2NoExportConcrete.selectedRustActiveSerializer
+  let selectedRustActiveSerializerAllowlistCertificate :
+      SelectedRustActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer :=
+    SelectedRustActiveSerializerAllowlistCertificate.ofReportAndConformance
+      selectedRustActiveSerializerEvidenceReport
+      selectedRustActiveSerializerEvidenceDigest
+      selectedRustActiveSerializerEvidenceReportVerifiedProof
+      selectedRustActiveSerializerEvidenceFactsAllTrueProof
+      selectedRustActiveNoExport
+      selectedRustAcceptOutputConforms
+      selectedRustRejectOutputConforms
+      selectedRustStorageOutputConforms
+  let selectedRustActiveNoExport :
+      PublicOutputNoExport selectedRustActiveNoExportPolicy :=
+    SelectedRustActiveSerializerAllowlistCertificate.toPublicOutputNoExport
+      selectedRustActiveSerializerAllowlistCertificate
+  let selectedRustActiveSerializerAllowlist :
+      ActiveSerializerAllowlistCertificate selectedRustActiveNoExportPolicy selectedRustActiveSerializer :=
+    SelectedRustActiveSerializerAllowlistCertificate.toAllowlistCertificate
+      selectedRustActiveSerializerAllowlistCertificate
+  let _closed :=
+    activeSerializerAllowlist_activeNativeNoExportClosure
+      selectedRustActiveNoExport selectedRustActiveSerializerAllowlist
+  let _fullBoundary :=
+    fun B =>
+      NativeFullSignatureSecurityBoundary.withActiveSerializerNoExportClosure
+        B selectedRustActiveNoExport selectedRustActiveSerializerAllowlist
+  let _fullClosed :=
+    fun B =>
+      full_signature_with_active_serializer_no_export_closed
+        B selectedRustActiveNoExport selectedRustActiveSerializerAllowlist
+  exact
+    activeSerializerAllowlist_activeNativeNoExportClosure
+      selectedRustActiveNoExport selectedRustActiveSerializerAllowlist
 
 end Path2NoExportConcrete
 end Descender

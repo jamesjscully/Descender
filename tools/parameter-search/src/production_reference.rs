@@ -51884,8 +51884,8 @@ end Path2NoExportConcrete
         assert!(path2_no_export_serializer_instantiated_in_source_v1(
             &suffixed_then_exact_no_export_instantiation
         ));
-        assert!(!path2_no_export_serializer_instantiated_v1());
-        assert!(!preflight.no_export_serializer_instantiated);
+        assert!(path2_no_export_serializer_instantiated_v1());
+        assert!(preflight.no_export_serializer_instantiated);
         assert!(path2_native_signer_verifier_pipeline_source_present_v1());
         assert!(!path2_native_signer_verifier_pipeline_productized_v1());
         assert!(!preflight.signer_verifier_pipeline_present);
@@ -51901,7 +51901,6 @@ end Path2NoExportConcrete
             vec![
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND,
-                PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
@@ -51932,7 +51931,7 @@ end Path2NoExportConcrete
             !rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE)
         );
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
-        assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS));
+        assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS));
         assert!(rendered.contains("active native signer/verifier pipeline"));
     }
 
@@ -53171,7 +53170,6 @@ end Path2NoExportConcrete
             vec![
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND,
-                PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
@@ -53294,7 +53292,7 @@ end Path2NoExportConcrete
                 .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND)
         );
         assert!(
-            evidence
+            !evidence
                 .deployment_blockers
                 .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS)
         );
@@ -53336,7 +53334,7 @@ end Path2NoExportConcrete
             rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE)
         );
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
-        assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS));
+        assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE));
