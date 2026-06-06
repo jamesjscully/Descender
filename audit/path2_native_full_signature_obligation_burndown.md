@@ -1390,6 +1390,13 @@ digests, or bare `True` prerequisite closures behind the selected
 accepted-spend names. This is a fail-closed scanner hardening only: the active
 numeric-bound theorem remains open until production accepted-spend evidence
 provides non-vacuous numeric values and the corresponding inequality proof.
+`Path2AcceptedSpendProbability.lean` now adds the finite numeric layer for this
+handoff: `AcceptedSpendNumericGame` proves that full-signature success
+probability is bounded by the union over the reduced accepted-spend event and
+the finite family of named break events, and `successProb_le_pricedBound`
+threads any production-priced upper bound through that union expression. The
+accepted-spend source gate now requires this layer, so future closure must
+consume the probability game rather than only raw `ℝ` fields.
 `selectedRustActiveNoExportSerializer_instantiation_v1` now follows the same
 exact-name/all-candidate pattern for the active no-export serializer gate.
 The full-execution boundary-presence check now also requires an exact

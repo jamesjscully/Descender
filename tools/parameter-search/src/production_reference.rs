@@ -27605,9 +27605,11 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_v1() -> bool {
     let checked_core_bridge_source =
         include_str!("../../../Descender/Path2CheckedCoreByteBridge.lean");
     let full_spend_concrete_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    let accepted_spend_probability_source =
+        include_str!("../../../Descender/Path2AcceptedSpendProbability.lean");
     let no_export_concrete_source = include_str!("../../../Descender/Path2NoExportConcrete.lean");
     let accepted_spend_sources = format!(
-        "{account_design_source}\n{hidden_source_boundary_source}\n{checked_core_bridge_source}\n{full_spend_concrete_source}\n{no_export_concrete_source}"
+        "{account_design_source}\n{hidden_source_boundary_source}\n{checked_core_bridge_source}\n{full_spend_concrete_source}\n{accepted_spend_probability_source}\n{no_export_concrete_source}"
     );
     path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(&accepted_spend_sources)
 }
@@ -28216,6 +28218,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "accepted_spend_with_selected_rust_checked_core_closure_closed",
         "concreteFullSignatureExecutionSource_instantiation_v1",
         "concrete_fullExecutionAcceptedSpendLift",
+        "Path2AcceptedSpendProbability",
+        "AcceptedSpendNumericGame",
+        "successProb_le_acceptedSpendOrBreakUnionBound",
+        "successProb_le_pricedBound",
         "selectedRustActiveNoExportSerializer_instantiation_v1",
         "activeSerializerAllowlist_boundaryNoExportClosed",
         "let selectedRustAcceptedSpendSoundnessCertificate :",
@@ -51754,6 +51760,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     concreteFullSignatureExecutionSource_instantiation_v1
   let _lifecycleLift :=
     concrete_fullExecutionAcceptedSpendLift
+  let _acceptedSpendNumericGame :=
+    Path2AcceptedSpendProbability.AcceptedSpendNumericGame
+  let _acceptedSpendUnionBound :=
+    AcceptedSpendNumericGame.successProb_le_acceptedSpendOrBreakUnionBound
+  let _acceptedSpendPricedBound :=
+    AcceptedSpendNumericGame.successProb_le_pricedBound
   let _noExportInstantiation :=
     selectedRustActiveNoExportSerializer_instantiation_v1
   let _noExportClosure :=
@@ -51894,6 +51906,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     concreteFullSignatureExecutionSource_instantiation_v1
   let _lifecycleLift :=
     concrete_fullExecutionAcceptedSpendLift
+  let _acceptedSpendNumericGame :=
+    Path2AcceptedSpendProbability.AcceptedSpendNumericGame
+  let _acceptedSpendUnionBound :=
+    AcceptedSpendNumericGame.successProb_le_acceptedSpendOrBreakUnionBound
+  let _acceptedSpendPricedBound :=
+    AcceptedSpendNumericGame.successProb_le_pricedBound
   let _noExportInstantiation :=
     selectedRustActiveNoExportSerializer_instantiation_v1
   let _noExportClosure :=
