@@ -948,13 +948,15 @@ digests. The current active output verifies all six Rust evidence reports and
 all component facts, but keeps AP2-N001 fail-closed:
 `extractor_theorem_instantiated = false`,
 `semantics_bridge_complete = false`, checklist digest
-`1c833fe6fb4f15432aa0273176fb2faa41bf3c7e2bc85570e386848162d62582`, and
+`a3343d6a79b93f65439a12cbae1dc0bb1cfcca62afedb5f5707dade64eb6b806`, and
 missing categories `predicate_model_certificate_definitions`,
-`source_record_definitions`, and `sub_evidence_digest_match_proof`. The
+`source_record_definitions`, `source_record_evidence_source_bindings`, and
+`sub_evidence_digest_match_proof`. The
 selected Lean report/proof definitions
 now alias verifier-backed Rust evidence, so the highest-risk remaining proof
-work is to import selected source-record certificates and prove the aggregate
-five-source report's sub-digests match those five certificates.
+work is to import selected source-record certificates, bind each imported
+source record to the public evidence that claims to certify it, and prove the
+aggregate five-source report's sub-digests match those five certificates.
 The active source scanner now preserves UTF-8 Lean symbols during
 comment/string stripping, so conjunction-heavy propositions are checked against
 the actual stripped Lean source rather than byte-corrupted marker text. The
@@ -995,6 +997,16 @@ scoped to the actual `ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource
 field types. A regression fixture aliases the payload antivacuity field type;
 the corresponding target bit now fails closed unless the source record carries
 the concrete non-vacuity proposition.
+The concrete-definition checklist now has an explicit
+`source_record_evidence_source_bindings_present` category. This keeps
+`all_definitions_present` false even for a synthetic fixture that supplies
+arbitrary source terms and constructor-shaped certificates, unless the proof
+also supplies selected evidence/source binding definitions for the boundary
+base, role-root/lift, source-route, field/local, and shared-witness source
+families. Current selected digests are checklist
+`a3343d6a79b93f65439a12cbae1dc0bb1cfcca62afedb5f5707dade64eb6b806` and
+five-source evidence
+`2ebca7cbd99496966c25a71f05cd1d7d914d69728e1a6b98e9e97a79293286c2`.
 The aggregate digest import also exposed a source-hash circularity constraint:
 the current Rust aggregate evidence digest is
 `146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the

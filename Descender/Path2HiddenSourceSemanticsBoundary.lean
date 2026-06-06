@@ -636,9 +636,9 @@ sub-evidence digest matching are imported.
 def verifierBackedSelectedRustFiveSourceEvidenceReport :
     ReviewedFq12SelectedRustFiveSourceClosureEvidence where
   schemaMatches := true
-  bridgeAuditDigest := ByteArray.mk #[125, 229, 228, 169, 136, 54, 188,
-    128, 138, 202, 39, 36, 89, 139, 221, 64, 253, 232, 8, 10, 39, 108, 49,
-    63, 215, 193, 103, 72, 214, 142, 34, 53]
+  bridgeAuditDigest := ByteArray.mk #[87, 147, 69, 141, 192, 196, 118,
+    158, 90, 146, 148, 102, 64, 206, 65, 40, 28, 147, 48, 158, 58, 241,
+    139, 94, 114, 98, 229, 38, 111, 228, 255, 255]
   bridgeAuditDigestBound := true
   hashByteDomainEvidenceDigest := ByteArray.mk #[23, 215, 160, 136, 150, 70,
     25, 35, 33, 177, 125, 177, 122, 119, 78, 13, 155, 114, 16, 80, 84,
@@ -1194,9 +1194,9 @@ theorem selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_forces_empt
 
 /-- Concrete digest of the public Rust five-source evidence report. -/
 def selectedRustFiveSourceEvidenceDigest : ByteArray :=
-  ByteArray.mk #[220, 228, 8, 138, 204, 164, 23, 230, 150, 121, 152, 216,
-    114, 107, 80, 137, 22, 61, 113, 253, 255, 108, 27, 5, 206, 53, 252,
-    131, 208, 110, 197, 145]
+  ByteArray.mk #[46, 188, 167, 203, 217, 148, 150, 150, 108, 37, 167, 31,
+    5, 205, 29, 125, 145, 77, 105, 114, 142, 26, 107, 152, 233, 233, 122,
+    121, 41, 50, 134, 194]
 
 /-- Concrete digest of the public Rust base-boundary evidence report. -/
 def selectedRustBoundaryBaseEvidenceDigest : ByteArray :=

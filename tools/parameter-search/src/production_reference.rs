@@ -7544,6 +7544,7 @@ pub struct Path2SelectedRustModelConcreteDefinitionChecklistV1 {
     pub predicate_model_certificate_definition_present: bool,
     pub predicate_model_certificate_definitions_present: bool,
     pub source_record_definitions_present: bool,
+    pub source_record_evidence_source_bindings_present: bool,
     pub sub_evidence_digest_match_proof_present: bool,
     pub all_definitions_present: bool,
     pub missing_definition_category_count: u8,
@@ -10407,9 +10408,10 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             predicate_model_certificate_definition_present: false,
             predicate_model_certificate_definitions_present: false,
             source_record_definitions_present: false,
+            source_record_evidence_source_bindings_present: false,
             sub_evidence_digest_match_proof_present: false,
             all_definitions_present: false,
-            missing_definition_category_count: 6,
+            missing_definition_category_count: 7,
         };
     }
     let boundary_source = lean_source_without_comments_and_strings_v1(boundary_source);
@@ -10699,6 +10701,50 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             "selectedRustFullOpeningBridgeDigestValidityBinds",
         ),
     ];
+    let source_record_evidence_source_bindings = [
+        (
+            "selectedRustBoundaryBaseEvidenceSourceBinding",
+            &[
+                "selectedRustBoundaryBaseEvidenceReport",
+                "selectedRustPayloadProjectionLaw",
+                "selectedRustExtractionCertificateAvailability",
+                "sourceBindingDigest",
+            ][..],
+        ),
+        (
+            "selectedRustRoleRootLiftEvidenceSourceBinding",
+            &[
+                "selectedRustRoleRootLiftEvidenceReport",
+                "selectedRustRoleRootLiftSource",
+                "sourceBindingDigest",
+            ][..],
+        ),
+        (
+            "selectedRustSourceRouteEvidenceSourceBinding",
+            &[
+                "selectedRustSourceRouteEvidenceReport",
+                "selectedRustSourceRouteByteSource",
+                "sourceBindingDigest",
+            ][..],
+        ),
+        (
+            "selectedRustFieldLocalEvidenceSourceBinding",
+            &[
+                "selectedRustFieldLocalEvidenceReport",
+                "selectedRustAssemblySource",
+                "selectedRustCompatibilitySource",
+                "sourceBindingDigest",
+            ][..],
+        ),
+        (
+            "selectedRustSharedWitnessEvidenceSourceBinding",
+            &[
+                "selectedRustSharedFrameWitnessEvidenceReport",
+                "selectedRustSharedFrameWitnessSources",
+                "sourceBindingDigest",
+            ][..],
+        ),
+    ];
     let evidence_report_definitions_present =
         evidence_report_definitions.iter().all(|(name, markers)| {
             lean_source_has_selected_rust_definition_with_markers_v1(
@@ -10814,6 +10860,15 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             && predicate_model_facts_proof_definition_present
             && predicate_model_certificate_definition_present
             && native_boundary_concrete_predicate_model_present;
+    let source_record_evidence_source_bindings_present = source_record_evidence_source_bindings
+        .iter()
+        .all(|(name, markers)| {
+            lean_source_has_selected_rust_definition_with_markers_v1(
+                &boundary_source,
+                name,
+                markers,
+            )
+        });
     let sub_evidence_digest_match_proof_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -10838,6 +10893,7 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         && predicate_model_certificate_definitions_present
         && native_boundary_concrete_predicate_model_present
         && source_record_definitions_present
+        && source_record_evidence_source_bindings_present
         && sub_evidence_digest_match_proof_present;
     let missing_definition_category_count = [
         evidence_report_definitions_present,
@@ -10845,6 +10901,7 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         evidence_proof_definitions_present,
         predicate_model_certificate_definitions_present,
         source_record_definitions_present,
+        source_record_evidence_source_bindings_present,
         sub_evidence_digest_match_proof_present,
     ]
     .iter()
@@ -10860,6 +10917,7 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         predicate_model_certificate_definition_present,
         predicate_model_certificate_definitions_present,
         source_record_definitions_present,
+        source_record_evidence_source_bindings_present,
         sub_evidence_digest_match_proof_present,
         all_definitions_present,
         missing_definition_category_count,
@@ -10910,6 +10968,11 @@ pub fn path2_selected_rust_model_concrete_definition_checklist_v1_frame(
         &mut frame,
         b"source_record_definitions_present",
         u64::from(checklist.source_record_definitions_present),
+    );
+    append_u64(
+        &mut frame,
+        b"source_record_evidence_source_bindings_present",
+        u64::from(checklist.source_record_evidence_source_bindings_present),
     );
     append_u64(
         &mut frame,
@@ -58424,11 +58487,12 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(!concrete_definition_checklist.predicate_model_certificate_definition_present);
         assert!(!concrete_definition_checklist.predicate_model_certificate_definitions_present);
         assert!(!concrete_definition_checklist.source_record_definitions_present);
+        assert!(!concrete_definition_checklist.source_record_evidence_source_bindings_present);
         assert!(!concrete_definition_checklist.sub_evidence_digest_match_proof_present);
         assert!(!concrete_definition_checklist.all_definitions_present);
         assert_eq!(
             concrete_definition_checklist.missing_definition_category_count,
-            3
+            4
         );
         let predicate_model_evidence =
             path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1().unwrap();
@@ -59358,7 +59422,7 @@ def selectedRustFiveSourceSubEvidenceDigestsMatchProof := spoof
         assert!(!spoofed_concrete_definition_checklist.all_definitions_present);
         assert_eq!(
             spoofed_concrete_definition_checklist.missing_definition_category_count,
-            6
+            7
         );
         let untyped_report_definition_source = r#"
 def selectedRustFiveSourceEvidenceReport := selectedRustFiveSourceEvidenceReportValue
@@ -59913,11 +59977,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             !complete_concrete_definition_checklist.predicate_model_certificate_definitions_present
         );
         assert!(complete_concrete_definition_checklist.source_record_definitions_present);
+        assert!(
+            !complete_concrete_definition_checklist.source_record_evidence_source_bindings_present
+        );
         assert!(complete_concrete_definition_checklist.sub_evidence_digest_match_proof_present);
         assert!(!complete_concrete_definition_checklist.all_definitions_present);
         assert_eq!(
             complete_concrete_definition_checklist.missing_definition_category_count,
-            1
+            2
         );
         let complete_model_and_definition_source = format!(
             "{complete_native_boundary_model_source}\n{complete_concrete_definition_source}"
@@ -59929,10 +59996,13 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(
             complete_model_and_definition_checklist.predicate_model_certificate_definitions_present
         );
-        assert!(complete_model_and_definition_checklist.all_definitions_present);
+        assert!(
+            !complete_model_and_definition_checklist.source_record_evidence_source_bindings_present
+        );
+        assert!(!complete_model_and_definition_checklist.all_definitions_present);
         assert_eq!(
             complete_model_and_definition_checklist.missing_definition_category_count,
-            0
+            1
         );
         let anonymous_predicate_model_certificate_source = complete_concrete_definition_source
             .replacen(

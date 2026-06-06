@@ -913,15 +913,17 @@ confirms that all six selected Rust evidence reports verify and have all facts
 true, while the Lean closure remains fail-closed with
 `extractor_theorem_instantiated = false`,
 `semantics_bridge_complete = false`, checklist digest
-`f40bb2869f37e27f7a1870940893a8fd8df2e8b4c16aebb1d4832a2da1907673`, and
-exactly three missing active categories:
+`a3343d6a79b93f65439a12cbae1dc0bb1cfcca62afedb5f5707dade64eb6b806`, and
+exactly four missing active categories:
 `predicate_model_certificate_definitions`, `source_record_definitions`, and
+`source_record_evidence_source_bindings`, and
 `sub_evidence_digest_match_proof`. The selected Lean report/proof definitions
 now alias verifier-backed Rust evidence, so `evidence_proof_definitions` is no
 longer a blocker. The remaining proof-completeness work is to import the
-selected source-record certificates and prove that the aggregate five-source
-report's sub-digests match the five component certificates, without reviving
-any inactive path.
+selected source-record certificates, bind each imported source record to the
+public evidence that claims to certify it, and prove that the aggregate
+five-source report's sub-digests match the five component certificates,
+without reviving any inactive path.
 The current selected aggregate evidence digest is
 `146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the
 current bridge-audit digest embedded in the Rust-generated aggregate report is
@@ -1498,7 +1500,8 @@ still reports these six target bits true for the active Lean source, while the
 actual closure blockers remain unchanged:
 `predicate_model = false`, `missing_selected_source_record_count = 13`, and
 missing categories `predicate_model_certificate_definitions`,
-`source_record_definitions`, and `sub_evidence_digest_match_proof`.
+`source_record_definitions`, `source_record_evidence_source_bindings`, and
+`sub_evidence_digest_match_proof`.
 The same declaration-scoped body-prefix treatment now covers the downstream
 role-lift, assembly, compatibility, and aggregate full-opening bridge target
 obligations that feed `full_opening_and_assembly_model_pinned` and
@@ -1526,6 +1529,16 @@ scoped to the actual `ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource
 field types. A regression fixture aliases the payload antivacuity field type;
 the corresponding target bit now fails closed unless the source record carries
 the concrete non-vacuity proposition.
+The concrete-definition checklist now has an explicit
+`source_record_evidence_source_bindings_present` category. This keeps
+`all_definitions_present` false even for a synthetic fixture that supplies
+arbitrary source terms and constructor-shaped certificates, unless the proof
+also supplies selected evidence/source binding definitions for the boundary
+base, role-root/lift, source-route, field/local, and shared-witness source
+families. Current selected digests are checklist
+`a3343d6a79b93f65439a12cbae1dc0bb1cfcca62afedb5f5707dade64eb6b806` and
+five-source evidence
+`2ebca7cbd99496966c25a71f05cd1d7d914d69728e1a6b98e9e97a79293286c2`.
 
 ## Findings
 
