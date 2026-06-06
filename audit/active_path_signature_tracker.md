@@ -1802,7 +1802,9 @@ family and the five-field hard-extraction subfamily through
 `ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate`
 and `ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate`, so
 downstream source-record construction can consume the proof-bearing certificate
-surface instead of reaching into raw provider records.
+surface instead of reaching into raw provider records. The Rust source audit
+pins that projection with
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_certificate_projection_present`.
 
 ## Findings
 

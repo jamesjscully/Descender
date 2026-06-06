@@ -1538,3 +1538,5 @@ Lean now projects both the full reviewed-Fq12 provider family and this
 five-field hard subgroup through the field-source package certificate and the
 predicate-model certificate. That keeps the next AP2-N001 construction aimed at
 the proof-bearing certificate boundary rather than raw provider-record access.
+The Rust source audit pins those projections with
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_certificate_projection_present`.

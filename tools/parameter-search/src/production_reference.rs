@@ -7592,6 +7592,8 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_predicate_model_reviewed_fq12_provider_family_target_present: bool,
     pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_family_target_present:
         bool,
+    pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_certificate_projection_present:
+        bool,
     pub native_boundary_predicate_model_core_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_transparent_trace_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present: bool,
@@ -9276,6 +9278,35 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             "Sources.toReviewedFq12PredicateFieldSources.toHardExtractionPredicateFieldSources",
             4096,
         );
+    let native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_certificate_projection_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "toReviewedFq12HardExtractionPredicateFieldSources",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate",
+                "ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources",
+            ],
+            "Cert.predicateFieldSources.toReviewedFq12HardExtractionPredicateFieldSources",
+            4096,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "toReviewedFq12HardExtractionPredicateFieldSources",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+                "ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources",
+            ],
+            "Cert.predicateFieldSourceCertificate.toReviewedFq12HardExtractionPredicateFieldSources",
+            4096,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "toReviewedFq12PredicateFieldSources",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+                "ReviewedFq12SelectedRustNativeBoundaryReviewedFq12PredicateFieldSources",
+            ],
+            "Cert.predicateFieldSourceCertificate.toReviewedFq12PredicateFieldSources",
+            4096,
+        );
     let native_boundary_predicate_model_evidence_report_target_present =
         lean_source_has_named_declaration_with_markers_v1(
             &boundary_source,
@@ -10908,6 +10939,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_predicate_model_forbidden_vacuous_literals_present,
         native_boundary_predicate_model_reviewed_fq12_provider_family_target_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_family_target_present,
+        native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_certificate_projection_present,
         native_boundary_predicate_model_core_provider_fields_defined_present,
         native_boundary_predicate_model_transparent_trace_provider_fields_defined_present,
         native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present,
@@ -59838,6 +59870,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(
             source_record_subcheck
                 .native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_family_target_present
+        );
+        assert!(
+            source_record_subcheck
+                .native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_certificate_projection_present
         );
         assert!(
             !source_record_subcheck
