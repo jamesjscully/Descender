@@ -1425,6 +1425,12 @@ full-forgery game.
 `Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
 active full-spend named breaks, so the numeric game can index its union bound by
 the actual active break family.
+`SelectedRustFullSignatureReductionCertificate` now consumes the proof-bearing
+`SelectedRustAcceptedSpendSoundnessCertificate` directly and derives the erased
+accepted-spend boundary internally. The full-reduction source gate requires a
+named `selectedRustAcceptedSpendCertificate`, preventing the final theorem from
+discarding the active numeric trace/outcome and bad-event pins before building
+the full-signature boundary.
 `selectedRustActiveNoExportSerializer_instantiation_v1` now follows the same
 exact-name/all-candidate pattern for the active no-export serializer gate.
 The full-execution boundary-presence check now also requires an exact

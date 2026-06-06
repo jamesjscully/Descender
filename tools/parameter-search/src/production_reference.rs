@@ -27651,7 +27651,8 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "evidenceDigest",
         "selectedRustFullSignatureReductionVerifiedProof",
         "selectedRustFullSignatureReductionFactsAllTrueProof",
-        "acceptedSpendSoundness : NativeAcceptedSpendSoundnessBoundary",
+        "acceptedSpendCertificate : SelectedRustAcceptedSpendSoundnessCertificate",
+        "toAcceptedSpendSoundnessBoundary",
         "hashBoundary : NativeHashBudgetBoundary",
         "productionSignatureForgerySuccessProb",
         "signatureForgerySuccessProbPinned",
@@ -27697,6 +27698,7 @@ fn path2_full_signature_reduction_certificate_instantiated_in_source_v1(
         "selectedRustFullSignatureReductionEvidenceDigest",
         "selectedRustFullSignatureReductionVerifiedProof",
         "selectedRustFullSignatureReductionFactsAllTrueProof",
+        "selectedRustAcceptedSpendCertificate",
         "selectedRustAcceptedSpendSoundness",
         "selectedRustActiveHashBoundary",
         "selectedRustSignatureForgerySuccessProb",
@@ -27865,6 +27867,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionEvidenceDigest",
         "selectedRustFullSignatureReductionVerifiedProof",
         "selectedRustFullSignatureReductionFactsAllTrueProof",
+        "selectedRustAcceptedSpendCertificate",
         "selectedRustAcceptedSpendSoundness",
         "selectedRustActiveHashBoundary",
         "selectedRustSignatureForgerySuccessProb",
@@ -27940,6 +27943,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustFullSignatureReductionEvidenceDigest",
         "selectedRustFullSignatureReductionVerifiedProof",
         "selectedRustFullSignatureReductionFactsAllTrueProof",
+        "selectedRustAcceptedSpendCertificate",
         "selectedRustAcceptedSpendSoundness",
         "selectedRustActiveHashBoundary",
         "selectedRustSignatureForgerySuccessProb",
@@ -51048,9 +51052,11 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     full_signature_with_concrete_full_execution_source_lift
   let _acceptedSpendNumericGate :=
     selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1
+  let selectedRustAcceptedSpendCertificate :=
+    selectedRustAcceptedSpendSoundnessCertificate
   let selectedRustAcceptedSpendSoundness :=
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
-      selectedRustAcceptedSpendSoundnessCertificate
+      selectedRustAcceptedSpendCertificate
   let selectedRustActiveHashBoundary :=
     activeNativeHashBudgetBoundary
   let _activeHashBoundaryProps :=
@@ -51071,7 +51077,7 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustFullSignatureReductionEvidenceDigest
       selectedRustFullSignatureReductionVerifiedProof
       selectedRustFullSignatureReductionFactsAllTrueProof
-      selectedRustAcceptedSpendSoundness
+      selectedRustAcceptedSpendCertificate
       selectedRustActiveHashBoundary
       selectedRustSignatureForgerySuccessProb
       selectedRustProductionSignatureForgerySuccessProb
@@ -51114,9 +51120,11 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     full_signature_with_concrete_full_execution_source_lift
   let _acceptedSpendNumericGate :=
     selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1
+  let selectedRustAcceptedSpendCertificate :=
+    selectedRustAcceptedSpendSoundnessCertificate
   let selectedRustAcceptedSpendSoundness :=
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
-      selectedRustAcceptedSpendSoundnessCertificate
+      selectedRustAcceptedSpendCertificate
   let selectedRustActiveHashBoundary :=
     activeNativeHashBudgetBoundary
   let _activeHashBoundaryProps :=
@@ -51128,7 +51136,7 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustFullSignatureReductionEvidenceDigest
       selectedRustFullSignatureReductionVerifiedProof
       selectedRustFullSignatureReductionFactsAllTrueProof
-      selectedRustAcceptedSpendSoundness
+      selectedRustAcceptedSpendCertificate
       selectedRustActiveHashBoundary
       selectedRustSignatureForgerySuccessProb
       selectedRustProductionSignatureForgerySuccessProb

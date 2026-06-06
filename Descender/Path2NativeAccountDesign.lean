@@ -1808,7 +1808,7 @@ structure SelectedRustFullSignatureReductionCertificate where
     evidenceReport.ReportVerified
   selectedRustFullSignatureReductionFactsAllTrueProof :
     evidenceReport.FactsAllTrue
-  acceptedSpendSoundness : NativeAcceptedSpendSoundnessBoundary
+  acceptedSpendCertificate : SelectedRustAcceptedSpendSoundnessCertificate
   hashBoundary : NativeHashBudgetBoundary
   signatureForgerySuccessProb : ℝ
   productionSignatureForgerySuccessProb : ℝ
@@ -1816,7 +1816,7 @@ structure SelectedRustFullSignatureReductionCertificate where
     signatureForgerySuccessProb = productionSignatureForgerySuccessProb
   signatureForgerySuccess_le_acceptedSpend :
     signatureForgerySuccessProb <=
-      acceptedSpendSoundness.acceptedSpendForgeryProb
+      acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.acceptedSpendForgeryProb
   keygenDistributionModeled : Prop
   keygenDistributionModeledProof : keygenDistributionModeled
   signingOracleModeled : Prop
@@ -1830,13 +1830,13 @@ structure SelectedRustFullSignatureReductionCertificate where
   fullForgeryImpliesAcceptedSpendForgeryProof :
     fullForgeryImpliesAcceptedSpendForgery
   hiddenSourceProofSemanticsClosedProof :
-    acceptedSpendSoundness.hiddenSourceProofSemanticsClosed
+    acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.hiddenSourceProofSemanticsClosed
   checkedCoreCompositionClosedProof :
-    acceptedSpendSoundness.checkedCoreCompositionClosed
+    acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.checkedCoreCompositionClosed
   lifecycleReplayClosedProof :
-    acceptedSpendSoundness.lifecycleReplayClosed
+    acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.lifecycleReplayClosed
   noExportClosedProof :
-    acceptedSpendSoundness.noExportClosed
+    acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.noExportClosed
   checkedCoreFrameDomainSeparatedProof :
     hashBoundary.checkedCoreFrameDomainSeparated
   hiddenSourceFrameDomainSeparatedProof :
@@ -1854,7 +1854,7 @@ def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
       evidenceReport.ReportVerified)
     (selectedRustFullSignatureReductionFactsAllTrueProof :
       evidenceReport.FactsAllTrue)
-    (acceptedSpendSoundness : NativeAcceptedSpendSoundnessBoundary)
+    (acceptedSpendCertificate : SelectedRustAcceptedSpendSoundnessCertificate)
     (hashBoundary : NativeHashBudgetBoundary)
     (signatureForgerySuccessProb : ℝ)
     (productionSignatureForgerySuccessProb : ℝ)
@@ -1862,7 +1862,7 @@ def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
       signatureForgerySuccessProb = productionSignatureForgerySuccessProb)
     (signatureForgerySuccess_le_acceptedSpend :
       signatureForgerySuccessProb <=
-        acceptedSpendSoundness.acceptedSpendForgeryProb)
+        acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.acceptedSpendForgeryProb)
     (keygenDistributionModeled : Prop)
     (keygenDistributionModeledProof : keygenDistributionModeled)
     (signingOracleModeled : Prop)
@@ -1876,13 +1876,13 @@ def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
     (fullForgeryImpliesAcceptedSpendForgeryProof :
       fullForgeryImpliesAcceptedSpendForgery)
     (hiddenSourceProofSemanticsClosedProof :
-      acceptedSpendSoundness.hiddenSourceProofSemanticsClosed)
+      acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.hiddenSourceProofSemanticsClosed)
     (checkedCoreCompositionClosedProof :
-      acceptedSpendSoundness.checkedCoreCompositionClosed)
+      acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.checkedCoreCompositionClosed)
     (lifecycleReplayClosedProof :
-      acceptedSpendSoundness.lifecycleReplayClosed)
+      acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.lifecycleReplayClosed)
     (noExportClosedProof :
-      acceptedSpendSoundness.noExportClosed)
+      acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.noExportClosed)
     (checkedCoreFrameDomainSeparatedProof :
       hashBoundary.checkedCoreFrameDomainSeparated)
     (hiddenSourceFrameDomainSeparatedProof :
@@ -1898,7 +1898,7 @@ def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
     selectedRustFullSignatureReductionVerifiedProof
   selectedRustFullSignatureReductionFactsAllTrueProof :=
     selectedRustFullSignatureReductionFactsAllTrueProof
-  acceptedSpendSoundness := acceptedSpendSoundness
+  acceptedSpendCertificate := acceptedSpendCertificate
   hashBoundary := hashBoundary
   signatureForgerySuccessProb := signatureForgerySuccessProb
   productionSignatureForgerySuccessProb :=
@@ -1937,7 +1937,8 @@ def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
 def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
     (Cert : SelectedRustFullSignatureReductionCertificate) :
     NativeFullSignatureSecurityBoundary where
-  acceptedSpendSoundness := Cert.acceptedSpendSoundness
+  acceptedSpendSoundness :=
+    Cert.acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary
   hashBoundary := Cert.hashBoundary
   keygenDistributionModeled := Cert.keygenDistributionModeled
   signingOracleModeled := Cert.signingOracleModeled
