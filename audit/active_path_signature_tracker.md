@@ -1336,6 +1336,10 @@ The aggregate sub-evidence digest-match proof is now route-bound:
 `selectedRustFiveSourceSubEvidenceDigestsMatchProof` must derive from
 `selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch`, not from an
 anonymous same-type proof.
+That digest-match proof check is now prefix-bound on the proof body; an
+alias-bound proof plus an unused mention of
+`selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch` no longer
+completes the sub-evidence category.
 The selected source-record package also now projects directly to
 `ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs` through
 `toFieldLocalSharedDigestFrameWitnessInputs`, and the Rust source-record

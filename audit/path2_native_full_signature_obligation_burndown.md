@@ -325,6 +325,8 @@ derive from `selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch`.
 A same-type proof with the right theorem name but without the constructor-bound
 source-record package reduction no longer completes
 `sub_evidence_digest_match_proof_present`.
+This check is now prefix-bound on the proof body, so an alias-bound proof plus
+an unused package-proof mention is also rejected.
 The source-record package now also has
 `toFieldLocalSharedDigestFrameWitnessInputs`, and the source-record subcheck
 requires that reduction surface. This pins the package to the preferred

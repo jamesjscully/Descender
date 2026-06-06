@@ -10535,10 +10535,11 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 "selectedRustFieldLocalSourceCertificate",
                 "selectedRustSharedFrameWitnessSourcesCertificate",
             ],
-        ) && lean_source_selected_rust_definition_body_contains_marker_v1(
+        ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
             &boundary_source,
             "selectedRustFiveSourceSubEvidenceDigestsMatchProof",
             "selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch",
+            4096,
         );
     let all_definitions_present = evidence_report_definitions_present
         && evidence_digest_definitions_present
@@ -59527,6 +59528,20 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             );
         assert!(!anonymous_sub_evidence_match_checklist.sub_evidence_digest_match_proof_present);
         assert!(!anonymous_sub_evidence_match_checklist.all_definitions_present);
+        let sub_evidence_match_mentioned_but_alias_bound_source =
+            complete_concrete_definition_source.replace(
+                "  selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch",
+                "  selectedRustFiveSourceSubEvidenceDigestsMatchProofValue\n\nexample : True := by\n  let _mentionedSubEvidenceProof :=\n    selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch\n  trivial",
+            );
+        let sub_evidence_match_mentioned_but_alias_bound_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                &sub_evidence_match_mentioned_but_alias_bound_source,
+            );
+        assert!(
+            !sub_evidence_match_mentioned_but_alias_bound_checklist
+                .sub_evidence_digest_match_proof_present
+        );
+        assert!(!sub_evidence_match_mentioned_but_alias_bound_checklist.all_definitions_present);
         let generic_predicate_source_record_source = complete_concrete_definition_source.replace(
             "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
             "P",
