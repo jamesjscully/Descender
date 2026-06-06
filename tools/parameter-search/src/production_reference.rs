@@ -7585,6 +7585,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_semantics_source_package_bound_handoff_present: bool,
     pub native_boundary_certified_semantics_source_package_bound_handoff_present: bool,
     pub full_spend_concrete_predicates_are_separate_model: bool,
+    pub native_boundary_predicate_model_forbidden_vacuous_literals_present: bool,
     pub native_boundary_concrete_predicate_model_present: bool,
     pub selected_source_records_blocked_on_native_boundary_predicate_model: bool,
     pub source_record_package_surface_present: bool,
@@ -9247,6 +9248,41 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         "spendAccepts :=",
         "spendWitnessValid :=",
     ];
+    let native_boundary_predicate_model_forbidden_vacuous_literal_markers = [
+        "boundaryBreakFor := fun _ _ _ => True",
+        "reviewedFq12PayloadAccepts := fun _ _ => False",
+        "reviewedFq12PayloadProjectsFrom := fun _ _ => True",
+        "reviewedFq12PayloadHasExtractionCertificate := fun _ _ _ => True",
+        "reviewedFq12ExtractionCertificateValid := fun _ _ _ => True",
+        "reviewedFq12CertificateExtracts := fun _ _ _ _ => True",
+        "reviewedFq12CertificateLiftsToOpening := fun _ _ _ _ => True",
+        "reviewedFq12PayloadHasRoleLiftCertificate := fun _ _ _ _ => True",
+        "reviewedFq12RoleLiftCertificateValid := fun _ _ _ _ => True",
+        "reviewedFq12RoleLiftCertificateOpens := fun _ _ _ _ _ => True",
+        "fullNativeOpeningAssemblesRepresentative := fun _ _ _ _ _ => True",
+        "reviewedFq12OpeningHasAssemblyCertificate := fun _ _ _ _ _ => True",
+        "reviewedFq12AssemblyCertificateValid := fun _ _ _ _ _ => True",
+        "reviewedFq12AssemblyCertificateAssembles := fun _ _ _ _ _ _ => True",
+        "reviewedFq12HasExtractionCompatibilityCertificate := fun _ _ _ _ _ _ => True",
+        "reviewedFq12ExtractionCompatibilityCertificateValid := fun _ _ _ _ _ _ => True",
+        "reviewedFq12ExtractionCompatibilityCertificateExtracts := fun _ _ _ _ _ _ => True",
+        "reviewedFq12HasFullOpeningBridgeDigestCertificate := fun _ _ _ _ _ _ _ => True",
+        "reviewedFq12FullOpeningBridgeDigestCertificateValid := fun _ _ _ _ _ _ _ => True",
+        "reviewedFq12PayloadExtracts := fun _ _ _ => True",
+        "spendAccepts := fun _ _ => True",
+        "spendWitnessValid := fun _ _ _ => True",
+    ];
+    let native_boundary_predicate_model_forbidden_vacuous_literals_present =
+        native_boundary_predicate_model_forbidden_vacuous_literal_markers
+            .iter()
+            .any(|marker| {
+                lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+                    &boundary_source,
+                    "selectedRustNativeBoundaryPredicates",
+                    marker,
+                    32768,
+                )
+            });
     let native_boundary_concrete_predicate_model_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -9261,7 +9297,8 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                     marker,
                     32768,
                 )
-            });
+            })
+            && !native_boundary_predicate_model_forbidden_vacuous_literals_present;
     let boundary_base_report_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -9627,6 +9664,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_semantics_source_package_bound_handoff_present,
         native_boundary_certified_semantics_source_package_bound_handoff_present,
         full_spend_concrete_predicates_are_separate_model,
+        native_boundary_predicate_model_forbidden_vacuous_literals_present,
         native_boundary_concrete_predicate_model_present,
         selected_source_records_blocked_on_native_boundary_predicate_model,
         source_record_package_surface_present,
@@ -57749,6 +57787,10 @@ def toPredicates
                 .native_boundary_certified_semantics_source_package_bound_handoff_present
         );
         assert!(source_record_subcheck.full_spend_concrete_predicates_are_separate_model);
+        assert!(
+            !source_record_subcheck
+                .native_boundary_predicate_model_forbidden_vacuous_literals_present
+        );
         assert!(!source_record_subcheck.native_boundary_concrete_predicate_model_present);
         let partial_native_boundary_model_source = r#"
 def selectedRustNativeBoundaryPredicates :
@@ -57927,6 +57969,33 @@ def selectedRustNativeBoundaryPredicates :
             );
         assert!(
             complete_native_boundary_model_subcheck
+                .native_boundary_concrete_predicate_model_present
+        );
+        assert!(
+            !complete_native_boundary_model_subcheck
+                .native_boundary_predicate_model_forbidden_vacuous_literals_present
+        );
+        let vacuous_native_boundary_model_source = complete_native_boundary_model_source
+            .replacen(
+                "boundaryBreakFor := selectedBoundaryBreakFor",
+                "boundaryBreakFor := fun _ _ _ => True",
+                1,
+            )
+            .replacen(
+                "reviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAccepts",
+                "reviewedFq12PayloadAccepts := fun _ _ => False",
+                1,
+            );
+        let vacuous_native_boundary_model_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &vacuous_native_boundary_model_source,
+            );
+        assert!(
+            vacuous_native_boundary_model_subcheck
+                .native_boundary_predicate_model_forbidden_vacuous_literals_present
+        );
+        assert!(
+            !vacuous_native_boundary_model_subcheck
                 .native_boundary_concrete_predicate_model_present
         );
         assert!(

@@ -360,6 +360,12 @@ The concrete predicate-model detector now requires the full
 transparent-view, trace-assembly, slot-authorization, and spend predicates. A
 reviewed-Fq12-only selected record is no longer enough to flip the concrete
 model bit.
+It now also rejects the obvious syntactic vacuity escape hatch: a field-complete
+`selectedRustNativeBoundaryPredicates` whose critical break, reviewed-Fq12
+certificate/extraction, payload-extraction, or spend predicates are filled by
+constant `True`/`False` lambdas. The manifest surfaces this as
+`native_boundary_predicate_model_forbidden_vacuous_literals_present`, and the
+concrete-model bit requires it to be false.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and

@@ -280,6 +280,9 @@ fn main() -> Result<(), String> {
                     .native_boundary_certified_semantics_source_package_bound_handoff_present,
             "full_spend_concrete_predicates_are_separate_model":
                 source_record_subcheck.full_spend_concrete_predicates_are_separate_model,
+            "native_boundary_predicate_model_forbidden_vacuous_literals_present":
+                source_record_subcheck
+                    .native_boundary_predicate_model_forbidden_vacuous_literals_present,
             "native_boundary_concrete_predicate_model_present":
                 source_record_subcheck.native_boundary_concrete_predicate_model_present,
             "selected_source_records_blocked_on_native_boundary_predicate_model":
