@@ -7610,6 +7610,8 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
         bool,
     pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_native_source_target_present:
         bool,
+    pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_model_certificate_constructor_present:
+        bool,
     pub native_boundary_predicate_model_core_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_transparent_trace_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present: bool,
@@ -9639,6 +9641,22 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             ],
             12288,
         );
+    let native_boundary_predicate_model_reviewed_fq12_hard_extraction_model_certificate_constructor_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "def",
+            "ofCanonicalNativeSource",
+            &[
+                "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate",
+                "reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate",
+                "reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates",
+                "ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValiditySource",
+                "ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate",
+                "reviewedFq12HardExtractionLawsOfSharedWitnessFullOpeningSource",
+                "reviewedFq12SharedWitnessFullOpeningNativeValiditySourceOfCanonicalSource",
+            ],
+            8192,
+        );
     let native_boundary_predicate_model_evidence_report_target_present =
         lean_source_has_named_declaration_with_markers_v1(
             &boundary_source,
@@ -11285,6 +11303,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_law_reduction_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_full_opening_native_source_target_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_native_source_target_present,
+        native_boundary_predicate_model_reviewed_fq12_hard_extraction_model_certificate_constructor_present,
         native_boundary_predicate_model_core_provider_fields_defined_present,
         native_boundary_predicate_model_transparent_trace_provider_fields_defined_present,
         native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present,
@@ -60256,6 +60275,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(
             source_record_subcheck
                 .native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_native_source_target_present
+        );
+        assert!(
+            source_record_subcheck
+                .native_boundary_predicate_model_reviewed_fq12_hard_extraction_model_certificate_constructor_present
         );
         assert!(
             !source_record_subcheck

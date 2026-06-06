@@ -4097,6 +4097,41 @@ structure ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredi
 namespace ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate
 
 /--
+Construct the shared-witness hard-extraction predicate-model certificate from
+the field equality and the canonical native-validity source.
+-/
+def ofCanonicalNativeSource
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {predicates : Path2NativeBoundary.Predicates}
+    (sharedWitnessCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser predicates)
+    (fieldSourcesFromSharedWitnessCertificate :
+      reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+          sharedWitnessCertificate =
+        reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates
+          predicates)
+    (canonicalNativeSource :
+      ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValiditySource
+        sharedWitnessCertificate) :
+    @ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate
+      CanonicalParser
+      WitnessParser
+      predicates where
+  sharedWitnessCertificate := sharedWitnessCertificate
+  fieldSourcesFromSharedWitnessCertificate :=
+    fieldSourcesFromSharedWitnessCertificate
+  laws :=
+    reviewedFq12HardExtractionLawsOfSharedWitnessFullOpeningSource
+      sharedWitnessCertificate
+      fieldSourcesFromSharedWitnessCertificate
+      (reviewedFq12SharedWitnessFullOpeningNativeValiditySourceOfCanonicalSource
+        sharedWitnessCertificate canonicalNativeSource)
+
+/--
 Forget the shared-witness hard-extraction certificate into the generic hard
 predicate-model package.
 -/

@@ -1862,6 +1862,12 @@ report-verified shared digest frame, and
 `reviewedFq12SharedWitnessFullOpeningNativeValiditySourceOfCanonicalSource`
 turns it into the full-opening native source. The manifest tracks this with
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_native_source_target_present`.
+The shared-witness hard model certificate now has a constructor,
+`ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate.ofCanonicalNativeSource`,
+that builds the certificate from the shared-witness certificate, the hard-field
+equality, and the canonical native-validity source, deriving the law bundle
+internally. The manifest tracks this with
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_model_certificate_constructor_present`.
 
 ## Findings
 
