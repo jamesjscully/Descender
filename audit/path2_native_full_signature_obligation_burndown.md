@@ -278,6 +278,9 @@ as part of `source_record_definitions` and requires it to be built through
 `ofSources`; a same-name/same-type anonymous source-record package no longer
 completes that category. This makes the package consumed by the certified
 native-boundary semantics route constructor-bound, not merely type-shaped.
+`ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource.toPredicates` is
+now prefix-bound to `Model.predicates`; an alias return plus an unused
+`Model.predicates` mention no longer satisfies the source-target subcheck.
 The predicate-model certificate constructor check is now prefix-bound on
 `selectedRustNativeBoundaryPredicateModelCertificate` itself; an alias-bound
 certificate plus an unused `ofReportAndModel` mention no longer completes the

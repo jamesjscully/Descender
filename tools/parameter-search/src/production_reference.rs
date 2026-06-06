@@ -9026,10 +9026,11 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 "fullOpeningBridgeDigestValidityBinds",
             ],
             4096,
-        ) && lean_source_selected_rust_definition_body_contains_marker_v1(
+        ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
             &boundary_source,
             "toPredicates",
             "Model.predicates",
+            4096,
         );
     let native_boundary_predicate_model_evidence_report_target_present =
         lean_source_has_named_declaration_with_markers_v1(
@@ -58248,6 +58249,21 @@ def toPredicates
         assert!(
             !split_predicate_model_target_subcheck
                 .native_boundary_predicate_model_source_target_present
+        );
+        let aliased_to_predicates_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "  Model.predicates",
+            "  otherPredicates\n\nexample : True := by\n  let _mentionedToPredicates := Model.predicates\n  trivial",
+            1,
+        );
+        let aliased_to_predicates_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_to_predicates_source,
+            );
+        assert!(
+            !aliased_to_predicates_subcheck.native_boundary_predicate_model_source_target_present
         );
         assert!(
             source_record_subcheck.native_boundary_payload_acceptance_boundary_match_target_present

@@ -1264,6 +1264,10 @@ Lean now names that import target as
 concrete `Path2NativeBoundary.Predicates` value plus the selected source-record
 package for that exact predicate interpretation, and exposes
 `.hiddenSourceClosure`.
+The predicate-model source projection is now prefix-bound as well:
+`ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource.toPredicates` must
+return `Model.predicates`; an alias return with an unused `Model.predicates`
+mention no longer satisfies the source-target subcheck.
 The same semantics package now has accepted-spend and full-signature handoff
 theorems, and the manifest reports
 `native_boundary_semantics_package_handoff_present = true`. This means the
