@@ -983,6 +983,13 @@ requires the theorem body to call the corresponding closure or
 actual predicates and `hiddenSourceClosure`. A regression fixture aliases the
 semantics-package active-bound theorem body while moving the old markers into
 an unused example; the handoff bit now fails closed under that mutation.
+The selected source-record package surface and reductions are now scoped to
+their named structure, constructor, projection definitions, sub-evidence
+theorem, and hidden-source closure theorem. The scanner requires the actual
+package projection bodies to consume the package fields in order, and a
+regression fixture aliases the package-to-hidden-source-closure theorem while
+placing the old markers in an unused example; the reduction bit now fails
+closed under that mutation.
 The aggregate digest import also exposed a source-hash circularity constraint:
 the current Rust aggregate evidence digest is
 `146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the

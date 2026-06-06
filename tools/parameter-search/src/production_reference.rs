@@ -10165,81 +10165,75 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability selectedRustRoleRootLiftSource selectedRustSourceRouteByteSource selectedRustAssemblySource selectedRustCompatibilitySource selectedRustSharedFrameWitnessSources",
             4096,
         );
-    let source_record_package_surface_present = [
+    let source_record_package_surface_present = lean_source_has_named_declaration_with_markers_v1(
+        &boundary_source,
+        "structure",
         "ReviewedFq12SelectedRustModelSourceRecordPackage",
-        "def ofSources",
-        "payloadProjectionLaw",
-        "extractionCertificateAvailability",
-        "roleRootLiftSource",
-        "selectedSourceRouteByteSource",
-        "assemblySource",
-        "compatibilitySource",
-        "sharedFrameWitnessSources",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let package_sub_evidence_match_reduction_present = [
-        "theorem subEvidenceDigestsMatch",
-        "selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_of_selected_certificate_digests",
-        "Package.boundaryBaseCertificate",
-        "Package.roleRootLiftSourceCertificate",
-        "Package.sourceRouteByteSourceCertificate",
-        "Package.fieldLocalSourceCertificate",
-        "Package.sharedFrameWitnessSourcesCertificate",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let package_to_closure_inputs_reduction_present = [
-        "def toFiveSourceClosureInputs",
-        "ReviewedFq12SelectedRustModelFiveSourceClosureInputs",
-        "payloadProjectsFrom := Package.payloadProjectionLaw",
-        "certificateAvailability :=",
-        "Package.extractionCertificateAvailability",
-        "roleRootLiftSource := Package.roleRootLiftSource",
-        "selectedSource := Package.selectedSourceRouteByteSource",
-        "assemblySource := Package.assemblySource",
-        "compatibilitySource := Package.compatibilitySource",
-        "witnessSources := Package.sharedFrameWitnessSources",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let package_to_byte_component_inputs_reduction_present = [
-        "def toByteComponentInputs",
-        "ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs",
-        "reviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputsOfSources",
-        "Package.roleRootLiftSource",
-        "Package.selectedSourceRouteByteSource",
-        "Package.assemblySource",
-        "Package.compatibilitySource",
-        "Package.sharedFrameWitnessSources",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let package_to_field_local_shared_digest_frame_inputs_reduction_present = [
-        "def toFieldLocalSharedDigestFrameWitnessInputs",
-        "ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs",
-        "reviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputsOfSources",
-        "Package.roleRootLiftSource",
-        "Package.selectedSourceRouteByteSource",
-        "Package.assemblySource",
-        "Package.compatibilitySource",
-        "Package.sharedFrameWitnessSources",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let package_to_hidden_source_closure_reduction_present = [
-        "theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package",
-        "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources",
-        "Package.payloadProjectionLaw",
-        "Package.extractionCertificateAvailability",
-        "Package.roleRootLiftSource",
-        "Package.selectedSourceRouteByteSource",
-        "Package.assemblySource",
-        "Package.compatibilitySource",
-        "Package.sharedFrameWitnessSources",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
+        &[
+            "payloadProjectionLaw",
+            "extractionCertificateAvailability",
+            "roleRootLiftSource",
+            "selectedSourceRouteByteSource",
+            "assemblySource",
+            "compatibilitySource",
+            "sharedFrameWitnessSources",
+        ],
+        4096,
+    )
+        && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ofSources",
+            &["ReviewedFq12SelectedRustModelSourceRecordPackage"],
+            "payloadProjectionLaw := payloadProjectionLaw extractionCertificateAvailability := extractionCertificateAvailability roleRootLiftSource := roleRootLiftSource selectedSourceRouteByteSource := selectedSourceRouteByteSource assemblySource := assemblySource compatibilitySource := compatibilitySource sharedFrameWitnessSources := sharedFrameWitnessSources",
+            4096,
+        );
+    let package_sub_evidence_match_reduction_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "subEvidenceDigestsMatch",
+            &[
+                "selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch",
+                "Package.boundaryBaseCertificate",
+                "Package.roleRootLiftSourceCertificate",
+                "Package.sourceRouteByteSourceCertificate",
+                "Package.fieldLocalSourceCertificate",
+                "Package.sharedFrameWitnessSourcesCertificate",
+            ],
+            "selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_of_selected_certificate_digests",
+            4096,
+        );
+    let package_to_closure_inputs_reduction_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "toFiveSourceClosureInputs",
+            &["ReviewedFq12SelectedRustModelFiveSourceClosureInputs"],
+            "payloadProjectsFrom := Package.payloadProjectionLaw certificateAvailability := Package.extractionCertificateAvailability roleRootLiftSource := Package.roleRootLiftSource selectedSource := Package.selectedSourceRouteByteSource assemblySource := Package.assemblySource compatibilitySource := Package.compatibilitySource witnessSources := Package.sharedFrameWitnessSources",
+            4096,
+        );
+    let package_to_byte_component_inputs_reduction_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "toByteComponentInputs",
+            &["ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs"],
+            "reviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputsOfSources Package.roleRootLiftSource Package.selectedSourceRouteByteSource Package.assemblySource Package.compatibilitySource Package.sharedFrameWitnessSources",
+            4096,
+        );
+    let package_to_field_local_shared_digest_frame_inputs_reduction_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "toFieldLocalSharedDigestFrameWitnessInputs",
+            &["ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs"],
+            "reviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputsOfSources Package.roleRootLiftSource Package.selectedSourceRouteByteSource Package.assemblySource Package.compatibilitySource Package.sharedFrameWitnessSources",
+            4096,
+        );
+    let package_to_hidden_source_closure_reduction_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package",
+            &["ReviewedFq12HiddenSourceProofSemanticsClosed P"],
+            "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources P Package.payloadProjectionLaw Package.extractionCertificateAvailability Package.roleRootLiftSource Package.selectedSourceRouteByteSource Package.assemblySource Package.compatibilitySource Package.sharedFrameWitnessSources",
+            4096,
+        );
     let canonical_witness_to_byte_source_adapter_present =
         lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_endpoint_present_v1();
     let byte_and_witness_packaged_route_endpoint_present =
@@ -58718,6 +58712,22 @@ def toPredicates
         assert!(
             !aliased_semantics_bound_handoff_subcheck
                 .native_boundary_semantics_package_bound_handoff_present
+        );
+        let aliased_package_closure_reduction_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources\n    P Package.payloadProjectionLaw\n    Package.extractionCertificateAvailability\n    Package.roleRootLiftSource\n    Package.selectedSourceRouteByteSource\n    Package.assemblySource\n    Package.compatibilitySource\n    Package.sharedFrameWitnessSources",
+            "packageClosureAlias\n\nexample : True := by\n  let _mentionedPackageClosureReduction :=\n    reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources\n      P Package.payloadProjectionLaw\n      Package.extractionCertificateAvailability\n      Package.roleRootLiftSource\n      Package.selectedSourceRouteByteSource\n      Package.assemblySource\n      Package.compatibilitySource\n      Package.sharedFrameWitnessSources\n  trivial",
+            1,
+        );
+        let aliased_package_closure_reduction_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_package_closure_reduction_source,
+            );
+        assert!(
+            !aliased_package_closure_reduction_subcheck
+                .package_to_hidden_source_closure_reduction_present
         );
         assert!(
             source_record_subcheck.native_boundary_payload_acceptance_boundary_match_target_present
