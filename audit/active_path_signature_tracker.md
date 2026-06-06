@@ -1600,6 +1600,13 @@ The source-binding digest constants themselves are now body-bound aliases of
 the selected component evidence digests. A binding definition whose
 `sourceBindingDigest` name points at a different digest no longer satisfies
 `source_record_evidence_source_bindings_present`.
+The predicate-model evidence-report target gate now requires the Lean
+`FactsAllTrue` definition to include every public predicate-model fact:
+extraction, full-opening/assembly, compatibility, break-model,
+record-completeness, verifier-route, negative-control, concrete-model, and
+certified-package target bits in addition to payload/model pins. A weakened
+`FactsAllTrue` definition that drops one fact no longer satisfies the report
+target bit.
 
 ## Findings
 

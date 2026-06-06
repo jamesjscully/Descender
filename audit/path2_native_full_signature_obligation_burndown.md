@@ -1068,6 +1068,13 @@ The five source-binding digest constants are now scanner-bound to the same
 selected evidence digest constants. A negative-control fixture that points the
 boundary-base source-binding digest at a different digest leaves
 `source_record_evidence_source_bindings_present = false`.
+The predicate-model report target gate now requires the Lean `FactsAllTrue`
+definition to consume every public report bit, including extraction,
+full-opening/assembly, compatibility, native-break, record-completeness,
+active-verifier-route, negative-control, concrete-model, and certified-package
+target facts. Dropping one fact from `FactsAllTrue` is a source-gate failure,
+so the future facts proof cannot certify a narrower predicate-model report
+than the Rust evidence frame records.
 The aggregate digest import also exposed a source-hash circularity constraint:
 the current Rust aggregate evidence digest is
 `146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the

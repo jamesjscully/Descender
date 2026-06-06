@@ -9168,6 +9168,13 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
                 "activeBoundaryPredicateModelPinned = true",
                 "payloadAcceptanceModelPinned = true",
+                "extractionCertificateModelPinned = true",
+                "fullOpeningAndAssemblyModelPinned = true",
+                "compatibilityAndExtractionModelPinned = true",
+                "nativeBoundaryBreakModelPinned = true",
+                "nativeBoundaryPredicateRecordComplete = true",
+                "activeVerifierRoutePinned = true",
+                "predicateNegativeControlsPassed = true",
                 "concretePredicateModelPresent = true",
                 "certifiedSemanticsSourcePackageTargetPresent = true",
             ],
@@ -59036,6 +59043,18 @@ def toPredicates
         assert!(
             !split_predicate_model_target_subcheck
                 .native_boundary_predicate_model_source_target_present
+        );
+        let weakened_predicate_model_facts_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen("      E.extractionCertificateModelPinned = true ∧\n", "", 1);
+        let weakened_predicate_model_facts_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &weakened_predicate_model_facts_source,
+            );
+        assert!(
+            !weakened_predicate_model_facts_subcheck
+                .native_boundary_predicate_model_evidence_report_target_present
         );
         let aliased_to_predicates_source = include_str!(
             "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
