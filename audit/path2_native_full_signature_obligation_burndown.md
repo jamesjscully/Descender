@@ -291,6 +291,10 @@ The final theorem gate now also requires the theorem body itself to construct
 `ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources`; merely naming a
 pre-existing source-record package no longer satisfies the AP2-N001 theorem
 source scanner.
+The source-record/package constructor checks now require constructor-prefixed
+definition bodies, so an alias-bound `selectedRustModelSourceRecordPackage`
+with an unused `ofSources` mention no longer completes the checklist or
+source-record subcheck.
 The same gate now rejects a final hidden-source theorem over generic
 `P : Predicates`; the accepted target must conclude
 `ReviewedFq12HiddenSourceProofSemanticsClosed

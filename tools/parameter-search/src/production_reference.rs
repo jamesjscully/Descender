@@ -8722,6 +8722,75 @@ fn lean_source_selected_rust_definition_body_contains_marker_v1(
     )
 }
 
+fn lean_source_selected_rust_definition_body_starts_with_marker_v1(
+    boundary_source: &str,
+    name: &str,
+    marker: &str,
+    max_body_len: usize,
+) -> bool {
+    ["def", "theorem"].iter().any(|kind| {
+        let public_start = format!("\n{kind} {name}");
+        let private_start = format!("\nprivate {kind} {name}");
+        [public_start, private_start].iter().any(|start_marker| {
+            boundary_source
+                .match_indices(start_marker)
+                .any(|(start, _)| {
+                    let name_end = start + start_marker.len();
+                    if boundary_source[name_end..]
+                        .chars()
+                        .next()
+                        .is_some_and(|next| {
+                            next.is_ascii_alphanumeric() || next == '_' || next == '\''
+                        })
+                    {
+                        return false;
+                    }
+                    let declaration_window =
+                        &boundary_source[start..boundary_source.len().min(start + max_body_len)];
+                    let Some(body_start) = [":=", "\nwhere", " where"]
+                        .iter()
+                        .filter_map(|body_marker| {
+                            declaration_window
+                                .find(body_marker)
+                                .map(|offset| offset + body_marker.len())
+                        })
+                        .min()
+                    else {
+                        return false;
+                    };
+                    let body_window = &declaration_window[body_start..];
+                    let next_top_level_declaration = [
+                        "\nabbrev ",
+                        "\naxiom ",
+                        "\nclass ",
+                        "\nconstant ",
+                        "\ndef ",
+                        "\ninductive ",
+                        "\ninstance ",
+                        "\nnamespace ",
+                        "\nopaque ",
+                        "\nopen ",
+                        "\nprivate abbrev ",
+                        "\nprivate def ",
+                        "\nprivate theorem ",
+                        "\nsection ",
+                        "\nstructure ",
+                        "\ntheorem ",
+                        "\nvariable ",
+                    ]
+                    .iter()
+                    .filter_map(|marker| body_window.find(marker))
+                    .min()
+                    .unwrap_or(body_window.len());
+                    let normalized_body = body_window[..next_top_level_declaration]
+                        .split_whitespace()
+                        .collect::<String>();
+                    normalized_body.starts_with(&marker.split_whitespace().collect::<String>())
+                })
+        })
+    })
+}
+
 fn lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
     boundary_source: &str,
     name: &str,
@@ -9805,10 +9874,11 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 "ReviewedFq12SelectedRustModelSourceRecordPackage",
                 "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
             ],
-        ) && lean_source_selected_rust_definition_body_contains_marker_v1(
+        ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
             &boundary_source,
             "selectedRustModelSourceRecordPackage",
             "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability selectedRustRoleRootLiftSource selectedRustSourceRouteByteSource selectedRustAssemblySource selectedRustCompatibilitySource selectedRustSharedFrameWitnessSources",
+            4096,
         );
     let source_record_package_surface_present = [
         "ReviewedFq12SelectedRustModelSourceRecordPackage",
@@ -10397,10 +10467,11 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         ]
         .iter()
         .all(|(name, marker)| {
-            lean_source_selected_rust_definition_body_contains_marker_v1(
+            lean_source_selected_rust_definition_body_starts_with_marker_v1(
                 &boundary_source,
                 name,
                 marker,
+                4096,
             )
         });
     let predicate_model_report_surface_definitions_present =
@@ -59396,6 +59467,27 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 .selected_source_record_package_definition_present
         );
         assert!(!anonymous_source_record_package_subcheck.all_selected_source_records_present);
+        let source_record_package_constructor_mentioned_but_alias_bound_source =
+            complete_concrete_definition_source.replace(
+                "  ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources\n    selectedRustPayloadProjectionLaw\n    selectedRustExtractionCertificateAvailability\n    selectedRustRoleRootLiftSource\n    selectedRustSourceRouteByteSource\n    selectedRustAssemblySource\n    selectedRustCompatibilitySource\n    selectedRustSharedFrameWitnessSources",
+                "  selectedRustModelSourceRecordPackageValue\n\nexample : True := by\n  let _mentionedSourceRecordPackageConstructor :=\n    ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources\n      selectedRustPayloadProjectionLaw\n      selectedRustExtractionCertificateAvailability\n      selectedRustRoleRootLiftSource\n      selectedRustSourceRouteByteSource\n      selectedRustAssemblySource\n      selectedRustCompatibilitySource\n      selectedRustSharedFrameWitnessSources\n  trivial",
+            );
+        let source_record_package_constructor_mentioned_but_alias_bound_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                &source_record_package_constructor_mentioned_but_alias_bound_source,
+            );
+        let source_record_package_constructor_mentioned_but_alias_bound_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &source_record_package_constructor_mentioned_but_alias_bound_source,
+            );
+        assert!(
+            !source_record_package_constructor_mentioned_but_alias_bound_checklist
+                .source_record_definitions_present
+        );
+        assert!(
+            !source_record_package_constructor_mentioned_but_alias_bound_subcheck
+                .selected_source_record_package_definition_present
+        );
         let anonymous_sub_evidence_match_source = complete_concrete_definition_source.replacen(
             "selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch",
             "selectedRustFiveSourceSubEvidenceDigestsMatchProofValue",

@@ -1307,6 +1307,10 @@ The selected source-record package is now constructor-bound too:
 `ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources` is the required
 route for `selectedRustModelSourceRecordPackage`, and an anonymous package with
 the right name/type no longer completes `source_record_definitions`.
+The source-record/package constructor checks now require the relevant
+definition bodies to start with their named constructors; an alias-bound
+`selectedRustModelSourceRecordPackage` plus an unused `ofSources` mention is
+rejected by both the concrete-definition checklist and source-record subcheck.
 The source-record subcheck now counts that selected package definition as part
 of `all_selected_source_records_present`, so the seven raw source records and
 five source-certificate constructors cannot be reported complete unless the
