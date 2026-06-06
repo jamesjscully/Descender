@@ -1039,6 +1039,12 @@ That same category now also requires the five named source-binding digest
 definitions to exist as `ByteArray` definitions and treats those digest names
 as forbidden source stubs if they are declared by `axiom`, `constant`, or
 `opaque`.
+The predicate-model certificate category now also requires named selected
+obligation definitions for every native-boundary predicate target consumed by
+`ofReportAndModel`. The certificate body alone is no longer enough; each
+selected proof must expose the target proposition over
+`selectedRustNativeBoundaryPredicates`, and those names are blocked as
+`axiom`/`constant`/`opaque` stubs.
 The aggregate digest import also exposed a source-hash circularity constraint:
 the current Rust aggregate evidence digest is
 `146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the

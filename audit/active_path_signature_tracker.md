@@ -1571,6 +1571,12 @@ That same category now also requires the five named source-binding digest
 definitions to exist as `ByteArray` definitions and treats those digest names
 as forbidden source stubs if they are declared by `axiom`, `constant`, or
 `opaque`.
+The predicate-model certificate category now also requires named selected
+obligation definitions for every native-boundary predicate target consumed by
+`ofReportAndModel`. The certificate body alone is no longer enough; each
+selected proof must expose the target proposition over
+`selectedRustNativeBoundaryPredicates`, and those names are blocked as
+`axiom`/`constant`/`opaque` stubs.
 
 ## Findings
 
