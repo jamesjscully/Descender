@@ -9837,34 +9837,39 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             ],
         );
     let boundary_base_certificate_constructor_bound =
-        lean_source_selected_rust_definition_body_contains_marker_v1(
+        lean_source_selected_rust_definition_body_starts_with_marker_v1(
             &boundary_source,
             "selectedRustBoundaryBaseCertificate",
             "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources selectedRustBoundaryBaseEvidenceReport selectedRustBoundaryBaseEvidenceDigest selectedRustBoundaryBaseEvidenceReportVerifiedProof selectedRustBoundaryBaseEvidenceFactsAllTrueProof selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability",
+            4096,
         );
     let role_root_lift_certificate_constructor_bound =
-        lean_source_selected_rust_definition_body_contains_marker_v1(
+        lean_source_selected_rust_definition_body_starts_with_marker_v1(
             &boundary_source,
             "selectedRustRoleRootLiftSourceCertificate",
             "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource selectedRustRoleRootLiftEvidenceReport selectedRustRoleRootLiftEvidenceDigest selectedRustRoleRootLiftEvidenceReportVerifiedProof selectedRustRoleRootLiftEvidenceFactsAllTrueProof selectedRustRoleRootLiftSource",
+            4096,
         );
     let source_route_certificate_constructor_bound =
-        lean_source_selected_rust_definition_body_contains_marker_v1(
+        lean_source_selected_rust_definition_body_starts_with_marker_v1(
             &boundary_source,
             "selectedRustSourceRouteByteSourceCertificate",
             "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource selectedRustSourceRouteEvidenceReport selectedRustSourceRouteEvidenceDigest selectedRustSourceRouteEvidenceReportVerifiedProof selectedRustSourceRouteEvidenceFactsAllTrueProof selectedRustSourceRouteByteSource",
+            4096,
         );
     let field_local_certificate_constructor_bound =
-        lean_source_selected_rust_definition_body_contains_marker_v1(
+        lean_source_selected_rust_definition_body_starts_with_marker_v1(
             &boundary_source,
             "selectedRustFieldLocalSourceCertificate",
             "ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources selectedRustFieldLocalEvidenceReport selectedRustFieldLocalEvidenceDigest selectedRustFieldLocalEvidenceReportVerifiedProof selectedRustFieldLocalEvidenceFactsAllTrueProof selectedRustAssemblySource selectedRustCompatibilitySource",
+            4096,
         );
     let shared_witness_certificate_constructor_bound =
-        lean_source_selected_rust_definition_body_contains_marker_v1(
+        lean_source_selected_rust_definition_body_starts_with_marker_v1(
             &boundary_source,
             "selectedRustSharedFrameWitnessSourcesCertificate",
             "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof selectedRustSharedFrameWitnessSources",
+            4096,
         );
     let selected_source_record_package_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
@@ -59606,6 +59611,19 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 .native_boundary_concrete_predicate_model_present
         );
         assert!(complete_model_and_source_record_subcheck.all_selected_source_records_present);
+        let boundary_certificate_constructor_mentioned_but_alias_bound_source =
+            complete_concrete_definition_source.replace(
+                "  ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources\n    selectedRustBoundaryBaseEvidenceReport\n    selectedRustBoundaryBaseEvidenceDigest\n    selectedRustBoundaryBaseEvidenceReportVerifiedProof\n    selectedRustBoundaryBaseEvidenceFactsAllTrueProof\n    selectedRustPayloadProjectionLaw\n    selectedRustExtractionCertificateAvailability",
+                "  selectedRustBoundaryBaseCertificateValue\n\nexample : True := by\n  let _mentionedBoundaryBaseCertificateConstructor :=\n    ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources\n      selectedRustBoundaryBaseEvidenceReport\n      selectedRustBoundaryBaseEvidenceDigest\n      selectedRustBoundaryBaseEvidenceReportVerifiedProof\n      selectedRustBoundaryBaseEvidenceFactsAllTrueProof\n      selectedRustPayloadProjectionLaw\n      selectedRustExtractionCertificateAvailability\n  trivial",
+            );
+        let boundary_certificate_constructor_mentioned_but_alias_bound_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &boundary_certificate_constructor_mentioned_but_alias_bound_source,
+            );
+        assert!(
+            !boundary_certificate_constructor_mentioned_but_alias_bound_subcheck
+                .boundary_base_certificate_constructor_bound
+        );
         let anonymous_certificate_definition_source = complete_concrete_definition_source.replacen(
             "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources\n    selectedRustBoundaryBaseEvidenceReport\n    selectedRustBoundaryBaseEvidenceDigest\n    selectedRustBoundaryBaseEvidenceReportVerifiedProof\n    selectedRustBoundaryBaseEvidenceFactsAllTrueProof\n    selectedRustPayloadProjectionLaw\n    selectedRustExtractionCertificateAvailability",
             "selectedRustBoundaryBaseCertificateValue",

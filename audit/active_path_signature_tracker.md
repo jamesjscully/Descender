@@ -1315,6 +1315,10 @@ The source-record/package constructor checks now require the relevant
 definition bodies to start with their named constructors; an alias-bound
 `selectedRustModelSourceRecordPackage` plus an unused `ofSources` mention is
 rejected by both the concrete-definition checklist and source-record subcheck.
+The same prefix-body rule now applies to the five selected evidence
+certificate constructor-bound bits in the source-record subcheck, so an
+alias-bound certificate plus an unused constructor mention does not reduce the
+missing selected-source-record count.
 The source-record subcheck now counts that selected package definition as part
 of `all_selected_source_records_present`, so the seven raw source records and
 five source-certificate constructors cannot be reported complete unless the

@@ -299,6 +299,9 @@ The source-record/package constructor checks now require constructor-prefixed
 definition bodies, so an alias-bound `selectedRustModelSourceRecordPackage`
 with an unused `ofSources` mention no longer completes the checklist or
 source-record subcheck.
+The five selected evidence certificate constructor-bound bits in the
+source-record subcheck now use the same prefix-body rule, preventing alias-bound
+certificates from reducing the missing source-record count.
 The same gate now rejects a final hidden-source theorem over generic
 `P : Predicates`; the accepted target must conclude
 `ReviewedFq12HiddenSourceProofSemanticsClosed
