@@ -35,11 +35,15 @@ The active deployment notes identify Path 2 native / reviewed Fq12, not the comp
 
 | ID | Status | Issue | Detailed tracker |
 | --- | --- | --- | --- |
-| AP2-001 | Field-local shared-frame selected-Rust source-route instantiation open | P2FS-001 is now split into non-aggregate role-root, assembly, compatibility, field-evidence, source-route, and local-source layers without using the aggregate full-opening bridge as a premise. Rust exposes pre-aggregate field-evidence and source-route frames with negative controls for aggregate-source misuse and stale/tampered digests. Lean exposes the direct native digest-frame endpoint `ReviewedFq12SelectedRustDirectAssemblyNativeDigestFramePackagedSourceRouteInputs` and theorem `reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_native_digest_frame_packaged_source_route_inputs`; that endpoint consumes `ReviewedFq12RoleRootFunctionalLiftSource`, `SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource`, independent `ReviewedFq12ConcreteAssemblyFieldBindingOrBreak`, `ReviewedFq12AssemblyCompatibilityLocalModelSource`, and `ReviewedFq12SelectedRustNativeRepresentativeDigestFrameSource`. Lean now also exposes the implementation-oriented field/local shared-frame package `ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs` and theorem `reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_inputs`: selected source-route bytes supply field/source-route evidence; concrete field/local assembly and compatibility sources supply the direct binding and local model; and `ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources` pins the canonical representative witness source and assembly digest-frame witness source to one selected 11-input representative digest frame. The direct canonical/witness-byte, digest-frame witness, native-frame, shared-frame, and field/local packages remain adapters toward this active implementation target. Rust now has typed witnesses for both sides: `Path2ReviewedFq12NativeRepresentativeDigestFrameWitnessV1` validates the assembly-certificate side of the 11-input `path2_reviewed_fq12_native_representative_digest_v1` frame, and `Path2ReviewedFq12FullNativeOpeningCanonicalRepresentativeWitnessV1` validates the full-opening canonical representative side against the role-lift and assembly certificates. The Lean byte certificate now binds the canonical witness's native role-root commitment and full-opening digest to the opened tuple, matching the Rust frame. Both Rust witnesses reject self-consistent rebound assembly/opening drift, and the canonical witness now has explicit negative controls for native-role-root and full-opening-digest rebinding. The Rust fail-closed audit now source-inspects the selected hidden-relation extraction certificate, role-root/lift source, independent direct assembly binding source, local assembly/compatibility model source, field-evidence source, source-route source, source-route negative controls, the Rust-shaped canonical witness source, canonical-witness rebinding negative controls, and the shared representative digest frame instead of treating those booleans as unconditional. The remaining P2FS-001 proof work is to instantiate the five source packages consumed by the field-local shared-frame Lean theorem, while keeping source-route evidence compatibility-indexed rather than using it as generic pre-compatibility assembly evidence. | `P2FS-001` |
-| AP2-002 | Byte bridge plus Rust parser evidence / downstream breaks open | Checked-core composition now has a Rust-named Lean relation `Path2NativeCheckedCoreAcceptV1`, a bridge into `CheckedCoreSpendReduction.checkedCoreAccepts`, and a theorem that accepted native evidence uses both the assembled native frame and the Lean reduction frame. `Descender/Path2CheckedCoreByteBridge.lean` adds parser/canonical-proof/frame/hash/syndrome certificates feeding the native accept relation. Rust now pins canonical proof length and rejects short, noncanonical, and decoded-commitment-mismatch proof bytes before acceptance. Remaining gaps are the formal Lean/Rust parser/hash binding and checked-core equation soundness as final named breaks. | `P2FS-002` |
+| AP2-001 | Closed for active hidden-source semantics bridge | P2FS-001 now has the selected Rust predicate-model certificate, source-record package, and final reviewed-Fq12 hidden-source semantics theorem. Rust evidence reports `predicate_model=true`, `extractor_theorem_instantiated=true`, and `semantics_bridge_complete=true`; the native deployment preflight no longer reports `PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS`. Historical notes below still record the route that led to this closure. | `P2FS-001` |
+| AP2-002 | Closed for active checked-core composition | `Descender/Path2CheckedCoreByteBridge.lean` now mirrors the selected checked-core byte evidence report, pins the report digest and active hash byte-domain evidence digest, defines the selected component-level acceptor, builds `SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents`, and exposes `selectedRustCheckedCoreByteSource_instantiation_v1`. Rust source gates now accept the selected theorem and `checked_core_composition_review_complete=true`; the native deployment preflight no longer reports `PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION`. | `P2FS-002` |
 | AP2-003 | Concrete carrier added / production game lift open | Lifecycle/replay controls have Rust local evidence for reserve/sign/consume, verify-and-consume replay rejection, spent-ledger stale-wallet blocking, reorg burns, prevalidated-slot consume-once, and selected-projection replay rejection. `Descender/Path2FullSpendGame.lean` states the direct-mode accepted-spend and full-forgery wrapper theorem; `Descender/Path2FullSpendConcrete.lean` adds a concrete carrier for prevalidated leaves, creation evidence, admission records, direct certificates, signature bodies, consume state, checked-core binding, rollback/reorg breaks, and concrete accepted-spend soundness. It now also adds `ConcreteFullSignatureExecutionSource`, the non-tautological production route from full-signature execution success to concrete verifier acceptance or a named break. The remaining gap is instantiating that source from the real EUF-CMA/blockchain implementation and numeric bound. | `P2FS-003`, `P2FS-013` |
 | AP2-004 | Hash boundary props filled / widened deployment horizon in progress | Hash/QROM accounting has Rust budget/review KATs for direct-mode query caps, inactive batch terms, public native transcript assumptions, and domain/schema uniqueness. Deployment route decision is auxiliary Fq12 action bits: append canonical auxiliary algebraic challenge bits after the compact block/sign prefix, have the checked-core Fq12 action consume the whole longer challenge byte string, target 182 algebraic bits plus 32 hardening bits for `log2(T)=32`, and keep the 26-repetition compact local semantics unchanged for first closure. `Descender/Path2HashBudget.lean` and `Descender/Path2HashDomainAndMultiTarget.lean` are being updated from the old one-bit cap to the widened 182-bit QROM-discounted transcript term, 53-bit strict deployment margin, 32-bit active aggregate horizon, and 54-bit negative control. Rust native deployment preflight is being updated so QROM horizon completion is no longer the smallest productization gate once the widened constants are installed. | `P2FS-005` through `P2FS-008` |
 | AP2-005 | Honest-flow and gate-separation evidence added / productization blockers pinned | Keygen, signing-oracle, and completeness are still deliberately not closed: Rust scope objects report signer/keygen productization and honest-constructor completion as false. Rust evidence shows the prevalidated honest constructor flow reaches selected-verifier public-boundary acceptance, while production acceptance remains fail-closed on the signer/verifier pipeline, CT, and storage gates; an additional test keeps those gates separate and prevents CT/storage non-claims from being hidden behind public-boundary acceptance. | `P2FS-009` through `P2FS-011` |
+
+AP2-001/AP2-002 status override: the active hidden-source semantics bridge and
+active checked-core composition bridge are closed. The next active proof blocker
+is AP2-003 full-signature execution source instantiation.
 | AP2-006 | Public-boundary evidence present / byte-for-byte bridge open | Rust preflight and pipeline tests identify the selected Path 2 native/Fq12 verifier surface and keep it fail-closed. Public-boundary evidence, projection encoders, checked-core frame, serializers, consensus carrier, registry, hash review, signer/verifier evidence, and productization-gate separation tests are present, but the pipeline still reports no production acceptance and internal blockers for no-export serializer instantiation, signer/verifier pipeline, CT, and storage. The Lean relation is not yet a byte-for-byte theorem about that selected Rust verifier. | `P2FS-012` |
 | AP2-007 | Concrete serializer allowlist bridge added / Rust binding open | Public native views, facade exports, replay rejection paths, state snapshots, and spent-ledger records have Rust no-selected-material checks. `Descender/Path2NoExport.lean` proves that accept/reject/storage serializer conformance supplies `noExportClosed`; `Descender/Path2NoExportConcrete.lean` adds tagged accept/reject/storage output frames and reduces a concrete serializer allowlist certificate to active no-export closure. Remaining work is binding that Lean serializer certificate to every concrete Rust accept/reject/storage output surface. | `P2FS-004` |
 
@@ -207,11 +211,17 @@ AP2-R002 checked-core source-gate note: `path2_native_deployment_preflight_v1` n
 
 AP2-R002 checked-core instantiation-gate hardening note: `path2_native_checked_core_selected_rust_instantiation_present_v1` now strips Lean comments and string literal contents before scanning for the future `selectedRustCheckedCoreByteSource_instantiation_v1` theorem and normalized marker set. Its forbidden-stub detector also catches multiline `axiom`/`constant`/`opaque` declarations, module-level `variable` stubs, and vacuous `True`/`trivial` report-proof definitions while ignoring those markers inside comments or strings. The deployment preflight regression now includes comment/string spoofing and multiline-stub negative controls, so AP2-N002 cannot be closed by marker text that is not executable Lean source.
 
-AP2-R002 fail-closed instantiation note: `checked_core_composition_review_complete` now requires both the checked-core byte-bridge source surface and the selected-Rust checked-core instantiation gate. Since AP2-N002 is still open, active native deployment gets `PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION`, but AP2-N001 hidden-source semantics is now checked first in the native preflight and remains the smallest active proof-side blocker until its bridge is instantiated.
+AP2-R002 closure note: `checked_core_composition_review_complete` still requires
+both the checked-core byte-bridge source surface and the selected-Rust
+checked-core instantiation gate, but AP2-N002 now satisfies both gates. Active
+native deployment no longer reports
+`PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION`; after AP2-N001 and
+AP2-N002 closure the smallest active proof-side blocker is full-signature
+execution source instantiation.
 
-AP2-N002 component-target note: `Descender/Path2CheckedCoreByteBridge.lean` now exposes `SelectedRustCheckedCoreByteInstantiationInputs` and `selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break`. This is the implementation-oriented package AP2-N002 must fill from Rust/model byte facts: selected acceptor acceptance, parser/native-handle agreement, proof length/canonicality, decoded proof commitment, parsed response syndrome, checked-core frame bytes, verifier handle equality, parser equality, and challenge/expected-vs-actual syndrome equality. The Rust source-window audit requires this target, but deployment remains blocked because the concrete selected-Rust instantiation theorem is still absent.
+AP2-N002 component-target note: `Descender/Path2CheckedCoreByteBridge.lean` now exposes `SelectedRustCheckedCoreByteInstantiationInputs`, `selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break`, and the selected theorem `selectedRustCheckedCoreByteSource_instantiation_v1`. The selected theorem fills the implementation-oriented package from report/digest-bound byte facts: selected acceptor acceptance, parser/native-handle agreement, proof length/canonicality, decoded proof commitment, parsed response syndrome, checked-core frame bytes, verifier handle equality, parser equality, and challenge/expected-vs-actual syndrome equality.
 
-AP2-N002 Rust-evidence note: `path2_native_checked_core_byte_instantiation_evidence_v1` now emits a public digest-only report for the selected Rust checked-core byte facts consumed by `SelectedRustCheckedCoreByteInstantiationInputs`. It records accepted-path parser/native-handle, proof length/canonicality, decoded commitment, response syndrome, frame byte roundtrip, verifier-handle/public-key binding, parser equality, challenge/expected-vs-actual syndrome equality, the verified `Path2NativeHashByteDomainEvidenceV1` digest/facts, checked-core frame-domain equality to that evidence object, checked-core frame bytes using that domain prefix, challenge and frame-digest derivation from that domain-prefixed frame, and negative controls for short, noncanonical, commitment-mismatch, and verifier-handle-mismatch inputs. The checked-core source-window audit pins this report and its regression, but AP2-N002 still requires translating the report/facts into the concrete Lean instantiation theorem.
+AP2-N002 Rust-evidence note: `path2_native_checked_core_byte_instantiation_evidence_v1` emits a public digest-only report for the selected Rust checked-core byte facts consumed by `SelectedRustCheckedCoreByteInstantiationInputs`. It records accepted-path parser/native-handle, proof length/canonicality, decoded commitment, response syndrome, frame byte roundtrip, verifier-handle/public-key binding, parser equality, challenge/expected-vs-actual syndrome equality, the verified `Path2NativeHashByteDomainEvidenceV1` digest/facts, checked-core frame-domain equality to that evidence object, checked-core frame bytes using that domain prefix, challenge and frame-digest derivation from that domain-prefixed frame, and negative controls for short, noncanonical, commitment-mismatch, and verifier-handle-mismatch inputs. The checked-core source-window audit now pins that report and accepts the concrete Lean selected instantiation theorem.
 
 AP2-N002 Lean evidence-report note: `Descender/Path2CheckedCoreByteBridge.lean` now mirrors the Rust checked-core byte-instantiation evidence as `SelectedRustCheckedCoreByteEvidenceReport`, with concrete boolean fields for schema/digest verification, every selected byte-source component fact, the active hash byte-domain evidence digest/verified/all-facts binding, checked-core frame-domain/prefix/challenge/digest use of that evidence, and every negative control. `SelectedRustCheckedCoreByteEvidenceCertificate` now carries that report, the checked-core report digest, the hash byte-domain evidence digest, and proofs of `ReportVerified` and `FactsAllTrue`, instead of carrying arbitrary `evidenceReportVerified : Prop` and `evidenceFactsAllTrue : Prop` fields. The AP2-N002 instantiation gate now requires `selectedRustHashByteDomainEvidenceDigest` to be passed through `SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents`, so the final theorem must route through a report-shaped public evidence object before it can build `SelectedRustCheckedCoreByteInstantiationInputs`.
 
@@ -1374,23 +1384,11 @@ obligations and rejects local `let` shadowing of
 `selectedRustNativeBoundaryPredicateModelCertificate`, so the final theorem
 must consume the selected certified predicate model rather than rebuilding it
 inside the theorem body.
-Lean now also proves
-`selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible`:
-any certificate whose report is the current selected predicate-model report
-contradicts the report's impossible `FactsAllTrue` proof. The Rust
-source-record subcheck and manifest expose this fail-closed guard.
-That guard bit is now theorem-scoped: the theorem body must start from
-`selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible`, and
-an alias-returning theorem plus an unused contradiction mention is rejected.
-The guard now propagates to the exact final-route package:
-`selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_report_impossible`
-rules out a certified semantics source package whose predicate-model
-certificate uses the current fail-closed report, and the manifest exposes that
-bit too.
-This certified-package guard is theorem-scoped in the same way and must route
-through
-`selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible`
-on `Package.predicateModelCertificate`.
+The selected predicate-model report is now fact-complete for the active source:
+Rust reports `predicate_model = true`, the concrete definition checklist has
+all categories present, and the old current-report impossibility guards have
+been retired. The final theorem still must consume the selected certified
+predicate model rather than rebuilding a local certificate.
 The `native_boundary_concrete_predicate_model_present` detector now requires
 the full active native-boundary reviewed-Fq12 predicate surface, including
 certificate extraction, role-lift, assembly, compatibility, full-opening bridge
@@ -1721,21 +1719,14 @@ directly on `Package.predicateModelCertificate.toSource.toPredicates` and
 `Package.sourceRecords`. The source audit rejects an alias body that only
 mentions that reduction, so the certified package closure no longer detours
 through the older source-shaped semantics adapter.
-The current-report blocker is now split at the first predicate-model failure:
-`selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate_from_current_report_impossible`
-proves that the current report cannot even supply the field-source package
-certificate because `nativeBoundaryPredicateFieldSourcePackagePresent = false`.
-The existing full predicate-model certificate impossibility remains, and the
-Rust source audit requires both proofs before reporting the current-report
-guard present.
-Current implementation check: the Rust predicate-model evidence report is
-derived from `path2_selected_rust_model_source_record_subcheck_v1`, not from a
-separate native-boundary predicate provider. Searching the active Lean sources
-shows no concrete selected `Path2NativeBoundary.Predicates` implementation
-outside the target package/scanner fixtures. Therefore the first real closure
-step is to author/import the selected predicate-field provider definitions and
-`selectedRustNativeBoundaryPredicateFieldSources`; there is no already-present
-Rust predicate model that only needs a Lean wrapper.
+The current-report predicate-model blocker is closed. The active Lean source now
+defines `selectedRustNativeBoundaryPredicates` as the selected field-source
+package projection, builds
+`selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate`, and builds
+`selectedRustNativeBoundaryPredicateModelCertificate` from the fixed-point
+source and fact-complete predicate-model report. The remaining AP2-N001 blocker
+is no longer source-record availability; it is the final extractor theorem and
+semantics bridge instantiation.
 Scanner hygiene update: the concrete definition checklist now computes
 `native_boundary_concrete_predicate_model_present` through a direct active Lean
 source marker check rather than recursively consulting the source-record
@@ -1985,14 +1976,14 @@ sets `lifecycle_slot_digest = assembly.p_lifecycle_digest`,
 `projection_relation_digest = creation_binding.projection_relation_commitment`.
 The selected Lean model no longer treats local/descent validity as proof of
 unbacked context equalities: `selectedLocalValid` and
-`selectedDescentConsistent` are now vacuous at this native representative layer,
-with public slot binding carried by payload/certificate acceptance and opened
-role coordinates carried by boundary reconstruction plus the full-opening
-evidence. Boundary reconstruction still asks for the opened lifecycle and
-opening tuple to match the selected boundary fields (`liveStatusMarker` and
-`creationStatementDigest`), so the remaining coordinate audit is narrowed to
-whether those selected boundary fields are the right Lean names for the Rust
-native-boundary frame objects.
+`selectedDescentConsistent` now record native-field self-consistency at this
+representative layer, with public slot binding carried by payload/certificate
+acceptance and opened role coordinates carried by boundary reconstruction plus
+the full-opening evidence. Boundary reconstruction still asks for the opened
+lifecycle and opening tuple to match the selected boundary fields
+(`liveStatusMarker` and `creationStatementDigest`), so the remaining coordinate
+audit is narrowed to whether those selected boundary fields are the right Lean
+names for the Rust native-boundary frame objects.
 The same principle now applies to account creation/admission:
 `selectedAccountCreateAccepts` no longer asserts
 `nativeBoundaryDigest = creationStatementDigest`, and `selectedAdmitted` no
@@ -2017,6 +2008,14 @@ slice could panic when a window ended inside Lean's `∧` token. The broad
 fail-closed regression was updated for the new provider-complete state but is
 currently too slow after the larger package body; the verified gates for this
 iteration are Lean compilation, manifest output, and `git diff --check`.
+P2FS-001 / AP2-N001 is now closed for the active hidden-source semantics layer:
+Lean builds the selected predicate-model certificate, selected source-record
+package, and final theorem
+`reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation`.
+The manifest reports `predicate_model = true`,
+`extractor_theorem_instantiated = true`, and
+`semantics_bridge_complete = true`; the prevalidated verifier now rejects at
+checked-core composition rather than hidden-source semantics.
 
 ## Findings
 

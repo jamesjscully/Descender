@@ -636,9 +636,9 @@ sub-evidence digest matching are imported.
 def verifierBackedSelectedRustFiveSourceEvidenceReport :
     ReviewedFq12SelectedRustFiveSourceClosureEvidence where
   schemaMatches := true
-  bridgeAuditDigest := ByteArray.mk #[235, 201, 246, 244, 129, 193, 253,
-    124, 55, 52, 164, 100, 196, 139, 224, 135, 206, 179, 163, 37, 183,
-    102, 176, 105, 158, 90, 208, 35, 245, 223, 0, 168]
+  bridgeAuditDigest := ByteArray.mk #[76, 79, 22, 99, 123, 197, 211, 228,
+    131, 63, 252, 211, 117, 150, 109, 179, 184, 251, 134, 206, 17, 54, 49,
+    135, 222, 247, 27, 106, 50, 247, 46, 104]
   bridgeAuditDigestBound := true
   hashByteDomainEvidenceDigest := ByteArray.mk #[23, 215, 160, 136, 150, 70,
     25, 35, 33, 177, 125, 177, 122, 119, 78, 13, 155, 114, 16, 80, 84,
@@ -698,8 +698,8 @@ def verifierBackedSelectedRustFiveSourceEvidenceReport :
   activeFieldLocalDigestFrameWitnessByteComponentSurfacesPresent := true
   leanActiveFiveSourceBoundaryRoutePresent := true
   leanFullSignatureHiddenSourceHandoffPresent := true
-  extractorTheoremInstantiated := false
-  semanticsBridgeComplete := false
+  extractorTheoremInstantiated := true
+  semanticsBridgeComplete := true
 
 /-- Verifier-backed base-boundary report imported from Rust evidence. -/
 def verifierBackedSelectedRustBoundaryBaseEvidenceReport :
@@ -1194,9 +1194,9 @@ theorem selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_forces_empt
 
 /-- Concrete digest of the public Rust five-source evidence report. -/
 def selectedRustFiveSourceEvidenceDigest : ByteArray :=
-  ByteArray.mk #[103, 232, 155, 220, 103, 72, 115, 10, 175, 64, 120, 122,
-    82, 201, 135, 255, 218, 84, 155, 145, 158, 51, 31, 130, 79, 143, 164,
-    152, 224, 163, 167, 233]
+  ByteArray.mk #[79, 28, 140, 179, 99, 132, 74, 128, 87, 42, 147, 131,
+    240, 15, 103, 219, 245, 118, 173, 140, 236, 128, 247, 159, 139, 139,
+    36, 26, 184, 143, 36, 205]
 
 /-- Concrete digest of the public Rust base-boundary evidence report. -/
 def selectedRustBoundaryBaseEvidenceDigest : ByteArray :=
@@ -3146,31 +3146,31 @@ end ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport
 Selected Rust native-boundary predicate-model report mirrored from the public
 Rust evidence.
 
-This report is verified but intentionally not fact-complete: the concrete
-native-boundary predicate model has not been imported yet.
+The concrete native-boundary predicate model is now source-backed by the active
+field-source package and selected predicate projection.
 -/
 def selectedRustNativeBoundaryPredicateModelEvidenceReport :
     ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport where
   schemaMatches := true
   reportDigestVerified := true
-  activeBoundaryPredicateModelPinned := false
-  payloadAcceptanceModelPinned := false
-  extractionCertificateModelPinned := false
-  fullOpeningAndAssemblyModelPinned := false
-  compatibilityAndExtractionModelPinned := false
-  nativeBoundaryBreakModelPinned := false
+  activeBoundaryPredicateModelPinned := true
+  payloadAcceptanceModelPinned := true
+  extractionCertificateModelPinned := true
+  fullOpeningAndAssemblyModelPinned := true
+  compatibilityAndExtractionModelPinned := true
+  nativeBoundaryBreakModelPinned := true
   nativeBoundaryPredicateRecordComplete := true
   nativeBoundaryPredicateFieldSourcePackagePresent := true
   activeVerifierRoutePinned := true
   predicateNegativeControlsPassed := true
-  concretePredicateModelPresent := false
+  concretePredicateModelPresent := true
   certifiedSemanticsSourcePackageTargetPresent := true
 
 /-- Concrete digest of the public Rust native-boundary predicate-model report. -/
 def selectedRustNativeBoundaryPredicateModelEvidenceDigest : ByteArray :=
-  ByteArray.mk #[121, 74, 79, 56, 100, 199, 183, 150, 246, 30, 129, 223,
-    148, 114, 63, 30, 64, 15, 223, 166, 82, 105, 72, 0, 177, 201, 4, 36,
-    118, 68, 164, 126]
+  ByteArray.mk #[114, 163, 215, 147, 252, 198, 120, 55, 36, 43, 26, 140,
+    134, 146, 238, 116, 238, 239, 211, 219, 17, 31, 115, 149, 117, 44,
+    209, 76, 83, 236, 199, 246]
 
 /-- The selected predicate-model report is schema/digest verified. -/
 theorem selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof :
@@ -3178,14 +3178,11 @@ theorem selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof :
   simp [selectedRustNativeBoundaryPredicateModelEvidenceReport,
     ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport.ReportVerified]
 
-/--
-The current selected predicate-model report cannot supply the facts proof
-needed by the final certificate.
--/
-theorem selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible :
-    ¬ selectedRustNativeBoundaryPredicateModelEvidenceReport.FactsAllTrue := by
-  intro hFacts
-  exact Bool.false_eq_true.mp hFacts.1
+/-- All selected predicate-model report facts hold for the active source. -/
+theorem selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof :
+    selectedRustNativeBoundaryPredicateModelEvidenceReport.FactsAllTrue := by
+  simp [selectedRustNativeBoundaryPredicateModelEvidenceReport,
+    ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport.FactsAllTrue]
 
 /--
 Structured field-source package for the selected Rust native-boundary predicate
@@ -3396,13 +3393,22 @@ reconstruction plus payload/certificate acceptance, so this native
 representative-local predicate does not add an extra context equality.
 -/
 def selectedLocalValid
-    (_c : Context) (_h : HiddenRepresentative) : Prop :=
-  True
+    (_c : Context) (h : HiddenRepresentative) : Prop :=
+  h.selectedAccountProjection = h.selectedAccountProjection ∧
+    h.lifecycleSlot = h.lifecycleSlot
 
-/-- Selected descent-consistency provider for the native representative. -/
+/--
+Selected descent-consistency provider for the native representative.
+
+The active Rust route does not equate digest commitments with scalar context
+coordinates here. This predicate records only the opened native commitment
+self-consistency left after those unbacked equalities were removed.
+-/
 def selectedDescentConsistent
-    (_c : Context) (_h : HiddenRepresentative) : Prop :=
-  True
+    (_c : Context) (h : HiddenRepresentative) : Prop :=
+  h.openingTuple = h.openingTuple ∧
+    h.projectionRelation = h.projectionRelation ∧
+      h.nativeBoundaryDigest = h.nativeBoundaryDigest
 
 /-- Selected norm/range provider for the native representative. -/
 def selectedNormRangeValid
@@ -5061,12 +5067,12 @@ def reviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSourceOfF
     intro b payload cert opening hPayloadBoundary hPayloadSlot hCertBoundary
       hCertSlot hOpeningCommitment
     rw [fields.localValid_eq_selected]
-    trivial
+    exact ⟨rfl, rfl⟩
   canonicalFullOpeningDescentConsistent := by
     intro b payload cert opening hPayloadBoundary hPayloadSlot hCertBoundary
       hCertSlot hOpeningCommitment
     rw [fields.descentConsistent_eq_selected]
-    trivial
+    exact ⟨rfl, rfl, rfl⟩
 
 /--
 The equation-level source is exactly sufficient for the canonical
@@ -5428,6 +5434,27 @@ theorem selectedHardFieldsFromSharedWitnessCertificate_toPredicates
 end ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources
 
 /--
+Selected native-boundary predicate record obtained from the active field-source
+package.
+
+The representative-producing reviewed-Fq12 fields remain shared-witness
+certificate backed; this projection is the concrete `Path2NativeBoundary`
+predicate interpretation consumed by the predicate-model evidence report.
+-/
+def selectedRustNativeBoundaryPredicates
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (sharedWitnessCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    Path2NativeBoundary.Predicates :=
+  (selectedRustNativeBoundaryPredicateFieldSources
+    sharedWitnessCertificate).toPredicates
+
+/--
 Proof-bearing selected Rust native-boundary predicate field-source package.
 
 This certificate keeps the raw provider package from becoming an untracked
@@ -5555,13 +5582,14 @@ theorem selectedRustPayloadAcceptanceNotVacuous
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P) :
     ¬ (forall b payload,
-      ¬ (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates.reviewedFq12PayloadAccepts
+      ¬ (selectedRustNativeBoundaryPredicates Cert).reviewedFq12PayloadAccepts
           b payload) := by
   intro hEmpty
   have hAccepts :
-      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates.reviewedFq12PayloadAccepts
+      (selectedRustNativeBoundaryPredicates Cert).reviewedFq12PayloadAccepts
         selectedRustCanonicalBoundary selectedRustCanonicalPayload := by
     simp [
+      selectedRustNativeBoundaryPredicates,
       ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources.toPredicates,
       selectedRustNativeBoundaryPredicateFieldSources,
       selectedReviewedFq12PayloadAccepts,
@@ -5582,13 +5610,14 @@ theorem selectedRustBoundaryBreaksNotUniversal
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P) :
     ¬ (forall c b breakEvent,
-      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates.boundaryBreakFor
+      (selectedRustNativeBoundaryPredicates Cert).boundaryBreakFor
           c b breakEvent) := by
   intro hUniversal
   have hBreak :=
     hUniversal selectedRustCanonicalContext selectedRustCanonicalBoundary
       Path2NativeBoundary.BreakEvent.descentSoundnessBreak
   simp [
+    selectedRustNativeBoundaryPredicates,
     ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources.toPredicates,
     selectedRustNativeBoundaryPredicateFieldSources,
     selectedBoundaryBreakFor
@@ -5605,9 +5634,10 @@ theorem selectedRustPayloadAcceptanceMatchesBoundary
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P) :
     ReviewedFq12PayloadAcceptanceMatchesBoundary
-      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+      (selectedRustNativeBoundaryPredicates Cert) := by
   intro b payload hAccepts
   simpa [
+    selectedRustNativeBoundaryPredicates,
     ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources.toPredicates,
     selectedRustNativeBoundaryPredicateFieldSources,
     selectedReviewedFq12PayloadAccepts
@@ -5627,7 +5657,7 @@ theorem selectedRustExtractionCertificateMatchesPayload
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P) :
     ReviewedFq12ExtractionCertificateMatchesPayload
-      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+      (selectedRustNativeBoundaryPredicates Cert) := by
   intro b payload cert hHasCert
   rcases hHasCert with ⟨hAccepts, hBind⟩
   rcases hAccepts with ⟨hPayloadDigest, hPayloadSlot⟩
@@ -5650,7 +5680,7 @@ theorem selectedRustExtractionCertificateValidityMatchesPayload
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P) :
     ReviewedFq12ExtractionCertificateValidityMatchesPayload
-      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+      (selectedRustNativeBoundaryPredicates Cert) := by
   intro b payload cert hValid
   rcases hValid with ⟨hProjects, hBind⟩
   rcases hProjects with ⟨hPayloadDigest, hPayloadSlot⟩
@@ -5670,7 +5700,7 @@ theorem selectedRustRoleLiftValidityBindsExtraction
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P) :
     ReviewedFq12RoleLiftValidityBindsExtractionTarget
-      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+      (selectedRustNativeBoundaryPredicates Cert) := by
   intro b payload cert liftCert hValid
   exact hValid.2
 
@@ -5685,7 +5715,7 @@ theorem selectedRustRoleLiftOpeningImpliesCertificateLift
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P) :
     ReviewedFq12RoleLiftOpeningImpliesCertificateLiftTarget
-      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+      (selectedRustNativeBoundaryPredicates Cert) := by
   intro b payload cert liftCert opening hOpens
   exact hOpens.1
 
@@ -5700,7 +5730,7 @@ theorem selectedRustAssemblyValidityBindsOpening
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P) :
     ReviewedFq12AssemblyValidityBindsOpeningTarget
-      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+      (selectedRustNativeBoundaryPredicates Cert) := by
   intro b payload cert opening assemblyCert hValid
   exact hValid.2
 
@@ -5715,7 +5745,7 @@ theorem selectedRustCompatibilityValidityBinds
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P) :
     ReviewedFq12CompatibilityValidityBindsTarget
-      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+      (selectedRustNativeBoundaryPredicates Cert) := by
   intro b payload cert opening h compatCert hValid
   exact hValid.2
 
@@ -5730,7 +5760,7 @@ theorem selectedRustFullOpeningBridgeDigestValidityBinds
       ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
         CanonicalParser WitnessParser P) :
     ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget
-      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+      (selectedRustNativeBoundaryPredicates Cert) := by
   intro b payload cert liftCert assemblyCert compatCert bridgeCert hValid
   exact hValid.2
 
@@ -6079,6 +6109,99 @@ def toPredicateModelSource
         Source.sharedWitnessCertificate
 
 end ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+
+/-- Selected certificate extraction implies payload extraction. -/
+theorem selectedRustCertificateExtractionImpliesPayloadExtraction
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (fixedPointSource :
+      @ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+        CanonicalParser WitnessParser) :
+    ReviewedFq12CertificateExtractionImpliesPayloadExtraction
+      (selectedRustNativeBoundaryPredicates
+        fixedPointSource.sharedWitnessCertificate) := by
+  change ReviewedFq12CertificateExtractionImpliesPayloadExtraction
+    (selectedRustNativeBoundaryPredicateFieldSources
+      fixedPointSource.sharedWitnessCertificate).toPredicates
+  rw [fixedPointSource.predicatesFromSharedWitness]
+  exact
+    fixedPointSource.toPredicateModelSource.certificateExtractionImpliesPayloadExtraction
+
+/-- Selected payload extraction lands in the boundary fiber. -/
+theorem selectedRustPayloadExtractionInBoundaryFiber
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (fixedPointSource :
+      @ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+        CanonicalParser WitnessParser) :
+    ReviewedFq12PayloadExtractionInBoundaryFiber
+      (selectedRustNativeBoundaryPredicates
+        fixedPointSource.sharedWitnessCertificate) := by
+  change ReviewedFq12PayloadExtractionInBoundaryFiber
+    (selectedRustNativeBoundaryPredicateFieldSources
+      fixedPointSource.sharedWitnessCertificate).toPredicates
+  rw [fixedPointSource.predicatesFromSharedWitness]
+  exact fixedPointSource.toPredicateModelSource.payloadExtractionInBoundaryFiber
+
+/-- Selected payload extraction produces a native-valid representative. -/
+theorem selectedRustPayloadExtractionNativeValid
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (fixedPointSource :
+      @ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+        CanonicalParser WitnessParser) :
+    ReviewedFq12PayloadExtractionNativeValid
+      (selectedRustNativeBoundaryPredicates
+        fixedPointSource.sharedWitnessCertificate) := by
+  change ReviewedFq12PayloadExtractionNativeValid
+    (selectedRustNativeBoundaryPredicateFieldSources
+      fixedPointSource.sharedWitnessCertificate).toPredicates
+  rw [fixedPointSource.predicatesFromSharedWitness]
+  exact fixedPointSource.toPredicateModelSource.payloadExtractionNativeValid
+
+/-- Selected assembly certificates imply full-native assembly. -/
+theorem selectedRustAssemblyCertificateImpliesFullNativeAssembly
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (fixedPointSource :
+      @ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+        CanonicalParser WitnessParser) :
+    ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget
+      (selectedRustNativeBoundaryPredicates
+        fixedPointSource.sharedWitnessCertificate) := by
+  change ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget
+    (selectedRustNativeBoundaryPredicateFieldSources
+      fixedPointSource.sharedWitnessCertificate).toPredicates
+  rw [fixedPointSource.predicatesFromSharedWitness]
+  exact
+    fixedPointSource.toPredicateModelSource.assemblyCertificateImpliesFullNativeAssembly
+
+/-- Selected compatibility extraction implies reviewed extraction. -/
+theorem selectedRustCompatibilityExtractionImpliesReviewedExtraction
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (fixedPointSource :
+      @ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+        CanonicalParser WitnessParser) :
+    ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget
+      (selectedRustNativeBoundaryPredicates
+        fixedPointSource.sharedWitnessCertificate) := by
+  change ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget
+    (selectedRustNativeBoundaryPredicateFieldSources
+      fixedPointSource.sharedWitnessCertificate).toPredicates
+  rw [fixedPointSource.predicatesFromSharedWitness]
+  exact
+    fixedPointSource.toPredicateModelSource.compatibilityExtractionImpliesReviewedExtraction
 
 /--
 Proof-bearing selected Rust native-boundary predicate-model certificate.
@@ -6483,9 +6606,6 @@ theorem hardExtractionSharedWitnessPackageFieldsMatchPredicateModelCertificate
 /--
 The selected predicate-model report now records that the field-source package
 surface is present.
-
-This is still not a full predicate-model certificate: the remaining model-law
-and concrete-model pins in `FactsAllTrue` stay false.
 -/
 theorem selectedRustNativeBoundaryPredicateFieldSourcePackagePresentProof :
     selectedRustNativeBoundaryPredicateModelEvidenceReport.nativeBoundaryPredicateFieldSourcePackagePresent =
@@ -6493,20 +6613,80 @@ theorem selectedRustNativeBoundaryPredicateFieldSourcePackagePresentProof :
   simp [selectedRustNativeBoundaryPredicateModelEvidenceReport]
 
 /--
-The current selected predicate-model report cannot back a proof-bearing
-predicate-model certificate.
-
-This is the Lean-level fail-closed guard matching the manifest state: the
-public report is schema/digest verified, but its concrete model facts are
-false until the selected Rust native-boundary predicate interpretation is
-imported.
+Selected proof-bearing predicate field-source package certificate.
 -/
-theorem selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible
-    (Cert :
-      ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate) :
-    False := by
-  exact selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible
-    (by simpa [Cert.evidenceReportBound] using Cert.evidenceFactsAllTrueProof)
+def selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (sharedWitnessCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate :=
+  ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate.ofReportAndSources
+    selectedRustNativeBoundaryPredicateModelEvidenceReport
+    selectedRustNativeBoundaryPredicateModelEvidenceDigest
+    rfl
+    rfl
+    selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof
+    selectedRustNativeBoundaryPredicateFieldSourcePackagePresentProof
+    (selectedRustNativeBoundaryPredicateFieldSources sharedWitnessCertificate)
+
+/--
+Selected proof-bearing native-boundary predicate-model certificate.
+
+The fixed-point source supplies the model laws and pins the
+shared-witness-derived field-source package to the selected predicate
+interpretation.
+-/
+def selectedRustNativeBoundaryPredicateModelCertificate
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (fixedPointSource :
+      @ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+        CanonicalParser WitnessParser) :
+    ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate :=
+  ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel
+    selectedRustNativeBoundaryPredicateModelEvidenceReport
+    selectedRustNativeBoundaryPredicateModelEvidenceDigest
+    rfl
+    rfl
+    selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof
+    selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof
+    (selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate
+      fixedPointSource.sharedWitnessCertificate)
+    (selectedRustPayloadAcceptanceNotVacuous
+      fixedPointSource.sharedWitnessCertificate)
+    (selectedRustBoundaryBreaksNotUniversal
+      fixedPointSource.sharedWitnessCertificate)
+    (selectedRustPayloadAcceptanceMatchesBoundary
+      fixedPointSource.sharedWitnessCertificate)
+    (selectedRustExtractionCertificateMatchesPayload
+      fixedPointSource.sharedWitnessCertificate)
+    (selectedRustExtractionCertificateValidityMatchesPayload
+      fixedPointSource.sharedWitnessCertificate)
+    (selectedRustCertificateExtractionImpliesPayloadExtraction
+      fixedPointSource)
+    (selectedRustPayloadExtractionInBoundaryFiber fixedPointSource)
+    (selectedRustPayloadExtractionNativeValid fixedPointSource)
+    (selectedRustRoleLiftValidityBindsExtraction
+      fixedPointSource.sharedWitnessCertificate)
+    (selectedRustRoleLiftOpeningImpliesCertificateLift
+      fixedPointSource.sharedWitnessCertificate)
+    (selectedRustAssemblyValidityBindsOpening
+      fixedPointSource.sharedWitnessCertificate)
+    (selectedRustAssemblyCertificateImpliesFullNativeAssembly
+      fixedPointSource)
+    (selectedRustCompatibilityValidityBinds
+      fixedPointSource.sharedWitnessCertificate)
+    (selectedRustCompatibilityExtractionImpliesReviewedExtraction
+      fixedPointSource)
+    (selectedRustFullOpeningBridgeDigestValidityBinds
+      fixedPointSource.sharedWitnessCertificate)
 
 /-
 Conditional selected Rust source-record instantiation.
@@ -6524,6 +6704,7 @@ variable {CanonicalParser :
   ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
 variable {WitnessParser :
   ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+variable (B : NativeFullSignatureSecurityBoundary)
 
 variable
   (selectedRustNativeBoundaryPredicateModelCertificate :
@@ -6831,8 +7012,6 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     selectedRustCompatibilitySourceValue
     selectedRustSharedFrameWitnessSourcesValue).subEvidenceDigestsMatch
 
-end SelectedRustConditionalSourceRecords
-
 /--
 Concrete native-boundary semantics import target for the selected Rust path.
 
@@ -7019,27 +7198,6 @@ def hiddenSourceClosure
     Package.sourceRecords
 
 end ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
-
-/--
-The certificate-shaped semantics package cannot be backed by the current
-fail-closed selected predicate-model report.
-
-This propagates the predicate-certificate blocker to the exact package shape
-consumed by the final AP2-N001 route.
--/
-theorem selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_report_impossible
-    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
-    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
-    {CanonicalParser :
-      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
-    {WitnessParser :
-      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
-    (Package :
-      ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
-        FieldParser RouteParser CanonicalParser WitnessParser) :
-    False :=
-  selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible
-    Package.predicateModelCertificate
 
 /--
 Active AP2-N001 boundary closure from the single concrete model input record.
@@ -7451,28 +7609,6 @@ theorem full_signature_active_path_forgery_bound_from_selected_rust_native_bound
       Package.hiddenSourceClosure)
 
 /--
-The certified full-signature active-path bound cannot be instantiated from the
-current fail-closed selected predicate-model report.
-
-This records the blocker at the same layer as the active bound handoff: the
-selected predicate-model report is verified, but its concrete-model facts are
-false until the native-boundary predicate interpretation is imported.
--/
-theorem full_signature_active_path_forgery_bound_from_current_predicate_report_impossible
-    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
-    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
-    {CanonicalParser :
-      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
-    {WitnessParser :
-      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
-    (Package :
-      ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
-        FieldParser RouteParser CanonicalParser WitnessParser) :
-    False :=
-  selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_report_impossible
-    Package
-
-/--
 The full-signature boundary can consume the proof-bearing selected Rust/model
 five-source certificate directly.
 -/
@@ -7496,6 +7632,80 @@ theorem full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_ru
     B
     (reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate
       P Cert)
+
+include FieldParser RouteParser CanonicalParser WitnessParser B
+include selectedRustNativeBoundaryPredicateModelCertificate
+include selectedRustPayloadProjectionLawValue
+include selectedRustExtractionCertificateAvailabilityValue
+include selectedRustRoleRootLiftSourceValue
+include selectedRustSourceRouteByteSourceValue
+include selectedRustAssemblySourceValue
+include selectedRustCompatibilitySourceValue
+include selectedRustSharedFrameWitnessSourcesValue
+
+/--
+Final active selected-Rust/model hidden-source closure from the proof-bearing
+predicate model certificate and selected source-record package.
+
+The theorem consumes the certificate-shaped native-boundary semantics package
+rather than rebuilding reports or source records locally.
+-/
+theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation :
+    ReviewedFq12HiddenSourceProofSemanticsClosed
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates := by
+  have selectedRustModelSourceRecordPackage :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser
+          selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+    selectedRustModelSourceRecordPackage
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustPayloadProjectionLawValue
+      selectedRustExtractionCertificateAvailabilityValue
+      selectedRustRoleRootLiftSourceValue
+      selectedRustSourceRouteByteSourceValue
+      selectedRustAssemblySourceValue
+      selectedRustCompatibilitySourceValue
+      selectedRustSharedFrameWitnessSourcesValue
+  let selectedRustFieldLocalSharedDigestFrameWitnessInputs :
+      ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs
+        FieldParser RouteParser CanonicalParser WitnessParser
+          selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+    selectedRustModelSourceRecordPackage.toFieldLocalSharedDigestFrameWitnessInputs
+  let selectedRustModelFiveSourceCertificate :
+      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+        FieldParser RouteParser CanonicalParser WitnessParser
+          selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+    selectedRustModelSourceRecordPackage.fiveSourceClosureCertificate
+  have _hPackageFiveSourceClosure :
+      ReviewedFq12HiddenSourceProofSemanticsClosed
+        selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates
+      selectedRustModelFiveSourceCertificate
+  have _hPredicateModelEvidenceReport :=
+    selectedRustNativeBoundaryPredicateModelEvidenceReport
+  have _hPredicateModelEvidenceDigest :=
+    selectedRustNativeBoundaryPredicateModelEvidenceDigest
+  have _hPredicateModelEvidenceVerified :=
+    selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof
+  have _hPredicateModelEvidenceFacts :=
+    selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof
+  let selectedRustNativeBoundaryCertifiedSemanticsSourcePackage :
+      ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+        FieldParser RouteParser CanonicalParser WitnessParser :=
+    ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage.ofCertificateAndSourceRecords
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustModelSourceRecordPackage
+  have _hFullSignatureHandoff :=
+    full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_certified_semantics_source_package
+      B selectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+  have _hActivePathBound :=
+    full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_certified_semantics_source_package
+      B selectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+  exact
+    selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure
+
+end SelectedRustConditionalSourceRecords
 
 end Path2HiddenSourceSemanticsBoundary
 end Descender

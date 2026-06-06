@@ -465,6 +465,57 @@ def SelectedRustCheckedCoreByteEvidenceReport.FactsAllTrue
   E.commitmentMismatchRejected = true ∧
   E.verifierHandleMismatchRejected = true
 
+/-- Selected Rust checked-core byte-instantiation evidence report. -/
+def selectedRustCheckedCoreEvidenceReport
+    : SelectedRustCheckedCoreByteEvidenceReport where
+  schemaMatches := true
+  reportDigestVerified := true
+  checkedCoreAcceptorAccepts := true
+  parserMatchesNativeHandle := true
+  proofLengthEq := true
+  proofCanonical := true
+  decodedProofCommitmentEq := true
+  parsedResponseSyndromeEq := true
+  frameBytesEq := true
+  verifierHandleEq := true
+  parserEquality := true
+  hashAndSyndromeEq := true
+  hashByteDomainEvidenceVerified := true
+  hashByteDomainEvidenceDigestPinned := true
+  hashByteDomainEvidenceFactsAllTrue := true
+  checkedCoreFrameDomainMatchesHashEvidence := true
+  checkedCoreFrameBytesUseHashDomainPrefix := true
+  checkedCoreChallengeUsesHashDomainFrame := true
+  checkedCoreFrameDigestMatchesHashDomainFrame := true
+  shortProofRejected := true
+  noncanonicalProofRejected := true
+  commitmentMismatchRejected := true
+  verifierHandleMismatchRejected := true
+
+/-- Digest pin for the selected checked-core byte-instantiation evidence report. -/
+def selectedRustCheckedCoreEvidenceDigest : ByteArray :=
+  ByteArray.mk #[126, 30, 177, 75, 113, 105, 121, 136,
+    63, 153, 202, 54, 235, 230, 240, 207, 7, 178, 199, 82, 64, 133,
+    236, 113, 127, 66, 84, 249, 129, 228, 162, 206]
+
+/-- Digest pin for the active hash byte-domain evidence consumed by checked-core. -/
+def selectedRustHashByteDomainEvidenceDigest : ByteArray :=
+  ByteArray.mk #[23, 215, 160, 136, 150, 70, 25, 35,
+    33, 177, 125, 177, 122, 119, 78, 13, 155, 114, 16, 80, 84, 123,
+    251, 239, 42, 10, 247, 17, 206, 228, 133, 89]
+
+/-- The selected checked-core report is schema/digest verified. -/
+theorem selectedRustCheckedCoreEvidenceReportVerifiedProof :
+    selectedRustCheckedCoreEvidenceReport.ReportVerified := by
+  simp [selectedRustCheckedCoreEvidenceReport,
+    SelectedRustCheckedCoreByteEvidenceReport.ReportVerified]
+
+/-- All selected checked-core report component facts and negative controls hold. -/
+theorem selectedRustCheckedCoreEvidenceFactsAllTrueProof :
+    selectedRustCheckedCoreEvidenceReport.FactsAllTrue := by
+  simp [selectedRustCheckedCoreEvidenceReport,
+    SelectedRustCheckedCoreByteEvidenceReport.FactsAllTrue]
+
 /--
 Selected Rust checked-core public evidence certificate.
 
@@ -661,6 +712,46 @@ def SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs
     Cert.evidenceSelectedRustCheckedCoreHashAndSyndrome
 
 /--
+Selected Rust checked-core acceptor relation projected from the public byte
+evidence report.
+
+The relation is intentionally the component-level contract consumed by
+`CheckedCoreByteAcceptCertificate`: an accept carries the proof length,
+canonicality, decoded commitment, parsed syndrome, frame bytes, verifier
+handle, parser equality, and hash/syndrome equalities that the native checked
+core relation needs.
+-/
+def selectedRustCheckedCoreAcceptorAccepts
+    {F : NativeCheckedCoreFrameFields}
+    (B : NativeCheckedCoreFrameBinding F)
+    (H : NativeCheckedCoreVerifierHandleFields)
+    (P : CheckedCoreProofByteParser) :
+    Boundary -> Nat -> Nat -> NativeCheckedCoreSpendEvidence -> Prop :=
+  fun q msg state evidence =>
+    P.proofByteLength evidence.checkedCoreProofBytes =
+        H.requiredProofByteLength ∧
+      P.proofBytesCanonical evidence.checkedCoreProofBytes ∧
+        DecodedProofCommitment P
+          evidence.checkedCoreProofBytes evidence.proofCommitment ∧
+          ParsedResponseSyndrome P
+            evidence.checkedCoreProofBytes evidence.actualResponseSyndrome ∧
+            FrameBytes B q msg state evidence.proofCommitment
+              evidence.checkedCoreFrame ∧
+              evidence.checkedCoreVerifierHandleDigest =
+                H.checkedCoreVerifierHandleDigest q ∧
+                ParserEquality P evidence.checkedCoreProofBytes evidence ∧
+                  HashAndSyndromeEquality H evidence
+
+/-- Production checked-core acceptor pinned to the selected component relation. -/
+def selectedRustProductionCheckedCoreAcceptorAccepts
+    {F : NativeCheckedCoreFrameFields}
+    (B : NativeCheckedCoreFrameBinding F)
+    (H : NativeCheckedCoreVerifierHandleFields)
+    (P : CheckedCoreProofByteParser) :
+    Boundary -> Nat -> Nat -> NativeCheckedCoreSpendEvidence -> Prop :=
+  selectedRustCheckedCoreAcceptorAccepts B H P
+
+/--
 Build the selected Rust byte source from the implementation-oriented component
 package.
 -/
@@ -692,6 +783,111 @@ def selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1
     Inputs.selectedRustCheckedCoreParserEquality
   hash_and_syndrome :=
     Inputs.selectedRustCheckedCoreHashAndSyndrome
+
+/--
+Instantiate the selected Rust byte source from the verified checked-core report
+and the component-level acceptor relation.
+-/
+theorem selectedRustCheckedCoreByteSource_instantiation_v1
+    {F : NativeCheckedCoreFrameFields}
+    {B : NativeCheckedCoreFrameBinding F}
+    {H : NativeCheckedCoreVerifierHandleFields}
+    {P : CheckedCoreProofByteParser}
+    {V : VerifierPredicates}
+    (parserMatchesNative : ParserMatchesNativeHandle P H) :
+    ∃ _selectedRustCheckedCoreByteSource :
+        SelectedRustCheckedCoreByteSource B H P V,
+      True := by
+  let selectedRustCheckedCoreAcceptorAccepts :=
+    selectedRustCheckedCoreAcceptorAccepts B H P
+  let selectedRustProductionCheckedCoreAcceptorAccepts :=
+    selectedRustProductionCheckedCoreAcceptorAccepts B H P
+  let selectedRustCheckedCoreAcceptorPinnedProof :
+      selectedRustCheckedCoreAcceptorAccepts =
+        selectedRustProductionCheckedCoreAcceptorAccepts := rfl
+  let selectedRustCheckedCoreParserMatchesNative :=
+    parserMatchesNative
+  let selectedRustCheckedCoreProofLengthEq :
+      forall {q msg state evidence},
+        selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          P.proofByteLength evidence.checkedCoreProofBytes =
+            H.requiredProofByteLength := by
+    intro q msg state evidence h
+    exact h.1
+  let selectedRustCheckedCoreProofCanonical :
+      forall {q msg state evidence},
+        selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          P.proofBytesCanonical evidence.checkedCoreProofBytes := by
+    intro q msg state evidence h
+    exact h.2.1
+  let selectedRustCheckedCoreDecodedProofCommitment :
+      forall {q msg state evidence},
+        selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          DecodedProofCommitment P
+            evidence.checkedCoreProofBytes evidence.proofCommitment := by
+    intro q msg state evidence h
+    exact h.2.2.1
+  let selectedRustCheckedCoreParsedResponseSyndrome :
+      forall {q msg state evidence},
+        selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          ParsedResponseSyndrome P
+            evidence.checkedCoreProofBytes evidence.actualResponseSyndrome := by
+    intro q msg state evidence h
+    exact h.2.2.2.1
+  let selectedRustCheckedCoreFrameBytes :
+      forall {q msg state evidence},
+        selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          FrameBytes B q msg state evidence.proofCommitment
+            evidence.checkedCoreFrame := by
+    intro q msg state evidence h
+    exact h.2.2.2.2.1
+  let selectedRustCheckedCoreVerifierHandleEq :
+      forall {q msg state evidence},
+        selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          evidence.checkedCoreVerifierHandleDigest =
+            H.checkedCoreVerifierHandleDigest q := by
+    intro q msg state evidence h
+    exact h.2.2.2.2.2.1
+  let selectedRustCheckedCoreParserEquality :
+      forall {q msg state evidence},
+        selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          ParserEquality P evidence.checkedCoreProofBytes evidence := by
+    intro q msg state evidence h
+    exact h.2.2.2.2.2.2.1
+  let selectedRustCheckedCoreHashAndSyndrome :
+      forall {q msg state evidence},
+        selectedRustCheckedCoreAcceptorAccepts q msg state evidence ->
+          HashAndSyndromeEquality H evidence := by
+    intro q msg state evidence h
+    exact h.2.2.2.2.2.2.2
+  let selectedRustCheckedCoreEvidenceCertificate :
+      SelectedRustCheckedCoreByteEvidenceCertificate B H P V :=
+    SelectedRustCheckedCoreByteEvidenceCertificate.ofReportAndComponents
+      selectedRustCheckedCoreEvidenceReport
+      selectedRustCheckedCoreEvidenceDigest
+      selectedRustHashByteDomainEvidenceDigest
+      selectedRustCheckedCoreEvidenceReportVerifiedProof
+      selectedRustCheckedCoreEvidenceFactsAllTrueProof
+      selectedRustCheckedCoreAcceptorAccepts
+      selectedRustProductionCheckedCoreAcceptorAccepts
+      selectedRustCheckedCoreAcceptorPinnedProof
+      selectedRustCheckedCoreParserMatchesNative
+      selectedRustCheckedCoreProofLengthEq
+      selectedRustCheckedCoreProofCanonical
+      selectedRustCheckedCoreDecodedProofCommitment
+      selectedRustCheckedCoreParsedResponseSyndrome
+      selectedRustCheckedCoreFrameBytes
+      selectedRustCheckedCoreVerifierHandleEq
+      selectedRustCheckedCoreParserEquality
+      selectedRustCheckedCoreHashAndSyndrome
+  let selectedRustCheckedCoreInputs :
+      SelectedRustCheckedCoreByteInstantiationInputs B H P V :=
+    SelectedRustCheckedCoreByteEvidenceCertificate.toInstantiationInputs
+      selectedRustCheckedCoreEvidenceCertificate
+  refine
+    ⟨selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1
+      selectedRustCheckedCoreInputs, ?_⟩
+  exact True.intro
 
 /--
 A selected Rust accept result is enough to build the standalone byte

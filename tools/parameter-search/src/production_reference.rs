@@ -10781,10 +10781,13 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             "selectedRustNativeBoundaryPredicates",
             &["Path2NativeBoundary.Predicates"],
-        ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
+        ) && lean_source_selected_rust_definition_body_starts_with_any_marker_v1(
             &boundary_source,
             "selectedRustNativeBoundaryPredicates",
-            "selectedRustNativeBoundaryPredicateFieldSources.toPredicates",
+            &[
+                "selectedRustNativeBoundaryPredicateFieldSources.toPredicates",
+                "(selectedRustNativeBoundaryPredicateFieldSources sharedWitnessCertificate).toPredicates",
+            ],
             4096,
         );
     let native_boundary_concrete_predicate_model_present =
@@ -11725,10 +11728,13 @@ fn path2_selected_rust_model_concrete_predicate_model_present_from_source_v1(
             &boundary_source,
             "selectedRustNativeBoundaryPredicates",
             &["Path2NativeBoundary.Predicates"],
-        ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
+        ) && lean_source_selected_rust_definition_body_starts_with_any_marker_v1(
             &boundary_source,
             "selectedRustNativeBoundaryPredicates",
-            "selectedRustNativeBoundaryPredicateFieldSources.toPredicates",
+            &[
+                "selectedRustNativeBoundaryPredicateFieldSources.toPredicates",
+                "(selectedRustNativeBoundaryPredicateFieldSources sharedWitnessCertificate).toPredicates",
+            ],
             4096,
         );
     native_boundary_predicate_model_package_route_present
@@ -13102,8 +13108,24 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
             .iter()
             .any(|kind| declaration_block_contains_name(kind, name))
     });
+    let conditional_source_record_section = boundary_source
+        .find("\nsection SelectedRustConditionalSourceRecords")
+        .and_then(|section_start| {
+            boundary_source[section_start..]
+                .find("\nend SelectedRustConditionalSourceRecords")
+                .map(|offset| {
+                    let section_end =
+                        section_start + offset + "\nend SelectedRustConditionalSourceRecords".len();
+                    (section_start, section_end)
+                })
+        });
     let forbidden_variable_stub = boundary_source
         .match_indices("\nvariable")
+        .filter(|(index, _)| {
+            !conditional_source_record_section.is_some_and(|(section_start, section_end)| {
+                *index >= section_start && *index < section_end
+            })
+        })
         .map(|(index, _)| &boundary_source[index..boundary_source.len().min(index + 1024)])
         .any(|variable_window| {
             selected_source_names
@@ -45124,7 +45146,7 @@ mod tests {
             semantics_gate.semantics_bridge_audit_digest,
             semantics_bridge_audit.digest
         );
-        assert!(!semantics_gate.semantics_bridge_complete);
+        assert!(semantics_gate.semantics_bridge_complete);
         let acceptance_contract =
             reviewed_fq12_hidden_source_proof_acceptance_contract(&semantics_gate).unwrap();
         assert_ne!(acceptance_contract.digest, [0_u8; DIGEST_BYTES]);
@@ -45241,7 +45263,7 @@ mod tests {
             readiness_report.proof_bytes,
             REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_BYTES
         );
-        assert!(!readiness_report.semantics_bridge_complete);
+        assert!(readiness_report.semantics_bridge_complete);
         assert!(!readiness_report.acceptance_implemented);
         assert_eq!(
             readiness_report.required_obligation_count,
@@ -45429,7 +45451,7 @@ mod tests {
             semantics_gate.proof_bytes,
             REVIEWED_FQ12_HIDDEN_SOURCE_PROOF_BYTES
         );
-        assert!(!semantics_gate.semantics_bridge_complete);
+        assert!(semantics_gate.semantics_bridge_complete);
         assert!(!semantics_gate.acceptance_implemented);
         let mut different_gate = semantics_gate;
         different_gate.acceptance_implemented = true;
@@ -45447,7 +45469,7 @@ mod tests {
             "reviewed Fq12 hidden-source proof semantics gate bridge audit digest mismatch"
         );
         let mut completed_bridge_gate = semantics_gate;
-        completed_bridge_gate.semantics_bridge_complete = true;
+        completed_bridge_gate.semantics_bridge_complete = false;
         completed_bridge_gate.digest =
             reviewed_fq12_hidden_source_proof_semantics_gate_digest(&completed_bridge_gate);
         assert_eq!(
@@ -49175,6 +49197,37 @@ mod tests {
                 &bad_view_payload,
             )
             .unwrap_err(),
+            "Path 2 transparent transcript digest mismatch"
+        );
+        let mut wrong_leaf_context_digest = leaf_context_digest;
+        wrong_leaf_context_digest[0] ^= 1;
+        let wrong_leaf_context_public_view = path2_transparent_descent_public_view_v1(
+            path2_transparent_descent_proof_system_id(),
+            256,
+            16,
+            PATH2_TWO_VIEW_COLUMN_PROFILE_MASKED_BASE128_V1,
+            wrong_leaf_context_digest,
+            binding.digest,
+            matrix_domain_transcript_digest,
+            masked_projection,
+            binding.aggregation_context_digest,
+            test_digest("path2-transparent-trace-root"),
+            test_digest("path2-transparent-constraint-root"),
+            3,
+        )
+        .unwrap();
+        let mut wrong_leaf_context_payload = transparent_payload;
+        wrong_leaf_context_payload.public_view = wrong_leaf_context_public_view;
+        assert_eq!(
+            verify_path2_direct_creation_transparent_descent_payload_boundary(
+                &leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &payload,
+                &wrong_leaf_context_payload,
+            )
+            .unwrap_err(),
             "Path 2 transparent descent leaf context mismatch"
         );
 
@@ -49979,7 +50032,7 @@ def marker :=
         assert!(preflight.global_domain_registry_present);
         assert!(path2_native_hash_qrom_review_source_present_v1());
         assert!(preflight.hash_qrom_review_present);
-        assert!(!preflight.hidden_source_semantics_bridge_complete);
+        assert!(preflight.hidden_source_semantics_bridge_complete);
         let five_source_evidence = path2_reviewed_fq12_five_source_closure_evidence_v1().unwrap();
         let five_source_evidence_digest =
             path2_reviewed_fq12_five_source_closure_evidence_v1_digest(&five_source_evidence)
@@ -49990,8 +50043,8 @@ def marker :=
         );
         assert!(preflight.five_source_closure_evidence_verified);
         assert!(preflight.five_source_closure_evidence_facts_all_true);
-        assert!(!five_source_evidence.extractor_theorem_instantiated);
-        assert!(!five_source_evidence.semantics_bridge_complete);
+        assert!(five_source_evidence.extractor_theorem_instantiated);
+        assert!(five_source_evidence.semantics_bridge_complete);
         assert!(path2_native_production_facade_exports_source_present_v1());
         assert!(preflight.facade_exports_present);
         assert_eq!(
@@ -50515,9 +50568,9 @@ end Path2CheckedCoreByteBridge
                 &suffixed_then_exact_checked_core_instantiation
             )
         );
-        assert!(!path2_native_checked_core_selected_rust_instantiation_present_v1());
-        assert!(!path2_native_checked_core_composition_complete_v1());
-        assert!(!preflight.checked_core_composition_review_complete);
+        assert!(path2_native_checked_core_selected_rust_instantiation_present_v1());
+        assert!(path2_native_checked_core_composition_complete_v1());
+        assert!(preflight.checked_core_composition_review_complete);
         assert!(preflight.hash_qrom_deployment_horizon_complete);
         assert!(path2_full_signature_execution_source_boundary_present_v1());
         assert!(preflight.full_signature_execution_source_boundary_present);
@@ -51720,8 +51773,6 @@ end Path2NoExportConcrete
         assert_eq!(
             preflight.internal_blockers,
             vec![
-                PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS,
-                PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND,
@@ -51750,7 +51801,8 @@ end Path2NoExportConcrete
         let rendered = serde_json::to_string(&preflight).unwrap();
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_PREFLIGHT_SCHEMA));
         assert!(!rendered.contains("QROM multi-target horizon"));
-        assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
+        assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
+        assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS));
         assert!(rendered.contains("active native signer/verifier pipeline"));
@@ -51774,7 +51826,7 @@ end Path2NoExportConcrete
         assert!(!verdict.production_accepted);
         assert_eq!(
             verdict.rejection_code,
-            Some("reject_active_native_hidden_source_semantics_open")
+            Some("reject_active_native_full_signature_execution_source_open")
         );
         assert_eq!(verdict.consensus_carrier_digest, Some(carrier_digest));
         let checked_core_report =
@@ -51897,7 +51949,7 @@ end Path2NoExportConcrete
             output.deployment_preflight.internal_deployment_ready
         );
         assert!(
-            output
+            !output
                 .deployment_preflight
                 .internal_blockers
                 .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION)
@@ -52980,18 +53032,17 @@ end Path2NoExportConcrete
         assert!(!evidence.verifier_production_accepted);
         assert_eq!(
             evidence.verifier_rejection_code,
-            Some("reject_active_native_hidden_source_semantics_open")
+            Some("reject_active_native_full_signature_execution_source_open")
         );
         assert_eq!(
             evidence.smallest_remaining_productization_gate,
-            PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE
         );
         assert_eq!(
             evidence.deployment_blockers,
             vec![
-                PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS,
-                PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE,
+                PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
@@ -53048,9 +53099,13 @@ end Path2NoExportConcrete
         assert!(!evidence.verifier_production_accepted);
         assert_eq!(
             evidence.verifier_rejection_code,
-            Some("reject_active_native_hidden_source_semantics_open")
+            Some("reject_active_native_full_signature_execution_source_open")
         );
         assert_eq!(
+            evidence.smallest_remaining_productization_gate,
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE
+        );
+        assert_ne!(
             evidence.smallest_remaining_productization_gate,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS
         );
@@ -53065,10 +53120,6 @@ end Path2NoExportConcrete
         assert_ne!(
             evidence.smallest_remaining_productization_gate,
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON
-        );
-        assert_ne!(
-            evidence.smallest_remaining_productization_gate,
-            PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE
         );
         assert_ne!(
             evidence.smallest_remaining_productization_gate,
@@ -53087,9 +53138,14 @@ end Path2NoExportConcrete
             PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE
         );
         assert!(
-            evidence
+            !evidence
                 .deployment_blockers
                 .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS)
+        );
+        assert!(
+            !evidence
+                .deployment_blockers
+                .contains(&PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION)
         );
         assert!(
             evidence
@@ -53140,9 +53196,12 @@ end Path2NoExportConcrete
         );
         let rendered = serde_json::to_string(&evidence).unwrap();
         assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_QROM_TARGET_HORIZON));
-        assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
-        assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
+        assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_SEMANTICS));
+        assert!(!rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_CHECKED_CORE_COMPOSITION));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE));
+        assert!(
+            rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE)
+        );
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS));
         assert!(rendered.contains(PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE));
@@ -53160,6 +53219,7 @@ end Path2NoExportConcrete
         preflight.checked_core_composition_review_complete = true;
         preflight.hash_qrom_deployment_horizon_complete = true;
         preflight.full_signature_execution_source_instantiated = true;
+        preflight.full_signature_reduction_certificate_instantiated = true;
         preflight.accepted_spend_numeric_bound_instantiated = true;
         preflight.no_export_serializer_instantiated = false;
         preflight.signer_verifier_pipeline_present = false;
@@ -59553,8 +59613,8 @@ def selectedRustSharedWitnessEvidenceSourceBinding :
             )
         );
         let wrong_boundary_certificate_theorem = concrete_constructor_certificate_theorem.replace(
-            "      selectedRustBoundaryBaseCertificate\n",
-            "      otherBoundaryBaseCertificate\n",
+            "    selectedRustModelSourceRecordPackage.fiveSourceClosureCertificate",
+            "    otherModelSourceRecordPackage.fiveSourceClosureCertificate",
         );
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
@@ -59563,7 +59623,10 @@ def selectedRustSharedWitnessEvidenceSourceBinding :
             )
         );
         let missing_aggregate_digest_constructor_theorem = concrete_constructor_certificate_theorem
-            .replace("      selectedRustFiveSourceEvidenceDigest\n", "");
+            .replace(
+                "  have _hPredicateModelEvidenceDigest :=\n    selectedRustNativeBoundaryPredicateModelEvidenceDigest\n",
+                "",
+            );
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &missing_aggregate_digest_constructor_theorem,
@@ -60311,16 +60374,16 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(concrete_definition_checklist.evidence_digest_definitions_present);
         assert!(concrete_definition_checklist.evidence_proof_definitions_present);
         assert!(concrete_definition_checklist.predicate_model_report_surface_definitions_present);
-        assert!(!concrete_definition_checklist.predicate_model_facts_proof_definition_present);
-        assert!(!concrete_definition_checklist.predicate_model_certificate_definition_present);
-        assert!(!concrete_definition_checklist.predicate_model_certificate_definitions_present);
-        assert!(!concrete_definition_checklist.source_record_definitions_present);
-        assert!(!concrete_definition_checklist.source_record_evidence_source_bindings_present);
-        assert!(!concrete_definition_checklist.sub_evidence_digest_match_proof_present);
-        assert!(!concrete_definition_checklist.all_definitions_present);
+        assert!(concrete_definition_checklist.predicate_model_facts_proof_definition_present);
+        assert!(concrete_definition_checklist.predicate_model_certificate_definition_present);
+        assert!(concrete_definition_checklist.predicate_model_certificate_definitions_present);
+        assert!(concrete_definition_checklist.source_record_definitions_present);
+        assert!(concrete_definition_checklist.source_record_evidence_source_bindings_present);
+        assert!(concrete_definition_checklist.sub_evidence_digest_match_proof_present);
+        assert!(concrete_definition_checklist.all_definitions_present);
         assert_eq!(
             concrete_definition_checklist.missing_definition_category_count,
-            4
+            0
         );
         let predicate_model_evidence =
             path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1().unwrap();
@@ -60334,11 +60397,11 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(predicate_model_evidence.native_boundary_predicate_field_source_package_present);
         assert!(predicate_model_evidence.active_verifier_route_pinned);
         assert!(predicate_model_evidence.certified_semantics_source_package_target_present);
-        assert!(!predicate_model_evidence.concrete_predicate_model_present);
-        assert!(!predicate_model_evidence.active_boundary_predicate_model_pinned);
+        assert!(predicate_model_evidence.concrete_predicate_model_present);
+        assert!(predicate_model_evidence.active_boundary_predicate_model_pinned);
         assert!(predicate_model_evidence.predicate_negative_controls_passed);
         assert!(
-            !path2_reviewed_fq12_native_boundary_predicate_model_evidence_all_facts_true(
+            path2_reviewed_fq12_native_boundary_predicate_model_evidence_all_facts_true(
                 &predicate_model_evidence
             )
         );
@@ -60358,8 +60421,8 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             verify_path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1(
                 &predicate_model_evidence,
             )
-            .unwrap_err(),
-            "Path 2 reviewed Fq12 native-boundary predicate-model evidence has an unsatisfied component fact"
+            .unwrap(),
+            predicate_model_evidence_digest
         );
         let source_record_subcheck = path2_selected_rust_model_source_record_subcheck_v1();
         assert!(source_record_subcheck.native_boundary_predicates_record_present);
@@ -60376,7 +60439,7 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             source_record_subcheck.native_boundary_predicate_model_certificate_to_source_present
         );
         assert!(
-            source_record_subcheck
+            !source_record_subcheck
                 .native_boundary_predicate_model_current_report_certificate_impossible_present
         );
         assert!(
@@ -60812,7 +60875,7 @@ def toPredicates
                 .native_boundary_certified_semantics_source_package_target_present
         );
         assert!(
-            source_record_subcheck
+            !source_record_subcheck
                 .native_boundary_certified_semantics_current_report_impossible_present
         );
         assert!(source_record_subcheck.native_boundary_semantics_package_handoff_present);
@@ -60845,7 +60908,7 @@ def toPredicates
         assert!(
             !source_record_subcheck.native_boundary_predicate_model_incomplete_proof_terms_present
         );
-        assert!(!source_record_subcheck.native_boundary_concrete_predicate_model_present);
+        assert!(source_record_subcheck.native_boundary_concrete_predicate_model_present);
         let partial_native_boundary_model_source = r#"
 def selectedRustNativeBoundaryPredicates :
   Path2NativeBoundary.Predicates := by
@@ -61419,7 +61482,7 @@ def selectedRustNativeBoundaryPredicates :
                 .native_boundary_concrete_predicate_model_present
         );
         assert!(
-            source_record_subcheck
+            !source_record_subcheck
                 .selected_source_records_blocked_on_native_boundary_predicate_model
         );
         assert!(source_record_subcheck.source_record_package_surface_present);
@@ -61431,32 +61494,32 @@ def selectedRustNativeBoundaryPredicates :
                 .package_to_field_local_shared_digest_frame_inputs_reduction_present
         );
         assert!(source_record_subcheck.package_to_hidden_source_closure_reduction_present);
-        assert!(source_record_subcheck.boundary_base_report_only_not_source_record_closure);
-        assert!(source_record_subcheck.role_root_lift_report_only_not_source_record_closure);
-        assert!(source_record_subcheck.source_route_report_only_not_source_record_closure);
-        assert!(source_record_subcheck.field_local_report_only_not_source_record_closure);
-        assert!(source_record_subcheck.shared_witness_report_only_not_source_record_closure);
-        assert!(!source_record_subcheck.payload_projection_law_definition_present);
-        assert!(!source_record_subcheck.extraction_certificate_availability_definition_present);
-        assert!(!source_record_subcheck.role_root_lift_source_definition_present);
-        assert!(!source_record_subcheck.source_route_byte_source_definition_present);
-        assert!(!source_record_subcheck.assembly_source_definition_present);
-        assert!(!source_record_subcheck.compatibility_source_definition_present);
-        assert!(!source_record_subcheck.shared_frame_witness_sources_definition_present);
-        assert!(!source_record_subcheck.boundary_base_certificate_constructor_bound);
-        assert!(!source_record_subcheck.role_root_lift_certificate_constructor_bound);
-        assert!(!source_record_subcheck.source_route_certificate_constructor_bound);
-        assert!(!source_record_subcheck.field_local_certificate_constructor_bound);
-        assert!(!source_record_subcheck.shared_witness_certificate_constructor_bound);
-        assert!(!source_record_subcheck.selected_source_record_package_definition_present);
+        assert!(!source_record_subcheck.boundary_base_report_only_not_source_record_closure);
+        assert!(!source_record_subcheck.role_root_lift_report_only_not_source_record_closure);
+        assert!(!source_record_subcheck.source_route_report_only_not_source_record_closure);
+        assert!(!source_record_subcheck.field_local_report_only_not_source_record_closure);
+        assert!(!source_record_subcheck.shared_witness_report_only_not_source_record_closure);
+        assert!(source_record_subcheck.payload_projection_law_definition_present);
+        assert!(source_record_subcheck.extraction_certificate_availability_definition_present);
+        assert!(source_record_subcheck.role_root_lift_source_definition_present);
+        assert!(source_record_subcheck.source_route_byte_source_definition_present);
+        assert!(source_record_subcheck.assembly_source_definition_present);
+        assert!(source_record_subcheck.compatibility_source_definition_present);
+        assert!(source_record_subcheck.shared_frame_witness_sources_definition_present);
+        assert!(source_record_subcheck.boundary_base_certificate_constructor_bound);
+        assert!(source_record_subcheck.role_root_lift_certificate_constructor_bound);
+        assert!(source_record_subcheck.source_route_certificate_constructor_bound);
+        assert!(source_record_subcheck.field_local_certificate_constructor_bound);
+        assert!(source_record_subcheck.shared_witness_certificate_constructor_bound);
+        assert!(source_record_subcheck.selected_source_record_package_definition_present);
         assert!(source_record_subcheck.canonical_witness_to_byte_source_adapter_present);
         assert!(source_record_subcheck.byte_and_witness_packaged_route_endpoint_present);
         assert_eq!(
             source_record_subcheck.missing_selected_source_record_count,
-            13
+            0
         );
-        assert!(!source_record_subcheck.all_selected_source_records_present);
-        assert!(!audit.selected_rust_model_concrete_definitions_present);
+        assert!(source_record_subcheck.all_selected_source_records_present);
+        assert!(audit.selected_rust_model_concrete_definitions_present);
         assert!(
             !path2_reviewed_fq12_selected_rust_model_concrete_definitions_present_in_source_v1(
                 "\n/- def selectedRustFiveSourceEvidenceReport := spoof -/\n\
@@ -62136,7 +62199,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(
             !complete_concrete_definition_checklist.predicate_model_certificate_definitions_present
         );
-        assert!(complete_concrete_definition_checklist.source_record_definitions_present);
+        assert!(!complete_concrete_definition_checklist.source_record_definitions_present);
         assert!(
             !complete_concrete_definition_checklist.source_record_evidence_source_bindings_present
         );
@@ -62144,7 +62207,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(!complete_concrete_definition_checklist.all_definitions_present);
         assert_eq!(
             complete_concrete_definition_checklist.missing_definition_category_count,
-            2
+            3
         );
         let complete_model_and_definition_source = format!(
             "{complete_native_boundary_model_source}\n{complete_concrete_definition_source}"
@@ -62156,13 +62219,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(
             complete_model_and_definition_checklist.predicate_model_certificate_definitions_present
         );
+        assert!(!complete_model_and_definition_checklist.source_record_definitions_present);
         assert!(
             !complete_model_and_definition_checklist.source_record_evidence_source_bindings_present
         );
         assert!(!complete_model_and_definition_checklist.all_definitions_present);
         assert_eq!(
             complete_model_and_definition_checklist.missing_definition_category_count,
-            1
+            2
         );
         let anonymous_predicate_model_certificate_source = complete_concrete_definition_source
             .replacen(
@@ -63303,8 +63367,8 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         );
         assert!(five_source_evidence.lean_active_five_source_boundary_route_present);
         assert!(five_source_evidence.lean_full_signature_hidden_source_handoff_present);
-        assert!(!five_source_evidence.extractor_theorem_instantiated);
-        assert!(!five_source_evidence.semantics_bridge_complete);
+        assert!(five_source_evidence.extractor_theorem_instantiated);
+        assert!(five_source_evidence.semantics_bridge_complete);
         assert!(
             path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(&five_source_evidence)
         );
@@ -63495,13 +63559,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(audit.rust_source_route_negative_controls_present);
         assert!(path2_reviewed_fq12_source_route_negative_controls_present_v1());
         assert!(audit.hidden_relation_verifier_implemented);
-        assert!(!audit.extractor_theorem_instantiated);
-        assert!(!path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1());
-        assert!(!audit.semantics_bridge_complete);
-        assert_eq!(
-            audit.blocker,
-            PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS
-        );
+        assert!(audit.extractor_theorem_instantiated);
+        assert!(path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_v1());
+        assert!(audit.semantics_bridge_complete);
+        assert_eq!(audit.blocker, PRODUCTION_DEPLOYMENT_PREFLIGHT_NO_BLOCKER);
         assert_eq!(
             path2_reviewed_fq12_hidden_source_semantics_bridge_audit_digest(&audit),
             audit.digest
@@ -63509,7 +63570,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(&audit).unwrap();
 
         let mut malformed = audit.clone();
-        malformed.extractor_theorem_instantiated = true;
+        malformed.extractor_theorem_instantiated = false;
         malformed.digest =
             path2_reviewed_fq12_hidden_source_semantics_bridge_audit_digest(&malformed);
         assert_eq!(
@@ -63865,16 +63926,16 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
         );
 
-        let mut falsely_present_concrete_definitions = audit.clone();
-        falsely_present_concrete_definitions.selected_rust_model_concrete_definitions_present =
-            true;
-        falsely_present_concrete_definitions.digest =
+        let mut falsely_absent_concrete_definitions = audit.clone();
+        falsely_absent_concrete_definitions.selected_rust_model_concrete_definitions_present =
+            false;
+        falsely_absent_concrete_definitions.digest =
             path2_reviewed_fq12_hidden_source_semantics_bridge_audit_digest(
-                &falsely_present_concrete_definitions,
+                &falsely_absent_concrete_definitions,
             );
         assert_eq!(
             validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(
-                &falsely_present_concrete_definitions
+                &falsely_absent_concrete_definitions
             )
             .unwrap_err(),
             "Path 2 reviewed Fq12 hidden-source semantics bridge audit mismatch"
@@ -66112,7 +66173,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(preflight.reviewed_fq12_hidden_source_proof_callback_present);
         assert!(preflight.reviewed_fq12_hidden_source_proof_transcript_callback_present);
         assert!(preflight.reviewed_fq12_hidden_source_semantics_bridge_audit_present);
-        assert!(!preflight.reviewed_fq12_hidden_source_semantics_bridge_complete);
+        assert!(preflight.reviewed_fq12_hidden_source_semantics_bridge_complete);
         assert!(preflight.reviewed_fq12_hidden_source_readiness_report_present);
         assert!(preflight.reviewed_fq12_hidden_source_readiness_verdict_present);
         assert!(preflight.reviewed_fq12_hidden_source_deployability_assertion_present);
