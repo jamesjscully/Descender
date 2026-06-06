@@ -1962,10 +1962,15 @@ over the accepted boundary and full opening. The adapter
 proves the three canonical native-validity equations from those fields by
 computation. `ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource.ofCanonicalNativeFieldEquations`
 now plugs that field-level source directly into the fixed-point constructor.
-This is still fail-closed: the concrete import must supply the boundary-version,
-role-handle, masked-projection, representative-digest, local slot/account, and
-descent lifecycle/aggregation equalities from the active Rust verifier/evidence,
-plus the report `FactsAllTrue` certificate.
+The fixed-point equality also now projects the three selected-predicate
+identification facts directly:
+`boundaryOf_eq_selected_of_predicatesFromSharedWitness`,
+`localValid_eq_selected_of_predicatesFromSharedWitness`, and
+`descentConsistent_eq_selected_of_predicatesFromSharedWitness`. This is still
+fail-closed: the concrete import must supply the boundary-version, role-handle,
+masked-projection, representative-digest, local slot/account, and descent
+lifecycle/aggregation equalities from the active Rust verifier/evidence, plus
+the report `FactsAllTrue` certificate.
 Tooling note: the Rust source scanner's direct-constant-lambda check now clamps
 source windows to a UTF-8 character boundary before slicing; the prior byte
 slice could panic when a window ended inside Lean's `∧` token. The broad

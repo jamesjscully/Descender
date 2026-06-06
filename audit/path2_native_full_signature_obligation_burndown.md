@@ -1609,9 +1609,11 @@ the active Rust/model import, and
 `reviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSourceOfFieldEquations`
 derives the three canonical native-validity equations from that list.
 `ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource.ofCanonicalNativeFieldEquations`
-feeds this field-level source directly into the fixed-point route. This does
-not close the route yet; it narrows the remaining import to concrete equality
-evidence plus the report `FactsAllTrue` proof.
+feeds this field-level source directly into the fixed-point route, and the
+fixed-point equality now projects the three selected-predicate identification
+facts directly. This does not close the route yet; it narrows the remaining
+import to concrete boundary/opening equality evidence plus the report
+`FactsAllTrue` proof.
 The hard model certificate route now has a constructor:
 `ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate.ofCanonicalNativeSource`
 uses the shared-witness certificate, the field equality, and the canonical

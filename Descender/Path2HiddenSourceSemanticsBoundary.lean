@@ -5903,6 +5903,73 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
 
 namespace ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
 
+/-- The fixed-point predicate equality pins `boundaryOf` to the selected definition. -/
+theorem boundaryOf_eq_selected_of_predicatesFromSharedWitness
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (predicateFieldSources :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources)
+    (sharedWitnessCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser predicateFieldSources.toPredicates)
+    (predicatesFromSharedWitness :
+      (selectedRustNativeBoundaryPredicateFieldSources
+        sharedWitnessCertificate).toPredicates =
+        predicateFieldSources.toPredicates) :
+    predicateFieldSources.toPredicates.boundaryOf = selectedBoundaryOf := by
+  have hBoundary :=
+    congrArg (fun P : Path2NativeBoundary.Predicates => P.boundaryOf)
+      predicatesFromSharedWitness
+  simpa [ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources.toPredicates,
+    selectedRustNativeBoundaryPredicateFieldSources] using hBoundary.symm
+
+/-- The fixed-point predicate equality pins `localValid` to the selected definition. -/
+theorem localValid_eq_selected_of_predicatesFromSharedWitness
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (predicateFieldSources :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources)
+    (sharedWitnessCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser predicateFieldSources.toPredicates)
+    (predicatesFromSharedWitness :
+      (selectedRustNativeBoundaryPredicateFieldSources
+        sharedWitnessCertificate).toPredicates =
+        predicateFieldSources.toPredicates) :
+    predicateFieldSources.toPredicates.localValid = selectedLocalValid := by
+  have hLocal :=
+    congrArg (fun P : Path2NativeBoundary.Predicates => P.localValid)
+      predicatesFromSharedWitness
+  simpa [ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources.toPredicates,
+    selectedRustNativeBoundaryPredicateFieldSources] using hLocal.symm
+
+/-- The fixed-point predicate equality pins `descentConsistent` to the selected definition. -/
+theorem descentConsistent_eq_selected_of_predicatesFromSharedWitness
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (predicateFieldSources :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources)
+    (sharedWitnessCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser predicateFieldSources.toPredicates)
+    (predicatesFromSharedWitness :
+      (selectedRustNativeBoundaryPredicateFieldSources
+        sharedWitnessCertificate).toPredicates =
+        predicateFieldSources.toPredicates) :
+    predicateFieldSources.toPredicates.descentConsistent =
+      selectedDescentConsistent := by
+  have hDescent :=
+    congrArg (fun P : Path2NativeBoundary.Predicates => P.descentConsistent)
+      predicatesFromSharedWitness
+  simpa [ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources.toPredicates,
+    selectedRustNativeBoundaryPredicateFieldSources] using hDescent.symm
+
 /--
 Construct the fixed-point source from the equation-level canonical
 native-validity evidence.
