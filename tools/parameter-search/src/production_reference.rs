@@ -7586,6 +7586,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_certified_semantics_source_package_bound_handoff_present: bool,
     pub full_spend_concrete_predicates_are_separate_model: bool,
     pub native_boundary_predicate_model_forbidden_vacuous_literals_present: bool,
+    pub native_boundary_predicate_model_stub_field_sources_present: bool,
     pub native_boundary_concrete_predicate_model_present: bool,
     pub selected_source_records_blocked_on_native_boundary_predicate_model: bool,
     pub source_record_package_surface_present: bool,
@@ -8786,6 +8787,29 @@ fn lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
     })
 }
 
+fn lean_source_module_has_forbidden_stubs_for_names_v1(lean_source: &str, names: &[&str]) -> bool {
+    let stripped_source = lean_source_without_comments_and_strings_v1(lean_source);
+    let lean_source = stripped_source.as_str();
+    let declaration_block_contains_name = |kind: &str, name: &str| -> bool {
+        lean_source
+            .match_indices(&format!("\n{kind}"))
+            .any(|(index, _)| {
+                let window = &lean_source[index..lean_source.len().min(index + 1024)];
+                window.contains(name)
+            })
+    };
+    let forbidden_declaration_stub = ["axiom", "constant", "opaque"].iter().any(|kind| {
+        names
+            .iter()
+            .any(|name| declaration_block_contains_name(kind, name))
+    });
+    let forbidden_variable_stub = lean_source
+        .match_indices("\nvariable")
+        .map(|(index, _)| &lean_source[index..lean_source.len().min(index + 1024)])
+        .any(|variable_window| names.iter().any(|name| variable_window.contains(name)));
+    forbidden_declaration_stub || forbidden_variable_stub
+}
+
 pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     boundary_source: &str,
 ) -> Path2SelectedRustModelSourceRecordSubcheckV1 {
@@ -9283,6 +9307,69 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                     32768,
                 )
             });
+    let native_boundary_predicate_model_field_source_names = [
+        "selectedBoundaryOf",
+        "selectedLocalValid",
+        "selectedDescentConsistent",
+        "selectedNormRangeValid",
+        "selectedBlindingNoiseBounded",
+        "selectedSafeEquivalent",
+        "selectedBoundaryBreakFor",
+        "selectedAccountCreateAccepts",
+        "selectedAdmitted",
+        "selectedParentRootBindsPrivateRoles",
+        "selectedRoleRestrictionsAuthenticate",
+        "selectedNoExportHolds",
+        "selectedRoleAuthenticationMaterialSimulatable",
+        "selectedMaskFreshnessHolds",
+        "selectedQromScheduleBound",
+        "selectedQromExtractorRewindBound",
+        "selectedRangeRowsBindRepresentative",
+        "selectedRangeRowsBindTraceRepresentative",
+        "selectedBlindingRowsBoundRepresentative",
+        "selectedBlindingRowsBoundTraceRepresentative",
+        "selectedTransparentAccepts",
+        "selectedTransparentExtractsTrace",
+        "selectedTransparentExtracts",
+        "selectedReviewedFq12PayloadAccepts",
+        "selectedReviewedFq12PayloadProjectsFrom",
+        "selectedReviewedFq12PayloadHasExtractionCertificate",
+        "selectedReviewedFq12ExtractionCertificateValid",
+        "selectedReviewedFq12CertificateExtracts",
+        "selectedReviewedFq12CertificateLiftsToOpening",
+        "selectedReviewedFq12PayloadHasRoleLiftCertificate",
+        "selectedReviewedFq12RoleLiftCertificateValid",
+        "selectedReviewedFq12RoleLiftCertificateOpens",
+        "selectedFullNativeOpeningAssemblesRepresentative",
+        "selectedReviewedFq12OpeningHasAssemblyCertificate",
+        "selectedReviewedFq12AssemblyCertificateValid",
+        "selectedReviewedFq12AssemblyCertificateAssembles",
+        "selectedReviewedFq12HasExtractionCompatibilityCertificate",
+        "selectedReviewedFq12ExtractionCompatibilityCertificateValid",
+        "selectedReviewedFq12ExtractionCompatibilityCertificateExtracts",
+        "selectedReviewedFq12HasFullOpeningBridgeDigestCertificate",
+        "selectedReviewedFq12FullOpeningBridgeDigestCertificateValid",
+        "selectedReviewedFq12PayloadExtracts",
+        "selectedTraceOpensBoundary",
+        "selectedTracesSafetyEquivalent",
+        "selectedMaskedOpeningsConsistent",
+        "selectedTraceRelationValid",
+        "selectedTraceAssemblesRepresentative",
+        "selectedExtractedRolesComplete",
+        "selectedTraceAssemblyRolesComplete",
+        "selectedTraceAssemblyDerivedRolesBound",
+        "selectedTraceAssemblyInFiber",
+        "selectedTraceAssemblyLocalValid",
+        "selectedTraceAssemblyDescentConsistent",
+        "selectedSlotAuthorizationOf",
+        "selectedSpendAccepts",
+        "selectedSpendWitnessValid",
+    ];
+    let native_boundary_predicate_model_stub_field_sources_present =
+        lean_source_module_has_forbidden_stubs_for_names_v1(
+            &boundary_source,
+            &native_boundary_predicate_model_field_source_names,
+        );
     let native_boundary_concrete_predicate_model_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -9298,7 +9385,8 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                     32768,
                 )
             })
-            && !native_boundary_predicate_model_forbidden_vacuous_literals_present;
+            && !native_boundary_predicate_model_forbidden_vacuous_literals_present
+            && !native_boundary_predicate_model_stub_field_sources_present;
     let boundary_base_report_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -9665,6 +9753,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_certified_semantics_source_package_bound_handoff_present,
         full_spend_concrete_predicates_are_separate_model,
         native_boundary_predicate_model_forbidden_vacuous_literals_present,
+        native_boundary_predicate_model_stub_field_sources_present,
         native_boundary_concrete_predicate_model_present,
         selected_source_records_blocked_on_native_boundary_predicate_model,
         source_record_package_surface_present,
@@ -13894,7 +13983,8 @@ pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1()
             && !source_record_subcheck
                 .native_boundary_predicate_model_generic_evidence_labels_present
             && !source_record_subcheck
-                .native_boundary_predicate_model_forbidden_vacuous_literals_present,
+                .native_boundary_predicate_model_forbidden_vacuous_literals_present
+            && !source_record_subcheck.native_boundary_predicate_model_stub_field_sources_present,
         concrete_predicate_model_present,
         certified_semantics_source_package_target_present: source_record_subcheck
             .native_boundary_certified_semantics_source_package_target_present,
@@ -57793,6 +57883,7 @@ def toPredicates
             !source_record_subcheck
                 .native_boundary_predicate_model_forbidden_vacuous_literals_present
         );
+        assert!(!source_record_subcheck.native_boundary_predicate_model_stub_field_sources_present);
         assert!(!source_record_subcheck.native_boundary_concrete_predicate_model_present);
         let partial_native_boundary_model_source = r#"
 def selectedRustNativeBoundaryPredicates :
@@ -57977,6 +58068,10 @@ def selectedRustNativeBoundaryPredicates :
             !complete_native_boundary_model_subcheck
                 .native_boundary_predicate_model_forbidden_vacuous_literals_present
         );
+        assert!(
+            !complete_native_boundary_model_subcheck
+                .native_boundary_predicate_model_stub_field_sources_present
+        );
         let vacuous_native_boundary_model_source = complete_native_boundary_model_source
             .replacen(
                 "boundaryBreakFor := selectedBoundaryBreakFor",
@@ -57998,6 +58093,22 @@ def selectedRustNativeBoundaryPredicates :
         );
         assert!(
             !vacuous_native_boundary_model_subcheck
+                .native_boundary_concrete_predicate_model_present
+        );
+        let stubbed_native_boundary_model_source = format!(
+            "\naxiom selectedReviewedFq12PayloadAccepts : stub\n{}",
+            complete_native_boundary_model_source
+        );
+        let stubbed_native_boundary_model_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &stubbed_native_boundary_model_source,
+            );
+        assert!(
+            stubbed_native_boundary_model_subcheck
+                .native_boundary_predicate_model_stub_field_sources_present
+        );
+        assert!(
+            !stubbed_native_boundary_model_subcheck
                 .native_boundary_concrete_predicate_model_present
         );
         assert!(

@@ -368,6 +368,11 @@ constant `True`/`False` lambdas. The manifest surfaces this as
 digest-bound predicate-model report includes it in
 `predicate_negative_controls_passed`, and the concrete-model bit requires it
 to be false.
+The same detector now rejects module-level `axiom`, `constant`, `opaque`, or
+`variable` stubs for the selected predicate-field providers used by
+`selectedRustNativeBoundaryPredicates`. The manifest exposes this as
+`native_boundary_predicate_model_stub_field_sources_present`, and the
+digest-bound negative-control bit also requires it to be false.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and

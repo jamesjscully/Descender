@@ -1369,6 +1369,11 @@ digest-bound predicate-model report folds it into
 `predicate_negative_controls_passed`, so a field-complete record still cannot
 count as the concrete active model if its critical predicates are filled by
 constant placeholders.
+It also rejects module-level `axiom`, `constant`, `opaque`, or `variable`
+stubs for the selected predicate-field providers used by
+`selectedRustNativeBoundaryPredicates`. The manifest exposes this as
+`native_boundary_predicate_model_stub_field_sources_present`, and the
+digest-bound negative-control bit requires it to be false.
 
 ## Findings
 
