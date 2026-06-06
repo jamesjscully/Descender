@@ -1600,6 +1600,12 @@ The source-binding digest constants themselves are now body-bound aliases of
 the selected component evidence digests. A binding definition whose
 `sourceBindingDigest` name points at a different digest no longer satisfies
 `source_record_evidence_source_bindings_present`.
+Each selected evidence/source binding now also carries
+`sourceBindingDigestBound`, proving its public binding digest equals the
+binding object's selected evidence digest. The Rust body-shape checklist
+requires `sourceBindingDigestBound := rfl` for every future selected binding,
+and a fixture that omits the field no longer satisfies
+`source_record_evidence_source_bindings_present`.
 The predicate-model certificate now has the same selected public-evidence
 discipline: it carries `evidenceReportBound` and `evidenceDigestBound` fields
 tying its report and digest to

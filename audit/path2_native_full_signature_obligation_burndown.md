@@ -1210,6 +1210,15 @@ externally supplied report equality. This keeps AP2-N001 blocked on importing
 the real active `Path2NativeBoundary.Predicates` model while closing another
 alias/rebind route around the public predicate-model evidence object.
 
+P2FS-001 source-binding digest-proof hardening: each selected
+evidence/source binding now also carries `sourceBindingDigestBound`, proving
+that the public binding digest field is definitionally the same byte array as
+the selected evidence digest carried by the binding. The future selected
+binding definitions must set this with `rfl`; the source audit rejects a
+binding body that has the digest fields but omits the equality proof. This
+keeps `sourceBindingDigest` from remaining audit-only bookkeeping detached
+from the proof object consumed by `ofSourceBindings`.
+
 P2FS-001 final-theorem constructor-binding hardening: the future extractor
 theorem gate now requires each selected certificate local to be bound directly
 by its named constructor. A constructor laundering fixture where the

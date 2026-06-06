@@ -1864,6 +1864,8 @@ structure ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding
   evidenceDigestBound :
     evidenceDigest = selectedRustBoundaryBaseEvidenceDigest
   sourceBindingDigest : ByteArray
+  sourceBindingDigestBound :
+    sourceBindingDigest = evidenceDigest
   payloadProjectionLaw :
     forall {b : Path2NativeBoundary.Boundary}
         {payload : ReviewedFq12HiddenSourcePayload},
@@ -1885,6 +1887,8 @@ structure ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding
   evidenceDigestBound :
     evidenceDigest = selectedRustRoleRootLiftEvidenceDigest
   sourceBindingDigest : ByteArray
+  sourceBindingDigestBound :
+    sourceBindingDigest = evidenceDigest
   roleRootLiftSource :
     ReviewedFq12RoleRootFunctionalLiftSource P
 
@@ -1901,6 +1905,8 @@ structure ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
   evidenceDigestBound :
     evidenceDigest = selectedRustSourceRouteEvidenceDigest
   sourceBindingDigest : ByteArray
+  sourceBindingDigestBound :
+    sourceBindingDigest = evidenceDigest
   selectedSourceRouteByteSource :
     SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
       FieldParser RouteParser P
@@ -1916,6 +1922,8 @@ structure ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding
   evidenceDigestBound :
     evidenceDigest = selectedRustFieldLocalEvidenceDigest
   sourceBindingDigest : ByteArray
+  sourceBindingDigestBound :
+    sourceBindingDigest = evidenceDigest
   assemblySource :
     ReviewedFq12FieldConcreteAssemblyLocalSource P
   compatibilitySource :
@@ -1936,6 +1944,8 @@ structure ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
   evidenceDigestBound :
     evidenceDigest = selectedRustSharedFrameWitnessEvidenceDigest
   sourceBindingDigest : ByteArray
+  sourceBindingDigestBound :
+    sourceBindingDigest = evidenceDigest
   sharedFrameWitnessSources :
     ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
       CanonicalParser WitnessParser P
