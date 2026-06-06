@@ -9170,6 +9170,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         );
     let source_record_package_surface_present = [
         "ReviewedFq12SelectedRustModelSourceRecordPackage",
+        "def ofSources",
         "payloadProjectionLaw",
         "extractionCertificateAvailability",
         "roleRootLiftSource",
@@ -9525,6 +9526,10 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             "selectedRustSharedFrameWitnessSourcesCertificate",
             &["ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate"][..],
         ),
+        (
+            "selectedRustModelSourceRecordPackage",
+            &["ReviewedFq12SelectedRustModelSourceRecordPackage"][..],
+        ),
     ];
     let predicate_model_report_surface_definitions = [
         (
@@ -9617,6 +9622,10 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             (
                 "selectedRustSharedFrameWitnessSourcesCertificate",
                 "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof selectedRustSharedFrameWitnessSources",
+            ),
+            (
+                "selectedRustModelSourceRecordPackage",
+                "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability selectedRustRoleRootLiftSource selectedRustSourceRouteByteSource selectedRustAssemblySource selectedRustCompatibilitySource selectedRustSharedFrameWitnessSources",
             ),
         ]
         .iter()
@@ -57729,6 +57738,16 @@ def selectedRustSharedFrameWitnessSourcesCertificate :
     selectedRustSharedFrameWitnessEvidenceReportVerifiedProof
     selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof
     selectedRustSharedFrameWitnessSources
+def selectedRustModelSourceRecordPackage :
+  ReviewedFq12SelectedRustModelSourceRecordPackage FieldParser RouteParser CanonicalParser WitnessParser P :=
+  ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources
+    selectedRustPayloadProjectionLaw
+    selectedRustExtractionCertificateAvailability
+    selectedRustRoleRootLiftSource
+    selectedRustSourceRouteByteSource
+    selectedRustAssemblySource
+    selectedRustCompatibilitySource
+    selectedRustSharedFrameWitnessSources
 theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
   selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
     selectedRustBoundaryBaseCertificate
@@ -57784,6 +57803,17 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 .predicate_model_certificate_definitions_present
         );
         assert!(!anonymous_predicate_model_certificate_checklist.all_definitions_present);
+        let anonymous_source_record_package_source = complete_concrete_definition_source.replacen(
+            "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources",
+            "selectedRustModelSourceRecordPackageValue",
+            1,
+        );
+        let anonymous_source_record_package_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                &anonymous_source_record_package_source,
+            );
+        assert!(!anonymous_source_record_package_checklist.source_record_definitions_present);
+        assert!(!anonymous_source_record_package_checklist.all_definitions_present);
         let complete_source_record_subcheck =
             path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 complete_concrete_definition_source,

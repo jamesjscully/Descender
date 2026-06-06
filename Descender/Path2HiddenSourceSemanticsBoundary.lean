@@ -1890,6 +1890,52 @@ structure ReviewedFq12SelectedRustModelSourceRecordPackage
 
 namespace ReviewedFq12SelectedRustModelSourceRecordPackage
 
+/--
+Named constructor for the selected Rust/model source-record package.
+
+The final AP2-N001 route should import the seven selected source records
+through this explicit package constructor before deriving certificates or
+hidden-source closure.
+-/
+def ofSources
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (payloadProjectionLaw :
+      forall {b : Path2NativeBoundary.Boundary}
+          {payload : ReviewedFq12HiddenSourcePayload},
+        P.reviewedFq12PayloadAccepts b payload ->
+          payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+            payload.slotId = b.context.slotId ->
+          P.reviewedFq12PayloadProjectsFrom b payload)
+    (extractionCertificateAvailability :
+      ReviewedFq12ExtractionCertificateAvailability P)
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (selectedSourceRouteByteSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P)
+    (assemblySource :
+      ReviewedFq12FieldConcreteAssemblyLocalSource P)
+    (compatibilitySource :
+      ReviewedFq12FieldConcreteCompatibilitySource P)
+    (sharedFrameWitnessSources :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustModelSourceRecordPackage
+      FieldParser RouteParser CanonicalParser WitnessParser P where
+  payloadProjectionLaw := payloadProjectionLaw
+  extractionCertificateAvailability := extractionCertificateAvailability
+  roleRootLiftSource := roleRootLiftSource
+  selectedSourceRouteByteSource := selectedSourceRouteByteSource
+  assemblySource := assemblySource
+  compatibilitySource := compatibilitySource
+  sharedFrameWitnessSources := sharedFrameWitnessSources
+
 /-- Constructor-bound boundary/base certificate from selected raw sources. -/
 def boundaryBaseCertificate
     {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}

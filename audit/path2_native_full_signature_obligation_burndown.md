@@ -265,6 +265,15 @@ constructor no longer completes the predicate-model certificate category. This
 keeps the final native-boundary semantics package from being sourced by an
 anonymous certificate record.
 
+2026-06-05 source-record package constructor update:
+`ReviewedFq12SelectedRustModelSourceRecordPackage` now exposes named
+constructor `ofSources` for the seven selected Rust/model source records. The
+concrete-definition checklist now treats `selectedRustModelSourceRecordPackage`
+as part of `source_record_definitions` and requires it to be built through
+`ofSources`; a same-name/same-type anonymous source-record package no longer
+completes that category. This makes the package consumed by the certified
+native-boundary semantics route constructor-bound, not merely type-shaped.
+
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
 verifier, and the Path 2 deployment facade source gate requires those exports.

@@ -1281,6 +1281,10 @@ named constructor `ofReportAndModel`, and the concrete-definition checklist
 requires `selectedRustNativeBoundaryPredicateModelCertificate` to be built
 through it. A same-name/same-type anonymous predicate-model certificate no
 longer completes the predicate-model certificate category.
+The selected source-record package is now constructor-bound too:
+`ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources` is the required
+route for `selectedRustModelSourceRecordPackage`, and an anonymous package with
+the right name/type no longer completes `source_record_definitions`.
 
 ## Findings
 
