@@ -10744,6 +10744,8 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate FieldParser RouteParser CanonicalParser WitnessParser selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
         "let selectedRustModelSourceRecordPackage : ReviewedFq12SelectedRustModelSourceRecordPackage",
         "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability selectedRustRoleRootLiftSource selectedRustSourceRouteByteSource selectedRustAssemblySource selectedRustCompatibilitySource selectedRustSharedFrameWitnessSources",
+        "let selectedRustFieldLocalSharedDigestFrameWitnessInputs : ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs",
+        "selectedRustModelSourceRecordPackage.toFieldLocalSharedDigestFrameWitnessInputs",
         "let selectedRustNativeBoundaryCertifiedSemanticsSourcePackage : ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
         "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage.ofCertificateAndSourceRecords selectedRustNativeBoundaryPredicateModelCertificate selectedRustModelSourceRecordPackage",
         "selectedRustNativeBoundaryPredicateModelEvidenceReport",
@@ -56353,6 +56355,11 @@ theorem {theorem_name}
       selectedRustAssemblySource
       selectedRustCompatibilitySource
       selectedRustSharedFrameWitnessSources
+  let selectedRustFieldLocalSharedDigestFrameWitnessInputs :
+      ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs
+        FieldParser RouteParser CanonicalParser WitnessParser
+          selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+    selectedRustModelSourceRecordPackage.toFieldLocalSharedDigestFrameWitnessInputs
   let selectedRustModelFiveSourceCertificate :
       ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
         FieldParser RouteParser CanonicalParser WitnessParser
@@ -56406,6 +56413,22 @@ theorem {theorem_name}
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &generic_predicate_final_theorem,
+                theorem_name
+            )
+        );
+        let missing_field_local_shared_inputs_theorem = concrete_constructor_certificate_theorem
+            .replace(
+                r#"  let selectedRustFieldLocalSharedDigestFrameWitnessInputs :
+      ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs
+        FieldParser RouteParser CanonicalParser WitnessParser
+          selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+    selectedRustModelSourceRecordPackage.toFieldLocalSharedDigestFrameWitnessInputs
+"#,
+                "",
+            );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &missing_field_local_shared_inputs_theorem,
                 theorem_name
             )
         );

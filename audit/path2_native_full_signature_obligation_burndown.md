@@ -311,6 +311,9 @@ The source-record package now also has
 requires that reduction surface. This pins the package to the preferred
 field/local shared-frame AP2-N001 theorem target in addition to the aggregate
 five-source and byte-component projections.
+The final theorem scanner now requires the future accepted theorem to bind the
+same projection as `selectedRustFieldLocalSharedDigestFrameWitnessInputs`;
+dropping that binding is a negative-control failure.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and

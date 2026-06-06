@@ -1308,6 +1308,9 @@ The selected source-record package also now projects directly to
 subcheck records that reduction. This keeps the active source package tied to
 the implementation-oriented field/local shared-frame theorem surface, while
 leaving the concrete selected source definitions fail-closed.
+The final AP2-N001 theorem gate now requires the accepted theorem body to bind
+that projection as `selectedRustFieldLocalSharedDigestFrameWitnessInputs`;
+omitting the projection no longer satisfies the scanner.
 
 ## Findings
 
