@@ -1378,6 +1378,10 @@ The same subcheck now exposes
 `native_boundary_predicate_model_incomplete_proof_terms_present`; `sorry` or
 `admit` tokens outside comments/strings block concrete-model completion and
 the digest-bound negative-control bit.
+The focused bridge regression now also parses
+`selectedRustNativeBoundaryPredicateModelEvidenceDigest` from Lean and compares
+it to the Rust-computed predicate-model evidence digest, so the predicate-model
+report cannot silently drift away from the selected public manifest digest.
 
 ## Findings
 

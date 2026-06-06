@@ -59280,6 +59280,13 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             ),
             five_source_evidence.shared_digest_frame_witness_evidence_digest
         );
+        assert_eq!(
+            lean_selected_rust_byte_array_digest_constant(
+                hidden_source_boundary_source,
+                "selectedRustNativeBoundaryPredicateModelEvidenceDigest"
+            ),
+            predicate_model_evidence_digest
+        );
         assert!(five_source_evidence.shared_digest_frame_witness_evidence_verified);
         assert!(five_source_evidence.report_digest_verified);
         assert!(five_source_evidence.selected_rust_model_five_source_inputs_ready);

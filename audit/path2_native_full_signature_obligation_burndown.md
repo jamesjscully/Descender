@@ -377,6 +377,10 @@ It also exposes
 `native_boundary_predicate_model_incomplete_proof_terms_present`; `sorry` or
 `admit` tokens outside comments/strings now block concrete-model completion
 and fail the digest-bound negative-control bit.
+The focused bridge regression now parses the Lean
+`selectedRustNativeBoundaryPredicateModelEvidenceDigest` byte-array constant
+and compares it to the Rust-computed predicate-model evidence digest, matching
+the existing six selected source-evidence digest checks.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
