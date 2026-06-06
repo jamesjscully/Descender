@@ -10312,6 +10312,11 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 [
                     "ReviewedFq12SelectedRustModelSourceRecordPackage",
                     "ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs",
+                    "ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPackage",
+                    "ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelLaws",
+                    "reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates",
+                    "toHardExtractionPredicateModelPackage",
+                    "toHardExtractionPredicateModelLaws",
                     "reviewed_fq12_certificate_soundness_from_selected_rust",
                     "P.reviewedFq12PayloadAccepts",
                     "predicateFieldSources.toPredicates.reviewedFq12PayloadAccepts",
@@ -11314,6 +11319,11 @@ fn path2_selected_rust_model_concrete_predicate_model_present_from_source_v1(
                 [
                     "ReviewedFq12SelectedRustModelSourceRecordPackage",
                     "ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs",
+                    "ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPackage",
+                    "ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelLaws",
+                    "reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates",
+                    "toHardExtractionPredicateModelPackage",
+                    "toHardExtractionPredicateModelLaws",
                     "reviewed_fq12_certificate_soundness_from_selected_rust",
                     "P.reviewedFq12PayloadAccepts",
                     "predicateFieldSources.toPredicates.reviewedFq12PayloadAccepts",
@@ -60806,6 +60816,24 @@ def selectedRustNativeBoundaryPredicates :
         );
         assert!(
             !circular_provider_native_boundary_model_subcheck
+                .native_boundary_concrete_predicate_model_present
+        );
+        let circular_hard_provider_native_boundary_model_source =
+            complete_native_boundary_model_source.replacen(
+                "def selectedFullNativeOpeningAssemblesRepresentative :=\n  selectedFullNativeOpeningAssemblesRepresentativeValue",
+                "def selectedFullNativeOpeningAssemblesRepresentative :=\n  ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPackage",
+                1,
+            );
+        let circular_hard_provider_native_boundary_model_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &circular_hard_provider_native_boundary_model_source,
+            );
+        assert!(
+            circular_hard_provider_native_boundary_model_subcheck
+                .native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present
+        );
+        assert!(
+            !circular_hard_provider_native_boundary_model_subcheck
                 .native_boundary_concrete_predicate_model_present
         );
         let vacuous_native_boundary_model_source = complete_native_boundary_model_source

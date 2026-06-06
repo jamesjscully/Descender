@@ -1551,3 +1551,8 @@ The paired package
 now ties the five projected providers to those laws for one predicate
 interpretation, and the manifest pins it with
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_package_target_present`.
+The Rust circular-provider guard now treats that hard package, its law bundle,
+the `reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates` projection,
+and the hard package/law projection functions as forbidden provider sources.
+The regression now checks `selectedFullNativeOpeningAssemblesRepresentative`
+against that shortcut directly.

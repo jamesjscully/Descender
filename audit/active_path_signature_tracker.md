@@ -1815,6 +1815,10 @@ The Lean target also packages those together as
 `ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPackage`;
 the manifest pins that with
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_package_target_present`.
+The circular-provider guard now also rejects selected reviewed-Fq12 provider
+definitions that reach into this hard-extraction package, its law bundle, or
+the package/law projections; the regression covers
+`selectedFullNativeOpeningAssemblesRepresentative` directly.
 
 ## Findings
 
