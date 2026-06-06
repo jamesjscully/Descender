@@ -1134,6 +1134,11 @@ Lean proofs that those imported reports satisfy `ReportVerified` and
 verifier-backed values; final closure remains fail-closed because the selected
 source-record certificates, the aggregate/sub-certificate digest-match proof,
 and the aggregate digest self-reference are still unresolved.
+The Rust focused bridge regression now parses the ByteArray fields inside
+`verifierBackedSelectedRustFiveSourceEvidenceReport` and checks them against the
+Rust evidence frame. This binds the imported bridge audit digest, hash-domain
+evidence digest, and five sub-evidence digests at the record-field level, not
+only through the public selected digest constants.
 Active source-record route note: the remaining constructive import target is
 the selected Rust direct-assembly/canonical-representative package
 `ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeByteAndWitnessPackagedSourceRouteInputs`.

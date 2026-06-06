@@ -734,6 +734,12 @@ their `ReportVerified`/`FactsAllTrue` predicates. The active `selectedRust...`
 report names now alias those verifier-backed values; source-record
 certificates, aggregate/sub-certificate digest matching, and aggregate digest
 self-reference remain fail-closed.
+Rust now source-checks the ByteArray fields inside the verifier-backed aggregate
+Lean report, not only the standalone selected digest constants. The regression
+parses `verifierBackedSelectedRustFiveSourceEvidenceReport` and compares its
+bridge audit digest, hash-domain evidence digest, and five sub-evidence digests
+against the Rust-computed evidence values. This closes the stale-record-field
+blind spot without changing the remaining source-record/digest-match blockers.
 The concrete source-record route should target
 `ReviewedFq12SelectedRustDirectAssemblyCanonicalRepresentativeByteAndWitnessPackagedSourceRouteInputs`.
 The first proof object to instantiate is

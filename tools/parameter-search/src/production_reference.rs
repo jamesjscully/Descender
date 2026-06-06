@@ -41784,15 +41784,47 @@ mod tests {
             .find(&format!("\ndef {name} : ByteArray :="))
             .unwrap_or_else(|| panic!("missing Lean digest definition {name}"));
         let declaration = &boundary_source[declaration_start..];
-        let byte_array_start = declaration
-            .find("ByteArray.mk #[")
-            .unwrap_or_else(|| panic!("missing ByteArray literal for {name}"))
-            + "ByteArray.mk #[".len();
-        let byte_array_end = declaration[byte_array_start..]
+        lean_byte_array_digest_after_marker(declaration, "ByteArray.mk #[", name)
+    }
+
+    fn lean_selected_rust_record_byte_array_digest_field(
+        boundary_source: &str,
+        def_name: &str,
+        field_name: &str,
+    ) -> [u8; DIGEST_BYTES] {
+        let boundary_source = lean_source_without_comments_and_strings_v1(boundary_source);
+        let declaration_marker = format!("\ndef {def_name} :");
+        let declaration_start = boundary_source
+            .find(&declaration_marker)
+            .unwrap_or_else(|| panic!("missing Lean record definition {def_name}"));
+        let after_declaration_marker = declaration_start + declaration_marker.len();
+        let declaration_end = boundary_source[after_declaration_marker..]
+            .find("\ndef ")
+            .map(|offset| after_declaration_marker + offset)
+            .unwrap_or(boundary_source.len());
+        let declaration = &boundary_source[declaration_start..declaration_end];
+        let field_marker = format!("{field_name} := ByteArray.mk #[");
+        lean_byte_array_digest_after_marker(
+            declaration,
+            &field_marker,
+            &format!("{def_name}.{field_name}"),
+        )
+    }
+
+    fn lean_byte_array_digest_after_marker(
+        source: &str,
+        marker: &str,
+        context: &str,
+    ) -> [u8; DIGEST_BYTES] {
+        let byte_array_start = source
+            .find(marker)
+            .unwrap_or_else(|| panic!("missing ByteArray literal for {context}"))
+            + marker.len();
+        let byte_array_end = source[byte_array_start..]
             .find(']')
-            .unwrap_or_else(|| panic!("unterminated ByteArray literal for {name}"))
+            .unwrap_or_else(|| panic!("unterminated ByteArray literal for {context}"))
             + byte_array_start;
-        let byte_values: Vec<u8> = declaration[byte_array_start..byte_array_end]
+        let byte_values: Vec<u8> = source[byte_array_start..byte_array_end]
             .split(',')
             .filter_map(|part| {
                 let part = part.trim();
@@ -41801,14 +41833,14 @@ mod tests {
                 } else {
                     Some(
                         part.parse::<u8>()
-                            .unwrap_or_else(|err| panic!("invalid byte in {name}: {err}")),
+                            .unwrap_or_else(|err| panic!("invalid byte in {context}: {err}")),
                     )
                 }
             })
             .collect();
         byte_values
             .try_into()
-            .unwrap_or_else(|bytes: Vec<u8>| panic!("{name} has {} bytes", bytes.len()))
+            .unwrap_or_else(|bytes: Vec<u8>| panic!("{context} has {} bytes", bytes.len()))
     }
 
     #[test]
@@ -59286,6 +59318,62 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 "selectedRustNativeBoundaryPredicateModelEvidenceDigest"
             ),
             predicate_model_evidence_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                hidden_source_boundary_source,
+                "verifierBackedSelectedRustFiveSourceEvidenceReport",
+                "bridgeAuditDigest"
+            ),
+            audit.digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                hidden_source_boundary_source,
+                "verifierBackedSelectedRustFiveSourceEvidenceReport",
+                "hashByteDomainEvidenceDigest"
+            ),
+            hash_byte_domain_evidence_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                hidden_source_boundary_source,
+                "verifierBackedSelectedRustFiveSourceEvidenceReport",
+                "boundaryBaseEvidenceDigest"
+            ),
+            five_source_evidence.boundary_base_evidence_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                hidden_source_boundary_source,
+                "verifierBackedSelectedRustFiveSourceEvidenceReport",
+                "roleRootLiftEvidenceDigest"
+            ),
+            five_source_evidence.role_root_lift_evidence_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                hidden_source_boundary_source,
+                "verifierBackedSelectedRustFiveSourceEvidenceReport",
+                "selectedSourceRouteEvidenceDigest"
+            ),
+            five_source_evidence.selected_source_route_evidence_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                hidden_source_boundary_source,
+                "verifierBackedSelectedRustFiveSourceEvidenceReport",
+                "fieldLocalEvidenceDigest"
+            ),
+            five_source_evidence.field_local_evidence_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                hidden_source_boundary_source,
+                "verifierBackedSelectedRustFiveSourceEvidenceReport",
+                "sharedDigestFrameWitnessEvidenceDigest"
+            ),
+            five_source_evidence.shared_digest_frame_witness_evidence_digest
         );
         assert!(five_source_evidence.shared_digest_frame_witness_evidence_verified);
         assert!(five_source_evidence.report_digest_verified);
