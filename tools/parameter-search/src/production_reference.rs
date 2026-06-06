@@ -7589,6 +7589,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_certified_semantics_source_package_bound_handoff_present: bool,
     pub full_spend_concrete_predicates_are_separate_model: bool,
     pub native_boundary_predicate_model_forbidden_vacuous_literals_present: bool,
+    pub native_boundary_predicate_model_reviewed_fq12_provider_family_target_present: bool,
     pub native_boundary_predicate_model_core_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_transparent_trace_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present: bool,
@@ -9184,6 +9185,53 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             "toPredicates",
             "Model.predicates",
             4096,
+        );
+    let native_boundary_predicate_model_reviewed_fq12_provider_family_target_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "structure",
+            "ReviewedFq12SelectedRustNativeBoundaryReviewedFq12PredicateFieldSources",
+            &[
+                "selectedReviewedFq12PayloadAccepts",
+                "selectedReviewedFq12PayloadProjectsFrom",
+                "selectedReviewedFq12PayloadHasExtractionCertificate",
+                "selectedReviewedFq12ExtractionCertificateValid",
+                "selectedReviewedFq12CertificateExtracts",
+                "selectedReviewedFq12CertificateLiftsToOpening",
+                "selectedReviewedFq12PayloadHasRoleLiftCertificate",
+                "selectedReviewedFq12RoleLiftCertificateValid",
+                "selectedReviewedFq12RoleLiftCertificateOpens",
+                "selectedFullNativeOpeningAssemblesRepresentative",
+                "selectedReviewedFq12OpeningHasAssemblyCertificate",
+                "selectedReviewedFq12AssemblyCertificateValid",
+                "selectedReviewedFq12AssemblyCertificateAssembles",
+                "selectedReviewedFq12HasExtractionCompatibilityCertificate",
+                "selectedReviewedFq12ExtractionCompatibilityCertificateValid",
+                "selectedReviewedFq12ExtractionCompatibilityCertificateExtracts",
+                "selectedReviewedFq12HasFullOpeningBridgeDigestCertificate",
+                "selectedReviewedFq12FullOpeningBridgeDigestCertificateValid",
+                "selectedReviewedFq12PayloadExtracts",
+            ],
+            8192,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "toReviewedFq12PredicateFieldSources",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources",
+                "ReviewedFq12SelectedRustNativeBoundaryReviewedFq12PredicateFieldSources",
+            ],
+            "selectedReviewedFq12PayloadAccepts := Sources.selectedReviewedFq12PayloadAccepts",
+            8192,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "toReviewedFq12PredicateFieldSources",
+            "selectedReviewedFq12FullOpeningBridgeDigestCertificateValid := Sources.selectedReviewedFq12FullOpeningBridgeDigestCertificateValid",
+            8192,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "toReviewedFq12PredicateFieldSources",
+            "selectedReviewedFq12PayloadExtracts := Sources.selectedReviewedFq12PayloadExtracts",
+            8192,
         );
     let native_boundary_predicate_model_evidence_report_target_present =
         lean_source_has_named_declaration_with_markers_v1(
@@ -10781,6 +10829,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_certified_semantics_source_package_bound_handoff_present,
         full_spend_concrete_predicates_are_separate_model,
         native_boundary_predicate_model_forbidden_vacuous_literals_present,
+        native_boundary_predicate_model_reviewed_fq12_provider_family_target_present,
         native_boundary_predicate_model_core_provider_fields_defined_present,
         native_boundary_predicate_model_transparent_trace_provider_fields_defined_present,
         native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present,

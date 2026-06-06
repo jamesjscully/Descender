@@ -1768,6 +1768,14 @@ predicate providers into three families. Current active manifest state has all
 three absent: core/admission-spend providers, transparent/trace/hash-row
 providers, and reviewed-Fq12/full-opening providers
 (`native_boundary_predicate_model_missing_provider_family_count = 3`).
+The active Lean target now also names the reviewed-Fq12/full-opening provider
+family separately as
+`ReviewedFq12SelectedRustNativeBoundaryReviewedFq12PredicateFieldSources`, with
+`ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources.toReviewedFq12PredicateFieldSources`
+projecting it from the full predicate-source record. The manifest reports
+`native_boundary_predicate_model_reviewed_fq12_provider_family_target_present =
+true`, but the actual reviewed-Fq12 provider fields remain undefined and
+fail-closed.
 
 ## Findings
 

@@ -1478,3 +1478,14 @@ core/admission-spend, transparent/trace/hash-row, and reviewed-Fq12/full-opening
 provider fields. The current active manifest reports all three families absent,
 so the first real construction remains a selected native-boundary predicate
 provider package, not another report-only certificate wrapper.
+The reviewed-Fq12/full-opening family now has its own Lean target slice,
+`ReviewedFq12SelectedRustNativeBoundaryReviewedFq12PredicateFieldSources`, plus
+the projection
+`ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources.toReviewedFq12PredicateFieldSources`.
+The manifest distinguishes that target from implementation:
+`native_boundary_predicate_model_reviewed_fq12_provider_family_target_present =
+true`, while
+`native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present =
+false` and the missing provider-family count remains 3. That keeps the
+highest-risk provider family explicit without treating target-shaping work as a
+concrete selected predicate implementation.

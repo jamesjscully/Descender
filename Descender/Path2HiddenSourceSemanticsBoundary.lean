@@ -3345,7 +3345,149 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources where
   selectedSpendWitnessValid :
     Context -> HiddenRepresentative -> SlotAuthorization -> Prop
 
+/--
+Reviewed-Fq12/full-opening provider slice of the selected Rust
+native-boundary predicate interpretation.
+
+This is the highest-risk active Path 2 predicate family because it is where
+payload acceptance, extraction certificates, role-lift openings, native
+representative assembly, compatibility, and bridge-digest binding all become
+one concrete relation. Keeping it as a named slice lets the proof track that
+family before the complete native-boundary predicate record is assembled.
+-/
+structure ReviewedFq12SelectedRustNativeBoundaryReviewedFq12PredicateFieldSources where
+  selectedReviewedFq12PayloadAccepts :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload -> Prop
+  selectedReviewedFq12PayloadProjectsFrom :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload -> Prop
+  selectedReviewedFq12PayloadHasExtractionCertificate :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate -> Prop
+  selectedReviewedFq12ExtractionCertificateValid :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate -> Prop
+  selectedReviewedFq12CertificateExtracts :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        HiddenRepresentative -> Prop
+  selectedReviewedFq12CertificateLiftsToOpening :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening -> Prop
+  selectedReviewedFq12PayloadHasRoleLiftCertificate :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        ReviewedFq12FullNativeOpeningCertificate -> Prop
+  selectedReviewedFq12RoleLiftCertificateValid :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        ReviewedFq12FullNativeOpeningCertificate -> Prop
+  selectedReviewedFq12RoleLiftCertificateOpens :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        ReviewedFq12FullNativeOpeningCertificate ->
+          FullNativeRepresentativeOpening -> Prop
+  selectedFullNativeOpeningAssemblesRepresentative :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening -> HiddenRepresentative -> Prop
+  selectedReviewedFq12OpeningHasAssemblyCertificate :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening ->
+          ReviewedFq12NativeRepresentativeAssemblyCertificate -> Prop
+  selectedReviewedFq12AssemblyCertificateValid :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening ->
+          ReviewedFq12NativeRepresentativeAssemblyCertificate -> Prop
+  selectedReviewedFq12AssemblyCertificateAssembles :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening ->
+          ReviewedFq12NativeRepresentativeAssemblyCertificate ->
+            HiddenRepresentative -> Prop
+  selectedReviewedFq12HasExtractionCompatibilityCertificate :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening -> HiddenRepresentative ->
+          ReviewedFq12ExtractionCompatibilityCertificate -> Prop
+  selectedReviewedFq12ExtractionCompatibilityCertificateValid :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening -> HiddenRepresentative ->
+          ReviewedFq12ExtractionCompatibilityCertificate -> Prop
+  selectedReviewedFq12ExtractionCompatibilityCertificateExtracts :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening -> HiddenRepresentative ->
+          ReviewedFq12ExtractionCompatibilityCertificate -> Prop
+  selectedReviewedFq12HasFullOpeningBridgeDigestCertificate :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        ReviewedFq12FullNativeOpeningCertificate ->
+          ReviewedFq12NativeRepresentativeAssemblyCertificate ->
+            ReviewedFq12ExtractionCompatibilityCertificate ->
+              ReviewedFq12FullOpeningBridgeDigestCertificate -> Prop
+  selectedReviewedFq12FullOpeningBridgeDigestCertificateValid :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        ReviewedFq12FullNativeOpeningCertificate ->
+          ReviewedFq12NativeRepresentativeAssemblyCertificate ->
+            ReviewedFq12ExtractionCompatibilityCertificate ->
+              ReviewedFq12FullOpeningBridgeDigestCertificate -> Prop
+  selectedReviewedFq12PayloadExtracts :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload -> HiddenRepresentative -> Prop
+
 namespace ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources
+
+/--
+Project the complete selected predicate-source record to the reviewed-Fq12
+provider family that must eventually be backed by concrete Rust relation
+definitions.
+-/
+def toReviewedFq12PredicateFieldSources
+    (Sources :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources) :
+    ReviewedFq12SelectedRustNativeBoundaryReviewedFq12PredicateFieldSources where
+  selectedReviewedFq12PayloadAccepts :=
+    Sources.selectedReviewedFq12PayloadAccepts
+  selectedReviewedFq12PayloadProjectsFrom :=
+    Sources.selectedReviewedFq12PayloadProjectsFrom
+  selectedReviewedFq12PayloadHasExtractionCertificate :=
+    Sources.selectedReviewedFq12PayloadHasExtractionCertificate
+  selectedReviewedFq12ExtractionCertificateValid :=
+    Sources.selectedReviewedFq12ExtractionCertificateValid
+  selectedReviewedFq12CertificateExtracts :=
+    Sources.selectedReviewedFq12CertificateExtracts
+  selectedReviewedFq12CertificateLiftsToOpening :=
+    Sources.selectedReviewedFq12CertificateLiftsToOpening
+  selectedReviewedFq12PayloadHasRoleLiftCertificate :=
+    Sources.selectedReviewedFq12PayloadHasRoleLiftCertificate
+  selectedReviewedFq12RoleLiftCertificateValid :=
+    Sources.selectedReviewedFq12RoleLiftCertificateValid
+  selectedReviewedFq12RoleLiftCertificateOpens :=
+    Sources.selectedReviewedFq12RoleLiftCertificateOpens
+  selectedFullNativeOpeningAssemblesRepresentative :=
+    Sources.selectedFullNativeOpeningAssemblesRepresentative
+  selectedReviewedFq12OpeningHasAssemblyCertificate :=
+    Sources.selectedReviewedFq12OpeningHasAssemblyCertificate
+  selectedReviewedFq12AssemblyCertificateValid :=
+    Sources.selectedReviewedFq12AssemblyCertificateValid
+  selectedReviewedFq12AssemblyCertificateAssembles :=
+    Sources.selectedReviewedFq12AssemblyCertificateAssembles
+  selectedReviewedFq12HasExtractionCompatibilityCertificate :=
+    Sources.selectedReviewedFq12HasExtractionCompatibilityCertificate
+  selectedReviewedFq12ExtractionCompatibilityCertificateValid :=
+    Sources.selectedReviewedFq12ExtractionCompatibilityCertificateValid
+  selectedReviewedFq12ExtractionCompatibilityCertificateExtracts :=
+    Sources.selectedReviewedFq12ExtractionCompatibilityCertificateExtracts
+  selectedReviewedFq12HasFullOpeningBridgeDigestCertificate :=
+    Sources.selectedReviewedFq12HasFullOpeningBridgeDigestCertificate
+  selectedReviewedFq12FullOpeningBridgeDigestCertificateValid :=
+    Sources.selectedReviewedFq12FullOpeningBridgeDigestCertificateValid
+  selectedReviewedFq12PayloadExtracts :=
+    Sources.selectedReviewedFq12PayloadExtracts
 
 /-- Forget the selected field-source package into the native boundary record. -/
 def toPredicates
