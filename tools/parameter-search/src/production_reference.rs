@@ -9477,10 +9477,23 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         "selectedSpendAccepts",
         "selectedSpendWitnessValid",
     ];
+    let native_boundary_predicate_model_field_source_value_dependency_names =
+        native_boundary_predicate_model_field_source_names
+            .iter()
+            .map(|name| format!("{name}Value"))
+            .collect::<Vec<_>>();
+    let native_boundary_predicate_model_field_source_value_dependency_name_refs =
+        native_boundary_predicate_model_field_source_value_dependency_names
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>();
     let native_boundary_predicate_model_stub_field_sources_present =
         lean_source_module_has_forbidden_stubs_for_names_v1(
             &boundary_source,
             &native_boundary_predicate_model_field_source_names,
+        ) || lean_source_module_has_forbidden_stubs_for_names_v1(
+            &boundary_source,
+            &native_boundary_predicate_model_field_source_value_dependency_name_refs,
         );
     let native_boundary_predicate_model_field_sources_defined_present =
         lean_source_module_has_non_stub_declarations_for_names_v1(
@@ -58603,6 +58616,22 @@ def selectedSpendWitnessValid := selectedSpendWitnessValidValue
         );
         assert!(
             !stubbed_native_boundary_model_subcheck
+                .native_boundary_concrete_predicate_model_present
+        );
+        let stubbed_provider_dependency_native_boundary_model_source = format!(
+            "\naxiom selectedAdmittedValue : stub\n{}",
+            complete_native_boundary_model_source
+        );
+        let stubbed_provider_dependency_native_boundary_model_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &stubbed_provider_dependency_native_boundary_model_source,
+            );
+        assert!(
+            stubbed_provider_dependency_native_boundary_model_subcheck
+                .native_boundary_predicate_model_stub_field_sources_present
+        );
+        assert!(
+            !stubbed_provider_dependency_native_boundary_model_subcheck
                 .native_boundary_concrete_predicate_model_present
         );
         let incomplete_native_boundary_model_source = format!(

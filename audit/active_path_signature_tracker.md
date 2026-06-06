@@ -1414,6 +1414,10 @@ stubs for the selected predicate-field providers used by
 `selectedRustNativeBoundaryPredicates`. The manifest exposes this as
 `native_boundary_predicate_model_stub_field_sources_present`, and the
 digest-bound negative-control bit requires it to be false.
+The same stub bit now also rejects obvious `selected...Value` dependency stubs
+for those providers, so a provider definition such as
+`selectedAdmitted := selectedAdmittedValue` cannot be completed by an axiom or
+constant named `selectedAdmittedValue`.
 Those selected predicate-field providers must now be concrete `def`/`abbrev`
 value declarations; theorem- or instance-shaped declarations no longer satisfy
 the provider-completeness gate. A regression fixture replaces a critical

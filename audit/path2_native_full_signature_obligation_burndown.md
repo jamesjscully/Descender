@@ -401,6 +401,9 @@ The same detector now rejects module-level `axiom`, `constant`, `opaque`, or
 `selectedRustNativeBoundaryPredicates`. The manifest exposes this as
 `native_boundary_predicate_model_stub_field_sources_present`, and the
 digest-bound negative-control bit also requires it to be false.
+That stub bit now also covers obvious `selected...Value` dependency stubs for
+the selected providers, preventing a concrete provider declaration from simply
+aliasing an axiom/constant placeholder with the same selected-provider stem.
 The provider-completeness detector now accepts only concrete `def`/`abbrev`
 value declarations for those selected predicate-field providers. A
 theorem-shaped replacement for a critical reviewed-Fq12 provider leaves both
