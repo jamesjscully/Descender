@@ -1371,6 +1371,14 @@ exact theorem unreachable.
 `selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1` now follows the
 same pattern for the active accepted-spend numeric-bound gate: suffixed theorem
 spoofs reject, and later exact selected declarations remain reachable.
+The accepted-spend numeric-bound gate now scans the account-design,
+hidden-source boundary, checked-core byte bridge, full-spend concrete, and
+concrete no-export sources together. It rejects a numeric-certificate-only
+theorem unless the source also consumes the active hidden-source closure,
+selected checked-core instantiation and accepted-spend wrapper, concrete
+full-execution source and lift, and selected no-export serializer closure.
+This keeps the numeric handoff dependent on the active closure proofs rather
+than locally named prerequisite propositions.
 `selectedRustActiveNoExportSerializer_instantiation_v1` now follows the same
 exact-name/all-candidate pattern for the active no-export serializer gate.
 The full-execution boundary-presence check now also requires an exact

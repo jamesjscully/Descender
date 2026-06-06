@@ -27600,7 +27600,16 @@ fn path2_full_signature_execution_source_instantiation_candidate_source_v1(
 
 fn path2_native_accepted_spend_numeric_bound_instantiated_v1() -> bool {
     let account_design_source = include_str!("../../../Descender/Path2NativeAccountDesign.lean");
-    path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(account_design_source)
+    let hidden_source_boundary_source =
+        include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
+    let checked_core_bridge_source =
+        include_str!("../../../Descender/Path2CheckedCoreByteBridge.lean");
+    let full_spend_concrete_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
+    let no_export_concrete_source = include_str!("../../../Descender/Path2NoExportConcrete.lean");
+    let accepted_spend_sources = format!(
+        "{account_design_source}\n{hidden_source_boundary_source}\n{checked_core_bridge_source}\n{full_spend_concrete_source}\n{no_export_concrete_source}"
+    );
+    path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(&accepted_spend_sources)
 }
 
 fn path2_full_signature_reduction_certificate_boundary_present_v1() -> bool {
@@ -28061,6 +28070,13 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
 
     let instantiation_checks = [
         "selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1",
+        "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate",
+        "selectedRustCheckedCoreByteSource_instantiation_v1",
+        "accepted_spend_with_selected_rust_checked_core_closure_closed",
+        "concreteFullSignatureExecutionSource_instantiation_v1",
+        "concrete_fullExecutionAcceptedSpendLift",
+        "selectedRustActiveNoExportSerializer_instantiation_v1",
+        "activeSerializerAllowlist_boundaryNoExportClosed",
         "let selectedRustAcceptedSpendSoundnessCertificate :",
         "SelectedRustAcceptedSpendSoundnessCertificate",
         "SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound",
@@ -51518,9 +51534,54 @@ end Path2NativeAccountDesign
                 vacuous_constructor_accepted_spend_zero_bound
             )
         );
+        let accepted_spend_instantiation_without_prerequisites = r#"
+theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
+    NativeAcceptedSpendSoundnessBoundary := by
+  let selectedRustAcceptedSpendSoundnessCertificate :
+      SelectedRustAcceptedSpendSoundnessCertificate :=
+    SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
+      selectedRustAcceptedSpendEvidenceReport
+      selectedRustAcceptedSpendEvidenceDigest
+      selectedRustAcceptedSpendBoundVerifiedProof
+      selectedRustAcceptedSpendFactsAllTrueProof
+      selectedRustAcceptedSpendForgeryProb
+      selectedRustAcceptedSpendForgeryBound
+      selectedRustProductionAcceptedSpendForgeryProb
+      selectedRustProductionAcceptedSpendForgeryBound
+      selectedRustAcceptedSpendForgeryProbPinned
+      selectedRustAcceptedSpendForgeryBoundPinned
+      selectedRustAcceptedSpendForgeryLeBound
+      selectedRustAcceptedSpendHiddenSourceClosed
+      selectedRustAcceptedSpendCheckedCoreClosed
+      selectedRustAcceptedSpendLifecycleClosed
+      selectedRustAcceptedSpendNoExportClosed
+  exact
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+      selectedRustAcceptedSpendSoundnessCertificate
+end Path2NativeAccountDesign
+"#;
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                accepted_spend_instantiation_without_prerequisites
+            )
+        );
         let accepted_spend_instantiation_shape = r#"
 theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     NativeAcceptedSpendSoundnessBoundary := by
+  let _hiddenSourceClosure :=
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate
+  let _checkedCoreInstantiation :=
+    selectedRustCheckedCoreByteSource_instantiation_v1
+  let _checkedCoreClosure :=
+    accepted_spend_with_selected_rust_checked_core_closure_closed
+  let _fullExecutionSource :=
+    concreteFullSignatureExecutionSource_instantiation_v1
+  let _lifecycleLift :=
+    concrete_fullExecutionAcceptedSpendLift
+  let _noExportInstantiation :=
+    selectedRustActiveNoExportSerializer_instantiation_v1
+  let _noExportClosure :=
+    activeSerializerAllowlist_boundaryNoExportClosed
   let selectedRustAcceptedSpendSoundnessCertificate :
       SelectedRustAcceptedSpendSoundnessCertificate :=
     SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
