@@ -1336,6 +1336,9 @@ the full active native-boundary reviewed-Fq12 predicate surface, including
 certificate extraction, role-lift, assembly, compatibility, full-opening bridge
 digest, payload extraction, and break predicates. A partial selected
 `Path2NativeBoundary.Predicates` stub no longer flips the predicate-model bit.
+The detector is now also scoped to the body of the actual
+`selectedRustNativeBoundaryPredicates` declaration: unrelated declarations in
+the same Lean module cannot contribute missing predicate-field markers.
 
 ## Findings
 

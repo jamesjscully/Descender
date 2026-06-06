@@ -8627,6 +8627,20 @@ fn lean_source_selected_rust_definition_body_contains_marker_v1(
     name: &str,
     marker: &str,
 ) -> bool {
+    lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+        boundary_source,
+        name,
+        marker,
+        4096,
+    )
+}
+
+fn lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+    boundary_source: &str,
+    name: &str,
+    marker: &str,
+    max_body_len: usize,
+) -> bool {
     ["def", "theorem"].iter().any(|kind| {
         let public_start = format!("\n{kind} {name}");
         let private_start = format!("\nprivate {kind} {name}");
@@ -8645,7 +8659,7 @@ fn lean_source_selected_rust_definition_body_contains_marker_v1(
                         return false;
                     }
                     let declaration_window =
-                        &boundary_source[start..boundary_source.len().min(start + 4096)];
+                        &boundary_source[start..boundary_source.len().min(start + max_body_len)];
                     let Some(body_start) = [":=", "\nwhere", " where"]
                         .iter()
                         .filter_map(|body_marker| {
@@ -8658,6 +8672,30 @@ fn lean_source_selected_rust_definition_body_contains_marker_v1(
                         return false;
                     };
                     let body_window = &declaration_window[body_start..];
+                    let next_top_level_declaration = [
+                        "\nabbrev ",
+                        "\naxiom ",
+                        "\nclass ",
+                        "\nconstant ",
+                        "\ndef ",
+                        "\ninductive ",
+                        "\ninstance ",
+                        "\nnamespace ",
+                        "\nopaque ",
+                        "\nopen ",
+                        "\nprivate abbrev ",
+                        "\nprivate def ",
+                        "\nprivate theorem ",
+                        "\nsection ",
+                        "\nstructure ",
+                        "\ntheorem ",
+                        "\nvariable ",
+                    ]
+                    .iter()
+                    .filter_map(|marker| body_window.find(marker))
+                    .min()
+                    .unwrap_or(body_window.len());
+                    let body_window = &body_window[..next_top_level_declaration];
                     let normalized_body = body_window.split_whitespace().collect::<String>();
                     normalized_body.contains(&marker.split_whitespace().collect::<String>())
                 })
@@ -9017,9 +9055,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| full_spend_concrete_source.contains(marker));
-    let native_boundary_concrete_predicate_model_present = [
-        "def selectedRustNativeBoundaryPredicates",
-        "Path2NativeBoundary.Predicates",
+    let native_boundary_predicate_model_field_markers = [
         "reviewedFq12PayloadAccepts :=",
         "reviewedFq12PayloadProjectsFrom :=",
         "reviewedFq12PayloadHasExtractionCertificate :=",
@@ -9040,9 +9076,22 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         "reviewedFq12FullOpeningBridgeDigestCertificateValid :=",
         "reviewedFq12PayloadExtracts :=",
         "boundaryBreakFor :=",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
+    ];
+    let native_boundary_concrete_predicate_model_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicates",
+            &["Path2NativeBoundary.Predicates"],
+        ) && native_boundary_predicate_model_field_markers
+            .iter()
+            .all(|marker| {
+                lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+                    &boundary_source,
+                    "selectedRustNativeBoundaryPredicates",
+                    marker,
+                    16384,
+                )
+            });
     let boundary_base_report_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -57470,6 +57519,41 @@ def selectedRustNativeBoundaryPredicates :
         selectedReviewedFq12PayloadHasExtractionCertificate
       reviewedFq12ExtractionCertificateValid :=
         selectedReviewedFq12ExtractionCertificateValid }
+
+def unrelatedNativeBoundaryPredicateMarkerBundle := by
+  exact
+    { reviewedFq12CertificateExtracts :=
+        selectedReviewedFq12CertificateExtracts
+      reviewedFq12CertificateLiftsToOpening :=
+        selectedReviewedFq12CertificateLiftsToOpening
+      reviewedFq12PayloadHasRoleLiftCertificate :=
+        selectedReviewedFq12PayloadHasRoleLiftCertificate
+      reviewedFq12RoleLiftCertificateValid :=
+        selectedReviewedFq12RoleLiftCertificateValid
+      reviewedFq12RoleLiftCertificateOpens :=
+        selectedReviewedFq12RoleLiftCertificateOpens
+      fullNativeOpeningAssemblesRepresentative :=
+        selectedFullNativeOpeningAssemblesRepresentative
+      reviewedFq12OpeningHasAssemblyCertificate :=
+        selectedReviewedFq12OpeningHasAssemblyCertificate
+      reviewedFq12AssemblyCertificateValid :=
+        selectedReviewedFq12AssemblyCertificateValid
+      reviewedFq12AssemblyCertificateAssembles :=
+        selectedReviewedFq12AssemblyCertificateAssembles
+      reviewedFq12HasExtractionCompatibilityCertificate :=
+        selectedReviewedFq12HasExtractionCompatibilityCertificate
+      reviewedFq12ExtractionCompatibilityCertificateValid :=
+        selectedReviewedFq12ExtractionCompatibilityCertificateValid
+      reviewedFq12ExtractionCompatibilityCertificateExtracts :=
+        selectedReviewedFq12ExtractionCompatibilityCertificateExtracts
+      reviewedFq12HasFullOpeningBridgeDigestCertificate :=
+        selectedReviewedFq12HasFullOpeningBridgeDigestCertificate
+      reviewedFq12FullOpeningBridgeDigestCertificateValid :=
+        selectedReviewedFq12FullOpeningBridgeDigestCertificateValid
+      reviewedFq12PayloadExtracts :=
+        selectedReviewedFq12PayloadExtracts
+      boundaryBreakFor :=
+        selectedBoundaryBreakFor }
 "#;
         let partial_native_boundary_model_subcheck =
             path2_selected_rust_model_source_record_subcheck_from_source_v1(
@@ -57477,6 +57561,57 @@ def selectedRustNativeBoundaryPredicates :
             );
         assert!(
             !partial_native_boundary_model_subcheck
+                .native_boundary_concrete_predicate_model_present
+        );
+        let complete_native_boundary_model_source = r#"
+def selectedRustNativeBoundaryPredicates :
+  Path2NativeBoundary.Predicates := by
+  exact
+    { reviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAccepts
+      reviewedFq12PayloadProjectsFrom := selectedReviewedFq12PayloadProjectsFrom
+      reviewedFq12PayloadHasExtractionCertificate :=
+        selectedReviewedFq12PayloadHasExtractionCertificate
+      reviewedFq12ExtractionCertificateValid :=
+        selectedReviewedFq12ExtractionCertificateValid
+      reviewedFq12CertificateExtracts :=
+        selectedReviewedFq12CertificateExtracts
+      reviewedFq12CertificateLiftsToOpening :=
+        selectedReviewedFq12CertificateLiftsToOpening
+      reviewedFq12PayloadHasRoleLiftCertificate :=
+        selectedReviewedFq12PayloadHasRoleLiftCertificate
+      reviewedFq12RoleLiftCertificateValid :=
+        selectedReviewedFq12RoleLiftCertificateValid
+      reviewedFq12RoleLiftCertificateOpens :=
+        selectedReviewedFq12RoleLiftCertificateOpens
+      fullNativeOpeningAssemblesRepresentative :=
+        selectedFullNativeOpeningAssemblesRepresentative
+      reviewedFq12OpeningHasAssemblyCertificate :=
+        selectedReviewedFq12OpeningHasAssemblyCertificate
+      reviewedFq12AssemblyCertificateValid :=
+        selectedReviewedFq12AssemblyCertificateValid
+      reviewedFq12AssemblyCertificateAssembles :=
+        selectedReviewedFq12AssemblyCertificateAssembles
+      reviewedFq12HasExtractionCompatibilityCertificate :=
+        selectedReviewedFq12HasExtractionCompatibilityCertificate
+      reviewedFq12ExtractionCompatibilityCertificateValid :=
+        selectedReviewedFq12ExtractionCompatibilityCertificateValid
+      reviewedFq12ExtractionCompatibilityCertificateExtracts :=
+        selectedReviewedFq12ExtractionCompatibilityCertificateExtracts
+      reviewedFq12HasFullOpeningBridgeDigestCertificate :=
+        selectedReviewedFq12HasFullOpeningBridgeDigestCertificate
+      reviewedFq12FullOpeningBridgeDigestCertificateValid :=
+        selectedReviewedFq12FullOpeningBridgeDigestCertificateValid
+      reviewedFq12PayloadExtracts :=
+        selectedReviewedFq12PayloadExtracts
+      boundaryBreakFor :=
+        selectedBoundaryBreakFor }
+"#;
+        let complete_native_boundary_model_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                complete_native_boundary_model_source,
+            );
+        assert!(
+            complete_native_boundary_model_subcheck
                 .native_boundary_concrete_predicate_model_present
         );
         assert!(

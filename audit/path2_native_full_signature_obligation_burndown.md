@@ -341,6 +341,9 @@ fields. A partial selected `Path2NativeBoundary.Predicates` record remains
 fail-closed, so `native_boundary_concrete_predicate_model_present` only turns
 true for a model that exposes the role-lift, assembly, compatibility,
 full-opening bridge digest, payload extraction, and break predicates as well.
+The detector is declaration-body scoped to
+`selectedRustNativeBoundaryPredicates`, so nearby or unrelated marker text no
+longer contributes to the concrete predicate-model import bit.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
