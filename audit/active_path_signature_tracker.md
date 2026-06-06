@@ -1968,9 +1968,17 @@ identification facts directly:
 `localValid_eq_selected_of_predicatesFromSharedWitness`, and
 `descentConsistent_eq_selected_of_predicatesFromSharedWitness`. This is still
 fail-closed: the concrete import must supply the boundary-version, role-handle,
-masked-projection, representative-digest, local slot/account, and descent
+masked-projection, representative-digest, local lifecycle-slot, and descent
 lifecycle/aggregation equalities from the active Rust verifier/evidence, plus
-the report `FactsAllTrue` certificate.
+the report `FactsAllTrue` certificate. The earlier highest-risk local-account
+mismatch is resolved by retargeting `selectedLocalValid` to lifecycle locality
+only. The previous predicate required
+`opening.selectedAccountProjectionDigest = b.context.accountId`, but Rust sets
+`selected_account_projection_digest` from the extraction certificate's
+account-projection lanes while `account_id` is the public account identity
+digest. That equality is not enforced by the active verifier and should not be
+part of the model; account binding is carried by native boundary reconstruction
+and the account projection digest instead.
 Tooling note: the Rust source scanner's direct-constant-lambda check now clamps
 source windows to a UTF-8 character boundary before slicing; the prior byte
 slice could panic when a window ended inside Lean's `∧` token. The broad

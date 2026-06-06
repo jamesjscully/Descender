@@ -3386,11 +3386,16 @@ def selectedBoundaryOf
   creationStatementDigest := h.openingTuple
   nativeBoundaryDigest := h.representativeDigest
 
-/-- Selected local-validity provider for the native representative. -/
+/--
+Selected local-validity provider for the native representative.
+
+The selected account-projection digest is not the public account identity
+digest. Account binding is carried by boundary reconstruction/account
+projection; local validity only checks lifecycle-slot locality.
+-/
 def selectedLocalValid
     (c : Context) (h : HiddenRepresentative) : Prop :=
-  h.lifecycleSlot = c.slotId ∧
-    h.selectedAccountProjection = c.accountId
+  h.lifecycleSlot = c.slotId
 
 /-- Selected descent-consistency provider for the native representative. -/
 def selectedDescentConsistent
@@ -4956,18 +4961,6 @@ structure ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityFieldEquati
             cert.slotId = b.context.slotId ->
               cert.openingCommitment = opening.openingTupleDigest ->
                 opening.lifecycleSlotDigest = b.context.slotId
-  localAccount_eq :
-    forall {b : Path2NativeBoundary.Boundary}
-        {payload : ReviewedFq12HiddenSourcePayload}
-        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
-        {opening : FullNativeRepresentativeOpening},
-      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
-        payload.slotId = b.context.slotId ->
-          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
-            cert.slotId = b.context.slotId ->
-              cert.openingCommitment = opening.openingTupleDigest ->
-                opening.selectedAccountProjectionDigest =
-                  b.context.accountId
   descentOpeningTuple_eq :
     forall {b : Path2NativeBoundary.Boundary}
         {payload : ReviewedFq12HiddenSourcePayload}
@@ -5105,10 +5098,8 @@ def reviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSourceOfF
       hCertSlot hOpeningCommitment
     rw [fields.localValid_eq_selected]
     exact
-      ⟨fields.localSlot_eq hPayloadBoundary hPayloadSlot hCertBoundary
-          hCertSlot hOpeningCommitment,
-        fields.localAccount_eq hPayloadBoundary hPayloadSlot hCertBoundary
-          hCertSlot hOpeningCommitment⟩
+      fields.localSlot_eq hPayloadBoundary hPayloadSlot hCertBoundary
+        hCertSlot hOpeningCommitment
   canonicalFullOpeningDescentConsistent := by
     intro b payload cert opening hPayloadBoundary hPayloadSlot hCertBoundary
       hCertSlot hOpeningCommitment

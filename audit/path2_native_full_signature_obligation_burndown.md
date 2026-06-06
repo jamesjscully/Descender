@@ -1614,6 +1614,14 @@ fixed-point equality now projects the three selected-predicate identification
 facts directly. This does not close the route yet; it narrows the remaining
 import to concrete boundary/opening equality evidence plus the report
 `FactsAllTrue` proof.
+The likely redesign-forcing local-account mismatch has been removed from the
+Lean model. `selectedLocalValid` now captures lifecycle-slot locality only; the
+previous equality between the selected account-projection digest and
+`Context.accountId` was not true of the active Rust route, where the selected
+projection digest comes from extracted account-projection lanes and
+`account_id` is the public account identity digest. Account binding remains in
+the native boundary/account projection reconstruction rather than this local
+validity predicate.
 The hard model certificate route now has a constructor:
 `ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate.ofCanonicalNativeSource`
 uses the shared-witness certificate, the field equality, and the canonical
