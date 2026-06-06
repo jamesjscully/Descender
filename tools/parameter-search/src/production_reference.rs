@@ -28237,18 +28237,25 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "observe",
         "successProb_le_acceptedSpendOrBreakUnionBound",
         "PricedAcceptedSpendNumericCertificate",
+        "PricedAcceptedSpendNumericCertificate.observe",
+        "PricedAcceptedSpendNumericCertificate.acceptedSpendEvent",
+        "PricedAcceptedSpendNumericCertificate.namedBreakEvent",
         "SelectedAcceptedSpendNumericSource",
         "SelectedAcceptedSpendNumericSource.toPricedAcceptedSpendNumericCertificate",
         "selectedRustAcceptedSpendNumericOutcome",
         "SelectedRustConcreteAcceptedSpendNumericCertificate",
         "outcomeCarrierPinned",
+        "acceptedSpendEventPinned",
         "toPricedAcceptedSpendNumericCertificate",
         "toSelectedAcceptedSpendNumericSource",
         "outcome_eq_selectedFullForgeryRun",
         "Path2FullSpendGame.BreakEvent",
         "activeBreakFamilyPinned",
+        "namedBreakEventsPinned",
         "breakFamily_eq_activeFullSpendBreakEvent",
         "break_eq_activeFullSpendBreakEvent",
+        "acceptedSpendEvent_activeSound",
+        "namedBreakEvents_activeSound",
         "unionBound_le_priced",
         "selectedRustActiveNoExportSerializer_instantiation_v1",
         "activeSerializerAllowlist_boundaryNoExportClosed",
@@ -28258,7 +28265,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "acceptedSpendNumericBoundPriced",
         "finiteTraceSupportPriced",
         "activeOutcomeCarrierPinned",
+        "acceptedSpendEventPinned",
         "activeBreakFamilyPinned",
+        "namedBreakEventsPinned",
         "acceptedSpendUnionBoundPriced",
         "selectedRustAcceptedSpendEvidenceReport",
         "selectedRustAcceptedSpendEvidenceDigest",
@@ -51631,7 +51640,9 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
           acceptedSpendNumericBoundPriced := true
           finiteTraceSupportPriced := true
           activeOutcomeCarrierPinned := true
+          acceptedSpendEventPinned := true
           activeBreakFamilyPinned := true
+          namedBreakEventsPinned := true
           acceptedSpendUnionBoundPriced := true
           hiddenSourceClosureReady := true
           checkedCoreClosureReady := true
@@ -51816,12 +51827,22 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.finiteTraceSupportPriced
   let _acceptedSpendReportActiveOutcomeCarrier :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.activeOutcomeCarrierPinned
+  let _acceptedSpendReportAcceptedSpendEvent :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendEventPinned
   let _acceptedSpendReportActiveBreakFamily :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.activeBreakFamilyPinned
+  let _acceptedSpendReportNamedBreakEvents :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.namedBreakEventsPinned
   let _acceptedSpendReportUnionBoundPriced :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendUnionBoundPriced
   let _acceptedSpendFiniteTraceSupport :=
     PricedAcceptedSpendNumericCertificate.traceFintype
+  let _acceptedSpendPackagedObserve :=
+    PricedAcceptedSpendNumericCertificate.observe
+  let _acceptedSpendPackagedAcceptedEvent :=
+    PricedAcceptedSpendNumericCertificate.acceptedSpendEvent
+  let _acceptedSpendPackagedNamedBreakEvent :=
+    PricedAcceptedSpendNumericCertificate.namedBreakEvent
   let _acceptedSpendObservationMap :=
     AcceptedSpendNumericGame.observe
   let _acceptedSpendUnionBound :=
@@ -51842,6 +51863,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource
   let _acceptedSpendConcreteOutcomeTheorem :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.outcome_eq_selectedFullForgeryRun
+  let _acceptedSpendConcreteAcceptedSpendEventTheorem :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendEvent_activeSound
   let _acceptedSpendActiveBreakIndex :=
     Path2FullSpendGame.BreakEvent
   let _acceptedSpendActiveBreakPinned :=
@@ -51850,6 +51873,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     PricedAcceptedSpendNumericCertificate.breakFamily_eq_activeFullSpendBreakEvent
   let _acceptedSpendConcreteBreakTheorem :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.break_eq_activeFullSpendBreakEvent
+  let _acceptedSpendConcreteNamedBreakEventsTheorem :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.namedBreakEvents_activeSound
   let _acceptedSpendPricedCertificate :=
     PricedAcceptedSpendNumericCertificate.unionBound_le_priced
   let _acceptedSpendPricedBound :=
@@ -52004,12 +52029,22 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.finiteTraceSupportPriced
   let _acceptedSpendReportActiveOutcomeCarrier :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.activeOutcomeCarrierPinned
+  let _acceptedSpendReportAcceptedSpendEvent :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendEventPinned
   let _acceptedSpendReportActiveBreakFamily :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.activeBreakFamilyPinned
+  let _acceptedSpendReportNamedBreakEvents :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.namedBreakEventsPinned
   let _acceptedSpendReportUnionBoundPriced :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendUnionBoundPriced
   let _acceptedSpendFiniteTraceSupport :=
     PricedAcceptedSpendNumericCertificate.traceFintype
+  let _acceptedSpendPackagedObserve :=
+    PricedAcceptedSpendNumericCertificate.observe
+  let _acceptedSpendPackagedAcceptedEvent :=
+    PricedAcceptedSpendNumericCertificate.acceptedSpendEvent
+  let _acceptedSpendPackagedNamedBreakEvent :=
+    PricedAcceptedSpendNumericCertificate.namedBreakEvent
   let _acceptedSpendObservationMap :=
     AcceptedSpendNumericGame.observe
   let _acceptedSpendUnionBound :=
@@ -52030,6 +52065,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource
   let _acceptedSpendConcreteOutcomeTheorem :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.outcome_eq_selectedFullForgeryRun
+  let _acceptedSpendConcreteAcceptedSpendEventTheorem :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendEvent_activeSound
   let _acceptedSpendActiveBreakIndex :=
     Path2FullSpendGame.BreakEvent
   let _acceptedSpendActiveBreakPinned :=
@@ -52038,6 +52075,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     PricedAcceptedSpendNumericCertificate.breakFamily_eq_activeFullSpendBreakEvent
   let _acceptedSpendConcreteBreakTheorem :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.break_eq_activeFullSpendBreakEvent
+  let _acceptedSpendConcreteNamedBreakEventsTheorem :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.namedBreakEvents_activeSound
   let _acceptedSpendPricedCertificate :=
     PricedAcceptedSpendNumericCertificate.unionBound_le_priced
   let _acceptedSpendPricedBound :=

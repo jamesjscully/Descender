@@ -1399,6 +1399,16 @@ production-priced upper bound and carries `unionBound_le_priced` for the finite
 accepted-spend-or-break union expression. The accepted-spend source gate now
 requires this layer, so future closure must consume the probability game and
 priced-bound package rather than only raw `ℝ` fields.
+The numeric source now pins event semantics, not only carrier types.
+`PricedAcceptedSpendNumericCertificate` exposes stored-instance accessors for
+observed outcomes, accepted-spend events, and named break events, and
+`SelectedRustConcreteAcceptedSpendNumericCertificate` must prove that priced
+accepted-spend Boolean events imply the active concrete
+`AcceptedSpendConclusion`, while priced named-break Boolean events imply the
+active concrete `breakFor` predicate after transporting through the pinned
+`Path2FullSpendGame.BreakEvent` equality. The accepted-spend source gate
+requires these markers, preventing a future theorem from pricing arbitrary
+predicates over the selected run carrier.
 The probability game now separates finite trace support from the observed
 full-forgery outcome: `Trace` has `traceFintype`, while `Outcome` is reached
 through `observe` and need not be finite. This is required for the active

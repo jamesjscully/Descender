@@ -153,6 +153,27 @@ def successProb (C : PricedAcceptedSpendNumericCertificate) : ℝ :=
   @AcceptedSpendNumericGame.successProb
     C.Trace C.Outcome C.Break C.traceFintype C.breakFintype C.game
 
+/-- Observe the concrete outcome associated with a finite trace. -/
+def observe (C : PricedAcceptedSpendNumericCertificate)
+    (trace : C.Trace) : C.Outcome :=
+  letI : Fintype C.Trace := C.traceFintype
+  letI : Fintype C.Break := C.breakFintype
+  C.game.observe trace
+
+/-- The accepted-spend event of the packaged game at one trace. -/
+def acceptedSpendEvent (C : PricedAcceptedSpendNumericCertificate)
+    (trace : C.Trace) : Bool :=
+  letI : Fintype C.Trace := C.traceFintype
+  letI : Fintype C.Break := C.breakFintype
+  C.game.acceptedSpendForgery (C.observe trace)
+
+/-- One named break event of the packaged game at one trace. -/
+def namedBreakEvent (C : PricedAcceptedSpendNumericCertificate)
+    (trace : C.Trace) (breakEvent : C.Break) : Bool :=
+  letI : Fintype C.Trace := C.traceFintype
+  letI : Fintype C.Break := C.breakFintype
+  C.game.namedBreak breakEvent (C.observe trace)
+
 /-- The reduced accepted-spend event probability of the packaged game. -/
 def acceptedSpendProb (C : PricedAcceptedSpendNumericCertificate) : ℝ :=
   @AcceptedSpendNumericGame.acceptedSpendProb
@@ -218,6 +239,10 @@ structure SelectedAcceptedSpendNumericSource where
   pricedCertificate : PricedAcceptedSpendNumericCertificate
   outcomeCarrierPinned : Prop
   outcomeCarrierPinnedProof : outcomeCarrierPinned
+  acceptedSpendEventPinned : Prop
+  acceptedSpendEventPinnedProof : acceptedSpendEventPinned
+  namedBreakEventsPinned : Prop
+  namedBreakEventsPinnedProof : namedBreakEventsPinned
   breakFamilyPinnedProof :
     pricedCertificate.Break = Path2FullSpendGame.BreakEvent
 

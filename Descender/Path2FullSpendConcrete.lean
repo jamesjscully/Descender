@@ -1005,8 +1005,23 @@ structure SelectedRustConcreteAcceptedSpendNumericCertificate where
     Path2AcceptedSpendProbability.PricedAcceptedSpendNumericCertificate
   outcomeCarrierPinned :
     pricedCertificate.Outcome = selectedRustAcceptedSpendNumericOutcome
+  acceptedSpendEventPinned :
+    forall trace : pricedCertificate.Trace,
+      pricedCertificate.acceptedSpendEvent trace = true ->
+        Path2FullSpendGame.AcceptedSpendConclusion
+          (concretePredicates selectedRustConcreteGameConfig)
+          (cast outcomeCarrierPinned
+            (pricedCertificate.observe trace)).spend
   breakFamilyPinned :
     pricedCertificate.Break = Path2FullSpendGame.BreakEvent
+  namedBreakEventsPinned :
+    forall (trace : pricedCertificate.Trace)
+        (breakEvent : pricedCertificate.Break),
+      pricedCertificate.namedBreakEvent trace breakEvent = true ->
+        (concretePredicates selectedRustConcreteGameConfig).breakFor
+          (cast outcomeCarrierPinned
+            (pricedCertificate.observe trace)).spend
+          (cast breakFamilyPinned breakEvent)
 
 /-- Forget the concrete active-carrier wrapper after its pins are checked. -/
 def SelectedRustConcreteAcceptedSpendNumericCertificate.toPricedAcceptedSpendNumericCertificate
@@ -1022,6 +1037,23 @@ def SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendN
   outcomeCarrierPinned :=
     Cert.pricedCertificate.Outcome = selectedRustAcceptedSpendNumericOutcome
   outcomeCarrierPinnedProof := Cert.outcomeCarrierPinned
+  acceptedSpendEventPinned :=
+    forall trace : Cert.pricedCertificate.Trace,
+      Cert.pricedCertificate.acceptedSpendEvent trace = true ->
+        Path2FullSpendGame.AcceptedSpendConclusion
+          (concretePredicates selectedRustConcreteGameConfig)
+          (cast Cert.outcomeCarrierPinned
+            (Cert.pricedCertificate.observe trace)).spend
+  acceptedSpendEventPinnedProof := Cert.acceptedSpendEventPinned
+  namedBreakEventsPinned :=
+    forall (trace : Cert.pricedCertificate.Trace)
+        (breakEvent : Cert.pricedCertificate.Break),
+      Cert.pricedCertificate.namedBreakEvent trace breakEvent = true ->
+        (concretePredicates selectedRustConcreteGameConfig).breakFor
+          (cast Cert.outcomeCarrierPinned
+            (Cert.pricedCertificate.observe trace)).spend
+          (cast Cert.breakFamilyPinned breakEvent)
+  namedBreakEventsPinnedProof := Cert.namedBreakEventsPinned
   breakFamilyPinnedProof := Cert.breakFamilyPinned
 
 /-- The selected concrete numeric certificate uses the active full-forgery run carrier. -/
@@ -1029,6 +1061,31 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.outcome_eq_selectedF
     (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
     Cert.pricedCertificate.Outcome = selectedRustAcceptedSpendNumericOutcome :=
   Cert.outcomeCarrierPinned
+
+/-- Accepted-spend events priced by the selected certificate mean the active conclusion. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendEvent_activeSound
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate)
+    (trace : Cert.pricedCertificate.Trace)
+    (hAccepted :
+      Cert.pricedCertificate.acceptedSpendEvent trace = true) :
+    Path2FullSpendGame.AcceptedSpendConclusion
+      (concretePredicates selectedRustConcreteGameConfig)
+      (cast Cert.outcomeCarrierPinned
+        (Cert.pricedCertificate.observe trace)).spend :=
+  Cert.acceptedSpendEventPinned trace hAccepted
+
+/-- Named break events priced by the selected certificate mean active full-spend breaks. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.namedBreakEvents_activeSound
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate)
+    (trace : Cert.pricedCertificate.Trace)
+    (breakEvent : Cert.pricedCertificate.Break)
+    (hBreak :
+      Cert.pricedCertificate.namedBreakEvent trace breakEvent = true) :
+    (concretePredicates selectedRustConcreteGameConfig).breakFor
+      (cast Cert.outcomeCarrierPinned
+        (Cert.pricedCertificate.observe trace)).spend
+      (cast Cert.breakFamilyPinned breakEvent) :=
+  Cert.namedBreakEventsPinned trace breakEvent hBreak
 
 /-- The selected concrete numeric certificate uses the active full-spend break family. -/
 theorem SelectedRustConcreteAcceptedSpendNumericCertificate.break_eq_activeFullSpendBreakEvent

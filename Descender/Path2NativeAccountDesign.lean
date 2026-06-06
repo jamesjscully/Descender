@@ -1574,7 +1574,9 @@ structure SelectedRustAcceptedSpendSoundnessEvidenceReport where
   acceptedSpendNumericBoundPriced : Bool
   finiteTraceSupportPriced : Bool
   activeOutcomeCarrierPinned : Bool
+  acceptedSpendEventPinned : Bool
   activeBreakFamilyPinned : Bool
+  namedBreakEventsPinned : Bool
   acceptedSpendUnionBoundPriced : Bool
   hiddenSourceClosureReady : Bool
   checkedCoreClosureReady : Bool
@@ -1593,7 +1595,9 @@ def SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue
   E.acceptedSpendNumericBoundPriced = true ∧
   E.finiteTraceSupportPriced = true ∧
   E.activeOutcomeCarrierPinned = true ∧
+  E.acceptedSpendEventPinned = true ∧
   E.activeBreakFamilyPinned = true ∧
+  E.namedBreakEventsPinned = true ∧
   E.acceptedSpendUnionBoundPriced = true ∧
   E.hiddenSourceClosureReady = true ∧
   E.checkedCoreClosureReady = true ∧
