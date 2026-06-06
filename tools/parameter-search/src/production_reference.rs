@@ -7587,6 +7587,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub full_spend_concrete_predicates_are_separate_model: bool,
     pub native_boundary_predicate_model_forbidden_vacuous_literals_present: bool,
     pub native_boundary_predicate_model_stub_field_sources_present: bool,
+    pub native_boundary_predicate_model_incomplete_proof_terms_present: bool,
     pub native_boundary_concrete_predicate_model_present: bool,
     pub selected_source_records_blocked_on_native_boundary_predicate_model: bool,
     pub source_record_package_surface_present: bool,
@@ -8810,6 +8811,15 @@ fn lean_source_module_has_forbidden_stubs_for_names_v1(lean_source: &str, names:
     forbidden_declaration_stub || forbidden_variable_stub
 }
 
+fn lean_source_has_incomplete_proof_token_v1(lean_source: &str) -> bool {
+    let stripped_source = lean_source_without_comments_and_strings_v1(lean_source);
+    ["sorry", "admit"].iter().any(|token| {
+        stripped_source
+            .split(|c: char| !c.is_ascii_alphanumeric() && c != '_')
+            .any(|part| part == *token)
+    })
+}
+
 pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     boundary_source: &str,
 ) -> Path2SelectedRustModelSourceRecordSubcheckV1 {
@@ -9370,6 +9380,8 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             &native_boundary_predicate_model_field_source_names,
         );
+    let native_boundary_predicate_model_incomplete_proof_terms_present =
+        lean_source_has_incomplete_proof_token_v1(&boundary_source);
     let native_boundary_concrete_predicate_model_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -9386,7 +9398,8 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 )
             })
             && !native_boundary_predicate_model_forbidden_vacuous_literals_present
-            && !native_boundary_predicate_model_stub_field_sources_present;
+            && !native_boundary_predicate_model_stub_field_sources_present
+            && !native_boundary_predicate_model_incomplete_proof_terms_present;
     let boundary_base_report_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -9754,6 +9767,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         full_spend_concrete_predicates_are_separate_model,
         native_boundary_predicate_model_forbidden_vacuous_literals_present,
         native_boundary_predicate_model_stub_field_sources_present,
+        native_boundary_predicate_model_incomplete_proof_terms_present,
         native_boundary_concrete_predicate_model_present,
         selected_source_records_blocked_on_native_boundary_predicate_model,
         source_record_package_surface_present,
@@ -13984,7 +13998,9 @@ pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1()
                 .native_boundary_predicate_model_generic_evidence_labels_present
             && !source_record_subcheck
                 .native_boundary_predicate_model_forbidden_vacuous_literals_present
-            && !source_record_subcheck.native_boundary_predicate_model_stub_field_sources_present,
+            && !source_record_subcheck.native_boundary_predicate_model_stub_field_sources_present
+            && !source_record_subcheck
+                .native_boundary_predicate_model_incomplete_proof_terms_present,
         concrete_predicate_model_present,
         certified_semantics_source_package_target_present: source_record_subcheck
             .native_boundary_certified_semantics_source_package_target_present,
@@ -57884,6 +57900,9 @@ def toPredicates
                 .native_boundary_predicate_model_forbidden_vacuous_literals_present
         );
         assert!(!source_record_subcheck.native_boundary_predicate_model_stub_field_sources_present);
+        assert!(
+            !source_record_subcheck.native_boundary_predicate_model_incomplete_proof_terms_present
+        );
         assert!(!source_record_subcheck.native_boundary_concrete_predicate_model_present);
         let partial_native_boundary_model_source = r#"
 def selectedRustNativeBoundaryPredicates :
@@ -58072,6 +58091,10 @@ def selectedRustNativeBoundaryPredicates :
             !complete_native_boundary_model_subcheck
                 .native_boundary_predicate_model_stub_field_sources_present
         );
+        assert!(
+            !complete_native_boundary_model_subcheck
+                .native_boundary_predicate_model_incomplete_proof_terms_present
+        );
         let vacuous_native_boundary_model_source = complete_native_boundary_model_source
             .replacen(
                 "boundaryBreakFor := selectedBoundaryBreakFor",
@@ -58109,6 +58132,21 @@ def selectedRustNativeBoundaryPredicates :
         );
         assert!(
             !stubbed_native_boundary_model_subcheck
+                .native_boundary_concrete_predicate_model_present
+        );
+        let incomplete_native_boundary_model_source = format!(
+            "{complete_native_boundary_model_source}\ntheorem selectedIncomplete : True := by\n  sorry\n"
+        );
+        let incomplete_native_boundary_model_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &incomplete_native_boundary_model_source,
+            );
+        assert!(
+            incomplete_native_boundary_model_subcheck
+                .native_boundary_predicate_model_incomplete_proof_terms_present
+        );
+        assert!(
+            !incomplete_native_boundary_model_subcheck
                 .native_boundary_concrete_predicate_model_present
         );
         assert!(

@@ -1374,6 +1374,10 @@ stubs for the selected predicate-field providers used by
 `selectedRustNativeBoundaryPredicates`. The manifest exposes this as
 `native_boundary_predicate_model_stub_field_sources_present`, and the
 digest-bound negative-control bit requires it to be false.
+The same subcheck now exposes
+`native_boundary_predicate_model_incomplete_proof_terms_present`; `sorry` or
+`admit` tokens outside comments/strings block concrete-model completion and
+the digest-bound negative-control bit.
 
 ## Findings
 

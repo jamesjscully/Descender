@@ -373,6 +373,10 @@ The same detector now rejects module-level `axiom`, `constant`, `opaque`, or
 `selectedRustNativeBoundaryPredicates`. The manifest exposes this as
 `native_boundary_predicate_model_stub_field_sources_present`, and the
 digest-bound negative-control bit also requires it to be false.
+It also exposes
+`native_boundary_predicate_model_incomplete_proof_terms_present`; `sorry` or
+`admit` tokens outside comments/strings now block concrete-model completion
+and fail the digest-bound negative-control bit.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
