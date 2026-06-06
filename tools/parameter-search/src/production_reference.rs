@@ -8750,6 +8750,8 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         "nativeBoundaryPredicateRecordComplete : Bool",
         "activeVerifierRoutePinned : Bool",
         "predicateNegativeControlsPassed : Bool",
+        "concretePredicateModelPresent : Bool",
+        "certifiedSemanticsSourcePackageTargetPresent : Bool",
         "def ReportVerified",
         "def FactsAllTrue",
     ]

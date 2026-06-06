@@ -344,6 +344,11 @@ full-opening bridge digest, payload extraction, and break predicates as well.
 The detector is declaration-body scoped to
 `selectedRustNativeBoundaryPredicates`, so nearby or unrelated marker text no
 longer contributes to the concrete predicate-model import bit.
+The predicate-model evidence report now mirrors the Rust frame's
+`concrete_predicate_model_present` and
+`certified_semantics_source_package_target_present` facts in Lean, and
+`FactsAllTrue` requires both. The report remains verified but not
+fact-complete until the concrete native-boundary predicate model is imported.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and

@@ -1339,6 +1339,12 @@ digest, payload extraction, and break predicates. A partial selected
 The detector is now also scoped to the body of the actual
 `selectedRustNativeBoundaryPredicates` declaration: unrelated declarations in
 the same Lean module cannot contribute missing predicate-field markers.
+The Lean predicate-model evidence report now mirrors the Rust report's
+concrete-model and certified-semantics-package status fields as
+`concretePredicateModelPresent` and
+`certifiedSemanticsSourcePackageTargetPresent`, and `FactsAllTrue` requires
+both. The current selected report remains impossible because the concrete
+predicate model is still absent.
 
 ## Findings
 

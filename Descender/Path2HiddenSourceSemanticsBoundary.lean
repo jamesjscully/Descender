@@ -2471,6 +2471,8 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport
   nativeBoundaryPredicateRecordComplete : Bool
   activeVerifierRoutePinned : Bool
   predicateNegativeControlsPassed : Bool
+  concretePredicateModelPresent : Bool
+  certifiedSemanticsSourcePackageTargetPresent : Bool
 
 namespace ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport
 
@@ -2495,7 +2497,9 @@ def FactsAllTrue
             E.nativeBoundaryBreakModelPinned = true ∧
               E.nativeBoundaryPredicateRecordComplete = true ∧
                 E.activeVerifierRoutePinned = true ∧
-                  E.predicateNegativeControlsPassed = true
+                  E.predicateNegativeControlsPassed = true ∧
+                    E.concretePredicateModelPresent = true ∧
+                      E.certifiedSemanticsSourcePackageTargetPresent = true
 
 end ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport
 
@@ -2519,6 +2523,8 @@ def selectedRustNativeBoundaryPredicateModelEvidenceReport :
   nativeBoundaryPredicateRecordComplete := true
   activeVerifierRoutePinned := true
   predicateNegativeControlsPassed := false
+  concretePredicateModelPresent := false
+  certifiedSemanticsSourcePackageTargetPresent := true
 
 /-- Concrete digest of the public Rust native-boundary predicate-model report. -/
 def selectedRustNativeBoundaryPredicateModelEvidenceDigest : ByteArray :=
