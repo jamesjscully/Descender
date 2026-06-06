@@ -28226,6 +28226,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "concrete_fullExecutionAcceptedSpendLift",
         "Path2AcceptedSpendProbability",
         "AcceptedSpendNumericGame",
+        "traceFintype",
+        "observe",
         "successProb_le_acceptedSpendOrBreakUnionBound",
         "PricedAcceptedSpendNumericCertificate",
         "selectedRustAcceptedSpendNumericOutcome",
@@ -51780,6 +51782,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     concrete_fullExecutionAcceptedSpendLift
   let _acceptedSpendNumericGame :=
     Path2AcceptedSpendProbability.AcceptedSpendNumericGame
+  let _acceptedSpendFiniteTraceSupport :=
+    PricedAcceptedSpendNumericCertificate.traceFintype
+  let _acceptedSpendObservationMap :=
+    AcceptedSpendNumericGame.observe
   let _acceptedSpendUnionBound :=
     AcceptedSpendNumericGame.successProb_le_acceptedSpendOrBreakUnionBound
   let _acceptedSpendConcreteOutcome :=
@@ -51948,6 +51954,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     concrete_fullExecutionAcceptedSpendLift
   let _acceptedSpendNumericGame :=
     Path2AcceptedSpendProbability.AcceptedSpendNumericGame
+  let _acceptedSpendFiniteTraceSupport :=
+    PricedAcceptedSpendNumericCertificate.traceFintype
+  let _acceptedSpendObservationMap :=
+    AcceptedSpendNumericGame.observe
   let _acceptedSpendUnionBound :=
     AcceptedSpendNumericGame.successProb_le_acceptedSpendOrBreakUnionBound
   let _acceptedSpendConcreteOutcome :=

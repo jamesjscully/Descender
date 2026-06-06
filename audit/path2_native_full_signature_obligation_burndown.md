@@ -1399,6 +1399,11 @@ production-priced upper bound and carries `unionBound_le_priced` for the finite
 accepted-spend-or-break union expression. The accepted-spend source gate now
 requires this layer, so future closure must consume the probability game and
 priced-bound package rather than only raw `ℝ` fields.
+The probability game now separates finite trace support from the observed
+full-forgery outcome: `Trace` has `traceFintype`, while `Outcome` is reached
+through `observe` and need not be finite. This is required for the active
+Nat/native concrete run carrier, which should be observed from bounded finite
+execution traces rather than treated as a finite type itself.
 `SelectedRustAcceptedSpendSoundnessCertificate` now carries that priced
 numeric certificate plus equality proofs from the exported probability/bound to
 the packaged game's union expression and priced bound. The conversion to
