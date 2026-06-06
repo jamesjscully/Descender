@@ -8558,6 +8558,11 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_from_bo
     ) {
         return false;
     }
+    if !path2_selected_rust_model_concrete_definition_checklist_from_source_v1(boundary_source)
+        .source_record_evidence_source_bindings_present
+    {
+        return false;
+    }
     let theorem_start_marker = format!("\ntheorem {theorem_name}");
     boundary_source
         .match_indices(&theorem_start_marker)
@@ -11400,6 +11405,11 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "selectedRustNativeBoundaryPredicateModelCertificate",
         "selectedRustModelSourceRecordPackage",
         "selectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
+        "selectedRustBoundaryBaseEvidenceSourceBinding",
+        "selectedRustRoleRootLiftEvidenceSourceBinding",
+        "selectedRustSourceRouteEvidenceSourceBinding",
+        "selectedRustFieldLocalEvidenceSourceBinding",
+        "selectedRustSharedWitnessEvidenceSourceBinding",
     ];
     let declaration_block_contains_name = |kind: &str, name: &str| -> bool {
         boundary_source
@@ -57663,6 +57673,36 @@ theorem {theorem_name}
                 theorem_name
             )
         );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_from_boundary_source_v1(
+                &concrete_constructor_certificate_theorem,
+                theorem_name
+            )
+        );
+        let source_binding_definitions = r#"
+def selectedRustBoundaryBaseEvidenceSourceBinding :
+    selectedRustBoundaryBaseEvidenceReport ->
+    selectedRustPayloadProjectionLaw ->
+    selectedRustExtractionCertificateAvailability ->
+    sourceBindingDigest := True
+def selectedRustRoleRootLiftEvidenceSourceBinding :
+    selectedRustRoleRootLiftEvidenceReport ->
+    selectedRustRoleRootLiftSource ->
+    sourceBindingDigest := True
+def selectedRustSourceRouteEvidenceSourceBinding :
+    selectedRustSourceRouteEvidenceReport ->
+    selectedRustSourceRouteByteSource ->
+    sourceBindingDigest := True
+def selectedRustFieldLocalEvidenceSourceBinding :
+    selectedRustFieldLocalEvidenceReport ->
+    selectedRustAssemblySource ->
+    selectedRustCompatibilitySource ->
+    sourceBindingDigest := True
+def selectedRustSharedWitnessEvidenceSourceBinding :
+    selectedRustSharedFrameWitnessEvidenceReport ->
+    selectedRustSharedFrameWitnessSources ->
+    sourceBindingDigest := True
+"#;
         let generic_predicate_final_theorem = concrete_constructor_certificate_theorem
             .replace(
                 "theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation\n    :\n    ReviewedFq12HiddenSourceProofSemanticsClosed\n      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates := by",
@@ -57725,8 +57765,10 @@ theorem {theorem_name}
             )
         );
         let suffixed_then_exact_boundary_source = format!(
-            "{}\n{}",
-            suffixed_theorem_name_constructor_theorem, concrete_constructor_certificate_theorem
+            "{}\n{}\n{}",
+            source_binding_definitions,
+            suffixed_theorem_name_constructor_theorem,
+            concrete_constructor_certificate_theorem
         );
         assert!(
             path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_from_boundary_source_v1(

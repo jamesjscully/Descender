@@ -1539,6 +1539,12 @@ families. Current selected digests are checklist
 `a3343d6a79b93f65439a12cbae1dc0bb1cfcca62afedb5f5707dade64eb6b806` and
 five-source evidence
 `2ebca7cbd99496966c25a71f05cd1d7d914d69728e1a6b98e9e97a79293286c2`.
+The module-level final theorem gate now also requires this source-binding
+category before `extractor_theorem_instantiated` can become true. A
+constructor-shaped theorem snippet without the binding definitions remains
+accepted only by the body-shape scanner and is rejected by the real module
+gate, so the public AP2-N001 status cannot advance ahead of the selected
+evidence/source binding work.
 
 ## Findings
 
