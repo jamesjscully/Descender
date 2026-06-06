@@ -1790,11 +1790,13 @@ have verifier functions, but the fields that produce a native
 digest-frame witness route. See the Path 2 burndown for the field-by-field
 mapping.
 The manifest now exposes those five representative/extraction provider
-obligations as their own subcheck:
+obligations as their own target/source subchecks:
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_family_target_present`
+is `true`, meaning the Lean proof surface names the five-field hard slice, and
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_fields_defined_present`.
-It is currently `false`, independently of the broader reviewed-Fq12 provider
-family bit, and the positive source-audit fixture asserts that it only flips
-when all five named providers are actually defined.
+is currently `false`, independently of the broader reviewed-Fq12 provider
+family bit. The positive source-audit fixture asserts that the implementation
+bit only flips when all five named providers are actually defined.
 
 ## Findings
 

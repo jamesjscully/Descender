@@ -3439,6 +3439,60 @@ structure ReviewedFq12SelectedRustNativeBoundaryReviewedFq12PredicateFieldSource
   selectedReviewedFq12PayloadExtracts :
     Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload -> HiddenRepresentative -> Prop
 
+/--
+Representative-producing reviewed-Fq12 provider slice of the selected Rust
+native-boundary predicate interpretation.
+
+These are the active Path 2 fields that cannot be sourced from aggregate
+bridge-digest validity alone: they must be backed by the canonical
+representative/shared digest-frame witness route.
+-/
+structure ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources where
+  selectedFullNativeOpeningAssemblesRepresentative :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening -> HiddenRepresentative -> Prop
+  selectedReviewedFq12AssemblyCertificateAssembles :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening ->
+          ReviewedFq12NativeRepresentativeAssemblyCertificate ->
+            HiddenRepresentative -> Prop
+  selectedReviewedFq12ExtractionCompatibilityCertificateExtracts :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening -> HiddenRepresentative ->
+          ReviewedFq12ExtractionCompatibilityCertificate -> Prop
+  selectedReviewedFq12CertificateExtracts :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        HiddenRepresentative -> Prop
+  selectedReviewedFq12PayloadExtracts :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload -> HiddenRepresentative -> Prop
+
+namespace ReviewedFq12SelectedRustNativeBoundaryReviewedFq12PredicateFieldSources
+
+/--
+Project the reviewed-Fq12 provider family to the representative-producing
+subfamily that remains the hard cryptographic closure target.
+-/
+def toHardExtractionPredicateFieldSources
+    (Sources :
+      ReviewedFq12SelectedRustNativeBoundaryReviewedFq12PredicateFieldSources) :
+    ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources where
+  selectedFullNativeOpeningAssemblesRepresentative :=
+    Sources.selectedFullNativeOpeningAssemblesRepresentative
+  selectedReviewedFq12AssemblyCertificateAssembles :=
+    Sources.selectedReviewedFq12AssemblyCertificateAssembles
+  selectedReviewedFq12ExtractionCompatibilityCertificateExtracts :=
+    Sources.selectedReviewedFq12ExtractionCompatibilityCertificateExtracts
+  selectedReviewedFq12CertificateExtracts :=
+    Sources.selectedReviewedFq12CertificateExtracts
+  selectedReviewedFq12PayloadExtracts :=
+    Sources.selectedReviewedFq12PayloadExtracts
+
+end ReviewedFq12SelectedRustNativeBoundaryReviewedFq12PredicateFieldSources
+
 namespace ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources
 
 /--
@@ -3488,6 +3542,16 @@ def toReviewedFq12PredicateFieldSources
     Sources.selectedReviewedFq12FullOpeningBridgeDigestCertificateValid
   selectedReviewedFq12PayloadExtracts :=
     Sources.selectedReviewedFq12PayloadExtracts
+
+/--
+Project the complete selected predicate-source record to the
+representative-producing reviewed-Fq12 subfamily.
+-/
+def toReviewedFq12HardExtractionPredicateFieldSources
+    (Sources :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources) :
+    ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources :=
+  Sources.toReviewedFq12PredicateFieldSources.toHardExtractionPredicateFieldSources
 
 /-- Forget the selected field-source package into the native boundary record. -/
 def toPredicates

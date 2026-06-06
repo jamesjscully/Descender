@@ -1526,8 +1526,11 @@ hard provider fields are the ones that turn those certificates into the native
 representative and shared digest-frame witness source records are needed; they
 cannot be supplied by the aggregate bridge verifier alone.
 The Rust source-record subcheck now reports this hard subgroup separately as
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_family_target_present`
+and
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_fields_defined_present`.
-The current active source reports `false`; the scanner regression's complete
-native-boundary-model fixture reports `true`. This keeps the highest-risk
-redesign trigger visible while the broader reviewed-Fq12 provider family
-remains unimplemented.
+The current active source reports the Lean target-slice bit as `true` and the
+concrete provider-definition bit as `false`; the scanner regression's complete
+native-boundary-model fixture reports the provider-definition bit as `true`.
+This keeps the highest-risk redesign trigger visible while the broader
+reviewed-Fq12 provider family remains unimplemented.
