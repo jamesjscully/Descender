@@ -3751,6 +3751,59 @@ theorem reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertific
       reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame
         Cert.toWitnessSources.digestFrame := rfl
 
+/--
+Proof-bearing hard-extraction predicate-model certificate sourced by the
+active shared digest-frame witness certificate.
+
+The nontrivial field is `fieldSourcesFromSharedWitnessCertificate`: it is the
+future proof that the selected native-boundary predicate model's five
+representative-producing fields are exactly the fields derived from the
+report-verified shared witness certificate.
+-/
+structure ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (predicates : Path2NativeBoundary.Predicates) where
+  sharedWitnessCertificate :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+      CanonicalParser WitnessParser predicates
+  fieldSourcesFromSharedWitnessCertificate :
+    reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+        sharedWitnessCertificate =
+      reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates predicates
+  laws :
+    ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelLaws
+      predicates
+
+namespace ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate
+
+/--
+Forget the shared-witness hard-extraction certificate into the generic hard
+predicate-model package.
+-/
+def toHardExtractionPredicateModelPackage
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {predicates : Path2NativeBoundary.Predicates}
+    (Cert :
+      @ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate
+        CanonicalParser
+        WitnessParser
+        predicates) :
+    ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPackage where
+  predicates := predicates
+  fieldSources :=
+    reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+      Cert.sharedWitnessCertificate
+  fieldSourcesFromPredicates := Cert.fieldSourcesFromSharedWitnessCertificate
+  laws := Cert.laws
+
+end ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate
+
 namespace ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources
 
 /--

@@ -1571,3 +1571,10 @@ then derives the hard-provider slice from the certificate's shared frame. The
 manifest tracks this with
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_certificate_route_present`,
 while the selected provider fields themselves remain intentionally fail-closed.
+The proof target now also names the final hard-provider selection certificate:
+`ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate`
+must prove that the certificate-derived hard-provider slice equals
+`reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates predicates` and
+must supply the hard-extraction law bundle for the same predicate model. This
+is tracked by
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_model_certificate_target_present`.

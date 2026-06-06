@@ -1833,6 +1833,12 @@ consumes the report-verified
 projects its shared digest frame into the hard-provider constructor. The
 manifest tracks this as
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_certificate_route_present`.
+The next target shape is also named:
+`ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate`
+packages the shared-witness certificate route, the equality proof that those
+five fields are exactly the selected predicate model's hard fields, and the
+hard-extraction law bundle. The manifest tracks this target with
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_model_certificate_target_present`.
 
 ## Findings
 
