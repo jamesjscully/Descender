@@ -1578,3 +1578,11 @@ must prove that the certificate-derived hard-provider slice equals
 must supply the hard-extraction law bundle for the same predicate model. This
 is tracked by
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_model_certificate_target_present`.
+The hard law bundle is no longer opaque in this route:
+`reviewedFq12HardExtractionLawsOfSharedWitnessCertificate` derives the
+certificate-to-payload, assembly-to-full-opening, and
+compatibility-to-reviewed-extraction laws from the shared-witness/digest-frame
+provider structurally. After the five-field equality is proved, the only
+remaining hard-law inputs are payload extraction in the boundary fiber and
+payload extraction native local/descent validity. The manifest tracks this as
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_law_reduction_present`.

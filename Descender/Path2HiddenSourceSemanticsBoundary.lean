@@ -3752,6 +3752,114 @@ theorem reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertific
         Cert.toWitnessSources.digestFrame := rfl
 
 /--
+Build the hard-extraction law bundle for a selected predicate model once its
+five hard fields have been proved equal to the shared-witness certificate
+route.
+
+The digest-frame provider gives the certificate/payload, assembly/full-opening,
+and compatibility/reviewed-extraction implications structurally. The remaining
+inputs are exactly the native-boundary facts that payload extraction lands in
+the boundary fiber and satisfies local/descent validity.
+-/
+theorem reviewedFq12HardExtractionLawsOfSharedWitnessCertificate
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P)
+    (hFields :
+      reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+          Cert =
+        reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates P)
+    (hFiber : ReviewedFq12PayloadExtractionInBoundaryFiber P)
+    (hNative : ReviewedFq12PayloadExtractionNativeValid P) :
+    ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelLaws P where
+  certificateExtractionImpliesPayloadExtraction := by
+    intro b payload cert h hExtracts
+    have hExtractsFromShared :
+        (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+          Cert).selectedReviewedFq12CertificateExtracts
+            b payload cert h := by
+      rw [hFields]
+      exact hExtracts
+    have hPayloadFromShared :
+        (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+          Cert).selectedReviewedFq12PayloadExtracts b payload h := by
+      exact
+        reviewedFq12DigestFrameCertificateExtractionImpliesPayloadExtraction
+          Cert.toWitnessSources.digestFrame hExtractsFromShared
+    have hPayloadOfPredicates :
+        (reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates
+          P).selectedReviewedFq12PayloadExtracts b payload h := by
+      rw [← hFields]
+      exact hPayloadFromShared
+    simpa [reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates]
+      using hPayloadOfPredicates
+  payloadExtractionInBoundaryFiber := hFiber
+  payloadExtractionNativeValid := hNative
+  assemblyCertificateImpliesFullNativeAssembly := by
+    intro b payload cert opening assemblyCert h hAssembles
+    have hAssemblesFromShared :
+        (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+          Cert).selectedReviewedFq12AssemblyCertificateAssembles
+            b payload cert opening assemblyCert h := by
+      rw [hFields]
+      exact hAssembles
+    have hFullFromShared :
+        (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+          Cert).selectedFullNativeOpeningAssemblesRepresentative
+            b payload cert opening h := by
+      exact
+        reviewedFq12DigestFrameAssemblyCertificateImpliesFullNativeAssembly
+          Cert.toWitnessSources.digestFrame hAssemblesFromShared
+    have hFullOfPredicates :
+        (reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates
+          P).selectedFullNativeOpeningAssemblesRepresentative
+            b payload cert opening h := by
+      rw [← hFields]
+      exact hFullFromShared
+    simpa [reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates]
+      using hFullOfPredicates
+  compatibilityExtractionImpliesReviewedExtraction := by
+    intro b payload cert opening h compatCert hCompat
+    have hCompatFromShared :
+        (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+          Cert).selectedReviewedFq12ExtractionCompatibilityCertificateExtracts
+            b payload cert opening h compatCert := by
+      rw [hFields]
+      exact hCompat
+    have hCertFromShared :
+        (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+          Cert).selectedReviewedFq12CertificateExtracts
+            b payload cert h := by
+      exact ⟨opening, hCompatFromShared.2⟩
+    have hPayloadFromShared :
+        (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+          Cert).selectedReviewedFq12PayloadExtracts b payload h := by
+      exact
+        reviewedFq12DigestFrameCertificateExtractionImpliesPayloadExtraction
+          Cert.toWitnessSources.digestFrame hCertFromShared
+    constructor
+    · have hCertOfPredicates :
+          (reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates
+            P).selectedReviewedFq12CertificateExtracts
+              b payload cert h := by
+        rw [← hFields]
+        exact hCertFromShared
+      simpa [reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates]
+        using hCertOfPredicates
+    · have hPayloadOfPredicates :
+          (reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates
+            P).selectedReviewedFq12PayloadExtracts b payload h := by
+        rw [← hFields]
+        exact hPayloadFromShared
+      simpa [reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates]
+        using hPayloadOfPredicates
+
+/--
 Proof-bearing hard-extraction predicate-model certificate sourced by the
 active shared digest-frame witness certificate.
 

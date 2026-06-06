@@ -1839,6 +1839,12 @@ packages the shared-witness certificate route, the equality proof that those
 five fields are exactly the selected predicate model's hard fields, and the
 hard-extraction law bundle. The manifest tracks this target with
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_model_certificate_target_present`.
+Lean now also reduces the hard-extraction law burden:
+`reviewedFq12HardExtractionLawsOfSharedWitnessCertificate` builds the hard law
+bundle from the shared-witness field equality plus only
+`ReviewedFq12PayloadExtractionInBoundaryFiber` and
+`ReviewedFq12PayloadExtractionNativeValid`. The manifest tracks this with
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_law_reduction_present`.
 
 ## Findings
 
