@@ -1615,8 +1615,8 @@ structure SelectedRustAcceptedSpendSoundnessCertificate where
   acceptedSpendForgeryBound : ℝ
   productionAcceptedSpendForgeryProb : ℝ
   productionAcceptedSpendForgeryBound : ℝ
-  acceptedSpendForgeryProbMatchesGame :
-    acceptedSpendForgeryProb = pricedNumericCertificate.acceptedSpendProb
+  acceptedSpendForgeryProbMatchesUnionBound :
+    acceptedSpendForgeryProb = pricedNumericCertificate.unionBound
   acceptedSpendForgeryBoundMatchesPriced :
     acceptedSpendForgeryBound = pricedNumericCertificate.pricedBound
   acceptedSpendForgeryProbPinned :
@@ -1642,8 +1642,8 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
     (acceptedSpendForgeryBound : ℝ)
     (productionAcceptedSpendForgeryProb : ℝ)
     (productionAcceptedSpendForgeryBound : ℝ)
-    (acceptedSpendForgeryProbMatchesGame :
-      acceptedSpendForgeryProb = pricedNumericCertificate.acceptedSpendProb)
+    (acceptedSpendForgeryProbMatchesUnionBound :
+      acceptedSpendForgeryProb = pricedNumericCertificate.unionBound)
     (acceptedSpendForgeryBoundMatchesPriced :
       acceptedSpendForgeryBound = pricedNumericCertificate.pricedBound)
     (acceptedSpendForgeryProbPinned :
@@ -1666,7 +1666,8 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
   acceptedSpendForgeryBound := acceptedSpendForgeryBound
   productionAcceptedSpendForgeryProb := productionAcceptedSpendForgeryProb
   productionAcceptedSpendForgeryBound := productionAcceptedSpendForgeryBound
-  acceptedSpendForgeryProbMatchesGame := acceptedSpendForgeryProbMatchesGame
+  acceptedSpendForgeryProbMatchesUnionBound :=
+    acceptedSpendForgeryProbMatchesUnionBound
   acceptedSpendForgeryBoundMatchesPriced := acceptedSpendForgeryBoundMatchesPriced
   acceptedSpendForgeryProbPinned := acceptedSpendForgeryProbPinned
   acceptedSpendForgeryBoundPinned := acceptedSpendForgeryBoundPinned
@@ -1706,10 +1707,10 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
       Cert.acceptedSpendForgeryBoundPinned
     calc
       Cert.acceptedSpendForgeryProb =
-          Cert.pricedNumericCertificate.acceptedSpendProb :=
-        Cert.acceptedSpendForgeryProbMatchesGame
+          Cert.pricedNumericCertificate.unionBound :=
+        Cert.acceptedSpendForgeryProbMatchesUnionBound
       _ <= Cert.pricedNumericCertificate.pricedBound :=
-        Cert.pricedNumericCertificate.acceptedSpendProb_le_pricedBound
+        Cert.pricedNumericCertificate.unionBound_le_priced
       _ = Cert.acceptedSpendForgeryBound :=
         Cert.acceptedSpendForgeryBoundMatchesPriced.symm
   hiddenSourceProofSemanticsClosed :=

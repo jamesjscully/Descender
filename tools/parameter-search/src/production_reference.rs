@@ -27989,7 +27989,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "selectedRustAcceptedSpendForgeryLeBound",
         "selectedRustProductionAcceptedSpendForgeryProb",
         "selectedRustProductionAcceptedSpendForgeryBound",
-        "selectedRustAcceptedSpendForgeryProbMatchesGame",
+        "selectedRustAcceptedSpendForgeryProbMatchesUnionBound",
         "selectedRustAcceptedSpendForgeryBoundMatchesPriced",
         "selectedRustAcceptedSpendForgeryProbPinned",
         "selectedRustAcceptedSpendForgeryBoundPinned",
@@ -28157,7 +28157,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "acceptedSpendForgery_le_bound",
         "selectedRustProductionAcceptedSpendForgeryProb",
         "selectedRustProductionAcceptedSpendForgeryBound",
-        "selectedRustAcceptedSpendForgeryProbMatchesGame",
+        "selectedRustAcceptedSpendForgeryProbMatchesUnionBound",
         "selectedRustAcceptedSpendForgeryBoundMatchesPriced",
         "selectedRustAcceptedSpendForgeryProbPinned",
         "selectedRustAcceptedSpendForgeryBoundPinned",
@@ -28228,7 +28228,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "AcceptedSpendNumericGame",
         "successProb_le_acceptedSpendOrBreakUnionBound",
         "PricedAcceptedSpendNumericCertificate",
-        "acceptedSpendProb_le_pricedBound",
+        "unionBound_le_priced",
         "selectedRustActiveNoExportSerializer_instantiation_v1",
         "activeSerializerAllowlist_boundaryNoExportClosed",
         "let selectedRustAcceptedSpendSoundnessCertificate :",
@@ -28243,7 +28243,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendForgeryBound",
         "selectedRustProductionAcceptedSpendForgeryProb",
         "selectedRustProductionAcceptedSpendForgeryBound",
-        "selectedRustAcceptedSpendForgeryProbMatchesGame",
+        "selectedRustAcceptedSpendForgeryProbMatchesUnionBound",
         "selectedRustAcceptedSpendForgeryBoundMatchesPriced",
         "selectedRustAcceptedSpendForgeryProbPinned",
         "selectedRustAcceptedSpendForgeryBoundPinned",
@@ -51774,7 +51774,7 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
   let _acceptedSpendUnionBound :=
     AcceptedSpendNumericGame.successProb_le_acceptedSpendOrBreakUnionBound
   let _acceptedSpendPricedCertificate :=
-    PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_pricedBound
+    PricedAcceptedSpendNumericCertificate.unionBound_le_priced
   let _acceptedSpendPricedBound :=
     AcceptedSpendNumericGame.successProb_le_pricedBound
   let _noExportInstantiation :=
@@ -51804,7 +51804,7 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
       selectedRustAcceptedSpendForgeryBound
       selectedRustProductionAcceptedSpendForgeryProb
       selectedRustProductionAcceptedSpendForgeryBound
-      selectedRustAcceptedSpendForgeryProbMatchesGame
+      selectedRustAcceptedSpendForgeryProbMatchesUnionBound
       selectedRustAcceptedSpendForgeryBoundMatchesPriced
       selectedRustAcceptedSpendForgeryProbPinned
       selectedRustAcceptedSpendForgeryBoundPinned
@@ -51924,7 +51924,7 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
   let _acceptedSpendUnionBound :=
     AcceptedSpendNumericGame.successProb_le_acceptedSpendOrBreakUnionBound
   let _acceptedSpendPricedCertificate :=
-    PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_pricedBound
+    PricedAcceptedSpendNumericCertificate.unionBound_le_priced
   let _acceptedSpendPricedBound :=
     AcceptedSpendNumericGame.successProb_le_pricedBound
   let _noExportInstantiation :=
@@ -51943,7 +51943,7 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
       selectedRustAcceptedSpendForgeryBound
       selectedRustProductionAcceptedSpendForgeryProb
       selectedRustProductionAcceptedSpendForgeryBound
-      selectedRustAcceptedSpendForgeryProbMatchesGame
+      selectedRustAcceptedSpendForgeryProbMatchesUnionBound
       selectedRustAcceptedSpendForgeryBoundMatchesPriced
       selectedRustAcceptedSpendForgeryProbPinned
       selectedRustAcceptedSpendForgeryBoundPinned
