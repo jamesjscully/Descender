@@ -11136,6 +11136,37 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                     name,
                     markers,
                 )
+            })
+            && [
+                (
+                    "selectedRustBoundaryBaseSourceBindingDigest",
+                    "selectedRustBoundaryBaseEvidenceDigest",
+                ),
+                (
+                    "selectedRustRoleRootLiftSourceBindingDigest",
+                    "selectedRustRoleRootLiftEvidenceDigest",
+                ),
+                (
+                    "selectedRustSourceRouteSourceBindingDigest",
+                    "selectedRustSourceRouteEvidenceDigest",
+                ),
+                (
+                    "selectedRustFieldLocalSourceBindingDigest",
+                    "selectedRustFieldLocalEvidenceDigest",
+                ),
+                (
+                    "selectedRustSharedWitnessSourceBindingDigest",
+                    "selectedRustSharedFrameWitnessEvidenceDigest",
+                ),
+            ]
+            .iter()
+            .all(|(name, marker)| {
+                lean_source_selected_rust_definition_body_starts_with_marker_v1(
+                    &boundary_source,
+                    name,
+                    marker,
+                    1024,
+                )
             });
     let source_record_evidence_source_bindings_present =
         source_record_evidence_source_binding_digests_present
@@ -58042,6 +58073,18 @@ def selectedRustSharedWitnessEvidenceSourceBinding :
     sourceBindingDigest := selectedRustSharedWitnessSourceBindingDigest
     sharedFrameWitnessSources := selectedRustSharedFrameWitnessSources }
 "#;
+        let wrong_source_binding_digest_source = source_binding_definitions.replacen(
+            "selectedRustBoundaryBaseEvidenceDigest",
+            "otherBoundaryBaseEvidenceDigest",
+            1,
+        );
+        let wrong_source_binding_digest_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                &wrong_source_binding_digest_source,
+            );
+        assert!(
+            !wrong_source_binding_digest_checklist.source_record_evidence_source_bindings_present
+        );
         let generic_predicate_final_theorem = concrete_constructor_certificate_theorem
             .replace(
                 "theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation\n    :\n    ReviewedFq12HiddenSourceProofSemanticsClosed\n      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates := by",

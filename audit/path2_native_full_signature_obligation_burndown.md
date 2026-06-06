@@ -1064,6 +1064,10 @@ source-binding checklist requires future binding definitions to fill those
 fields with the selected component evidence digest and `rfl`, so report-bound
 source records are also digest-bound to the same public evidence constants
 consumed by the source certificates.
+The five source-binding digest constants are now scanner-bound to the same
+selected evidence digest constants. A negative-control fixture that points the
+boundary-base source-binding digest at a different digest leaves
+`source_record_evidence_source_bindings_present = false`.
 The aggregate digest import also exposed a source-hash circularity constraint:
 the current Rust aggregate evidence digest is
 `146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the

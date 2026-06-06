@@ -1596,6 +1596,10 @@ evidence digest with `rfl`. This keeps report-bound source records tied to
 the same public digest constants consumed by the selected source certificates,
 instead of allowing an arbitrary source-binding digest to be the only digest
 field on the binding object.
+The source-binding digest constants themselves are now body-bound aliases of
+the selected component evidence digests. A binding definition whose
+`sourceBindingDigest` name points at a different digest no longer satisfies
+`source_record_evidence_source_bindings_present`.
 
 ## Findings
 
