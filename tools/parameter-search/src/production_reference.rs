@@ -11472,6 +11472,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "selectedRustModelSourceRecordPackage",
         "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
         "selectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
+        "exact selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure",
         "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources",
         "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource",
         "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource",
@@ -57361,6 +57362,17 @@ theorem {theorem_name}
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &missing_certified_package_bound_theorem,
+                theorem_name
+            )
+        );
+        let certified_closure_marker_only_theorem = concrete_constructor_certificate_theorem
+            .replace(
+                "  exact\n    selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure\n",
+                "  have _hUnusedCertifiedClosure :=\n    selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure\n  exact\n    selectedRustModelFiveSourceCertificate.toClosureInputs\n",
+            );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &certified_closure_marker_only_theorem,
                 theorem_name
             )
         );

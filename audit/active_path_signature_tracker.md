@@ -1283,6 +1283,10 @@ Negative controls reject an assumed or wrong predicate-model certificate, raw
 predicate-model/source-record package stubs, and omission of the active-bound
 handoff. This keeps `extractor_theorem_instantiated` from closing on the stale
 five-source-only route.
+The final AP2-N001 scanner now also requires the theorem to return
+`selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure`
+through the final `exact`; merely mentioning that closure in an unused local
+binding is not enough to instantiate the extractor theorem gate.
 `ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate` now also has
 named constructor `ofReportAndModel`, and the concrete-definition checklist
 requires `selectedRustNativeBoundaryPredicateModelCertificate` to be built

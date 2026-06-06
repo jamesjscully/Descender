@@ -304,6 +304,9 @@ source-record package. The final AP2-N001 theorem gate requires this
 constructor before accepting `.hiddenSourceClosure` or the certified-package
 full-signature bound handoff; an anonymous certified semantics package no
 longer satisfies the theorem source scanner.
+The same scanner now requires the final theorem to `exact` the certified
+package's `.hiddenSourceClosure`; an unused local mention of that closure no
+longer satisfies the final AP2-N001 gate.
 
 2026-06-05 sub-evidence digest-match route update: the concrete-definition
 checklist now requires `selectedRustFiveSourceSubEvidenceDigestsMatchProof` to
