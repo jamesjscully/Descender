@@ -1,4 +1,4 @@
-#![recursion_limit = "256"]
+#![recursion_limit = "512"]
 
 use descender_parameter_search::production_reference::{
     path2_reviewed_fq12_boundary_base_evidence_all_facts_true,
@@ -308,6 +308,9 @@ fn main() -> Result<(), String> {
             "native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present,
+            "native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_fields_defined_present":
+                source_record_subcheck
+                    .native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_fields_defined_present,
             "native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present,

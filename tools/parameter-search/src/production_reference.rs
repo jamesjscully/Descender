@@ -7593,6 +7593,8 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_predicate_model_core_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_transparent_trace_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present: bool,
+    pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_fields_defined_present:
+        bool,
     pub native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present:
         bool,
     pub native_boundary_predicate_model_missing_provider_family_count: u8,
@@ -10089,6 +10091,13 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         "selectedReviewedFq12FullOpeningBridgeDigestCertificateValid",
         "selectedReviewedFq12PayloadExtracts",
     ];
+    let native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_field_names = [
+        "selectedFullNativeOpeningAssemblesRepresentative",
+        "selectedReviewedFq12AssemblyCertificateAssembles",
+        "selectedReviewedFq12ExtractionCompatibilityCertificateExtracts",
+        "selectedReviewedFq12CertificateExtracts",
+        "selectedReviewedFq12PayloadExtracts",
+    ];
     let native_boundary_predicate_model_stub_field_sources_present =
         lean_source_module_has_forbidden_stubs_for_names_v1(
             &boundary_source,
@@ -10116,6 +10125,11 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         lean_source_module_has_non_stub_declarations_for_names_v1(
             &boundary_source,
             &native_boundary_predicate_model_reviewed_fq12_provider_field_names,
+        );
+    let native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_fields_defined_present =
+        lean_source_module_has_non_stub_declarations_for_names_v1(
+            &boundary_source,
+            &native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_field_names,
         );
     let native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present =
         native_boundary_predicate_model_reviewed_fq12_provider_field_names
@@ -10857,6 +10871,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_predicate_model_core_provider_fields_defined_present,
         native_boundary_predicate_model_transparent_trace_provider_fields_defined_present,
         native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present,
+        native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_fields_defined_present,
         native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present,
         native_boundary_predicate_model_missing_provider_family_count,
         native_boundary_predicate_model_field_sources_defined_present,
@@ -59780,6 +59795,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
             source_record_subcheck.native_boundary_payload_acceptance_antivacuity_target_present
         );
         assert!(source_record_subcheck.native_boundary_break_antivacuity_target_present);
+        assert!(
+            !source_record_subcheck
+                .native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_fields_defined_present
+        );
         let split_predicate_model_target_source = r#"
 structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport where
   schemaMatches : Bool
@@ -60552,6 +60571,10 @@ def selectedRustNativeBoundaryPredicates :
         assert!(
             complete_native_boundary_model_subcheck
                 .native_boundary_predicate_model_field_sources_defined_present
+        );
+        assert!(
+            complete_native_boundary_model_subcheck
+                .native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_fields_defined_present
         );
         assert!(
             !complete_native_boundary_model_subcheck
