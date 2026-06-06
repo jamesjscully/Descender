@@ -4157,13 +4157,14 @@ def selectedReviewedFq12RoleLiftCertificateValid
 
 /-- Selected role-lift opening provider. -/
 def selectedReviewedFq12RoleLiftCertificateOpens
-    (_b : Path2NativeBoundary.Boundary)
+    (b : Path2NativeBoundary.Boundary)
     (payload : ReviewedFq12HiddenSourcePayload)
     (cert : ReviewedFq12HiddenRelationExtractionCertificate)
     (liftCert : ReviewedFq12FullNativeOpeningCertificate)
     (opening : FullNativeRepresentativeOpening) : Prop :=
-  ReviewedFq12RoleLiftCertificateBindsExtraction payload cert liftCert ∧
-    liftCert.opening = opening
+  selectedReviewedFq12CertificateLiftsToOpening b payload cert opening ∧
+    ReviewedFq12RoleLiftCertificateBindsExtraction payload cert liftCert ∧
+      liftCert.opening = opening
 
 /-- Selected assembly-certificate availability provider. -/
 def selectedReviewedFq12OpeningHasAssemblyCertificate
@@ -4910,6 +4911,24 @@ def toReviewedFq12HardExtractionPredicateFieldSources
     ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources :=
   Sources.toReviewedFq12PredicateFieldSources.toHardExtractionPredicateFieldSources
 
+/--
+The selected predicate field-source package uses the supplied shared-witness
+certificate for exactly its five hard reviewed-Fq12 extraction fields.
+-/
+theorem selectedHardFieldsFromSharedWitnessCertificate
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    (selectedRustNativeBoundaryPredicateFieldSources
+        Cert).toReviewedFq12HardExtractionPredicateFieldSources =
+      reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+        Cert := rfl
+
 /-- Forget the selected field-source package into the native boundary record. -/
 def toPredicates
     (Sources :
@@ -4998,6 +5017,25 @@ def toPredicates
   slotAuthorizationOf := Sources.selectedSlotAuthorizationOf
   spendAccepts := Sources.selectedSpendAccepts
   spendWitnessValid := Sources.selectedSpendWitnessValid
+
+/--
+The shared-witness hard fields are the hard-field projection of the selected
+native-boundary predicate record built from that certificate.
+-/
+theorem selectedHardFieldsFromSharedWitnessCertificate_toPredicates
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+        Cert =
+      reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates
+        (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates :=
+  rfl
 
 end ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources
 
@@ -5247,6 +5285,21 @@ theorem selectedRustRoleLiftValidityBindsExtraction
       (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
   intro b payload cert liftCert hValid
   exact hValid.2
+
+/-- Selected role-lift opening entails the certificate-to-opening lift relation. -/
+theorem selectedRustRoleLiftOpeningImpliesCertificateLift
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12RoleLiftOpeningImpliesCertificateLiftTarget
+      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+  intro b payload cert liftCert opening hOpens
+  exact hOpens.1
 
 /-- Selected assembly validity exposes the assembly/opening binding. -/
 theorem selectedRustAssemblyValidityBindsOpening

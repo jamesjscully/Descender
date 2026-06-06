@@ -1911,12 +1911,26 @@ acceptance matching the native boundary, extraction-certificate availability
 and validity matching the accepted payload, role-lift validity binding
 extraction, assembly validity binding the opening, compatibility validity
 binding the representative, and aggregate full-opening bridge validity binding
-the bridge certificate. These are definitional/projection facts over
+the bridge certificate. The selected role-lift opening predicate was tightened
+so opening now carries the certificate-to-opening lift relation, and the
+role-lift-opening-to-certificate-lift law is proved directly from that
+relation. These are definitional/projection facts over
 `selectedRustNativeBoundaryPredicateFieldSources Cert`; they do not instantiate
-the predicate-model certificate. The remaining hard blockers are the
-role-lift-opening-to-certificate-lift law and the shared-witness/canonical
-native-validity source needed to finish the hard extraction law bundle and
-then build the concrete predicate-model certificate from real report evidence.
+the predicate-model certificate. The remaining hard blocker in this cluster is
+the shared-witness/canonical native-validity source needed to finish the hard
+extraction law bundle and then build the concrete predicate-model certificate
+from real report evidence.
+The selected hard-field equality is now also proved in both useful forms:
+`selectedHardFieldsFromSharedWitnessCertificate` states that the selected
+field-source package uses the supplied shared-witness certificate for exactly
+the five hard reviewed-Fq12 extraction fields, and
+`selectedHardFieldsFromSharedWitnessCertificate_toPredicates` gives the
+constructor-facing equality against
+`reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates`. The remaining
+design point is no longer the hard-field equality itself; it is the concrete
+fixed-point/import route that supplies a shared-witness certificate over the
+same predicate record whose hard fields are sourced from that certificate, plus
+the canonical native-validity source for that record.
 Tooling note: the Rust source scanner's direct-constant-lambda check now clamps
 source windows to a UTF-8 character boundary before slicing; the prior byte
 slice could panic when a window ended inside Lean's `∧` token. The broad
