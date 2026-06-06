@@ -1364,6 +1364,12 @@ The Rust source audit now scopes predicate-model source/report/certificate
 target detection to the named Lean declarations, with a split-marker negative
 fixture. Unrelated declarations can no longer contribute missing fields to
 these target bits.
+The selected source-record completion bit is now explicitly gated on the
+concrete native-boundary predicate model. A fixture with every source-record
+marker but no concrete `selectedRustNativeBoundaryPredicates` model remains
+non-closing; only the combined concrete-model plus source-record fixture closes
+the source-record subcheck. This prevents source-record package markers from
+floating over an absent active predicate interpretation.
 The concrete native predicate-model detector now requires the full
 `Path2NativeBoundary.Predicates` field surface, including account/admission,
 transparent-view, trace-assembly, slot-authorization, and spend predicates, not

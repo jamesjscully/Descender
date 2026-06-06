@@ -9728,8 +9728,9 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     let selected_source_records_blocked_on_native_boundary_predicate_model =
         native_boundary_predicates_record_present
             && full_spend_concrete_predicates_are_separate_model
-            && !native_boundary_concrete_predicate_model_present
-            && missing_selected_source_record_count > 0;
+            && !native_boundary_concrete_predicate_model_present;
+    let all_selected_source_records_present = missing_selected_source_record_count == 0
+        && native_boundary_concrete_predicate_model_present;
     Path2SelectedRustModelSourceRecordSubcheckV1 {
         native_boundary_predicates_record_present,
         native_boundary_predicate_model_source_target_present,
@@ -9797,7 +9798,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         canonical_witness_to_byte_source_adapter_present,
         byte_and_witness_packaged_route_endpoint_present,
         missing_selected_source_record_count,
-        all_selected_source_records_present: missing_selected_source_record_count == 0,
+        all_selected_source_records_present,
     }
 }
 
@@ -58990,7 +58991,28 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(complete_source_record_subcheck.shared_frame_witness_sources_definition_present);
         assert!(complete_source_record_subcheck.shared_witness_certificate_constructor_bound);
         assert!(complete_source_record_subcheck.selected_source_record_package_definition_present);
-        assert!(complete_source_record_subcheck.all_selected_source_records_present);
+        assert_eq!(
+            complete_source_record_subcheck.missing_selected_source_record_count,
+            0
+        );
+        assert!(!complete_source_record_subcheck.native_boundary_concrete_predicate_model_present);
+        assert!(!complete_source_record_subcheck.all_selected_source_records_present);
+        let complete_model_and_source_record_source = format!(
+            "{complete_native_boundary_model_source}\n{complete_concrete_definition_source}"
+        );
+        let complete_model_and_source_record_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &complete_model_and_source_record_source,
+            );
+        assert_eq!(
+            complete_model_and_source_record_subcheck.missing_selected_source_record_count,
+            0
+        );
+        assert!(
+            complete_model_and_source_record_subcheck
+                .native_boundary_concrete_predicate_model_present
+        );
+        assert!(complete_model_and_source_record_subcheck.all_selected_source_records_present);
         let anonymous_certificate_definition_source = complete_concrete_definition_source.replacen(
             "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources\n    selectedRustBoundaryBaseEvidenceReport\n    selectedRustBoundaryBaseEvidenceDigest\n    selectedRustBoundaryBaseEvidenceReportVerifiedProof\n    selectedRustBoundaryBaseEvidenceFactsAllTrueProof\n    selectedRustPayloadProjectionLaw\n    selectedRustExtractionCertificateAvailability",
             "selectedRustBoundaryBaseCertificateValue",

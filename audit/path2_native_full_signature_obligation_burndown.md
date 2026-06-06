@@ -355,6 +355,11 @@ The Rust source audit now checks the predicate-model source, evidence report,
 certificate, and `toSource` adapter in their named Lean declaration windows,
 with a split-marker regression so unrelated declarations cannot satisfy the
 target bits.
+The selected source-record completion bit is now also gated by the concrete
+native-boundary predicate model. A fixture with all source-record definitions
+but no concrete `selectedRustNativeBoundaryPredicates` model no longer reports
+`all_selected_source_records_present`; the positive fixture must include both
+the full active predicate model and the source-record package.
 The concrete predicate-model detector now requires the full
 `Path2NativeBoundary.Predicates` record surface, including account/admission,
 transparent-view, trace-assembly, slot-authorization, and spend predicates. A
