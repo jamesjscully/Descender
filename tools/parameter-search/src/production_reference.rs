@@ -8775,6 +8775,24 @@ fn lean_source_selected_rust_definition_body_starts_with_marker_v1(
     marker: &str,
     max_body_len: usize,
 ) -> bool {
+    lean_source_selected_rust_definition_body_starts_with_any_marker_v1(
+        boundary_source,
+        name,
+        &[marker],
+        max_body_len,
+    )
+}
+
+fn lean_source_selected_rust_definition_body_starts_with_any_marker_v1(
+    boundary_source: &str,
+    name: &str,
+    markers: &[&str],
+    max_body_len: usize,
+) -> bool {
+    let normalized_markers = markers
+        .iter()
+        .map(|marker| marker.split_whitespace().collect::<String>())
+        .collect::<Vec<_>>();
     ["def", "theorem"].iter().any(|kind| {
         let public_start = format!("\n{kind} {name}");
         let private_start = format!("\nprivate {kind} {name}");
@@ -8832,7 +8850,9 @@ fn lean_source_selected_rust_definition_body_starts_with_marker_v1(
                     let normalized_body = body_window[..next_top_level_declaration]
                         .split_whitespace()
                         .collect::<String>();
-                    normalized_body.starts_with(&marker.split_whitespace().collect::<String>())
+                    normalized_markers
+                        .iter()
+                        .any(|marker| normalized_body.starts_with(marker))
                 })
         })
     })
@@ -10826,6 +10846,15 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             "selectedRustPayloadProjectionLaw",
             &[
+                "reviewedFq12PayloadAccepts",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+                "reviewedFq12PayloadProjectsFrom",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ],
+        ) || lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustPayloadProjectionLaw",
+            &[
                 "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
                 "reviewedFq12PayloadAccepts",
                 "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
@@ -10887,38 +10916,53 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             ],
         );
     let boundary_base_certificate_constructor_bound =
-        lean_source_selected_rust_definition_body_starts_with_marker_v1(
+        lean_source_selected_rust_definition_body_starts_with_any_marker_v1(
             &boundary_source,
             "selectedRustBoundaryBaseCertificate",
-            "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources selectedRustBoundaryBaseEvidenceReport selectedRustBoundaryBaseEvidenceDigest selectedRustBoundaryBaseEvidenceReportVerifiedProof selectedRustBoundaryBaseEvidenceFactsAllTrueProof selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability",
+            &[
+                "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources selectedRustBoundaryBaseEvidenceReport selectedRustBoundaryBaseEvidenceDigest selectedRustBoundaryBaseEvidenceReportVerifiedProof selectedRustBoundaryBaseEvidenceFactsAllTrueProof selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability",
+                "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources selectedRustBoundaryBaseEvidenceReport selectedRustBoundaryBaseEvidenceDigest selectedRustBoundaryBaseEvidenceReportVerifiedProof selectedRustBoundaryBaseEvidenceFactsAllTrueProof (selectedRustPayloadProjectionLaw selectedRustNativeBoundaryPredicateModelCertificate selectedRustPayloadProjectionLawValue selectedRustExtractionCertificateAvailabilityValue) (selectedRustExtractionCertificateAvailability selectedRustNativeBoundaryPredicateModelCertificate selectedRustPayloadProjectionLawValue selectedRustExtractionCertificateAvailabilityValue)",
+            ],
             4096,
         );
     let role_root_lift_certificate_constructor_bound =
-        lean_source_selected_rust_definition_body_starts_with_marker_v1(
+        lean_source_selected_rust_definition_body_starts_with_any_marker_v1(
             &boundary_source,
             "selectedRustRoleRootLiftSourceCertificate",
-            "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource selectedRustRoleRootLiftEvidenceReport selectedRustRoleRootLiftEvidenceDigest selectedRustRoleRootLiftEvidenceReportVerifiedProof selectedRustRoleRootLiftEvidenceFactsAllTrueProof selectedRustRoleRootLiftSource",
+            &[
+                "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource selectedRustRoleRootLiftEvidenceReport selectedRustRoleRootLiftEvidenceDigest selectedRustRoleRootLiftEvidenceReportVerifiedProof selectedRustRoleRootLiftEvidenceFactsAllTrueProof selectedRustRoleRootLiftSource",
+                "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource selectedRustRoleRootLiftEvidenceReport selectedRustRoleRootLiftEvidenceDigest selectedRustRoleRootLiftEvidenceReportVerifiedProof selectedRustRoleRootLiftEvidenceFactsAllTrueProof (selectedRustRoleRootLiftSource selectedRustNativeBoundaryPredicateModelCertificate selectedRustRoleRootLiftSourceValue)",
+            ],
             4096,
         );
     let source_route_certificate_constructor_bound =
-        lean_source_selected_rust_definition_body_starts_with_marker_v1(
+        lean_source_selected_rust_definition_body_starts_with_any_marker_v1(
             &boundary_source,
             "selectedRustSourceRouteByteSourceCertificate",
-            "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource selectedRustSourceRouteEvidenceReport selectedRustSourceRouteEvidenceDigest selectedRustSourceRouteEvidenceReportVerifiedProof selectedRustSourceRouteEvidenceFactsAllTrueProof selectedRustSourceRouteByteSource",
+            &[
+                "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource selectedRustSourceRouteEvidenceReport selectedRustSourceRouteEvidenceDigest selectedRustSourceRouteEvidenceReportVerifiedProof selectedRustSourceRouteEvidenceFactsAllTrueProof selectedRustSourceRouteByteSource",
+                "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource selectedRustSourceRouteEvidenceReport selectedRustSourceRouteEvidenceDigest selectedRustSourceRouteEvidenceReportVerifiedProof selectedRustSourceRouteEvidenceFactsAllTrueProof (selectedRustSourceRouteByteSource selectedRustNativeBoundaryPredicateModelCertificate selectedRustSourceRouteByteSourceValue)",
+            ],
             4096,
         );
     let field_local_certificate_constructor_bound =
-        lean_source_selected_rust_definition_body_starts_with_marker_v1(
+        lean_source_selected_rust_definition_body_starts_with_any_marker_v1(
             &boundary_source,
             "selectedRustFieldLocalSourceCertificate",
-            "ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources selectedRustFieldLocalEvidenceReport selectedRustFieldLocalEvidenceDigest selectedRustFieldLocalEvidenceReportVerifiedProof selectedRustFieldLocalEvidenceFactsAllTrueProof selectedRustAssemblySource selectedRustCompatibilitySource",
+            &[
+                "ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources selectedRustFieldLocalEvidenceReport selectedRustFieldLocalEvidenceDigest selectedRustFieldLocalEvidenceReportVerifiedProof selectedRustFieldLocalEvidenceFactsAllTrueProof selectedRustAssemblySource selectedRustCompatibilitySource",
+                "ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources selectedRustFieldLocalEvidenceReport selectedRustFieldLocalEvidenceDigest selectedRustFieldLocalEvidenceReportVerifiedProof selectedRustFieldLocalEvidenceFactsAllTrueProof (selectedRustAssemblySource selectedRustNativeBoundaryPredicateModelCertificate selectedRustAssemblySourceValue selectedRustCompatibilitySourceValue) (selectedRustCompatibilitySource selectedRustNativeBoundaryPredicateModelCertificate selectedRustAssemblySourceValue selectedRustCompatibilitySourceValue)",
+            ],
             4096,
         );
     let shared_witness_certificate_constructor_bound =
-        lean_source_selected_rust_definition_body_starts_with_marker_v1(
+        lean_source_selected_rust_definition_body_starts_with_any_marker_v1(
             &boundary_source,
             "selectedRustSharedFrameWitnessSourcesCertificate",
-            "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof selectedRustSharedFrameWitnessSources",
+            &[
+                "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof selectedRustSharedFrameWitnessSources",
+                "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof (selectedRustSharedFrameWitnessSources selectedRustNativeBoundaryPredicateModelCertificate selectedRustSharedFrameWitnessSourcesValue)",
+            ],
             4096,
         );
     let selected_source_record_package_definition_present =
@@ -10929,10 +10973,13 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 "ReviewedFq12SelectedRustModelSourceRecordPackage",
                 "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
             ],
-        ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
+        ) && lean_source_selected_rust_definition_body_starts_with_any_marker_v1(
             &boundary_source,
             "selectedRustModelSourceRecordPackage",
-            "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSourceBindings selectedRustBoundaryBaseEvidenceSourceBinding selectedRustRoleRootLiftEvidenceSourceBinding selectedRustSourceRouteEvidenceSourceBinding selectedRustFieldLocalEvidenceSourceBinding selectedRustSharedWitnessEvidenceSourceBinding",
+            &[
+                "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSourceBindings selectedRustBoundaryBaseEvidenceSourceBinding selectedRustRoleRootLiftEvidenceSourceBinding selectedRustSourceRouteEvidenceSourceBinding selectedRustFieldLocalEvidenceSourceBinding selectedRustSharedWitnessEvidenceSourceBinding",
+                "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSourceBindings (selectedRustBoundaryBaseEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustPayloadProjectionLawValue selectedRustExtractionCertificateAvailabilityValue) (selectedRustRoleRootLiftEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustRoleRootLiftSourceValue) (selectedRustSourceRouteEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustSourceRouteByteSourceValue) (selectedRustFieldLocalEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustAssemblySourceValue selectedRustCompatibilitySourceValue) (selectedRustSharedWitnessEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustSharedFrameWitnessSourcesValue)",
+            ],
             4096,
         );
     let source_binding_surface_present = [
@@ -11761,10 +11808,10 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         (
             "selectedRustPayloadProjectionLaw",
             &[
-                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
                 "reviewedFq12PayloadAccepts",
                 "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
                 "reviewedFq12PayloadProjectsFrom",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
             ][..],
         ),
         (
@@ -12103,7 +12150,10 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 "ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding",
                 "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
             ][..],
-            "ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding.ofReportAndSources selectedRustBoundaryBaseEvidenceReport selectedRustBoundaryBaseEvidenceDigest selectedRustBoundaryBaseSourceBindingDigest rfl rfl rfl selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability",
+            &[
+                "ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding.ofReportAndSources selectedRustBoundaryBaseEvidenceReport selectedRustBoundaryBaseEvidenceDigest selectedRustBoundaryBaseSourceBindingDigest rfl rfl rfl selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability",
+                "ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding.ofReportAndSources selectedRustBoundaryBaseEvidenceReport selectedRustBoundaryBaseEvidenceDigest selectedRustBoundaryBaseSourceBindingDigest rfl rfl rfl selectedRustPayloadProjectionLawValue selectedRustExtractionCertificateAvailabilityValue",
+            ][..],
         ),
         (
             "selectedRustRoleRootLiftEvidenceSourceBinding",
@@ -12111,7 +12161,10 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 "ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding",
                 "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
             ][..],
-            "ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding.ofReportAndSource selectedRustRoleRootLiftEvidenceReport selectedRustRoleRootLiftEvidenceDigest selectedRustRoleRootLiftSourceBindingDigest rfl rfl rfl selectedRustRoleRootLiftSource",
+            &[
+                "ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding.ofReportAndSource selectedRustRoleRootLiftEvidenceReport selectedRustRoleRootLiftEvidenceDigest selectedRustRoleRootLiftSourceBindingDigest rfl rfl rfl selectedRustRoleRootLiftSource",
+                "ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding.ofReportAndSource selectedRustRoleRootLiftEvidenceReport selectedRustRoleRootLiftEvidenceDigest selectedRustRoleRootLiftSourceBindingDigest rfl rfl rfl selectedRustRoleRootLiftSourceValue",
+            ][..],
         ),
         (
             "selectedRustSourceRouteEvidenceSourceBinding",
@@ -12119,7 +12172,10 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 "ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding",
                 "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
             ][..],
-            "ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding.ofReportAndSource selectedRustSourceRouteEvidenceReport selectedRustSourceRouteEvidenceDigest selectedRustSourceRouteSourceBindingDigest rfl rfl rfl selectedRustSourceRouteByteSource",
+            &[
+                "ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding.ofReportAndSource selectedRustSourceRouteEvidenceReport selectedRustSourceRouteEvidenceDigest selectedRustSourceRouteSourceBindingDigest rfl rfl rfl selectedRustSourceRouteByteSource",
+                "ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding.ofReportAndSource selectedRustSourceRouteEvidenceReport selectedRustSourceRouteEvidenceDigest selectedRustSourceRouteSourceBindingDigest rfl rfl rfl selectedRustSourceRouteByteSourceValue",
+            ][..],
         ),
         (
             "selectedRustFieldLocalEvidenceSourceBinding",
@@ -12127,7 +12183,10 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 "ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding",
                 "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
             ][..],
-            "ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding.ofReportAndSources selectedRustFieldLocalEvidenceReport selectedRustFieldLocalEvidenceDigest selectedRustFieldLocalSourceBindingDigest rfl rfl rfl selectedRustAssemblySource selectedRustCompatibilitySource",
+            &[
+                "ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding.ofReportAndSources selectedRustFieldLocalEvidenceReport selectedRustFieldLocalEvidenceDigest selectedRustFieldLocalSourceBindingDigest rfl rfl rfl selectedRustAssemblySource selectedRustCompatibilitySource",
+                "ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding.ofReportAndSources selectedRustFieldLocalEvidenceReport selectedRustFieldLocalEvidenceDigest selectedRustFieldLocalSourceBindingDigest rfl rfl rfl selectedRustAssemblySourceValue selectedRustCompatibilitySourceValue",
+            ][..],
         ),
         (
             "selectedRustSharedWitnessEvidenceSourceBinding",
@@ -12135,7 +12194,10 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 "ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding",
                 "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
             ][..],
-            "ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedWitnessSourceBindingDigest rfl rfl rfl selectedRustSharedFrameWitnessSources",
+            &[
+                "ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedWitnessSourceBindingDigest rfl rfl rfl selectedRustSharedFrameWitnessSources",
+                "ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedWitnessSourceBindingDigest rfl rfl rfl selectedRustSharedFrameWitnessSourcesValue",
+            ][..],
         ),
     ];
     let evidence_report_definitions_present =
@@ -12172,63 +12234,102 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         }) && [
             (
                 "selectedRustPayloadProjectionLaw",
-                "selectedRustBoundaryBaseEvidenceSourceBinding.payloadProjectionLaw",
+                &[
+                    "selectedRustBoundaryBaseEvidenceSourceBinding.payloadProjectionLaw",
+                    "(selectedRustBoundaryBaseEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustPayloadProjectionLawValue selectedRustExtractionCertificateAvailabilityValue).payloadProjectionLaw",
+                ][..],
             ),
             (
                 "selectedRustExtractionCertificateAvailability",
-                "selectedRustBoundaryBaseEvidenceSourceBinding.extractionCertificateAvailability",
+                &[
+                    "selectedRustBoundaryBaseEvidenceSourceBinding.extractionCertificateAvailability",
+                    "(selectedRustBoundaryBaseEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustPayloadProjectionLawValue selectedRustExtractionCertificateAvailabilityValue).extractionCertificateAvailability",
+                ][..],
             ),
             (
                 "selectedRustRoleRootLiftSource",
-                "selectedRustRoleRootLiftEvidenceSourceBinding.roleRootLiftSource",
+                &[
+                    "selectedRustRoleRootLiftEvidenceSourceBinding.roleRootLiftSource",
+                    "(selectedRustRoleRootLiftEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustRoleRootLiftSourceValue).roleRootLiftSource",
+                ][..],
             ),
             (
                 "selectedRustSourceRouteByteSource",
-                "selectedRustSourceRouteEvidenceSourceBinding.selectedSourceRouteByteSource",
+                &[
+                    "selectedRustSourceRouteEvidenceSourceBinding.selectedSourceRouteByteSource",
+                    "(selectedRustSourceRouteEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustSourceRouteByteSourceValue).selectedSourceRouteByteSource",
+                ][..],
             ),
             (
                 "selectedRustAssemblySource",
-                "selectedRustFieldLocalEvidenceSourceBinding.assemblySource",
+                &[
+                    "selectedRustFieldLocalEvidenceSourceBinding.assemblySource",
+                    "(selectedRustFieldLocalEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustAssemblySourceValue selectedRustCompatibilitySourceValue).assemblySource",
+                ][..],
             ),
             (
                 "selectedRustCompatibilitySource",
-                "selectedRustFieldLocalEvidenceSourceBinding.compatibilitySource",
+                &[
+                    "selectedRustFieldLocalEvidenceSourceBinding.compatibilitySource",
+                    "(selectedRustFieldLocalEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustAssemblySourceValue selectedRustCompatibilitySourceValue).compatibilitySource",
+                ][..],
             ),
             (
                 "selectedRustSharedFrameWitnessSources",
-                "selectedRustSharedWitnessEvidenceSourceBinding.sharedFrameWitnessSources",
+                &[
+                    "selectedRustSharedWitnessEvidenceSourceBinding.sharedFrameWitnessSources",
+                    "(selectedRustSharedWitnessEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustSharedFrameWitnessSourcesValue).sharedFrameWitnessSources",
+                ][..],
             ),
             (
                 "selectedRustBoundaryBaseCertificate",
-                "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources selectedRustBoundaryBaseEvidenceReport selectedRustBoundaryBaseEvidenceDigest selectedRustBoundaryBaseEvidenceReportVerifiedProof selectedRustBoundaryBaseEvidenceFactsAllTrueProof selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability",
+                &[
+                    "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources selectedRustBoundaryBaseEvidenceReport selectedRustBoundaryBaseEvidenceDigest selectedRustBoundaryBaseEvidenceReportVerifiedProof selectedRustBoundaryBaseEvidenceFactsAllTrueProof selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability",
+                    "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources selectedRustBoundaryBaseEvidenceReport selectedRustBoundaryBaseEvidenceDigest selectedRustBoundaryBaseEvidenceReportVerifiedProof selectedRustBoundaryBaseEvidenceFactsAllTrueProof (selectedRustPayloadProjectionLaw selectedRustNativeBoundaryPredicateModelCertificate selectedRustPayloadProjectionLawValue selectedRustExtractionCertificateAvailabilityValue) (selectedRustExtractionCertificateAvailability selectedRustNativeBoundaryPredicateModelCertificate selectedRustPayloadProjectionLawValue selectedRustExtractionCertificateAvailabilityValue)",
+                ][..],
             ),
             (
                 "selectedRustRoleRootLiftSourceCertificate",
-                "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource selectedRustRoleRootLiftEvidenceReport selectedRustRoleRootLiftEvidenceDigest selectedRustRoleRootLiftEvidenceReportVerifiedProof selectedRustRoleRootLiftEvidenceFactsAllTrueProof selectedRustRoleRootLiftSource",
+                &[
+                    "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource selectedRustRoleRootLiftEvidenceReport selectedRustRoleRootLiftEvidenceDigest selectedRustRoleRootLiftEvidenceReportVerifiedProof selectedRustRoleRootLiftEvidenceFactsAllTrueProof selectedRustRoleRootLiftSource",
+                    "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource selectedRustRoleRootLiftEvidenceReport selectedRustRoleRootLiftEvidenceDigest selectedRustRoleRootLiftEvidenceReportVerifiedProof selectedRustRoleRootLiftEvidenceFactsAllTrueProof (selectedRustRoleRootLiftSource selectedRustNativeBoundaryPredicateModelCertificate selectedRustRoleRootLiftSourceValue)",
+                ][..],
             ),
             (
                 "selectedRustSourceRouteByteSourceCertificate",
-                "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource selectedRustSourceRouteEvidenceReport selectedRustSourceRouteEvidenceDigest selectedRustSourceRouteEvidenceReportVerifiedProof selectedRustSourceRouteEvidenceFactsAllTrueProof selectedRustSourceRouteByteSource",
+                &[
+                    "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource selectedRustSourceRouteEvidenceReport selectedRustSourceRouteEvidenceDigest selectedRustSourceRouteEvidenceReportVerifiedProof selectedRustSourceRouteEvidenceFactsAllTrueProof selectedRustSourceRouteByteSource",
+                    "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource selectedRustSourceRouteEvidenceReport selectedRustSourceRouteEvidenceDigest selectedRustSourceRouteEvidenceReportVerifiedProof selectedRustSourceRouteEvidenceFactsAllTrueProof (selectedRustSourceRouteByteSource selectedRustNativeBoundaryPredicateModelCertificate selectedRustSourceRouteByteSourceValue)",
+                ][..],
             ),
             (
                 "selectedRustFieldLocalSourceCertificate",
-                "ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources selectedRustFieldLocalEvidenceReport selectedRustFieldLocalEvidenceDigest selectedRustFieldLocalEvidenceReportVerifiedProof selectedRustFieldLocalEvidenceFactsAllTrueProof selectedRustAssemblySource selectedRustCompatibilitySource",
+                &[
+                    "ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources selectedRustFieldLocalEvidenceReport selectedRustFieldLocalEvidenceDigest selectedRustFieldLocalEvidenceReportVerifiedProof selectedRustFieldLocalEvidenceFactsAllTrueProof selectedRustAssemblySource selectedRustCompatibilitySource",
+                    "ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources selectedRustFieldLocalEvidenceReport selectedRustFieldLocalEvidenceDigest selectedRustFieldLocalEvidenceReportVerifiedProof selectedRustFieldLocalEvidenceFactsAllTrueProof (selectedRustAssemblySource selectedRustNativeBoundaryPredicateModelCertificate selectedRustAssemblySourceValue selectedRustCompatibilitySourceValue) (selectedRustCompatibilitySource selectedRustNativeBoundaryPredicateModelCertificate selectedRustAssemblySourceValue selectedRustCompatibilitySourceValue)",
+                ][..],
             ),
             (
                 "selectedRustSharedFrameWitnessSourcesCertificate",
-                "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof selectedRustSharedFrameWitnessSources",
+                &[
+                    "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof selectedRustSharedFrameWitnessSources",
+                    "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof (selectedRustSharedFrameWitnessSources selectedRustNativeBoundaryPredicateModelCertificate selectedRustSharedFrameWitnessSourcesValue)",
+                ][..],
             ),
             (
                 "selectedRustModelSourceRecordPackage",
-                "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSourceBindings selectedRustBoundaryBaseEvidenceSourceBinding selectedRustRoleRootLiftEvidenceSourceBinding selectedRustSourceRouteEvidenceSourceBinding selectedRustFieldLocalEvidenceSourceBinding selectedRustSharedWitnessEvidenceSourceBinding",
+                &[
+                    "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSourceBindings selectedRustBoundaryBaseEvidenceSourceBinding selectedRustRoleRootLiftEvidenceSourceBinding selectedRustSourceRouteEvidenceSourceBinding selectedRustFieldLocalEvidenceSourceBinding selectedRustSharedWitnessEvidenceSourceBinding",
+                    "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSourceBindings (selectedRustBoundaryBaseEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustPayloadProjectionLawValue selectedRustExtractionCertificateAvailabilityValue) (selectedRustRoleRootLiftEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustRoleRootLiftSourceValue) (selectedRustSourceRouteEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustSourceRouteByteSourceValue) (selectedRustFieldLocalEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustAssemblySourceValue selectedRustCompatibilitySourceValue) (selectedRustSharedWitnessEvidenceSourceBinding selectedRustNativeBoundaryPredicateModelCertificate selectedRustSharedFrameWitnessSourcesValue)",
+                ][..],
             ),
         ]
         .iter()
-        .all(|(name, marker)| {
-            lean_source_selected_rust_definition_body_starts_with_marker_v1(
+        .all(|(name, markers)| {
+            lean_source_selected_rust_definition_body_starts_with_any_marker_v1(
                 &boundary_source,
                 name,
-                marker,
+                markers,
                 4096,
             )
         });
@@ -12361,15 +12462,15 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
     let source_record_evidence_source_bindings_present =
         source_record_evidence_source_binding_digests_present
             && source_record_evidence_source_bindings.iter().all(
-                |(name, header_markers, body_marker)| {
+                |(name, header_markers, body_markers)| {
                     lean_source_has_selected_rust_definition_with_markers_v1(
                         &boundary_source,
                         name,
                         header_markers,
-                    ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
+                    ) && lean_source_selected_rust_definition_body_starts_with_any_marker_v1(
                         &boundary_source,
                         name,
-                        body_marker,
+                        body_markers,
                         4096,
                     )
                 },
@@ -12386,10 +12487,13 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 "selectedRustFieldLocalSourceCertificate",
                 "selectedRustSharedFrameWitnessSourcesCertificate",
             ],
-        ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
+        ) && lean_source_selected_rust_definition_body_starts_with_any_marker_v1(
             &boundary_source,
             "selectedRustFiveSourceSubEvidenceDigestsMatchProof",
-            "selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch",
+            &[
+                "selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch",
+                "(selectedRustModelSourceRecordPackage selectedRustNativeBoundaryPredicateModelCertificate selectedRustPayloadProjectionLawValue selectedRustExtractionCertificateAvailabilityValue selectedRustRoleRootLiftSourceValue selectedRustSourceRouteByteSourceValue selectedRustAssemblySourceValue selectedRustCompatibilitySourceValue selectedRustSharedFrameWitnessSourcesValue).subEvidenceDigestsMatch",
+            ],
             4096,
         );
     let all_definitions_present = evidence_report_definitions_present
@@ -60683,7 +60787,9 @@ def toPredicates
             !source_record_subcheck
                 .native_boundary_predicate_model_forbidden_vacuous_literals_present
         );
-        assert!(source_record_subcheck.native_boundary_predicate_model_field_sources_defined_present);
+        assert!(
+            source_record_subcheck.native_boundary_predicate_model_field_sources_defined_present
+        );
         assert!(
             !source_record_subcheck
                 .native_boundary_predicate_model_forbidden_vacuous_field_sources_present

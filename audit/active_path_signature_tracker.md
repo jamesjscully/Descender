@@ -1890,6 +1890,20 @@ incomplete-proof, or circular-provider flags. This does not close AP2-N001:
 current-report impossibility now lives at the full predicate-model certificate
 rather than the field-source package, and the selected source-record definition
 categories remain missing.
+The active Lean boundary now also has a conditional selected source-record
+instantiation route. `selectedRustModelSourceRecordPackage` is built from the
+five selected evidence-source bindings, and
+`selectedRustFiveSourceSubEvidenceDigestsMatchProof` is projected from that
+package, all parameterized by a proof-bearing
+`ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate` plus the
+seven raw source records it must certify. Lean accepts the block, and the
+manifest now reports `missing_selected_source_record_count = 0` with every
+source-record definition and certificate-constructor binding present. This is
+not cryptographic closure: `all_selected_source_records_present` remains false
+because `native_boundary_concrete_predicate_model_present = false`, and the
+broader concrete-definition checklist still rejects the conditional route as a
+non-concrete import rather than treating parameterized source records as real
+Rust/model evidence.
 Tooling note: the Rust source scanner's direct-constant-lambda check now clamps
 source windows to a UTF-8 character boundary before slicing; the prior byte
 slice could panic when a window ended inside Lean's `∧` token. The broad

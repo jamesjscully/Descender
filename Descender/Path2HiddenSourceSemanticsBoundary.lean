@@ -5504,6 +5504,331 @@ theorem selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_
   exact selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible
     (by simpa [Cert.evidenceReportBound] using Cert.evidenceFactsAllTrueProof)
 
+/-
+Conditional selected Rust source-record instantiation.
+
+These definitions name the exact source-record objects the final Rust/model
+import must provide. They are parameterized by a proof-bearing predicate-model
+certificate and by the seven raw source records, so they do not assert that the
+current fail-closed report can build those objects.
+-/
+section SelectedRustConditionalSourceRecords
+
+variable {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+variable {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+variable {CanonicalParser :
+  ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+variable {WitnessParser :
+  ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+
+variable
+  (selectedRustNativeBoundaryPredicateModelCertificate :
+    ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate)
+
+abbrev selectedRustCertifiedNativeBoundaryPredicates : Predicates :=
+  selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates
+
+variable
+  (selectedRustPayloadProjectionLawValue :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload},
+      Predicates.reviewedFq12PayloadAccepts
+        selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates
+        b payload ->
+        payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+          payload.slotId = b.context.slotId ->
+        Predicates.reviewedFq12PayloadProjectsFrom
+          selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates
+          b payload)
+  (selectedRustExtractionCertificateAvailabilityValue :
+    ReviewedFq12ExtractionCertificateAvailability
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates)
+  (selectedRustRoleRootLiftSourceValue :
+    ReviewedFq12RoleRootFunctionalLiftSource
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates)
+  (selectedRustSourceRouteByteSourceValue :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+      FieldParser RouteParser
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates)
+  (selectedRustAssemblySourceValue :
+    ReviewedFq12FieldConcreteAssemblyLocalSource
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates)
+  (selectedRustCompatibilitySourceValue :
+    ReviewedFq12FieldConcreteCompatibilitySource
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates)
+  (selectedRustSharedFrameWitnessSourcesValue :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+      CanonicalParser WitnessParser
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates)
+
+def selectedRustBoundaryBaseSourceBindingDigest : ByteArray :=
+  selectedRustBoundaryBaseEvidenceDigest
+
+def selectedRustRoleRootLiftSourceBindingDigest : ByteArray :=
+  selectedRustRoleRootLiftEvidenceDigest
+
+def selectedRustSourceRouteSourceBindingDigest : ByteArray :=
+  selectedRustSourceRouteEvidenceDigest
+
+def selectedRustFieldLocalSourceBindingDigest : ByteArray :=
+  selectedRustFieldLocalEvidenceDigest
+
+def selectedRustSharedWitnessSourceBindingDigest : ByteArray :=
+  selectedRustSharedFrameWitnessEvidenceDigest
+
+def selectedRustBoundaryBaseEvidenceSourceBinding :
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding.ofReportAndSources
+    selectedRustBoundaryBaseEvidenceReport
+    selectedRustBoundaryBaseEvidenceDigest
+    selectedRustBoundaryBaseSourceBindingDigest
+    rfl
+    rfl
+    rfl
+    selectedRustPayloadProjectionLawValue
+    selectedRustExtractionCertificateAvailabilityValue
+
+def selectedRustRoleRootLiftEvidenceSourceBinding :
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding.ofReportAndSource
+    selectedRustRoleRootLiftEvidenceReport
+    selectedRustRoleRootLiftEvidenceDigest
+    selectedRustRoleRootLiftSourceBindingDigest
+    rfl
+    rfl
+    rfl
+    selectedRustRoleRootLiftSourceValue
+
+def selectedRustSourceRouteEvidenceSourceBinding :
+    ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
+      FieldParser RouteParser
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding.ofReportAndSource
+    selectedRustSourceRouteEvidenceReport
+    selectedRustSourceRouteEvidenceDigest
+    selectedRustSourceRouteSourceBindingDigest
+    rfl
+    rfl
+    rfl
+    selectedRustSourceRouteByteSourceValue
+
+def selectedRustFieldLocalEvidenceSourceBinding :
+    ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding.ofReportAndSources
+    selectedRustFieldLocalEvidenceReport
+    selectedRustFieldLocalEvidenceDigest
+    selectedRustFieldLocalSourceBindingDigest
+    rfl
+    rfl
+    rfl
+    selectedRustAssemblySourceValue
+    selectedRustCompatibilitySourceValue
+
+def selectedRustSharedWitnessEvidenceSourceBinding :
+    ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
+      CanonicalParser WitnessParser
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding.ofReportAndSources
+    selectedRustSharedFrameWitnessEvidenceReport
+    selectedRustSharedFrameWitnessEvidenceDigest
+    selectedRustSharedWitnessSourceBindingDigest
+    rfl
+    rfl
+    rfl
+    selectedRustSharedFrameWitnessSourcesValue
+
+def selectedRustPayloadProjectionLaw :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload},
+      Predicates.reviewedFq12PayloadAccepts
+        selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates
+        b payload ->
+        payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+          payload.slotId = b.context.slotId ->
+        Predicates.reviewedFq12PayloadProjectsFrom
+          selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates
+          b payload :=
+  (selectedRustBoundaryBaseEvidenceSourceBinding
+    selectedRustNativeBoundaryPredicateModelCertificate
+    selectedRustPayloadProjectionLawValue
+    selectedRustExtractionCertificateAvailabilityValue).payloadProjectionLaw
+
+def selectedRustExtractionCertificateAvailability :
+    ReviewedFq12ExtractionCertificateAvailability
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  (selectedRustBoundaryBaseEvidenceSourceBinding
+    selectedRustNativeBoundaryPredicateModelCertificate
+    selectedRustPayloadProjectionLawValue
+    selectedRustExtractionCertificateAvailabilityValue).extractionCertificateAvailability
+
+def selectedRustRoleRootLiftSource :
+    ReviewedFq12RoleRootFunctionalLiftSource
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  (selectedRustRoleRootLiftEvidenceSourceBinding
+    selectedRustNativeBoundaryPredicateModelCertificate
+    selectedRustRoleRootLiftSourceValue).roleRootLiftSource
+
+def selectedRustSourceRouteByteSource :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+      FieldParser RouteParser
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  (selectedRustSourceRouteEvidenceSourceBinding
+    selectedRustNativeBoundaryPredicateModelCertificate
+    selectedRustSourceRouteByteSourceValue).selectedSourceRouteByteSource
+
+def selectedRustAssemblySource :
+    ReviewedFq12FieldConcreteAssemblyLocalSource
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  (selectedRustFieldLocalEvidenceSourceBinding
+    selectedRustNativeBoundaryPredicateModelCertificate
+    selectedRustAssemblySourceValue
+    selectedRustCompatibilitySourceValue).assemblySource
+
+def selectedRustCompatibilitySource :
+    ReviewedFq12FieldConcreteCompatibilitySource
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  (selectedRustFieldLocalEvidenceSourceBinding
+    selectedRustNativeBoundaryPredicateModelCertificate
+    selectedRustAssemblySourceValue
+    selectedRustCompatibilitySourceValue).compatibilitySource
+
+def selectedRustSharedFrameWitnessSources :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+      CanonicalParser WitnessParser
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  (selectedRustSharedWitnessEvidenceSourceBinding
+    selectedRustNativeBoundaryPredicateModelCertificate
+    selectedRustSharedFrameWitnessSourcesValue).sharedFrameWitnessSources
+
+def selectedRustBoundaryBaseCertificate :
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources
+    selectedRustBoundaryBaseEvidenceReport
+    selectedRustBoundaryBaseEvidenceDigest
+    selectedRustBoundaryBaseEvidenceReportVerifiedProof
+    selectedRustBoundaryBaseEvidenceFactsAllTrueProof
+    (selectedRustPayloadProjectionLaw
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustPayloadProjectionLawValue
+      selectedRustExtractionCertificateAvailabilityValue)
+    (selectedRustExtractionCertificateAvailability
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustPayloadProjectionLawValue
+      selectedRustExtractionCertificateAvailabilityValue)
+
+def selectedRustRoleRootLiftSourceCertificate :
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource
+    selectedRustRoleRootLiftEvidenceReport
+    selectedRustRoleRootLiftEvidenceDigest
+    selectedRustRoleRootLiftEvidenceReportVerifiedProof
+    selectedRustRoleRootLiftEvidenceFactsAllTrueProof
+    (selectedRustRoleRootLiftSource
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustRoleRootLiftSourceValue)
+
+def selectedRustSourceRouteByteSourceCertificate :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+      FieldParser RouteParser
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource
+    selectedRustSourceRouteEvidenceReport
+    selectedRustSourceRouteEvidenceDigest
+    selectedRustSourceRouteEvidenceReportVerifiedProof
+    selectedRustSourceRouteEvidenceFactsAllTrueProof
+    (selectedRustSourceRouteByteSource
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustSourceRouteByteSourceValue)
+
+def selectedRustFieldLocalSourceCertificate :
+    ReviewedFq12SelectedRustFieldLocalEvidenceCertificate
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources
+    selectedRustFieldLocalEvidenceReport
+    selectedRustFieldLocalEvidenceDigest
+    selectedRustFieldLocalEvidenceReportVerifiedProof
+    selectedRustFieldLocalEvidenceFactsAllTrueProof
+    (selectedRustAssemblySource
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustAssemblySourceValue
+      selectedRustCompatibilitySourceValue)
+    (selectedRustCompatibilitySource
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustAssemblySourceValue
+      selectedRustCompatibilitySourceValue)
+
+def selectedRustSharedFrameWitnessSourcesCertificate :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+      CanonicalParser WitnessParser
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources
+    selectedRustSharedFrameWitnessEvidenceReport
+    selectedRustSharedFrameWitnessEvidenceDigest
+    selectedRustSharedFrameWitnessEvidenceReportVerifiedProof
+    selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof
+    (selectedRustSharedFrameWitnessSources
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustSharedFrameWitnessSourcesValue)
+
+def selectedRustModelSourceRecordPackage :
+    ReviewedFq12SelectedRustModelSourceRecordPackage
+      FieldParser RouteParser CanonicalParser WitnessParser
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
+  ReviewedFq12SelectedRustModelSourceRecordPackage.ofSourceBindings
+    (selectedRustBoundaryBaseEvidenceSourceBinding
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustPayloadProjectionLawValue
+      selectedRustExtractionCertificateAvailabilityValue)
+    (selectedRustRoleRootLiftEvidenceSourceBinding
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustRoleRootLiftSourceValue)
+    (selectedRustSourceRouteEvidenceSourceBinding
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustSourceRouteByteSourceValue)
+    (selectedRustFieldLocalEvidenceSourceBinding
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustAssemblySourceValue
+      selectedRustCompatibilitySourceValue)
+    (selectedRustSharedWitnessEvidenceSourceBinding
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustSharedFrameWitnessSourcesValue)
+
+theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
+    selectedRustFiveSourceEvidenceReport.SubEvidenceDigestsMatch
+      (selectedRustBoundaryBaseCertificate
+        selectedRustNativeBoundaryPredicateModelCertificate
+        selectedRustPayloadProjectionLawValue
+        selectedRustExtractionCertificateAvailabilityValue)
+      (selectedRustRoleRootLiftSourceCertificate
+        selectedRustNativeBoundaryPredicateModelCertificate
+        selectedRustRoleRootLiftSourceValue)
+      (selectedRustSourceRouteByteSourceCertificate
+        selectedRustNativeBoundaryPredicateModelCertificate
+        selectedRustSourceRouteByteSourceValue)
+      (selectedRustFieldLocalSourceCertificate
+        selectedRustNativeBoundaryPredicateModelCertificate
+        selectedRustAssemblySourceValue
+        selectedRustCompatibilitySourceValue)
+      (selectedRustSharedFrameWitnessSourcesCertificate
+        selectedRustNativeBoundaryPredicateModelCertificate
+        selectedRustSharedFrameWitnessSourcesValue) :=
+  (selectedRustModelSourceRecordPackage
+    selectedRustNativeBoundaryPredicateModelCertificate
+    selectedRustPayloadProjectionLawValue
+    selectedRustExtractionCertificateAvailabilityValue
+    selectedRustRoleRootLiftSourceValue
+    selectedRustSourceRouteByteSourceValue
+    selectedRustAssemblySourceValue
+    selectedRustCompatibilitySourceValue
+    selectedRustSharedFrameWitnessSourcesValue).subEvidenceDigestsMatch
+
+end SelectedRustConditionalSourceRecords
+
 /--
 Concrete native-boundary semantics import target for the selected Rust path.
 
