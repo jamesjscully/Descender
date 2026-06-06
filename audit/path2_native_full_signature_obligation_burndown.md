@@ -384,6 +384,9 @@ bodies, such as defining `selectedReviewedFq12PayloadAccepts` as a
 constant-false predicate. The manifest exposes this as
 `native_boundary_predicate_model_forbidden_vacuous_field_sources_present`, and
 the digest-bound predicate-model negative-control bit requires it to be false.
+The same bit now also rejects direct constant-lambda provider bodies across
+the selected provider surface, including active account-admission placeholders
+such as `selectedAdmitted := fun _ _ => True`.
 It now also rejects the obvious syntactic vacuity escape hatch: a field-complete
 `selectedRustNativeBoundaryPredicates` whose critical break, reviewed-Fq12
 certificate/extraction, payload-extraction, or spend predicates are filled by

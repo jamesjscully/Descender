@@ -1394,6 +1394,11 @@ bodies, such as a provider definition of
 exposes this as
 `native_boundary_predicate_model_forbidden_vacuous_field_sources_present`, and
 the digest-bound predicate-model negative-control bit requires it to be false.
+That rejection now applies generically to direct constant-lambda provider
+bodies (`True`/`False` or `fun _ ... => True/False`) across the selected
+predicate-field provider surface. A regression fixture covers
+`selectedAdmitted := fun _ _ => True`, so the active account-admission leg
+cannot be closed by an always-true placeholder outside the reviewed-Fq12 list.
 It now also rejects the most direct vacuous literal model shapes inside
 `selectedRustNativeBoundaryPredicates`: universal break predicates,
 always-false reviewed-Fq12 payload acceptance, and constant-true reviewed-Fq12

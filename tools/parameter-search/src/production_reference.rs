@@ -8833,6 +8833,79 @@ fn lean_source_module_has_non_stub_declarations_for_names_v1(
     })
 }
 
+fn lean_source_selected_rust_definition_body_is_direct_constant_lambda_v1(
+    lean_source: &str,
+    name: &str,
+    max_body_len: usize,
+) -> bool {
+    let stripped_source = lean_source_without_comments_and_strings_v1(lean_source);
+    let lean_source = stripped_source.as_str();
+    let declaration_starts = [
+        format!("\nabbrev {name}"),
+        format!("\ndef {name}"),
+        format!("\nprivate abbrev {name}"),
+        format!("\nprivate def {name}"),
+    ];
+    declaration_starts.iter().any(|start_marker| {
+        lean_source.match_indices(start_marker).any(|(start, _)| {
+            let name_end = start + start_marker.len();
+            if lean_source[name_end..]
+                .chars()
+                .next()
+                .is_some_and(|next| next.is_ascii_alphanumeric() || next == '_' || next == '\'')
+            {
+                return false;
+            }
+            let declaration_window =
+                &lean_source[start..lean_source.len().min(start + max_body_len)];
+            let Some(body_start) = [":=", "\nwhere", " where"]
+                .iter()
+                .filter_map(|body_marker| {
+                    declaration_window
+                        .find(body_marker)
+                        .map(|offset| offset + body_marker.len())
+                })
+                .min()
+            else {
+                return false;
+            };
+            let body_window = &declaration_window[body_start..];
+            let next_top_level_declaration = [
+                "\nabbrev ",
+                "\naxiom ",
+                "\nclass ",
+                "\nconstant ",
+                "\ndef ",
+                "\ninductive ",
+                "\ninstance ",
+                "\nnamespace ",
+                "\nopaque ",
+                "\nopen ",
+                "\nprivate abbrev ",
+                "\nprivate def ",
+                "\nprivate theorem ",
+                "\nsection ",
+                "\nstructure ",
+                "\ntheorem ",
+                "\nvariable ",
+            ]
+            .iter()
+            .filter_map(|marker| body_window.find(marker))
+            .min()
+            .unwrap_or(body_window.len());
+            let normalized_body = body_window[..next_top_level_declaration]
+                .split_whitespace()
+                .collect::<String>();
+            ["True", "False", "(True)", "(False)"].iter().any(|value| {
+                normalized_body == *value
+                    || (1..=12).any(|arity| {
+                        normalized_body == format!("fun{}=>{value}", "_".repeat(arity))
+                    })
+            })
+        })
+    })
+}
+
 fn lean_source_has_incomplete_proof_token_v1(lean_source: &str) -> bool {
     let stripped_source = lean_source_without_comments_and_strings_v1(lean_source);
     ["sorry", "admit"].iter().any(|token| {
@@ -9487,7 +9560,16 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             marker,
             4096,
         )
-    });
+    })
+        || native_boundary_predicate_model_field_source_names
+            .iter()
+            .any(|name| {
+                lean_source_selected_rust_definition_body_is_direct_constant_lambda_v1(
+                    &boundary_source,
+                    name,
+                    4096,
+                )
+            });
     let native_boundary_predicate_model_incomplete_proof_terms_present =
         lean_source_has_incomplete_proof_token_v1(&boundary_source);
     let native_boundary_concrete_predicate_model_present =
@@ -58444,6 +58526,24 @@ def selectedSpendWitnessValid := selectedSpendWitnessValidValue
         );
         assert!(
             !vacuous_provider_native_boundary_model_subcheck
+                .native_boundary_concrete_predicate_model_present
+        );
+        let vacuous_admission_provider_native_boundary_model_source =
+            complete_native_boundary_model_source.replacen(
+                "def selectedAdmitted := selectedAdmittedValue",
+                "def selectedAdmitted := fun _ _ => True",
+                1,
+            );
+        let vacuous_admission_provider_native_boundary_model_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &vacuous_admission_provider_native_boundary_model_source,
+            );
+        assert!(
+            vacuous_admission_provider_native_boundary_model_subcheck
+                .native_boundary_predicate_model_forbidden_vacuous_field_sources_present
+        );
+        assert!(
+            !vacuous_admission_provider_native_boundary_model_subcheck
                 .native_boundary_concrete_predicate_model_present
         );
         let theorem_provider_native_boundary_model_source = complete_native_boundary_model_source
