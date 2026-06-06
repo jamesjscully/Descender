@@ -1630,6 +1630,13 @@ model still compares them to scalar/context coordinates (`slotId`, live marker,
 blocker. The next route should retarget `selectedBoundaryOf`,
 `selectedLocalValid`, and `selectedDescentConsistent` together to the actual
 Rust native-boundary frame instead of importing impossible equalities.
+The primary concrete example is the digest identity itself: Rust keeps
+`native_boundary_digest` and `representative_digest` separate, with the latter
+computed from the former plus opening fields. The current Lean
+`selectedBoundaryOf` instead writes `Boundary.nativeBoundaryDigest :=
+h.representativeDigest`. That cannot be justified by Rust evidence and must be
+split before the canonical native-validity/fiber theorem can be cryptographically
+closed.
 The hard model certificate route now has a constructor:
 `ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate.ofCanonicalNativeSource`
 uses the shared-witness certificate, the field equality, and the canonical
