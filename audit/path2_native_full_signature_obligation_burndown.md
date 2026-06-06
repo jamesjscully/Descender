@@ -1252,6 +1252,13 @@ The current-report blocker is also recorded at the full-signature bound layer:
 `full_signature_active_path_forgery_bound_from_current_predicate_report_impossible`
 shows that a certified semantics package over the current fail-closed selected
 predicate evidence would contradict the predicate-model certificate guard.
+The selected native-boundary predicate interpretation now has a structured
+target package:
+`ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources.toPredicates`.
+The source audit requires this package to route the critical break,
+reviewed-Fq12, trace/fiber, slot-authorization, and spend predicates into
+`Path2NativeBoundary.Predicates`, while still keeping concrete selected field
+source definitions absent and fail-closed.
 
 P2FS-001 final-theorem constructor-binding hardening: the future extractor
 theorem gate now requires each selected certificate local to be bound directly

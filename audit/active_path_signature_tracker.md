@@ -1638,6 +1638,14 @@ layer:
 reduces any certified semantics package back to the selected predicate-model
 certificate impossibility, so the active bound cannot be claimed from the
 current fail-closed predicate evidence.
+Lean now exposes
+`ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources`, a structured
+field-source package for the eventual selected native-boundary predicate
+interpretation, plus its canonical `toPredicates` projection. The source audit
+requires this target shape and checks that critical break, reviewed-Fq12,
+trace/fiber, slot-authorization, and spend predicates are routed through the
+package. This does not close the predicate model: the selected concrete field
+source definitions remain absent and the manifest must stay fail-closed.
 The predicate-model certificate now has the same selected public-evidence
 discipline: it carries `evidenceReportBound` and `evidenceDigestBound` fields
 tying its report and digest to

@@ -2879,6 +2879,278 @@ theorem selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible 
   exact Bool.false_eq_true.mp hFacts.1
 
 /--
+Structured field-source package for the selected Rust native-boundary predicate
+interpretation.
+
+This is a target shape, not a selected implementation. It keeps the eventual
+`Path2NativeBoundary.Predicates` import auditable field-by-field before the
+proof forgets it into the large native-boundary predicate record.
+-/
+structure ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources where
+  selectedBoundaryOf :
+    Context -> HiddenRepresentative -> Path2NativeBoundary.Boundary
+  selectedLocalValid :
+    Context -> HiddenRepresentative -> Prop
+  selectedDescentConsistent :
+    Context -> HiddenRepresentative -> Prop
+  selectedNormRangeValid :
+    Path2NativeBoundary.Boundary -> HiddenRepresentative -> Prop
+  selectedBlindingNoiseBounded :
+    Path2NativeBoundary.Boundary -> BlindingNoisePolicy -> HiddenRepresentative -> Prop
+  selectedSafeEquivalent :
+    Context -> HiddenRepresentative -> HiddenRepresentative -> Prop
+  selectedBoundaryBreakFor :
+    Context -> Path2NativeBoundary.Boundary -> Path2NativeBoundary.BreakEvent -> Prop
+  selectedAccountCreateAccepts :
+    Context -> Path2NativeBoundary.Boundary -> Prop
+  selectedAdmitted :
+    Context -> Path2NativeBoundary.Boundary -> Prop
+  selectedParentRootBindsPrivateRoles :
+    Path2NativeBoundary.Boundary -> ColumnProfile -> Prop
+  selectedRoleRestrictionsAuthenticate :
+    Path2NativeBoundary.Boundary -> ColumnProfile -> Prop
+  selectedNoExportHolds :
+    Path2NativeBoundary.Boundary -> TransparentPublicView -> ColumnProfile -> Prop
+  selectedRoleAuthenticationMaterialSimulatable :
+    Path2NativeBoundary.Boundary -> TransparentPublicView -> ColumnProfile -> Prop
+  selectedMaskFreshnessHolds :
+    Path2NativeBoundary.Boundary -> TransparentPublicView -> ColumnProfile -> Prop
+  selectedQromScheduleBound :
+    Path2NativeBoundary.Boundary -> TransparentPublicView -> ColumnProfile -> Prop
+  selectedQromExtractorRewindBound :
+    Path2NativeBoundary.Boundary -> TransparentPublicView -> ColumnProfile -> Prop
+  selectedRangeRowsBindRepresentative :
+    Path2NativeBoundary.Boundary ->
+      TransparentPublicView ->
+        ColumnProfile ->
+          HybridBase128RangePolicy -> HiddenRepresentative -> Prop
+  selectedRangeRowsBindTraceRepresentative :
+    Path2NativeBoundary.Boundary ->
+      TransparentPublicView ->
+        ColumnProfile ->
+          HybridBase128RangePolicy ->
+            ExtractedTrace -> HiddenRepresentative -> Prop
+  selectedBlindingRowsBoundRepresentative :
+    Path2NativeBoundary.Boundary ->
+      TransparentPublicView ->
+        ColumnProfile -> BlindingNoisePolicy -> HiddenRepresentative -> Prop
+  selectedBlindingRowsBoundTraceRepresentative :
+    Path2NativeBoundary.Boundary ->
+      TransparentPublicView ->
+        ColumnProfile ->
+          BlindingNoisePolicy ->
+            ExtractedTrace -> HiddenRepresentative -> Prop
+  selectedTransparentAccepts :
+    Path2NativeBoundary.Boundary -> TransparentPublicView -> Prop
+  selectedTransparentExtractsTrace :
+    Path2NativeBoundary.Boundary -> TransparentPublicView -> ExtractedTrace -> Prop
+  selectedTransparentExtracts :
+    Path2NativeBoundary.Boundary -> TransparentPublicView -> HiddenRepresentative -> Prop
+  selectedReviewedFq12PayloadAccepts :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload -> Prop
+  selectedReviewedFq12PayloadProjectsFrom :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload -> Prop
+  selectedReviewedFq12PayloadHasExtractionCertificate :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate -> Prop
+  selectedReviewedFq12ExtractionCertificateValid :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate -> Prop
+  selectedReviewedFq12CertificateExtracts :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        HiddenRepresentative -> Prop
+  selectedReviewedFq12CertificateLiftsToOpening :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening -> Prop
+  selectedReviewedFq12PayloadHasRoleLiftCertificate :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        ReviewedFq12FullNativeOpeningCertificate -> Prop
+  selectedReviewedFq12RoleLiftCertificateValid :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        ReviewedFq12FullNativeOpeningCertificate -> Prop
+  selectedReviewedFq12RoleLiftCertificateOpens :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        ReviewedFq12FullNativeOpeningCertificate ->
+          FullNativeRepresentativeOpening -> Prop
+  selectedFullNativeOpeningAssemblesRepresentative :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening -> HiddenRepresentative -> Prop
+  selectedReviewedFq12OpeningHasAssemblyCertificate :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening ->
+          ReviewedFq12NativeRepresentativeAssemblyCertificate -> Prop
+  selectedReviewedFq12AssemblyCertificateValid :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening ->
+          ReviewedFq12NativeRepresentativeAssemblyCertificate -> Prop
+  selectedReviewedFq12AssemblyCertificateAssembles :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening ->
+          ReviewedFq12NativeRepresentativeAssemblyCertificate ->
+            HiddenRepresentative -> Prop
+  selectedReviewedFq12HasExtractionCompatibilityCertificate :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening -> HiddenRepresentative ->
+          ReviewedFq12ExtractionCompatibilityCertificate -> Prop
+  selectedReviewedFq12ExtractionCompatibilityCertificateValid :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening -> HiddenRepresentative ->
+          ReviewedFq12ExtractionCompatibilityCertificate -> Prop
+  selectedReviewedFq12ExtractionCompatibilityCertificateExtracts :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening -> HiddenRepresentative ->
+          ReviewedFq12ExtractionCompatibilityCertificate -> Prop
+  selectedReviewedFq12HasFullOpeningBridgeDigestCertificate :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        ReviewedFq12FullNativeOpeningCertificate ->
+          ReviewedFq12NativeRepresentativeAssemblyCertificate ->
+            ReviewedFq12ExtractionCompatibilityCertificate ->
+              ReviewedFq12FullOpeningBridgeDigestCertificate -> Prop
+  selectedReviewedFq12FullOpeningBridgeDigestCertificateValid :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        ReviewedFq12FullNativeOpeningCertificate ->
+          ReviewedFq12NativeRepresentativeAssemblyCertificate ->
+            ReviewedFq12ExtractionCompatibilityCertificate ->
+              ReviewedFq12FullOpeningBridgeDigestCertificate -> Prop
+  selectedReviewedFq12PayloadExtracts :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload -> HiddenRepresentative -> Prop
+  selectedTraceOpensBoundary :
+    Path2NativeBoundary.Boundary -> ColumnProfile -> ExtractedTrace -> Prop
+  selectedTracesSafetyEquivalent :
+    Path2NativeBoundary.Boundary -> ColumnProfile -> ExtractedTrace -> ExtractedTrace -> Prop
+  selectedMaskedOpeningsConsistent :
+    Path2NativeBoundary.Boundary -> TransparentPublicView -> ColumnProfile -> ExtractedTrace -> Prop
+  selectedTraceRelationValid :
+    Path2NativeBoundary.Boundary -> ColumnProfile -> ExtractedTrace -> Prop
+  selectedTraceAssemblesRepresentative :
+    ExtractedTrace -> HiddenRepresentative -> Prop
+  selectedExtractedRolesComplete :
+    Path2NativeBoundary.Boundary -> ColumnProfile -> HiddenRepresentative -> Prop
+  selectedTraceAssemblyRolesComplete :
+    Path2NativeBoundary.Boundary -> ColumnProfile -> ExtractedTrace -> HiddenRepresentative -> Prop
+  selectedTraceAssemblyDerivedRolesBound :
+    Path2NativeBoundary.Boundary -> ColumnProfile -> ExtractedTrace -> HiddenRepresentative -> Prop
+  selectedTraceAssemblyInFiber :
+    Path2NativeBoundary.Boundary -> ColumnProfile -> ExtractedTrace -> HiddenRepresentative -> Prop
+  selectedTraceAssemblyLocalValid :
+    Path2NativeBoundary.Boundary -> ColumnProfile -> ExtractedTrace -> HiddenRepresentative -> Prop
+  selectedTraceAssemblyDescentConsistent :
+    Path2NativeBoundary.Boundary -> ColumnProfile -> ExtractedTrace -> HiddenRepresentative -> Prop
+  selectedSlotAuthorizationOf :
+    Path2NativeBoundary.Boundary -> SlotAuthorization
+  selectedSpendAccepts :
+    Context -> SlotAuthorization -> Prop
+  selectedSpendWitnessValid :
+    Context -> HiddenRepresentative -> SlotAuthorization -> Prop
+
+namespace ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources
+
+/-- Forget the selected field-source package into the native boundary record. -/
+def toPredicates
+    (Sources :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources) :
+    Path2NativeBoundary.Predicates where
+  boundaryOf := Sources.selectedBoundaryOf
+  localValid := Sources.selectedLocalValid
+  descentConsistent := Sources.selectedDescentConsistent
+  normRangeValid := Sources.selectedNormRangeValid
+  blindingNoiseBounded := Sources.selectedBlindingNoiseBounded
+  safeEquivalent := Sources.selectedSafeEquivalent
+  boundaryBreakFor := Sources.selectedBoundaryBreakFor
+  accountCreateAccepts := Sources.selectedAccountCreateAccepts
+  admitted := Sources.selectedAdmitted
+  parentRootBindsPrivateRoles := Sources.selectedParentRootBindsPrivateRoles
+  roleRestrictionsAuthenticate :=
+    Sources.selectedRoleRestrictionsAuthenticate
+  noExportHolds := Sources.selectedNoExportHolds
+  roleAuthenticationMaterialSimulatable :=
+    Sources.selectedRoleAuthenticationMaterialSimulatable
+  maskFreshnessHolds := Sources.selectedMaskFreshnessHolds
+  qromScheduleBound := Sources.selectedQromScheduleBound
+  qromExtractorRewindBound := Sources.selectedQromExtractorRewindBound
+  rangeRowsBindRepresentative :=
+    Sources.selectedRangeRowsBindRepresentative
+  rangeRowsBindTraceRepresentative :=
+    Sources.selectedRangeRowsBindTraceRepresentative
+  blindingRowsBoundRepresentative :=
+    Sources.selectedBlindingRowsBoundRepresentative
+  blindingRowsBoundTraceRepresentative :=
+    Sources.selectedBlindingRowsBoundTraceRepresentative
+  transparentAccepts := Sources.selectedTransparentAccepts
+  transparentExtractsTrace := Sources.selectedTransparentExtractsTrace
+  transparentExtracts := Sources.selectedTransparentExtracts
+  reviewedFq12PayloadAccepts :=
+    Sources.selectedReviewedFq12PayloadAccepts
+  reviewedFq12PayloadProjectsFrom :=
+    Sources.selectedReviewedFq12PayloadProjectsFrom
+  reviewedFq12PayloadHasExtractionCertificate :=
+    Sources.selectedReviewedFq12PayloadHasExtractionCertificate
+  reviewedFq12ExtractionCertificateValid :=
+    Sources.selectedReviewedFq12ExtractionCertificateValid
+  reviewedFq12CertificateExtracts :=
+    Sources.selectedReviewedFq12CertificateExtracts
+  reviewedFq12CertificateLiftsToOpening :=
+    Sources.selectedReviewedFq12CertificateLiftsToOpening
+  reviewedFq12PayloadHasRoleLiftCertificate :=
+    Sources.selectedReviewedFq12PayloadHasRoleLiftCertificate
+  reviewedFq12RoleLiftCertificateValid :=
+    Sources.selectedReviewedFq12RoleLiftCertificateValid
+  reviewedFq12RoleLiftCertificateOpens :=
+    Sources.selectedReviewedFq12RoleLiftCertificateOpens
+  fullNativeOpeningAssemblesRepresentative :=
+    Sources.selectedFullNativeOpeningAssemblesRepresentative
+  reviewedFq12OpeningHasAssemblyCertificate :=
+    Sources.selectedReviewedFq12OpeningHasAssemblyCertificate
+  reviewedFq12AssemblyCertificateValid :=
+    Sources.selectedReviewedFq12AssemblyCertificateValid
+  reviewedFq12AssemblyCertificateAssembles :=
+    Sources.selectedReviewedFq12AssemblyCertificateAssembles
+  reviewedFq12HasExtractionCompatibilityCertificate :=
+    Sources.selectedReviewedFq12HasExtractionCompatibilityCertificate
+  reviewedFq12ExtractionCompatibilityCertificateValid :=
+    Sources.selectedReviewedFq12ExtractionCompatibilityCertificateValid
+  reviewedFq12ExtractionCompatibilityCertificateExtracts :=
+    Sources.selectedReviewedFq12ExtractionCompatibilityCertificateExtracts
+  reviewedFq12HasFullOpeningBridgeDigestCertificate :=
+    Sources.selectedReviewedFq12HasFullOpeningBridgeDigestCertificate
+  reviewedFq12FullOpeningBridgeDigestCertificateValid :=
+    Sources.selectedReviewedFq12FullOpeningBridgeDigestCertificateValid
+  reviewedFq12PayloadExtracts :=
+    Sources.selectedReviewedFq12PayloadExtracts
+  traceOpensBoundary := Sources.selectedTraceOpensBoundary
+  tracesSafetyEquivalent := Sources.selectedTracesSafetyEquivalent
+  maskedOpeningsConsistent := Sources.selectedMaskedOpeningsConsistent
+  traceRelationValid := Sources.selectedTraceRelationValid
+  traceAssemblesRepresentative := Sources.selectedTraceAssemblesRepresentative
+  extractedRolesComplete := Sources.selectedExtractedRolesComplete
+  traceAssemblyRolesComplete := Sources.selectedTraceAssemblyRolesComplete
+  traceAssemblyDerivedRolesBound :=
+    Sources.selectedTraceAssemblyDerivedRolesBound
+  traceAssemblyInFiber := Sources.selectedTraceAssemblyInFiber
+  traceAssemblyLocalValid := Sources.selectedTraceAssemblyLocalValid
+  traceAssemblyDescentConsistent :=
+    Sources.selectedTraceAssemblyDescentConsistent
+  slotAuthorizationOf := Sources.selectedSlotAuthorizationOf
+  spendAccepts := Sources.selectedSpendAccepts
+  spendWitnessValid := Sources.selectedSpendWitnessValid
+
+end ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources
+
+/--
 Selected Rust native-boundary predicate-model import target.
 
 The full-spend concrete predicates are not this object: they live over concrete
