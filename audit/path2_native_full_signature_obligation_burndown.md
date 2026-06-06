@@ -1556,3 +1556,11 @@ the `reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates` projection,
 and the hard package/law projection functions as forbidden provider sources.
 The regression now checks `selectedFullNativeOpeningAssemblesRepresentative`
 against that shortcut directly.
+Lean now also exposes the first concrete non-circular provider-construction
+route: `reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame` builds
+the five hard predicates from a selected native representative digest frame.
+This pins representative digest canonicality for full opening assembly,
+assembly-certificate assembly, compatibility extraction, certificate
+extraction, and payload extraction, while leaving native fiber/local/descent
+laws to the selected source records. The manifest tracks the route with
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_digest_frame_provider_constructors_present`.

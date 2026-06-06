@@ -1819,6 +1819,13 @@ The circular-provider guard now also rejects selected reviewed-Fq12 provider
 definitions that reach into this hard-extraction package, its law bundle, or
 the package/law projections; the regression covers
 `selectedFullNativeOpeningAssemblesRepresentative` directly.
+The proof side now has digest-frame-based constructors for the hard provider
+slice:
+`reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame` builds the
+five representative/extraction predicates from one native representative
+digest frame, with immediate lemmas for assembly-implies-full-assembly and
+certificate-extraction-implies-payload-extraction. The manifest tracks this as
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_digest_frame_provider_constructors_present`.
 
 ## Findings
 

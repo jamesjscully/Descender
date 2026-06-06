@@ -3551,6 +3551,166 @@ structure ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPack
     ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelLaws
       predicates
 
+/--
+Digest-frame-based full-native-opening assembly provider.
+
+This is a concrete non-circular provider constructor, not the final selected
+global provider. It pins the representative digest to the active native
+representative digest-frame shape and uses the full native opening for every
+role coordinate.
+-/
+def reviewedFq12FullNativeOpeningAssemblesRepresentativeFromDigestFrame
+    (digestFrame : ReviewedFq12NativeRepresentativeDigestFrame)
+    (b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate)
+    (opening : FullNativeRepresentativeOpening)
+    (h : HiddenRepresentative) : Prop :=
+  payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+    payload.slotId = b.context.slotId ∧
+      cert.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+        cert.slotId = b.context.slotId ∧
+          cert.openingCommitment = opening.openingTupleDigest ∧
+            h =
+              reviewedFq12FullNativeOpeningCanonicalRepresentative
+                (reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
+                  digestFrame)
+                b opening
+
+/--
+Digest-frame-based assembly-certificate assembly provider.
+
+The assembly certificate must field-bind to the opening, its representative
+digest must equal the selected digest-frame value, and the hidden
+representative must be the canonical representative for the same boundary and
+opening.
+-/
+def reviewedFq12AssemblyCertificateAssemblesFromDigestFrame
+    (digestFrame : ReviewedFq12NativeRepresentativeDigestFrame)
+    (b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate)
+    (opening : FullNativeRepresentativeOpening)
+    (assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate)
+    (h : HiddenRepresentative) : Prop :=
+  ReviewedFq12AssemblyCertificateBindsOpening payload cert opening
+      assemblyCert ∧
+    assemblyCert.representativeDigest =
+        reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
+          digestFrame b opening ∧
+      reviewedFq12FullNativeOpeningAssemblesRepresentativeFromDigestFrame
+        digestFrame b payload cert opening h
+
+/--
+Digest-frame-based compatibility extraction provider.
+
+The compatibility certificate must bind the same payload, extraction
+certificate, opening, and canonical representative.
+-/
+def reviewedFq12ExtractionCompatibilityCertificateExtractsFromDigestFrame
+    (digestFrame : ReviewedFq12NativeRepresentativeDigestFrame)
+    (b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate)
+    (opening : FullNativeRepresentativeOpening)
+    (h : HiddenRepresentative)
+    (compatCert : ReviewedFq12ExtractionCompatibilityCertificate) : Prop :=
+  ReviewedFq12ExtractionCompatibilityCertificateBinds
+      payload cert opening h compatCert ∧
+    reviewedFq12FullNativeOpeningAssemblesRepresentativeFromDigestFrame
+      digestFrame b payload cert opening h
+
+/--
+Digest-frame-based certificate extraction provider.
+
+An extraction certificate extracts a representative when it has a full native
+opening whose canonical representative is that representative.
+-/
+def reviewedFq12CertificateExtractsFromDigestFrame
+    (digestFrame : ReviewedFq12NativeRepresentativeDigestFrame)
+    (b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate)
+    (h : HiddenRepresentative) : Prop :=
+  exists opening,
+    reviewedFq12FullNativeOpeningAssemblesRepresentativeFromDigestFrame
+      digestFrame b payload cert opening h
+
+/--
+Digest-frame-based payload extraction provider.
+
+Payload extraction is sourced from a certificate extraction over the same
+boundary and payload. Native fiber/local/descent validity are still separate
+laws supplied by the selected predicate model.
+-/
+def reviewedFq12PayloadExtractsFromDigestFrame
+    (digestFrame : ReviewedFq12NativeRepresentativeDigestFrame)
+    (b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (h : HiddenRepresentative) : Prop :=
+  exists cert,
+    reviewedFq12CertificateExtractsFromDigestFrame
+      digestFrame b payload cert h
+
+/--
+Concrete hard-extraction provider slice obtained from one native
+representative digest frame.
+-/
+def reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame
+    (digestFrame : ReviewedFq12NativeRepresentativeDigestFrame) :
+    ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources where
+  selectedFullNativeOpeningAssemblesRepresentative :=
+    reviewedFq12FullNativeOpeningAssemblesRepresentativeFromDigestFrame
+      digestFrame
+  selectedReviewedFq12AssemblyCertificateAssembles :=
+    reviewedFq12AssemblyCertificateAssemblesFromDigestFrame digestFrame
+  selectedReviewedFq12ExtractionCompatibilityCertificateExtracts :=
+    reviewedFq12ExtractionCompatibilityCertificateExtractsFromDigestFrame
+      digestFrame
+  selectedReviewedFq12CertificateExtracts :=
+    reviewedFq12CertificateExtractsFromDigestFrame digestFrame
+  selectedReviewedFq12PayloadExtracts :=
+    reviewedFq12PayloadExtractsFromDigestFrame digestFrame
+
+/--
+The digest-frame assembly-certificate provider immediately implies the
+digest-frame full-opening assembly provider for the same representative.
+-/
+theorem reviewedFq12DigestFrameAssemblyCertificateImpliesFullNativeAssembly
+    (digestFrame : ReviewedFq12NativeRepresentativeDigestFrame)
+    {b : Path2NativeBoundary.Boundary}
+    {payload : ReviewedFq12HiddenSourcePayload}
+    {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+    {opening : FullNativeRepresentativeOpening}
+    {assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate}
+    {h : HiddenRepresentative}
+    (hAssembles :
+      (reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame
+        digestFrame).selectedReviewedFq12AssemblyCertificateAssembles
+          b payload cert opening assemblyCert h) :
+    (reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame
+      digestFrame).selectedFullNativeOpeningAssemblesRepresentative
+        b payload cert opening h := by
+  exact hAssembles.2.2
+
+/--
+The digest-frame certificate extraction provider immediately implies the
+digest-frame payload extraction provider for the same representative.
+-/
+theorem reviewedFq12DigestFrameCertificateExtractionImpliesPayloadExtraction
+    (digestFrame : ReviewedFq12NativeRepresentativeDigestFrame)
+    {b : Path2NativeBoundary.Boundary}
+    {payload : ReviewedFq12HiddenSourcePayload}
+    {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+    {h : HiddenRepresentative}
+    (hExtracts :
+      (reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame
+        digestFrame).selectedReviewedFq12CertificateExtracts
+          b payload cert h) :
+    (reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame
+      digestFrame).selectedReviewedFq12PayloadExtracts b payload h := by
+  exact ⟨cert, hExtracts⟩
+
 namespace ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources
 
 /--
