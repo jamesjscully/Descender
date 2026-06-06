@@ -1287,6 +1287,12 @@ The final AP2-N001 scanner now also requires the theorem to return
 `selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure`
 through the final `exact`; merely mentioning that closure in an unused local
 binding is not enough to instantiate the extractor theorem gate.
+It also requires the local
+`selectedRustNativeBoundaryCertifiedSemanticsSourcePackage` binding itself to
+be constructed by
+`ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage.ofCertificateAndSourceRecords`;
+mentioning that constructor in an unused local while binding the package to an
+alias no longer closes the final gate.
 `ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate` now also has
 named constructor `ofReportAndModel`, and the concrete-definition checklist
 requires `selectedRustNativeBoundaryPredicateModelCertificate` to be built

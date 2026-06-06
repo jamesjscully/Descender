@@ -11463,6 +11463,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "let selectedRustFieldLocalSharedDigestFrameWitnessInputs : ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs",
         "selectedRustModelSourceRecordPackage.toFieldLocalSharedDigestFrameWitnessInputs",
         "let selectedRustNativeBoundaryCertifiedSemanticsSourcePackage : ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
+        "let selectedRustNativeBoundaryCertifiedSemanticsSourcePackage : ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage FieldParser RouteParser CanonicalParser WitnessParser := ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage.ofCertificateAndSourceRecords selectedRustNativeBoundaryPredicateModelCertificate selectedRustModelSourceRecordPackage",
         "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage.ofCertificateAndSourceRecords selectedRustNativeBoundaryPredicateModelCertificate selectedRustModelSourceRecordPackage",
         "selectedRustNativeBoundaryPredicateModelEvidenceReport",
         "selectedRustNativeBoundaryPredicateModelEvidenceDigest",
@@ -57351,6 +57352,17 @@ theorem {theorem_name}
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &anonymous_certified_package_theorem,
+                theorem_name
+            )
+        );
+        let certified_package_constructor_mentioned_but_alias_bound_theorem =
+            concrete_constructor_certificate_theorem.replace(
+                "    ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage.ofCertificateAndSourceRecords\n      selectedRustNativeBoundaryPredicateModelCertificate\n      selectedRustModelSourceRecordPackage\n",
+                "    selectedRustNativeBoundaryCertifiedSemanticsSourcePackageValue\n  have _hMentionedCertifiedPackageConstructor :=\n    ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage.ofCertificateAndSourceRecords\n      selectedRustNativeBoundaryPredicateModelCertificate\n      selectedRustModelSourceRecordPackage\n",
+            );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &certified_package_constructor_mentioned_but_alias_bound_theorem,
                 theorem_name
             )
         );
