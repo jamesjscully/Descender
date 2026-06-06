@@ -9250,16 +9250,28 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     let native_boundary_predicate_model_generic_evidence_labels_present =
         native_boundary_predicate_model_remaining_generic_evidence_label_count
             == native_boundary_predicate_model_generic_evidence_label_markers.len() as u8;
-    let native_boundary_payload_acceptance_antivacuity_target_present = [
-        "payloadAcceptanceNotVacuous",
-        "predicates.reviewedFq12PayloadAccepts",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_payload_acceptance_antivacuity_target_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "structure",
+            "ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
+            &[
+                "payloadAcceptanceNotVacuous",
+                "¬ (forall b payload, ¬ predicates.reviewedFq12PayloadAccepts b payload)",
+            ],
+            4096,
+        );
     let native_boundary_break_antivacuity_target_present =
-        ["boundaryBreaksNotUniversal", "predicates.boundaryBreakFor"]
-            .iter()
-            .all(|marker| boundary_source.contains(marker));
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "structure",
+            "ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
+            &[
+                "boundaryBreaksNotUniversal",
+                "¬ (forall c b breakEvent, predicates.boundaryBreakFor c b breakEvent)",
+            ],
+            4096,
+        );
     let native_boundary_payload_acceptance_boundary_match_target_present =
         lean_source_definition_with_header_markers_body_starts_with_marker_v1(
             &boundary_source,
@@ -58728,6 +58740,22 @@ def toPredicates
         assert!(
             !aliased_package_closure_reduction_subcheck
                 .package_to_hidden_source_closure_reduction_present
+        );
+        let aliased_payload_antivacuity_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "payloadAcceptanceNotVacuous :\n    ¬ (forall b payload, ¬ predicates.reviewedFq12PayloadAccepts b payload)",
+            "payloadAcceptanceNotVacuous : payloadAcceptanceAntivacuityAlias",
+            1,
+        );
+        let aliased_payload_antivacuity_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_payload_antivacuity_source,
+            );
+        assert!(
+            !aliased_payload_antivacuity_subcheck
+                .native_boundary_payload_acceptance_antivacuity_target_present
         );
         assert!(
             source_record_subcheck.native_boundary_payload_acceptance_boundary_match_target_present
