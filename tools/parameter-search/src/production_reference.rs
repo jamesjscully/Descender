@@ -27983,11 +27983,14 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "selectedRustAcceptedSpendEvidenceDigest",
         "selectedRustAcceptedSpendBoundVerifiedProof",
         "selectedRustAcceptedSpendFactsAllTrueProof",
+        "selectedRustAcceptedSpendPricedNumericCertificate",
         "selectedRustAcceptedSpendForgeryProb",
         "selectedRustAcceptedSpendForgeryBound",
         "selectedRustAcceptedSpendForgeryLeBound",
         "selectedRustProductionAcceptedSpendForgeryProb",
         "selectedRustProductionAcceptedSpendForgeryBound",
+        "selectedRustAcceptedSpendForgeryProbMatchesGame",
+        "selectedRustAcceptedSpendForgeryBoundMatchesPriced",
         "selectedRustAcceptedSpendForgeryProbPinned",
         "selectedRustAcceptedSpendForgeryBoundPinned",
         "selectedRustAcceptedSpendHiddenSourceClosed",
@@ -28148,11 +28151,14 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceDigest",
         "selectedRustAcceptedSpendBoundVerifiedProof",
         "selectedRustAcceptedSpendFactsAllTrueProof",
+        "selectedRustAcceptedSpendPricedNumericCertificate",
         "acceptedSpendForgeryProb",
         "acceptedSpendForgeryBound",
         "acceptedSpendForgery_le_bound",
         "selectedRustProductionAcceptedSpendForgeryProb",
         "selectedRustProductionAcceptedSpendForgeryBound",
+        "selectedRustAcceptedSpendForgeryProbMatchesGame",
+        "selectedRustAcceptedSpendForgeryBoundMatchesPriced",
         "selectedRustAcceptedSpendForgeryProbPinned",
         "selectedRustAcceptedSpendForgeryBoundPinned",
         "selectedRustAcceptedSpendHiddenSourceClosed",
@@ -28232,11 +28238,13 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceDigest",
         "selectedRustAcceptedSpendBoundVerifiedProof",
         "selectedRustAcceptedSpendFactsAllTrueProof",
+        "selectedRustAcceptedSpendPricedNumericCertificate",
         "selectedRustAcceptedSpendForgeryProb",
         "selectedRustAcceptedSpendForgeryBound",
-        "selectedRustAcceptedSpendForgeryLeBound",
         "selectedRustProductionAcceptedSpendForgeryProb",
         "selectedRustProductionAcceptedSpendForgeryBound",
+        "selectedRustAcceptedSpendForgeryProbMatchesGame",
+        "selectedRustAcceptedSpendForgeryBoundMatchesPriced",
         "selectedRustAcceptedSpendForgeryProbPinned",
         "selectedRustAcceptedSpendForgeryBoundPinned",
         "selectedRustAcceptedSpendHiddenSourceClosed",
@@ -51791,13 +51799,15 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
       selectedRustAcceptedSpendEvidenceDigest
       selectedRustAcceptedSpendBoundVerifiedProof
       selectedRustAcceptedSpendFactsAllTrueProof
+      selectedRustAcceptedSpendPricedNumericCertificate
       selectedRustAcceptedSpendForgeryProb
       selectedRustAcceptedSpendForgeryBound
       selectedRustProductionAcceptedSpendForgeryProb
       selectedRustProductionAcceptedSpendForgeryBound
+      selectedRustAcceptedSpendForgeryProbMatchesGame
+      selectedRustAcceptedSpendForgeryBoundMatchesPriced
       selectedRustAcceptedSpendForgeryProbPinned
       selectedRustAcceptedSpendForgeryBoundPinned
-      selectedRustAcceptedSpendForgeryLeBound
       selectedRustAcceptedSpendHiddenSourceClosed
       selectedRustAcceptedSpendCheckedCoreClosed
       selectedRustAcceptedSpendLifecycleClosed
@@ -51928,13 +51938,15 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
       selectedRustAcceptedSpendEvidenceDigest
       selectedRustAcceptedSpendBoundVerifiedProof
       selectedRustAcceptedSpendFactsAllTrueProof
+      selectedRustAcceptedSpendPricedNumericCertificate
       selectedRustAcceptedSpendForgeryProb
       selectedRustAcceptedSpendForgeryBound
       selectedRustProductionAcceptedSpendForgeryProb
       selectedRustProductionAcceptedSpendForgeryBound
+      selectedRustAcceptedSpendForgeryProbMatchesGame
+      selectedRustAcceptedSpendForgeryBoundMatchesPriced
       selectedRustAcceptedSpendForgeryProbPinned
       selectedRustAcceptedSpendForgeryBoundPinned
-      selectedRustAcceptedSpendForgeryLeBound
       selectedRustAcceptedSpendHiddenSourceClosed
       selectedRustAcceptedSpendCheckedCoreClosed
       selectedRustAcceptedSpendLifecycleClosed

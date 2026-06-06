@@ -1,4 +1,5 @@
 import Mathlib.Data.Real.Basic
+import Descender.Path2AcceptedSpendProbability
 
 namespace Descender
 
@@ -1608,16 +1609,20 @@ structure SelectedRustAcceptedSpendSoundnessCertificate where
     evidenceReport.ReportVerified
   selectedRustAcceptedSpendFactsAllTrueProof :
     evidenceReport.FactsAllTrue
+  pricedNumericCertificate :
+    Path2AcceptedSpendProbability.PricedAcceptedSpendNumericCertificate
   acceptedSpendForgeryProb : ℝ
   acceptedSpendForgeryBound : ℝ
   productionAcceptedSpendForgeryProb : ℝ
   productionAcceptedSpendForgeryBound : ℝ
+  acceptedSpendForgeryProbMatchesGame :
+    acceptedSpendForgeryProb = pricedNumericCertificate.successProb
+  acceptedSpendForgeryBoundMatchesPriced :
+    acceptedSpendForgeryBound = pricedNumericCertificate.pricedBound
   acceptedSpendForgeryProbPinned :
     acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb
   acceptedSpendForgeryBoundPinned :
     acceptedSpendForgeryBound = productionAcceptedSpendForgeryBound
-  acceptedSpendForgery_le_bound :
-    acceptedSpendForgeryProb <= acceptedSpendForgeryBound
   hiddenSourceProofSemanticsClosed : Prop
   checkedCoreCompositionClosed : Prop
   lifecycleReplayClosed : Prop
@@ -1631,16 +1636,20 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
       evidenceReport.ReportVerified)
     (selectedRustAcceptedSpendFactsAllTrueProof :
       evidenceReport.FactsAllTrue)
+    (pricedNumericCertificate :
+      Path2AcceptedSpendProbability.PricedAcceptedSpendNumericCertificate)
     (acceptedSpendForgeryProb : ℝ)
     (acceptedSpendForgeryBound : ℝ)
     (productionAcceptedSpendForgeryProb : ℝ)
     (productionAcceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgeryProbMatchesGame :
+      acceptedSpendForgeryProb = pricedNumericCertificate.successProb)
+    (acceptedSpendForgeryBoundMatchesPriced :
+      acceptedSpendForgeryBound = pricedNumericCertificate.pricedBound)
     (acceptedSpendForgeryProbPinned :
       acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb)
     (acceptedSpendForgeryBoundPinned :
       acceptedSpendForgeryBound = productionAcceptedSpendForgeryBound)
-    (acceptedSpendForgery_le_bound :
-      acceptedSpendForgeryProb <= acceptedSpendForgeryBound)
     (hiddenSourceProofSemanticsClosed : Prop)
     (checkedCoreCompositionClosed : Prop)
     (lifecycleReplayClosed : Prop)
@@ -1652,13 +1661,15 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
     selectedRustAcceptedSpendBoundVerifiedProof
   selectedRustAcceptedSpendFactsAllTrueProof :=
     selectedRustAcceptedSpendFactsAllTrueProof
+  pricedNumericCertificate := pricedNumericCertificate
   acceptedSpendForgeryProb := acceptedSpendForgeryProb
   acceptedSpendForgeryBound := acceptedSpendForgeryBound
   productionAcceptedSpendForgeryProb := productionAcceptedSpendForgeryProb
   productionAcceptedSpendForgeryBound := productionAcceptedSpendForgeryBound
+  acceptedSpendForgeryProbMatchesGame := acceptedSpendForgeryProbMatchesGame
+  acceptedSpendForgeryBoundMatchesPriced := acceptedSpendForgeryBoundMatchesPriced
   acceptedSpendForgeryProbPinned := acceptedSpendForgeryProbPinned
   acceptedSpendForgeryBoundPinned := acceptedSpendForgeryBoundPinned
-  acceptedSpendForgery_le_bound := acceptedSpendForgery_le_bound
   hiddenSourceProofSemanticsClosed := hiddenSourceProofSemanticsClosed
   checkedCoreCompositionClosed := checkedCoreCompositionClosed
   lifecycleReplayClosed := lifecycleReplayClosed
@@ -1693,7 +1704,14 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
         Cert.acceptedSpendForgeryBound =
           Cert.productionAcceptedSpendForgeryBound :=
       Cert.acceptedSpendForgeryBoundPinned
-    exact Cert.acceptedSpendForgery_le_bound
+    calc
+      Cert.acceptedSpendForgeryProb =
+          Cert.pricedNumericCertificate.successProb :=
+        Cert.acceptedSpendForgeryProbMatchesGame
+      _ <= Cert.pricedNumericCertificate.pricedBound :=
+        Cert.pricedNumericCertificate.successProb_le_pricedBound
+      _ = Cert.acceptedSpendForgeryBound :=
+        Cert.acceptedSpendForgeryBoundMatchesPriced.symm
   hiddenSourceProofSemanticsClosed :=
     Cert.hiddenSourceProofSemanticsClosed
   checkedCoreCompositionClosed :=
