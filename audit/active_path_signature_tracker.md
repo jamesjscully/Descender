@@ -1418,6 +1418,13 @@ the raw-predicate constructor route. The digest-bound
 `nativeBoundaryPredicateRecordComplete` fact now also requires the package
 route bit, so provider declarations alone cannot close the predicate-record
 fact.
+That package-route fact is now independently digest-bound in the selected
+predicate-model evidence report as
+`nativeBoundaryPredicateFieldSourcePackagePresent` /
+`native_boundary_predicate_field_source_package_present`. The current report
+and manifest keep it false, and the selected predicate-model evidence digest is
+updated to bind the extra false fact rather than hiding it inside
+`nativeBoundaryPredicateRecordComplete`.
 The Lean predicate-model evidence report now mirrors the Rust report's
 concrete-model and certified-semantics-package status fields as
 `concretePredicateModelPresent` and

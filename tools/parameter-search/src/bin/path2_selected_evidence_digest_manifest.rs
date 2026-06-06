@@ -149,6 +149,8 @@ fn main() -> Result<(), String> {
                 predicate_model.native_boundary_break_model_pinned,
             "native_boundary_predicate_record_complete":
                 predicate_model.native_boundary_predicate_record_complete,
+            "native_boundary_predicate_field_source_package_present":
+                predicate_model.native_boundary_predicate_field_source_package_present,
             "active_verifier_route_pinned":
                 predicate_model.active_verifier_route_pinned,
             "concrete_predicate_model_present":

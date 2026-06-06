@@ -2800,6 +2800,7 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport
   compatibilityAndExtractionModelPinned : Bool
   nativeBoundaryBreakModelPinned : Bool
   nativeBoundaryPredicateRecordComplete : Bool
+  nativeBoundaryPredicateFieldSourcePackagePresent : Bool
   activeVerifierRoutePinned : Bool
   predicateNegativeControlsPassed : Bool
   concretePredicateModelPresent : Bool
@@ -2827,10 +2828,11 @@ def FactsAllTrue
           E.compatibilityAndExtractionModelPinned = true ∧
             E.nativeBoundaryBreakModelPinned = true ∧
               E.nativeBoundaryPredicateRecordComplete = true ∧
-                E.activeVerifierRoutePinned = true ∧
-                  E.predicateNegativeControlsPassed = true ∧
-                    E.concretePredicateModelPresent = true ∧
-                      E.certifiedSemanticsSourcePackageTargetPresent = true
+                E.nativeBoundaryPredicateFieldSourcePackagePresent = true ∧
+                  E.activeVerifierRoutePinned = true ∧
+                    E.predicateNegativeControlsPassed = true ∧
+                      E.concretePredicateModelPresent = true ∧
+                        E.certifiedSemanticsSourcePackageTargetPresent = true
 
 end ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport
 
@@ -2852,6 +2854,7 @@ def selectedRustNativeBoundaryPredicateModelEvidenceReport :
   compatibilityAndExtractionModelPinned := false
   nativeBoundaryBreakModelPinned := false
   nativeBoundaryPredicateRecordComplete := false
+  nativeBoundaryPredicateFieldSourcePackagePresent := false
   activeVerifierRoutePinned := true
   predicateNegativeControlsPassed := true
   concretePredicateModelPresent := false
@@ -2859,9 +2862,9 @@ def selectedRustNativeBoundaryPredicateModelEvidenceReport :
 
 /-- Concrete digest of the public Rust native-boundary predicate-model report. -/
 def selectedRustNativeBoundaryPredicateModelEvidenceDigest : ByteArray :=
-  ByteArray.mk #[127, 52, 141, 26, 78, 247, 222, 18, 63, 134, 176, 207,
-    88, 251, 221, 115, 73, 21, 181, 123, 98, 63, 121, 253, 200, 102, 198,
-    30, 58, 155, 238, 74]
+  ByteArray.mk #[245, 0, 161, 249, 181, 40, 186, 46, 147, 5, 16, 186,
+    171, 207, 133, 78, 242, 154, 6, 75, 82, 118, 241, 233, 219, 234, 253,
+    3, 107, 198, 238, 64]
 
 /-- The selected predicate-model report is schema/digest verified. -/
 theorem selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof :

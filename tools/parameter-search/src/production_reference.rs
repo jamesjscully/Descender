@@ -7762,6 +7762,7 @@ pub struct Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1 {
     pub compatibility_and_extraction_model_pinned: bool,
     pub native_boundary_break_model_pinned: bool,
     pub native_boundary_predicate_record_complete: bool,
+    pub native_boundary_predicate_field_source_package_present: bool,
     pub active_verifier_route_pinned: bool,
     pub predicate_negative_controls_passed: bool,
     pub concrete_predicate_model_present: bool,
@@ -9191,6 +9192,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 "compatibilityAndExtractionModelPinned : Bool",
                 "nativeBoundaryBreakModelPinned : Bool",
                 "nativeBoundaryPredicateRecordComplete : Bool",
+                "nativeBoundaryPredicateFieldSourcePackagePresent : Bool",
                 "activeVerifierRoutePinned : Bool",
                 "predicateNegativeControlsPassed : Bool",
                 "concretePredicateModelPresent : Bool",
@@ -9220,6 +9222,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 "compatibilityAndExtractionModelPinned = true",
                 "nativeBoundaryBreakModelPinned = true",
                 "nativeBoundaryPredicateRecordComplete = true",
+                "nativeBoundaryPredicateFieldSourcePackagePresent = true",
                 "activeVerifierRoutePinned = true",
                 "predicateNegativeControlsPassed = true",
                 "concretePredicateModelPresent = true",
@@ -15115,6 +15118,8 @@ pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1()
             .native_boundary_predicates_record_present
             && source_record_subcheck.native_boundary_predicate_model_field_sources_defined_present
             && source_record_subcheck.native_boundary_predicate_model_field_source_package_present,
+        native_boundary_predicate_field_source_package_present: source_record_subcheck
+            .native_boundary_predicate_model_field_source_package_present,
         active_verifier_route_pinned: source_record_subcheck
             .native_boundary_certified_semantics_source_package_target_present
             && source_record_subcheck
@@ -15191,6 +15196,11 @@ pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1_frame(
     );
     append_u64(
         &mut frame,
+        b"native_boundary_predicate_field_source_package_present",
+        u64::from(evidence.native_boundary_predicate_field_source_package_present),
+    );
+    append_u64(
+        &mut frame,
         b"active_verifier_route_pinned",
         u64::from(evidence.active_verifier_route_pinned),
     );
@@ -15232,6 +15242,7 @@ pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_all_facts_tr
         && evidence.compatibility_and_extraction_model_pinned
         && evidence.native_boundary_break_model_pinned
         && evidence.native_boundary_predicate_record_complete
+        && evidence.native_boundary_predicate_field_source_package_present
         && evidence.active_verifier_route_pinned
         && evidence.predicate_negative_controls_passed
         && evidence.concrete_predicate_model_present
@@ -59086,6 +59097,7 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(predicate_model_evidence.schema_matches);
         assert!(predicate_model_evidence.report_digest_verified);
         assert!(!predicate_model_evidence.native_boundary_predicate_record_complete);
+        assert!(!predicate_model_evidence.native_boundary_predicate_field_source_package_present);
         assert!(predicate_model_evidence.active_verifier_route_pinned);
         assert!(predicate_model_evidence.certified_semantics_source_package_target_present);
         assert!(!predicate_model_evidence.concrete_predicate_model_present);
@@ -61799,6 +61811,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 "nativeBoundaryPredicateRecordComplete"
             ),
             predicate_model_evidence.native_boundary_predicate_record_complete
+        );
+        assert_eq!(
+            lean_selected_rust_record_bool_field(
+                hidden_source_boundary_source,
+                predicate_model_report_def,
+                "nativeBoundaryPredicateFieldSourcePackagePresent"
+            ),
+            predicate_model_evidence.native_boundary_predicate_field_source_package_present
         );
         assert_eq!(
             lean_selected_rust_record_bool_field(

@@ -447,6 +447,12 @@ rejects a selected certificate built directly from the raw
 `selectedRustNativeBoundaryPredicates` record, and
 `nativeBoundaryPredicateRecordComplete` now requires both concrete provider
 definitions and the package-route bit.
+The package-route bit is now also a standalone selected predicate-model
+evidence fact, mirrored in Lean as
+`nativeBoundaryPredicateFieldSourcePackagePresent` and in Rust/manifest output
+as `native_boundary_predicate_field_source_package_present`. The predicate
+evidence digest was updated so the current false package-route fact is
+explicitly public and hash-bound.
 The same detector now rejects module-level `axiom`, `constant`, `opaque`, or
 `variable` stubs for the selected predicate-field providers used by
 `selectedRustNativeBoundaryPredicates`. The manifest exposes this as
