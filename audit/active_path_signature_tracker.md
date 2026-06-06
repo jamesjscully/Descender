@@ -1707,6 +1707,14 @@ fail-closed with the same four missing concrete categories:
 `predicate_model_certificate_definitions`, `source_record_definitions`,
 `source_record_evidence_source_bindings`, and
 `sub_evidence_digest_match_proof`.
+The future final AP2-N001 theorem gate now mirrors that same route: its
+synthetic positive shape binds `selectedRustModelFiveSourceCertificate` from
+`selectedRustModelSourceRecordPackage.fiveSourceClosureCertificate` and then
+derives the side hidden-source closure through
+`reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate`.
+An alias-bound theorem that manually rebuilds the certificate while merely
+mentioning the package projection is rejected, so the final theorem cannot use
+the package-derived certificate as a decorative marker.
 
 ## Findings
 

@@ -1286,6 +1286,14 @@ and those digest-bound arguments. The manifest remains fail-closed with
 `package_sub_evidence_match_reduction_present = true`, and the same four
 missing concrete categories.
 
+P2FS-001 final-theorem package-certificate route: the future
+`reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation`
+gate now requires `selectedRustModelFiveSourceCertificate` to be assigned from
+`selectedRustModelSourceRecordPackage.fiveSourceClosureCertificate` and to be
+consumed by the certificate-level hidden-source closure theorem. A theorem that
+manually rebuilds the five-source certificate and only mentions the package
+projection no longer satisfies the gate.
+
 P2FS-001 certified closure route guard: the future final theorem gate now
 rejects raw native-boundary semantics package closure and source-shaped
 semantics package closure markers. The active final proof must close through
