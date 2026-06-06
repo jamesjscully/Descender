@@ -1582,6 +1582,13 @@ definition to be the projection of its corresponding evidence/source binding
 object. This keeps the certificate route and the binding-backed package route
 definitionally aligned instead of allowing independent raw source terms to
 coexist with an unrelated `ofSourceBindings` package.
+The module-level final theorem gate now requires the full concrete-definition
+checklist, not only the evidence/source-binding subcategory, before
+`extractor_theorem_instantiated` can become true. Its body-shape scanner also
+rejects local same-name reconstruction of the five selected source
+certificates and `selectedRustModelSourceRecordPackage`, so the final theorem
+must consume the selected global certificate/package definitions checked by
+the checklist rather than shadowing them with locally rebuilt objects.
 
 ## Findings
 

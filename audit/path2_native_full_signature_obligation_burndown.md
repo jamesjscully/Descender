@@ -1007,12 +1007,13 @@ families. Current selected digests are checklist
 `a3343d6a79b93f65439a12cbae1dc0bb1cfcca62afedb5f5707dade64eb6b806` and
 five-source evidence
 `2ebca7cbd99496966c25a71f05cd1d7d914d69728e1a6b98e9e97a79293286c2`.
-The module-level final theorem gate now also requires this source-binding
-category before `extractor_theorem_instantiated` can become true. A
-constructor-shaped theorem snippet without the binding definitions remains
-accepted only by the body-shape scanner and is rejected by the real module
-gate, so the public AP2-N001 status cannot advance ahead of the selected
-evidence/source binding work.
+The module-level final theorem gate now requires the full concrete-definition
+checklist before `extractor_theorem_instantiated` can become true. A
+constructor-shaped theorem snippet without the binding definitions, selected
+predicate-model certificate, source-record definitions, or sub-evidence
+digest-match proof remains accepted only by the body-shape scanner and is
+rejected by the real module gate, so the public AP2-N001 status cannot advance
+ahead of the selected definition import work.
 Lean now exposes concrete source-binding object types for the five selected
 evidence families and a
 `ReviewedFq12SelectedRustModelSourceRecordPackage.ofSourceBindings`
@@ -1050,6 +1051,13 @@ definition to be the projection of its corresponding evidence/source binding
 object. This keeps the certificate route and the binding-backed package route
 definitionally aligned instead of allowing independent raw source terms to
 coexist with an unrelated `ofSourceBindings` package.
+The final theorem body-shape scanner now rejects local same-name
+reconstruction of the five selected source certificates and
+`selectedRustModelSourceRecordPackage`. The future theorem may build the
+aggregate five-source certificate and certified semantics handoff from those
+objects, but the per-source certificates and source-record package must be the
+selected global definitions that the concrete-definition checklist already
+checks.
 The aggregate digest import also exposed a source-hash circularity constraint:
 the current Rust aggregate evidence digest is
 `146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the

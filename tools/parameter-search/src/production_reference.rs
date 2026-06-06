@@ -8559,7 +8559,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_from_bo
         return false;
     }
     if !path2_selected_rust_model_concrete_definition_checklist_from_source_v1(boundary_source)
-        .source_record_evidence_source_bindings_present
+        .all_definitions_present
     {
         return false;
     }
@@ -12168,6 +12168,16 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "selectedRustSourceRouteByteSourceCertificate := {",
         "selectedRustFieldLocalSourceCertificate := {",
         "selectedRustSharedFrameWitnessSourcesCertificate := {",
+        "let selectedRustBoundaryBaseCertificate :=",
+        "let selectedRustBoundaryBaseCertificate :",
+        "let selectedRustRoleRootLiftSourceCertificate :=",
+        "let selectedRustRoleRootLiftSourceCertificate :",
+        "let selectedRustSourceRouteByteSourceCertificate :=",
+        "let selectedRustSourceRouteByteSourceCertificate :",
+        "let selectedRustFieldLocalSourceCertificate :=",
+        "let selectedRustFieldLocalSourceCertificate :",
+        "let selectedRustSharedFrameWitnessSourcesCertificate :=",
+        "let selectedRustSharedFrameWitnessSourcesCertificate :",
         "let selectedRustNativeBoundaryPredicateModelEvidenceReport := {",
         "let selectedRustNativeBoundaryPredicateModelEvidenceReport :=",
         "let selectedRustNativeBoundaryPredicateModelEvidenceReport :",
@@ -12178,6 +12188,8 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "let selectedRustNativeBoundaryPredicateModelCertificate := {",
         "let selectedRustModelSourceRecordPackage := {",
         "let selectedRustModelSourceRecordPackage := ⟨",
+        "let selectedRustModelSourceRecordPackage :=",
+        "let selectedRustModelSourceRecordPackage :",
         "predicateModelCertificate := {",
         "sourceRecords := {",
     ];
@@ -12189,23 +12201,11 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
     }
 
     let required_constructor_bindings = [
-        "let selectedRustBoundaryBaseCertificate := ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources",
-        "let selectedRustRoleRootLiftSourceCertificate := ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource",
-        "let selectedRustSourceRouteByteSourceCertificate := SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource",
-        "let selectedRustFieldLocalSourceCertificate := ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources",
-        "let selectedRustSharedFrameWitnessSourcesCertificate := ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources",
         "let selectedRustModelFiveSourceCertificate : ReviewedFq12SelectedRustModelFiveSourceClosureCertificate",
-        "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources selectedRustBoundaryBaseEvidenceReport selectedRustBoundaryBaseEvidenceDigest selectedRustBoundaryBaseEvidenceReportVerifiedProof selectedRustBoundaryBaseEvidenceFactsAllTrueProof selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability",
-        "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource selectedRustRoleRootLiftEvidenceReport selectedRustRoleRootLiftEvidenceDigest selectedRustRoleRootLiftEvidenceReportVerifiedProof selectedRustRoleRootLiftEvidenceFactsAllTrueProof selectedRustRoleRootLiftSource",
-        "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource selectedRustSourceRouteEvidenceReport selectedRustSourceRouteEvidenceDigest selectedRustSourceRouteEvidenceReportVerifiedProof selectedRustSourceRouteEvidenceFactsAllTrueProof selectedRustSourceRouteByteSource",
-        "ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources selectedRustFieldLocalEvidenceReport selectedRustFieldLocalEvidenceDigest selectedRustFieldLocalEvidenceReportVerifiedProof selectedRustFieldLocalEvidenceFactsAllTrueProof selectedRustAssemblySource selectedRustCompatibilitySource",
-        "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof selectedRustSharedFrameWitnessSources",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates selectedRustFiveSourceEvidenceReport selectedRustFiveSourceEvidenceDigest selectedRustFiveSourceEvidenceReportVerifiedProof selectedRustFiveSourceEvidenceFactsAllTrueProof selectedRustBoundaryBaseCertificate selectedRustRoleRootLiftSourceCertificate selectedRustSourceRouteByteSourceCertificate selectedRustFieldLocalSourceCertificate selectedRustSharedFrameWitnessSourcesCertificate selectedRustFiveSourceSubEvidenceDigestsMatchProof",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates",
         "ReviewedFq12HiddenSourceProofSemanticsClosed selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate FieldParser RouteParser CanonicalParser WitnessParser selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
-        "let selectedRustModelSourceRecordPackage : ReviewedFq12SelectedRustModelSourceRecordPackage",
-        "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSourceBindings selectedRustBoundaryBaseEvidenceSourceBinding selectedRustRoleRootLiftEvidenceSourceBinding selectedRustSourceRouteEvidenceSourceBinding selectedRustFieldLocalEvidenceSourceBinding selectedRustSharedWitnessEvidenceSourceBinding",
         "let selectedRustFieldLocalSharedDigestFrameWitnessInputs : ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs",
         "selectedRustModelSourceRecordPackage.toFieldLocalSharedDigestFrameWitnessInputs",
         "let selectedRustNativeBoundaryCertifiedSemanticsSourcePackage : ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
@@ -57858,53 +57858,6 @@ theorem {theorem_name}
     :
     ReviewedFq12HiddenSourceProofSemanticsClosed
       selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates := by
-  let selectedRustBoundaryBaseCertificate :=
-    ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources
-      selectedRustBoundaryBaseEvidenceReport
-      selectedRustBoundaryBaseEvidenceDigest
-      selectedRustBoundaryBaseEvidenceReportVerifiedProof
-      selectedRustBoundaryBaseEvidenceFactsAllTrueProof
-      selectedRustPayloadProjectionLaw
-      selectedRustExtractionCertificateAvailability
-  let selectedRustRoleRootLiftSourceCertificate :=
-    ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource
-      selectedRustRoleRootLiftEvidenceReport
-      selectedRustRoleRootLiftEvidenceDigest
-      selectedRustRoleRootLiftEvidenceReportVerifiedProof
-      selectedRustRoleRootLiftEvidenceFactsAllTrueProof
-      selectedRustRoleRootLiftSource
-  let selectedRustSourceRouteByteSourceCertificate :=
-    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource
-      selectedRustSourceRouteEvidenceReport
-      selectedRustSourceRouteEvidenceDigest
-      selectedRustSourceRouteEvidenceReportVerifiedProof
-      selectedRustSourceRouteEvidenceFactsAllTrueProof
-      selectedRustSourceRouteByteSource
-  let selectedRustFieldLocalSourceCertificate :=
-    ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources
-      selectedRustFieldLocalEvidenceReport
-      selectedRustFieldLocalEvidenceDigest
-      selectedRustFieldLocalEvidenceReportVerifiedProof
-      selectedRustFieldLocalEvidenceFactsAllTrueProof
-      selectedRustAssemblySource
-      selectedRustCompatibilitySource
-  let selectedRustSharedFrameWitnessSourcesCertificate :=
-    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources
-      selectedRustSharedFrameWitnessEvidenceReport
-      selectedRustSharedFrameWitnessEvidenceDigest
-      selectedRustSharedFrameWitnessEvidenceReportVerifiedProof
-      selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof
-      selectedRustSharedFrameWitnessSources
-  let selectedRustModelSourceRecordPackage :
-      ReviewedFq12SelectedRustModelSourceRecordPackage
-        FieldParser RouteParser CanonicalParser WitnessParser
-          selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
-    ReviewedFq12SelectedRustModelSourceRecordPackage.ofSourceBindings
-      selectedRustBoundaryBaseEvidenceSourceBinding
-      selectedRustRoleRootLiftEvidenceSourceBinding
-      selectedRustSourceRouteEvidenceSourceBinding
-      selectedRustFieldLocalEvidenceSourceBinding
-      selectedRustSharedWitnessEvidenceSourceBinding
   let selectedRustFieldLocalSharedDigestFrameWitnessInputs :
       ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs
         FieldParser RouteParser CanonicalParser WitnessParser
@@ -58132,30 +58085,29 @@ def selectedRustSharedWitnessEvidenceSourceBinding :
             concrete_constructor_certificate_theorem
         );
         assert!(
-            path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_from_boundary_source_v1(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_from_boundary_source_v1(
                 &suffixed_then_exact_boundary_source,
                 theorem_name
             )
         );
-        let renamed_boundary_certificate_constructor_theorem =
+        let locally_rebuilt_boundary_certificate_theorem =
             concrete_constructor_certificate_theorem.replace(
-                "let selectedRustBoundaryBaseCertificate :=\n    ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources",
-                "let constructedRustBoundaryBaseCertificate :=\n    ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources",
+                "  let selectedRustModelFiveSourceCertificate :",
+                "  let selectedRustBoundaryBaseCertificate :=\n    ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources\n      selectedRustBoundaryBaseEvidenceReport\n      selectedRustBoundaryBaseEvidenceDigest\n      selectedRustBoundaryBaseEvidenceReportVerifiedProof\n      selectedRustBoundaryBaseEvidenceFactsAllTrueProof\n      selectedRustPayloadProjectionLaw\n      selectedRustExtractionCertificateAvailability\n  let selectedRustModelFiveSourceCertificate :",
             );
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
-                &renamed_boundary_certificate_constructor_theorem,
+                &locally_rebuilt_boundary_certificate_theorem,
                 theorem_name
             )
         );
-        let wrong_boundary_report_constructor_theorem = concrete_constructor_certificate_theorem
-            .replace(
-                "      selectedRustBoundaryBaseEvidenceReport\n",
-                "      otherBoundaryBaseEvidenceReport\n",
-            );
+        let wrong_boundary_certificate_theorem = concrete_constructor_certificate_theorem.replace(
+            "      selectedRustBoundaryBaseCertificate\n",
+            "      otherBoundaryBaseCertificate\n",
+        );
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
-                &wrong_boundary_report_constructor_theorem,
+                &wrong_boundary_certificate_theorem,
                 theorem_name
             )
         );
@@ -58191,7 +58143,7 @@ def selectedRustSharedWitnessEvidenceSourceBinding :
         );
         let anonymous_source_record_package_theorem = concrete_constructor_certificate_theorem
             .replace(
-                "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSourceBindings",
+                "selectedRustModelSourceRecordPackage.toFieldLocalSharedDigestFrameWitnessInputs",
                 "selectedRustModelSourceRecordPackageValue",
             );
         assert!(
