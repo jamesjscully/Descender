@@ -7610,6 +7610,8 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
         bool,
     pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_native_source_target_present:
         bool,
+    pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_field_equation_adapter_present:
+        bool,
     pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_model_certificate_constructor_present:
         bool,
     pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_predicate_model_bridge_present:
@@ -9664,6 +9666,34 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             ],
             12288,
         );
+    let native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_field_equation_adapter_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "structure",
+            "ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityFieldEquationSource",
+            &[
+                "boundaryOf_eq_selected",
+                "localValid_eq_selected",
+                "descentConsistent_eq_selected",
+                "maskedProjection_eq",
+                "representativeDigest_eq",
+                "descentProjectionRelation_eq",
+            ],
+            32768,
+        ) && lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "def",
+            "reviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSourceOfFieldEquations",
+            &[
+                "ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityFieldEquationSource",
+                "ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSource",
+                "hMaskedProjection'",
+                "selectedBoundaryOf",
+                "fields.localValid_eq_selected",
+                "fields.descentConsistent_eq_selected",
+            ],
+            16384,
+        );
     let native_boundary_predicate_model_reviewed_fq12_hard_extraction_model_certificate_constructor_present =
         lean_source_has_named_declaration_with_markers_v1(
             &boundary_source,
@@ -11353,6 +11383,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_law_reduction_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_full_opening_native_source_target_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_native_source_target_present,
+        native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_field_equation_adapter_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_model_certificate_constructor_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_predicate_model_bridge_present,
         native_boundary_predicate_model_core_provider_fields_defined_present,

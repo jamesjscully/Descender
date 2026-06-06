@@ -4781,6 +4781,345 @@ structure ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSou
                     b opening)
 
 /--
+Field-level source for the canonical full-opening native-validity equations.
+
+This is the Rust/model import contract behind
+`ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSource`.
+It separates the predicate-model identification facts
+(`boundaryOf`/`localValid`/`descentConsistent` are the selected active
+definitions) from the concrete public-boundary/opening field equalities
+checked by the active implementation.
+-/
+structure ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityFieldEquationSource
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) where
+  boundaryOf_eq_selected :
+    P.boundaryOf = selectedBoundaryOf
+  localValid_eq_selected :
+    P.localValid = selectedLocalValid
+  descentConsistent_eq_selected :
+    P.descentConsistent = selectedDescentConsistent
+  boundaryVersion_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                b.boundaryVersion = b.context.profileVersionDigest
+  localSection_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                opening.localSectionDigest = b.parentSectionRoot
+  packedResidues_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                opening.packedResiduesDigest = b.roleProfileDigest
+  packedWitnessHandle_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                opening.packedResiduesDigest =
+                  b.roleHandles.packedWitnessHandle
+  randomizerHandle_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                opening.randomizerDigest = b.roleHandles.randomizerHandle
+  padSourceHandle_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                opening.padSourceDigest = b.roleHandles.padSourceHandle
+  openingTupleHandle_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                opening.openingTupleDigest =
+                  b.roleHandles.openingTupleHandle
+  projectionRelationHandle_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                opening.projectionRelationDigest =
+                  b.roleHandles.projectionRelationHandle
+  maskedProjection_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening}
+        (lane : Path2NativeBoundary.Lane),
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                b.maskedProjection lane =
+                  opening.selectedAccountProjectionDigest +
+                    opening.randomizerDigest + lane.val
+  liveStatusMarker_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                opening.lifecycleSlotDigest = b.liveStatusMarker
+  creationStatementDigest_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                opening.openingTupleDigest = b.creationStatementDigest
+  representativeDigest_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
+                  Cert.toWitnessSources.digestFrame b opening =
+                  b.nativeBoundaryDigest
+  localSlot_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                opening.lifecycleSlotDigest = b.context.slotId
+  localAccount_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                opening.selectedAccountProjectionDigest =
+                  b.context.accountId
+  descentOpeningTuple_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                opening.openingTupleDigest = b.context.lifecycleAnchor
+  descentProjectionRelation_eq :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                opening.projectionRelationDigest =
+                  b.context.aggregationContextDigest
+
+/--
+Field equations are sufficient for the canonical full-opening native-validity
+equation source.
+-/
+def reviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSourceOfFieldEquations
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P)
+    (fields :
+      ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityFieldEquationSource
+        Cert) :
+    ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSource
+      Cert where
+  canonicalFullOpeningBoundaryOf := by
+    intro b payload cert opening hPayloadBoundary hPayloadSlot hCertBoundary
+      hCertSlot hOpeningCommitment
+    rw [fields.boundaryOf_eq_selected]
+    have hBoundaryVersion :=
+      fields.boundaryVersion_eq hPayloadBoundary hPayloadSlot hCertBoundary
+        hCertSlot hOpeningCommitment
+    have hLocalSection :=
+      fields.localSection_eq hPayloadBoundary hPayloadSlot hCertBoundary
+        hCertSlot hOpeningCommitment
+    have hPackedResidues :=
+      fields.packedResidues_eq hPayloadBoundary hPayloadSlot hCertBoundary
+        hCertSlot hOpeningCommitment
+    have hPackedWitness :=
+      fields.packedWitnessHandle_eq hPayloadBoundary hPayloadSlot
+        hCertBoundary hCertSlot hOpeningCommitment
+    have hRandomizer :=
+      fields.randomizerHandle_eq hPayloadBoundary hPayloadSlot
+        hCertBoundary hCertSlot hOpeningCommitment
+    have hPadSource :=
+      fields.padSourceHandle_eq hPayloadBoundary hPayloadSlot
+        hCertBoundary hCertSlot hOpeningCommitment
+    have hOpeningTupleHandle :=
+      fields.openingTupleHandle_eq hPayloadBoundary hPayloadSlot
+        hCertBoundary hCertSlot hOpeningCommitment
+    have hProjectionRelation :=
+      fields.projectionRelationHandle_eq hPayloadBoundary hPayloadSlot
+        hCertBoundary hCertSlot hOpeningCommitment
+    have hMaskedProjection :
+        (fun lane : Path2NativeBoundary.Lane =>
+            opening.selectedAccountProjectionDigest +
+              opening.randomizerDigest + lane.val) =
+          b.maskedProjection := by
+      funext lane
+      exact
+        (fields.maskedProjection_eq (lane := lane)
+          hPayloadBoundary hPayloadSlot hCertBoundary hCertSlot
+          hOpeningCommitment).symm
+    have hLiveStatus :=
+      fields.liveStatusMarker_eq hPayloadBoundary hPayloadSlot
+        hCertBoundary hCertSlot hOpeningCommitment
+    have hCreation :=
+      fields.creationStatementDigest_eq hPayloadBoundary hPayloadSlot
+        hCertBoundary hCertSlot hOpeningCommitment
+    have hRepresentative :=
+      fields.representativeDigest_eq hPayloadBoundary hPayloadSlot
+        hCertBoundary hCertSlot hOpeningCommitment
+    cases b with
+    | mk boundaryVersion context parentSectionRoot roleProfileDigest
+        roleHandles maskedProjection liveStatusMarker creationStatementDigest
+        nativeBoundaryDigest =>
+    cases roleHandles with
+    | mk packedWitnessHandle randomizerHandle padSourceHandle
+        openingTupleHandle projectionRelationHandle =>
+    have hBoundaryVersion' : context.profileVersionDigest = boundaryVersion := by
+      simpa using hBoundaryVersion.symm
+    have hPackedResidues' :
+        opening.packedResiduesDigest = roleProfileDigest := by
+      simpa using hPackedResidues
+    have hPackedWitness' :
+        opening.packedResiduesDigest = packedWitnessHandle := by
+      simpa using hPackedWitness
+    have hRandomizer' :
+        opening.randomizerDigest = randomizerHandle := by
+      simpa using hRandomizer
+    have hMaskedProjection' :
+        (fun lane : Path2NativeBoundary.Lane =>
+            opening.selectedAccountProjectionDigest +
+              opening.randomizerDigest + lane.val) =
+          maskedProjection := by
+      simpa using hMaskedProjection
+    have hOpeningTupleHandle' :
+        opening.openingTupleDigest = openingTupleHandle := by
+      simpa using hOpeningTupleHandle
+    have hCreation' :
+        opening.openingTupleDigest = creationStatementDigest := by
+      simpa using hCreation
+    simp [selectedBoundaryOf,
+      reviewedFq12FullNativeOpeningCanonicalRepresentative,
+      hLocalSection, hPackedResidues, hRandomizer, hPadSource,
+      hOpeningTupleHandle, hProjectionRelation, hLiveStatus,
+      hRepresentative]
+    exact
+      ⟨hBoundaryVersion',
+        hPackedResidues'.symm.trans hPackedWitness',
+        by
+          rw [← hMaskedProjection']
+          funext lane
+          rw [hRandomizer'],
+        hOpeningTupleHandle'.symm.trans hCreation'⟩
+  canonicalFullOpeningLocalValid := by
+    intro b payload cert opening hPayloadBoundary hPayloadSlot hCertBoundary
+      hCertSlot hOpeningCommitment
+    rw [fields.localValid_eq_selected]
+    exact
+      ⟨fields.localSlot_eq hPayloadBoundary hPayloadSlot hCertBoundary
+          hCertSlot hOpeningCommitment,
+        fields.localAccount_eq hPayloadBoundary hPayloadSlot hCertBoundary
+          hCertSlot hOpeningCommitment⟩
+  canonicalFullOpeningDescentConsistent := by
+    intro b payload cert opening hPayloadBoundary hPayloadSlot hCertBoundary
+      hCertSlot hOpeningCommitment
+    rw [fields.descentConsistent_eq_selected]
+    exact
+      ⟨fields.descentOpeningTuple_eq hPayloadBoundary hPayloadSlot
+          hCertBoundary hCertSlot hOpeningCommitment,
+        fields.descentProjectionRelation_eq hPayloadBoundary hPayloadSlot
+          hCertBoundary hCertSlot hOpeningCommitment⟩
+
+/--
 The equation-level source is exactly sufficient for the canonical
 native-validity source consumed by the hard extraction law bundle.
 -/
