@@ -29921,12 +29921,14 @@ pub fn path2_native_deployment_preflight_v1() -> Path2NativeDeploymentPreflightV
         internal_blockers
             .push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE);
     }
-    if !full_signature_reduction_certificate_instantiated {
-        internal_blockers
-            .push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE);
-    }
     if !accepted_spend_numeric_bound_instantiated {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND);
+    }
+    if full_signature_reduction_certificate_boundary_present
+        && !full_signature_reduction_certificate_instantiated
+    {
+        internal_blockers
+            .push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE);
     }
     if !no_export_serializer_boundary_present || !no_export_serializer_instantiated {
         internal_blockers.push(PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS);
@@ -30186,10 +30188,10 @@ fn path2_native_smallest_remaining_deployment_gate_v1(
         PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_EXECUTION_SOURCE
     } else if !preflight.full_signature_reduction_certificate_boundary_present {
         PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE
-    } else if !preflight.full_signature_reduction_certificate_instantiated {
-        PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE
     } else if !preflight.accepted_spend_numeric_bound_instantiated {
         PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND
+    } else if !preflight.full_signature_reduction_certificate_instantiated {
+        PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE
     } else if !preflight.no_export_serializer_instantiated {
         PATH2_NATIVE_DEPLOYMENT_BLOCKER_NO_EXPORT_SERIALIZERS
     } else if !preflight.signer_verifier_pipeline_present {
@@ -52363,8 +52365,8 @@ end Path2NoExportConcrete
         assert_eq!(
             preflight.internal_blockers,
             vec![
-                PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND,
+                PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
@@ -53627,13 +53629,13 @@ end Path2NoExportConcrete
         );
         assert_eq!(
             evidence.smallest_remaining_productization_gate,
-            PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND
         );
         assert_eq!(
             evidence.deployment_blockers,
             vec![
-                PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND,
+                PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_CONSTANT_TIME,
                 PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
@@ -53692,7 +53694,7 @@ end Path2NoExportConcrete
         );
         assert_eq!(
             evidence.smallest_remaining_productization_gate,
-            PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND
         );
         assert_ne!(
             evidence.smallest_remaining_productization_gate,
@@ -53716,7 +53718,7 @@ end Path2NoExportConcrete
         );
         assert_ne!(
             evidence.smallest_remaining_productization_gate,
-            PATH2_NATIVE_DEPLOYMENT_BLOCKER_ACCEPTED_SPEND_NUMERIC_BOUND
+            PATH2_NATIVE_DEPLOYMENT_BLOCKER_FULL_SIGNATURE_REDUCTION_CERTIFICATE
         );
         assert_ne!(
             evidence.smallest_remaining_productization_gate,
