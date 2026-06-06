@@ -1935,9 +1935,12 @@ package's predicate record, predicate-level equality to the selected
 shared-witness-sourced package, and the canonical native-validity source.
 `toPredicateModelSource` reduces that fixed-point source to the full
 predicate-model source target, deriving the hard extraction law bundle through
-the shared-witness certificate. The remaining concrete blocker is supplying
-that fixed-point source and report-backed certificate from real Rust/model
-evidence.
+the shared-witness certificate. The predicate-model certificate also now has
+`ofReportAndFixedPointSource`, which builds the proof-bearing certificate from
+the public report/digest proofs, the field-source package certificate, and the
+fixed-point source instead of requiring every model law as an independent
+argument. The remaining concrete blocker is supplying that fixed-point source
+and `FactsAllTrue` report proof from real Rust/model evidence.
 Tooling note: the Rust source scanner's direct-constant-lambda check now clamps
 source windows to a UTF-8 character boundary before slicing; the prior byte
 slice could panic when a window ended inside Lean's `∧` token. The broad

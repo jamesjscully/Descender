@@ -5734,6 +5734,93 @@ def ofReportAndModel
     fullOpeningBridgeDigestValidityBinds
 
 /--
+Construct a predicate-model certificate from public report proofs, the
+field-source package certificate, and the selected fixed-point source.
+
+This is the constructor shape the final Rust/model import should use: the
+fixed-point source derives all model laws, while this certificate still
+requires the public report/digest and `FactsAllTrue` proofs.
+-/
+def ofReportAndFixedPointSource
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (evidenceReport :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (evidenceReportBound :
+      evidenceReport = selectedRustNativeBoundaryPredicateModelEvidenceReport)
+    (evidenceDigestBound :
+      evidenceDigest = selectedRustNativeBoundaryPredicateModelEvidenceDigest)
+    (evidenceReportVerifiedProof :
+      evidenceReport.ReportVerified)
+    (evidenceFactsAllTrueProof :
+      evidenceReport.FactsAllTrue)
+    (predicateFieldSourceCertificate :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate)
+    (fixedPointSource :
+      @ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+        CanonicalParser WitnessParser)
+    (fieldSourcesBound :
+      predicateFieldSourceCertificate.predicateFieldSources =
+        fixedPointSource.predicateFieldSources) :
+    ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate :=
+  ofReportAndModel
+    evidenceReport
+    evidenceDigest
+    evidenceReportBound
+    evidenceDigestBound
+    evidenceReportVerifiedProof
+    evidenceFactsAllTrueProof
+    predicateFieldSourceCertificate
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.payloadAcceptanceNotVacuous)
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.boundaryBreaksNotUniversal)
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.payloadAcceptanceMatchesBoundary)
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.extractionCertificateMatchesPayload)
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.extractionCertificateValidityMatchesPayload)
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.certificateExtractionImpliesPayloadExtraction)
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.payloadExtractionInBoundaryFiber)
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.payloadExtractionNativeValid)
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.roleLiftValidityBindsExtraction)
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.roleLiftOpeningImpliesCertificateLift)
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.assemblyValidityBindsOpening)
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.assemblyCertificateImpliesFullNativeAssembly)
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.compatibilityValidityBinds)
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.compatibilityExtractionImpliesReviewedExtraction)
+    (by
+      rw [fieldSourcesBound]
+      exact fixedPointSource.toPredicateModelSource.fullOpeningBridgeDigestValidityBinds)
+
+/--
 Project a proof-bearing predicate-model certificate to the reviewed-Fq12
 provider family that backs its native-boundary predicate interpretation.
 -/
