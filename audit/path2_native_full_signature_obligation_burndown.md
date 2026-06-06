@@ -360,6 +360,11 @@ native-boundary predicate model. A fixture with all source-record definitions
 but no concrete `selectedRustNativeBoundaryPredicates` model no longer reports
 `all_selected_source_records_present`; the positive fixture must include both
 the full active predicate model and the source-record package.
+The concrete-definition checklist now has the same dependency: the selected
+predicate-model certificate must call `ofReportAndModel` with
+`selectedRustNativeBoundaryPredicates`, and the predicate-certificate/all-
+definition bits still require the full concrete model detector. A generic `P`
+certificate can no longer satisfy the active checklist.
 The concrete predicate-model detector now requires the full
 `Path2NativeBoundary.Predicates` record surface, including account/admission,
 transparent-view, trace-assembly, slot-authorization, and spend predicates. A

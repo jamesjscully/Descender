@@ -1370,6 +1370,12 @@ marker but no concrete `selectedRustNativeBoundaryPredicates` model remains
 non-closing; only the combined concrete-model plus source-record fixture closes
 the source-record subcheck. This prevents source-record package markers from
 floating over an absent active predicate interpretation.
+The concrete-definition checklist is gated the same way: the predicate-model
+certificate must pass `selectedRustNativeBoundaryPredicates` to
+`ofReportAndModel`, and `predicate_model_certificate_definitions_present` /
+`all_definitions_present` remain false unless the full concrete predicate model
+is also detected. This blocks a generic `P` certificate fixture from closing
+the active definition checklist.
 The concrete native predicate-model detector now requires the full
 `Path2NativeBoundary.Predicates` field surface, including account/admission,
 transparent-view, trace-assembly, slot-authorization, and spend predicates, not

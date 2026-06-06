@@ -10061,6 +10061,10 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         ),
         (
             "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustNativeBoundaryPredicates",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
             "selectedRustPayloadAcceptanceNotVacuous",
         ),
         (
@@ -10215,10 +10219,14 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                     marker,
                 )
             });
+    let native_boundary_concrete_predicate_model_present =
+        path2_selected_rust_model_source_record_subcheck_from_source_v1(&boundary_source)
+            .native_boundary_concrete_predicate_model_present;
     let predicate_model_certificate_definitions_present =
         predicate_model_report_surface_definitions_present
             && predicate_model_facts_proof_definition_present
-            && predicate_model_certificate_definition_present;
+            && predicate_model_certificate_definition_present
+            && native_boundary_concrete_predicate_model_present;
     let sub_evidence_digest_match_proof_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -10240,6 +10248,7 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         && evidence_digest_definitions_present
         && evidence_proof_definitions_present
         && predicate_model_certificate_definitions_present
+        && native_boundary_concrete_predicate_model_present
         && source_record_definitions_present
         && sub_evidence_digest_match_proof_present;
     let missing_definition_category_count = [
@@ -58737,7 +58746,7 @@ def selectedRustNativeBoundaryPredicateModelCertificate :
     selectedRustNativeBoundaryPredicateModelEvidenceDigest
     selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof
     selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof
-    P
+    selectedRustNativeBoundaryPredicates
     selectedRustPayloadAcceptanceNotVacuousValue
     selectedRustBoundaryBreaksNotUniversalValue
     selectedRustPayloadAcceptanceMatchesBoundaryValue
@@ -58871,13 +58880,28 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             complete_concrete_definition_checklist.predicate_model_certificate_definition_present
         );
         assert!(
-            complete_concrete_definition_checklist.predicate_model_certificate_definitions_present
+            !complete_concrete_definition_checklist.predicate_model_certificate_definitions_present
         );
         assert!(complete_concrete_definition_checklist.source_record_definitions_present);
         assert!(complete_concrete_definition_checklist.sub_evidence_digest_match_proof_present);
-        assert!(complete_concrete_definition_checklist.all_definitions_present);
+        assert!(!complete_concrete_definition_checklist.all_definitions_present);
         assert_eq!(
             complete_concrete_definition_checklist.missing_definition_category_count,
+            1
+        );
+        let complete_model_and_definition_source = format!(
+            "{complete_native_boundary_model_source}\n{complete_concrete_definition_source}"
+        );
+        let complete_model_and_definition_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                &complete_model_and_definition_source,
+            );
+        assert!(
+            complete_model_and_definition_checklist.predicate_model_certificate_definitions_present
+        );
+        assert!(complete_model_and_definition_checklist.all_definitions_present);
+        assert_eq!(
+            complete_model_and_definition_checklist.missing_definition_category_count,
             0
         );
         let anonymous_predicate_model_certificate_source = complete_concrete_definition_source
