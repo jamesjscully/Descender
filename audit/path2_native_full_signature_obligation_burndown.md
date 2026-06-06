@@ -1035,6 +1035,10 @@ families. Current selected digests are checklist
 `f1dc786697672712b03cbce6ab97124ac520d8cac569c6ffe5566270782ca3bd` and
 five-source evidence
 `67e89bdc6748730aaf40787a52c987ffda549b919e331f824f8fa498e0a3a7e9`.
+The binding category is now constructor-gated as well: Lean provides named
+constructors for the five selected evidence/source binding families, and the
+Rust checklist requires selected binding definitions to use those constructors
+rather than anonymous record literals.
 The module-level final theorem gate now requires the full concrete-definition
 checklist before `extractor_theorem_instantiated` can become true. A
 constructor-shaped theorem snippet without the binding definitions, selected

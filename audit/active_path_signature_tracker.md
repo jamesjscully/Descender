@@ -1565,6 +1565,12 @@ families. Current selected digests are checklist
 `f1dc786697672712b03cbce6ab97124ac520d8cac569c6ffe5566270782ca3bd` and
 five-source evidence
 `67e89bdc6748730aaf40787a52c987ffda549b919e331f824f8fa498e0a3a7e9`.
+The selected evidence/source binding definitions now have named constructors
+for all five families, and the Rust checklist requires selected binding
+definitions to use those constructors with the selected evidence report,
+evidence digest, source-binding digest, digest-bound proof, and source
+projection. Anonymous binding record literals no longer satisfy
+`source_record_evidence_source_bindings_present`.
 The module-level final theorem gate now also requires this source-binding
 category before `extractor_theorem_instantiated` can become true. A
 constructor-shaped theorem snippet without the binding definitions remains

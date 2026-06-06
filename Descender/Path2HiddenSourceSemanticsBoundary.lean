@@ -1911,6 +1911,41 @@ structure ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding
   extractionCertificateAvailability :
     ReviewedFq12ExtractionCertificateAvailability P
 
+namespace ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding
+
+/-- Named constructor for the selected base-boundary evidence/source binding. -/
+def ofReportAndSources
+    {P : Predicates}
+    (evidenceReport :
+      ReviewedFq12SelectedRustBoundaryBaseEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (sourceBindingDigest : ByteArray)
+    (evidenceReportBound :
+      evidenceReport = selectedRustBoundaryBaseEvidenceReport)
+    (evidenceDigestBound :
+      evidenceDigest = selectedRustBoundaryBaseEvidenceDigest)
+    (sourceBindingDigestBound : sourceBindingDigest = evidenceDigest)
+    (payloadProjectionLaw :
+      forall {b : Path2NativeBoundary.Boundary}
+          {payload : ReviewedFq12HiddenSourcePayload},
+        P.reviewedFq12PayloadAccepts b payload ->
+          payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+            payload.slotId = b.context.slotId ->
+          P.reviewedFq12PayloadProjectsFrom b payload)
+    (extractionCertificateAvailability :
+      ReviewedFq12ExtractionCertificateAvailability P) :
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding P where
+  evidenceReport := evidenceReport
+  evidenceReportBound := evidenceReportBound
+  evidenceDigest := evidenceDigest
+  evidenceDigestBound := evidenceDigestBound
+  sourceBindingDigest := sourceBindingDigest
+  sourceBindingDigestBound := sourceBindingDigestBound
+  payloadProjectionLaw := payloadProjectionLaw
+  extractionCertificateAvailability := extractionCertificateAvailability
+
+end ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding
+
 /-- Evidence/source binding for the selected role-root/lift report. -/
 structure ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding
     (P : Predicates) where
@@ -1926,6 +1961,33 @@ structure ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding
     sourceBindingDigest = evidenceDigest
   roleRootLiftSource :
     ReviewedFq12RoleRootFunctionalLiftSource P
+
+namespace ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding
+
+/-- Named constructor for the selected role-root/lift evidence/source binding. -/
+def ofReportAndSource
+    {P : Predicates}
+    (evidenceReport :
+      ReviewedFq12SelectedRustRoleRootLiftEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (sourceBindingDigest : ByteArray)
+    (evidenceReportBound :
+      evidenceReport = selectedRustRoleRootLiftEvidenceReport)
+    (evidenceDigestBound :
+      evidenceDigest = selectedRustRoleRootLiftEvidenceDigest)
+    (sourceBindingDigestBound : sourceBindingDigest = evidenceDigest)
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P) :
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding P where
+  evidenceReport := evidenceReport
+  evidenceReportBound := evidenceReportBound
+  evidenceDigest := evidenceDigest
+  evidenceDigestBound := evidenceDigestBound
+  sourceBindingDigest := sourceBindingDigest
+  sourceBindingDigestBound := sourceBindingDigestBound
+  roleRootLiftSource := roleRootLiftSource
+
+end ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding
 
 /-- Evidence/source binding for the selected source-route report. -/
 structure ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
@@ -1946,6 +2008,37 @@ structure ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
     SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
       FieldParser RouteParser P
 
+namespace ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
+
+/-- Named constructor for the selected source-route evidence/source binding. -/
+def ofReportAndSource
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {P : Predicates}
+    (evidenceReport :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (sourceBindingDigest : ByteArray)
+    (evidenceReportBound :
+      evidenceReport = selectedRustSourceRouteEvidenceReport)
+    (evidenceDigestBound :
+      evidenceDigest = selectedRustSourceRouteEvidenceDigest)
+    (sourceBindingDigestBound : sourceBindingDigest = evidenceDigest)
+    (selectedSourceRouteByteSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P) :
+    ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
+      FieldParser RouteParser P where
+  evidenceReport := evidenceReport
+  evidenceReportBound := evidenceReportBound
+  evidenceDigest := evidenceDigest
+  evidenceDigestBound := evidenceDigestBound
+  sourceBindingDigest := sourceBindingDigest
+  sourceBindingDigestBound := sourceBindingDigestBound
+  selectedSourceRouteByteSource := selectedSourceRouteByteSource
+
+end ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
+
 /-- Evidence/source binding for the selected field/local report. -/
 structure ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding
     (P : Predicates) where
@@ -1963,6 +2056,36 @@ structure ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding
     ReviewedFq12FieldConcreteAssemblyLocalSource P
   compatibilitySource :
     ReviewedFq12FieldConcreteCompatibilitySource P
+
+namespace ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding
+
+/-- Named constructor for the selected field/local evidence/source binding. -/
+def ofReportAndSources
+    {P : Predicates}
+    (evidenceReport :
+      ReviewedFq12SelectedRustFieldLocalEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (sourceBindingDigest : ByteArray)
+    (evidenceReportBound :
+      evidenceReport = selectedRustFieldLocalEvidenceReport)
+    (evidenceDigestBound :
+      evidenceDigest = selectedRustFieldLocalEvidenceDigest)
+    (sourceBindingDigestBound : sourceBindingDigest = evidenceDigest)
+    (assemblySource :
+      ReviewedFq12FieldConcreteAssemblyLocalSource P)
+    (compatibilitySource :
+      ReviewedFq12FieldConcreteCompatibilitySource P) :
+    ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding P where
+  evidenceReport := evidenceReport
+  evidenceReportBound := evidenceReportBound
+  evidenceDigest := evidenceDigest
+  evidenceDigestBound := evidenceDigestBound
+  sourceBindingDigest := sourceBindingDigest
+  sourceBindingDigestBound := sourceBindingDigestBound
+  assemblySource := assemblySource
+  compatibilitySource := compatibilitySource
+
+end ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding
 
 /-- Evidence/source binding for the selected shared-frame witness report. -/
 structure ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
@@ -1984,6 +2107,39 @@ structure ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
   sharedFrameWitnessSources :
     ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
       CanonicalParser WitnessParser P
+
+namespace ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
+
+/-- Named constructor for the selected shared-witness evidence/source binding. -/
+def ofReportAndSources
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (evidenceReport :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (sourceBindingDigest : ByteArray)
+    (evidenceReportBound :
+      evidenceReport = selectedRustSharedFrameWitnessEvidenceReport)
+    (evidenceDigestBound :
+      evidenceDigest = selectedRustSharedFrameWitnessEvidenceDigest)
+    (sourceBindingDigestBound : sourceBindingDigest = evidenceDigest)
+    (sharedFrameWitnessSources :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
+      CanonicalParser WitnessParser P where
+  evidenceReport := evidenceReport
+  evidenceReportBound := evidenceReportBound
+  evidenceDigest := evidenceDigest
+  evidenceDigestBound := evidenceDigestBound
+  sourceBindingDigest := sourceBindingDigest
+  sourceBindingDigestBound := sourceBindingDigestBound
+  sharedFrameWitnessSources := sharedFrameWitnessSources
+
+end ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
 
 /--
 Selected Rust/model source-record package before final aggregate-digest
