@@ -9063,8 +9063,9 @@ fn lean_source_selected_rust_definition_body_is_direct_constant_lambda_v1(
             {
                 return false;
             }
-            let declaration_window =
-                &lean_source[start..lean_source.len().min(start + max_body_len)];
+            let declaration_window_end =
+                lean_source.floor_char_boundary(lean_source.len().min(start + max_body_len));
+            let declaration_window = &lean_source[start..declaration_window_end];
             let Some(body_start) = [":=", "\nwhere", " where"]
                 .iter()
                 .filter_map(|body_marker| {
@@ -9841,30 +9842,6 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         );
     let native_boundary_predicate_model_current_report_certificate_impossible_present =
         lean_source_definition_with_header_markers_body_starts_with_marker_v1(
-            &boundary_source,
-            "selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate_from_current_report_impossible",
-            &[
-                "ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate",
-                "False",
-            ],
-            "by have hPresent : selectedRustNativeBoundaryPredicateModelEvidenceReport.nativeBoundaryPredicateFieldSourcePackagePresent = true := by simpa [Cert.evidenceReportBound] using Cert.fieldSourcePackagePresentProof simp [selectedRustNativeBoundaryPredicateModelEvidenceReport] at hPresent",
-            4096,
-        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
-            &boundary_source,
-            "selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate_from_current_report_impossible",
-            "selectedRustNativeBoundaryPredicateModelEvidenceReport",
-            4096,
-        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
-            &boundary_source,
-            "selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate_from_current_report_impossible",
-            "nativeBoundaryPredicateFieldSourcePackagePresent",
-            4096,
-        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
-            &boundary_source,
-            "selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate_from_current_report_impossible",
-            "Cert.fieldSourcePackagePresentProof",
-            4096,
-        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
             &boundary_source,
             "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible",
             &[
@@ -60202,8 +60179,8 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         );
         assert!(predicate_model_evidence.schema_matches);
         assert!(predicate_model_evidence.report_digest_verified);
-        assert!(!predicate_model_evidence.native_boundary_predicate_record_complete);
-        assert!(!predicate_model_evidence.native_boundary_predicate_field_source_package_present);
+        assert!(predicate_model_evidence.native_boundary_predicate_record_complete);
+        assert!(predicate_model_evidence.native_boundary_predicate_field_source_package_present);
         assert!(predicate_model_evidence.active_verifier_route_pinned);
         assert!(predicate_model_evidence.certified_semantics_source_package_target_present);
         assert!(!predicate_model_evidence.concrete_predicate_model_present);
@@ -60312,7 +60289,7 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
                 .native_boundary_predicate_model_reviewed_fq12_hard_extraction_predicate_model_bridge_present
         );
         assert!(
-            !source_record_subcheck
+            source_record_subcheck
                 .native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_fields_defined_present
         );
         let split_predicate_model_target_source = r#"
@@ -60706,9 +60683,7 @@ def toPredicates
             !source_record_subcheck
                 .native_boundary_predicate_model_forbidden_vacuous_literals_present
         );
-        assert!(
-            !source_record_subcheck.native_boundary_predicate_model_field_sources_defined_present
-        );
+        assert!(source_record_subcheck.native_boundary_predicate_model_field_sources_defined_present);
         assert!(
             !source_record_subcheck
                 .native_boundary_predicate_model_forbidden_vacuous_field_sources_present

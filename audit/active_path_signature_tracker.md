@@ -1875,6 +1875,27 @@ that a shared-witness hard certificate over `ModelCert.predicates` has the same
 hard provider fields as `ModelCert.toHardExtractionPredicateModelPackage`. The
 manifest tracks this with
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_predicate_model_bridge_present`.
+The active Lean boundary now defines the selected native-boundary predicate
+provider surface: core/admission/spend fields, transparent trace/hash-row
+fields, the reviewed-Fq12 non-representative fields, and the five
+shared-witness-backed hard extraction fields. `selectedRustNativeBoundaryPredicateFieldSources`
+packages those definitions, with the representative-producing fields still
+parameterized by the report-verified shared-witness certificate. The manifest
+now reports `native_boundary_predicate_model_missing_provider_family_count = 0`,
+`native_boundary_predicate_model_field_sources_defined_present = true`,
+`native_boundary_predicate_model_field_source_package_present = true`, and
+`native_boundary_predicate_record_complete = true`, with no vacuous/stub,
+incomplete-proof, or circular-provider flags. This does not close AP2-N001:
+`predicate_model = false`, the pinned model-law booleans remain false, the
+current-report impossibility now lives at the full predicate-model certificate
+rather than the field-source package, and the selected source-record definition
+categories remain missing.
+Tooling note: the Rust source scanner's direct-constant-lambda check now clamps
+source windows to a UTF-8 character boundary before slicing; the prior byte
+slice could panic when a window ended inside Lean's `∧` token. The broad
+fail-closed regression was updated for the new provider-complete state but is
+currently too slow after the larger package body; the verified gates for this
+iteration are Lean compilation, manifest output, and `git diff --check`.
 
 ## Findings
 

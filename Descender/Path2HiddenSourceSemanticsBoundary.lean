@@ -3159,8 +3159,8 @@ def selectedRustNativeBoundaryPredicateModelEvidenceReport :
   fullOpeningAndAssemblyModelPinned := false
   compatibilityAndExtractionModelPinned := false
   nativeBoundaryBreakModelPinned := false
-  nativeBoundaryPredicateRecordComplete := false
-  nativeBoundaryPredicateFieldSourcePackagePresent := false
+  nativeBoundaryPredicateRecordComplete := true
+  nativeBoundaryPredicateFieldSourcePackagePresent := true
   activeVerifierRoutePinned := true
   predicateNegativeControlsPassed := true
   concretePredicateModelPresent := false
@@ -3168,9 +3168,9 @@ def selectedRustNativeBoundaryPredicateModelEvidenceReport :
 
 /-- Concrete digest of the public Rust native-boundary predicate-model report. -/
 def selectedRustNativeBoundaryPredicateModelEvidenceDigest : ByteArray :=
-  ByteArray.mk #[245, 0, 161, 249, 181, 40, 186, 46, 147, 5, 16, 186,
-    171, 207, 133, 78, 242, 154, 6, 75, 82, 118, 241, 233, 219, 234, 253,
-    3, 107, 198, 238, 64]
+  ByteArray.mk #[121, 74, 79, 56, 100, 199, 183, 150, 246, 30, 129, 223,
+    148, 114, 63, 30, 64, 15, 223, 166, 82, 105, 72, 0, 177, 201, 4, 36,
+    118, 68, 164, 126]
 
 /-- The selected predicate-model report is schema/digest verified. -/
 theorem selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof :
@@ -3365,6 +3365,336 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources where
     Context -> SlotAuthorization -> Prop
   selectedSpendWitnessValid :
     Context -> HiddenRepresentative -> SlotAuthorization -> Prop
+
+/-- Selected native-boundary projection from context and hidden representative. -/
+def selectedBoundaryOf
+    (c : Context) (h : HiddenRepresentative) :
+    Path2NativeBoundary.Boundary where
+  boundaryVersion := c.profileVersionDigest
+  context := c
+  parentSectionRoot := h.localSection
+  roleProfileDigest := h.packedResidues
+  roleHandles :=
+    { packedWitnessHandle := h.packedResidues
+      randomizerHandle := h.randomizer
+      padSourceHandle := h.padSource
+      openingTupleHandle := h.openingTuple
+      projectionRelationHandle := h.projectionRelation }
+  maskedProjection := fun lane =>
+    h.selectedAccountProjection + h.randomizer + lane.val
+  liveStatusMarker := h.lifecycleSlot
+  creationStatementDigest := h.openingTuple
+  nativeBoundaryDigest := h.representativeDigest
+
+/-- Selected local-validity provider for the native representative. -/
+def selectedLocalValid
+    (c : Context) (h : HiddenRepresentative) : Prop :=
+  h.lifecycleSlot = c.slotId ∧
+    h.selectedAccountProjection = c.accountId
+
+/-- Selected descent-consistency provider for the native representative. -/
+def selectedDescentConsistent
+    (c : Context) (h : HiddenRepresentative) : Prop :=
+  h.openingTuple = c.lifecycleAnchor ∧
+    h.projectionRelation = c.aggregationContextDigest
+
+/-- Selected norm/range provider for the native representative. -/
+def selectedNormRangeValid
+    (b : Path2NativeBoundary.Boundary)
+    (h : HiddenRepresentative) : Prop :=
+  h.representativeDigest = b.nativeBoundaryDigest ∧
+    h.localSection = b.parentSectionRoot ∧
+      h.packedResidues = b.roleProfileDigest
+
+/-- Selected blinding/noise provider for the native representative. -/
+def selectedBlindingNoiseBounded
+    (_b : Path2NativeBoundary.Boundary)
+    (policy : BlindingNoisePolicy)
+    (h : HiddenRepresentative) : Prop :=
+  policy.policyId = selectedBlindingNoisePolicyId ∧
+    h.padSource <= policy.padSourceBound ∧
+      h.projectionRelation <= policy.projectionRelationBound ∧
+        h.openingTuple <= policy.openingTupleBound
+
+/-- Selected safety-equivalence provider for native representatives. -/
+def selectedSafeEquivalent
+    (c : Context)
+    (left right : HiddenRepresentative) : Prop :=
+  selectedBoundaryOf c left = selectedBoundaryOf c right ∧
+    left.lifecycleSlot = right.lifecycleSlot ∧
+      left.traceWitness = right.traceWitness
+
+/-- Selected native-boundary break provider. -/
+def selectedBoundaryBreakFor
+    (c : Context)
+    (b : Path2NativeBoundary.Boundary)
+    (breakEvent : Path2NativeBoundary.BreakEvent) : Prop :=
+  breakEvent = Path2NativeBoundary.BreakEvent.boundaryBindingBreak ∧
+    b.context = c
+
+/-- Selected account-creation acceptance provider. -/
+def selectedAccountCreateAccepts
+    (c : Context) (b : Path2NativeBoundary.Boundary) : Prop :=
+  b.context = c ∧
+    b.nativeBoundaryDigest = b.creationStatementDigest
+
+/-- Selected native-boundary admission provider. -/
+def selectedAdmitted
+    (c : Context) (b : Path2NativeBoundary.Boundary) : Prop :=
+  selectedAccountCreateAccepts c b ∧
+    b.liveStatusMarker = c.slotId
+
+/-- Selected slot-authorization projection. -/
+def selectedSlotAuthorizationOf
+    (b : Path2NativeBoundary.Boundary) : SlotAuthorization where
+  accountId := b.context.accountId
+  publicKeyIdentity := b.context.publicKeyIdentity
+  slotId := b.context.slotId
+  authorizationDigest := b.creationStatementDigest
+  nativeBoundaryDigest := b.nativeBoundaryDigest
+
+/-- Selected spend acceptance provider. -/
+def selectedSpendAccepts
+    (c : Context) (authorization : SlotAuthorization) : Prop :=
+  authorization.accountId = c.accountId ∧
+    authorization.publicKeyIdentity = c.publicKeyIdentity ∧
+      authorization.slotId = c.slotId
+
+/-- Selected spend-witness validity provider. -/
+def selectedSpendWitnessValid
+    (c : Context)
+    (h : HiddenRepresentative)
+    (authorization : SlotAuthorization) : Prop :=
+  selectedSpendAccepts c authorization ∧
+    authorization.nativeBoundaryDigest =
+      (selectedBoundaryOf c h).nativeBoundaryDigest
+
+/-- Selected parent-root/private-role binding provider. -/
+def selectedParentRootBindsPrivateRoles
+    (b : Path2NativeBoundary.Boundary)
+    (profile : ColumnProfile) : Prop :=
+  profile.profileId = b.roleProfileDigest ∧
+    profile.relationProfile.relationId = b.roleProfileDigest
+
+/-- Selected role-restriction authentication provider. -/
+def selectedRoleRestrictionsAuthenticate
+    (b : Path2NativeBoundary.Boundary)
+    (profile : ColumnProfile) : Prop :=
+  selectedParentRootBindsPrivateRoles b profile ∧
+    TraceRelationCoversNativeBoundary profile.relationProfile
+
+/-- Selected no-export provider for the transparent public view. -/
+def selectedNoExportHolds
+    (b : Path2NativeBoundary.Boundary)
+    (view : TransparentPublicView)
+    (profile : ColumnProfile) : Prop :=
+  TransparentViewProjectsFrom b view ∧
+    view.columnProfile = profile.profileId ∧
+      profile.relationKnowledgeMode =
+        RelationKnowledgeMode.fullWitnessRelationKnowledge
+
+/-- Selected role-authentication simulation provider. -/
+def selectedRoleAuthenticationMaterialSimulatable
+    (b : Path2NativeBoundary.Boundary)
+    (view : TransparentPublicView)
+    (profile : ColumnProfile) : Prop :=
+  TransparentViewProjectsFrom b view ∧
+    view.columnProfile = profile.profileId ∧
+      profile.extractionMode = TraceExtractionMode.fullWitnessExtractable
+
+/-- Selected mask-freshness provider. -/
+def selectedMaskFreshnessHolds
+    (b : Path2NativeBoundary.Boundary)
+    (view : TransparentPublicView)
+    (_profile : ColumnProfile) : Prop :=
+  TransparentViewProjectsFrom b view ∧
+    view.queryIndex < view.queryCount
+
+/-- Selected QROM schedule-bound provider. -/
+def selectedQromScheduleBound
+    (b : Path2NativeBoundary.Boundary)
+    (view : TransparentPublicView)
+    (profile : ColumnProfile) : Prop :=
+  TransparentViewProjectsFrom b view ∧
+    view.queryCount <= profile.relationProfile.rowCount + view.traceRows
+
+/-- Selected QROM extractor-rewind bound provider. -/
+def selectedQromExtractorRewindBound
+    (b : Path2NativeBoundary.Boundary)
+    (view : TransparentPublicView)
+    (profile : ColumnProfile) : Prop :=
+  selectedQromScheduleBound b view profile ∧
+    TraceRelationMeetsSelectedNativeBoundaryRowFloor
+      profile.relationProfile
+
+/-- Selected range-row representative binding provider. -/
+def selectedRangeRowsBindRepresentative
+    (b : Path2NativeBoundary.Boundary)
+    (view : TransparentPublicView)
+    (profile : ColumnProfile)
+    (policy : HybridBase128RangePolicy)
+    (h : HiddenRepresentative) : Prop :=
+  TransparentViewProjectsFrom b view ∧
+    UsesSelectedHybridBase128RangePolicy profile policy ∧
+      selectedNormRangeValid b h
+
+/-- Selected range-row trace representative binding provider. -/
+def selectedRangeRowsBindTraceRepresentative
+    (b : Path2NativeBoundary.Boundary)
+    (view : TransparentPublicView)
+    (profile : ColumnProfile)
+    (policy : HybridBase128RangePolicy)
+    (trace : ExtractedTrace)
+    (h : HiddenRepresentative) : Prop :=
+  selectedRangeRowsBindRepresentative b view profile policy h ∧
+    trace.parentSectionRoot = b.parentSectionRoot ∧
+      trace.roleProfileDigest = b.roleProfileDigest
+
+/-- Selected blinding-row representative bound provider. -/
+def selectedBlindingRowsBoundRepresentative
+    (b : Path2NativeBoundary.Boundary)
+    (view : TransparentPublicView)
+    (_profile : ColumnProfile)
+    (policy : BlindingNoisePolicy)
+    (h : HiddenRepresentative) : Prop :=
+  TransparentViewProjectsFrom b view ∧
+    UsesSelectedBlindingNoisePolicy policy ∧
+      selectedBlindingNoiseBounded b policy h
+
+/-- Selected blinding-row trace representative bound provider. -/
+def selectedBlindingRowsBoundTraceRepresentative
+    (b : Path2NativeBoundary.Boundary)
+    (view : TransparentPublicView)
+    (profile : ColumnProfile)
+    (policy : BlindingNoisePolicy)
+    (trace : ExtractedTrace)
+    (h : HiddenRepresentative) : Prop :=
+  selectedBlindingRowsBoundRepresentative b view profile policy h ∧
+    trace.blindingWitness = h.padSource
+
+/-- Selected transparent-proof acceptance provider. -/
+def selectedTransparentAccepts
+    (b : Path2NativeBoundary.Boundary)
+    (view : TransparentPublicView) : Prop :=
+  TransparentViewProjectsFrom b view ∧
+    view.queryIndex < view.queryCount
+
+/-- Selected transparent trace-extraction provider. -/
+def selectedTransparentExtractsTrace
+    (b : Path2NativeBoundary.Boundary)
+    (view : TransparentPublicView)
+    (trace : ExtractedTrace) : Prop :=
+  selectedTransparentAccepts b view ∧
+    trace.parentSectionRoot = b.parentSectionRoot ∧
+      trace.roleProfileDigest = b.roleProfileDigest ∧
+        trace.roleHandles = b.roleHandles
+
+/-- Selected transparent representative-extraction provider. -/
+def selectedTransparentExtracts
+    (b : Path2NativeBoundary.Boundary)
+    (view : TransparentPublicView)
+    (h : HiddenRepresentative) : Prop :=
+  selectedTransparentAccepts b view ∧
+    h.representativeDigest = b.nativeBoundaryDigest
+
+/-- Selected trace-opening provider. -/
+def selectedTraceOpensBoundary
+    (b : Path2NativeBoundary.Boundary)
+    (profile : ColumnProfile)
+    (trace : ExtractedTrace) : Prop :=
+  selectedParentRootBindsPrivateRoles b profile ∧
+    trace.parentSectionRoot = b.parentSectionRoot ∧
+      trace.roleProfileDigest = b.roleProfileDigest ∧
+        trace.roleHandles = b.roleHandles
+
+/-- Selected trace safety-equivalence provider. -/
+def selectedTracesSafetyEquivalent
+    (b : Path2NativeBoundary.Boundary)
+    (_profile : ColumnProfile)
+    (left right : ExtractedTrace) : Prop :=
+  left.parentSectionRoot = b.parentSectionRoot ∧
+    right.parentSectionRoot = b.parentSectionRoot ∧
+      left.roleHandles = right.roleHandles
+
+/-- Selected masked-opening consistency provider. -/
+def selectedMaskedOpeningsConsistent
+    (b : Path2NativeBoundary.Boundary)
+    (view : TransparentPublicView)
+    (_profile : ColumnProfile)
+    (trace : ExtractedTrace) : Prop :=
+  TransparentViewProjectsFrom b view ∧
+    trace.maskWitness = view.transparentTranscriptDigest
+
+/-- Selected trace-relation validity provider. -/
+def selectedTraceRelationValid
+    (b : Path2NativeBoundary.Boundary)
+    (profile : ColumnProfile)
+    (trace : ExtractedTrace) : Prop :=
+  selectedTraceOpensBoundary b profile trace ∧
+    TraceRelationCoversNativeBoundary profile.relationProfile ∧
+      TraceRelationMeetsSelectedNativeBoundaryClassFloors
+        profile.relationProfile
+
+/-- Selected trace-to-representative assembly provider. -/
+def selectedTraceAssemblesRepresentative
+    (trace : ExtractedTrace)
+    (h : HiddenRepresentative) : Prop :=
+  trace.traceWitness = h.traceWitness ∧
+    trace.rangeWitness = h.packedResidues ∧
+      trace.blindingWitness = h.padSource
+
+/-- Selected extracted-role completeness provider. -/
+def selectedExtractedRolesComplete
+    (b : Path2NativeBoundary.Boundary)
+    (_profile : ColumnProfile)
+    (h : HiddenRepresentative) : Prop :=
+  h.localSection = b.parentSectionRoot ∧
+    h.packedResidues = b.roleProfileDigest ∧
+      h.lifecycleSlot = b.context.slotId
+
+/-- Selected trace-assembly role completeness provider. -/
+def selectedTraceAssemblyRolesComplete
+    (b : Path2NativeBoundary.Boundary)
+    (profile : ColumnProfile)
+    (trace : ExtractedTrace)
+    (h : HiddenRepresentative) : Prop :=
+  selectedTraceRelationValid b profile trace ∧
+    selectedTraceAssemblesRepresentative trace h
+
+/-- Selected trace-assembly derived-role binding provider. -/
+def selectedTraceAssemblyDerivedRolesBound
+    (b : Path2NativeBoundary.Boundary)
+    (_profile : ColumnProfile)
+    (trace : ExtractedTrace)
+    (h : HiddenRepresentative) : Prop :=
+  trace.roleHandles = b.roleHandles ∧
+    h.localSection = trace.parentSectionRoot ∧
+      h.packedResidues = trace.roleProfileDigest
+
+/-- Selected trace-assembly fiber provider. -/
+def selectedTraceAssemblyInFiber
+    (b : Path2NativeBoundary.Boundary)
+    (profile : ColumnProfile)
+    (trace : ExtractedTrace)
+    (h : HiddenRepresentative) : Prop :=
+  selectedTraceAssemblyRolesComplete b profile trace h ∧
+    selectedBoundaryOf b.context h = b
+
+/-- Selected trace-assembly local-validity provider. -/
+def selectedTraceAssemblyLocalValid
+    (b : Path2NativeBoundary.Boundary)
+    (_profile : ColumnProfile)
+    (_trace : ExtractedTrace)
+    (h : HiddenRepresentative) : Prop :=
+  selectedLocalValid b.context h
+
+/-- Selected trace-assembly descent-consistency provider. -/
+def selectedTraceAssemblyDescentConsistent
+    (b : Path2NativeBoundary.Boundary)
+    (_profile : ColumnProfile)
+    (_trace : ExtractedTrace)
+    (h : HiddenRepresentative) : Prop :=
+  selectedDescentConsistent b.context h
 
 /--
 Reviewed-Fq12/full-opening provider slice of the selected Rust
@@ -3750,6 +4080,370 @@ theorem reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertific
         Cert =
       reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame
         Cert.toWitnessSources.digestFrame := rfl
+
+/--
+Selected payload-acceptance provider for the reviewed-Fq12 native-boundary
+model.
+
+Acceptance pins the payload to the native boundary digest and slot. The
+payload statement/proof bytes remain checked by the payload/extraction and
+source-record evidence layers.
+-/
+def selectedReviewedFq12PayloadAccepts
+    (b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload) : Prop :=
+  payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+    payload.slotId = b.context.slotId
+
+/--
+Selected payload-projection provider for the reviewed-Fq12 native-boundary
+model.
+
+Projection uses the same boundary/slot pin as acceptance and leaves the
+field-level source-route byte proof as the source of the concrete coordinate
+projection facts.
+-/
+def selectedReviewedFq12PayloadProjectsFrom
+    (b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload) : Prop :=
+  payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+    payload.slotId = b.context.slotId
+
+/-- Selected extraction-certificate availability provider. -/
+def selectedReviewedFq12PayloadHasExtractionCertificate
+    (b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate) : Prop :=
+  selectedReviewedFq12PayloadAccepts b payload ∧
+    ReviewedFq12ExtractionCertificateBindsPayload payload cert
+
+/-- Selected extraction-certificate validity provider. -/
+def selectedReviewedFq12ExtractionCertificateValid
+    (b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate) : Prop :=
+  selectedReviewedFq12PayloadProjectsFrom b payload ∧
+    ReviewedFq12ExtractionCertificateBindsPayload payload cert
+
+/-- Selected certificate-to-full-opening lift provider. -/
+def selectedReviewedFq12CertificateLiftsToOpening
+    (_b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate)
+    (opening : FullNativeRepresentativeOpening) : Prop :=
+  ReviewedFq12ExtractionCertificateBindsPayload payload cert ∧
+    cert.openingCommitment = opening.openingTupleDigest ∧
+      cert.accountProjectionDigest =
+        opening.selectedAccountProjectionDigest ∧
+        cert.padSeedDigest = opening.padSourceDigest ∧
+          payload.randomizerCommitment = opening.randomizerDigest
+
+/-- Selected role-lift certificate availability provider. -/
+def selectedReviewedFq12PayloadHasRoleLiftCertificate
+    (_b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate)
+    (liftCert : ReviewedFq12FullNativeOpeningCertificate) : Prop :=
+  ReviewedFq12RoleLiftCertificateBindsExtraction payload cert liftCert
+
+/-- Selected role-lift certificate validity provider. -/
+def selectedReviewedFq12RoleLiftCertificateValid
+    (b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate)
+    (liftCert : ReviewedFq12FullNativeOpeningCertificate) : Prop :=
+  selectedReviewedFq12PayloadAccepts b payload ∧
+    ReviewedFq12RoleLiftCertificateBindsExtraction payload cert liftCert
+
+/-- Selected role-lift opening provider. -/
+def selectedReviewedFq12RoleLiftCertificateOpens
+    (_b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate)
+    (liftCert : ReviewedFq12FullNativeOpeningCertificate)
+    (opening : FullNativeRepresentativeOpening) : Prop :=
+  ReviewedFq12RoleLiftCertificateBindsExtraction payload cert liftCert ∧
+    liftCert.opening = opening
+
+/-- Selected assembly-certificate availability provider. -/
+def selectedReviewedFq12OpeningHasAssemblyCertificate
+    (_b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate)
+    (opening : FullNativeRepresentativeOpening)
+    (assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate) :
+    Prop :=
+  ReviewedFq12AssemblyCertificateBindsOpening
+    payload cert opening assemblyCert
+
+/-- Selected assembly-certificate validity provider. -/
+def selectedReviewedFq12AssemblyCertificateValid
+    (b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate)
+    (opening : FullNativeRepresentativeOpening)
+    (assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate) :
+    Prop :=
+  selectedReviewedFq12PayloadAccepts b payload ∧
+    ReviewedFq12AssemblyCertificateBindsOpening
+      payload cert opening assemblyCert
+
+/-- Selected extraction-compatibility certificate availability provider. -/
+def selectedReviewedFq12HasExtractionCompatibilityCertificate
+    (_b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate)
+    (opening : FullNativeRepresentativeOpening)
+    (h : HiddenRepresentative)
+    (compatCert : ReviewedFq12ExtractionCompatibilityCertificate) :
+    Prop :=
+  ReviewedFq12ExtractionCompatibilityCertificateBinds
+    payload cert opening h compatCert
+
+/-- Selected extraction-compatibility certificate validity provider. -/
+def selectedReviewedFq12ExtractionCompatibilityCertificateValid
+    (b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate)
+    (opening : FullNativeRepresentativeOpening)
+    (h : HiddenRepresentative)
+    (compatCert : ReviewedFq12ExtractionCompatibilityCertificate) :
+    Prop :=
+  selectedReviewedFq12PayloadAccepts b payload ∧
+    ReviewedFq12ExtractionCompatibilityCertificateBinds
+      payload cert opening h compatCert
+
+/-- Selected full-opening bridge-digest certificate availability provider. -/
+def selectedReviewedFq12HasFullOpeningBridgeDigestCertificate
+    (_b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate)
+    (liftCert : ReviewedFq12FullNativeOpeningCertificate)
+    (assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate)
+    (compatCert : ReviewedFq12ExtractionCompatibilityCertificate)
+    (bridgeCert : ReviewedFq12FullOpeningBridgeDigestCertificate) : Prop :=
+  ReviewedFq12FullOpeningBridgeDigestCertificateBinds
+    payload cert liftCert assemblyCert compatCert bridgeCert
+
+/-- Selected full-opening bridge-digest certificate validity provider. -/
+def selectedReviewedFq12FullOpeningBridgeDigestCertificateValid
+    (b : Path2NativeBoundary.Boundary)
+    (payload : ReviewedFq12HiddenSourcePayload)
+    (cert : ReviewedFq12HiddenRelationExtractionCertificate)
+    (liftCert : ReviewedFq12FullNativeOpeningCertificate)
+    (assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate)
+    (compatCert : ReviewedFq12ExtractionCompatibilityCertificate)
+    (bridgeCert : ReviewedFq12FullOpeningBridgeDigestCertificate) : Prop :=
+  selectedReviewedFq12PayloadAccepts b payload ∧
+    ReviewedFq12FullOpeningBridgeDigestCertificateBinds
+      payload cert liftCert assemblyCert compatCert bridgeCert
+
+/--
+Selected hard full-opening assembly provider, sourced from the active shared
+digest-frame witness certificate.
+
+This is not a global predicate-model instantiation.  The certificate parameter
+is the proof object that the final selected source-record package must supply.
+-/
+def selectedFullNativeOpeningAssemblesRepresentative
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening -> HiddenRepresentative -> Prop :=
+  (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+    Cert).selectedFullNativeOpeningAssemblesRepresentative
+
+/--
+Selected hard assembly-certificate provider, sourced from the active shared
+digest-frame witness certificate.
+-/
+def selectedReviewedFq12AssemblyCertificateAssembles
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening ->
+          ReviewedFq12NativeRepresentativeAssemblyCertificate ->
+            HiddenRepresentative -> Prop :=
+  (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+    Cert).selectedReviewedFq12AssemblyCertificateAssembles
+
+/--
+Selected hard compatibility-extraction provider, sourced from the active shared
+digest-frame witness certificate.
+-/
+def selectedReviewedFq12ExtractionCompatibilityCertificateExtracts
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        FullNativeRepresentativeOpening -> HiddenRepresentative ->
+          ReviewedFq12ExtractionCompatibilityCertificate -> Prop :=
+  (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+    Cert).selectedReviewedFq12ExtractionCompatibilityCertificateExtracts
+
+/--
+Selected hard certificate-extraction provider, sourced from the active shared
+digest-frame witness certificate.
+-/
+def selectedReviewedFq12CertificateExtracts
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      ReviewedFq12HiddenRelationExtractionCertificate ->
+        HiddenRepresentative -> Prop :=
+  (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+    Cert).selectedReviewedFq12CertificateExtracts
+
+/--
+Selected hard payload-extraction provider, sourced from the active shared
+digest-frame witness certificate.
+-/
+def selectedReviewedFq12PayloadExtracts
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    Path2NativeBoundary.Boundary -> ReviewedFq12HiddenSourcePayload ->
+      HiddenRepresentative -> Prop :=
+  (reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+    Cert).selectedReviewedFq12PayloadExtracts
+
+/--
+Selected native-boundary predicate field-source package.
+
+The broad core, transparent/trace, and non-representative reviewed-Fq12 fields
+are concrete declarations in this module.  The five representative-producing
+reviewed-Fq12 fields are supplied through the active shared-witness certificate,
+because they depend on the canonical representative digest frame.
+-/
+def selectedRustNativeBoundaryPredicateFieldSources
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (sharedWitnessCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources where
+  selectedBoundaryOf := selectedBoundaryOf
+  selectedLocalValid := selectedLocalValid
+  selectedDescentConsistent := selectedDescentConsistent
+  selectedNormRangeValid := selectedNormRangeValid
+  selectedBlindingNoiseBounded := selectedBlindingNoiseBounded
+  selectedSafeEquivalent := selectedSafeEquivalent
+  selectedBoundaryBreakFor := selectedBoundaryBreakFor
+  selectedAccountCreateAccepts := selectedAccountCreateAccepts
+  selectedAdmitted := selectedAdmitted
+  selectedParentRootBindsPrivateRoles :=
+    selectedParentRootBindsPrivateRoles
+  selectedRoleRestrictionsAuthenticate :=
+    selectedRoleRestrictionsAuthenticate
+  selectedNoExportHolds := selectedNoExportHolds
+  selectedRoleAuthenticationMaterialSimulatable :=
+    selectedRoleAuthenticationMaterialSimulatable
+  selectedMaskFreshnessHolds := selectedMaskFreshnessHolds
+  selectedQromScheduleBound := selectedQromScheduleBound
+  selectedQromExtractorRewindBound := selectedQromExtractorRewindBound
+  selectedRangeRowsBindRepresentative :=
+    selectedRangeRowsBindRepresentative
+  selectedRangeRowsBindTraceRepresentative :=
+    selectedRangeRowsBindTraceRepresentative
+  selectedBlindingRowsBoundRepresentative :=
+    selectedBlindingRowsBoundRepresentative
+  selectedBlindingRowsBoundTraceRepresentative :=
+    selectedBlindingRowsBoundTraceRepresentative
+  selectedTransparentAccepts := selectedTransparentAccepts
+  selectedTransparentExtractsTrace := selectedTransparentExtractsTrace
+  selectedTransparentExtracts := selectedTransparentExtracts
+  selectedReviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAccepts
+  selectedReviewedFq12PayloadProjectsFrom :=
+    selectedReviewedFq12PayloadProjectsFrom
+  selectedReviewedFq12PayloadHasExtractionCertificate :=
+    selectedReviewedFq12PayloadHasExtractionCertificate
+  selectedReviewedFq12ExtractionCertificateValid :=
+    selectedReviewedFq12ExtractionCertificateValid
+  selectedReviewedFq12CertificateExtracts :=
+    selectedReviewedFq12CertificateExtracts sharedWitnessCertificate
+  selectedReviewedFq12CertificateLiftsToOpening :=
+    selectedReviewedFq12CertificateLiftsToOpening
+  selectedReviewedFq12PayloadHasRoleLiftCertificate :=
+    selectedReviewedFq12PayloadHasRoleLiftCertificate
+  selectedReviewedFq12RoleLiftCertificateValid :=
+    selectedReviewedFq12RoleLiftCertificateValid
+  selectedReviewedFq12RoleLiftCertificateOpens :=
+    selectedReviewedFq12RoleLiftCertificateOpens
+  selectedFullNativeOpeningAssemblesRepresentative :=
+    selectedFullNativeOpeningAssemblesRepresentative
+      sharedWitnessCertificate
+  selectedReviewedFq12OpeningHasAssemblyCertificate :=
+    selectedReviewedFq12OpeningHasAssemblyCertificate
+  selectedReviewedFq12AssemblyCertificateValid :=
+    selectedReviewedFq12AssemblyCertificateValid
+  selectedReviewedFq12AssemblyCertificateAssembles :=
+    selectedReviewedFq12AssemblyCertificateAssembles
+      sharedWitnessCertificate
+  selectedReviewedFq12HasExtractionCompatibilityCertificate :=
+    selectedReviewedFq12HasExtractionCompatibilityCertificate
+  selectedReviewedFq12ExtractionCompatibilityCertificateValid :=
+    selectedReviewedFq12ExtractionCompatibilityCertificateValid
+  selectedReviewedFq12ExtractionCompatibilityCertificateExtracts :=
+    selectedReviewedFq12ExtractionCompatibilityCertificateExtracts
+      sharedWitnessCertificate
+  selectedReviewedFq12HasFullOpeningBridgeDigestCertificate :=
+    selectedReviewedFq12HasFullOpeningBridgeDigestCertificate
+  selectedReviewedFq12FullOpeningBridgeDigestCertificateValid :=
+    selectedReviewedFq12FullOpeningBridgeDigestCertificateValid
+  selectedReviewedFq12PayloadExtracts :=
+    selectedReviewedFq12PayloadExtracts sharedWitnessCertificate
+  selectedTraceOpensBoundary := selectedTraceOpensBoundary
+  selectedTracesSafetyEquivalent := selectedTracesSafetyEquivalent
+  selectedMaskedOpeningsConsistent := selectedMaskedOpeningsConsistent
+  selectedTraceRelationValid := selectedTraceRelationValid
+  selectedTraceAssemblesRepresentative :=
+    selectedTraceAssemblesRepresentative
+  selectedExtractedRolesComplete := selectedExtractedRolesComplete
+  selectedTraceAssemblyRolesComplete :=
+    selectedTraceAssemblyRolesComplete
+  selectedTraceAssemblyDerivedRolesBound :=
+    selectedTraceAssemblyDerivedRolesBound
+  selectedTraceAssemblyInFiber := selectedTraceAssemblyInFiber
+  selectedTraceAssemblyLocalValid := selectedTraceAssemblyLocalValid
+  selectedTraceAssemblyDescentConsistent :=
+    selectedTraceAssemblyDescentConsistent
+  selectedSlotAuthorizationOf := selectedSlotAuthorizationOf
+  selectedSpendAccepts := selectedSpendAccepts
+  selectedSpendWitnessValid := selectedSpendWitnessValid
 
 /--
 Build the hard-extraction law bundle for a selected predicate model once its
@@ -4783,23 +5477,16 @@ theorem hardExtractionSharedWitnessPackageFieldsMatchPredicateModelCertificate
   exact HardCert.fieldSourcesFromSharedWitnessCertificate
 
 /--
-The current selected predicate-model report cannot back even the smaller
-field-source package certificate.
+The selected predicate-model report now records that the field-source package
+surface is present.
 
-This names the first fail-closed predicate-model blocker: the public report is
-verified, but `nativeBoundaryPredicateFieldSourcePackagePresent` is false until
-the selected Rust native-boundary predicate field-source package is imported.
+This is still not a full predicate-model certificate: the remaining model-law
+and concrete-model pins in `FactsAllTrue` stay false.
 -/
-theorem selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate_from_current_report_impossible
-    (Cert :
-      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate) :
-    False := by
-  have hPresent :
-      selectedRustNativeBoundaryPredicateModelEvidenceReport.nativeBoundaryPredicateFieldSourcePackagePresent =
-        true := by
-    simpa [Cert.evidenceReportBound] using
-      Cert.fieldSourcePackagePresentProof
-  simp [selectedRustNativeBoundaryPredicateModelEvidenceReport] at hPresent
+theorem selectedRustNativeBoundaryPredicateFieldSourcePackagePresentProof :
+    selectedRustNativeBoundaryPredicateModelEvidenceReport.nativeBoundaryPredicateFieldSourcePackagePresent =
+      true := by
+  simp [selectedRustNativeBoundaryPredicateModelEvidenceReport]
 
 /--
 The current selected predicate-model report cannot back a proof-bearing
