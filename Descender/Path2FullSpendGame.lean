@@ -1,3 +1,5 @@
+import Mathlib.Data.Fintype.Basic
+
 namespace Descender
 
 /-!
@@ -69,6 +71,21 @@ inductive BreakEvent where
   | qromOrDomainSeparationBreak
   | liveSlotLeakageOrKeygenBreak
   deriving DecidableEq
+
+instance : Fintype BreakEvent where
+  elems :=
+    { BreakEvent.creationTimeHiddenSourceSoundnessBreak,
+      BreakEvent.prevalidationLeafBindingBreak,
+      BreakEvent.prevalidationRegistryBindingBreak,
+      BreakEvent.prevalidationDataAvailabilityBreak,
+      BreakEvent.postchallengeSlotCreationOrRewriteBreak,
+      BreakEvent.checkedCoreMessageBindingBreak,
+      BreakEvent.slotReplayOrRollbackBreak,
+      BreakEvent.qromOrDomainSeparationBreak,
+      BreakEvent.liveSlotLeakageOrKeygenBreak }
+  complete := by
+    intro breakEvent
+    cases breakEvent <;> simp
 
 /--
 Predicates supplied by a concrete direct-mode game implementation.

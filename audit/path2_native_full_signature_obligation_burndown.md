@@ -1399,6 +1399,9 @@ production-priced upper bound and proves `successProb_le_pricedBound`. The
 accepted-spend source gate now requires this layer, so future closure must
 consume the probability game and priced-bound package rather than only raw `ℝ`
 fields.
+`Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
+active full-spend named breaks, so the numeric game can index its union bound by
+the actual active break family.
 `selectedRustActiveNoExportSerializer_instantiation_v1` now follows the same
 exact-name/all-candidate pattern for the active no-export serializer gate.
 The full-execution boundary-presence check now also requires an exact
