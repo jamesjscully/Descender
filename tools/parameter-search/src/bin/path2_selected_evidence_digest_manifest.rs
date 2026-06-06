@@ -246,6 +246,9 @@ fn main() -> Result<(), String> {
             "native_boundary_certified_semantics_source_package_target_present":
                 source_record_subcheck
                     .native_boundary_certified_semantics_source_package_target_present,
+            "native_boundary_certified_semantics_current_report_impossible_present":
+                source_record_subcheck
+                    .native_boundary_certified_semantics_current_report_impossible_present,
             "native_boundary_semantics_package_handoff_present":
                 source_record_subcheck.native_boundary_semantics_package_handoff_present,
             "native_boundary_semantics_source_package_handoff_present":

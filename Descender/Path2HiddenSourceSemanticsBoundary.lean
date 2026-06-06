@@ -3018,6 +3018,30 @@ def hiddenSourceClosure
 end ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
 
 /--
+The certificate-shaped semantics package cannot be backed by the current
+fail-closed selected predicate-model report.
+
+This propagates the predicate-certificate blocker to the exact package shape
+consumed by the final AP2-N001 route.
+-/
+theorem selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_report_impossible
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Package :
+      ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+        FieldParser RouteParser CanonicalParser WitnessParser)
+    (hReport :
+      Package.predicateModelCertificate.evidenceReport =
+        selectedRustNativeBoundaryPredicateModelEvidenceReport) :
+    False :=
+  selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible
+    Package.predicateModelCertificate hReport
+
+/--
 Active AP2-N001 boundary closure from the single concrete model input record.
 -/
 theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs

@@ -1326,6 +1326,11 @@ Lean now also proves
 any certificate whose report is the current selected predicate-model report
 contradicts the report's impossible `FactsAllTrue` proof. The Rust
 source-record subcheck and manifest expose this fail-closed guard.
+The guard now propagates to the exact final-route package:
+`selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_report_impossible`
+rules out a certified semantics source package whose predicate-model
+certificate uses the current fail-closed report, and the manifest exposes that
+bit too.
 
 ## Findings
 

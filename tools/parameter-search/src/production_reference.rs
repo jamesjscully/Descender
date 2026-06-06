@@ -7577,6 +7577,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_semantics_package_target_present: bool,
     pub native_boundary_semantics_source_package_target_present: bool,
     pub native_boundary_certified_semantics_source_package_target_present: bool,
+    pub native_boundary_certified_semantics_current_report_impossible_present: bool,
     pub native_boundary_semantics_package_handoff_present: bool,
     pub native_boundary_semantics_source_package_handoff_present: bool,
     pub native_boundary_certified_semantics_source_package_handoff_present: bool,
@@ -8937,6 +8938,16 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
+    let native_boundary_certified_semantics_current_report_impossible_present = [
+        "selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_report_impossible",
+        "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
+        "Package.predicateModelCertificate.evidenceReport =",
+        "selectedRustNativeBoundaryPredicateModelEvidenceReport",
+        "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible",
+        "Package.predicateModelCertificate",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
     let native_boundary_semantics_package_handoff_present = [
         "with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_package",
         "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_package",
@@ -9359,6 +9370,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_semantics_package_target_present,
         native_boundary_semantics_source_package_target_present,
         native_boundary_certified_semantics_source_package_target_present,
+        native_boundary_certified_semantics_current_report_impossible_present,
         native_boundary_semantics_package_handoff_present,
         native_boundary_semantics_source_package_handoff_present,
         native_boundary_certified_semantics_source_package_handoff_present,
@@ -57411,6 +57423,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(
             source_record_subcheck
                 .native_boundary_certified_semantics_source_package_target_present
+        );
+        assert!(
+            source_record_subcheck
+                .native_boundary_certified_semantics_current_report_impossible_present
         );
         assert!(source_record_subcheck.native_boundary_semantics_package_handoff_present);
         assert!(source_record_subcheck.native_boundary_semantics_source_package_handoff_present);

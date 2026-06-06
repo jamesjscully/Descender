@@ -330,6 +330,11 @@ Lean now proves the matching fail-closed guard
 the current selected predicate-model report cannot back a proof-bearing
 certificate because its `FactsAllTrue` obligation is impossible. The manifest
 now surfaces that guard in the source-record subcheck.
+The same impossibility now propagates to
+`selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_report_impossible`,
+the certificate-shaped semantics package consumed by the final theorem route.
+This keeps the package-level blocker explicit until the selected predicate
+model report is replaced with a fact-complete import.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
