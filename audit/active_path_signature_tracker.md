@@ -1563,6 +1563,10 @@ proof tying its report field to the active selected report constant consumed
 by the certificate path. The Rust package-surface gate pins those fields, so a
 future binding-backed source package cannot be typed against unrelated report
 objects while still satisfying the AP2-N001 surface checks.
+The selected source-binding definition checklist now requires structure-literal
+bodies that set the active selected report, `evidenceReportBound := rfl`, a
+named source-binding digest, and the selected source fields. Header-only
+binding declarations no longer satisfy the module-level final theorem gate.
 
 ## Findings
 

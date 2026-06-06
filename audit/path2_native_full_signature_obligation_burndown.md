@@ -1031,6 +1031,10 @@ proof tying its report field to the active selected report constant consumed
 by the certificate path. The Rust package-surface gate pins those fields, so a
 future binding-backed source package cannot be typed against unrelated report
 objects while still satisfying the AP2-N001 surface checks.
+The selected source-binding definition checklist now requires structure-literal
+bodies that set the active selected report, `evidenceReportBound := rfl`, a
+named source-binding digest, and the selected source fields. Header-only
+binding declarations no longer satisfy the module-level final theorem gate.
 The aggregate digest import also exposed a source-hash circularity constraint:
 the current Rust aggregate evidence digest is
 `146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the
