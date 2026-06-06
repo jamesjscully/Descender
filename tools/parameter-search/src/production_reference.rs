@@ -10790,6 +10790,28 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             "selectedRustFullOpeningBridgeDigestValidityBinds",
         ),
     ];
+    let source_record_evidence_source_binding_digests = [
+        (
+            "selectedRustBoundaryBaseSourceBindingDigest",
+            &["ByteArray"][..],
+        ),
+        (
+            "selectedRustRoleRootLiftSourceBindingDigest",
+            &["ByteArray"][..],
+        ),
+        (
+            "selectedRustSourceRouteSourceBindingDigest",
+            &["ByteArray"][..],
+        ),
+        (
+            "selectedRustFieldLocalSourceBindingDigest",
+            &["ByteArray"][..],
+        ),
+        (
+            "selectedRustSharedWitnessSourceBindingDigest",
+            &["ByteArray"][..],
+        ),
+    ];
     let source_record_evidence_source_bindings = [
         (
             "selectedRustBoundaryBaseEvidenceSourceBinding",
@@ -10947,20 +10969,32 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             && predicate_model_facts_proof_definition_present
             && predicate_model_certificate_definition_present
             && native_boundary_concrete_predicate_model_present;
-    let source_record_evidence_source_bindings_present = source_record_evidence_source_bindings
-        .iter()
-        .all(|(name, header_markers, body_marker)| {
-            lean_source_has_selected_rust_definition_with_markers_v1(
-                &boundary_source,
-                name,
-                header_markers,
-            ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
-                &boundary_source,
-                name,
-                body_marker,
-                4096,
-            )
-        });
+    let source_record_evidence_source_binding_digests_present =
+        source_record_evidence_source_binding_digests
+            .iter()
+            .all(|(name, markers)| {
+                lean_source_has_selected_rust_definition_with_markers_v1(
+                    &boundary_source,
+                    name,
+                    markers,
+                )
+            });
+    let source_record_evidence_source_bindings_present =
+        source_record_evidence_source_binding_digests_present
+            && source_record_evidence_source_bindings.iter().all(
+                |(name, header_markers, body_marker)| {
+                    lean_source_has_selected_rust_definition_with_markers_v1(
+                        &boundary_source,
+                        name,
+                        header_markers,
+                    ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
+                        &boundary_source,
+                        name,
+                        body_marker,
+                        4096,
+                    )
+                },
+            );
     let sub_evidence_digest_match_proof_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -11492,6 +11526,11 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "selectedRustNativeBoundaryPredicateModelCertificate",
         "selectedRustModelSourceRecordPackage",
         "selectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
+        "selectedRustBoundaryBaseSourceBindingDigest",
+        "selectedRustRoleRootLiftSourceBindingDigest",
+        "selectedRustSourceRouteSourceBindingDigest",
+        "selectedRustFieldLocalSourceBindingDigest",
+        "selectedRustSharedWitnessSourceBindingDigest",
         "selectedRustBoundaryBaseEvidenceSourceBinding",
         "selectedRustRoleRootLiftEvidenceSourceBinding",
         "selectedRustSourceRouteEvidenceSourceBinding",
@@ -57765,6 +57804,16 @@ theorem {theorem_name}
             )
         );
         let header_only_source_binding_definitions = r#"
+def selectedRustBoundaryBaseSourceBindingDigest : ByteArray :=
+  selectedRustBoundaryBaseEvidenceDigest
+def selectedRustRoleRootLiftSourceBindingDigest : ByteArray :=
+  selectedRustRoleRootLiftEvidenceDigest
+def selectedRustSourceRouteSourceBindingDigest : ByteArray :=
+  selectedRustSourceRouteEvidenceDigest
+def selectedRustFieldLocalSourceBindingDigest : ByteArray :=
+  selectedRustFieldLocalEvidenceDigest
+def selectedRustSharedWitnessSourceBindingDigest : ByteArray :=
+  selectedRustSharedFrameWitnessEvidenceDigest
 def selectedRustBoundaryBaseEvidenceSourceBinding :
     ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding
       selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates ->
@@ -57809,6 +57858,16 @@ def selectedRustSharedWitnessEvidenceSourceBinding :
             )
         );
         let source_binding_definitions = r#"
+def selectedRustBoundaryBaseSourceBindingDigest : ByteArray :=
+  selectedRustBoundaryBaseEvidenceDigest
+def selectedRustRoleRootLiftSourceBindingDigest : ByteArray :=
+  selectedRustRoleRootLiftEvidenceDigest
+def selectedRustSourceRouteSourceBindingDigest : ByteArray :=
+  selectedRustSourceRouteEvidenceDigest
+def selectedRustFieldLocalSourceBindingDigest : ByteArray :=
+  selectedRustFieldLocalEvidenceDigest
+def selectedRustSharedWitnessSourceBindingDigest : ByteArray :=
+  selectedRustSharedFrameWitnessEvidenceDigest
 def selectedRustBoundaryBaseEvidenceSourceBinding :
     ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding
       selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=

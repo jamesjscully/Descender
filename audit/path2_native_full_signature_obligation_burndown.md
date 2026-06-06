@@ -1035,6 +1035,10 @@ The selected source-binding definition checklist now requires structure-literal
 bodies that set the active selected report, `evidenceReportBound := rfl`, a
 named source-binding digest, and the selected source fields. Header-only
 binding declarations no longer satisfy the module-level final theorem gate.
+That same category now also requires the five named source-binding digest
+definitions to exist as `ByteArray` definitions and treats those digest names
+as forbidden source stubs if they are declared by `axiom`, `constant`, or
+`opaque`.
 The aggregate digest import also exposed a source-hash circularity constraint:
 the current Rust aggregate evidence digest is
 `146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the
