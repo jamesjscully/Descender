@@ -12281,6 +12281,12 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "let selectedRustModelSourceRecordPackage :",
         "predicateModelCertificate := {",
         "sourceRecords := {",
+        "selectedRustNativeBoundarySemanticsPackage.hiddenSourceClosure",
+        "selectedRustNativeBoundarySemanticsSourcePackage.hiddenSourceClosure",
+        "ReviewedFq12SelectedRustNativeBoundarySemanticsPackage.hiddenSourceClosure",
+        "ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage.hiddenSourceClosure",
+        "with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_package",
+        "with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_semantics_source_package",
     ];
     if forbidden_vacuous_terms
         .iter()
@@ -58330,6 +58336,28 @@ def selectedRustSharedWitnessEvidenceSourceBinding :
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &certified_closure_marker_only_theorem,
+                theorem_name
+            )
+        );
+        let raw_semantics_package_closure_theorem = concrete_constructor_certificate_theorem
+            .replace(
+                "  exact\n    selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure\n",
+                "  have _hCertifiedClosure :=\n    selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure\n  exact\n    selectedRustNativeBoundarySemanticsPackage.hiddenSourceClosure\n",
+            );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &raw_semantics_package_closure_theorem,
+                theorem_name
+            )
+        );
+        let source_semantics_package_closure_theorem = concrete_constructor_certificate_theorem
+            .replace(
+                "  exact\n    selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure\n",
+                "  have _hCertifiedClosure :=\n    selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure\n  exact\n    selectedRustNativeBoundarySemanticsSourcePackage.hiddenSourceClosure\n",
+            );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &source_semantics_package_closure_theorem,
                 theorem_name
             )
         );

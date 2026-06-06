@@ -1243,6 +1243,12 @@ witnesses from each exported raw source projection back to those bindings. This
 keeps the package from becoming a laundering point where selected evidence
 bindings are consumed and then discarded before hidden-source closure.
 
+P2FS-001 certified closure route guard: the future final theorem gate now
+rejects raw native-boundary semantics package closure and source-shaped
+semantics package closure markers. The active final proof must close through
+`selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure`,
+keeping the selected predicate-model certificate on the closure route.
+
 P2FS-001 final-theorem constructor-binding hardening: the future extractor
 theorem gate now requires each selected certificate local to be bound directly
 by its named constructor. A constructor laundering fixture where the

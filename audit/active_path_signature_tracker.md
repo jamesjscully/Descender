@@ -1626,6 +1626,12 @@ source projection back to the corresponding binding. The package can no longer
 erase the selected public-evidence bindings after construction and then feed an
 unrelated raw payload-projection, availability, route, local, or witness source
 into the aggregate closure.
+The final AP2-N001 theorem gate now also rejects raw
+`ReviewedFq12SelectedRustNativeBoundarySemanticsPackage` and source-shaped
+`ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage` closure routes.
+The final proof must close through
+`selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure`,
+so the predicate-model certificate remains on the active closure path.
 The predicate-model certificate now has the same selected public-evidence
 discipline: it carries `evidenceReportBound` and `evidenceDigestBound` fields
 tying its report and digest to
