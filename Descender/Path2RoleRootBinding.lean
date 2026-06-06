@@ -27,6 +27,7 @@ the digest handles that the later assembly layer consumes.
 -/
 def FullNativeOpeningRoleCoordinatesEqual
     (left right : FullNativeRepresentativeOpening) : Prop :=
+  left.nativeBoundaryDigest = right.nativeBoundaryDigest ∧
   left.nativeRoleRootCommitment = right.nativeRoleRootCommitment ∧
     left.localSectionDigest = right.localSectionDigest ∧
       left.packedResiduesDigest = right.packedResiduesDigest ∧
@@ -55,13 +56,13 @@ theorem full_native_opening_matches_of_role_coordinates_eq
     (hMatches : FullNativeOpeningMatchesRepresentative left h) :
     FullNativeOpeningMatchesRepresentative right h := by
   rcases hEq with
-    ⟨_hRoot, hLocal, hPacked, hRandomizer, hSelected, hPad, hTuple,
+    ⟨hNativeBoundary, _hRoot, hLocal, hPacked, hRandomizer, hSelected, hPad, hTuple,
       hProjection, hLifecycle, hTrace, hGauge, _hDigest⟩
   rcases hMatches with
-    ⟨mLocal, mPacked, mRandomizer, mSelected, mPad, mTuple,
+    ⟨mNativeBoundary, mLocal, mPacked, mRandomizer, mSelected, mPad, mTuple,
       mProjection, mLifecycle, mTrace, mGauge⟩
   exact
-    ⟨mLocal.trans hLocal, mPacked.trans hPacked,
+    ⟨mNativeBoundary.trans hNativeBoundary, mLocal.trans hLocal, mPacked.trans hPacked,
       mRandomizer.trans hRandomizer, mSelected.trans hSelected,
       mPad.trans hPad, mTuple.trans hTuple,
       mProjection.trans hProjection, mLifecycle.trans hLifecycle,

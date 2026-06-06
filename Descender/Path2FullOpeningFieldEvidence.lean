@@ -154,6 +154,8 @@ structure ReviewedFq12FullOpeningFieldEvidenceBinds
     fieldCert.nativeBoundaryDigest = cert.nativeBoundaryDigest
   nativeBoundaryDigest_lift_eq :
     fieldCert.nativeBoundaryDigest = liftCert.nativeBoundaryDigest
+  nativeBoundaryDigest_liftOpening_eq :
+    fieldCert.nativeBoundaryDigest = liftCert.opening.nativeBoundaryDigest
   nativeBoundaryDigest_assembly_eq :
     fieldCert.nativeBoundaryDigest = assemblyCert.nativeBoundaryDigest
   nativeBoundaryDigest_compat_eq :
@@ -484,6 +486,8 @@ theorem role_lift_binds_extraction_of_full_opening_field_evidence
         h.reviewedStatementDigest_payload_eq,
       h.reviewedStatementDigest_lift_eq.symm.trans
         h.reviewedStatementDigest_cert_eq,
+      h.nativeBoundaryDigest_liftOpening_eq.symm.trans
+        h.nativeBoundaryDigest_lift_eq,
       h.nativeRoleRootCommitment_liftOpening_eq.symm.trans
         h.nativeRoleRootCommitment_lift_eq,
       h.selectedAccountProjectionDigest_liftOpening_eq.symm.trans
@@ -534,6 +538,8 @@ theorem assembly_binds_opening_of_full_opening_field_evidence
         h.reviewedStatementDigest_payload_eq,
       h.reviewedStatementDigest_assembly_eq.symm.trans
         h.reviewedStatementDigest_cert_eq,
+      h.nativeBoundaryDigest_assembly_eq.symm.trans
+        h.nativeBoundaryDigest_liftOpening_eq,
       h.nativeRoleRootCommitment_assembly_eq.symm.trans
         h.nativeRoleRootCommitment_liftOpening_eq,
       h.fullOpeningDigest_assembly_eq.symm.trans
@@ -605,6 +611,8 @@ theorem compatibility_binds_deterministic_representative_of_full_opening_field_e
         h.nativeBoundaryDigest_payload_eq,
       h.nativeBoundaryDigest_compat_eq.symm.trans
         h.nativeBoundaryDigest_cert_eq,
+      h.nativeBoundaryDigest_compat_eq.symm.trans
+        h.nativeBoundaryDigest_liftOpening_eq,
       h.slotId_compat_eq.symm.trans h.slotId_payload_eq,
       h.slotId_compat_eq.symm.trans h.slotId_cert_eq,
       h.creationStatementDigest_compat_eq.symm.trans

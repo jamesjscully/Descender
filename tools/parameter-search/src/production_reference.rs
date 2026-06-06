@@ -9678,7 +9678,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 "localValid_eq_selected",
                 "descentConsistent_eq_selected",
                 "maskedProjection_eq",
-                "representativeDigest_eq",
+                "nativeBoundaryDigest_eq",
                 "descentProjectionRelation_eq",
             ],
             32768,

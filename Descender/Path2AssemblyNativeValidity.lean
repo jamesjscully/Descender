@@ -69,22 +69,24 @@ theorem reviewed_fq12_assembled_representative_eq_constructed
       AssemblyCertificateMatchesRepresentative assemblyCert h) :
     h = ReviewedFq12AssemblyConstructedRepresentative assemblyCert := by
   rcases hOpeningMatches with
-    ⟨hLocalSection, hPackedResidues, hRandomizer,
+    ⟨hNativeBoundary, hLocalSection, hPackedResidues, hRandomizer,
       hSelectedAccountProjection, hPadSource, hOpeningTuple,
       hProjectionRelation, hLifecycleSlot, hTraceWitness, hGauge⟩
   rcases hBinds with
     ⟨_hPayloadBinding, _hExtraction, _hCreationProof, _hNativePayload,
       _hNativeCert, _hSlotPayload, _hSlotCert, _hCreationPayload,
-      _hCreationCert, _hReviewedPayload, _hReviewedCert, _hRoleRoot,
+      _hCreationCert, _hReviewedPayload, _hReviewedCert, hAssemblyNativeOpening,
+      _hRoleRoot,
       _hFullOpening, hAssemblyLocalSection, hAssemblyPackedResidues,
       hAssemblyRandomizer, hAssemblySelectedAccountProjection,
       hAssemblyPadSource, hAssemblyOpeningTuple,
       hAssemblyProjectionRelation, hAssemblyLifecycleSlot,
       hAssemblyTraceWitness, hAssemblyGauge, _hOpeningEq⟩
   cases h
-  simp [ReviewedFq12AssemblyConstructedRepresentative, AssemblyCertificateMatchesRepresentative] at hAssemblyMatches hLocalSection hPackedResidues hRandomizer hSelectedAccountProjection hPadSource hOpeningTuple hProjectionRelation hLifecycleSlot hTraceWitness hGauge ⊢
+  simp [ReviewedFq12AssemblyConstructedRepresentative, AssemblyCertificateMatchesRepresentative] at hAssemblyMatches hNativeBoundary hLocalSection hPackedResidues hRandomizer hSelectedAccountProjection hPadSource hOpeningTuple hProjectionRelation hLifecycleSlot hTraceWitness hGauge ⊢
   exact
-    ⟨hAssemblyMatches,
+    ⟨hNativeBoundary.trans hAssemblyNativeOpening.symm,
+      hAssemblyMatches,
       hLocalSection.trans hAssemblyLocalSection.symm,
       hPackedResidues.trans hAssemblyPackedResidues.symm,
       hRandomizer.trans hAssemblyRandomizer.symm,

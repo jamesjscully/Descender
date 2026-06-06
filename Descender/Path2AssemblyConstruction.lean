@@ -25,7 +25,8 @@ particular `FullNativeRepresentativeOpening`.
 def ReviewedFq12AssemblyConstructedRepresentative
     (assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate) :
     HiddenRepresentative :=
-  { representativeDigest := assemblyCert.representativeDigest
+  { nativeBoundaryDigest := assemblyCert.nativeBoundaryDigest
+    representativeDigest := assemblyCert.representativeDigest
     localSection := assemblyCert.localSectionDigest
     packedResidues := assemblyCert.packedResiduesDigest
     randomizer := assemblyCert.randomizerDigest
@@ -81,13 +82,14 @@ theorem reviewed_fq12_assembly_constructed_representative_matches_opening
   rcases hBinds with
     ⟨_hPayloadBinding, _hExtraction, _hCreationProof, _hNativePayload,
       _hNativeCert, _hSlotPayload, _hSlotCert, _hCreationPayload,
-      _hCreationCert, _hReviewedPayload, _hReviewedCert, _hRoleRoot,
+      _hCreationCert, _hReviewedPayload, _hReviewedCert, hNativeOpening,
+      _hRoleRoot,
       _hFullOpening, hLocalSection, hPackedResidues, hRandomizer,
       hSelectedAccountProjection, hPadSource, hOpeningTuple,
       hProjectionRelation, hLifecycleSlot, hTraceWitness, hGauge,
       _hOpeningEq⟩
   exact
-    ⟨hLocalSection, hPackedResidues, hRandomizer,
+    ⟨hNativeOpening, hLocalSection, hPackedResidues, hRandomizer,
       hSelectedAccountProjection, hPadSource, hOpeningTuple,
       hProjectionRelation, hLifecycleSlot, hTraceWitness, hGauge⟩
 

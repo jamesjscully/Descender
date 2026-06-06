@@ -75,7 +75,8 @@ theorem reviewed_fq12_opening_native_role_root_eq_of_binds
     ⟨_hPayloadBinding, _hExtraction, _hCreationProof,
       _hNativeBoundaryPayload, _hNativeBoundaryCert, _hSlotPayload,
       _hSlotCert, _hCreationStatementPayload, _hCreationStatementCert,
-      _hReviewedStatementPayload, _hReviewedStatementCert, hRoot,
+      _hReviewedStatementPayload, _hReviewedStatementCert, _hNativeOpening,
+      hRoot,
       _hSelected, _hRandomizer, _hOpeningTuple, _hPad,
       _hProjectionRelation⟩
   exact hRoot
@@ -117,6 +118,9 @@ the root equality and concrete non-root field equalities.
 -/
 theorem full_native_opening_role_coordinates_eq_of_nonroot_fields
     {left right : FullNativeRepresentativeOpening}
+    (hNativeBoundary :
+      left.nativeBoundaryDigest =
+        right.nativeBoundaryDigest)
     (hRoot :
       left.nativeRoleRootCommitment =
         right.nativeRoleRootCommitment)
@@ -124,7 +128,7 @@ theorem full_native_opening_role_coordinates_eq_of_nonroot_fields
       FullNativeOpeningNonRootRoleFieldEqualityCertificate
         left right) :
     FullNativeOpeningRoleCoordinatesEqual left right :=
-  ⟨hRoot, C.localSectionDigest_eq, C.packedResiduesDigest_eq,
+  ⟨hNativeBoundary, hRoot, C.localSectionDigest_eq, C.packedResiduesDigest_eq,
     C.randomizerDigest_eq, C.selectedAccountProjectionDigest_eq,
     C.padSourceDigest_eq, C.openingTupleDigest_eq,
     C.projectionRelationDigest_eq, C.lifecycleSlotDigest_eq,
@@ -178,8 +182,32 @@ theorem reviewed_fq12_native_role_root_pins_full_opening_roles_of_field_binding
       left.opening.nativeRoleRootCommitment =
         right.opening.nativeRoleRootCommitment :=
     hLeftOpeningRoot.trans (hSameRoot.trans hRightOpeningRoot.symm)
+  have hLeftOpeningNative :
+      left.opening.nativeBoundaryDigest =
+        left.nativeBoundaryDigest := by
+    rcases hBindsLeft with
+      ⟨_, _, _, _, _, _, _, _, _, _, _, hNativeOpening, _⟩
+    exact hNativeOpening
+  have hRightOpeningNative :
+      right.opening.nativeBoundaryDigest =
+        right.nativeBoundaryDigest := by
+    rcases hBindsRight with
+      ⟨_, _, _, _, _, _, _, _, _, _, _, hNativeOpening, _⟩
+    exact hNativeOpening
+  have hLiftNative :
+      left.nativeBoundaryDigest = right.nativeBoundaryDigest := by
+    rcases hBindsLeft with
+      ⟨_, _, _, hLeftPayload, _, _⟩
+    rcases hBindsRight with
+      ⟨_, _, _, hRightPayload, _, _⟩
+    exact hLeftPayload.trans hRightPayload.symm
+  have hOpeningNative :
+      left.opening.nativeBoundaryDigest =
+        right.opening.nativeBoundaryDigest :=
+    hLeftOpeningNative.trans (hLiftNative.trans hRightOpeningNative.symm)
   exact Or.inl
-    (full_native_opening_role_coordinates_eq_of_nonroot_fields hOpeningRoot
+    (full_native_opening_role_coordinates_eq_of_nonroot_fields hOpeningNative
+      hOpeningRoot
       (hFieldBinding hBindsLeft hOpensLeft hBindsRight hOpensRight
         hSameRoot))
 

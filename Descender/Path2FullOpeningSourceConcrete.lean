@@ -465,6 +465,8 @@ structure ReviewedFq12AssemblyConcreteFieldCertificate
     assemblyCert.reviewedStatementDigest = payload.statementDigest
   reviewedStatementDigest_cert_eq :
     assemblyCert.reviewedStatementDigest = cert.reviewedStatementDigest
+  nativeBoundaryDigest_opening_eq :
+    assemblyCert.nativeBoundaryDigest = opening.nativeBoundaryDigest
   nativeRoleRootCommitment_eq :
     assemblyCert.nativeRoleRootCommitment =
       opening.nativeRoleRootCommitment
@@ -517,6 +519,7 @@ theorem binding_of_assembly_concrete_field_certificate
     hFields.creationStatementDigest_cert_eq,
     hFields.reviewedStatementDigest_payload_eq,
     hFields.reviewedStatementDigest_cert_eq,
+    hFields.nativeBoundaryDigest_opening_eq,
     hFields.nativeRoleRootCommitment_eq,
     hFields.fullOpeningDigest_eq,
     hFields.localSectionDigest_eq,
@@ -549,7 +552,8 @@ theorem assembly_concrete_field_certificate_of_binding
   rcases hBinds with
     ⟨hPayloadBinding, hExtraction, hCreationProof, hNativePayload,
       hNativeCert, hSlotPayload, hSlotCert, hCreationPayload,
-      hCreationCert, hReviewedPayload, hReviewedCert, hRoleRoot,
+      hCreationCert, hReviewedPayload, hReviewedCert, hNativeOpening,
+      hRoleRoot,
       hFullOpening, hLocalSection, hPackedResidues, hRandomizer,
       hSelectedAccountProjection, hPadSource, hOpeningTuple,
       hProjectionRelation, hLifecycleSlot, hTraceWitness, hGauge,
@@ -566,6 +570,7 @@ theorem assembly_concrete_field_certificate_of_binding
       creationStatementDigest_cert_eq := hCreationCert
       reviewedStatementDigest_payload_eq := hReviewedPayload
       reviewedStatementDigest_cert_eq := hReviewedCert
+      nativeBoundaryDigest_opening_eq := hNativeOpening
       nativeRoleRootCommitment_eq := hRoleRoot
       fullOpeningDigest_eq := hFullOpening
       localSectionDigest_eq := hLocalSection

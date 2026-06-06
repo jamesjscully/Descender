@@ -515,7 +515,8 @@ def reviewedFq12FullNativeOpeningCanonicalRepresentative
     (b : Boundary)
     (opening : FullNativeRepresentativeOpening) :
     HiddenRepresentative :=
-  { representativeDigest := canonicalDigest b opening
+  { nativeBoundaryDigest := opening.nativeBoundaryDigest
+    representativeDigest := canonicalDigest b opening
     localSection := opening.localSectionDigest
     packedResidues := opening.packedResiduesDigest
     randomizer := opening.randomizerDigest
@@ -606,14 +607,14 @@ def canonical_representative_source_of_representative_frame_source
             hValid hLifts hMatches hAssembles hFiber hLocal hDescent with
         hDigest | hBreak
       · rcases hMatches with
-          ⟨hLocalSection, hPackedResidues, hRandomizer,
+          ⟨hNativeBoundary, hLocalSection, hPackedResidues, hRandomizer,
             hSelectedAccountProjection, hPadSource, hOpeningTuple,
             hProjectionRelation, hLifecycleSlot, hTraceWitness, hGauge⟩
         cases h
-        simp [reviewedFq12FullNativeOpeningCanonicalRepresentative] at hDigest hLocalSection hPackedResidues hRandomizer hSelectedAccountProjection hPadSource hOpeningTuple hProjectionRelation hLifecycleSlot hTraceWitness hGauge ⊢
+        simp [reviewedFq12FullNativeOpeningCanonicalRepresentative] at hDigest hNativeBoundary hLocalSection hPackedResidues hRandomizer hSelectedAccountProjection hPadSource hOpeningTuple hProjectionRelation hLifecycleSlot hTraceWitness hGauge ⊢
         exact
           Or.inl
-            ⟨hDigest, hLocalSection, hPackedResidues, hRandomizer,
+            ⟨hNativeBoundary, hDigest, hLocalSection, hPackedResidues, hRandomizer,
               hSelectedAccountProjection, hPadSource, hOpeningTuple,
               hProjectionRelation, hLifecycleSlot, hTraceWitness, hGauge⟩
       · exact Or.inr hBreak }
@@ -996,15 +997,15 @@ def canonical_representative_source_of_canonical_representative_byte_source
                 Source.digestFrame b opening :=
           hByte.representative_digest_eq
         rcases hMatches with
-          ⟨hLocalSection, hPackedResidues, hRandomizer,
+          ⟨hNativeBoundary, hLocalSection, hPackedResidues, hRandomizer,
             hSelectedAccountProjection, hPadSource, hOpeningTuple,
             hProjectionRelation, hLifecycleSlot, hTraceWitness, hGauge⟩
         cases h
         simp [reviewedFq12FullNativeOpeningCanonicalRepresentative,
-          reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest] at hDigest hLocalSection hPackedResidues hRandomizer hSelectedAccountProjection hPadSource hOpeningTuple hProjectionRelation hLifecycleSlot hTraceWitness hGauge ⊢
+          reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest] at hDigest hNativeBoundary hLocalSection hPackedResidues hRandomizer hSelectedAccountProjection hPadSource hOpeningTuple hProjectionRelation hLifecycleSlot hTraceWitness hGauge ⊢
         exact
           Or.inl
-            ⟨hDigest, hLocalSection, hPackedResidues, hRandomizer,
+            ⟨hNativeBoundary, hDigest, hLocalSection, hPackedResidues, hRandomizer,
               hSelectedAccountProjection, hPadSource, hOpeningTuple,
               hProjectionRelation, hLifecycleSlot, hTraceWitness, hGauge⟩
       · exact Or.inr hBreak }

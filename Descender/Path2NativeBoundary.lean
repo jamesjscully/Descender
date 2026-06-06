@@ -70,6 +70,7 @@ structure ProjectionDigestFields where
 
 /-- Hidden representative space for one context. -/
 structure HiddenRepresentative where
+  nativeBoundaryDigest : Nat
   representativeDigest : Nat
   localSection : Nat
   packedResidues : Nat
@@ -188,6 +189,7 @@ checked-core digests.  This opening names the remaining native private roles
 that `HiddenRepresentative` requires.
 -/
 structure FullNativeRepresentativeOpening where
+  nativeBoundaryDigest : Nat
   nativeRoleRootCommitment : Nat
   localSectionDigest : Nat
   packedResiduesDigest : Nat
@@ -354,6 +356,8 @@ def ReviewedFq12FullOpeningBridgeDigestCertificateBinds
     bridgeCert.nativeBoundaryDigest = payload.nativeBoundaryDigest ∧
     bridgeCert.nativeBoundaryDigest = cert.nativeBoundaryDigest ∧
     bridgeCert.nativeBoundaryDigest = liftCert.nativeBoundaryDigest ∧
+    bridgeCert.nativeBoundaryDigest =
+      liftCert.opening.nativeBoundaryDigest ∧
     bridgeCert.nativeBoundaryDigest = assemblyCert.nativeBoundaryDigest ∧
     bridgeCert.nativeBoundaryDigest = compatCert.nativeBoundaryDigest ∧
     bridgeCert.slotId = payload.slotId ∧
@@ -2981,6 +2985,8 @@ def ReviewedFq12RoleLiftCertificateBindsExtraction
     liftCert.creationStatementDigest = cert.creationStatementDigest ∧
     liftCert.reviewedStatementDigest = payload.statementDigest ∧
     liftCert.reviewedStatementDigest = cert.reviewedStatementDigest ∧
+    liftCert.opening.nativeBoundaryDigest =
+      liftCert.nativeBoundaryDigest ∧
     liftCert.opening.nativeRoleRootCommitment =
       liftCert.nativeRoleRootCommitment ∧
     liftCert.opening.selectedAccountProjectionDigest =
@@ -3224,6 +3230,7 @@ representative exists.
 def FullNativeOpeningMatchesRepresentative
     (opening : FullNativeRepresentativeOpening)
     (h : HiddenRepresentative) : Prop :=
+  h.nativeBoundaryDigest = opening.nativeBoundaryDigest ∧
   h.localSection = opening.localSectionDigest ∧
     h.packedResidues = opening.packedResiduesDigest ∧
     h.randomizer = opening.randomizerDigest ∧
@@ -3294,6 +3301,7 @@ def ReviewedFq12AssemblyCertificateBindsOpening
       cert.creationStatementDigest ∧
     assemblyCert.reviewedStatementDigest = payload.statementDigest ∧
     assemblyCert.reviewedStatementDigest = cert.reviewedStatementDigest ∧
+    assemblyCert.nativeBoundaryDigest = opening.nativeBoundaryDigest ∧
     assemblyCert.nativeRoleRootCommitment =
       opening.nativeRoleRootCommitment ∧
     assemblyCert.fullOpeningDigest = opening.openingDigest ∧
@@ -3340,7 +3348,7 @@ theorem reviewed_fq12_assembly_opening_agrees_from_full_opening_bridge_digest
       _hCreationAssembly, _hRoleLiftDigest, _hRoleAssemblyDigest,
       _hRoleCompatDigest, _hAssemblyDigest, _hAssemblyCompat,
       _hCompatDigest, _hNativePayload, _hNativeCert, _hNativeLift,
-      _hNativeAssembly, _hNativeCompat, _hSlotPayload, _hSlotCert,
+      _hNativeLiftOpening, _hNativeAssembly, _hNativeCompat, _hSlotPayload, _hSlotCert,
       _hSlotLift, _hSlotAssembly, _hSlotCompat, _hCreationStmtPayload,
       _hCreationStmtCert, _hCreationStmtLift, _hCreationStmtAssembly,
       _hCreationStmtCompat, _hReviewedStmtPayload, _hReviewedStmtCert,
@@ -3645,6 +3653,7 @@ def ReviewedFq12ExtractionCompatibilityCertificateBinds
       cert.extractionCertificateDigest ∧
     compatCert.nativeBoundaryDigest = payload.nativeBoundaryDigest ∧
     compatCert.nativeBoundaryDigest = cert.nativeBoundaryDigest ∧
+    compatCert.nativeBoundaryDigest = opening.nativeBoundaryDigest ∧
     compatCert.slotId = payload.slotId ∧
     compatCert.slotId = cert.slotId ∧
     compatCert.creationStatementDigest =
@@ -3690,7 +3699,7 @@ theorem reviewed_fq12_compatibility_binding_from_full_opening_bridge_digest
       _hCreationAssembly, _hRoleLiftDigest, _hRoleAssemblyDigest,
       _hRoleCompatDigest, _hAssemblyDigest, _hAssemblyCompat,
       _hCompatDigest, hNativePayload, hNativeCert, _hNativeLift,
-      _hNativeAssembly, hNativeCompat, hSlotPayload, hSlotCert,
+      _hNativeLiftOpening, _hNativeAssembly, hNativeCompat, hSlotPayload, hSlotCert,
       _hSlotLift, _hSlotAssembly, hSlotCompat, hCreationStmtPayload,
       hCreationStmtCert, _hCreationStmtLift, _hCreationStmtAssembly,
       hCreationStmtCompat, hReviewedStmtPayload, hReviewedStmtCert,
@@ -3706,6 +3715,7 @@ theorem reviewed_fq12_compatibility_binding_from_full_opening_bridge_digest
       hExtractionCompat.symm.trans hExtractionCert,
       hNativeCompat.symm.trans hNativePayload,
       hNativeCompat.symm.trans hNativeCert,
+      hNativeCompat.symm.trans _hNativeLiftOpening,
       hSlotCompat.symm.trans hSlotPayload,
       hSlotCompat.symm.trans hSlotCert,
       hCreationStmtCompat.symm.trans hCreationStmtPayload,

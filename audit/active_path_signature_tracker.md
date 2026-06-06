@@ -1990,16 +1990,18 @@ objects. The next proof step should retarget the selected `boundaryOf`,
 `localValid`, and `descentConsistent` definitions as one coordinated model
 change against the actual Rust native-boundary frame, rather than trying to
 prove impossible equalities one by one.
-The clearest instance is digest identity: Lean's current `selectedBoundaryOf`
-sets `Boundary.nativeBoundaryDigest := h.representativeDigest`, but Rust treats
-`native_boundary_digest` and `representative_digest` as distinct values. The
-representative digest is computed by
+The digest-identity instance has now been repaired in the Lean model:
+`HiddenRepresentative` and `FullNativeRepresentativeOpening` carry
+`nativeBoundaryDigest` separately from `representativeDigest`,
+`selectedBoundaryOf` sets `Boundary.nativeBoundaryDigest` from the native digest,
+and the role-lift, assembly, compatibility, bridge, and canonical
+full-opening predicates bind the native digest across the opening/certificate
+chain. The former `representativeDigest_eq` field equation has been replaced by
+`nativeBoundaryDigest_eq`; the representative digest remains the Rust frame hash
 `path2_reviewed_fq12_native_representative_digest_v1(native_boundary_digest,
-...)` and is then carried by assembly/compatibility certificates; it is not the
-native boundary digest itself. Therefore the current field equation
-`representativeDigest_eq` is not an importable Rust fact as written. The model
-needs to distinguish "native boundary digest" from "representative digest" in
-the boundary/fiber relation before proof completeness can close.
+...)` and is no longer modeled as the native boundary digest itself. This closes
+the explicit representative/native digest conflation; the coordinate retargeting
+above remains the next active proof-completeness blocker.
 Tooling note: the Rust source scanner's direct-constant-lambda check now clamps
 source windows to a UTF-8 character boundary before slicing; the prior byte
 slice could panic when a window ended inside Lean's `∧` token. The broad

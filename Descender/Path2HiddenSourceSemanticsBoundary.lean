@@ -3384,7 +3384,7 @@ def selectedBoundaryOf
     h.selectedAccountProjection + h.randomizer + lane.val
   liveStatusMarker := h.lifecycleSlot
   creationStatementDigest := h.openingTuple
-  nativeBoundaryDigest := h.representativeDigest
+  nativeBoundaryDigest := h.nativeBoundaryDigest
 
 /--
 Selected local-validity provider for the native representative.
@@ -3407,7 +3407,7 @@ def selectedDescentConsistent
 def selectedNormRangeValid
     (b : Path2NativeBoundary.Boundary)
     (h : HiddenRepresentative) : Prop :=
-  h.representativeDigest = b.nativeBoundaryDigest ∧
+  h.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
     h.localSection = b.parentSectionRoot ∧
       h.packedResidues = b.roleProfileDigest
 
@@ -3600,7 +3600,7 @@ def selectedTransparentExtracts
     (view : TransparentPublicView)
     (h : HiddenRepresentative) : Prop :=
   selectedTransparentAccepts b view ∧
-    h.representativeDigest = b.nativeBoundaryDigest
+    h.nativeBoundaryDigest = b.nativeBoundaryDigest
 
 /-- Selected trace-opening provider. -/
 def selectedTraceOpensBoundary
@@ -4137,6 +4137,7 @@ def selectedReviewedFq12CertificateLiftsToOpening
     (cert : ReviewedFq12HiddenRelationExtractionCertificate)
     (opening : FullNativeRepresentativeOpening) : Prop :=
   ReviewedFq12ExtractionCertificateBindsPayload payload cert ∧
+    cert.nativeBoundaryDigest = opening.nativeBoundaryDigest ∧
     cert.openingCommitment = opening.openingTupleDigest ∧
       cert.accountProjectionDigest =
         opening.selectedAccountProjectionDigest ∧
@@ -4937,7 +4938,7 @@ structure ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityFieldEquati
             cert.slotId = b.context.slotId ->
               cert.openingCommitment = opening.openingTupleDigest ->
                 opening.openingTupleDigest = b.creationStatementDigest
-  representativeDigest_eq :
+  nativeBoundaryDigest_eq :
     forall {b : Path2NativeBoundary.Boundary}
         {payload : ReviewedFq12HiddenSourcePayload}
         {cert : ReviewedFq12HiddenRelationExtractionCertificate}
@@ -4947,9 +4948,7 @@ structure ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityFieldEquati
           cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
             cert.slotId = b.context.slotId ->
               cert.openingCommitment = opening.openingTupleDigest ->
-                reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
-                  Cert.toWitnessSources.digestFrame b opening =
-                  b.nativeBoundaryDigest
+                opening.nativeBoundaryDigest = b.nativeBoundaryDigest
   localSlot_eq :
     forall {b : Path2NativeBoundary.Boundary}
         {payload : ReviewedFq12HiddenSourcePayload}
@@ -5047,8 +5046,8 @@ def reviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSourceOfF
     have hCreation :=
       fields.creationStatementDigest_eq hPayloadBoundary hPayloadSlot
         hCertBoundary hCertSlot hOpeningCommitment
-    have hRepresentative :=
-      fields.representativeDigest_eq hPayloadBoundary hPayloadSlot
+    have hNativeBoundary :=
+      fields.nativeBoundaryDigest_eq hPayloadBoundary hPayloadSlot
         hCertBoundary hCertSlot hOpeningCommitment
     cases b with
     | mk boundaryVersion context parentSectionRoot roleProfileDigest
@@ -5084,7 +5083,7 @@ def reviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSourceOfF
       reviewedFq12FullNativeOpeningCanonicalRepresentative,
       hLocalSection, hPackedResidues, hRandomizer, hPadSource,
       hOpeningTupleHandle, hProjectionRelation, hLiveStatus,
-      hRepresentative]
+      hNativeBoundary]
     exact
       ⟨hBoundaryVersion',
         hPackedResidues'.symm.trans hPackedWitness',

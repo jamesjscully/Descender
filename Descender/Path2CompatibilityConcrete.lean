@@ -80,6 +80,8 @@ structure CompatibilityRepresentativeDigestFieldCertificate
     Prop where
   representativeDigest_eq :
     compatCert.representativeDigest = h.representativeDigest
+  nativeBoundaryDigest_eq :
+    compatCert.nativeBoundaryDigest = h.nativeBoundaryDigest
   openingMatchesRepresentative :
     FullNativeOpeningMatchesRepresentative opening h
 
@@ -118,9 +120,11 @@ theorem same_representative_concrete_field_certificate_of_binding
       payload cert opening h compatCert := by
   rcases hBind with
     ⟨hPayloadBinding, hExtractionDigest, hNativePayload, hNativeCert,
-      hSlotPayload, hSlotCert, hCreationPayload, hCreationCert,
+      hNativeOpening, hSlotPayload, hSlotCert, hCreationPayload, hCreationCert,
       hReviewedPayload, hReviewedCert, hFullOpening, hSelectedOpening,
       hSelectedCert, hRepresentative, hOpeningMatches⟩
+  rcases hOpeningMatches with
+    ⟨hRepresentativeNative, hOpeningMatchesTail⟩
   exact
     { payloadExtractionFields :=
         { payloadBindingDigest_eq := hPayloadBinding
@@ -139,7 +143,10 @@ theorem same_representative_concrete_field_certificate_of_binding
           selectedProjection_cert_eq := hSelectedCert }
       representativeDigestFields :=
         { representativeDigest_eq := hRepresentative
-          openingMatchesRepresentative := hOpeningMatches } }
+          nativeBoundaryDigest_eq :=
+            hNativeOpening.trans hRepresentativeNative.symm
+          openingMatchesRepresentative :=
+            ⟨hRepresentativeNative, hOpeningMatchesTail⟩ } }
 
 /--
 Conversely, the concrete field certificate is precisely strong enough to
@@ -156,11 +163,16 @@ theorem binding_of_same_representative_concrete_field_certificate
         payload cert opening h compatCert) :
     ReviewedFq12ExtractionCompatibilityCertificateBinds
       payload cert opening h compatCert := by
+  have hOpeningNative :
+      h.nativeBoundaryDigest = opening.nativeBoundaryDigest :=
+    hFields.representativeDigestFields.openingMatchesRepresentative.1
   exact
     ⟨hFields.payloadExtractionFields.payloadBindingDigest_eq,
       hFields.payloadExtractionFields.extractionCertificateDigest_eq,
       hFields.payloadExtractionFields.nativeBoundaryDigest_payload_eq,
       hFields.payloadExtractionFields.nativeBoundaryDigest_cert_eq,
+      hFields.representativeDigestFields.nativeBoundaryDigest_eq.trans
+        hOpeningNative,
       hFields.payloadExtractionFields.slotId_payload_eq,
       hFields.payloadExtractionFields.slotId_cert_eq,
       hFields.payloadExtractionFields.creationStatementDigest_payload_eq,
