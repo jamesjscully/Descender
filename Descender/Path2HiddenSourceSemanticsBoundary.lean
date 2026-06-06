@@ -2003,6 +2003,18 @@ structure ReviewedFq12SelectedRustModelSourceRecordPackage
     (WitnessParser :
       ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
     (P : Predicates) where
+  boundaryBaseEvidenceSourceBinding :
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding P
+  roleRootLiftEvidenceSourceBinding :
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding P
+  sourceRouteEvidenceSourceBinding :
+    ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
+      FieldParser RouteParser P
+  fieldLocalEvidenceSourceBinding :
+    ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding P
+  sharedWitnessEvidenceSourceBinding :
+    ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
+      CanonicalParser WitnessParser P
   payloadProjectionLaw :
     forall {b : Path2NativeBoundary.Boundary}
         {payload : ReviewedFq12HiddenSourcePayload},
@@ -2010,20 +2022,53 @@ structure ReviewedFq12SelectedRustModelSourceRecordPackage
         payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
           payload.slotId = b.context.slotId ->
         P.reviewedFq12PayloadProjectsFrom b payload
+  payloadProjectionLawBound :
+    (payloadProjectionLaw :
+      forall {b : Path2NativeBoundary.Boundary}
+          {payload : ReviewedFq12HiddenSourcePayload},
+        P.reviewedFq12PayloadAccepts b payload ->
+          payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+            payload.slotId = b.context.slotId ->
+          P.reviewedFq12PayloadProjectsFrom b payload) =
+      (boundaryBaseEvidenceSourceBinding.payloadProjectionLaw :
+        forall {b : Path2NativeBoundary.Boundary}
+            {payload : ReviewedFq12HiddenSourcePayload},
+          P.reviewedFq12PayloadAccepts b payload ->
+            payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+              payload.slotId = b.context.slotId ->
+            P.reviewedFq12PayloadProjectsFrom b payload)
   extractionCertificateAvailability :
     ReviewedFq12ExtractionCertificateAvailability P
+  extractionCertificateAvailabilityBound :
+    (extractionCertificateAvailability :
+      ReviewedFq12ExtractionCertificateAvailability P) =
+      (boundaryBaseEvidenceSourceBinding.extractionCertificateAvailability :
+        ReviewedFq12ExtractionCertificateAvailability P)
   roleRootLiftSource :
     ReviewedFq12RoleRootFunctionalLiftSource P
+  roleRootLiftSourceBound :
+    roleRootLiftSource =
+      roleRootLiftEvidenceSourceBinding.roleRootLiftSource
   selectedSourceRouteByteSource :
     SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
       FieldParser RouteParser P
+  selectedSourceRouteByteSourceBound :
+    selectedSourceRouteByteSource =
+      sourceRouteEvidenceSourceBinding.selectedSourceRouteByteSource
   assemblySource :
     ReviewedFq12FieldConcreteAssemblyLocalSource P
+  assemblySourceBound :
+    assemblySource = fieldLocalEvidenceSourceBinding.assemblySource
   compatibilitySource :
     ReviewedFq12FieldConcreteCompatibilitySource P
+  compatibilitySourceBound :
+    compatibilitySource = fieldLocalEvidenceSourceBinding.compatibilitySource
   sharedFrameWitnessSources :
     ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
       CanonicalParser WitnessParser P
+  sharedFrameWitnessSourcesBound :
+    sharedFrameWitnessSources =
+      sharedWitnessEvidenceSourceBinding.sharedFrameWitnessSources
 
 namespace ReviewedFq12SelectedRustModelSourceRecordPackage
 
@@ -2042,6 +2087,18 @@ def ofSources
     {WitnessParser :
       ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
     {P : Predicates}
+    (boundaryBaseEvidenceSourceBinding :
+      ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding P)
+    (roleRootLiftEvidenceSourceBinding :
+      ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding P)
+    (sourceRouteEvidenceSourceBinding :
+      ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
+        FieldParser RouteParser P)
+    (fieldLocalEvidenceSourceBinding :
+      ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding P)
+    (sharedWitnessEvidenceSourceBinding :
+      ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
+        CanonicalParser WitnessParser P)
     (payloadProjectionLaw :
       forall {b : Path2NativeBoundary.Boundary}
           {payload : ReviewedFq12HiddenSourcePayload},
@@ -2049,29 +2106,74 @@ def ofSources
           payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
             payload.slotId = b.context.slotId ->
           P.reviewedFq12PayloadProjectsFrom b payload)
+    (payloadProjectionLawBound :
+      (payloadProjectionLaw :
+        forall {b : Path2NativeBoundary.Boundary}
+            {payload : ReviewedFq12HiddenSourcePayload},
+          P.reviewedFq12PayloadAccepts b payload ->
+            payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+              payload.slotId = b.context.slotId ->
+            P.reviewedFq12PayloadProjectsFrom b payload) =
+        (boundaryBaseEvidenceSourceBinding.payloadProjectionLaw :
+          forall {b : Path2NativeBoundary.Boundary}
+              {payload : ReviewedFq12HiddenSourcePayload},
+            P.reviewedFq12PayloadAccepts b payload ->
+              payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+                payload.slotId = b.context.slotId ->
+              P.reviewedFq12PayloadProjectsFrom b payload))
     (extractionCertificateAvailability :
       ReviewedFq12ExtractionCertificateAvailability P)
+    (extractionCertificateAvailabilityBound :
+      (extractionCertificateAvailability :
+        ReviewedFq12ExtractionCertificateAvailability P) =
+        (boundaryBaseEvidenceSourceBinding.extractionCertificateAvailability :
+          ReviewedFq12ExtractionCertificateAvailability P))
     (roleRootLiftSource :
       ReviewedFq12RoleRootFunctionalLiftSource P)
+    (roleRootLiftSourceBound :
+      roleRootLiftSource =
+        roleRootLiftEvidenceSourceBinding.roleRootLiftSource)
     (selectedSourceRouteByteSource :
       SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
         FieldParser RouteParser P)
+    (selectedSourceRouteByteSourceBound :
+      selectedSourceRouteByteSource =
+        sourceRouteEvidenceSourceBinding.selectedSourceRouteByteSource)
     (assemblySource :
       ReviewedFq12FieldConcreteAssemblyLocalSource P)
+    (assemblySourceBound :
+      assemblySource = fieldLocalEvidenceSourceBinding.assemblySource)
     (compatibilitySource :
       ReviewedFq12FieldConcreteCompatibilitySource P)
+    (compatibilitySourceBound :
+      compatibilitySource = fieldLocalEvidenceSourceBinding.compatibilitySource)
     (sharedFrameWitnessSources :
       ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
-        CanonicalParser WitnessParser P) :
+        CanonicalParser WitnessParser P)
+    (sharedFrameWitnessSourcesBound :
+      sharedFrameWitnessSources =
+        sharedWitnessEvidenceSourceBinding.sharedFrameWitnessSources) :
     ReviewedFq12SelectedRustModelSourceRecordPackage
       FieldParser RouteParser CanonicalParser WitnessParser P where
+  boundaryBaseEvidenceSourceBinding := boundaryBaseEvidenceSourceBinding
+  roleRootLiftEvidenceSourceBinding := roleRootLiftEvidenceSourceBinding
+  sourceRouteEvidenceSourceBinding := sourceRouteEvidenceSourceBinding
+  fieldLocalEvidenceSourceBinding := fieldLocalEvidenceSourceBinding
+  sharedWitnessEvidenceSourceBinding := sharedWitnessEvidenceSourceBinding
   payloadProjectionLaw := payloadProjectionLaw
+  payloadProjectionLawBound := payloadProjectionLawBound
   extractionCertificateAvailability := extractionCertificateAvailability
+  extractionCertificateAvailabilityBound := extractionCertificateAvailabilityBound
   roleRootLiftSource := roleRootLiftSource
+  roleRootLiftSourceBound := roleRootLiftSourceBound
   selectedSourceRouteByteSource := selectedSourceRouteByteSource
+  selectedSourceRouteByteSourceBound := selectedSourceRouteByteSourceBound
   assemblySource := assemblySource
+  assemblySourceBound := assemblySourceBound
   compatibilitySource := compatibilitySource
+  compatibilitySourceBound := compatibilitySourceBound
   sharedFrameWitnessSources := sharedFrameWitnessSources
+  sharedFrameWitnessSourcesBound := sharedFrameWitnessSourcesBound
 
 /--
 Construct the selected source-record package from explicit evidence/source
@@ -2103,20 +2205,32 @@ def ofSourceBindings
         CanonicalParser WitnessParser P) :
     ReviewedFq12SelectedRustModelSourceRecordPackage
       FieldParser RouteParser CanonicalParser WitnessParser P where
+  boundaryBaseEvidenceSourceBinding := boundaryBaseEvidenceSourceBinding
+  roleRootLiftEvidenceSourceBinding := roleRootLiftEvidenceSourceBinding
+  sourceRouteEvidenceSourceBinding := sourceRouteEvidenceSourceBinding
+  fieldLocalEvidenceSourceBinding := fieldLocalEvidenceSourceBinding
+  sharedWitnessEvidenceSourceBinding := sharedWitnessEvidenceSourceBinding
   payloadProjectionLaw :=
     boundaryBaseEvidenceSourceBinding.payloadProjectionLaw
+  payloadProjectionLawBound := rfl
   extractionCertificateAvailability :=
     boundaryBaseEvidenceSourceBinding.extractionCertificateAvailability
+  extractionCertificateAvailabilityBound := rfl
   roleRootLiftSource :=
     roleRootLiftEvidenceSourceBinding.roleRootLiftSource
+  roleRootLiftSourceBound := rfl
   selectedSourceRouteByteSource :=
     sourceRouteEvidenceSourceBinding.selectedSourceRouteByteSource
+  selectedSourceRouteByteSourceBound := rfl
   assemblySource :=
     fieldLocalEvidenceSourceBinding.assemblySource
+  assemblySourceBound := rfl
   compatibilitySource :=
     fieldLocalEvidenceSourceBinding.compatibilitySource
+  compatibilitySourceBound := rfl
   sharedFrameWitnessSources :=
     sharedWitnessEvidenceSourceBinding.sharedFrameWitnessSources
+  sharedFrameWitnessSourcesBound := rfl
 
 /-- Constructor-bound boundary/base certificate from selected raw sources. -/
 def boundaryBaseCertificate

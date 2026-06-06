@@ -1237,6 +1237,12 @@ matches the predicate-model and source-binding evidence discipline and rules
 out aggregate certificate construction over an unrelated public report/digest
 pair.
 
+P2FS-001 source-record package binding: the selected source-record package now
+stores the five selected evidence/source binding objects and has equality
+witnesses from each exported raw source projection back to those bindings. This
+keeps the package from becoming a laundering point where selected evidence
+bindings are consumed and then discarded before hidden-source closure.
+
 P2FS-001 final-theorem constructor-binding hardening: the future extractor
 theorem gate now requires each selected certificate local to be bound directly
 by its named constructor. A constructor laundering fixture where the

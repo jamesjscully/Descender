@@ -1620,6 +1620,12 @@ five-source constructor route must pass `rfl rfl` after the aggregate evidence
 digest. This prevents the aggregate certificate from being built over an
 unrelated report/digest pair while still using selected per-source
 certificates.
+The selected source-record package now retains the five selected
+evidence/source binding objects and carries equality witnesses tying every raw
+source projection back to the corresponding binding. The package can no longer
+erase the selected public-evidence bindings after construction and then feed an
+unrelated raw payload-projection, availability, route, local, or witness source
+into the aggregate closure.
 The predicate-model certificate now has the same selected public-evidence
 discipline: it carries `evidenceReportBound` and `evidenceDigestBound` fields
 tying its report and digest to
