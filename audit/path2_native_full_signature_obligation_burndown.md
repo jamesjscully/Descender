@@ -1564,3 +1564,10 @@ assembly-certificate assembly, compatibility extraction, certificate
 extraction, and payload extraction, while leaving native fiber/local/descent
 laws to the selected source records. The manifest tracks the route with
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_digest_frame_provider_constructors_present`.
+The route now also has a certificate-shaped entry point:
+`reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate`
+first consumes the active shared digest-frame witness evidence certificate and
+then derives the hard-provider slice from the certificate's shared frame. The
+manifest tracks this with
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_certificate_route_present`,
+while the selected provider fields themselves remain intentionally fail-closed.

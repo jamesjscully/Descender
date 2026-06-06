@@ -1826,6 +1826,13 @@ five representative/extraction predicates from one native representative
 digest frame, with immediate lemmas for assembly-implies-full-assembly and
 certificate-extraction-implies-payload-extraction. The manifest tracks this as
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_digest_frame_provider_constructors_present`.
+That constructor now also has a certificate-shaped active route:
+`reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate`
+consumes the report-verified
+`ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate` and
+projects its shared digest frame into the hard-provider constructor. The
+manifest tracks this as
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_certificate_route_present`.
 
 ## Findings
 

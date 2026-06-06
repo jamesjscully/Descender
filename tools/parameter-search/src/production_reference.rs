@@ -7600,6 +7600,8 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
         bool,
     pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_digest_frame_provider_constructors_present:
         bool,
+    pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_certificate_route_present:
+        bool,
     pub native_boundary_predicate_model_core_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_transparent_trace_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present: bool,
@@ -9478,6 +9480,30 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             ],
             4096,
         );
+    let native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_certificate_route_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "def",
+            "reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate",
+            &[
+                "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate",
+                "ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources",
+                "reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame",
+                "Cert.toWitnessSources.digestFrame",
+            ],
+            4096,
+        ) && lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "theorem",
+            "reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate_eq",
+            &[
+                "reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate",
+                "reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame",
+                "Cert.toWitnessSources.digestFrame",
+                "rfl",
+            ],
+            4096,
+        );
     let native_boundary_predicate_model_evidence_report_target_present =
         lean_source_has_named_declaration_with_markers_v1(
             &boundary_source,
@@ -11119,6 +11145,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_law_bundle_target_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_package_target_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_digest_frame_provider_constructors_present,
+        native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_certificate_route_present,
         native_boundary_predicate_model_core_provider_fields_defined_present,
         native_boundary_predicate_model_transparent_trace_provider_fields_defined_present,
         native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present,
@@ -60070,6 +60097,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(
             source_record_subcheck
                 .native_boundary_predicate_model_reviewed_fq12_hard_extraction_digest_frame_provider_constructors_present
+        );
+        assert!(
+            source_record_subcheck
+                .native_boundary_predicate_model_reviewed_fq12_hard_extraction_shared_witness_certificate_route_present
         );
         assert!(
             !source_record_subcheck

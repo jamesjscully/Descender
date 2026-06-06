@@ -3711,6 +3711,46 @@ theorem reviewedFq12DigestFrameCertificateExtractionImpliesPayloadExtraction
       digestFrame).selectedReviewedFq12PayloadExtracts b payload h := by
   exact ⟨cert, hExtracts⟩
 
+/--
+Certificate-shaped route from the active shared digest-frame witness evidence
+into the hard-extraction provider slice.
+
+This consumes the report-verified shared witness certificate before exposing
+the digest frame. It keeps the representative-producing provider route tied to
+the active selected Rust shared-frame evidence, rather than to a naked frame
+parameter.
+-/
+def reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources :=
+  reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame
+    Cert.toWitnessSources.digestFrame
+
+/--
+The shared-witness certificate route is definitionally the digest-frame
+provider route for the certificate's report-verified shared frame.
+-/
+theorem reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate_eq
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate
+        Cert =
+      reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame
+        Cert.toWitnessSources.digestFrame := rfl
+
 namespace ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources
 
 /--
