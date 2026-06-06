@@ -283,6 +283,13 @@ constructor before accepting `.hiddenSourceClosure` or the certified-package
 full-signature bound handoff; an anonymous certified semantics package no
 longer satisfies the theorem source scanner.
 
+2026-06-05 sub-evidence digest-match route update: the concrete-definition
+checklist now requires `selectedRustFiveSourceSubEvidenceDigestsMatchProof` to
+derive from `selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch`.
+A same-type proof with the right theorem name but without the constructor-bound
+source-record package reduction no longer completes
+`sub_evidence_digest_match_proof_present`.
+
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
 verifier, and the Path 2 deployment facade source gate requires those exports.

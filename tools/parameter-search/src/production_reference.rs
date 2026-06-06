@@ -9683,6 +9683,10 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 "selectedRustFieldLocalSourceCertificate",
                 "selectedRustSharedFrameWitnessSourcesCertificate",
             ],
+        ) && lean_source_selected_rust_definition_body_contains_marker_v1(
+            &boundary_source,
+            "selectedRustFiveSourceSubEvidenceDigestsMatchProof",
+            "selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch",
         );
     let all_definitions_present = evidence_report_definitions_present
         && evidence_digest_definitions_present
@@ -57765,7 +57769,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     selectedRustSourceRouteByteSourceCertificate
     selectedRustFieldLocalSourceCertificate
     selectedRustSharedFrameWitnessSourcesCertificate :=
-  selectedRustFiveSourceSubEvidenceDigestsMatchProofValue
+  selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch
 "#;
         let complete_concrete_definition_checklist =
             path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
@@ -57824,6 +57828,17 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             );
         assert!(!anonymous_source_record_package_checklist.source_record_definitions_present);
         assert!(!anonymous_source_record_package_checklist.all_definitions_present);
+        let anonymous_sub_evidence_match_source = complete_concrete_definition_source.replacen(
+            "selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch",
+            "selectedRustFiveSourceSubEvidenceDigestsMatchProofValue",
+            1,
+        );
+        let anonymous_sub_evidence_match_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                &anonymous_sub_evidence_match_source,
+            );
+        assert!(!anonymous_sub_evidence_match_checklist.sub_evidence_digest_match_proof_present);
+        assert!(!anonymous_sub_evidence_match_checklist.all_definitions_present);
         let complete_source_record_subcheck =
             path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 complete_concrete_definition_source,

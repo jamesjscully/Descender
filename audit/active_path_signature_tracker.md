@@ -1289,6 +1289,10 @@ The certified native-boundary semantics package now has constructor
 `ofCertificateAndSourceRecords`, and the final AP2-N001 theorem gate requires
 that constructor before it accepts `.hiddenSourceClosure` or the
 certified-package active-bound handoff.
+The aggregate sub-evidence digest-match proof is now route-bound:
+`selectedRustFiveSourceSubEvidenceDigestsMatchProof` must derive from
+`selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch`, not from an
+anonymous same-type proof.
 
 ## Findings
 
