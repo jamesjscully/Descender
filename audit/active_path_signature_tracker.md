@@ -1783,6 +1783,12 @@ stack. Those theorems are `P`-parameterized and already assume the predicate
 fields, so they can discharge laws for an independently defined provider but
 cannot define the provider. The active manifest reports the circular-dependency
 bit false.
+Mapping the reviewed-Fq12 provider fields against Rust shows that payload,
+extraction, role-lift, assembly, compatibility, and bridge-digest validity each
+have verifier functions, but the fields that produce a native
+`HiddenRepresentative` still depend on the canonical representative/shared
+digest-frame witness route. See the Path 2 burndown for the field-by-field
+mapping.
 
 ## Findings
 

@@ -1500,3 +1500,28 @@ they can validate laws for a chosen provider but cannot define the provider
 itself. The current manifest reports
 `native_boundary_predicate_model_reviewed_fq12_provider_circular_source_dependency_present =
 false`.
+
+Reviewed-Fq12 provider mapping from the active Rust verifier surface:
+`selectedReviewedFq12PayloadAccepts` and
+`selectedReviewedFq12PayloadProjectsFrom` must be tied to a successful
+`verify_path2_reviewed_fq12_hidden_source_payload_binding_v1` plus native
+boundary digest/slot agreement, not merely digest equality. Extraction
+certificate availability/validity maps to
+`verify_path2_reviewed_fq12_hidden_relation_extraction_certificate_v1`;
+role-lift fields map to
+`verify_path2_reviewed_fq12_full_native_opening_certificate_v1`; assembly
+certificate fields map to
+`verify_path2_reviewed_fq12_native_representative_assembly_certificate_v1`;
+compatibility fields map to
+`verify_path2_reviewed_fq12_extraction_compatibility_certificate_v1`; and
+aggregate bridge-digest fields map to
+`verify_path2_reviewed_fq12_full_opening_bridge_certificate_v1`. The remaining
+hard provider fields are the ones that turn those certificates into the native
+`HiddenRepresentative` relation:
+`selectedFullNativeOpeningAssemblesRepresentative`,
+`selectedReviewedFq12AssemblyCertificateAssembles`,
+`selectedReviewedFq12ExtractionCompatibilityCertificateExtracts`,
+`selectedReviewedFq12CertificateExtracts`, and
+`selectedReviewedFq12PayloadExtracts`. Those are exactly where the canonical
+representative and shared digest-frame witness source records are needed; they
+cannot be supplied by the aggregate bridge verifier alone.
