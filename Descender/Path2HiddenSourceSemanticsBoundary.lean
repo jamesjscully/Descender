@@ -1860,6 +1860,9 @@ structure ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding
     ReviewedFq12SelectedRustBoundaryBaseEvidenceReport
   evidenceReportBound :
     evidenceReport = selectedRustBoundaryBaseEvidenceReport
+  evidenceDigest : ByteArray
+  evidenceDigestBound :
+    evidenceDigest = selectedRustBoundaryBaseEvidenceDigest
   sourceBindingDigest : ByteArray
   payloadProjectionLaw :
     forall {b : Path2NativeBoundary.Boundary}
@@ -1878,6 +1881,9 @@ structure ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding
     ReviewedFq12SelectedRustRoleRootLiftEvidenceReport
   evidenceReportBound :
     evidenceReport = selectedRustRoleRootLiftEvidenceReport
+  evidenceDigest : ByteArray
+  evidenceDigestBound :
+    evidenceDigest = selectedRustRoleRootLiftEvidenceDigest
   sourceBindingDigest : ByteArray
   roleRootLiftSource :
     ReviewedFq12RoleRootFunctionalLiftSource P
@@ -1891,6 +1897,9 @@ structure ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
     SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport
   evidenceReportBound :
     evidenceReport = selectedRustSourceRouteEvidenceReport
+  evidenceDigest : ByteArray
+  evidenceDigestBound :
+    evidenceDigest = selectedRustSourceRouteEvidenceDigest
   sourceBindingDigest : ByteArray
   selectedSourceRouteByteSource :
     SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
@@ -1903,6 +1912,9 @@ structure ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding
     ReviewedFq12SelectedRustFieldLocalEvidenceReport
   evidenceReportBound :
     evidenceReport = selectedRustFieldLocalEvidenceReport
+  evidenceDigest : ByteArray
+  evidenceDigestBound :
+    evidenceDigest = selectedRustFieldLocalEvidenceDigest
   sourceBindingDigest : ByteArray
   assemblySource :
     ReviewedFq12FieldConcreteAssemblyLocalSource P
@@ -1920,6 +1932,9 @@ structure ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
     ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport
   evidenceReportBound :
     evidenceReport = selectedRustSharedFrameWitnessEvidenceReport
+  evidenceDigest : ByteArray
+  evidenceDigestBound :
+    evidenceDigest = selectedRustSharedFrameWitnessEvidenceDigest
   sourceBindingDigest : ByteArray
   sharedFrameWitnessSources :
     ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources

@@ -1589,6 +1589,13 @@ rejects local same-name reconstruction of the five selected source
 certificates and `selectedRustModelSourceRecordPackage`, so the final theorem
 must consume the selected global certificate/package definitions checked by
 the checklist rather than shadowing them with locally rebuilt objects.
+Each selected evidence/source binding object now also carries
+`evidenceDigest` and `evidenceDigestBound`, and the Rust checklist requires
+future binding definitions to set those fields to the selected component
+evidence digest with `rfl`. This keeps report-bound source records tied to
+the same public digest constants consumed by the selected source certificates,
+instead of allowing an arbitrary source-binding digest to be the only digest
+field on the binding object.
 
 ## Findings
 

@@ -1058,6 +1058,12 @@ aggregate five-source certificate and certified semantics handoff from those
 objects, but the per-source certificates and source-record package must be the
 selected global definitions that the concrete-definition checklist already
 checks.
+Each selected evidence/source binding object now also carries the selected
+component `evidenceDigest` plus an `evidenceDigestBound` equality proof. The
+source-binding checklist requires future binding definitions to fill those
+fields with the selected component evidence digest and `rfl`, so report-bound
+source records are also digest-bound to the same public evidence constants
+consumed by the source certificates.
 The aggregate digest import also exposed a source-hash circularity constraint:
 the current Rust aggregate evidence digest is
 `146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the
