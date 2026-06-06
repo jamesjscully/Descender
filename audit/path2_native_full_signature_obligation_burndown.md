@@ -306,6 +306,11 @@ derive from `selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch`.
 A same-type proof with the right theorem name but without the constructor-bound
 source-record package reduction no longer completes
 `sub_evidence_digest_match_proof_present`.
+The source-record package now also has
+`toFieldLocalSharedDigestFrameWitnessInputs`, and the source-record subcheck
+requires that reduction surface. This pins the package to the preferred
+field/local shared-frame AP2-N001 theorem target in addition to the aggregate
+five-source and byte-component projections.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and

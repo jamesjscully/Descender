@@ -2123,6 +2123,36 @@ def toByteComponentInputs
     Package.compatibilitySource
     Package.sharedFrameWitnessSources
 
+/--
+Forget a selected source-record package into the preferred field/local
+shared-frame input record.
+
+This records the active implementation-oriented AP2-N001 route directly:
+the source package supplies role-root/lift, selected source-route bytes,
+assembly and compatibility local sources, and the shared digest-frame witness
+bundle consumed by
+`reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_inputs`.
+-/
+def toFieldLocalSharedDigestFrameWitnessInputs
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Package :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs
+      FieldParser RouteParser CanonicalParser WitnessParser P :=
+  reviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputsOfSources
+    Package.roleRootLiftSource
+    Package.selectedSourceRouteByteSource
+    Package.assemblySource
+    Package.compatibilitySource
+    Package.sharedFrameWitnessSources
+
 end ReviewedFq12SelectedRustModelSourceRecordPackage
 
 /--

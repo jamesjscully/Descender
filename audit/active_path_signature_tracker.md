@@ -1302,6 +1302,12 @@ The aggregate sub-evidence digest-match proof is now route-bound:
 `selectedRustFiveSourceSubEvidenceDigestsMatchProof` must derive from
 `selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch`, not from an
 anonymous same-type proof.
+The selected source-record package also now projects directly to
+`ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs` through
+`toFieldLocalSharedDigestFrameWitnessInputs`, and the Rust source-record
+subcheck records that reduction. This keeps the active source package tied to
+the implementation-oriented field/local shared-frame theorem surface, while
+leaving the concrete selected source definitions fail-closed.
 
 ## Findings
 

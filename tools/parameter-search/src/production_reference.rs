@@ -7589,6 +7589,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub package_sub_evidence_match_reduction_present: bool,
     pub package_to_closure_inputs_reduction_present: bool,
     pub package_to_byte_component_inputs_reduction_present: bool,
+    pub package_to_field_local_shared_digest_frame_inputs_reduction_present: bool,
     pub package_to_hidden_source_closure_reduction_present: bool,
     pub boundary_base_report_only_not_source_record_closure: bool,
     pub role_root_lift_report_only_not_source_record_closure: bool,
@@ -9239,6 +9240,18 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
+    let package_to_field_local_shared_digest_frame_inputs_reduction_present = [
+        "def toFieldLocalSharedDigestFrameWitnessInputs",
+        "ReviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputs",
+        "reviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputsOfSources",
+        "Package.roleRootLiftSource",
+        "Package.selectedSourceRouteByteSource",
+        "Package.assemblySource",
+        "Package.compatibilitySource",
+        "Package.sharedFrameWitnessSources",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
     let package_to_hidden_source_closure_reduction_present = [
         "theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package",
         "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources",
@@ -9347,6 +9360,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         package_sub_evidence_match_reduction_present,
         package_to_closure_inputs_reduction_present,
         package_to_byte_component_inputs_reduction_present,
+        package_to_field_local_shared_digest_frame_inputs_reduction_present,
         package_to_hidden_source_closure_reduction_present,
         boundary_base_report_only_not_source_record_closure,
         role_root_lift_report_only_not_source_record_closure,
@@ -57284,6 +57298,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(source_record_subcheck.package_sub_evidence_match_reduction_present);
         assert!(source_record_subcheck.package_to_closure_inputs_reduction_present);
         assert!(source_record_subcheck.package_to_byte_component_inputs_reduction_present);
+        assert!(
+            source_record_subcheck
+                .package_to_field_local_shared_digest_frame_inputs_reduction_present
+        );
         assert!(source_record_subcheck.package_to_hidden_source_closure_reduction_present);
         assert!(source_record_subcheck.boundary_base_report_only_not_source_record_closure);
         assert!(source_record_subcheck.role_root_lift_report_only_not_source_record_closure);

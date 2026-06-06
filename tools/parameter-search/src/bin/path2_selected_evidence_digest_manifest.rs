@@ -273,6 +273,9 @@ fn main() -> Result<(), String> {
                 source_record_subcheck.package_to_closure_inputs_reduction_present,
             "package_to_byte_component_inputs_reduction_present":
                 source_record_subcheck.package_to_byte_component_inputs_reduction_present,
+            "package_to_field_local_shared_digest_frame_inputs_reduction_present":
+                source_record_subcheck
+                    .package_to_field_local_shared_digest_frame_inputs_reduction_present,
             "package_to_hidden_source_closure_reduction_present":
                 source_record_subcheck.package_to_hidden_source_closure_reduction_present,
             "boundary_base_report_only_not_source_record_closure":
