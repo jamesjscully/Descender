@@ -1979,17 +1979,20 @@ account-projection lanes while `account_id` is the public account identity
 digest. That equality is not enforced by the active verifier and should not be
 part of the model; account binding is carried by native boundary reconstruction
 and the account projection digest instead.
-Continuing the same field audit exposed a broader coordinate mismatch that is
-still open: Rust sets `lifecycle_slot_digest = assembly.p_lifecycle_digest`,
+Continuing the same field audit exposed a broader coordinate mismatch: Rust
+sets `lifecycle_slot_digest = assembly.p_lifecycle_digest`,
 `opening_tuple_digest = creation_binding.opening_tuple_commitment`, and
 `projection_relation_digest = creation_binding.projection_relation_commitment`.
-The current selected Lean model still asks for those fields to equal
-context/live/descent coordinates such as `slotId`, `liveStatusMarker`,
-`lifecycleAnchor`, and `aggregationContextDigest`. Those are different Rust
-objects. The next proof step should retarget the selected `boundaryOf`,
-`localValid`, and `descentConsistent` definitions as one coordinated model
-change against the actual Rust native-boundary frame, rather than trying to
-prove impossible equalities one by one.
+The selected Lean model no longer treats local/descent validity as proof of
+unbacked context equalities: `selectedLocalValid` and
+`selectedDescentConsistent` are now vacuous at this native representative layer,
+with public slot binding carried by payload/certificate acceptance and opened
+role coordinates carried by boundary reconstruction plus the full-opening
+evidence. Boundary reconstruction still asks for the opened lifecycle and
+opening tuple to match the selected boundary fields (`liveStatusMarker` and
+`creationStatementDigest`), so the remaining coordinate audit is narrowed to
+whether those selected boundary fields are the right Lean names for the Rust
+native-boundary frame objects.
 The digest-identity instance has now been repaired in the Lean model:
 `HiddenRepresentative` and `FullNativeRepresentativeOpening` carry
 `nativeBoundaryDigest` separately from `representativeDigest`,

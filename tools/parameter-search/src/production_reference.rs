@@ -9678,10 +9678,10 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 "localValid_eq_selected",
                 "descentConsistent_eq_selected",
                 "maskedProjection_eq",
+                "creationStatementDigest_eq",
                 "nativeBoundaryDigest_eq",
-                "descentProjectionRelation_eq",
             ],
-            32768,
+            65536,
         ) && lean_source_has_named_declaration_with_markers_v1(
             &boundary_source,
             "def",

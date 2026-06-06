@@ -1615,28 +1615,28 @@ facts directly. This does not close the route yet; it narrows the remaining
 import to concrete boundary/opening equality evidence plus the report
 `FactsAllTrue` proof.
 The likely redesign-forcing local-account mismatch has been removed from the
-Lean model. `selectedLocalValid` now captures lifecycle-slot locality only; the
-previous equality between the selected account-projection digest and
+Lean model. `selectedLocalValid` is now vacuous at the native representative
+layer; the previous equality between the selected account-projection digest and
 `Context.accountId` was not true of the active Rust route, where the selected
 projection digest comes from extracted account-projection lanes and
-`account_id` is the public account identity digest. Account binding remains in
-the native boundary/account projection reconstruction rather than this local
-validity predicate.
-The remaining canonical field equations show the same pattern more broadly:
-Rust's full-opening fields are digest commitments (`p_lifecycle_digest`,
-opening commitment, projection-carrier digest), while the current Lean selected
-model still compares them to scalar/context coordinates (`slotId`, live marker,
-`lifecycleAnchor`, `aggregationContextDigest`). This is an open model-alignment
-blocker. The next route should retarget `selectedBoundaryOf`,
-`selectedLocalValid`, and `selectedDescentConsistent` together to the actual
-Rust native-boundary frame instead of importing impossible equalities.
-The primary concrete example is the digest identity itself: Rust keeps
+`account_id` is the public account identity digest. Public slot binding remains
+in payload/certificate acceptance, and account binding remains in the native
+boundary/account projection reconstruction rather than this local validity
+predicate.
+The same retarget removed the unbacked descent equalities:
+`selectedDescentConsistent` no longer asks full-opening digest commitments
+(`p_lifecycle_digest`, opening commitment, projection-carrier digest) to equal
+scalar/context coordinates (`slotId`, `lifecycleAnchor`,
+`aggregationContextDigest`). Boundary reconstruction still binds the opened
+lifecycle/opening tuple to the selected boundary fields, so the remaining
+model-alignment question is whether those selected boundary field names match
+the Rust native-boundary frame objects.
+The primary concrete digest-identity example is now repaired: Rust keeps
 `native_boundary_digest` and `representative_digest` separate, with the latter
-computed from the former plus opening fields. The current Lean
-`selectedBoundaryOf` instead writes `Boundary.nativeBoundaryDigest :=
-h.representativeDigest`. That cannot be justified by Rust evidence and must be
-split before the canonical native-validity/fiber theorem can be cryptographically
-closed.
+computed from the former plus opening fields. Lean now carries both fields in
+`HiddenRepresentative` / `FullNativeRepresentativeOpening`, and
+`selectedBoundaryOf` writes `Boundary.nativeBoundaryDigest` from the native
+digest rather than the representative digest.
 The hard model certificate route now has a constructor:
 `ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate.ofCanonicalNativeSource`
 uses the shared-witness certificate, the field equality, and the canonical
