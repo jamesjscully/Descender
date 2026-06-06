@@ -349,6 +349,9 @@ The predicate-model evidence report now mirrors the Rust frame's
 `certified_semantics_source_package_target_present` facts in Lean, and
 `FactsAllTrue` requires both. The report remains verified but not
 fact-complete until the concrete native-boundary predicate model is imported.
+The selected evidence manifest now prints every predicate-model all-facts
+input, making the remaining false pins visible directly in the deployment
+artifact instead of only through the hashed evidence frame.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and

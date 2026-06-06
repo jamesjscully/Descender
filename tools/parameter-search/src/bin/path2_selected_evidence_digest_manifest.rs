@@ -134,6 +134,20 @@ fn main() -> Result<(), String> {
             "report_verified": true,
             "active_boundary_predicate_model_pinned":
                 predicate_model.active_boundary_predicate_model_pinned,
+            "payload_acceptance_model_pinned":
+                predicate_model.payload_acceptance_model_pinned,
+            "extraction_certificate_model_pinned":
+                predicate_model.extraction_certificate_model_pinned,
+            "full_opening_and_assembly_model_pinned":
+                predicate_model.full_opening_and_assembly_model_pinned,
+            "compatibility_and_extraction_model_pinned":
+                predicate_model.compatibility_and_extraction_model_pinned,
+            "native_boundary_break_model_pinned":
+                predicate_model.native_boundary_break_model_pinned,
+            "native_boundary_predicate_record_complete":
+                predicate_model.native_boundary_predicate_record_complete,
+            "active_verifier_route_pinned":
+                predicate_model.active_verifier_route_pinned,
             "concrete_predicate_model_present":
                 predicate_model.concrete_predicate_model_present,
             "certified_semantics_source_package_target_present":

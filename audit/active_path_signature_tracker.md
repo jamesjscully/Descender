@@ -1345,6 +1345,10 @@ concrete-model and certified-semantics-package status fields as
 `certifiedSemanticsSourcePackageTargetPresent`, and `FactsAllTrue` requires
 both. The current selected report remains impossible because the concrete
 predicate model is still absent.
+The selected evidence manifest now emits every predicate-model all-facts input
+from the Rust evidence frame, not only the digest, top-level model bit, and
+negative-control bit. This makes the active blocker inspectable without
+changing the fail-closed status.
 
 ## Findings
 
