@@ -1754,6 +1754,10 @@ which consumes
 `ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.toWitnessSources`
 instead of raw shared witness sources. The Rust source audit requires this
 wrapper before accepting the shared digest-frame witness endpoint surface.
+The source-record package hidden-source closure now calls the corresponding
+certificate-level boundary theorem with
+`Package.sharedFrameWitnessSourcesCertificate`; it no longer unwraps the
+package through five-source closure inputs solely to pass raw `I.witnessSources`.
 
 ## Findings
 

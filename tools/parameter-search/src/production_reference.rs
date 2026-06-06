@@ -10584,7 +10584,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package",
             &["ReviewedFq12HiddenSourceProofSemanticsClosed P"],
-            "let Cert := Package.fiveSourceClosureCertificate let I := ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs Cert reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources P I.payloadProjectsFrom I.certificateAvailability I.roleRootLiftSource I.selectedSource I.assemblySource I.compatibilitySource I.witnessSources",
+            "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_certificate P Package.payloadProjectionLaw Package.extractionCertificateAvailability Package.roleRootLiftSource Package.selectedSourceRouteByteSource Package.assemblySource Package.compatibilitySource Package.sharedFrameWitnessSourcesCertificate",
             4096,
         );
     let canonical_witness_to_byte_source_adapter_present =
@@ -59807,8 +59807,8 @@ def toPredicates
             "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
         )
         .replacen(
-            "let Cert := Package.fiveSourceClosureCertificate\n  let I :=\n    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs\n      Cert\n  reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources\n    P I.payloadProjectsFrom I.certificateAvailability\n    I.roleRootLiftSource I.selectedSource I.assemblySource I.compatibilitySource\n    I.witnessSources",
-            "packageClosureAlias\n\nexample : True := by\n  let _mentionedPackageClosureReduction :=\n    let Cert := Package.fiveSourceClosureCertificate\n    let I :=\n      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs\n        Cert\n    reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources\n      P I.payloadProjectsFrom I.certificateAvailability\n      I.roleRootLiftSource I.selectedSource I.assemblySource I.compatibilitySource\n      I.witnessSources\n  trivial",
+            "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_certificate\n    P Package.payloadProjectionLaw Package.extractionCertificateAvailability\n    Package.roleRootLiftSource Package.selectedSourceRouteByteSource\n    Package.assemblySource Package.compatibilitySource\n    Package.sharedFrameWitnessSourcesCertificate",
+            "packageClosureAlias\n\nexample : True := by\n  let _mentionedPackageClosureReduction :=\n    reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_certificate\n      P Package.payloadProjectionLaw Package.extractionCertificateAvailability\n      Package.roleRootLiftSource Package.selectedSourceRouteByteSource\n      Package.assemblySource Package.compatibilitySource\n      Package.sharedFrameWitnessSourcesCertificate\n  trivial",
             1,
         );
         let aliased_package_closure_reduction_subcheck =

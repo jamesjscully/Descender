@@ -2758,6 +2758,50 @@ theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_loc
       witnessSources)
 
 /--
+Active AP2-N001 boundary closure from the selected source records plus the
+report-bound shared witness evidence certificate.
+
+This is the preferred certificate route for the source-record package: the
+shared witness source bundle is exposed only by the public shared-witness
+evidence certificate.
+-/
+theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_certificate
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (payloadProjectsFrom :
+      forall {b : Path2NativeBoundary.Boundary}
+          {payload : ReviewedFq12HiddenSourcePayload},
+        P.reviewedFq12PayloadAccepts b payload ->
+          payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+            payload.slotId = b.context.slotId ->
+          P.reviewedFq12PayloadProjectsFrom b payload)
+    (certificateAvailability :
+      ReviewedFq12ExtractionCertificateAvailability P)
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (selectedSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P)
+    (assemblySource :
+      ReviewedFq12FieldConcreteAssemblyLocalSource P)
+    (compatibilitySource :
+      ReviewedFq12FieldConcreteCompatibilitySource P)
+    (witnessSourcesCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12HiddenSourceProofSemanticsClosed P :=
+  reviewed_fq12_hidden_source_proof_semantics_closed_from_extraction_soundness
+    P payloadProjectsFrom certificateAvailability
+    (reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_certificate
+      P roleRootLiftSource selectedSource assemblySource compatibilitySource
+      witnessSourcesCertificate)
+
+/--
 Active AP2-N001 boundary closure from the selected source-record package.
 
 This is the same fail-closed route as the raw-source theorem above, with the
@@ -2777,14 +2821,11 @@ theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_mo
       ReviewedFq12SelectedRustModelSourceRecordPackage
         FieldParser RouteParser CanonicalParser WitnessParser P) :
     ReviewedFq12HiddenSourceProofSemanticsClosed P :=
-  let Cert := Package.fiveSourceClosureCertificate
-  let I :=
-    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
-      Cert
-  reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources
-    P I.payloadProjectsFrom I.certificateAvailability
-    I.roleRootLiftSource I.selectedSource I.assemblySource I.compatibilitySource
-    I.witnessSources
+  reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_certificate
+    P Package.payloadProjectionLaw Package.extractionCertificateAvailability
+    Package.roleRootLiftSource Package.selectedSourceRouteByteSource
+    Package.assemblySource Package.compatibilitySource
+    Package.sharedFrameWitnessSourcesCertificate
 
 /--
 Concrete predicate-model obligation for accepted reviewed-Fq12 payloads.

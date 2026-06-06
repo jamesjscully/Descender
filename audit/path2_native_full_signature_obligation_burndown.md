@@ -1464,3 +1464,7 @@ The proof route now has a certificate-consuming wrapper,
 so the eventual source record can expose shared witness sources through
 `ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.toWitnessSources`
 instead of passing the raw witness package directly.
+The source-record package closure uses the same discipline: it now routes
+through `Package.sharedFrameWitnessSourcesCertificate` and the certificate-level
+hidden-source theorem, rather than detouring through raw five-source closure
+inputs.
