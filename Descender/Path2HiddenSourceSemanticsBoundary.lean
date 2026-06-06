@@ -2752,6 +2752,10 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate
   evidenceReport :
     ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport
   evidenceDigest : ByteArray
+  evidenceReportBound :
+    evidenceReport = selectedRustNativeBoundaryPredicateModelEvidenceReport
+  evidenceDigestBound :
+    evidenceDigest = selectedRustNativeBoundaryPredicateModelEvidenceDigest
   evidenceReportVerifiedProof :
     evidenceReport.ReportVerified
   evidenceFactsAllTrueProof :
@@ -2803,6 +2807,10 @@ def ofReportAndModel
     (evidenceReport :
       ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport)
     (evidenceDigest : ByteArray)
+    (evidenceReportBound :
+      evidenceReport = selectedRustNativeBoundaryPredicateModelEvidenceReport)
+    (evidenceDigestBound :
+      evidenceDigest = selectedRustNativeBoundaryPredicateModelEvidenceDigest)
     (evidenceReportVerifiedProof :
       evidenceReport.ReportVerified)
     (evidenceFactsAllTrueProof :
@@ -2842,6 +2850,8 @@ def ofReportAndModel
     ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate where
   evidenceReport := evidenceReport
   evidenceDigest := evidenceDigest
+  evidenceReportBound := evidenceReportBound
+  evidenceDigestBound := evidenceDigestBound
   evidenceReportVerifiedProof := evidenceReportVerifiedProof
   evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
   predicates := predicates
@@ -2917,13 +2927,10 @@ imported.
 -/
 theorem selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible
     (Cert :
-      ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate)
-    (hReport :
-      Cert.evidenceReport =
-        selectedRustNativeBoundaryPredicateModelEvidenceReport) :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate) :
     False := by
   exact selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible
-    (by simpa [hReport] using Cert.evidenceFactsAllTrueProof)
+    (by simpa [Cert.evidenceReportBound] using Cert.evidenceFactsAllTrueProof)
 
 /--
 Concrete native-boundary semantics import target for the selected Rust path.
@@ -3126,13 +3133,10 @@ theorem selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_r
       ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
     (Package :
       ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
-        FieldParser RouteParser CanonicalParser WitnessParser)
-    (hReport :
-      Package.predicateModelCertificate.evidenceReport =
-        selectedRustNativeBoundaryPredicateModelEvidenceReport) :
+        FieldParser RouteParser CanonicalParser WitnessParser) :
     False :=
   selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible
-    Package.predicateModelCertificate hReport
+    Package.predicateModelCertificate
 
 /--
 Active AP2-N001 boundary closure from the single concrete model input record.

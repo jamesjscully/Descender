@@ -1197,6 +1197,19 @@ per-source vacuity check so the selected source-route report is treated like
 the aggregate, boundary-base, role-root/lift, field/local, and shared-witness
 reports.
 
+P2FS-001 predicate-model certificate binding hardening: the selected native
+boundary predicate-model certificate now carries proof fields binding its
+`evidenceReport` and `evidenceDigest` to the selected public
+`selectedRustNativeBoundaryPredicateModelEvidenceReport` and
+`selectedRustNativeBoundaryPredicateModelEvidenceDigest` constants. The named
+constructor requires those equalities explicitly, the selected concrete
+definition gate requires `rfl rfl` at the report/digest boundary, and the
+fail-closed current-report theorem derives impossibility through the
+certificate's internal `evidenceReportBound` field rather than through an
+externally supplied report equality. This keeps AP2-N001 blocked on importing
+the real active `Path2NativeBoundary.Predicates` model while closing another
+alias/rebind route around the public predicate-model evidence object.
+
 P2FS-001 final-theorem constructor-binding hardening: the future extractor
 theorem gate now requires each selected certificate local to be bound directly
 by its named constructor. A constructor laundering fixture where the

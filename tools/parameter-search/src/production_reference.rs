@@ -9189,6 +9189,10 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 "evidenceReport :",
                 "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
                 "evidenceDigest : ByteArray",
+                "evidenceReportBound",
+                "selectedRustNativeBoundaryPredicateModelEvidenceReport",
+                "evidenceDigestBound",
+                "selectedRustNativeBoundaryPredicateModelEvidenceDigest",
                 "evidenceReportVerifiedProof",
                 "evidenceFactsAllTrueProof",
                 "predicates : Predicates",
@@ -9235,8 +9239,6 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible",
             &[
                 "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
-                "Cert.evidenceReport =",
-                "selectedRustNativeBoundaryPredicateModelEvidenceReport",
                 "False",
             ],
             "by exact selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible",
@@ -9245,6 +9247,11 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible",
             "Cert.evidenceFactsAllTrueProof",
+            4096,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible",
+            "Cert.evidenceReportBound",
             4096,
         );
     let native_boundary_predicate_model_generic_evidence_label_markers = [
@@ -9576,11 +9583,9 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             "selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_report_impossible",
             &[
                 "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
-                "Package.predicateModelCertificate.evidenceReport =",
-                "selectedRustNativeBoundaryPredicateModelEvidenceReport",
                 "False",
             ],
-            "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible Package.predicateModelCertificate hReport",
+            "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible Package.predicateModelCertificate",
             4096,
         );
     let native_boundary_semantics_package_handoff_present =
@@ -10733,7 +10738,7 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
     let predicate_model_certificate_definition_body_markers = [
         (
             "selectedRustNativeBoundaryPredicateModelCertificate",
-            "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel selectedRustNativeBoundaryPredicateModelEvidenceReport selectedRustNativeBoundaryPredicateModelEvidenceDigest selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
+            "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel selectedRustNativeBoundaryPredicateModelEvidenceReport selectedRustNativeBoundaryPredicateModelEvidenceDigest rfl rfl selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
         ),
         (
             "selectedRustNativeBoundaryPredicateModelCertificate",
@@ -59123,8 +59128,8 @@ def toPredicates
             "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
         )
         .replacen(
-            "  exact selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible\n    (by simpa [hReport] using Cert.evidenceFactsAllTrueProof)",
-            "  exact impossibleGuardAlias\n\nexample : True := by\n  let _mentionedCurrentReportGuard :=\n    selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible\n      (by simpa [hReport] using Cert.evidenceFactsAllTrueProof)\n  trivial",
+            "  exact selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible\n    (by simpa [Cert.evidenceReportBound] using Cert.evidenceFactsAllTrueProof)",
+            "  exact impossibleGuardAlias\n\nexample : True := by\n  let _mentionedCurrentReportGuard :=\n    selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible\n      (by simpa [Cert.evidenceReportBound] using Cert.evidenceFactsAllTrueProof)\n  trivial",
             1,
         );
         let aliased_predicate_model_current_report_guard_subcheck =
@@ -59139,8 +59144,8 @@ def toPredicates
             "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
         )
         .replacen(
-            "  selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible\n    Package.predicateModelCertificate hReport",
-            "  impossibleGuardAlias\n\nexample : True := by\n  let _mentionedCertifiedCurrentReportGuard :=\n    selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible\n      Package.predicateModelCertificate hReport\n  trivial",
+            "  selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible\n    Package.predicateModelCertificate",
+            "  impossibleGuardAlias\n\nexample : True := by\n  let _mentionedCertifiedCurrentReportGuard :=\n    selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible\n      Package.predicateModelCertificate\n  trivial",
             1,
         );
         let aliased_certified_current_report_guard_subcheck =
@@ -60325,6 +60330,8 @@ def selectedRustNativeBoundaryPredicateModelCertificate :
   ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel
     selectedRustNativeBoundaryPredicateModelEvidenceReport
     selectedRustNativeBoundaryPredicateModelEvidenceDigest
+    rfl
+    rfl
     selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof
     selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof
     selectedRustNativeBoundaryPredicates
@@ -60510,8 +60517,8 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(!anonymous_predicate_model_certificate_checklist.all_definitions_present);
         let predicate_model_certificate_constructor_mentioned_but_alias_bound_source =
             complete_concrete_definition_source.replace(
-                "  ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel\n    selectedRustNativeBoundaryPredicateModelEvidenceReport\n    selectedRustNativeBoundaryPredicateModelEvidenceDigest\n    selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof\n    selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof\n    selectedRustNativeBoundaryPredicates\n    selectedRustPayloadAcceptanceNotVacuous\n    selectedRustBoundaryBreaksNotUniversal\n    selectedRustPayloadAcceptanceMatchesBoundary\n    selectedRustExtractionCertificateMatchesPayload\n    selectedRustExtractionCertificateValidityMatchesPayload\n    selectedRustCertificateExtractionImpliesPayloadExtraction\n    selectedRustPayloadExtractionInBoundaryFiber\n    selectedRustPayloadExtractionNativeValid\n    selectedRustRoleLiftValidityBindsExtraction\n    selectedRustRoleLiftOpeningImpliesCertificateLift\n    selectedRustAssemblyValidityBindsOpening\n    selectedRustAssemblyCertificateImpliesFullNativeAssembly\n    selectedRustCompatibilityValidityBinds\n    selectedRustCompatibilityExtractionImpliesReviewedExtraction\n    selectedRustFullOpeningBridgeDigestValidityBinds",
-                "  selectedRustNativeBoundaryPredicateModelCertificateValue\n\nexample : True := by\n  let _mentionedPredicateModelConstructor :=\n    ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel\n      selectedRustNativeBoundaryPredicateModelEvidenceReport\n      selectedRustNativeBoundaryPredicateModelEvidenceDigest\n      selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof\n      selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof\n      selectedRustNativeBoundaryPredicates\n      selectedRustPayloadAcceptanceNotVacuous\n      selectedRustBoundaryBreaksNotUniversal\n      selectedRustPayloadAcceptanceMatchesBoundary\n      selectedRustExtractionCertificateMatchesPayload\n      selectedRustExtractionCertificateValidityMatchesPayload\n      selectedRustCertificateExtractionImpliesPayloadExtraction\n      selectedRustPayloadExtractionInBoundaryFiber\n      selectedRustPayloadExtractionNativeValid\n      selectedRustRoleLiftValidityBindsExtraction\n      selectedRustRoleLiftOpeningImpliesCertificateLift\n      selectedRustAssemblyValidityBindsOpening\n      selectedRustAssemblyCertificateImpliesFullNativeAssembly\n      selectedRustCompatibilityValidityBinds\n      selectedRustCompatibilityExtractionImpliesReviewedExtraction\n      selectedRustFullOpeningBridgeDigestValidityBinds\n  trivial",
+                "  ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel\n    selectedRustNativeBoundaryPredicateModelEvidenceReport\n    selectedRustNativeBoundaryPredicateModelEvidenceDigest\n    rfl\n    rfl\n    selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof\n    selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof\n    selectedRustNativeBoundaryPredicates\n    selectedRustPayloadAcceptanceNotVacuous\n    selectedRustBoundaryBreaksNotUniversal\n    selectedRustPayloadAcceptanceMatchesBoundary\n    selectedRustExtractionCertificateMatchesPayload\n    selectedRustExtractionCertificateValidityMatchesPayload\n    selectedRustCertificateExtractionImpliesPayloadExtraction\n    selectedRustPayloadExtractionInBoundaryFiber\n    selectedRustPayloadExtractionNativeValid\n    selectedRustRoleLiftValidityBindsExtraction\n    selectedRustRoleLiftOpeningImpliesCertificateLift\n    selectedRustAssemblyValidityBindsOpening\n    selectedRustAssemblyCertificateImpliesFullNativeAssembly\n    selectedRustCompatibilityValidityBinds\n    selectedRustCompatibilityExtractionImpliesReviewedExtraction\n    selectedRustFullOpeningBridgeDigestValidityBinds",
+                "  selectedRustNativeBoundaryPredicateModelCertificateValue\n\nexample : True := by\n  let _mentionedPredicateModelConstructor :=\n    ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel\n      selectedRustNativeBoundaryPredicateModelEvidenceReport\n      selectedRustNativeBoundaryPredicateModelEvidenceDigest\n      rfl\n      rfl\n      selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof\n      selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof\n      selectedRustNativeBoundaryPredicates\n      selectedRustPayloadAcceptanceNotVacuous\n      selectedRustBoundaryBreaksNotUniversal\n      selectedRustPayloadAcceptanceMatchesBoundary\n      selectedRustExtractionCertificateMatchesPayload\n      selectedRustExtractionCertificateValidityMatchesPayload\n      selectedRustCertificateExtractionImpliesPayloadExtraction\n      selectedRustPayloadExtractionInBoundaryFiber\n      selectedRustPayloadExtractionNativeValid\n      selectedRustRoleLiftValidityBindsExtraction\n      selectedRustRoleLiftOpeningImpliesCertificateLift\n      selectedRustAssemblyValidityBindsOpening\n      selectedRustAssemblyCertificateImpliesFullNativeAssembly\n      selectedRustCompatibilityValidityBinds\n      selectedRustCompatibilityExtractionImpliesReviewedExtraction\n      selectedRustFullOpeningBridgeDigestValidityBinds\n  trivial",
             );
         let predicate_model_certificate_constructor_mentioned_but_alias_bound_checklist =
             path2_selected_rust_model_concrete_definition_checklist_from_source_v1(

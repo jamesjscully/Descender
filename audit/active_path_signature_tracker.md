@@ -1600,6 +1600,14 @@ The source-binding digest constants themselves are now body-bound aliases of
 the selected component evidence digests. A binding definition whose
 `sourceBindingDigest` name points at a different digest no longer satisfies
 `source_record_evidence_source_bindings_present`.
+The predicate-model certificate now has the same selected public-evidence
+discipline: it carries `evidenceReportBound` and `evidenceDigestBound` fields
+tying its report and digest to
+`selectedRustNativeBoundaryPredicateModelEvidenceReport` and
+`selectedRustNativeBoundaryPredicateModelEvidenceDigest`. The selected
+certificate constructor/checklist requires `rfl rfl` for those equalities, and
+the fail-closed current-report theorem uses `Cert.evidenceReportBound`
+internally rather than relying on an external report-equality premise.
 The predicate-model evidence-report target gate now requires the Lean
 `FactsAllTrue` definition to include every public predicate-model fact:
 extraction, full-opening/assembly, compatibility, break-model,
