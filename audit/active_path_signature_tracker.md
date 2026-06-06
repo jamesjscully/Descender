@@ -1728,6 +1728,14 @@ certificate because `nativeBoundaryPredicateFieldSourcePackagePresent = false`.
 The existing full predicate-model certificate impossibility remains, and the
 Rust source audit requires both proofs before reporting the current-report
 guard present.
+Current implementation check: the Rust predicate-model evidence report is
+derived from `path2_selected_rust_model_source_record_subcheck_v1`, not from a
+separate native-boundary predicate provider. Searching the active Lean sources
+shows no concrete selected `Path2NativeBoundary.Predicates` implementation
+outside the target package/scanner fixtures. Therefore the first real closure
+step is to author/import the selected predicate-field provider definitions and
+`selectedRustNativeBoundaryPredicateFieldSources`; there is no already-present
+Rust predicate model that only needs a Lean wrapper.
 
 ## Findings
 

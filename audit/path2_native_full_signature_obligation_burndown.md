@@ -1308,6 +1308,12 @@ smaller field-source package certificate because
 `nativeBoundaryPredicateFieldSourcePackagePresent` is false. The source audit
 requires this theorem alongside the full predicate-model certificate
 impossibility, keeping the first remaining predicate-model blocker explicit.
+Inspection note: Rust's predicate-model evidence is computed from the Lean
+source-record subcheck, and there is no separate implementation-backed
+selected native-boundary predicate provider in the active Lean sources. The
+next non-mechanical P2FS-001 step is therefore construction/import of the
+selected predicate-field providers and package, not merely connecting an
+already-existing Rust predicate model to Lean.
 
 P2FS-001 certified closure route guard: the future final theorem gate now
 rejects raw native-boundary semantics package closure and source-shaped
