@@ -1814,9 +1814,9 @@ structure SelectedRustFullSignatureReductionCertificate where
   productionSignatureForgerySuccessProb : ℝ
   signatureForgerySuccessProbPinned :
     signatureForgerySuccessProb = productionSignatureForgerySuccessProb
-  signatureForgerySuccess_le_acceptedSpend :
-    signatureForgerySuccessProb <=
-      acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.acceptedSpendForgeryProb
+  signatureForgerySuccessMatchesAcceptedSpendGame :
+    signatureForgerySuccessProb =
+      acceptedSpendCertificate.pricedNumericCertificate.successProb
   keygenDistributionModeled : Prop
   keygenDistributionModeledProof : keygenDistributionModeled
   signingOracleModeled : Prop
@@ -1860,9 +1860,9 @@ def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
     (productionSignatureForgerySuccessProb : ℝ)
     (signatureForgerySuccessProbPinned :
       signatureForgerySuccessProb = productionSignatureForgerySuccessProb)
-    (signatureForgerySuccess_le_acceptedSpend :
-      signatureForgerySuccessProb <=
-        acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.acceptedSpendForgeryProb)
+    (signatureForgerySuccessMatchesAcceptedSpendGame :
+      signatureForgerySuccessProb =
+        acceptedSpendCertificate.pricedNumericCertificate.successProb)
     (keygenDistributionModeled : Prop)
     (keygenDistributionModeledProof : keygenDistributionModeled)
     (signingOracleModeled : Prop)
@@ -1905,8 +1905,8 @@ def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
     productionSignatureForgerySuccessProb
   signatureForgerySuccessProbPinned :=
     signatureForgerySuccessProbPinned
-  signatureForgerySuccess_le_acceptedSpend :=
-    signatureForgerySuccess_le_acceptedSpend
+  signatureForgerySuccessMatchesAcceptedSpendGame :=
+    signatureForgerySuccessMatchesAcceptedSpendGame
   keygenDistributionModeled := keygenDistributionModeled
   keygenDistributionModeledProof := keygenDistributionModeledProof
   signingOracleModeled := signingOracleModeled
@@ -1957,7 +1957,17 @@ def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityB
         Cert.signatureForgerySuccessProb =
           Cert.productionSignatureForgerySuccessProb :=
       Cert.signatureForgerySuccessProbPinned
-    exact Cert.signatureForgerySuccess_le_acceptedSpend
+    change
+      Cert.signatureForgerySuccessProb <=
+        Cert.acceptedSpendCertificate.acceptedSpendForgeryProb
+    calc
+      Cert.signatureForgerySuccessProb =
+          Cert.acceptedSpendCertificate.pricedNumericCertificate.successProb :=
+        Cert.signatureForgerySuccessMatchesAcceptedSpendGame
+      _ <= Cert.acceptedSpendCertificate.pricedNumericCertificate.unionBound :=
+        Cert.acceptedSpendCertificate.pricedNumericCertificate.successProb_le_unionBound
+      _ = Cert.acceptedSpendCertificate.acceptedSpendForgeryProb :=
+        Cert.acceptedSpendCertificate.acceptedSpendForgeryProbMatchesUnionBound.symm
   fullSignatureSecurityClaimComplete := by
     let _hVerified : Cert.evidenceReport.ReportVerified :=
       Cert.selectedRustFullSignatureReductionVerifiedProof

@@ -27656,7 +27656,8 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "hashBoundary : NativeHashBudgetBoundary",
         "productionSignatureForgerySuccessProb",
         "signatureForgerySuccessProbPinned",
-        "signatureForgerySuccess_le_acceptedSpend",
+        "signatureForgerySuccessMatchesAcceptedSpendGame",
+        "successProb_le_unionBound",
         "keygenDistributionModeledProof",
         "signingOracleModeledProof",
         "completenessModeledProof",
@@ -27704,7 +27705,7 @@ fn path2_full_signature_reduction_certificate_instantiated_in_source_v1(
         "selectedRustSignatureForgerySuccessProb",
         "selectedRustProductionSignatureForgerySuccessProb",
         "selectedRustSignatureForgerySuccessProbPinned",
-        "selectedRustSignatureForgerySuccessLeAcceptedSpend",
+        "selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame",
         "selectedRustFullSignatureKeygenModeledProof",
         "selectedRustFullSignatureSigningOracleModeledProof",
         "selectedRustFullSignatureCompletenessModeledProof",
@@ -27765,7 +27766,7 @@ fn path2_full_signature_reduction_certificate_instantiated_in_source_v1(
         "def selectedRustProductionSignatureForgerySuccessProb : ℝ := 0",
         "def selectedRustProductionSignatureForgerySuccessProb : ℝ := (0 : ℝ)",
         "def selectedRustSignatureForgerySuccessProbPinned := rfl",
-        "def selectedRustSignatureForgerySuccessLeAcceptedSpend := le_rfl",
+        "def selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame := rfl",
         "def selectedRustFullSignatureKeygenModeled := True",
         "def selectedRustFullSignatureSigningOracleModeled := True",
         "def selectedRustFullSignatureCompletenessModeled := True",
@@ -27873,7 +27874,8 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustSignatureForgerySuccessProb",
         "selectedRustProductionSignatureForgerySuccessProb",
         "selectedRustSignatureForgerySuccessProbPinned",
-        "selectedRustSignatureForgerySuccessLeAcceptedSpend",
+        "selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame",
+        "successProb_le_unionBound",
         "selectedRustFullSignatureKeygenModeled",
         "selectedRustFullSignatureSigningOracleModeled",
         "selectedRustFullSignatureCompletenessModeled",
@@ -27909,7 +27911,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "let selectedRustProductionSignatureForgerySuccessProb : ℝ := 0",
         "let selectedRustProductionSignatureForgerySuccessProb : ℝ := (0 : ℝ)",
         "let selectedRustSignatureForgerySuccessProbPinned := rfl",
-        "let selectedRustSignatureForgerySuccessLeAcceptedSpend := le_rfl",
+        "let selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame := rfl",
         "selectedRustFullSignatureKeygenModeled := True",
         "selectedRustFullSignatureSigningOracleModeled := True",
         "selectedRustFullSignatureCompletenessModeled := True",
@@ -27949,7 +27951,8 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustSignatureForgerySuccessProb",
         "selectedRustProductionSignatureForgerySuccessProb",
         "selectedRustSignatureForgerySuccessProbPinned",
-        "selectedRustSignatureForgerySuccessLeAcceptedSpend",
+        "selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame",
+        "successProb_le_unionBound",
         "selectedRustFullSignatureKeygenModeled",
         "selectedRustFullSignatureKeygenModeledProof",
         "selectedRustFullSignatureSigningOracleModeled",
@@ -50813,7 +50816,7 @@ structure SelectedRustFullSignatureReductionCertificate where
   hashBoundary : NativeHashBudgetBoundary
   productionSignatureForgerySuccessProb : ℝ
   signatureForgerySuccessProbPinned : True
-  signatureForgerySuccess_le_acceptedSpend : True
+  signatureForgerySuccessMatchesAcceptedSpendGame : True
   keygenDistributionModeledProof : True
   signingOracleModeledProof : True
   completenessModeledProof : True
@@ -50858,7 +50861,7 @@ structure SelectedRustFullSignatureReductionCertificate where
   hashBoundary : NativeHashBudgetBoundary
   productionSignatureForgerySuccessProb : ℝ
   signatureForgerySuccessProbPinned : True
-  signatureForgerySuccess_le_acceptedSpend : True
+  signatureForgerySuccessMatchesAcceptedSpendGame : True
   keygenDistributionModeledProof : True
   signingOracleModeledProof : True
   completenessModeledProof : True
@@ -50923,7 +50926,7 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustSignatureForgerySuccessProb
       selectedRustProductionSignatureForgerySuccessProb
       selectedRustSignatureForgerySuccessProbPinned
-      selectedRustSignatureForgerySuccessLeAcceptedSpend
+      selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame
       selectedRustFullSignatureKeygenModeled
       selectedRustFullSignatureKeygenModeledProof
       selectedRustFullSignatureSigningOracleModeled
@@ -50970,7 +50973,7 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustSignatureForgerySuccessProb
       selectedRustProductionSignatureForgerySuccessProb
       selectedRustSignatureForgerySuccessProbPinned
-      selectedRustSignatureForgerySuccessLeAcceptedSpend
+      selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame
       selectedRustFullSignatureKeygenModeled
       selectedRustFullSignatureKeygenModeledProof
       selectedRustFullSignatureSigningOracleModeled
@@ -51014,7 +51017,7 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustSignatureForgerySuccessProb
       selectedRustProductionSignatureForgerySuccessProb
       selectedRustSignatureForgerySuccessProbPinned
-      selectedRustSignatureForgerySuccessLeAcceptedSpend
+      selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame
       selectedRustFullSignatureKeygenModeled
       selectedRustFullSignatureKeygenModeledProof
       selectedRustFullSignatureSigningOracleModeled
@@ -51057,6 +51060,8 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
   let selectedRustAcceptedSpendSoundness :=
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
       selectedRustAcceptedSpendCertificate
+  let _acceptedSpendSignatureToUnionBound :=
+    selectedRustAcceptedSpendCertificate.pricedNumericCertificate.successProb_le_unionBound
   let selectedRustActiveHashBoundary :=
     activeNativeHashBudgetBoundary
   let _activeHashBoundaryProps :=
@@ -51064,7 +51069,7 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
   let selectedRustSignatureForgerySuccessProb : ℝ := 0
   let selectedRustProductionSignatureForgerySuccessProb : ℝ := (0 : ℝ)
   let selectedRustSignatureForgerySuccessProbPinned := rfl
-  let selectedRustSignatureForgerySuccessLeAcceptedSpend := le_rfl
+  let selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame := rfl
   let selectedRustFullSignatureKeygenModeled := True
   let selectedRustFullSignatureSigningOracleModeled := True
   let selectedRustFullSignatureCompletenessModeled := True
@@ -51082,7 +51087,7 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustSignatureForgerySuccessProb
       selectedRustProductionSignatureForgerySuccessProb
       selectedRustSignatureForgerySuccessProbPinned
-      selectedRustSignatureForgerySuccessLeAcceptedSpend
+      selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame
       selectedRustFullSignatureKeygenModeled
       selectedRustFullSignatureKeygenModeledProof
       selectedRustFullSignatureSigningOracleModeled
@@ -51125,6 +51130,8 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
   let selectedRustAcceptedSpendSoundness :=
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
       selectedRustAcceptedSpendCertificate
+  let _acceptedSpendSignatureToUnionBound :=
+    selectedRustAcceptedSpendCertificate.pricedNumericCertificate.successProb_le_unionBound
   let selectedRustActiveHashBoundary :=
     activeNativeHashBudgetBoundary
   let _activeHashBoundaryProps :=
@@ -51141,7 +51148,7 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustSignatureForgerySuccessProb
       selectedRustProductionSignatureForgerySuccessProb
       selectedRustSignatureForgerySuccessProbPinned
-      selectedRustSignatureForgerySuccessLeAcceptedSpend
+      selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame
       selectedRustFullSignatureKeygenModeled
       selectedRustFullSignatureKeygenModeledProof
       selectedRustFullSignatureSigningOracleModeled

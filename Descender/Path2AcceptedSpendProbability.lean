@@ -185,6 +185,15 @@ theorem acceptedSpendProb_le_pricedBound
     C.acceptedSpendProb <= C.pricedBound :=
   le_trans C.acceptedSpendProb_le_unionBound C.unionBound_le_priced
 
+/-- The packaged full-signature success probability is below the union bound. -/
+theorem successProb_le_unionBound
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.successProb <= C.unionBound := by
+  exact
+    @AcceptedSpendNumericGame.successProb_le_acceptedSpendOrBreakUnionBound
+      C.Trace C.Outcome C.Break C.traceFintype C.breakFintype
+      C.breakDecidableEq C.game
+
 /-- The packaged full-signature success probability is below the priced bound. -/
 theorem successProb_le_pricedBound
     (C : PricedAcceptedSpendNumericCertificate) :
