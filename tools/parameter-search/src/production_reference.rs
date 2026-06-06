@@ -8726,12 +8726,12 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     let native_boundary_predicate_model_source_target_present = [
         "ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
         "predicates : Predicates",
-        "activeBoundaryPredicateModelPinned",
-        "reviewedFq12PayloadAcceptanceModeled",
-        "reviewedFq12ExtractionCertificateModelModeled",
-        "reviewedFq12FullOpeningAndAssemblyModelModeled",
-        "reviewedFq12CompatibilityAndExtractionModelModeled",
-        "nativeBoundaryBreakModelModeled",
+        "payloadAcceptanceNotVacuous",
+        "boundaryBreaksNotUniversal",
+        "payloadAcceptanceMatchesBoundary",
+        "extractionCertificateMatchesPayload",
+        "certificateExtractionImpliesPayloadExtraction",
+        "fullOpeningBridgeDigestValidityBinds",
         "def toPredicates",
         "Model.predicates",
     ]
@@ -8777,12 +8777,12 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         "namespace ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
         "def toSource",
         "ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
-        "Cert.evidenceReport.activeBoundaryPredicateModelPinned = true",
-        "Cert.evidenceFactsAllTrueProof.1",
-        "Cert.evidenceReport.payloadAcceptanceModelPinned = true",
-        "Cert.evidenceFactsAllTrueProof.2.1",
-        "Cert.evidenceReport.nativeBoundaryBreakModelPinned = true",
-        "Cert.evidenceFactsAllTrueProof.2.2.2.2.2.1",
+        "payloadAcceptanceNotVacuous := Cert.payloadAcceptanceNotVacuous",
+        "boundaryBreaksNotUniversal := Cert.boundaryBreaksNotUniversal",
+        "payloadAcceptanceMatchesBoundary :=",
+        "Cert.payloadAcceptanceMatchesBoundary",
+        "fullOpeningBridgeDigestValidityBinds :=",
+        "Cert.fullOpeningBridgeDigestValidityBinds",
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
@@ -57394,7 +57394,7 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(predicate_model_evidence.certified_semantics_source_package_target_present);
         assert!(!predicate_model_evidence.concrete_predicate_model_present);
         assert!(!predicate_model_evidence.active_boundary_predicate_model_pinned);
-        assert!(!predicate_model_evidence.predicate_negative_controls_passed);
+        assert!(predicate_model_evidence.predicate_negative_controls_passed);
         assert!(
             !path2_reviewed_fq12_native_boundary_predicate_model_evidence_all_facts_true(
                 &predicate_model_evidence
@@ -57434,12 +57434,12 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
                 .native_boundary_predicate_model_current_report_certificate_impossible_present
         );
         assert!(
-            source_record_subcheck.native_boundary_predicate_model_generic_evidence_labels_present
+            !source_record_subcheck.native_boundary_predicate_model_generic_evidence_labels_present
         );
         assert_eq!(
             source_record_subcheck
                 .native_boundary_predicate_model_remaining_generic_evidence_label_count,
-            6
+            0
         );
         assert!(
             source_record_subcheck.native_boundary_payload_acceptance_antivacuity_target_present

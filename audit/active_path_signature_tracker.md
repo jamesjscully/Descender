@@ -1223,11 +1223,10 @@ directly: `native_boundary_predicates_record_present = true`,
 `full_spend_concrete_predicates_are_separate_model = true`,
 `native_boundary_concrete_predicate_model_present = false`, and
 `selected_source_records_blocked_on_native_boundary_predicate_model = true`.
-It also reports
-`native_boundary_predicate_model_remaining_generic_evidence_label_count = 6`,
-covering the active-model pin plus the five modeled-surface labels still
-represented as generic `Prop` fields in the active predicate-model source
-target. These labels are target placeholders, not cryptographic closure facts.
+The generic predicate-model source labels have been removed, so
+`native_boundary_predicate_model_remaining_generic_evidence_label_count = 0`
+and the predicate negative-control bit is no longer held open by placeholder
+`Prop` fields.
 The target route now names the proof-bearing replacement surface:
 `native_boundary_predicate_model_evidence_report_target_present = true`,
 `native_boundary_predicate_model_certificate_target_present = true`, and

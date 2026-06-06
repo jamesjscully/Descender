@@ -171,15 +171,14 @@ predicates.
 aggregate full-opening bridge digest certificate validity predicate to enforce
 the digest binding across payload, extraction, role-lift, assembly, and
 compatibility certificates.
-The same predicate-model source still carries six generic `Prop` evidence
-labels: one active-model pin plus five modeled-surface labels for payload
-acceptance, extraction certificates, full opening/assembly, compatibility, and
-boundary breaks. The selected evidence manifest now counts these explicitly as
-`native_boundary_predicate_model_remaining_generic_evidence_label_count = 6`.
-Those labels are not closure facts; AP2-N001 remains blocked until they are
-replaced or justified by a concrete active `Path2NativeBoundary.Predicates`
-interpretation, or by an equivalent theorem package for exactly the predicate
-model consumed by the hidden-source boundary.
+The predicate-model source no longer carries the six generic `Prop` evidence
+labels for active-model pinning and modeled surfaces. The selected evidence
+manifest now reports
+`native_boundary_predicate_model_remaining_generic_evidence_label_count = 0`,
+so AP2-N001 is blocked on the real concrete active
+`Path2NativeBoundary.Predicates` interpretation, or an equivalent theorem
+package for exactly the predicate model consumed by the hidden-source
+boundary.
 Follow-up target shaping now names that replacement object explicitly:
 `ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport` records
 the public predicate-model report bits, and

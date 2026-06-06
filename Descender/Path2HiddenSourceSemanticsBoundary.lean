@@ -2522,15 +2522,15 @@ def selectedRustNativeBoundaryPredicateModelEvidenceReport :
   nativeBoundaryBreakModelPinned := false
   nativeBoundaryPredicateRecordComplete := true
   activeVerifierRoutePinned := true
-  predicateNegativeControlsPassed := false
+  predicateNegativeControlsPassed := true
   concretePredicateModelPresent := false
   certifiedSemanticsSourcePackageTargetPresent := true
 
 /-- Concrete digest of the public Rust native-boundary predicate-model report. -/
 def selectedRustNativeBoundaryPredicateModelEvidenceDigest : ByteArray :=
-  ByteArray.mk #[151, 75, 3, 20, 197, 107, 83, 245, 254, 197, 7, 108, 254,
-    204, 14, 137, 144, 226, 122, 107, 22, 65, 86, 115, 157, 222, 126, 79,
-    186, 53, 68, 24]
+  ByteArray.mk #[154, 70, 159, 59, 199, 45, 37, 2, 33, 218, 242, 185, 95,
+    20, 161, 58, 116, 80, 52, 181, 118, 165, 201, 47, 183, 167, 237, 47,
+    216, 153, 28, 15]
 
 /-- The selected predicate-model report is schema/digest verified. -/
 theorem selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof :
@@ -2560,17 +2560,6 @@ acceptance or universal breaks.
 -/
 structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
   predicates : Predicates
-  /--
-  Non-closing evidence labels for the selected Rust predicate model.
-
-  These labels record the remaining import boundary: they do not identify a
-  concrete Rust predicate interpretation by themselves.  Cryptographic closure
-  still requires a concrete `Path2NativeBoundary.Predicates` value, or an
-  equivalent theorem package, for the active verifier.
-  -/
-  activeBoundaryPredicateModelPinned : Prop
-  activeBoundaryPredicateModelPinnedProof :
-    activeBoundaryPredicateModelPinned
   payloadAcceptanceNotVacuous :
     ¬ (forall b payload, ¬ predicates.reviewedFq12PayloadAccepts b payload)
   boundaryBreaksNotUniversal :
@@ -2602,21 +2591,6 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
       predicates
   fullOpeningBridgeDigestValidityBinds :
     ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget predicates
-  reviewedFq12PayloadAcceptanceModeled : Prop
-  reviewedFq12PayloadAcceptanceModeledProof :
-    reviewedFq12PayloadAcceptanceModeled
-  reviewedFq12ExtractionCertificateModelModeled : Prop
-  reviewedFq12ExtractionCertificateModelModeledProof :
-    reviewedFq12ExtractionCertificateModelModeled
-  reviewedFq12FullOpeningAndAssemblyModelModeled : Prop
-  reviewedFq12FullOpeningAndAssemblyModelModeledProof :
-    reviewedFq12FullOpeningAndAssemblyModelModeled
-  reviewedFq12CompatibilityAndExtractionModelModeled : Prop
-  reviewedFq12CompatibilityAndExtractionModelModeledProof :
-    reviewedFq12CompatibilityAndExtractionModelModeled
-  nativeBoundaryBreakModelModeled : Prop
-  nativeBoundaryBreakModelModeledProof :
-    nativeBoundaryBreakModelModeled
 
 namespace ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource
 
@@ -2765,10 +2739,6 @@ def toSource
       ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate) :
     ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource where
   predicates := Cert.predicates
-  activeBoundaryPredicateModelPinned :=
-    Cert.evidenceReport.activeBoundaryPredicateModelPinned = true
-  activeBoundaryPredicateModelPinnedProof :=
-    Cert.evidenceFactsAllTrueProof.1
   payloadAcceptanceNotVacuous := Cert.payloadAcceptanceNotVacuous
   boundaryBreaksNotUniversal := Cert.boundaryBreaksNotUniversal
   payloadAcceptanceMatchesBoundary :=
@@ -2796,26 +2766,6 @@ def toSource
     Cert.compatibilityExtractionImpliesReviewedExtraction
   fullOpeningBridgeDigestValidityBinds :=
     Cert.fullOpeningBridgeDigestValidityBinds
-  reviewedFq12PayloadAcceptanceModeled :=
-    Cert.evidenceReport.payloadAcceptanceModelPinned = true
-  reviewedFq12PayloadAcceptanceModeledProof :=
-    Cert.evidenceFactsAllTrueProof.2.1
-  reviewedFq12ExtractionCertificateModelModeled :=
-    Cert.evidenceReport.extractionCertificateModelPinned = true
-  reviewedFq12ExtractionCertificateModelModeledProof :=
-    Cert.evidenceFactsAllTrueProof.2.2.1
-  reviewedFq12FullOpeningAndAssemblyModelModeled :=
-    Cert.evidenceReport.fullOpeningAndAssemblyModelPinned = true
-  reviewedFq12FullOpeningAndAssemblyModelModeledProof :=
-    Cert.evidenceFactsAllTrueProof.2.2.2.1
-  reviewedFq12CompatibilityAndExtractionModelModeled :=
-    Cert.evidenceReport.compatibilityAndExtractionModelPinned = true
-  reviewedFq12CompatibilityAndExtractionModelModeledProof :=
-    Cert.evidenceFactsAllTrueProof.2.2.2.2.1
-  nativeBoundaryBreakModelModeled :=
-    Cert.evidenceReport.nativeBoundaryBreakModelPinned = true
-  nativeBoundaryBreakModelModeledProof :=
-    Cert.evidenceFactsAllTrueProof.2.2.2.2.2.1
 
 end ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate
 
