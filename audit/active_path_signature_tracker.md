@@ -1262,6 +1262,20 @@ theorems, and the manifest reports
 `native_boundary_semantics_package_handoff_present = true`. This means the
 path from the future concrete native-boundary semantics package to the active
 full-signature boundary is now mechanical; the package itself remains absent.
+The AP2-N001 final theorem source gate now requires that future closure to
+route through
+`ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage`, not
+just through the older five-source certificate. The accepted synthetic theorem
+shape must name the predicate-model evidence report/digest/proofs, consume
+`selectedRustNativeBoundaryPredicateModelCertificate`, bind
+`sourceRecords := selectedRustModelSourceRecordPackage`, expose
+`.hiddenSourceClosure`, and call both the certified-package full-signature
+handoff and
+`full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_certified_semantics_source_package`.
+Negative controls reject an assumed or wrong predicate-model certificate, raw
+predicate-model/source-record package stubs, and omission of the active-bound
+handoff. This keeps `extractor_theorem_instantiated` from closing on the stale
+five-source-only route.
 
 ## Findings
 

@@ -237,6 +237,23 @@ report/facts proof objects, the native-boundary predicate-model certificate,
 concrete source records, and the aggregate sub-evidence digest-match proof.
 The final theorem target is now mechanically visible.
 
+2026-06-05 certified predicate-model theorem-gate update: the AP2-N001 final
+theorem scanner no longer accepts the stale shape that stops at constructing
+`ReviewedFq12SelectedRustModelFiveSourceClosureCertificate` and applying the
+old hidden-source certificate adapter. A future accepted theorem must also
+route through
+`ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage`, using
+`selectedRustNativeBoundaryPredicateModelCertificate` and
+`selectedRustModelSourceRecordPackage`, expose the package
+`.hiddenSourceClosure`, and name the certified-package full-signature handoff
+plus
+`full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_certified_semantics_source_package`.
+The source gate rejects predicate-model evidence/certificates/source packages
+as theorem assumptions, rejects vacuous local predicate-model report/proof
+construction, and rejects omission of the active-bound handoff. AP2-N001
+therefore remains fail-closed until the concrete native-boundary predicate
+model certificate and selected source-record package are genuinely imported.
+
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
 verifier, and the Path 2 deployment facade source gate requires those exports.

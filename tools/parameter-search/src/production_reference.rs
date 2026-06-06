@@ -10170,6 +10170,13 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "selectedRustFiveSourceEvidenceReportVerifiedProof",
         "selectedRustFiveSourceEvidenceFactsAllTrueProof",
         "selectedRustFiveSourceSubEvidenceDigestsMatchProof",
+        "selectedRustNativeBoundaryPredicateModelEvidenceReport",
+        "selectedRustNativeBoundaryPredicateModelEvidenceDigest",
+        "selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof",
+        "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
+        "selectedRustNativeBoundaryPredicateModelCertificate",
+        "selectedRustModelSourceRecordPackage",
+        "selectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
     ];
     let declaration_block_contains_name = |kind: &str, name: &str| -> bool {
         boundary_source
@@ -10382,6 +10389,22 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
         "theorem",
         "selectedRustSourceRouteEvidenceFactsAllTrueProof",
         &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+    ) || declaration_has_normalized_marker(
+        "def",
+        "selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof",
+        &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+    ) || declaration_has_normalized_marker(
+        "theorem",
+        "selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof",
+        &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+    ) || declaration_has_normalized_marker(
+        "def",
+        "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
+        &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+    ) || declaration_has_normalized_marker(
+        "theorem",
+        "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
+        &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
     );
     forbidden_declaration_stub
         || forbidden_variable_stub
@@ -10510,6 +10533,12 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources",
         "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate",
         "ReviewedFq12SelectedRustFiveSourceClosureEvidence",
+        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
+        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
+        "ReviewedFq12SelectedRustNativeBoundarySemanticsPackage",
+        "ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage",
+        "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
         "SelectedRustModelFiveSourceImplementation",
         "SelectedRustModelFiveSourcePackage",
         "SelectedRustModelFiveSourceEvidence",
@@ -10557,6 +10586,13 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "selectedRustSharedFrameWitnessEvidenceDigest :",
         "selectedRustSharedFrameWitnessEvidenceReportVerifiedProof :",
         "selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof :",
+        "selectedRustNativeBoundaryPredicateModelEvidenceReport :",
+        "selectedRustNativeBoundaryPredicateModelEvidenceDigest :",
+        "selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof :",
+        "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof :",
+        "selectedRustNativeBoundaryPredicateModelCertificate :",
+        "selectedRustModelSourceRecordPackage :",
+        "selectedRustNativeBoundaryCertifiedSemanticsSourcePackage :",
     ];
     if forbidden_header_parameters
         .iter()
@@ -10582,6 +10618,14 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "selectedRustSourceRouteByteSourceCertificate := {",
         "selectedRustFieldLocalSourceCertificate := {",
         "selectedRustSharedFrameWitnessSourcesCertificate := {",
+        "let selectedRustNativeBoundaryPredicateModelEvidenceReport := {",
+        "let selectedRustNativeBoundaryPredicateModelEvidenceReport :=",
+        "let selectedRustNativeBoundaryPredicateModelEvidenceReport :",
+        "let selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof := True.intro",
+        "let selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof := True.intro",
+        "let selectedRustNativeBoundaryPredicateModelCertificate := {",
+        "predicateModelCertificate := {",
+        "sourceRecords := {",
     ];
     if forbidden_vacuous_terms
         .iter()
@@ -10604,6 +10648,17 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof selectedRustSharedFrameWitnessSources",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates selectedRustFiveSourceEvidenceReport selectedRustFiveSourceEvidenceDigest selectedRustFiveSourceEvidenceReportVerifiedProof selectedRustFiveSourceEvidenceFactsAllTrueProof selectedRustBoundaryBaseCertificate selectedRustRoleRootLiftSourceCertificate selectedRustSourceRouteByteSourceCertificate selectedRustFieldLocalSourceCertificate selectedRustSharedFrameWitnessSourcesCertificate selectedRustFiveSourceSubEvidenceDigestsMatchProof",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates",
+        "let selectedRustNativeBoundaryCertifiedSemanticsSourcePackage : ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
+        "predicateModelCertificate := selectedRustNativeBoundaryPredicateModelCertificate",
+        "sourceRecords := selectedRustModelSourceRecordPackage",
+        "selectedRustNativeBoundaryPredicateModelEvidenceReport",
+        "selectedRustNativeBoundaryPredicateModelEvidenceDigest",
+        "selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof",
+        "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
+        "selectedRustNativeBoundaryPredicateModelCertificate",
+        "selectedRustModelSourceRecordPackage",
+        "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
+        "selectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
         "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources",
         "ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource",
         "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource",
@@ -10639,8 +10694,9 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates",
         "selectedRustModelFiveSourceCertificate",
-        "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate",
-        "P selectedRustModelFiveSourceCertificate",
+        "selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure",
+        "full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_certified_semantics_source_package",
+        "full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_certified_semantics_source_package",
     ]
     .iter()
     .all(|marker| theorem_source.contains(marker))
@@ -56200,9 +56256,28 @@ theorem {theorem_name}
       selectedRustFieldLocalSourceCertificate
       selectedRustSharedFrameWitnessSourcesCertificate
       selectedRustFiveSourceSubEvidenceDigestsMatchProof
+  have _hPredicateModelEvidenceReport :=
+    selectedRustNativeBoundaryPredicateModelEvidenceReport
+  have _hPredicateModelEvidenceDigest :=
+    selectedRustNativeBoundaryPredicateModelEvidenceDigest
+  have _hPredicateModelEvidenceVerified :=
+    selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof
+  have _hPredicateModelEvidenceFacts :=
+    selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof
+  let selectedRustNativeBoundaryCertifiedSemanticsSourcePackage :
+      ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+        FieldParser RouteParser CanonicalParser WitnessParser :=
+    {{ predicateModelCertificate :=
+        selectedRustNativeBoundaryPredicateModelCertificate
+      sourceRecords := selectedRustModelSourceRecordPackage }}
+  have _hFullSignatureHandoff :=
+    full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_certified_semantics_source_package
+      B selectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+  have _hActivePathBound :=
+    full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_certified_semantics_source_package
+      B selectedRustNativeBoundaryCertifiedSemanticsSourcePackage
   exact
-    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate
-      P selectedRustModelFiveSourceCertificate
+    selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure
 "#
         );
         assert!(
@@ -56263,14 +56338,36 @@ theorem {theorem_name}
                 theorem_name
             )
         );
-        let input_route_after_certificate_constructor_theorem = concrete_constructor_certificate_theorem
-            .replace(
-                "  exact\n    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate\n      P selectedRustModelFiveSourceCertificate\n",
+        let input_route_after_certificate_constructor_theorem =
+            concrete_constructor_certificate_theorem.replace(
+                "  exact\n    selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure\n",
                 "  let selectedRustModelFiveSourceInputs :\n      ReviewedFq12SelectedRustModelFiveSourceClosureInputs\n        FieldParser RouteParser CanonicalParser WitnessParser P :=\n    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs\n      selectedRustModelFiveSourceCertificate\n  exact\n    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_inputs\n      P selectedRustModelFiveSourceInputs\n",
             );
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &input_route_after_certificate_constructor_theorem,
+                theorem_name
+            )
+        );
+        let wrong_predicate_model_certificate_theorem = concrete_constructor_certificate_theorem
+            .replace(
+                "        selectedRustNativeBoundaryPredicateModelCertificate\n",
+                "        otherNativeBoundaryPredicateModelCertificate\n",
+            );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &wrong_predicate_model_certificate_theorem,
+                theorem_name
+            )
+        );
+        let missing_certified_package_bound_theorem = concrete_constructor_certificate_theorem
+            .replace(
+                "  have _hActivePathBound :=\n    full_signature_active_path_forgery_bound_from_selected_rust_native_boundary_certified_semantics_source_package\n      B selectedRustNativeBoundaryCertifiedSemanticsSourcePackage\n",
+                "",
+            );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &missing_certified_package_bound_theorem,
                 theorem_name
             )
         );
