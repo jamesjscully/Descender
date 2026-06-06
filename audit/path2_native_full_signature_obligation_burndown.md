@@ -1219,6 +1219,16 @@ binding body that has the digest fields but omits the equality proof. This
 keeps `sourceBindingDigest` from remaining audit-only bookkeeping detached
 from the proof object consumed by `ofSourceBindings`.
 
+P2FS-001 package-certificate closure hardening: the selected source-record
+package now exposes `fiveSourceClosureCertificate`, built from the package's
+constructor-bound per-source certificates and `Package.subEvidenceDigestsMatch`.
+The source-record package closure theorem derives closure through that
+certificate's `toClosureInputs`, so the aggregate five-source report and
+sub-evidence digest match proof are consumed by the actual closure route rather
+than merely built beside it. The Rust source audit requires this route and has
+negative controls for aliasing either the package-derived certificate
+constructor or the package closure reduction.
+
 P2FS-001 final-theorem constructor-binding hardening: the future extractor
 theorem gate now requires each selected certificate local to be bound directly
 by its named constructor. A constructor laundering fixture where the

@@ -10320,6 +10320,13 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             ],
             "payloadProjectionLaw := boundaryBaseEvidenceSourceBinding.payloadProjectionLaw extractionCertificateAvailability := boundaryBaseEvidenceSourceBinding.extractionCertificateAvailability roleRootLiftSource := roleRootLiftEvidenceSourceBinding.roleRootLiftSource selectedSourceRouteByteSource := sourceRouteEvidenceSourceBinding.selectedSourceRouteByteSource assemblySource := fieldLocalEvidenceSourceBinding.assemblySource compatibilitySource := fieldLocalEvidenceSourceBinding.compatibilitySource sharedFrameWitnessSources := sharedWitnessEvidenceSourceBinding.sharedFrameWitnessSources",
             4096,
+        )
+        && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "fiveSourceClosureCertificate",
+            &["ReviewedFq12SelectedRustModelFiveSourceClosureCertificate"],
+            "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates selectedRustFiveSourceEvidenceReport selectedRustFiveSourceEvidenceDigest selectedRustFiveSourceEvidenceReportVerifiedProof selectedRustFiveSourceEvidenceFactsAllTrueProof Package.boundaryBaseCertificate Package.roleRootLiftSourceCertificate Package.sourceRouteByteSourceCertificate Package.fieldLocalSourceCertificate Package.sharedFrameWitnessSourcesCertificate Package.subEvidenceDigestsMatch",
+            4096,
         );
     let package_sub_evidence_match_reduction_present =
         lean_source_definition_with_header_markers_body_starts_with_marker_v1(
@@ -10365,7 +10372,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package",
             &["ReviewedFq12HiddenSourceProofSemanticsClosed P"],
-            "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources P Package.payloadProjectionLaw Package.extractionCertificateAvailability Package.roleRootLiftSource Package.selectedSourceRouteByteSource Package.assemblySource Package.compatibilitySource Package.sharedFrameWitnessSources",
+            "let Cert := Package.fiveSourceClosureCertificate let I := ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs Cert reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources P I.payloadProjectsFrom I.certificateAvailability I.roleRootLiftSource I.selectedSource I.assemblySource I.compatibilitySource I.witnessSources",
             4096,
         );
     let canonical_witness_to_byte_source_adapter_present =
@@ -59260,8 +59267,8 @@ def toPredicates
             "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
         )
         .replacen(
-            "reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources\n    P Package.payloadProjectionLaw\n    Package.extractionCertificateAvailability\n    Package.roleRootLiftSource\n    Package.selectedSourceRouteByteSource\n    Package.assemblySource\n    Package.compatibilitySource\n    Package.sharedFrameWitnessSources",
-            "packageClosureAlias\n\nexample : True := by\n  let _mentionedPackageClosureReduction :=\n    reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources\n      P Package.payloadProjectionLaw\n      Package.extractionCertificateAvailability\n      Package.roleRootLiftSource\n      Package.selectedSourceRouteByteSource\n      Package.assemblySource\n      Package.compatibilitySource\n      Package.sharedFrameWitnessSources\n  trivial",
+            "let Cert := Package.fiveSourceClosureCertificate\n  let I :=\n    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs\n      Cert\n  reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources\n    P I.payloadProjectsFrom I.certificateAvailability\n    I.roleRootLiftSource I.selectedSource I.assemblySource I.compatibilitySource\n    I.witnessSources",
+            "packageClosureAlias\n\nexample : True := by\n  let _mentionedPackageClosureReduction :=\n    let Cert := Package.fiveSourceClosureCertificate\n    let I :=\n      ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs\n        Cert\n    reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources\n      P I.payloadProjectsFrom I.certificateAvailability\n      I.roleRootLiftSource I.selectedSource I.assemblySource I.compatibilitySource\n      I.witnessSources\n  trivial",
             1,
         );
         let aliased_package_closure_reduction_subcheck =
@@ -59271,6 +59278,21 @@ def toPredicates
         assert!(
             !aliased_package_closure_reduction_subcheck
                 .package_to_hidden_source_closure_reduction_present
+        );
+        let aliased_package_five_source_certificate_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates\n    selectedRustFiveSourceEvidenceReport\n    selectedRustFiveSourceEvidenceDigest\n    selectedRustFiveSourceEvidenceReportVerifiedProof\n    selectedRustFiveSourceEvidenceFactsAllTrueProof\n    Package.boundaryBaseCertificate\n    Package.roleRootLiftSourceCertificate\n    Package.sourceRouteByteSourceCertificate\n    Package.fieldLocalSourceCertificate\n    Package.sharedFrameWitnessSourcesCertificate\n    Package.subEvidenceDigestsMatch",
+            "fiveSourceCertificateAlias\n\nexample : True := by\n  let _mentionedFiveSourceCertificateReduction :=\n    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates\n      selectedRustFiveSourceEvidenceReport\n      selectedRustFiveSourceEvidenceDigest\n      selectedRustFiveSourceEvidenceReportVerifiedProof\n      selectedRustFiveSourceEvidenceFactsAllTrueProof\n      Package.boundaryBaseCertificate\n      Package.roleRootLiftSourceCertificate\n      Package.sourceRouteByteSourceCertificate\n      Package.fieldLocalSourceCertificate\n      Package.sharedFrameWitnessSourcesCertificate\n      Package.subEvidenceDigestsMatch\n  trivial",
+            1,
+        );
+        let aliased_package_five_source_certificate_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_package_five_source_certificate_source,
+            );
+        assert!(
+            !aliased_package_five_source_certificate_subcheck.source_record_package_surface_present
         );
         let aliased_payload_antivacuity_source = include_str!(
             "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"

@@ -2212,6 +2212,39 @@ theorem subEvidenceDigestsMatch
     (by rfl) (by rfl) (by rfl) (by rfl) (by rfl)
 
 /--
+Proof-bearing five-source certificate derived from the selected source-record
+package.
+
+This makes the aggregate evidence report and sub-evidence digest match part of
+the package closure route, not a side object that the final theorem can build
+and then ignore.
+-/
+def fiveSourceClosureCertificate
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Package :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
+      FieldParser RouteParser CanonicalParser WitnessParser P :=
+  ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates
+    selectedRustFiveSourceEvidenceReport
+    selectedRustFiveSourceEvidenceDigest
+    selectedRustFiveSourceEvidenceReportVerifiedProof
+    selectedRustFiveSourceEvidenceFactsAllTrueProof
+    Package.boundaryBaseCertificate
+    Package.roleRootLiftSourceCertificate
+    Package.sourceRouteByteSourceCertificate
+    Package.fieldLocalSourceCertificate
+    Package.sharedFrameWitnessSourcesCertificate
+    Package.subEvidenceDigestsMatch
+
+/--
 Forget a selected source-record package into the active five-source closure
 input record.
 
@@ -2366,14 +2399,14 @@ theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_mo
       ReviewedFq12SelectedRustModelSourceRecordPackage
         FieldParser RouteParser CanonicalParser WitnessParser P) :
     ReviewedFq12HiddenSourceProofSemanticsClosed P :=
+  let Cert := Package.fiveSourceClosureCertificate
+  let I :=
+    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.toClosureInputs
+      Cert
   reviewed_fq12_hidden_source_proof_semantics_closed_from_active_field_local_shared_digest_frame_witness_sources
-    P Package.payloadProjectionLaw
-    Package.extractionCertificateAvailability
-    Package.roleRootLiftSource
-    Package.selectedSourceRouteByteSource
-    Package.assemblySource
-    Package.compatibilitySource
-    Package.sharedFrameWitnessSources
+    P I.payloadProjectsFrom I.certificateAvailability
+    I.roleRootLiftSource I.selectedSource I.assemblySource I.compatibilitySource
+    I.witnessSources
 
 /--
 Concrete predicate-model obligation for accepted reviewed-Fq12 payloads.

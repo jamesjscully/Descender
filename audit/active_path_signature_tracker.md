@@ -1606,6 +1606,14 @@ binding object's selected evidence digest. The Rust body-shape checklist
 requires `sourceBindingDigestBound := rfl` for every future selected binding,
 and a fixture that omits the field no longer satisfies
 `source_record_evidence_source_bindings_present`.
+The selected source-record package now derives an explicit
+`fiveSourceClosureCertificate` from the package's constructor-bound per-source
+certificates and `Package.subEvidenceDigestsMatch`. The package-to-hidden-source
+closure theorem routes through that certificate's `toClosureInputs`, so the
+aggregate five-source report and sub-evidence digest proof are proof-critical
+for package closure rather than a final-theorem side construction. The Rust
+source gate requires this package-derived certificate route and rejects aliases
+for either the certificate constructor or the package closure reduction.
 The predicate-model certificate now has the same selected public-evidence
 discipline: it carries `evidenceReportBound` and `evidenceDigestBound` fields
 tying its report and digest to
