@@ -10496,14 +10496,25 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             predicate_model_certificate_definition.0,
             predicate_model_certificate_definition.1,
         ) && predicate_model_certificate_definition_body_markers
-            .iter()
-            .all(|(name, marker)| {
-                lean_source_selected_rust_definition_body_contains_marker_v1(
+            .first()
+            .is_some_and(|(name, marker)| {
+                lean_source_selected_rust_definition_body_starts_with_marker_v1(
                     &boundary_source,
                     name,
                     marker,
+                    4096,
                 )
-            });
+            })
+            && predicate_model_certificate_definition_body_markers
+                .iter()
+                .skip(1)
+                .all(|(name, marker)| {
+                    lean_source_selected_rust_definition_body_contains_marker_v1(
+                        &boundary_source,
+                        name,
+                        marker,
+                    )
+                });
     let native_boundary_concrete_predicate_model_present =
         path2_selected_rust_model_source_record_subcheck_from_source_v1(&boundary_source)
             .native_boundary_concrete_predicate_model_present;
@@ -59428,6 +59439,23 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 .predicate_model_certificate_definitions_present
         );
         assert!(!anonymous_predicate_model_certificate_checklist.all_definitions_present);
+        let predicate_model_certificate_constructor_mentioned_but_alias_bound_source =
+            complete_concrete_definition_source.replace(
+                "  ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel\n    selectedRustNativeBoundaryPredicateModelEvidenceReport\n    selectedRustNativeBoundaryPredicateModelEvidenceDigest\n    selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof\n    selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof\n    selectedRustNativeBoundaryPredicates\n    selectedRustPayloadAcceptanceNotVacuousValue\n    selectedRustBoundaryBreaksNotUniversalValue\n    selectedRustPayloadAcceptanceMatchesBoundaryValue\n    selectedRustExtractionCertificateMatchesPayloadValue\n    selectedRustExtractionCertificateValidityMatchesPayloadValue\n    selectedRustCertificateExtractionImpliesPayloadExtractionValue\n    selectedRustPayloadExtractionInBoundaryFiberValue\n    selectedRustPayloadExtractionNativeValidValue\n    selectedRustRoleLiftValidityBindsExtractionValue\n    selectedRustRoleLiftOpeningImpliesCertificateLiftValue\n    selectedRustAssemblyValidityBindsOpeningValue\n    selectedRustAssemblyCertificateImpliesFullNativeAssemblyValue\n    selectedRustCompatibilityValidityBindsValue\n    selectedRustCompatibilityExtractionImpliesReviewedExtractionValue\n    selectedRustFullOpeningBridgeDigestValidityBindsValue",
+                "  selectedRustNativeBoundaryPredicateModelCertificateValue\n\nexample : True := by\n  let _mentionedPredicateModelConstructor :=\n    ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel\n      selectedRustNativeBoundaryPredicateModelEvidenceReport\n      selectedRustNativeBoundaryPredicateModelEvidenceDigest\n      selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof\n      selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof\n      selectedRustNativeBoundaryPredicates\n      selectedRustPayloadAcceptanceNotVacuousValue\n      selectedRustBoundaryBreaksNotUniversalValue\n      selectedRustPayloadAcceptanceMatchesBoundaryValue\n      selectedRustExtractionCertificateMatchesPayloadValue\n      selectedRustExtractionCertificateValidityMatchesPayloadValue\n      selectedRustCertificateExtractionImpliesPayloadExtractionValue\n      selectedRustPayloadExtractionInBoundaryFiberValue\n      selectedRustPayloadExtractionNativeValidValue\n      selectedRustRoleLiftValidityBindsExtractionValue\n      selectedRustRoleLiftOpeningImpliesCertificateLiftValue\n      selectedRustAssemblyValidityBindsOpeningValue\n      selectedRustAssemblyCertificateImpliesFullNativeAssemblyValue\n      selectedRustCompatibilityValidityBindsValue\n      selectedRustCompatibilityExtractionImpliesReviewedExtractionValue\n      selectedRustFullOpeningBridgeDigestValidityBindsValue\n  trivial",
+            );
+        let predicate_model_certificate_constructor_mentioned_but_alias_bound_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                &predicate_model_certificate_constructor_mentioned_but_alias_bound_source,
+            );
+        assert!(
+            !predicate_model_certificate_constructor_mentioned_but_alias_bound_checklist
+                .predicate_model_certificate_definition_present
+        );
+        assert!(
+            !predicate_model_certificate_constructor_mentioned_but_alias_bound_checklist
+                .predicate_model_certificate_definitions_present
+        );
         let missing_predicate_model_obligation_source = complete_concrete_definition_source
             .replacen(
                 "selectedRustPayloadAcceptanceNotVacuousValue",

@@ -1298,6 +1298,10 @@ named constructor `ofReportAndModel`, and the concrete-definition checklist
 requires `selectedRustNativeBoundaryPredicateModelCertificate` to be built
 through it. A same-name/same-type anonymous predicate-model certificate no
 longer completes the predicate-model certificate category.
+That constructor check is now prefix-bound on the certificate definition body:
+an alias-bound `selectedRustNativeBoundaryPredicateModelCertificate` plus an
+unused `ofReportAndModel` mention no longer completes the predicate-model
+certificate category.
 The predicate-model certificate checklist now also requires the constructor
 body to name every selected native-boundary model obligation argument,
 including payload/boundary binding, extraction consistency, role-lift,
