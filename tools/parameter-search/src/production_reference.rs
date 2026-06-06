@@ -7610,6 +7610,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub source_route_certificate_constructor_bound: bool,
     pub field_local_certificate_constructor_bound: bool,
     pub shared_witness_certificate_constructor_bound: bool,
+    pub selected_source_record_package_definition_present: bool,
     pub canonical_witness_to_byte_source_adapter_present: bool,
     pub byte_and_witness_packaged_route_endpoint_present: bool,
     pub missing_selected_source_record_count: u8,
@@ -9446,6 +9447,19 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             "selectedRustSharedFrameWitnessSourcesCertificate",
             "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof selectedRustSharedFrameWitnessSources",
         );
+    let selected_source_record_package_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustModelSourceRecordPackage",
+            &[
+                "ReviewedFq12SelectedRustModelSourceRecordPackage",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+            ],
+        ) && lean_source_selected_rust_definition_body_contains_marker_v1(
+            &boundary_source,
+            "selectedRustModelSourceRecordPackage",
+            "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability selectedRustRoleRootLiftSource selectedRustSourceRouteByteSource selectedRustAssemblySource selectedRustCompatibilitySource selectedRustSharedFrameWitnessSources",
+        );
     let source_record_package_surface_present = [
         "ReviewedFq12SelectedRustModelSourceRecordPackage",
         "def ofSources",
@@ -9568,6 +9582,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         source_route_certificate_constructor_bound,
         field_local_certificate_constructor_bound,
         shared_witness_certificate_constructor_bound,
+        selected_source_record_package_definition_present,
     ]
     .iter()
     .filter(|present| !**present)
@@ -9637,6 +9652,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         source_route_certificate_constructor_bound,
         field_local_certificate_constructor_bound,
         shared_witness_certificate_constructor_bound,
+        selected_source_record_package_definition_present,
         canonical_witness_to_byte_source_adapter_present,
         byte_and_witness_packaged_route_endpoint_present,
         missing_selected_source_record_count,
@@ -57943,11 +57959,12 @@ def selectedRustNativeBoundaryPredicates :
         assert!(!source_record_subcheck.source_route_certificate_constructor_bound);
         assert!(!source_record_subcheck.field_local_certificate_constructor_bound);
         assert!(!source_record_subcheck.shared_witness_certificate_constructor_bound);
+        assert!(!source_record_subcheck.selected_source_record_package_definition_present);
         assert!(source_record_subcheck.canonical_witness_to_byte_source_adapter_present);
         assert!(source_record_subcheck.byte_and_witness_packaged_route_endpoint_present);
         assert_eq!(
             source_record_subcheck.missing_selected_source_record_count,
-            12
+            13
         );
         assert!(!source_record_subcheck.all_selected_source_records_present);
         assert!(!audit.selected_rust_model_concrete_definitions_present);
@@ -58609,8 +58626,17 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 &anonymous_source_record_package_source,
             );
+        let anonymous_source_record_package_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &anonymous_source_record_package_source,
+            );
         assert!(!anonymous_source_record_package_checklist.source_record_definitions_present);
         assert!(!anonymous_source_record_package_checklist.all_definitions_present);
+        assert!(
+            !anonymous_source_record_package_subcheck
+                .selected_source_record_package_definition_present
+        );
+        assert!(!anonymous_source_record_package_subcheck.all_selected_source_records_present);
         let anonymous_sub_evidence_match_source = complete_concrete_definition_source.replacen(
             "selectedRustModelSourceRecordPackage.subEvidenceDigestsMatch",
             "selectedRustFiveSourceSubEvidenceDigestsMatchProofValue",
@@ -58663,6 +58689,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(complete_source_record_subcheck.field_local_certificate_constructor_bound);
         assert!(complete_source_record_subcheck.shared_frame_witness_sources_definition_present);
         assert!(complete_source_record_subcheck.shared_witness_certificate_constructor_bound);
+        assert!(complete_source_record_subcheck.selected_source_record_package_definition_present);
         assert!(complete_source_record_subcheck.all_selected_source_records_present);
         let anonymous_certificate_definition_source = complete_concrete_definition_source.replacen(
             "ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources\n    selectedRustBoundaryBaseEvidenceReport\n    selectedRustBoundaryBaseEvidenceDigest\n    selectedRustBoundaryBaseEvidenceReportVerifiedProof\n    selectedRustBoundaryBaseEvidenceFactsAllTrueProof\n    selectedRustPayloadProjectionLaw\n    selectedRustExtractionCertificateAvailability",

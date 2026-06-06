@@ -333,6 +333,8 @@ fn main() -> Result<(), String> {
                 source_record_subcheck.field_local_certificate_constructor_bound,
             "shared_witness_certificate_constructor_bound":
                 source_record_subcheck.shared_witness_certificate_constructor_bound,
+            "selected_source_record_package_definition_present":
+                source_record_subcheck.selected_source_record_package_definition_present,
             "canonical_witness_to_byte_source_adapter_present":
                 source_record_subcheck.canonical_witness_to_byte_source_adapter_present,
             "byte_and_witness_packaged_route_endpoint_present":

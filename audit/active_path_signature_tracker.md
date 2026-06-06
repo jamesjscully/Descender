@@ -1289,6 +1289,10 @@ The selected source-record package is now constructor-bound too:
 `ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources` is the required
 route for `selectedRustModelSourceRecordPackage`, and an anonymous package with
 the right name/type no longer completes `source_record_definitions`.
+The source-record subcheck now counts that selected package definition as part
+of `all_selected_source_records_present`, so the seven raw source records and
+five source-certificate constructors cannot be reported complete unless the
+final package consumed by AP2-N001 is also present.
 Those source records must now be typed over
 `selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates`; a
 generic-`P` source package no longer completes the source-record category.

@@ -722,12 +722,13 @@ accepted semantic openings. The existing digest-frame witness source only
 discharges assembly-frame recomputation and cannot replace the representative
 canonicality source.
 `path2_selected_evidence_digest_manifest` now emits `source_record_subcheck`.
-The current subcheck reports `missing_selected_source_record_count = 12`: the
-seven raw selected source definitions and five constructor-bound selected
-source-certificate definitions are all still absent. The same subcheck reports
-the canonical-witness-to-byte-source adapter and byte/witness packaged route
-endpoint as present, so the next work is concrete selected source import, not
-another route theorem.
+The current subcheck reports `missing_selected_source_record_count = 13`: the
+seven raw selected source definitions, five constructor-bound selected
+source-certificate definitions, and the constructor-bound
+`selectedRustModelSourceRecordPackage` definition are all still absent. The
+same subcheck reports the canonical-witness-to-byte-source adapter and
+byte/witness packaged route endpoint as present, so the next work is concrete
+selected source import, not another route theorem.
 Lean now provides
 `ReviewedFq12SelectedRustModelSourceRecordPackage`, which packages the seven
 raw selected source records before final aggregate-digest closure. The package
@@ -736,7 +737,7 @@ report/digest/proof/source constructors, and
 `ReviewedFq12SelectedRustModelSourceRecordPackage.subEvidenceDigestsMatch`
 derives the aggregate sub-evidence match from selected component digest
 equalities. The manifest now reports both package-surface booleans true, while
-the twelve concrete selected source bindings remain absent.
+the thirteen concrete selected source/package bindings remain absent.
 The same package now has direct reductions to the active proof inputs:
 `toFiveSourceClosureInputs`,
 `toByteComponentInputs`, and
@@ -774,14 +775,15 @@ regression pinning the fail-closed distinction.
 All-five source-record audit: the source-record subcheck now exposes matching
 report-only guards for boundary-base, role-root/lift, source-route,
 field/local, and shared-witness evidence. The active manifest reports all five
-guards true, while `missing_selected_source_record_count = 12`. This is the
+guards true, while `missing_selected_source_record_count = 13`. This is the
 current proof-completeness frontier: verified evidence reports are in Lean,
 but the raw source records (`selectedRustPayloadProjectionLaw`,
 `selectedRustExtractionCertificateAvailability`,
 `selectedRustRoleRootLiftSource`, `selectedRustSourceRouteByteSource`,
 `selectedRustAssemblySource`, `selectedRustCompatibilitySource`, and
 `selectedRustSharedFrameWitnessSources`) plus their five named source
-certificates still have to be imported from the active Rust/model route.
+certificates plus the selected source-record package definition still have to
+be imported from the active Rust/model route.
 Predicate-model audit: the concrete full-spend package currently visible in
 Lean instantiates `Path2FullSpendGame.Predicates`; it does not instantiate the
 `Path2NativeBoundary.Predicates` record used by P2FS-001. The selected source
