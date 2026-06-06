@@ -1545,6 +1545,15 @@ constructor-shaped theorem snippet without the binding definitions remains
 accepted only by the body-shape scanner and is rejected by the real module
 gate, so the public AP2-N001 status cannot advance ahead of the selected
 evidence/source binding work.
+Lean now exposes concrete source-binding object types for the five selected
+evidence families and a
+`ReviewedFq12SelectedRustModelSourceRecordPackage.ofSourceBindings`
+constructor that derives the seven source-record fields from those binding
+objects. The Rust package-surface gate requires that binding-backed
+constructor, and the source-binding checklist requires future selected binding
+definitions to use the concrete Lean binding types. The manifest remains
+fail-closed with the same four missing categories, so this adds the proof
+shape without silently importing any selected sources.
 
 ## Findings
 

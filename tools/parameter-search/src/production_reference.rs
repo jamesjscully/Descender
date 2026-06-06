@@ -10204,6 +10204,20 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &["ReviewedFq12SelectedRustModelSourceRecordPackage"],
             "payloadProjectionLaw := payloadProjectionLaw extractionCertificateAvailability := extractionCertificateAvailability roleRootLiftSource := roleRootLiftSource selectedSourceRouteByteSource := selectedSourceRouteByteSource assemblySource := assemblySource compatibilitySource := compatibilitySource sharedFrameWitnessSources := sharedFrameWitnessSources",
             4096,
+        )
+        && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ofSourceBindings",
+            &[
+                "ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding",
+                "ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding",
+                "ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding",
+                "ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding",
+                "ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding",
+                "ReviewedFq12SelectedRustModelSourceRecordPackage",
+            ],
+            "payloadProjectionLaw := boundaryBaseEvidenceSourceBinding.payloadProjectionLaw extractionCertificateAvailability := boundaryBaseEvidenceSourceBinding.extractionCertificateAvailability roleRootLiftSource := roleRootLiftEvidenceSourceBinding.roleRootLiftSource selectedSourceRouteByteSource := sourceRouteEvidenceSourceBinding.selectedSourceRouteByteSource assemblySource := fieldLocalEvidenceSourceBinding.assemblySource compatibilitySource := fieldLocalEvidenceSourceBinding.compatibilitySource sharedFrameWitnessSources := sharedWitnessEvidenceSourceBinding.sharedFrameWitnessSources",
+            4096,
         );
     let package_sub_evidence_match_reduction_present =
         lean_source_definition_with_header_markers_body_starts_with_marker_v1(
@@ -10710,6 +10724,8 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         (
             "selectedRustBoundaryBaseEvidenceSourceBinding",
             &[
+                "ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
                 "selectedRustBoundaryBaseEvidenceReport",
                 "selectedRustPayloadProjectionLaw",
                 "selectedRustExtractionCertificateAvailability",
@@ -10719,6 +10735,8 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         (
             "selectedRustRoleRootLiftEvidenceSourceBinding",
             &[
+                "ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
                 "selectedRustRoleRootLiftEvidenceReport",
                 "selectedRustRoleRootLiftSource",
                 "sourceBindingDigest",
@@ -10727,6 +10745,8 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         (
             "selectedRustSourceRouteEvidenceSourceBinding",
             &[
+                "ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
                 "selectedRustSourceRouteEvidenceReport",
                 "selectedRustSourceRouteByteSource",
                 "sourceBindingDigest",
@@ -10735,6 +10755,8 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         (
             "selectedRustFieldLocalEvidenceSourceBinding",
             &[
+                "ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
                 "selectedRustFieldLocalEvidenceReport",
                 "selectedRustAssemblySource",
                 "selectedRustCompatibilitySource",
@@ -10744,6 +10766,8 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         (
             "selectedRustSharedWitnessEvidenceSourceBinding",
             &[
+                "ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding",
+                "selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
                 "selectedRustSharedFrameWitnessEvidenceReport",
                 "selectedRustSharedFrameWitnessSources",
                 "sourceBindingDigest",
@@ -57681,24 +57705,34 @@ theorem {theorem_name}
         );
         let source_binding_definitions = r#"
 def selectedRustBoundaryBaseEvidenceSourceBinding :
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates ->
     selectedRustBoundaryBaseEvidenceReport ->
     selectedRustPayloadProjectionLaw ->
     selectedRustExtractionCertificateAvailability ->
     sourceBindingDigest := True
 def selectedRustRoleRootLiftEvidenceSourceBinding :
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates ->
     selectedRustRoleRootLiftEvidenceReport ->
     selectedRustRoleRootLiftSource ->
     sourceBindingDigest := True
 def selectedRustSourceRouteEvidenceSourceBinding :
+    ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates ->
     selectedRustSourceRouteEvidenceReport ->
     selectedRustSourceRouteByteSource ->
     sourceBindingDigest := True
 def selectedRustFieldLocalEvidenceSourceBinding :
+    ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates ->
     selectedRustFieldLocalEvidenceReport ->
     selectedRustAssemblySource ->
     selectedRustCompatibilitySource ->
     sourceBindingDigest := True
 def selectedRustSharedWitnessEvidenceSourceBinding :
+    ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates ->
     selectedRustSharedFrameWitnessEvidenceReport ->
     selectedRustSharedFrameWitnessSources ->
     sourceBindingDigest := True

@@ -1849,6 +1849,73 @@ def ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBound
     witnessSourcesCertificate.toWitnessSources
 
 /--
+Evidence/source binding for the active selected base-boundary report.
+
+This is the object the Rust/model import must eventually supply before a
+selected source can be treated as audited by a selected evidence report.
+-/
+structure ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding
+    (P : Predicates) where
+  evidenceReport :
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceReport
+  sourceBindingDigest : ByteArray
+  payloadProjectionLaw :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload},
+      P.reviewedFq12PayloadAccepts b payload ->
+        payload.nativeBoundaryDigest = b.nativeBoundaryDigest ∧
+          payload.slotId = b.context.slotId ->
+        P.reviewedFq12PayloadProjectsFrom b payload
+  extractionCertificateAvailability :
+    ReviewedFq12ExtractionCertificateAvailability P
+
+/-- Evidence/source binding for the selected role-root/lift report. -/
+structure ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding
+    (P : Predicates) where
+  evidenceReport :
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceReport
+  sourceBindingDigest : ByteArray
+  roleRootLiftSource :
+    ReviewedFq12RoleRootFunctionalLiftSource P
+
+/-- Evidence/source binding for the selected source-route report. -/
+structure ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
+    (FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser)
+    (RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser)
+    (P : Predicates) where
+  evidenceReport :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport
+  sourceBindingDigest : ByteArray
+  selectedSourceRouteByteSource :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+      FieldParser RouteParser P
+
+/-- Evidence/source binding for the selected field/local report. -/
+structure ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding
+    (P : Predicates) where
+  evidenceReport :
+    ReviewedFq12SelectedRustFieldLocalEvidenceReport
+  sourceBindingDigest : ByteArray
+  assemblySource :
+    ReviewedFq12FieldConcreteAssemblyLocalSource P
+  compatibilitySource :
+    ReviewedFq12FieldConcreteCompatibilitySource P
+
+/-- Evidence/source binding for the selected shared-frame witness report. -/
+structure ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
+    (CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser)
+    (WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser)
+    (P : Predicates) where
+  evidenceReport :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport
+  sourceBindingDigest : ByteArray
+  sharedFrameWitnessSources :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+      CanonicalParser WitnessParser P
+
+/--
 Selected Rust/model source-record package before final aggregate-digest
 closure.
 
@@ -1935,6 +2002,51 @@ def ofSources
   assemblySource := assemblySource
   compatibilitySource := compatibilitySource
   sharedFrameWitnessSources := sharedFrameWitnessSources
+
+/--
+Construct the selected source-record package from explicit evidence/source
+bindings.
+
+This is the preferred shape for the final AP2-N001 import: the seven source
+records are not free-standing assumptions, but projections of the five public
+report binding objects.
+-/
+def ofSourceBindings
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (boundaryBaseEvidenceSourceBinding :
+      ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding P)
+    (roleRootLiftEvidenceSourceBinding :
+      ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding P)
+    (sourceRouteEvidenceSourceBinding :
+      ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
+        FieldParser RouteParser P)
+    (fieldLocalEvidenceSourceBinding :
+      ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding P)
+    (sharedWitnessEvidenceSourceBinding :
+      ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustModelSourceRecordPackage
+      FieldParser RouteParser CanonicalParser WitnessParser P where
+  payloadProjectionLaw :=
+    boundaryBaseEvidenceSourceBinding.payloadProjectionLaw
+  extractionCertificateAvailability :=
+    boundaryBaseEvidenceSourceBinding.extractionCertificateAvailability
+  roleRootLiftSource :=
+    roleRootLiftEvidenceSourceBinding.roleRootLiftSource
+  selectedSourceRouteByteSource :=
+    sourceRouteEvidenceSourceBinding.selectedSourceRouteByteSource
+  assemblySource :=
+    fieldLocalEvidenceSourceBinding.assemblySource
+  compatibilitySource :=
+    fieldLocalEvidenceSourceBinding.compatibilitySource
+  sharedFrameWitnessSources :=
+    sharedWitnessEvidenceSourceBinding.sharedFrameWitnessSources
 
 /-- Constructor-bound boundary/base certificate from selected raw sources. -/
 def boundaryBaseCertificate
