@@ -5075,6 +5075,224 @@ def toReviewedFq12HardExtractionPredicateFieldSources
 
 end ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate
 
+/-- Canonical semantic context used only to witness non-empty selected predicates. -/
+def selectedRustCanonicalContext : Context where
+  profileVersionDigest := 0
+  verifierVersionDigest := 0
+  accountId := 0
+  publicKeyIdentity := 0
+  slotId := 0
+  accountStateRootBefore := 0
+  lifecycleAnchor := 0
+  aggregationContextDigest := 0
+
+/-- Canonical semantic boundary used only to witness non-empty selected predicates. -/
+def selectedRustCanonicalBoundary : Path2NativeBoundary.Boundary where
+  boundaryVersion := 0
+  context := selectedRustCanonicalContext
+  parentSectionRoot := 0
+  roleProfileDigest := 0
+  roleHandles := {
+    packedWitnessHandle := 0
+    randomizerHandle := 0
+    padSourceHandle := 0
+    openingTupleHandle := 0
+    projectionRelationHandle := 0
+  }
+  maskedProjection := fun _ => 0
+  liveStatusMarker := 0
+  creationStatementDigest := 0
+  nativeBoundaryDigest := 0
+
+/-- Canonical semantic payload used only to witness non-empty selected predicates. -/
+def selectedRustCanonicalPayload : ReviewedFq12HiddenSourcePayload where
+  statementDigest := 0
+  creationStatementDigest := 0
+  creationProofBindingDigest := 0
+  randomizerCommitment := 0
+  openingCommitment := 0
+  padSeedDigest := 0
+  projectionCarrierDigest := 0
+  checkedCoreTranscriptDigest := 0
+  proofDigest := 0
+  nativeBoundaryDigest := 0
+  slotId := 0
+
+/-- The selected payload-acceptance predicate is not empty. -/
+theorem selectedRustPayloadAcceptanceNotVacuous
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ¬ (forall b payload,
+      ¬ (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates.reviewedFq12PayloadAccepts
+          b payload) := by
+  intro hEmpty
+  have hAccepts :
+      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates.reviewedFq12PayloadAccepts
+        selectedRustCanonicalBoundary selectedRustCanonicalPayload := by
+    simp [
+      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources.toPredicates,
+      selectedRustNativeBoundaryPredicateFieldSources,
+      selectedReviewedFq12PayloadAccepts,
+      selectedRustCanonicalBoundary,
+      selectedRustCanonicalPayload,
+      selectedRustCanonicalContext
+    ]
+  exact hEmpty selectedRustCanonicalBoundary selectedRustCanonicalPayload hAccepts
+
+/-- The selected boundary-break predicate is not the universal break relation. -/
+theorem selectedRustBoundaryBreaksNotUniversal
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ¬ (forall c b breakEvent,
+      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates.boundaryBreakFor
+          c b breakEvent) := by
+  intro hUniversal
+  have hBreak :=
+    hUniversal selectedRustCanonicalContext selectedRustCanonicalBoundary
+      Path2NativeBoundary.BreakEvent.descentSoundnessBreak
+  simp [
+    ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources.toPredicates,
+    selectedRustNativeBoundaryPredicateFieldSources,
+    selectedBoundaryBreakFor
+  ] at hBreak
+
+/-- The selected payload-acceptance model projects back to the same boundary. -/
+theorem selectedRustPayloadAcceptanceMatchesBoundary
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12PayloadAcceptanceMatchesBoundary
+      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+  intro b payload hAccepts
+  simpa [
+    ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources.toPredicates,
+    selectedRustNativeBoundaryPredicateFieldSources,
+    selectedReviewedFq12PayloadAccepts
+  ] using hAccepts
+
+/--
+The selected extraction-certificate availability predicate binds certificates
+to the same native boundary and accepted payload.
+-/
+theorem selectedRustExtractionCertificateMatchesPayload
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12ExtractionCertificateMatchesPayload
+      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+  intro b payload cert hHasCert
+  rcases hHasCert with ⟨hAccepts, hBind⟩
+  rcases hAccepts with ⟨hPayloadDigest, hPayloadSlot⟩
+  rcases hBind with
+    ⟨hCertDigest, hCertSlot, hCreation, hReviewed, _hOpening, _hPad⟩
+  exact ⟨hCertDigest.trans hPayloadDigest, hCertSlot.trans hPayloadSlot,
+    hCreation, hReviewed⟩
+
+/--
+The selected extraction-certificate validity predicate binds certificates to
+the same native boundary and accepted payload.
+-/
+theorem selectedRustExtractionCertificateValidityMatchesPayload
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12ExtractionCertificateValidityMatchesPayload
+      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+  intro b payload cert hValid
+  rcases hValid with ⟨hProjects, hBind⟩
+  rcases hProjects with ⟨hPayloadDigest, hPayloadSlot⟩
+  rcases hBind with
+    ⟨hCertDigest, hCertSlot, hCreation, hReviewed, _hOpening, _hPad⟩
+  exact ⟨hCertDigest.trans hPayloadDigest, hCertSlot.trans hPayloadSlot,
+    hCreation, hReviewed⟩
+
+/-- Selected role-lift validity exposes the role-lift extraction binding. -/
+theorem selectedRustRoleLiftValidityBindsExtraction
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12RoleLiftValidityBindsExtractionTarget
+      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+  intro b payload cert liftCert hValid
+  exact hValid.2
+
+/-- Selected assembly validity exposes the assembly/opening binding. -/
+theorem selectedRustAssemblyValidityBindsOpening
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12AssemblyValidityBindsOpeningTarget
+      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+  intro b payload cert opening assemblyCert hValid
+  exact hValid.2
+
+/-- Selected compatibility validity exposes the compatibility binding. -/
+theorem selectedRustCompatibilityValidityBinds
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12CompatibilityValidityBindsTarget
+      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+  intro b payload cert opening h compatCert hValid
+  exact hValid.2
+
+/-- Selected full-opening bridge validity exposes the aggregate bridge binding. -/
+theorem selectedRustFullOpeningBridgeDigestValidityBinds
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget
+      (selectedRustNativeBoundaryPredicateFieldSources Cert).toPredicates := by
+  intro b payload cert liftCert assemblyCert compatCert bridgeCert hValid
+  exact hValid.2
+
 /--
 Selected Rust native-boundary predicate-model import target.
 

@@ -1904,6 +1904,19 @@ because `native_boundary_concrete_predicate_model_present = false`, and the
 broader concrete-definition checklist still rejects the conditional route as a
 non-concrete import rather than treating parameterized source records as real
 Rust/model evidence.
+The next native-boundary model slice now has direct Lean proofs instead of
+remaining as opaque model facts: the selected field-source package proves
+payload-acceptance non-vacuity, boundary-break non-universality, payload
+acceptance matching the native boundary, extraction-certificate availability
+and validity matching the accepted payload, role-lift validity binding
+extraction, assembly validity binding the opening, compatibility validity
+binding the representative, and aggregate full-opening bridge validity binding
+the bridge certificate. These are definitional/projection facts over
+`selectedRustNativeBoundaryPredicateFieldSources Cert`; they do not instantiate
+the predicate-model certificate. The remaining hard blockers are the
+role-lift-opening-to-certificate-lift law and the shared-witness/canonical
+native-validity source needed to finish the hard extraction law bundle and
+then build the concrete predicate-model certificate from real report evidence.
 Tooling note: the Rust source scanner's direct-constant-lambda check now clamps
 source windows to a UTF-8 character boundary before slicing; the prior byte
 slice could panic when a window ended inside Lean's `∧` token. The broad
