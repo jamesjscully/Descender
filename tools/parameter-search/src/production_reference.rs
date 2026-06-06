@@ -13892,7 +13892,9 @@ pub fn path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1()
             .native_boundary_payload_acceptance_antivacuity_target_present
             && source_record_subcheck.native_boundary_break_antivacuity_target_present
             && !source_record_subcheck
-                .native_boundary_predicate_model_generic_evidence_labels_present,
+                .native_boundary_predicate_model_generic_evidence_labels_present
+            && !source_record_subcheck
+                .native_boundary_predicate_model_forbidden_vacuous_literals_present,
         concrete_predicate_model_present,
         certified_semantics_source_package_target_present: source_record_subcheck
             .native_boundary_certified_semantics_source_package_target_present,

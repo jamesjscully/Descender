@@ -364,8 +364,10 @@ It now also rejects the obvious syntactic vacuity escape hatch: a field-complete
 `selectedRustNativeBoundaryPredicates` whose critical break, reviewed-Fq12
 certificate/extraction, payload-extraction, or spend predicates are filled by
 constant `True`/`False` lambdas. The manifest surfaces this as
-`native_boundary_predicate_model_forbidden_vacuous_literals_present`, and the
-concrete-model bit requires it to be false.
+`native_boundary_predicate_model_forbidden_vacuous_literals_present`; the
+digest-bound predicate-model report includes it in
+`predicate_negative_controls_passed`, and the concrete-model bit requires it
+to be false.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and

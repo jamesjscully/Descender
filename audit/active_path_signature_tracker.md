@@ -1364,9 +1364,11 @@ It now also rejects the most direct vacuous literal model shapes inside
 `selectedRustNativeBoundaryPredicates`: universal break predicates,
 always-false reviewed-Fq12 payload acceptance, and constant-true reviewed-Fq12
 certificate/extraction/spend predicates. The manifest exposes this as
-`native_boundary_predicate_model_forbidden_vacuous_literals_present`, so a
-field-complete record still cannot count as the concrete active model if its
-critical predicates are filled by constant placeholders.
+`native_boundary_predicate_model_forbidden_vacuous_literals_present`, and the
+digest-bound predicate-model report folds it into
+`predicate_negative_controls_passed`, so a field-complete record still cannot
+count as the concrete active model if its critical predicates are filled by
+constant placeholders.
 
 ## Findings
 
