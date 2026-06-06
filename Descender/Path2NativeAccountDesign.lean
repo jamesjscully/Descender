@@ -1768,7 +1768,7 @@ structure SelectedRustFullSignatureReductionEvidenceReport where
   schemaMatches : Bool
   reportDigestVerified : Bool
   productionSignatureProbabilityPinned : Bool
-  signatureToAcceptedSpendInequalityProved : Bool
+  signatureSuccessMatchesAcceptedSpendGame : Bool
   acceptedSpendProbabilityLinked : Bool
   fullExecutionSourceConsumed : Bool
   activeHashBoundaryConsumed : Bool
@@ -1786,7 +1786,7 @@ def SelectedRustFullSignatureReductionEvidenceReport.ReportVerified
 def SelectedRustFullSignatureReductionEvidenceReport.FactsAllTrue
     (E : SelectedRustFullSignatureReductionEvidenceReport) : Prop :=
   E.productionSignatureProbabilityPinned = true ∧
-  E.signatureToAcceptedSpendInequalityProved = true ∧
+  E.signatureSuccessMatchesAcceptedSpendGame = true ∧
   E.acceptedSpendProbabilityLinked = true ∧
   E.fullExecutionSourceConsumed = true ∧
   E.activeHashBoundaryConsumed = true ∧

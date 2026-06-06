@@ -27638,7 +27638,7 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
     let certificate_checks = [
         "SelectedRustFullSignatureReductionEvidenceReport",
         "productionSignatureProbabilityPinned",
-        "signatureToAcceptedSpendInequalityProved",
+        "signatureSuccessMatchesAcceptedSpendGame",
         "acceptedSpendProbabilityLinked",
         "fullExecutionSourceConsumed",
         "activeHashBoundaryConsumed",
@@ -50801,7 +50801,7 @@ end Path2CheckedCoreByteBridge
 /-
 structure SelectedRustFullSignatureReductionEvidenceReport where
   productionSignatureProbabilityPinned : Bool
-  signatureToAcceptedSpendInequalityProved : Bool
+  signatureSuccessMatchesAcceptedSpendGame : Bool
   acceptedSpendProbabilityLinked : Bool
   fullExecutionSourceConsumed : Bool
   activeHashBoundaryConsumed : Bool
@@ -50844,7 +50844,7 @@ end Path2NativeAccountDesign
         let missing_hash_witness_full_signature_reduction_certificate = r#"
 structure SelectedRustFullSignatureReductionEvidenceReport where
   productionSignatureProbabilityPinned : Bool
-  signatureToAcceptedSpendInequalityProved : Bool
+  signatureSuccessMatchesAcceptedSpendGame : Bool
   acceptedSpendProbabilityLinked : Bool
   fullExecutionSourceConsumed : Bool
   activeHashBoundaryConsumed : Bool
