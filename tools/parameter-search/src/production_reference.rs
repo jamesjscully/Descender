@@ -27959,6 +27959,52 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
     if forbidden_variable_stub {
         return false;
     }
+    let normalized_account_design_source =
+        account_design_source.split_whitespace().collect::<String>();
+    let contains_normalized_source = |marker: &str| {
+        normalized_account_design_source.contains(&marker.split_whitespace().collect::<String>())
+    };
+    let forbidden_vacuous_global_terms = [
+        "def selectedRustAcceptedSpendEvidenceReport := {",
+        "def selectedRustAcceptedSpendEvidenceReport : SelectedRustAcceptedSpendSoundnessEvidenceReport :=",
+        "def selectedRustAcceptedSpendEvidenceReport := ⟨",
+        "def selectedRustAcceptedSpendEvidenceDigest := ByteArray.empty",
+        "def selectedRustAcceptedSpendForgeryProb := 0",
+        "def selectedRustAcceptedSpendForgeryProb : ℝ := 0",
+        "def selectedRustAcceptedSpendForgeryProb : ℝ := (0 : ℝ)",
+        "def selectedRustAcceptedSpendForgeryBound := 0",
+        "def selectedRustAcceptedSpendForgeryBound : ℝ := 0",
+        "def selectedRustAcceptedSpendForgeryBound : ℝ := (0 : ℝ)",
+        "def selectedRustProductionAcceptedSpendForgeryProb := 0",
+        "def selectedRustProductionAcceptedSpendForgeryProb : ℝ := 0",
+        "def selectedRustProductionAcceptedSpendForgeryProb : ℝ := (0 : ℝ)",
+        "def selectedRustProductionAcceptedSpendForgeryBound := 0",
+        "def selectedRustProductionAcceptedSpendForgeryBound : ℝ := 0",
+        "def selectedRustProductionAcceptedSpendForgeryBound : ℝ := (0 : ℝ)",
+        "def selectedRustAcceptedSpendForgeryProbPinned := rfl",
+        "def selectedRustAcceptedSpendForgeryBoundPinned := rfl",
+        "def selectedRustAcceptedSpendForgeryLeBound := le_rfl",
+        "def selectedRustAcceptedSpendHiddenSourceClosed := True",
+        "def selectedRustAcceptedSpendCheckedCoreClosed := True",
+        "def selectedRustAcceptedSpendLifecycleClosed := True",
+        "def selectedRustAcceptedSpendNoExportClosed := True",
+        "abbrev selectedRustAcceptedSpendEvidenceReport := {",
+        "abbrev selectedRustAcceptedSpendEvidenceDigest := ByteArray.empty",
+        "abbrev selectedRustAcceptedSpendForgeryProb := 0",
+        "abbrev selectedRustAcceptedSpendForgeryBound := 0",
+        "abbrev selectedRustProductionAcceptedSpendForgeryProb := 0",
+        "abbrev selectedRustProductionAcceptedSpendForgeryBound := 0",
+        "abbrev selectedRustAcceptedSpendHiddenSourceClosed := True",
+        "abbrev selectedRustAcceptedSpendCheckedCoreClosed := True",
+        "abbrev selectedRustAcceptedSpendLifecycleClosed := True",
+        "abbrev selectedRustAcceptedSpendNoExportClosed := True",
+    ];
+    if forbidden_vacuous_global_terms
+        .iter()
+        .any(|term| account_design_source.contains(term) || contains_normalized_source(term))
+    {
+        return false;
+    }
     let theorem_start_marker = format!("\ntheorem {theorem_name}");
     account_design_source
         .match_indices(&theorem_start_marker)
@@ -27980,6 +28026,11 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
     instantiation_source: &str,
     theorem_name: &str,
 ) -> bool {
+    let normalized_instantiation_source =
+        instantiation_source.split_whitespace().collect::<String>();
+    let contains_normalized = |marker: &str| {
+        normalized_instantiation_source.contains(&marker.split_whitespace().collect::<String>())
+    };
     let theorem_header_end = instantiation_source
         .find(":= by")
         .or_else(|| instantiation_source.find(" where"))
@@ -28052,18 +28103,45 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
     }
     let forbidden_vacuous_terms = [
         "evidenceReport := {",
+        "evidenceReport := ⟨",
+        "evidenceDigest := ByteArray.empty",
         "selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
         "selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
         "let selectedRustAcceptedSpendEvidenceReport : SelectedRustAcceptedSpendSoundnessEvidenceReport :=",
+        "let selectedRustAcceptedSpendEvidenceReport :=",
+        "let selectedRustAcceptedSpendEvidenceReport := {",
+        "let selectedRustAcceptedSpendEvidenceReport := ⟨",
+        "let selectedRustAcceptedSpendEvidenceDigest := ByteArray.empty",
         "let selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
         "let selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
         "selectedRustAcceptedSpendSoundnessCertificate := {",
         "selectedRustAcceptedSpendForgeryProb := 0",
         "selectedRustAcceptedSpendForgeryBound := 0",
+        "selectedRustProductionAcceptedSpendForgeryProb := 0",
+        "selectedRustProductionAcceptedSpendForgeryBound := 0",
+        "let selectedRustAcceptedSpendForgeryProb := 0",
+        "let selectedRustAcceptedSpendForgeryProb : ℝ := 0",
+        "let selectedRustAcceptedSpendForgeryProb : ℝ := (0 : ℝ)",
+        "let selectedRustAcceptedSpendForgeryBound := 0",
+        "let selectedRustAcceptedSpendForgeryBound : ℝ := 0",
+        "let selectedRustAcceptedSpendForgeryBound : ℝ := (0 : ℝ)",
+        "let selectedRustProductionAcceptedSpendForgeryProb := 0",
+        "let selectedRustProductionAcceptedSpendForgeryProb : ℝ := 0",
+        "let selectedRustProductionAcceptedSpendForgeryProb : ℝ := (0 : ℝ)",
+        "let selectedRustProductionAcceptedSpendForgeryBound := 0",
+        "let selectedRustProductionAcceptedSpendForgeryBound : ℝ := 0",
+        "let selectedRustProductionAcceptedSpendForgeryBound : ℝ := (0 : ℝ)",
+        "let selectedRustAcceptedSpendForgeryProbPinned := rfl",
+        "let selectedRustAcceptedSpendForgeryBoundPinned := rfl",
+        "let selectedRustAcceptedSpendForgeryLeBound := le_rfl",
+        "let selectedRustAcceptedSpendHiddenSourceClosed := True",
+        "let selectedRustAcceptedSpendCheckedCoreClosed := True",
+        "let selectedRustAcceptedSpendLifecycleClosed := True",
+        "let selectedRustAcceptedSpendNoExportClosed := True",
     ];
     if forbidden_vacuous_terms
         .iter()
-        .any(|term| instantiation_source.contains(term))
+        .any(|term| instantiation_source.contains(term) || contains_normalized(term))
     {
         return false;
     }
@@ -28099,7 +28177,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
     ];
     instantiation_checks
         .iter()
-        .all(|marker| instantiation_source.contains(marker))
+        .all(|marker| instantiation_source.contains(marker) || contains_normalized(marker))
 }
 
 fn path2_no_export_serializer_boundary_present_v1() -> bool {
@@ -51532,6 +51610,115 @@ end Path2NativeAccountDesign
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 vacuous_constructor_accepted_spend_zero_bound
+            )
+        );
+        let vacuous_aliased_accepted_spend_bound = r#"
+theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
+    NativeAcceptedSpendSoundnessBoundary := by
+  let _hiddenSourceClosure :=
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate
+  let _checkedCoreInstantiation :=
+    selectedRustCheckedCoreByteSource_instantiation_v1
+  let _checkedCoreClosure :=
+    accepted_spend_with_selected_rust_checked_core_closure_closed
+  let _fullExecutionSource :=
+    concreteFullSignatureExecutionSource_instantiation_v1
+  let _lifecycleLift :=
+    concrete_fullExecutionAcceptedSpendLift
+  let _noExportInstantiation :=
+    selectedRustActiveNoExportSerializer_instantiation_v1
+  let _noExportClosure :=
+    activeSerializerAllowlist_boundaryNoExportClosed
+  let selectedRustAcceptedSpendForgeryProb : ℝ := 0
+  let selectedRustAcceptedSpendForgeryBound : ℝ := (0 : ℝ)
+  let selectedRustProductionAcceptedSpendForgeryProb : ℝ := 0
+  let selectedRustProductionAcceptedSpendForgeryBound : ℝ := (0 : ℝ)
+  let selectedRustAcceptedSpendForgeryProbPinned := rfl
+  let selectedRustAcceptedSpendForgeryBoundPinned := rfl
+  let selectedRustAcceptedSpendForgeryLeBound := le_rfl
+  let selectedRustAcceptedSpendHiddenSourceClosed := True
+  let selectedRustAcceptedSpendCheckedCoreClosed := True
+  let selectedRustAcceptedSpendLifecycleClosed := True
+  let selectedRustAcceptedSpendNoExportClosed := True
+  let selectedRustAcceptedSpendSoundnessCertificate :
+      SelectedRustAcceptedSpendSoundnessCertificate :=
+    SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
+      selectedRustAcceptedSpendEvidenceReport
+      selectedRustAcceptedSpendEvidenceDigest
+      selectedRustAcceptedSpendBoundVerifiedProof
+      selectedRustAcceptedSpendFactsAllTrueProof
+      selectedRustAcceptedSpendForgeryProb
+      selectedRustAcceptedSpendForgeryBound
+      selectedRustProductionAcceptedSpendForgeryProb
+      selectedRustProductionAcceptedSpendForgeryBound
+      selectedRustAcceptedSpendForgeryProbPinned
+      selectedRustAcceptedSpendForgeryBoundPinned
+      selectedRustAcceptedSpendForgeryLeBound
+      selectedRustAcceptedSpendHiddenSourceClosed
+      selectedRustAcceptedSpendCheckedCoreClosed
+      selectedRustAcceptedSpendLifecycleClosed
+      selectedRustAcceptedSpendNoExportClosed
+  exact
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+      selectedRustAcceptedSpendSoundnessCertificate
+end Path2NativeAccountDesign
+"#;
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                vacuous_aliased_accepted_spend_bound
+            )
+        );
+        let vacuous_global_aliased_accepted_spend_bound = r#"
+def selectedRustAcceptedSpendForgeryProb : ℝ := 0
+def selectedRustAcceptedSpendForgeryBound : ℝ := (0 : ℝ)
+def selectedRustProductionAcceptedSpendForgeryProb : ℝ := 0
+def selectedRustProductionAcceptedSpendForgeryBound : ℝ := (0 : ℝ)
+def selectedRustAcceptedSpendHiddenSourceClosed := True
+def selectedRustAcceptedSpendCheckedCoreClosed := True
+def selectedRustAcceptedSpendLifecycleClosed := True
+def selectedRustAcceptedSpendNoExportClosed := True
+theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
+    NativeAcceptedSpendSoundnessBoundary := by
+  let _hiddenSourceClosure :=
+    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_certificate
+  let _checkedCoreInstantiation :=
+    selectedRustCheckedCoreByteSource_instantiation_v1
+  let _checkedCoreClosure :=
+    accepted_spend_with_selected_rust_checked_core_closure_closed
+  let _fullExecutionSource :=
+    concreteFullSignatureExecutionSource_instantiation_v1
+  let _lifecycleLift :=
+    concrete_fullExecutionAcceptedSpendLift
+  let _noExportInstantiation :=
+    selectedRustActiveNoExportSerializer_instantiation_v1
+  let _noExportClosure :=
+    activeSerializerAllowlist_boundaryNoExportClosed
+  let selectedRustAcceptedSpendSoundnessCertificate :
+      SelectedRustAcceptedSpendSoundnessCertificate :=
+    SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
+      selectedRustAcceptedSpendEvidenceReport
+      selectedRustAcceptedSpendEvidenceDigest
+      selectedRustAcceptedSpendBoundVerifiedProof
+      selectedRustAcceptedSpendFactsAllTrueProof
+      selectedRustAcceptedSpendForgeryProb
+      selectedRustAcceptedSpendForgeryBound
+      selectedRustProductionAcceptedSpendForgeryProb
+      selectedRustProductionAcceptedSpendForgeryBound
+      selectedRustAcceptedSpendForgeryProbPinned
+      selectedRustAcceptedSpendForgeryBoundPinned
+      selectedRustAcceptedSpendForgeryLeBound
+      selectedRustAcceptedSpendHiddenSourceClosed
+      selectedRustAcceptedSpendCheckedCoreClosed
+      selectedRustAcceptedSpendLifecycleClosed
+      selectedRustAcceptedSpendNoExportClosed
+  exact
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+      selectedRustAcceptedSpendSoundnessCertificate
+end Path2NativeAccountDesign
+"#;
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                vacuous_global_aliased_accepted_spend_bound
             )
         );
         let accepted_spend_instantiation_without_prerequisites = r#"

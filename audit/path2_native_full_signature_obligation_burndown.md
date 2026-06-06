@@ -1379,6 +1379,12 @@ selected checked-core instantiation and accepted-spend wrapper, concrete
 full-execution source and lift, and selected no-export serializer closure.
 This keeps the numeric handoff dependent on the active closure proofs rather
 than locally named prerequisite propositions.
+The accepted-spend numeric-bound gate now also rejects local or global aliases
+that hide zero probability/bound values, `rfl`/`le_rfl` pins, empty evidence
+digests, or bare `True` prerequisite closures behind the selected
+accepted-spend names. This is a fail-closed scanner hardening only: the active
+numeric-bound theorem remains open until production accepted-spend evidence
+provides non-vacuous numeric values and the corresponding inequality proof.
 `selectedRustActiveNoExportSerializer_instantiation_v1` now follows the same
 exact-name/all-candidate pattern for the active no-export serializer gate.
 The full-execution boundary-presence check now also requires an exact
