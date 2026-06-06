@@ -179,6 +179,9 @@ fn main() -> Result<(), String> {
             "predicate_model_facts_proof_definition_present":
                 concrete_definition_checklist
                     .predicate_model_facts_proof_definition_present,
+            "predicate_model_field_source_certificate_definition_present":
+                concrete_definition_checklist
+                    .predicate_model_field_source_certificate_definition_present,
             "predicate_model_certificate_definition_present":
                 concrete_definition_checklist.predicate_model_certificate_definition_present,
             "predicate_model_certificate_definitions_present":
@@ -203,6 +206,9 @@ fn main() -> Result<(), String> {
             "native_boundary_predicate_model_evidence_report_target_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_evidence_report_target_present,
+            "native_boundary_predicate_field_source_certificate_target_present":
+                source_record_subcheck
+                    .native_boundary_predicate_field_source_certificate_target_present,
             "native_boundary_predicate_model_certificate_target_present":
                 source_record_subcheck.native_boundary_predicate_model_certificate_target_present,
             "native_boundary_predicate_model_certificate_to_source_present":

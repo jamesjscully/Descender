@@ -447,6 +447,13 @@ rejects a selected certificate built directly from the raw
 `selectedRustNativeBoundaryPredicates` record, and
 `nativeBoundaryPredicateRecordComplete` now requires both concrete provider
 definitions and the package-route bit.
+The route is now certificate-gated: Lean defines
+`ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate`,
+whose constructor binds the selected report/digest, report verification, the
+package-present report fact, and the field-source package. The predicate-model
+certificate consumes this field-source certificate rather than the raw package,
+and the manifest exposes
+`native_boundary_predicate_field_source_certificate_target_present`.
 The package-route bit is now also a standalone selected predicate-model
 evidence fact, mirrored in Lean as
 `nativeBoundaryPredicateFieldSourcePackagePresent` and in Rust/manifest output
@@ -969,7 +976,7 @@ digests. The current active output verifies all six Rust evidence reports and
 all component facts, but keeps AP2-N001 fail-closed:
 `extractor_theorem_instantiated = false`,
 `semantics_bridge_complete = false`, checklist digest
-`a3343d6a79b93f65439a12cbae1dc0bb1cfcca62afedb5f5707dade64eb6b806`, and
+`f1dc786697672712b03cbce6ab97124ac520d8cac569c6ffe5566270782ca3bd`, and
 missing categories `predicate_model_certificate_definitions`,
 `source_record_definitions`, `source_record_evidence_source_bindings`, and
 `sub_evidence_digest_match_proof`. The
@@ -1025,9 +1032,9 @@ arbitrary source terms and constructor-shaped certificates, unless the proof
 also supplies selected evidence/source binding definitions for the boundary
 base, role-root/lift, source-route, field/local, and shared-witness source
 families. Current selected digests are checklist
-`a3343d6a79b93f65439a12cbae1dc0bb1cfcca62afedb5f5707dade64eb6b806` and
+`f1dc786697672712b03cbce6ab97124ac520d8cac569c6ffe5566270782ca3bd` and
 five-source evidence
-`2ebca7cbd99496966c25a71f05cd1d7d914d69728e1a6b98e9e97a79293286c2`.
+`67e89bdc6748730aaf40787a52c987ffda549b919e331f824f8fa498e0a3a7e9`.
 The module-level final theorem gate now requires the full concrete-definition
 checklist before `extractor_theorem_instantiated` can become true. A
 constructor-shaped theorem snippet without the binding definitions, selected

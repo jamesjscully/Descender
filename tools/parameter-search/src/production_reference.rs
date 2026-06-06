@@ -7541,6 +7541,7 @@ pub struct Path2SelectedRustModelConcreteDefinitionChecklistV1 {
     pub evidence_proof_definitions_present: bool,
     pub predicate_model_report_surface_definitions_present: bool,
     pub predicate_model_facts_proof_definition_present: bool,
+    pub predicate_model_field_source_certificate_definition_present: bool,
     pub predicate_model_certificate_definition_present: bool,
     pub predicate_model_certificate_definitions_present: bool,
     pub source_record_definitions_present: bool,
@@ -7555,6 +7556,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_predicates_record_present: bool,
     pub native_boundary_predicate_model_source_target_present: bool,
     pub native_boundary_predicate_model_evidence_report_target_present: bool,
+    pub native_boundary_predicate_field_source_certificate_target_present: bool,
     pub native_boundary_predicate_model_certificate_target_present: bool,
     pub native_boundary_predicate_model_certificate_to_source_present: bool,
     pub native_boundary_predicate_model_current_report_certificate_impossible_present: bool,
@@ -9230,11 +9232,11 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             ],
             2048,
         );
-    let native_boundary_predicate_model_certificate_target_present =
+    let native_boundary_predicate_field_source_certificate_target_present =
         lean_source_has_named_declaration_with_markers_v1(
             &boundary_source,
             "structure",
-            "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+            "ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate",
             &[
                 "evidenceReport :",
                 "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
@@ -9244,33 +9246,77 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 "evidenceDigestBound",
                 "selectedRustNativeBoundaryPredicateModelEvidenceDigest",
                 "evidenceReportVerifiedProof",
-                "evidenceFactsAllTrueProof",
+                "fieldSourcePackagePresentProof",
+                "nativeBoundaryPredicateFieldSourcePackagePresent = true",
                 "predicateFieldSources :",
                 "ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources",
-                "predicates : Predicates",
-                "predicatesFromFieldSources",
-                "predicates = predicateFieldSources.toPredicates",
-                "payloadAcceptanceNotVacuous",
-                "boundaryBreaksNotUniversal",
-                "payloadAcceptanceMatchesBoundary",
-                "fullOpeningBridgeDigestValidityBinds",
             ],
-            8192,
+            4096,
         ) && lean_source_has_named_declaration_with_markers_v1(
             &boundary_source,
             "def",
-            "ofReportAndModel",
+            "ofReportAndSources",
             &[
                 "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
-                "evidenceFactsAllTrueProof",
+                "fieldSourcePackagePresentProof",
+                "nativeBoundaryPredicateFieldSourcePackagePresent = true",
                 "ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources",
-                "predicateFieldSources.toPredicates",
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate",
+                "fieldSourcePackagePresentProof := fieldSourcePackagePresentProof",
                 "predicateFieldSources := predicateFieldSources",
-                "predicates := predicateFieldSources.toPredicates",
-                "predicatesFromFieldSources := rfl",
             ],
             8192,
         );
+    let native_boundary_predicate_model_certificate_target_present =
+        native_boundary_predicate_field_source_certificate_target_present
+            && lean_source_has_named_declaration_with_markers_v1(
+                &boundary_source,
+                "structure",
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+                &[
+                    "evidenceReport :",
+                    "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
+                    "evidenceDigest : ByteArray",
+                    "evidenceReportBound",
+                    "selectedRustNativeBoundaryPredicateModelEvidenceReport",
+                    "evidenceDigestBound",
+                    "selectedRustNativeBoundaryPredicateModelEvidenceDigest",
+                    "evidenceReportVerifiedProof",
+                    "evidenceFactsAllTrueProof",
+                    "predicateFieldSourceCertificate :",
+                    "ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate",
+                    "predicateFieldSources :",
+                    "ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources",
+                    "predicateFieldSourcesFromCertificate",
+                    "predicateFieldSources =",
+                    "predicateFieldSourceCertificate.predicateFieldSources",
+                    "predicates : Predicates",
+                    "predicatesFromFieldSources",
+                    "predicates = predicateFieldSources.toPredicates",
+                    "payloadAcceptanceNotVacuous",
+                    "boundaryBreaksNotUniversal",
+                    "payloadAcceptanceMatchesBoundary",
+                    "fullOpeningBridgeDigestValidityBinds",
+                ],
+                8192,
+            )
+            && lean_source_has_named_declaration_with_markers_v1(
+                &boundary_source,
+                "def",
+                "ofReportAndModel",
+                &[
+                    "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
+                    "evidenceFactsAllTrueProof",
+                    "ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate",
+                    "predicateFieldSourceCertificate.predicateFieldSources.toPredicates",
+                    "predicateFieldSourceCertificate := predicateFieldSourceCertificate",
+                    "predicateFieldSources := predicateFieldSourceCertificate.predicateFieldSources",
+                    "predicateFieldSourcesFromCertificate := rfl",
+                    "predicates := predicateFieldSourceCertificate.predicateFieldSources.toPredicates",
+                    "predicatesFromFieldSources := rfl",
+                ],
+                12000,
+            );
     let native_boundary_predicate_model_certificate_to_source_present =
         lean_source_has_named_declaration_with_markers_v1(
             &boundary_source,
@@ -10519,6 +10565,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_predicates_record_present,
         native_boundary_predicate_model_source_target_present,
         native_boundary_predicate_model_evidence_report_target_present,
+        native_boundary_predicate_field_source_certificate_target_present,
         native_boundary_predicate_model_certificate_target_present,
         native_boundary_predicate_model_certificate_to_source_present,
         native_boundary_predicate_model_current_report_certificate_impossible_present,
@@ -10616,6 +10663,7 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             evidence_proof_definitions_present: false,
             predicate_model_report_surface_definitions_present: false,
             predicate_model_facts_proof_definition_present: false,
+            predicate_model_field_source_certificate_definition_present: false,
             predicate_model_certificate_definition_present: false,
             predicate_model_certificate_definitions_present: false,
             source_record_definitions_present: false,
@@ -10826,6 +10874,20 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
         &["selectedRustNativeBoundaryPredicateModelEvidenceReport.FactsAllTrue"][..],
     );
+    let predicate_model_field_source_certificate_definition = (
+        "selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate",
+        &["ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate"][..],
+    );
+    let predicate_model_field_source_certificate_definition_body_markers = [
+        (
+            "selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate",
+            "ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate.ofReportAndSources selectedRustNativeBoundaryPredicateModelEvidenceReport selectedRustNativeBoundaryPredicateModelEvidenceDigest rfl rfl selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof selectedRustNativeBoundaryPredicateFieldSourcePackagePresentProof",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate",
+            "selectedRustNativeBoundaryPredicateFieldSources",
+        ),
+    ];
     let predicate_model_certificate_definition = (
         "selectedRustNativeBoundaryPredicateModelCertificate",
         &["ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate"][..],
@@ -10849,7 +10911,7 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         ),
         (
             "selectedRustNativeBoundaryPredicateModelCertificate",
-            "selectedRustNativeBoundaryPredicateFieldSources",
+            "selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate",
         ),
         (
             "selectedRustNativeBoundaryPredicateModelCertificate",
@@ -11190,6 +11252,31 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             predicate_model_facts_proof_definition.0,
             predicate_model_facts_proof_definition.1,
         );
+    let predicate_model_field_source_certificate_definition_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            predicate_model_field_source_certificate_definition.0,
+            predicate_model_field_source_certificate_definition.1,
+        ) && predicate_model_field_source_certificate_definition_body_markers
+            .first()
+            .is_some_and(|(name, marker)| {
+                lean_source_selected_rust_definition_body_starts_with_marker_v1(
+                    &boundary_source,
+                    name,
+                    marker,
+                    4096,
+                )
+            })
+            && predicate_model_field_source_certificate_definition_body_markers
+                .iter()
+                .skip(1)
+                .all(|(name, marker)| {
+                    lean_source_selected_rust_definition_body_contains_marker_v1(
+                        &boundary_source,
+                        name,
+                        marker,
+                    )
+                });
     let predicate_model_certificate_definition_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
@@ -11231,6 +11318,7 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
     let predicate_model_certificate_definitions_present =
         predicate_model_report_surface_definitions_present
             && predicate_model_facts_proof_definition_present
+            && predicate_model_field_source_certificate_definition_present
             && predicate_model_certificate_definition_present
             && predicate_model_selected_obligation_definitions_present
             && native_boundary_concrete_predicate_model_present;
@@ -11336,6 +11424,7 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
         evidence_proof_definitions_present,
         predicate_model_report_surface_definitions_present,
         predicate_model_facts_proof_definition_present,
+        predicate_model_field_source_certificate_definition_present,
         predicate_model_certificate_definition_present,
         predicate_model_certificate_definitions_present,
         source_record_definitions_present,
@@ -11375,6 +11464,11 @@ pub fn path2_selected_rust_model_concrete_definition_checklist_v1_frame(
         &mut frame,
         b"predicate_model_facts_proof_definition_present",
         u64::from(checklist.predicate_model_facts_proof_definition_present),
+    );
+    append_u64(
+        &mut frame,
+        b"predicate_model_field_source_certificate_definition_present",
+        u64::from(checklist.predicate_model_field_source_certificate_definition_present),
     );
     append_u64(
         &mut frame,
@@ -59133,6 +59227,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(
             source_record_subcheck.native_boundary_predicate_model_evidence_report_target_present
         );
+        assert!(
+            source_record_subcheck
+                .native_boundary_predicate_field_source_certificate_target_present
+        );
         assert!(source_record_subcheck.native_boundary_predicate_model_certificate_target_present);
         assert!(
             source_record_subcheck.native_boundary_predicate_model_certificate_to_source_present
@@ -60552,6 +60650,9 @@ theorem selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof :
 theorem selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof :
   selectedRustNativeBoundaryPredicateModelEvidenceReport.FactsAllTrue :=
   selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProofValue
+theorem selectedRustNativeBoundaryPredicateFieldSourcePackagePresentProof :
+  selectedRustNativeBoundaryPredicateModelEvidenceReport.nativeBoundaryPredicateFieldSourcePackagePresent = true :=
+  selectedRustNativeBoundaryPredicateFieldSourcePackagePresentProofValue
 theorem selectedRustPayloadAcceptanceNotVacuous :
   ¬ (forall b payload, ¬ selectedRustNativeBoundaryPredicates.reviewedFq12PayloadAccepts b payload) :=
   selectedRustPayloadAcceptanceNotVacuousValue
@@ -60597,6 +60698,16 @@ theorem selectedRustCompatibilityExtractionImpliesReviewedExtraction :
 theorem selectedRustFullOpeningBridgeDigestValidityBinds :
   ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget selectedRustNativeBoundaryPredicates :=
   selectedRustFullOpeningBridgeDigestValidityBindsValue
+def selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate :
+  ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate :=
+  ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate.ofReportAndSources
+    selectedRustNativeBoundaryPredicateModelEvidenceReport
+    selectedRustNativeBoundaryPredicateModelEvidenceDigest
+    rfl
+    rfl
+    selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof
+    selectedRustNativeBoundaryPredicateFieldSourcePackagePresentProof
+    selectedRustNativeBoundaryPredicateFieldSources
 def selectedRustNativeBoundaryPredicateModelCertificate :
   ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate :=
   ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel
@@ -60606,7 +60717,7 @@ def selectedRustNativeBoundaryPredicateModelCertificate :
     rfl
     selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof
     selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof
-    selectedRustNativeBoundaryPredicateFieldSources
+    selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate
     selectedRustPayloadAcceptanceNotVacuous
     selectedRustBoundaryBreaksNotUniversal
     selectedRustPayloadAcceptanceMatchesBoundary
@@ -60738,7 +60849,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             complete_concrete_definition_checklist.predicate_model_certificate_definition_present
         );
         let raw_predicate_model_certificate_source = complete_concrete_definition_source.replacen(
-            "    selectedRustNativeBoundaryPredicateFieldSources",
+            "    selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate",
             "    selectedRustNativeBoundaryPredicates",
             1,
         );
@@ -60806,8 +60917,8 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(!anonymous_predicate_model_certificate_checklist.all_definitions_present);
         let predicate_model_certificate_constructor_mentioned_but_alias_bound_source =
             complete_concrete_definition_source.replace(
-                "  ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel\n    selectedRustNativeBoundaryPredicateModelEvidenceReport\n    selectedRustNativeBoundaryPredicateModelEvidenceDigest\n    rfl\n    rfl\n    selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof\n    selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof\n    selectedRustNativeBoundaryPredicateFieldSources\n    selectedRustPayloadAcceptanceNotVacuous\n    selectedRustBoundaryBreaksNotUniversal\n    selectedRustPayloadAcceptanceMatchesBoundary\n    selectedRustExtractionCertificateMatchesPayload\n    selectedRustExtractionCertificateValidityMatchesPayload\n    selectedRustCertificateExtractionImpliesPayloadExtraction\n    selectedRustPayloadExtractionInBoundaryFiber\n    selectedRustPayloadExtractionNativeValid\n    selectedRustRoleLiftValidityBindsExtraction\n    selectedRustRoleLiftOpeningImpliesCertificateLift\n    selectedRustAssemblyValidityBindsOpening\n    selectedRustAssemblyCertificateImpliesFullNativeAssembly\n    selectedRustCompatibilityValidityBinds\n    selectedRustCompatibilityExtractionImpliesReviewedExtraction\n    selectedRustFullOpeningBridgeDigestValidityBinds",
-                "  selectedRustNativeBoundaryPredicateModelCertificateValue\n\nexample : True := by\n  let _mentionedPredicateModelConstructor :=\n    ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel\n      selectedRustNativeBoundaryPredicateModelEvidenceReport\n      selectedRustNativeBoundaryPredicateModelEvidenceDigest\n      rfl\n      rfl\n      selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof\n      selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof\n      selectedRustNativeBoundaryPredicateFieldSources\n      selectedRustPayloadAcceptanceNotVacuous\n      selectedRustBoundaryBreaksNotUniversal\n      selectedRustPayloadAcceptanceMatchesBoundary\n      selectedRustExtractionCertificateMatchesPayload\n      selectedRustExtractionCertificateValidityMatchesPayload\n      selectedRustCertificateExtractionImpliesPayloadExtraction\n      selectedRustPayloadExtractionInBoundaryFiber\n      selectedRustPayloadExtractionNativeValid\n      selectedRustRoleLiftValidityBindsExtraction\n      selectedRustRoleLiftOpeningImpliesCertificateLift\n      selectedRustAssemblyValidityBindsOpening\n      selectedRustAssemblyCertificateImpliesFullNativeAssembly\n      selectedRustCompatibilityValidityBinds\n      selectedRustCompatibilityExtractionImpliesReviewedExtraction\n      selectedRustFullOpeningBridgeDigestValidityBinds\n  trivial",
+                "  ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel\n    selectedRustNativeBoundaryPredicateModelEvidenceReport\n    selectedRustNativeBoundaryPredicateModelEvidenceDigest\n    rfl\n    rfl\n    selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof\n    selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof\n    selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate\n    selectedRustPayloadAcceptanceNotVacuous\n    selectedRustBoundaryBreaksNotUniversal\n    selectedRustPayloadAcceptanceMatchesBoundary\n    selectedRustExtractionCertificateMatchesPayload\n    selectedRustExtractionCertificateValidityMatchesPayload\n    selectedRustCertificateExtractionImpliesPayloadExtraction\n    selectedRustPayloadExtractionInBoundaryFiber\n    selectedRustPayloadExtractionNativeValid\n    selectedRustRoleLiftValidityBindsExtraction\n    selectedRustRoleLiftOpeningImpliesCertificateLift\n    selectedRustAssemblyValidityBindsOpening\n    selectedRustAssemblyCertificateImpliesFullNativeAssembly\n    selectedRustCompatibilityValidityBinds\n    selectedRustCompatibilityExtractionImpliesReviewedExtraction\n    selectedRustFullOpeningBridgeDigestValidityBinds",
+                "  selectedRustNativeBoundaryPredicateModelCertificateValue\n\nexample : True := by\n  let _mentionedPredicateModelConstructor :=\n    ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel\n      selectedRustNativeBoundaryPredicateModelEvidenceReport\n      selectedRustNativeBoundaryPredicateModelEvidenceDigest\n      rfl\n      rfl\n      selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof\n      selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof\n      selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate\n      selectedRustPayloadAcceptanceNotVacuous\n      selectedRustBoundaryBreaksNotUniversal\n      selectedRustPayloadAcceptanceMatchesBoundary\n      selectedRustExtractionCertificateMatchesPayload\n      selectedRustExtractionCertificateValidityMatchesPayload\n      selectedRustCertificateExtractionImpliesPayloadExtraction\n      selectedRustPayloadExtractionInBoundaryFiber\n      selectedRustPayloadExtractionNativeValid\n      selectedRustRoleLiftValidityBindsExtraction\n      selectedRustRoleLiftOpeningImpliesCertificateLift\n      selectedRustAssemblyValidityBindsOpening\n      selectedRustAssemblyCertificateImpliesFullNativeAssembly\n      selectedRustCompatibilityValidityBinds\n      selectedRustCompatibilityExtractionImpliesReviewedExtraction\n      selectedRustFullOpeningBridgeDigestValidityBinds\n  trivial",
             );
         let predicate_model_certificate_constructor_mentioned_but_alias_bound_checklist =
             path2_selected_rust_model_concrete_definition_checklist_from_source_v1(

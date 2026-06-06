@@ -913,7 +913,7 @@ confirms that all six selected Rust evidence reports verify and have all facts
 true, while the Lean closure remains fail-closed with
 `extractor_theorem_instantiated = false`,
 `semantics_bridge_complete = false`, checklist digest
-`a3343d6a79b93f65439a12cbae1dc0bb1cfcca62afedb5f5707dade64eb6b806`, and
+`f1dc786697672712b03cbce6ab97124ac520d8cac569c6ffe5566270782ca3bd`, and
 exactly four missing active categories:
 `predicate_model_certificate_definitions`, `source_record_definitions`, and
 `source_record_evidence_source_bindings`, and
@@ -1562,9 +1562,9 @@ arbitrary source terms and constructor-shaped certificates, unless the proof
 also supplies selected evidence/source binding definitions for the boundary
 base, role-root/lift, source-route, field/local, and shared-witness source
 families. Current selected digests are checklist
-`a3343d6a79b93f65439a12cbae1dc0bb1cfcca62afedb5f5707dade64eb6b806` and
+`f1dc786697672712b03cbce6ab97124ac520d8cac569c6ffe5566270782ca3bd` and
 five-source evidence
-`2ebca7cbd99496966c25a71f05cd1d7d914d69728e1a6b98e9e97a79293286c2`.
+`67e89bdc6748730aaf40787a52c987ffda549b919e331f824f8fa498e0a3a7e9`.
 The module-level final theorem gate now also requires this source-binding
 category before `extractor_theorem_instantiated` can become true. A
 constructor-shaped theorem snippet without the binding definitions remains
