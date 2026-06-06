@@ -2814,6 +2814,25 @@ def toSource
 end ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate
 
 /--
+The current selected predicate-model report cannot back a proof-bearing
+predicate-model certificate.
+
+This is the Lean-level fail-closed guard matching the manifest state: the
+public report is schema/digest verified, but its concrete model facts are
+false until the selected Rust native-boundary predicate interpretation is
+imported.
+-/
+theorem selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible
+    (Cert :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate)
+    (hReport :
+      Cert.evidenceReport =
+        selectedRustNativeBoundaryPredicateModelEvidenceReport) :
+    False := by
+  exact selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible
+    (by simpa [hReport] using Cert.evidenceFactsAllTrueProof)
+
+/--
 Concrete native-boundary semantics import target for the selected Rust path.
 
 This is the next non-mechanical object the active proof needs: not merely

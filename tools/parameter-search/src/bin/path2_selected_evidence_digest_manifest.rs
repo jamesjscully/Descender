@@ -187,6 +187,9 @@ fn main() -> Result<(), String> {
             "native_boundary_predicate_model_certificate_to_source_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_certificate_to_source_present,
+            "native_boundary_predicate_model_current_report_certificate_impossible_present":
+                source_record_subcheck
+                    .native_boundary_predicate_model_current_report_certificate_impossible_present,
             "native_boundary_predicate_model_generic_evidence_labels_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_generic_evidence_labels_present,

@@ -1321,6 +1321,11 @@ obligations and rejects local `let` shadowing of
 `selectedRustNativeBoundaryPredicateModelCertificate`, so the final theorem
 must consume the selected certified predicate model rather than rebuilding it
 inside the theorem body.
+Lean now also proves
+`selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible`:
+any certificate whose report is the current selected predicate-model report
+contradicts the report's impossible `FactsAllTrue` proof. The Rust
+source-record subcheck and manifest expose this fail-closed guard.
 
 ## Findings
 

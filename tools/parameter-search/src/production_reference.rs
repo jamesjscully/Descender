@@ -7556,6 +7556,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_predicate_model_evidence_report_target_present: bool,
     pub native_boundary_predicate_model_certificate_target_present: bool,
     pub native_boundary_predicate_model_certificate_to_source_present: bool,
+    pub native_boundary_predicate_model_current_report_certificate_impossible_present: bool,
     pub native_boundary_predicate_model_generic_evidence_labels_present: bool,
     pub native_boundary_predicate_model_remaining_generic_evidence_label_count: u8,
     pub native_boundary_payload_acceptance_antivacuity_target_present: bool,
@@ -8744,6 +8745,16 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
+    let native_boundary_predicate_model_current_report_certificate_impossible_present = [
+        "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible",
+        "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+        "Cert.evidenceReport =",
+        "selectedRustNativeBoundaryPredicateModelEvidenceReport",
+        "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrue_impossible",
+        "Cert.evidenceFactsAllTrueProof",
+    ]
+    .iter()
+    .all(|marker| boundary_source.contains(marker));
     let native_boundary_predicate_model_generic_evidence_label_markers = [
         "activeBoundaryPredicateModelPinned : Prop",
         "reviewedFq12PayloadAcceptanceModeled : Prop",
@@ -9327,6 +9338,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_predicate_model_evidence_report_target_present,
         native_boundary_predicate_model_certificate_target_present,
         native_boundary_predicate_model_certificate_to_source_present,
+        native_boundary_predicate_model_current_report_certificate_impossible_present,
         native_boundary_predicate_model_generic_evidence_labels_present,
         native_boundary_predicate_model_remaining_generic_evidence_label_count,
         native_boundary_payload_acceptance_antivacuity_target_present,
@@ -57337,6 +57349,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(source_record_subcheck.native_boundary_predicate_model_certificate_target_present);
         assert!(
             source_record_subcheck.native_boundary_predicate_model_certificate_to_source_present
+        );
+        assert!(
+            source_record_subcheck
+                .native_boundary_predicate_model_current_report_certificate_impossible_present
         );
         assert!(
             source_record_subcheck.native_boundary_predicate_model_generic_evidence_labels_present

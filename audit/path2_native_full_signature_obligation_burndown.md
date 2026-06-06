@@ -325,6 +325,11 @@ obligation proofs and local `let` rebinding of
 `selectedRustNativeBoundaryPredicateModelCertificate`, keeping the final route
 on the selected certified predicate model rather than a local certificate
 stub.
+Lean now proves the matching fail-closed guard
+`selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible`:
+the current selected predicate-model report cannot back a proof-bearing
+certificate because its `FactsAllTrue` obligation is impossible. The manifest
+now surfaces that guard in the source-record subcheck.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
