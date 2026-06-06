@@ -8233,6 +8233,7 @@ fn lean_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route
         "reviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputsOfSources",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_inputs",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_certificate",
         "reviewed_fq12_certificate_soundness_from_selected_rust_direct_assembly_digest_frame_witness_packaged_source_route_inputs",
         "ReviewedFq12FullNativeOpeningCanonicalRepresentativeSource",
         "ReviewedFq12SelectedRustAssemblyRepresentativeFrameSource",
@@ -8253,6 +8254,7 @@ fn lean_selected_rust_field_local_shared_digest_frame_witness_source_endpoint_pr
         "reviewedFq12SelectedRustFieldLocalSharedDigestFrameWitnessInputsOfSources",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_inputs",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_certificate",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_sources",
         "ReviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputs",
         "reviewedFq12SelectedRustFieldLocalDigestFrameWitnessByteComponentInputsOfSources",
@@ -18660,6 +18662,7 @@ fn path2_reviewed_fq12_shared_digest_frame_witness_byte_source_contract_present_
         "cases canonical_digest_frame_eq",
         "cases assembly_digest_frame_eq",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources",
+        "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_certificate",
         "reviewed_fq12_certificate_soundness_from_selected_rust_field_local_digest_frame_witness_byte_sources",
     ];
     let shared_evidence_struct_checks = [

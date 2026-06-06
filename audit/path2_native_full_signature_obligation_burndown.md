@@ -1451,3 +1451,16 @@ scanner now computes the concrete predicate-model presence bit directly for the
 concrete-definition checklist instead of deriving it through the source-record
 subcheck, so checklist fail-closed status does not depend on that subcheck's
 future report layout.
+
+Selected source-record status: Rust has concrete source-route, canonical
+representative witness, native representative digest-frame witness, direct
+assembly binding, and local-model evidence. The Lean source-record package has
+not yet instantiated `selectedRustSharedFrameWitnessSources`; that is the first
+reviewed-Fq12 subroute source record most likely to expose a real issue because
+it must combine the canonical representative byte source with the native
+digest-frame witness source rather than merely recomputing the assembly frame.
+The proof route now has a certificate-consuming wrapper,
+`reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_certificate`,
+so the eventual source record can expose shared witness sources through
+`ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.toWitnessSources`
+instead of passing the raw witness package directly.

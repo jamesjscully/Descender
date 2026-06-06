@@ -1742,6 +1742,18 @@ source marker check rather than recursively consulting the source-record
 subcheck. This preserves the current fail-closed predicate-model status while
 making the checklist independent from future changes to the subcheck report
 shape.
+Selected source-record bottleneck: Rust evidence exists for the source-route,
+canonical representative witness, native digest-frame witness, direct assembly
+binding, and local model, but Lean has not instantiated
+`selectedRustSharedFrameWitnessSources`. That source record is the first
+reviewed-Fq12 subroute item to build because it must prove the representative
+canonicality side and cannot be replaced by assembly-frame recomputation alone.
+Lean now also exposes
+`reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_certificate`,
+which consumes
+`ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.toWitnessSources`
+instead of raw shared witness sources. The Rust source audit requires this
+wrapper before accepting the shared digest-frame witness endpoint surface.
 
 ## Findings
 

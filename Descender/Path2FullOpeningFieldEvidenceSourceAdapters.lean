@@ -5331,6 +5331,40 @@ theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_share
       witnessSources)
 
 /--
+P2FS-001 closure from the field/local source records plus the report-bound
+shared-frame witness evidence certificate.
+
+This is the selected source-record route shape: the raw shared witness source
+bundle is exposed only through
+`ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.toWitnessSources`,
+so the final package cannot bypass the public shared-witness evidence report.
+-/
+theorem reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_certificate
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (P : Predicates)
+    (roleRootLiftSource :
+      ReviewedFq12RoleRootFunctionalLiftSource P)
+    (selectedSource :
+      SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+        FieldParser RouteParser P)
+    (assemblySource :
+      ReviewedFq12FieldConcreteAssemblyLocalSource P)
+    (compatibilitySource :
+      ReviewedFq12FieldConcreteCompatibilitySource P)
+    (witnessSourcesCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12ExtractionCertificateSoundness P :=
+  reviewed_fq12_certificate_soundness_from_selected_rust_field_local_shared_digest_frame_witness_sources
+    P roleRootLiftSource selectedSource assemblySource compatibilitySource
+    witnessSourcesCertificate.toWitnessSources
+
+/--
 P2FS-001 closure from the field/local source records plus the two Rust witness
 byte sources and explicit proof that they use the same selected representative
 digest frame.
