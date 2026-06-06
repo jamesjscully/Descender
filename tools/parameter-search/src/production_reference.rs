@@ -8716,6 +8716,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     .all(|marker| boundary_source.contains(marker));
     let native_boundary_predicate_model_certificate_target_present = [
         "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+        "def ofReportAndModel",
         "evidenceReport :",
         "ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport",
         "evidenceDigest : ByteArray",
@@ -9550,7 +9551,7 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
     let predicate_model_certificate_definition_body_markers = [
         (
             "selectedRustNativeBoundaryPredicateModelCertificate",
-            "selectedRustNativeBoundaryPredicateModelEvidenceReport",
+            "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel selectedRustNativeBoundaryPredicateModelEvidenceReport selectedRustNativeBoundaryPredicateModelEvidenceDigest selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
         ),
         (
             "selectedRustNativeBoundaryPredicateModelCertificate",
@@ -57642,34 +57643,27 @@ theorem selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof :
   selectedRustNativeBoundaryPredicateModelEvidenceReport.FactsAllTrue :=
   selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProofValue
 def selectedRustNativeBoundaryPredicateModelCertificate :
-  ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate where
-  evidenceReport := selectedRustNativeBoundaryPredicateModelEvidenceReport
-  evidenceDigest := selectedRustNativeBoundaryPredicateModelEvidenceDigest
-  evidenceReportVerifiedProof :=
+  ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate :=
+  ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel
+    selectedRustNativeBoundaryPredicateModelEvidenceReport
+    selectedRustNativeBoundaryPredicateModelEvidenceDigest
     selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof
-  evidenceFactsAllTrueProof :=
     selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof
-  predicates := P
-  payloadAcceptanceNotVacuous := selectedRustPayloadAcceptanceNotVacuousValue
-  boundaryBreaksNotUniversal := selectedRustBoundaryBreaksNotUniversalValue
-  payloadAcceptanceMatchesBoundary := selectedRustPayloadAcceptanceMatchesBoundaryValue
-  extractionCertificateMatchesPayload := selectedRustExtractionCertificateMatchesPayloadValue
-  extractionCertificateValidityMatchesPayload :=
+    P
+    selectedRustPayloadAcceptanceNotVacuousValue
+    selectedRustBoundaryBreaksNotUniversalValue
+    selectedRustPayloadAcceptanceMatchesBoundaryValue
+    selectedRustExtractionCertificateMatchesPayloadValue
     selectedRustExtractionCertificateValidityMatchesPayloadValue
-  certificateExtractionImpliesPayloadExtraction :=
     selectedRustCertificateExtractionImpliesPayloadExtractionValue
-  payloadExtractionInBoundaryFiber := selectedRustPayloadExtractionInBoundaryFiberValue
-  payloadExtractionNativeValid := selectedRustPayloadExtractionNativeValidValue
-  roleLiftValidityBindsExtraction := selectedRustRoleLiftValidityBindsExtractionValue
-  roleLiftOpeningImpliesCertificateLift :=
+    selectedRustPayloadExtractionInBoundaryFiberValue
+    selectedRustPayloadExtractionNativeValidValue
+    selectedRustRoleLiftValidityBindsExtractionValue
     selectedRustRoleLiftOpeningImpliesCertificateLiftValue
-  assemblyValidityBindsOpening := selectedRustAssemblyValidityBindsOpeningValue
-  assemblyCertificateImpliesFullNativeAssembly :=
+    selectedRustAssemblyValidityBindsOpeningValue
     selectedRustAssemblyCertificateImpliesFullNativeAssemblyValue
-  compatibilityValidityBinds := selectedRustCompatibilityValidityBindsValue
-  compatibilityExtractionImpliesReviewedExtraction :=
+    selectedRustCompatibilityValidityBindsValue
     selectedRustCompatibilityExtractionImpliesReviewedExtractionValue
-  fullOpeningBridgeDigestValidityBinds :=
     selectedRustFullOpeningBridgeDigestValidityBindsValue
 theorem selectedRustPayloadProjectionLaw :
   P.reviewedFq12PayloadAccepts b payload ->
@@ -57771,6 +57765,25 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             complete_concrete_definition_checklist.missing_definition_category_count,
             0
         );
+        let anonymous_predicate_model_certificate_source = complete_concrete_definition_source
+            .replacen(
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate.ofReportAndModel",
+                "selectedRustNativeBoundaryPredicateModelCertificateValue",
+                1,
+            );
+        let anonymous_predicate_model_certificate_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                &anonymous_predicate_model_certificate_source,
+            );
+        assert!(
+            !anonymous_predicate_model_certificate_checklist
+                .predicate_model_certificate_definition_present
+        );
+        assert!(
+            !anonymous_predicate_model_certificate_checklist
+                .predicate_model_certificate_definitions_present
+        );
+        assert!(!anonymous_predicate_model_certificate_checklist.all_definitions_present);
         let complete_source_record_subcheck =
             path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 complete_concrete_definition_source,

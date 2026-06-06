@@ -1276,6 +1276,11 @@ Negative controls reject an assumed or wrong predicate-model certificate, raw
 predicate-model/source-record package stubs, and omission of the active-bound
 handoff. This keeps `extractor_theorem_instantiated` from closing on the stale
 five-source-only route.
+`ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate` now also has
+named constructor `ofReportAndModel`, and the concrete-definition checklist
+requires `selectedRustNativeBoundaryPredicateModelCertificate` to be built
+through it. A same-name/same-type anonymous predicate-model certificate no
+longer completes the predicate-model certificate category.
 
 ## Findings
 

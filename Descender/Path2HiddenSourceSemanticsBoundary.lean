@@ -2599,6 +2599,82 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate
 namespace ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate
 
 /--
+Named constructor for the selected Rust native-boundary predicate-model
+certificate.
+
+The final AP2-N001 import should build the predicate model through this
+public report/digest/proof surface and the concrete model obligations, not by
+supplying an anonymous certificate record.
+-/
+def ofReportAndModel
+    (evidenceReport :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateModelEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (evidenceReportVerifiedProof :
+      evidenceReport.ReportVerified)
+    (evidenceFactsAllTrueProof :
+      evidenceReport.FactsAllTrue)
+    (predicates : Predicates)
+    (payloadAcceptanceNotVacuous :
+      ¬ (forall b payload, ¬ predicates.reviewedFq12PayloadAccepts b payload))
+    (boundaryBreaksNotUniversal :
+      ¬ (forall c b breakEvent, predicates.boundaryBreakFor c b breakEvent))
+    (payloadAcceptanceMatchesBoundary :
+      ReviewedFq12PayloadAcceptanceMatchesBoundary predicates)
+    (extractionCertificateMatchesPayload :
+      ReviewedFq12ExtractionCertificateMatchesPayload predicates)
+    (extractionCertificateValidityMatchesPayload :
+      ReviewedFq12ExtractionCertificateValidityMatchesPayload predicates)
+    (certificateExtractionImpliesPayloadExtraction :
+      ReviewedFq12CertificateExtractionImpliesPayloadExtraction predicates)
+    (payloadExtractionInBoundaryFiber :
+      ReviewedFq12PayloadExtractionInBoundaryFiber predicates)
+    (payloadExtractionNativeValid :
+      ReviewedFq12PayloadExtractionNativeValid predicates)
+    (roleLiftValidityBindsExtraction :
+      ReviewedFq12RoleLiftValidityBindsExtractionTarget predicates)
+    (roleLiftOpeningImpliesCertificateLift :
+      ReviewedFq12RoleLiftOpeningImpliesCertificateLiftTarget predicates)
+    (assemblyValidityBindsOpening :
+      ReviewedFq12AssemblyValidityBindsOpeningTarget predicates)
+    (assemblyCertificateImpliesFullNativeAssembly :
+      ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget predicates)
+    (compatibilityValidityBinds :
+      ReviewedFq12CompatibilityValidityBindsTarget predicates)
+    (compatibilityExtractionImpliesReviewedExtraction :
+      ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget
+        predicates)
+    (fullOpeningBridgeDigestValidityBinds :
+      ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget predicates) :
+    ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate where
+  evidenceReport := evidenceReport
+  evidenceDigest := evidenceDigest
+  evidenceReportVerifiedProof := evidenceReportVerifiedProof
+  evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
+  predicates := predicates
+  payloadAcceptanceNotVacuous := payloadAcceptanceNotVacuous
+  boundaryBreaksNotUniversal := boundaryBreaksNotUniversal
+  payloadAcceptanceMatchesBoundary := payloadAcceptanceMatchesBoundary
+  extractionCertificateMatchesPayload := extractionCertificateMatchesPayload
+  extractionCertificateValidityMatchesPayload :=
+    extractionCertificateValidityMatchesPayload
+  certificateExtractionImpliesPayloadExtraction :=
+    certificateExtractionImpliesPayloadExtraction
+  payloadExtractionInBoundaryFiber := payloadExtractionInBoundaryFiber
+  payloadExtractionNativeValid := payloadExtractionNativeValid
+  roleLiftValidityBindsExtraction := roleLiftValidityBindsExtraction
+  roleLiftOpeningImpliesCertificateLift :=
+    roleLiftOpeningImpliesCertificateLift
+  assemblyValidityBindsOpening := assemblyValidityBindsOpening
+  assemblyCertificateImpliesFullNativeAssembly :=
+    assemblyCertificateImpliesFullNativeAssembly
+  compatibilityValidityBinds := compatibilityValidityBinds
+  compatibilityExtractionImpliesReviewedExtraction :=
+    compatibilityExtractionImpliesReviewedExtraction
+  fullOpeningBridgeDigestValidityBinds :=
+    fullOpeningBridgeDigestValidityBinds
+
+/--
 Forget a proof-bearing predicate-model certificate into the existing source
 record target consumed by the semantics source package.
 -/

@@ -254,6 +254,17 @@ construction, and rejects omission of the active-bound handoff. AP2-N001
 therefore remains fail-closed until the concrete native-boundary predicate
 model certificate and selected source-record package are genuinely imported.
 
+2026-06-05 predicate-model certificate constructor update:
+`ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate` now exposes
+named constructor `ofReportAndModel` for the public predicate-model
+report/digest/proofs plus every concrete native-boundary model obligation. The
+concrete-definition checklist requires
+`selectedRustNativeBoundaryPredicateModelCertificate` to use that constructor;
+a certificate definition with the right name and type but without the
+constructor no longer completes the predicate-model certificate category. This
+keeps the final native-boundary semantics package from being sourced by an
+anonymous certificate record.
+
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
 verifier, and the Path 2 deployment facade source gate requires those exports.
