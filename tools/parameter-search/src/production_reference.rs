@@ -8896,12 +8896,19 @@ fn lean_source_selected_rust_definition_body_is_direct_constant_lambda_v1(
             let normalized_body = body_window[..next_top_level_declaration]
                 .split_whitespace()
                 .collect::<String>();
-            ["True", "False", "(True)", "(False)"].iter().any(|value| {
-                normalized_body == *value
-                    || (1..=12).any(|arity| {
-                        normalized_body == format!("fun{}=>{value}", "_".repeat(arity))
+            let mut stripped_outer_body = normalized_body.as_str();
+            while stripped_outer_body.starts_with('(') && stripped_outer_body.ends_with(')') {
+                stripped_outer_body = &stripped_outer_body[1..stripped_outer_body.len() - 1];
+            }
+            [normalized_body.as_str(), stripped_outer_body]
+                .iter()
+                .any(|body| {
+                    ["True", "False", "(True)", "(False)"].iter().any(|value| {
+                        *body == *value
+                            || (1..=12)
+                                .any(|arity| *body == format!("fun{}=>{value}", "_".repeat(arity)))
                     })
-            })
+                })
         })
     })
 }
@@ -58544,6 +58551,24 @@ def selectedSpendWitnessValid := selectedSpendWitnessValidValue
         );
         assert!(
             !vacuous_admission_provider_native_boundary_model_subcheck
+                .native_boundary_concrete_predicate_model_present
+        );
+        let parenthesized_vacuous_admission_provider_native_boundary_model_source =
+            complete_native_boundary_model_source.replacen(
+                "def selectedAdmitted := selectedAdmittedValue",
+                "def selectedAdmitted := (fun _ _ => True)",
+                1,
+            );
+        let parenthesized_vacuous_admission_provider_native_boundary_model_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &parenthesized_vacuous_admission_provider_native_boundary_model_source,
+            );
+        assert!(
+            parenthesized_vacuous_admission_provider_native_boundary_model_subcheck
+                .native_boundary_predicate_model_forbidden_vacuous_field_sources_present
+        );
+        assert!(
+            !parenthesized_vacuous_admission_provider_native_boundary_model_subcheck
                 .native_boundary_concrete_predicate_model_present
         );
         let theorem_provider_native_boundary_model_source = complete_native_boundary_model_source

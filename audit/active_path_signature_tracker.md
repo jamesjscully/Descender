@@ -1396,8 +1396,9 @@ exposes this as
 the digest-bound predicate-model negative-control bit requires it to be false.
 That rejection now applies generically to direct constant-lambda provider
 bodies (`True`/`False` or `fun _ ... => True/False`) across the selected
-predicate-field provider surface. A regression fixture covers
-`selectedAdmitted := fun _ _ => True`, so the active account-admission leg
+predicate-field provider surface, including simple parenthesized wrappers. A
+regression fixture covers `selectedAdmitted := fun _ _ => True` and
+`selectedAdmitted := (fun _ _ => True)`, so the active account-admission leg
 cannot be closed by an always-true placeholder outside the reviewed-Fq12 list.
 It now also rejects the most direct vacuous literal model shapes inside
 `selectedRustNativeBoundaryPredicates`: universal break predicates,
