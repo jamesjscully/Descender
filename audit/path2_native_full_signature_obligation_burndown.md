@@ -286,6 +286,10 @@ The final theorem gate now also requires the theorem body itself to construct
 `ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources`; merely naming a
 pre-existing source-record package no longer satisfies the AP2-N001 theorem
 source scanner.
+The same gate now rejects a final hidden-source theorem over generic
+`P : Predicates`; the accepted target must conclude
+`ReviewedFq12HiddenSourceProofSemanticsClosed
+selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates`.
 
 2026-06-05 certified semantics package constructor update:
 `ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage` now

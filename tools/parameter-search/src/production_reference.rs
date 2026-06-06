@@ -10592,6 +10592,9 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "assemblySource :",
         "compatibilitySource :",
         "witnessSources :",
+        "P : Predicates",
+        "(P : Predicates)",
+        "ReviewedFq12HiddenSourceProofSemanticsClosed P",
         "ReviewedFq12SelectedRustModelFiveSourceClosureInputs",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate",
         "ReviewedFq12ExtractionCertificateAvailability",
@@ -10723,6 +10726,8 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources selectedRustSharedFrameWitnessEvidenceReport selectedRustSharedFrameWitnessEvidenceDigest selectedRustSharedFrameWitnessEvidenceReportVerifiedProof selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof selectedRustSharedFrameWitnessSources",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates selectedRustFiveSourceEvidenceReport selectedRustFiveSourceEvidenceDigest selectedRustFiveSourceEvidenceReportVerifiedProof selectedRustFiveSourceEvidenceFactsAllTrueProof selectedRustBoundaryBaseCertificate selectedRustRoleRootLiftSourceCertificate selectedRustSourceRouteByteSourceCertificate selectedRustFieldLocalSourceCertificate selectedRustSharedFrameWitnessSourcesCertificate selectedRustFiveSourceSubEvidenceDigestsMatchProof",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates",
+        "ReviewedFq12HiddenSourceProofSemanticsClosed selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
+        "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate FieldParser RouteParser CanonicalParser WitnessParser selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
         "let selectedRustModelSourceRecordPackage : ReviewedFq12SelectedRustModelSourceRecordPackage",
         "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources selectedRustPayloadProjectionLaw selectedRustExtractionCertificateAvailability selectedRustRoleRootLiftSource selectedRustSourceRouteByteSource selectedRustAssemblySource selectedRustCompatibilitySource selectedRustSharedFrameWitnessSources",
         "let selectedRustNativeBoundaryCertifiedSemanticsSourcePackage : ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
@@ -55774,8 +55779,9 @@ theorem {theorem_name}
         let placeholder_fed_local_construction = format!(
             r#"
 theorem {theorem_name}
-    (P : Predicates) :
-    ReviewedFq12HiddenSourceProofSemanticsClosed P := by
+    :
+    ReviewedFq12HiddenSourceProofSemanticsClosed
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates := by
   let selectedRustModelFiveSourceInputs :
       ReviewedFq12SelectedRustModelFiveSourceClosureInputs
         FieldParser RouteParser CanonicalParser WitnessParser P :=
@@ -55858,7 +55864,8 @@ theorem {theorem_name}
     ReviewedFq12HiddenSourceProofSemanticsClosed P := by
   let selectedRustModelFiveSourceCertificate :
       ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
-        FieldParser RouteParser CanonicalParser WitnessParser P :=
+        FieldParser RouteParser CanonicalParser WitnessParser
+          selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
     {{ evidenceReport := selectedRustFiveSourceEvidenceReport
       evidenceReportVerifiedProof :=
         selectedRustFiveSourceEvidenceReportVerifiedProof
@@ -55898,7 +55905,8 @@ theorem {theorem_name}
     ReviewedFq12HiddenSourceProofSemanticsClosed P := by
   let selectedRustModelFiveSourceCertificate :
       ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
-        FieldParser RouteParser CanonicalParser WitnessParser P :=
+        FieldParser RouteParser CanonicalParser WitnessParser
+          selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
     {{ evidenceReport := selectedRustFiveSourceEvidenceReport
       evidenceReportVerifiedProof :=
         selectedRustFiveSourceEvidenceReportVerifiedProof
@@ -56279,8 +56287,9 @@ theorem {theorem_name}
         let concrete_constructor_certificate_theorem = format!(
             r#"
 theorem {theorem_name}
-    (P : Predicates) :
-    ReviewedFq12HiddenSourceProofSemanticsClosed P := by
+    :
+    ReviewedFq12HiddenSourceProofSemanticsClosed
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates := by
   let selectedRustBoundaryBaseCertificate :=
     ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources
       selectedRustBoundaryBaseEvidenceReport
@@ -56332,7 +56341,8 @@ theorem {theorem_name}
       selectedRustSharedFrameWitnessSources
   let selectedRustModelFiveSourceCertificate :
       ReviewedFq12SelectedRustModelFiveSourceClosureCertificate
-        FieldParser RouteParser CanonicalParser WitnessParser P :=
+        FieldParser RouteParser CanonicalParser WitnessParser
+          selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates :=
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates
       selectedRustFiveSourceEvidenceReport
       selectedRustFiveSourceEvidenceDigest
@@ -56371,6 +56381,17 @@ theorem {theorem_name}
         assert!(
             path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &concrete_constructor_certificate_theorem,
+                theorem_name
+            )
+        );
+        let generic_predicate_final_theorem = concrete_constructor_certificate_theorem
+            .replace(
+                "theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation\n    :\n    ReviewedFq12HiddenSourceProofSemanticsClosed\n      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates := by",
+                "theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation\n    (P : Predicates) :\n    ReviewedFq12HiddenSourceProofSemanticsClosed P := by",
+            );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &generic_predicate_final_theorem,
                 theorem_name
             )
         );

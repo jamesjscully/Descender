@@ -1291,6 +1291,9 @@ generic-`P` source package no longer completes the source-record category.
 The final AP2-N001 theorem gate also requires
 `selectedRustModelSourceRecordPackage` to be constructed through
 `ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources`.
+It now rejects a final theorem over generic `P : Predicates`; the conclusion
+must target the certified predicate model exposed by
+`selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates`.
 The certified native-boundary semantics package now has constructor
 `ofCertificateAndSourceRecords`, and the final AP2-N001 theorem gate requires
 that constructor before it accepts `.hiddenSourceClosure` or the
