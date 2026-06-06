@@ -1797,6 +1797,12 @@ is `true`, meaning the Lean proof surface names the five-field hard slice, and
 is currently `false`, independently of the broader reviewed-Fq12 provider
 family bit. The positive source-audit fixture asserts that the implementation
 bit only flips when all five named providers are actually defined.
+The Lean boundary now also projects both the full reviewed-Fq12 provider
+family and the five-field hard-extraction subfamily through
+`ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate`
+and `ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate`, so
+downstream source-record construction can consume the proof-bearing certificate
+surface instead of reaching into raw provider records.
 
 ## Findings
 

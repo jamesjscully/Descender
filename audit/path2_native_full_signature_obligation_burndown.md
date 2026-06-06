@@ -1534,3 +1534,7 @@ concrete provider-definition bit as `false`; the scanner regression's complete
 native-boundary-model fixture reports the provider-definition bit as `true`.
 This keeps the highest-risk redesign trigger visible while the broader
 reviewed-Fq12 provider family remains unimplemented.
+Lean now projects both the full reviewed-Fq12 provider family and this
+five-field hard subgroup through the field-source package certificate and the
+predicate-model certificate. That keeps the next AP2-N001 construction aimed at
+the proof-bearing certificate boundary rather than raw provider-record access.

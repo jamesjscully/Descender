@@ -3696,6 +3696,26 @@ def ofReportAndSources
   fieldSourcePackagePresentProof := fieldSourcePackagePresentProof
   predicateFieldSources := predicateFieldSources
 
+/--
+Project a proof-bearing field-source package certificate to the reviewed-Fq12
+provider family.
+-/
+def toReviewedFq12PredicateFieldSources
+    (Cert :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate) :
+    ReviewedFq12SelectedRustNativeBoundaryReviewedFq12PredicateFieldSources :=
+  Cert.predicateFieldSources.toReviewedFq12PredicateFieldSources
+
+/--
+Project a proof-bearing field-source package certificate to the
+representative-producing reviewed-Fq12 provider subfamily.
+-/
+def toReviewedFq12HardExtractionPredicateFieldSources
+    (Cert :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate) :
+    ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources :=
+  Cert.predicateFieldSources.toReviewedFq12HardExtractionPredicateFieldSources
+
 end ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate
 
 /--
@@ -3920,6 +3940,26 @@ def ofReportAndModel
     compatibilityExtractionImpliesReviewedExtraction
   fullOpeningBridgeDigestValidityBinds :=
     fullOpeningBridgeDigestValidityBinds
+
+/--
+Project a proof-bearing predicate-model certificate to the reviewed-Fq12
+provider family that backs its native-boundary predicate interpretation.
+-/
+def toReviewedFq12PredicateFieldSources
+    (Cert :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate) :
+    ReviewedFq12SelectedRustNativeBoundaryReviewedFq12PredicateFieldSources :=
+  Cert.predicateFieldSourceCertificate.toReviewedFq12PredicateFieldSources
+
+/--
+Project a proof-bearing predicate-model certificate to the
+representative-producing reviewed-Fq12 provider subfamily.
+-/
+def toReviewedFq12HardExtractionPredicateFieldSources
+    (Cert :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate) :
+    ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources :=
+  Cert.predicateFieldSourceCertificate.toReviewedFq12HardExtractionPredicateFieldSources
 
 /--
 Forget a proof-bearing predicate-model certificate into the existing source
