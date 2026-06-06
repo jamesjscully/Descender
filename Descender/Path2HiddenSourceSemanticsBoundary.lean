@@ -3045,6 +3045,27 @@ def ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget
         P.reviewedFq12PayloadExtracts b payload h
 
 /--
+Law bundle for the representative-producing reviewed-Fq12 provider subfamily.
+
+These are the obligations that make the five hard extraction predicates usable
+by the native hidden-source soundness theorem. They are separated from the
+full predicate model so the active AP2-N001 route can close this high-risk
+slice before the remaining native-boundary predicates are fully instantiated.
+-/
+structure ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelLaws
+    (P : Predicates) where
+  certificateExtractionImpliesPayloadExtraction :
+    ReviewedFq12CertificateExtractionImpliesPayloadExtraction P
+  payloadExtractionInBoundaryFiber :
+    ReviewedFq12PayloadExtractionInBoundaryFiber P
+  payloadExtractionNativeValid :
+    ReviewedFq12PayloadExtractionNativeValid P
+  assemblyCertificateImpliesFullNativeAssembly :
+    ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget P
+  compatibilityExtractionImpliesReviewedExtraction :
+    ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget P
+
+/--
 Concrete predicate-model obligation for valid aggregate full-opening bridge
 digest certificates.
 
@@ -3771,6 +3792,25 @@ def toPredicates
     Predicates :=
   Model.predicates
 
+/--
+Project the predicate-model source to the laws governing the
+representative-producing reviewed-Fq12 provider subfamily.
+-/
+def toHardExtractionPredicateModelLaws
+    (Model : ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource) :
+    ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelLaws
+      Model.predicates where
+  certificateExtractionImpliesPayloadExtraction :=
+    Model.certificateExtractionImpliesPayloadExtraction
+  payloadExtractionInBoundaryFiber :=
+    Model.payloadExtractionInBoundaryFiber
+  payloadExtractionNativeValid :=
+    Model.payloadExtractionNativeValid
+  assemblyCertificateImpliesFullNativeAssembly :=
+    Model.assemblyCertificateImpliesFullNativeAssembly
+  compatibilityExtractionImpliesReviewedExtraction :=
+    Model.compatibilityExtractionImpliesReviewedExtraction
+
 end ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource
 
 /--
@@ -3960,6 +4000,26 @@ def toReviewedFq12HardExtractionPredicateFieldSources
       ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate) :
     ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources :=
   Cert.predicateFieldSourceCertificate.toReviewedFq12HardExtractionPredicateFieldSources
+
+/--
+Project a proof-bearing predicate-model certificate to the laws governing the
+representative-producing reviewed-Fq12 provider subfamily.
+-/
+def toHardExtractionPredicateModelLaws
+    (Cert :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate) :
+    ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelLaws
+      Cert.predicates where
+  certificateExtractionImpliesPayloadExtraction :=
+    Cert.certificateExtractionImpliesPayloadExtraction
+  payloadExtractionInBoundaryFiber :=
+    Cert.payloadExtractionInBoundaryFiber
+  payloadExtractionNativeValid :=
+    Cert.payloadExtractionNativeValid
+  assemblyCertificateImpliesFullNativeAssembly :=
+    Cert.assemblyCertificateImpliesFullNativeAssembly
+  compatibilityExtractionImpliesReviewedExtraction :=
+    Cert.compatibilityExtractionImpliesReviewedExtraction
 
 /--
 Forget a proof-bearing predicate-model certificate into the existing source

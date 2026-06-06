@@ -1805,6 +1805,12 @@ downstream source-record construction can consume the proof-bearing certificate
 surface instead of reaching into raw provider records. The Rust source audit
 pins that projection with
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_certificate_projection_present`.
+The proof side now also names the corresponding hard-extraction law bundle,
+`ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelLaws`, with
+source/certificate projections pinned by
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_law_bundle_target_present`.
+This separates "define the five predicates" from "prove their native
+extraction/assembly laws" for the next implementation pass.
 
 ## Findings
 

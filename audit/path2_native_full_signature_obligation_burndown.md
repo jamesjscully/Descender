@@ -1540,3 +1540,9 @@ predicate-model certificate. That keeps the next AP2-N001 construction aimed at
 the proof-bearing certificate boundary rather than raw provider-record access.
 The Rust source audit pins those projections with
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_certificate_projection_present`.
+The Lean boundary now also names
+`ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelLaws`, and
+the Rust source audit pins the source/certificate projections with
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_law_bundle_target_present`.
+That splits AP2-N001's hard subgroup into concrete provider definitions versus
+the laws needed to consume them in hidden-source soundness.
