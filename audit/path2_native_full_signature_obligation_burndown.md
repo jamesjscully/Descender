@@ -1409,6 +1409,14 @@ active concrete `breakFor` predicate after transporting through the pinned
 `Path2FullSpendGame.BreakEvent` equality. The accepted-spend source gate
 requires these markers, preventing a future theorem from pricing arbitrary
 predicates over the selected run carrier.
+Rust now has a matching public evidence carrier,
+`Path2NativeAcceptedSpendNumericEvidenceV1`, with length-delimited frame,
+digest, report-verification helper, all-facts helper, verifier, and production
+facade exports. The canonical report remains fail-closed: prerequisite closure
+bits that are already closed are true, while numeric pricing, finite trace
+support, active event pins, and union-bound pricing are false. A regression
+checks that flipping those readiness bits in a copied report does not satisfy
+the all-facts helper or verifier.
 The probability game now separates finite trace support from the observed
 full-forgery outcome: `Trace` has `traceFintype`, while `Outcome` is reached
 through `observe` and need not be finite. This is required for the active

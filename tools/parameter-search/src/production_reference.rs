@@ -44,6 +44,8 @@ pub const PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeCheckedCoreByteInstantiationEvidence.v1";
 pub const PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeNoExportSerializerEvidence.v1";
+pub const PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.NativeAcceptedSpendNumericEvidence.v1";
 pub const PATH2_NATIVE_SIGNER_VERIFIER_PIPELINE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeSignerVerifierPipelineEvidence.v1";
 pub const PATH2_NATIVE_SIGNER_PIPELINE_PUBLIC_OUTPUT_SCHEMA: &str =
@@ -1975,6 +1977,25 @@ pub struct Path2NativeNoExportSerializerEvidenceV1 {
     pub cleanup_policy: &'static str,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2NativeAcceptedSpendNumericEvidenceV1 {
+    pub schema: &'static str,
+    pub schema_matches: bool,
+    pub report_digest_verified: bool,
+    pub accepted_spend_numeric_bound_priced: bool,
+    pub finite_trace_support_priced: bool,
+    pub active_outcome_carrier_pinned: bool,
+    pub accepted_spend_event_pinned: bool,
+    pub active_break_family_pinned: bool,
+    pub named_break_events_pinned: bool,
+    pub accepted_spend_union_bound_priced: bool,
+    pub hidden_source_closure_ready: bool,
+    pub checked_core_closure_ready: bool,
+    pub lifecycle_replay_closure_ready: bool,
+    pub no_export_closure_ready: bool,
+    pub cleanup_policy: &'static str,
+}
+
 pub fn validate_path2_native_checked_core_frame_v1(
     frame: &Path2NativeCheckedCoreFrameV1,
 ) -> Result<(), String> {
@@ -2421,6 +2442,162 @@ pub fn verify_path2_native_no_export_serializer_evidence_v1(
         );
     }
     path2_native_no_export_serializer_evidence_v1_digest(evidence)
+}
+
+pub fn path2_native_accepted_spend_numeric_evidence_v1() -> Path2NativeAcceptedSpendNumericEvidenceV1
+{
+    let hidden_source_audit = path2_reviewed_fq12_hidden_source_semantics_bridge_audit();
+    let hidden_source_closure_ready =
+        validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(&hidden_source_audit)
+            .is_ok()
+            && hidden_source_audit.semantics_bridge_complete;
+    Path2NativeAcceptedSpendNumericEvidenceV1 {
+        schema: PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA,
+        schema_matches: true,
+        report_digest_verified: true,
+        accepted_spend_numeric_bound_priced: false,
+        finite_trace_support_priced: false,
+        active_outcome_carrier_pinned: false,
+        accepted_spend_event_pinned: false,
+        active_break_family_pinned: false,
+        named_break_events_pinned: false,
+        accepted_spend_union_bound_priced: false,
+        hidden_source_closure_ready,
+        checked_core_closure_ready: path2_native_checked_core_composition_complete_v1(),
+        lifecycle_replay_closure_ready: path2_full_signature_execution_source_instantiated_v1(),
+        no_export_closure_ready: path2_no_export_serializer_instantiated_v1(),
+        cleanup_policy: "accepted-spend numeric evidence is public and remains fail-closed until pricing facts are instantiated",
+    }
+}
+
+pub fn path2_native_accepted_spend_numeric_evidence_v1_frame(
+    evidence: &Path2NativeAcceptedSpendNumericEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"schema_matches",
+        u64::from(evidence.schema_matches),
+    );
+    append_u64(
+        &mut frame,
+        b"report_digest_verified",
+        u64::from(evidence.report_digest_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_spend_numeric_bound_priced",
+        u64::from(evidence.accepted_spend_numeric_bound_priced),
+    );
+    append_u64(
+        &mut frame,
+        b"finite_trace_support_priced",
+        u64::from(evidence.finite_trace_support_priced),
+    );
+    append_u64(
+        &mut frame,
+        b"active_outcome_carrier_pinned",
+        u64::from(evidence.active_outcome_carrier_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_spend_event_pinned",
+        u64::from(evidence.accepted_spend_event_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"active_break_family_pinned",
+        u64::from(evidence.active_break_family_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"named_break_events_pinned",
+        u64::from(evidence.named_break_events_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_spend_union_bound_priced",
+        u64::from(evidence.accepted_spend_union_bound_priced),
+    );
+    append_u64(
+        &mut frame,
+        b"hidden_source_closure_ready",
+        u64::from(evidence.hidden_source_closure_ready),
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_closure_ready",
+        u64::from(evidence.checked_core_closure_ready),
+    );
+    append_u64(
+        &mut frame,
+        b"lifecycle_replay_closure_ready",
+        u64::from(evidence.lifecycle_replay_closure_ready),
+    );
+    append_u64(
+        &mut frame,
+        b"no_export_closure_ready",
+        u64::from(evidence.no_export_closure_ready),
+    );
+    append_frame(
+        &mut frame,
+        b"cleanup_policy",
+        evidence.cleanup_policy.as_bytes(),
+    );
+    frame
+}
+
+pub fn path2_native_accepted_spend_numeric_evidence_v1_digest(
+    evidence: &Path2NativeAcceptedSpendNumericEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    Ok(
+        Sha256::digest(path2_native_accepted_spend_numeric_evidence_v1_frame(
+            evidence,
+        ))
+        .into(),
+    )
+}
+
+pub fn path2_native_accepted_spend_numeric_evidence_report_verified_v1(
+    evidence: &Path2NativeAcceptedSpendNumericEvidenceV1,
+) -> bool {
+    evidence.schema == PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA
+        && evidence.schema_matches
+        && evidence.report_digest_verified
+}
+
+pub fn path2_native_accepted_spend_numeric_evidence_all_facts_true(
+    evidence: &Path2NativeAcceptedSpendNumericEvidenceV1,
+) -> bool {
+    *evidence == path2_native_accepted_spend_numeric_evidence_v1()
+        && path2_native_accepted_spend_numeric_evidence_report_verified_v1(evidence)
+        && evidence.accepted_spend_numeric_bound_priced
+        && evidence.finite_trace_support_priced
+        && evidence.active_outcome_carrier_pinned
+        && evidence.accepted_spend_event_pinned
+        && evidence.active_break_family_pinned
+        && evidence.named_break_events_pinned
+        && evidence.accepted_spend_union_bound_priced
+        && evidence.hidden_source_closure_ready
+        && evidence.checked_core_closure_ready
+        && evidence.lifecycle_replay_closure_ready
+        && evidence.no_export_closure_ready
+}
+
+pub fn verify_path2_native_accepted_spend_numeric_evidence_v1(
+    evidence: &Path2NativeAcceptedSpendNumericEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let expected = path2_native_accepted_spend_numeric_evidence_v1();
+    if expected != *evidence {
+        return Err("Path 2 native accepted-spend numeric evidence mismatch".to_string());
+    }
+    if !path2_native_accepted_spend_numeric_evidence_report_verified_v1(evidence) {
+        return Err(
+            "Path 2 native accepted-spend numeric evidence report is not verified".to_string(),
+        );
+    }
+    path2_native_accepted_spend_numeric_evidence_v1_digest(evidence)
 }
 
 pub fn path2_native_checked_core_accept_v1(
@@ -29303,6 +29480,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "Path2NativeConsensusCarrierPreflightReportV1",
         "Path2NativeCheckedCoreByteInstantiationEvidenceV1",
         "Path2NativeNoExportSerializerEvidenceV1",
+        "Path2NativeAcceptedSpendNumericEvidenceV1",
         "Path2NativeHashByteDomainEvidenceV1",
         "Path2ReviewedFq12FiveSourceClosureEvidenceV1",
         "Path2SelectedRustModelConcreteDefinitionChecklistV1",
@@ -29310,11 +29488,18 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "Path2NativeVerifierPipelineVerdictV1",
         "PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA",
         "PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA",
+        "PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA",
         "PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA",
         "PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA",
         "PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA",
         "path2_native_consensus_carrier_v1_from_assembly",
         "validate_path2_native_consensus_carrier_v1",
+        "path2_native_accepted_spend_numeric_evidence_v1",
+        "path2_native_accepted_spend_numeric_evidence_v1_digest",
+        "path2_native_accepted_spend_numeric_evidence_v1_frame",
+        "path2_native_accepted_spend_numeric_evidence_report_verified_v1",
+        "path2_native_accepted_spend_numeric_evidence_all_facts_true",
+        "verify_path2_native_accepted_spend_numeric_evidence_v1",
         "path2_native_consensus_carrier_v1_bytes",
         "path2_native_consensus_carrier_v1_digest",
         "decode_path2_native_consensus_carrier_v1",
@@ -47358,6 +47543,65 @@ mod tests {
 
         let rendered = serde_json::to_string(&evidence).unwrap();
         assert!(rendered.contains(PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA));
+        assert_no_active_native_private_material(&rendered);
+    }
+
+    #[test]
+    fn path2_native_accepted_spend_numeric_evidence_stays_fail_closed_until_priced() {
+        let evidence = path2_native_accepted_spend_numeric_evidence_v1();
+        assert_eq!(
+            evidence.schema,
+            PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA
+        );
+        assert!(evidence.schema_matches);
+        assert!(evidence.report_digest_verified);
+        assert!(!evidence.accepted_spend_numeric_bound_priced);
+        assert!(!evidence.finite_trace_support_priced);
+        assert!(!evidence.active_outcome_carrier_pinned);
+        assert!(!evidence.accepted_spend_event_pinned);
+        assert!(!evidence.active_break_family_pinned);
+        assert!(!evidence.named_break_events_pinned);
+        assert!(!evidence.accepted_spend_union_bound_priced);
+        assert!(evidence.hidden_source_closure_ready);
+        assert!(evidence.checked_core_closure_ready);
+        assert!(evidence.lifecycle_replay_closure_ready);
+        assert!(evidence.no_export_closure_ready);
+        assert!(path2_native_accepted_spend_numeric_evidence_report_verified_v1(&evidence));
+        assert!(!path2_native_accepted_spend_numeric_evidence_all_facts_true(&evidence));
+        assert_ne!(
+            path2_native_accepted_spend_numeric_evidence_v1_digest(&evidence).unwrap(),
+            [0_u8; DIGEST_BYTES]
+        );
+
+        let evidence_frame = path2_native_accepted_spend_numeric_evidence_v1_frame(&evidence);
+        let expected_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&evidence_frame).into();
+        assert_eq!(
+            path2_native_accepted_spend_numeric_evidence_v1_digest(&evidence).unwrap(),
+            expected_frame_digest
+        );
+        assert_eq!(
+            verify_path2_native_accepted_spend_numeric_evidence_v1(&evidence).unwrap(),
+            path2_native_accepted_spend_numeric_evidence_v1_digest(&evidence).unwrap()
+        );
+
+        let mut forged_ready = evidence;
+        forged_ready.accepted_spend_numeric_bound_priced = true;
+        forged_ready.finite_trace_support_priced = true;
+        forged_ready.active_outcome_carrier_pinned = true;
+        forged_ready.accepted_spend_event_pinned = true;
+        forged_ready.active_break_family_pinned = true;
+        forged_ready.named_break_events_pinned = true;
+        forged_ready.accepted_spend_union_bound_priced = true;
+        assert!(!path2_native_accepted_spend_numeric_evidence_all_facts_true(&forged_ready));
+        assert_eq!(
+            verify_path2_native_accepted_spend_numeric_evidence_v1(&forged_ready).unwrap_err(),
+            "Path 2 native accepted-spend numeric evidence mismatch"
+        );
+
+        let rendered = serde_json::to_string(&evidence).unwrap();
+        assert!(rendered.contains(PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA));
+        assert!(!rendered.contains("\"accepted_spend_numeric_bound_priced\":true"));
+        assert!(!rendered.contains("\"accepted_spend_event_pinned\":true"));
         assert_no_active_native_private_material(&rendered);
     }
 
