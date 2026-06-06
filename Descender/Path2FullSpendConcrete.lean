@@ -1014,6 +1014,16 @@ def SelectedRustConcreteAcceptedSpendNumericCertificate.toPricedAcceptedSpendNum
     Path2AcceptedSpendProbability.PricedAcceptedSpendNumericCertificate :=
   Cert.pricedCertificate
 
+/-- Convert the concrete active-carrier wrapper into the generic numeric source package. -/
+def SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    Path2AcceptedSpendProbability.SelectedAcceptedSpendNumericSource where
+  pricedCertificate := Cert.pricedCertificate
+  outcomeCarrierPinned :=
+    Cert.pricedCertificate.Outcome = selectedRustAcceptedSpendNumericOutcome
+  outcomeCarrierPinnedProof := Cert.outcomeCarrierPinned
+  breakFamilyPinnedProof := Cert.breakFamilyPinned
+
 /-- The selected concrete numeric certificate uses the active full-forgery run carrier. -/
 theorem SelectedRustConcreteAcceptedSpendNumericCertificate.outcome_eq_selectedFullForgeryRun
     (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :

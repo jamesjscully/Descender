@@ -1422,6 +1422,12 @@ concreteTypes` and wraps the priced certificate in
 that wrapper and its forgetful map, so a future theorem cannot price an
 unrelated finite outcome space while claiming to bound the selected concrete
 full-forgery game.
+The concrete wrapper now maps into the generic
+`SelectedAcceptedSpendNumericSource` package through
+`toSelectedAcceptedSpendNumericSource`, and the accepted-spend certificate
+consumes that source package instead of a bare priced certificate. This keeps
+the concrete carrier proof on the Lean certificate route, not only in Rust
+scanner text.
 `Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
 active full-spend named breaks, so the numeric game can index its union bound by
 the actual active break family.

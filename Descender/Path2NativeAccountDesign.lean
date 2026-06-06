@@ -1609,16 +1609,16 @@ structure SelectedRustAcceptedSpendSoundnessCertificate where
     evidenceReport.ReportVerified
   selectedRustAcceptedSpendFactsAllTrueProof :
     evidenceReport.FactsAllTrue
-  pricedNumericCertificate :
-    Path2AcceptedSpendProbability.PricedAcceptedSpendNumericCertificate
+  numericSource :
+    Path2AcceptedSpendProbability.SelectedAcceptedSpendNumericSource
   acceptedSpendForgeryProb : ℝ
   acceptedSpendForgeryBound : ℝ
   productionAcceptedSpendForgeryProb : ℝ
   productionAcceptedSpendForgeryBound : ℝ
   acceptedSpendForgeryProbMatchesUnionBound :
-    acceptedSpendForgeryProb = pricedNumericCertificate.unionBound
+    acceptedSpendForgeryProb = numericSource.pricedCertificate.unionBound
   acceptedSpendForgeryBoundMatchesPriced :
-    acceptedSpendForgeryBound = pricedNumericCertificate.pricedBound
+    acceptedSpendForgeryBound = numericSource.pricedCertificate.pricedBound
   acceptedSpendForgeryProbPinned :
     acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb
   acceptedSpendForgeryBoundPinned :
@@ -1636,16 +1636,16 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
       evidenceReport.ReportVerified)
     (selectedRustAcceptedSpendFactsAllTrueProof :
       evidenceReport.FactsAllTrue)
-    (pricedNumericCertificate :
-      Path2AcceptedSpendProbability.PricedAcceptedSpendNumericCertificate)
+    (numericSource :
+      Path2AcceptedSpendProbability.SelectedAcceptedSpendNumericSource)
     (acceptedSpendForgeryProb : ℝ)
     (acceptedSpendForgeryBound : ℝ)
     (productionAcceptedSpendForgeryProb : ℝ)
     (productionAcceptedSpendForgeryBound : ℝ)
     (acceptedSpendForgeryProbMatchesUnionBound :
-      acceptedSpendForgeryProb = pricedNumericCertificate.unionBound)
+      acceptedSpendForgeryProb = numericSource.pricedCertificate.unionBound)
     (acceptedSpendForgeryBoundMatchesPriced :
-      acceptedSpendForgeryBound = pricedNumericCertificate.pricedBound)
+      acceptedSpendForgeryBound = numericSource.pricedCertificate.pricedBound)
     (acceptedSpendForgeryProbPinned :
       acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb)
     (acceptedSpendForgeryBoundPinned :
@@ -1661,7 +1661,7 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
     selectedRustAcceptedSpendBoundVerifiedProof
   selectedRustAcceptedSpendFactsAllTrueProof :=
     selectedRustAcceptedSpendFactsAllTrueProof
-  pricedNumericCertificate := pricedNumericCertificate
+  numericSource := numericSource
   acceptedSpendForgeryProb := acceptedSpendForgeryProb
   acceptedSpendForgeryBound := acceptedSpendForgeryBound
   productionAcceptedSpendForgeryProb := productionAcceptedSpendForgeryProb
@@ -1675,6 +1675,12 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
   checkedCoreCompositionClosed := checkedCoreCompositionClosed
   lifecycleReplayClosed := lifecycleReplayClosed
   noExportClosed := noExportClosed
+
+/-- The priced numeric certificate validated by the selected accepted-spend source. -/
+def SelectedRustAcceptedSpendSoundnessCertificate.pricedNumericCertificate
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Path2AcceptedSpendProbability.PricedAcceptedSpendNumericCertificate :=
+  Cert.numericSource.pricedCertificate
 
 /-- Convert selected Rust accepted-spend numeric evidence into the boundary. -/
 def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary

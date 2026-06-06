@@ -205,6 +205,38 @@ theorem successProb_le_pricedBound
 
 end PricedAcceptedSpendNumericCertificate
 
+/--
+Proof-bearing source package for a selected accepted-spend numeric certificate.
+
+The generic probability theorem cannot know the downstream concrete run type,
+but the selected deployment route still needs to prove that the priced
+certificate came from a checked outcome-carrier source and the active full-spend
+break family.  Concrete modules instantiate `outcomeCarrierPinned` with their
+exact carrier equality.
+-/
+structure SelectedAcceptedSpendNumericSource where
+  pricedCertificate : PricedAcceptedSpendNumericCertificate
+  outcomeCarrierPinned : Prop
+  outcomeCarrierPinnedProof : outcomeCarrierPinned
+  breakFamilyPinnedProof :
+    pricedCertificate.Break = Path2FullSpendGame.BreakEvent
+
+namespace SelectedAcceptedSpendNumericSource
+
+/-- The selected numeric source exposes the priced certificate it validates. -/
+def toPricedAcceptedSpendNumericCertificate
+    (Source : SelectedAcceptedSpendNumericSource) :
+    PricedAcceptedSpendNumericCertificate :=
+  Source.pricedCertificate
+
+/-- The selected numeric source is pinned to the active full-spend break family. -/
+theorem breakFamily_eq_activeFullSpendBreakEvent
+    (Source : SelectedAcceptedSpendNumericSource) :
+    Source.pricedCertificate.Break = Path2FullSpendGame.BreakEvent :=
+  Source.breakFamilyPinnedProof
+
+end SelectedAcceptedSpendNumericSource
+
 end
 
 end Path2AcceptedSpendProbability
