@@ -1858,6 +1858,8 @@ structure ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding
     (P : Predicates) where
   evidenceReport :
     ReviewedFq12SelectedRustBoundaryBaseEvidenceReport
+  evidenceReportBound :
+    evidenceReport = selectedRustBoundaryBaseEvidenceReport
   sourceBindingDigest : ByteArray
   payloadProjectionLaw :
     forall {b : Path2NativeBoundary.Boundary}
@@ -1874,6 +1876,8 @@ structure ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding
     (P : Predicates) where
   evidenceReport :
     ReviewedFq12SelectedRustRoleRootLiftEvidenceReport
+  evidenceReportBound :
+    evidenceReport = selectedRustRoleRootLiftEvidenceReport
   sourceBindingDigest : ByteArray
   roleRootLiftSource :
     ReviewedFq12RoleRootFunctionalLiftSource P
@@ -1885,6 +1889,8 @@ structure ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
     (P : Predicates) where
   evidenceReport :
     SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport
+  evidenceReportBound :
+    evidenceReport = selectedRustSourceRouteEvidenceReport
   sourceBindingDigest : ByteArray
   selectedSourceRouteByteSource :
     SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
@@ -1895,6 +1901,8 @@ structure ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding
     (P : Predicates) where
   evidenceReport :
     ReviewedFq12SelectedRustFieldLocalEvidenceReport
+  evidenceReportBound :
+    evidenceReport = selectedRustFieldLocalEvidenceReport
   sourceBindingDigest : ByteArray
   assemblySource :
     ReviewedFq12FieldConcreteAssemblyLocalSource P
@@ -1910,6 +1918,8 @@ structure ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
     (P : Predicates) where
   evidenceReport :
     ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport
+  evidenceReportBound :
+    evidenceReport = selectedRustSharedFrameWitnessEvidenceReport
   sourceBindingDigest : ByteArray
   sharedFrameWitnessSources :
     ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources

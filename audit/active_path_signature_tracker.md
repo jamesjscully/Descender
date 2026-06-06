@@ -1558,6 +1558,11 @@ The selected source-record definition gate and final theorem body-shape gate
 now require the binding-backed `ofSourceBindings` constructor rather than the
 raw `ofSources` constructor. This closes the route where binding definitions
 could exist unused while the package consumed independent raw source terms.
+Each Lean source-binding object now also carries an `evidenceReportBound`
+proof tying its report field to the active selected report constant consumed
+by the certificate path. The Rust package-surface gate pins those fields, so a
+future binding-backed source package cannot be typed against unrelated report
+objects while still satisfying the AP2-N001 surface checks.
 
 ## Findings
 

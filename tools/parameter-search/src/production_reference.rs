@@ -10183,21 +10183,91 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSourceBindings selectedRustBoundaryBaseEvidenceSourceBinding selectedRustRoleRootLiftEvidenceSourceBinding selectedRustSourceRouteEvidenceSourceBinding selectedRustFieldLocalEvidenceSourceBinding selectedRustSharedWitnessEvidenceSourceBinding",
             4096,
         );
-    let source_record_package_surface_present = lean_source_has_named_declaration_with_markers_v1(
-        &boundary_source,
-        "structure",
-        "ReviewedFq12SelectedRustModelSourceRecordPackage",
-        &[
-            "payloadProjectionLaw",
-            "extractionCertificateAvailability",
-            "roleRootLiftSource",
-            "selectedSourceRouteByteSource",
-            "assemblySource",
-            "compatibilitySource",
-            "sharedFrameWitnessSources",
-        ],
-        4096,
-    )
+    let source_binding_surface_present = [
+        (
+            "ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding",
+            &[
+                "evidenceReport",
+                "ReviewedFq12SelectedRustBoundaryBaseEvidenceReport",
+                "evidenceReportBound",
+                "selectedRustBoundaryBaseEvidenceReport",
+                "sourceBindingDigest",
+                "payloadProjectionLaw",
+                "extractionCertificateAvailability",
+            ][..],
+        ),
+        (
+            "ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding",
+            &[
+                "evidenceReport",
+                "ReviewedFq12SelectedRustRoleRootLiftEvidenceReport",
+                "evidenceReportBound",
+                "selectedRustRoleRootLiftEvidenceReport",
+                "sourceBindingDigest",
+                "roleRootLiftSource",
+            ][..],
+        ),
+        (
+            "ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding",
+            &[
+                "evidenceReport",
+                "SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceReport",
+                "evidenceReportBound",
+                "selectedRustSourceRouteEvidenceReport",
+                "sourceBindingDigest",
+                "selectedSourceRouteByteSource",
+            ][..],
+        ),
+        (
+            "ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding",
+            &[
+                "evidenceReport",
+                "ReviewedFq12SelectedRustFieldLocalEvidenceReport",
+                "evidenceReportBound",
+                "selectedRustFieldLocalEvidenceReport",
+                "sourceBindingDigest",
+                "assemblySource",
+                "compatibilitySource",
+            ][..],
+        ),
+        (
+            "ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding",
+            &[
+                "evidenceReport",
+                "ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceReport",
+                "evidenceReportBound",
+                "selectedRustSharedFrameWitnessEvidenceReport",
+                "sourceBindingDigest",
+                "sharedFrameWitnessSources",
+            ][..],
+        ),
+    ]
+    .iter()
+    .all(|(name, markers)| {
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "structure",
+            name,
+            markers,
+            4096,
+        )
+    });
+    let source_record_package_surface_present = source_binding_surface_present
+        && lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "structure",
+            "ReviewedFq12SelectedRustModelSourceRecordPackage",
+            &[
+                "payloadProjectionLaw",
+                "extractionCertificateAvailability",
+                "roleRootLiftSource",
+                "selectedSourceRouteByteSource",
+                "assemblySource",
+                "compatibilitySource",
+                "sharedFrameWitnessSources",
+            ],
+            4096,
+        )
         && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
             &boundary_source,
             "ofSources",
