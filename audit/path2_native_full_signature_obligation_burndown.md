@@ -264,6 +264,12 @@ a certificate definition with the right name and type but without the
 constructor no longer completes the predicate-model certificate category. This
 keeps the final native-boundary semantics package from being sourced by an
 anonymous certificate record.
+The checklist now requires that certificate constructor body to name every
+selected model-obligation argument: non-vacuity, payload/boundary binding,
+certificate/payload binding, payload extraction consistency, role-lift,
+assembly, compatibility, and full-opening bridge digest binding. Omitting one
+of those obligations is a negative-control failure for
+`predicate_model_certificate_definition_present`.
 
 2026-06-05 source-record package constructor update:
 `ReviewedFq12SelectedRustModelSourceRecordPackage` now exposes named

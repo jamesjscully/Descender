@@ -9643,6 +9643,66 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
             "selectedRustNativeBoundaryPredicateModelCertificate",
             "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof",
         ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustPayloadAcceptanceNotVacuous",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustBoundaryBreaksNotUniversal",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustPayloadAcceptanceMatchesBoundary",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustExtractionCertificateMatchesPayload",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustExtractionCertificateValidityMatchesPayload",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustCertificateExtractionImpliesPayloadExtraction",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustPayloadExtractionInBoundaryFiber",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustPayloadExtractionNativeValid",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustRoleLiftValidityBindsExtraction",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustRoleLiftOpeningImpliesCertificateLift",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustAssemblyValidityBindsOpening",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustAssemblyCertificateImpliesFullNativeAssembly",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustCompatibilityValidityBinds",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustCompatibilityExtractionImpliesReviewedExtraction",
+        ),
+        (
+            "selectedRustNativeBoundaryPredicateModelCertificate",
+            "selectedRustFullOpeningBridgeDigestValidityBinds",
+        ),
     ];
     let evidence_report_definitions_present =
         evidence_report_definitions.iter().all(|(name, markers)| {
@@ -57981,6 +58041,25 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 .predicate_model_certificate_definitions_present
         );
         assert!(!anonymous_predicate_model_certificate_checklist.all_definitions_present);
+        let missing_predicate_model_obligation_source = complete_concrete_definition_source
+            .replacen(
+                "selectedRustPayloadAcceptanceNotVacuousValue",
+                "payloadAcceptanceNotVacuousValue",
+                1,
+            );
+        let missing_predicate_model_obligation_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
+                &missing_predicate_model_obligation_source,
+            );
+        assert!(
+            !missing_predicate_model_obligation_checklist
+                .predicate_model_certificate_definition_present
+        );
+        assert!(
+            !missing_predicate_model_obligation_checklist
+                .predicate_model_certificate_definitions_present
+        );
+        assert!(!missing_predicate_model_obligation_checklist.all_definitions_present);
         let anonymous_source_record_package_source = complete_concrete_definition_source.replacen(
             "ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources",
             "selectedRustModelSourceRecordPackageValue",
