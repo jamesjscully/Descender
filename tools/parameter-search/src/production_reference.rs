@@ -41811,6 +41811,40 @@ mod tests {
         )
     }
 
+    fn lean_selected_rust_record_bool_field(
+        boundary_source: &str,
+        def_name: &str,
+        field_name: &str,
+    ) -> bool {
+        let boundary_source = lean_source_without_comments_and_strings_v1(boundary_source);
+        let declaration_marker = format!("\ndef {def_name} :");
+        let declaration_start = boundary_source
+            .find(&declaration_marker)
+            .unwrap_or_else(|| panic!("missing Lean record definition {def_name}"));
+        let after_declaration_marker = declaration_start + declaration_marker.len();
+        let declaration_end = boundary_source[after_declaration_marker..]
+            .find("\ndef ")
+            .map(|offset| after_declaration_marker + offset)
+            .unwrap_or(boundary_source.len());
+        let declaration = &boundary_source[declaration_start..declaration_end];
+        let field_marker = format!("{field_name} :=");
+        let field_start = declaration
+            .find(&field_marker)
+            .unwrap_or_else(|| panic!("missing bool field {def_name}.{field_name}"))
+            + field_marker.len();
+        let field_tail = declaration[field_start..].trim_start();
+        for (literal, value) in [("true", true), ("false", false)] {
+            if let Some(rest) = field_tail.strip_prefix(literal) {
+                if rest.chars().next().is_none_or(|next| {
+                    !(next.is_ascii_alphanumeric() || next == '_' || next == '\'')
+                }) {
+                    return value;
+                }
+            }
+        }
+        panic!("missing bool literal for {def_name}.{field_name}")
+    }
+
     fn lean_byte_array_digest_after_marker(
         source: &str,
         marker: &str,
@@ -59318,6 +59352,111 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 "selectedRustNativeBoundaryPredicateModelEvidenceDigest"
             ),
             predicate_model_evidence_digest
+        );
+        let predicate_model_report_def = "selectedRustNativeBoundaryPredicateModelEvidenceReport";
+        assert_eq!(
+            lean_selected_rust_record_bool_field(
+                hidden_source_boundary_source,
+                predicate_model_report_def,
+                "schemaMatches"
+            ),
+            predicate_model_evidence.schema_matches
+        );
+        assert_eq!(
+            lean_selected_rust_record_bool_field(
+                hidden_source_boundary_source,
+                predicate_model_report_def,
+                "reportDigestVerified"
+            ),
+            predicate_model_evidence.report_digest_verified
+        );
+        assert_eq!(
+            lean_selected_rust_record_bool_field(
+                hidden_source_boundary_source,
+                predicate_model_report_def,
+                "activeBoundaryPredicateModelPinned"
+            ),
+            predicate_model_evidence.active_boundary_predicate_model_pinned
+        );
+        assert_eq!(
+            lean_selected_rust_record_bool_field(
+                hidden_source_boundary_source,
+                predicate_model_report_def,
+                "payloadAcceptanceModelPinned"
+            ),
+            predicate_model_evidence.payload_acceptance_model_pinned
+        );
+        assert_eq!(
+            lean_selected_rust_record_bool_field(
+                hidden_source_boundary_source,
+                predicate_model_report_def,
+                "extractionCertificateModelPinned"
+            ),
+            predicate_model_evidence.extraction_certificate_model_pinned
+        );
+        assert_eq!(
+            lean_selected_rust_record_bool_field(
+                hidden_source_boundary_source,
+                predicate_model_report_def,
+                "fullOpeningAndAssemblyModelPinned"
+            ),
+            predicate_model_evidence.full_opening_and_assembly_model_pinned
+        );
+        assert_eq!(
+            lean_selected_rust_record_bool_field(
+                hidden_source_boundary_source,
+                predicate_model_report_def,
+                "compatibilityAndExtractionModelPinned"
+            ),
+            predicate_model_evidence.compatibility_and_extraction_model_pinned
+        );
+        assert_eq!(
+            lean_selected_rust_record_bool_field(
+                hidden_source_boundary_source,
+                predicate_model_report_def,
+                "nativeBoundaryBreakModelPinned"
+            ),
+            predicate_model_evidence.native_boundary_break_model_pinned
+        );
+        assert_eq!(
+            lean_selected_rust_record_bool_field(
+                hidden_source_boundary_source,
+                predicate_model_report_def,
+                "nativeBoundaryPredicateRecordComplete"
+            ),
+            predicate_model_evidence.native_boundary_predicate_record_complete
+        );
+        assert_eq!(
+            lean_selected_rust_record_bool_field(
+                hidden_source_boundary_source,
+                predicate_model_report_def,
+                "activeVerifierRoutePinned"
+            ),
+            predicate_model_evidence.active_verifier_route_pinned
+        );
+        assert_eq!(
+            lean_selected_rust_record_bool_field(
+                hidden_source_boundary_source,
+                predicate_model_report_def,
+                "predicateNegativeControlsPassed"
+            ),
+            predicate_model_evidence.predicate_negative_controls_passed
+        );
+        assert_eq!(
+            lean_selected_rust_record_bool_field(
+                hidden_source_boundary_source,
+                predicate_model_report_def,
+                "concretePredicateModelPresent"
+            ),
+            predicate_model_evidence.concrete_predicate_model_present
+        );
+        assert_eq!(
+            lean_selected_rust_record_bool_field(
+                hidden_source_boundary_source,
+                predicate_model_report_def,
+                "certifiedSemanticsSourcePackageTargetPresent"
+            ),
+            predicate_model_evidence.certified_semantics_source_package_target_present
         );
         assert_eq!(
             lean_selected_rust_record_byte_array_digest_field(

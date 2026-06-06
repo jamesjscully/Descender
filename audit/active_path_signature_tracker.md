@@ -1387,6 +1387,11 @@ The focused bridge regression now also parses
 `selectedRustNativeBoundaryPredicateModelEvidenceDigest` from Lean and compares
 it to the Rust-computed predicate-model evidence digest, so the predicate-model
 report cannot silently drift away from the selected public manifest digest.
+It now also parses every boolean field in
+`selectedRustNativeBoundaryPredicateModelEvidenceReport` and compares the Lean
+record against `Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1`. This
+keeps the current fail-closed predicate-model report byte/digest binding and
+its exposed blocker bits synchronized with Rust evidence.
 
 ## Findings
 

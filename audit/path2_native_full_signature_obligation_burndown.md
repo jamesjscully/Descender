@@ -381,6 +381,10 @@ The focused bridge regression now parses the Lean
 `selectedRustNativeBoundaryPredicateModelEvidenceDigest` byte-array constant
 and compares it to the Rust-computed predicate-model evidence digest, matching
 the existing six selected source-evidence digest checks.
+It now also parses the boolean fields in
+`selectedRustNativeBoundaryPredicateModelEvidenceReport` and compares them to
+the Rust predicate-model evidence frame, so the visible fail-closed blocker
+bits cannot drift independently of the digest-bound Rust evidence.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
