@@ -1853,6 +1853,15 @@ shared-witness payload extraction, and
 source plus the field equality into the full hard law bundle. The manifest
 tracks this with
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_full_opening_native_source_target_present`.
+That native source has been reduced one step further to the exact canonical
+representative:
+`ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValiditySource` asks for
+fiber/local/descent of
+`reviewedFq12FullNativeOpeningCanonicalRepresentative` under the
+report-verified shared digest frame, and
+`reviewedFq12SharedWitnessFullOpeningNativeValiditySourceOfCanonicalSource`
+turns it into the full-opening native source. The manifest tracks this with
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_native_source_target_present`.
 
 ## Findings
 

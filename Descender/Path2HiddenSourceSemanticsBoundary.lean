@@ -3968,6 +3968,107 @@ theorem reviewedFq12HardExtractionLawsOfSharedWitnessFullOpeningSource
       Cert hFields hNativeLaws.1 hNativeLaws.2
 
 /--
+Canonical full-opening native-validity source for the shared-witness route.
+
+This is the implementation-facing form of the remaining native-validity
+obligation: prove fiber/local/descent for the exact canonical representative
+computed from the report-verified shared digest frame and the opened native
+roles.
+-/
+structure ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValiditySource
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P) where
+  canonicalFullOpeningInBoundaryFiber :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                InFiber P b.context b
+                  (reviewedFq12FullNativeOpeningCanonicalRepresentative
+                    (reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
+                      Cert.toWitnessSources.digestFrame)
+                    b opening)
+  canonicalFullOpeningNativeValid :
+    forall {b : Path2NativeBoundary.Boundary}
+        {payload : ReviewedFq12HiddenSourcePayload}
+        {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+        {opening : FullNativeRepresentativeOpening},
+      payload.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+        payload.slotId = b.context.slotId ->
+          cert.nativeBoundaryDigest = b.nativeBoundaryDigest ->
+            cert.slotId = b.context.slotId ->
+              cert.openingCommitment = opening.openingTupleDigest ->
+                P.localValid b.context
+                    (reviewedFq12FullNativeOpeningCanonicalRepresentative
+                      (reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
+                        Cert.toWitnessSources.digestFrame)
+                      b opening) ∧
+                  P.descentConsistent b.context
+                    (reviewedFq12FullNativeOpeningCanonicalRepresentative
+                      (reviewedFq12NativeRepresentativeDigestFrameCanonicalDigest
+                        Cert.toWitnessSources.digestFrame)
+                      b opening)
+
+/--
+The canonical full-opening native-validity source derives the full-opening
+native-validity source used by the hard law bundle.
+-/
+def reviewedFq12SharedWitnessFullOpeningNativeValiditySourceOfCanonicalSource
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Path2NativeBoundary.Predicates}
+    (Cert :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser P)
+    (canonicalSource :
+      ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValiditySource
+        Cert) :
+    ReviewedFq12SharedWitnessFullOpeningNativeValiditySource Cert where
+  fullOpeningAssemblyInBoundaryFiber := by
+    intro b payload cert opening h hAssembles
+    dsimp [
+      reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate,
+      reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame,
+      reviewedFq12FullNativeOpeningAssemblesRepresentativeFromDigestFrame
+    ] at hAssembles
+    rcases hAssembles with
+      ⟨hPayloadBoundary, hPayloadSlot, hCertBoundary, hCertSlot,
+        hOpeningCommitment, hEq⟩
+    rw [hEq]
+    exact
+      canonicalSource.canonicalFullOpeningInBoundaryFiber
+        hPayloadBoundary hPayloadSlot hCertBoundary hCertSlot
+        hOpeningCommitment
+  fullOpeningAssemblyNativeValid := by
+    intro b payload cert opening h hAssembles
+    dsimp [
+      reviewedFq12HardExtractionPredicateFieldSourcesFromSharedWitnessCertificate,
+      reviewedFq12HardExtractionPredicateFieldSourcesFromDigestFrame,
+      reviewedFq12FullNativeOpeningAssemblesRepresentativeFromDigestFrame
+    ] at hAssembles
+    rcases hAssembles with
+      ⟨hPayloadBoundary, hPayloadSlot, hCertBoundary, hCertSlot,
+        hOpeningCommitment, hEq⟩
+    rw [hEq]
+    exact
+      canonicalSource.canonicalFullOpeningNativeValid
+        hPayloadBoundary hPayloadSlot hCertBoundary hCertSlot
+        hOpeningCommitment
+
+/--
 Proof-bearing hard-extraction predicate-model certificate sourced by the
 active shared digest-frame witness certificate.
 
