@@ -1275,6 +1275,17 @@ witnesses from each exported raw source projection back to those bindings. This
 keeps the package from becoming a laundering point where selected evidence
 bindings are consumed and then discarded before hidden-source closure.
 
+P2FS-001 package certificate projection hardening: the five package-level
+source certificates now project from the stored evidence/source binding
+objects through `.toCertificate`, and
+`ReviewedFq12SelectedRustModelSourceRecordPackage.subEvidenceDigestsMatch`
+uses the five binding `evidenceDigestBound` proofs as the digest-match
+arguments. The Rust source audit now requires those package certificate bodies
+and those digest-bound arguments. The manifest remains fail-closed with
+`source_record_package_surface_present = true`,
+`package_sub_evidence_match_reduction_present = true`, and the same four
+missing concrete categories.
+
 P2FS-001 certified closure route guard: the future final theorem gate now
 rejects raw native-boundary semantics package closure and source-shaped
 semantics package closure markers. The active final proof must close through

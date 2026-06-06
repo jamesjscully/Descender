@@ -1693,6 +1693,20 @@ record-completeness, verifier-route, negative-control, concrete-model, and
 certified-package target bits in addition to payload/model pins. A weakened
 `FactsAllTrue` definition that drops one fact no longer satisfies the report
 target bit.
+The selected evidence/source binding route now projects the five package-level
+source certificates from the binding objects themselves:
+`Package.boundaryBaseEvidenceSourceBinding.toCertificate`,
+`Package.roleRootLiftEvidenceSourceBinding.toCertificate`,
+`Package.sourceRouteEvidenceSourceBinding.toCertificate`,
+`Package.fieldLocalEvidenceSourceBinding.toCertificate`, and
+`Package.sharedWitnessEvidenceSourceBinding.toCertificate`. The package
+sub-evidence digest proof now consumes each binding's `evidenceDigestBound`
+field rather than relying on definitional coincidence. The Rust source audit
+requires this package-certificate route and still reports the active manifest
+fail-closed with the same four missing concrete categories:
+`predicate_model_certificate_definitions`, `source_record_definitions`,
+`source_record_evidence_source_bindings`, and
+`sub_evidence_digest_match_proof`.
 
 ## Findings
 

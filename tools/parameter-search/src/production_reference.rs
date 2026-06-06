@@ -10395,7 +10395,40 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             4096,
         )
     });
+    let package_certificates_from_source_bindings_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "boundaryBaseCertificate",
+            &["ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate"],
+            "Package.boundaryBaseEvidenceSourceBinding.toCertificate",
+            2048,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "roleRootLiftSourceCertificate",
+            &["ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate"],
+            "Package.roleRootLiftEvidenceSourceBinding.toCertificate",
+            2048,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "sourceRouteByteSourceCertificate",
+            &["SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate"],
+            "Package.sourceRouteEvidenceSourceBinding.toCertificate",
+            2048,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "fieldLocalSourceCertificate",
+            &["ReviewedFq12SelectedRustFieldLocalEvidenceCertificate"],
+            "Package.fieldLocalEvidenceSourceBinding.toCertificate",
+            2048,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "sharedFrameWitnessSourcesCertificate",
+            &["ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate"],
+            "Package.sharedWitnessEvidenceSourceBinding.toCertificate",
+            2048,
+        );
     let source_record_package_surface_present = source_binding_surface_present
+        && package_certificates_from_source_bindings_present
         && lean_source_has_named_declaration_with_markers_v1(
             &boundary_source,
             "structure",
@@ -10469,6 +10502,31 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 "Package.sharedFrameWitnessSourcesCertificate",
             ],
             "selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_of_selected_certificate_digests",
+            4096,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "subEvidenceDigestsMatch",
+            "Package.boundaryBaseEvidenceSourceBinding.evidenceDigestBound",
+            4096,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "subEvidenceDigestsMatch",
+            "Package.roleRootLiftEvidenceSourceBinding.evidenceDigestBound",
+            4096,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "subEvidenceDigestsMatch",
+            "Package.sourceRouteEvidenceSourceBinding.evidenceDigestBound",
+            4096,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "subEvidenceDigestsMatch",
+            "Package.fieldLocalEvidenceSourceBinding.evidenceDigestBound",
+            4096,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "subEvidenceDigestsMatch",
+            "Package.sharedWitnessEvidenceSourceBinding.evidenceDigestBound",
             4096,
         );
     let package_to_closure_inputs_reduction_present =
@@ -59532,6 +59590,38 @@ def toPredicates
             );
         assert!(
             !aliased_package_five_source_certificate_subcheck.source_record_package_surface_present
+        );
+        let aliased_package_binding_certificate_projection_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "Package.boundaryBaseEvidenceSourceBinding.toCertificate",
+            "packageBoundaryBaseCertificateAlias\n\nexample : True := by\n  let _mentionedPackageBoundaryBaseCertificateProjection :=\n    Package.boundaryBaseEvidenceSourceBinding.toCertificate\n  trivial",
+            1,
+        );
+        let aliased_package_binding_certificate_projection_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_package_binding_certificate_projection_source,
+            );
+        assert!(
+            !aliased_package_binding_certificate_projection_subcheck
+                .source_record_package_surface_present
+        );
+        let missing_package_binding_digest_bound_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "    Package.boundaryBaseEvidenceSourceBinding.evidenceDigestBound\n    Package.roleRootLiftEvidenceSourceBinding.evidenceDigestBound",
+            "    by rfl\n    Package.roleRootLiftEvidenceSourceBinding.evidenceDigestBound",
+            1,
+        );
+        let missing_package_binding_digest_bound_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &missing_package_binding_digest_bound_source,
+            );
+        assert!(
+            !missing_package_binding_digest_bound_subcheck
+                .package_sub_evidence_match_reduction_present
         );
         let aliased_payload_antivacuity_source = include_str!(
             "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"

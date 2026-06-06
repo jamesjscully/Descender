@@ -1944,6 +1944,23 @@ def ofReportAndSources
   payloadProjectionLaw := payloadProjectionLaw
   extractionCertificateAvailability := extractionCertificateAvailability
 
+/-- Certificate projection from the selected base-boundary evidence/source binding. -/
+def toCertificate
+    {P : Predicates}
+    (Binding : ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding P) :
+    ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P :=
+  ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources
+    Binding.evidenceReport
+    Binding.evidenceDigest
+    (by
+      rw [Binding.evidenceReportBound]
+      exact selectedRustBoundaryBaseEvidenceReportVerifiedProof)
+    (by
+      rw [Binding.evidenceReportBound]
+      exact selectedRustBoundaryBaseEvidenceFactsAllTrueProof)
+    Binding.payloadProjectionLaw
+    Binding.extractionCertificateAvailability
+
 end ReviewedFq12SelectedRustBoundaryBaseEvidenceSourceBinding
 
 /-- Evidence/source binding for the selected role-root/lift report. -/
@@ -1986,6 +2003,22 @@ def ofReportAndSource
   sourceBindingDigest := sourceBindingDigest
   sourceBindingDigestBound := sourceBindingDigestBound
   roleRootLiftSource := roleRootLiftSource
+
+/-- Certificate projection from the selected role-root/lift evidence/source binding. -/
+def toCertificate
+    {P : Predicates}
+    (Binding : ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding P) :
+    ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P :=
+  ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource
+    Binding.evidenceReport
+    Binding.evidenceDigest
+    (by
+      rw [Binding.evidenceReportBound]
+      exact selectedRustRoleRootLiftEvidenceReportVerifiedProof)
+    (by
+      rw [Binding.evidenceReportBound]
+      exact selectedRustRoleRootLiftEvidenceFactsAllTrueProof)
+    Binding.roleRootLiftSource
 
 end ReviewedFq12SelectedRustRoleRootLiftEvidenceSourceBinding
 
@@ -2037,6 +2070,27 @@ def ofReportAndSource
   sourceBindingDigestBound := sourceBindingDigestBound
   selectedSourceRouteByteSource := selectedSourceRouteByteSource
 
+/-- Certificate projection from the selected source-route evidence/source binding. -/
+def toCertificate
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {P : Predicates}
+    (Binding :
+      ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
+        FieldParser RouteParser P) :
+    SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
+      FieldParser RouteParser P :=
+  SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource
+    Binding.evidenceReport
+    Binding.evidenceDigest
+    (by
+      rw [Binding.evidenceReportBound]
+      exact selectedRustSourceRouteEvidenceReportVerifiedProof)
+    (by
+      rw [Binding.evidenceReportBound]
+      exact selectedRustSourceRouteEvidenceFactsAllTrueProof)
+    Binding.selectedSourceRouteByteSource
+
 end ReviewedFq12SelectedRustSourceRouteEvidenceSourceBinding
 
 /-- Evidence/source binding for the selected field/local report. -/
@@ -2084,6 +2138,23 @@ def ofReportAndSources
   sourceBindingDigestBound := sourceBindingDigestBound
   assemblySource := assemblySource
   compatibilitySource := compatibilitySource
+
+/-- Certificate projection from the selected field/local evidence/source binding. -/
+def toCertificate
+    {P : Predicates}
+    (Binding : ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding P) :
+    ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P :=
+  ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources
+    Binding.evidenceReport
+    Binding.evidenceDigest
+    (by
+      rw [Binding.evidenceReportBound]
+      exact selectedRustFieldLocalEvidenceReportVerifiedProof)
+    (by
+      rw [Binding.evidenceReportBound]
+      exact selectedRustFieldLocalEvidenceFactsAllTrueProof)
+    Binding.assemblySource
+    Binding.compatibilitySource
 
 end ReviewedFq12SelectedRustFieldLocalEvidenceSourceBinding
 
@@ -2138,6 +2209,29 @@ def ofReportAndSources
   sourceBindingDigest := sourceBindingDigest
   sourceBindingDigestBound := sourceBindingDigestBound
   sharedFrameWitnessSources := sharedFrameWitnessSources
+
+/-- Certificate projection from the selected shared-witness evidence/source binding. -/
+def toCertificate
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    {P : Predicates}
+    (Binding :
+      ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
+        CanonicalParser WitnessParser P) :
+    ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+      CanonicalParser WitnessParser P :=
+  ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources
+    Binding.evidenceReport
+    Binding.evidenceDigest
+    (by
+      rw [Binding.evidenceReportBound]
+      exact selectedRustSharedFrameWitnessEvidenceReportVerifiedProof)
+    (by
+      rw [Binding.evidenceReportBound]
+      exact selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof)
+    Binding.sharedFrameWitnessSources
 
 end ReviewedFq12SelectedRustSharedWitnessEvidenceSourceBinding
 
@@ -2401,13 +2495,7 @@ def boundaryBaseCertificate
       ReviewedFq12SelectedRustModelSourceRecordPackage
         FieldParser RouteParser CanonicalParser WitnessParser P) :
     ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate P :=
-  ReviewedFq12SelectedRustBoundaryBaseEvidenceCertificate.ofReportAndSources
-    selectedRustBoundaryBaseEvidenceReport
-    selectedRustBoundaryBaseEvidenceDigest
-    selectedRustBoundaryBaseEvidenceReportVerifiedProof
-    selectedRustBoundaryBaseEvidenceFactsAllTrueProof
-    Package.payloadProjectionLaw
-    Package.extractionCertificateAvailability
+  Package.boundaryBaseEvidenceSourceBinding.toCertificate
 
 /-- Constructor-bound role-root/lift certificate from selected raw sources. -/
 def roleRootLiftSourceCertificate
@@ -2422,12 +2510,7 @@ def roleRootLiftSourceCertificate
       ReviewedFq12SelectedRustModelSourceRecordPackage
         FieldParser RouteParser CanonicalParser WitnessParser P) :
     ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate P :=
-  ReviewedFq12SelectedRustRoleRootLiftEvidenceCertificate.ofReportAndSource
-    selectedRustRoleRootLiftEvidenceReport
-    selectedRustRoleRootLiftEvidenceDigest
-    selectedRustRoleRootLiftEvidenceReportVerifiedProof
-    selectedRustRoleRootLiftEvidenceFactsAllTrueProof
-    Package.roleRootLiftSource
+  Package.roleRootLiftEvidenceSourceBinding.toCertificate
 
 /-- Constructor-bound source-route byte-source certificate. -/
 def sourceRouteByteSourceCertificate
@@ -2443,12 +2526,7 @@ def sourceRouteByteSourceCertificate
         FieldParser RouteParser CanonicalParser WitnessParser P) :
     SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate
       FieldParser RouteParser P :=
-  SelectedRustReviewedFq12FullOpeningFieldSourceRouteEvidenceCertificate.ofReportAndSource
-    selectedRustSourceRouteEvidenceReport
-    selectedRustSourceRouteEvidenceDigest
-    selectedRustSourceRouteEvidenceReportVerifiedProof
-    selectedRustSourceRouteEvidenceFactsAllTrueProof
-    Package.selectedSourceRouteByteSource
+  Package.sourceRouteEvidenceSourceBinding.toCertificate
 
 /-- Constructor-bound field/local certificate. -/
 def fieldLocalSourceCertificate
@@ -2463,13 +2541,7 @@ def fieldLocalSourceCertificate
       ReviewedFq12SelectedRustModelSourceRecordPackage
         FieldParser RouteParser CanonicalParser WitnessParser P) :
     ReviewedFq12SelectedRustFieldLocalEvidenceCertificate P :=
-  ReviewedFq12SelectedRustFieldLocalEvidenceCertificate.ofReportAndSources
-    selectedRustFieldLocalEvidenceReport
-    selectedRustFieldLocalEvidenceDigest
-    selectedRustFieldLocalEvidenceReportVerifiedProof
-    selectedRustFieldLocalEvidenceFactsAllTrueProof
-    Package.assemblySource
-    Package.compatibilitySource
+  Package.fieldLocalEvidenceSourceBinding.toCertificate
 
 /-- Constructor-bound shared-frame witness certificate. -/
 def sharedFrameWitnessSourcesCertificate
@@ -2485,12 +2557,7 @@ def sharedFrameWitnessSourcesCertificate
         FieldParser RouteParser CanonicalParser WitnessParser P) :
     ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
       CanonicalParser WitnessParser P :=
-  ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate.ofReportAndSources
-    selectedRustSharedFrameWitnessEvidenceReport
-    selectedRustSharedFrameWitnessEvidenceDigest
-    selectedRustSharedFrameWitnessEvidenceReportVerifiedProof
-    selectedRustSharedFrameWitnessEvidenceFactsAllTrueProof
-    Package.sharedFrameWitnessSources
+  Package.sharedWitnessEvidenceSourceBinding.toCertificate
 
 /--
 The selected aggregate report digest-matches the constructor-bound certificates
@@ -2514,7 +2581,11 @@ theorem subEvidenceDigestsMatch
       Package.fieldLocalSourceCertificate
       Package.sharedFrameWitnessSourcesCertificate :=
   selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_of_selected_certificate_digests
-    (by rfl) (by rfl) (by rfl) (by rfl) (by rfl)
+    Package.boundaryBaseEvidenceSourceBinding.evidenceDigestBound
+    Package.roleRootLiftEvidenceSourceBinding.evidenceDigestBound
+    Package.sourceRouteEvidenceSourceBinding.evidenceDigestBound
+    Package.fieldLocalEvidenceSourceBinding.evidenceDigestBound
+    Package.sharedWitnessEvidenceSourceBinding.evidenceDigestBound
 
 /--
 Proof-bearing five-source certificate derived from the selected source-record
