@@ -1331,6 +1331,11 @@ The guard now propagates to the exact final-route package:
 rules out a certified semantics source package whose predicate-model
 certificate uses the current fail-closed report, and the manifest exposes that
 bit too.
+The `native_boundary_concrete_predicate_model_present` detector now requires
+the full active native-boundary reviewed-Fq12 predicate surface, including
+certificate extraction, role-lift, assembly, compatibility, full-opening bridge
+digest, payload extraction, and break predicates. A partial selected
+`Path2NativeBoundary.Predicates` stub no longer flips the predicate-model bit.
 
 ## Findings
 

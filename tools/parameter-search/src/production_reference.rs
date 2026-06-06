@@ -9024,6 +9024,22 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         "reviewedFq12PayloadProjectsFrom :=",
         "reviewedFq12PayloadHasExtractionCertificate :=",
         "reviewedFq12ExtractionCertificateValid :=",
+        "reviewedFq12CertificateExtracts :=",
+        "reviewedFq12CertificateLiftsToOpening :=",
+        "reviewedFq12PayloadHasRoleLiftCertificate :=",
+        "reviewedFq12RoleLiftCertificateValid :=",
+        "reviewedFq12RoleLiftCertificateOpens :=",
+        "fullNativeOpeningAssemblesRepresentative :=",
+        "reviewedFq12OpeningHasAssemblyCertificate :=",
+        "reviewedFq12AssemblyCertificateValid :=",
+        "reviewedFq12AssemblyCertificateAssembles :=",
+        "reviewedFq12HasExtractionCompatibilityCertificate :=",
+        "reviewedFq12ExtractionCompatibilityCertificateValid :=",
+        "reviewedFq12ExtractionCompatibilityCertificateExtracts :=",
+        "reviewedFq12HasFullOpeningBridgeDigestCertificate :=",
+        "reviewedFq12FullOpeningBridgeDigestCertificateValid :=",
+        "reviewedFq12PayloadExtracts :=",
+        "boundaryBreakFor :=",
     ]
     .iter()
     .all(|marker| boundary_source.contains(marker));
@@ -57444,6 +57460,25 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         );
         assert!(source_record_subcheck.full_spend_concrete_predicates_are_separate_model);
         assert!(!source_record_subcheck.native_boundary_concrete_predicate_model_present);
+        let partial_native_boundary_model_source = r#"
+def selectedRustNativeBoundaryPredicates :
+  Path2NativeBoundary.Predicates := by
+  exact
+    { reviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAccepts
+      reviewedFq12PayloadProjectsFrom := selectedReviewedFq12PayloadProjectsFrom
+      reviewedFq12PayloadHasExtractionCertificate :=
+        selectedReviewedFq12PayloadHasExtractionCertificate
+      reviewedFq12ExtractionCertificateValid :=
+        selectedReviewedFq12ExtractionCertificateValid }
+"#;
+        let partial_native_boundary_model_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                partial_native_boundary_model_source,
+            );
+        assert!(
+            !partial_native_boundary_model_subcheck
+                .native_boundary_concrete_predicate_model_present
+        );
         assert!(
             source_record_subcheck
                 .selected_source_records_blocked_on_native_boundary_predicate_model

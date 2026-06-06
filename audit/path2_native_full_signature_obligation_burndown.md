@@ -335,6 +335,12 @@ The same impossibility now propagates to
 the certificate-shaped semantics package consumed by the final theorem route.
 This keeps the package-level blocker explicit until the selected predicate
 model report is replaced with a fact-complete import.
+The concrete predicate-model detector now requires the full reviewed-Fq12
+native-boundary predicate surface, not only accept/project/certificate-valid
+fields. A partial selected `Path2NativeBoundary.Predicates` record remains
+fail-closed, so `native_boundary_concrete_predicate_model_present` only turns
+true for a model that exposes the role-lift, assembly, compatibility,
+full-opening bridge digest, payload extraction, and break predicates as well.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
