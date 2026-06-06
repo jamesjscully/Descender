@@ -1399,6 +1399,15 @@ digest, payload extraction, and break predicates. A partial selected
 The detector is now also scoped to the body of the actual
 `selectedRustNativeBoundaryPredicates` declaration: unrelated declarations in
 the same Lean module cannot contribute missing predicate-field markers.
+Concrete predicate-model completion now requires the active model to route
+through the named field-source package:
+`selectedRustNativeBoundaryPredicateFieldSources` must package the selected
+predicate-field providers, and `selectedRustNativeBoundaryPredicates` must be
+the package's `toPredicates` projection. A raw field-complete
+`Path2NativeBoundary.Predicates` literal no longer satisfies the concrete
+model gate, and the obvious vacuous-lambda detector also scans the field-source
+package body. The manifest exposes the package-route bit as
+`native_boundary_predicate_model_field_source_package_present`.
 The Lean predicate-model evidence report now mirrors the Rust report's
 concrete-model and certified-semantics-package status fields as
 `concretePredicateModelPresent` and

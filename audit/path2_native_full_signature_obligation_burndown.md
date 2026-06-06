@@ -432,6 +432,13 @@ constant `True`/`False` lambdas. The manifest surfaces this as
 digest-bound predicate-model report includes it in
 `predicate_negative_controls_passed`, and the concrete-model bit requires it
 to be false.
+Concrete predicate-model completion now also requires the selected predicates
+to be projected from the named
+`selectedRustNativeBoundaryPredicateFieldSources` package. A raw
+field-complete `Path2NativeBoundary.Predicates` literal is rejected, and the
+same vacuous-lambda detector scans the package body as well as the projected
+predicate model. The manifest exposes the package-route bit as
+`native_boundary_predicate_model_field_source_package_present`.
 The same detector now rejects module-level `axiom`, `constant`, `opaque`, or
 `variable` stubs for the selected predicate-field providers used by
 `selectedRustNativeBoundaryPredicates`. The manifest exposes this as

@@ -7588,6 +7588,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub full_spend_concrete_predicates_are_separate_model: bool,
     pub native_boundary_predicate_model_forbidden_vacuous_literals_present: bool,
     pub native_boundary_predicate_model_field_sources_defined_present: bool,
+    pub native_boundary_predicate_model_field_source_package_present: bool,
     pub native_boundary_predicate_model_forbidden_vacuous_field_sources_present: bool,
     pub native_boundary_predicate_model_stub_field_sources_present: bool,
     pub native_boundary_predicate_model_incomplete_proof_terms_present: bool,
@@ -9760,64 +9761,6 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     ]
     .iter()
     .all(|marker| full_spend_concrete_source.contains(marker));
-    let native_boundary_predicate_model_field_markers = [
-        "boundaryOf :=",
-        "localValid :=",
-        "descentConsistent :=",
-        "normRangeValid :=",
-        "blindingNoiseBounded :=",
-        "safeEquivalent :=",
-        "boundaryBreakFor :=",
-        "accountCreateAccepts :=",
-        "admitted :=",
-        "parentRootBindsPrivateRoles :=",
-        "roleRestrictionsAuthenticate :=",
-        "noExportHolds :=",
-        "roleAuthenticationMaterialSimulatable :=",
-        "maskFreshnessHolds :=",
-        "qromScheduleBound :=",
-        "qromExtractorRewindBound :=",
-        "rangeRowsBindRepresentative :=",
-        "rangeRowsBindTraceRepresentative :=",
-        "blindingRowsBoundRepresentative :=",
-        "blindingRowsBoundTraceRepresentative :=",
-        "transparentAccepts :=",
-        "transparentExtractsTrace :=",
-        "transparentExtracts :=",
-        "reviewedFq12PayloadAccepts :=",
-        "reviewedFq12PayloadProjectsFrom :=",
-        "reviewedFq12PayloadHasExtractionCertificate :=",
-        "reviewedFq12ExtractionCertificateValid :=",
-        "reviewedFq12CertificateExtracts :=",
-        "reviewedFq12CertificateLiftsToOpening :=",
-        "reviewedFq12PayloadHasRoleLiftCertificate :=",
-        "reviewedFq12RoleLiftCertificateValid :=",
-        "reviewedFq12RoleLiftCertificateOpens :=",
-        "fullNativeOpeningAssemblesRepresentative :=",
-        "reviewedFq12OpeningHasAssemblyCertificate :=",
-        "reviewedFq12AssemblyCertificateValid :=",
-        "reviewedFq12AssemblyCertificateAssembles :=",
-        "reviewedFq12HasExtractionCompatibilityCertificate :=",
-        "reviewedFq12ExtractionCompatibilityCertificateValid :=",
-        "reviewedFq12ExtractionCompatibilityCertificateExtracts :=",
-        "reviewedFq12HasFullOpeningBridgeDigestCertificate :=",
-        "reviewedFq12FullOpeningBridgeDigestCertificateValid :=",
-        "reviewedFq12PayloadExtracts :=",
-        "traceOpensBoundary :=",
-        "tracesSafetyEquivalent :=",
-        "maskedOpeningsConsistent :=",
-        "traceRelationValid :=",
-        "traceAssemblesRepresentative :=",
-        "extractedRolesComplete :=",
-        "traceAssemblyRolesComplete :=",
-        "traceAssemblyDerivedRolesBound :=",
-        "traceAssemblyInFiber :=",
-        "traceAssemblyLocalValid :=",
-        "traceAssemblyDescentConsistent :=",
-        "slotAuthorizationOf :=",
-        "spendAccepts :=",
-        "spendWitnessValid :=",
-    ];
     let native_boundary_predicate_model_forbidden_vacuous_literal_markers = [
         "boundaryBreakFor := fun _ _ _ => True",
         "reviewedFq12PayloadAccepts := fun _ _ => False",
@@ -9849,6 +9792,34 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
                     &boundary_source,
                     "selectedRustNativeBoundaryPredicates",
+                    marker,
+                    32768,
+                )
+            })
+            || [
+                "selectedBoundaryBreakFor := fun _ _ _ => True",
+                "selectedReviewedFq12PayloadAccepts := fun _ _ => False",
+                "selectedReviewedFq12PayloadProjectsFrom := fun _ _ => True",
+                "selectedReviewedFq12PayloadHasExtractionCertificate := fun _ _ _ => True",
+                "selectedReviewedFq12ExtractionCertificateValid := fun _ _ _ => True",
+                "selectedReviewedFq12CertificateExtracts := fun _ _ _ _ => True",
+                "selectedReviewedFq12CertificateLiftsToOpening := fun _ _ _ _ => True",
+                "selectedReviewedFq12PayloadHasRoleLiftCertificate := fun _ _ _ _ => True",
+                "selectedReviewedFq12RoleLiftCertificateValid := fun _ _ _ _ => True",
+                "selectedReviewedFq12RoleLiftCertificateOpens := fun _ _ _ _ _ => True",
+                "selectedFullNativeOpeningAssemblesRepresentative := fun _ _ _ _ _ => True",
+                "selectedReviewedFq12AssemblyCertificateValid := fun _ _ _ _ _ => True",
+                "selectedReviewedFq12ExtractionCompatibilityCertificateValid := fun _ _ _ _ _ _ => True",
+                "selectedReviewedFq12FullOpeningBridgeDigestCertificateValid := fun _ _ _ _ _ _ _ => True",
+                "selectedReviewedFq12PayloadExtracts := fun _ _ _ => True",
+                "selectedSpendAccepts := fun _ _ => True",
+                "selectedSpendWitnessValid := fun _ _ _ => True",
+            ]
+            .iter()
+            .any(|marker| {
+                lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+                    &boundary_source,
+                    "selectedRustNativeBoundaryPredicateFieldSources",
                     marker,
                     32768,
                 )
@@ -10026,21 +9997,51 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             });
     let native_boundary_predicate_model_incomplete_proof_terms_present =
         lean_source_has_incomplete_proof_token_v1(&boundary_source);
-    let native_boundary_concrete_predicate_model_present =
+    let native_boundary_predicate_model_field_source_package_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSources",
+            &["ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources"],
+        ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSources",
+            "selectedBoundaryOf := selectedBoundaryOf",
+            32768,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSources",
+            "selectedBoundaryBreakFor := selectedBoundaryBreakFor",
+            32768,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSources",
+            "selectedReviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAccepts",
+            32768,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSources",
+            "selectedReviewedFq12FullOpeningBridgeDigestCertificateValid := selectedReviewedFq12FullOpeningBridgeDigestCertificateValid",
+            32768,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSources",
+            "selectedSpendWitnessValid := selectedSpendWitnessValid",
+            32768,
+        );
+    let native_boundary_predicate_model_package_route_present =
         lean_source_has_selected_rust_definition_with_markers_v1(
             &boundary_source,
             "selectedRustNativeBoundaryPredicates",
             &["Path2NativeBoundary.Predicates"],
-        ) && native_boundary_predicate_model_field_markers
-            .iter()
-            .all(|marker| {
-                lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
-                    &boundary_source,
-                    "selectedRustNativeBoundaryPredicates",
-                    marker,
-                    32768,
-                )
-            })
+        ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicates",
+            "selectedRustNativeBoundaryPredicateFieldSources.toPredicates",
+            4096,
+        );
+    let native_boundary_concrete_predicate_model_present =
+        native_boundary_predicate_model_package_route_present
+            && native_boundary_predicate_model_field_source_package_present
             && !native_boundary_predicate_model_forbidden_vacuous_literals_present
             && native_boundary_predicate_model_field_sources_defined_present
             && !native_boundary_predicate_model_forbidden_vacuous_field_sources_present
@@ -10542,6 +10543,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         full_spend_concrete_predicates_are_separate_model,
         native_boundary_predicate_model_forbidden_vacuous_literals_present,
         native_boundary_predicate_model_field_sources_defined_present,
+        native_boundary_predicate_model_field_source_package_present,
         native_boundary_predicate_model_forbidden_vacuous_field_sources_present,
         native_boundary_predicate_model_stub_field_sources_present,
         native_boundary_predicate_model_incomplete_proof_terms_present,
@@ -59761,8 +59763,105 @@ def selectedSlotAuthorizationOf := selectedSlotAuthorizationOfValue
 def selectedSpendAccepts := selectedSpendAcceptsValue
 def selectedSpendWitnessValid := selectedSpendWitnessValidValue
 "#;
+        let selected_predicate_field_source_package_source = r#"
+def selectedRustNativeBoundaryPredicateFieldSources :
+  ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources where
+  selectedBoundaryOf := selectedBoundaryOf
+  selectedLocalValid := selectedLocalValid
+  selectedDescentConsistent := selectedDescentConsistent
+  selectedNormRangeValid := selectedNormRangeValid
+  selectedBlindingNoiseBounded := selectedBlindingNoiseBounded
+  selectedSafeEquivalent := selectedSafeEquivalent
+  selectedBoundaryBreakFor := selectedBoundaryBreakFor
+  selectedAccountCreateAccepts := selectedAccountCreateAccepts
+  selectedAdmitted := selectedAdmitted
+  selectedParentRootBindsPrivateRoles := selectedParentRootBindsPrivateRoles
+  selectedRoleRestrictionsAuthenticate := selectedRoleRestrictionsAuthenticate
+  selectedNoExportHolds := selectedNoExportHolds
+  selectedRoleAuthenticationMaterialSimulatable :=
+    selectedRoleAuthenticationMaterialSimulatable
+  selectedMaskFreshnessHolds := selectedMaskFreshnessHolds
+  selectedQromScheduleBound := selectedQromScheduleBound
+  selectedQromExtractorRewindBound := selectedQromExtractorRewindBound
+  selectedRangeRowsBindRepresentative := selectedRangeRowsBindRepresentative
+  selectedRangeRowsBindTraceRepresentative :=
+    selectedRangeRowsBindTraceRepresentative
+  selectedBlindingRowsBoundRepresentative :=
+    selectedBlindingRowsBoundRepresentative
+  selectedBlindingRowsBoundTraceRepresentative :=
+    selectedBlindingRowsBoundTraceRepresentative
+  selectedTransparentAccepts := selectedTransparentAccepts
+  selectedTransparentExtractsTrace := selectedTransparentExtractsTrace
+  selectedTransparentExtracts := selectedTransparentExtracts
+  selectedReviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAccepts
+  selectedReviewedFq12PayloadProjectsFrom :=
+    selectedReviewedFq12PayloadProjectsFrom
+  selectedReviewedFq12PayloadHasExtractionCertificate :=
+    selectedReviewedFq12PayloadHasExtractionCertificate
+  selectedReviewedFq12ExtractionCertificateValid :=
+    selectedReviewedFq12ExtractionCertificateValid
+  selectedReviewedFq12CertificateExtracts :=
+    selectedReviewedFq12CertificateExtracts
+  selectedReviewedFq12CertificateLiftsToOpening :=
+    selectedReviewedFq12CertificateLiftsToOpening
+  selectedReviewedFq12PayloadHasRoleLiftCertificate :=
+    selectedReviewedFq12PayloadHasRoleLiftCertificate
+  selectedReviewedFq12RoleLiftCertificateValid :=
+    selectedReviewedFq12RoleLiftCertificateValid
+  selectedReviewedFq12RoleLiftCertificateOpens :=
+    selectedReviewedFq12RoleLiftCertificateOpens
+  selectedFullNativeOpeningAssemblesRepresentative :=
+    selectedFullNativeOpeningAssemblesRepresentative
+  selectedReviewedFq12OpeningHasAssemblyCertificate :=
+    selectedReviewedFq12OpeningHasAssemblyCertificate
+  selectedReviewedFq12AssemblyCertificateValid :=
+    selectedReviewedFq12AssemblyCertificateValid
+  selectedReviewedFq12AssemblyCertificateAssembles :=
+    selectedReviewedFq12AssemblyCertificateAssembles
+  selectedReviewedFq12HasExtractionCompatibilityCertificate :=
+    selectedReviewedFq12HasExtractionCompatibilityCertificate
+  selectedReviewedFq12ExtractionCompatibilityCertificateValid :=
+    selectedReviewedFq12ExtractionCompatibilityCertificateValid
+  selectedReviewedFq12ExtractionCompatibilityCertificateExtracts :=
+    selectedReviewedFq12ExtractionCompatibilityCertificateExtracts
+  selectedReviewedFq12HasFullOpeningBridgeDigestCertificate :=
+    selectedReviewedFq12HasFullOpeningBridgeDigestCertificate
+  selectedReviewedFq12FullOpeningBridgeDigestCertificateValid :=
+    selectedReviewedFq12FullOpeningBridgeDigestCertificateValid
+  selectedReviewedFq12PayloadExtracts := selectedReviewedFq12PayloadExtracts
+  selectedTraceOpensBoundary := selectedTraceOpensBoundary
+  selectedTracesSafetyEquivalent := selectedTracesSafetyEquivalent
+  selectedMaskedOpeningsConsistent := selectedMaskedOpeningsConsistent
+  selectedTraceRelationValid := selectedTraceRelationValid
+  selectedTraceAssemblesRepresentative := selectedTraceAssemblesRepresentative
+  selectedExtractedRolesComplete := selectedExtractedRolesComplete
+  selectedTraceAssemblyRolesComplete := selectedTraceAssemblyRolesComplete
+  selectedTraceAssemblyDerivedRolesBound := selectedTraceAssemblyDerivedRolesBound
+  selectedTraceAssemblyInFiber := selectedTraceAssemblyInFiber
+  selectedTraceAssemblyLocalValid := selectedTraceAssemblyLocalValid
+  selectedTraceAssemblyDescentConsistent :=
+    selectedTraceAssemblyDescentConsistent
+  selectedSlotAuthorizationOf := selectedSlotAuthorizationOf
+  selectedSpendAccepts := selectedSpendAccepts
+  selectedSpendWitnessValid := selectedSpendWitnessValid
+
+def selectedRustNativeBoundaryPredicates :
+  Path2NativeBoundary.Predicates :=
+  selectedRustNativeBoundaryPredicateFieldSources.toPredicates
+"#;
         let complete_native_boundary_model_source = format!(
+            "{selected_predicate_provider_definitions_source}\n{selected_predicate_field_source_package_source}"
+        );
+        let raw_complete_native_boundary_model_source = format!(
             "{selected_predicate_provider_definitions_source}\n{dangling_native_boundary_model_source}"
+        );
+        let raw_complete_native_boundary_model_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &raw_complete_native_boundary_model_source,
+            );
+        assert!(
+            !raw_complete_native_boundary_model_subcheck
+                .native_boundary_concrete_predicate_model_present
         );
         let complete_native_boundary_model_subcheck =
             path2_selected_rust_model_source_record_subcheck_from_source_v1(
@@ -59794,13 +59893,13 @@ def selectedSpendWitnessValid := selectedSpendWitnessValidValue
         );
         let vacuous_native_boundary_model_source = complete_native_boundary_model_source
             .replacen(
-                "boundaryBreakFor := selectedBoundaryBreakFor",
-                "boundaryBreakFor := fun _ _ _ => True",
+                "  selectedBoundaryBreakFor := selectedBoundaryBreakFor",
+                "  selectedBoundaryBreakFor := fun _ _ _ => True",
                 1,
             )
             .replacen(
-                "reviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAccepts",
-                "reviewedFq12PayloadAccepts := fun _ _ => False",
+                "  selectedReviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAccepts",
+                "  selectedReviewedFq12PayloadAccepts := fun _ _ => False",
                 1,
             );
         let vacuous_native_boundary_model_subcheck =
