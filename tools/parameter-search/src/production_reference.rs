@@ -28228,6 +28228,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "AcceptedSpendNumericGame",
         "successProb_le_acceptedSpendOrBreakUnionBound",
         "PricedAcceptedSpendNumericCertificate",
+        "Path2FullSpendGame.BreakEvent",
+        "activeBreakFamilyPinned",
+        "breakFamily_eq_activeFullSpendBreakEvent",
         "unionBound_le_priced",
         "selectedRustActiveNoExportSerializer_instantiation_v1",
         "activeSerializerAllowlist_boundaryNoExportClosed",
@@ -51773,6 +51776,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     Path2AcceptedSpendProbability.AcceptedSpendNumericGame
   let _acceptedSpendUnionBound :=
     AcceptedSpendNumericGame.successProb_le_acceptedSpendOrBreakUnionBound
+  let _acceptedSpendActiveBreakIndex :=
+    Path2FullSpendGame.BreakEvent
+  let _acceptedSpendActiveBreakPinned :=
+    PricedAcceptedSpendNumericCertificate.activeBreakFamilyPinned
+  let _acceptedSpendActiveBreakTheorem :=
+    PricedAcceptedSpendNumericCertificate.breakFamily_eq_activeFullSpendBreakEvent
   let _acceptedSpendPricedCertificate :=
     PricedAcceptedSpendNumericCertificate.unionBound_le_priced
   let _acceptedSpendPricedBound :=
@@ -51923,6 +51932,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     Path2AcceptedSpendProbability.AcceptedSpendNumericGame
   let _acceptedSpendUnionBound :=
     AcceptedSpendNumericGame.successProb_le_acceptedSpendOrBreakUnionBound
+  let _acceptedSpendActiveBreakIndex :=
+    Path2FullSpendGame.BreakEvent
+  let _acceptedSpendActiveBreakPinned :=
+    PricedAcceptedSpendNumericCertificate.activeBreakFamilyPinned
+  let _acceptedSpendActiveBreakTheorem :=
+    PricedAcceptedSpendNumericCertificate.breakFamily_eq_activeFullSpendBreakEvent
   let _acceptedSpendPricedCertificate :=
     PricedAcceptedSpendNumericCertificate.unionBound_le_priced
   let _acceptedSpendPricedBound :=

@@ -1,4 +1,5 @@
 import Descender.SignatureForking
+import Descender.Path2FullSpendGame
 
 namespace Descender
 
@@ -122,6 +123,7 @@ structure PricedAcceptedSpendNumericCertificate where
   outcomeFintype : Fintype Outcome
   breakFintype : Fintype Break
   breakDecidableEq : DecidableEq Break
+  activeBreakFamilyPinned : Break = Path2FullSpendGame.BreakEvent
   game : @AcceptedSpendNumericGame Outcome Break outcomeFintype breakFintype
   pricedBound : ℝ
   unionBound_le_priced :
@@ -130,6 +132,15 @@ structure PricedAcceptedSpendNumericCertificate where
         pricedBound
 
 namespace PricedAcceptedSpendNumericCertificate
+
+/--
+The priced numeric certificate must price the active Path 2 full-spend break
+family, not an implementation-chosen or proof-convenient break index.
+-/
+theorem breakFamily_eq_activeFullSpendBreakEvent
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.Break = Path2FullSpendGame.BreakEvent :=
+  C.activeBreakFamilyPinned
 
 /-- The full-signature success probability of the packaged game. -/
 def successProb (C : PricedAcceptedSpendNumericCertificate) : ℝ :=

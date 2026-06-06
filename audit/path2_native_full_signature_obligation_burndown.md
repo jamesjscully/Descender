@@ -1405,6 +1405,11 @@ the packaged game's union expression and priced bound. The conversion to
 `NativeAcceptedSpendSoundnessBoundary` derives `acceptedSpendForgery_le_bound`
 from the packaged `unionBound_le_priced` proof; a standalone raw inequality
 proof is no longer an input to the selected constructor.
+`PricedAcceptedSpendNumericCertificate` now also pins its break index to the
+active full-spend break family `Path2FullSpendGame.BreakEvent`; the source gate
+requires the corresponding projection and theorem markers, so the future
+numeric theorem cannot price a different finite bad-event index while claiming
+to close the active path.
 `Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
 active full-spend named breaks, so the numeric game can index its union bound by
 the actual active break family.
