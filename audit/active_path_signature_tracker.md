@@ -1721,6 +1721,13 @@ directly on `Package.predicateModelCertificate.toSource.toPredicates` and
 `Package.sourceRecords`. The source audit rejects an alias body that only
 mentions that reduction, so the certified package closure no longer detours
 through the older source-shaped semantics adapter.
+The current-report blocker is now split at the first predicate-model failure:
+`selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate_from_current_report_impossible`
+proves that the current report cannot even supply the field-source package
+certificate because `nativeBoundaryPredicateFieldSourcePackagePresent = false`.
+The existing full predicate-model certificate impossibility remains, and the
+Rust source audit requires both proofs before reporting the current-report
+guard present.
 
 ## Findings
 

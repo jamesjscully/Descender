@@ -9338,6 +9338,30 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     let native_boundary_predicate_model_current_report_certificate_impossible_present =
         lean_source_definition_with_header_markers_body_starts_with_marker_v1(
             &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate_from_current_report_impossible",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate",
+                "False",
+            ],
+            "by have hPresent : selectedRustNativeBoundaryPredicateModelEvidenceReport.nativeBoundaryPredicateFieldSourcePackagePresent = true := by simpa [Cert.evidenceReportBound] using Cert.fieldSourcePackagePresentProof simp [selectedRustNativeBoundaryPredicateModelEvidenceReport] at hPresent",
+            4096,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate_from_current_report_impossible",
+            "selectedRustNativeBoundaryPredicateModelEvidenceReport",
+            4096,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate_from_current_report_impossible",
+            "nativeBoundaryPredicateFieldSourcePackagePresent",
+            4096,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate_from_current_report_impossible",
+            "Cert.fieldSourcePackagePresentProof",
+            4096,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
             "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible",
             &[
                 "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",

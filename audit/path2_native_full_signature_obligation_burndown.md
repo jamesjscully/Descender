@@ -1301,6 +1301,14 @@ over `Package.sourceRecords`, instead of detouring through
 `toSemanticsSourcePackage`. The Rust source audit requires that direct body and
 keeps the alias-returning negative control.
 
+P2FS-001 current-report field-source blocker: Lean now names
+`selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate_from_current_report_impossible`.
+It proves that the current selected predicate-model report cannot back the
+smaller field-source package certificate because
+`nativeBoundaryPredicateFieldSourcePackagePresent` is false. The source audit
+requires this theorem alongside the full predicate-model certificate
+impossibility, keeping the first remaining predicate-model blocker explicit.
+
 P2FS-001 certified closure route guard: the future final theorem gate now
 rejects raw native-boundary semantics package closure and source-shaped
 semantics package closure markers. The active final proof must close through

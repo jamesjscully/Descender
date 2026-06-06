@@ -3697,6 +3697,25 @@ def toSource
 end ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate
 
 /--
+The current selected predicate-model report cannot back even the smaller
+field-source package certificate.
+
+This names the first fail-closed predicate-model blocker: the public report is
+verified, but `nativeBoundaryPredicateFieldSourcePackagePresent` is false until
+the selected Rust native-boundary predicate field-source package is imported.
+-/
+theorem selectedRustNativeBoundaryPredicateFieldSourcePackageCertificate_from_current_report_impossible
+    (Cert :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSourcePackageCertificate) :
+    False := by
+  have hPresent :
+      selectedRustNativeBoundaryPredicateModelEvidenceReport.nativeBoundaryPredicateFieldSourcePackagePresent =
+        true := by
+    simpa [Cert.evidenceReportBound] using
+      Cert.fieldSourcePackagePresentProof
+  simp [selectedRustNativeBoundaryPredicateModelEvidenceReport] at hPresent
+
+/--
 The current selected predicate-model report cannot back a proof-bearing
 predicate-model certificate.
 
