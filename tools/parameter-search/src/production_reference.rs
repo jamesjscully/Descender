@@ -10732,6 +10732,238 @@ pub fn path2_selected_rust_model_concrete_definition_checklist_v1()
     path2_selected_rust_model_concrete_definition_checklist_from_source_v1(boundary_source)
 }
 
+fn path2_selected_rust_model_concrete_predicate_model_present_from_source_v1(
+    boundary_source: &str,
+) -> bool {
+    if path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+        boundary_source,
+    ) {
+        return false;
+    }
+    let boundary_source = lean_source_without_comments_and_strings_v1(boundary_source);
+    let native_boundary_predicate_model_field_source_names = [
+        "selectedBoundaryOf",
+        "selectedLocalValid",
+        "selectedDescentConsistent",
+        "selectedNormRangeValid",
+        "selectedBlindingNoiseBounded",
+        "selectedSafeEquivalent",
+        "selectedBoundaryBreakFor",
+        "selectedAccountCreateAccepts",
+        "selectedAdmitted",
+        "selectedParentRootBindsPrivateRoles",
+        "selectedRoleRestrictionsAuthenticate",
+        "selectedNoExportHolds",
+        "selectedRoleAuthenticationMaterialSimulatable",
+        "selectedMaskFreshnessHolds",
+        "selectedQromScheduleBound",
+        "selectedQromExtractorRewindBound",
+        "selectedRangeRowsBindRepresentative",
+        "selectedRangeRowsBindTraceRepresentative",
+        "selectedBlindingRowsBoundRepresentative",
+        "selectedBlindingRowsBoundTraceRepresentative",
+        "selectedTransparentAccepts",
+        "selectedTransparentExtractsTrace",
+        "selectedTransparentExtracts",
+        "selectedReviewedFq12PayloadAccepts",
+        "selectedReviewedFq12PayloadProjectsFrom",
+        "selectedReviewedFq12PayloadHasExtractionCertificate",
+        "selectedReviewedFq12ExtractionCertificateValid",
+        "selectedReviewedFq12CertificateExtracts",
+        "selectedReviewedFq12CertificateLiftsToOpening",
+        "selectedReviewedFq12PayloadHasRoleLiftCertificate",
+        "selectedReviewedFq12RoleLiftCertificateValid",
+        "selectedReviewedFq12RoleLiftCertificateOpens",
+        "selectedFullNativeOpeningAssemblesRepresentative",
+        "selectedReviewedFq12OpeningHasAssemblyCertificate",
+        "selectedReviewedFq12AssemblyCertificateValid",
+        "selectedReviewedFq12AssemblyCertificateAssembles",
+        "selectedReviewedFq12HasExtractionCompatibilityCertificate",
+        "selectedReviewedFq12ExtractionCompatibilityCertificateValid",
+        "selectedReviewedFq12ExtractionCompatibilityCertificateExtracts",
+        "selectedReviewedFq12HasFullOpeningBridgeDigestCertificate",
+        "selectedReviewedFq12FullOpeningBridgeDigestCertificateValid",
+        "selectedReviewedFq12PayloadExtracts",
+        "selectedTraceOpensBoundary",
+        "selectedTracesSafetyEquivalent",
+        "selectedMaskedOpeningsConsistent",
+        "selectedTraceRelationValid",
+        "selectedTraceAssemblesRepresentative",
+        "selectedExtractedRolesComplete",
+        "selectedTraceAssemblyRolesComplete",
+        "selectedTraceAssemblyDerivedRolesBound",
+        "selectedTraceAssemblyInFiber",
+        "selectedTraceAssemblyLocalValid",
+        "selectedTraceAssemblyDescentConsistent",
+        "selectedSlotAuthorizationOf",
+        "selectedSpendAccepts",
+        "selectedSpendWitnessValid",
+    ];
+    let native_boundary_predicate_model_field_source_value_dependency_names =
+        native_boundary_predicate_model_field_source_names
+            .iter()
+            .map(|name| format!("{name}Value"))
+            .collect::<Vec<_>>();
+    let native_boundary_predicate_model_field_source_value_dependency_name_refs =
+        native_boundary_predicate_model_field_source_value_dependency_names
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>();
+    let native_boundary_predicate_model_stub_field_sources_present =
+        lean_source_module_has_forbidden_stubs_for_names_v1(
+            &boundary_source,
+            &native_boundary_predicate_model_field_source_names,
+        ) || lean_source_module_has_forbidden_stubs_for_names_v1(
+            &boundary_source,
+            &native_boundary_predicate_model_field_source_value_dependency_name_refs,
+        );
+    let native_boundary_predicate_model_field_sources_defined_present =
+        lean_source_module_has_non_stub_declarations_for_names_v1(
+            &boundary_source,
+            &native_boundary_predicate_model_field_source_names,
+        );
+    let native_boundary_predicate_model_forbidden_vacuous_field_sources_present = [
+        ("selectedBoundaryBreakFor", "fun _ _ _ => True"),
+        ("selectedReviewedFq12PayloadAccepts", "fun _ _ => False"),
+        ("selectedReviewedFq12PayloadProjectsFrom", "fun _ _ => True"),
+        (
+            "selectedReviewedFq12PayloadHasExtractionCertificate",
+            "fun _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12ExtractionCertificateValid",
+            "fun _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12CertificateExtracts",
+            "fun _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12CertificateLiftsToOpening",
+            "fun _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12PayloadHasRoleLiftCertificate",
+            "fun _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12RoleLiftCertificateValid",
+            "fun _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12RoleLiftCertificateOpens",
+            "fun _ _ _ _ _ => True",
+        ),
+        (
+            "selectedFullNativeOpeningAssemblesRepresentative",
+            "fun _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12OpeningHasAssemblyCertificate",
+            "fun _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12AssemblyCertificateValid",
+            "fun _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12AssemblyCertificateAssembles",
+            "fun _ _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12HasExtractionCompatibilityCertificate",
+            "fun _ _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12ExtractionCompatibilityCertificateValid",
+            "fun _ _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12ExtractionCompatibilityCertificateExtracts",
+            "fun _ _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12HasFullOpeningBridgeDigestCertificate",
+            "fun _ _ _ _ _ _ _ => True",
+        ),
+        (
+            "selectedReviewedFq12FullOpeningBridgeDigestCertificateValid",
+            "fun _ _ _ _ _ _ _ => True",
+        ),
+        ("selectedReviewedFq12PayloadExtracts", "fun _ _ _ => True"),
+        ("selectedSpendAccepts", "fun _ _ => True"),
+        ("selectedSpendWitnessValid", "fun _ _ _ => True"),
+    ]
+    .iter()
+    .any(|(name, marker)| {
+        lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            name,
+            marker,
+            4096,
+        )
+    })
+        || native_boundary_predicate_model_field_source_names
+            .iter()
+            .any(|name| {
+                lean_source_selected_rust_definition_body_is_direct_constant_lambda_v1(
+                    &boundary_source,
+                    name,
+                    4096,
+                )
+            });
+    let native_boundary_predicate_model_incomplete_proof_terms_present =
+        lean_source_has_incomplete_proof_token_v1(&boundary_source);
+    let native_boundary_predicate_model_field_source_package_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSources",
+            &["ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources"],
+        ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSources",
+            "selectedBoundaryOf := selectedBoundaryOf",
+            32768,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSources",
+            "selectedBoundaryBreakFor := selectedBoundaryBreakFor",
+            32768,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSources",
+            "selectedReviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAccepts",
+            32768,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSources",
+            "selectedReviewedFq12FullOpeningBridgeDigestCertificateValid := selectedReviewedFq12FullOpeningBridgeDigestCertificateValid",
+            32768,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicateFieldSources",
+            "selectedSpendWitnessValid := selectedSpendWitnessValid",
+            32768,
+        );
+    let native_boundary_predicate_model_package_route_present =
+        lean_source_has_selected_rust_definition_with_markers_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicates",
+            &["Path2NativeBoundary.Predicates"],
+        ) && lean_source_selected_rust_definition_body_starts_with_marker_v1(
+            &boundary_source,
+            "selectedRustNativeBoundaryPredicates",
+            "selectedRustNativeBoundaryPredicateFieldSources.toPredicates",
+            4096,
+        );
+    native_boundary_predicate_model_package_route_present
+        && native_boundary_predicate_model_field_source_package_present
+        && !native_boundary_predicate_model_forbidden_vacuous_field_sources_present
+        && native_boundary_predicate_model_field_sources_defined_present
+        && !native_boundary_predicate_model_stub_field_sources_present
+        && !native_boundary_predicate_model_incomplete_proof_terms_present
+}
+
 fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
     boundary_source: &str,
 ) -> Path2SelectedRustModelConcreteDefinitionChecklistV1 {
@@ -11395,8 +11627,7 @@ fn path2_selected_rust_model_concrete_definition_checklist_from_source_v1(
                 )
             });
     let native_boundary_concrete_predicate_model_present =
-        path2_selected_rust_model_source_record_subcheck_from_source_v1(&boundary_source)
-            .native_boundary_concrete_predicate_model_present;
+        path2_selected_rust_model_concrete_predicate_model_present_from_source_v1(&boundary_source);
     let predicate_model_certificate_definitions_present =
         predicate_model_report_surface_definitions_present
             && predicate_model_facts_proof_definition_present

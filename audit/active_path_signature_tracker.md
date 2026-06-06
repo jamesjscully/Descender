@@ -1736,6 +1736,12 @@ outside the target package/scanner fixtures. Therefore the first real closure
 step is to author/import the selected predicate-field provider definitions and
 `selectedRustNativeBoundaryPredicateFieldSources`; there is no already-present
 Rust predicate model that only needs a Lean wrapper.
+Scanner hygiene update: the concrete definition checklist now computes
+`native_boundary_concrete_predicate_model_present` through a direct active Lean
+source marker check rather than recursively consulting the source-record
+subcheck. This preserves the current fail-closed predicate-model status while
+making the checklist independent from future changes to the subcheck report
+shape.
 
 ## Findings
 

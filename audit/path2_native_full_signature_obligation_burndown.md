@@ -1443,3 +1443,11 @@ evidence must first lift to a `FullNativeRepresentativeOpening`, then that
 opening must assemble into the hidden representative. This confirms the core
 constraint: the current selected certificate does not itself contain all native
 private roles.
+
+Predicate-provider status: the active Lean source still has only the target
+`ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources` package shape and
+no concrete selected `Path2NativeBoundary.Predicates` implementation. The Rust
+scanner now computes the concrete predicate-model presence bit directly for the
+concrete-definition checklist instead of deriving it through the source-record
+subcheck, so checklist fail-closed status does not depend on that subcheck's
+future report layout.
