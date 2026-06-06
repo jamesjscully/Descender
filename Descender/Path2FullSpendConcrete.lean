@@ -984,5 +984,47 @@ theorem concrete_fullForgeryImpliesAcceptedSpendForgery
     (concreteDirectAcceptedSpendSoundness C)
     hSuccess
 
+/--
+The active numeric accepted-spend carrier is the concrete full-forgery run
+surface, not an arbitrary finite probability space chosen by the proof.
+-/
+abbrev selectedRustAcceptedSpendNumericOutcome : Type :=
+  Path2FullSpendGame.FullForgeryRun concreteTypes
+
+/--
+Concrete wrapper for the selected Rust accepted-spend numeric certificate.
+
+The upstream probability certificate stays generic so the union-bound theorem
+remains reusable.  The active deployment route must pass through this wrapper
+before handing the priced certificate to `SelectedRustAcceptedSpendSoundnessCertificate`,
+thereby pinning the outcome carrier to the selected concrete full-forgery run
+type and the bad-event index to the active full-spend break family.
+-/
+structure SelectedRustConcreteAcceptedSpendNumericCertificate where
+  pricedCertificate :
+    Path2AcceptedSpendProbability.PricedAcceptedSpendNumericCertificate
+  outcomeCarrierPinned :
+    pricedCertificate.Outcome = selectedRustAcceptedSpendNumericOutcome
+  breakFamilyPinned :
+    pricedCertificate.Break = Path2FullSpendGame.BreakEvent
+
+/-- Forget the concrete active-carrier wrapper after its pins are checked. -/
+def SelectedRustConcreteAcceptedSpendNumericCertificate.toPricedAcceptedSpendNumericCertificate
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    Path2AcceptedSpendProbability.PricedAcceptedSpendNumericCertificate :=
+  Cert.pricedCertificate
+
+/-- The selected concrete numeric certificate uses the active full-forgery run carrier. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.outcome_eq_selectedFullForgeryRun
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    Cert.pricedCertificate.Outcome = selectedRustAcceptedSpendNumericOutcome :=
+  Cert.outcomeCarrierPinned
+
+/-- The selected concrete numeric certificate uses the active full-spend break family. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.break_eq_activeFullSpendBreakEvent
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    Cert.pricedCertificate.Break = Path2FullSpendGame.BreakEvent :=
+  Cert.breakFamilyPinned
+
 end Path2FullSpendConcrete
 end Descender

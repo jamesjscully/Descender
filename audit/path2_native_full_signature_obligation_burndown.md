@@ -1410,6 +1410,13 @@ active full-spend break family `Path2FullSpendGame.BreakEvent`; the source gate
 requires the corresponding projection and theorem markers, so the future
 numeric theorem cannot price a different finite bad-event index while claiming
 to close the active path.
+`Path2FullSpendConcrete.lean` now also names the active numeric outcome carrier
+as `selectedRustAcceptedSpendNumericOutcome = Path2FullSpendGame.FullForgeryRun
+concreteTypes` and wraps the priced certificate in
+`SelectedRustConcreteAcceptedSpendNumericCertificate`. The source gate requires
+that wrapper and its forgetful map, so a future theorem cannot price an
+unrelated finite outcome space while claiming to bound the selected concrete
+full-forgery game.
 `Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
 active full-spend named breaks, so the numeric game can index its union bound by
 the actual active break family.
