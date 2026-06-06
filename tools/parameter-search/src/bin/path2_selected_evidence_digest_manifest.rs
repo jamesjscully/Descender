@@ -332,6 +332,9 @@ fn main() -> Result<(), String> {
             "native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_field_equation_adapter_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_field_equation_adapter_present,
+            "native_boundary_predicate_model_reviewed_fq12_hard_extraction_fixed_point_field_equation_constructor_present":
+                source_record_subcheck
+                    .native_boundary_predicate_model_reviewed_fq12_hard_extraction_fixed_point_field_equation_constructor_present,
             "native_boundary_predicate_model_reviewed_fq12_hard_extraction_model_certificate_constructor_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_reviewed_fq12_hard_extraction_model_certificate_constructor_present,

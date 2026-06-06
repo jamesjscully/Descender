@@ -7612,6 +7612,8 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
         bool,
     pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_field_equation_adapter_present:
         bool,
+    pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_fixed_point_field_equation_constructor_present:
+        bool,
     pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_model_certificate_constructor_present:
         bool,
     pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_predicate_model_bridge_present:
@@ -9694,6 +9696,19 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             ],
             16384,
         );
+    let native_boundary_predicate_model_reviewed_fq12_hard_extraction_fixed_point_field_equation_constructor_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "def",
+            "ofCanonicalNativeFieldEquations",
+            &[
+                "ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityFieldEquationSource",
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource",
+                "ofCanonicalNativeEquations",
+                "reviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSourceOfFieldEquations",
+            ],
+            8192,
+        );
     let native_boundary_predicate_model_reviewed_fq12_hard_extraction_model_certificate_constructor_present =
         lean_source_has_named_declaration_with_markers_v1(
             &boundary_source,
@@ -11384,6 +11399,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_full_opening_native_source_target_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_native_source_target_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_canonical_field_equation_adapter_present,
+        native_boundary_predicate_model_reviewed_fq12_hard_extraction_fixed_point_field_equation_constructor_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_model_certificate_constructor_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_predicate_model_bridge_present,
         native_boundary_predicate_model_core_provider_fields_defined_present,

@@ -5933,6 +5933,36 @@ def ofCanonicalNativeEquations
     reviewedFq12SharedWitnessCanonicalFullOpeningNativeValiditySourceOfEquations
       sharedWitnessCertificate canonicalNativeEquations
 
+/--
+Construct the fixed-point source directly from the field-level canonical
+native-validity import contract.
+-/
+def ofCanonicalNativeFieldEquations
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (predicateFieldSources :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources)
+    (sharedWitnessCertificate :
+      ReviewedFq12SelectedRustSharedDigestFrameWitnessEvidenceCertificate
+        CanonicalParser WitnessParser predicateFieldSources.toPredicates)
+    (predicatesFromSharedWitness :
+      (selectedRustNativeBoundaryPredicateFieldSources
+        sharedWitnessCertificate).toPredicates =
+        predicateFieldSources.toPredicates)
+    (canonicalNativeFieldEquations :
+      ReviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityFieldEquationSource
+        sharedWitnessCertificate) :
+    @ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource
+      CanonicalParser WitnessParser :=
+  ofCanonicalNativeEquations
+    predicateFieldSources
+    sharedWitnessCertificate
+    predicatesFromSharedWitness
+    (reviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSourceOfFieldEquations
+      sharedWitnessCertificate canonicalNativeFieldEquations)
+
 /-- The selected hard fields of a fixed-point source are the shared-witness fields. -/
 theorem hardFieldSourcesFromSharedWitness
     {CanonicalParser :

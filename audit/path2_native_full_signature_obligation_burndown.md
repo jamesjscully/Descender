@@ -1607,9 +1607,11 @@ The canonical target now has a field-level adapter:
 lists the exact selected-predicate and boundary/opening equalities required by
 the active Rust/model import, and
 `reviewedFq12SharedWitnessCanonicalFullOpeningNativeValidityEquationSourceOfFieldEquations`
-derives the three canonical native-validity equations from that list. This
-does not close the route yet; it narrows the remaining import to concrete
-equality evidence plus the report `FactsAllTrue` proof.
+derives the three canonical native-validity equations from that list.
+`ReviewedFq12SelectedRustNativeBoundaryPredicateFixedPointSource.ofCanonicalNativeFieldEquations`
+feeds this field-level source directly into the fixed-point route. This does
+not close the route yet; it narrows the remaining import to concrete equality
+evidence plus the report `FactsAllTrue` proof.
 The hard model certificate route now has a constructor:
 `ReviewedFq12SelectedRustNativeBoundaryHardExtractionSharedWitnessPredicateModelCertificate.ofCanonicalNativeSource`
 uses the shared-witness certificate, the field equality, and the canonical
