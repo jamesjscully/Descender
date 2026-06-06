@@ -9340,72 +9340,118 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         P.descentConsistent b.context h",
             2048,
         );
-    let native_boundary_role_lift_validity_binds_extraction_target_present = [
-        "ReviewedFq12RoleLiftValidityBindsExtractionTarget",
-        "roleLiftValidityBindsExtraction",
-        "P.reviewedFq12RoleLiftCertificateValid b payload cert liftCert",
-        "ReviewedFq12RoleLiftCertificateBindsExtraction payload cert liftCert",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_role_lift_opening_certificate_lift_target_present = [
-        "ReviewedFq12RoleLiftOpeningImpliesCertificateLiftTarget",
-        "roleLiftOpeningImpliesCertificateLift",
-        "P.reviewedFq12RoleLiftCertificateOpens",
-        "b payload cert liftCert opening",
-        "P.reviewedFq12CertificateLiftsToOpening b payload cert opening",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_assembly_validity_binds_opening_target_present = [
-        "ReviewedFq12AssemblyValidityBindsOpeningTarget",
-        "assemblyValidityBindsOpening",
-        "P.reviewedFq12AssemblyCertificateValid",
-        "b payload cert opening assemblyCert",
-        "ReviewedFq12AssemblyCertificateBindsOpening",
-        "payload cert opening assemblyCert",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_assembly_certificate_full_native_target_present = [
-        "ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget",
-        "assemblyCertificateImpliesFullNativeAssembly",
-        "P.reviewedFq12AssemblyCertificateAssembles",
-        "b payload cert opening assemblyCert h",
-        "P.fullNativeOpeningAssemblesRepresentative b payload cert opening h",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_compatibility_validity_binds_target_present = [
-        "ReviewedFq12CompatibilityValidityBindsTarget",
-        "compatibilityValidityBinds",
-        "P.reviewedFq12ExtractionCompatibilityCertificateValid",
-        "b payload cert opening h compatCert",
-        "ReviewedFq12ExtractionCompatibilityCertificateBinds",
-        "payload cert opening h compatCert",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_compatibility_extraction_reviewed_target_present = [
-        "ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget",
-        "compatibilityExtractionImpliesReviewedExtraction",
-        "P.reviewedFq12ExtractionCompatibilityCertificateExtracts",
-        "b payload cert opening h compatCert",
-        "P.reviewedFq12CertificateExtracts b payload cert h",
-        "P.reviewedFq12PayloadExtracts b payload h",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
-    let native_boundary_full_opening_bridge_digest_binds_target_present = [
-        "ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget",
-        "fullOpeningBridgeDigestValidityBinds",
-        "P.reviewedFq12FullOpeningBridgeDigestCertificateValid",
-        "b payload cert liftCert assemblyCert compatCert bridgeCert",
-        "ReviewedFq12FullOpeningBridgeDigestCertificateBinds",
-        "payload cert liftCert assemblyCert compatCert bridgeCert",
-    ]
-    .iter()
-    .all(|marker| boundary_source.contains(marker));
+    let native_boundary_role_lift_validity_binds_extraction_target_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ReviewedFq12RoleLiftValidityBindsExtractionTarget",
+            &["(P : Predicates) : Prop"],
+            "forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {liftCert : ReviewedFq12FullNativeOpeningCertificate},
+    P.reviewedFq12RoleLiftCertificateValid b payload cert liftCert ->
+      ReviewedFq12RoleLiftCertificateBindsExtraction payload cert liftCert",
+            2048,
+        );
+    let native_boundary_role_lift_opening_certificate_lift_target_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ReviewedFq12RoleLiftOpeningImpliesCertificateLiftTarget",
+            &["(P : Predicates) : Prop"],
+            "forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {liftCert : ReviewedFq12FullNativeOpeningCertificate}
+      {opening : FullNativeRepresentativeOpening},
+    P.reviewedFq12RoleLiftCertificateOpens
+        b payload cert liftCert opening ->
+      P.reviewedFq12CertificateLiftsToOpening b payload cert opening",
+            2048,
+        );
+    let native_boundary_assembly_validity_binds_opening_target_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ReviewedFq12AssemblyValidityBindsOpeningTarget",
+            &["(P : Predicates) : Prop"],
+            "forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {opening : FullNativeRepresentativeOpening}
+      {assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate},
+    P.reviewedFq12AssemblyCertificateValid
+        b payload cert opening assemblyCert ->
+      ReviewedFq12AssemblyCertificateBindsOpening
+        payload cert opening assemblyCert",
+            2048,
+        );
+    let native_boundary_assembly_certificate_full_native_target_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ReviewedFq12AssemblyCertificateImpliesFullNativeAssemblyTarget",
+            &["(P : Predicates) : Prop"],
+            "forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {opening : FullNativeRepresentativeOpening}
+      {assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate}
+      {h : HiddenRepresentative},
+    P.reviewedFq12AssemblyCertificateAssembles
+        b payload cert opening assemblyCert h ->
+      P.fullNativeOpeningAssemblesRepresentative b payload cert opening h",
+            2048,
+        );
+    let native_boundary_compatibility_validity_binds_target_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ReviewedFq12CompatibilityValidityBindsTarget",
+            &["(P : Predicates) : Prop"],
+            "forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {opening : FullNativeRepresentativeOpening}
+      {h : HiddenRepresentative}
+      {compatCert : ReviewedFq12ExtractionCompatibilityCertificate},
+    P.reviewedFq12ExtractionCompatibilityCertificateValid
+        b payload cert opening h compatCert ->
+      ReviewedFq12ExtractionCompatibilityCertificateBinds
+        payload cert opening h compatCert",
+            2048,
+        );
+    let native_boundary_compatibility_extraction_reviewed_target_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ReviewedFq12CompatibilityExtractionImpliesReviewedExtractionTarget",
+            &["(P : Predicates) : Prop"],
+            "forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {opening : FullNativeRepresentativeOpening}
+      {h : HiddenRepresentative}
+      {compatCert : ReviewedFq12ExtractionCompatibilityCertificate},
+    P.reviewedFq12ExtractionCompatibilityCertificateExtracts
+        b payload cert opening h compatCert ->
+      P.reviewedFq12CertificateExtracts b payload cert h ∧
+        P.reviewedFq12PayloadExtracts b payload h",
+            2048,
+        );
+    let native_boundary_full_opening_bridge_digest_binds_target_present =
+        lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "ReviewedFq12FullOpeningBridgeDigestValidityBindsTarget",
+            &["(P : Predicates) : Prop"],
+            "forall {b : Path2NativeBoundary.Boundary}
+      {payload : ReviewedFq12HiddenSourcePayload}
+      {cert : ReviewedFq12HiddenRelationExtractionCertificate}
+      {liftCert : ReviewedFq12FullNativeOpeningCertificate}
+      {assemblyCert : ReviewedFq12NativeRepresentativeAssemblyCertificate}
+      {compatCert : ReviewedFq12ExtractionCompatibilityCertificate}
+      {bridgeCert : ReviewedFq12FullOpeningBridgeDigestCertificate},
+    P.reviewedFq12FullOpeningBridgeDigestCertificateValid
+        b payload cert liftCert assemblyCert compatCert bridgeCert ->
+      ReviewedFq12FullOpeningBridgeDigestCertificateBinds
+        payload cert liftCert assemblyCert compatCert bridgeCert",
+            2048,
+        );
     let native_boundary_semantics_package_target_present =
         lean_source_has_named_declaration_with_markers_v1(
             &boundary_source,
@@ -58576,6 +58622,38 @@ def toPredicates
         assert!(
             !aliased_payload_extraction_native_valid_target_subcheck
                 .native_boundary_payload_extraction_native_valid_target_present
+        );
+        let aliased_role_lift_opening_target_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "P.reviewedFq12RoleLiftCertificateOpens\n        b payload cert liftCert opening ->\n      P.reviewedFq12CertificateLiftsToOpening b payload cert opening",
+            "roleLiftOpeningAlias\n\nexample : True := by\n  let _mentionedRoleLiftOpening :=\n    P.reviewedFq12RoleLiftCertificateOpens\n      b payload cert liftCert opening ->\n        P.reviewedFq12CertificateLiftsToOpening b payload cert opening\n  trivial",
+            1,
+        );
+        let aliased_role_lift_opening_target_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_role_lift_opening_target_source,
+            );
+        assert!(
+            !aliased_role_lift_opening_target_subcheck
+                .native_boundary_role_lift_opening_certificate_lift_target_present
+        );
+        let aliased_compatibility_extraction_target_source = include_str!(
+            "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
+        )
+        .replacen(
+            "P.reviewedFq12ExtractionCompatibilityCertificateExtracts\n        b payload cert opening h compatCert ->\n      P.reviewedFq12CertificateExtracts b payload cert h ∧\n        P.reviewedFq12PayloadExtracts b payload h",
+            "compatibilityExtractionAlias\n\nexample : True := by\n  let _mentionedCompatibilityExtraction :=\n    P.reviewedFq12ExtractionCompatibilityCertificateExtracts\n      b payload cert opening h compatCert ->\n        P.reviewedFq12CertificateExtracts b payload cert h ∧\n          P.reviewedFq12PayloadExtracts b payload h\n  trivial",
+            1,
+        );
+        let aliased_compatibility_extraction_target_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                &aliased_compatibility_extraction_target_source,
+            );
+        assert!(
+            !aliased_compatibility_extraction_target_subcheck
+                .native_boundary_compatibility_extraction_reviewed_target_present
         );
         assert!(
             source_record_subcheck.native_boundary_payload_acceptance_boundary_match_target_present

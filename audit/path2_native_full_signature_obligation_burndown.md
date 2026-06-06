@@ -968,6 +968,13 @@ markers in unused examples; both fixtures fail closed. The current manifest
 still reports all six target bits true, while `predicate_model = false`,
 `missing_selected_source_record_count = 13`, and the three missing definition
 categories remain the real AP2-N001 blockers.
+The same declaration-scoped body-prefix treatment now covers the downstream
+role-lift, assembly, compatibility, and aggregate full-opening bridge target
+obligations that feed `full_opening_and_assembly_model_pinned` and
+`compatibility_and_extraction_model_pinned`. Regression fixtures alias the
+role-lift opening and compatibility-extraction target bodies while moving the
+old markers into unused examples; both now fail closed, while the active
+manifest still reports those scoped target bits true on the live Lean source.
 The aggregate digest import also exposed a source-hash circularity constraint:
 the current Rust aggregate evidence digest is
 `146570f815d27ca8b79ad52480f51a9bb7fb55c892e17a34fdeb9b0050cd1367`, and the

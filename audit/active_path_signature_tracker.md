@@ -1499,6 +1499,13 @@ actual closure blockers remain unchanged:
 `predicate_model = false`, `missing_selected_source_record_count = 13`, and
 missing categories `predicate_model_certificate_definitions`,
 `source_record_definitions`, and `sub_evidence_digest_match_proof`.
+The same declaration-scoped body-prefix treatment now covers the downstream
+role-lift, assembly, compatibility, and aggregate full-opening bridge target
+obligations that feed `full_opening_and_assembly_model_pinned` and
+`compatibility_and_extraction_model_pinned`. Regression fixtures alias the
+role-lift opening and compatibility-extraction target bodies while moving the
+old markers into unused examples; both now fail closed, while the active
+manifest still reports those scoped target bits true on the live Lean source.
 
 ## Findings
 
