@@ -1554,6 +1554,10 @@ constructor, and the source-binding checklist requires future selected binding
 definitions to use the concrete Lean binding types. The manifest remains
 fail-closed with the same four missing categories, so this adds the proof
 shape without silently importing any selected sources.
+The selected source-record definition gate and final theorem body-shape gate
+now require the binding-backed `ofSourceBindings` constructor rather than the
+raw `ofSources` constructor. This closes the route where binding definitions
+could exist unused while the package consumed independent raw source terms.
 
 ## Findings
 
