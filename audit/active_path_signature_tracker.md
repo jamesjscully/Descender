@@ -1614,6 +1614,12 @@ aggregate five-source report and sub-evidence digest proof are proof-critical
 for package closure rather than a final-theorem side construction. The Rust
 source gate requires this package-derived certificate route and rejects aliases
 for either the certificate constructor or the package closure reduction.
+The proof-critical aggregate five-source certificate now also carries
+`evidenceReportBound` and `evidenceDigestBound`, and every selected
+five-source constructor route must pass `rfl rfl` after the aggregate evidence
+digest. This prevents the aggregate certificate from being built over an
+unrelated report/digest pair while still using selected per-source
+certificates.
 The predicate-model certificate now has the same selected public-evidence
 discipline: it carries `evidenceReportBound` and `evidenceDigestBound` fields
 tying its report and digest to

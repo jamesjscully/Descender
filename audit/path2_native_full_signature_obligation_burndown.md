@@ -1229,6 +1229,14 @@ than merely built beside it. The Rust source audit requires this route and has
 negative controls for aliasing either the package-derived certificate
 constructor or the package closure reduction.
 
+P2FS-001 aggregate certificate evidence binding: the proof-critical aggregate
+`ReviewedFq12SelectedRustModelFiveSourceClosureCertificate` now carries
+`evidenceReportBound` and `evidenceDigestBound`, and every selected constructor
+route must pass `rfl rfl` after `selectedRustFiveSourceEvidenceDigest`. This
+matches the predicate-model and source-binding evidence discipline and rules
+out aggregate certificate construction over an unrelated public report/digest
+pair.
+
 P2FS-001 final-theorem constructor-binding hardening: the future extractor
 theorem gate now requires each selected certificate local to be bound directly
 by its named constructor. A constructor laundering fixture where the

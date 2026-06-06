@@ -8467,6 +8467,8 @@ fn lean_path2_active_five_source_boundary_route_present_v1() -> bool {
         "witnessSourcesCertificate.evidenceDigest",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate",
         "evidenceReport :",
+        "evidenceReportBound",
+        "evidenceDigestBound",
         "evidenceReportVerifiedProof",
         "evidenceFactsAllTrueProof",
         "subEvidenceDigestsMatchProof",
@@ -10325,7 +10327,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             "fiveSourceClosureCertificate",
             &["ReviewedFq12SelectedRustModelFiveSourceClosureCertificate"],
-            "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates selectedRustFiveSourceEvidenceReport selectedRustFiveSourceEvidenceDigest selectedRustFiveSourceEvidenceReportVerifiedProof selectedRustFiveSourceEvidenceFactsAllTrueProof Package.boundaryBaseCertificate Package.roleRootLiftSourceCertificate Package.sourceRouteByteSourceCertificate Package.fieldLocalSourceCertificate Package.sharedFrameWitnessSourcesCertificate Package.subEvidenceDigestsMatch",
+            "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates selectedRustFiveSourceEvidenceReport selectedRustFiveSourceEvidenceDigest rfl rfl selectedRustFiveSourceEvidenceReportVerifiedProof selectedRustFiveSourceEvidenceFactsAllTrueProof Package.boundaryBaseCertificate Package.roleRootLiftSourceCertificate Package.sourceRouteByteSourceCertificate Package.fieldLocalSourceCertificate Package.sharedFrameWitnessSourcesCertificate Package.subEvidenceDigestsMatch",
             4096,
         );
     let package_sub_evidence_match_reduction_present =
@@ -12272,7 +12274,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
 
     let required_constructor_bindings = [
         "let selectedRustModelFiveSourceCertificate : ReviewedFq12SelectedRustModelFiveSourceClosureCertificate",
-        "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates selectedRustFiveSourceEvidenceReport selectedRustFiveSourceEvidenceDigest selectedRustFiveSourceEvidenceReportVerifiedProof selectedRustFiveSourceEvidenceFactsAllTrueProof selectedRustBoundaryBaseCertificate selectedRustRoleRootLiftSourceCertificate selectedRustSourceRouteByteSourceCertificate selectedRustFieldLocalSourceCertificate selectedRustSharedFrameWitnessSourcesCertificate selectedRustFiveSourceSubEvidenceDigestsMatchProof",
+        "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates selectedRustFiveSourceEvidenceReport selectedRustFiveSourceEvidenceDigest rfl rfl selectedRustFiveSourceEvidenceReportVerifiedProof selectedRustFiveSourceEvidenceFactsAllTrueProof selectedRustBoundaryBaseCertificate selectedRustRoleRootLiftSourceCertificate selectedRustSourceRouteByteSourceCertificate selectedRustFieldLocalSourceCertificate selectedRustSharedFrameWitnessSourcesCertificate selectedRustFiveSourceSubEvidenceDigestsMatchProof",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates",
         "ReviewedFq12HiddenSourceProofSemanticsClosed selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate FieldParser RouteParser CanonicalParser WitnessParser selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates",
@@ -57748,6 +57750,8 @@ theorem {theorem_name}
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSources
       selectedRustFiveSourceEvidenceReport
       selectedRustFiveSourceEvidenceDigest
+      rfl
+      rfl
       selectedRustFiveSourceEvidenceReportVerifiedProof
       selectedRustFiveSourceEvidenceFactsAllTrueProof
       selectedRustPayloadProjectionLaw
@@ -57785,6 +57789,8 @@ theorem {theorem_name}
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourceRouteCertificate
       selectedRustFiveSourceEvidenceReport
       selectedRustFiveSourceEvidenceDigest
+      rfl
+      rfl
       selectedRustFiveSourceEvidenceReportVerifiedProof
       selectedRustFiveSourceEvidenceFactsAllTrueProof
       selectedRustPayloadProjectionLaw
@@ -57822,6 +57828,8 @@ theorem {theorem_name}
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourceRouteAndWitnessCertificates
       selectedRustFiveSourceEvidenceReport
       selectedRustFiveSourceEvidenceDigest
+      rfl
+      rfl
       selectedRustFiveSourceEvidenceReportVerifiedProof
       selectedRustFiveSourceEvidenceFactsAllTrueProof
       selectedRustPayloadProjectionLaw
@@ -57859,6 +57867,8 @@ theorem {theorem_name}
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndSourceRouteFieldLocalAndWitnessCertificates
       selectedRustFiveSourceEvidenceReport
       selectedRustFiveSourceEvidenceDigest
+      rfl
+      rfl
       selectedRustFiveSourceEvidenceReportVerifiedProof
       selectedRustFiveSourceEvidenceFactsAllTrueProof
       selectedRustPayloadProjectionLaw
@@ -57896,6 +57906,8 @@ theorem {theorem_name}
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndRoleRootSourceRouteFieldLocalAndWitnessCertificates
       selectedRustFiveSourceEvidenceReport
       selectedRustFiveSourceEvidenceDigest
+      rfl
+      rfl
       selectedRustFiveSourceEvidenceReportVerifiedProof
       selectedRustFiveSourceEvidenceFactsAllTrueProof
       selectedRustPayloadProjectionLaw
@@ -57940,6 +57952,8 @@ theorem {theorem_name}
     ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates
       selectedRustFiveSourceEvidenceReport
       selectedRustFiveSourceEvidenceDigest
+      rfl
+      rfl
       selectedRustFiveSourceEvidenceReportVerifiedProof
       selectedRustFiveSourceEvidenceFactsAllTrueProof
       selectedRustBoundaryBaseCertificate
@@ -59283,8 +59297,8 @@ def toPredicates
             "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
         )
         .replacen(
-            "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates\n    selectedRustFiveSourceEvidenceReport\n    selectedRustFiveSourceEvidenceDigest\n    selectedRustFiveSourceEvidenceReportVerifiedProof\n    selectedRustFiveSourceEvidenceFactsAllTrueProof\n    Package.boundaryBaseCertificate\n    Package.roleRootLiftSourceCertificate\n    Package.sourceRouteByteSourceCertificate\n    Package.fieldLocalSourceCertificate\n    Package.sharedFrameWitnessSourcesCertificate\n    Package.subEvidenceDigestsMatch",
-            "fiveSourceCertificateAlias\n\nexample : True := by\n  let _mentionedFiveSourceCertificateReduction :=\n    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates\n      selectedRustFiveSourceEvidenceReport\n      selectedRustFiveSourceEvidenceDigest\n      selectedRustFiveSourceEvidenceReportVerifiedProof\n      selectedRustFiveSourceEvidenceFactsAllTrueProof\n      Package.boundaryBaseCertificate\n      Package.roleRootLiftSourceCertificate\n      Package.sourceRouteByteSourceCertificate\n      Package.fieldLocalSourceCertificate\n      Package.sharedFrameWitnessSourcesCertificate\n      Package.subEvidenceDigestsMatch\n  trivial",
+            "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates\n    selectedRustFiveSourceEvidenceReport\n    selectedRustFiveSourceEvidenceDigest\n    rfl\n    rfl\n    selectedRustFiveSourceEvidenceReportVerifiedProof\n    selectedRustFiveSourceEvidenceFactsAllTrueProof\n    Package.boundaryBaseCertificate\n    Package.roleRootLiftSourceCertificate\n    Package.sourceRouteByteSourceCertificate\n    Package.fieldLocalSourceCertificate\n    Package.sharedFrameWitnessSourcesCertificate\n    Package.subEvidenceDigestsMatch",
+            "fiveSourceCertificateAlias\n\nexample : True := by\n  let _mentionedFiveSourceCertificateReduction :=\n    ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates\n      selectedRustFiveSourceEvidenceReport\n      selectedRustFiveSourceEvidenceDigest\n      rfl\n      rfl\n      selectedRustFiveSourceEvidenceReportVerifiedProof\n      selectedRustFiveSourceEvidenceFactsAllTrueProof\n      Package.boundaryBaseCertificate\n      Package.roleRootLiftSourceCertificate\n      Package.sourceRouteByteSourceCertificate\n      Package.fieldLocalSourceCertificate\n      Package.sharedFrameWitnessSourcesCertificate\n      Package.subEvidenceDigestsMatch\n  trivial",
             1,
         );
         let aliased_package_five_source_certificate_subcheck =
