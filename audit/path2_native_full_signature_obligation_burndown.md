@@ -370,6 +370,10 @@ The concrete predicate-model detector now requires the full
 transparent-view, trace-assembly, slot-authorization, and spend predicates. A
 reviewed-Fq12-only selected record is no longer enough to flip the concrete
 model bit.
+It also requires concrete declarations for every selected predicate-field
+provider consumed by `selectedRustNativeBoundaryPredicates`. The manifest now
+exposes `native_boundary_predicate_model_field_sources_defined_present`; a
+field-complete record with dangling provider identifiers remains non-closing.
 It now also rejects the obvious syntactic vacuity escape hatch: a field-complete
 `selectedRustNativeBoundaryPredicates` whose critical break, reviewed-Fq12
 certificate/extraction, payload-extraction, or spend predicates are filled by

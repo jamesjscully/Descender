@@ -7586,6 +7586,7 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_certified_semantics_source_package_bound_handoff_present: bool,
     pub full_spend_concrete_predicates_are_separate_model: bool,
     pub native_boundary_predicate_model_forbidden_vacuous_literals_present: bool,
+    pub native_boundary_predicate_model_field_sources_defined_present: bool,
     pub native_boundary_predicate_model_stub_field_sources_present: bool,
     pub native_boundary_predicate_model_incomplete_proof_terms_present: bool,
     pub native_boundary_concrete_predicate_model_present: bool,
@@ -8811,6 +8812,34 @@ fn lean_source_module_has_forbidden_stubs_for_names_v1(lean_source: &str, names:
     forbidden_declaration_stub || forbidden_variable_stub
 }
 
+fn lean_source_module_has_non_stub_declarations_for_names_v1(
+    lean_source: &str,
+    names: &[&str],
+) -> bool {
+    let stripped_source = lean_source_without_comments_and_strings_v1(lean_source);
+    let lean_source = stripped_source.as_str();
+    let declaration_kinds = [
+        "abbrev",
+        "def",
+        "instance",
+        "private abbrev",
+        "private def",
+        "private theorem",
+        "theorem",
+    ];
+    names.iter().all(|name| {
+        declaration_kinds.iter().any(|kind| {
+            let marker = format!("\n{kind} {name}");
+            lean_source.match_indices(&marker).any(|(index, _)| {
+                let name_end = index + marker.len();
+                lean_source[name_end..].chars().next().is_none_or(|next| {
+                    !(next.is_ascii_alphanumeric() || next == '_' || next == '\'')
+                })
+            })
+        })
+    })
+}
+
 fn lean_source_has_incomplete_proof_token_v1(lean_source: &str) -> bool {
     let stripped_source = lean_source_without_comments_and_strings_v1(lean_source);
     ["sorry", "admit"].iter().any(|token| {
@@ -9380,6 +9409,11 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             &native_boundary_predicate_model_field_source_names,
         );
+    let native_boundary_predicate_model_field_sources_defined_present =
+        lean_source_module_has_non_stub_declarations_for_names_v1(
+            &boundary_source,
+            &native_boundary_predicate_model_field_source_names,
+        );
     let native_boundary_predicate_model_incomplete_proof_terms_present =
         lean_source_has_incomplete_proof_token_v1(&boundary_source);
     let native_boundary_concrete_predicate_model_present =
@@ -9398,6 +9432,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 )
             })
             && !native_boundary_predicate_model_forbidden_vacuous_literals_present
+            && native_boundary_predicate_model_field_sources_defined_present
             && !native_boundary_predicate_model_stub_field_sources_present
             && !native_boundary_predicate_model_incomplete_proof_terms_present;
     let boundary_base_report_definition_present =
@@ -9767,6 +9802,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_certified_semantics_source_package_bound_handoff_present,
         full_spend_concrete_predicates_are_separate_model,
         native_boundary_predicate_model_forbidden_vacuous_literals_present,
+        native_boundary_predicate_model_field_sources_defined_present,
         native_boundary_predicate_model_stub_field_sources_present,
         native_boundary_predicate_model_incomplete_proof_terms_present,
         native_boundary_concrete_predicate_model_present,
@@ -57989,6 +58025,9 @@ def toPredicates
             !source_record_subcheck
                 .native_boundary_predicate_model_forbidden_vacuous_literals_present
         );
+        assert!(
+            !source_record_subcheck.native_boundary_predicate_model_field_sources_defined_present
+        );
         assert!(!source_record_subcheck.native_boundary_predicate_model_stub_field_sources_present);
         assert!(
             !source_record_subcheck.native_boundary_predicate_model_incomplete_proof_terms_present
@@ -58085,7 +58124,7 @@ def unrelatedNativeBoundaryPredicateMarkerBundle := by
             !partial_native_boundary_model_subcheck
                 .native_boundary_concrete_predicate_model_present
         );
-        let complete_native_boundary_model_source = r#"
+        let dangling_native_boundary_model_source = r#"
 def selectedRustNativeBoundaryPredicates :
   Path2NativeBoundary.Predicates := by
   exact
@@ -58165,13 +58204,107 @@ def selectedRustNativeBoundaryPredicates :
       spendAccepts := selectedSpendAccepts
       spendWitnessValid := selectedSpendWitnessValid }
 "#;
+        let dangling_native_boundary_model_subcheck =
+            path2_selected_rust_model_source_record_subcheck_from_source_v1(
+                dangling_native_boundary_model_source,
+            );
+        assert!(
+            !dangling_native_boundary_model_subcheck
+                .native_boundary_predicate_model_field_sources_defined_present
+        );
+        assert!(
+            !dangling_native_boundary_model_subcheck
+                .native_boundary_concrete_predicate_model_present
+        );
+        let selected_predicate_provider_definitions_source = r#"
+def selectedBoundaryOf := selectedBoundaryOfValue
+def selectedLocalValid := selectedLocalValidValue
+def selectedDescentConsistent := selectedDescentConsistentValue
+def selectedNormRangeValid := selectedNormRangeValidValue
+def selectedBlindingNoiseBounded := selectedBlindingNoiseBoundedValue
+def selectedSafeEquivalent := selectedSafeEquivalentValue
+def selectedBoundaryBreakFor := selectedBoundaryBreakForValue
+def selectedAccountCreateAccepts := selectedAccountCreateAcceptsValue
+def selectedAdmitted := selectedAdmittedValue
+def selectedParentRootBindsPrivateRoles := selectedParentRootBindsPrivateRolesValue
+def selectedRoleRestrictionsAuthenticate := selectedRoleRestrictionsAuthenticateValue
+def selectedNoExportHolds := selectedNoExportHoldsValue
+def selectedRoleAuthenticationMaterialSimulatable :=
+  selectedRoleAuthenticationMaterialSimulatableValue
+def selectedMaskFreshnessHolds := selectedMaskFreshnessHoldsValue
+def selectedQromScheduleBound := selectedQromScheduleBoundValue
+def selectedQromExtractorRewindBound := selectedQromExtractorRewindBoundValue
+def selectedRangeRowsBindRepresentative := selectedRangeRowsBindRepresentativeValue
+def selectedRangeRowsBindTraceRepresentative := selectedRangeRowsBindTraceRepresentativeValue
+def selectedBlindingRowsBoundRepresentative := selectedBlindingRowsBoundRepresentativeValue
+def selectedBlindingRowsBoundTraceRepresentative :=
+  selectedBlindingRowsBoundTraceRepresentativeValue
+def selectedTransparentAccepts := selectedTransparentAcceptsValue
+def selectedTransparentExtractsTrace := selectedTransparentExtractsTraceValue
+def selectedTransparentExtracts := selectedTransparentExtractsValue
+def selectedReviewedFq12PayloadAccepts := selectedReviewedFq12PayloadAcceptsValue
+def selectedReviewedFq12PayloadProjectsFrom := selectedReviewedFq12PayloadProjectsFromValue
+def selectedReviewedFq12PayloadHasExtractionCertificate :=
+  selectedReviewedFq12PayloadHasExtractionCertificateValue
+def selectedReviewedFq12ExtractionCertificateValid :=
+  selectedReviewedFq12ExtractionCertificateValidValue
+def selectedReviewedFq12CertificateExtracts := selectedReviewedFq12CertificateExtractsValue
+def selectedReviewedFq12CertificateLiftsToOpening :=
+  selectedReviewedFq12CertificateLiftsToOpeningValue
+def selectedReviewedFq12PayloadHasRoleLiftCertificate :=
+  selectedReviewedFq12PayloadHasRoleLiftCertificateValue
+def selectedReviewedFq12RoleLiftCertificateValid :=
+  selectedReviewedFq12RoleLiftCertificateValidValue
+def selectedReviewedFq12RoleLiftCertificateOpens :=
+  selectedReviewedFq12RoleLiftCertificateOpensValue
+def selectedFullNativeOpeningAssemblesRepresentative :=
+  selectedFullNativeOpeningAssemblesRepresentativeValue
+def selectedReviewedFq12OpeningHasAssemblyCertificate :=
+  selectedReviewedFq12OpeningHasAssemblyCertificateValue
+def selectedReviewedFq12AssemblyCertificateValid :=
+  selectedReviewedFq12AssemblyCertificateValidValue
+def selectedReviewedFq12AssemblyCertificateAssembles :=
+  selectedReviewedFq12AssemblyCertificateAssemblesValue
+def selectedReviewedFq12HasExtractionCompatibilityCertificate :=
+  selectedReviewedFq12HasExtractionCompatibilityCertificateValue
+def selectedReviewedFq12ExtractionCompatibilityCertificateValid :=
+  selectedReviewedFq12ExtractionCompatibilityCertificateValidValue
+def selectedReviewedFq12ExtractionCompatibilityCertificateExtracts :=
+  selectedReviewedFq12ExtractionCompatibilityCertificateExtractsValue
+def selectedReviewedFq12HasFullOpeningBridgeDigestCertificate :=
+  selectedReviewedFq12HasFullOpeningBridgeDigestCertificateValue
+def selectedReviewedFq12FullOpeningBridgeDigestCertificateValid :=
+  selectedReviewedFq12FullOpeningBridgeDigestCertificateValidValue
+def selectedReviewedFq12PayloadExtracts := selectedReviewedFq12PayloadExtractsValue
+def selectedTraceOpensBoundary := selectedTraceOpensBoundaryValue
+def selectedTracesSafetyEquivalent := selectedTracesSafetyEquivalentValue
+def selectedMaskedOpeningsConsistent := selectedMaskedOpeningsConsistentValue
+def selectedTraceRelationValid := selectedTraceRelationValidValue
+def selectedTraceAssemblesRepresentative := selectedTraceAssemblesRepresentativeValue
+def selectedExtractedRolesComplete := selectedExtractedRolesCompleteValue
+def selectedTraceAssemblyRolesComplete := selectedTraceAssemblyRolesCompleteValue
+def selectedTraceAssemblyDerivedRolesBound := selectedTraceAssemblyDerivedRolesBoundValue
+def selectedTraceAssemblyInFiber := selectedTraceAssemblyInFiberValue
+def selectedTraceAssemblyLocalValid := selectedTraceAssemblyLocalValidValue
+def selectedTraceAssemblyDescentConsistent := selectedTraceAssemblyDescentConsistentValue
+def selectedSlotAuthorizationOf := selectedSlotAuthorizationOfValue
+def selectedSpendAccepts := selectedSpendAcceptsValue
+def selectedSpendWitnessValid := selectedSpendWitnessValidValue
+"#;
+        let complete_native_boundary_model_source = format!(
+            "{selected_predicate_provider_definitions_source}\n{dangling_native_boundary_model_source}"
+        );
         let complete_native_boundary_model_subcheck =
             path2_selected_rust_model_source_record_subcheck_from_source_v1(
-                complete_native_boundary_model_source,
+                &complete_native_boundary_model_source,
             );
         assert!(
             complete_native_boundary_model_subcheck
                 .native_boundary_concrete_predicate_model_present
+        );
+        assert!(
+            complete_native_boundary_model_subcheck
+                .native_boundary_predicate_model_field_sources_defined_present
         );
         assert!(
             !complete_native_boundary_model_subcheck

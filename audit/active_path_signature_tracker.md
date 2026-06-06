@@ -1380,6 +1380,11 @@ The concrete native predicate-model detector now requires the full
 `Path2NativeBoundary.Predicates` field surface, including account/admission,
 transparent-view, trace-assembly, slot-authorization, and spend predicates, not
 only the reviewed-Fq12 certificate chain.
+It also requires concrete declarations for every selected predicate-field
+provider consumed by `selectedRustNativeBoundaryPredicates`; a field-complete
+record with dangling provider identifiers no longer counts as the active
+predicate model. The manifest exposes this as
+`native_boundary_predicate_model_field_sources_defined_present`.
 It now also rejects the most direct vacuous literal model shapes inside
 `selectedRustNativeBoundaryPredicates`: universal break predicates,
 always-false reviewed-Fq12 payload acceptance, and constant-true reviewed-Fq12
