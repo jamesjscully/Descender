@@ -27744,6 +27744,45 @@ fn path2_full_signature_reduction_certificate_instantiated_in_source_v1(
     if forbidden_variable_stub {
         return false;
     }
+    let normalized_account_design_source =
+        account_design_source.split_whitespace().collect::<String>();
+    let contains_normalized_source = |marker: &str| {
+        normalized_account_design_source.contains(&marker.split_whitespace().collect::<String>())
+    };
+    let forbidden_vacuous_global_terms = [
+        "def selectedRustFullSignatureReductionEvidenceReport := {",
+        "def selectedRustFullSignatureReductionEvidenceReport : SelectedRustFullSignatureReductionEvidenceReport :=",
+        "def selectedRustFullSignatureReductionEvidenceReport := ⟨",
+        "def selectedRustFullSignatureReductionEvidenceDigest := ByteArray.empty",
+        "def selectedRustSignatureForgerySuccessProb := 0",
+        "def selectedRustSignatureForgerySuccessProb : ℝ := 0",
+        "def selectedRustSignatureForgerySuccessProb : ℝ := (0 : ℝ)",
+        "def selectedRustProductionSignatureForgerySuccessProb := 0",
+        "def selectedRustProductionSignatureForgerySuccessProb : ℝ := 0",
+        "def selectedRustProductionSignatureForgerySuccessProb : ℝ := (0 : ℝ)",
+        "def selectedRustSignatureForgerySuccessProbPinned := rfl",
+        "def selectedRustSignatureForgerySuccessLeAcceptedSpend := le_rfl",
+        "def selectedRustFullSignatureKeygenModeled := True",
+        "def selectedRustFullSignatureSigningOracleModeled := True",
+        "def selectedRustFullSignatureCompletenessModeled := True",
+        "def selectedRustVerifierRelationMatchesImplementation := True",
+        "def selectedRustFullForgeryImpliesAcceptedSpendForgery := True",
+        "abbrev selectedRustFullSignatureReductionEvidenceReport := {",
+        "abbrev selectedRustFullSignatureReductionEvidenceDigest := ByteArray.empty",
+        "abbrev selectedRustSignatureForgerySuccessProb := 0",
+        "abbrev selectedRustProductionSignatureForgerySuccessProb := 0",
+        "abbrev selectedRustFullSignatureKeygenModeled := True",
+        "abbrev selectedRustFullSignatureSigningOracleModeled := True",
+        "abbrev selectedRustFullSignatureCompletenessModeled := True",
+        "abbrev selectedRustVerifierRelationMatchesImplementation := True",
+        "abbrev selectedRustFullForgeryImpliesAcceptedSpendForgery := True",
+    ];
+    if forbidden_vacuous_global_terms
+        .iter()
+        .any(|term| account_design_source.contains(term) || contains_normalized_source(term))
+    {
+        return false;
+    }
     let theorem_start_marker = format!("\ntheorem {theorem_name}");
     account_design_source
         .match_indices(&theorem_start_marker)
@@ -27765,6 +27804,11 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
     instantiation_source: &str,
     theorem_name: &str,
 ) -> bool {
+    let normalized_instantiation_source =
+        instantiation_source.split_whitespace().collect::<String>();
+    let contains_normalized = |marker: &str| {
+        normalized_instantiation_source.contains(&marker.split_whitespace().collect::<String>())
+    };
     let theorem_header_end = instantiation_source
         .find(":= by")
         .or_else(|| instantiation_source.find(" where"))
@@ -27839,23 +27883,42 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
     }
     let forbidden_vacuous_terms = [
         "evidenceReport := {",
+        "evidenceReport := ⟨",
+        "evidenceDigest := ByteArray.empty",
         "selectedRustFullSignatureReductionVerifiedProof := True.intro",
         "selectedRustFullSignatureReductionFactsAllTrueProof := True.intro",
         "let selectedRustFullSignatureReductionEvidenceReport : SelectedRustFullSignatureReductionEvidenceReport :=",
+        "let selectedRustFullSignatureReductionEvidenceReport :=",
+        "let selectedRustFullSignatureReductionEvidenceReport := {",
+        "let selectedRustFullSignatureReductionEvidenceReport := ⟨",
+        "let selectedRustFullSignatureReductionEvidenceDigest := ByteArray.empty",
         "let selectedRustFullSignatureReductionVerifiedProof := True.intro",
         "let selectedRustFullSignatureReductionFactsAllTrueProof := True.intro",
         "selectedRustFullSignatureReductionCertificate := {",
         "selectedRustSignatureForgerySuccessProb := 0",
         "selectedRustProductionSignatureForgerySuccessProb := 0",
+        "let selectedRustSignatureForgerySuccessProb := 0",
+        "let selectedRustSignatureForgerySuccessProb : ℝ := 0",
+        "let selectedRustSignatureForgerySuccessProb : ℝ := (0 : ℝ)",
+        "let selectedRustProductionSignatureForgerySuccessProb := 0",
+        "let selectedRustProductionSignatureForgerySuccessProb : ℝ := 0",
+        "let selectedRustProductionSignatureForgerySuccessProb : ℝ := (0 : ℝ)",
+        "let selectedRustSignatureForgerySuccessProbPinned := rfl",
+        "let selectedRustSignatureForgerySuccessLeAcceptedSpend := le_rfl",
         "selectedRustFullSignatureKeygenModeled := True",
         "selectedRustFullSignatureSigningOracleModeled := True",
         "selectedRustFullSignatureCompletenessModeled := True",
         "selectedRustVerifierRelationMatchesImplementation := True",
         "selectedRustFullForgeryImpliesAcceptedSpendForgery := True",
+        "let selectedRustFullSignatureKeygenModeled := True",
+        "let selectedRustFullSignatureSigningOracleModeled := True",
+        "let selectedRustFullSignatureCompletenessModeled := True",
+        "let selectedRustVerifierRelationMatchesImplementation := True",
+        "let selectedRustFullForgeryImpliesAcceptedSpendForgery := True",
     ];
     if forbidden_vacuous_terms
         .iter()
-        .any(|term| instantiation_source.contains(term))
+        .any(|term| instantiation_source.contains(term) || contains_normalized(term))
     {
         return false;
     }
@@ -27903,7 +27966,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
     ];
     instantiation_checks
         .iter()
-        .all(|marker| instantiation_source.contains(marker))
+        .all(|marker| instantiation_source.contains(marker) || contains_normalized(marker))
 }
 
 fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
@@ -50948,6 +51011,72 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 full_signature_reduction_instantiation_without_prerequisites
+            )
+        );
+        let vacuous_aliased_full_signature_reduction_instantiation = r#"
+theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
+    NativeFullSignatureSecurityBoundary := by
+  let _fullExecutionSourceGate :=
+    concreteFullSignatureExecutionSource_instantiation_v1
+  let _fullExecutionSourceLift :=
+    full_signature_with_concrete_full_execution_source_lift
+  let _acceptedSpendNumericGate :=
+    selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1
+  let selectedRustAcceptedSpendSoundness :=
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+      selectedRustAcceptedSpendSoundnessCertificate
+  let selectedRustActiveHashBoundary :=
+    activeNativeHashBudgetBoundary
+  let _activeHashBoundaryProps :=
+    activeNativeHashBudgetBoundary_hashBoundaryProps
+  let selectedRustSignatureForgerySuccessProb : ℝ := 0
+  let selectedRustProductionSignatureForgerySuccessProb : ℝ := (0 : ℝ)
+  let selectedRustSignatureForgerySuccessProbPinned := rfl
+  let selectedRustSignatureForgerySuccessLeAcceptedSpend := le_rfl
+  let selectedRustFullSignatureKeygenModeled := True
+  let selectedRustFullSignatureSigningOracleModeled := True
+  let selectedRustFullSignatureCompletenessModeled := True
+  let selectedRustVerifierRelationMatchesImplementation := True
+  let selectedRustFullForgeryImpliesAcceptedSpendForgery := True
+  let selectedRustFullSignatureReductionCertificate :
+      SelectedRustFullSignatureReductionCertificate :=
+    SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
+      selectedRustFullSignatureReductionEvidenceReport
+      selectedRustFullSignatureReductionEvidenceDigest
+      selectedRustFullSignatureReductionVerifiedProof
+      selectedRustFullSignatureReductionFactsAllTrueProof
+      selectedRustAcceptedSpendSoundness
+      selectedRustActiveHashBoundary
+      selectedRustSignatureForgerySuccessProb
+      selectedRustProductionSignatureForgerySuccessProb
+      selectedRustSignatureForgerySuccessProbPinned
+      selectedRustSignatureForgerySuccessLeAcceptedSpend
+      selectedRustFullSignatureKeygenModeled
+      selectedRustFullSignatureKeygenModeledProof
+      selectedRustFullSignatureSigningOracleModeled
+      selectedRustFullSignatureSigningOracleModeledProof
+      selectedRustFullSignatureCompletenessModeled
+      selectedRustFullSignatureCompletenessModeledProof
+      selectedRustVerifierRelationMatchesImplementation
+      selectedRustVerifierRelationMatchesImplementationProof
+      selectedRustFullForgeryImpliesAcceptedSpendForgery
+      selectedRustFullForgeryImpliesAcceptedSpendForgeryProof
+      selectedRustHiddenSourceProofSemanticsClosedProof
+      selectedRustCheckedCoreCompositionClosedProof
+      selectedRustLifecycleReplayClosedProof
+      selectedRustNoExportClosedProof
+      selectedRustCheckedCoreFrameDomainSeparatedProof
+      selectedRustHiddenSourceFrameDomainSeparatedProof
+      selectedRustQueryBudgetPricedProof
+      selectedRustMultiTargetLossPricedProof
+  exact
+    SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
+      selectedRustFullSignatureReductionCertificate
+namespace NativeFullSignatureSecurityBoundary
+"#;
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                vacuous_aliased_full_signature_reduction_instantiation
             )
         );
         let full_signature_reduction_instantiation_shape = r#"

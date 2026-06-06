@@ -1364,6 +1364,11 @@ conversion, `activeNativeHashBudgetBoundary`, and
 reduction from closing in the upstream account-design layer with local shells
 instead of the active concrete execution source, numeric accepted-spend package,
 and active hash boundary.
+The full-reduction gate now also rejects local/global zero or bare-`True`
+aliases for the selected signature probability, production pin, accepted-spend
+inequality, and core full-signature modeling propositions, even when every
+active prerequisite marker is present. This remains a fail-closed scanner
+hardening; it does not instantiate the production full-reduction theorem.
 The same all-candidate exact-name scan now applies to
 `concreteFullSignatureExecutionSource_instantiation_v1`, so full-execution
 source closure also rejects suffixed theorem spoofs without making a later
