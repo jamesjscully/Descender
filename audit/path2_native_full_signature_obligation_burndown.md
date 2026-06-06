@@ -1404,12 +1404,13 @@ full-forgery outcome: `Trace` has `traceFintype`, while `Outcome` is reached
 through `observe` and need not be finite. This is required for the active
 Nat/native concrete run carrier, which should be observed from bounded finite
 execution traces rather than treated as a finite type itself.
-`SelectedRustAcceptedSpendSoundnessCertificate` now carries that priced
-numeric certificate plus equality proofs from the exported probability/bound to
-the packaged game's union expression and priced bound. The conversion to
-`NativeAcceptedSpendSoundnessBoundary` derives `acceptedSpendForgery_le_bound`
-from the packaged `unionBound_le_priced` proof; a standalone raw inequality
-proof is no longer an input to the selected constructor.
+`SelectedRustAcceptedSpendSoundnessCertificate` now carries the
+`SelectedAcceptedSpendNumericSource` package plus equality proofs from the
+exported probability/bound to the source certificate's union expression and
+priced bound. The conversion to `NativeAcceptedSpendSoundnessBoundary` derives
+`acceptedSpendForgery_le_bound` from the packaged `unionBound_le_priced` proof
+through that numeric source; a standalone raw inequality proof is no longer an
+input to the selected constructor.
 `PricedAcceptedSpendNumericCertificate` now also pins its break index to the
 active full-spend break family `Path2FullSpendGame.BreakEvent`; the source gate
 requires the corresponding projection and theorem markers, so the future
