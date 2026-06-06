@@ -296,6 +296,18 @@ fn main() -> Result<(), String> {
             "native_boundary_predicate_model_forbidden_vacuous_literals_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_forbidden_vacuous_literals_present,
+            "native_boundary_predicate_model_core_provider_fields_defined_present":
+                source_record_subcheck
+                    .native_boundary_predicate_model_core_provider_fields_defined_present,
+            "native_boundary_predicate_model_transparent_trace_provider_fields_defined_present":
+                source_record_subcheck
+                    .native_boundary_predicate_model_transparent_trace_provider_fields_defined_present,
+            "native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present":
+                source_record_subcheck
+                    .native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present,
+            "native_boundary_predicate_model_missing_provider_family_count":
+                source_record_subcheck
+                    .native_boundary_predicate_model_missing_provider_family_count,
             "native_boundary_predicate_model_field_sources_defined_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_field_sources_defined_present,

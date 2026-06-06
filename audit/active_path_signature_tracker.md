@@ -1763,6 +1763,11 @@ Package projections now route shared witness inputs through
 `sharedFrameWitnessSourcesFromCertificate` recording equality to the raw package
 field. The scanner requires this certificate projection in the package-to-input
 reductions.
+The source-record subcheck now splits the missing selected native-boundary
+predicate providers into three families. Current active manifest state has all
+three absent: core/admission-spend providers, transparent/trace/hash-row
+providers, and reviewed-Fq12/full-opening providers
+(`native_boundary_predicate_model_missing_provider_family_count = 3`).
 
 ## Findings
 

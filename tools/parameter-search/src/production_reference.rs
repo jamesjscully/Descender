@@ -7589,6 +7589,10 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
     pub native_boundary_certified_semantics_source_package_bound_handoff_present: bool,
     pub full_spend_concrete_predicates_are_separate_model: bool,
     pub native_boundary_predicate_model_forbidden_vacuous_literals_present: bool,
+    pub native_boundary_predicate_model_core_provider_fields_defined_present: bool,
+    pub native_boundary_predicate_model_transparent_trace_provider_fields_defined_present: bool,
+    pub native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present: bool,
+    pub native_boundary_predicate_model_missing_provider_family_count: u8,
     pub native_boundary_predicate_model_field_sources_defined_present: bool,
     pub native_boundary_predicate_model_field_source_package_present: bool,
     pub native_boundary_predicate_model_forbidden_vacuous_field_sources_present: bool,
@@ -9973,6 +9977,68 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             .iter()
             .map(String::as_str)
             .collect::<Vec<_>>();
+    let native_boundary_predicate_model_core_provider_field_names = [
+        "selectedBoundaryOf",
+        "selectedLocalValid",
+        "selectedDescentConsistent",
+        "selectedNormRangeValid",
+        "selectedBlindingNoiseBounded",
+        "selectedSafeEquivalent",
+        "selectedBoundaryBreakFor",
+        "selectedAccountCreateAccepts",
+        "selectedAdmitted",
+        "selectedSlotAuthorizationOf",
+        "selectedSpendAccepts",
+        "selectedSpendWitnessValid",
+    ];
+    let native_boundary_predicate_model_transparent_trace_provider_field_names = [
+        "selectedParentRootBindsPrivateRoles",
+        "selectedRoleRestrictionsAuthenticate",
+        "selectedNoExportHolds",
+        "selectedRoleAuthenticationMaterialSimulatable",
+        "selectedMaskFreshnessHolds",
+        "selectedQromScheduleBound",
+        "selectedQromExtractorRewindBound",
+        "selectedRangeRowsBindRepresentative",
+        "selectedRangeRowsBindTraceRepresentative",
+        "selectedBlindingRowsBoundRepresentative",
+        "selectedBlindingRowsBoundTraceRepresentative",
+        "selectedTransparentAccepts",
+        "selectedTransparentExtractsTrace",
+        "selectedTransparentExtracts",
+        "selectedTraceOpensBoundary",
+        "selectedTracesSafetyEquivalent",
+        "selectedMaskedOpeningsConsistent",
+        "selectedTraceRelationValid",
+        "selectedTraceAssemblesRepresentative",
+        "selectedExtractedRolesComplete",
+        "selectedTraceAssemblyRolesComplete",
+        "selectedTraceAssemblyDerivedRolesBound",
+        "selectedTraceAssemblyInFiber",
+        "selectedTraceAssemblyLocalValid",
+        "selectedTraceAssemblyDescentConsistent",
+    ];
+    let native_boundary_predicate_model_reviewed_fq12_provider_field_names = [
+        "selectedReviewedFq12PayloadAccepts",
+        "selectedReviewedFq12PayloadProjectsFrom",
+        "selectedReviewedFq12PayloadHasExtractionCertificate",
+        "selectedReviewedFq12ExtractionCertificateValid",
+        "selectedReviewedFq12CertificateExtracts",
+        "selectedReviewedFq12CertificateLiftsToOpening",
+        "selectedReviewedFq12PayloadHasRoleLiftCertificate",
+        "selectedReviewedFq12RoleLiftCertificateValid",
+        "selectedReviewedFq12RoleLiftCertificateOpens",
+        "selectedFullNativeOpeningAssemblesRepresentative",
+        "selectedReviewedFq12OpeningHasAssemblyCertificate",
+        "selectedReviewedFq12AssemblyCertificateValid",
+        "selectedReviewedFq12AssemblyCertificateAssembles",
+        "selectedReviewedFq12HasExtractionCompatibilityCertificate",
+        "selectedReviewedFq12ExtractionCompatibilityCertificateValid",
+        "selectedReviewedFq12ExtractionCompatibilityCertificateExtracts",
+        "selectedReviewedFq12HasFullOpeningBridgeDigestCertificate",
+        "selectedReviewedFq12FullOpeningBridgeDigestCertificateValid",
+        "selectedReviewedFq12PayloadExtracts",
+    ];
     let native_boundary_predicate_model_stub_field_sources_present =
         lean_source_module_has_forbidden_stubs_for_names_v1(
             &boundary_source,
@@ -9986,6 +10052,29 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             &boundary_source,
             &native_boundary_predicate_model_field_source_names,
         );
+    let native_boundary_predicate_model_core_provider_fields_defined_present =
+        lean_source_module_has_non_stub_declarations_for_names_v1(
+            &boundary_source,
+            &native_boundary_predicate_model_core_provider_field_names,
+        );
+    let native_boundary_predicate_model_transparent_trace_provider_fields_defined_present =
+        lean_source_module_has_non_stub_declarations_for_names_v1(
+            &boundary_source,
+            &native_boundary_predicate_model_transparent_trace_provider_field_names,
+        );
+    let native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present =
+        lean_source_module_has_non_stub_declarations_for_names_v1(
+            &boundary_source,
+            &native_boundary_predicate_model_reviewed_fq12_provider_field_names,
+        );
+    let native_boundary_predicate_model_missing_provider_family_count = [
+        native_boundary_predicate_model_core_provider_fields_defined_present,
+        native_boundary_predicate_model_transparent_trace_provider_fields_defined_present,
+        native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present,
+    ]
+    .iter()
+    .filter(|present| !**present)
+    .count() as u8;
     let native_boundary_predicate_model_forbidden_vacuous_field_sources_present = [
         ("selectedBoundaryBreakFor", "fun _ _ _ => True"),
         ("selectedReviewedFq12PayloadAccepts", "fun _ _ => False"),
@@ -10692,6 +10781,10 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_certified_semantics_source_package_bound_handoff_present,
         full_spend_concrete_predicates_are_separate_model,
         native_boundary_predicate_model_forbidden_vacuous_literals_present,
+        native_boundary_predicate_model_core_provider_fields_defined_present,
+        native_boundary_predicate_model_transparent_trace_provider_fields_defined_present,
+        native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present,
+        native_boundary_predicate_model_missing_provider_family_count,
         native_boundary_predicate_model_field_sources_defined_present,
         native_boundary_predicate_model_field_source_package_present,
         native_boundary_predicate_model_forbidden_vacuous_field_sources_present,

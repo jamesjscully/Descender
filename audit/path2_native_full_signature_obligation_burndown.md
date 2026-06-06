@@ -1473,3 +1473,8 @@ The package-to-input projections now also use
 the equality back to the raw package field with
 `sharedFrameWitnessSourcesFromCertificate`, and the Rust scanner requires this
 certificate projection shape.
+The source-record subcheck now exposes the predicate-provider gap by family:
+core/admission-spend, transparent/trace/hash-row, and reviewed-Fq12/full-opening
+provider fields. The current active manifest reports all three families absent,
+so the first real construction remains a selected native-boundary predicate
+provider package, not another report-only certificate wrapper.
