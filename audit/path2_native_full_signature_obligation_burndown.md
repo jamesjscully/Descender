@@ -1546,3 +1546,8 @@ the Rust source audit pins the source/certificate projections with
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_law_bundle_target_present`.
 That splits AP2-N001's hard subgroup into concrete provider definitions versus
 the laws needed to consume them in hidden-source soundness.
+The paired package
+`ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPackage`
+now ties the five projected providers to those laws for one predicate
+interpretation, and the manifest pins it with
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_package_target_present`.

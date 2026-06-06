@@ -1811,6 +1811,10 @@ source/certificate projections pinned by
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_law_bundle_target_present`.
 This separates "define the five predicates" from "prove their native
 extraction/assembly laws" for the next implementation pass.
+The Lean target also packages those together as
+`ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPackage`;
+the manifest pins that with
+`native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_package_target_present`.
 
 ## Findings
 

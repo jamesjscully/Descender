@@ -308,6 +308,9 @@ fn main() -> Result<(), String> {
             "native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_law_bundle_target_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_law_bundle_target_present,
+            "native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_package_target_present":
+                source_record_subcheck
+                    .native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_package_target_present,
             "native_boundary_predicate_model_core_provider_fields_defined_present":
                 source_record_subcheck
                     .native_boundary_predicate_model_core_provider_fields_defined_present,

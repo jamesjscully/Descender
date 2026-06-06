@@ -3514,6 +3514,43 @@ def toHardExtractionPredicateFieldSources
 
 end ReviewedFq12SelectedRustNativeBoundaryReviewedFq12PredicateFieldSources
 
+/--
+Extract the representative-producing reviewed-Fq12 provider subfamily directly
+from a native-boundary predicate interpretation.
+-/
+def reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates
+    (P : Predicates) :
+    ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources where
+  selectedFullNativeOpeningAssemblesRepresentative :=
+    P.fullNativeOpeningAssemblesRepresentative
+  selectedReviewedFq12AssemblyCertificateAssembles :=
+    P.reviewedFq12AssemblyCertificateAssembles
+  selectedReviewedFq12ExtractionCompatibilityCertificateExtracts :=
+    P.reviewedFq12ExtractionCompatibilityCertificateExtracts
+  selectedReviewedFq12CertificateExtracts :=
+    P.reviewedFq12CertificateExtracts
+  selectedReviewedFq12PayloadExtracts :=
+    P.reviewedFq12PayloadExtracts
+
+/--
+Self-contained hard-extraction slice of a selected native-boundary predicate
+model.
+
+This package ties the five representative-producing reviewed-Fq12 predicates
+to the exact native-boundary predicate interpretation whose laws justify using
+them in hidden-source soundness.
+-/
+structure ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPackage where
+  predicates : Predicates
+  fieldSources :
+    ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources
+  fieldSourcesFromPredicates :
+    fieldSources =
+      reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates predicates
+  laws :
+    ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelLaws
+      predicates
+
 namespace ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources
 
 /--
@@ -3811,6 +3848,20 @@ def toHardExtractionPredicateModelLaws
   compatibilityExtractionImpliesReviewedExtraction :=
     Model.compatibilityExtractionImpliesReviewedExtraction
 
+/--
+Project the predicate-model source to the complete hard-extraction provider
+package over the same predicate interpretation.
+-/
+def toHardExtractionPredicateModelPackage
+    (Model : ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource) :
+    ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPackage where
+  predicates := Model.predicates
+  fieldSources :=
+    reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates
+      Model.predicates
+  fieldSourcesFromPredicates := rfl
+  laws := Model.toHardExtractionPredicateModelLaws
+
 end ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource
 
 /--
@@ -4020,6 +4071,22 @@ def toHardExtractionPredicateModelLaws
     Cert.assemblyCertificateImpliesFullNativeAssembly
   compatibilityExtractionImpliesReviewedExtraction :=
     Cert.compatibilityExtractionImpliesReviewedExtraction
+
+/--
+Project a proof-bearing predicate-model certificate to the complete
+hard-extraction provider package over the certificate's predicate
+interpretation.
+-/
+def toHardExtractionPredicateModelPackage
+    (Cert :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate) :
+    ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPackage where
+  predicates := Cert.predicates
+  fieldSources :=
+    reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates
+      Cert.predicates
+  fieldSourcesFromPredicates := rfl
+  laws := Cert.toHardExtractionPredicateModelLaws
 
 /--
 Forget a proof-bearing predicate-model certificate into the existing source

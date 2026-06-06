@@ -7596,6 +7596,8 @@ pub struct Path2SelectedRustModelSourceRecordSubcheckV1 {
         bool,
     pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_law_bundle_target_present:
         bool,
+    pub native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_package_target_present:
+        bool,
     pub native_boundary_predicate_model_core_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_transparent_trace_provider_fields_defined_present: bool,
     pub native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present: bool,
@@ -9351,6 +9353,64 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             "compatibilityExtractionImpliesReviewedExtraction := Cert.compatibilityExtractionImpliesReviewedExtraction",
             4096,
         );
+    let native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_package_target_present =
+        lean_source_has_named_declaration_with_markers_v1(
+            &boundary_source,
+            "structure",
+            "ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPackage",
+            &[
+                "predicates : Predicates",
+                "fieldSources :",
+                "ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources",
+                "fieldSourcesFromPredicates",
+                "reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates predicates",
+                "laws :",
+                "ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelLaws",
+            ],
+            4096,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates",
+            &[
+                "Predicates",
+                "ReviewedFq12SelectedRustNativeBoundaryReviewedFq12HardExtractionPredicateFieldSources",
+            ],
+            "selectedFullNativeOpeningAssemblesRepresentative := P.fullNativeOpeningAssemblesRepresentative",
+            4096,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "reviewedFq12HardExtractionPredicateFieldSourcesOfPredicates",
+            "selectedReviewedFq12PayloadExtracts := P.reviewedFq12PayloadExtracts",
+            4096,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "toHardExtractionPredicateModelPackage",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelSource",
+                "ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPackage",
+            ],
+            "predicates := Model.predicates",
+            4096,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "toHardExtractionPredicateModelPackage",
+            "laws := Model.toHardExtractionPredicateModelLaws",
+            4096,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "toHardExtractionPredicateModelPackage",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
+                "ReviewedFq12SelectedRustNativeBoundaryHardExtractionPredicateModelPackage",
+            ],
+            "predicates := Cert.predicates",
+            4096,
+        ) && lean_source_selected_rust_definition_body_contains_marker_with_limit_v1(
+            &boundary_source,
+            "toHardExtractionPredicateModelPackage",
+            "laws := Cert.toHardExtractionPredicateModelLaws",
+            4096,
+        );
     let native_boundary_predicate_model_evidence_report_target_present =
         lean_source_has_named_declaration_with_markers_v1(
             &boundary_source,
@@ -10985,6 +11045,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_family_target_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_certificate_projection_present,
         native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_law_bundle_target_present,
+        native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_package_target_present,
         native_boundary_predicate_model_core_provider_fields_defined_present,
         native_boundary_predicate_model_transparent_trace_provider_fields_defined_present,
         native_boundary_predicate_model_reviewed_fq12_provider_fields_defined_present,
@@ -59923,6 +59984,10 @@ theorem selectedRustFiveSourceEvidenceReportVerifiedProof :
         assert!(
             source_record_subcheck
                 .native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_law_bundle_target_present
+        );
+        assert!(
+            source_record_subcheck
+                .native_boundary_predicate_model_reviewed_fq12_hard_extraction_provider_package_target_present
         );
         assert!(
             !source_record_subcheck
