@@ -1316,6 +1316,11 @@ leaving the concrete selected source definitions fail-closed.
 The final AP2-N001 theorem gate now requires the accepted theorem body to bind
 that projection as `selectedRustFieldLocalSharedDigestFrameWitnessInputs`;
 omitting the projection no longer satisfies the scanner.
+It also rejects theorem-header assumptions for the individual predicate-model
+obligations and rejects local `let` shadowing of
+`selectedRustNativeBoundaryPredicateModelCertificate`, so the final theorem
+must consume the selected certified predicate model rather than rebuilding it
+inside the theorem body.
 
 ## Findings
 

@@ -320,6 +320,11 @@ five-source and byte-component projections.
 The final theorem scanner now requires the future accepted theorem to bind the
 same projection as `selectedRustFieldLocalSharedDigestFrameWitnessInputs`;
 dropping that binding is a negative-control failure.
+The same scanner now rejects theorem-header assumptions for the predicate-model
+obligation proofs and local `let` rebinding of
+`selectedRustNativeBoundaryPredicateModelCertificate`, keeping the final route
+on the selected certified predicate model rather than a local certificate
+stub.
 
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and

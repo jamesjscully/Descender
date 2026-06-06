@@ -10741,6 +10741,21 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof :",
         "selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof :",
         "selectedRustNativeBoundaryPredicateModelCertificate :",
+        "selectedRustPayloadAcceptanceNotVacuous :",
+        "selectedRustBoundaryBreaksNotUniversal :",
+        "selectedRustPayloadAcceptanceMatchesBoundary :",
+        "selectedRustExtractionCertificateMatchesPayload :",
+        "selectedRustExtractionCertificateValidityMatchesPayload :",
+        "selectedRustCertificateExtractionImpliesPayloadExtraction :",
+        "selectedRustPayloadExtractionInBoundaryFiber :",
+        "selectedRustPayloadExtractionNativeValid :",
+        "selectedRustRoleLiftValidityBindsExtraction :",
+        "selectedRustRoleLiftOpeningImpliesCertificateLift :",
+        "selectedRustAssemblyValidityBindsOpening :",
+        "selectedRustAssemblyCertificateImpliesFullNativeAssembly :",
+        "selectedRustCompatibilityValidityBinds :",
+        "selectedRustCompatibilityExtractionImpliesReviewedExtraction :",
+        "selectedRustFullOpeningBridgeDigestValidityBinds :",
         "selectedRustModelSourceRecordPackage :",
         "selectedRustNativeBoundaryCertifiedSemanticsSourcePackage :",
     ];
@@ -10773,6 +10788,8 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "let selectedRustNativeBoundaryPredicateModelEvidenceReport :",
         "let selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof := True.intro",
         "let selectedRustNativeBoundaryPredicateModelEvidenceFactsAllTrueProof := True.intro",
+        "let selectedRustNativeBoundaryPredicateModelCertificate :=",
+        "let selectedRustNativeBoundaryPredicateModelCertificate :",
         "let selectedRustNativeBoundaryPredicateModelCertificate := {",
         "let selectedRustModelSourceRecordPackage := {",
         "let selectedRustModelSourceRecordPackage := ⟨",
@@ -56473,6 +56490,28 @@ theorem {theorem_name}
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &generic_predicate_final_theorem,
+                theorem_name
+            )
+        );
+        let assumed_predicate_obligation_theorem = concrete_constructor_certificate_theorem
+            .replace(
+                "theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation\n    :\n    ReviewedFq12HiddenSourceProofSemanticsClosed",
+                "theorem reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation\n    (selectedRustPayloadAcceptanceMatchesBoundary : True) :\n    ReviewedFq12HiddenSourceProofSemanticsClosed",
+            );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &assumed_predicate_obligation_theorem,
+                theorem_name
+            )
+        );
+        let local_predicate_model_certificate_theorem = concrete_constructor_certificate_theorem
+            .replace(
+                "  have _hPredicateModelEvidenceReport :=\n    selectedRustNativeBoundaryPredicateModelEvidenceReport",
+                "  let selectedRustNativeBoundaryPredicateModelCertificate := selectedRustNativeBoundaryPredicateModelCertificate\n  have _hPredicateModelEvidenceReport :=\n    selectedRustNativeBoundaryPredicateModelEvidenceReport",
+            );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &local_predicate_model_certificate_theorem,
                 theorem_name
             )
         );
