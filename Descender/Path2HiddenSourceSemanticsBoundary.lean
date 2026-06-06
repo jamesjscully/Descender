@@ -3893,7 +3893,9 @@ def hiddenSourceClosure
         FieldParser RouteParser CanonicalParser WitnessParser) :
     ReviewedFq12HiddenSourceProofSemanticsClosed
       Package.predicateModelCertificate.toSource.toPredicates :=
-  (Package.toSemanticsSourcePackage).hiddenSourceClosure
+  reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package
+    Package.predicateModelCertificate.toSource.toPredicates
+    Package.sourceRecords
 
 end ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
 

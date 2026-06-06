@@ -1715,6 +1715,12 @@ derives the side hidden-source closure through
 An alias-bound theorem that manually rebuilds the certificate while merely
 mentioning the package projection is rejected, so the final theorem cannot use
 the package-derived certificate as a decorative marker.
+The certified semantics package's own `hiddenSourceClosure` now calls
+`reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package`
+directly on `Package.predicateModelCertificate.toSource.toPredicates` and
+`Package.sourceRecords`. The source audit rejects an alias body that only
+mentions that reduction, so the certified package closure no longer detours
+through the older source-shaped semantics adapter.
 
 ## Findings
 

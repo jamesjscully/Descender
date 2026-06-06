@@ -1294,6 +1294,13 @@ consumed by the certificate-level hidden-source closure theorem. A theorem that
 manually rebuilds the five-source certificate and only mentions the package
 projection no longer satisfies the gate.
 
+P2FS-001 certified-package direct closure: the certificate-shaped native
+boundary semantics package now derives `hiddenSourceClosure` directly from
+`reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package`
+over `Package.sourceRecords`, instead of detouring through
+`toSemanticsSourcePackage`. The Rust source audit requires that direct body and
+keeps the alias-returning negative control.
+
 P2FS-001 certified closure route guard: the future final theorem gate now
 rejects raw native-boundary semantics package closure and source-shaped
 semantics package closure markers. The active final proof must close through

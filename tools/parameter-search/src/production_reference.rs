@@ -9676,7 +9676,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
                 "ReviewedFq12HiddenSourceProofSemanticsClosed",
                 "Package.predicateModelCertificate.toSource.toPredicates",
             ],
-            "(Package.toSemanticsSourcePackage).hiddenSourceClosure",
+            "reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package Package.predicateModelCertificate.toSource.toPredicates Package.sourceRecords",
             4096,
         );
     let native_boundary_certified_semantics_current_report_impossible_present =
@@ -59389,8 +59389,8 @@ def toPredicates
             "../../../Descender/Path2HiddenSourceSemanticsBoundary.lean"
         )
         .replacen(
-            "  (Package.toSemanticsSourcePackage).hiddenSourceClosure",
-            "  otherClosure\n\nexample : True := by\n  let _mentionedCertifiedPackageClosure :=\n    (Package.toSemanticsSourcePackage).hiddenSourceClosure\n  trivial",
+            "  reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package\n    Package.predicateModelCertificate.toSource.toPredicates\n    Package.sourceRecords",
+            "  otherClosure\n\nexample : True := by\n  let _mentionedCertifiedPackageClosure :=\n    reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_source_record_package\n      Package.predicateModelCertificate.toSource.toPredicates\n      Package.sourceRecords\n  trivial",
             1,
         );
         let aliased_certified_package_closure_subcheck =
