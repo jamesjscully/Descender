@@ -1248,6 +1248,10 @@ rejects raw native-boundary semantics package closure and source-shaped
 semantics package closure markers. The active final proof must close through
 `selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure`,
 keeping the selected predicate-model certificate on the closure route.
+The current-report blocker is also recorded at the full-signature bound layer:
+`full_signature_active_path_forgery_bound_from_current_predicate_report_impossible`
+shows that a certified semantics package over the current fail-closed selected
+predicate evidence would contradict the predicate-model certificate guard.
 
 P2FS-001 final-theorem constructor-binding hardening: the future extractor
 theorem gate now requires each selected certificate local to be bound directly

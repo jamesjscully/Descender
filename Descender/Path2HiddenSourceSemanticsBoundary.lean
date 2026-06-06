@@ -3742,6 +3742,28 @@ theorem full_signature_active_path_forgery_bound_from_selected_rust_native_bound
       Package.hiddenSourceClosure)
 
 /--
+The certified full-signature active-path bound cannot be instantiated from the
+current fail-closed selected predicate-model report.
+
+This records the blocker at the same layer as the active bound handoff: the
+selected predicate-model report is verified, but its concrete-model facts are
+false until the native-boundary predicate interpretation is imported.
+-/
+theorem full_signature_active_path_forgery_bound_from_current_predicate_report_impossible
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (Package :
+      ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+        FieldParser RouteParser CanonicalParser WitnessParser) :
+    False :=
+  selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_report_impossible
+    Package
+
+/--
 The full-signature boundary can consume the proof-bearing selected Rust/model
 five-source certificate directly.
 -/

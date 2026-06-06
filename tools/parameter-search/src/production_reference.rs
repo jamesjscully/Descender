@@ -9589,6 +9589,15 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
             ],
             "selectedRustNativeBoundaryPredicateModelCertificate_from_current_report_impossible Package.predicateModelCertificate",
             4096,
+        ) && lean_source_definition_with_header_markers_body_starts_with_marker_v1(
+            &boundary_source,
+            "full_signature_active_path_forgery_bound_from_current_predicate_report_impossible",
+            &[
+                "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
+                "False",
+            ],
+            "selectedRustNativeBoundaryCertifiedSemanticsSourcePackage_from_current_report_impossible Package",
+            4096,
         );
     let native_boundary_semantics_package_handoff_present =
         lean_source_definition_with_header_markers_body_starts_with_marker_v1(

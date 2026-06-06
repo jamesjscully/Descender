@@ -1632,6 +1632,12 @@ The final AP2-N001 theorem gate now also rejects raw
 The final proof must close through
 `selectedRustNativeBoundaryCertifiedSemanticsSourcePackage.hiddenSourceClosure`,
 so the predicate-model certificate remains on the active closure path.
+The same current-report blocker is now propagated at the full-signature bound
+layer:
+`full_signature_active_path_forgery_bound_from_current_predicate_report_impossible`
+reduces any certified semantics package back to the selected predicate-model
+certificate impossibility, so the active bound cannot be claimed from the
+current fail-closed predicate evidence.
 The predicate-model certificate now has the same selected public-evidence
 discipline: it carries `evidenceReportBound` and `evidenceDigestBound` fields
 tying its report and digest to
