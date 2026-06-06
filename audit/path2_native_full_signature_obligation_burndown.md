@@ -274,6 +274,15 @@ as part of `source_record_definitions` and requires it to be built through
 completes that category. This makes the package consumed by the certified
 native-boundary semantics route constructor-bound, not merely type-shaped.
 
+2026-06-05 certified semantics package constructor update:
+`ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage` now
+exposes named constructor `ofCertificateAndSourceRecords` for the
+constructor-bound predicate-model certificate and constructor-bound selected
+source-record package. The final AP2-N001 theorem gate requires this
+constructor before accepting `.hiddenSourceClosure` or the certified-package
+full-signature bound handoff; an anonymous certified semantics package no
+longer satisfies the theorem source scanner.
+
 2026-06-05 concrete-definition checklist facade update: the production-reference
 facade now exports the checklist schema, type, constructor, frame, digest, and
 verifier, and the Path 2 deployment facade source gate requires those exports.

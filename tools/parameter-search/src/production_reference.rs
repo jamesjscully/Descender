@@ -8915,6 +8915,7 @@ pub fn path2_selected_rust_model_source_record_subcheck_from_source_v1(
     .all(|marker| boundary_source.contains(marker));
     let native_boundary_certified_semantics_source_package_target_present = [
         "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
+        "def ofCertificateAndSourceRecords",
         "predicateModelCertificate :",
         "ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate",
         "predicateModelCertificate.toSource.toPredicates",
@@ -10659,8 +10660,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates selectedRustFiveSourceEvidenceReport selectedRustFiveSourceEvidenceDigest selectedRustFiveSourceEvidenceReportVerifiedProof selectedRustFiveSourceEvidenceFactsAllTrueProof selectedRustBoundaryBaseCertificate selectedRustRoleRootLiftSourceCertificate selectedRustSourceRouteByteSourceCertificate selectedRustFieldLocalSourceCertificate selectedRustSharedFrameWitnessSourcesCertificate selectedRustFiveSourceSubEvidenceDigestsMatchProof",
         "ReviewedFq12SelectedRustModelFiveSourceClosureCertificate.ofEvidenceAndBoundaryBaseRoleRootSourceRouteFieldLocalAndWitnessCertificates",
         "let selectedRustNativeBoundaryCertifiedSemanticsSourcePackage : ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage",
-        "predicateModelCertificate := selectedRustNativeBoundaryPredicateModelCertificate",
-        "sourceRecords := selectedRustModelSourceRecordPackage",
+        "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage.ofCertificateAndSourceRecords selectedRustNativeBoundaryPredicateModelCertificate selectedRustModelSourceRecordPackage",
         "selectedRustNativeBoundaryPredicateModelEvidenceReport",
         "selectedRustNativeBoundaryPredicateModelEvidenceDigest",
         "selectedRustNativeBoundaryPredicateModelEvidenceReportVerifiedProof",
@@ -56277,9 +56277,9 @@ theorem {theorem_name}
   let selectedRustNativeBoundaryCertifiedSemanticsSourcePackage :
       ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
         FieldParser RouteParser CanonicalParser WitnessParser :=
-    {{ predicateModelCertificate :=
-        selectedRustNativeBoundaryPredicateModelCertificate
-      sourceRecords := selectedRustModelSourceRecordPackage }}
+    ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage.ofCertificateAndSourceRecords
+      selectedRustNativeBoundaryPredicateModelCertificate
+      selectedRustModelSourceRecordPackage
   have _hFullSignatureHandoff :=
     full_signature_with_reviewed_fq12_hidden_source_closure_from_selected_rust_native_boundary_certified_semantics_source_package
       B selectedRustNativeBoundaryCertifiedSemanticsSourcePackage
@@ -56361,12 +56361,22 @@ theorem {theorem_name}
         );
         let wrong_predicate_model_certificate_theorem = concrete_constructor_certificate_theorem
             .replace(
-                "        selectedRustNativeBoundaryPredicateModelCertificate\n",
-                "        otherNativeBoundaryPredicateModelCertificate\n",
+                "      selectedRustNativeBoundaryPredicateModelCertificate\n",
+                "      otherNativeBoundaryPredicateModelCertificate\n",
             );
         assert!(
             !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &wrong_predicate_model_certificate_theorem,
+                theorem_name
+            )
+        );
+        let anonymous_certified_package_theorem = concrete_constructor_certificate_theorem.replace(
+            "ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage.ofCertificateAndSourceRecords",
+            "selectedRustNativeBoundaryCertifiedSemanticsSourcePackageValue",
+        );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
+                &anonymous_certified_package_theorem,
                 theorem_name
             )
         );

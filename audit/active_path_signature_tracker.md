@@ -1285,6 +1285,10 @@ The selected source-record package is now constructor-bound too:
 `ReviewedFq12SelectedRustModelSourceRecordPackage.ofSources` is the required
 route for `selectedRustModelSourceRecordPackage`, and an anonymous package with
 the right name/type no longer completes `source_record_definitions`.
+The certified native-boundary semantics package now has constructor
+`ofCertificateAndSourceRecords`, and the final AP2-N001 theorem gate requires
+that constructor before it accepts `.hiddenSourceClosure` or the
+certified-package active-bound handoff.
 
 ## Findings
 

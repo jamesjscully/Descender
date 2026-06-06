@@ -2904,6 +2904,31 @@ end ReviewedFq12SelectedRustNativeBoundarySemanticsSourcePackage
 namespace ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
 
 /--
+Named constructor for the certificate-shaped native-boundary semantics package.
+
+This keeps the final AP2-N001 import route explicit: a proof-bearing
+predicate-model certificate and the selected source-record package for exactly
+the predicate interpretation exposed by that certificate.
+-/
+def ofCertificateAndSourceRecords
+    {FieldParser : ReviewedFq12FullOpeningFieldEvidenceByteParser}
+    {RouteParser : ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+    {CanonicalParser :
+      ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+    {WitnessParser :
+      ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+    (predicateModelCertificate :
+      ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate)
+    (sourceRecords :
+      ReviewedFq12SelectedRustModelSourceRecordPackage
+        FieldParser RouteParser CanonicalParser WitnessParser
+          predicateModelCertificate.toSource.toPredicates) :
+    ReviewedFq12SelectedRustNativeBoundaryCertifiedSemanticsSourcePackage
+      FieldParser RouteParser CanonicalParser WitnessParser where
+  predicateModelCertificate := predicateModelCertificate
+  sourceRecords := sourceRecords
+
+/--
 Forget the predicate-model certificate into the older source-shaped semantics
 package.  This keeps existing closure reductions reusable while making the
 preferred import boundary certificate-shaped.
