@@ -2709,6 +2709,10 @@ pub fn path2_native_accepted_spend_numeric_evidence_all_facts_true(
         && evidence.named_break_events_pinned
         && evidence.accepted_spend_union_bound_priced
         && evidence.accepted_spend_numeric_budget_meets_target
+        && evidence.target_security_bits == 128
+        && evidence.selected_multi_target_horizon_log2 == 32
+        && evidence.qrom_quadratic_loss_bits_at_deployment_bound == 32
+        && evidence.transcript_term_bits_after_qrom_loss == 182
         && evidence.accepted_spend_priced_bound_security_bits >= evidence.target_security_bits
         && u32::from(evidence.target_security_bits)
             + u32::from(evidence.selected_multi_target_horizon_log2)

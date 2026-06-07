@@ -1473,8 +1473,11 @@ scanner text.
 The accepted-spend numeric evidence report now carries public budget numbers
 for the target security bits, selected multi-target horizon, QROM loss,
 QROM-discounted transcript term, and claimed priced-bound security bits, plus
-`acceptedSpendNumericBudgetMeetsTarget`. `FactsAllTrue` requires the target
-predicate plus the numeric inequalities
+`acceptedSpendNumericBudgetMeetsTarget`. `FactsAllTrue` pins the active
+constants `targetSecurityBits = 128`, `selectedMultiTargetHorizonLog2 = 32`,
+`qromQuadraticLossBitsAtDeploymentBound = 32`, and
+`transcriptTermBitsAfterQromLoss = 182`, then requires the target predicate
+plus the numeric inequalities
 `targetSecurityBits ≤ acceptedSpendPricedBoundSecurityBits` and
 `targetSecurityBits + selectedMultiTargetHorizonLog2 ≤
 transcriptTermBitsAfterQromLoss`; Rust mirrors those checks in the evidence
