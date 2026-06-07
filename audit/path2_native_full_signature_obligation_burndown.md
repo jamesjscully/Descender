@@ -1369,6 +1369,12 @@ aliases for the selected signature probability, production pin, accepted-spend
 inequality, and core full-signature modeling propositions, even when every
 active prerequisite marker is present. This remains a fail-closed scanner
 hardening; it does not instantiate the production full-reduction theorem.
+The same gate now also rejects global `def`/`abbrev` aliases that set the
+report/digest binding proofs, report-verified/facts proofs,
+keygen/signing/completeness/verifier/full-forgery model proofs,
+accepted-spend closure proofs, hash-domain proofs, query-budget proof, or
+multi-target proof to `True.intro`; a regression prepends those proof aliases
+to the otherwise accepted full-reduction theorem shape and keeps the gate open.
 `SelectedRustFullSignatureReductionCertificate` now also carries
 `evidenceReportBound` and `evidenceDigestBound` proof fields, consumed by
 `toNativeFullSignatureSecurityBoundary` in both the probability inequality and

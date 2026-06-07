@@ -28538,6 +28538,10 @@ fn path2_full_signature_reduction_certificate_instantiated_in_source_v1(
         "def selectedRustFullSignatureReductionEvidenceDigest := ByteArray.empty",
         "def selectedRustFullSignatureReductionEvidenceReportBound := True",
         "def selectedRustFullSignatureReductionEvidenceDigestBound := True",
+        "def selectedRustFullSignatureReductionEvidenceReportBoundProof := True.intro",
+        "def selectedRustFullSignatureReductionEvidenceDigestBoundProof := True.intro",
+        "def selectedRustFullSignatureReductionVerifiedProof := True.intro",
+        "def selectedRustFullSignatureReductionFactsAllTrueProof := True.intro",
         "def selectedRustSignatureForgerySuccessProb := 0",
         "def selectedRustSignatureForgerySuccessProb : ℝ := 0",
         "def selectedRustSignatureForgerySuccessProb : ℝ := (0 : ℝ)",
@@ -28551,10 +28555,27 @@ fn path2_full_signature_reduction_certificate_instantiated_in_source_v1(
         "def selectedRustFullSignatureCompletenessModeled := True",
         "def selectedRustVerifierRelationMatchesImplementation := True",
         "def selectedRustFullForgeryImpliesAcceptedSpendForgery := True",
+        "def selectedRustFullSignatureKeygenModeledProof := True.intro",
+        "def selectedRustFullSignatureSigningOracleModeledProof := True.intro",
+        "def selectedRustFullSignatureCompletenessModeledProof := True.intro",
+        "def selectedRustVerifierRelationMatchesImplementationProof := True.intro",
+        "def selectedRustFullForgeryImpliesAcceptedSpendForgeryProof := True.intro",
+        "def selectedRustHiddenSourceProofSemanticsClosedProof := True.intro",
+        "def selectedRustCheckedCoreCompositionClosedProof := True.intro",
+        "def selectedRustLifecycleReplayClosedProof := True.intro",
+        "def selectedRustNoExportClosedProof := True.intro",
+        "def selectedRustCheckedCoreFrameDomainSeparatedProof := True.intro",
+        "def selectedRustHiddenSourceFrameDomainSeparatedProof := True.intro",
+        "def selectedRustQueryBudgetPricedProof := True.intro",
+        "def selectedRustMultiTargetLossPricedProof := True.intro",
         "abbrev selectedRustFullSignatureReductionEvidenceReport := {",
         "abbrev selectedRustFullSignatureReductionEvidenceDigest := ByteArray.empty",
         "abbrev selectedRustFullSignatureReductionEvidenceReportBound := True",
         "abbrev selectedRustFullSignatureReductionEvidenceDigestBound := True",
+        "abbrev selectedRustFullSignatureReductionEvidenceReportBoundProof := True.intro",
+        "abbrev selectedRustFullSignatureReductionEvidenceDigestBoundProof := True.intro",
+        "abbrev selectedRustFullSignatureReductionVerifiedProof := True.intro",
+        "abbrev selectedRustFullSignatureReductionFactsAllTrueProof := True.intro",
         "abbrev selectedRustSignatureForgerySuccessProb := 0",
         "abbrev selectedRustProductionSignatureForgerySuccessProb := 0",
         "abbrev selectedRustFullSignatureKeygenModeled := True",
@@ -28562,6 +28583,19 @@ fn path2_full_signature_reduction_certificate_instantiated_in_source_v1(
         "abbrev selectedRustFullSignatureCompletenessModeled := True",
         "abbrev selectedRustVerifierRelationMatchesImplementation := True",
         "abbrev selectedRustFullForgeryImpliesAcceptedSpendForgery := True",
+        "abbrev selectedRustFullSignatureKeygenModeledProof := True.intro",
+        "abbrev selectedRustFullSignatureSigningOracleModeledProof := True.intro",
+        "abbrev selectedRustFullSignatureCompletenessModeledProof := True.intro",
+        "abbrev selectedRustVerifierRelationMatchesImplementationProof := True.intro",
+        "abbrev selectedRustFullForgeryImpliesAcceptedSpendForgeryProof := True.intro",
+        "abbrev selectedRustHiddenSourceProofSemanticsClosedProof := True.intro",
+        "abbrev selectedRustCheckedCoreCompositionClosedProof := True.intro",
+        "abbrev selectedRustLifecycleReplayClosedProof := True.intro",
+        "abbrev selectedRustNoExportClosedProof := True.intro",
+        "abbrev selectedRustCheckedCoreFrameDomainSeparatedProof := True.intro",
+        "abbrev selectedRustHiddenSourceFrameDomainSeparatedProof := True.intro",
+        "abbrev selectedRustQueryBudgetPricedProof := True.intro",
+        "abbrev selectedRustMultiTargetLossPricedProof := True.intro",
     ];
     if forbidden_vacuous_global_terms
         .iter()
@@ -52316,6 +52350,34 @@ namespace NativeFullSignatureSecurityBoundary
         assert!(
             path2_full_signature_reduction_certificate_instantiated_in_source_v1(
                 full_signature_reduction_instantiation_shape
+            )
+        );
+        let global_vacuous_full_signature_reduction_proofs = format!(
+            "{}\n{}",
+            r#"
+def selectedRustFullSignatureReductionEvidenceReportBoundProof := True.intro
+def selectedRustFullSignatureReductionEvidenceDigestBoundProof := True.intro
+def selectedRustFullSignatureReductionVerifiedProof := True.intro
+def selectedRustFullSignatureReductionFactsAllTrueProof := True.intro
+def selectedRustFullSignatureKeygenModeledProof := True.intro
+def selectedRustFullSignatureSigningOracleModeledProof := True.intro
+def selectedRustFullSignatureCompletenessModeledProof := True.intro
+def selectedRustVerifierRelationMatchesImplementationProof := True.intro
+def selectedRustFullForgeryImpliesAcceptedSpendForgeryProof := True.intro
+def selectedRustHiddenSourceProofSemanticsClosedProof := True.intro
+def selectedRustCheckedCoreCompositionClosedProof := True.intro
+def selectedRustLifecycleReplayClosedProof := True.intro
+def selectedRustNoExportClosedProof := True.intro
+def selectedRustCheckedCoreFrameDomainSeparatedProof := True.intro
+def selectedRustHiddenSourceFrameDomainSeparatedProof := True.intro
+def selectedRustQueryBudgetPricedProof := True.intro
+def selectedRustMultiTargetLossPricedProof := True.intro
+"#,
+            full_signature_reduction_instantiation_shape
+        );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &global_vacuous_full_signature_reduction_proofs
             )
         );
         let suffixed_full_signature_reduction_instantiation =
