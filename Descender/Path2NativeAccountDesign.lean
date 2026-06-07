@@ -2206,6 +2206,51 @@ def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
   queryBudgetPricedProof := queryBudgetPricedProof
   multiTargetLossPricedProof := multiTargetLossPricedProof
 
+/-- The selected full-signature success probability is pinned to production. -/
+theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_production
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.signatureForgerySuccessProb =
+      Cert.productionSignatureForgerySuccessProb :=
+  Cert.signatureForgerySuccessProbPinned
+
+/-- The selected full-signature success probability is the accepted-spend game success. -/
+theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_acceptedSpendGame
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.signatureForgerySuccessProb =
+      Cert.acceptedSpendCertificate.pricedNumericCertificate.successProb :=
+  Cert.signatureForgerySuccessMatchesAcceptedSpendGame
+
+/-- The selected full-signature reduction reaches the exported accepted-spend probability. -/
+theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.signatureForgerySuccessProb <=
+      Cert.acceptedSpendCertificate.acceptedSpendForgeryProb := by
+  calc
+    Cert.signatureForgerySuccessProb =
+        Cert.acceptedSpendCertificate.pricedNumericCertificate.successProb :=
+      Cert.signatureForgerySuccessProb_eq_acceptedSpendGame
+    _ <= Cert.acceptedSpendCertificate.acceptedSpendForgeryProb :=
+      Cert.acceptedSpendCertificate.successProb_le_acceptedSpendForgeryProb
+
+/-- The selected full-signature reduction reaches the exported accepted-spend bound. -/
+theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendBound
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.signatureForgerySuccessProb <=
+      Cert.acceptedSpendCertificate.acceptedSpendForgeryBound :=
+  le_trans
+    Cert.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+    Cert.acceptedSpendCertificate.acceptedSpendForgeryProb_le_bound
+
+/-- The selected full-signature reduction is priced by the accepted-spend reported security bits. -/
+theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.signatureForgerySuccessProb <=
+      ((2 : ℝ) ^
+        Cert.acceptedSpendCertificate.evidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹ :=
+  le_trans
+    Cert.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+    Cert.acceptedSpendCertificate.acceptedSpendForgeryProb_le_reportedSecurity
+
 /-- Convert selected Rust full-signature reduction evidence into the boundary. -/
 def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
     (Cert : SelectedRustFullSignatureReductionCertificate) :
@@ -2237,12 +2282,7 @@ def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityB
     change
       Cert.signatureForgerySuccessProb <=
         Cert.acceptedSpendCertificate.acceptedSpendForgeryProb
-    calc
-      Cert.signatureForgerySuccessProb =
-          Cert.acceptedSpendCertificate.pricedNumericCertificate.successProb :=
-        Cert.signatureForgerySuccessMatchesAcceptedSpendGame
-      _ <= Cert.acceptedSpendCertificate.acceptedSpendForgeryProb :=
-        Cert.acceptedSpendCertificate.successProb_le_acceptedSpendForgeryProb
+    exact Cert.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
   fullSignatureSecurityClaimComplete := by
     let _hVerified : Cert.evidenceReport.ReportVerified :=
       Cert.selectedRustFullSignatureReductionVerifiedProof

@@ -28541,6 +28541,11 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "signatureForgerySuccessProbPinned",
         "signatureForgerySuccessMatchesAcceptedSpendGame",
         "successProb_le_acceptedSpendForgeryProb",
+        "signatureForgerySuccessProb_eq_production",
+        "signatureForgerySuccessProb_eq_acceptedSpendGame",
+        "signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
+        "signatureForgerySuccessProb_le_acceptedSpendBound",
+        "signatureForgerySuccessProb_le_reportedSecurity",
         "keygenDistributionModeledProof",
         "signingOracleModeledProof",
         "completenessModeledProof",
@@ -28564,6 +28569,11 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "\ndef SelectedRustFullSignatureReductionEvidenceReport.FactsAllTrue",
         "\nstructure SelectedRustFullSignatureReductionCertificate",
         "\ndef SelectedRustFullSignatureReductionCertificate.ofReportAndReduction",
+        "\ntheorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_production",
+        "\ntheorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_acceptedSpendGame",
+        "\ntheorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
+        "\ntheorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendBound",
+        "\ntheorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity",
         "\ndef SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
     ];
     certificate_checks
@@ -28912,6 +28922,11 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustSignatureForgerySuccessProbPinned",
         "selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame",
         "successProb_le_acceptedSpendForgeryProb",
+        "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_production",
+        "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_acceptedSpendGame",
+        "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
+        "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendBound",
+        "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity",
         "selectedRustFullSignatureKeygenModeled",
         "selectedRustFullSignatureKeygenModeledProof",
         "selectedRustFullSignatureSigningOracleModeled",
@@ -52379,6 +52394,21 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustHiddenSourceFrameDomainSeparatedProof
       selectedRustQueryBudgetPricedProof
       selectedRustMultiTargetLossPricedProof
+  let _fullReductionProductionPin :=
+    SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_production
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionAcceptedSpendGamePin :=
+    SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_acceptedSpendGame
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionToAcceptedSpendProb :=
+    SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionToAcceptedSpendBound :=
+    SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendBound
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionToReportedSecurity :=
+    SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity
+      selectedRustFullSignatureReductionCertificate
   exact
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
       selectedRustFullSignatureReductionCertificate
@@ -52582,6 +52612,21 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustHiddenSourceFrameDomainSeparatedProof
       selectedRustQueryBudgetPricedProof
       selectedRustMultiTargetLossPricedProof
+  let _fullReductionProductionPin :=
+    SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_production
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionAcceptedSpendGamePin :=
+    SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_acceptedSpendGame
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionToAcceptedSpendProb :=
+    SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionToAcceptedSpendBound :=
+    SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendBound
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionToReportedSecurity :=
+    SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity
+      selectedRustFullSignatureReductionCertificate
   exact
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
       selectedRustFullSignatureReductionCertificate
