@@ -29250,6 +29250,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "PricedAcceptedSpendNumericCertificate.namedBreakEvent",
         "SelectedAcceptedSpendNumericSource",
         "SelectedAcceptedSpendNumericSource.toPricedAcceptedSpendNumericCertificate",
+        "SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_pricedBound",
+        "SelectedAcceptedSpendNumericSource.successProb_le_unionBound",
+        "SelectedAcceptedSpendNumericSource.successProb_le_pricedBound",
+        "SelectedAcceptedSpendNumericSource.unionBound_le_priced",
         "selectedRustAcceptedSpendNumericOutcome",
         "SelectedRustConcreteAcceptedSpendNumericCertificate",
         "outcomeCarrierPinned",
@@ -53336,6 +53340,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedAcceptedSpendNumericSource
   let _acceptedSpendSelectedNumericSourcePriced :=
     SelectedAcceptedSpendNumericSource.toPricedAcceptedSpendNumericCertificate
+  let _acceptedSpendSelectedSourceAcceptedSpendProbPriced :=
+    SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_pricedBound
+  let _acceptedSpendSelectedSourceSuccessProbUnionBound :=
+    SelectedAcceptedSpendNumericSource.successProb_le_unionBound
+  let _acceptedSpendSelectedSourceSuccessProbPriced :=
+    SelectedAcceptedSpendNumericSource.successProb_le_pricedBound
+  let _acceptedSpendSelectedSourceUnionBoundPriced :=
+    SelectedAcceptedSpendNumericSource.unionBound_le_priced
   let _acceptedSpendConcreteOutcome :=
     selectedRustAcceptedSpendNumericOutcome
   let _acceptedSpendConcreteCertificate :=
@@ -53597,6 +53609,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedAcceptedSpendNumericSource
   let _acceptedSpendSelectedNumericSourcePriced :=
     SelectedAcceptedSpendNumericSource.toPricedAcceptedSpendNumericCertificate
+  let _acceptedSpendSelectedSourceAcceptedSpendProbPriced :=
+    SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_pricedBound
+  let _acceptedSpendSelectedSourceSuccessProbUnionBound :=
+    SelectedAcceptedSpendNumericSource.successProb_le_unionBound
+  let _acceptedSpendSelectedSourceSuccessProbPriced :=
+    SelectedAcceptedSpendNumericSource.successProb_le_pricedBound
+  let _acceptedSpendSelectedSourceUnionBoundPriced :=
+    SelectedAcceptedSpendNumericSource.unionBound_le_priced
   let _acceptedSpendConcreteOutcome :=
     selectedRustAcceptedSpendNumericOutcome
   let _acceptedSpendConcreteCertificate :=

@@ -260,6 +260,34 @@ theorem breakFamily_eq_activeFullSpendBreakEvent
     Source.pricedCertificate.Break = Path2FullSpendGame.BreakEvent :=
   Source.breakFamilyPinnedProof
 
+/-- The selected source carries a priced accepted-spend probability bound. -/
+theorem acceptedSpendProb_le_pricedBound
+    (Source : SelectedAcceptedSpendNumericSource) :
+    Source.pricedCertificate.acceptedSpendProb <=
+      Source.pricedCertificate.pricedBound :=
+  Source.pricedCertificate.acceptedSpendProb_le_pricedBound
+
+/-- The selected source carries the full-forgery success union-bound reduction. -/
+theorem successProb_le_unionBound
+    (Source : SelectedAcceptedSpendNumericSource) :
+    Source.pricedCertificate.successProb <=
+      Source.pricedCertificate.unionBound :=
+  Source.pricedCertificate.successProb_le_unionBound
+
+/-- The selected source carries a priced full-forgery success bound. -/
+theorem successProb_le_pricedBound
+    (Source : SelectedAcceptedSpendNumericSource) :
+    Source.pricedCertificate.successProb <=
+      Source.pricedCertificate.pricedBound :=
+  Source.pricedCertificate.successProb_le_pricedBound
+
+/-- The selected source carries the finite union-bound pricing proof. -/
+theorem unionBound_le_priced
+    (Source : SelectedAcceptedSpendNumericSource) :
+    Source.pricedCertificate.unionBound <=
+      Source.pricedCertificate.pricedBound :=
+  Source.pricedCertificate.unionBound_le_priced
+
 end SelectedAcceptedSpendNumericSource
 
 end

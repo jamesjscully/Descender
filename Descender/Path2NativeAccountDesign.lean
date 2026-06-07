@@ -1827,7 +1827,7 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
           Cert.pricedNumericCertificate.unionBound :=
         Cert.acceptedSpendForgeryProbMatchesUnionBound
       _ <= Cert.pricedNumericCertificate.pricedBound :=
-        Cert.pricedNumericCertificate.unionBound_le_priced
+        Cert.numericSource.unionBound_le_priced
       _ = Cert.acceptedSpendForgeryBound :=
         Cert.acceptedSpendForgeryBoundMatchesPriced.symm
   hiddenSourceProofSemanticsClosed :=
