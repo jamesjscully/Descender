@@ -1635,6 +1635,42 @@ def SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue
   E.lifecycleReplayClosureReady = true ∧
   E.noExportClosureReady = true
 
+/-- A complete accepted-spend report prices the aggregate accepted-spend union bound. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_unionBoundPriced
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.acceptedSpendUnionBoundPriced = true := by
+  rcases h with
+    ⟨_, _, _, _, _, _, hUnionPriced, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _⟩
+  exact hUnionPriced
+
+/-- A complete accepted-spend report prices the reduced accepted-spend event bound. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_acceptedSpendEventBoundPriced
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.acceptedSpendEventBoundPriced = true := by
+  rcases h with
+    ⟨_, _, _, _, _, _, _, hAcceptedSpendBoundPriced, _, _, _, _, _, _, _, _, _, _, _, _, _, _⟩
+  exact hAcceptedSpendBoundPriced
+
+/-- A complete accepted-spend report prices the active named-break event bounds. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventBoundsPriced
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.namedBreakEventBoundsPriced = true := by
+  rcases h with
+    ⟨_, _, _, _, _, _, _, _, hNamedBreakBoundsPriced, _, _, _, _, _, _, _, _, _, _, _, _, _⟩
+  exact hNamedBreakBoundsPriced
+
+/-- A complete accepted-spend report checks the break-pricing budget against the priced bound. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_breakPricingBudgetMeetsPricedBound
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.breakPricingBudgetMeetsPricedBound = true := by
+  rcases h with
+    ⟨_, _, _, _, _, _, _, _, _, hBreakBudgetPriced, _, _, _, _, _, _, _, _, _, _, _, _⟩
+  exact hBreakBudgetPriced
+
 /-- A complete accepted-spend report proves its priced-bound bits meet target. -/
 theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
@@ -1869,6 +1905,26 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_l
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityWithinTranscript
         Cert.evidenceReport
         Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hUnionBoundPriced :
+      Cert.evidenceReport.acceptedSpendUnionBoundPriced = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_unionBoundPriced
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hAcceptedSpendEventBoundPriced :
+      Cert.evidenceReport.acceptedSpendEventBoundPriced = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_acceptedSpendEventBoundPriced
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hNamedBreakEventBoundsPriced :
+      Cert.evidenceReport.namedBreakEventBoundsPriced = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventBoundsPriced
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hBreakPricingBudgetMeetsPricedBound :
+      Cert.evidenceReport.breakPricingBudgetMeetsPricedBound = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_breakPricingBudgetMeetsPricedBound
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
   let _hPricedBoundSecurity :
       Cert.pricedNumericCertificate.pricedBound <=
         ((2 : ℝ) ^
@@ -1996,6 +2052,26 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
           Cert.evidenceReport.selectedMultiTargetHorizonLog2 ≤
             Cert.evidenceReport.transcriptTermBitsAfterQromLoss :=
       SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityWithinTranscript
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hUnionBoundPriced :
+        Cert.evidenceReport.acceptedSpendUnionBoundPriced = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_unionBoundPriced
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hAcceptedSpendEventBoundPriced :
+        Cert.evidenceReport.acceptedSpendEventBoundPriced = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_acceptedSpendEventBoundPriced
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hNamedBreakEventBoundsPriced :
+        Cert.evidenceReport.namedBreakEventBoundsPriced = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventBoundsPriced
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hBreakPricingBudgetMeetsPricedBound :
+        Cert.evidenceReport.breakPricingBudgetMeetsPricedBound = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_breakPricingBudgetMeetsPricedBound
           Cert.evidenceReport
           Cert.selectedRustAcceptedSpendFactsAllTrueProof
     let _hPricedBoundSecurity :

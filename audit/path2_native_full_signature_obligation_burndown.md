@@ -1475,6 +1475,10 @@ fail-closed bits for pricing the accepted-spend event bound, pricing the named
 break-event bounds, and proving the break-pricing budget fits the production
 priced bound; the aggregate `acceptedSpendUnionBoundPriced` bit is no longer
 the only pricing readiness signal.
+Those bits also have named `FactsAllTrue` projection theorems that are consumed
+by the selected accepted-spend certificate and exact-checked by the Rust source
+gate, so the final theorem must expose each constructive pricing subclaim on
+the active proof route.
 The numeric source now pins event semantics, not only carrier types.
 `PricedAcceptedSpendNumericCertificate` exposes stored-instance accessors for
 observed outcomes, accepted-spend events, and named break events, and
