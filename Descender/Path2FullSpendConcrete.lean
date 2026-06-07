@@ -1620,6 +1620,44 @@ theorem pricedBound_le_reportedSecurity
         (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹ :=
   W.acceptedSpendPricedBoundSecurityPriced
 
+/-- The selected pricing witness exposes the concrete accepted-spend component bound. -/
+theorem acceptedSpendProb_le_acceptedSpendBound
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.acceptedSpendProb <=
+      W.concreteCertificate.pricedCertificate.acceptedSpendBound :=
+  W.concreteCertificate.pricedCertificate.acceptedSpendProb_le_acceptedSpendBound
+
+/-- The selected pricing witness exposes each concrete named-break component bound. -/
+theorem breakProb_le_breakBound
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness)
+    (breakEvent : W.concreteCertificate.pricedCertificate.Break) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        W.concreteCertificate.pricedCertificate.Trace
+        W.concreteCertificate.pricedCertificate.Outcome
+        W.concreteCertificate.pricedCertificate.Break
+        W.concreteCertificate.pricedCertificate.traceFintype
+        W.concreteCertificate.pricedCertificate.breakFintype
+        W.concreteCertificate.pricedCertificate.game breakEvent <=
+      W.concreteCertificate.pricedCertificate.breakBound breakEvent :=
+  W.concreteCertificate.pricedCertificate.breakProb_le_breakBound breakEvent
+
+/-- The selected pricing witness exposes the concrete component budget. -/
+theorem breakBudget_le_pricedBound
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ W.concreteCertificate.pricedCertificate.Break
+          W.concreteCertificate.pricedCertificate.breakFintype).sum
+            W.concreteCertificate.pricedCertificate.breakBound <=
+      W.concreteCertificate.pricedCertificate.pricedBound :=
+  W.concreteCertificate.pricedCertificate.breakBudget_le_pricedBound
+
+/-- The selected pricing witness prices full-forgery success by its priced bound. -/
+theorem successProb_le_pricedBound
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.successProb <=
+      W.concreteCertificate.pricedCertificate.pricedBound :=
+  W.concreteCertificate.pricedCertificate.successProb_le_pricedBound
+
 /--
 Turn the selected pricing witness into the report-bound concrete numeric
 source certificate required by the accepted-spend soundness layer.

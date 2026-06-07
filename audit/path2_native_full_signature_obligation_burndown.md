@@ -2198,3 +2198,11 @@ projections, and the full-reduction theorem shape to mention
 `ProductionFactsComplete` projection, its certificate projection, and the
 selected hard-half constructor. This keeps the new witness routes from becoming
 dead optional proof API.
+AP2-N003 witness-projection note: the accepted-spend pricing witness now
+projects the concrete accepted-spend component bound, named-break component
+bounds, component-budget bound, and full-success-to-priced-bound inequality.
+The full-reduction production witness now projects the production probability
+pin, accepted-spend-game equality, accepted-spend certificate probability
+bound, query-budget pricing, and multi-target pricing. The Rust source gates
+require these projection names, so future theorem text cannot merely mention a
+witness type while ignoring the real inequalities it carries.

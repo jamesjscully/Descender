@@ -2081,9 +2081,9 @@ def selectedRustAcceptedSpendEvidenceReport :
       184, 94, 226, 157, 26, 55, 237, 33, 21, 223, 183, 249, 34, 163, 53,
       42, 43, 237, 74, 214]
   acceptedSpendEventSemanticsDigest :=
-    ByteArray.mk #[80, 125, 209, 225, 31, 92, 253, 175, 154, 30, 244, 54,
-      155, 141, 15, 164, 96, 45, 18, 81, 133, 183, 28, 223, 146, 237, 66,
-      210, 208, 159, 160, 20]
+    ByteArray.mk #[137, 104, 240, 34, 160, 186, 32, 165, 54, 53, 163, 68,
+      113, 255, 12, 209, 245, 52, 164, 40, 90, 106, 14, 198, 130, 141,
+      154, 177, 246, 161, 84, 233]
   activeBreakFamilyDigest :=
     ByteArray.mk #[111, 3, 153, 201, 118, 101, 3, 131, 125, 95, 74, 112,
       104, 81, 255, 126, 60, 29, 241, 180, 122, 212, 12, 39, 240, 46, 175,
@@ -2123,9 +2123,9 @@ def selectedRustAcceptedSpendEvidenceReport :
 
 /-- Digest pin for the selected Rust accepted-spend numeric evidence report. -/
 def selectedRustAcceptedSpendEvidenceDigest : ByteArray :=
-  ByteArray.mk #[116, 218, 6, 148, 176, 153, 29, 96, 218, 47, 102, 116, 19,
-    133, 57, 187, 179, 239, 214, 32, 210, 122, 73, 244, 184, 234, 131, 5,
-    38, 79, 68, 64]
+  ByteArray.mk #[132, 199, 63, 22, 129, 143, 124, 123, 77, 235, 67, 145,
+    109, 59, 123, 180, 66, 33, 245, 215, 101, 56, 191, 52, 77, 122, 151,
+    128, 79, 176, 179, 159]
 
 /-- The selected accepted-spend report has verified public digest slots. -/
 theorem selectedRustAcceptedSpendEvidenceReportVerifiedProof :
@@ -3589,6 +3589,38 @@ theorem productionFactsComplete
     W.acceptedSpendProbabilityLinkedProof,
     W.allActiveQuerySymbolsPricedProof,
     W.verifierGameMatchesProductionExecutionProof⟩
+
+/-- The production witness pins selected signature success to the production probability. -/
+theorem signatureForgerySuccessProb_eq_production
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.signatureForgerySuccessProb = W.productionSignatureForgerySuccessProb :=
+  W.signatureForgerySuccessProbPinned
+
+/-- The production witness identifies selected signature success with the accepted-spend game. -/
+theorem signatureForgerySuccessProb_eq_acceptedSpendGame
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.signatureForgerySuccessProb =
+      W.acceptedSpendCertificate.pricedNumericCertificate.successProb :=
+  W.signatureForgerySuccessMatchesAcceptedSpendGame
+
+/-- The production witness carries the accepted-spend certificate probability bound. -/
+theorem acceptedSpendCertificate_prob_le_bound
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.acceptedSpendCertificate.acceptedSpendForgeryProb <=
+      W.acceptedSpendCertificate.acceptedSpendForgeryBound :=
+  W.acceptedSpendCertificate.acceptedSpendForgeryProb_le_bound
+
+/-- The production witness carries active query-budget pricing through its hash boundary. -/
+theorem queryBudgetPriced
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.hashBoundary.queryBudgetPriced :=
+  W.queryBudgetPricedProof
+
+/-- The production witness carries active multi-target-loss pricing through its hash boundary. -/
+theorem multiTargetLossPriced
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.hashBoundary.multiTargetLossPriced :=
+  W.multiTargetLossPricedProof
 
 /-- Build the selected full-reduction certificate from the production witness. -/
 def toFullSignatureReductionCertificate

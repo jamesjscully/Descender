@@ -28967,6 +28967,11 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndReductionProductionFacts",
         "SelectedRustFullSignatureReductionProductionWitness",
         "SelectedRustFullSignatureReductionProductionWitness.productionFactsComplete",
+        "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_production",
+        "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_acceptedSpendGame",
+        "SelectedRustFullSignatureReductionProductionWitness.acceptedSpendCertificate_prob_le_bound",
+        "SelectedRustFullSignatureReductionProductionWitness.queryBudgetPriced",
+        "SelectedRustFullSignatureReductionProductionWitness.multiTargetLossPriced",
         "SelectedRustFullSignatureReductionProductionWitness.toFullSignatureReductionCertificate",
         "reductionEvidenceDigestsVerified",
         "productionSignatureProbabilityDigest",
@@ -29048,6 +29053,11 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.ofReportAndReduction",
         "SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndReductionProductionFacts",
         "SelectedRustFullSignatureReductionProductionWitness.productionFactsComplete",
+        "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_production",
+        "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_acceptedSpendGame",
+        "SelectedRustFullSignatureReductionProductionWitness.acceptedSpendCertificate_prob_le_bound",
+        "SelectedRustFullSignatureReductionProductionWitness.queryBudgetPriced",
+        "SelectedRustFullSignatureReductionProductionWitness.multiTargetLossPriced",
         "SelectedRustFullSignatureReductionProductionWitness.toFullSignatureReductionCertificate",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_production",
@@ -29565,6 +29575,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness",
         "SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete",
         "SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.breakBudget_le_pricedBound",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate",
@@ -29760,6 +29774,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource",
         "SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete",
         "SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.breakBudget_le_pricedBound",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate",
@@ -53510,6 +53528,16 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustFullSignatureReductionProductionWitness
   let _fullReductionProductionWitnessFacts :=
     SelectedRustFullSignatureReductionProductionWitness.productionFactsComplete
+  let _fullReductionProductionWitnessProductionPin :=
+    SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_production
+  let _fullReductionProductionWitnessAcceptedSpendGame :=
+    SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_acceptedSpendGame
+  let _fullReductionProductionWitnessAcceptedSpendBound :=
+    SelectedRustFullSignatureReductionProductionWitness.acceptedSpendCertificate_prob_le_bound
+  let _fullReductionProductionWitnessQueryBudget :=
+    SelectedRustFullSignatureReductionProductionWitness.queryBudgetPriced
+  let _fullReductionProductionWitnessMultiTarget :=
+    SelectedRustFullSignatureReductionProductionWitness.multiTargetLossPriced
   let _fullReductionProductionWitnessCertificate :=
     SelectedRustFullSignatureReductionProductionWitness.toFullSignatureReductionCertificate
   let _fullReductionAcceptedSpendHiddenSourceProof :=
@@ -54508,6 +54536,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete
   let _acceptedSpendConcretePricingWitnessBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity
+  let _acceptedSpendConcretePricingWitnessAcceptedBound :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound
+  let _acceptedSpendConcretePricingWitnessBreakBound :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound
+  let _acceptedSpendConcretePricingWitnessBreakBudget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakBudget_le_pricedBound
+  let _acceptedSpendConcretePricingWitnessSuccessPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound
   let _acceptedSpendConcretePricingWitnessSource :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
   let _acceptedSpendConcreteNumericSourceConstructor :=
@@ -54614,6 +54650,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete
   let _acceptedSpendConcretePricingWitnessBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity
+  let _acceptedSpendConcretePricingWitnessAcceptedBound :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound
+  let _acceptedSpendConcretePricingWitnessBreakBound :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound
+  let _acceptedSpendConcretePricingWitnessBreakBudget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakBudget_le_pricedBound
+  let _acceptedSpendConcretePricingWitnessSuccessPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound
   let _acceptedSpendConcretePricingWitnessSource :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
   let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=
@@ -55134,6 +55178,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete
   let _acceptedSpendConcretePricingWitnessBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity
+  let _acceptedSpendConcretePricingWitnessAcceptedBound :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound
+  let _acceptedSpendConcretePricingWitnessBreakBound :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound
+  let _acceptedSpendConcretePricingWitnessBreakBudget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakBudget_le_pricedBound
+  let _acceptedSpendConcretePricingWitnessSuccessPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound
   let _acceptedSpendConcretePricingWitnessSource :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
   let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=
