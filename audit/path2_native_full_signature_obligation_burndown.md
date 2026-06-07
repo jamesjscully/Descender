@@ -1750,6 +1750,11 @@ impossible, and full-reduction `StructuralFactsComplete` holds while
 `ProductionFactsComplete` is impossible. The active blocker is therefore the
 missing pricing/production proof content, not report parsing, digest presence,
 QROM capacity, or structural source consumption.
+The hard halves also now have named projection theorems, so future closure can
+consume pricing/production facts by name: accepted-spend component pricing,
+named-break component pricing, break-budget pricing, target/security cap
+arithmetic, production signature-probability pinning, accepted-spend game
+linkage, all-symbol query pricing, and verifier-game production binding.
 The same fail-closed distinction is now stated at the certificate boundary:
 `SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossible`,
 `SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible`,

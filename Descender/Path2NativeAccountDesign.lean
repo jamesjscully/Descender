@@ -1788,6 +1788,56 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_iff_struct
         hActiveBudget, hClaimedBudget, hHidden, hChecked, hLifecycle,
         hNoExport⟩
 
+/-- A complete pricing half says the aggregate accepted-spend numeric bound is priced. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_numericBoundPriced
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.PricingFactsComplete) :
+    E.acceptedSpendNumericBoundPriced = true :=
+  h.1
+
+/-- A complete pricing half says the accepted-spend event component is priced. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_acceptedSpendEventBoundPriced
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.PricingFactsComplete) :
+    E.acceptedSpendEventBoundPriced = true :=
+  h.2.1
+
+/-- A complete pricing half says each named-break event component is priced. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_namedBreakEventBoundsPriced
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.PricingFactsComplete) :
+    E.namedBreakEventBoundsPriced = true :=
+  h.2.2.1
+
+/-- A complete pricing half says the component budget fits below the priced bound. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_breakPricingBudgetMeetsPricedBound
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.PricingFactsComplete) :
+    E.breakPricingBudgetMeetsPricedBound = true :=
+  h.2.2.2.1
+
+/-- A complete pricing half says the selected numeric budget meets target. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_numericBudgetMeetsTarget
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.PricingFactsComplete) :
+    E.acceptedSpendNumericBudgetMeetsTarget = true :=
+  h.2.2.2.2.1
+
+/-- A complete pricing half says reported priced-bound bits meet target bits. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_pricedBoundSecurityMeetsTarget
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.PricingFactsComplete) :
+    E.targetSecurityBits ≤ E.acceptedSpendPricedBoundSecurityBits :=
+  h.2.2.2.2.2.1
+
+/-- A complete pricing half says claimed priced-bound bits fit the transcript budget. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_pricedBoundSecurityWithinTranscript
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.PricingFactsComplete) :
+    E.acceptedSpendPricedBoundSecurityBits + E.selectedMultiTargetHorizonLog2 ≤
+      E.transcriptTermBitsAfterQromLoss :=
+  h.2.2.2.2.2.2
+
 /-- A complete accepted-spend report says the selected numeric bound is priced. -/
 theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBoundPriced
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
@@ -2958,6 +3008,41 @@ theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_iff_struct
     exact
       ⟨hProbability, hAcceptedGame, hAcceptedLinked, hExecution, hHash,
         hQuery, hMultiTarget, hVerifierGame⟩
+
+/-- A complete production half pins the production signature probability. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_productionSignatureProbabilityPinned
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ProductionFactsComplete) :
+    E.productionSignatureProbabilityPinned = true :=
+  h.1
+
+/-- A complete production half links signature success to the accepted-spend game. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_signatureSuccessMatchesAcceptedSpendGame
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ProductionFactsComplete) :
+    E.signatureSuccessMatchesAcceptedSpendGame = true :=
+  h.2.1
+
+/-- A complete production half links accepted-spend probability. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_acceptedSpendProbabilityLinked
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ProductionFactsComplete) :
+    E.acceptedSpendProbabilityLinked = true :=
+  h.2.2.1
+
+/-- A complete production half prices every active final query symbol. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_allActiveQuerySymbolsPriced
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ProductionFactsComplete) :
+    E.allActiveQuerySymbolsPriced = true :=
+  h.2.2.2.1
+
+/-- A complete production half binds the verifier game to production execution. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_verifierGameMatchesProductionExecution
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ProductionFactsComplete) :
+    E.verifierGameMatchesProductionExecution = true :=
+  h.2.2.2.2
 
 /-- A complete full-reduction report pins the production signature probability. -/
 theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_productionSignatureProbabilityPinned
