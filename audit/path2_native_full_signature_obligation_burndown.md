@@ -1689,16 +1689,20 @@ replaces the concrete-source union-bound fact projection with the report-level
 projection and confirms that this no longer satisfies the active accepted-spend
 numeric-bound gate.
 The generic accepted-spend pricing layer now also exposes nonnegativity
-theorems for the accepted-spend component bound, each named-break component
-bound, and the final priced bound at the `AcceptedSpendBreakPricingCertificate`,
+theorems for the accepted-spend union bound, accepted-spend component bound,
+each named-break component bound, and the final priced bound at the
+`AcceptedSpendNumericGame`, `AcceptedSpendBreakPricingCertificate`,
 `PricedAcceptedSpendNumericCertificate`, and `SelectedAcceptedSpendNumericSource`
 layers. `SelectedRustConcreteAcceptedSpendNumericCertificate` and
 `SelectedRustConcreteAcceptedSpendNumericSourceCertificate` now project those
-sign facts through the active concrete carrier/source route too. The
-accepted-spend source gate exact-checks those theorem names, so the future
-pricing package must expose nonnegative budgets rather than only upper-bound
-inequalities, and it must preserve those sign facts through the concrete source
-handoff.
+sign facts through the active concrete carrier/source route too, and
+`SelectedRustAcceptedSpendSoundnessCertificate` proves the exported
+accepted-spend probability and bound remain nonnegative after erasure to
+`NativeAcceptedSpendSoundnessBoundary`. The accepted-spend source gate
+exact-checks those theorem names, so the future pricing package must expose
+nonnegative budgets rather than only upper-bound inequalities, and it must
+preserve those sign facts through the concrete source and full-boundary
+handoffs.
 The accepted-spend numeric and full-signature reduction certificates now bind
 their evidence reports and digests by equality to concrete selected Rust
 report/digest constants, rather than by arbitrary `Prop` slots. The selected

@@ -2351,6 +2351,26 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_l
     _ = Cert.acceptedSpendForgeryBound :=
       Cert.acceptedSpendForgeryBound_eq_pricedBound.symm
 
+/-- The selected accepted-spend certificate exports a nonnegative probability. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_nonneg
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    0 <= Cert.acceptedSpendForgeryProb := by
+  calc
+    0 <= Cert.pricedNumericCertificate.unionBound :=
+      Cert.pricedNumericCertificate.unionBound_nonneg
+    _ = Cert.acceptedSpendForgeryProb :=
+      Cert.acceptedSpendForgeryProb_eq_unionBound.symm
+
+/-- The selected accepted-spend certificate exports a nonnegative bound. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_nonneg
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    0 <= Cert.acceptedSpendForgeryBound := by
+  calc
+    0 <= Cert.pricedNumericCertificate.pricedBound :=
+      Cert.pricedNumericCertificate.pricedBound_nonneg
+    _ = Cert.acceptedSpendForgeryBound :=
+      Cert.acceptedSpendForgeryBound_eq_pricedBound.symm
+
 /-- The selected accepted-spend certificate prices its exported bound by reported security bits. -/
 theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_reportedSecurity
     (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
@@ -2589,6 +2609,18 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBo
     Cert.toAcceptedSpendSoundnessBoundary.acceptedSpendForgeryProb <=
       ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
   Cert.acceptedSpendForgeryProb_le_active128BitTarget
+
+/-- The erased accepted-spend boundary keeps the exported probability nonnegative. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_nonneg
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    0 <= Cert.toAcceptedSpendSoundnessBoundary.acceptedSpendForgeryProb :=
+  Cert.acceptedSpendForgeryProb_nonneg
+
+/-- The erased accepted-spend boundary keeps the exported bound nonnegative. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_nonneg
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    0 <= Cert.toAcceptedSpendSoundnessBoundary.acceptedSpendForgeryBound :=
+  Cert.acceptedSpendForgeryBound_nonneg
 
 /-- The selected accepted-spend certificate bounds packaged success by the exported accepted-spend probability. -/
 theorem SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_acceptedSpendForgeryProb

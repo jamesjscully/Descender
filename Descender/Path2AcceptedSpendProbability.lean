@@ -99,6 +99,16 @@ theorem successProb_le_acceptedSpendOrBreakUnionBound
         · rcases hBreak with ⟨breakEvent, hBreakEvent⟩
           exact ⟨some breakEvent, hBreakEvent⟩)
 
+omit [DecidableEq Break] in
+/-- The accepted-spend plus named-break union expression is nonnegative. -/
+theorem acceptedSpendOrBreakUnionBound_nonneg
+    (G : AcceptedSpendNumericGame Trace Outcome Break) :
+    0 <= G.acceptedSpendOrBreakUnionBound := by
+  unfold acceptedSpendOrBreakUnionBound
+  exact Finset.sum_nonneg (by
+    intro event _hEvent
+    exact G.traceDist.acceptProb_nonneg (G.acceptedOrBreakEvent event))
+
 /--
 If deployment pricing supplies a concrete upper bound for the union expression,
 then the full-signature success probability is below that bound.
@@ -302,6 +312,15 @@ theorem unionBound_le_priced
     _ = C.pricedBound :=
       C.pricedBound_eq_breakPricing.symm
 
+/-- The priced numeric certificate's union-bound expression is nonnegative. -/
+theorem unionBound_nonneg
+    (C : PricedAcceptedSpendNumericCertificate) :
+    0 <= C.unionBound := by
+  exact
+    @AcceptedSpendNumericGame.acceptedSpendOrBreakUnionBound_nonneg
+      C.Trace C.Outcome C.Break C.traceFintype C.breakFintype
+      C.game
+
 /-- The priced certificate's accepted-spend probability is bounded by its component budget. -/
 theorem acceptedSpendProb_le_acceptedSpendBound
     (C : PricedAcceptedSpendNumericCertificate) :
@@ -475,6 +494,12 @@ theorem unionBound_le_priced
     Source.pricedCertificate.unionBound <=
       Source.pricedCertificate.pricedBound :=
   Source.pricedCertificate.unionBound_le_priced
+
+/-- The selected source exposes nonnegativity of its union-bound expression. -/
+theorem unionBound_nonneg
+    (Source : SelectedAcceptedSpendNumericSource) :
+    0 <= Source.pricedCertificate.unionBound :=
+  Source.pricedCertificate.unionBound_nonneg
 
 /-- The selected source exposes the accepted-spend component bound. -/
 theorem acceptedSpendProb_le_acceptedSpendBound

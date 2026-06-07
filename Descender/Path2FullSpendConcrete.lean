@@ -1559,6 +1559,12 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.pricedBound_nonneg
     0 <= Cert.pricedCertificate.pricedBound :=
   Cert.pricedCertificate.pricedBound_nonneg
 
+/-- The selected concrete numeric certificate exposes a nonnegative union bound. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.unionBound_nonneg
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    0 <= Cert.pricedCertificate.unionBound :=
+  Cert.pricedCertificate.unionBound_nonneg
+
 /-- The source-bound concrete certificate exposes nonnegative accepted-spend budget. -/
 theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendBound_nonneg
     (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
@@ -1577,6 +1583,12 @@ theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.pricedBound_no
     (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
     0 <= Source.concreteCertificate.pricedCertificate.pricedBound :=
   Source.concreteCertificate.pricedBound_nonneg
+
+/-- The source-bound concrete certificate exposes a nonnegative union bound. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.unionBound_nonneg
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    0 <= Source.concreteCertificate.pricedCertificate.unionBound :=
+  Source.concreteCertificate.unionBound_nonneg
 
 /-- The source-bound report says the accepted-spend numeric bound is priced. -/
 theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBoundPriced
