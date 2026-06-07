@@ -29580,7 +29580,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakBudget_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificate",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundary",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificatePricingFacts",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.finiteTraceSupportDigest_bound",
@@ -29623,6 +29626,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "let selectedRustAcceptedSpendSoundnessCertificate :",
         "SelectedRustAcceptedSpendSoundnessCertificate",
         "SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundPricingFacts",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_unionBound",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_pricedBound",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_production",
@@ -29779,7 +29783,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakBudget_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificate",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundary",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificatePricingFacts",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.finiteTraceSupportDigest_bound",
@@ -29836,6 +29843,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakBound_nonneg",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.pricedBound_nonneg",
         "SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundPricingFacts",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_unionBound",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_pricedBound",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_production",
@@ -54546,6 +54554,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound
   let _acceptedSpendConcretePricingWitnessSource :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
+  let _acceptedSpendConcretePricingWitnessCertificate :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificate
+  let _acceptedSpendConcretePricingWitnessBoundary :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundary
+  let _acceptedSpendConcreteNumericSourceSelectedConstructor :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificatePricingFacts
   let _acceptedSpendConcreteNumericSourceConstructor :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate
   let _acceptedSpendConcreteNumericSourceConcreteProjection :=
@@ -54660,6 +54674,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound
   let _acceptedSpendConcretePricingWitnessSource :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
+  let _acceptedSpendConcretePricingWitnessCertificate :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificate
+  let _acceptedSpendConcretePricingWitnessBoundary :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundary
+  let _acceptedSpendConcreteNumericSourceSelectedConstructor :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificatePricingFacts
   let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate
       selectedRustAcceptedSpendEvidenceReport
@@ -55188,6 +55208,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound
   let _acceptedSpendConcretePricingWitnessSource :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
+  let _acceptedSpendConcretePricingWitnessCertificate :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificate
+  let _acceptedSpendConcretePricingWitnessBoundary :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundary
+  let _acceptedSpendConcreteNumericSourceSelectedConstructor :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificatePricingFacts
   let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate
       selectedRustAcceptedSpendEvidenceReport
@@ -55300,6 +55326,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_nonneg
   let _acceptedSpendCertificateConstructor :=
     SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
+  let _acceptedSpendCertificateSelectedConstructor :=
+    SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundPricingFacts
   let _acceptedSpendCertificateToBoundary :=
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
   let selectedRustAcceptedSpendSoundnessCertificate :

@@ -2206,3 +2206,13 @@ pin, accepted-spend-game equality, accepted-spend certificate probability
 bound, query-budget pricing, and multi-target pricing. The Rust source gates
 require these projection names, so future theorem text cannot merely mention a
 witness type while ignoring the real inequalities it carries.
+AP2-N003 pricing-witness route note: `SelectedRustConcreteAcceptedSpendPricingWitness`
+now erases directly to the selected accepted-spend certificate and boundary.
+The accepted-spend source gate requires those witness adapters plus the
+selected-report split constructors
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificatePricingFacts`
+and
+`SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundPricingFacts`.
+This keeps the future accepted-spend theorem on the current AP2-N003 hard-half
+route instead of allowing a generic report-and-bound constructor path to stand
+in for selected pricing closure.
