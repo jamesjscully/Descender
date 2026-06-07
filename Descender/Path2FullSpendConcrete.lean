@@ -1540,6 +1540,83 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_price
       Cert.pricedCertificate.pricedBound :=
   Cert.pricedCertificate.successProb_le_pricedBound
 
+/-- The source-bound report says the accepted-spend numeric bound is priced. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBoundPriced
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.evidenceReport.acceptedSpendNumericBoundPriced = true :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBoundPriced
+    Source.evidenceReport Source.evidenceFactsAllTrueProof
+
+/-- The source-bound report says finite trace support is priced. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_finiteTraceSupportPriced
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.evidenceReport.finiteTraceSupportPriced = true :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_finiteTraceSupportPriced
+    Source.evidenceReport Source.evidenceFactsAllTrueProof
+
+/-- The source-bound report pins the active outcome carrier. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_activeOutcomeCarrierPinned
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.evidenceReport.activeOutcomeCarrierPinned = true :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeOutcomeCarrierPinned
+    Source.evidenceReport Source.evidenceFactsAllTrueProof
+
+/-- The source-bound report pins accepted-spend event semantics. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_acceptedSpendEventPinned
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.evidenceReport.acceptedSpendEventPinned = true :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_acceptedSpendEventPinned
+    Source.evidenceReport Source.evidenceFactsAllTrueProof
+
+/-- The source-bound report pins the active break family. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_activeBreakFamilyPinned
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.evidenceReport.activeBreakFamilyPinned = true :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBreakFamilyPinned
+    Source.evidenceReport Source.evidenceFactsAllTrueProof
+
+/-- The source-bound report pins named-break event semantics. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_namedBreakEventsPinned
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.evidenceReport.namedBreakEventsPinned = true :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventsPinned
+    Source.evidenceReport Source.evidenceFactsAllTrueProof
+
+/-- The source-bound report prices the aggregate accepted-spend union bound. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_unionBoundPriced
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.evidenceReport.acceptedSpendUnionBoundPriced = true :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_unionBoundPriced
+    Source.evidenceReport Source.evidenceFactsAllTrueProof
+
+/-- The source-bound report prices the reduced accepted-spend event bound. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_acceptedSpendEventBoundPriced
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.evidenceReport.acceptedSpendEventBoundPriced = true :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_acceptedSpendEventBoundPriced
+    Source.evidenceReport Source.evidenceFactsAllTrueProof
+
+/-- The source-bound report prices the active named-break event bounds. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_namedBreakEventBoundsPriced
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.evidenceReport.namedBreakEventBoundsPriced = true :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventBoundsPriced
+    Source.evidenceReport Source.evidenceFactsAllTrueProof
+
+/-- The source-bound report checks the break-pricing budget. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_breakPricingBudgetMeetsPricedBound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.evidenceReport.breakPricingBudgetMeetsPricedBound = true :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_breakPricingBudgetMeetsPricedBound
+    Source.evidenceReport Source.evidenceFactsAllTrueProof
+
+/-- The source-bound report says the selected numeric budget meets target. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBudgetMeetsTarget
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.evidenceReport.acceptedSpendNumericBudgetMeetsTarget = true :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBudgetMeetsTarget
+    Source.evidenceReport Source.evidenceFactsAllTrueProof
+
 /--
 No concrete accepted-spend source certificate exists for the current selected
 fail-closed report.

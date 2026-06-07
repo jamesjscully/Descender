@@ -1675,6 +1675,16 @@ the concrete certificate itself from those report-side facts plus the seven
 report/certificate digest equalities. The accepted-spend source gate
 exact-checks these source-certificate projections, so digest presence is carried
 through to the active-carrier numeric certificate.
+The concrete source certificate now also derives the remaining accepted-spend
+numeric readiness facts from its own `evidenceFactsAllTrueProof`: numeric bound
+priced, finite trace support priced, active outcome carrier pinned,
+accepted-spend event pinned, active break family pinned, named-break events
+pinned, union bound priced, accepted-spend component bound priced, named-break
+component bounds priced, break-pricing budget below the priced bound, and
+numeric budget meets target. The accepted-spend source gate exact-checks those
+source-certificate projection names, so the future theorem must pull the
+numeric facts through the report-bound concrete source package, not only
+through standalone report-level projections.
 The accepted-spend numeric and full-signature reduction certificates now bind
 their evidence reports and digests by equality to concrete selected Rust
 report/digest constants, rather than by arbitrary `Prop` slots. The selected

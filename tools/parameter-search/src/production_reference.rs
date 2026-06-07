@@ -29732,6 +29732,17 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.namedBreakEventsDigest_nonzero",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendUnionBoundPricingDigest_nonzero",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendPricedBoundDigest_nonzero",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBoundPriced",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_finiteTraceSupportPriced",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_activeOutcomeCarrierPinned",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_acceptedSpendEventPinned",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_activeBreakFamilyPinned",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_namedBreakEventsPinned",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_unionBoundPriced",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_acceptedSpendEventBoundPriced",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_namedBreakEventBoundsPriced",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_breakPricingBudgetMeetsPricedBound",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBudgetMeetsTarget",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessCertificate",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessBoundary",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.outcome_eq_selectedFullForgeryRun",
@@ -54394,6 +54405,28 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendUnionBoundPricingDigest_nonzero
   let _acceptedSpendConcreteNumericSourcePricedBoundDigestNonzero :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendPricedBoundDigest_nonzero
+  let _acceptedSpendConcreteNumericSourceNumericBoundPriced :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBoundPriced
+  let _acceptedSpendConcreteNumericSourceFiniteTracePriced :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_finiteTraceSupportPriced
+  let _acceptedSpendConcreteNumericSourceOutcomePinned :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_activeOutcomeCarrierPinned
+  let _acceptedSpendConcreteNumericSourceAcceptedEventPinned :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_acceptedSpendEventPinned
+  let _acceptedSpendConcreteNumericSourceBreakFamilyPinned :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_activeBreakFamilyPinned
+  let _acceptedSpendConcreteNumericSourceNamedBreakEventsPinned :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_namedBreakEventsPinned
+  let _acceptedSpendConcreteNumericSourceUnionBoundPriced :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_unionBoundPriced
+  let _acceptedSpendConcreteNumericSourceAcceptedEventBoundPriced :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_acceptedSpendEventBoundPriced
+  let _acceptedSpendConcreteNumericSourceNamedBreakBoundsPriced :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_namedBreakEventBoundsPriced
+  let _acceptedSpendConcreteNumericSourceBreakBudgetPriced :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_breakPricingBudgetMeetsPricedBound
+  let _acceptedSpendConcreteNumericSourceBudgetMeetsTarget :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBudgetMeetsTarget
   let _acceptedSpendConcreteNumericSourceToCertificate :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessCertificate
   let _acceptedSpendConcreteNumericSourceToBoundary :=
@@ -54850,6 +54883,28 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendUnionBoundPricingDigest_nonzero
   let _acceptedSpendConcreteNumericSourcePricedBoundDigestNonzero :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendPricedBoundDigest_nonzero
+  let _acceptedSpendConcreteNumericSourceNumericBoundPriced :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBoundPriced
+  let _acceptedSpendConcreteNumericSourceFiniteTracePriced :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_finiteTraceSupportPriced
+  let _acceptedSpendConcreteNumericSourceOutcomePinned :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_activeOutcomeCarrierPinned
+  let _acceptedSpendConcreteNumericSourceAcceptedEventPinned :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_acceptedSpendEventPinned
+  let _acceptedSpendConcreteNumericSourceBreakFamilyPinned :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_activeBreakFamilyPinned
+  let _acceptedSpendConcreteNumericSourceNamedBreakEventsPinned :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_namedBreakEventsPinned
+  let _acceptedSpendConcreteNumericSourceUnionBoundPriced :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_unionBoundPriced
+  let _acceptedSpendConcreteNumericSourceAcceptedEventBoundPriced :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_acceptedSpendEventBoundPriced
+  let _acceptedSpendConcreteNumericSourceNamedBreakBoundsPriced :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_namedBreakEventBoundsPriced
+  let _acceptedSpendConcreteNumericSourceBreakBudgetPriced :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_breakPricingBudgetMeetsPricedBound
+  let _acceptedSpendConcreteNumericSourceBudgetMeetsTarget :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBudgetMeetsTarget
   let _acceptedSpendConcreteOutcomeTheorem :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.outcome_eq_selectedFullForgeryRun
   let _acceptedSpendConcreteAcceptedSpendEventTheorem :=
