@@ -1550,16 +1550,22 @@ constants `targetSecurityBits = 128`, `selectedMultiTargetHorizonLog2 = 32`,
 plus the numeric inequalities
 `targetSecurityBits ≤ acceptedSpendPricedBoundSecurityBits` and
 `targetSecurityBits + selectedMultiTargetHorizonLog2 ≤
+transcriptTermBitsAfterQromLoss`, and
+`acceptedSpendPricedBoundSecurityBits + selectedMultiTargetHorizonLog2 ≤
 transcriptTermBitsAfterQromLoss`; Rust mirrors those checks in the evidence
-`all_facts_true` helper. The canonical Rust evidence still has priced-bound
-security bits `0` and the target predicate false, so it remains fail-closed.
+`all_facts_true` helper. This prevents over-reporting claimed priced-bound
+bits beyond the active QROM-discounted transcript budget. The canonical Rust
+evidence still has priced-bound security bits `0` and the target predicate
+false, so it remains fail-closed.
 Lean now exposes report-derived theorem facts that the accepted-spend
 priced-bound bits meet target, the selected 32-bit multi-target horizon fits
-inside the 182-bit QROM-discounted transcript term, and the resulting arithmetic
-slack is 22 bits. The accepted-spend certificate-to-boundary conversion consumes
-those facts directly, and the numeric-bound source gate requires the future
-selected theorem to consume them too. This leaves the real-valued accepted-spend
-probability source and priced-bound inequality as the remaining numeric gap.
+inside the 182-bit QROM-discounted transcript term, the claimed priced-bound
+bits plus that horizon also fit inside the transcript term, and the resulting
+target arithmetic slack is 22 bits. The accepted-spend certificate-to-boundary
+conversion consumes those facts directly, and the numeric-bound source gate
+requires the future selected theorem to consume them too. This leaves the
+real-valued accepted-spend probability source and priced-bound inequality as
+the remaining numeric gap.
 `SelectedRustAcceptedSpendSoundnessCertificate` also carries
 `acceptedSpendPricedBoundSecurityPriced`, proving the actual real-valued
 `numericSource.pricedCertificate.pricedBound` is at most

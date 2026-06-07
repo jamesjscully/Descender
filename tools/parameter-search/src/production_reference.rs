@@ -2804,6 +2804,9 @@ pub fn path2_native_accepted_spend_numeric_evidence_all_facts_true(
         && u32::from(evidence.target_security_bits)
             + u32::from(evidence.selected_multi_target_horizon_log2)
             <= u32::from(evidence.transcript_term_bits_after_qrom_loss)
+        && u32::from(evidence.accepted_spend_priced_bound_security_bits)
+            + u32::from(evidence.selected_multi_target_horizon_log2)
+            <= u32::from(evidence.transcript_term_bits_after_qrom_loss)
         && evidence.hidden_source_closure_ready
         && evidence.checked_core_closure_ready
         && evidence.lifecycle_replay_closure_ready
@@ -29308,6 +29311,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetSlackBits",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityWithinTranscript",
         "selectedRustAcceptedSpendEvidenceReport",
         "selectedRustAcceptedSpendEvidenceDigest",
         "selectedRustAcceptedSpendEvidenceReportBound",
@@ -53331,6 +53335,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced
   let _acceptedSpendReportActiveBudgetSlack :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetSlackBits
+  let _acceptedSpendReportClaimedBoundWithinTranscript :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityWithinTranscript
   let _acceptedSpendFiniteTraceSupport :=
     PricedAcceptedSpendNumericCertificate.traceFintype
   let _acceptedSpendPackagedObserve :=
@@ -53614,6 +53620,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced
   let _acceptedSpendReportActiveBudgetSlack :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetSlackBits
+  let _acceptedSpendReportClaimedBoundWithinTranscript :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityWithinTranscript
   let _acceptedSpendFiniteTraceSupport :=
     PricedAcceptedSpendNumericCertificate.traceFintype
   let _acceptedSpendPackagedObserve :=
