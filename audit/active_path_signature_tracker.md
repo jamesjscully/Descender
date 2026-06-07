@@ -439,7 +439,7 @@ AP2-N003 report-bound concrete numeric-source note: `Descender/Path2FullSpendCon
 
 AP2-N003 concrete numeric digest-binding note: `SelectedRustConcreteAcceptedSpendNumericCertificate` now carries concrete digest bytes for each accepted-spend numeric evidence slot: finite trace support, active outcome carrier, accepted-spend event semantics, active break family, named break events, union-bound pricing, and priced-bound pricing. `SelectedRustConcreteAcceptedSpendNumericSourceCertificate` now requires equality proofs that those certificate digest bytes match the corresponding accepted-spend evidence-report digest slots, and exposes projection theorems for all seven equalities. The source gate requires the future theorem to pass named equality proofs, exact-checks the projection theorem references, and rejects header/declaration/local trivial aliases for those witnesses. This does not instantiate production hash computation yet, but it prevents the final theorem shape from carrying a verified report beside an unrelated concrete numeric certificate.
 
-AP2-N003 accepted-spend report digest-presence note: `SelectedRustAcceptedSpendSoundnessEvidenceReport.ReportVerified` now includes nonempty `ByteArray` requirements for all seven accepted-spend numeric digest slots, matching the Rust verifier's fail-closed rejection of placeholder digest slots. The source gate exact-checks the seven new `reportVerified_*_nonempty` projection theorems in the future accepted-spend theorem shape, so report verification cannot be represented in Lean solely by three true Boolean flags.
+AP2-N003 accepted-spend report digest-presence note: `SelectedRustAcceptedSpendSoundnessEvidenceReport.ReportVerified` now includes nonzero `ByteArray` requirements for all seven accepted-spend numeric digest slots, matching the Rust verifier's fail-closed rejection of placeholder digest slots. The source gate exact-checks the seven new `reportVerified_*_nonzero` projection theorems in the future accepted-spend theorem shape, so report verification cannot be represented in Lean solely by three true Boolean flags.
 
 AP2-N003 full-reduction report digest-presence note: `SelectedRustFullSignatureReductionEvidenceReport.ReportVerified` now mirrors the same digest-presence requirement for the seven full-signature reduction evidence slots: production signature probability, signature-to-accepted-spend link, full-execution source, active hash boundary, query-budget pricing, multi-target pricing, and verifier-game binding. `SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary` consumes those projection theorems, and the full-reduction source gate exact-checks them in the future selected theorem shape.
 
@@ -1087,7 +1087,7 @@ Lean now proves
 `selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_forces_empty_certificate_digests`:
 any `SubEvidenceDigestsMatch` proof against the current placeholder aggregate
 report forces all five consumed certificate `evidenceDigest` fields to be
-`ByteArray.mk #[]`. This makes the placeholder/non-empty Rust digest mismatch
+`selectedRustZeroDigest32`. This makes the placeholder/non-zero Rust digest mismatch
 explicit in the proof layer without introducing any future proof-object names.
 The final extractor-gate regression now treats the certificate endpoint as the
 only accepted production-facing route: the positive fixture calls
@@ -1117,7 +1117,7 @@ fixture that mentions `selectedRustFiveSourceEvidenceReport` in an unrelated
 premise while proving `otherFiveSourceEvidenceReport.SubEvidenceDigestsMatch`
 fails the category, so the digest-match proof must bind the selected aggregate
 report directly.
-Lean now also proves `selectedRustEvidenceDigests_nonempty` and
+Lean now also proves `selectedRustEvidenceDigests_nonzero` and
 `selectedRustFiveSourceEvidenceReport_subEvidenceDigestsMatch_incompatible_with_selected_certificate_digests`.
 Together with the earlier placeholder digest-match lemma, this shows that the
 current placeholder aggregate report cannot match certificates carrying the

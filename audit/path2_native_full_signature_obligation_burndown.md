@@ -1152,7 +1152,7 @@ P2FS-001 placeholder aggregate digest sanity: Lean now proves that any
 `SubEvidenceDigestsMatch` proof against the current
 `selectedRustFiveSourceEvidenceReport` placeholder forces all five consumed
 certificate evidence digests to be empty byte arrays. Since the selected Rust
-evidence digest constants are concrete non-empty arrays, the future
+evidence digest constants are concrete non-zero arrays, the future
 digest-match proof cannot legitimately reuse the placeholder aggregate report;
 it must be derived from verifier-backed selected evidence.
 
@@ -1191,7 +1191,7 @@ future aggregate/certificate digest-match proof pinned to the selected
 five-source report.
 
 P2FS-001 selected-digest impossibility sanity: Lean now proves the selected
-public Rust evidence digest constants are non-empty and that the current
+public Rust evidence digest constants are non-zero and that the current
 placeholder `selectedRustFiveSourceEvidenceReport` cannot digest-match
 certificates carrying those selected digest constants. This makes the
 placeholder/certificate mismatch explicit in the theorem layer: AP2-N001 must
@@ -1665,9 +1665,9 @@ for each slot. This still leaves the production hash computation open, but the
 final theorem shape can no longer put a verified report beside an unrelated
 concrete numeric certificate without exposing the missing digest equalities.
 `SelectedRustAcceptedSpendSoundnessEvidenceReport.ReportVerified` now also
-requires all seven accepted-spend numeric digest slots to be nonempty
+requires all seven accepted-spend numeric digest slots to be nonzero
 `ByteArray`s, and the source gate exact-checks the seven corresponding
-`reportVerified_*_nonempty` projection theorems. This mirrors the Rust
+`reportVerified_*_nonzero` projection theorems. This mirrors the Rust
 verifier's rejection of placeholder digest slots and prevents the Lean report
 verification route from collapsing to three Boolean flags.
 `SelectedRustFullSignatureReductionEvidenceReport.ReportVerified` now applies
