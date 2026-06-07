@@ -1524,6 +1524,12 @@ on a named `selectedRustConcreteAcceptedSpendNumericCertificate`. A regression
 rejects the previous shape where the concrete conversion was merely mentioned
 under another local name while `ofReportAndBound` received a generic selected
 numeric source.
+The same gate now rejects global `def`/`abbrev` record literals for
+`selectedRustConcreteAcceptedSpendNumericCertificateSource` or
+`selectedRustConcreteAcceptedSpendNumericCertificate`; a regression prepends
+such a source to the otherwise accepted theorem shape and keeps the gate open,
+so the concrete active-carrier wrapper must come from a named
+production-derived source route.
 `Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
 active full-spend named breaks, so the numeric game can index its union bound by
 the actual active break family.

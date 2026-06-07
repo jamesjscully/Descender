@@ -28855,6 +28855,12 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "def selectedRustAcceptedSpendEvidenceDigestBound := True",
         "def selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
         "def selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
+        "def selectedRustConcreteAcceptedSpendNumericCertificateSource := {",
+        "def selectedRustConcreteAcceptedSpendNumericCertificateSource : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
+        "def selectedRustConcreteAcceptedSpendNumericCertificateSource := ⟨",
+        "def selectedRustConcreteAcceptedSpendNumericCertificate := {",
+        "def selectedRustConcreteAcceptedSpendNumericCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
+        "def selectedRustConcreteAcceptedSpendNumericCertificate := ⟨",
         "def selectedRustAcceptedSpendForgeryProb := 0",
         "def selectedRustAcceptedSpendForgeryProb : ℝ := 0",
         "def selectedRustAcceptedSpendForgeryProb : ℝ := (0 : ℝ)",
@@ -28883,6 +28889,12 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "abbrev selectedRustAcceptedSpendEvidenceDigestBound := True",
         "abbrev selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
         "abbrev selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
+        "abbrev selectedRustConcreteAcceptedSpendNumericCertificateSource := {",
+        "abbrev selectedRustConcreteAcceptedSpendNumericCertificateSource : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
+        "abbrev selectedRustConcreteAcceptedSpendNumericCertificateSource := ⟨",
+        "abbrev selectedRustConcreteAcceptedSpendNumericCertificate := {",
+        "abbrev selectedRustConcreteAcceptedSpendNumericCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
+        "abbrev selectedRustConcreteAcceptedSpendNumericCertificate := ⟨",
         "abbrev selectedRustAcceptedSpendForgeryProb := 0",
         "abbrev selectedRustAcceptedSpendForgeryBound := 0",
         "abbrev selectedRustProductionAcceptedSpendForgeryProb := 0",
@@ -53333,6 +53345,23 @@ def selectedRustAcceptedSpendFactsAllTrueProof := True.intro
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &global_vacuous_accepted_spend_report_proofs
+            )
+        );
+        let global_vacuous_concrete_numeric_source = format!(
+            "{}\n{}",
+            r#"
+def selectedRustConcreteAcceptedSpendNumericCertificateSource :=
+  { pricedCertificate := selectedRustPricedAcceptedSpendNumericCertificate
+    outcomeCarrierPinned := selectedRustAcceptedSpendOutcomeCarrierPinned
+    acceptedSpendEventPinned := selectedRustAcceptedSpendEventPinned
+    breakFamilyPinned := selectedRustAcceptedSpendBreakFamilyPinned
+    namedBreakEventsPinned := selectedRustAcceptedSpendNamedBreakEventsPinned }
+"#,
+            accepted_spend_instantiation_shape
+        );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &global_vacuous_concrete_numeric_source
             )
         );
         let concrete_numeric_source_mentioned_but_not_consumed =
