@@ -1483,6 +1483,9 @@ The priced certificate and selected numeric source now additionally expose
 component-bound projections for the accepted-spend event, each named break
 event, and the finite component-budget inequality into the priced bound; these
 projection names are also required by the source gate.
+The concrete active-carrier wrapper mirrors those component-bound projections,
+so the future theorem must expose them before erasing the active outcome
+carrier and break-family pins into the generic selected numeric source.
 The numeric source now pins event semantics, not only carrier types.
 `PricedAcceptedSpendNumericCertificate` exposes stored-instance accessors for
 observed outcomes, accepted-spend events, and named break events, and

@@ -1100,6 +1100,37 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le
       Cert.pricedCertificate.pricedBound :=
   Cert.pricedCertificate.acceptedSpendProb_le_pricedBound
 
+/-- The selected concrete numeric certificate exposes its accepted-spend component bound. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_acceptedSpendBound
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    Cert.pricedCertificate.acceptedSpendProb <=
+      Cert.pricedCertificate.acceptedSpendBound :=
+  Cert.pricedCertificate.acceptedSpendProb_le_acceptedSpendBound
+
+/-- The selected concrete numeric certificate exposes each named-break component bound. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_le_breakBound
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate)
+    (breakEvent : Cert.pricedCertificate.Break) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        Cert.pricedCertificate.Trace
+        Cert.pricedCertificate.Outcome
+        Cert.pricedCertificate.Break
+        Cert.pricedCertificate.traceFintype
+        Cert.pricedCertificate.breakFintype
+        Cert.pricedCertificate.game breakEvent <=
+      Cert.pricedCertificate.breakBound breakEvent :=
+  Cert.pricedCertificate.breakProb_le_breakBound breakEvent
+
+/-- The selected concrete numeric certificate exposes the finite component budget. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.breakBudget_le_pricedBound
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    Cert.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Cert.pricedCertificate.Break
+          Cert.pricedCertificate.breakFintype).sum
+            Cert.pricedCertificate.breakBound <=
+      Cert.pricedCertificate.pricedBound :=
+  Cert.pricedCertificate.breakBudget_le_pricedBound
+
 /-- The selected concrete numeric certificate prices full-forgery success by the union bound. -/
 theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_unionBound
     (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
