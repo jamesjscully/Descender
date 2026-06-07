@@ -28492,9 +28492,10 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
     let stripped_account_design_source =
         lean_source_without_comments_and_strings_v1(account_design_source);
     let account_design_source = stripped_account_design_source.as_str();
-    let Some(certificate_start) =
-        account_design_source.find("\nstructure SelectedRustFullSignatureReductionEvidenceReport")
-    else {
+    let Some(certificate_start) = lean_source_find_exact_declaration_marker_v1(
+        account_design_source,
+        "\nstructure SelectedRustFullSignatureReductionEvidenceReport",
+    ) else {
         return false;
     };
     let certificate_end = account_design_source[certificate_start..]
@@ -28554,9 +28555,20 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
         "fullSignatureSecurityClaimComplete",
     ];
+    let exact_declarations = [
+        "\nstructure SelectedRustFullSignatureReductionEvidenceReport",
+        "\ndef SelectedRustFullSignatureReductionEvidenceReport.ReportVerified",
+        "\ndef SelectedRustFullSignatureReductionEvidenceReport.FactsAllTrue",
+        "\nstructure SelectedRustFullSignatureReductionCertificate",
+        "\ndef SelectedRustFullSignatureReductionCertificate.ofReportAndReduction",
+        "\ndef SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
+    ];
     certificate_checks
         .iter()
         .all(|marker| certificate_source.contains(marker))
+        && exact_declarations.iter().all(|marker| {
+            lean_source_has_exact_declaration_marker_v1(account_design_source, marker)
+        })
 }
 
 fn path2_full_signature_reduction_certificate_instantiated_v1() -> bool {
@@ -52121,6 +52133,26 @@ def selectedRustProductionCheckedCoreAcceptorAccepts := fun _ _ _ _ => False
         );
         assert!(path2_full_signature_reduction_certificate_boundary_present_v1());
         assert!(preflight.full_signature_reduction_certificate_boundary_present);
+        let suffixed_full_reduction_report_source = native_account_design_source.replacen(
+            "\nstructure SelectedRustFullSignatureReductionEvidenceReport",
+            "\nstructure SelectedRustFullSignatureReductionEvidenceReportSpoof",
+            1,
+        );
+        assert!(
+            !path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
+                &suffixed_full_reduction_report_source
+            )
+        );
+        let suffixed_full_reduction_certificate_source = native_account_design_source.replacen(
+            "\nstructure SelectedRustFullSignatureReductionCertificate",
+            "\nstructure SelectedRustFullSignatureReductionCertificateSpoof",
+            1,
+        );
+        assert!(
+            !path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
+                &suffixed_full_reduction_certificate_source
+            )
+        );
         assert!(!path2_full_signature_reduction_certificate_instantiated_v1());
         assert!(!preflight.full_signature_reduction_certificate_instantiated);
         let spoofed_full_signature_reduction_certificate = r#"

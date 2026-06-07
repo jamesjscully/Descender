@@ -1375,6 +1375,12 @@ aliases for the selected signature probability, production pin, accepted-spend
 inequality, and core full-signature modeling propositions, even when every
 active prerequisite marker is present. This remains a fail-closed scanner
 hardening; it does not instantiate the production full-reduction theorem.
+The full-reduction boundary source gate now requires exact Lean declarations
+for the selected reduction evidence report, report/facts predicates,
+certificate structure, and certificate constructor/projection functions.
+Regressions reject suffixed report/certificate structures, keeping the final
+active reduction boundary tied to the named certificate family rather than a
+shadow source shape.
 The same gate now also rejects global `def`/`abbrev` aliases that set the
 report/digest binding proofs, report-verified/facts proofs,
 keygen/signing/completeness/verifier/full-forgery model proofs,
