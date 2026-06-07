@@ -1527,6 +1527,10 @@ The accepted-spend certificate now also exposes
 inequality before conversion to `NativeAcceptedSpendSoundnessBoundary`; the
 source gate requires the future selected theorem to consume this certificate
 projection.
+It also exposes `acceptedSpendForgeryBound_le_reportedSecurity` and
+`acceptedSpendForgeryProb_le_reportedSecurity`, keeping the reported
+`acceptedSpendPricedBoundSecurityBits` theorem-visible after the selected
+numeric source is packaged.
 The concrete wrapper also exposes selected theorem projections for accepted-
 spend probability below the priced bound, full-forgery success below the union
 bound, and full-forgery success below the priced bound. The numeric-bound source

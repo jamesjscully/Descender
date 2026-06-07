@@ -1818,6 +1818,28 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_l
     _ = Cert.acceptedSpendForgeryBound :=
       Cert.acceptedSpendForgeryBoundMatchesPriced.symm
 
+/-- The selected accepted-spend certificate prices its exported bound by reported security bits. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_reportedSecurity
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.acceptedSpendForgeryBound <=
+      ((2 : ℝ) ^ Cert.evidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹ := by
+  calc
+    Cert.acceptedSpendForgeryBound =
+        Cert.pricedNumericCertificate.pricedBound :=
+      Cert.acceptedSpendForgeryBoundMatchesPriced
+    _ <= ((2 : ℝ) ^
+          Cert.evidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹ :=
+      Cert.acceptedSpendPricedBoundSecurityPriced
+
+/-- The selected accepted-spend certificate prices accepted-spend probability by reported security bits. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_reportedSecurity
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.acceptedSpendForgeryProb <=
+      ((2 : ℝ) ^ Cert.evidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹ :=
+  le_trans
+    Cert.acceptedSpendForgeryProb_le_bound
+    Cert.acceptedSpendForgeryBound_le_reportedSecurity
+
 /-- Convert selected Rust accepted-spend numeric evidence into the boundary. -/
 def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
     (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :

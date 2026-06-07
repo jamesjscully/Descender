@@ -29278,6 +29278,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessCertificate",
         "SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_reportedSecurity",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_reportedSecurity",
         "acceptedSpendNumericBoundPriced",
         "numericEvidenceDigestsVerified",
         "finiteTraceSupportDigest",
@@ -53470,6 +53472,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     activeSerializerAllowlist_boundaryNoExportClosed
   let _acceptedSpendCertificateProbBound :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound
+  let _acceptedSpendCertificateBoundSecurity :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_reportedSecurity
+  let _acceptedSpendCertificateProbSecurity :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_reportedSecurity
   let selectedRustAcceptedSpendSoundnessCertificate :
       SelectedRustAcceptedSpendSoundnessCertificate :=
     SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
@@ -53665,6 +53671,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     activeSerializerAllowlist_boundaryNoExportClosed
   let _acceptedSpendCertificateProbBound :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound
+  let _acceptedSpendCertificateBoundSecurity :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_reportedSecurity
+  let _acceptedSpendCertificateProbSecurity :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_reportedSecurity
   let selectedRustAcceptedSpendSoundnessCertificate :
       SelectedRustAcceptedSpendSoundnessCertificate :=
     SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
