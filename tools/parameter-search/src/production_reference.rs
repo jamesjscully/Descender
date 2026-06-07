@@ -29491,6 +29491,22 @@ fn path2_no_export_serializer_instantiated_in_source_v1(concrete_source: &str) -
     if forbidden_variable_stub {
         return false;
     }
+    let normalized_concrete_source = concrete_source.split_whitespace().collect::<String>();
+    let contains_normalized_source = |marker: &str| {
+        normalized_concrete_source.contains(&marker.split_whitespace().collect::<String>())
+    };
+    let forbidden_vacuous_global_terms = [
+        "def selectedRustActiveSerializerEvidenceReportVerifiedProof := True.intro",
+        "def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro",
+        "abbrev selectedRustActiveSerializerEvidenceReportVerifiedProof := True.intro",
+        "abbrev selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro",
+    ];
+    if forbidden_vacuous_global_terms
+        .iter()
+        .any(|term| concrete_source.contains(term) || contains_normalized_source(term))
+    {
+        return false;
+    }
     let theorem_start_marker = format!("\ntheorem {theorem_name}");
     concrete_source
         .match_indices(&theorem_start_marker)
@@ -53799,6 +53815,17 @@ end Path2NoExportConcrete
 "#;
         assert!(path2_no_export_serializer_instantiated_in_source_v1(
             no_export_instantiation_shape
+        ));
+        let global_vacuous_no_export_report_proofs = format!(
+            "{}\n{}",
+            r#"
+def selectedRustActiveSerializerEvidenceReportVerifiedProof := True.intro
+def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
+"#,
+            no_export_instantiation_shape
+        );
+        assert!(!path2_no_export_serializer_instantiated_in_source_v1(
+            &global_vacuous_no_export_report_proofs
         ));
         let suffixed_no_export_instantiation = no_export_instantiation_shape.replacen(
             "theorem selectedRustActiveNoExportSerializer_instantiation_v1",
