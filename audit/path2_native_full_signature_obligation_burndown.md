@@ -2233,6 +2233,15 @@ the finite sum of named-break probabilities. The accepted-spend source gate
 requires these identifiers, so the remaining concrete pricing proof must price
 the exact active accepted-plus-break decomposition rather than an opaque
 aggregate event.
+AP2-N003 component-budget note: `PricedAcceptedSpendNumericCertificate`,
+`SelectedAcceptedSpendNumericSource`,
+`SelectedRustConcreteAcceptedSpendNumericCertificate`,
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate`, and
+`SelectedRustConcreteAcceptedSpendPricingWitness` now expose
+`unionBound_le_componentBudget` and `successProb_le_componentBudget`. The
+accepted-spend source gate requires those projections, so the final pricing
+proof must explicitly pass through component-wise accepted-spend and named-break
+bounds before using the final priced-bound budget.
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit

@@ -1644,6 +1644,16 @@ theorem unionBound_eq_acceptedSpendProb_add_breakProb_sum
               W.concreteCertificate.pricedCertificate.game breakEvent) :=
   W.concreteCertificate.pricedCertificate.unionBound_eq_acceptedSpendProb_add_breakProb_sum
 
+/-- The selected pricing witness bounds the union expression by the component budget. -/
+theorem unionBound_le_componentBudget
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.unionBound <=
+      W.concreteCertificate.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ W.concreteCertificate.pricedCertificate.Break
+          W.concreteCertificate.pricedCertificate.breakFintype).sum
+            W.concreteCertificate.pricedCertificate.breakBound :=
+  W.concreteCertificate.pricedCertificate.unionBound_le_componentBudget
+
 /-- The selected pricing witness exposes each concrete named-break component bound. -/
 theorem breakProb_le_breakBound
     (W : SelectedRustConcreteAcceptedSpendPricingWitness)
@@ -1674,6 +1684,16 @@ theorem successProb_le_pricedBound
     W.concreteCertificate.pricedCertificate.successProb <=
       W.concreteCertificate.pricedCertificate.pricedBound :=
   W.concreteCertificate.pricedCertificate.successProb_le_pricedBound
+
+/-- The selected pricing witness bounds full-forgery success by the component budget. -/
+theorem successProb_le_componentBudget
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.successProb <=
+      W.concreteCertificate.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ W.concreteCertificate.pricedCertificate.Break
+          W.concreteCertificate.pricedCertificate.breakFintype).sum
+            W.concreteCertificate.pricedCertificate.breakBound :=
+  W.concreteCertificate.pricedCertificate.successProb_le_componentBudget
 
 /-- The selected pricing witness prices its concrete bound by the selected target bits. -/
 theorem pricedBound_le_targetSecurity
@@ -1938,6 +1958,16 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.unionBound_eq_accept
               Cert.pricedCertificate.game breakEvent) :=
   Cert.pricedCertificate.unionBound_eq_acceptedSpendProb_add_breakProb_sum
 
+/-- The selected concrete numeric certificate bounds the union expression by the component budget. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.unionBound_le_componentBudget
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    Cert.pricedCertificate.unionBound <=
+      Cert.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Cert.pricedCertificate.Break
+          Cert.pricedCertificate.breakFintype).sum
+            Cert.pricedCertificate.breakBound :=
+  Cert.pricedCertificate.unionBound_le_componentBudget
+
 /-- The selected concrete numeric certificate exposes accepted-spend probability at most one. -/
 theorem SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_one
     (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
@@ -1987,6 +2017,16 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_union
     Cert.pricedCertificate.successProb <=
       Cert.pricedCertificate.unionBound :=
   Cert.pricedCertificate.successProb_le_unionBound
+
+/-- The selected concrete numeric certificate bounds success by the component budget. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_componentBudget
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    Cert.pricedCertificate.successProb <=
+      Cert.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Cert.pricedCertificate.Break
+          Cert.pricedCertificate.breakFintype).sum
+            Cert.pricedCertificate.breakBound :=
+  Cert.pricedCertificate.successProb_le_componentBudget
 
 /-- The selected concrete numeric certificate prices full-forgery success by the deployment bound. -/
 theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_pricedBound
@@ -2104,6 +2144,26 @@ theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.unionBound_eq_
               Source.concreteCertificate.pricedCertificate.breakFintype
               Source.concreteCertificate.pricedCertificate.game breakEvent) :=
   Source.concreteCertificate.unionBound_eq_acceptedSpendProb_add_breakProb_sum
+
+/-- The source-bound concrete certificate bounds the union expression by the component budget. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.unionBound_le_componentBudget
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.pricedCertificate.unionBound <=
+      Source.concreteCertificate.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Source.concreteCertificate.pricedCertificate.Break
+          Source.concreteCertificate.pricedCertificate.breakFintype).sum
+            Source.concreteCertificate.pricedCertificate.breakBound :=
+  Source.concreteCertificate.unionBound_le_componentBudget
+
+/-- The source-bound concrete certificate bounds success by the component budget. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le_componentBudget
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.pricedCertificate.successProb <=
+      Source.concreteCertificate.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Source.concreteCertificate.pricedCertificate.Break
+          Source.concreteCertificate.pricedCertificate.breakFintype).sum
+            Source.concreteCertificate.pricedCertificate.breakBound :=
+  Source.concreteCertificate.successProb_le_componentBudget
 
 /-- The source-bound report says the accepted-spend numeric bound is priced. -/
 theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBoundPriced

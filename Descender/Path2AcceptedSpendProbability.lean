@@ -436,6 +436,20 @@ theorem breakProb_le_one
     C.Trace C.Outcome C.Break C.traceFintype C.breakFintype C.game
     breakEvent
 
+/-- The packaged union expression is bounded by the constructive component budget. -/
+theorem unionBound_le_componentBudget
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.unionBound <=
+      C.acceptedSpendBound +
+        (@Finset.univ C.Break C.breakFintype).sum C.breakBound := by
+  rw [C.unionBound_eq_acceptedSpendProb_add_breakProb_sum]
+  exact
+    add_le_add
+      C.acceptedSpendProb_le_acceptedSpendBound
+      (Finset.sum_le_sum (by
+        intro breakEvent _hBreakEvent
+        exact C.breakProb_le_breakBound breakEvent))
+
 /-- The priced certificate's constructive component budget fits below its priced bound. -/
 theorem breakBudget_le_pricedBound
     (C : PricedAcceptedSpendNumericCertificate) :
@@ -513,6 +527,14 @@ theorem successProb_le_unionBound
     @AcceptedSpendNumericGame.successProb_le_acceptedSpendOrBreakUnionBound
       C.Trace C.Outcome C.Break C.traceFintype C.breakFintype
       C.breakDecidableEq C.game
+
+/-- The packaged full-signature success probability is below the component budget. -/
+theorem successProb_le_componentBudget
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.successProb <=
+      C.acceptedSpendBound +
+        (@Finset.univ C.Break C.breakFintype).sum C.breakBound :=
+  le_trans C.successProb_le_unionBound C.unionBound_le_componentBudget
 
 /-- The packaged full-signature success probability is below the priced bound. -/
 theorem successProb_le_pricedBound
@@ -621,6 +643,26 @@ theorem unionBound_eq_acceptedSpendProb_add_breakProb_sum
               Source.pricedCertificate.breakFintype
               Source.pricedCertificate.game breakEvent) :=
   Source.pricedCertificate.unionBound_eq_acceptedSpendProb_add_breakProb_sum
+
+/-- The selected source exposes the component-budget union bound. -/
+theorem unionBound_le_componentBudget
+    (Source : SelectedAcceptedSpendNumericSource) :
+    Source.pricedCertificate.unionBound <=
+      Source.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Source.pricedCertificate.Break
+          Source.pricedCertificate.breakFintype).sum
+            Source.pricedCertificate.breakBound :=
+  Source.pricedCertificate.unionBound_le_componentBudget
+
+/-- The selected source exposes that success is below the component budget. -/
+theorem successProb_le_componentBudget
+    (Source : SelectedAcceptedSpendNumericSource) :
+    Source.pricedCertificate.successProb <=
+      Source.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Source.pricedCertificate.Break
+          Source.pricedCertificate.breakFintype).sum
+            Source.pricedCertificate.breakBound :=
+  Source.pricedCertificate.successProb_le_componentBudget
 
 /-- The selected source exposes the accepted-spend component bound. -/
 theorem acceptedSpendProb_le_acceptedSpendBound
