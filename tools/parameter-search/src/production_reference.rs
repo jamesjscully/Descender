@@ -29434,17 +29434,29 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "namedBreakEventBoundsPriced",
         "breakPricingBudgetMeetsPricedBound",
         "acceptedSpendNumericBudgetMeetsTarget",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBoundPriced",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_finiteTraceSupportPriced",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeOutcomeCarrierPinned",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_acceptedSpendEventPinned",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBreakFamilyPinned",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventsPinned",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_unionBoundPriced",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_acceptedSpendEventBoundPriced",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventBoundsPriced",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_breakPricingBudgetMeetsPricedBound",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBudgetMeetsTarget",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_targetSecurityBits",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_qromQuadraticLossBits",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetSlackBits",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityWithinTranscript",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityBits_le_transcriptCap",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_reportedSecurityBound_le_targetSecurityBound",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_hiddenSourceClosureReady",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_checkedCoreClosureReady",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_lifecycleReplayClosureReady",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_noExportClosureReady",
         "selectedRustAcceptedSpendEvidenceReport",
         "selectedRustAcceptedSpendEvidenceDigest",
         "selectedRustAcceptedSpendEvidenceReportBound",
@@ -29512,16 +29524,28 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_unionBoundPriced",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBoundPriced",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_finiteTraceSupportPriced",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeOutcomeCarrierPinned",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_acceptedSpendEventPinned",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBreakFamilyPinned",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventsPinned",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_acceptedSpendEventBoundPriced",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventBoundsPriced",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_breakPricingBudgetMeetsPricedBound",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBudgetMeetsTarget",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_targetSecurityBits",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_qromQuadraticLossBits",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetSlackBits",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityWithinTranscript",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityBits_le_transcriptCap",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_reportedSecurityBound_le_targetSecurityBound",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_hiddenSourceClosureReady",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_checkedCoreClosureReady",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_lifecycleReplayClosureReady",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_noExportClosureReady",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
     ];
     instantiation_checks
@@ -53598,6 +53622,18 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.breakPricingBudgetMeetsPricedBound
   let _acceptedSpendReportBudgetMeetsTarget :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendNumericBudgetMeetsTarget
+  let _acceptedSpendReportNumericBoundPricedProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBoundPriced
+  let _acceptedSpendReportFiniteTraceSupportProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_finiteTraceSupportPriced
+  let _acceptedSpendReportActiveOutcomeCarrierProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeOutcomeCarrierPinned
+  let _acceptedSpendReportAcceptedSpendEventProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_acceptedSpendEventPinned
+  let _acceptedSpendReportActiveBreakFamilyProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBreakFamilyPinned
+  let _acceptedSpendReportNamedBreakEventsProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventsPinned
   let _acceptedSpendReportUnionBoundPricedProof :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_unionBoundPriced
   let _acceptedSpendReportAcceptedSpendBoundPricedProof :=
@@ -53606,10 +53642,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventBoundsPriced
   let _acceptedSpendReportBreakBudgetPricedProof :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_breakPricingBudgetMeetsPricedBound
+  let _acceptedSpendReportBudgetMeetsTargetProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBudgetMeetsTarget
   let _acceptedSpendReportPricedBoundBitsMeetsTarget :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget
   let _acceptedSpendReportTargetSecurityBits :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_targetSecurityBits
+  let _acceptedSpendReportQromLoss :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_qromQuadraticLossBits
   let _acceptedSpendReportActiveBudgetMargin :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced
   let _acceptedSpendReportActiveBudgetSlack :=
@@ -53620,6 +53660,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityBits_le_transcriptCap
   let _acceptedSpendReportReportedBoundWithinTarget :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_reportedSecurityBound_le_targetSecurityBound
+  let _acceptedSpendReportHiddenSourceReady :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_hiddenSourceClosureReady
+  let _acceptedSpendReportCheckedCoreReady :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_checkedCoreClosureReady
+  let _acceptedSpendReportLifecycleReady :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_lifecycleReplayClosureReady
+  let _acceptedSpendReportNoExportReady :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_noExportClosureReady
   let _acceptedSpendFiniteTraceSupport :=
     PricedAcceptedSpendNumericCertificate.traceFintype
   let _acceptedSpendPackagedObserve :=
@@ -53951,6 +53999,18 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.breakPricingBudgetMeetsPricedBound
   let _acceptedSpendReportBudgetMeetsTarget :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendNumericBudgetMeetsTarget
+  let _acceptedSpendReportNumericBoundPricedProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBoundPriced
+  let _acceptedSpendReportFiniteTraceSupportProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_finiteTraceSupportPriced
+  let _acceptedSpendReportActiveOutcomeCarrierProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeOutcomeCarrierPinned
+  let _acceptedSpendReportAcceptedSpendEventProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_acceptedSpendEventPinned
+  let _acceptedSpendReportActiveBreakFamilyProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBreakFamilyPinned
+  let _acceptedSpendReportNamedBreakEventsProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventsPinned
   let _acceptedSpendReportUnionBoundPricedProof :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_unionBoundPriced
   let _acceptedSpendReportAcceptedSpendBoundPricedProof :=
@@ -53959,10 +54019,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventBoundsPriced
   let _acceptedSpendReportBreakBudgetPricedProof :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_breakPricingBudgetMeetsPricedBound
+  let _acceptedSpendReportBudgetMeetsTargetProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBudgetMeetsTarget
   let _acceptedSpendReportPricedBoundBitsMeetsTarget :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget
   let _acceptedSpendReportTargetSecurityBits :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_targetSecurityBits
+  let _acceptedSpendReportQromLoss :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_qromQuadraticLossBits
   let _acceptedSpendReportActiveBudgetMargin :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced
   let _acceptedSpendReportActiveBudgetSlack :=
@@ -53973,6 +54037,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityBits_le_transcriptCap
   let _acceptedSpendReportReportedBoundWithinTarget :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_reportedSecurityBound_le_targetSecurityBound
+  let _acceptedSpendReportHiddenSourceReady :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_hiddenSourceClosureReady
+  let _acceptedSpendReportCheckedCoreReady :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_checkedCoreClosureReady
+  let _acceptedSpendReportLifecycleReady :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_lifecycleReplayClosureReady
+  let _acceptedSpendReportNoExportReady :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_noExportClosureReady
   let _acceptedSpendFiniteTraceSupport :=
     PricedAcceptedSpendNumericCertificate.traceFintype
   let _acceptedSpendPackagedObserve :=

@@ -1479,6 +1479,11 @@ Those bits also have named `FactsAllTrue` projection theorems that are consumed
 by the selected accepted-spend certificate and exact-checked by the Rust source
 gate, so the final theorem must expose each constructive pricing subclaim on
 the active proof route.
+The remaining report readiness bits now have the same treatment: finite trace
+support, active outcome carrier, accepted-spend event semantics, active
+break-family, named-break semantics, numeric-budget readiness, selected QROM
+loss, and prerequisite closure readiness are all exposed as named projections
+consumed by the selected certificate and required by the source gate.
 The priced certificate and selected numeric source now additionally expose
 component-bound projections for the accepted-spend event, each named break
 event, and the finite component-budget inequality into the priced bound; these

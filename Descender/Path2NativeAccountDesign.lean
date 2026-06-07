@@ -1635,6 +1635,60 @@ def SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue
   E.lifecycleReplayClosureReady = true ∧
   E.noExportClosureReady = true
 
+/-- A complete accepted-spend report says the selected numeric bound is priced. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBoundPriced
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.acceptedSpendNumericBoundPriced = true := by
+  rcases h with
+    ⟨hNumericBoundPriced, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _⟩
+  exact hNumericBoundPriced
+
+/-- A complete accepted-spend report prices the finite trace support. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_finiteTraceSupportPriced
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.finiteTraceSupportPriced = true := by
+  rcases h with
+    ⟨_, hFiniteTraceSupportPriced, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _⟩
+  exact hFiniteTraceSupportPriced
+
+/-- A complete accepted-spend report pins the active outcome carrier. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeOutcomeCarrierPinned
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.activeOutcomeCarrierPinned = true := by
+  rcases h with
+    ⟨_, _, hActiveOutcomeCarrierPinned, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _⟩
+  exact hActiveOutcomeCarrierPinned
+
+/-- A complete accepted-spend report pins accepted-spend event semantics. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_acceptedSpendEventPinned
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.acceptedSpendEventPinned = true := by
+  rcases h with
+    ⟨_, _, _, hAcceptedSpendEventPinned, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _⟩
+  exact hAcceptedSpendEventPinned
+
+/-- A complete accepted-spend report pins the active break family. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBreakFamilyPinned
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.activeBreakFamilyPinned = true := by
+  rcases h with
+    ⟨_, _, _, _, hActiveBreakFamilyPinned, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _⟩
+  exact hActiveBreakFamilyPinned
+
+/-- A complete accepted-spend report pins named-break event semantics. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventsPinned
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.namedBreakEventsPinned = true := by
+  rcases h with
+    ⟨_, _, _, _, _, hNamedBreakEventsPinned, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _⟩
+  exact hNamedBreakEventsPinned
+
 /-- A complete accepted-spend report prices the aggregate accepted-spend union bound. -/
 theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_unionBoundPriced
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
@@ -1671,6 +1725,15 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_breakPrici
     ⟨_, _, _, _, _, _, _, _, _, hBreakBudgetPriced, _, _, _, _, _, _, _, _, _, _, _, _⟩
   exact hBreakBudgetPriced
 
+/-- A complete accepted-spend report says the selected numeric budget meets target. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBudgetMeetsTarget
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.acceptedSpendNumericBudgetMeetsTarget = true := by
+  rcases h with
+    ⟨_, _, _, _, _, _, _, _, _, _, hNumericBudgetMeetsTarget, _, _, _, _, _, _, _, _, _, _, _⟩
+  exact hNumericBudgetMeetsTarget
+
 /-- A complete accepted-spend report proves its priced-bound bits meet target. -/
 theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
@@ -1688,6 +1751,15 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_targetSecu
   rcases h with
     ⟨_, _, _, _, _, _, _, _, _, _, _, hTarget, _, _, _, _, _, _, _, _, _, _⟩
   exact hTarget
+
+/-- A complete accepted-spend report pins the selected QROM loss. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_qromQuadraticLossBits
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.qromQuadraticLossBitsAtDeploymentBound = 32 := by
+  rcases h with
+    ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, hQromLoss, _, _, _, _, _, _, _, _⟩
+  exact hQromLoss
 
 /-- A complete accepted-spend report prices the selected active multi-target horizon. -/
 theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced
@@ -1745,6 +1817,42 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_reportedSe
     inv_pow_le_inv_pow_of_le (a := (2 : ℝ)) (by norm_num)
       (SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget
         E h)
+
+/-- A complete accepted-spend report records hidden-source closure readiness. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_hiddenSourceClosureReady
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.hiddenSourceClosureReady = true := by
+  rcases h with
+    ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, hHiddenSource, _, _, _⟩
+  exact hHiddenSource
+
+/-- A complete accepted-spend report records checked-core closure readiness. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_checkedCoreClosureReady
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.checkedCoreClosureReady = true := by
+  rcases h with
+    ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, hCheckedCore, _, _⟩
+  exact hCheckedCore
+
+/-- A complete accepted-spend report records lifecycle/replay closure readiness. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_lifecycleReplayClosureReady
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.lifecycleReplayClosureReady = true := by
+  rcases h with
+    ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, hLifecycle, _⟩
+  exact hLifecycle
+
+/-- A complete accepted-spend report records no-export closure readiness. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_noExportClosureReady
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.noExportClosureReady = true := by
+  rcases h with
+    ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, hNoExport⟩
+  exact hNoExport
 
 /--
 Selected Rust/model certificate for the accepted-spend numeric soundness layer.
@@ -1926,6 +2034,36 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_l
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityBits_le_transcriptCap
         Cert.evidenceReport
         Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hNumericBoundPriced :
+      Cert.evidenceReport.acceptedSpendNumericBoundPriced = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBoundPriced
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hFiniteTraceSupportPriced :
+      Cert.evidenceReport.finiteTraceSupportPriced = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_finiteTraceSupportPriced
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hActiveOutcomeCarrierPinned :
+      Cert.evidenceReport.activeOutcomeCarrierPinned = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeOutcomeCarrierPinned
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hAcceptedSpendEventPinned :
+      Cert.evidenceReport.acceptedSpendEventPinned = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_acceptedSpendEventPinned
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hActiveBreakFamilyPinned :
+      Cert.evidenceReport.activeBreakFamilyPinned = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBreakFamilyPinned
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hNamedBreakEventsPinned :
+      Cert.evidenceReport.namedBreakEventsPinned = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventsPinned
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
   let _hUnionBoundPriced :
       Cert.evidenceReport.acceptedSpendUnionBoundPriced = true :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_unionBoundPriced
@@ -1944,6 +2082,36 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_l
   let _hBreakPricingBudgetMeetsPricedBound :
       Cert.evidenceReport.breakPricingBudgetMeetsPricedBound = true :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_breakPricingBudgetMeetsPricedBound
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hNumericBudgetMeetsTarget :
+      Cert.evidenceReport.acceptedSpendNumericBudgetMeetsTarget = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBudgetMeetsTarget
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hQromQuadraticLossBits :
+      Cert.evidenceReport.qromQuadraticLossBitsAtDeploymentBound = 32 :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_qromQuadraticLossBits
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hHiddenSourceClosureReady :
+      Cert.evidenceReport.hiddenSourceClosureReady = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_hiddenSourceClosureReady
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hCheckedCoreClosureReady :
+      Cert.evidenceReport.checkedCoreClosureReady = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_checkedCoreClosureReady
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hLifecycleReplayClosureReady :
+      Cert.evidenceReport.lifecycleReplayClosureReady = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_lifecycleReplayClosureReady
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hNoExportClosureReady :
+      Cert.evidenceReport.noExportClosureReady = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_noExportClosureReady
         Cert.evidenceReport
         Cert.selectedRustAcceptedSpendFactsAllTrueProof
   let _hPricedBoundSecurity :
@@ -2080,6 +2248,36 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
       SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityBits_le_transcriptCap
           Cert.evidenceReport
           Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hNumericBoundPriced :
+        Cert.evidenceReport.acceptedSpendNumericBoundPriced = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBoundPriced
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hFiniteTraceSupportPriced :
+        Cert.evidenceReport.finiteTraceSupportPriced = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_finiteTraceSupportPriced
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hActiveOutcomeCarrierPinned :
+        Cert.evidenceReport.activeOutcomeCarrierPinned = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeOutcomeCarrierPinned
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hAcceptedSpendEventPinned :
+        Cert.evidenceReport.acceptedSpendEventPinned = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_acceptedSpendEventPinned
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hActiveBreakFamilyPinned :
+        Cert.evidenceReport.activeBreakFamilyPinned = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBreakFamilyPinned
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hNamedBreakEventsPinned :
+        Cert.evidenceReport.namedBreakEventsPinned = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_namedBreakEventsPinned
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
     let _hUnionBoundPriced :
         Cert.evidenceReport.acceptedSpendUnionBoundPriced = true :=
       SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_unionBoundPriced
@@ -2098,6 +2296,36 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
     let _hBreakPricingBudgetMeetsPricedBound :
         Cert.evidenceReport.breakPricingBudgetMeetsPricedBound = true :=
       SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_breakPricingBudgetMeetsPricedBound
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hNumericBudgetMeetsTarget :
+        Cert.evidenceReport.acceptedSpendNumericBudgetMeetsTarget = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBudgetMeetsTarget
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hQromQuadraticLossBits :
+        Cert.evidenceReport.qromQuadraticLossBitsAtDeploymentBound = 32 :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_qromQuadraticLossBits
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hHiddenSourceClosureReady :
+        Cert.evidenceReport.hiddenSourceClosureReady = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_hiddenSourceClosureReady
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hCheckedCoreClosureReady :
+        Cert.evidenceReport.checkedCoreClosureReady = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_checkedCoreClosureReady
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hLifecycleReplayClosureReady :
+        Cert.evidenceReport.lifecycleReplayClosureReady = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_lifecycleReplayClosureReady
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hNoExportClosureReady :
+        Cert.evidenceReport.noExportClosureReady = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_noExportClosureReady
           Cert.evidenceReport
           Cert.selectedRustAcceptedSpendFactsAllTrueProof
     let _hPricedBoundSecurity :
