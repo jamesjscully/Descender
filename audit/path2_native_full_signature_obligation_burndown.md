@@ -1375,6 +1375,13 @@ hardening; it does not instantiate the production full-reduction theorem.
 complete-claim construction paths. The full-reduction source gate requires
 named selected report/digest binding propositions and proofs, and rejects
 `True` aliases for those bindings.
+`SelectedRustFullSignatureReductionEvidenceReport` now also carries
+`reductionEvidenceDigestsVerified` plus public digest slots for production
+signature probability, signature-to-accepted-spend linkage, full-execution
+source consumption, active hash boundary consumption, query-budget pricing,
+multi-target pricing, and verifier-game binding. `ReportVerified` requires the
+digest-verification bit, and the full-reduction source gate requires these
+markers before accepting the future final theorem shape.
 The same all-candidate exact-name scan now applies to
 `concreteFullSignatureExecutionSource_instantiation_v1`, so full-execution
 source closure also rejects suffixed theorem spoofs without making a later

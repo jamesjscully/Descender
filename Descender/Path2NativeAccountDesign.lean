@@ -1835,6 +1835,14 @@ production evidence before constructing `NativeFullSignatureSecurityBoundary`.
 structure SelectedRustFullSignatureReductionEvidenceReport where
   schemaMatches : Bool
   reportDigestVerified : Bool
+  reductionEvidenceDigestsVerified : Bool
+  productionSignatureProbabilityDigest : ByteArray
+  signatureAcceptedSpendLinkDigest : ByteArray
+  fullExecutionSourceDigest : ByteArray
+  activeHashBoundaryDigest : ByteArray
+  queryBudgetPricingDigest : ByteArray
+  multiTargetPricingDigest : ByteArray
+  verifierGameBindingDigest : ByteArray
   productionSignatureProbabilityPinned : Bool
   signatureSuccessMatchesAcceptedSpendGame : Bool
   acceptedSpendProbabilityLinked : Bool
@@ -1848,7 +1856,8 @@ structure SelectedRustFullSignatureReductionEvidenceReport where
 def SelectedRustFullSignatureReductionEvidenceReport.ReportVerified
     (E : SelectedRustFullSignatureReductionEvidenceReport) : Prop :=
   E.schemaMatches = true ∧
-  E.reportDigestVerified = true
+  E.reportDigestVerified = true ∧
+  E.reductionEvidenceDigestsVerified = true
 
 /-- Every production full-signature reduction fact recorded by the report holds. -/
 def SelectedRustFullSignatureReductionEvidenceReport.FactsAllTrue

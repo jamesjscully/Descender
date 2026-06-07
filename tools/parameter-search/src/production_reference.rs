@@ -28094,6 +28094,14 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
     let certificate_source = &account_design_source[certificate_start..certificate_end];
     let certificate_checks = [
         "SelectedRustFullSignatureReductionEvidenceReport",
+        "reductionEvidenceDigestsVerified",
+        "productionSignatureProbabilityDigest",
+        "signatureAcceptedSpendLinkDigest",
+        "fullExecutionSourceDigest",
+        "activeHashBoundaryDigest",
+        "queryBudgetPricingDigest",
+        "multiTargetPricingDigest",
+        "verifierGameBindingDigest",
         "productionSignatureProbabilityPinned",
         "signatureSuccessMatchesAcceptedSpendGame",
         "acceptedSpendProbabilityLinked",
@@ -28418,6 +28426,14 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "let selectedRustFullSignatureReductionCertificate :",
         "SelectedRustFullSignatureReductionCertificate",
         "SelectedRustFullSignatureReductionCertificate.ofReportAndReduction",
+        "reductionEvidenceDigestsVerified",
+        "productionSignatureProbabilityDigest",
+        "signatureAcceptedSpendLinkDigest",
+        "fullExecutionSourceDigest",
+        "activeHashBoundaryDigest",
+        "queryBudgetPricingDigest",
+        "multiTargetPricingDigest",
+        "verifierGameBindingDigest",
         "selectedRustFullSignatureReductionEvidenceReport",
         "selectedRustFullSignatureReductionEvidenceDigest",
         "selectedRustFullSignatureReductionEvidenceReportBound",
@@ -51811,6 +51827,22 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     activeNativeHashBudgetBoundary
   let _activeHashBoundaryProps :=
     activeNativeHashBudgetBoundary_hashBoundaryProps
+  let _fullReductionDigestSlotsVerified :=
+    SelectedRustFullSignatureReductionEvidenceReport.reductionEvidenceDigestsVerified
+  let _fullReductionSignatureProbabilityDigest :=
+    SelectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityDigest
+  let _fullReductionAcceptedSpendLinkDigest :=
+    SelectedRustFullSignatureReductionEvidenceReport.signatureAcceptedSpendLinkDigest
+  let _fullReductionExecutionSourceDigest :=
+    SelectedRustFullSignatureReductionEvidenceReport.fullExecutionSourceDigest
+  let _fullReductionHashBoundaryDigest :=
+    SelectedRustFullSignatureReductionEvidenceReport.activeHashBoundaryDigest
+  let _fullReductionQueryPricingDigest :=
+    SelectedRustFullSignatureReductionEvidenceReport.queryBudgetPricingDigest
+  let _fullReductionMultiTargetPricingDigest :=
+    SelectedRustFullSignatureReductionEvidenceReport.multiTargetPricingDigest
+  let _fullReductionVerifierGameDigest :=
+    SelectedRustFullSignatureReductionEvidenceReport.verifierGameBindingDigest
   let selectedRustFullSignatureReductionCertificate :
       SelectedRustFullSignatureReductionCertificate :=
     SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
