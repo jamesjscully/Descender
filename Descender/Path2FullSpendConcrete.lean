@@ -1543,6 +1543,103 @@ def toSelectedRustAcceptedSpendSoundnessBoundary
 
 end SelectedRustConcreteAcceptedSpendNumericSourceCertificate
 
+/--
+Production pricing witness for the active selected accepted-spend numeric
+report.
+
+This is the non-opaque route into `PricingFactsComplete`: it carries the
+concrete active-carrier numeric certificate, the real-valued priced-bound
+security inequality, the selected report pricing facts, and the digest bindings
+that tie the concrete certificate back to the selected public evidence report.
+-/
+structure SelectedRustConcreteAcceptedSpendPricingWitness where
+  concreteCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate
+  acceptedSpendPricedBoundSecurityPriced :
+    concreteCertificate.pricedCertificate.pricedBound <=
+      ((2 : ℝ) ^
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹
+  acceptedSpendNumericBoundPricedProof :
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendNumericBoundPriced = true
+  acceptedSpendEventBoundPricedProof :
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendEventBoundPriced = true
+  namedBreakEventBoundsPricedProof :
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).namedBreakEventBoundsPriced = true
+  breakPricingBudgetMeetsPricedBoundProof :
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).breakPricingBudgetMeetsPricedBound = true
+  acceptedSpendNumericBudgetMeetsTargetProof :
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendNumericBudgetMeetsTarget = true
+  acceptedSpendPricedBoundSecurityMeetsTargetProof :
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).targetSecurityBits ≤
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits
+  acceptedSpendPricedBoundSecurityWithinTranscriptProof :
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits +
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).selectedMultiTargetHorizonLog2 ≤
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).transcriptTermBitsAfterQromLoss
+  finiteTraceSupportDigestBoundProof :
+    concreteCertificate.finiteTraceSupportDigest =
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).finiteTraceSupportDigest
+  activeOutcomeCarrierDigestBoundProof :
+    concreteCertificate.activeOutcomeCarrierDigest =
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).activeOutcomeCarrierDigest
+  acceptedSpendEventSemanticsDigestBoundProof :
+    concreteCertificate.acceptedSpendEventSemanticsDigest =
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendEventSemanticsDigest
+  activeBreakFamilyDigestBoundProof :
+    concreteCertificate.activeBreakFamilyDigest =
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).activeBreakFamilyDigest
+  namedBreakEventsDigestBoundProof :
+    concreteCertificate.namedBreakEventsDigest =
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).namedBreakEventsDigest
+  acceptedSpendUnionBoundPricingDigestBoundProof :
+    concreteCertificate.acceptedSpendUnionBoundPricingDigest =
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendUnionBoundPricingDigest
+  acceptedSpendPricedBoundDigestBoundProof :
+    concreteCertificate.acceptedSpendPricedBoundDigest =
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundDigest
+
+namespace SelectedRustConcreteAcceptedSpendPricingWitness
+
+/-- The selected pricing witness supplies the active report pricing half. -/
+theorem pricingFactsComplete
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    Descender.Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.PricingFactsComplete
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport :=
+  ⟨W.acceptedSpendNumericBoundPricedProof,
+    W.acceptedSpendEventBoundPricedProof,
+    W.namedBreakEventBoundsPricedProof,
+    W.breakPricingBudgetMeetsPricedBoundProof,
+    W.acceptedSpendNumericBudgetMeetsTargetProof,
+    W.acceptedSpendPricedBoundSecurityMeetsTargetProof,
+    W.acceptedSpendPricedBoundSecurityWithinTranscriptProof⟩
+
+/-- The selected pricing witness carries the real-valued priced-bound inequality. -/
+theorem pricedBound_le_reportedSecurity
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.pricedBound <=
+      ((2 : ℝ) ^
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits)⁻¹ :=
+  W.acceptedSpendPricedBoundSecurityPriced
+
+/--
+Turn the selected pricing witness into the report-bound concrete numeric
+source certificate required by the accepted-spend soundness layer.
+-/
+def toConcreteNumericSourceCertificate
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate :=
+  SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofSelectedReportAndConcreteCertificatePricingFacts
+      (pricingFactsComplete W)
+      W.concreteCertificate
+      W.finiteTraceSupportDigestBoundProof
+      W.activeOutcomeCarrierDigestBoundProof
+      W.acceptedSpendEventSemanticsDigestBoundProof
+      W.activeBreakFamilyDigestBoundProof
+      W.namedBreakEventsDigestBoundProof
+      W.acceptedSpendUnionBoundPricingDigestBoundProof
+      W.acceptedSpendPricedBoundDigestBoundProof
+
+end SelectedRustConcreteAcceptedSpendPricingWitness
+
 /-- Forget the concrete active-carrier wrapper after its pins are checked. -/
 def SelectedRustConcreteAcceptedSpendNumericCertificate.toPricedAcceptedSpendNumericCertificate
     (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :

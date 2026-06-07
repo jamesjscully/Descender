@@ -2172,3 +2172,12 @@ builds the selected full-reduction certificate from the active selected report
 plus the future `ProductionFactsComplete` proof. The certificate layer no
 longer requires final theorem code to pass opaque monolithic `FactsAllTrue`
 witnesses once the hard halves are available.
+AP2-N003 concrete pricing-witness note:
+`SelectedRustConcreteAcceptedSpendPricingWitness` now pairs the concrete
+accepted-spend numeric certificate with the real priced-bound security
+inequality, the selected report pricing facts, and the digest bindings to the
+selected public evidence report. It derives both the active
+`PricingFactsComplete` proof and the report-bound concrete numeric source
+certificate. This makes the remaining accepted-spend hard half a single object
+that must carry both real probability pricing and the selected report bits,
+rather than letting those obligations be supplied independently.
