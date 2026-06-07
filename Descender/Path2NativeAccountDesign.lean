@@ -1723,6 +1723,71 @@ def SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue
   E.lifecycleReplayClosureReady = true ∧
   E.noExportClosureReady = true
 
+/-- Structural accepted-spend evidence facts already selected from active sources. -/
+def SelectedRustAcceptedSpendSoundnessEvidenceReport.StructuralFactsComplete
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport) : Prop :=
+  E.finiteTraceSupportPriced = true ∧
+  E.activeOutcomeCarrierPinned = true ∧
+  E.acceptedSpendEventPinned = true ∧
+  E.activeBreakFamilyPinned = true ∧
+  E.namedBreakEventsPinned = true ∧
+  E.acceptedSpendUnionBoundPriced = true ∧
+  E.targetSecurityBits = 128 ∧
+  E.selectedMultiTargetHorizonLog2 = 32 ∧
+  E.qromQuadraticLossBitsAtDeploymentBound = 32 ∧
+  E.transcriptTermBitsAfterQromLoss = 182 ∧
+  E.targetSecurityBits + E.selectedMultiTargetHorizonLog2 ≤
+    E.transcriptTermBitsAfterQromLoss ∧
+  E.hiddenSourceClosureReady = true ∧
+  E.checkedCoreClosureReady = true ∧
+  E.lifecycleReplayClosureReady = true ∧
+  E.noExportClosureReady = true
+
+/-- Accepted-spend facts that still require production probability pricing. -/
+def SelectedRustAcceptedSpendSoundnessEvidenceReport.PricingFactsComplete
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport) : Prop :=
+  E.acceptedSpendNumericBoundPriced = true ∧
+  E.acceptedSpendEventBoundPriced = true ∧
+  E.namedBreakEventBoundsPriced = true ∧
+  E.breakPricingBudgetMeetsPricedBound = true ∧
+  E.acceptedSpendNumericBudgetMeetsTarget = true ∧
+  E.targetSecurityBits ≤ E.acceptedSpendPricedBoundSecurityBits ∧
+  E.acceptedSpendPricedBoundSecurityBits + E.selectedMultiTargetHorizonLog2 ≤
+    E.transcriptTermBitsAfterQromLoss
+
+/-- Accepted-spend report completeness is exactly structural evidence plus pricing evidence. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_iff_structural_and_pricing
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport) :
+    E.FactsAllTrue ↔
+      E.StructuralFactsComplete ∧ E.PricingFactsComplete := by
+  constructor
+  · intro h
+    rcases h with
+      ⟨hNumeric, hFinite, hOutcome, hEvent, hBreakFamily, hNamedBreaks,
+        hUnion, hAcceptedBound, hNamedBreakBounds, hBreakBudget,
+        hNumericBudget, hTarget, hHorizon, hQrom, hTranscript, hTargetBits,
+        hActiveBudget, hClaimedBudget, hHidden, hChecked, hLifecycle,
+        hNoExport⟩
+    exact
+      ⟨⟨hFinite, hOutcome, hEvent, hBreakFamily, hNamedBreaks, hUnion,
+          hTarget, hHorizon, hQrom, hTranscript, hActiveBudget, hHidden,
+          hChecked, hLifecycle, hNoExport⟩,
+        ⟨hNumeric, hAcceptedBound, hNamedBreakBounds, hBreakBudget,
+          hNumericBudget, hTargetBits, hClaimedBudget⟩⟩
+  · intro h
+    rcases h with
+      ⟨⟨hFinite, hOutcome, hEvent, hBreakFamily, hNamedBreaks, hUnion,
+          hTarget, hHorizon, hQrom, hTranscript, hActiveBudget, hHidden,
+          hChecked, hLifecycle, hNoExport⟩,
+        ⟨hNumeric, hAcceptedBound, hNamedBreakBounds, hBreakBudget,
+          hNumericBudget, hTargetBits, hClaimedBudget⟩⟩
+    exact
+      ⟨hNumeric, hFinite, hOutcome, hEvent, hBreakFamily, hNamedBreaks,
+        hUnion, hAcceptedBound, hNamedBreakBounds, hBreakBudget,
+        hNumericBudget, hTarget, hHorizon, hQrom, hTranscript, hTargetBits,
+        hActiveBudget, hClaimedBudget, hHidden, hChecked, hLifecycle,
+        hNoExport⟩
+
 /-- A complete accepted-spend report says the selected numeric bound is priced. -/
 theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBoundPriced
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
@@ -2841,6 +2906,45 @@ def SelectedRustFullSignatureReductionEvidenceReport.FactsAllTrue
   E.allActiveQuerySymbolsPriced = true ∧
   E.multiTargetHorizonPriced = true ∧
   E.verifierGameMatchesProductionExecution = true
+
+/-- Full-reduction structural evidence already selected from active sources. -/
+def SelectedRustFullSignatureReductionEvidenceReport.StructuralFactsComplete
+    (E : SelectedRustFullSignatureReductionEvidenceReport) : Prop :=
+  E.fullExecutionSourceConsumed = true ∧
+  E.activeHashBoundaryConsumed = true ∧
+  E.multiTargetHorizonPriced = true
+
+/-- Full-reduction facts that still require the production model/reduction theorem. -/
+def SelectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete
+    (E : SelectedRustFullSignatureReductionEvidenceReport) : Prop :=
+  E.productionSignatureProbabilityPinned = true ∧
+  E.signatureSuccessMatchesAcceptedSpendGame = true ∧
+  E.acceptedSpendProbabilityLinked = true ∧
+  E.allActiveQuerySymbolsPriced = true ∧
+  E.verifierGameMatchesProductionExecution = true
+
+/-- Full-reduction completeness is exactly structural evidence plus production facts. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_iff_structural_and_production
+    (E : SelectedRustFullSignatureReductionEvidenceReport) :
+    E.FactsAllTrue ↔
+      E.StructuralFactsComplete ∧ E.ProductionFactsComplete := by
+  constructor
+  · intro h
+    rcases h with
+      ⟨hProbability, hAcceptedGame, hAcceptedLinked, hExecution, hHash,
+        hQuery, hMultiTarget, hVerifierGame⟩
+    exact
+      ⟨⟨hExecution, hHash, hMultiTarget⟩,
+        ⟨hProbability, hAcceptedGame, hAcceptedLinked, hQuery,
+          hVerifierGame⟩⟩
+  · intro h
+    rcases h with
+      ⟨⟨hExecution, hHash, hMultiTarget⟩,
+        ⟨hProbability, hAcceptedGame, hAcceptedLinked, hQuery,
+          hVerifierGame⟩⟩
+    exact
+      ⟨hProbability, hAcceptedGame, hAcceptedLinked, hExecution, hHash,
+        hQuery, hMultiTarget, hVerifierGame⟩
 
 /-- A complete full-reduction report pins the production signature probability. -/
 theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_productionSignatureProbabilityPinned

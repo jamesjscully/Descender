@@ -1737,6 +1737,13 @@ production signature-probability pinning, equality into the accepted-spend
 numeric game, accepted-spend probability linkage, all-symbol final query
 pricing, and verifier-game-to-production-execution binding remain the
 cryptographic/model proof obligations.
+Lean now exposes the same split as proof API: accepted-spend `FactsAllTrue` is
+equivalent to `StructuralFactsComplete ∧ PricingFactsComplete`, and
+full-reduction `FactsAllTrue` is equivalent to
+`StructuralFactsComplete ∧ ProductionFactsComplete`. The remaining AP2-N003
+route is therefore the accepted-spend pricing half first, then the
+full-reduction production half; the structural halves are no longer mixed into
+the hard blocker.
 The same fail-closed distinction is now stated at the certificate boundary:
 `SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossible`,
 `SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible`,
