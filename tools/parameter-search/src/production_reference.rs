@@ -14082,6 +14082,19 @@ fn lean_declaration_marker_has_exact_name_v1(
         .is_none_or(|next| !(next.is_ascii_alphanumeric() || next == '_' || next == '\''))
 }
 
+fn lean_source_has_exact_declaration_marker_v1(source: &str, marker: &str) -> bool {
+    source
+        .match_indices(marker)
+        .any(|(index, _)| lean_declaration_marker_has_exact_name_v1(source, index, marker))
+}
+
+fn lean_source_find_exact_declaration_marker_v1(source: &str, marker: &str) -> Option<usize> {
+    source
+        .match_indices(marker)
+        .find(|(index, _)| lean_declaration_marker_has_exact_name_v1(source, *index, marker))
+        .map(|(index, _)| index)
+}
+
 fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
     theorem_source: &str,
     theorem_name: &str,
@@ -27675,65 +27688,74 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
     let budget_source = stripped_budget_source.as_str();
     let domain_source = stripped_domain_source.as_str();
 
-    let Some(budget_start) =
-        budget_source.find("\ndef path2DirectQueryBudgetV1 : Path2DirectQueryBudgetV1 where")
-    else {
+    let Some(budget_start) = lean_source_find_exact_declaration_marker_v1(
+        budget_source,
+        "\ndef path2DirectQueryBudgetV1",
+    ) else {
         return false;
     };
-    let Some(budget_end_offset) =
-        budget_source[budget_start..].find("\nstructure Path2NativeHashQromReviewV1")
-    else {
+    let Some(budget_end) = lean_source_find_exact_declaration_marker_v1(
+        budget_source,
+        "\nstructure Path2NativeHashQromReviewV1",
+    ) else {
         return false;
     };
-    let budget_end = budget_end_offset + budget_start;
     let budget_window = &budget_source[budget_start..budget_end];
 
-    let Some(shape_start) = budget_source.find("\ndef AuxiliaryFq12ChallengeShapeComplete") else {
+    let Some(shape_start) = lean_source_find_exact_declaration_marker_v1(
+        budget_source,
+        "\ndef AuxiliaryFq12ChallengeShapeComplete",
+    ) else {
         return false;
     };
-    let Some(shape_end_offset) =
-        budget_source[shape_start..].find("\ndef Fq12ActionCollisionBudgetPriced")
-    else {
+    let Some(shape_end) = lean_source_find_exact_declaration_marker_v1(
+        budget_source,
+        "\ndef Fq12ActionCollisionBudgetPriced",
+    ) else {
         return false;
     };
-    let shape_end = shape_end_offset + shape_start;
     let shape_window = &budget_source[shape_start..shape_end];
 
-    let Some(collision_start) = budget_source.find("\ndef Fq12ActionCollisionBudgetPriced") else {
+    let Some(collision_start) = lean_source_find_exact_declaration_marker_v1(
+        budget_source,
+        "\ndef Fq12ActionCollisionBudgetPriced",
+    ) else {
         return false;
     };
-    let Some(collision_end_offset) = budget_source[collision_start..]
-        .find("\ntheorem path2_direct_query_budget_keeps_q_batch_inactive")
-    else {
+    let Some(collision_end) = lean_source_find_exact_declaration_marker_v1(
+        budget_source,
+        "\ntheorem path2_direct_query_budget_keeps_q_batch_inactive",
+    ) else {
         return false;
     };
-    let collision_end = collision_end_offset + collision_start;
     let collision_window = &budget_source[collision_start..collision_end];
 
-    let Some(horizon_start) =
-        domain_source.find("\ndef activeLaneAccountHorizonV1 : ActiveMultiTargetHorizon where")
-    else {
+    let Some(horizon_start) = lean_source_find_exact_declaration_marker_v1(
+        domain_source,
+        "\ndef activeLaneAccountHorizonV1",
+    ) else {
         return false;
     };
-    let Some(horizon_end_offset) =
-        domain_source[horizon_start..].find("\ndef fiftyFourBitAggregateTargetHorizonV1")
-    else {
+    let Some(horizon_end) = lean_source_find_exact_declaration_marker_v1(
+        domain_source,
+        "\ndef fiftyFourBitAggregateTargetHorizonV1",
+    ) else {
         return false;
     };
-    let horizon_end = horizon_end_offset + horizon_start;
     let horizon_window = &domain_source[horizon_start..horizon_end];
 
-    let Some(byte_domain_start) =
-        domain_source.find("\nstructure ActiveHashByteDomainEvidenceReport")
-    else {
+    let Some(byte_domain_start) = lean_source_find_exact_declaration_marker_v1(
+        domain_source,
+        "\nstructure ActiveHashByteDomainEvidenceReport",
+    ) else {
         return false;
     };
-    let Some(byte_domain_end_offset) =
-        domain_source[byte_domain_start..].find("\nstructure ActiveMultiTargetHorizon")
-    else {
+    let Some(byte_domain_end) = lean_source_find_exact_declaration_marker_v1(
+        domain_source,
+        "\nstructure ActiveMultiTargetHorizon",
+    ) else {
         return false;
     };
-    let byte_domain_end = byte_domain_end_offset + byte_domain_start;
     let byte_domain_window = &domain_source[byte_domain_start..byte_domain_end];
     if byte_domain_window
         .contains("activeHashByteDomainEvidenceDigestV1 : ByteArray :=\n  ByteArray.empty")
@@ -27742,9 +27764,10 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
         return false;
     }
 
-    let Some(boundary_start) =
-        domain_source.find("\ndef activePath2HashDomainAndMultiTargetCertificate")
-    else {
+    let Some(boundary_start) = lean_source_find_exact_declaration_marker_v1(
+        domain_source,
+        "\ndef activePath2HashDomainAndMultiTargetCertificate",
+    ) else {
         return false;
     };
     let Some(boundary_end_offset) =
@@ -27838,10 +27861,38 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
         "byteDomainCertificate",
         "toInstantiation",
     ];
+    let budget_exact_declarations = [
+        "\ndef path2DirectQueryBudgetV1",
+        "\ndef AuxiliaryFq12ChallengeShapeComplete",
+        "\ndef Fq12ActionCollisionBudgetPriced",
+        "\ntheorem path2_direct_query_budget_keeps_q_batch_inactive",
+        "\ntheorem path2_direct_query_budget_auxiliary_fq12_challenge_shape_complete",
+        "\ntheorem path2_direct_query_budget_fq12_action_collision_budget_priced",
+    ];
+    let domain_exact_declarations = [
+        "\nstructure ActiveHashByteDomainEvidenceReport",
+        "\ndef activeHashByteDomainInstantiationV1",
+        "\ntheorem active_checkedCoreFrameByteDomainSeparated",
+        "\ntheorem active_hiddenSourceFrameByteDomainSeparated",
+        "\ndef activeLaneAccountHorizonV1",
+        "\ndef fiftyFourBitAggregateTargetHorizonV1",
+        "\ntheorem fiftyFourBitAggregateTargetHorizon_not_priced",
+        "\ndef activePath2HashDomainAndMultiTargetCertificate",
+        "\ndef activeNativeHashBudgetBoundary",
+        "\ntheorem activeNativeHashBudgetBoundary_auxiliaryFq12ChallengeShapeComplete",
+        "\ntheorem activeNativeHashBudgetBoundary_fq12ActionCollisionBudgetPriced",
+        "\ntheorem activeNativeHashBudgetBoundary_multiTargetLossPriced",
+        "\ntheorem activeNativeHashBudgetBoundary_hashBoundaryProps",
+        "\ndef NativeFullSignatureSecurityBoundary.withActiveHashBoundary",
+        "\ntheorem full_signature_with_active_hash_boundary_props",
+    ];
 
     budget_checks
         .iter()
         .all(|marker| budget_window.contains(marker))
+        && budget_exact_declarations
+            .iter()
+            .all(|marker| lean_source_has_exact_declaration_marker_v1(budget_source, marker))
         && shape_checks
             .iter()
             .all(|marker| shape_window.contains(marker))
@@ -27857,7 +27908,9 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
         && boundary_checks
             .iter()
             .all(|marker| boundary_window.contains(marker))
-        && domain_source.contains("theorem fiftyFourBitAggregateTargetHorizon_not_priced")
+        && domain_exact_declarations
+            .iter()
+            .all(|marker| lean_source_has_exact_declaration_marker_v1(domain_source, marker))
 }
 
 fn path2_native_hash_byte_domain_evidence_source_present_v1() -> bool {
@@ -51339,6 +51392,42 @@ def marker :=
             !path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
                 string_budget_markers,
                 string_domain_markers
+            )
+        );
+        let hash_budget_source = include_str!("../../../Descender/Path2HashBudget.lean");
+        let hash_domain_source =
+            include_str!("../../../Descender/Path2HashDomainAndMultiTarget.lean");
+        let suffixed_auxiliary_shape_source = hash_budget_source.replacen(
+            "\ndef AuxiliaryFq12ChallengeShapeComplete",
+            "\ndef AuxiliaryFq12ChallengeShapeCompleteSpoof",
+            1,
+        );
+        assert!(
+            !path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
+                &suffixed_auxiliary_shape_source,
+                hash_domain_source,
+            )
+        );
+        let suffixed_multi_target_source = hash_domain_source.replacen(
+            "\ndef activeLaneAccountHorizonV1",
+            "\ndef activeLaneAccountHorizonV1Spoof",
+            1,
+        );
+        assert!(
+            !path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
+                hash_budget_source,
+                &suffixed_multi_target_source,
+            )
+        );
+        let suffixed_boundary_handoff_source = hash_domain_source.replacen(
+            "\ntheorem full_signature_with_active_hash_boundary_props",
+            "\ntheorem full_signature_with_active_hash_boundary_propsSpoof",
+            1,
+        );
+        assert!(
+            !path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
+                hash_budget_source,
+                &suffixed_boundary_handoff_source,
             )
         );
         assert!(
