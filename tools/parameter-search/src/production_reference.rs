@@ -45926,10 +45926,14 @@ mod tests {
             .map(|offset| after_declaration_marker + offset)
             .unwrap_or(boundary_source.len());
         let declaration = &boundary_source[declaration_start..declaration_end];
-        let field_marker = format!("{field_name} := ByteArray.mk #[");
+        let field_marker = format!("{field_name} :=");
+        let field_start = declaration
+            .find(&field_marker)
+            .unwrap_or_else(|| panic!("missing ByteArray field {def_name}.{field_name}"))
+            + field_marker.len();
         lean_byte_array_digest_after_marker(
-            declaration,
-            &field_marker,
+            &declaration[field_start..],
+            "ByteArray.mk #[",
             &format!("{def_name}.{field_name}"),
         )
     }
@@ -45968,6 +45972,37 @@ mod tests {
         panic!("missing bool literal for {def_name}.{field_name}")
     }
 
+    fn lean_selected_rust_record_u16_field(
+        boundary_source: &str,
+        def_name: &str,
+        field_name: &str,
+    ) -> u16 {
+        let boundary_source = lean_source_without_comments_and_strings_v1(boundary_source);
+        let declaration_marker = format!("\ndef {def_name} :");
+        let declaration_start = boundary_source
+            .find(&declaration_marker)
+            .unwrap_or_else(|| panic!("missing Lean record definition {def_name}"));
+        let after_declaration_marker = declaration_start + declaration_marker.len();
+        let declaration_end = boundary_source[after_declaration_marker..]
+            .find("\ndef ")
+            .map(|offset| after_declaration_marker + offset)
+            .unwrap_or(boundary_source.len());
+        let declaration = &boundary_source[declaration_start..declaration_end];
+        let field_marker = format!("{field_name} :=");
+        let field_start = declaration
+            .find(&field_marker)
+            .unwrap_or_else(|| panic!("missing numeric field {def_name}.{field_name}"))
+            + field_marker.len();
+        let field_tail = declaration[field_start..].trim_start();
+        let literal: String = field_tail
+            .chars()
+            .take_while(|ch| ch.is_ascii_digit())
+            .collect();
+        literal
+            .parse::<u16>()
+            .unwrap_or_else(|err| panic!("invalid numeric field {def_name}.{field_name}: {err}"))
+    }
+
     fn assert_lean_record_bool_fields_match(
         boundary_source: &str,
         def_name: &str,
@@ -45976,6 +46011,20 @@ mod tests {
         for &(field_name, expected) in fields {
             assert_eq!(
                 lean_selected_rust_record_bool_field(boundary_source, def_name, field_name),
+                expected,
+                "{def_name}.{field_name}"
+            );
+        }
+    }
+
+    fn assert_lean_record_u16_fields_match(
+        boundary_source: &str,
+        def_name: &str,
+        fields: &[(&str, u16)],
+    ) {
+        for &(field_name, expected) in fields {
+            assert_eq!(
+                lean_selected_rust_record_u16_field(boundary_source, def_name, field_name),
                 expected,
                 "{def_name}.{field_name}"
             );
@@ -49071,6 +49120,286 @@ mod tests {
         assert!(!rendered.contains("\"production_signature_probability_pinned\":true"));
         assert!(!rendered.contains("\"verifier_game_matches_production_execution\":true"));
         assert_no_active_native_private_material(&rendered);
+    }
+
+    #[test]
+    fn path2_native_ap2_n003_lean_selected_reports_match_rust_evidence() {
+        let lean_source = include_str!("../../../Descender/Path2NativeAccountDesign.lean");
+        let accepted_spend = path2_native_accepted_spend_numeric_evidence_v1();
+        let full_reduction = path2_native_full_signature_reduction_evidence_v1();
+
+        assert_eq!(
+            lean_selected_rust_byte_array_digest_constant(
+                lean_source,
+                "selectedRustAcceptedSpendEvidenceDigest",
+            ),
+            path2_native_accepted_spend_numeric_evidence_v1_digest(&accepted_spend).unwrap()
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                lean_source,
+                "selectedRustAcceptedSpendEvidenceReport",
+                "finiteTraceSupportDigest",
+            ),
+            accepted_spend.finite_trace_support_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                lean_source,
+                "selectedRustAcceptedSpendEvidenceReport",
+                "activeOutcomeCarrierDigest",
+            ),
+            accepted_spend.active_outcome_carrier_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                lean_source,
+                "selectedRustAcceptedSpendEvidenceReport",
+                "acceptedSpendEventSemanticsDigest",
+            ),
+            accepted_spend.accepted_spend_event_semantics_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                lean_source,
+                "selectedRustAcceptedSpendEvidenceReport",
+                "activeBreakFamilyDigest",
+            ),
+            accepted_spend.active_break_family_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                lean_source,
+                "selectedRustAcceptedSpendEvidenceReport",
+                "namedBreakEventsDigest",
+            ),
+            accepted_spend.named_break_events_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                lean_source,
+                "selectedRustAcceptedSpendEvidenceReport",
+                "acceptedSpendUnionBoundPricingDigest",
+            ),
+            accepted_spend.accepted_spend_union_bound_pricing_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                lean_source,
+                "selectedRustAcceptedSpendEvidenceReport",
+                "acceptedSpendPricedBoundDigest",
+            ),
+            accepted_spend.accepted_spend_priced_bound_digest
+        );
+        assert_lean_record_bool_fields_match(
+            lean_source,
+            "selectedRustAcceptedSpendEvidenceReport",
+            &[
+                ("schemaMatches", accepted_spend.schema_matches),
+                (
+                    "reportDigestVerified",
+                    accepted_spend.report_digest_verified,
+                ),
+                (
+                    "numericEvidenceDigestsVerified",
+                    accepted_spend.numeric_evidence_digests_verified,
+                ),
+                (
+                    "acceptedSpendNumericBoundPriced",
+                    accepted_spend.accepted_spend_numeric_bound_priced,
+                ),
+                (
+                    "finiteTraceSupportPriced",
+                    accepted_spend.finite_trace_support_priced,
+                ),
+                (
+                    "activeOutcomeCarrierPinned",
+                    accepted_spend.active_outcome_carrier_pinned,
+                ),
+                (
+                    "acceptedSpendEventPinned",
+                    accepted_spend.accepted_spend_event_pinned,
+                ),
+                (
+                    "activeBreakFamilyPinned",
+                    accepted_spend.active_break_family_pinned,
+                ),
+                (
+                    "namedBreakEventsPinned",
+                    accepted_spend.named_break_events_pinned,
+                ),
+                (
+                    "acceptedSpendUnionBoundPriced",
+                    accepted_spend.accepted_spend_union_bound_priced,
+                ),
+                (
+                    "acceptedSpendEventBoundPriced",
+                    accepted_spend.accepted_spend_event_bound_priced,
+                ),
+                (
+                    "namedBreakEventBoundsPriced",
+                    accepted_spend.named_break_event_bounds_priced,
+                ),
+                (
+                    "breakPricingBudgetMeetsPricedBound",
+                    accepted_spend.break_pricing_budget_meets_priced_bound,
+                ),
+                (
+                    "acceptedSpendNumericBudgetMeetsTarget",
+                    accepted_spend.accepted_spend_numeric_budget_meets_target,
+                ),
+                (
+                    "hiddenSourceClosureReady",
+                    accepted_spend.hidden_source_closure_ready,
+                ),
+                (
+                    "checkedCoreClosureReady",
+                    accepted_spend.checked_core_closure_ready,
+                ),
+                (
+                    "lifecycleReplayClosureReady",
+                    accepted_spend.lifecycle_replay_closure_ready,
+                ),
+                (
+                    "noExportClosureReady",
+                    accepted_spend.no_export_closure_ready,
+                ),
+            ],
+        );
+        assert_lean_record_u16_fields_match(
+            lean_source,
+            "selectedRustAcceptedSpendEvidenceReport",
+            &[
+                ("targetSecurityBits", accepted_spend.target_security_bits),
+                (
+                    "selectedMultiTargetHorizonLog2",
+                    accepted_spend.selected_multi_target_horizon_log2,
+                ),
+                (
+                    "qromQuadraticLossBitsAtDeploymentBound",
+                    accepted_spend.qrom_quadratic_loss_bits_at_deployment_bound,
+                ),
+                (
+                    "transcriptTermBitsAfterQromLoss",
+                    accepted_spend.transcript_term_bits_after_qrom_loss,
+                ),
+                (
+                    "acceptedSpendPricedBoundSecurityBits",
+                    accepted_spend.accepted_spend_priced_bound_security_bits,
+                ),
+            ],
+        );
+
+        assert_eq!(
+            lean_selected_rust_byte_array_digest_constant(
+                lean_source,
+                "selectedRustFullSignatureReductionEvidenceDigest",
+            ),
+            path2_native_full_signature_reduction_evidence_v1_digest(&full_reduction).unwrap()
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                lean_source,
+                "selectedRustFullSignatureReductionEvidenceReport",
+                "productionSignatureProbabilityDigest",
+            ),
+            full_reduction.production_signature_probability_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                lean_source,
+                "selectedRustFullSignatureReductionEvidenceReport",
+                "signatureAcceptedSpendLinkDigest",
+            ),
+            full_reduction.signature_accepted_spend_link_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                lean_source,
+                "selectedRustFullSignatureReductionEvidenceReport",
+                "fullExecutionSourceDigest",
+            ),
+            full_reduction.full_execution_source_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                lean_source,
+                "selectedRustFullSignatureReductionEvidenceReport",
+                "activeHashBoundaryDigest",
+            ),
+            full_reduction.active_hash_boundary_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                lean_source,
+                "selectedRustFullSignatureReductionEvidenceReport",
+                "queryBudgetPricingDigest",
+            ),
+            full_reduction.query_budget_pricing_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                lean_source,
+                "selectedRustFullSignatureReductionEvidenceReport",
+                "multiTargetPricingDigest",
+            ),
+            full_reduction.multi_target_pricing_digest
+        );
+        assert_eq!(
+            lean_selected_rust_record_byte_array_digest_field(
+                lean_source,
+                "selectedRustFullSignatureReductionEvidenceReport",
+                "verifierGameBindingDigest",
+            ),
+            full_reduction.verifier_game_binding_digest
+        );
+        assert_lean_record_bool_fields_match(
+            lean_source,
+            "selectedRustFullSignatureReductionEvidenceReport",
+            &[
+                ("schemaMatches", full_reduction.schema_matches),
+                (
+                    "reportDigestVerified",
+                    full_reduction.report_digest_verified,
+                ),
+                (
+                    "reductionEvidenceDigestsVerified",
+                    full_reduction.reduction_evidence_digests_verified,
+                ),
+                (
+                    "productionSignatureProbabilityPinned",
+                    full_reduction.production_signature_probability_pinned,
+                ),
+                (
+                    "signatureSuccessMatchesAcceptedSpendGame",
+                    full_reduction.signature_success_matches_accepted_spend_game,
+                ),
+                (
+                    "acceptedSpendProbabilityLinked",
+                    full_reduction.accepted_spend_probability_linked,
+                ),
+                (
+                    "fullExecutionSourceConsumed",
+                    full_reduction.full_execution_source_consumed,
+                ),
+                (
+                    "activeHashBoundaryConsumed",
+                    full_reduction.active_hash_boundary_consumed,
+                ),
+                (
+                    "allActiveQuerySymbolsPriced",
+                    full_reduction.all_active_query_symbols_priced,
+                ),
+                (
+                    "multiTargetHorizonPriced",
+                    full_reduction.multi_target_horizon_priced,
+                ),
+                (
+                    "verifierGameMatchesProductionExecution",
+                    full_reduction.verifier_game_matches_production_execution,
+                ),
+            ],
+        );
     }
 
     fn native_projection_fixtures() -> (

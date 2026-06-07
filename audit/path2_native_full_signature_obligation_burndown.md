@@ -1686,6 +1686,11 @@ Lean also proves the current selected accepted-spend numeric and full-reduction
 reports cannot satisfy `FactsAllTrue`. These sanity guards keep the current
 verified-but-incomplete public reports separate from the future complete
 selected evidence values needed to close AP2-N003.
+The Rust regression `path2_native_ap2_n003_lean_selected_reports_match_rust_evidence`
+now parses those Lean selected report constants and compares every
+digest/boolean/numeric field plus the selected report-frame digest constants
+against the current Rust AP2-N003 evidence objects. This prevents stale Lean
+selected reports after source-window digest churn.
 `SelectedRustFullSignatureReductionEvidenceReport.ReportVerified` now applies
 the same digest-presence requirement to the seven full-reduction evidence slots:
 production signature probability, signature-to-accepted-spend link,
