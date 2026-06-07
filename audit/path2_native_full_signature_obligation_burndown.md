@@ -1416,7 +1416,9 @@ facade exports. The canonical report remains fail-closed: prerequisite closure
 bits that are already closed are true, while numeric pricing, finite trace
 support, active event pins, and union-bound pricing are false. A regression
 checks that flipping those readiness bits in a copied report does not satisfy
-the all-facts helper or verifier.
+the all-facts helper or verifier. The accepted-spend numeric instantiation gate
+now requires this Rust evidence source before scanning for the future Lean
+theorem.
 The probability game now separates finite trace support from the observed
 full-forgery outcome: `Trace` has `traceFintype`, while `Outcome` is reached
 through `observe` and need not be finite. This is required for the active

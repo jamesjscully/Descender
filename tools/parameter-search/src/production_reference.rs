@@ -27775,7 +27775,59 @@ fn path2_full_signature_execution_source_instantiation_candidate_source_v1(
         .all(|marker| instantiation_source.contains(marker))
 }
 
+fn path2_native_accepted_spend_numeric_evidence_source_present_v1() -> bool {
+    let rust_source = include_str!("production_reference.rs");
+    let Some(schema_start) =
+        rust_source.find("\npub const PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA")
+    else {
+        return false;
+    };
+    let Some(struct_start) =
+        rust_source.find("\npub struct Path2NativeAcceptedSpendNumericEvidenceV1")
+    else {
+        return false;
+    };
+    let Some(test_start) = rust_source.find(
+        "\n    fn path2_native_accepted_spend_numeric_evidence_stays_fail_closed_until_priced",
+    ) else {
+        return false;
+    };
+    let evidence_window = &rust_source[schema_start..rust_source.len().min(test_start + 8192)];
+    let source_checks = [
+        "Descender.Path2.NativeAcceptedSpendNumericEvidence.v1",
+        "Path2NativeAcceptedSpendNumericEvidenceV1",
+        "accepted_spend_numeric_bound_priced",
+        "finite_trace_support_priced",
+        "active_outcome_carrier_pinned",
+        "accepted_spend_event_pinned",
+        "active_break_family_pinned",
+        "named_break_events_pinned",
+        "accepted_spend_union_bound_priced",
+        "hidden_source_closure_ready",
+        "checked_core_closure_ready",
+        "lifecycle_replay_closure_ready",
+        "no_export_closure_ready",
+        "path2_native_accepted_spend_numeric_evidence_v1",
+        "path2_native_accepted_spend_numeric_evidence_v1_frame",
+        "path2_native_accepted_spend_numeric_evidence_v1_digest",
+        "path2_native_accepted_spend_numeric_evidence_report_verified_v1",
+        "path2_native_accepted_spend_numeric_evidence_all_facts_true",
+        "*evidence == path2_native_accepted_spend_numeric_evidence_v1()",
+        "verify_path2_native_accepted_spend_numeric_evidence_v1",
+        "forged_ready.accepted_spend_numeric_bound_priced = true",
+        "forged_ready.accepted_spend_event_pinned = true",
+        "Path 2 native accepted-spend numeric evidence mismatch",
+    ];
+    source_checks
+        .iter()
+        .all(|marker| evidence_window.contains(marker))
+        && struct_start > schema_start
+}
+
 fn path2_native_accepted_spend_numeric_bound_instantiated_v1() -> bool {
+    if !path2_native_accepted_spend_numeric_evidence_source_present_v1() {
+        return false;
+    }
     let account_design_source = include_str!("../../../Descender/Path2NativeAccountDesign.lean");
     let hidden_source_boundary_source =
         include_str!("../../../Descender/Path2HiddenSourceSemanticsBoundary.lean");
@@ -52378,6 +52430,7 @@ end Path2NativeAccountDesign
                 &suffixed_then_exact_accepted_spend_instantiation
             )
         );
+        assert!(path2_native_accepted_spend_numeric_evidence_source_present_v1());
         assert!(!path2_native_accepted_spend_numeric_bound_instantiated_v1());
         assert!(!preflight.accepted_spend_numeric_bound_instantiated);
         assert!(path2_no_export_serializer_boundary_present_v1());
