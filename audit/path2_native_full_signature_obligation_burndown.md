@@ -1572,6 +1572,12 @@ declaration name.
 
 P2FS-002 checked-core evidence-constructor hardening: `SelectedRustCheckedCoreByteEvidenceCertificate` now carries the public evidence digest and active hash byte-domain evidence digest, and has named constructor `ofReportAndComponents`, taking the checked-core evidence report, both digests, verification proof, all-facts proof, parser/frame/hash component facts, a named production checked-core acceptor, and a proof that the selected acceptor equals that production acceptor. The future selected-Rust checked-core theorem gate now requires this constructor and rejects anonymous certificate record literals or constructor-built `False` acceptors, so the checked-core byte-source instantiation must be report/digest-bound, hash-domain-evidence-bound, and production-predicate-pinned before AP2-N002 can close.
 
+P2FS-002 checked-core proof-shell hardening: the selected checked-core source
+gate now rejects `abbrev` aliases that set the report proof names to
+`True.intro`, and global aliases that set the selected or production checked
+core acceptor to `fun _ _ _ _ => False`. Regressions prepend those aliases to
+the otherwise accepted checked-core theorem shape and keep the gate open.
+
 P2FS-002 closure note: AP2-N002 is now closed on the active path. The selected
 checked-core theorem constructs the required evidence certificate from the
 report/digest-bound component relation, and Rust preflight advances past

@@ -27450,6 +27450,12 @@ fn path2_native_checked_core_selected_rust_instantiation_has_forbidden_stubs(
         "let selectedRustCheckedCoreEvidenceReport : SelectedRustCheckedCoreByteEvidenceReport :=",
         "def selectedRustCheckedCoreEvidenceReportVerifiedProof := True.intro",
         "def selectedRustCheckedCoreEvidenceFactsAllTrueProof := True.intro",
+        "abbrev selectedRustCheckedCoreEvidenceReportVerifiedProof := True.intro",
+        "abbrev selectedRustCheckedCoreEvidenceFactsAllTrueProof := True.intro",
+        "def selectedRustCheckedCoreAcceptorAccepts := fun _ _ _ _ => False",
+        "def selectedRustProductionCheckedCoreAcceptorAccepts := fun _ _ _ _ => False",
+        "abbrev selectedRustCheckedCoreAcceptorAccepts := fun _ _ _ _ => False",
+        "abbrev selectedRustProductionCheckedCoreAcceptorAccepts := fun _ _ _ _ => False",
     ]
     .iter()
     .any(|marker| lean_source.contains(marker));
@@ -51912,6 +51918,32 @@ end Path2CheckedCoreByteBridge
         assert!(
             path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
                 checked_core_instantiation_shape
+            )
+        );
+        let global_vacuous_checked_core_report_proofs = format!(
+            "{}\n{}",
+            r#"
+abbrev selectedRustCheckedCoreEvidenceReportVerifiedProof := True.intro
+abbrev selectedRustCheckedCoreEvidenceFactsAllTrueProof := True.intro
+"#,
+            checked_core_instantiation_shape
+        );
+        assert!(
+            !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
+                &global_vacuous_checked_core_report_proofs
+            )
+        );
+        let global_vacuous_checked_core_false_acceptor = format!(
+            "{}\n{}",
+            r#"
+def selectedRustCheckedCoreAcceptorAccepts := fun _ _ _ _ => False
+def selectedRustProductionCheckedCoreAcceptorAccepts := fun _ _ _ _ => False
+"#,
+            checked_core_instantiation_shape
+        );
+        assert!(
+            !path2_native_checked_core_selected_rust_instantiation_present_in_source_v1(
+                &global_vacuous_checked_core_false_acceptor
             )
         );
         let suffixed_checked_core_instantiation = checked_core_instantiation_shape.replacen(
