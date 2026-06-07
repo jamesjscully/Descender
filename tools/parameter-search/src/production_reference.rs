@@ -28088,6 +28088,34 @@ fn path2_full_signature_execution_source_instantiated_in_source_v1(
     if forbidden_variable_stub {
         return false;
     }
+    let normalized_full_spend_source = full_spend_source.split_whitespace().collect::<String>();
+    let contains_normalized_source = |marker: &str| {
+        normalized_full_spend_source.contains(&marker.split_whitespace().collect::<String>())
+    };
+    let forbidden_vacuous_global_terms = [
+        "def selectedRustFullExecutionEvidenceReport := {",
+        "def selectedRustFullExecutionEvidenceReport : SelectedRustFullExecutionEvidenceReport :=",
+        "def selectedRustFullExecutionEvidenceReport := ⟨",
+        "def selectedRustFullExecutionEvidenceDigest := ByteArray.empty",
+        "def selectedRustFullExecutionSourceVerifiedProof := True.intro",
+        "def selectedRustFullExecutionFactsAllTrueProof := True.intro",
+        "def selectedRustExecutionSucceeds := fun _ => False",
+        "def selectedRustProductionExecutionSucceeds := fun _ => False",
+        "abbrev selectedRustFullExecutionEvidenceReport := {",
+        "abbrev selectedRustFullExecutionEvidenceReport : SelectedRustFullExecutionEvidenceReport :=",
+        "abbrev selectedRustFullExecutionEvidenceReport := ⟨",
+        "abbrev selectedRustFullExecutionEvidenceDigest := ByteArray.empty",
+        "abbrev selectedRustFullExecutionSourceVerifiedProof := True.intro",
+        "abbrev selectedRustFullExecutionFactsAllTrueProof := True.intro",
+        "abbrev selectedRustExecutionSucceeds := fun _ => False",
+        "abbrev selectedRustProductionExecutionSucceeds := fun _ => False",
+    ];
+    if forbidden_vacuous_global_terms
+        .iter()
+        .any(|term| full_spend_source.contains(term) || contains_normalized_source(term))
+    {
+        return false;
+    }
     let theorem_start_marker = format!("\ntheorem {theorem_name}");
     full_spend_source
         .match_indices(&theorem_start_marker)
@@ -52714,6 +52742,32 @@ end Path2FullSpendConcrete
         assert!(
             path2_full_signature_execution_source_instantiated_in_source_v1(
                 full_execution_instantiation_shape
+            )
+        );
+        let global_vacuous_full_execution_source_proofs = format!(
+            "{}\n{}",
+            r#"
+def selectedRustFullExecutionSourceVerifiedProof := True.intro
+def selectedRustFullExecutionFactsAllTrueProof := True.intro
+"#,
+            full_execution_instantiation_shape
+        );
+        assert!(
+            !path2_full_signature_execution_source_instantiated_in_source_v1(
+                &global_vacuous_full_execution_source_proofs
+            )
+        );
+        let global_vacuous_false_full_execution_source = format!(
+            "{}\n{}",
+            r#"
+def selectedRustExecutionSucceeds := fun _ => False
+def selectedRustProductionExecutionSucceeds := fun _ => False
+"#,
+            full_execution_instantiation_shape
+        );
+        assert!(
+            !path2_full_signature_execution_source_instantiated_in_source_v1(
+                &global_vacuous_false_full_execution_source
             )
         );
         let suffixed_full_execution_instantiation = full_execution_instantiation_shape.replacen(

@@ -1403,6 +1403,11 @@ The same all-candidate exact-name scan now applies to
 `concreteFullSignatureExecutionSource_instantiation_v1`, so full-execution
 source closure also rejects suffixed theorem spoofs without making a later
 exact theorem unreachable.
+The full-execution source gate also rejects global `def`/`abbrev` aliases that
+set the selected execution report proofs to `True.intro` or set the selected
+execution-success predicates to `fun _ => False`; regressions prepend those
+aliases to the otherwise accepted full-execution theorem shape and keep the
+gate open.
 `selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1` now follows the
 same pattern for the active accepted-spend numeric-bound gate: suffixed theorem
 spoofs reject, and later exact selected declarations remain reachable.
