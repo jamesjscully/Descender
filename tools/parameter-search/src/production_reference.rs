@@ -2710,6 +2710,9 @@ pub fn path2_native_accepted_spend_numeric_evidence_all_facts_true(
         && evidence.accepted_spend_union_bound_priced
         && evidence.accepted_spend_numeric_budget_meets_target
         && evidence.accepted_spend_priced_bound_security_bits >= evidence.target_security_bits
+        && u32::from(evidence.target_security_bits)
+            + u32::from(evidence.selected_multi_target_horizon_log2)
+            <= u32::from(evidence.transcript_term_bits_after_qrom_loss)
         && evidence.hidden_source_closure_ready
         && evidence.checked_core_closure_ready
         && evidence.lifecycle_replay_closure_ready

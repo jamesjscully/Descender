@@ -1473,10 +1473,13 @@ scanner text.
 The accepted-spend numeric evidence report now carries public budget numbers
 for the target security bits, selected multi-target horizon, QROM loss,
 QROM-discounted transcript term, and claimed priced-bound security bits, plus
-`acceptedSpendNumericBudgetMeetsTarget`. The canonical Rust evidence still has
-priced-bound security bits `0` and the target predicate false, so it remains
-fail-closed; the future theorem gate requires these report markers before the
-numeric-bound instantiation can count.
+`acceptedSpendNumericBudgetMeetsTarget`. `FactsAllTrue` requires the target
+predicate plus the numeric inequalities
+`targetSecurityBits ≤ acceptedSpendPricedBoundSecurityBits` and
+`targetSecurityBits + selectedMultiTargetHorizonLog2 ≤
+transcriptTermBitsAfterQromLoss`; Rust mirrors those checks in the evidence
+`all_facts_true` helper. The canonical Rust evidence still has priced-bound
+security bits `0` and the target predicate false, so it remains fail-closed.
 The accepted-spend numeric-bound source gate now requires the consumed
 `selectedRustAcceptedSpendNumericSource` binding to be exactly the result of
 `SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource`

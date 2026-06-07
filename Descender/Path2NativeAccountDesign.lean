@@ -1615,6 +1615,9 @@ def SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue
   E.namedBreakEventsPinned = true ∧
   E.acceptedSpendUnionBoundPriced = true ∧
   E.acceptedSpendNumericBudgetMeetsTarget = true ∧
+  E.targetSecurityBits ≤ E.acceptedSpendPricedBoundSecurityBits ∧
+  E.targetSecurityBits + E.selectedMultiTargetHorizonLog2 ≤
+    E.transcriptTermBitsAfterQromLoss ∧
   E.hiddenSourceClosureReady = true ∧
   E.checkedCoreClosureReady = true ∧
   E.lifecycleReplayClosureReady = true ∧
