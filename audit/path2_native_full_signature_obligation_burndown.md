@@ -1513,9 +1513,11 @@ The source gate also rejects local/global `rfl` aliases for
 accepted-spend probability and bound tied to selected evidence rather than
 local definitional shells.
 The source gate also rejects global `def`/`abbrev` aliases that set
-`selectedRustAcceptedSpendBoundVerifiedProof` or
-`selectedRustAcceptedSpendFactsAllTrueProof` to `True.intro`; a regression
-prepends those aliases to the otherwise accepted theorem shape and keeps the
+`selectedRustAcceptedSpendEvidenceReportBoundProof`,
+`selectedRustAcceptedSpendEvidenceDigestBoundProof`,
+`selectedRustAcceptedSpendBoundVerifiedProof`, or
+`selectedRustAcceptedSpendFactsAllTrueProof` to `True.intro`; regressions
+prepend those aliases to the otherwise accepted theorem shape and keep the
 active numeric-bound gate open.
 The accepted-spend numeric-bound source gate now requires the consumed
 `selectedRustAcceptedSpendNumericSource` binding to be exactly the result of

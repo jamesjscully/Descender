@@ -28853,6 +28853,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "def selectedRustAcceptedSpendEvidenceDigest := ByteArray.empty",
         "def selectedRustAcceptedSpendEvidenceReportBound := True",
         "def selectedRustAcceptedSpendEvidenceDigestBound := True",
+        "def selectedRustAcceptedSpendEvidenceReportBoundProof := True.intro",
+        "def selectedRustAcceptedSpendEvidenceDigestBoundProof := True.intro",
         "def selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
         "def selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
         "def selectedRustConcreteAcceptedSpendNumericCertificateSource := {",
@@ -28887,6 +28889,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "abbrev selectedRustAcceptedSpendEvidenceDigest := ByteArray.empty",
         "abbrev selectedRustAcceptedSpendEvidenceReportBound := True",
         "abbrev selectedRustAcceptedSpendEvidenceDigestBound := True",
+        "abbrev selectedRustAcceptedSpendEvidenceReportBoundProof := True.intro",
+        "abbrev selectedRustAcceptedSpendEvidenceDigestBoundProof := True.intro",
         "abbrev selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
         "abbrev selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
         "abbrev selectedRustConcreteAcceptedSpendNumericCertificateSource := {",
@@ -53345,6 +53349,19 @@ def selectedRustAcceptedSpendFactsAllTrueProof := True.intro
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &global_vacuous_accepted_spend_report_proofs
+            )
+        );
+        let global_vacuous_accepted_spend_binding_proofs = format!(
+            "{}\n{}",
+            r#"
+def selectedRustAcceptedSpendEvidenceReportBoundProof := True.intro
+def selectedRustAcceptedSpendEvidenceDigestBoundProof := True.intro
+"#,
+            accepted_spend_instantiation_shape
+        );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &global_vacuous_accepted_spend_binding_proofs
             )
         );
         let global_vacuous_concrete_numeric_source = format!(
