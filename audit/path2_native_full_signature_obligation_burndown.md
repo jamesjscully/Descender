@@ -1484,6 +1484,9 @@ support, active outcome carrier, accepted-spend event semantics, active
 break-family, named-break semantics, numeric-budget readiness, selected QROM
 loss, and prerequisite closure readiness are all exposed as named projections
 consumed by the selected certificate and required by the source gate.
+Report verification is similarly split into named projections for schema match,
+report-digest verification, and numeric-evidence digest verification, so the
+selected certificate cannot consume report identity as an opaque proof blob.
 The priced certificate and selected numeric source now additionally expose
 component-bound projections for the accepted-spend event, each named break
 event, and the finite component-budget inequality into the priced bound; these

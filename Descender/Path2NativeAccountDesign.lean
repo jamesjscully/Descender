@@ -1607,6 +1607,27 @@ def SelectedRustAcceptedSpendSoundnessEvidenceReport.ReportVerified
   E.reportDigestVerified = true ∧
   E.numericEvidenceDigestsVerified = true
 
+/-- A verified accepted-spend report has the selected schema. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_schemaMatches
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.ReportVerified) :
+    E.schemaMatches = true := by
+  exact h.1
+
+/-- A verified accepted-spend report has its report digest checked. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.ReportVerified) :
+    E.reportDigestVerified = true := by
+  exact h.2.1
+
+/-- A verified accepted-spend report has its numeric evidence digests checked. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.ReportVerified) :
+    E.numericEvidenceDigestsVerified = true := by
+  exact h.2.2
+
 /-- All accepted-spend numeric and prerequisite closure facts are true. -/
 def SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport) : Prop :=
@@ -1998,6 +2019,21 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_l
     Cert.selectedRustAcceptedSpendBoundVerifiedProof
   let _hFacts : Cert.evidenceReport.FactsAllTrue :=
     Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hSchemaMatches :
+      Cert.evidenceReport.schemaMatches = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_schemaMatches
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendBoundVerifiedProof
+  let _hReportDigestVerified :
+      Cert.evidenceReport.reportDigestVerified = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendBoundVerifiedProof
+  let _hNumericEvidenceDigestsVerified :
+      Cert.evidenceReport.numericEvidenceDigestsVerified = true :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendBoundVerifiedProof
   let _hReportBound : Cert.evidenceReportBound :=
     Cert.evidenceReportBoundProof
   let _hDigestBound : Cert.evidenceDigestBound :=
@@ -2212,6 +2248,21 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
       Cert.selectedRustAcceptedSpendBoundVerifiedProof
     let _hFacts : Cert.evidenceReport.FactsAllTrue :=
       Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hSchemaMatches :
+        Cert.evidenceReport.schemaMatches = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_schemaMatches
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendBoundVerifiedProof
+    let _hReportDigestVerified :
+        Cert.evidenceReport.reportDigestVerified = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendBoundVerifiedProof
+    let _hNumericEvidenceDigestsVerified :
+        Cert.evidenceReport.numericEvidenceDigestsVerified = true :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendBoundVerifiedProof
     let _hReportBound : Cert.evidenceReportBound :=
       Cert.evidenceReportBoundProof
     let _hDigestBound : Cert.evidenceDigestBound :=

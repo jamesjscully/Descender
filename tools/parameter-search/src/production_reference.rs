@@ -29457,6 +29457,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_checkedCoreClosureReady",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_lifecycleReplayClosureReady",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_noExportClosureReady",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_schemaMatches",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified",
         "selectedRustAcceptedSpendEvidenceReport",
         "selectedRustAcceptedSpendEvidenceDigest",
         "selectedRustAcceptedSpendEvidenceReportBound",
@@ -29546,6 +29549,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_checkedCoreClosureReady",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_lifecycleReplayClosureReady",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_noExportClosureReady",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_schemaMatches",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
     ];
     instantiation_checks
@@ -53578,6 +53584,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendNumericBoundPriced
   let _acceptedSpendReportDigestSlotsVerified :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.numericEvidenceDigestsVerified
+  let _acceptedSpendReportSchemaProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_schemaMatches
+  let _acceptedSpendReportDigestProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified
+  let _acceptedSpendReportNumericDigestsProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified
   let _acceptedSpendReportFiniteTraceDigest :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.finiteTraceSupportDigest
   let _acceptedSpendReportOutcomeCarrierDigest :=
@@ -53955,6 +53967,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendNumericBoundPriced
   let _acceptedSpendReportDigestSlotsVerified :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.numericEvidenceDigestsVerified
+  let _acceptedSpendReportSchemaProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_schemaMatches
+  let _acceptedSpendReportDigestProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified
+  let _acceptedSpendReportNumericDigestsProof :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified
   let _acceptedSpendReportFiniteTraceDigest :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.finiteTraceSupportDigest
   let _acceptedSpendReportOutcomeCarrierDigest :=
