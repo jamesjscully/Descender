@@ -1664,6 +1664,12 @@ requires named witnesses plus source-certificate projection theorem references
 for each slot. This still leaves the production hash computation open, but the
 final theorem shape can no longer put a verified report beside an unrelated
 concrete numeric certificate without exposing the missing digest equalities.
+`SelectedRustAcceptedSpendSoundnessEvidenceReport.ReportVerified` now also
+requires all seven accepted-spend numeric digest slots to be nonempty
+`ByteArray`s, and the source gate exact-checks the seven corresponding
+`reportVerified_*_nonempty` projection theorems. This mirrors the Rust
+verifier's rejection of placeholder digest slots and prevents the Lean report
+verification route from collapsing to three Boolean flags.
 `Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
 active full-spend named breaks, so the numeric game can index its union bound by
 the actual active break family.

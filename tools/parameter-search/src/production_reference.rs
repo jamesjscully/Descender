@@ -29575,6 +29575,13 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_schemaMatches",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_finiteTraceSupportDigest_nonempty",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_activeOutcomeCarrierDigest_nonempty",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_acceptedSpendEventSemanticsDigest_nonempty",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_activeBreakFamilyDigest_nonempty",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_namedBreakEventsDigest_nonempty",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_unionBoundPricingDigest_nonempty",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_pricedBoundDigest_nonempty",
         "selectedRustAcceptedSpendEvidenceReport",
         "selectedRustAcceptedSpendEvidenceDigest",
         "selectedRustAcceptedSpendEvidenceReportBound",
@@ -29693,6 +29700,13 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_schemaMatches",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_finiteTraceSupportDigest_nonempty",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_activeOutcomeCarrierDigest_nonempty",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_acceptedSpendEventSemanticsDigest_nonempty",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_activeBreakFamilyDigest_nonempty",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_namedBreakEventsDigest_nonempty",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_unionBoundPricingDigest_nonempty",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_pricedBoundDigest_nonempty",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
     ];
     instantiation_checks
@@ -53731,6 +53745,20 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified
   let _acceptedSpendReportNumericDigestsProof :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified
+  let _acceptedSpendReportFiniteTraceDigestNonempty :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_finiteTraceSupportDigest_nonempty
+  let _acceptedSpendReportOutcomeDigestNonempty :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_activeOutcomeCarrierDigest_nonempty
+  let _acceptedSpendReportAcceptedEventDigestNonempty :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_acceptedSpendEventSemanticsDigest_nonempty
+  let _acceptedSpendReportBreakFamilyDigestNonempty :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_activeBreakFamilyDigest_nonempty
+  let _acceptedSpendReportNamedBreakDigestNonempty :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_namedBreakEventsDigest_nonempty
+  let _acceptedSpendReportUnionPricingDigestNonempty :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_unionBoundPricingDigest_nonempty
+  let _acceptedSpendReportPricedBoundDigestNonempty :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_pricedBoundDigest_nonempty
   let _acceptedSpendReportFiniteTraceDigest :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.finiteTraceSupportDigest
   let _acceptedSpendReportOutcomeCarrierDigest :=
@@ -54155,6 +54183,20 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified
   let _acceptedSpendReportNumericDigestsProof :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified
+  let _acceptedSpendReportFiniteTraceDigestNonempty :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_finiteTraceSupportDigest_nonempty
+  let _acceptedSpendReportOutcomeDigestNonempty :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_activeOutcomeCarrierDigest_nonempty
+  let _acceptedSpendReportAcceptedEventDigestNonempty :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_acceptedSpendEventSemanticsDigest_nonempty
+  let _acceptedSpendReportBreakFamilyDigestNonempty :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_activeBreakFamilyDigest_nonempty
+  let _acceptedSpendReportNamedBreakDigestNonempty :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_namedBreakEventsDigest_nonempty
+  let _acceptedSpendReportUnionPricingDigestNonempty :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_unionBoundPricingDigest_nonempty
+  let _acceptedSpendReportPricedBoundDigestNonempty :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_pricedBoundDigest_nonempty
   let _acceptedSpendReportFiniteTraceDigest :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.finiteTraceSupportDigest
   let _acceptedSpendReportOutcomeCarrierDigest :=

@@ -1605,7 +1605,14 @@ def SelectedRustAcceptedSpendSoundnessEvidenceReport.ReportVerified
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport) : Prop :=
   E.schemaMatches = true ∧
   E.reportDigestVerified = true ∧
-  E.numericEvidenceDigestsVerified = true
+  E.numericEvidenceDigestsVerified = true ∧
+  E.finiteTraceSupportDigest ≠ ByteArray.mk #[] ∧
+  E.activeOutcomeCarrierDigest ≠ ByteArray.mk #[] ∧
+  E.acceptedSpendEventSemanticsDigest ≠ ByteArray.mk #[] ∧
+  E.activeBreakFamilyDigest ≠ ByteArray.mk #[] ∧
+  E.namedBreakEventsDigest ≠ ByteArray.mk #[] ∧
+  E.acceptedSpendUnionBoundPricingDigest ≠ ByteArray.mk #[] ∧
+  E.acceptedSpendPricedBoundDigest ≠ ByteArray.mk #[]
 
 /-- A verified accepted-spend report has the selected schema. -/
 theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_schemaMatches
@@ -1626,7 +1633,63 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericE
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
     (h : E.ReportVerified) :
     E.numericEvidenceDigestsVerified = true := by
-  exact h.2.2
+  exact h.2.2.1
+
+/-- A verified accepted-spend report has a nonempty finite-trace digest slot. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_finiteTraceSupportDigest_nonempty
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.ReportVerified) :
+    E.finiteTraceSupportDigest ≠ ByteArray.mk #[] := by
+  rcases h with ⟨_, _, _, hFinite, _, _, _, _, _, _⟩
+  exact hFinite
+
+/-- A verified accepted-spend report has a nonempty active-outcome digest slot. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_activeOutcomeCarrierDigest_nonempty
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.ReportVerified) :
+    E.activeOutcomeCarrierDigest ≠ ByteArray.mk #[] := by
+  rcases h with ⟨_, _, _, _, hOutcome, _, _, _, _, _⟩
+  exact hOutcome
+
+/-- A verified accepted-spend report has a nonempty accepted-event digest slot. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_acceptedSpendEventSemanticsDigest_nonempty
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.ReportVerified) :
+    E.acceptedSpendEventSemanticsDigest ≠ ByteArray.mk #[] := by
+  rcases h with ⟨_, _, _, _, _, hEvent, _, _, _, _⟩
+  exact hEvent
+
+/-- A verified accepted-spend report has a nonempty active-break digest slot. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_activeBreakFamilyDigest_nonempty
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.ReportVerified) :
+    E.activeBreakFamilyDigest ≠ ByteArray.mk #[] := by
+  rcases h with ⟨_, _, _, _, _, _, hBreak, _, _, _⟩
+  exact hBreak
+
+/-- A verified accepted-spend report has a nonempty named-break digest slot. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_namedBreakEventsDigest_nonempty
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.ReportVerified) :
+    E.namedBreakEventsDigest ≠ ByteArray.mk #[] := by
+  rcases h with ⟨_, _, _, _, _, _, _, hNamed, _, _⟩
+  exact hNamed
+
+/-- A verified accepted-spend report has a nonempty union-pricing digest slot. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_unionBoundPricingDigest_nonempty
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.ReportVerified) :
+    E.acceptedSpendUnionBoundPricingDigest ≠ ByteArray.mk #[] := by
+  rcases h with ⟨_, _, _, _, _, _, _, _, hUnion, _⟩
+  exact hUnion
+
+/-- A verified accepted-spend report has a nonempty priced-bound digest slot. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_pricedBoundDigest_nonempty
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.ReportVerified) :
+    E.acceptedSpendPricedBoundDigest ≠ ByteArray.mk #[] := by
+  rcases h with ⟨_, _, _, _, _, _, _, _, _, hPriced⟩
+  exact hPriced
 
 /-- All accepted-spend numeric and prerequisite closure facts are true. -/
 def SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue
