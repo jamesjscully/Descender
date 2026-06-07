@@ -1982,6 +1982,13 @@ pub struct Path2NativeAcceptedSpendNumericEvidenceV1 {
     pub schema: &'static str,
     pub schema_matches: bool,
     pub report_digest_verified: bool,
+    pub finite_trace_support_digest: [u8; DIGEST_BYTES],
+    pub active_outcome_carrier_digest: [u8; DIGEST_BYTES],
+    pub accepted_spend_event_semantics_digest: [u8; DIGEST_BYTES],
+    pub active_break_family_digest: [u8; DIGEST_BYTES],
+    pub named_break_events_digest: [u8; DIGEST_BYTES],
+    pub accepted_spend_union_bound_pricing_digest: [u8; DIGEST_BYTES],
+    pub accepted_spend_priced_bound_digest: [u8; DIGEST_BYTES],
     pub accepted_spend_numeric_bound_priced: bool,
     pub finite_trace_support_priced: bool,
     pub active_outcome_carrier_pinned: bool,
@@ -2455,6 +2462,34 @@ pub fn path2_native_accepted_spend_numeric_evidence_v1() -> Path2NativeAcceptedS
         schema: PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA,
         schema_matches: true,
         report_digest_verified: true,
+        finite_trace_support_digest: Sha256::digest(
+            b"Descender.Path2.accepted_spend.finite_trace_support.open.v1",
+        )
+        .into(),
+        active_outcome_carrier_digest: Sha256::digest(
+            b"Descender.Path2.accepted_spend.active_outcome_carrier.open.v1",
+        )
+        .into(),
+        accepted_spend_event_semantics_digest: Sha256::digest(
+            b"Descender.Path2.accepted_spend.accepted_event_semantics.open.v1",
+        )
+        .into(),
+        active_break_family_digest: Sha256::digest(
+            b"Descender.Path2.accepted_spend.active_break_family.open.v1",
+        )
+        .into(),
+        named_break_events_digest: Sha256::digest(
+            b"Descender.Path2.accepted_spend.named_break_events.open.v1",
+        )
+        .into(),
+        accepted_spend_union_bound_pricing_digest: Sha256::digest(
+            b"Descender.Path2.accepted_spend.union_bound_pricing.open.v1",
+        )
+        .into(),
+        accepted_spend_priced_bound_digest: Sha256::digest(
+            b"Descender.Path2.accepted_spend.priced_bound.open.v1",
+        )
+        .into(),
         accepted_spend_numeric_bound_priced: false,
         finite_trace_support_priced: false,
         active_outcome_carrier_pinned: false,
@@ -2484,6 +2519,41 @@ pub fn path2_native_accepted_spend_numeric_evidence_v1_frame(
         &mut frame,
         b"report_digest_verified",
         u64::from(evidence.report_digest_verified),
+    );
+    append_frame(
+        &mut frame,
+        b"finite_trace_support_digest",
+        &evidence.finite_trace_support_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"active_outcome_carrier_digest",
+        &evidence.active_outcome_carrier_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"accepted_spend_event_semantics_digest",
+        &evidence.accepted_spend_event_semantics_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"active_break_family_digest",
+        &evidence.active_break_family_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"named_break_events_digest",
+        &evidence.named_break_events_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"accepted_spend_union_bound_pricing_digest",
+        &evidence.accepted_spend_union_bound_pricing_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"accepted_spend_priced_bound_digest",
+        &evidence.accepted_spend_priced_bound_digest,
     );
     append_u64(
         &mut frame,
@@ -2562,16 +2632,23 @@ pub fn path2_native_accepted_spend_numeric_evidence_v1_digest(
 pub fn path2_native_accepted_spend_numeric_evidence_report_verified_v1(
     evidence: &Path2NativeAcceptedSpendNumericEvidenceV1,
 ) -> bool {
-    evidence.schema == PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA
+    *evidence == path2_native_accepted_spend_numeric_evidence_v1()
+        && evidence.schema == PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA
         && evidence.schema_matches
         && evidence.report_digest_verified
+        && evidence.finite_trace_support_digest != [0_u8; DIGEST_BYTES]
+        && evidence.active_outcome_carrier_digest != [0_u8; DIGEST_BYTES]
+        && evidence.accepted_spend_event_semantics_digest != [0_u8; DIGEST_BYTES]
+        && evidence.active_break_family_digest != [0_u8; DIGEST_BYTES]
+        && evidence.named_break_events_digest != [0_u8; DIGEST_BYTES]
+        && evidence.accepted_spend_union_bound_pricing_digest != [0_u8; DIGEST_BYTES]
+        && evidence.accepted_spend_priced_bound_digest != [0_u8; DIGEST_BYTES]
 }
 
 pub fn path2_native_accepted_spend_numeric_evidence_all_facts_true(
     evidence: &Path2NativeAcceptedSpendNumericEvidenceV1,
 ) -> bool {
-    *evidence == path2_native_accepted_spend_numeric_evidence_v1()
-        && path2_native_accepted_spend_numeric_evidence_report_verified_v1(evidence)
+    path2_native_accepted_spend_numeric_evidence_report_verified_v1(evidence)
         && evidence.accepted_spend_numeric_bound_priced
         && evidence.finite_trace_support_priced
         && evidence.active_outcome_carrier_pinned
@@ -27796,6 +27873,13 @@ fn path2_native_accepted_spend_numeric_evidence_source_present_v1() -> bool {
     let source_checks = [
         "Descender.Path2.NativeAcceptedSpendNumericEvidence.v1",
         "Path2NativeAcceptedSpendNumericEvidenceV1",
+        "finite_trace_support_digest",
+        "active_outcome_carrier_digest",
+        "accepted_spend_event_semantics_digest",
+        "active_break_family_digest",
+        "named_break_events_digest",
+        "accepted_spend_union_bound_pricing_digest",
+        "accepted_spend_priced_bound_digest",
         "accepted_spend_numeric_bound_priced",
         "finite_trace_support_priced",
         "active_outcome_carrier_pinned",
@@ -28492,6 +28576,13 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessCertificate",
         "SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound",
         "acceptedSpendNumericBoundPriced",
+        "finiteTraceSupportDigest",
+        "activeOutcomeCarrierDigest",
+        "acceptedSpendEventSemanticsDigest",
+        "activeBreakFamilyDigest",
+        "namedBreakEventsDigest",
+        "acceptedSpendUnionBoundPricingDigest",
+        "acceptedSpendPricedBoundDigest",
         "finiteTraceSupportPriced",
         "activeOutcomeCarrierPinned",
         "acceptedSpendEventPinned",
@@ -47607,6 +47698,17 @@ mod tests {
         );
         assert!(evidence.schema_matches);
         assert!(evidence.report_digest_verified);
+        for digest in [
+            evidence.finite_trace_support_digest,
+            evidence.active_outcome_carrier_digest,
+            evidence.accepted_spend_event_semantics_digest,
+            evidence.active_break_family_digest,
+            evidence.named_break_events_digest,
+            evidence.accepted_spend_union_bound_pricing_digest,
+            evidence.accepted_spend_priced_bound_digest,
+        ] {
+            assert_ne!(digest, [0_u8; DIGEST_BYTES]);
+        }
         assert!(!evidence.accepted_spend_numeric_bound_priced);
         assert!(!evidence.finite_trace_support_priced);
         assert!(!evidence.active_outcome_carrier_pinned);
@@ -47647,6 +47749,13 @@ mod tests {
         assert!(!path2_native_accepted_spend_numeric_evidence_all_facts_true(&forged_ready));
         assert_eq!(
             verify_path2_native_accepted_spend_numeric_evidence_v1(&forged_ready).unwrap_err(),
+            "Path 2 native accepted-spend numeric evidence mismatch"
+        );
+        let mut tampered_digest = evidence;
+        tampered_digest.accepted_spend_priced_bound_digest[0] ^= 1;
+        assert!(!path2_native_accepted_spend_numeric_evidence_report_verified_v1(&tampered_digest));
+        assert_eq!(
+            verify_path2_native_accepted_spend_numeric_evidence_v1(&tampered_digest).unwrap_err(),
             "Path 2 native accepted-spend numeric evidence mismatch"
         );
 
@@ -51933,6 +52042,13 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     { evidenceReport :=
         { schemaMatches := true
           reportDigestVerified := true
+          finiteTraceSupportDigest := ByteArray.empty
+          activeOutcomeCarrierDigest := ByteArray.empty
+          acceptedSpendEventSemanticsDigest := ByteArray.empty
+          activeBreakFamilyDigest := ByteArray.empty
+          namedBreakEventsDigest := ByteArray.empty
+          acceptedSpendUnionBoundPricingDigest := ByteArray.empty
+          acceptedSpendPricedBoundDigest := ByteArray.empty
           acceptedSpendNumericBoundPriced := true
           finiteTraceSupportPriced := true
           activeOutcomeCarrierPinned := true
@@ -52119,6 +52235,20 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     Path2AcceptedSpendProbability.AcceptedSpendNumericGame
   let _acceptedSpendReportNumericBoundPriced :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendNumericBoundPriced
+  let _acceptedSpendReportFiniteTraceDigest :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.finiteTraceSupportDigest
+  let _acceptedSpendReportOutcomeCarrierDigest :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.activeOutcomeCarrierDigest
+  let _acceptedSpendReportAcceptedEventDigest :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendEventSemanticsDigest
+  let _acceptedSpendReportBreakFamilyDigest :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.activeBreakFamilyDigest
+  let _acceptedSpendReportNamedBreakDigest :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.namedBreakEventsDigest
+  let _acceptedSpendReportUnionPricingDigest :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendUnionBoundPricingDigest
+  let _acceptedSpendReportPricedBoundDigest :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendPricedBoundDigest
   let _acceptedSpendReportFiniteTraceSupport :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.finiteTraceSupportPriced
   let _acceptedSpendReportActiveOutcomeCarrier :=
@@ -52321,6 +52451,20 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     Path2AcceptedSpendProbability.AcceptedSpendNumericGame
   let _acceptedSpendReportNumericBoundPriced :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendNumericBoundPriced
+  let _acceptedSpendReportFiniteTraceDigest :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.finiteTraceSupportDigest
+  let _acceptedSpendReportOutcomeCarrierDigest :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.activeOutcomeCarrierDigest
+  let _acceptedSpendReportAcceptedEventDigest :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendEventSemanticsDigest
+  let _acceptedSpendReportBreakFamilyDigest :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.activeBreakFamilyDigest
+  let _acceptedSpendReportNamedBreakDigest :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.namedBreakEventsDigest
+  let _acceptedSpendReportUnionPricingDigest :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendUnionBoundPricingDigest
+  let _acceptedSpendReportPricedBoundDigest :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendPricedBoundDigest
   let _acceptedSpendReportFiniteTraceSupport :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.finiteTraceSupportPriced
   let _acceptedSpendReportActiveOutcomeCarrier :=

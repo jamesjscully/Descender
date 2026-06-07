@@ -1571,6 +1571,13 @@ evidence before constructing the active accepted-spend boundary.
 structure SelectedRustAcceptedSpendSoundnessEvidenceReport where
   schemaMatches : Bool
   reportDigestVerified : Bool
+  finiteTraceSupportDigest : ByteArray
+  activeOutcomeCarrierDigest : ByteArray
+  acceptedSpendEventSemanticsDigest : ByteArray
+  activeBreakFamilyDigest : ByteArray
+  namedBreakEventsDigest : ByteArray
+  acceptedSpendUnionBoundPricingDigest : ByteArray
+  acceptedSpendPricedBoundDigest : ByteArray
   acceptedSpendNumericBoundPriced : Bool
   finiteTraceSupportPriced : Bool
   activeOutcomeCarrierPinned : Bool

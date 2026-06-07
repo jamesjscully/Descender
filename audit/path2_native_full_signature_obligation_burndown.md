@@ -1419,6 +1419,12 @@ checks that flipping those readiness bits in a copied report does not satisfy
 the all-facts helper or verifier. The accepted-spend numeric instantiation gate
 now requires this Rust evidence source before scanning for the future Lean
 theorem.
+That evidence now carries digest commitments for finite trace support, active
+outcome carrier, accepted-spend event semantics, active break family, named
+break event semantics, union-bound pricing, and the priced bound. The Lean
+report mirrors those digest fields, and report verification rejects zero digest
+placeholders plus digest tampering. This keeps the future numeric theorem from
+closing against uncommitted Boolean flags alone.
 The probability game now separates finite trace support from the observed
 full-forgery outcome: `Trace` has `traceFintype`, while `Outcome` is reached
 through `observe` and need not be finite. This is required for the active
