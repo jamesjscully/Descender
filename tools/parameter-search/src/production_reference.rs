@@ -28613,6 +28613,10 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "checkedCoreCompositionClosedProof",
         "lifecycleReplayClosedProof",
         "noExportClosedProof",
+        "acceptedSpendCertificate.hiddenSourceProofSemanticsClosedProof",
+        "acceptedSpendCertificate.checkedCoreCompositionClosedProof",
+        "acceptedSpendCertificate.lifecycleReplayClosedProof",
+        "acceptedSpendCertificate.noExportClosedProof",
         "checkedCoreFrameDomainSeparatedProof",
         "hiddenSourceFrameDomainSeparatedProof",
         "queryBudgetPricedProof",
@@ -29019,10 +29023,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustVerifierRelationMatchesImplementationProof",
         "selectedRustFullForgeryImpliesAcceptedSpendForgery",
         "selectedRustFullForgeryImpliesAcceptedSpendForgeryProof",
-        "selectedRustHiddenSourceProofSemanticsClosedProof",
-        "selectedRustCheckedCoreCompositionClosedProof",
-        "selectedRustLifecycleReplayClosedProof",
-        "selectedRustNoExportClosedProof",
+        "selectedRustAcceptedSpendCertificate.hiddenSourceProofSemanticsClosedProof",
+        "selectedRustAcceptedSpendCertificate.checkedCoreCompositionClosedProof",
+        "selectedRustAcceptedSpendCertificate.lifecycleReplayClosedProof",
+        "selectedRustAcceptedSpendCertificate.noExportClosedProof",
         "selectedRustCheckedCoreFrameDomainSeparatedProof",
         "selectedRustHiddenSourceFrameDomainSeparatedProof",
         "selectedRustQueryBudgetPricedProof",
@@ -53400,6 +53404,14 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_multiTargetHorizonPriced
   let _fullReductionReportVerifierGame :=
     SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_verifierGameMatchesProductionExecution
+  let _fullReductionAcceptedSpendHiddenSourceProof :=
+    selectedRustAcceptedSpendCertificate.hiddenSourceProofSemanticsClosedProof
+  let _fullReductionAcceptedSpendCheckedCoreProof :=
+    selectedRustAcceptedSpendCertificate.checkedCoreCompositionClosedProof
+  let _fullReductionAcceptedSpendLifecycleProof :=
+    selectedRustAcceptedSpendCertificate.lifecycleReplayClosedProof
+  let _fullReductionAcceptedSpendNoExportProof :=
+    selectedRustAcceptedSpendCertificate.noExportClosedProof
   let selectedRustFullSignatureReductionCertificate :
       SelectedRustFullSignatureReductionCertificate :=
     SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
@@ -53427,10 +53439,6 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustVerifierRelationMatchesImplementationProof
       selectedRustFullForgeryImpliesAcceptedSpendForgery
       selectedRustFullForgeryImpliesAcceptedSpendForgeryProof
-      selectedRustHiddenSourceProofSemanticsClosedProof
-      selectedRustCheckedCoreCompositionClosedProof
-      selectedRustLifecycleReplayClosedProof
-      selectedRustNoExportClosedProof
       selectedRustCheckedCoreFrameDomainSeparatedProof
       selectedRustHiddenSourceFrameDomainSeparatedProof
       selectedRustQueryBudgetPricedProof

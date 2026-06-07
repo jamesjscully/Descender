@@ -2155,6 +2155,14 @@ they can build the selected accepted-spend certificate or erased boundary. The
 Rust source gate now requires the proof names and rejects local/global
 `True.intro` aliases for them, so the numeric-bound instantiation cannot close
 by naming closure propositions without supplying evidence.
+AP2-N003 full-reduction closure dependency note: the selected full-signature
+reduction constructor no longer accepts a second set of hidden-source,
+checked-core, lifecycle/replay, or no-export closure proof arguments. It derives
+those proof fields from the consumed `SelectedRustAcceptedSpendSoundnessCertificate`
+itself. The full-reduction source gate now expects the future theorem to project
+`selectedRustAcceptedSpendCertificate.hiddenSourceProofSemanticsClosedProof`,
+`.checkedCoreCompositionClosedProof`, `.lifecycleReplayClosedProof`, and
+`.noExportClosedProof`, keeping closure ownership at the accepted-spend layer.
 
 ## Findings
 

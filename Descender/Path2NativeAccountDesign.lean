@@ -2975,14 +2975,6 @@ def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
     (fullForgeryImpliesAcceptedSpendForgery : Prop)
     (fullForgeryImpliesAcceptedSpendForgeryProof :
       fullForgeryImpliesAcceptedSpendForgery)
-    (hiddenSourceProofSemanticsClosedProof :
-      acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.hiddenSourceProofSemanticsClosed)
-    (checkedCoreCompositionClosedProof :
-      acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.checkedCoreCompositionClosed)
-    (lifecycleReplayClosedProof :
-      acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.lifecycleReplayClosed)
-    (noExportClosedProof :
-      acceptedSpendCertificate.toAcceptedSpendSoundnessBoundary.noExportClosed)
     (checkedCoreFrameDomainSeparatedProof :
       hashBoundary.checkedCoreFrameDomainSeparated)
     (hiddenSourceFrameDomainSeparatedProof :
@@ -3026,10 +3018,13 @@ def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
   fullForgeryImpliesAcceptedSpendForgeryProof :=
     fullForgeryImpliesAcceptedSpendForgeryProof
   hiddenSourceProofSemanticsClosedProof :=
-    hiddenSourceProofSemanticsClosedProof
-  checkedCoreCompositionClosedProof := checkedCoreCompositionClosedProof
-  lifecycleReplayClosedProof := lifecycleReplayClosedProof
-  noExportClosedProof := noExportClosedProof
+    acceptedSpendCertificate.hiddenSourceProofSemanticsClosedProof
+  checkedCoreCompositionClosedProof :=
+    acceptedSpendCertificate.checkedCoreCompositionClosedProof
+  lifecycleReplayClosedProof :=
+    acceptedSpendCertificate.lifecycleReplayClosedProof
+  noExportClosedProof :=
+    acceptedSpendCertificate.noExportClosedProof
   checkedCoreFrameDomainSeparatedProof :=
     checkedCoreFrameDomainSeparatedProof
   hiddenSourceFrameDomainSeparatedProof :=

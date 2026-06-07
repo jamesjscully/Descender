@@ -2054,3 +2054,12 @@ numeric-source-to-certificate and numeric-source-to-boundary adapters require
 those proofs. The Rust accepted-spend numeric-bound instantiation gate requires
 the proof names and rejects local/global `True.intro` proof aliases, keeping
 the accepted-spend numeric route from advancing with proposition names alone.
+AP2-N003 full-reduction closure dependency note: the full-signature reduction
+constructor now derives its accepted-spend closure proofs from the consumed
+`SelectedRustAcceptedSpendSoundnessCertificate` instead of taking standalone
+closure proof arguments. The source gate's positive shape now projects
+`selectedRustAcceptedSpendCertificate.hiddenSourceProofSemanticsClosedProof`,
+`.checkedCoreCompositionClosedProof`, `.lifecycleReplayClosedProof`, and
+`.noExportClosedProof` before constructing the full-reduction certificate. This
+removes the remaining duplicate closure-witness handoff between accepted-spend
+numeric closure and full-signature reduction.
