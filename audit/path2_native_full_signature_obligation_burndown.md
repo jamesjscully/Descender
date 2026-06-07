@@ -1692,9 +1692,13 @@ The generic accepted-spend pricing layer now also exposes nonnegativity
 theorems for the accepted-spend component bound, each named-break component
 bound, and the final priced bound at the `AcceptedSpendBreakPricingCertificate`,
 `PricedAcceptedSpendNumericCertificate`, and `SelectedAcceptedSpendNumericSource`
-layers. The accepted-spend source gate exact-checks those theorem names, so
-the future pricing package must expose nonnegative budgets rather than only
-upper-bound inequalities.
+layers. `SelectedRustConcreteAcceptedSpendNumericCertificate` and
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate` now project those
+sign facts through the active concrete carrier/source route too. The
+accepted-spend source gate exact-checks those theorem names, so the future
+pricing package must expose nonnegative budgets rather than only upper-bound
+inequalities, and it must preserve those sign facts through the concrete source
+handoff.
 The accepted-spend numeric and full-signature reduction certificates now bind
 their evidence reports and digests by equality to concrete selected Rust
 report/digest constants, rather than by arbitrary `Prop` slots. The selected

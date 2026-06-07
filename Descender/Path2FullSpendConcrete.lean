@@ -1540,6 +1540,44 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_price
       Cert.pricedCertificate.pricedBound :=
   Cert.pricedCertificate.successProb_le_pricedBound
 
+/-- The selected concrete numeric certificate exposes nonnegative accepted-spend budget. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendBound_nonneg
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    0 <= Cert.pricedCertificate.acceptedSpendBound :=
+  Cert.pricedCertificate.acceptedSpendBound_nonneg
+
+/-- The selected concrete numeric certificate exposes nonnegative named-break budgets. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.breakBound_nonneg
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate)
+    (breakEvent : Cert.pricedCertificate.Break) :
+    0 <= Cert.pricedCertificate.breakBound breakEvent :=
+  Cert.pricedCertificate.breakBound_nonneg breakEvent
+
+/-- The selected concrete numeric certificate exposes a nonnegative priced bound. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.pricedBound_nonneg
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    0 <= Cert.pricedCertificate.pricedBound :=
+  Cert.pricedCertificate.pricedBound_nonneg
+
+/-- The source-bound concrete certificate exposes nonnegative accepted-spend budget. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendBound_nonneg
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    0 <= Source.concreteCertificate.pricedCertificate.acceptedSpendBound :=
+  Source.concreteCertificate.acceptedSpendBound_nonneg
+
+/-- The source-bound concrete certificate exposes nonnegative named-break budgets. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakBound_nonneg
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate)
+    (breakEvent : Source.concreteCertificate.pricedCertificate.Break) :
+    0 <= Source.concreteCertificate.pricedCertificate.breakBound breakEvent :=
+  Source.concreteCertificate.breakBound_nonneg breakEvent
+
+/-- The source-bound concrete certificate exposes a nonnegative priced bound. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.pricedBound_nonneg
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    0 <= Source.concreteCertificate.pricedCertificate.pricedBound :=
+  Source.concreteCertificate.pricedBound_nonneg
+
 /-- The source-bound report says the accepted-spend numeric bound is priced. -/
 theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBoundPriced
     (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
