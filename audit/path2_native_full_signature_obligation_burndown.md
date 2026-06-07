@@ -1684,7 +1684,10 @@ component bounds priced, break-pricing budget below the priced bound, and
 numeric budget meets target. The accepted-spend source gate exact-checks those
 source-certificate projection names, so the future theorem must pull the
 numeric facts through the report-bound concrete source package, not only
-through standalone report-level projections.
+through standalone report-level projections. A focused source-gate regression
+replaces the concrete-source union-bound fact projection with the report-level
+projection and confirms that this no longer satisfies the active accepted-spend
+numeric-bound gate.
 The accepted-spend numeric and full-signature reduction certificates now bind
 their evidence reports and digests by equality to concrete selected Rust
 report/digest constants, rather than by arbitrary `Prop` slots. The selected

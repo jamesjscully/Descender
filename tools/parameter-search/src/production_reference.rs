@@ -55047,6 +55047,15 @@ end Path2NativeAccountDesign
                 accepted_spend_instantiation_shape
             )
         );
+        let report_only_concrete_source_numeric_fact = accepted_spend_instantiation_shape.replace(
+            "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_unionBoundPriced",
+            "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_unionBoundPriced",
+        );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &report_only_concrete_source_numeric_fact
+            )
+        );
         let suffixed_concrete_source_certificate_adapter = accepted_spend_instantiation_shape
             .replace(
                 "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessCertificate",
