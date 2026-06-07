@@ -1627,6 +1627,35 @@ def SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue
   E.lifecycleReplayClosureReady = true ∧
   E.noExportClosureReady = true
 
+/-- A complete accepted-spend report proves its priced-bound bits meet target. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.targetSecurityBits ≤ E.acceptedSpendPricedBoundSecurityBits := by
+  rcases h with
+    ⟨_, _, _, _, _, _, _, _, _, _, _, _, hPricedBoundBits, _, _, _, _, _⟩
+  exact hPricedBoundBits
+
+/-- A complete accepted-spend report prices the selected active multi-target horizon. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.targetSecurityBits + E.selectedMultiTargetHorizonLog2 ≤
+      E.transcriptTermBitsAfterQromLoss := by
+  rcases h with
+    ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, hBudget, _, _, _, _⟩
+  exact hBudget
+
+/-- The active report constants leave 22 QROM-discounted transcript bits after target plus horizon. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetSlackBits
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.transcriptTermBitsAfterQromLoss -
+      (E.targetSecurityBits + E.selectedMultiTargetHorizonLog2) = 22 := by
+  rcases h with
+    ⟨_, _, _, _, _, _, _, _, hTarget, hHorizon, _, hTranscript, _, _, _, _, _, _⟩
+  rw [hTarget, hHorizon, hTranscript]
+
 /--
 Selected Rust/model certificate for the accepted-spend numeric soundness layer.
 

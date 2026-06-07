@@ -29291,6 +29291,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "namedBreakEventsPinned",
         "acceptedSpendUnionBoundPriced",
         "acceptedSpendNumericBudgetMeetsTarget",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetSlackBits",
         "selectedRustAcceptedSpendEvidenceReport",
         "selectedRustAcceptedSpendEvidenceDigest",
         "selectedRustAcceptedSpendEvidenceReportBound",
@@ -53308,6 +53311,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendUnionBoundPriced
   let _acceptedSpendReportBudgetMeetsTarget :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendNumericBudgetMeetsTarget
+  let _acceptedSpendReportPricedBoundBitsMeetsTarget :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget
+  let _acceptedSpendReportActiveBudgetMargin :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced
+  let _acceptedSpendReportActiveBudgetSlack :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetSlackBits
   let _acceptedSpendFiniteTraceSupport :=
     PricedAcceptedSpendNumericCertificate.traceFintype
   let _acceptedSpendPackagedObserve :=
@@ -53557,6 +53566,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendUnionBoundPriced
   let _acceptedSpendReportBudgetMeetsTarget :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendNumericBudgetMeetsTarget
+  let _acceptedSpendReportPricedBoundBitsMeetsTarget :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget
+  let _acceptedSpendReportActiveBudgetMargin :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced
+  let _acceptedSpendReportActiveBudgetSlack :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetSlackBits
   let _acceptedSpendFiniteTraceSupport :=
     PricedAcceptedSpendNumericCertificate.traceFintype
   let _acceptedSpendPackagedObserve :=

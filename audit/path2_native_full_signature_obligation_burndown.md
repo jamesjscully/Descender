@@ -1524,6 +1524,12 @@ plus the numeric inequalities
 transcriptTermBitsAfterQromLoss`; Rust mirrors those checks in the evidence
 `all_facts_true` helper. The canonical Rust evidence still has priced-bound
 security bits `0` and the target predicate false, so it remains fail-closed.
+Lean now exposes report-derived theorem facts that the accepted-spend
+priced-bound bits meet target, the selected 32-bit multi-target horizon fits
+inside the 182-bit QROM-discounted transcript term, and the resulting arithmetic
+slack is 22 bits. The numeric-bound source gate requires the future selected
+theorem to consume those facts, leaving the real-valued accepted-spend
+probability source and priced-bound inequality as the remaining numeric gap.
 `SelectedRustAcceptedSpendSoundnessCertificate` also carries
 `acceptedSpendPricedBoundSecurityPriced`, proving the actual real-valued
 `numericSource.pricedCertificate.pricedBound` is at most
