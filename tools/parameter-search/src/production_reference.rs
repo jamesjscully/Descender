@@ -13772,6 +13772,27 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
                 })
             })
     };
+    let forbidden_vacuous_generic_proof_stub = selected_source_names
+        .iter()
+        .filter(|name| name.ends_with("Proof"))
+        .any(|name| {
+            [
+                "def",
+                "theorem",
+                "abbrev",
+                "private def",
+                "private theorem",
+                "private abbrev",
+            ]
+            .iter()
+            .any(|kind| {
+                declaration_has_normalized_marker(
+                    kind,
+                    name,
+                    &[":=True.intro", ":=bytrivial", ":=byexactTrue.intro"],
+                )
+            })
+        });
     let forbidden_vacuous_verification_stub = declaration_has_normalized_marker(
         "def",
         "selectedRustFiveSourceEvidenceReport",
@@ -13964,6 +13985,7 @@ fn path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_
     forbidden_declaration_stub
         || forbidden_variable_stub
         || forbidden_incomplete_proof_term
+        || forbidden_vacuous_generic_proof_stub
         || forbidden_vacuous_verification_stub
 }
 
@@ -61449,6 +61471,24 @@ theorem {theorem_name}
         assert!(
             path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
                 &concrete_constructor_certificate_theorem,
+                theorem_name
+            )
+        );
+        let vacuous_abbrev_hidden_source_proof_alias = format!(
+            "{}\n{}",
+            r#"
+abbrev selectedRustFiveSourceEvidenceFactsAllTrueProof := True.intro
+"#,
+            concrete_constructor_certificate_theorem
+        );
+        assert!(
+            path2_reviewed_fq12_active_five_source_extractor_module_has_forbidden_source_stubs(
+                &vacuous_abbrev_hidden_source_proof_alias
+            )
+        );
+        assert!(
+            !path2_reviewed_fq12_active_five_source_extractor_theorem_instantiated_from_boundary_source_v1(
+                &vacuous_abbrev_hidden_source_proof_alias,
                 theorem_name
             )
         );

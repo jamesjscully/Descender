@@ -961,6 +961,12 @@ P2FS-001 aggregate/certificate digest-match hardening: the aggregate five-source
 
 P2FS-001 per-source certificate-constructor hardening: the boundary-base, role-root/lift, source-route, field/local, and shared-witness evidence certificates now each have named constructors that take the public report, report digest, report-verification proof, all-facts proof, and underlying source records. The future AP2-N001 theorem gate requires these constructors before the final all-certificate constructor, preventing anonymous certificate records from hiding mismatched or unverified evidence.
 
+P2FS-001 proof-shell hardening: the hidden-source extractor gate now rejects
+`abbrev` proof shells, in addition to `def`/`theorem` shells, for selected
+source proof names ending in `Proof` when the body is `True.intro`,
+`by trivial`, or `by exact True.intro`. A regression prepends such an alias to
+the otherwise accepted theorem shape and keeps the gate open.
+
 P2FS-001 selected evidence manifest status: `path2_selected_evidence_digest_manifest`
 now emits the concrete-definition checklist next to the six selected evidence
 digests. The current active output verifies all six Rust evidence reports and
