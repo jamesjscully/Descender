@@ -1540,5 +1540,15 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_price
       Cert.pricedCertificate.pricedBound :=
   Cert.pricedCertificate.successProb_le_pricedBound
 
+/--
+No concrete accepted-spend source certificate exists for the current selected
+fail-closed report.
+-/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) : False :=
+  Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReportFactsAllTrue_impossible (by
+    rw [← Source.evidenceReportBoundProof]
+    exact Source.evidenceFactsAllTrueProof)
+
 end Path2FullSpendConcrete
 end Descender

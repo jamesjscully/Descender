@@ -1686,6 +1686,14 @@ Lean also proves the current selected accepted-spend numeric and full-reduction
 reports cannot satisfy `FactsAllTrue`. These sanity guards keep the current
 verified-but-incomplete public reports separate from the future complete
 selected evidence values needed to close AP2-N003.
+The same fail-closed distinction is now stated at the certificate boundary:
+`SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossible`,
+`SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible`,
+and
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate.currentSelectedReport_impossible`
+show that no current selected accepted-spend, full-reduction, or concrete
+numeric-source certificate can exist while the selected report constants remain
+in their present fail-closed state.
 The Rust regression `path2_native_ap2_n003_lean_selected_reports_match_rust_evidence`
 now parses those Lean selected report constants and compares every
 digest/boolean/numeric field plus the selected report-frame digest constants

@@ -2147,6 +2147,13 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
   lifecycleReplayClosedProof := lifecycleReplayClosedProof
   noExportClosedProof := noExportClosedProof
 
+/-- No selected accepted-spend certificate exists for the current fail-closed report. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossible
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) : False :=
+  selectedRustAcceptedSpendEvidenceReportFactsAllTrue_impossible (by
+    rw [← Cert.evidenceReportBoundProof]
+    exact Cert.selectedRustAcceptedSpendFactsAllTrueProof)
+
 /-- The priced numeric certificate validated by the selected accepted-spend source. -/
 def SelectedRustAcceptedSpendSoundnessCertificate.pricedNumericCertificate
     (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
@@ -3031,6 +3038,13 @@ def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
     hiddenSourceFrameDomainSeparatedProof
   queryBudgetPricedProof := queryBudgetPricedProof
   multiTargetLossPricedProof := multiTargetLossPricedProof
+
+/-- No selected full-signature certificate exists for the current fail-closed report. -/
+theorem SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible
+    (Cert : SelectedRustFullSignatureReductionCertificate) : False :=
+  selectedRustFullSignatureReductionFactsAllTrue_impossible (by
+    rw [← Cert.evidenceReportBoundProof]
+    exact Cert.selectedRustFullSignatureReductionFactsAllTrueProof)
 
 /-- The selected full-signature success probability is pinned to production. -/
 theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_production
