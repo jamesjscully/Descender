@@ -1325,7 +1325,15 @@ def toSelectedRustAcceptedSpendSoundnessCertificate
     (hiddenSourceProofSemanticsClosed : Prop)
     (checkedCoreCompositionClosed : Prop)
     (lifecycleReplayClosed : Prop)
-    (noExportClosed : Prop) :
+    (noExportClosed : Prop)
+    (hiddenSourceProofSemanticsClosedProof :
+      hiddenSourceProofSemanticsClosed)
+    (checkedCoreCompositionClosedProof :
+      checkedCoreCompositionClosed)
+    (lifecycleReplayClosedProof :
+      lifecycleReplayClosed)
+    (noExportClosedProof :
+      noExportClosed) :
     Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessCertificate :=
   Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
     Source.evidenceReport
@@ -1350,6 +1358,10 @@ def toSelectedRustAcceptedSpendSoundnessCertificate
     checkedCoreCompositionClosed
     lifecycleReplayClosed
     noExportClosed
+    hiddenSourceProofSemanticsClosedProof
+    checkedCoreCompositionClosedProof
+    lifecycleReplayClosedProof
+    noExportClosedProof
 
 /-- Erase the report-bound concrete numeric source into the active accepted-spend boundary. -/
 def toSelectedRustAcceptedSpendSoundnessBoundary
@@ -1374,7 +1386,15 @@ def toSelectedRustAcceptedSpendSoundnessBoundary
     (hiddenSourceProofSemanticsClosed : Prop)
     (checkedCoreCompositionClosed : Prop)
     (lifecycleReplayClosed : Prop)
-    (noExportClosed : Prop) :
+    (noExportClosed : Prop)
+    (hiddenSourceProofSemanticsClosedProof :
+      hiddenSourceProofSemanticsClosed)
+    (checkedCoreCompositionClosedProof :
+      checkedCoreCompositionClosed)
+    (lifecycleReplayClosedProof :
+      lifecycleReplayClosed)
+    (noExportClosedProof :
+      noExportClosed) :
     Path2NativeAccountDesign.NativeAcceptedSpendSoundnessBoundary :=
   (toSelectedRustAcceptedSpendSoundnessCertificate
       Source
@@ -1390,7 +1410,11 @@ def toSelectedRustAcceptedSpendSoundnessBoundary
       hiddenSourceProofSemanticsClosed
       checkedCoreCompositionClosed
       lifecycleReplayClosed
-      noExportClosed).toAcceptedSpendSoundnessBoundary
+      noExportClosed
+      hiddenSourceProofSemanticsClosedProof
+      checkedCoreCompositionClosedProof
+      lifecycleReplayClosedProof
+      noExportClosedProof).toAcceptedSpendSoundnessBoundary
 
 end SelectedRustConcreteAcceptedSpendNumericSourceCertificate
 

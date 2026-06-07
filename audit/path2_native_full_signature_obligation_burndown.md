@@ -2047,3 +2047,10 @@ source gate now requires these adapter names exactly and rejects spoofed
 suffixes. The selected accepted-spend event-semantics source digest and report
 digest were refreshed to reflect the new adapter window; the report remains
 verified but not `FactsAllTrue`.
+AP2-N003 accepted-spend closure-proof note: the selected accepted-spend
+certificate now carries proof fields for the hidden-source, checked-core,
+lifecycle/replay, and no-export closure propositions. The concrete
+numeric-source-to-certificate and numeric-source-to-boundary adapters require
+those proofs. The Rust accepted-spend numeric-bound instantiation gate requires
+the proof names and rejects local/global `True.intro` proof aliases, keeping
+the accepted-spend numeric route from advancing with proposition names alone.

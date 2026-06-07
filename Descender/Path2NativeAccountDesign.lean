@@ -1957,9 +1957,9 @@ def selectedRustAcceptedSpendEvidenceReport :
       184, 94, 226, 157, 26, 55, 237, 33, 21, 223, 183, 249, 34, 163, 53,
       42, 43, 237, 74, 214]
   acceptedSpendEventSemanticsDigest :=
-    ByteArray.mk #[9, 155, 129, 44, 124, 245, 157, 43, 35, 30, 86, 111,
-      158, 254, 31, 136, 206, 202, 164, 161, 175, 250, 118, 72, 182, 133,
-      113, 123, 204, 216, 75, 22]
+    ByteArray.mk #[102, 99, 177, 244, 18, 141, 40, 76, 190, 169, 228, 26,
+      76, 156, 16, 20, 168, 81, 101, 231, 64, 173, 105, 3, 187, 10, 74,
+      116, 255, 49, 38, 90]
   activeBreakFamilyDigest :=
     ByteArray.mk #[111, 3, 153, 201, 118, 101, 3, 131, 125, 95, 74, 112,
       104, 81, 255, 126, 60, 29, 241, 180, 122, 212, 12, 39, 240, 46, 175,
@@ -1999,9 +1999,9 @@ def selectedRustAcceptedSpendEvidenceReport :
 
 /-- Digest pin for the selected Rust accepted-spend numeric evidence report. -/
 def selectedRustAcceptedSpendEvidenceDigest : ByteArray :=
-  ByteArray.mk #[207, 118, 186, 139, 19, 191, 112, 234, 221, 66, 75, 112,
-    185, 253, 252, 235, 127, 59, 103, 238, 234, 94, 62, 46, 111, 56, 53,
-    128, 186, 122, 84, 216]
+  ByteArray.mk #[111, 133, 98, 209, 235, 73, 59, 117, 217, 7, 42, 79, 215,
+    224, 180, 229, 122, 144, 83, 150, 243, 62, 143, 94, 40, 13, 167, 21, 9,
+    179, 194, 153]
 
 /-- The selected accepted-spend report has verified public digest slots. -/
 theorem selectedRustAcceptedSpendEvidenceReportVerifiedProof :
@@ -2060,6 +2060,14 @@ structure SelectedRustAcceptedSpendSoundnessCertificate where
   checkedCoreCompositionClosed : Prop
   lifecycleReplayClosed : Prop
   noExportClosed : Prop
+  hiddenSourceProofSemanticsClosedProof :
+    hiddenSourceProofSemanticsClosed
+  checkedCoreCompositionClosedProof :
+    checkedCoreCompositionClosed
+  lifecycleReplayClosedProof :
+    lifecycleReplayClosed
+  noExportClosedProof :
+    noExportClosed
 
 /-- Named constructor for the selected Rust accepted-spend numeric certificate. -/
 def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
@@ -2097,7 +2105,15 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
     (hiddenSourceProofSemanticsClosed : Prop)
     (checkedCoreCompositionClosed : Prop)
     (lifecycleReplayClosed : Prop)
-    (noExportClosed : Prop) :
+    (noExportClosed : Prop)
+    (hiddenSourceProofSemanticsClosedProof :
+      hiddenSourceProofSemanticsClosed)
+    (checkedCoreCompositionClosedProof :
+      checkedCoreCompositionClosed)
+    (lifecycleReplayClosedProof :
+      lifecycleReplayClosed)
+    (noExportClosedProof :
+      noExportClosed) :
     SelectedRustAcceptedSpendSoundnessCertificate where
   evidenceReport := evidenceReport
   evidenceDigest := evidenceDigest
@@ -2125,6 +2141,11 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
   checkedCoreCompositionClosed := checkedCoreCompositionClosed
   lifecycleReplayClosed := lifecycleReplayClosed
   noExportClosed := noExportClosed
+  hiddenSourceProofSemanticsClosedProof :=
+    hiddenSourceProofSemanticsClosedProof
+  checkedCoreCompositionClosedProof := checkedCoreCompositionClosedProof
+  lifecycleReplayClosedProof := lifecycleReplayClosedProof
+  noExportClosedProof := noExportClosedProof
 
 /-- The priced numeric certificate validated by the selected accepted-spend source. -/
 def SelectedRustAcceptedSpendSoundnessCertificate.pricedNumericCertificate

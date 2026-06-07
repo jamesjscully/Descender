@@ -29119,6 +29119,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "selectedRustAcceptedSpendCheckedCoreClosed",
         "selectedRustAcceptedSpendLifecycleClosed",
         "selectedRustAcceptedSpendNoExportClosed",
+        "selectedRustAcceptedSpendHiddenSourceClosedProof",
+        "selectedRustAcceptedSpendCheckedCoreClosedProof",
+        "selectedRustAcceptedSpendLifecycleClosedProof",
+        "selectedRustAcceptedSpendNoExportClosedProof",
     ];
     let forbidden_declaration_kinds = ["axiom", "constant", "opaque"];
     let forbidden_declaration_stub = forbidden_declaration_kinds.iter().any(|kind| {
@@ -29217,6 +29221,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "def selectedRustAcceptedSpendCheckedCoreClosed := True",
         "def selectedRustAcceptedSpendLifecycleClosed := True",
         "def selectedRustAcceptedSpendNoExportClosed := True",
+        "def selectedRustAcceptedSpendHiddenSourceClosedProof := True.intro",
+        "def selectedRustAcceptedSpendCheckedCoreClosedProof := True.intro",
+        "def selectedRustAcceptedSpendLifecycleClosedProof := True.intro",
+        "def selectedRustAcceptedSpendNoExportClosedProof := True.intro",
         "abbrev selectedRustAcceptedSpendEvidenceReport := {",
         "abbrev selectedRustAcceptedSpendEvidenceDigest := ByteArray.empty",
         "abbrev selectedRustAcceptedSpendEvidenceReportBound := True",
@@ -29263,6 +29271,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "abbrev selectedRustAcceptedSpendCheckedCoreClosed := True",
         "abbrev selectedRustAcceptedSpendLifecycleClosed := True",
         "abbrev selectedRustAcceptedSpendNoExportClosed := True",
+        "abbrev selectedRustAcceptedSpendHiddenSourceClosedProof := True.intro",
+        "abbrev selectedRustAcceptedSpendCheckedCoreClosedProof := True.intro",
+        "abbrev selectedRustAcceptedSpendLifecycleClosedProof := True.intro",
+        "abbrev selectedRustAcceptedSpendNoExportClosedProof := True.intro",
     ];
     if forbidden_vacuous_global_terms
         .iter()
@@ -29382,6 +29394,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendCheckedCoreClosed",
         "selectedRustAcceptedSpendLifecycleClosed",
         "selectedRustAcceptedSpendNoExportClosed",
+        "selectedRustAcceptedSpendHiddenSourceClosedProof",
+        "selectedRustAcceptedSpendCheckedCoreClosedProof",
+        "selectedRustAcceptedSpendLifecycleClosedProof",
+        "selectedRustAcceptedSpendNoExportClosedProof",
     ];
     if forbidden_header_terms
         .iter()
@@ -29466,6 +29482,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "let selectedRustAcceptedSpendCheckedCoreClosed := True",
         "let selectedRustAcceptedSpendLifecycleClosed := True",
         "let selectedRustAcceptedSpendNoExportClosed := True",
+        "let selectedRustAcceptedSpendHiddenSourceClosedProof := True.intro",
+        "let selectedRustAcceptedSpendCheckedCoreClosedProof := True.intro",
+        "let selectedRustAcceptedSpendLifecycleClosedProof := True.intro",
+        "let selectedRustAcceptedSpendNoExportClosedProof := True.intro",
     ];
     if forbidden_vacuous_terms
         .iter()
@@ -29668,6 +29688,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendCheckedCoreClosed",
         "selectedRustAcceptedSpendLifecycleClosed",
         "selectedRustAcceptedSpendNoExportClosed",
+        "selectedRustAcceptedSpendHiddenSourceClosedProof",
+        "selectedRustAcceptedSpendCheckedCoreClosedProof",
+        "selectedRustAcceptedSpendLifecycleClosedProof",
+        "selectedRustAcceptedSpendNoExportClosedProof",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
     ];
     let exact_identifier_checks = [
@@ -54129,6 +54153,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
       selectedRustAcceptedSpendCheckedCoreClosed
       selectedRustAcceptedSpendLifecycleClosed
       selectedRustAcceptedSpendNoExportClosed
+      selectedRustAcceptedSpendHiddenSourceClosedProof
+      selectedRustAcceptedSpendCheckedCoreClosedProof
+      selectedRustAcceptedSpendLifecycleClosedProof
+      selectedRustAcceptedSpendNoExportClosedProof
   exact
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
       selectedRustAcceptedSpendSoundnessCertificate
@@ -54945,6 +54973,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
       selectedRustAcceptedSpendCheckedCoreClosed
       selectedRustAcceptedSpendLifecycleClosed
       selectedRustAcceptedSpendNoExportClosed
+      selectedRustAcceptedSpendHiddenSourceClosedProof
+      selectedRustAcceptedSpendCheckedCoreClosedProof
+      selectedRustAcceptedSpendLifecycleClosedProof
+      selectedRustAcceptedSpendNoExportClosedProof
 end Path2NativeAccountDesign
 "#;
         assert!(
