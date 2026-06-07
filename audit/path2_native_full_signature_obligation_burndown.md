@@ -2152,3 +2152,14 @@ does the same for the full-reduction `ProductionFactsComplete` proof. The
 remaining AP2-N003 proof-completeness work is therefore directly framed as
 supplying those two hard halves from production probability/pricing evidence,
 not rebuilding or re-proving the structural report fields.
+AP2-N003 concrete numeric-source split-constructor note:
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate` now has
+`ofReportAndConcreteCertificateSplitFacts`, which assembles its internal
+`FactsAllTrue` witness from `StructuralFactsComplete` plus
+`PricingFactsComplete`, and
+`ofSelectedReportAndConcreteCertificatePricingFacts`, which specializes this
+to the active selected AP2-N003 report. The selected constructor obtains report
+verification and structural facts from the current selected constants and
+requires only the future selected `PricingFactsComplete` proof plus the
+concrete numeric certificate/digest bindings. This narrows the accepted-spend
+source-certificate input surface to the actual hard production-pricing proof.

@@ -1150,6 +1150,131 @@ def ofReportAndConcreteCertificate
   acceptedSpendPricedBoundDigestBoundProof :=
     acceptedSpendPricedBoundDigestBoundProof
 
+/--
+Named constructor that keeps the concrete numeric source on the split
+accepted-spend evidence route.  The pricing proof is the hard production input;
+the structural proof can come from the selected report once the source is
+bound to AP2-N003.
+-/
+def ofReportAndConcreteCertificateSplitFacts
+    (evidenceReport :
+      Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (evidenceReportBound :
+      evidenceReport =
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport)
+    (evidenceReportBoundProof :
+      evidenceReport =
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport)
+    (evidenceDigestBound :
+      evidenceDigest =
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceDigest)
+    (evidenceDigestBoundProof :
+      evidenceDigest =
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceDigest)
+    (evidenceReportVerifiedProof :
+      evidenceReport.ReportVerified)
+    (evidenceStructuralFactsCompleteProof :
+      Descender.Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.StructuralFactsComplete
+        evidenceReport)
+    (evidencePricingFactsCompleteProof :
+      Descender.Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.PricingFactsComplete
+        evidenceReport)
+    (concreteCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate)
+    (finiteTraceSupportDigestBoundProof :
+      concreteCertificate.finiteTraceSupportDigest =
+        evidenceReport.finiteTraceSupportDigest)
+    (activeOutcomeCarrierDigestBoundProof :
+      concreteCertificate.activeOutcomeCarrierDigest =
+        evidenceReport.activeOutcomeCarrierDigest)
+    (acceptedSpendEventSemanticsDigestBoundProof :
+      concreteCertificate.acceptedSpendEventSemanticsDigest =
+        evidenceReport.acceptedSpendEventSemanticsDigest)
+    (activeBreakFamilyDigestBoundProof :
+      concreteCertificate.activeBreakFamilyDigest =
+        evidenceReport.activeBreakFamilyDigest)
+    (namedBreakEventsDigestBoundProof :
+      concreteCertificate.namedBreakEventsDigest =
+        evidenceReport.namedBreakEventsDigest)
+    (acceptedSpendUnionBoundPricingDigestBoundProof :
+      concreteCertificate.acceptedSpendUnionBoundPricingDigest =
+        evidenceReport.acceptedSpendUnionBoundPricingDigest)
+    (acceptedSpendPricedBoundDigestBoundProof :
+      concreteCertificate.acceptedSpendPricedBoundDigest =
+        evidenceReport.acceptedSpendPricedBoundDigest) :
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate :=
+  ofReportAndConcreteCertificate
+    evidenceReport
+    evidenceDigest
+    evidenceReportBound
+    evidenceReportBoundProof
+    evidenceDigestBound
+    evidenceDigestBoundProof
+    evidenceReportVerifiedProof
+    (Descender.Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_of_structural_and_pricing
+      evidenceReport
+      evidenceStructuralFactsCompleteProof
+      evidencePricingFactsCompleteProof)
+    concreteCertificate
+    finiteTraceSupportDigestBoundProof
+    activeOutcomeCarrierDigestBoundProof
+    acceptedSpendEventSemanticsDigestBoundProof
+    activeBreakFamilyDigestBoundProof
+    namedBreakEventsDigestBoundProof
+    acceptedSpendUnionBoundPricingDigestBoundProof
+    acceptedSpendPricedBoundDigestBoundProof
+
+/--
+Active AP2-N003 constructor for the selected report-bound concrete numeric
+source.  Once production supplies `PricingFactsComplete`, the selected report's
+verified and structural halves are obtained from the current selected constants.
+-/
+def ofSelectedReportAndConcreteCertificatePricingFacts
+    (evidencePricingFactsCompleteProof :
+      Descender.Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.PricingFactsComplete
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport)
+    (concreteCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate)
+    (finiteTraceSupportDigestBoundProof :
+      concreteCertificate.finiteTraceSupportDigest =
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).finiteTraceSupportDigest)
+    (activeOutcomeCarrierDigestBoundProof :
+      concreteCertificate.activeOutcomeCarrierDigest =
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).activeOutcomeCarrierDigest)
+    (acceptedSpendEventSemanticsDigestBoundProof :
+      concreteCertificate.acceptedSpendEventSemanticsDigest =
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendEventSemanticsDigest)
+    (activeBreakFamilyDigestBoundProof :
+      concreteCertificate.activeBreakFamilyDigest =
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).activeBreakFamilyDigest)
+    (namedBreakEventsDigestBoundProof :
+      concreteCertificate.namedBreakEventsDigest =
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).namedBreakEventsDigest)
+    (acceptedSpendUnionBoundPricingDigestBoundProof :
+      concreteCertificate.acceptedSpendUnionBoundPricingDigest =
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendUnionBoundPricingDigest)
+    (acceptedSpendPricedBoundDigestBoundProof :
+      concreteCertificate.acceptedSpendPricedBoundDigest =
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundDigest) :
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate :=
+  ofReportAndConcreteCertificate
+    Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport
+    Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceDigest
+    rfl
+    rfl
+    rfl
+    rfl
+    Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReportVerifiedProof
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
+      evidencePricingFactsCompleteProof)
+    concreteCertificate
+    finiteTraceSupportDigestBoundProof
+    activeOutcomeCarrierDigestBoundProof
+    acceptedSpendEventSemanticsDigestBoundProof
+    activeBreakFamilyDigestBoundProof
+    namedBreakEventsDigestBoundProof
+    acceptedSpendUnionBoundPricingDigestBoundProof
+    acceptedSpendPricedBoundDigestBoundProof
+
 theorem finiteTraceSupportDigest_bound
     (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
     Source.concreteCertificate.finiteTraceSupportDigest =
