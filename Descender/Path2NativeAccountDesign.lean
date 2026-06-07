@@ -1571,6 +1571,7 @@ evidence before constructing the active accepted-spend boundary.
 structure SelectedRustAcceptedSpendSoundnessEvidenceReport where
   schemaMatches : Bool
   reportDigestVerified : Bool
+  numericEvidenceDigestsVerified : Bool
   finiteTraceSupportDigest : ByteArray
   activeOutcomeCarrierDigest : ByteArray
   acceptedSpendEventSemanticsDigest : ByteArray
@@ -1594,7 +1595,8 @@ structure SelectedRustAcceptedSpendSoundnessEvidenceReport where
 def SelectedRustAcceptedSpendSoundnessEvidenceReport.ReportVerified
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport) : Prop :=
   E.schemaMatches = true ∧
-  E.reportDigestVerified = true
+  E.reportDigestVerified = true ∧
+  E.numericEvidenceDigestsVerified = true
 
 /-- All accepted-spend numeric and prerequisite closure facts are true. -/
 def SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue

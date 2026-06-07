@@ -1422,9 +1422,12 @@ theorem.
 That evidence now carries digest commitments for finite trace support, active
 outcome carrier, accepted-spend event semantics, active break family, named
 break event semantics, union-bound pricing, and the priced bound. The Lean
-report mirrors those digest fields, and report verification rejects zero digest
-placeholders plus digest tampering. This keeps the future numeric theorem from
-closing against uncommitted Boolean flags alone.
+report mirrors those digest fields with an explicit
+`numericEvidenceDigestsVerified` report-verification bit, mirrored in Rust as
+`numeric_evidence_digests_verified`. Report verification rejects zero digest
+placeholders, digest tampering, and a false digest-verification bit. This keeps
+the future numeric theorem from closing against uncommitted Boolean flags
+alone.
 The probability game now separates finite trace support from the observed
 full-forgery outcome: `Trace` has `traceFintype`, while `Outcome` is reached
 through `observe` and need not be finite. This is required for the active
