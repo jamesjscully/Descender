@@ -14098,6 +14098,25 @@ fn lean_source_find_exact_declaration_marker_v1(source: &str, marker: &str) -> O
         .map(|(index, _)| index)
 }
 
+fn lean_identifier_boundary_byte_v1(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'\'' || byte == b'.'
+}
+
+fn lean_source_contains_exact_identifier_v1(source: &str, identifier: &str) -> bool {
+    source.match_indices(identifier).any(|(index, _)| {
+        let before_is_identifier = index
+            .checked_sub(1)
+            .and_then(|before_index| source.as_bytes().get(before_index))
+            .is_some_and(|byte| lean_identifier_boundary_byte_v1(*byte));
+        let after_index = index + identifier.len();
+        let after_is_identifier = source
+            .as_bytes()
+            .get(after_index)
+            .is_some_and(|byte| lean_identifier_boundary_byte_v1(*byte));
+        !before_is_identifier && !after_is_identifier
+    })
+}
+
 fn path2_reviewed_fq12_active_five_source_extractor_theorem_source_instantiates_record(
     theorem_source: &str,
     theorem_name: &str,
@@ -28953,9 +28972,28 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustMultiTargetLossPricedProof",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
     ];
+    let exact_identifier_checks = [
+        "SelectedRustFullSignatureReductionCertificate.ofReportAndReduction",
+        "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
+        "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_production",
+        "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_acceptedSpendGame",
+        "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
+        "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendBound",
+        "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity",
+        "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_targetSecurity",
+        "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTarget",
+        "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
+    ];
     instantiation_checks
         .iter()
         .all(|marker| instantiation_source.contains(marker) || contains_normalized(marker))
+        && exact_identifier_checks.iter().all(|identifier| {
+            lean_source_contains_exact_identifier_v1(instantiation_source, identifier)
+                || lean_source_contains_exact_identifier_v1(
+                    &normalized_instantiation_source,
+                    &identifier.split_whitespace().collect::<String>(),
+                )
+        })
 }
 
 fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
@@ -29365,9 +29403,50 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendNoExportClosed",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
     ];
+    let exact_identifier_checks = [
+        "SelectedAcceptedSpendNumericSource.toPricedAcceptedSpendNumericCertificate",
+        "SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_pricedBound",
+        "SelectedAcceptedSpendNumericSource.successProb_le_unionBound",
+        "SelectedAcceptedSpendNumericSource.successProb_le_pricedBound",
+        "SelectedAcceptedSpendNumericSource.unionBound_le_priced",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.toPricedAcceptedSpendNumericCertificate",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.outcome_eq_selectedFullForgeryRun",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendEvent_activeSound",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.break_eq_activeFullSpendBreakEvent",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.namedBreakEvents_activeSound",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_pricedBound",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_unionBound",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_pricedBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_unionBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_pricedBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_production",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_production",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_reportedSecurity",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_reportedSecurity",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_targetSecurity",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_targetSecurity",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_targetSecurityBits",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetSlackBits",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityWithinTranscript",
+        "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_reportedSecurityBound_le_targetSecurityBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
+    ];
     instantiation_checks
         .iter()
         .all(|marker| instantiation_source.contains(marker) || contains_normalized(marker))
+        && exact_identifier_checks.iter().all(|identifier| {
+            lean_source_contains_exact_identifier_v1(instantiation_source, identifier)
+                || lean_source_contains_exact_identifier_v1(
+                    &normalized_instantiation_source,
+                    &identifier.split_whitespace().collect::<String>(),
+                )
+        })
 }
 
 fn path2_no_export_serializer_boundary_present_v1() -> bool {
@@ -52660,6 +52739,17 @@ namespace NativeFullSignatureSecurityBoundary
                 full_signature_reduction_instantiation_shape
             )
         );
+        let suffixed_full_signature_reduction_projection =
+            full_signature_reduction_instantiation_shape.replacen(
+                "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTarget",
+                "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTargetSpoof",
+                1,
+            );
+        assert!(
+            !path2_full_signature_reduction_certificate_instantiated_in_source_v1(
+                &suffixed_full_signature_reduction_projection
+            )
+        );
         let global_vacuous_full_signature_reduction_proofs = format!(
             "{}\n{}",
             r#"
@@ -53824,6 +53914,16 @@ end Path2NativeAccountDesign
         assert!(
             path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 accepted_spend_instantiation_shape
+            )
+        );
+        let suffixed_accepted_spend_projection = accepted_spend_instantiation_shape.replacen(
+            "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget",
+            "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTargetSpoof",
+            1,
+        );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_accepted_spend_projection
             )
         );
         let global_vacuous_accepted_spend_report_proofs = format!(

@@ -1386,6 +1386,11 @@ bound, then to target-security bits and the fixed active `2^-128` target. The
 full-reduction source gate requires the future selected theorem to consume those
 projections, so the final theorem cannot stop at a raw record conversion without
 making the final target-security claim theorem-visible.
+The AP2-N003 accepted-spend and full-reduction instantiation gates now
+exact-check qualified Lean identifier references for these certificate
+projection markers. Regressions replace the active 128-bit target projection
+names with suffixed spoof names and keep both gates open, preventing substring
+matches from satisfying the final target-bound route.
 Regressions reject suffixed report/certificate structures, keeping the final
 active reduction boundary tied to the named certificate family rather than a
 shadow source shape.
