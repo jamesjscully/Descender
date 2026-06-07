@@ -1722,6 +1722,18 @@ Lean also proves the current selected accepted-spend numeric and full-reduction
 reports cannot satisfy `FactsAllTrue`. These sanity guards keep the current
 verified-but-incomplete public reports separate from the future complete
 selected evidence values needed to close AP2-N003.
+The selected-report diagnostics now separate budget capacity from missing
+production evidence: the current accepted-spend report proves target plus the
+selected 32-bit multi-target horizon fits inside the 182-bit QROM-discounted
+transcript term, but also proves the selected priced-bound bits remain `0`,
+below target, and every production numeric-pricing Boolean is false. The current
+full-reduction report likewise proves every production reduction Boolean is
+false. This leaves structural consumption/pinning facts as plausible mechanical
+closures from existing active-path evidence, while accepted-spend component
+probability pricing, production signature-probability pinning, equality into the
+accepted-spend numeric game, all-symbol final query pricing, and
+verifier-game-to-production-execution binding remain the cryptographic/model
+proof obligations.
 The same fail-closed distinction is now stated at the certificate boundary:
 `SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossible`,
 `SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible`,

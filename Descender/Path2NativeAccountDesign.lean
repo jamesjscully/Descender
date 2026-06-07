@@ -2016,6 +2016,39 @@ theorem selectedRustAcceptedSpendEvidenceReportFactsAllTrue_impossible :
   simp [SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue,
     selectedRustAcceptedSpendEvidenceReport]
 
+/-- The current selected accepted-spend report has the active target/horizon transcript headroom. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentBudgetCapacity :
+    selectedRustAcceptedSpendEvidenceReport.targetSecurityBits +
+        selectedRustAcceptedSpendEvidenceReport.selectedMultiTargetHorizonLog2 <=
+      selectedRustAcceptedSpendEvidenceReport.transcriptTermBitsAfterQromLoss := by
+  native_decide
+
+/-- The current selected accepted-spend report still carries zero priced-bound bits. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBitsZero :
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits = 0 := by
+  native_decide
+
+/-- The current selected accepted-spend report's priced-bound bits do not meet target. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBelowTarget :
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits <
+      selectedRustAcceptedSpendEvidenceReport.targetSecurityBits := by
+  native_decide
+
+/-- The current selected accepted-spend report is missing the production numeric-pricing facts. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentNumericPricingFactsFalse :
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBoundPriced = false ∧
+    selectedRustAcceptedSpendEvidenceReport.finiteTraceSupportPriced = false ∧
+    selectedRustAcceptedSpendEvidenceReport.activeOutcomeCarrierPinned = false ∧
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendEventPinned = false ∧
+    selectedRustAcceptedSpendEvidenceReport.activeBreakFamilyPinned = false ∧
+    selectedRustAcceptedSpendEvidenceReport.namedBreakEventsPinned = false ∧
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendUnionBoundPriced = false ∧
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendEventBoundPriced = false ∧
+    selectedRustAcceptedSpendEvidenceReport.namedBreakEventBoundsPriced = false ∧
+    selectedRustAcceptedSpendEvidenceReport.breakPricingBudgetMeetsPricedBound = false ∧
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBudgetMeetsTarget = false := by
+  native_decide
+
 /--
 Selected Rust/model certificate for the accepted-spend numeric soundness layer.
 
@@ -2922,6 +2955,18 @@ theorem selectedRustFullSignatureReductionFactsAllTrue_impossible :
     ¬ selectedRustFullSignatureReductionEvidenceReport.FactsAllTrue := by
   simp [SelectedRustFullSignatureReductionEvidenceReport.FactsAllTrue,
     selectedRustFullSignatureReductionEvidenceReport]
+
+/-- The current selected full-reduction report is missing every production reduction fact. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentReductionFactsFalse :
+    selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned = false ∧
+    selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame = false ∧
+    selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = false ∧
+    selectedRustFullSignatureReductionEvidenceReport.fullExecutionSourceConsumed = false ∧
+    selectedRustFullSignatureReductionEvidenceReport.activeHashBoundaryConsumed = false ∧
+    selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = false ∧
+    selectedRustFullSignatureReductionEvidenceReport.multiTargetHorizonPriced = false ∧
+    selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = false := by
+  native_decide
 
 /--
 Selected Rust/model certificate for the full-signature reduction layer.
