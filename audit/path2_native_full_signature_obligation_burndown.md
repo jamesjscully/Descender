@@ -1385,7 +1385,10 @@ exported accepted-spend bound, and the accepted-spend reported-security-bit
 bound, then to target-security bits and the fixed active `2^-128` target. The
 full-reduction source gate requires the future selected theorem to consume those
 projections, so the final theorem cannot stop at a raw record conversion without
-making the final target-security claim theorem-visible.
+making the final target-security claim theorem-visible. The fixed target now
+also has explicit projections after erasing the certificates to
+`NativeAcceptedSpendSoundnessBoundary` and `NativeFullSignatureSecurityBoundary`,
+so the theorem-visible target bound survives the public boundary conversion.
 The AP2-N003 accepted-spend and full-reduction instantiation gates now
 exact-check qualified Lean identifier references for these certificate
 projection markers. Regressions replace the active 128-bit target projection

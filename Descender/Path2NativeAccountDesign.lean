@@ -2015,6 +2015,13 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
   noExportClosed :=
     Cert.noExportClosed
 
+/-- The erased accepted-spend boundary from the selected certificate still reaches the fixed target. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.toAcceptedSpendSoundnessBoundary.acceptedSpendForgeryProb <=
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  Cert.acceptedSpendForgeryProb_le_active128BitTarget
+
 /-- The selected accepted-spend certificate bounds packaged success by the exported accepted-spend probability. -/
 theorem SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_acceptedSpendForgeryProb
     (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
@@ -2377,6 +2384,13 @@ def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityB
         Cert.hiddenSourceFrameDomainSeparatedProof,
         Cert.queryBudgetPricedProof,
         Cert.multiTargetLossPricedProof⟩
+
+/-- The erased full-signature boundary from the selected certificate still reaches the fixed target. -/
+theorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.toNativeFullSignatureSecurityBoundary.signatureForgerySuccessProb <=
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  Cert.signatureForgerySuccessProb_le_active128BitTarget
 
 namespace NativeFullSignatureSecurityBoundary
 

@@ -28567,6 +28567,7 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "signatureForgerySuccessProb_le_reportedSecurity",
         "signatureForgerySuccessProb_le_targetSecurity",
         "signatureForgerySuccessProb_le_active128BitTarget",
+        "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "keygenDistributionModeledProof",
         "signingOracleModeledProof",
         "completenessModeledProof",
@@ -28597,6 +28598,7 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "\ntheorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity",
         "\ntheorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_targetSecurity",
         "\ntheorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTarget",
+        "\ntheorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "\ndef SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
     ];
     certificate_checks
@@ -28952,6 +28954,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_targetSecurity",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTarget",
+        "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "selectedRustFullSignatureKeygenModeled",
         "selectedRustFullSignatureKeygenModeledProof",
         "selectedRustFullSignatureSigningOracleModeled",
@@ -28982,6 +28985,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_targetSecurity",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTarget",
+        "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
     ];
     instantiation_checks
@@ -29349,6 +29353,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_targetSecurity",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_targetSecurity",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget",
         "acceptedSpendNumericBoundPriced",
         "numericEvidenceDigestsVerified",
         "finiteTraceSupportDigest",
@@ -29429,6 +29434,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_targetSecurity",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_targetSecurity",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_targetSecurityBits",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced",
@@ -52505,6 +52511,9 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
   let _fullReductionToActive128BitTarget :=
     SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTarget
       selectedRustFullSignatureReductionCertificate
+  let _fullReductionErasedBoundaryToActive128BitTarget :=
+    SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget
+      selectedRustFullSignatureReductionCertificate
   exact
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
       selectedRustFullSignatureReductionCertificate
@@ -52728,6 +52737,9 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustFullSignatureReductionCertificate
   let _fullReductionToActive128BitTarget :=
     SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTarget
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionErasedBoundaryToActive128BitTarget :=
+    SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget
       selectedRustFullSignatureReductionCertificate
   exact
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
@@ -53662,6 +53674,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_targetSecurity
   let _acceptedSpendCertificateProbActiveTarget :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget
+  let _acceptedSpendCertificateErasedBoundaryActiveTarget :=
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget
   let selectedRustAcceptedSpendSoundnessCertificate :
       SelectedRustAcceptedSpendSoundnessCertificate :=
     SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
@@ -53881,6 +53895,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_targetSecurity
   let _acceptedSpendCertificateProbActiveTarget :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget
+  let _acceptedSpendCertificateErasedBoundaryActiveTarget :=
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget
   let selectedRustAcceptedSpendSoundnessCertificate :
       SelectedRustAcceptedSpendSoundnessCertificate :=
     SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
