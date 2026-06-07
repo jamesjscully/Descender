@@ -46,6 +46,8 @@ pub const PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeNoExportSerializerEvidence.v1";
 pub const PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeAcceptedSpendNumericEvidence.v1";
+pub const PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.NativeFullSignatureReductionEvidence.v1";
 pub const PATH2_NATIVE_SIGNER_VERIFIER_PIPELINE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeSignerVerifierPipelineEvidence.v1";
 pub const PATH2_NATIVE_SIGNER_PIPELINE_PUBLIC_OUTPUT_SCHEMA: &str =
@@ -2010,6 +2012,30 @@ pub struct Path2NativeAcceptedSpendNumericEvidenceV1 {
     pub cleanup_policy: &'static str,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2NativeFullSignatureReductionEvidenceV1 {
+    pub schema: &'static str,
+    pub schema_matches: bool,
+    pub report_digest_verified: bool,
+    pub reduction_evidence_digests_verified: bool,
+    pub production_signature_probability_digest: [u8; DIGEST_BYTES],
+    pub signature_accepted_spend_link_digest: [u8; DIGEST_BYTES],
+    pub full_execution_source_digest: [u8; DIGEST_BYTES],
+    pub active_hash_boundary_digest: [u8; DIGEST_BYTES],
+    pub query_budget_pricing_digest: [u8; DIGEST_BYTES],
+    pub multi_target_pricing_digest: [u8; DIGEST_BYTES],
+    pub verifier_game_binding_digest: [u8; DIGEST_BYTES],
+    pub production_signature_probability_pinned: bool,
+    pub signature_success_matches_accepted_spend_game: bool,
+    pub accepted_spend_probability_linked: bool,
+    pub full_execution_source_consumed: bool,
+    pub active_hash_boundary_consumed: bool,
+    pub all_active_query_symbols_priced: bool,
+    pub multi_target_horizon_priced: bool,
+    pub verifier_game_matches_production_execution: bool,
+    pub cleanup_policy: &'static str,
+}
+
 pub fn validate_path2_native_checked_core_frame_v1(
     frame: &Path2NativeCheckedCoreFrameV1,
 ) -> Result<(), String> {
@@ -2797,6 +2823,227 @@ pub fn verify_path2_native_accepted_spend_numeric_evidence_v1(
         );
     }
     path2_native_accepted_spend_numeric_evidence_v1_digest(evidence)
+}
+
+pub fn path2_native_full_signature_reduction_evidence_v1()
+-> Path2NativeFullSignatureReductionEvidenceV1 {
+    Path2NativeFullSignatureReductionEvidenceV1 {
+        schema: PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA,
+        schema_matches: true,
+        report_digest_verified: true,
+        reduction_evidence_digests_verified: true,
+        production_signature_probability_digest: path2_source_window_digest_v1(
+            include_str!("../../../Descender/Path2NativeAccountDesign.lean"),
+            "\nstructure SelectedRustFullSignatureReductionCertificate where",
+            "\n/-- Named constructor for the selected Rust full-signature reduction certificate. -/",
+            "Path 2 full-signature production probability and certificate surface",
+        ),
+        signature_accepted_spend_link_digest: path2_source_window_digest_v1(
+            include_str!("../../../Descender/Path2NativeAccountDesign.lean"),
+            "\ndef SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
+            "\nnamespace NativeFullSignatureSecurityBoundary",
+            "Path 2 full-signature accepted-spend linkage",
+        ),
+        full_execution_source_digest: path2_source_window_digest_v1(
+            include_str!("../../../Descender/Path2FullSpendConcrete.lean"),
+            "\nstructure SelectedRustFullExecutionSourceCertificate",
+            "\n/-- Named constructor for the selected Rust full-execution evidence certificate. -/",
+            "Path 2 full-signature execution source certificate",
+        ),
+        active_hash_boundary_digest: path2_source_window_digest_v1(
+            include_str!("../../../Descender/Path2HashDomainAndMultiTarget.lean"),
+            "\ndef activeNativeHashBudgetBoundary",
+            "\ntheorem activeNativeHashBudgetBoundary_checkedCoreFrameDomainSeparated",
+            "Path 2 full-signature active hash boundary",
+        ),
+        query_budget_pricing_digest: path2_source_window_digest_v1(
+            include_str!("../../../Descender/Path2HashBudget.lean"),
+            "\ndef path2DirectQueryBudgetV1",
+            "\n/-- Lean mirror of the native public hash/QROM review caps. -/",
+            "Path 2 full-signature query budget pricing",
+        ),
+        multi_target_pricing_digest: path2_source_window_digest_v1(
+            include_str!("../../../Descender/Path2HashDomainAndMultiTarget.lean"),
+            "\ndef MultiTargetHorizonLossPriced",
+            "\n/--\nActive account-horizon cap for the direct native route.",
+            "Path 2 full-signature multi-target pricing",
+        ),
+        verifier_game_binding_digest: path2_source_window_digest_v1(
+            include_str!("../../../Descender/Path2FullSpendConcrete.lean"),
+            "\nstructure ConcreteFullSignatureExecutionSource",
+            "\n/--\nLean mirror of the public selected-Rust full-execution evidence report.",
+            "Path 2 full-signature verifier game binding",
+        ),
+        production_signature_probability_pinned: false,
+        signature_success_matches_accepted_spend_game: false,
+        accepted_spend_probability_linked: false,
+        full_execution_source_consumed: false,
+        active_hash_boundary_consumed: false,
+        all_active_query_symbols_priced: false,
+        multi_target_horizon_priced: false,
+        verifier_game_matches_production_execution: false,
+        cleanup_policy: "full-signature reduction evidence is public and remains fail-closed until production reduction facts are instantiated",
+    }
+}
+
+pub fn path2_native_full_signature_reduction_evidence_v1_frame(
+    evidence: &Path2NativeFullSignatureReductionEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_u64(
+        &mut frame,
+        b"schema_matches",
+        u64::from(evidence.schema_matches),
+    );
+    append_u64(
+        &mut frame,
+        b"report_digest_verified",
+        u64::from(evidence.report_digest_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"reduction_evidence_digests_verified",
+        u64::from(evidence.reduction_evidence_digests_verified),
+    );
+    append_frame(
+        &mut frame,
+        b"production_signature_probability_digest",
+        &evidence.production_signature_probability_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"signature_accepted_spend_link_digest",
+        &evidence.signature_accepted_spend_link_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"full_execution_source_digest",
+        &evidence.full_execution_source_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"active_hash_boundary_digest",
+        &evidence.active_hash_boundary_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"query_budget_pricing_digest",
+        &evidence.query_budget_pricing_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"multi_target_pricing_digest",
+        &evidence.multi_target_pricing_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"verifier_game_binding_digest",
+        &evidence.verifier_game_binding_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"production_signature_probability_pinned",
+        u64::from(evidence.production_signature_probability_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"signature_success_matches_accepted_spend_game",
+        u64::from(evidence.signature_success_matches_accepted_spend_game),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_spend_probability_linked",
+        u64::from(evidence.accepted_spend_probability_linked),
+    );
+    append_u64(
+        &mut frame,
+        b"full_execution_source_consumed",
+        u64::from(evidence.full_execution_source_consumed),
+    );
+    append_u64(
+        &mut frame,
+        b"active_hash_boundary_consumed",
+        u64::from(evidence.active_hash_boundary_consumed),
+    );
+    append_u64(
+        &mut frame,
+        b"all_active_query_symbols_priced",
+        u64::from(evidence.all_active_query_symbols_priced),
+    );
+    append_u64(
+        &mut frame,
+        b"multi_target_horizon_priced",
+        u64::from(evidence.multi_target_horizon_priced),
+    );
+    append_u64(
+        &mut frame,
+        b"verifier_game_matches_production_execution",
+        u64::from(evidence.verifier_game_matches_production_execution),
+    );
+    append_frame(
+        &mut frame,
+        b"cleanup_policy",
+        evidence.cleanup_policy.as_bytes(),
+    );
+    frame
+}
+
+pub fn path2_native_full_signature_reduction_evidence_v1_digest(
+    evidence: &Path2NativeFullSignatureReductionEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    Ok(
+        Sha256::digest(path2_native_full_signature_reduction_evidence_v1_frame(
+            evidence,
+        ))
+        .into(),
+    )
+}
+
+pub fn path2_native_full_signature_reduction_evidence_report_verified_v1(
+    evidence: &Path2NativeFullSignatureReductionEvidenceV1,
+) -> bool {
+    *evidence == path2_native_full_signature_reduction_evidence_v1()
+        && evidence.schema == PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA
+        && evidence.schema_matches
+        && evidence.report_digest_verified
+        && evidence.reduction_evidence_digests_verified
+        && evidence.production_signature_probability_digest != [0_u8; DIGEST_BYTES]
+        && evidence.signature_accepted_spend_link_digest != [0_u8; DIGEST_BYTES]
+        && evidence.full_execution_source_digest != [0_u8; DIGEST_BYTES]
+        && evidence.active_hash_boundary_digest != [0_u8; DIGEST_BYTES]
+        && evidence.query_budget_pricing_digest != [0_u8; DIGEST_BYTES]
+        && evidence.multi_target_pricing_digest != [0_u8; DIGEST_BYTES]
+        && evidence.verifier_game_binding_digest != [0_u8; DIGEST_BYTES]
+}
+
+pub fn path2_native_full_signature_reduction_evidence_all_facts_true(
+    evidence: &Path2NativeFullSignatureReductionEvidenceV1,
+) -> bool {
+    path2_native_full_signature_reduction_evidence_report_verified_v1(evidence)
+        && evidence.production_signature_probability_pinned
+        && evidence.signature_success_matches_accepted_spend_game
+        && evidence.accepted_spend_probability_linked
+        && evidence.full_execution_source_consumed
+        && evidence.active_hash_boundary_consumed
+        && evidence.all_active_query_symbols_priced
+        && evidence.multi_target_horizon_priced
+        && evidence.verifier_game_matches_production_execution
+}
+
+pub fn verify_path2_native_full_signature_reduction_evidence_v1(
+    evidence: &Path2NativeFullSignatureReductionEvidenceV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let expected = path2_native_full_signature_reduction_evidence_v1();
+    if expected != *evidence {
+        return Err("Path 2 native full-signature reduction evidence mismatch".to_string());
+    }
+    if !path2_native_full_signature_reduction_evidence_report_verified_v1(evidence) {
+        return Err(
+            "Path 2 native full-signature reduction evidence report is not verified".to_string(),
+        );
+    }
+    path2_native_full_signature_reduction_evidence_v1_digest(evidence)
 }
 
 pub fn path2_native_checked_core_accept_v1(
@@ -28076,6 +28323,60 @@ fn path2_full_signature_reduction_certificate_boundary_present_v1() -> bool {
     path2_full_signature_reduction_certificate_boundary_present_in_source_v1(account_design_source)
 }
 
+fn path2_native_full_signature_reduction_evidence_source_present_v1() -> bool {
+    let rust_source = include_str!("production_reference.rs");
+    let Some(schema_start) =
+        rust_source.find("\npub const PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA")
+    else {
+        return false;
+    };
+    let Some(struct_start) =
+        rust_source.find("\npub struct Path2NativeFullSignatureReductionEvidenceV1")
+    else {
+        return false;
+    };
+    let Some(test_start) = rust_source.find(
+        "\n    fn path2_native_full_signature_reduction_evidence_stays_fail_closed_until_instantiated",
+    ) else {
+        return false;
+    };
+    let evidence_window = &rust_source[schema_start..rust_source.len().min(test_start + 8192)];
+    let source_checks = [
+        "Descender.Path2.NativeFullSignatureReductionEvidence.v1",
+        "Path2NativeFullSignatureReductionEvidenceV1",
+        "reduction_evidence_digests_verified",
+        "production_signature_probability_digest",
+        "signature_accepted_spend_link_digest",
+        "full_execution_source_digest",
+        "active_hash_boundary_digest",
+        "query_budget_pricing_digest",
+        "multi_target_pricing_digest",
+        "verifier_game_binding_digest",
+        "production_signature_probability_pinned",
+        "signature_success_matches_accepted_spend_game",
+        "accepted_spend_probability_linked",
+        "full_execution_source_consumed",
+        "active_hash_boundary_consumed",
+        "all_active_query_symbols_priced",
+        "multi_target_horizon_priced",
+        "verifier_game_matches_production_execution",
+        "path2_native_full_signature_reduction_evidence_v1",
+        "path2_native_full_signature_reduction_evidence_v1_frame",
+        "path2_native_full_signature_reduction_evidence_v1_digest",
+        "path2_native_full_signature_reduction_evidence_report_verified_v1",
+        "path2_native_full_signature_reduction_evidence_all_facts_true",
+        "*evidence == path2_native_full_signature_reduction_evidence_v1()",
+        "verify_path2_native_full_signature_reduction_evidence_v1",
+        "forged_ready.production_signature_probability_pinned = true",
+        "forged_ready.verifier_game_matches_production_execution = true",
+        "Path 2 native full-signature reduction evidence mismatch",
+    ];
+    source_checks
+        .iter()
+        .all(|marker| evidence_window.contains(marker))
+        && struct_start > schema_start
+}
+
 fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
     account_design_source: &str,
 ) -> bool {
@@ -28150,6 +28451,9 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
 }
 
 fn path2_full_signature_reduction_certificate_instantiated_v1() -> bool {
+    if !path2_native_full_signature_reduction_evidence_source_present_v1() {
+        return false;
+    }
     let account_design_source = include_str!("../../../Descender/Path2NativeAccountDesign.lean");
     let full_spend_concrete_source = include_str!("../../../Descender/Path2FullSpendConcrete.lean");
     let reduction_sources = format!("{account_design_source}\n{full_spend_concrete_source}");
@@ -29813,7 +30117,9 @@ fn path2_native_global_domain_registry_source_present_v1() -> bool {
         "PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA",
         "PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA",
         "PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA",
-        "active_native_values.len(), 38",
+        "PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA",
+        "PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA",
+        "active_native_values.len(), 40",
         "label.starts_with(\"PATH2_NATIVE_\") || label.starts_with(\"PATH2_PUBLIC_NATIVE_\")",
         "active native registry value collides with non-native",
     ];
@@ -29855,6 +30161,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "Path2NativeCheckedCoreByteInstantiationEvidenceV1",
         "Path2NativeNoExportSerializerEvidenceV1",
         "Path2NativeAcceptedSpendNumericEvidenceV1",
+        "Path2NativeFullSignatureReductionEvidenceV1",
         "Path2NativeHashByteDomainEvidenceV1",
         "Path2ReviewedFq12FiveSourceClosureEvidenceV1",
         "Path2SelectedRustModelConcreteDefinitionChecklistV1",
@@ -29863,6 +30170,7 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA",
         "PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA",
         "PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA",
+        "PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA",
         "PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA",
         "PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA",
         "PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA",
@@ -29874,6 +30182,12 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "path2_native_accepted_spend_numeric_evidence_report_verified_v1",
         "path2_native_accepted_spend_numeric_evidence_all_facts_true",
         "verify_path2_native_accepted_spend_numeric_evidence_v1",
+        "path2_native_full_signature_reduction_evidence_v1",
+        "path2_native_full_signature_reduction_evidence_v1_digest",
+        "path2_native_full_signature_reduction_evidence_v1_frame",
+        "path2_native_full_signature_reduction_evidence_report_verified_v1",
+        "path2_native_full_signature_reduction_evidence_all_facts_true",
+        "verify_path2_native_full_signature_reduction_evidence_v1",
         "path2_native_consensus_carrier_v1_bytes",
         "path2_native_consensus_carrier_v1_digest",
         "decode_path2_native_consensus_carrier_v1",
@@ -34203,6 +34517,14 @@ pub fn production_registered_domain_schema_constants() -> Vec<(&'static str, &'s
         (
             "PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA",
             PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA,
+        ),
+        (
+            "PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA",
+            PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA,
+        ),
+        (
+            "PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA",
+            PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA,
         ),
         (
             "PATH2_DIRECT_CREATION_PROOF_PAYLOAD_SCHEMA",
@@ -48017,6 +48339,92 @@ mod tests {
         assert_no_active_native_private_material(&rendered);
     }
 
+    #[test]
+    fn path2_native_full_signature_reduction_evidence_stays_fail_closed_until_instantiated() {
+        let evidence = path2_native_full_signature_reduction_evidence_v1();
+        assert_eq!(
+            evidence.schema,
+            PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA
+        );
+        assert!(evidence.schema_matches);
+        assert!(evidence.report_digest_verified);
+        assert!(evidence.reduction_evidence_digests_verified);
+        for digest in [
+            evidence.production_signature_probability_digest,
+            evidence.signature_accepted_spend_link_digest,
+            evidence.full_execution_source_digest,
+            evidence.active_hash_boundary_digest,
+            evidence.query_budget_pricing_digest,
+            evidence.multi_target_pricing_digest,
+            evidence.verifier_game_binding_digest,
+        ] {
+            assert_ne!(digest, [0_u8; DIGEST_BYTES]);
+        }
+        assert!(!evidence.production_signature_probability_pinned);
+        assert!(!evidence.signature_success_matches_accepted_spend_game);
+        assert!(!evidence.accepted_spend_probability_linked);
+        assert!(!evidence.full_execution_source_consumed);
+        assert!(!evidence.active_hash_boundary_consumed);
+        assert!(!evidence.all_active_query_symbols_priced);
+        assert!(!evidence.multi_target_horizon_priced);
+        assert!(!evidence.verifier_game_matches_production_execution);
+        assert!(path2_native_full_signature_reduction_evidence_report_verified_v1(&evidence));
+        assert!(!path2_native_full_signature_reduction_evidence_all_facts_true(&evidence));
+
+        let evidence_frame = path2_native_full_signature_reduction_evidence_v1_frame(&evidence);
+        let expected_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&evidence_frame).into();
+        assert_eq!(
+            path2_native_full_signature_reduction_evidence_v1_digest(&evidence).unwrap(),
+            expected_frame_digest
+        );
+        assert_eq!(
+            verify_path2_native_full_signature_reduction_evidence_v1(&evidence).unwrap(),
+            path2_native_full_signature_reduction_evidence_v1_digest(&evidence).unwrap()
+        );
+
+        let mut forged_ready = evidence;
+        forged_ready.production_signature_probability_pinned = true;
+        forged_ready.signature_success_matches_accepted_spend_game = true;
+        forged_ready.accepted_spend_probability_linked = true;
+        forged_ready.full_execution_source_consumed = true;
+        forged_ready.active_hash_boundary_consumed = true;
+        forged_ready.all_active_query_symbols_priced = true;
+        forged_ready.multi_target_horizon_priced = true;
+        forged_ready.verifier_game_matches_production_execution = true;
+        assert!(!path2_native_full_signature_reduction_evidence_all_facts_true(&forged_ready));
+        assert_eq!(
+            verify_path2_native_full_signature_reduction_evidence_v1(&forged_ready).unwrap_err(),
+            "Path 2 native full-signature reduction evidence mismatch"
+        );
+
+        let mut tampered_digest = evidence;
+        tampered_digest.signature_accepted_spend_link_digest[0] ^= 1;
+        assert!(
+            !path2_native_full_signature_reduction_evidence_report_verified_v1(&tampered_digest)
+        );
+        assert_eq!(
+            verify_path2_native_full_signature_reduction_evidence_v1(&tampered_digest).unwrap_err(),
+            "Path 2 native full-signature reduction evidence mismatch"
+        );
+
+        let mut unverified_digests = evidence;
+        unverified_digests.reduction_evidence_digests_verified = false;
+        assert!(
+            !path2_native_full_signature_reduction_evidence_report_verified_v1(&unverified_digests)
+        );
+        assert_eq!(
+            verify_path2_native_full_signature_reduction_evidence_v1(&unverified_digests)
+                .unwrap_err(),
+            "Path 2 native full-signature reduction evidence mismatch"
+        );
+
+        let rendered = serde_json::to_string(&evidence).unwrap();
+        assert!(rendered.contains(PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA));
+        assert!(!rendered.contains("\"production_signature_probability_pinned\":true"));
+        assert!(!rendered.contains("\"verifier_game_matches_production_execution\":true"));
+        assert_no_active_native_private_material(&rendered);
+    }
+
     fn native_projection_fixtures() -> (
         Path2NativeContextProjectionV1,
         Path2NativeAccountProjectionV1,
@@ -48709,6 +49117,8 @@ mod tests {
             "PATH2_NATIVE_BOUNDARY_TRACE_PROOF_FAMILY_INTERFACE_SCHEMA",
             "PATH2_PUBLIC_NATIVE_ACCOUNT_VIEW_SCHEMA",
             "PATH2_PUBLIC_NATIVE_SPEND_VIEW_SCHEMA",
+            "PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA",
+            "PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA",
             "REVIEWED_FQ12_STATE_ASSISTED_CARRIER_DOMAIN",
             "HIDDEN_SOURCE_FALLBACK_CHECKED_CORE_TRANSCRIPT_FRAME_DOMAIN",
             "PRODUCTION_DEPLOYMENT_PREFLIGHT_CERTIFICATE_DOMAIN",
@@ -48726,7 +49136,7 @@ mod tests {
             })
             .map(|(_, value)| *value)
             .collect();
-        assert_eq!(active_native_values.len(), 38);
+        assert_eq!(active_native_values.len(), 40);
         for active in active_native_values {
             for (label, value) in &registry {
                 if label.starts_with("PATH2_NATIVE_") || label.starts_with("PATH2_PUBLIC_NATIVE_") {

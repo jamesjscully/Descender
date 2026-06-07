@@ -51,11 +51,11 @@ pub use descender_parameter_search::production_reference::{
     LINEAR_SIGMA_PROOF_COMMITMENT_BYTES, LINEAR_SIGMA_TARGET_PROOF_BYTES,
     LINEAR_SIGMA_TARGET_TRANSACTION_SIGNATURE_BYTES, LOCAL_FREE, LOCAL_OPENING_BYTES,
     LOCAL_OPENING_BYTES_PER_REP, LOCAL_PIVOT, LOCAL_SYNDROME_SLOPE,
+    PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA,
     PATH2_NATIVE_AGGREGATION_MODE_AGGREGATE_COMPATIBLE, PATH2_NATIVE_AGGREGATION_MODE_DIRECT,
     PATH2_NATIVE_AUTHORIZATION_CLASS_DOMAIN, PATH2_NATIVE_AUTHORIZATION_LOCAL_MODE_DIRECT,
     PATH2_NATIVE_BOUNDARY_DOMAIN, PATH2_NATIVE_CHECKED_CORE_BYTE_INSTANTIATION_EVIDENCE_SCHEMA,
     PATH2_NATIVE_CHECKED_CORE_FRAME_BODY_BYTES, PATH2_NATIVE_CHECKED_CORE_FRAME_BYTES,
-    PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA,
     PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN, PATH2_NATIVE_CHECKED_CORE_FRAME_VERSION,
     PATH2_NATIVE_CHECKED_CORE_PARAMETER_SET_Q12289, PATH2_NATIVE_CHECKED_CORE_PROOF_BYTES,
     PATH2_NATIVE_CHECKED_CORE_VERIFIER_FAMILY_FQ12, PATH2_NATIVE_CONSENSUS_CARRIER_BODY_BYTES,
@@ -79,8 +79,9 @@ pub use descender_parameter_search::production_reference::{
     PATH2_NATIVE_DEPLOYMENT_BLOCKER_SIGNER_VERIFIER_PIPELINE,
     PATH2_NATIVE_DEPLOYMENT_BLOCKER_STORAGE,
     PATH2_NATIVE_DEPLOYMENT_BLOCKER_VERIFIER_PREFLIGHT_REPORT,
-    PATH2_NATIVE_DEPLOYMENT_PREFLIGHT_SCHEMA, PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA,
-    PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA,
+    PATH2_NATIVE_DEPLOYMENT_PREFLIGHT_SCHEMA,
+    PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA,
+    PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA, PATH2_NATIVE_HASH_QROM_REVIEW_SCHEMA,
     PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA, PATH2_NATIVE_NO_OBSTRUCTION_FLAGS_DOMAIN,
     PATH2_NATIVE_PROJECTION_ACCOUNT_DOMAIN, PATH2_NATIVE_PROJECTION_CONTEXT_DOMAIN,
     PATH2_NATIVE_PROJECTION_LIFECYCLE_DOMAIN, PATH2_NATIVE_PROJECTION_PREIMAGE_DA_DOMAIN,
@@ -120,18 +121,17 @@ pub use descender_parameter_search::production_reference::{
     PRODUCTION_TRUSTED_RESTORE_ANCHOR_CHAIN_OBSERVED_PLACEMENT,
     PRODUCTION_TRUSTED_RESTORE_ANCHOR_SCHEMA, PRODUCTION_VERIFIER_CALLBACK_FAILURE_REASON, PROFILE,
     Path2NativeAcceptedSpendNumericEvidenceV1, Path2NativeAccountProjectionV1,
-    Path2NativeBoundaryAssemblyV1,
-    Path2NativeCheckedCoreByteInstantiationEvidenceV1, Path2NativeCheckedCoreFrameV1,
-    Path2NativeConsensusCarrierPreflightReportV1, Path2NativeConsensusCarrierV1,
-    Path2NativeConstantTimeAuditScopeV1, Path2NativeContextProjectionV1,
-    Path2NativeDeploymentPreflightV1, Path2NativeHashByteDomainEvidenceV1,
-    Path2NativeHashQromReviewV1,
-    Path2NativeLifecycleProjectionV1, Path2NativeNoExportSerializerEvidenceV1,
-    Path2NativeProjectionBundleV1, Path2NativeSignerPipelinePublicOutputV1,
-    Path2NativeSignerVerifierPipelineEvidenceV1, Path2NativeSpendProjectionV1,
-    Path2NativeStateProjectionV1, Path2NativeStorageLifecycleHardeningScopeV1,
-    Path2NativeTranscriptProjectionV1, Path2NativeVerifierPipelineVerdictV1,
-    Path2ReviewedFq12FiveSourceClosureEvidenceV1,
+    Path2NativeBoundaryAssemblyV1, Path2NativeCheckedCoreByteInstantiationEvidenceV1,
+    Path2NativeCheckedCoreFrameV1, Path2NativeConsensusCarrierPreflightReportV1,
+    Path2NativeConsensusCarrierV1, Path2NativeConstantTimeAuditScopeV1,
+    Path2NativeContextProjectionV1, Path2NativeDeploymentPreflightV1,
+    Path2NativeFullSignatureReductionEvidenceV1, Path2NativeHashByteDomainEvidenceV1,
+    Path2NativeHashQromReviewV1, Path2NativeLifecycleProjectionV1,
+    Path2NativeNoExportSerializerEvidenceV1, Path2NativeProjectionBundleV1,
+    Path2NativeSignerPipelinePublicOutputV1, Path2NativeSignerVerifierPipelineEvidenceV1,
+    Path2NativeSpendProjectionV1, Path2NativeStateProjectionV1,
+    Path2NativeStorageLifecycleHardeningScopeV1, Path2NativeTranscriptProjectionV1,
+    Path2NativeVerifierPipelineVerdictV1, Path2ReviewedFq12FiveSourceClosureEvidenceV1,
     Path2SelectedRustModelConcreteDefinitionChecklistV1, ProductionAccountBindingError,
     ProductionAccountCommitment, ProductionAccountLifecycleManager, ProductionAccountSlot,
     ProductionAccountSlotRecord, ProductionAccountSlotSeed, ProductionAccountState,
@@ -292,14 +292,14 @@ pub use descender_parameter_search::production_reference::{
     hidden_source_fallback_projection_values_from_hidden_material,
     legacy_stateful_challenge_hash_frame, pack_reviewed_account_carried_syndrome_digest,
     pack_reviewed_fq12_account_carried_syndrome_digest, pack_reviewed_fq12_packed_witness_state18,
-    pack_reviewed_fq12_packed_witness_state18_from_parts, path2_native_account_projection_v1_bytes,
+    pack_reviewed_fq12_packed_witness_state18_from_parts,
     path2_native_accepted_spend_numeric_evidence_all_facts_true,
     path2_native_accepted_spend_numeric_evidence_report_verified_v1,
     path2_native_accepted_spend_numeric_evidence_v1,
     path2_native_accepted_spend_numeric_evidence_v1_digest,
     path2_native_accepted_spend_numeric_evidence_v1_frame,
-    path2_native_account_projection_v1_digest, path2_native_boundary_v1_digest,
-    path2_native_checked_core_accept_v1,
+    path2_native_account_projection_v1_bytes, path2_native_account_projection_v1_digest,
+    path2_native_boundary_v1_digest, path2_native_checked_core_accept_v1,
     path2_native_checked_core_byte_instantiation_evidence_all_facts_true,
     path2_native_checked_core_byte_instantiation_evidence_v1,
     path2_native_checked_core_byte_instantiation_evidence_v1_digest,
@@ -313,11 +313,15 @@ pub use descender_parameter_search::production_reference::{
     path2_native_constant_time_audit_scope_v1_digest, path2_native_context_projection_v1_bytes,
     path2_native_context_projection_v1_digest, path2_native_deployment_preflight_v1,
     path2_native_deployment_preflight_v1_digest, path2_native_deployment_preflight_v1_frame,
+    path2_native_full_signature_reduction_evidence_all_facts_true,
+    path2_native_full_signature_reduction_evidence_report_verified_v1,
+    path2_native_full_signature_reduction_evidence_v1,
+    path2_native_full_signature_reduction_evidence_v1_digest,
+    path2_native_full_signature_reduction_evidence_v1_frame,
     path2_native_hash_byte_domain_evidence_all_facts_true,
     path2_native_hash_byte_domain_evidence_v1, path2_native_hash_byte_domain_evidence_v1_digest,
     path2_native_hash_byte_domain_evidence_v1_frame, path2_native_hash_qrom_review_v1,
-    path2_native_lifecycle_projection_v1_bytes,
-    path2_native_lifecycle_projection_v1_digest,
+    path2_native_lifecycle_projection_v1_bytes, path2_native_lifecycle_projection_v1_digest,
     path2_native_no_export_serializer_evidence_all_facts_true,
     path2_native_no_export_serializer_evidence_v1,
     path2_native_no_export_serializer_evidence_v1_digest,
@@ -362,9 +366,6 @@ pub use descender_parameter_search::production_reference::{
     require_deployment_callback_boundaries, require_production_deployment_preflight_ready,
     require_reviewed_fq12_account_carried_signature_carried_deployable,
     require_reviewed_fq12_hidden_source_proof_deployable_verdict,
-    verify_path2_native_accepted_spend_numeric_evidence_v1,
-    verify_path2_native_hash_byte_domain_evidence_v1,
-    verify_path2_selected_rust_model_concrete_definition_checklist_v1,
     reviewed_account_carried_matrix_entry, reviewed_account_carried_response_syndrome,
     reviewed_account_carried_response_syndrome_digest,
     reviewed_fq12_account_carried_expected_response_syndrome,
@@ -447,11 +448,15 @@ pub use descender_parameter_search::production_reference::{
     verify_hidden_source_fallback_pad_prf_seed_or_export,
     verify_hidden_source_fallback_projection_public_bridge,
     verify_hidden_source_fallback_response_link_kernel_or_export,
+    verify_path2_native_accepted_spend_numeric_evidence_v1,
     verify_path2_native_checked_core_byte_instantiation_evidence_v1,
     verify_path2_native_consensus_carrier_v1_against_bundle,
     verify_path2_native_deployment_pipeline_v1,
+    verify_path2_native_full_signature_reduction_evidence_v1,
+    verify_path2_native_hash_byte_domain_evidence_v1,
     verify_path2_native_no_export_serializer_evidence_v1,
     verify_path2_reviewed_fq12_five_source_closure_evidence_v1,
+    verify_path2_selected_rust_model_concrete_definition_checklist_v1,
     verify_public_local_fiber_consistency, verify_public_pad_opening_consistency,
     verify_reviewed_account_carried_account_binding,
     verify_reviewed_account_carried_transcript_binding,
@@ -1493,7 +1498,8 @@ mod tests {
                 .blockers
                 .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS)
         );
-        let selected_source_checklist = path2_selected_rust_model_concrete_definition_checklist_v1();
+        let selected_source_checklist =
+            path2_selected_rust_model_concrete_definition_checklist_v1();
         assert_eq!(
             selected_source_checklist.schema,
             PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA
@@ -1504,11 +1510,16 @@ mod tests {
         assert!(!selected_source_checklist.source_record_definitions_present);
         assert!(!selected_source_checklist.sub_evidence_digest_match_proof_present);
         assert!(!selected_source_checklist.all_definitions_present);
-        assert_eq!(selected_source_checklist.missing_definition_category_count, 3);
-        assert!(!path2_selected_rust_model_concrete_definition_checklist_v1_frame(
-            &selected_source_checklist
-        )
-        .is_empty());
+        assert_eq!(
+            selected_source_checklist.missing_definition_category_count,
+            3
+        );
+        assert!(
+            !path2_selected_rust_model_concrete_definition_checklist_v1_frame(
+                &selected_source_checklist
+            )
+            .is_empty()
+        );
         let selected_source_checklist_digest =
             verify_path2_selected_rust_model_concrete_definition_checklist_v1(
                 &selected_source_checklist,

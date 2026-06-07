@@ -1382,6 +1382,17 @@ source consumption, active hash boundary consumption, query-budget pricing,
 multi-target pricing, and verifier-game binding. `ReportVerified` requires the
 digest-verification bit, and the full-reduction source gate requires these
 markers before accepting the future final theorem shape.
+Rust now exposes `Path2NativeFullSignatureReductionEvidenceV1` with schema,
+length-delimited frame, digest, report-verification helper, all-facts helper,
+verifier, production-facade exports, and registry membership. The canonical
+report is intentionally fail-closed: schema/report/digest verification passes
+and the seven public digest slots are filled from active Lean source windows,
+but production signature probability pinning, signature-to-accepted-spend
+linkage, full-execution-source consumption, active hash-boundary consumption,
+query-symbol pricing, multi-target pricing, and verifier-game binding remain
+false. The final full-reduction instantiation gate now requires this Rust
+evidence source before scanning for
+`selectedRustFullSignatureReductionBoundary_instantiation_v1`.
 The same all-candidate exact-name scan now applies to
 `concreteFullSignatureExecutionSource_instantiation_v1`, so full-execution
 source closure also rejects suffixed theorem spoofs without making a later
