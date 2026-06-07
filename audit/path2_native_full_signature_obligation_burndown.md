@@ -2163,3 +2163,12 @@ verification and structural facts from the current selected constants and
 requires only the future selected `PricingFactsComplete` proof plus the
 concrete numeric certificate/digest bindings. This narrows the accepted-spend
 source-certificate input surface to the actual hard production-pricing proof.
+AP2-N003 certificate-level hard-half constructor note:
+`SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundPricingFacts`
+now builds the selected accepted-spend certificate from the active selected
+report plus the future `PricingFactsComplete` proof, and
+`SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndReductionProductionFacts`
+builds the selected full-reduction certificate from the active selected report
+plus the future `ProductionFactsComplete` proof. The certificate layer no
+longer requires final theorem code to pass opaque monolithic `FactsAllTrue`
+witnesses once the hard halves are available.

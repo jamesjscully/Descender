@@ -2335,6 +2335,74 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
   lifecycleReplayClosedProof := lifecycleReplayClosedProof
   noExportClosedProof := noExportClosedProof
 
+/--
+Active AP2-N003 constructor for the selected accepted-spend certificate.  The
+selected report supplies verification and structural facts; the remaining hard
+input is the production pricing half.
+-/
+def SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundPricingFacts
+    (selectedRustAcceptedSpendPricingFactsCompleteProof :
+      selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete)
+    (numericSource :
+      Path2AcceptedSpendProbability.SelectedAcceptedSpendNumericSource)
+    (acceptedSpendForgeryProb : ℝ)
+    (acceptedSpendForgeryBound : ℝ)
+    (productionAcceptedSpendForgeryProb : ℝ)
+    (productionAcceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgeryProbMatchesUnionBound :
+      acceptedSpendForgeryProb = numericSource.pricedCertificate.unionBound)
+    (acceptedSpendForgeryBoundMatchesPriced :
+      acceptedSpendForgeryBound = numericSource.pricedCertificate.pricedBound)
+    (acceptedSpendPricedBoundSecurityPriced :
+      numericSource.pricedCertificate.pricedBound <=
+        ((2 : ℝ) ^
+          selectedRustAcceptedSpendEvidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (acceptedSpendForgeryProbPinned :
+      acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb)
+    (acceptedSpendForgeryBoundPinned :
+      acceptedSpendForgeryBound = productionAcceptedSpendForgeryBound)
+    (hiddenSourceProofSemanticsClosed : Prop)
+    (checkedCoreCompositionClosed : Prop)
+    (lifecycleReplayClosed : Prop)
+    (noExportClosed : Prop)
+    (hiddenSourceProofSemanticsClosedProof :
+      hiddenSourceProofSemanticsClosed)
+    (checkedCoreCompositionClosedProof :
+      checkedCoreCompositionClosed)
+    (lifecycleReplayClosedProof :
+      lifecycleReplayClosed)
+    (noExportClosedProof :
+      noExportClosed) :
+    SelectedRustAcceptedSpendSoundnessCertificate :=
+  SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
+    selectedRustAcceptedSpendEvidenceReport
+    selectedRustAcceptedSpendEvidenceDigest
+    rfl
+    rfl
+    rfl
+    rfl
+    selectedRustAcceptedSpendEvidenceReportVerifiedProof
+    (selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
+      selectedRustAcceptedSpendPricingFactsCompleteProof)
+    numericSource
+    acceptedSpendForgeryProb
+    acceptedSpendForgeryBound
+    productionAcceptedSpendForgeryProb
+    productionAcceptedSpendForgeryBound
+    acceptedSpendForgeryProbMatchesUnionBound
+    acceptedSpendForgeryBoundMatchesPriced
+    acceptedSpendPricedBoundSecurityPriced
+    acceptedSpendForgeryProbPinned
+    acceptedSpendForgeryBoundPinned
+    hiddenSourceProofSemanticsClosed
+    checkedCoreCompositionClosed
+    lifecycleReplayClosed
+    noExportClosed
+    hiddenSourceProofSemanticsClosedProof
+    checkedCoreCompositionClosedProof
+    lifecycleReplayClosedProof
+    noExportClosedProof
+
 /-- No selected accepted-spend certificate exists for the current fail-closed report. -/
 theorem SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossible
     (Cert : SelectedRustAcceptedSpendSoundnessCertificate) : False :=
@@ -3390,6 +3458,75 @@ def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
     hiddenSourceFrameDomainSeparatedProof
   queryBudgetPricedProof := queryBudgetPricedProof
   multiTargetLossPricedProof := multiTargetLossPricedProof
+
+/--
+Active AP2-N003 constructor for the selected full-signature reduction
+certificate.  The selected report supplies verification and structural facts;
+the remaining hard input is the production reduction half.
+-/
+def SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndReductionProductionFacts
+    (selectedRustFullSignatureReductionProductionFactsCompleteProof :
+      selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete)
+    (acceptedSpendCertificate : SelectedRustAcceptedSpendSoundnessCertificate)
+    (hashBoundary : NativeHashBudgetBoundary)
+    (signatureForgerySuccessProb : ℝ)
+    (productionSignatureForgerySuccessProb : ℝ)
+    (signatureForgerySuccessProbPinned :
+      signatureForgerySuccessProb = productionSignatureForgerySuccessProb)
+    (signatureForgerySuccessMatchesAcceptedSpendGame :
+      signatureForgerySuccessProb =
+        acceptedSpendCertificate.pricedNumericCertificate.successProb)
+    (keygenDistributionModeled : Prop)
+    (keygenDistributionModeledProof : keygenDistributionModeled)
+    (signingOracleModeled : Prop)
+    (signingOracleModeledProof : signingOracleModeled)
+    (completenessModeled : Prop)
+    (completenessModeledProof : completenessModeled)
+    (verifierRelationMatchesImplementation : Prop)
+    (verifierRelationMatchesImplementationProof :
+      verifierRelationMatchesImplementation)
+    (fullForgeryImpliesAcceptedSpendForgery : Prop)
+    (fullForgeryImpliesAcceptedSpendForgeryProof :
+      fullForgeryImpliesAcceptedSpendForgery)
+    (checkedCoreFrameDomainSeparatedProof :
+      hashBoundary.checkedCoreFrameDomainSeparated)
+    (hiddenSourceFrameDomainSeparatedProof :
+      hashBoundary.hiddenSourceFrameDomainSeparated)
+    (queryBudgetPricedProof :
+      hashBoundary.queryBudgetPriced)
+    (multiTargetLossPricedProof :
+      hashBoundary.multiTargetLossPriced) :
+    SelectedRustFullSignatureReductionCertificate :=
+  SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
+    selectedRustFullSignatureReductionEvidenceReport
+    selectedRustFullSignatureReductionEvidenceDigest
+    rfl
+    rfl
+    rfl
+    rfl
+    _root_.Descender.Path2NativeAccountDesign.selectedRustFullSignatureReductionVerifiedProof
+    (selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete
+      selectedRustFullSignatureReductionProductionFactsCompleteProof)
+    acceptedSpendCertificate
+    hashBoundary
+    signatureForgerySuccessProb
+    productionSignatureForgerySuccessProb
+    signatureForgerySuccessProbPinned
+    signatureForgerySuccessMatchesAcceptedSpendGame
+    keygenDistributionModeled
+    keygenDistributionModeledProof
+    signingOracleModeled
+    signingOracleModeledProof
+    completenessModeled
+    completenessModeledProof
+    verifierRelationMatchesImplementation
+    verifierRelationMatchesImplementationProof
+    fullForgeryImpliesAcceptedSpendForgery
+    fullForgeryImpliesAcceptedSpendForgeryProof
+    checkedCoreFrameDomainSeparatedProof
+    hiddenSourceFrameDomainSeparatedProof
+    queryBudgetPricedProof
+    multiTargetLossPricedProof
 
 /-- No selected full-signature certificate exists for the current fail-closed report. -/
 theorem SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible
