@@ -2136,6 +2136,17 @@ The manifest reports `predicate_model = true`,
 `extractor_theorem_instantiated = true`, and
 `semantics_bridge_complete = true`; the prevalidated verifier now rejects at
 checked-core composition rather than hidden-source semantics.
+AP2-N003 concrete numeric-source adapter note: `Path2FullSpendConcrete.lean`
+now exposes
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessCertificate`
+and `.toSelectedRustAcceptedSpendSoundnessBoundary`. These adapters build the
+accepted-spend certificate/boundary only from the report-bound concrete numeric
+source while still requiring the real production probability pins,
+priced-bound security inequality, `FactsAllTrue`, and closure propositions.
+The Rust accepted-spend numeric-bound source gate now exact-checks these
+adapter names and rejects suffixed/spoofed variants. The selected
+accepted-spend report digest was refreshed for the expanded source window, but
+the report remains verified-only and intentionally not `FactsAllTrue`.
 
 ## Findings
 

@@ -1293,6 +1293,105 @@ def toSelectedAcceptedSpendNumericSource
     breakFamilyPinnedProof :=
       Source.concreteCertificate.breakFamilyPinned }
 
+/--
+Build the selected accepted-spend soundness certificate from the report-bound
+concrete numeric source.
+
+This is the narrow AP2-N003 handoff: the final selected theorem still has to
+supply the real production probability pins, priced-bound inequality, and
+closure witnesses, but it can no longer bypass the concrete trace/outcome,
+accepted-spend event, active break-family, and report/digest bindings carried
+by `SelectedRustConcreteAcceptedSpendNumericSourceCertificate`.
+-/
+def toSelectedRustAcceptedSpendSoundnessCertificate
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate)
+    (acceptedSpendForgeryProb : ℝ)
+    (acceptedSpendForgeryBound : ℝ)
+    (productionAcceptedSpendForgeryProb : ℝ)
+    (productionAcceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgeryProbMatchesUnionBound :
+      acceptedSpendForgeryProb =
+        (toSelectedAcceptedSpendNumericSource Source).pricedCertificate.unionBound)
+    (acceptedSpendForgeryBoundMatchesPriced :
+      acceptedSpendForgeryBound =
+        (toSelectedAcceptedSpendNumericSource Source).pricedCertificate.pricedBound)
+    (acceptedSpendPricedBoundSecurityPriced :
+      (toSelectedAcceptedSpendNumericSource Source).pricedCertificate.pricedBound <=
+        ((2 : ℝ) ^ Source.evidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (acceptedSpendForgeryProbPinned :
+      acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb)
+    (acceptedSpendForgeryBoundPinned :
+      acceptedSpendForgeryBound = productionAcceptedSpendForgeryBound)
+    (hiddenSourceProofSemanticsClosed : Prop)
+    (checkedCoreCompositionClosed : Prop)
+    (lifecycleReplayClosed : Prop)
+    (noExportClosed : Prop) :
+    Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessCertificate :=
+  Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
+    Source.evidenceReport
+    Source.evidenceDigest
+    Source.evidenceReportBound
+    Source.evidenceReportBoundProof
+    Source.evidenceDigestBound
+    Source.evidenceDigestBoundProof
+    Source.evidenceReportVerifiedProof
+    Source.evidenceFactsAllTrueProof
+    (toSelectedAcceptedSpendNumericSource Source)
+    acceptedSpendForgeryProb
+    acceptedSpendForgeryBound
+    productionAcceptedSpendForgeryProb
+    productionAcceptedSpendForgeryBound
+    acceptedSpendForgeryProbMatchesUnionBound
+    acceptedSpendForgeryBoundMatchesPriced
+    acceptedSpendPricedBoundSecurityPriced
+    acceptedSpendForgeryProbPinned
+    acceptedSpendForgeryBoundPinned
+    hiddenSourceProofSemanticsClosed
+    checkedCoreCompositionClosed
+    lifecycleReplayClosed
+    noExportClosed
+
+/-- Erase the report-bound concrete numeric source into the active accepted-spend boundary. -/
+def toSelectedRustAcceptedSpendSoundnessBoundary
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate)
+    (acceptedSpendForgeryProb : ℝ)
+    (acceptedSpendForgeryBound : ℝ)
+    (productionAcceptedSpendForgeryProb : ℝ)
+    (productionAcceptedSpendForgeryBound : ℝ)
+    (acceptedSpendForgeryProbMatchesUnionBound :
+      acceptedSpendForgeryProb =
+        (toSelectedAcceptedSpendNumericSource Source).pricedCertificate.unionBound)
+    (acceptedSpendForgeryBoundMatchesPriced :
+      acceptedSpendForgeryBound =
+        (toSelectedAcceptedSpendNumericSource Source).pricedCertificate.pricedBound)
+    (acceptedSpendPricedBoundSecurityPriced :
+      (toSelectedAcceptedSpendNumericSource Source).pricedCertificate.pricedBound <=
+        ((2 : ℝ) ^ Source.evidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹)
+    (acceptedSpendForgeryProbPinned :
+      acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb)
+    (acceptedSpendForgeryBoundPinned :
+      acceptedSpendForgeryBound = productionAcceptedSpendForgeryBound)
+    (hiddenSourceProofSemanticsClosed : Prop)
+    (checkedCoreCompositionClosed : Prop)
+    (lifecycleReplayClosed : Prop)
+    (noExportClosed : Prop) :
+    Path2NativeAccountDesign.NativeAcceptedSpendSoundnessBoundary :=
+  (toSelectedRustAcceptedSpendSoundnessCertificate
+      Source
+      acceptedSpendForgeryProb
+      acceptedSpendForgeryBound
+      productionAcceptedSpendForgeryProb
+      productionAcceptedSpendForgeryBound
+      acceptedSpendForgeryProbMatchesUnionBound
+      acceptedSpendForgeryBoundMatchesPriced
+      acceptedSpendPricedBoundSecurityPriced
+      acceptedSpendForgeryProbPinned
+      acceptedSpendForgeryBoundPinned
+      hiddenSourceProofSemanticsClosed
+      checkedCoreCompositionClosed
+      lifecycleReplayClosed
+      noExportClosed).toAcceptedSpendSoundnessBoundary
+
 end SelectedRustConcreteAcceptedSpendNumericSourceCertificate
 
 /-- Forget the concrete active-carrier wrapper after its pins are checked. -/

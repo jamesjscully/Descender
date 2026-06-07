@@ -2033,3 +2033,17 @@ proves its hard fields match
 `ModelCert.toHardExtractionPredicateModelPackage.fieldSources`. The manifest
 tracks this as
 `native_boundary_predicate_model_reviewed_fq12_hard_extraction_predicate_model_bridge_present`.
+AP2-N003 concrete numeric-source adapter note: the accepted-spend numeric route
+now has a direct adapter from the report-bound concrete numeric source to the
+selected accepted-spend soundness certificate and erased boundary:
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessCertificate`
+and `.toSelectedRustAcceptedSpendSoundnessBoundary`. This keeps the future
+accepted-spend numeric-bound instantiation from manually assembling
+`SelectedRustAcceptedSpendSoundnessCertificate` after merely mentioning a
+concrete source. The adapter still requires the real production probability
+pins, priced-bound security inequality, all selected report facts, and the
+closed hidden-source/checked-core/lifecycle/no-export propositions. The Rust
+source gate now requires these adapter names exactly and rejects spoofed
+suffixes. The selected accepted-spend event-semantics source digest and report
+digest were refreshed to reflect the new adapter window; the report remains
+verified but not `FactsAllTrue`.

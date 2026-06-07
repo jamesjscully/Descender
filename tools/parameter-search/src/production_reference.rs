@@ -29533,6 +29533,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.namedBreakEventsDigest_nonzero",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendUnionBoundPricingDigest_nonzero",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendPricedBoundDigest_nonzero",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessCertificate",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessBoundary",
         "outcomeCarrierPinned",
         "acceptedSpendEventPinned",
         "toPricedAcceptedSpendNumericCertificate",
@@ -29702,6 +29704,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.namedBreakEventsDigest_nonzero",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendUnionBoundPricingDigest_nonzero",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendPricedBoundDigest_nonzero",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessCertificate",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessBoundary",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.outcome_eq_selectedFullForgeryRun",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendEvent_activeSound",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.break_eq_activeFullSpendBreakEvent",
@@ -54354,6 +54358,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendUnionBoundPricingDigest_nonzero
   let _acceptedSpendConcreteNumericSourcePricedBoundDigestNonzero :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendPricedBoundDigest_nonzero
+  let _acceptedSpendConcreteNumericSourceToCertificate :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessCertificate
+  let _acceptedSpendConcreteNumericSourceToBoundary :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessBoundary
   let _acceptedSpendConcreteOutcomeTheorem :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.outcome_eq_selectedFullForgeryRun
   let _acceptedSpendConcreteAcceptedSpendEventTheorem :=
@@ -54900,18 +54908,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget
   let _acceptedSpendCertificateErasedBoundaryActiveTarget :=
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget
+  let _acceptedSpendCertificateConstructor :=
+    SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
+  let _acceptedSpendCertificateToBoundary :=
+    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
   let selectedRustAcceptedSpendSoundnessCertificate :
       SelectedRustAcceptedSpendSoundnessCertificate :=
-    SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
-      selectedRustAcceptedSpendEvidenceReport
-      selectedRustAcceptedSpendEvidenceDigest
-      selectedRustAcceptedSpendEvidenceReportBound
-      selectedRustAcceptedSpendEvidenceReportBoundProof
-      selectedRustAcceptedSpendEvidenceDigestBound
-      selectedRustAcceptedSpendEvidenceDigestBoundProof
-      selectedRustAcceptedSpendBoundVerifiedProof
-      selectedRustAcceptedSpendFactsAllTrueProof
-      selectedRustAcceptedSpendNumericSource
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessCertificate
+      selectedRustConcreteAcceptedSpendNumericSourceCertificate
       selectedRustAcceptedSpendForgeryProb
       selectedRustAcceptedSpendForgeryBound
       selectedRustProductionAcceptedSpendForgeryProb
@@ -54926,13 +54930,46 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
       selectedRustAcceptedSpendLifecycleClosed
       selectedRustAcceptedSpendNoExportClosed
   exact
-    SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
-      selectedRustAcceptedSpendSoundnessCertificate
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessBoundary
+      selectedRustConcreteAcceptedSpendNumericSourceCertificate
+      selectedRustAcceptedSpendForgeryProb
+      selectedRustAcceptedSpendForgeryBound
+      selectedRustProductionAcceptedSpendForgeryProb
+      selectedRustProductionAcceptedSpendForgeryBound
+      selectedRustAcceptedSpendForgeryProbMatchesUnionBound
+      selectedRustAcceptedSpendForgeryBoundMatchesPriced
+      selectedRustAcceptedSpendPricedBoundSecurityPriced
+      selectedRustAcceptedSpendForgeryProbPinned
+      selectedRustAcceptedSpendForgeryBoundPinned
+      selectedRustAcceptedSpendHiddenSourceClosed
+      selectedRustAcceptedSpendCheckedCoreClosed
+      selectedRustAcceptedSpendLifecycleClosed
+      selectedRustAcceptedSpendNoExportClosed
 end Path2NativeAccountDesign
 "#;
         assert!(
             path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 accepted_spend_instantiation_shape
+            )
+        );
+        let suffixed_concrete_source_certificate_adapter = accepted_spend_instantiation_shape
+            .replace(
+                "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessCertificate",
+                "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessCertificateSpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_concrete_source_certificate_adapter
+            )
+        );
+        let suffixed_concrete_source_boundary_adapter = accepted_spend_instantiation_shape
+            .replace(
+                "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessBoundary",
+                "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessBoundarySpoof",
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &suffixed_concrete_source_boundary_adapter
             )
         );
         let suffixed_accepted_spend_projection = accepted_spend_instantiation_shape.replacen(
