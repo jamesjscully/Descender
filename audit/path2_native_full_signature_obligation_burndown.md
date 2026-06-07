@@ -1511,6 +1511,11 @@ The concrete wrapper now maps into the generic
 consumes that source package instead of a bare priced certificate. This keeps
 the concrete carrier proof on the Lean certificate route, not only in Rust
 scanner text.
+The concrete wrapper also exposes selected theorem projections for accepted-
+spend probability below the priced bound, full-forgery success below the union
+bound, and full-forgery success below the priced bound. The numeric-bound source
+gate requires the future selected theorem to consume these concrete-wrapper
+facts before erasing to the generic priced certificate.
 The accepted-spend numeric evidence report now carries public budget numbers
 for the target security bits, selected multi-target horizon, QROM loss,
 QROM-discounted transcript term, and claimed priced-bound security bits, plus

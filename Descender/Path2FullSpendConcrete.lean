@@ -1093,5 +1093,26 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.break_eq_activeFullS
     Cert.pricedCertificate.Break = Path2FullSpendGame.BreakEvent :=
   Cert.breakFamilyPinned
 
+/-- The selected concrete numeric certificate prices accepted-spend probability. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_pricedBound
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    Cert.pricedCertificate.acceptedSpendProb <=
+      Cert.pricedCertificate.pricedBound :=
+  Cert.pricedCertificate.acceptedSpendProb_le_pricedBound
+
+/-- The selected concrete numeric certificate prices full-forgery success by the union bound. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_unionBound
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    Cert.pricedCertificate.successProb <=
+      Cert.pricedCertificate.unionBound :=
+  Cert.pricedCertificate.successProb_le_unionBound
+
+/-- The selected concrete numeric certificate prices full-forgery success by the deployment bound. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_pricedBound
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    Cert.pricedCertificate.successProb <=
+      Cert.pricedCertificate.pricedBound :=
+  Cert.pricedCertificate.successProb_le_pricedBound
+
 end Path2FullSpendConcrete
 end Descender

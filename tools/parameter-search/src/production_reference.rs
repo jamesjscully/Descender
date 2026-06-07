@@ -29264,6 +29264,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "break_eq_activeFullSpendBreakEvent",
         "acceptedSpendEvent_activeSound",
         "namedBreakEvents_activeSound",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_pricedBound",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_unionBound",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_pricedBound",
         "unionBound_le_priced",
         "selectedRustActiveNoExportSerializer_instantiation_v1",
         "activeSerializerAllowlist_boundaryNoExportClosed",
@@ -53357,6 +53360,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericCertificate.break_eq_activeFullSpendBreakEvent
   let _acceptedSpendConcreteNamedBreakEventsTheorem :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.namedBreakEvents_activeSound
+  let _acceptedSpendConcreteAcceptedSpendProbPriced :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_pricedBound
+  let _acceptedSpendConcreteSuccessProbUnionBound :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_unionBound
+  let _acceptedSpendConcreteSuccessProbPriced :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_pricedBound
   let selectedRustConcreteAcceptedSpendNumericCertificate :=
     selectedRustConcreteAcceptedSpendNumericCertificateSource
   let selectedRustAcceptedSpendNumericSource :=
@@ -53612,6 +53621,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericCertificate.break_eq_activeFullSpendBreakEvent
   let _acceptedSpendConcreteNamedBreakEventsTheorem :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.namedBreakEvents_activeSound
+  let _acceptedSpendConcreteAcceptedSpendProbPriced :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_pricedBound
+  let _acceptedSpendConcreteSuccessProbUnionBound :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_unionBound
+  let _acceptedSpendConcreteSuccessProbPriced :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_pricedBound
   let selectedRustConcreteAcceptedSpendNumericCertificate :=
     selectedRustConcreteAcceptedSpendNumericCertificateSource
   let selectedRustAcceptedSpendNumericSource :=
