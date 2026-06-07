@@ -1463,11 +1463,13 @@ provides non-vacuous numeric values and the corresponding inequality proof.
 handoff: `AcceptedSpendNumericGame` proves that full-signature success
 probability is bounded by the union over the reduced accepted-spend event and
 the finite family of named break events, while
-`PricedAcceptedSpendNumericCertificate` packages a concrete game with a
-production-priced upper bound and carries `unionBound_le_priced` for the finite
-accepted-spend-or-break union expression. The accepted-spend source gate now
-requires this layer, so future closure must consume the probability game and
-priced-bound package rather than only raw `ℝ` fields.
+`AcceptedSpendBreakPricingCertificate` records the accepted-spend bound, one
+bound per active named break, and the final finite-sum budget inequality into
+the production-priced upper bound. `PricedAcceptedSpendNumericCertificate`
+derives `unionBound_le_priced` from that constructive break-pricing package
+rather than carrying a monolithic real inequality. The accepted-spend source
+gate now requires this layer, so future closure must consume the probability
+game and priced-bound package rather than only raw `ℝ` fields.
 The numeric source now pins event semantics, not only carrier types.
 `PricedAcceptedSpendNumericCertificate` exposes stored-instance accessors for
 observed outcomes, accepted-spend events, and named break events, and

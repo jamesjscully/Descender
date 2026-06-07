@@ -114,6 +114,60 @@ theorem successProb_le_pricedBound
 end AcceptedSpendNumericGame
 
 /--
+Constructive pricing certificate for accepted-spend plus named breaks.
+
+Instead of treating the union-bound pricing as one opaque real inequality, this
+records a bound for the accepted-spend event, a bound for each active named
+break, and the final budget inequality that the sum fits below the deployment
+priced bound.
+-/
+structure AcceptedSpendBreakPricingCertificate
+    (G : AcceptedSpendNumericGame Trace Outcome Break) where
+  acceptedSpendBound : ℝ
+  breakBound : Break -> ℝ
+  pricedBound : ℝ
+  acceptedSpendProb_le_bound :
+    G.acceptedSpendProb <= acceptedSpendBound
+  breakProb_le_bound :
+    forall breakEvent, G.breakProb breakEvent <= breakBound breakEvent
+  breakBudget_le_priced :
+    acceptedSpendBound + Finset.univ.sum breakBound <= pricedBound
+
+namespace AcceptedSpendBreakPricingCertificate
+
+set_option linter.unusedSectionVars false in
+/-- Accepted-spend plus per-break pricing bounds the full union expression. -/
+theorem unionBound_le_priced
+    {G : AcceptedSpendNumericGame Trace Outcome Break}
+    (P : AcceptedSpendBreakPricingCertificate G) :
+    G.acceptedSpendOrBreakUnionBound <= P.pricedBound := by
+  have hUnionBudget :
+      G.acceptedSpendOrBreakUnionBound <=
+        P.acceptedSpendBound + Finset.univ.sum P.breakBound := by
+    unfold AcceptedSpendNumericGame.acceptedSpendOrBreakUnionBound
+    rw [Fintype.sum_option]
+    dsimp [AcceptedSpendNumericGame.acceptedOrBreakEvent]
+    have hSome :
+        (Finset.univ.sum fun breakEvent : Break =>
+            G.traceDist.acceptProb fun trace =>
+              G.namedBreak breakEvent (G.observe trace)) <=
+          Finset.univ.sum P.breakBound := by
+      exact Finset.sum_le_sum (by
+        intro breakEvent _hBreakEvent
+        simpa [AcceptedSpendNumericGame.breakProb] using
+          P.breakProb_le_bound breakEvent)
+    have hNone :
+        G.traceDist.acceptProb
+            (fun trace => G.acceptedSpendForgery (G.observe trace)) <=
+          P.acceptedSpendBound := by
+      simpa [AcceptedSpendNumericGame.acceptedSpendProb] using
+        P.acceptedSpendProb_le_bound
+    exact add_le_add hNone hSome
+  exact le_trans hUnionBudget P.breakBudget_le_priced
+
+end AcceptedSpendBreakPricingCertificate
+
+/--
 Existential package for a production-priced accepted-spend numeric game.
 
 This is the object a selected implementation can eventually provide to the
@@ -131,11 +185,10 @@ structure PricedAcceptedSpendNumericCertificate where
   breakDecidableEq : DecidableEq Break
   activeBreakFamilyPinned : Break = Path2FullSpendGame.BreakEvent
   game : @AcceptedSpendNumericGame Trace Outcome Break traceFintype breakFintype
+  breakPricing : AcceptedSpendBreakPricingCertificate game
   pricedBound : ℝ
-  unionBound_le_priced :
-    @AcceptedSpendNumericGame.acceptedSpendOrBreakUnionBound
-      Trace Outcome Break traceFintype breakFintype game <=
-        pricedBound
+  pricedBound_eq_breakPricing :
+    pricedBound = breakPricing.pricedBound
 
 namespace PricedAcceptedSpendNumericCertificate
 
@@ -183,6 +236,19 @@ def acceptedSpendProb (C : PricedAcceptedSpendNumericCertificate) : ℝ :=
 def unionBound (C : PricedAcceptedSpendNumericCertificate) : ℝ :=
   @AcceptedSpendNumericGame.acceptedSpendOrBreakUnionBound
     C.Trace C.Outcome C.Break C.traceFintype C.breakFintype C.game
+
+/-- The priced numeric certificate's union bound is derived from its break-pricing certificate. -/
+theorem unionBound_le_priced
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.unionBound <= C.pricedBound := by
+  letI : Fintype C.Trace := C.traceFintype
+  letI : Fintype C.Break := C.breakFintype
+  letI : DecidableEq C.Break := C.breakDecidableEq
+  calc
+    C.unionBound <= C.breakPricing.pricedBound :=
+      C.breakPricing.unionBound_le_priced
+    _ = C.pricedBound :=
+      C.pricedBound_eq_breakPricing.symm
 
 /-- The packaged accepted-spend event probability is below the union bound. -/
 theorem acceptedSpendProb_le_unionBound
