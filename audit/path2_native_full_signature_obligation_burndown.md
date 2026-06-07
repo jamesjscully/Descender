@@ -2190,3 +2190,11 @@ production report bits. It derives both `ProductionFactsComplete` and the
 selected full-signature reduction certificate, so the remaining full-reduction
 hard half is tied to the actual reduction data rather than independent Boolean
 claims.
+AP2-N003 source-gate witness-route note: the Rust future-theorem scanners now
+require the accepted-spend theorem shape to mention
+`SelectedRustConcreteAcceptedSpendPricingWitness` and its pricing/source
+projections, and the full-reduction theorem shape to mention
+`SelectedRustFullSignatureReductionProductionWitness`, its
+`ProductionFactsComplete` projection, its certificate projection, and the
+selected hard-half constructor. This keeps the new witness routes from becoming
+dead optional proof API.
