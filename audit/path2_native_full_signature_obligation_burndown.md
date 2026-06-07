@@ -1499,6 +1499,13 @@ numeric source.
 `Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
 active full-spend named breaks, so the numeric game can index its union bound by
 the actual active break family.
+The canonical Rust accepted-spend numeric evidence now fills its seven digest
+slots from source windows instead of placeholder labels: finite trace support
+and union/priced-bound logic from `Path2AcceptedSpendProbability.lean`, active
+outcome and event semantics from `Path2FullSpendConcrete.lean`, and active
+break-family enumeration from `Path2FullSpendGame.lean`. These are source
+commitments only; readiness remains false until the production numeric pricing
+theorem is instantiated.
 `SelectedRustFullSignatureReductionCertificate` now consumes the proof-bearing
 `SelectedRustAcceptedSpendSoundnessCertificate` directly and derives the erased
 accepted-spend boundary internally. The full-reduction source gate requires a

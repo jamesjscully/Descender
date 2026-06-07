@@ -2458,6 +2458,85 @@ pub fn verify_path2_native_no_export_serializer_evidence_v1(
     path2_native_no_export_serializer_evidence_v1_digest(evidence)
 }
 
+fn path2_source_window_digest_v1(
+    source: &str,
+    start_marker: &str,
+    end_marker: &str,
+    label: &str,
+) -> [u8; DIGEST_BYTES] {
+    let start = source
+        .find(start_marker)
+        .unwrap_or_else(|| panic!("{label} source start marker missing"));
+    let end = source[start..]
+        .find(end_marker)
+        .map(|offset| start + offset)
+        .unwrap_or_else(|| panic!("{label} source end marker missing"));
+    Sha256::digest(source[start..end].as_bytes()).into()
+}
+
+fn path2_accepted_spend_finite_trace_support_source_digest_v1() -> [u8; DIGEST_BYTES] {
+    path2_source_window_digest_v1(
+        include_str!("../../../Descender/Path2AcceptedSpendProbability.lean"),
+        "\nstructure PricedAcceptedSpendNumericCertificate where",
+        "\nnamespace PricedAcceptedSpendNumericCertificate",
+        "Path 2 accepted-spend finite trace support",
+    )
+}
+
+fn path2_accepted_spend_active_outcome_carrier_source_digest_v1() -> [u8; DIGEST_BYTES] {
+    path2_source_window_digest_v1(
+        include_str!("../../../Descender/Path2FullSpendConcrete.lean"),
+        "\nabbrev selectedRustAcceptedSpendNumericOutcome",
+        "\n/--\nConcrete wrapper for the selected Rust accepted-spend numeric certificate.",
+        "Path 2 accepted-spend active outcome carrier",
+    )
+}
+
+fn path2_accepted_spend_event_semantics_source_digest_v1() -> [u8; DIGEST_BYTES] {
+    path2_source_window_digest_v1(
+        include_str!("../../../Descender/Path2FullSpendConcrete.lean"),
+        "\nstructure SelectedRustConcreteAcceptedSpendNumericCertificate where",
+        "\n/-- Forget the concrete active-carrier wrapper",
+        "Path 2 accepted-spend event semantics",
+    )
+}
+
+fn path2_accepted_spend_active_break_family_source_digest_v1() -> [u8; DIGEST_BYTES] {
+    path2_source_window_digest_v1(
+        include_str!("../../../Descender/Path2FullSpendGame.lean"),
+        "\ninductive BreakEvent where",
+        "\n/--\nPredicates supplied by a concrete direct-mode game implementation.",
+        "Path 2 accepted-spend active break family",
+    )
+}
+
+fn path2_accepted_spend_named_break_events_source_digest_v1() -> [u8; DIGEST_BYTES] {
+    path2_source_window_digest_v1(
+        include_str!("../../../Descender/Path2FullSpendConcrete.lean"),
+        "\n/-- Named break events priced by the selected certificate mean active full-spend breaks. -/",
+        "\n/-- The selected concrete numeric certificate uses the active full-spend break family. -/",
+        "Path 2 accepted-spend named break event semantics",
+    )
+}
+
+fn path2_accepted_spend_union_bound_pricing_source_digest_v1() -> [u8; DIGEST_BYTES] {
+    path2_source_window_digest_v1(
+        include_str!("../../../Descender/Path2AcceptedSpendProbability.lean"),
+        "\ndef acceptedSpendOrBreakUnionBound",
+        "\n/--\nThe core numeric handoff: proposition-level",
+        "Path 2 accepted-spend union-bound pricing",
+    )
+}
+
+fn path2_accepted_spend_priced_bound_source_digest_v1() -> [u8; DIGEST_BYTES] {
+    path2_source_window_digest_v1(
+        include_str!("../../../Descender/Path2AcceptedSpendProbability.lean"),
+        "\ntheorem successProb_le_pricedBound",
+        "\nend AcceptedSpendNumericGame",
+        "Path 2 accepted-spend priced-bound theorem",
+    )
+}
+
 pub fn path2_native_accepted_spend_numeric_evidence_v1() -> Path2NativeAcceptedSpendNumericEvidenceV1
 {
     let direct_budget = path2_direct_query_budget_v1();
@@ -2471,34 +2550,16 @@ pub fn path2_native_accepted_spend_numeric_evidence_v1() -> Path2NativeAcceptedS
         schema_matches: true,
         report_digest_verified: true,
         numeric_evidence_digests_verified: true,
-        finite_trace_support_digest: Sha256::digest(
-            b"Descender.Path2.accepted_spend.finite_trace_support.open.v1",
-        )
-        .into(),
-        active_outcome_carrier_digest: Sha256::digest(
-            b"Descender.Path2.accepted_spend.active_outcome_carrier.open.v1",
-        )
-        .into(),
-        accepted_spend_event_semantics_digest: Sha256::digest(
-            b"Descender.Path2.accepted_spend.accepted_event_semantics.open.v1",
-        )
-        .into(),
-        active_break_family_digest: Sha256::digest(
-            b"Descender.Path2.accepted_spend.active_break_family.open.v1",
-        )
-        .into(),
-        named_break_events_digest: Sha256::digest(
-            b"Descender.Path2.accepted_spend.named_break_events.open.v1",
-        )
-        .into(),
-        accepted_spend_union_bound_pricing_digest: Sha256::digest(
-            b"Descender.Path2.accepted_spend.union_bound_pricing.open.v1",
-        )
-        .into(),
-        accepted_spend_priced_bound_digest: Sha256::digest(
-            b"Descender.Path2.accepted_spend.priced_bound.open.v1",
-        )
-        .into(),
+        finite_trace_support_digest: path2_accepted_spend_finite_trace_support_source_digest_v1(),
+        active_outcome_carrier_digest: path2_accepted_spend_active_outcome_carrier_source_digest_v1(
+        ),
+        accepted_spend_event_semantics_digest:
+            path2_accepted_spend_event_semantics_source_digest_v1(),
+        active_break_family_digest: path2_accepted_spend_active_break_family_source_digest_v1(),
+        named_break_events_digest: path2_accepted_spend_named_break_events_source_digest_v1(),
+        accepted_spend_union_bound_pricing_digest:
+            path2_accepted_spend_union_bound_pricing_source_digest_v1(),
+        accepted_spend_priced_bound_digest: path2_accepted_spend_priced_bound_source_digest_v1(),
         target_security_bits: direct_budget.target_security_bits,
         selected_multi_target_horizon_log2: direct_budget.selected_multi_target_horizon_log2,
         qrom_quadratic_loss_bits_at_deployment_bound: direct_budget
@@ -27934,6 +27995,13 @@ fn path2_native_accepted_spend_numeric_evidence_source_present_v1() -> bool {
     let source_checks = [
         "Descender.Path2.NativeAcceptedSpendNumericEvidence.v1",
         "Path2NativeAcceptedSpendNumericEvidenceV1",
+        "path2_accepted_spend_finite_trace_support_source_digest_v1",
+        "path2_accepted_spend_active_outcome_carrier_source_digest_v1",
+        "path2_accepted_spend_event_semantics_source_digest_v1",
+        "path2_accepted_spend_active_break_family_source_digest_v1",
+        "path2_accepted_spend_named_break_events_source_digest_v1",
+        "path2_accepted_spend_union_bound_pricing_source_digest_v1",
+        "path2_accepted_spend_priced_bound_source_digest_v1",
         "numeric_evidence_digests_verified",
         "finite_trace_support_digest",
         "active_outcome_carrier_digest",
