@@ -2191,6 +2191,20 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_impo
     selectedRustAcceptedSpendEvidenceReport] at hPricing
 
 /--
+For the active accepted-spend report, the only remaining report-completeness
+input is the production pricing half; the structural evidence is already
+selected and proved for AP2-N003.
+-/
+theorem selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
+    (hPricing :
+      selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete) :
+    selectedRustAcceptedSpendEvidenceReport.FactsAllTrue :=
+  SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_of_structural_and_pricing
+    selectedRustAcceptedSpendEvidenceReport
+    selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete
+    hPricing
+
+/--
 Selected Rust/model certificate for the accepted-spend numeric soundness layer.
 
 The active full-signature theorem is only cryptographically meaningful after
@@ -3208,6 +3222,20 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsC
   intro hProduction
   simp [SelectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete,
     selectedRustFullSignatureReductionEvidenceReport] at hProduction
+
+/--
+For the active full-signature reduction report, the only remaining
+report-completeness input is the production reduction half; the structural
+source-consumption evidence is already selected and proved for AP2-N003.
+-/
+theorem selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete
+    (hProduction :
+      selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete) :
+    selectedRustFullSignatureReductionEvidenceReport.FactsAllTrue :=
+  SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_of_structural_and_production
+    selectedRustFullSignatureReductionEvidenceReport
+    selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsComplete
+    hProduction
 
 /--
 Selected Rust/model certificate for the full-signature reduction layer.

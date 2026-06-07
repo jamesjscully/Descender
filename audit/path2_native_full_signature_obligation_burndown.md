@@ -2142,3 +2142,13 @@ closure proof arguments. The source gate's positive shape now projects
 `.noExportClosedProof` before constructing the full-reduction certificate. This
 removes the remaining duplicate closure-witness handoff between accepted-spend
 numeric closure and full-signature reduction.
+AP2-N003 active-report hard-half handoff note: Lean now exposes current-report
+assembly lemmas for the selected accepted-spend and full-reduction evidence
+reports. `selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete`
+combines the already-proved current structural facts with a future
+`PricingFactsComplete` proof, and
+`selectedRustFullSignatureReductionEvidenceReportFactsAllTrue_of_currentProductionFactsComplete`
+does the same for the full-reduction `ProductionFactsComplete` proof. The
+remaining AP2-N003 proof-completeness work is therefore directly framed as
+supplying those two hard halves from production probability/pricing evidence,
+not rebuilding or re-proving the structural report fields.
