@@ -1502,6 +1502,12 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le
       Cert.pricedCertificate.acceptedSpendBound :=
   Cert.pricedCertificate.acceptedSpendProb_le_acceptedSpendBound
 
+/-- The selected concrete numeric certificate exposes accepted-spend probability at most one. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_one
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    Cert.pricedCertificate.acceptedSpendProb <= 1 :=
+  Cert.pricedCertificate.acceptedSpendProb_le_one
+
 /-- The selected concrete numeric certificate exposes each named-break component bound. -/
 theorem SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_le_breakBound
     (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate)
@@ -1515,6 +1521,19 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_le_breakBo
         Cert.pricedCertificate.game breakEvent <=
       Cert.pricedCertificate.breakBound breakEvent :=
   Cert.pricedCertificate.breakProb_le_breakBound breakEvent
+
+/-- The selected concrete numeric certificate exposes named-break probabilities at most one. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_le_one
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate)
+    (breakEvent : Cert.pricedCertificate.Break) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        Cert.pricedCertificate.Trace
+        Cert.pricedCertificate.Outcome
+        Cert.pricedCertificate.Break
+        Cert.pricedCertificate.traceFintype
+        Cert.pricedCertificate.breakFintype
+        Cert.pricedCertificate.game breakEvent <= 1 :=
+  Cert.pricedCertificate.breakProb_le_one breakEvent
 
 /-- The selected concrete numeric certificate exposes the finite component budget. -/
 theorem SelectedRustConcreteAcceptedSpendNumericCertificate.breakBudget_le_pricedBound
@@ -1545,6 +1564,12 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_nonneg
     (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
     0 <= Cert.pricedCertificate.successProb :=
   Cert.pricedCertificate.successProb_nonneg
+
+/-- The selected concrete numeric certificate exposes success probability at most one. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_one
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    Cert.pricedCertificate.successProb <= 1 :=
+  Cert.pricedCertificate.successProb_le_one
 
 /-- The selected concrete numeric certificate exposes nonnegative accepted-spend budget. -/
 theorem SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendBound_nonneg
@@ -1601,6 +1626,31 @@ theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_no
     (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
     0 <= Source.concreteCertificate.pricedCertificate.successProb :=
   Source.concreteCertificate.successProb_nonneg
+
+/-- The source-bound concrete certificate exposes success probability at most one. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le_one
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.pricedCertificate.successProb <= 1 :=
+  Source.concreteCertificate.successProb_le_one
+
+/-- The source-bound concrete certificate exposes accepted-spend probability at most one. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendProb_le_one
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.pricedCertificate.acceptedSpendProb <= 1 :=
+  Source.concreteCertificate.acceptedSpendProb_le_one
+
+/-- The source-bound concrete certificate exposes named-break probabilities at most one. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_le_one
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate)
+    (breakEvent : Source.concreteCertificate.pricedCertificate.Break) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        Source.concreteCertificate.pricedCertificate.Trace
+        Source.concreteCertificate.pricedCertificate.Outcome
+        Source.concreteCertificate.pricedCertificate.Break
+        Source.concreteCertificate.pricedCertificate.traceFintype
+        Source.concreteCertificate.pricedCertificate.breakFintype
+        Source.concreteCertificate.pricedCertificate.game breakEvent <= 1 :=
+  Source.concreteCertificate.breakProb_le_one breakEvent
 
 /-- The source-bound report says the accepted-spend numeric bound is priced. -/
 theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBoundPriced

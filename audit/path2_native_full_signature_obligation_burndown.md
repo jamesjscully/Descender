@@ -1694,19 +1694,23 @@ bound, accepted-spend component bound, each named-break component bound, and the
 final priced bound at the
 `AcceptedSpendNumericGame`, `AcceptedSpendBreakPricingCertificate`,
 `PricedAcceptedSpendNumericCertificate`, and `SelectedAcceptedSpendNumericSource`
-layers. `SelectedRustConcreteAcceptedSpendNumericCertificate` and
+layers. The actual event probabilities also carry explicit `≤ 1` facts for
+success, accepted-spend, and named-break events through the generic game,
+priced certificate, selected source, concrete certificate/source, packaged
+accepted-spend certificate, selected full-reduction certificate, production
+full-reduction probability, and erased `NativeFullSignatureSecurityBoundary`.
+`SelectedRustConcreteAcceptedSpendNumericCertificate` and
 `SelectedRustConcreteAcceptedSpendNumericSourceCertificate` now project those
-sign facts through the active concrete carrier/source route too, and
-`SelectedRustAcceptedSpendSoundnessCertificate` proves the exported
-accepted-spend probability and bound remain nonnegative after erasure to
-`NativeAcceptedSpendSoundnessBoundary`. `SelectedRustFullSignatureReductionCertificate`
-also proves selected and production signature-forgery success probabilities are
-nonnegative, and the erased `NativeFullSignatureSecurityBoundary` preserves
-nonnegativity of `signatureForgerySuccessProb`. The accepted-spend and
-full-reduction source gates exact-check those theorem names, so the future
-pricing package must expose nonnegative probabilities and budgets rather than
-only upper-bound inequalities, and it must preserve those sign facts through
-the concrete source and full-boundary handoffs.
+sign and probability-range facts through the active concrete carrier/source
+route too, and `SelectedRustAcceptedSpendSoundnessCertificate` proves the
+exported accepted-spend probability and bound remain nonnegative after erasure
+to `NativeAcceptedSpendSoundnessBoundary`. The accepted-spend and full-reduction
+source gates exact-check those theorem names, so the future pricing package
+must expose nonnegative probabilities and budgets rather than only upper-bound
+inequalities, and it must preserve actual probability-range facts through the
+concrete source and full-boundary handoffs. This is not a `≤ 1` theorem for
+every derived union/priced budget; it is a range guarantee for real event
+probabilities.
 The accepted-spend numeric and full-signature reduction certificates now bind
 their evidence reports and digests by equality to concrete selected Rust
 report/digest constants, rather than by arbitrary `Prop` slots. The selected

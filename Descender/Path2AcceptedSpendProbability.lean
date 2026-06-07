@@ -68,15 +68,39 @@ theorem successProb_nonneg
   G.traceDist.acceptProb_nonneg fun trace =>
     G.fullSignatureSuccess (G.observe trace)
 
+omit [DecidableEq Break] in
+/-- The full-signature success event probability is at most one. -/
+theorem successProb_le_one
+    (G : AcceptedSpendNumericGame Trace Outcome Break) :
+    G.successProb <= 1 :=
+  G.traceDist.acceptProb_le_one fun trace =>
+    G.fullSignatureSuccess (G.observe trace)
+
 /-- Probability of the reduced accepted-spend event. -/
 def acceptedSpendProb
     (G : AcceptedSpendNumericGame Trace Outcome Break) : ℝ :=
   G.traceDist.acceptProb fun trace => G.acceptedSpendForgery (G.observe trace)
 
+omit [DecidableEq Break] in
+/-- The reduced accepted-spend event probability is at most one. -/
+theorem acceptedSpendProb_le_one
+    (G : AcceptedSpendNumericGame Trace Outcome Break) :
+    G.acceptedSpendProb <= 1 :=
+  G.traceDist.acceptProb_le_one fun trace =>
+    G.acceptedSpendForgery (G.observe trace)
+
 /-- Probability of one named break event. -/
 def breakProb
     (G : AcceptedSpendNumericGame Trace Outcome Break) (breakEvent : Break) : ℝ :=
   G.traceDist.acceptProb fun trace => G.namedBreak breakEvent (G.observe trace)
+
+omit [DecidableEq Break] in
+/-- Each named-break event probability is at most one. -/
+theorem breakProb_le_one
+    (G : AcceptedSpendNumericGame Trace Outcome Break) (breakEvent : Break) :
+    G.breakProb breakEvent <= 1 :=
+  G.traceDist.acceptProb_le_one fun trace =>
+    G.namedBreak breakEvent (G.observe trace)
 
 /--
 Finite union-bound expression over the accepted-spend event and every named
@@ -271,6 +295,13 @@ theorem successProb_nonneg
   @AcceptedSpendNumericGame.successProb_nonneg
     C.Trace C.Outcome C.Break C.traceFintype C.breakFintype C.game
 
+/-- The priced certificate's full-signature success probability is at most one. -/
+theorem successProb_le_one
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.successProb <= 1 :=
+  @AcceptedSpendNumericGame.successProb_le_one
+    C.Trace C.Outcome C.Break C.traceFintype C.breakFintype C.game
+
 /-- Observe the concrete outcome associated with a finite trace. -/
 def observe (C : PricedAcceptedSpendNumericCertificate)
     (trace : C.Trace) : C.Outcome :=
@@ -346,6 +377,13 @@ theorem acceptedSpendProb_le_acceptedSpendBound
     AcceptedSpendNumericGame.acceptedSpendProb] using
     C.breakPricing.acceptedSpendProb_le_bound
 
+/-- The priced certificate's accepted-spend probability is at most one. -/
+theorem acceptedSpendProb_le_one
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.acceptedSpendProb <= 1 :=
+  @AcceptedSpendNumericGame.acceptedSpendProb_le_one
+    C.Trace C.Outcome C.Break C.traceFintype C.breakFintype C.game
+
 /-- The priced certificate's named-break probabilities are bounded componentwise. -/
 theorem breakProb_le_breakBound
     (C : PricedAcceptedSpendNumericCertificate)
@@ -358,6 +396,17 @@ theorem breakProb_le_breakBound
   letI : Fintype C.Break := C.breakFintype
   simpa [breakBound, AcceptedSpendNumericGame.breakProb] using
     C.breakPricing.breakProb_le_bound breakEvent
+
+/-- The priced certificate's named-break probabilities are at most one. -/
+theorem breakProb_le_one
+    (C : PricedAcceptedSpendNumericCertificate)
+    (breakEvent : C.Break) :
+    @AcceptedSpendNumericGame.breakProb
+        C.Trace C.Outcome C.Break C.traceFintype C.breakFintype
+        C.game breakEvent <= 1 :=
+  @AcceptedSpendNumericGame.breakProb_le_one
+    C.Trace C.Outcome C.Break C.traceFintype C.breakFintype C.game
+    breakEvent
 
 /-- The priced certificate's constructive component budget fits below its priced bound. -/
 theorem breakBudget_le_pricedBound
@@ -509,6 +558,12 @@ theorem successProb_nonneg
     0 <= Source.pricedCertificate.successProb :=
   Source.pricedCertificate.successProb_nonneg
 
+/-- The selected source exposes that full-signature success probability is at most one. -/
+theorem successProb_le_one
+    (Source : SelectedAcceptedSpendNumericSource) :
+    Source.pricedCertificate.successProb <= 1 :=
+  Source.pricedCertificate.successProb_le_one
+
 /-- The selected source carries the finite union-bound pricing proof. -/
 theorem unionBound_le_priced
     (Source : SelectedAcceptedSpendNumericSource) :
@@ -529,6 +584,12 @@ theorem acceptedSpendProb_le_acceptedSpendBound
       Source.pricedCertificate.acceptedSpendBound :=
   Source.pricedCertificate.acceptedSpendProb_le_acceptedSpendBound
 
+/-- The selected source exposes that accepted-spend probability is at most one. -/
+theorem acceptedSpendProb_le_one
+    (Source : SelectedAcceptedSpendNumericSource) :
+    Source.pricedCertificate.acceptedSpendProb <= 1 :=
+  Source.pricedCertificate.acceptedSpendProb_le_one
+
 /-- The selected source exposes each named-break component bound. -/
 theorem breakProb_le_breakBound
     (Source : SelectedAcceptedSpendNumericSource)
@@ -542,6 +603,19 @@ theorem breakProb_le_breakBound
         Source.pricedCertificate.game breakEvent <=
       Source.pricedCertificate.breakBound breakEvent :=
   Source.pricedCertificate.breakProb_le_breakBound breakEvent
+
+/-- The selected source exposes that each named-break probability is at most one. -/
+theorem breakProb_le_one
+    (Source : SelectedAcceptedSpendNumericSource)
+    (breakEvent : Source.pricedCertificate.Break) :
+    @AcceptedSpendNumericGame.breakProb
+        Source.pricedCertificate.Trace
+        Source.pricedCertificate.Outcome
+        Source.pricedCertificate.Break
+        Source.pricedCertificate.traceFintype
+        Source.pricedCertificate.breakFintype
+        Source.pricedCertificate.game breakEvent <= 1 :=
+  Source.pricedCertificate.breakProb_le_one breakEvent
 
 /-- The selected source exposes the finite component budget below the priced bound. -/
 theorem breakBudget_le_pricedBound

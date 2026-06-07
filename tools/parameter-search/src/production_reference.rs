@@ -29012,10 +29012,13 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendBound",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_nonneg",
         "SelectedRustFullSignatureReductionCertificate.productionSignatureForgerySuccessProb_nonneg",
+        "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_one",
+        "SelectedRustFullSignatureReductionCertificate.productionSignatureForgerySuccessProb_le_one",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_targetSecurity",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTarget",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
+        "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "selectedRustFullSignatureKeygenModeled",
         "selectedRustFullSignatureKeygenModeledProof",
@@ -29046,10 +29049,13 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendBound",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_nonneg",
         "SelectedRustFullSignatureReductionCertificate.productionSignatureForgerySuccessProb_nonneg",
+        "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_one",
+        "SelectedRustFullSignatureReductionCertificate.productionSignatureForgerySuccessProb_le_one",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_targetSecurity",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTarget",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
+        "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
         "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_schemaMatches",
@@ -29712,9 +29718,12 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_pricedBound",
         "SelectedAcceptedSpendNumericSource.successProb_le_unionBound",
         "SelectedAcceptedSpendNumericSource.successProb_le_pricedBound",
+        "SelectedAcceptedSpendNumericSource.successProb_le_one",
         "SelectedAcceptedSpendNumericSource.unionBound_le_priced",
         "SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_acceptedSpendBound",
+        "SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_one",
         "SelectedAcceptedSpendNumericSource.breakProb_le_breakBound",
+        "SelectedAcceptedSpendNumericSource.breakProb_le_one",
         "SelectedAcceptedSpendNumericSource.breakBudget_le_pricedBound",
         "SelectedAcceptedSpendNumericSource.acceptedSpendBound_nonneg",
         "SelectedAcceptedSpendNumericSource.breakBound_nonneg",
@@ -29726,9 +29735,12 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "PricedAcceptedSpendNumericCertificate.breakPricing",
         "PricedAcceptedSpendNumericCertificate.pricedBound_eq_breakPricing",
         "PricedAcceptedSpendNumericCertificate.successProb_nonneg",
+        "PricedAcceptedSpendNumericCertificate.successProb_le_one",
         "PricedAcceptedSpendNumericCertificate.unionBound_nonneg",
         "PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_acceptedSpendBound",
+        "PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_one",
         "PricedAcceptedSpendNumericCertificate.breakProb_le_breakBound",
+        "PricedAcceptedSpendNumericCertificate.breakProb_le_one",
         "PricedAcceptedSpendNumericCertificate.breakBudget_le_pricedBound",
         "PricedAcceptedSpendNumericCertificate.acceptedSpendBound_nonneg",
         "PricedAcceptedSpendNumericCertificate.breakBound_nonneg",
@@ -29776,12 +29788,18 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_unionBound",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_nonneg",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_one",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.unionBound_nonneg",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_one",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_le_one",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendBound_nonneg",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.breakBound_nonneg",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.pricedBound_nonneg",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.unionBound_nonneg",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_nonneg",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le_one",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendProb_le_one",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_le_one",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendBound_nonneg",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakBound_nonneg",
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.pricedBound_nonneg",
@@ -29798,6 +29816,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_targetSecurity",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_targetSecurity",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_one",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_nonneg",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_nonneg",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget",
@@ -53236,8 +53255,14 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
   let _fullReductionSuccessProbNonnegative :=
     SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_nonneg
       selectedRustFullSignatureReductionCertificate
+  let _fullReductionSuccessProbLeOne :=
+    SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_one
+      selectedRustFullSignatureReductionCertificate
   let _fullReductionProductionSuccessProbNonnegative :=
     SelectedRustFullSignatureReductionCertificate.productionSignatureForgerySuccessProb_nonneg
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionProductionSuccessProbLeOne :=
+    SelectedRustFullSignatureReductionCertificate.productionSignatureForgerySuccessProb_le_one
       selectedRustFullSignatureReductionCertificate
   let _fullReductionToReportedSecurity :=
     SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity
@@ -53253,6 +53278,9 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustFullSignatureReductionCertificate
   let _fullReductionErasedBoundarySuccessProbNonnegative :=
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionErasedBoundarySuccessProbLeOne :=
+    SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one
       selectedRustFullSignatureReductionCertificate
   exact
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
@@ -53512,8 +53540,14 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
   let _fullReductionSuccessProbNonnegative :=
     SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_nonneg
       selectedRustFullSignatureReductionCertificate
+  let _fullReductionSuccessProbLeOne :=
+    SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_one
+      selectedRustFullSignatureReductionCertificate
   let _fullReductionProductionSuccessProbNonnegative :=
     SelectedRustFullSignatureReductionCertificate.productionSignatureForgerySuccessProb_nonneg
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionProductionSuccessProbLeOne :=
+    SelectedRustFullSignatureReductionCertificate.productionSignatureForgerySuccessProb_le_one
       selectedRustFullSignatureReductionCertificate
   let _fullReductionToReportedSecurity :=
     SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity
@@ -53529,6 +53563,9 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustFullSignatureReductionCertificate
   let _fullReductionErasedBoundarySuccessProbNonnegative :=
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionErasedBoundarySuccessProbLeOne :=
+    SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one
       selectedRustFullSignatureReductionCertificate
   exact
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
@@ -54405,14 +54442,20 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedAcceptedSpendNumericSource.successProb_le_pricedBound
   let _acceptedSpendSelectedSourceSuccessProbNonnegative :=
     SelectedAcceptedSpendNumericSource.successProb_nonneg
+  let _acceptedSpendSelectedSourceSuccessProbLeOne :=
+    SelectedAcceptedSpendNumericSource.successProb_le_one
   let _acceptedSpendSelectedSourceUnionBoundPriced :=
     SelectedAcceptedSpendNumericSource.unionBound_le_priced
   let _acceptedSpendSelectedSourceUnionBoundNonnegative :=
     SelectedAcceptedSpendNumericSource.unionBound_nonneg
   let _acceptedSpendSelectedSourceAcceptedBound :=
     SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_acceptedSpendBound
+  let _acceptedSpendSelectedSourceAcceptedProbLeOne :=
+    SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_one
   let _acceptedSpendSelectedSourceBreakBound :=
     SelectedAcceptedSpendNumericSource.breakProb_le_breakBound
+  let _acceptedSpendSelectedSourceBreakProbLeOne :=
+    SelectedAcceptedSpendNumericSource.breakProb_le_one
   let _acceptedSpendSelectedSourceBreakBudget :=
     SelectedAcceptedSpendNumericSource.breakBudget_le_pricedBound
   let _acceptedSpendSelectedSourceAcceptedBoundNonnegative :=
@@ -54521,6 +54564,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_pricedBound
   let _acceptedSpendConcreteSuccessProbNonnegative :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_nonneg
+  let _acceptedSpendConcreteSuccessProbLeOne :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_one
   let _acceptedSpendConcreteUnionBoundNonnegative :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.unionBound_nonneg
   let _acceptedSpendConcreteAcceptedBoundNonnegative :=
@@ -54909,14 +54954,20 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedAcceptedSpendNumericSource.successProb_le_pricedBound
   let _acceptedSpendSelectedSourceSuccessProbNonnegative :=
     SelectedAcceptedSpendNumericSource.successProb_nonneg
+  let _acceptedSpendSelectedSourceSuccessProbLeOne :=
+    SelectedAcceptedSpendNumericSource.successProb_le_one
   let _acceptedSpendSelectedSourceUnionBoundPriced :=
     SelectedAcceptedSpendNumericSource.unionBound_le_priced
   let _acceptedSpendSelectedSourceUnionBoundNonnegative :=
     SelectedAcceptedSpendNumericSource.unionBound_nonneg
   let _acceptedSpendSelectedSourceAcceptedBound :=
     SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_acceptedSpendBound
+  let _acceptedSpendSelectedSourceAcceptedProbLeOne :=
+    SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_one
   let _acceptedSpendSelectedSourceBreakBound :=
     SelectedAcceptedSpendNumericSource.breakProb_le_breakBound
+  let _acceptedSpendSelectedSourceBreakProbLeOne :=
+    SelectedAcceptedSpendNumericSource.breakProb_le_one
   let _acceptedSpendSelectedSourceBreakBudget :=
     SelectedAcceptedSpendNumericSource.breakBudget_le_pricedBound
   let _acceptedSpendSelectedSourceAcceptedBoundNonnegative :=
@@ -55011,8 +55062,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_pricedBound
   let _acceptedSpendConcreteAcceptedSpendProbAcceptedBound :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_acceptedSpendBound
+  let _acceptedSpendConcreteAcceptedProbLeOne :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_one
   let _acceptedSpendConcreteBreakProbBreakBound :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_le_breakBound
+  let _acceptedSpendConcreteBreakProbLeOne :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.breakProb_le_one
   let _acceptedSpendConcreteBreakBudget :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.breakBudget_le_pricedBound
   let _acceptedSpendConcreteSuccessProbUnionBound :=
@@ -55021,6 +55076,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_pricedBound
   let _acceptedSpendConcreteSuccessProbNonnegative :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_nonneg
+  let _acceptedSpendConcreteSuccessProbLeOne :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_one
   let _acceptedSpendConcreteUnionBoundNonnegative :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.unionBound_nonneg
   let _acceptedSpendConcreteAcceptedBoundNonnegative :=
@@ -55063,6 +55120,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.unionBound_nonneg
   let _acceptedSpendConcreteSourceSuccessProbNonnegative :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_nonneg
+  let _acceptedSpendConcreteSourceSuccessProbLeOne :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le_one
+  let _acceptedSpendConcreteSourceAcceptedProbLeOne :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendProb_le_one
+  let _acceptedSpendConcreteSourceBreakProbLeOne :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_le_one
   let _acceptedSpendPricedCertificate :=
     PricedAcceptedSpendNumericCertificate.unionBound_le_priced
   let _acceptedSpendPricedBreakPricing :=
@@ -55071,6 +55134,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     PricedAcceptedSpendNumericCertificate.pricedBound_eq_breakPricing
   let _acceptedSpendPricedSuccessProbNonnegative :=
     PricedAcceptedSpendNumericCertificate.successProb_nonneg
+  let _acceptedSpendPricedSuccessProbLeOne :=
+    PricedAcceptedSpendNumericCertificate.successProb_le_one
   let _acceptedSpendPricedUnionBoundNonnegative :=
     PricedAcceptedSpendNumericCertificate.unionBound_nonneg
   let _acceptedSpendPricedAcceptedSpendBound :=
@@ -55079,8 +55144,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     PricedAcceptedSpendNumericCertificate.breakBound
   let _acceptedSpendPricedAcceptedSpendProbBound :=
     PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_acceptedSpendBound
+  let _acceptedSpendPricedAcceptedProbLeOne :=
+    PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_one
   let _acceptedSpendPricedBreakProbBound :=
     PricedAcceptedSpendNumericCertificate.breakProb_le_breakBound
+  let _acceptedSpendPricedBreakProbLeOne :=
+    PricedAcceptedSpendNumericCertificate.breakProb_le_one
   let _acceptedSpendPricedBreakBudget :=
     PricedAcceptedSpendNumericCertificate.breakBudget_le_pricedBound
   let _acceptedSpendPricedAcceptedBoundNonnegative :=
@@ -55099,6 +55168,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound
   let _acceptedSpendCertificateProbNonnegative :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_nonneg
+  let _acceptedSpendCertificateSuccessProbLeOne :=
+    SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_one
   let _acceptedSpendCertificateBoundNonnegative :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_nonneg
   let _acceptedSpendCertificateProbUnion :=

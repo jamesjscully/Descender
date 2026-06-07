@@ -2634,6 +2634,12 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_acceptedSpe
     _ = Cert.acceptedSpendForgeryProb :=
       Cert.acceptedSpendForgeryProbMatchesUnionBound.symm
 
+/-- The selected accepted-spend certificate keeps packaged success probability at most one. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_one
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.pricedNumericCertificate.successProb <= 1 :=
+  Cert.pricedNumericCertificate.successProb_le_one
+
 /--
 Full-signature boundary for the currently selected Path 2 native/Fq12 route.
 
@@ -3130,6 +3136,24 @@ theorem SelectedRustFullSignatureReductionCertificate.productionSignatureForgery
   rw [← Cert.signatureForgerySuccessProbPinned]
   exact Cert.signatureForgerySuccessProb_nonneg
 
+/-- The selected full-signature success probability is at most one. -/
+theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_one
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.signatureForgerySuccessProb <= 1 := by
+  calc
+    Cert.signatureForgerySuccessProb =
+        Cert.acceptedSpendCertificate.pricedNumericCertificate.successProb :=
+      Cert.signatureForgerySuccessProb_eq_acceptedSpendGame
+    _ <= 1 :=
+      Cert.acceptedSpendCertificate.pricedNumericCertificate.successProb_le_one
+
+/-- The selected production full-signature success probability is at most one. -/
+theorem SelectedRustFullSignatureReductionCertificate.productionSignatureForgerySuccessProb_le_one
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.productionSignatureForgerySuccessProb <= 1 := by
+  rw [← Cert.signatureForgerySuccessProbPinned]
+  exact Cert.signatureForgerySuccessProb_le_one
+
 /-- The selected full-signature reduction is priced by the accepted-spend reported security bits. -/
 theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity
     (Cert : SelectedRustFullSignatureReductionCertificate) :
@@ -3361,6 +3385,12 @@ theorem fullSignatureSuccessProb_le_activePathForgeryBound
     B.acceptedSpendSoundness.acceptedSpendForgery_le_bound
 
 end NativeFullSignatureSecurityBoundary
+
+/-- The erased full-signature boundary keeps selected signature success at most one. -/
+theorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.toNativeFullSignatureSecurityBoundary.signatureForgerySuccessProb <= 1 :=
+  Cert.signatureForgerySuccessProb_le_one
 
 end Path2NativeAccountDesign
 end Descender
