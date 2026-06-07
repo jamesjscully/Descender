@@ -1682,6 +1682,10 @@ AP2-N003 reports mirror the Rust public evidence reports and are verified on
 schema/digest/nonzero slots while remaining fail-closed on `FactsAllTrue`.
 Future theorem constructors therefore have a type-level selected-evidence
 identity obligation, not only scanner-enforced binding names.
+Lean also proves the current selected accepted-spend numeric and full-reduction
+reports cannot satisfy `FactsAllTrue`. These sanity guards keep the current
+verified-but-incomplete public reports separate from the future complete
+selected evidence values needed to close AP2-N003.
 `SelectedRustFullSignatureReductionEvidenceReport.ReportVerified` now applies
 the same digest-presence requirement to the seven full-reduction evidence slots:
 production signature probability, signature-to-accepted-spend link,

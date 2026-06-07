@@ -2010,6 +2010,12 @@ theorem selectedRustAcceptedSpendEvidenceReportVerifiedProof :
     selectedRustAcceptedSpendEvidenceReport, selectedRustZeroDigest32]
   repeat constructor <;> native_decide
 
+/-- The current selected accepted-spend report is intentionally not proof-complete. -/
+theorem selectedRustAcceptedSpendEvidenceReportFactsAllTrue_impossible :
+    ¬ selectedRustAcceptedSpendEvidenceReport.FactsAllTrue := by
+  simp [SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue,
+    selectedRustAcceptedSpendEvidenceReport]
+
 /--
 Selected Rust/model certificate for the accepted-spend numeric soundness layer.
 
@@ -2844,6 +2850,12 @@ theorem selectedRustFullSignatureReductionVerifiedProof :
   simp [SelectedRustFullSignatureReductionEvidenceReport.ReportVerified,
     selectedRustFullSignatureReductionEvidenceReport, selectedRustZeroDigest32]
   repeat constructor <;> native_decide
+
+/-- The current selected full-reduction report is intentionally not proof-complete. -/
+theorem selectedRustFullSignatureReductionFactsAllTrue_impossible :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.FactsAllTrue := by
+  simp [SelectedRustFullSignatureReductionEvidenceReport.FactsAllTrue,
+    selectedRustFullSignatureReductionEvidenceReport]
 
 /--
 Selected Rust/model certificate for the full-signature reduction layer.
