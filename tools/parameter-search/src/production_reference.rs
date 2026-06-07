@@ -1990,6 +1990,11 @@ pub struct Path2NativeAcceptedSpendNumericEvidenceV1 {
     pub named_break_events_digest: [u8; DIGEST_BYTES],
     pub accepted_spend_union_bound_pricing_digest: [u8; DIGEST_BYTES],
     pub accepted_spend_priced_bound_digest: [u8; DIGEST_BYTES],
+    pub target_security_bits: u16,
+    pub selected_multi_target_horizon_log2: u16,
+    pub qrom_quadratic_loss_bits_at_deployment_bound: u16,
+    pub transcript_term_bits_after_qrom_loss: u16,
+    pub accepted_spend_priced_bound_security_bits: u16,
     pub accepted_spend_numeric_bound_priced: bool,
     pub finite_trace_support_priced: bool,
     pub active_outcome_carrier_pinned: bool,
@@ -1997,6 +2002,7 @@ pub struct Path2NativeAcceptedSpendNumericEvidenceV1 {
     pub active_break_family_pinned: bool,
     pub named_break_events_pinned: bool,
     pub accepted_spend_union_bound_priced: bool,
+    pub accepted_spend_numeric_budget_meets_target: bool,
     pub hidden_source_closure_ready: bool,
     pub checked_core_closure_ready: bool,
     pub lifecycle_replay_closure_ready: bool,
@@ -2454,6 +2460,7 @@ pub fn verify_path2_native_no_export_serializer_evidence_v1(
 
 pub fn path2_native_accepted_spend_numeric_evidence_v1() -> Path2NativeAcceptedSpendNumericEvidenceV1
 {
+    let direct_budget = path2_direct_query_budget_v1();
     let hidden_source_audit = path2_reviewed_fq12_hidden_source_semantics_bridge_audit();
     let hidden_source_closure_ready =
         validate_path2_reviewed_fq12_hidden_source_semantics_bridge_audit(&hidden_source_audit)
@@ -2492,6 +2499,12 @@ pub fn path2_native_accepted_spend_numeric_evidence_v1() -> Path2NativeAcceptedS
             b"Descender.Path2.accepted_spend.priced_bound.open.v1",
         )
         .into(),
+        target_security_bits: direct_budget.target_security_bits,
+        selected_multi_target_horizon_log2: direct_budget.selected_multi_target_horizon_log2,
+        qrom_quadratic_loss_bits_at_deployment_bound: direct_budget
+            .qrom_quadratic_loss_bits_at_deployment_bound,
+        transcript_term_bits_after_qrom_loss: direct_budget.transcript_term_bits_after_qrom_loss,
+        accepted_spend_priced_bound_security_bits: 0,
         accepted_spend_numeric_bound_priced: false,
         finite_trace_support_priced: false,
         active_outcome_carrier_pinned: false,
@@ -2499,6 +2512,7 @@ pub fn path2_native_accepted_spend_numeric_evidence_v1() -> Path2NativeAcceptedS
         active_break_family_pinned: false,
         named_break_events_pinned: false,
         accepted_spend_union_bound_priced: false,
+        accepted_spend_numeric_budget_meets_target: false,
         hidden_source_closure_ready,
         checked_core_closure_ready: path2_native_checked_core_composition_complete_v1(),
         lifecycle_replay_closure_ready: path2_full_signature_execution_source_instantiated_v1(),
@@ -2564,6 +2578,31 @@ pub fn path2_native_accepted_spend_numeric_evidence_v1_frame(
     );
     append_u64(
         &mut frame,
+        b"target_security_bits",
+        u64::from(evidence.target_security_bits),
+    );
+    append_u64(
+        &mut frame,
+        b"selected_multi_target_horizon_log2",
+        u64::from(evidence.selected_multi_target_horizon_log2),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_quadratic_loss_bits_at_deployment_bound",
+        u64::from(evidence.qrom_quadratic_loss_bits_at_deployment_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"transcript_term_bits_after_qrom_loss",
+        u64::from(evidence.transcript_term_bits_after_qrom_loss),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_spend_priced_bound_security_bits",
+        u64::from(evidence.accepted_spend_priced_bound_security_bits),
+    );
+    append_u64(
+        &mut frame,
         b"accepted_spend_numeric_bound_priced",
         u64::from(evidence.accepted_spend_numeric_bound_priced),
     );
@@ -2596,6 +2635,11 @@ pub fn path2_native_accepted_spend_numeric_evidence_v1_frame(
         &mut frame,
         b"accepted_spend_union_bound_priced",
         u64::from(evidence.accepted_spend_union_bound_priced),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_spend_numeric_budget_meets_target",
+        u64::from(evidence.accepted_spend_numeric_budget_meets_target),
     );
     append_u64(
         &mut frame,
@@ -2664,6 +2708,8 @@ pub fn path2_native_accepted_spend_numeric_evidence_all_facts_true(
         && evidence.active_break_family_pinned
         && evidence.named_break_events_pinned
         && evidence.accepted_spend_union_bound_priced
+        && evidence.accepted_spend_numeric_budget_meets_target
+        && evidence.accepted_spend_priced_bound_security_bits >= evidence.target_security_bits
         && evidence.hidden_source_closure_ready
         && evidence.checked_core_closure_ready
         && evidence.lifecycle_replay_closure_ready
@@ -27889,6 +27935,11 @@ fn path2_native_accepted_spend_numeric_evidence_source_present_v1() -> bool {
         "named_break_events_digest",
         "accepted_spend_union_bound_pricing_digest",
         "accepted_spend_priced_bound_digest",
+        "target_security_bits",
+        "selected_multi_target_horizon_log2",
+        "qrom_quadratic_loss_bits_at_deployment_bound",
+        "transcript_term_bits_after_qrom_loss",
+        "accepted_spend_priced_bound_security_bits",
         "accepted_spend_numeric_bound_priced",
         "finite_trace_support_priced",
         "active_outcome_carrier_pinned",
@@ -27896,6 +27947,7 @@ fn path2_native_accepted_spend_numeric_evidence_source_present_v1() -> bool {
         "active_break_family_pinned",
         "named_break_events_pinned",
         "accepted_spend_union_bound_priced",
+        "accepted_spend_numeric_budget_meets_target",
         "hidden_source_closure_ready",
         "checked_core_closure_ready",
         "lifecycle_replay_closure_ready",
@@ -27909,6 +27961,7 @@ fn path2_native_accepted_spend_numeric_evidence_source_present_v1() -> bool {
         "verify_path2_native_accepted_spend_numeric_evidence_v1",
         "forged_ready.accepted_spend_numeric_bound_priced = true",
         "forged_ready.accepted_spend_event_pinned = true",
+        "forged_ready.accepted_spend_numeric_budget_meets_target = true",
         "Path 2 native accepted-spend numeric evidence mismatch",
     ];
     source_checks
@@ -28641,12 +28694,18 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "namedBreakEventsDigest",
         "acceptedSpendUnionBoundPricingDigest",
         "acceptedSpendPricedBoundDigest",
+        "targetSecurityBits",
+        "selectedMultiTargetHorizonLog2",
+        "qromQuadraticLossBitsAtDeploymentBound",
+        "transcriptTermBitsAfterQromLoss",
+        "acceptedSpendPricedBoundSecurityBits",
         "finiteTraceSupportPriced",
         "activeOutcomeCarrierPinned",
         "acceptedSpendEventPinned",
         "activeBreakFamilyPinned",
         "namedBreakEventsPinned",
         "acceptedSpendUnionBoundPriced",
+        "acceptedSpendNumericBudgetMeetsTarget",
         "selectedRustAcceptedSpendEvidenceReport",
         "selectedRustAcceptedSpendEvidenceDigest",
         "selectedRustAcceptedSpendEvidenceReportBound",
@@ -47782,6 +47841,12 @@ mod tests {
         assert!(!evidence.active_break_family_pinned);
         assert!(!evidence.named_break_events_pinned);
         assert!(!evidence.accepted_spend_union_bound_priced);
+        assert_eq!(evidence.target_security_bits, 128);
+        assert_eq!(evidence.selected_multi_target_horizon_log2, 32);
+        assert_eq!(evidence.qrom_quadratic_loss_bits_at_deployment_bound, 32);
+        assert_eq!(evidence.transcript_term_bits_after_qrom_loss, 182);
+        assert_eq!(evidence.accepted_spend_priced_bound_security_bits, 0);
+        assert!(!evidence.accepted_spend_numeric_budget_meets_target);
         assert!(evidence.hidden_source_closure_ready);
         assert!(evidence.checked_core_closure_ready);
         assert!(evidence.lifecycle_replay_closure_ready);
@@ -47812,6 +47877,8 @@ mod tests {
         forged_ready.active_break_family_pinned = true;
         forged_ready.named_break_events_pinned = true;
         forged_ready.accepted_spend_union_bound_priced = true;
+        forged_ready.accepted_spend_priced_bound_security_bits = evidence.target_security_bits;
+        forged_ready.accepted_spend_numeric_budget_meets_target = true;
         assert!(!path2_native_accepted_spend_numeric_evidence_all_facts_true(&forged_ready));
         assert_eq!(
             verify_path2_native_accepted_spend_numeric_evidence_v1(&forged_ready).unwrap_err(),
@@ -47839,6 +47906,7 @@ mod tests {
         assert!(rendered.contains(PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA));
         assert!(!rendered.contains("\"accepted_spend_numeric_bound_priced\":true"));
         assert!(!rendered.contains("\"accepted_spend_event_pinned\":true"));
+        assert!(!rendered.contains("\"accepted_spend_numeric_budget_meets_target\":true"));
         assert_no_active_native_private_material(&rendered);
     }
 
@@ -52356,6 +52424,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendUnionBoundPricingDigest
   let _acceptedSpendReportPricedBoundDigest :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendPricedBoundDigest
+  let _acceptedSpendReportTargetSecurityBits :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.targetSecurityBits
+  let _acceptedSpendReportMultiTargetHorizon :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.selectedMultiTargetHorizonLog2
+  let _acceptedSpendReportQromLossBits :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.qromQuadraticLossBitsAtDeploymentBound
+  let _acceptedSpendReportTranscriptTerm :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.transcriptTermBitsAfterQromLoss
+  let _acceptedSpendReportPricedBoundSecurityBits :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendPricedBoundSecurityBits
   let _acceptedSpendReportFiniteTraceSupport :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.finiteTraceSupportPriced
   let _acceptedSpendReportActiveOutcomeCarrier :=
@@ -52368,6 +52446,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.namedBreakEventsPinned
   let _acceptedSpendReportUnionBoundPriced :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendUnionBoundPriced
+  let _acceptedSpendReportBudgetMeetsTarget :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendNumericBudgetMeetsTarget
   let _acceptedSpendFiniteTraceSupport :=
     PricedAcceptedSpendNumericCertificate.traceFintype
   let _acceptedSpendPackagedObserve :=
@@ -52587,6 +52667,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendUnionBoundPricingDigest
   let _acceptedSpendReportPricedBoundDigest :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendPricedBoundDigest
+  let _acceptedSpendReportTargetSecurityBits :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.targetSecurityBits
+  let _acceptedSpendReportMultiTargetHorizon :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.selectedMultiTargetHorizonLog2
+  let _acceptedSpendReportQromLossBits :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.qromQuadraticLossBitsAtDeploymentBound
+  let _acceptedSpendReportTranscriptTerm :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.transcriptTermBitsAfterQromLoss
+  let _acceptedSpendReportPricedBoundSecurityBits :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendPricedBoundSecurityBits
   let _acceptedSpendReportFiniteTraceSupport :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.finiteTraceSupportPriced
   let _acceptedSpendReportActiveOutcomeCarrier :=
@@ -52599,6 +52689,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.namedBreakEventsPinned
   let _acceptedSpendReportUnionBoundPriced :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendUnionBoundPriced
+  let _acceptedSpendReportBudgetMeetsTarget :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendNumericBudgetMeetsTarget
   let _acceptedSpendFiniteTraceSupport :=
     PricedAcceptedSpendNumericCertificate.traceFintype
   let _acceptedSpendPackagedObserve :=

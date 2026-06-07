@@ -1579,6 +1579,11 @@ structure SelectedRustAcceptedSpendSoundnessEvidenceReport where
   namedBreakEventsDigest : ByteArray
   acceptedSpendUnionBoundPricingDigest : ByteArray
   acceptedSpendPricedBoundDigest : ByteArray
+  targetSecurityBits : Nat
+  selectedMultiTargetHorizonLog2 : Nat
+  qromQuadraticLossBitsAtDeploymentBound : Nat
+  transcriptTermBitsAfterQromLoss : Nat
+  acceptedSpendPricedBoundSecurityBits : Nat
   acceptedSpendNumericBoundPriced : Bool
   finiteTraceSupportPriced : Bool
   activeOutcomeCarrierPinned : Bool
@@ -1586,6 +1591,7 @@ structure SelectedRustAcceptedSpendSoundnessEvidenceReport where
   activeBreakFamilyPinned : Bool
   namedBreakEventsPinned : Bool
   acceptedSpendUnionBoundPriced : Bool
+  acceptedSpendNumericBudgetMeetsTarget : Bool
   hiddenSourceClosureReady : Bool
   checkedCoreClosureReady : Bool
   lifecycleReplayClosureReady : Bool
@@ -1608,6 +1614,7 @@ def SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue
   E.activeBreakFamilyPinned = true ∧
   E.namedBreakEventsPinned = true ∧
   E.acceptedSpendUnionBoundPriced = true ∧
+  E.acceptedSpendNumericBudgetMeetsTarget = true ∧
   E.hiddenSourceClosureReady = true ∧
   E.checkedCoreClosureReady = true ∧
   E.lifecycleReplayClosureReady = true ∧
