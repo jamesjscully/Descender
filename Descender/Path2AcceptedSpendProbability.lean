@@ -60,6 +60,14 @@ def successProb
     (G : AcceptedSpendNumericGame Trace Outcome Break) : ℝ :=
   G.traceDist.acceptProb fun trace => G.fullSignatureSuccess (G.observe trace)
 
+omit [DecidableEq Break] in
+/-- The full-signature success event probability is nonnegative. -/
+theorem successProb_nonneg
+    (G : AcceptedSpendNumericGame Trace Outcome Break) :
+    0 <= G.successProb :=
+  G.traceDist.acceptProb_nonneg fun trace =>
+    G.fullSignatureSuccess (G.observe trace)
+
 /-- Probability of the reduced accepted-spend event. -/
 def acceptedSpendProb
     (G : AcceptedSpendNumericGame Trace Outcome Break) : ℝ :=
@@ -254,6 +262,13 @@ theorem breakFamily_eq_activeFullSpendBreakEvent
 /-- The full-signature success probability of the packaged game. -/
 def successProb (C : PricedAcceptedSpendNumericCertificate) : ℝ :=
   @AcceptedSpendNumericGame.successProb
+    C.Trace C.Outcome C.Break C.traceFintype C.breakFintype C.game
+
+/-- The priced certificate's full-signature success probability is nonnegative. -/
+theorem successProb_nonneg
+    (C : PricedAcceptedSpendNumericCertificate) :
+    0 <= C.successProb :=
+  @AcceptedSpendNumericGame.successProb_nonneg
     C.Trace C.Outcome C.Break C.traceFintype C.breakFintype C.game
 
 /-- Observe the concrete outcome associated with a finite trace. -/
@@ -487,6 +502,12 @@ theorem successProb_le_pricedBound
     Source.pricedCertificate.successProb <=
       Source.pricedCertificate.pricedBound :=
   Source.pricedCertificate.successProb_le_pricedBound
+
+/-- The selected source exposes a nonnegative full-signature success probability. -/
+theorem successProb_nonneg
+    (Source : SelectedAcceptedSpendNumericSource) :
+    0 <= Source.pricedCertificate.successProb :=
+  Source.pricedCertificate.successProb_nonneg
 
 /-- The selected source carries the finite union-bound pricing proof. -/
 theorem unionBound_le_priced

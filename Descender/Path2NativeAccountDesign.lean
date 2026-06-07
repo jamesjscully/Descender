@@ -3113,6 +3113,23 @@ theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessPro
     Cert.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
     Cert.acceptedSpendCertificate.acceptedSpendForgeryProb_le_bound
 
+/-- The selected full-signature success probability is nonnegative. -/
+theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_nonneg
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    0 <= Cert.signatureForgerySuccessProb := by
+  calc
+    0 <= Cert.acceptedSpendCertificate.pricedNumericCertificate.successProb :=
+      Cert.acceptedSpendCertificate.pricedNumericCertificate.successProb_nonneg
+    _ = Cert.signatureForgerySuccessProb :=
+      Cert.signatureForgerySuccessProb_eq_acceptedSpendGame.symm
+
+/-- The selected production full-signature success probability is nonnegative. -/
+theorem SelectedRustFullSignatureReductionCertificate.productionSignatureForgerySuccessProb_nonneg
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    0 <= Cert.productionSignatureForgerySuccessProb := by
+  rw [← Cert.signatureForgerySuccessProbPinned]
+  exact Cert.signatureForgerySuccessProb_nonneg
+
 /-- The selected full-signature reduction is priced by the accepted-spend reported security bits. -/
 theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity
     (Cert : SelectedRustFullSignatureReductionCertificate) :

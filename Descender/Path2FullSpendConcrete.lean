@@ -1540,6 +1540,12 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_price
       Cert.pricedCertificate.pricedBound :=
   Cert.pricedCertificate.successProb_le_pricedBound
 
+/-- The selected concrete numeric certificate exposes nonnegative success probability. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_nonneg
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    0 <= Cert.pricedCertificate.successProb :=
+  Cert.pricedCertificate.successProb_nonneg
+
 /-- The selected concrete numeric certificate exposes nonnegative accepted-spend budget. -/
 theorem SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendBound_nonneg
     (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
@@ -1589,6 +1595,12 @@ theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.unionBound_non
     (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
     0 <= Source.concreteCertificate.pricedCertificate.unionBound :=
   Source.concreteCertificate.unionBound_nonneg
+
+/-- The source-bound concrete certificate exposes nonnegative success probability. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_nonneg
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    0 <= Source.concreteCertificate.pricedCertificate.successProb :=
+  Source.concreteCertificate.successProb_nonneg
 
 /-- The source-bound report says the accepted-spend numeric bound is priced. -/
 theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBoundPriced

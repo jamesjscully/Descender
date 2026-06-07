@@ -1689,8 +1689,9 @@ replaces the concrete-source union-bound fact projection with the report-level
 projection and confirms that this no longer satisfies the active accepted-spend
 numeric-bound gate.
 The generic accepted-spend pricing layer now also exposes nonnegativity
-theorems for the accepted-spend union bound, accepted-spend component bound,
-each named-break component bound, and the final priced bound at the
+theorems for the full-signature success probability, accepted-spend union
+bound, accepted-spend component bound, each named-break component bound, and the
+final priced bound at the
 `AcceptedSpendNumericGame`, `AcceptedSpendBreakPricingCertificate`,
 `PricedAcceptedSpendNumericCertificate`, and `SelectedAcceptedSpendNumericSource`
 layers. `SelectedRustConcreteAcceptedSpendNumericCertificate` and
@@ -1698,10 +1699,12 @@ layers. `SelectedRustConcreteAcceptedSpendNumericCertificate` and
 sign facts through the active concrete carrier/source route too, and
 `SelectedRustAcceptedSpendSoundnessCertificate` proves the exported
 accepted-spend probability and bound remain nonnegative after erasure to
-`NativeAcceptedSpendSoundnessBoundary`. The accepted-spend source gate
-exact-checks those theorem names, so the future pricing package must expose
-nonnegative budgets rather than only upper-bound inequalities, and it must
-preserve those sign facts through the concrete source and full-boundary
+`NativeAcceptedSpendSoundnessBoundary`. `SelectedRustFullSignatureReductionCertificate`
+also proves selected and production signature-forgery success probabilities are
+nonnegative. The accepted-spend and full-reduction source gates exact-check
+those theorem names, so the future pricing package must expose nonnegative
+probabilities and budgets rather than only upper-bound inequalities, and it
+must preserve those sign facts through the concrete source and full-boundary
 handoffs.
 The accepted-spend numeric and full-signature reduction certificates now bind
 their evidence reports and digests by equality to concrete selected Rust
