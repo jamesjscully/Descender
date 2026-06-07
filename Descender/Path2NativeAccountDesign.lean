@@ -1719,6 +1719,22 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudg
     ⟨_, _, _, _, _, _, _, _, _, _, _, hTarget, hHorizon, _, hTranscript, _, _, _, _, _, _, _⟩
   rw [hTarget, hHorizon, hTranscript]
 
+/-- A complete report caps accepted-spend priced-bound bits by the selected transcript budget. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityBits_le_transcriptCap
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.acceptedSpendPricedBoundSecurityBits ≤ 150 := by
+  have hWithin :
+      E.acceptedSpendPricedBoundSecurityBits +
+        E.selectedMultiTargetHorizonLog2 ≤
+          E.transcriptTermBitsAfterQromLoss :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityWithinTranscript
+      E h
+  rcases h with
+    ⟨_, _, _, _, _, _, _, _, _, _, _, _, hHorizon, _, hTranscript, _, _, _, _, _, _, _⟩
+  rw [hHorizon, hTranscript] at hWithin
+  omega
+
 /-- A complete accepted-spend report shows the reported bound is within target security. -/
 theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_reportedSecurityBound_le_targetSecurityBound
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
@@ -1905,6 +1921,11 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_l
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityWithinTranscript
         Cert.evidenceReport
         Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hClaimedBoundWithinTranscriptCap :
+      Cert.evidenceReport.acceptedSpendPricedBoundSecurityBits ≤ 150 :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityBits_le_transcriptCap
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
   let _hUnionBoundPriced :
       Cert.evidenceReport.acceptedSpendUnionBoundPriced = true :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_unionBoundPriced
@@ -2052,6 +2073,11 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
           Cert.evidenceReport.selectedMultiTargetHorizonLog2 ≤
             Cert.evidenceReport.transcriptTermBitsAfterQromLoss :=
       SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityWithinTranscript
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hClaimedBoundWithinTranscriptCap :
+        Cert.evidenceReport.acceptedSpendPricedBoundSecurityBits ≤ 150 :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityBits_le_transcriptCap
           Cert.evidenceReport
           Cert.selectedRustAcceptedSpendFactsAllTrueProof
     let _hUnionBoundPriced :
