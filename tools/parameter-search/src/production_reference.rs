@@ -28340,6 +28340,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "selectedRustAcceptedSpendEvidenceDigestBoundProof",
         "selectedRustAcceptedSpendBoundVerifiedProof",
         "selectedRustAcceptedSpendFactsAllTrueProof",
+        "selectedRustConcreteAcceptedSpendNumericCertificate",
         "selectedRustAcceptedSpendNumericSource",
         "selectedRustAcceptedSpendForgeryProb",
         "selectedRustAcceptedSpendForgeryBound",
@@ -28516,6 +28517,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceDigestBoundProof",
         "selectedRustAcceptedSpendBoundVerifiedProof",
         "selectedRustAcceptedSpendFactsAllTrueProof",
+        "selectedRustConcreteAcceptedSpendNumericCertificate",
         "selectedRustAcceptedSpendNumericSource",
         "acceptedSpendForgeryProb",
         "acceptedSpendForgeryBound",
@@ -28554,6 +28556,12 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "let selectedRustAcceptedSpendEvidenceDigestBoundProof := True.intro",
         "let selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
         "let selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
+        "let selectedRustConcreteAcceptedSpendNumericCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
+        "let selectedRustConcreteAcceptedSpendNumericCertificate := {",
+        "let selectedRustConcreteAcceptedSpendNumericCertificate := ⟨",
+        "let selectedRustAcceptedSpendNumericSource : SelectedAcceptedSpendNumericSource :=",
+        "let selectedRustAcceptedSpendNumericSource := {",
+        "let selectedRustAcceptedSpendNumericSource := ⟨",
         "selectedRustAcceptedSpendSoundnessCertificate := {",
         "selectedRustAcceptedSpendForgeryProb := 0",
         "selectedRustAcceptedSpendForgeryBound := 0",
@@ -28647,7 +28655,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceDigestBoundProof",
         "selectedRustAcceptedSpendBoundVerifiedProof",
         "selectedRustAcceptedSpendFactsAllTrueProof",
+        "selectedRustConcreteAcceptedSpendNumericCertificate",
         "selectedRustAcceptedSpendNumericSource",
+        "let selectedRustAcceptedSpendNumericSource :=",
+        "SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource\n      selectedRustConcreteAcceptedSpendNumericCertificate",
         "selectedRustAcceptedSpendForgeryProb",
         "selectedRustAcceptedSpendForgeryBound",
         "selectedRustProductionAcceptedSpendForgeryProb",
@@ -52397,6 +52408,11 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericCertificate.break_eq_activeFullSpendBreakEvent
   let _acceptedSpendConcreteNamedBreakEventsTheorem :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.namedBreakEvents_activeSound
+  let selectedRustConcreteAcceptedSpendNumericCertificate :=
+    selectedRustConcreteAcceptedSpendNumericCertificateSource
+  let selectedRustAcceptedSpendNumericSource :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource
+      selectedRustConcreteAcceptedSpendNumericCertificate
   let _acceptedSpendPricedCertificate :=
     PricedAcceptedSpendNumericCertificate.unionBound_le_priced
   let _acceptedSpendPricedBound :=
@@ -52623,6 +52639,11 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericCertificate.break_eq_activeFullSpendBreakEvent
   let _acceptedSpendConcreteNamedBreakEventsTheorem :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.namedBreakEvents_activeSound
+  let selectedRustConcreteAcceptedSpendNumericCertificate :=
+    selectedRustConcreteAcceptedSpendNumericCertificateSource
+  let selectedRustAcceptedSpendNumericSource :=
+    SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource
+      selectedRustConcreteAcceptedSpendNumericCertificate
   let _acceptedSpendPricedCertificate :=
     PricedAcceptedSpendNumericCertificate.unionBound_le_priced
   let _acceptedSpendPricedBound :=
@@ -52663,6 +52684,17 @@ end Path2NativeAccountDesign
         assert!(
             path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 accepted_spend_instantiation_shape
+            )
+        );
+        let concrete_numeric_source_mentioned_but_not_consumed =
+            accepted_spend_instantiation_shape.replacen(
+                "let selectedRustAcceptedSpendNumericSource :=\n    SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource\n      selectedRustConcreteAcceptedSpendNumericCertificate",
+                "let _selectedRustConcreteNumericSource :=\n    SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource\n      selectedRustConcreteAcceptedSpendNumericCertificate",
+                1,
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &concrete_numeric_source_mentioned_but_not_consumed
             )
         );
         let suffixed_accepted_spend_instantiation = accepted_spend_instantiation_shape.replacen(

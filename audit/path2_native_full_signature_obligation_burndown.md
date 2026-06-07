@@ -1470,6 +1470,13 @@ The concrete wrapper now maps into the generic
 consumes that source package instead of a bare priced certificate. This keeps
 the concrete carrier proof on the Lean certificate route, not only in Rust
 scanner text.
+The accepted-spend numeric-bound source gate now requires the consumed
+`selectedRustAcceptedSpendNumericSource` binding to be exactly the result of
+`SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource`
+on a named `selectedRustConcreteAcceptedSpendNumericCertificate`. A regression
+rejects the previous shape where the concrete conversion was merely mentioned
+under another local name while `ofReportAndBound` received a generic selected
+numeric source.
 `Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
 active full-spend named breaks, so the numeric game can index its union bound by
 the actual active break family.
