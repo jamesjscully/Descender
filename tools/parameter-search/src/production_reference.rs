@@ -29277,6 +29277,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "let selectedRustAcceptedSpendSoundnessCertificate :",
         "SelectedRustAcceptedSpendSoundnessCertificate",
         "SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_unionBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_pricedBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_production",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_production",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_reportedSecurity",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_reportedSecurity",
@@ -53472,6 +53476,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     activeSerializerAllowlist_boundaryNoExportClosed
   let _acceptedSpendCertificateProbBound :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound
+  let _acceptedSpendCertificateProbUnion :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_unionBound
+  let _acceptedSpendCertificateBoundPriced :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_pricedBound
+  let _acceptedSpendCertificateProbProduction :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_production
+  let _acceptedSpendCertificateBoundProduction :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_production
   let _acceptedSpendCertificateBoundSecurity :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_reportedSecurity
   let _acceptedSpendCertificateProbSecurity :=
@@ -53671,6 +53683,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     activeSerializerAllowlist_boundaryNoExportClosed
   let _acceptedSpendCertificateProbBound :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound
+  let _acceptedSpendCertificateProbUnion :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_unionBound
+  let _acceptedSpendCertificateBoundPriced :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_pricedBound
+  let _acceptedSpendCertificateProbProduction :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_production
+  let _acceptedSpendCertificateBoundProduction :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_production
   let _acceptedSpendCertificateBoundSecurity :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_reportedSecurity
   let _acceptedSpendCertificateProbSecurity :=

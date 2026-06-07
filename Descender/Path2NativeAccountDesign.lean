@@ -1764,6 +1764,34 @@ def SelectedRustAcceptedSpendSoundnessCertificate.pricedNumericCertificate
     Path2AcceptedSpendProbability.PricedAcceptedSpendNumericCertificate :=
   Cert.numericSource.pricedCertificate
 
+/-- The exported accepted-spend probability is the selected numeric source's union bound. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_unionBound
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.acceptedSpendForgeryProb =
+      Cert.pricedNumericCertificate.unionBound :=
+  Cert.acceptedSpendForgeryProbMatchesUnionBound
+
+/-- The exported accepted-spend bound is the selected numeric source's priced bound. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_pricedBound
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.acceptedSpendForgeryBound =
+      Cert.pricedNumericCertificate.pricedBound :=
+  Cert.acceptedSpendForgeryBoundMatchesPriced
+
+/-- The exported accepted-spend probability is pinned to the production value. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_production
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.acceptedSpendForgeryProb =
+      Cert.productionAcceptedSpendForgeryProb :=
+  Cert.acceptedSpendForgeryProbPinned
+
+/-- The exported accepted-spend bound is pinned to the production value. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_production
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.acceptedSpendForgeryBound =
+      Cert.productionAcceptedSpendForgeryBound :=
+  Cert.acceptedSpendForgeryBoundPinned
+
 /-- The selected accepted-spend certificate proves its exported probability bound. -/
 theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound
     (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
@@ -1812,11 +1840,11 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_l
   calc
     Cert.acceptedSpendForgeryProb =
         Cert.pricedNumericCertificate.unionBound :=
-      Cert.acceptedSpendForgeryProbMatchesUnionBound
+      Cert.acceptedSpendForgeryProb_eq_unionBound
     _ <= Cert.pricedNumericCertificate.pricedBound :=
       Cert.numericSource.unionBound_le_priced
     _ = Cert.acceptedSpendForgeryBound :=
-      Cert.acceptedSpendForgeryBoundMatchesPriced.symm
+      Cert.acceptedSpendForgeryBound_eq_pricedBound.symm
 
 /-- The selected accepted-spend certificate prices its exported bound by reported security bits. -/
 theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_reportedSecurity
@@ -1826,7 +1854,7 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_
   calc
     Cert.acceptedSpendForgeryBound =
         Cert.pricedNumericCertificate.pricedBound :=
-      Cert.acceptedSpendForgeryBoundMatchesPriced
+      Cert.acceptedSpendForgeryBound_eq_pricedBound
     _ <= ((2 : ℝ) ^
           Cert.evidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹ :=
       Cert.acceptedSpendPricedBoundSecurityPriced

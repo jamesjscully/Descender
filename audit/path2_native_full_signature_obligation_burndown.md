@@ -1531,6 +1531,10 @@ It also exposes `acceptedSpendForgeryBound_le_reportedSecurity` and
 `acceptedSpendForgeryProb_le_reportedSecurity`, keeping the reported
 `acceptedSpendPricedBoundSecurityBits` theorem-visible after the selected
 numeric source is packaged.
+The certificate now also exposes named equality projections for exported
+probability-to-union-bound, exported-bound-to-priced-bound, and production-value
+pinning; the source gate requires the future selected theorem to consume those
+projection names rather than relying only on raw record fields.
 The concrete wrapper also exposes selected theorem projections for accepted-
 spend probability below the priced bound, full-forgery success below the union
 bound, and full-forgery success below the priced bound. The numeric-bound source
