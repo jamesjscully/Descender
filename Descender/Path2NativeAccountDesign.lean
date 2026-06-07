@@ -1652,6 +1652,9 @@ structure SelectedRustAcceptedSpendSoundnessCertificate where
     acceptedSpendForgeryProb = numericSource.pricedCertificate.unionBound
   acceptedSpendForgeryBoundMatchesPriced :
     acceptedSpendForgeryBound = numericSource.pricedCertificate.pricedBound
+  acceptedSpendPricedBoundSecurityPriced :
+    numericSource.pricedCertificate.pricedBound <=
+      ((2 : ℝ) ^ evidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹
   acceptedSpendForgeryProbPinned :
     acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb
   acceptedSpendForgeryBoundPinned :
@@ -1683,6 +1686,9 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
       acceptedSpendForgeryProb = numericSource.pricedCertificate.unionBound)
     (acceptedSpendForgeryBoundMatchesPriced :
       acceptedSpendForgeryBound = numericSource.pricedCertificate.pricedBound)
+    (acceptedSpendPricedBoundSecurityPriced :
+      numericSource.pricedCertificate.pricedBound <=
+        ((2 : ℝ) ^ evidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹)
     (acceptedSpendForgeryProbPinned :
       acceptedSpendForgeryProb = productionAcceptedSpendForgeryProb)
     (acceptedSpendForgeryBoundPinned :
@@ -1710,6 +1716,8 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
   acceptedSpendForgeryProbMatchesUnionBound :=
     acceptedSpendForgeryProbMatchesUnionBound
   acceptedSpendForgeryBoundMatchesPriced := acceptedSpendForgeryBoundMatchesPriced
+  acceptedSpendPricedBoundSecurityPriced :=
+    acceptedSpendPricedBoundSecurityPriced
   acceptedSpendForgeryProbPinned := acceptedSpendForgeryProbPinned
   acceptedSpendForgeryBoundPinned := acceptedSpendForgeryBoundPinned
   hiddenSourceProofSemanticsClosed := hiddenSourceProofSemanticsClosed
@@ -1748,6 +1756,11 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
       Cert.evidenceReportBoundProof
     let _hDigestBound : Cert.evidenceDigestBound :=
       Cert.evidenceDigestBoundProof
+    let _hPricedBoundSecurity :
+        Cert.pricedNumericCertificate.pricedBound <=
+          ((2 : ℝ) ^
+            Cert.evidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹ :=
+      Cert.acceptedSpendPricedBoundSecurityPriced
     let _hProbPinned :
         Cert.acceptedSpendForgeryProb =
           Cert.productionAcceptedSpendForgeryProb :=

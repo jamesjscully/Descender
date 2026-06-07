@@ -1480,6 +1480,12 @@ predicate plus the numeric inequalities
 transcriptTermBitsAfterQromLoss`; Rust mirrors those checks in the evidence
 `all_facts_true` helper. The canonical Rust evidence still has priced-bound
 security bits `0` and the target predicate false, so it remains fail-closed.
+`SelectedRustAcceptedSpendSoundnessCertificate` also carries
+`acceptedSpendPricedBoundSecurityPriced`, proving the actual real-valued
+`numericSource.pricedCertificate.pricedBound` is at most
+`((2 : ℝ) ^ evidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹`. The
+source gate requires the named selected proof and rejects `le_rfl` aliases, so
+reported security bits cannot remain detached from the probability bound.
 The accepted-spend numeric-bound source gate now requires the consumed
 `selectedRustAcceptedSpendNumericSource` binding to be exactly the result of
 `SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource`

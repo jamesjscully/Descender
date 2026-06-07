@@ -28405,6 +28405,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "selectedRustProductionAcceptedSpendForgeryBound",
         "selectedRustAcceptedSpendForgeryProbMatchesUnionBound",
         "selectedRustAcceptedSpendForgeryBoundMatchesPriced",
+        "selectedRustAcceptedSpendPricedBoundSecurityPriced",
         "selectedRustAcceptedSpendForgeryProbPinned",
         "selectedRustAcceptedSpendForgeryBoundPinned",
         "selectedRustAcceptedSpendHiddenSourceClosed",
@@ -28468,6 +28469,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "def selectedRustAcceptedSpendForgeryProbPinned := rfl",
         "def selectedRustAcceptedSpendForgeryBoundPinned := rfl",
         "def selectedRustAcceptedSpendForgeryLeBound := le_rfl",
+        "def selectedRustAcceptedSpendPricedBoundSecurityPriced := le_rfl",
         "def selectedRustAcceptedSpendHiddenSourceClosed := True",
         "def selectedRustAcceptedSpendCheckedCoreClosed := True",
         "def selectedRustAcceptedSpendLifecycleClosed := True",
@@ -28582,6 +28584,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustProductionAcceptedSpendForgeryBound",
         "selectedRustAcceptedSpendForgeryProbMatchesUnionBound",
         "selectedRustAcceptedSpendForgeryBoundMatchesPriced",
+        "selectedRustAcceptedSpendPricedBoundSecurityPriced",
         "selectedRustAcceptedSpendForgeryProbPinned",
         "selectedRustAcceptedSpendForgeryBoundPinned",
         "selectedRustAcceptedSpendHiddenSourceClosed",
@@ -28638,6 +28641,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "let selectedRustAcceptedSpendForgeryProbPinned := rfl",
         "let selectedRustAcceptedSpendForgeryBoundPinned := rfl",
         "let selectedRustAcceptedSpendForgeryLeBound := le_rfl",
+        "let selectedRustAcceptedSpendPricedBoundSecurityPriced := le_rfl",
         "let selectedRustAcceptedSpendHiddenSourceClosed := True",
         "let selectedRustAcceptedSpendCheckedCoreClosed := True",
         "let selectedRustAcceptedSpendLifecycleClosed := True",
@@ -28727,6 +28731,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustProductionAcceptedSpendForgeryBound",
         "selectedRustAcceptedSpendForgeryProbMatchesUnionBound",
         "selectedRustAcceptedSpendForgeryBoundMatchesPriced",
+        "selectedRustAcceptedSpendPricedBoundSecurityPriced",
         "selectedRustAcceptedSpendForgeryProbPinned",
         "selectedRustAcceptedSpendForgeryBoundPinned",
         "selectedRustAcceptedSpendHiddenSourceClosed",
@@ -52511,6 +52516,7 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
   let selectedRustAcceptedSpendForgeryProbPinned := rfl
   let selectedRustAcceptedSpendForgeryBoundPinned := rfl
   let selectedRustAcceptedSpendForgeryLeBound := le_rfl
+  let selectedRustAcceptedSpendPricedBoundSecurityPriced := le_rfl
   let selectedRustAcceptedSpendHiddenSourceClosed := True
   let selectedRustAcceptedSpendCheckedCoreClosed := True
   let selectedRustAcceptedSpendLifecycleClosed := True
@@ -52533,6 +52539,7 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
       selectedRustProductionAcceptedSpendForgeryBound
       selectedRustAcceptedSpendForgeryProbMatchesUnionBound
       selectedRustAcceptedSpendForgeryBoundMatchesPriced
+      selectedRustAcceptedSpendPricedBoundSecurityPriced
       selectedRustAcceptedSpendForgeryProbPinned
       selectedRustAcceptedSpendForgeryBoundPinned
       selectedRustAcceptedSpendHiddenSourceClosed
@@ -52765,6 +52772,7 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
       selectedRustProductionAcceptedSpendForgeryBound
       selectedRustAcceptedSpendForgeryProbMatchesUnionBound
       selectedRustAcceptedSpendForgeryBoundMatchesPriced
+      selectedRustAcceptedSpendPricedBoundSecurityPriced
       selectedRustAcceptedSpendForgeryProbPinned
       selectedRustAcceptedSpendForgeryBoundPinned
       selectedRustAcceptedSpendHiddenSourceClosed
