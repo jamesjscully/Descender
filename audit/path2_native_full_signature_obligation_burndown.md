@@ -1655,15 +1655,15 @@ accepted-spend evidence report, digest, report/digest binding proofs,
 certificate. The remaining proof work is to construct that object from real
 production accepted-spend numeric evidence and then price the accepted-spend and
 named-break events through it.
-The same source certificate now carries seven proof-bearing digest-binding
-propositions for finite trace support, active outcome carrier, accepted-spend
-event semantics, active break family, named break events, union-bound pricing,
-and priced-bound pricing. The source gate requires named witnesses and
-source-certificate projection theorem references for each slot, and rejects
-header/declaration/local `True` aliases for those witnesses. This still leaves
-the production hash semantics open, but the final theorem shape can no longer
-put a verified report beside an unrelated concrete numeric certificate without
-exposing the missing digest bindings.
+The concrete numeric certificate now carries seven digest bytes for finite
+trace support, active outcome carrier, accepted-spend event semantics, active
+break family, named break events, union-bound pricing, and priced-bound pricing.
+The source certificate requires equality proofs tying those concrete-certificate
+digests to the corresponding evidence-report digest slots, and the source gate
+requires named witnesses plus source-certificate projection theorem references
+for each slot. This still leaves the production hash computation open, but the
+final theorem shape can no longer put a verified report beside an unrelated
+concrete numeric certificate without exposing the missing digest equalities.
 `Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
 active full-spend named breaks, so the numeric game can index its union bound by
 the actual active break family.

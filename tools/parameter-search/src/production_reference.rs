@@ -29131,18 +29131,25 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "def selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
         "def selectedRustAcceptedSpendFiniteTraceSupportDigestBound := True",
         "def selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof := True.intro",
+        "def selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof := rfl",
         "def selectedRustAcceptedSpendActiveOutcomeCarrierDigestBound := True",
         "def selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof := True.intro",
+        "def selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof := rfl",
         "def selectedRustAcceptedSpendAcceptedEventDigestBound := True",
         "def selectedRustAcceptedSpendAcceptedEventDigestBoundProof := True.intro",
+        "def selectedRustAcceptedSpendAcceptedEventDigestBoundProof := rfl",
         "def selectedRustAcceptedSpendActiveBreakFamilyDigestBound := True",
         "def selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof := True.intro",
+        "def selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof := rfl",
         "def selectedRustAcceptedSpendNamedBreakEventsDigestBound := True",
         "def selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof := True.intro",
+        "def selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof := rfl",
         "def selectedRustAcceptedSpendUnionBoundPricingDigestBound := True",
         "def selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof := True.intro",
+        "def selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof := rfl",
         "def selectedRustAcceptedSpendPricedBoundDigestBound := True",
         "def selectedRustAcceptedSpendPricedBoundDigestBoundProof := True.intro",
+        "def selectedRustAcceptedSpendPricedBoundDigestBoundProof := rfl",
         "def selectedRustConcreteAcceptedSpendNumericCertificateSource := {",
         "def selectedRustConcreteAcceptedSpendNumericCertificateSource : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
         "def selectedRustConcreteAcceptedSpendNumericCertificateSource := ⟨",
@@ -29184,18 +29191,25 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "abbrev selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
         "abbrev selectedRustAcceptedSpendFiniteTraceSupportDigestBound := True",
         "abbrev selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof := True.intro",
+        "abbrev selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof := rfl",
         "abbrev selectedRustAcceptedSpendActiveOutcomeCarrierDigestBound := True",
         "abbrev selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof := True.intro",
+        "abbrev selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof := rfl",
         "abbrev selectedRustAcceptedSpendAcceptedEventDigestBound := True",
         "abbrev selectedRustAcceptedSpendAcceptedEventDigestBoundProof := True.intro",
+        "abbrev selectedRustAcceptedSpendAcceptedEventDigestBoundProof := rfl",
         "abbrev selectedRustAcceptedSpendActiveBreakFamilyDigestBound := True",
         "abbrev selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof := True.intro",
+        "abbrev selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof := rfl",
         "abbrev selectedRustAcceptedSpendNamedBreakEventsDigestBound := True",
         "abbrev selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof := True.intro",
+        "abbrev selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof := rfl",
         "abbrev selectedRustAcceptedSpendUnionBoundPricingDigestBound := True",
         "abbrev selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof := True.intro",
+        "abbrev selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof := rfl",
         "abbrev selectedRustAcceptedSpendPricedBoundDigestBound := True",
         "abbrev selectedRustAcceptedSpendPricedBoundDigestBoundProof := True.intro",
+        "abbrev selectedRustAcceptedSpendPricedBoundDigestBoundProof := rfl",
         "abbrev selectedRustConcreteAcceptedSpendNumericCertificateSource := {",
         "abbrev selectedRustConcreteAcceptedSpendNumericCertificateSource : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
         "abbrev selectedRustConcreteAcceptedSpendNumericCertificateSource := ⟨",
@@ -29358,18 +29372,25 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "let selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
         "let selectedRustAcceptedSpendFiniteTraceSupportDigestBound := True",
         "let selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof := True.intro",
+        "let selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof := rfl",
         "let selectedRustAcceptedSpendActiveOutcomeCarrierDigestBound := True",
         "let selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof := True.intro",
+        "let selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof := rfl",
         "let selectedRustAcceptedSpendAcceptedEventDigestBound := True",
         "let selectedRustAcceptedSpendAcceptedEventDigestBoundProof := True.intro",
+        "let selectedRustAcceptedSpendAcceptedEventDigestBoundProof := rfl",
         "let selectedRustAcceptedSpendActiveBreakFamilyDigestBound := True",
         "let selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof := True.intro",
+        "let selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof := rfl",
         "let selectedRustAcceptedSpendNamedBreakEventsDigestBound := True",
         "let selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof := True.intro",
+        "let selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof := rfl",
         "let selectedRustAcceptedSpendUnionBoundPricingDigestBound := True",
         "let selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof := True.intro",
+        "let selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof := rfl",
         "let selectedRustAcceptedSpendPricedBoundDigestBound := True",
         "let selectedRustAcceptedSpendPricedBoundDigestBoundProof := True.intro",
+        "let selectedRustAcceptedSpendPricedBoundDigestBoundProof := rfl",
         "let selectedRustConcreteAcceptedSpendNumericCertificateSource : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
         "let selectedRustConcreteAcceptedSpendNumericCertificateSource := {",
         "let selectedRustConcreteAcceptedSpendNumericCertificateSource := ⟨",
@@ -53912,21 +53933,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
       selectedRustAcceptedSpendEvidenceDigestBoundProof
       selectedRustAcceptedSpendBoundVerifiedProof
       selectedRustAcceptedSpendFactsAllTrueProof
-      selectedRustAcceptedSpendFiniteTraceSupportDigestBound
-      selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof
-      selectedRustAcceptedSpendActiveOutcomeCarrierDigestBound
-      selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof
-      selectedRustAcceptedSpendAcceptedEventDigestBound
-      selectedRustAcceptedSpendAcceptedEventDigestBoundProof
-      selectedRustAcceptedSpendActiveBreakFamilyDigestBound
-      selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof
-      selectedRustAcceptedSpendNamedBreakEventsDigestBound
-      selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof
-      selectedRustAcceptedSpendUnionBoundPricingDigestBound
-      selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof
-      selectedRustAcceptedSpendPricedBoundDigestBound
-      selectedRustAcceptedSpendPricedBoundDigestBoundProof
       selectedRustConcreteAcceptedSpendNumericCertificateSource
+      selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof
+      selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof
+      selectedRustAcceptedSpendAcceptedEventDigestBoundProof
+      selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof
+      selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof
+      selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof
+      selectedRustAcceptedSpendPricedBoundDigestBoundProof
   let selectedRustConcreteAcceptedSpendNumericCertificate :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate
       selectedRustConcreteAcceptedSpendNumericSourceCertificate
@@ -54343,21 +54357,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
       selectedRustAcceptedSpendEvidenceDigestBoundProof
       selectedRustAcceptedSpendBoundVerifiedProof
       selectedRustAcceptedSpendFactsAllTrueProof
-      selectedRustAcceptedSpendFiniteTraceSupportDigestBound
-      selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof
-      selectedRustAcceptedSpendActiveOutcomeCarrierDigestBound
-      selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof
-      selectedRustAcceptedSpendAcceptedEventDigestBound
-      selectedRustAcceptedSpendAcceptedEventDigestBoundProof
-      selectedRustAcceptedSpendActiveBreakFamilyDigestBound
-      selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof
-      selectedRustAcceptedSpendNamedBreakEventsDigestBound
-      selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof
-      selectedRustAcceptedSpendUnionBoundPricingDigestBound
-      selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof
-      selectedRustAcceptedSpendPricedBoundDigestBound
-      selectedRustAcceptedSpendPricedBoundDigestBoundProof
       selectedRustConcreteAcceptedSpendNumericCertificateSource
+      selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof
+      selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof
+      selectedRustAcceptedSpendAcceptedEventDigestBoundProof
+      selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof
+      selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof
+      selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof
+      selectedRustAcceptedSpendPricedBoundDigestBoundProof
   let selectedRustConcreteAcceptedSpendNumericCertificate :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate
       selectedRustConcreteAcceptedSpendNumericSourceCertificate
@@ -54484,6 +54491,13 @@ def selectedRustAcceptedSpendEvidenceDigestBoundProof := True.intro
             r#"
 def selectedRustConcreteAcceptedSpendNumericCertificateSource :=
   { pricedCertificate := selectedRustPricedAcceptedSpendNumericCertificate
+    finiteTraceSupportDigest := ByteArray.empty
+    activeOutcomeCarrierDigest := ByteArray.empty
+    acceptedSpendEventSemanticsDigest := ByteArray.empty
+    activeBreakFamilyDigest := ByteArray.empty
+    namedBreakEventsDigest := ByteArray.empty
+    acceptedSpendUnionBoundPricingDigest := ByteArray.empty
+    acceptedSpendPricedBoundDigest := ByteArray.empty
     outcomeCarrierPinned := selectedRustAcceptedSpendOutcomeCarrierPinned
     acceptedSpendEventPinned := selectedRustAcceptedSpendEventPinned
     breakFamilyPinned := selectedRustAcceptedSpendBreakFamilyPinned
@@ -54508,21 +54522,14 @@ def selectedRustConcreteAcceptedSpendNumericSourceCertificate :=
     evidenceDigestBoundProof := selectedRustAcceptedSpendEvidenceDigestBoundProof
     evidenceReportVerifiedProof := selectedRustAcceptedSpendBoundVerifiedProof
     evidenceFactsAllTrueProof := selectedRustAcceptedSpendFactsAllTrueProof
-    finiteTraceSupportDigestBound := selectedRustAcceptedSpendFiniteTraceSupportDigestBound
+    concreteCertificate := selectedRustConcreteAcceptedSpendNumericCertificateSource
     finiteTraceSupportDigestBoundProof := selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof
-    activeOutcomeCarrierDigestBound := selectedRustAcceptedSpendActiveOutcomeCarrierDigestBound
     activeOutcomeCarrierDigestBoundProof := selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof
-    acceptedSpendEventSemanticsDigestBound := selectedRustAcceptedSpendAcceptedEventDigestBound
     acceptedSpendEventSemanticsDigestBoundProof := selectedRustAcceptedSpendAcceptedEventDigestBoundProof
-    activeBreakFamilyDigestBound := selectedRustAcceptedSpendActiveBreakFamilyDigestBound
     activeBreakFamilyDigestBoundProof := selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof
-    namedBreakEventsDigestBound := selectedRustAcceptedSpendNamedBreakEventsDigestBound
     namedBreakEventsDigestBoundProof := selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof
-    acceptedSpendUnionBoundPricingDigestBound := selectedRustAcceptedSpendUnionBoundPricingDigestBound
     acceptedSpendUnionBoundPricingDigestBoundProof := selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof
-    acceptedSpendPricedBoundDigestBound := selectedRustAcceptedSpendPricedBoundDigestBound
-    acceptedSpendPricedBoundDigestBoundProof := selectedRustAcceptedSpendPricedBoundDigestBoundProof
-    concreteCertificate := selectedRustConcreteAcceptedSpendNumericCertificateSource }
+    acceptedSpendPricedBoundDigestBoundProof := selectedRustAcceptedSpendPricedBoundDigestBoundProof }
 "#,
             accepted_spend_instantiation_shape
         );
@@ -54533,8 +54540,8 @@ def selectedRustConcreteAcceptedSpendNumericSourceCertificate :=
         );
         let local_vacuous_concrete_numeric_source =
             accepted_spend_instantiation_shape.replacen(
-                "let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=\n    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate\n      selectedRustAcceptedSpendEvidenceReport\n      selectedRustAcceptedSpendEvidenceDigest\n      selectedRustAcceptedSpendEvidenceReportBound\n      selectedRustAcceptedSpendEvidenceReportBoundProof\n      selectedRustAcceptedSpendEvidenceDigestBound\n      selectedRustAcceptedSpendEvidenceDigestBoundProof\n      selectedRustAcceptedSpendBoundVerifiedProof\n      selectedRustAcceptedSpendFactsAllTrueProof\n      selectedRustAcceptedSpendFiniteTraceSupportDigestBound\n      selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof\n      selectedRustAcceptedSpendActiveOutcomeCarrierDigestBound\n      selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof\n      selectedRustAcceptedSpendAcceptedEventDigestBound\n      selectedRustAcceptedSpendAcceptedEventDigestBoundProof\n      selectedRustAcceptedSpendActiveBreakFamilyDigestBound\n      selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof\n      selectedRustAcceptedSpendNamedBreakEventsDigestBound\n      selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof\n      selectedRustAcceptedSpendUnionBoundPricingDigestBound\n      selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof\n      selectedRustAcceptedSpendPricedBoundDigestBound\n      selectedRustAcceptedSpendPricedBoundDigestBoundProof\n      selectedRustConcreteAcceptedSpendNumericCertificateSource",
-                "let selectedRustConcreteAcceptedSpendNumericCertificateSource :=\n    { pricedCertificate := selectedRustPricedAcceptedSpendNumericCertificate\n      outcomeCarrierPinned := selectedRustAcceptedSpendOutcomeCarrierPinned\n      acceptedSpendEventPinned := selectedRustAcceptedSpendEventPinned\n      breakFamilyPinned := selectedRustAcceptedSpendBreakFamilyPinned\n      namedBreakEventsPinned := selectedRustAcceptedSpendNamedBreakEventsPinned }\n  let selectedRustConcreteAcceptedSpendNumericCertificate :=\n    selectedRustConcreteAcceptedSpendNumericCertificateSource",
+                "let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=\n    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate\n      selectedRustAcceptedSpendEvidenceReport\n      selectedRustAcceptedSpendEvidenceDigest\n      selectedRustAcceptedSpendEvidenceReportBound\n      selectedRustAcceptedSpendEvidenceReportBoundProof\n      selectedRustAcceptedSpendEvidenceDigestBound\n      selectedRustAcceptedSpendEvidenceDigestBoundProof\n      selectedRustAcceptedSpendBoundVerifiedProof\n      selectedRustAcceptedSpendFactsAllTrueProof\n      selectedRustConcreteAcceptedSpendNumericCertificateSource\n      selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof\n      selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof\n      selectedRustAcceptedSpendAcceptedEventDigestBoundProof\n      selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof\n      selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof\n      selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof\n      selectedRustAcceptedSpendPricedBoundDigestBoundProof",
+                "let selectedRustConcreteAcceptedSpendNumericCertificateSource :=\n    { pricedCertificate := selectedRustPricedAcceptedSpendNumericCertificate\n      finiteTraceSupportDigest := ByteArray.empty\n      activeOutcomeCarrierDigest := ByteArray.empty\n      acceptedSpendEventSemanticsDigest := ByteArray.empty\n      activeBreakFamilyDigest := ByteArray.empty\n      namedBreakEventsDigest := ByteArray.empty\n      acceptedSpendUnionBoundPricingDigest := ByteArray.empty\n      acceptedSpendPricedBoundDigest := ByteArray.empty\n      outcomeCarrierPinned := selectedRustAcceptedSpendOutcomeCarrierPinned\n      acceptedSpendEventPinned := selectedRustAcceptedSpendEventPinned\n      breakFamilyPinned := selectedRustAcceptedSpendBreakFamilyPinned\n      namedBreakEventsPinned := selectedRustAcceptedSpendNamedBreakEventsPinned }\n  let selectedRustConcreteAcceptedSpendNumericCertificate :=\n    selectedRustConcreteAcceptedSpendNumericCertificateSource",
                 1,
             );
         assert!(
@@ -54544,8 +54551,8 @@ def selectedRustConcreteAcceptedSpendNumericSourceCertificate :=
         );
         let local_vacuous_concrete_numeric_source_certificate =
             accepted_spend_instantiation_shape.replacen(
-                "let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=\n    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate\n      selectedRustAcceptedSpendEvidenceReport\n      selectedRustAcceptedSpendEvidenceDigest\n      selectedRustAcceptedSpendEvidenceReportBound\n      selectedRustAcceptedSpendEvidenceReportBoundProof\n      selectedRustAcceptedSpendEvidenceDigestBound\n      selectedRustAcceptedSpendEvidenceDigestBoundProof\n      selectedRustAcceptedSpendBoundVerifiedProof\n      selectedRustAcceptedSpendFactsAllTrueProof\n      selectedRustAcceptedSpendFiniteTraceSupportDigestBound\n      selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof\n      selectedRustAcceptedSpendActiveOutcomeCarrierDigestBound\n      selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof\n      selectedRustAcceptedSpendAcceptedEventDigestBound\n      selectedRustAcceptedSpendAcceptedEventDigestBoundProof\n      selectedRustAcceptedSpendActiveBreakFamilyDigestBound\n      selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof\n      selectedRustAcceptedSpendNamedBreakEventsDigestBound\n      selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof\n      selectedRustAcceptedSpendUnionBoundPricingDigestBound\n      selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof\n      selectedRustAcceptedSpendPricedBoundDigestBound\n      selectedRustAcceptedSpendPricedBoundDigestBoundProof\n      selectedRustConcreteAcceptedSpendNumericCertificateSource",
-                "let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=\n    { evidenceReport := selectedRustAcceptedSpendEvidenceReport\n      evidenceDigest := selectedRustAcceptedSpendEvidenceDigest\n      evidenceReportBound := selectedRustAcceptedSpendEvidenceReportBound\n      evidenceReportBoundProof := selectedRustAcceptedSpendEvidenceReportBoundProof\n      evidenceDigestBound := selectedRustAcceptedSpendEvidenceDigestBound\n      evidenceDigestBoundProof := selectedRustAcceptedSpendEvidenceDigestBoundProof\n      evidenceReportVerifiedProof := selectedRustAcceptedSpendBoundVerifiedProof\n      evidenceFactsAllTrueProof := selectedRustAcceptedSpendFactsAllTrueProof\n      finiteTraceSupportDigestBound := selectedRustAcceptedSpendFiniteTraceSupportDigestBound\n      finiteTraceSupportDigestBoundProof := selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof\n      activeOutcomeCarrierDigestBound := selectedRustAcceptedSpendActiveOutcomeCarrierDigestBound\n      activeOutcomeCarrierDigestBoundProof := selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof\n      acceptedSpendEventSemanticsDigestBound := selectedRustAcceptedSpendAcceptedEventDigestBound\n      acceptedSpendEventSemanticsDigestBoundProof := selectedRustAcceptedSpendAcceptedEventDigestBoundProof\n      activeBreakFamilyDigestBound := selectedRustAcceptedSpendActiveBreakFamilyDigestBound\n      activeBreakFamilyDigestBoundProof := selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof\n      namedBreakEventsDigestBound := selectedRustAcceptedSpendNamedBreakEventsDigestBound\n      namedBreakEventsDigestBoundProof := selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof\n      acceptedSpendUnionBoundPricingDigestBound := selectedRustAcceptedSpendUnionBoundPricingDigestBound\n      acceptedSpendUnionBoundPricingDigestBoundProof := selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof\n      acceptedSpendPricedBoundDigestBound := selectedRustAcceptedSpendPricedBoundDigestBound\n      acceptedSpendPricedBoundDigestBoundProof := selectedRustAcceptedSpendPricedBoundDigestBoundProof\n      concreteCertificate := selectedRustConcreteAcceptedSpendNumericCertificateSource }",
+                "let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=\n    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate\n      selectedRustAcceptedSpendEvidenceReport\n      selectedRustAcceptedSpendEvidenceDigest\n      selectedRustAcceptedSpendEvidenceReportBound\n      selectedRustAcceptedSpendEvidenceReportBoundProof\n      selectedRustAcceptedSpendEvidenceDigestBound\n      selectedRustAcceptedSpendEvidenceDigestBoundProof\n      selectedRustAcceptedSpendBoundVerifiedProof\n      selectedRustAcceptedSpendFactsAllTrueProof\n      selectedRustConcreteAcceptedSpendNumericCertificateSource\n      selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof\n      selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof\n      selectedRustAcceptedSpendAcceptedEventDigestBoundProof\n      selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof\n      selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof\n      selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof\n      selectedRustAcceptedSpendPricedBoundDigestBoundProof",
+                "let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=\n    { evidenceReport := selectedRustAcceptedSpendEvidenceReport\n      evidenceDigest := selectedRustAcceptedSpendEvidenceDigest\n      evidenceReportBound := selectedRustAcceptedSpendEvidenceReportBound\n      evidenceReportBoundProof := selectedRustAcceptedSpendEvidenceReportBoundProof\n      evidenceDigestBound := selectedRustAcceptedSpendEvidenceDigestBound\n      evidenceDigestBoundProof := selectedRustAcceptedSpendEvidenceDigestBoundProof\n      evidenceReportVerifiedProof := selectedRustAcceptedSpendBoundVerifiedProof\n      evidenceFactsAllTrueProof := selectedRustAcceptedSpendFactsAllTrueProof\n      concreteCertificate := selectedRustConcreteAcceptedSpendNumericCertificateSource\n      finiteTraceSupportDigestBoundProof := selectedRustAcceptedSpendFiniteTraceSupportDigestBoundProof\n      activeOutcomeCarrierDigestBoundProof := selectedRustAcceptedSpendActiveOutcomeCarrierDigestBoundProof\n      acceptedSpendEventSemanticsDigestBoundProof := selectedRustAcceptedSpendAcceptedEventDigestBoundProof\n      activeBreakFamilyDigestBoundProof := selectedRustAcceptedSpendActiveBreakFamilyDigestBoundProof\n      namedBreakEventsDigestBoundProof := selectedRustAcceptedSpendNamedBreakEventsDigestBoundProof\n      acceptedSpendUnionBoundPricingDigestBoundProof := selectedRustAcceptedSpendUnionBoundPricingDigestBoundProof\n      acceptedSpendPricedBoundDigestBoundProof := selectedRustAcceptedSpendPricedBoundDigestBoundProof }",
                 1,
             );
         assert!(
