@@ -1754,7 +1754,9 @@ The hard halves also now have named projection theorems, so future closure can
 consume pricing/production facts by name: accepted-spend component pricing,
 named-break component pricing, break-budget pricing, target/security cap
 arithmetic, production signature-probability pinning, accepted-spend game
-linkage, all-symbol query pricing, and verifier-game production binding.
+linkage, all-symbol query pricing, and verifier-game production binding. Lean
+also provides assembly lemmas from structural plus pricing/production halves
+back into the existing monolithic `FactsAllTrue` constructor input.
 The same fail-closed distinction is now stated at the certificate boundary:
 `SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossible`,
 `SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible`,

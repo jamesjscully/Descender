@@ -1788,6 +1788,15 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_iff_struct
         hActiveBudget, hClaimedBudget, hHidden, hChecked, hLifecycle,
         hNoExport⟩
 
+/-- Assemble accepted-spend report completeness from the structural and pricing halves. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_of_structural_and_pricing
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (hStructural : E.StructuralFactsComplete)
+    (hPricing : E.PricingFactsComplete) :
+    E.FactsAllTrue :=
+  (SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_iff_structural_and_pricing E).2
+    ⟨hStructural, hPricing⟩
+
 /-- A complete pricing half says the aggregate accepted-spend numeric bound is priced. -/
 theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.pricingFactsComplete_numericBoundPriced
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
@@ -3008,6 +3017,15 @@ theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_iff_struct
     exact
       ⟨hProbability, hAcceptedGame, hAcceptedLinked, hExecution, hHash,
         hQuery, hMultiTarget, hVerifierGame⟩
+
+/-- Assemble full-reduction report completeness from the structural and production halves. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_of_structural_and_production
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (hStructural : E.StructuralFactsComplete)
+    (hProduction : E.ProductionFactsComplete) :
+    E.FactsAllTrue :=
+  (SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_iff_structural_and_production E).2
+    ⟨hStructural, hProduction⟩
 
 /-- A complete production half pins the production signature probability. -/
 theorem SelectedRustFullSignatureReductionEvidenceReport.productionFactsComplete_productionSignatureProbabilityPinned
