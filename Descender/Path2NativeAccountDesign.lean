@@ -2109,6 +2109,12 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsTrue :
     selectedRustAcceptedSpendEvidenceReport.acceptedSpendUnionBoundPriced = true := by
   native_decide
 
+/-- The current selected accepted-spend report completes the structural half. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsComplete :
+    selectedRustAcceptedSpendEvidenceReport.StructuralFactsComplete := by
+  simp [SelectedRustAcceptedSpendSoundnessEvidenceReport.StructuralFactsComplete,
+    selectedRustAcceptedSpendEvidenceReport]
+
 /-- The current selected accepted-spend report is still missing production pricing facts. -/
 theorem selectedRustAcceptedSpendEvidenceReport_currentMissingPricingFactsFalse :
     selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBoundPriced = false ∧
@@ -2117,6 +2123,13 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentMissingPricingFactsFalse 
     selectedRustAcceptedSpendEvidenceReport.breakPricingBudgetMeetsPricedBound = false ∧
     selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBudgetMeetsTarget = false := by
   native_decide
+
+/-- The current selected accepted-spend report cannot complete the pricing half. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_impossible :
+    ¬ selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete := by
+  intro hPricing
+  simp [SelectedRustAcceptedSpendSoundnessEvidenceReport.PricingFactsComplete,
+    selectedRustAcceptedSpendEvidenceReport] at hPricing
 
 /--
 Selected Rust/model certificate for the accepted-spend numeric soundness layer.
@@ -3071,6 +3084,12 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsT
     selectedRustFullSignatureReductionEvidenceReport.multiTargetHorizonPriced = true := by
   native_decide
 
+/-- The current selected full-reduction report completes the structural half. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsComplete :
+    selectedRustFullSignatureReductionEvidenceReport.StructuralFactsComplete := by
+  simp [SelectedRustFullSignatureReductionEvidenceReport.StructuralFactsComplete,
+    selectedRustFullSignatureReductionEvidenceReport]
+
 /-- The current selected full-reduction report is still missing production reduction facts. -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse :
     selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned = false ∧
@@ -3079,6 +3098,13 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentMissingReduction
     selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = false ∧
     selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = false := by
   native_decide
+
+/-- The current selected full-reduction report cannot complete the production half. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_impossible :
+    ¬ selectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete := by
+  intro hProduction
+  simp [SelectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete,
+    selectedRustFullSignatureReductionEvidenceReport] at hProduction
 
 /--
 Selected Rust/model certificate for the full-signature reduction layer.

@@ -1744,6 +1744,12 @@ full-reduction `FactsAllTrue` is equivalent to
 route is therefore the accepted-spend pricing half first, then the
 full-reduction production half; the structural halves are no longer mixed into
 the hard blocker.
+The current selected reports now prove that distinction directly:
+accepted-spend `StructuralFactsComplete` holds while `PricingFactsComplete` is
+impossible, and full-reduction `StructuralFactsComplete` holds while
+`ProductionFactsComplete` is impossible. The active blocker is therefore the
+missing pricing/production proof content, not report parsing, digest presence,
+QROM capacity, or structural source consumption.
 The same fail-closed distinction is now stated at the certificate boundary:
 `SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impossible`,
 `SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible`,
