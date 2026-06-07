@@ -2216,6 +2216,13 @@ and
 This keeps the future accepted-spend theorem on the current AP2-N003 hard-half
 route instead of allowing a generic report-and-bound constructor path to stand
 in for selected pricing closure.
+AP2-N003 pricing-witness target note:
+`SelectedRustConcreteAcceptedSpendPricingWitness` now derives concrete
+priced-bound-to-target, priced-bound-to-active-128-bit, and
+success-probability-to-active-128-bit projections from its real priced-bound
+inequality plus the selected report pricing half. The accepted-spend source
+gate requires those projection names, so the future pricing witness must expose
+the actual fixed-target consequence before certificate erasure.
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit

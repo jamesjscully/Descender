@@ -1658,6 +1658,40 @@ theorem successProb_le_pricedBound
       W.concreteCertificate.pricedCertificate.pricedBound :=
   W.concreteCertificate.pricedCertificate.successProb_le_pricedBound
 
+/-- The selected pricing witness prices its concrete bound by the selected target bits. -/
+theorem pricedBound_le_targetSecurity
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.pricedBound <=
+      ((2 : ℝ) ^
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).targetSecurityBits)⁻¹ :=
+  le_trans
+    (pricedBound_le_reportedSecurity W)
+    (Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_reportedSecurityBound_le_targetSecurityBound
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
+        (pricingFactsComplete W)))
+
+/-- The selected pricing witness prices its concrete bound by the active 128-bit target. -/
+theorem pricedBound_le_active128BitTarget
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.pricedBound <=
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ := by
+  have hTarget :
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).targetSecurityBits =
+        128 :=
+    Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_targetSecurityBits
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReportFactsAllTrue_of_currentPricingFactsComplete
+        (pricingFactsComplete W))
+  simpa [hTarget] using pricedBound_le_targetSecurity W
+
+/-- The selected pricing witness prices full-forgery success by the active 128-bit target. -/
+theorem successProb_le_active128BitTarget
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.successProb <=
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  le_trans (successProb_le_pricedBound W) (pricedBound_le_active128BitTarget W)
+
 /--
 Turn the selected pricing witness into the report-bound concrete numeric
 source certificate required by the accepted-spend soundness layer.

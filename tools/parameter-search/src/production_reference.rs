@@ -29587,6 +29587,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakBudget_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_targetSecurity",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_active128BitTarget",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificate",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundary",
@@ -29790,6 +29793,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakBudget_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_targetSecurity",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_active128BitTarget",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessCertificate",
         "SelectedRustConcreteAcceptedSpendPricingWitness.toSelectedRustAcceptedSpendSoundnessBoundary",
@@ -54568,6 +54574,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.breakBudget_le_pricedBound
   let _acceptedSpendConcretePricingWitnessSuccessPriced :=
     SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound
+  let _acceptedSpendConcretePricingWitnessBoundTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_targetSecurity
+  let _acceptedSpendConcretePricingWitnessBoundActiveTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_active128BitTarget
+  let _acceptedSpendConcretePricingWitnessSuccessActiveTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget
   let _acceptedSpendConcretePricingWitnessSource :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
   let _acceptedSpendConcretePricingWitnessCertificate :=
@@ -54688,6 +54700,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.breakBudget_le_pricedBound
   let _acceptedSpendConcretePricingWitnessSuccessPriced :=
     SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound
+  let _acceptedSpendConcretePricingWitnessBoundTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_targetSecurity
+  let _acceptedSpendConcretePricingWitnessBoundActiveTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_active128BitTarget
+  let _acceptedSpendConcretePricingWitnessSuccessActiveTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget
   let _acceptedSpendConcretePricingWitnessSource :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
   let _acceptedSpendConcretePricingWitnessCertificate :=
@@ -55222,6 +55240,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness.breakBudget_le_pricedBound
   let _acceptedSpendConcretePricingWitnessSuccessPriced :=
     SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_pricedBound
+  let _acceptedSpendConcretePricingWitnessBoundTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_targetSecurity
+  let _acceptedSpendConcretePricingWitnessBoundActiveTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_active128BitTarget
+  let _acceptedSpendConcretePricingWitnessSuccessActiveTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.successProb_le_active128BitTarget
   let _acceptedSpendConcretePricingWitnessSource :=
     SelectedRustConcreteAcceptedSpendPricingWitness.toConcreteNumericSourceCertificate
   let _acceptedSpendConcretePricingWitnessCertificate :=
