@@ -1675,6 +1675,13 @@ the concrete certificate itself from those report-side facts plus the seven
 report/certificate digest equalities. The accepted-spend source gate
 exact-checks these source-certificate projections, so digest presence is carried
 through to the active-carrier numeric certificate.
+The accepted-spend numeric and full-signature reduction certificates now bind
+their evidence reports and digests by equality to concrete selected Rust
+report/digest constants, rather than by arbitrary `Prop` slots. The selected
+AP2-N003 reports mirror the Rust public evidence reports and are verified on
+schema/digest/nonzero slots while remaining fail-closed on `FactsAllTrue`.
+Future theorem constructors therefore have a type-level selected-evidence
+identity obligation, not only scanner-enforced binding names.
 `SelectedRustFullSignatureReductionEvidenceReport.ReportVerified` now applies
 the same digest-presence requirement to the seven full-reduction evidence slots:
 production signature probability, signature-to-accepted-spend link,

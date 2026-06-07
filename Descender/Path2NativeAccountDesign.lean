@@ -1942,6 +1942,74 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_noExportCl
     ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, hNoExport⟩
   exact hNoExport
 
+/-- Selected Rust accepted-spend numeric evidence report mirrored from the Rust verifier. -/
+def selectedRustAcceptedSpendEvidenceReport :
+    SelectedRustAcceptedSpendSoundnessEvidenceReport where
+  schemaMatches := true
+  reportDigestVerified := true
+  numericEvidenceDigestsVerified := true
+  finiteTraceSupportDigest :=
+    ByteArray.mk #[32, 157, 78, 216, 213, 224, 135, 35, 199, 215, 72, 122,
+      115, 180, 144, 197, 164, 25, 41, 200, 64, 208, 98, 6, 165, 57, 106,
+      183, 194, 133, 147, 86]
+  activeOutcomeCarrierDigest :=
+    ByteArray.mk #[12, 106, 231, 51, 5, 206, 105, 148, 94, 250, 178, 31,
+      184, 94, 226, 157, 26, 55, 237, 33, 21, 223, 183, 249, 34, 163, 53,
+      42, 43, 237, 74, 214]
+  acceptedSpendEventSemanticsDigest :=
+    ByteArray.mk #[154, 82, 55, 32, 245, 141, 94, 200, 4, 207, 199, 35, 83,
+      44, 79, 83, 224, 5, 120, 21, 31, 147, 12, 179, 173, 9, 40, 15, 13,
+      31, 6, 194]
+  activeBreakFamilyDigest :=
+    ByteArray.mk #[111, 3, 153, 201, 118, 101, 3, 131, 125, 95, 74, 112,
+      104, 81, 255, 126, 60, 29, 241, 180, 122, 212, 12, 39, 240, 46, 175,
+      234, 226, 41, 148, 226]
+  namedBreakEventsDigest :=
+    ByteArray.mk #[239, 239, 12, 86, 194, 199, 4, 19, 215, 33, 190, 24,
+      211, 27, 72, 24, 50, 159, 159, 35, 131, 125, 226, 200, 211, 19, 104,
+      71, 30, 51, 137, 43]
+  acceptedSpendUnionBoundPricingDigest :=
+    ByteArray.mk #[158, 137, 218, 102, 81, 161, 239, 189, 139, 194, 27,
+      129, 37, 31, 11, 141, 42, 153, 24, 66, 119, 154, 9, 2, 152, 158, 215,
+      226, 152, 143, 72, 164]
+  acceptedSpendPricedBoundDigest :=
+    ByteArray.mk #[187, 178, 56, 246, 207, 80, 245, 41, 254, 45, 53, 219,
+      78, 215, 69, 4, 188, 30, 50, 47, 15, 127, 87, 174, 48, 150, 229, 160,
+      109, 162, 224, 74]
+  targetSecurityBits := 128
+  selectedMultiTargetHorizonLog2 := 32
+  qromQuadraticLossBitsAtDeploymentBound := 32
+  transcriptTermBitsAfterQromLoss := 182
+  acceptedSpendPricedBoundSecurityBits := 0
+  acceptedSpendNumericBoundPriced := false
+  finiteTraceSupportPriced := false
+  activeOutcomeCarrierPinned := false
+  acceptedSpendEventPinned := false
+  activeBreakFamilyPinned := false
+  namedBreakEventsPinned := false
+  acceptedSpendUnionBoundPriced := false
+  acceptedSpendEventBoundPriced := false
+  namedBreakEventBoundsPriced := false
+  breakPricingBudgetMeetsPricedBound := false
+  acceptedSpendNumericBudgetMeetsTarget := false
+  hiddenSourceClosureReady := true
+  checkedCoreClosureReady := true
+  lifecycleReplayClosureReady := true
+  noExportClosureReady := true
+
+/-- Digest pin for the selected Rust accepted-spend numeric evidence report. -/
+def selectedRustAcceptedSpendEvidenceDigest : ByteArray :=
+  ByteArray.mk #[226, 205, 158, 142, 127, 164, 195, 233, 140, 131, 228,
+    186, 162, 159, 171, 239, 215, 115, 161, 101, 56, 181, 4, 105, 186,
+    120, 4, 209, 56, 75, 211, 22]
+
+/-- The selected accepted-spend report has verified public digest slots. -/
+theorem selectedRustAcceptedSpendEvidenceReportVerifiedProof :
+    selectedRustAcceptedSpendEvidenceReport.ReportVerified := by
+  simp [SelectedRustAcceptedSpendSoundnessEvidenceReport.ReportVerified,
+    selectedRustAcceptedSpendEvidenceReport, selectedRustZeroDigest32]
+  repeat constructor <;> native_decide
+
 /--
 Selected Rust/model certificate for the accepted-spend numeric soundness layer.
 
@@ -1953,10 +2021,14 @@ numeric bound from being silently supplied as an arbitrary boundary field.
 structure SelectedRustAcceptedSpendSoundnessCertificate where
   evidenceReport : SelectedRustAcceptedSpendSoundnessEvidenceReport
   evidenceDigest : ByteArray
-  evidenceReportBound : Prop
-  evidenceReportBoundProof : evidenceReportBound
-  evidenceDigestBound : Prop
-  evidenceDigestBoundProof : evidenceDigestBound
+  evidenceReportBound :
+    evidenceReport = selectedRustAcceptedSpendEvidenceReport
+  evidenceReportBoundProof :
+    evidenceReport = selectedRustAcceptedSpendEvidenceReport
+  evidenceDigestBound :
+    evidenceDigest = selectedRustAcceptedSpendEvidenceDigest
+  evidenceDigestBoundProof :
+    evidenceDigest = selectedRustAcceptedSpendEvidenceDigest
   selectedRustAcceptedSpendBoundVerifiedProof :
     evidenceReport.ReportVerified
   selectedRustAcceptedSpendFactsAllTrueProof :
@@ -1987,10 +2059,14 @@ structure SelectedRustAcceptedSpendSoundnessCertificate where
 def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
     (evidenceReport : SelectedRustAcceptedSpendSoundnessEvidenceReport)
     (evidenceDigest : ByteArray)
-    (evidenceReportBound : Prop)
-    (evidenceReportBoundProof : evidenceReportBound)
-    (evidenceDigestBound : Prop)
-    (evidenceDigestBoundProof : evidenceDigestBound)
+    (evidenceReportBound :
+      evidenceReport = selectedRustAcceptedSpendEvidenceReport)
+    (evidenceReportBoundProof :
+      evidenceReport = selectedRustAcceptedSpendEvidenceReport)
+    (evidenceDigestBound :
+      evidenceDigest = selectedRustAcceptedSpendEvidenceDigest)
+    (evidenceDigestBoundProof :
+      evidenceDigest = selectedRustAcceptedSpendEvidenceDigest)
     (selectedRustAcceptedSpendBoundVerifiedProof :
       evidenceReport.ReportVerified)
     (selectedRustAcceptedSpendFactsAllTrueProof :
@@ -2101,9 +2177,11 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_l
     SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified
         Cert.evidenceReport
         Cert.selectedRustAcceptedSpendBoundVerifiedProof
-  let _hReportBound : Cert.evidenceReportBound :=
+  let _hReportBound :
+      Cert.evidenceReport = selectedRustAcceptedSpendEvidenceReport :=
     Cert.evidenceReportBoundProof
-  let _hDigestBound : Cert.evidenceDigestBound :=
+  let _hDigestBound :
+      Cert.evidenceDigest = selectedRustAcceptedSpendEvidenceDigest :=
     Cert.evidenceDigestBoundProof
   let _hPricedBoundBitsMeetTarget :
       Cert.evidenceReport.targetSecurityBits ≤
@@ -2330,9 +2408,11 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
       SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified
           Cert.evidenceReport
           Cert.selectedRustAcceptedSpendBoundVerifiedProof
-    let _hReportBound : Cert.evidenceReportBound :=
+    let _hReportBound :
+        Cert.evidenceReport = selectedRustAcceptedSpendEvidenceReport :=
       Cert.evidenceReportBoundProof
-    let _hDigestBound : Cert.evidenceDigestBound :=
+    let _hDigestBound :
+        Cert.evidenceDigest = selectedRustAcceptedSpendEvidenceDigest :=
       Cert.evidenceDigestBoundProof
     let _hPricedBoundBitsMeetTarget :
         Cert.evidenceReport.targetSecurityBits ≤
@@ -2709,6 +2789,62 @@ theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_verifierGa
     E.verifierGameMatchesProductionExecution = true := by
   exact h.2.2.2.2.2.2.2
 
+/-- Selected Rust full-signature reduction evidence report mirrored from Rust. -/
+def selectedRustFullSignatureReductionEvidenceReport :
+    SelectedRustFullSignatureReductionEvidenceReport where
+  schemaMatches := true
+  reportDigestVerified := true
+  reductionEvidenceDigestsVerified := true
+  productionSignatureProbabilityDigest :=
+    ByteArray.mk #[102, 50, 217, 80, 236, 55, 118, 51, 123, 235, 251, 15,
+      142, 30, 171, 255, 4, 248, 151, 146, 228, 162, 71, 87, 164, 35, 177,
+      147, 80, 17, 5, 25]
+  signatureAcceptedSpendLinkDigest :=
+    ByteArray.mk #[26, 195, 2, 13, 73, 1, 237, 202, 97, 216, 13, 136, 92,
+      87, 167, 233, 55, 23, 106, 196, 12, 101, 133, 71, 59, 212, 99, 121,
+      120, 116, 19, 60]
+  fullExecutionSourceDigest :=
+    ByteArray.mk #[255, 181, 157, 198, 240, 129, 76, 113, 9, 35, 168, 216,
+      204, 48, 31, 224, 238, 132, 237, 162, 151, 134, 201, 91, 85, 7, 117,
+      202, 68, 28, 244, 206]
+  activeHashBoundaryDigest :=
+    ByteArray.mk #[200, 31, 58, 59, 106, 52, 143, 78, 67, 6, 238, 92, 210,
+      79, 245, 60, 179, 190, 228, 249, 236, 166, 174, 245, 192, 185, 107,
+      85, 200, 81, 100, 237]
+  queryBudgetPricingDigest :=
+    ByteArray.mk #[157, 227, 195, 195, 6, 136, 166, 200, 225, 244, 110, 44,
+      108, 33, 71, 74, 24, 161, 108, 148, 9, 31, 174, 69, 89, 193, 128, 81,
+      64, 28, 105, 233]
+  multiTargetPricingDigest :=
+    ByteArray.mk #[24, 85, 71, 199, 201, 152, 191, 90, 105, 103, 38, 92,
+      211, 167, 99, 194, 113, 134, 176, 46, 139, 245, 67, 45, 191, 5, 96,
+      105, 186, 237, 13, 142]
+  verifierGameBindingDigest :=
+    ByteArray.mk #[129, 23, 122, 9, 55, 148, 45, 226, 53, 192, 28, 253,
+      247, 168, 27, 252, 28, 141, 61, 68, 57, 195, 236, 209, 241, 245, 134,
+      178, 226, 155, 117, 233]
+  productionSignatureProbabilityPinned := false
+  signatureSuccessMatchesAcceptedSpendGame := false
+  acceptedSpendProbabilityLinked := false
+  fullExecutionSourceConsumed := false
+  activeHashBoundaryConsumed := false
+  allActiveQuerySymbolsPriced := false
+  multiTargetHorizonPriced := false
+  verifierGameMatchesProductionExecution := false
+
+/-- Digest pin for the selected Rust full-signature reduction evidence report. -/
+def selectedRustFullSignatureReductionEvidenceDigest : ByteArray :=
+  ByteArray.mk #[42, 73, 63, 227, 166, 189, 239, 168, 241, 196, 207, 198,
+    200, 230, 59, 48, 87, 51, 144, 168, 196, 176, 153, 179, 208, 191, 9,
+    155, 32, 158, 166, 46]
+
+/-- The selected full-reduction report has verified public digest slots. -/
+theorem selectedRustFullSignatureReductionVerifiedProof :
+    selectedRustFullSignatureReductionEvidenceReport.ReportVerified := by
+  simp [SelectedRustFullSignatureReductionEvidenceReport.ReportVerified,
+    selectedRustFullSignatureReductionEvidenceReport, selectedRustZeroDigest32]
+  repeat constructor <;> native_decide
+
 /--
 Selected Rust/model certificate for the full-signature reduction layer.
 
@@ -2719,10 +2855,14 @@ accepted-spend game, and the active hash/QROM budget in one reviewed package.
 structure SelectedRustFullSignatureReductionCertificate where
   evidenceReport : SelectedRustFullSignatureReductionEvidenceReport
   evidenceDigest : ByteArray
-  evidenceReportBound : Prop
-  evidenceReportBoundProof : evidenceReportBound
-  evidenceDigestBound : Prop
-  evidenceDigestBoundProof : evidenceDigestBound
+  evidenceReportBound :
+    evidenceReport = selectedRustFullSignatureReductionEvidenceReport
+  evidenceReportBoundProof :
+    evidenceReport = selectedRustFullSignatureReductionEvidenceReport
+  evidenceDigestBound :
+    evidenceDigest = selectedRustFullSignatureReductionEvidenceDigest
+  evidenceDigestBoundProof :
+    evidenceDigest = selectedRustFullSignatureReductionEvidenceDigest
   selectedRustFullSignatureReductionVerifiedProof :
     evidenceReport.ReportVerified
   selectedRustFullSignatureReductionFactsAllTrueProof :
@@ -2769,10 +2909,14 @@ structure SelectedRustFullSignatureReductionCertificate where
 def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
     (evidenceReport : SelectedRustFullSignatureReductionEvidenceReport)
     (evidenceDigest : ByteArray)
-    (evidenceReportBound : Prop)
-    (evidenceReportBoundProof : evidenceReportBound)
-    (evidenceDigestBound : Prop)
-    (evidenceDigestBoundProof : evidenceDigestBound)
+    (evidenceReportBound :
+      evidenceReport = selectedRustFullSignatureReductionEvidenceReport)
+    (evidenceReportBoundProof :
+      evidenceReport = selectedRustFullSignatureReductionEvidenceReport)
+    (evidenceDigestBound :
+      evidenceDigest = selectedRustFullSignatureReductionEvidenceDigest)
+    (evidenceDigestBoundProof :
+      evidenceDigest = selectedRustFullSignatureReductionEvidenceDigest)
     (selectedRustFullSignatureReductionVerifiedProof :
       evidenceReport.ReportVerified)
     (selectedRustFullSignatureReductionFactsAllTrueProof :
@@ -2997,9 +3141,11 @@ def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityB
     let _hReportVerifierGame :=
       SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_verifierGameMatchesProductionExecution
         Cert.evidenceReport _hFacts
-    let _hReportBound : Cert.evidenceReportBound :=
+    let _hReportBound :
+        Cert.evidenceReport = selectedRustFullSignatureReductionEvidenceReport :=
       Cert.evidenceReportBoundProof
-    let _hDigestBound : Cert.evidenceDigestBound :=
+    let _hDigestBound :
+        Cert.evidenceDigest = selectedRustFullSignatureReductionEvidenceDigest :=
       Cert.evidenceDigestBoundProof
     let _hSigPinned :
         Cert.signatureForgerySuccessProb =
@@ -3068,9 +3214,11 @@ def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityB
     let _hReportVerifierGame :=
       SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_verifierGameMatchesProductionExecution
         Cert.evidenceReport _hFacts
-    let _hReportBound : Cert.evidenceReportBound :=
+    let _hReportBound :
+        Cert.evidenceReport = selectedRustFullSignatureReductionEvidenceReport :=
       Cert.evidenceReportBoundProof
-    let _hDigestBound : Cert.evidenceDigestBound :=
+    let _hDigestBound :
+        Cert.evidenceDigest = selectedRustFullSignatureReductionEvidenceDigest :=
       Cert.evidenceDigestBoundProof
     exact
       ⟨Cert.keygenDistributionModeledProof,

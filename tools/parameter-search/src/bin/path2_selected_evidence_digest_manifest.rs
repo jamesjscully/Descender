@@ -1,6 +1,14 @@
 #![recursion_limit = "512"]
 
 use descender_parameter_search::production_reference::{
+    path2_native_accepted_spend_numeric_evidence_all_facts_true,
+    path2_native_accepted_spend_numeric_evidence_report_verified_v1,
+    path2_native_accepted_spend_numeric_evidence_v1,
+    path2_native_accepted_spend_numeric_evidence_v1_digest,
+    path2_native_full_signature_reduction_evidence_all_facts_true,
+    path2_native_full_signature_reduction_evidence_report_verified_v1,
+    path2_native_full_signature_reduction_evidence_v1,
+    path2_native_full_signature_reduction_evidence_v1_digest,
     path2_reviewed_fq12_boundary_base_evidence_all_facts_true,
     path2_reviewed_fq12_boundary_base_evidence_v1,
     path2_reviewed_fq12_boundary_base_evidence_v1_digest,
@@ -47,6 +55,8 @@ fn main() -> Result<(), String> {
     let field_local = path2_reviewed_fq12_field_local_evidence_v1()?;
     let shared_witness = path2_reviewed_fq12_shared_digest_frame_witness_evidence_v1()?;
     let predicate_model = path2_reviewed_fq12_native_boundary_predicate_model_evidence_v1()?;
+    let accepted_spend_numeric = path2_native_accepted_spend_numeric_evidence_v1();
+    let full_signature_reduction = path2_native_full_signature_reduction_evidence_v1();
     let predicate_model_report_digest =
         path2_reviewed_fq12_native_boundary_predicate_model_evidence_report_verified_v1(
             &predicate_model,
@@ -105,6 +115,16 @@ fn main() -> Result<(), String> {
                     &predicate_model
                 )?
             ),
+            "selectedRustAcceptedSpendEvidenceDigest": hex_encode(
+                &path2_native_accepted_spend_numeric_evidence_v1_digest(
+                    &accepted_spend_numeric
+                )?
+            ),
+            "selectedRustFullSignatureReductionEvidenceDigest": hex_encode(
+                &path2_native_full_signature_reduction_evidence_v1_digest(
+                    &full_signature_reduction
+                )?
+            ),
         },
         "all_facts": {
             "five_source": path2_reviewed_fq12_five_source_closure_evidence_all_facts_true(
@@ -131,6 +151,34 @@ fn main() -> Result<(), String> {
                 path2_reviewed_fq12_native_boundary_predicate_model_evidence_all_facts_true(
                     &predicate_model
                 ),
+            "accepted_spend_numeric":
+                path2_native_accepted_spend_numeric_evidence_all_facts_true(
+                    &accepted_spend_numeric
+                ),
+            "full_signature_reduction":
+                path2_native_full_signature_reduction_evidence_all_facts_true(
+                    &full_signature_reduction
+                ),
+        },
+        "active_path_numeric_evidence": {
+            "accepted_spend_numeric_report_verified":
+                path2_native_accepted_spend_numeric_evidence_report_verified_v1(
+                    &accepted_spend_numeric
+                ),
+            "accepted_spend_numeric_all_facts":
+                path2_native_accepted_spend_numeric_evidence_all_facts_true(
+                    &accepted_spend_numeric
+                ),
+            "full_signature_reduction_report_verified":
+                path2_native_full_signature_reduction_evidence_report_verified_v1(
+                    &full_signature_reduction
+                ),
+            "full_signature_reduction_all_facts":
+                path2_native_full_signature_reduction_evidence_all_facts_true(
+                    &full_signature_reduction
+                ),
+            "accepted_spend_numeric_report": accepted_spend_numeric,
+            "full_signature_reduction_report": full_signature_reduction,
         },
         "predicate_model_evidence": {
             "report_digest": hex_encode(&predicate_model_report_digest),

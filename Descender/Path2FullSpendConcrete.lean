@@ -1041,10 +1041,18 @@ structure SelectedRustConcreteAcceptedSpendNumericSourceCertificate where
   evidenceReport :
     Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport
   evidenceDigest : ByteArray
-  evidenceReportBound : Prop
-  evidenceReportBoundProof : evidenceReportBound
-  evidenceDigestBound : Prop
-  evidenceDigestBoundProof : evidenceDigestBound
+  evidenceReportBound :
+    evidenceReport =
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport
+  evidenceReportBoundProof :
+    evidenceReport =
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport
+  evidenceDigestBound :
+    evidenceDigest =
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceDigest
+  evidenceDigestBoundProof :
+    evidenceDigest =
+      Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceDigest
   evidenceReportVerifiedProof :
     evidenceReport.ReportVerified
   evidenceFactsAllTrueProof :
@@ -1079,10 +1087,18 @@ def ofReportAndConcreteCertificate
     (evidenceReport :
       Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport)
     (evidenceDigest : ByteArray)
-    (evidenceReportBound : Prop)
-    (evidenceReportBoundProof : evidenceReportBound)
-    (evidenceDigestBound : Prop)
-    (evidenceDigestBoundProof : evidenceDigestBound)
+    (evidenceReportBound :
+      evidenceReport =
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport)
+    (evidenceReportBoundProof :
+      evidenceReport =
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport)
+    (evidenceDigestBound :
+      evidenceDigest =
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceDigest)
+    (evidenceDigestBoundProof :
+      evidenceDigest =
+        Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceDigest)
     (evidenceReportVerifiedProof :
       evidenceReport.ReportVerified)
     (evidenceFactsAllTrueProof :
