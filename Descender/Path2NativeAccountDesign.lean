@@ -1591,6 +1591,9 @@ structure SelectedRustAcceptedSpendSoundnessEvidenceReport where
   activeBreakFamilyPinned : Bool
   namedBreakEventsPinned : Bool
   acceptedSpendUnionBoundPriced : Bool
+  acceptedSpendEventBoundPriced : Bool
+  namedBreakEventBoundsPriced : Bool
+  breakPricingBudgetMeetsPricedBound : Bool
   acceptedSpendNumericBudgetMeetsTarget : Bool
   hiddenSourceClosureReady : Bool
   checkedCoreClosureReady : Bool
@@ -1614,6 +1617,9 @@ def SelectedRustAcceptedSpendSoundnessEvidenceReport.FactsAllTrue
   E.activeBreakFamilyPinned = true ∧
   E.namedBreakEventsPinned = true ∧
   E.acceptedSpendUnionBoundPriced = true ∧
+  E.acceptedSpendEventBoundPriced = true ∧
+  E.namedBreakEventBoundsPriced = true ∧
+  E.breakPricingBudgetMeetsPricedBound = true ∧
   E.acceptedSpendNumericBudgetMeetsTarget = true ∧
   E.targetSecurityBits = 128 ∧
   E.selectedMultiTargetHorizonLog2 = 32 ∧
@@ -1635,7 +1641,7 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoun
     (h : E.FactsAllTrue) :
     E.targetSecurityBits ≤ E.acceptedSpendPricedBoundSecurityBits := by
   rcases h with
-    ⟨_, _, _, _, _, _, _, _, _, _, _, _, hPricedBoundBits, _, _, _, _, _, _⟩
+    ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, hPricedBoundBits, _, _, _, _, _, _⟩
   exact hPricedBoundBits
 
 /-- A complete accepted-spend report pins the active target-security bits. -/
@@ -1644,7 +1650,7 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_targetSecu
     (h : E.FactsAllTrue) :
     E.targetSecurityBits = 128 := by
   rcases h with
-    ⟨_, _, _, _, _, _, _, _, hTarget, _, _, _, _, _, _, _, _, _, _⟩
+    ⟨_, _, _, _, _, _, _, _, _, _, _, hTarget, _, _, _, _, _, _, _, _, _, _⟩
   exact hTarget
 
 /-- A complete accepted-spend report prices the selected active multi-target horizon. -/
@@ -1654,7 +1660,7 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudg
     E.targetSecurityBits + E.selectedMultiTargetHorizonLog2 ≤
       E.transcriptTermBitsAfterQromLoss := by
   rcases h with
-    ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, hBudget, _, _, _, _, _⟩
+    ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, hBudget, _, _, _, _, _⟩
   exact hBudget
 
 /-- A complete accepted-spend report caps claimed bound bits by the active transcript budget. -/
@@ -1664,7 +1670,7 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoun
     E.acceptedSpendPricedBoundSecurityBits + E.selectedMultiTargetHorizonLog2 ≤
       E.transcriptTermBitsAfterQromLoss := by
   rcases h with
-    ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, hClaimedBudget, _, _, _, _⟩
+    ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, hClaimedBudget, _, _, _, _⟩
   exact hClaimedBudget
 
 /-- The active report constants leave 22 QROM-discounted transcript bits after target plus horizon. -/
@@ -1674,7 +1680,7 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudg
     E.transcriptTermBitsAfterQromLoss -
       (E.targetSecurityBits + E.selectedMultiTargetHorizonLog2) = 22 := by
   rcases h with
-    ⟨_, _, _, _, _, _, _, _, hTarget, hHorizon, _, hTranscript, _, _, _, _, _, _, _⟩
+    ⟨_, _, _, _, _, _, _, _, _, _, _, hTarget, hHorizon, _, hTranscript, _, _, _, _, _, _, _⟩
   rw [hTarget, hHorizon, hTranscript]
 
 /-- A complete accepted-spend report shows the reported bound is within target security. -/

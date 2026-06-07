@@ -1470,6 +1470,11 @@ derives `unionBound_le_priced` from that constructive break-pricing package
 rather than carrying a monolithic real inequality. The accepted-spend source
 gate now requires this layer, so future closure must consume the probability
 game and priced-bound package rather than only raw `ℝ` fields.
+The accepted-spend evidence report now mirrors that split with separate
+fail-closed bits for pricing the accepted-spend event bound, pricing the named
+break-event bounds, and proving the break-pricing budget fits the production
+priced bound; the aggregate `acceptedSpendUnionBoundPriced` bit is no longer
+the only pricing readiness signal.
 The numeric source now pins event semantics, not only carrier types.
 `PricedAcceptedSpendNumericCertificate` exposes stored-instance accessors for
 observed outcomes, accepted-spend events, and named break events, and

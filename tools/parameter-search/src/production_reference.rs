@@ -2004,6 +2004,9 @@ pub struct Path2NativeAcceptedSpendNumericEvidenceV1 {
     pub active_break_family_pinned: bool,
     pub named_break_events_pinned: bool,
     pub accepted_spend_union_bound_priced: bool,
+    pub accepted_spend_event_bound_priced: bool,
+    pub named_break_event_bounds_priced: bool,
+    pub break_pricing_budget_meets_priced_bound: bool,
     pub accepted_spend_numeric_budget_meets_target: bool,
     pub hidden_source_closure_ready: bool,
     pub checked_core_closure_ready: bool,
@@ -2599,6 +2602,9 @@ pub fn path2_native_accepted_spend_numeric_evidence_v1() -> Path2NativeAcceptedS
         active_break_family_pinned: false,
         named_break_events_pinned: false,
         accepted_spend_union_bound_priced: false,
+        accepted_spend_event_bound_priced: false,
+        named_break_event_bounds_priced: false,
+        break_pricing_budget_meets_priced_bound: false,
         accepted_spend_numeric_budget_meets_target: false,
         hidden_source_closure_ready,
         checked_core_closure_ready: path2_native_checked_core_composition_complete_v1(),
@@ -2725,6 +2731,21 @@ pub fn path2_native_accepted_spend_numeric_evidence_v1_frame(
     );
     append_u64(
         &mut frame,
+        b"accepted_spend_event_bound_priced",
+        u64::from(evidence.accepted_spend_event_bound_priced),
+    );
+    append_u64(
+        &mut frame,
+        b"named_break_event_bounds_priced",
+        u64::from(evidence.named_break_event_bounds_priced),
+    );
+    append_u64(
+        &mut frame,
+        b"break_pricing_budget_meets_priced_bound",
+        u64::from(evidence.break_pricing_budget_meets_priced_bound),
+    );
+    append_u64(
+        &mut frame,
         b"accepted_spend_numeric_budget_meets_target",
         u64::from(evidence.accepted_spend_numeric_budget_meets_target),
     );
@@ -2795,6 +2816,9 @@ pub fn path2_native_accepted_spend_numeric_evidence_all_facts_true(
         && evidence.active_break_family_pinned
         && evidence.named_break_events_pinned
         && evidence.accepted_spend_union_bound_priced
+        && evidence.accepted_spend_event_bound_priced
+        && evidence.named_break_event_bounds_priced
+        && evidence.break_pricing_budget_meets_priced_bound
         && evidence.accepted_spend_numeric_budget_meets_target
         && evidence.target_security_bits == 128
         && evidence.selected_multi_target_horizon_log2 == 32
@@ -28416,6 +28440,9 @@ fn path2_native_accepted_spend_numeric_evidence_source_present_v1() -> bool {
         "active_break_family_pinned",
         "named_break_events_pinned",
         "accepted_spend_union_bound_priced",
+        "accepted_spend_event_bound_priced",
+        "named_break_event_bounds_priced",
+        "break_pricing_budget_meets_priced_bound",
         "accepted_spend_numeric_budget_meets_target",
         "hidden_source_closure_ready",
         "checked_core_closure_ready",
@@ -29392,6 +29419,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "activeBreakFamilyPinned",
         "namedBreakEventsPinned",
         "acceptedSpendUnionBoundPriced",
+        "acceptedSpendEventBoundPriced",
+        "namedBreakEventBoundsPriced",
+        "breakPricingBudgetMeetsPricedBound",
         "acceptedSpendNumericBudgetMeetsTarget",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_targetSecurityBits",
@@ -48614,6 +48644,9 @@ mod tests {
         assert!(!evidence.active_break_family_pinned);
         assert!(!evidence.named_break_events_pinned);
         assert!(!evidence.accepted_spend_union_bound_priced);
+        assert!(!evidence.accepted_spend_event_bound_priced);
+        assert!(!evidence.named_break_event_bounds_priced);
+        assert!(!evidence.break_pricing_budget_meets_priced_bound);
         assert_eq!(evidence.target_security_bits, 128);
         assert_eq!(evidence.selected_multi_target_horizon_log2, 32);
         assert_eq!(evidence.qrom_quadratic_loss_bits_at_deployment_bound, 32);
@@ -48650,6 +48683,9 @@ mod tests {
         forged_ready.active_break_family_pinned = true;
         forged_ready.named_break_events_pinned = true;
         forged_ready.accepted_spend_union_bound_priced = true;
+        forged_ready.accepted_spend_event_bound_priced = true;
+        forged_ready.named_break_event_bounds_priced = true;
+        forged_ready.break_pricing_budget_meets_priced_bound = true;
         forged_ready.accepted_spend_priced_bound_security_bits = evidence.target_security_bits;
         forged_ready.accepted_spend_numeric_budget_meets_target = true;
         assert!(!path2_native_accepted_spend_numeric_evidence_all_facts_true(&forged_ready));
@@ -48678,6 +48714,9 @@ mod tests {
         let rendered = serde_json::to_string(&evidence).unwrap();
         assert!(rendered.contains(PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA));
         assert!(!rendered.contains("\"accepted_spend_numeric_bound_priced\":true"));
+        assert!(!rendered.contains("\"accepted_spend_event_bound_priced\":true"));
+        assert!(!rendered.contains("\"named_break_event_bounds_priced\":true"));
+        assert!(!rendered.contains("\"break_pricing_budget_meets_priced_bound\":true"));
         assert!(!rendered.contains("\"accepted_spend_event_pinned\":true"));
         assert!(!rendered.contains("\"accepted_spend_numeric_budget_meets_target\":true"));
         assert_no_active_native_private_material(&rendered);
@@ -53293,6 +53332,9 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
           activeBreakFamilyPinned := true
           namedBreakEventsPinned := true
           acceptedSpendUnionBoundPriced := true
+          acceptedSpendEventBoundPriced := true
+          namedBreakEventBoundsPriced := true
+          breakPricingBudgetMeetsPricedBound := true
           hiddenSourceClosureReady := true
           checkedCoreClosureReady := true
           lifecycleReplayClosureReady := true
@@ -53518,6 +53560,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.namedBreakEventsPinned
   let _acceptedSpendReportUnionBoundPriced :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendUnionBoundPriced
+  let _acceptedSpendReportAcceptedSpendBoundPriced :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendEventBoundPriced
+  let _acceptedSpendReportNamedBreakBoundsPriced :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.namedBreakEventBoundsPriced
+  let _acceptedSpendReportBreakBudgetPriced :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.breakPricingBudgetMeetsPricedBound
   let _acceptedSpendReportBudgetMeetsTarget :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendNumericBudgetMeetsTarget
   let _acceptedSpendReportPricedBoundBitsMeetsTarget :=
@@ -53833,6 +53881,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.namedBreakEventsPinned
   let _acceptedSpendReportUnionBoundPriced :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendUnionBoundPriced
+  let _acceptedSpendReportAcceptedSpendBoundPriced :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendEventBoundPriced
+  let _acceptedSpendReportNamedBreakBoundsPriced :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.namedBreakEventBoundsPriced
+  let _acceptedSpendReportBreakBudgetPriced :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.breakPricingBudgetMeetsPricedBound
   let _acceptedSpendReportBudgetMeetsTarget :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.acceptedSpendNumericBudgetMeetsTarget
   let _acceptedSpendReportPricedBoundBitsMeetsTarget :=
