@@ -1428,6 +1428,12 @@ report mirrors those digest fields with an explicit
 placeholders, digest tampering, and a false digest-verification bit. This keeps
 the future numeric theorem from closing against uncommitted Boolean flags
 alone.
+`SelectedRustAcceptedSpendSoundnessCertificate` also now carries
+`evidenceReportBound` and `evidenceDigestBound` proof fields, consumed by
+`toAcceptedSpendSoundnessBoundary`. The source gate requires named selected
+report/digest binding propositions and proofs, and rejects `True` aliases for
+those bindings, so the future accepted-spend theorem cannot attach arbitrary
+report/digest bytes to otherwise plausible numeric fields.
 The probability game now separates finite trace support from the observed
 full-forgery outcome: `Trace` has `traceFintype`, while `Outcome` is reached
 through `observe` and need not be finite. This is required for the active

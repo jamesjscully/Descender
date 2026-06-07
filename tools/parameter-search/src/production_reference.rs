@@ -28310,6 +28310,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
     let forbidden_declaration_terms = [
         "selectedRustAcceptedSpendEvidenceReport",
         "selectedRustAcceptedSpendEvidenceDigest",
+        "selectedRustAcceptedSpendEvidenceReportBound",
+        "selectedRustAcceptedSpendEvidenceReportBoundProof",
+        "selectedRustAcceptedSpendEvidenceDigestBound",
+        "selectedRustAcceptedSpendEvidenceDigestBoundProof",
         "selectedRustAcceptedSpendBoundVerifiedProof",
         "selectedRustAcceptedSpendFactsAllTrueProof",
         "selectedRustAcceptedSpendNumericSource",
@@ -28366,6 +28370,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "def selectedRustAcceptedSpendEvidenceReport : SelectedRustAcceptedSpendSoundnessEvidenceReport :=",
         "def selectedRustAcceptedSpendEvidenceReport := ⟨",
         "def selectedRustAcceptedSpendEvidenceDigest := ByteArray.empty",
+        "def selectedRustAcceptedSpendEvidenceReportBound := True",
+        "def selectedRustAcceptedSpendEvidenceDigestBound := True",
         "def selectedRustAcceptedSpendForgeryProb := 0",
         "def selectedRustAcceptedSpendForgeryProb : ℝ := 0",
         "def selectedRustAcceptedSpendForgeryProb : ℝ := (0 : ℝ)",
@@ -28387,6 +28393,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "def selectedRustAcceptedSpendNoExportClosed := True",
         "abbrev selectedRustAcceptedSpendEvidenceReport := {",
         "abbrev selectedRustAcceptedSpendEvidenceDigest := ByteArray.empty",
+        "abbrev selectedRustAcceptedSpendEvidenceReportBound := True",
+        "abbrev selectedRustAcceptedSpendEvidenceDigestBound := True",
         "abbrev selectedRustAcceptedSpendForgeryProb := 0",
         "abbrev selectedRustAcceptedSpendForgeryBound := 0",
         "abbrev selectedRustProductionAcceptedSpendForgeryProb := 0",
@@ -28478,6 +28486,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessEvidenceReport",
         "selectedRustAcceptedSpendEvidenceReport",
         "selectedRustAcceptedSpendEvidenceDigest",
+        "selectedRustAcceptedSpendEvidenceReportBound",
+        "selectedRustAcceptedSpendEvidenceReportBoundProof",
+        "selectedRustAcceptedSpendEvidenceDigestBound",
+        "selectedRustAcceptedSpendEvidenceDigestBoundProof",
         "selectedRustAcceptedSpendBoundVerifiedProof",
         "selectedRustAcceptedSpendFactsAllTrueProof",
         "selectedRustAcceptedSpendNumericSource",
@@ -28512,6 +28524,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "let selectedRustAcceptedSpendEvidenceReport := {",
         "let selectedRustAcceptedSpendEvidenceReport := ⟨",
         "let selectedRustAcceptedSpendEvidenceDigest := ByteArray.empty",
+        "let selectedRustAcceptedSpendEvidenceReportBound := True",
+        "let selectedRustAcceptedSpendEvidenceReportBoundProof := True.intro",
+        "let selectedRustAcceptedSpendEvidenceDigestBound := True",
+        "let selectedRustAcceptedSpendEvidenceDigestBoundProof := True.intro",
         "let selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
         "let selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
         "selectedRustAcceptedSpendSoundnessCertificate := {",
@@ -28601,6 +28617,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "acceptedSpendUnionBoundPriced",
         "selectedRustAcceptedSpendEvidenceReport",
         "selectedRustAcceptedSpendEvidenceDigest",
+        "selectedRustAcceptedSpendEvidenceReportBound",
+        "selectedRustAcceptedSpendEvidenceReportBoundProof",
+        "selectedRustAcceptedSpendEvidenceDigestBound",
+        "selectedRustAcceptedSpendEvidenceDigestBoundProof",
         "selectedRustAcceptedSpendBoundVerifiedProof",
         "selectedRustAcceptedSpendFactsAllTrueProof",
         "selectedRustAcceptedSpendNumericSource",
@@ -52186,6 +52206,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
       selectedRustAcceptedSpendEvidenceReport
       selectedRustAcceptedSpendEvidenceDigest
+      selectedRustAcceptedSpendEvidenceReportBound
+      selectedRustAcceptedSpendEvidenceReportBoundProof
+      selectedRustAcceptedSpendEvidenceDigestBound
+      selectedRustAcceptedSpendEvidenceDigestBoundProof
       selectedRustAcceptedSpendBoundVerifiedProof
       selectedRustAcceptedSpendFactsAllTrueProof
       selectedRustAcceptedSpendForgeryProb
@@ -52217,6 +52241,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
       selectedRustAcceptedSpendEvidenceReport
       selectedRustAcceptedSpendEvidenceDigest
+      selectedRustAcceptedSpendEvidenceReportBound
+      selectedRustAcceptedSpendEvidenceReportBoundProof
+      selectedRustAcceptedSpendEvidenceDigestBound
+      selectedRustAcceptedSpendEvidenceDigestBoundProof
       selectedRustAcceptedSpendBoundVerifiedProof
       selectedRustAcceptedSpendFactsAllTrueProof
       0
@@ -52349,6 +52377,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
       selectedRustAcceptedSpendEvidenceReport
       selectedRustAcceptedSpendEvidenceDigest
+      selectedRustAcceptedSpendEvidenceReportBound
+      selectedRustAcceptedSpendEvidenceReportBoundProof
+      selectedRustAcceptedSpendEvidenceDigestBound
+      selectedRustAcceptedSpendEvidenceDigestBoundProof
       selectedRustAcceptedSpendBoundVerifiedProof
       selectedRustAcceptedSpendFactsAllTrueProof
       selectedRustAcceptedSpendNumericSource
@@ -52404,6 +52436,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
       selectedRustAcceptedSpendEvidenceReport
       selectedRustAcceptedSpendEvidenceDigest
+      selectedRustAcceptedSpendEvidenceReportBound
+      selectedRustAcceptedSpendEvidenceReportBoundProof
+      selectedRustAcceptedSpendEvidenceDigestBound
+      selectedRustAcceptedSpendEvidenceDigestBoundProof
       selectedRustAcceptedSpendBoundVerifiedProof
       selectedRustAcceptedSpendFactsAllTrueProof
       selectedRustAcceptedSpendForgeryProb
@@ -52556,6 +52592,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
       selectedRustAcceptedSpendEvidenceReport
       selectedRustAcceptedSpendEvidenceDigest
+      selectedRustAcceptedSpendEvidenceReportBound
+      selectedRustAcceptedSpendEvidenceReportBoundProof
+      selectedRustAcceptedSpendEvidenceDigestBound
+      selectedRustAcceptedSpendEvidenceDigestBoundProof
       selectedRustAcceptedSpendBoundVerifiedProof
       selectedRustAcceptedSpendFactsAllTrueProof
       selectedRustAcceptedSpendNumericSource

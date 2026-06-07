@@ -1624,6 +1624,10 @@ numeric bound from being silently supplied as an arbitrary boundary field.
 structure SelectedRustAcceptedSpendSoundnessCertificate where
   evidenceReport : SelectedRustAcceptedSpendSoundnessEvidenceReport
   evidenceDigest : ByteArray
+  evidenceReportBound : Prop
+  evidenceReportBoundProof : evidenceReportBound
+  evidenceDigestBound : Prop
+  evidenceDigestBoundProof : evidenceDigestBound
   selectedRustAcceptedSpendBoundVerifiedProof :
     evidenceReport.ReportVerified
   selectedRustAcceptedSpendFactsAllTrueProof :
@@ -1651,6 +1655,10 @@ structure SelectedRustAcceptedSpendSoundnessCertificate where
 def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
     (evidenceReport : SelectedRustAcceptedSpendSoundnessEvidenceReport)
     (evidenceDigest : ByteArray)
+    (evidenceReportBound : Prop)
+    (evidenceReportBoundProof : evidenceReportBound)
+    (evidenceDigestBound : Prop)
+    (evidenceDigestBoundProof : evidenceDigestBound)
     (selectedRustAcceptedSpendBoundVerifiedProof :
       evidenceReport.ReportVerified)
     (selectedRustAcceptedSpendFactsAllTrueProof :
@@ -1676,6 +1684,10 @@ def SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
     SelectedRustAcceptedSpendSoundnessCertificate where
   evidenceReport := evidenceReport
   evidenceDigest := evidenceDigest
+  evidenceReportBound := evidenceReportBound
+  evidenceReportBoundProof := evidenceReportBoundProof
+  evidenceDigestBound := evidenceDigestBound
+  evidenceDigestBoundProof := evidenceDigestBoundProof
   selectedRustAcceptedSpendBoundVerifiedProof :=
     selectedRustAcceptedSpendBoundVerifiedProof
   selectedRustAcceptedSpendFactsAllTrueProof :=
@@ -1722,6 +1734,10 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
       Cert.selectedRustAcceptedSpendBoundVerifiedProof
     let _hFacts : Cert.evidenceReport.FactsAllTrue :=
       Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hReportBound : Cert.evidenceReportBound :=
+      Cert.evidenceReportBoundProof
+    let _hDigestBound : Cert.evidenceDigestBound :=
+      Cert.evidenceDigestBoundProof
     let _hProbPinned :
         Cert.acceptedSpendForgeryProb =
           Cert.productionAcceptedSpendForgeryProb :=
