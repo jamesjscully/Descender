@@ -1688,6 +1688,13 @@ through standalone report-level projections. A focused source-gate regression
 replaces the concrete-source union-bound fact projection with the report-level
 projection and confirms that this no longer satisfies the active accepted-spend
 numeric-bound gate.
+The generic accepted-spend pricing layer now also exposes nonnegativity
+theorems for the accepted-spend component bound, each named-break component
+bound, and the final priced bound at the `AcceptedSpendBreakPricingCertificate`,
+`PricedAcceptedSpendNumericCertificate`, and `SelectedAcceptedSpendNumericSource`
+layers. The accepted-spend source gate exact-checks those theorem names, so
+the future pricing package must expose nonnegative budgets rather than only
+upper-bound inequalities.
 The accepted-spend numeric and full-signature reduction certificates now bind
 their evidence reports and digests by equality to concrete selected Rust
 report/digest constants, rather than by arbitrary `Prop` slots. The selected

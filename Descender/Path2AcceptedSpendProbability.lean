@@ -165,6 +165,46 @@ theorem unionBound_le_priced
     exact add_le_add hNone hSome
   exact le_trans hUnionBudget P.breakBudget_le_priced
 
+omit [DecidableEq Break] in
+/-- The accepted-spend component bound in a pricing certificate is nonnegative. -/
+theorem acceptedSpendBound_nonneg
+    {G : AcceptedSpendNumericGame Trace Outcome Break}
+    (P : AcceptedSpendBreakPricingCertificate G) :
+    0 <= P.acceptedSpendBound := by
+  have hProbNonneg : 0 <= G.acceptedSpendProb :=
+    G.traceDist.acceptProb_nonneg
+      (fun trace => G.acceptedSpendForgery (G.observe trace))
+  linarith [P.acceptedSpendProb_le_bound]
+
+omit [DecidableEq Break] in
+/-- Every named-break component bound in a pricing certificate is nonnegative. -/
+theorem breakBound_nonneg
+    {G : AcceptedSpendNumericGame Trace Outcome Break}
+    (P : AcceptedSpendBreakPricingCertificate G)
+    (breakEvent : Break) :
+    0 <= P.breakBound breakEvent := by
+  have hProbNonneg : 0 <= G.breakProb breakEvent :=
+    G.traceDist.acceptProb_nonneg
+      (fun trace => G.namedBreak breakEvent (G.observe trace))
+  linarith [P.breakProb_le_bound breakEvent]
+
+omit [DecidableEq Break] in
+/-- The final priced bound in a pricing certificate is nonnegative. -/
+theorem pricedBound_nonneg
+    {G : AcceptedSpendNumericGame Trace Outcome Break}
+    (P : AcceptedSpendBreakPricingCertificate G) :
+    0 <= P.pricedBound := by
+  have hAccepted : 0 <= P.acceptedSpendBound :=
+    P.acceptedSpendBound_nonneg
+  have hBreaks : 0 <= Finset.univ.sum P.breakBound :=
+    Finset.sum_nonneg (by
+      intro breakEvent _hBreakEvent
+      exact P.breakBound_nonneg breakEvent)
+  have hBudgetNonneg :
+      0 <= P.acceptedSpendBound + Finset.univ.sum P.breakBound :=
+    add_nonneg hAccepted hBreaks
+  linarith [P.breakBudget_le_priced]
+
 end AcceptedSpendBreakPricingCertificate
 
 /--
@@ -298,6 +338,37 @@ theorem breakBudget_le_pricedBound
         C.breakPricing.pricedBound := by
       simpa [acceptedSpendBound, breakBound] using
         C.breakPricing.breakBudget_le_priced
+    _ = C.pricedBound :=
+      C.pricedBound_eq_breakPricing.symm
+
+/-- The priced certificate's accepted-spend component bound is nonnegative. -/
+theorem acceptedSpendBound_nonneg
+    (C : PricedAcceptedSpendNumericCertificate) :
+    0 <= C.acceptedSpendBound := by
+  letI : Fintype C.Trace := C.traceFintype
+  letI : Fintype C.Break := C.breakFintype
+  simpa [acceptedSpendBound] using
+    C.breakPricing.acceptedSpendBound_nonneg
+
+/-- The priced certificate's named-break component bounds are nonnegative. -/
+theorem breakBound_nonneg
+    (C : PricedAcceptedSpendNumericCertificate)
+    (breakEvent : C.Break) :
+    0 <= C.breakBound breakEvent := by
+  letI : Fintype C.Trace := C.traceFintype
+  letI : Fintype C.Break := C.breakFintype
+  simpa [breakBound] using
+    C.breakPricing.breakBound_nonneg breakEvent
+
+/-- The priced certificate's final deployment bound is nonnegative. -/
+theorem pricedBound_nonneg
+    (C : PricedAcceptedSpendNumericCertificate) :
+    0 <= C.pricedBound := by
+  letI : Fintype C.Trace := C.traceFintype
+  letI : Fintype C.Break := C.breakFintype
+  calc
+    0 <= C.breakPricing.pricedBound :=
+      C.breakPricing.pricedBound_nonneg
     _ = C.pricedBound :=
       C.pricedBound_eq_breakPricing.symm
 
@@ -435,6 +506,25 @@ theorem breakBudget_le_pricedBound
             Source.pricedCertificate.breakBound <=
       Source.pricedCertificate.pricedBound :=
   Source.pricedCertificate.breakBudget_le_pricedBound
+
+/-- The selected source exposes nonnegativity of its accepted-spend component bound. -/
+theorem acceptedSpendBound_nonneg
+    (Source : SelectedAcceptedSpendNumericSource) :
+    0 <= Source.pricedCertificate.acceptedSpendBound :=
+  Source.pricedCertificate.acceptedSpendBound_nonneg
+
+/-- The selected source exposes nonnegativity of each named-break component bound. -/
+theorem breakBound_nonneg
+    (Source : SelectedAcceptedSpendNumericSource)
+    (breakEvent : Source.pricedCertificate.Break) :
+    0 <= Source.pricedCertificate.breakBound breakEvent :=
+  Source.pricedCertificate.breakBound_nonneg breakEvent
+
+/-- The selected source exposes nonnegativity of its final priced bound. -/
+theorem pricedBound_nonneg
+    (Source : SelectedAcceptedSpendNumericSource) :
+    0 <= Source.pricedCertificate.pricedBound :=
+  Source.pricedCertificate.pricedBound_nonneg
 
 end SelectedAcceptedSpendNumericSource
 
