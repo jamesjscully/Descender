@@ -1638,6 +1638,15 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoun
     ⟨_, _, _, _, _, _, _, _, _, _, _, _, hPricedBoundBits, _, _, _, _, _, _⟩
   exact hPricedBoundBits
 
+/-- A complete accepted-spend report pins the active target-security bits. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_targetSecurityBits
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.targetSecurityBits = 128 := by
+  rcases h with
+    ⟨_, _, _, _, _, _, _, _, hTarget, _, _, _, _, _, _, _, _, _, _⟩
+  exact hTarget
+
 /-- A complete accepted-spend report prices the selected active multi-target horizon. -/
 theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
@@ -1667,6 +1676,17 @@ theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudg
   rcases h with
     ⟨_, _, _, _, _, _, _, _, hTarget, hHorizon, _, hTranscript, _, _, _, _, _, _, _⟩
   rw [hTarget, hHorizon, hTranscript]
+
+/-- A complete accepted-spend report shows the reported bound is within target security. -/
+theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_reportedSecurityBound_le_targetSecurityBound
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (h : E.FactsAllTrue) :
+    ((2 : ℝ) ^ E.acceptedSpendPricedBoundSecurityBits)⁻¹ <=
+      ((2 : ℝ) ^ E.targetSecurityBits)⁻¹ := by
+  exact
+    inv_pow_le_inv_pow_of_le (a := (2 : ℝ)) (by norm_num)
+      (SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget
+        E h)
 
 /--
 Selected Rust/model certificate for the accepted-spend numeric soundness layer.
@@ -1886,6 +1906,39 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_l
   le_trans
     Cert.acceptedSpendForgeryProb_le_bound
     Cert.acceptedSpendForgeryBound_le_reportedSecurity
+
+/-- The selected accepted-spend certificate prices its bound by the target security bits. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_targetSecurity
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.acceptedSpendForgeryBound <=
+      ((2 : ℝ) ^ Cert.evidenceReport.targetSecurityBits)⁻¹ :=
+  le_trans
+    Cert.acceptedSpendForgeryBound_le_reportedSecurity
+    (SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_reportedSecurityBound_le_targetSecurityBound
+      Cert.evidenceReport
+      Cert.selectedRustAcceptedSpendFactsAllTrueProof)
+
+/-- The selected accepted-spend certificate prices accepted-spend probability by target bits. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_targetSecurity
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.acceptedSpendForgeryProb <=
+      ((2 : ℝ) ^ Cert.evidenceReport.targetSecurityBits)⁻¹ :=
+  le_trans
+    Cert.acceptedSpendForgeryProb_le_reportedSecurity
+    (SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_reportedSecurityBound_le_targetSecurityBound
+      Cert.evidenceReport
+      Cert.selectedRustAcceptedSpendFactsAllTrueProof)
+
+/-- The active selected accepted-spend certificate reaches the fixed 128-bit target. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.acceptedSpendForgeryProb <= ((2 : ℝ) ^ (128 : Nat))⁻¹ := by
+  have hTarget :
+      Cert.evidenceReport.targetSecurityBits = 128 :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_targetSecurityBits
+      Cert.evidenceReport
+      Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  simpa [hTarget] using Cert.acceptedSpendForgeryProb_le_targetSecurity
 
 /-- Convert selected Rust accepted-spend numeric evidence into the boundary. -/
 def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
@@ -2250,6 +2303,24 @@ theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessPro
   le_trans
     Cert.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
     Cert.acceptedSpendCertificate.acceptedSpendForgeryProb_le_reportedSecurity
+
+/-- The selected full-signature reduction reaches the accepted-spend target-security bound. -/
+theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_targetSecurity
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.signatureForgerySuccessProb <=
+      ((2 : ℝ) ^
+        Cert.acceptedSpendCertificate.evidenceReport.targetSecurityBits)⁻¹ :=
+  le_trans
+    Cert.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+    Cert.acceptedSpendCertificate.acceptedSpendForgeryProb_le_targetSecurity
+
+/-- The active selected full-signature reduction reaches the fixed 128-bit target. -/
+theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTarget
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.signatureForgerySuccessProb <= ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  le_trans
+    Cert.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+    Cert.acceptedSpendCertificate.acceptedSpendForgeryProb_le_active128BitTarget
 
 /-- Convert selected Rust full-signature reduction evidence into the boundary. -/
 def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary

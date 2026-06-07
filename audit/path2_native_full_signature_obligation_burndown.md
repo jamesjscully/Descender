@@ -1382,9 +1382,10 @@ certificate structure, and certificate constructor/projection functions.
 projections from full-signature success to the production probability, the
 accepted-spend game success, the exported accepted-spend probability, the
 exported accepted-spend bound, and the accepted-spend reported-security-bit
-bound. The full-reduction source gate requires the future selected theorem to
-consume those projections, so the final theorem cannot stop at a raw record
-conversion without making the reported security target theorem-visible.
+bound, then to target-security bits and the fixed active `2^-128` target. The
+full-reduction source gate requires the future selected theorem to consume those
+projections, so the final theorem cannot stop at a raw record conversion without
+making the final target-security claim theorem-visible.
 Regressions reject suffixed report/certificate structures, keeping the final
 active reduction boundary tied to the named certificate family rather than a
 shadow source shape.
@@ -1535,9 +1536,10 @@ inequality before conversion to `NativeAcceptedSpendSoundnessBoundary`; the
 source gate requires the future selected theorem to consume this certificate
 projection.
 It also exposes `acceptedSpendForgeryBound_le_reportedSecurity` and
-`acceptedSpendForgeryProb_le_reportedSecurity`, keeping the reported
-`acceptedSpendPricedBoundSecurityBits` theorem-visible after the selected
-numeric source is packaged.
+`acceptedSpendForgeryProb_le_reportedSecurity`, target-security variants, and
+`acceptedSpendForgeryProb_le_active128BitTarget`, keeping both the reported
+`acceptedSpendPricedBoundSecurityBits` and the final pinned 128-bit target
+theorem-visible after the selected numeric source is packaged.
 The certificate now also exposes named equality projections for exported
 probability-to-union-bound, exported-bound-to-priced-bound, and production-value
 pinning; the source gate requires the future selected theorem to consume those
