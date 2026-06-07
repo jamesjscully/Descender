@@ -1042,6 +1042,23 @@ structure SelectedRustConcreteAcceptedSpendNumericSourceCertificate where
     evidenceReport.ReportVerified
   evidenceFactsAllTrueProof :
     evidenceReport.FactsAllTrue
+  finiteTraceSupportDigestBound : Prop
+  finiteTraceSupportDigestBoundProof : finiteTraceSupportDigestBound
+  activeOutcomeCarrierDigestBound : Prop
+  activeOutcomeCarrierDigestBoundProof : activeOutcomeCarrierDigestBound
+  acceptedSpendEventSemanticsDigestBound : Prop
+  acceptedSpendEventSemanticsDigestBoundProof :
+    acceptedSpendEventSemanticsDigestBound
+  activeBreakFamilyDigestBound : Prop
+  activeBreakFamilyDigestBoundProof : activeBreakFamilyDigestBound
+  namedBreakEventsDigestBound : Prop
+  namedBreakEventsDigestBoundProof : namedBreakEventsDigestBound
+  acceptedSpendUnionBoundPricingDigestBound : Prop
+  acceptedSpendUnionBoundPricingDigestBoundProof :
+    acceptedSpendUnionBoundPricingDigestBound
+  acceptedSpendPricedBoundDigestBound : Prop
+  acceptedSpendPricedBoundDigestBoundProof :
+    acceptedSpendPricedBoundDigestBound
   concreteCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate
 
 namespace SelectedRustConcreteAcceptedSpendNumericSourceCertificate
@@ -1059,6 +1076,27 @@ def ofReportAndConcreteCertificate
       evidenceReport.ReportVerified)
     (evidenceFactsAllTrueProof :
       evidenceReport.FactsAllTrue)
+    (finiteTraceSupportDigestBound : Prop)
+    (finiteTraceSupportDigestBoundProof :
+      finiteTraceSupportDigestBound)
+    (activeOutcomeCarrierDigestBound : Prop)
+    (activeOutcomeCarrierDigestBoundProof :
+      activeOutcomeCarrierDigestBound)
+    (acceptedSpendEventSemanticsDigestBound : Prop)
+    (acceptedSpendEventSemanticsDigestBoundProof :
+      acceptedSpendEventSemanticsDigestBound)
+    (activeBreakFamilyDigestBound : Prop)
+    (activeBreakFamilyDigestBoundProof :
+      activeBreakFamilyDigestBound)
+    (namedBreakEventsDigestBound : Prop)
+    (namedBreakEventsDigestBoundProof :
+      namedBreakEventsDigestBound)
+    (acceptedSpendUnionBoundPricingDigestBound : Prop)
+    (acceptedSpendUnionBoundPricingDigestBoundProof :
+      acceptedSpendUnionBoundPricingDigestBound)
+    (acceptedSpendPricedBoundDigestBound : Prop)
+    (acceptedSpendPricedBoundDigestBoundProof :
+      acceptedSpendPricedBoundDigestBound)
     (concreteCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate) :
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate where
   evidenceReport := evidenceReport
@@ -1069,7 +1107,66 @@ def ofReportAndConcreteCertificate
   evidenceDigestBoundProof := evidenceDigestBoundProof
   evidenceReportVerifiedProof := evidenceReportVerifiedProof
   evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
+  finiteTraceSupportDigestBound := finiteTraceSupportDigestBound
+  finiteTraceSupportDigestBoundProof :=
+    finiteTraceSupportDigestBoundProof
+  activeOutcomeCarrierDigestBound := activeOutcomeCarrierDigestBound
+  activeOutcomeCarrierDigestBoundProof :=
+    activeOutcomeCarrierDigestBoundProof
+  acceptedSpendEventSemanticsDigestBound :=
+    acceptedSpendEventSemanticsDigestBound
+  acceptedSpendEventSemanticsDigestBoundProof :=
+    acceptedSpendEventSemanticsDigestBoundProof
+  activeBreakFamilyDigestBound := activeBreakFamilyDigestBound
+  activeBreakFamilyDigestBoundProof :=
+    activeBreakFamilyDigestBoundProof
+  namedBreakEventsDigestBound := namedBreakEventsDigestBound
+  namedBreakEventsDigestBoundProof :=
+    namedBreakEventsDigestBoundProof
+  acceptedSpendUnionBoundPricingDigestBound :=
+    acceptedSpendUnionBoundPricingDigestBound
+  acceptedSpendUnionBoundPricingDigestBoundProof :=
+    acceptedSpendUnionBoundPricingDigestBoundProof
+  acceptedSpendPricedBoundDigestBound :=
+    acceptedSpendPricedBoundDigestBound
+  acceptedSpendPricedBoundDigestBoundProof :=
+    acceptedSpendPricedBoundDigestBoundProof
   concreteCertificate := concreteCertificate
+
+theorem finiteTraceSupportDigest_bound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.finiteTraceSupportDigestBound :=
+  Source.finiteTraceSupportDigestBoundProof
+
+theorem activeOutcomeCarrierDigest_bound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.activeOutcomeCarrierDigestBound :=
+  Source.activeOutcomeCarrierDigestBoundProof
+
+theorem acceptedSpendEventSemanticsDigest_bound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.acceptedSpendEventSemanticsDigestBound :=
+  Source.acceptedSpendEventSemanticsDigestBoundProof
+
+theorem activeBreakFamilyDigest_bound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.activeBreakFamilyDigestBound :=
+  Source.activeBreakFamilyDigestBoundProof
+
+theorem namedBreakEventsDigest_bound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.namedBreakEventsDigestBound :=
+  Source.namedBreakEventsDigestBoundProof
+
+theorem acceptedSpendUnionBoundPricingDigest_bound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.acceptedSpendUnionBoundPricingDigestBound :=
+  Source.acceptedSpendUnionBoundPricingDigestBoundProof
+
+theorem acceptedSpendPricedBoundDigest_bound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.acceptedSpendPricedBoundDigestBound :=
+  Source.acceptedSpendPricedBoundDigestBoundProof
 
 /-- Extract the concrete active-carrier numeric certificate from the source route. -/
 def toConcreteAcceptedSpendNumericCertificate
