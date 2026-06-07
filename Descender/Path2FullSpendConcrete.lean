@@ -1176,6 +1176,69 @@ theorem acceptedSpendPricedBoundDigest_bound
       Source.evidenceReport.acceptedSpendPricedBoundDigest :=
   Source.acceptedSpendPricedBoundDigestBoundProof
 
+theorem finiteTraceSupportDigest_nonzero
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.finiteTraceSupportDigest ≠
+      Path2NativeAccountDesign.selectedRustZeroDigest32 := by
+  rw [Source.finiteTraceSupportDigest_bound]
+  exact
+    Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_finiteTraceSupportDigest_nonzero
+      Source.evidenceReport Source.evidenceReportVerifiedProof
+
+theorem activeOutcomeCarrierDigest_nonzero
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.activeOutcomeCarrierDigest ≠
+      Path2NativeAccountDesign.selectedRustZeroDigest32 := by
+  rw [Source.activeOutcomeCarrierDigest_bound]
+  exact
+    Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_activeOutcomeCarrierDigest_nonzero
+      Source.evidenceReport Source.evidenceReportVerifiedProof
+
+theorem acceptedSpendEventSemanticsDigest_nonzero
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.acceptedSpendEventSemanticsDigest ≠
+      Path2NativeAccountDesign.selectedRustZeroDigest32 := by
+  rw [Source.acceptedSpendEventSemanticsDigest_bound]
+  exact
+    Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_acceptedSpendEventSemanticsDigest_nonzero
+      Source.evidenceReport Source.evidenceReportVerifiedProof
+
+theorem activeBreakFamilyDigest_nonzero
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.activeBreakFamilyDigest ≠
+      Path2NativeAccountDesign.selectedRustZeroDigest32 := by
+  rw [Source.activeBreakFamilyDigest_bound]
+  exact
+    Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_activeBreakFamilyDigest_nonzero
+      Source.evidenceReport Source.evidenceReportVerifiedProof
+
+theorem namedBreakEventsDigest_nonzero
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.namedBreakEventsDigest ≠
+      Path2NativeAccountDesign.selectedRustZeroDigest32 := by
+  rw [Source.namedBreakEventsDigest_bound]
+  exact
+    Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_namedBreakEventsDigest_nonzero
+      Source.evidenceReport Source.evidenceReportVerifiedProof
+
+theorem acceptedSpendUnionBoundPricingDigest_nonzero
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.acceptedSpendUnionBoundPricingDigest ≠
+      Path2NativeAccountDesign.selectedRustZeroDigest32 := by
+  rw [Source.acceptedSpendUnionBoundPricingDigest_bound]
+  exact
+    Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_unionBoundPricingDigest_nonzero
+      Source.evidenceReport Source.evidenceReportVerifiedProof
+
+theorem acceptedSpendPricedBoundDigest_nonzero
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.acceptedSpendPricedBoundDigest ≠
+      Path2NativeAccountDesign.selectedRustZeroDigest32 := by
+  rw [Source.acceptedSpendPricedBoundDigest_bound]
+  exact
+    Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_pricedBoundDigest_nonzero
+      Source.evidenceReport Source.evidenceReportVerifiedProof
+
 /-- Extract the concrete active-carrier numeric certificate from the source route. -/
 def toConcreteAcceptedSpendNumericCertificate
     (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :

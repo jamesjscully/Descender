@@ -1670,6 +1670,11 @@ requires all seven accepted-spend numeric digest slots to be nonzero
 `reportVerified_*_nonzero` projection theorems. This mirrors the Rust
 verifier's rejection of placeholder digest slots and prevents the Lean report
 verification route from collapsing to three Boolean flags.
+The concrete numeric source certificate now derives nonzero digest facts for
+the concrete certificate itself from those report-side facts plus the seven
+report/certificate digest equalities. The accepted-spend source gate
+exact-checks these source-certificate projections, so digest presence is carried
+through to the active-carrier numeric certificate.
 `SelectedRustFullSignatureReductionEvidenceReport.ReportVerified` now applies
 the same digest-presence requirement to the seven full-reduction evidence slots:
 production signature probability, signature-to-accepted-spend link,
