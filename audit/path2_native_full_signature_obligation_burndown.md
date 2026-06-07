@@ -1527,8 +1527,9 @@ security bits `0` and the target predicate false, so it remains fail-closed.
 Lean now exposes report-derived theorem facts that the accepted-spend
 priced-bound bits meet target, the selected 32-bit multi-target horizon fits
 inside the 182-bit QROM-discounted transcript term, and the resulting arithmetic
-slack is 22 bits. The numeric-bound source gate requires the future selected
-theorem to consume those facts, leaving the real-valued accepted-spend
+slack is 22 bits. The accepted-spend certificate-to-boundary conversion consumes
+those facts directly, and the numeric-bound source gate requires the future
+selected theorem to consume them too. This leaves the real-valued accepted-spend
 probability source and priced-bound inequality as the remaining numeric gap.
 `SelectedRustAcceptedSpendSoundnessCertificate` also carries
 `acceptedSpendPricedBoundSecurityPriced`, proving the actual real-valued

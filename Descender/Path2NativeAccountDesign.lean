@@ -1789,6 +1789,26 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
       Cert.evidenceReportBoundProof
     let _hDigestBound : Cert.evidenceDigestBound :=
       Cert.evidenceDigestBoundProof
+    let _hPricedBoundBitsMeetTarget :
+        Cert.evidenceReport.targetSecurityBits ≤
+          Cert.evidenceReport.acceptedSpendPricedBoundSecurityBits :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hActiveBudgetMarginPriced :
+        Cert.evidenceReport.targetSecurityBits +
+          Cert.evidenceReport.selectedMultiTargetHorizonLog2 ≤
+            Cert.evidenceReport.transcriptTermBitsAfterQromLoss :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
+    let _hActiveBudgetSlack :
+        Cert.evidenceReport.transcriptTermBitsAfterQromLoss -
+          (Cert.evidenceReport.targetSecurityBits +
+            Cert.evidenceReport.selectedMultiTargetHorizonLog2) = 22 :=
+      SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetSlackBits
+          Cert.evidenceReport
+          Cert.selectedRustAcceptedSpendFactsAllTrueProof
     let _hPricedBoundSecurity :
         Cert.pricedNumericCertificate.pricedBound <=
           ((2 : ℝ) ^
