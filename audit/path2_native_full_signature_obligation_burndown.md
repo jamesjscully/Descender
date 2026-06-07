@@ -2216,3 +2216,10 @@ and
 This keeps the future accepted-spend theorem on the current AP2-N003 hard-half
 route instead of allowing a generic report-and-bound constructor path to stand
 in for selected pricing closure.
+AP2-N003 production-witness route note:
+`SelectedRustFullSignatureReductionProductionWitness` now projects selected
+signature success through the accepted-spend probability, the active 128-bit
+target, and the erased native full-signature boundary. The full-reduction
+source gate requires these witness-level projections along with the selected
+full-reduction certificate constructor, so the final AP2-N003 theorem must keep
+the production witness on the proof path through boundary erasure.

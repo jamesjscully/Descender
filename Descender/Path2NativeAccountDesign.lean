@@ -3966,5 +3966,35 @@ theorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecur
     Cert.toNativeFullSignatureSecurityBoundary.signatureForgerySuccessProb <= 1 :=
   Cert.signatureForgerySuccessProb_le_one
 
+namespace SelectedRustFullSignatureReductionProductionWitness
+
+/-- The production witness reaches the exported accepted-spend probability. -/
+theorem signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.signatureForgerySuccessProb <=
+      W.acceptedSpendCertificate.acceptedSpendForgeryProb :=
+  (toFullSignatureReductionCertificate W).signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+
+/-- The production witness reaches the active 128-bit target. -/
+theorem signatureForgerySuccessProb_le_active128BitTarget
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.signatureForgerySuccessProb <= ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  (toFullSignatureReductionCertificate W).signatureForgerySuccessProb_le_active128BitTarget
+
+/-- Erase the selected production witness directly into the native full-signature boundary. -/
+def toNativeFullSignatureSecurityBoundary
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    NativeFullSignatureSecurityBoundary :=
+  (toFullSignatureReductionCertificate W).toNativeFullSignatureSecurityBoundary
+
+/-- The erased full-signature boundary from the production witness reaches the active target. -/
+theorem toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    (toNativeFullSignatureSecurityBoundary W).signatureForgerySuccessProb <=
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  (toFullSignatureReductionCertificate W).toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget
+
+end SelectedRustFullSignatureReductionProductionWitness
+
 end Path2NativeAccountDesign
 end Descender
