@@ -1381,6 +1381,12 @@ certificate structure, and certificate constructor/projection functions.
 Regressions reject suffixed report/certificate structures, keeping the final
 active reduction boundary tied to the named certificate family rather than a
 shadow source shape.
+The accepted-spend certificate now exposes
+`successProb_le_acceptedSpendForgeryProb`, deriving packaged full-forgery
+success below the exported accepted-spend probability through the selected
+numeric source. The full-reduction boundary conversion consumes that projection,
+and the source gate requires the future final theorem to mention it instead of
+reaching directly into the raw priced certificate's union-bound proof.
 The same gate now also rejects global `def`/`abbrev` aliases that set the
 report/digest binding proofs, report-verified/facts proofs,
 keygen/signing/completeness/verifier/full-forgery model proofs,

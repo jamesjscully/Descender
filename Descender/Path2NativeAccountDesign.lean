@@ -1839,6 +1839,18 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
   noExportClosed :=
     Cert.noExportClosed
 
+/-- The selected accepted-spend certificate bounds packaged success by the exported accepted-spend probability. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_acceptedSpendForgeryProb
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.pricedNumericCertificate.successProb <=
+      Cert.acceptedSpendForgeryProb := by
+  calc
+    Cert.pricedNumericCertificate.successProb <=
+        Cert.pricedNumericCertificate.unionBound :=
+      Cert.numericSource.successProb_le_unionBound
+    _ = Cert.acceptedSpendForgeryProb :=
+      Cert.acceptedSpendForgeryProbMatchesUnionBound.symm
+
 /--
 Full-signature boundary for the currently selected Path 2 native/Fq12 route.
 
@@ -2106,10 +2118,8 @@ def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityB
       Cert.signatureForgerySuccessProb =
           Cert.acceptedSpendCertificate.pricedNumericCertificate.successProb :=
         Cert.signatureForgerySuccessMatchesAcceptedSpendGame
-      _ <= Cert.acceptedSpendCertificate.pricedNumericCertificate.unionBound :=
-        Cert.acceptedSpendCertificate.pricedNumericCertificate.successProb_le_unionBound
-      _ = Cert.acceptedSpendCertificate.acceptedSpendForgeryProb :=
-        Cert.acceptedSpendCertificate.acceptedSpendForgeryProbMatchesUnionBound.symm
+      _ <= Cert.acceptedSpendCertificate.acceptedSpendForgeryProb :=
+        Cert.acceptedSpendCertificate.successProb_le_acceptedSpendForgeryProb
   fullSignatureSecurityClaimComplete := by
     let _hVerified : Cert.evidenceReport.ReportVerified :=
       Cert.selectedRustFullSignatureReductionVerifiedProof

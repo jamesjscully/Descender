@@ -28537,7 +28537,7 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "productionSignatureForgerySuccessProb",
         "signatureForgerySuccessProbPinned",
         "signatureForgerySuccessMatchesAcceptedSpendGame",
-        "successProb_le_unionBound",
+        "successProb_le_acceptedSpendForgeryProb",
         "keygenDistributionModeledProof",
         "signingOracleModeledProof",
         "completenessModeledProof",
@@ -28815,7 +28815,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustProductionSignatureForgerySuccessProb",
         "selectedRustSignatureForgerySuccessProbPinned",
         "selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame",
-        "successProb_le_unionBound",
+        "successProb_le_acceptedSpendForgeryProb",
         "selectedRustFullSignatureKeygenModeled",
         "selectedRustFullSignatureSigningOracleModeled",
         "selectedRustFullSignatureCompletenessModeled",
@@ -28908,7 +28908,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustProductionSignatureForgerySuccessProb",
         "selectedRustSignatureForgerySuccessProbPinned",
         "selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame",
-        "successProb_le_unionBound",
+        "successProb_le_acceptedSpendForgeryProb",
         "selectedRustFullSignatureKeygenModeled",
         "selectedRustFullSignatureKeygenModeledProof",
         "selectedRustFullSignatureSigningOracleModeled",
@@ -52437,7 +52437,7 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
       selectedRustAcceptedSpendCertificate
   let _acceptedSpendSignatureToUnionBound :=
-    selectedRustAcceptedSpendCertificate.pricedNumericCertificate.successProb_le_unionBound
+    selectedRustAcceptedSpendCertificate.successProb_le_acceptedSpendForgeryProb
   let selectedRustActiveHashBoundary :=
     activeNativeHashBudgetBoundary
   let _activeHashBoundaryProps :=
@@ -52515,7 +52515,7 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
       selectedRustAcceptedSpendCertificate
   let _acceptedSpendSignatureToUnionBound :=
-    selectedRustAcceptedSpendCertificate.pricedNumericCertificate.successProb_le_unionBound
+    selectedRustAcceptedSpendCertificate.successProb_le_acceptedSpendForgeryProb
   let selectedRustActiveHashBoundary :=
     activeNativeHashBudgetBoundary
   let _activeHashBoundaryProps :=
