@@ -2223,6 +2223,16 @@ success-probability-to-active-128-bit projections from its real priced-bound
 inequality plus the selected report pricing half. The accepted-spend source
 gate requires those projection names, so the future pricing witness must expose
 the actual fixed-target consequence before certificate erasure.
+AP2-N003 union-decomposition note: `AcceptedSpendNumericGame`,
+`PricedAcceptedSpendNumericCertificate`, `SelectedAcceptedSpendNumericSource`,
+`SelectedRustConcreteAcceptedSpendNumericCertificate`,
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate`, and
+`SelectedRustConcreteAcceptedSpendPricingWitness` now expose the named equality
+that the accepted-spend union expression is the accepted-spend probability plus
+the finite sum of named-break probabilities. The accepted-spend source gate
+requires these identifiers, so the remaining concrete pricing proof must price
+the exact active accepted-plus-break decomposition rather than an opaque
+aggregate event.
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit

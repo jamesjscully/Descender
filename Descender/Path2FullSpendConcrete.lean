@@ -1627,6 +1627,23 @@ theorem acceptedSpendProb_le_acceptedSpendBound
       W.concreteCertificate.pricedCertificate.acceptedSpendBound :=
   W.concreteCertificate.pricedCertificate.acceptedSpendProb_le_acceptedSpendBound
 
+/-- The selected pricing witness exposes the accepted-spend plus named-break decomposition. -/
+theorem unionBound_eq_acceptedSpendProb_add_breakProb_sum
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.unionBound =
+      W.concreteCertificate.pricedCertificate.acceptedSpendProb +
+        (@Finset.univ W.concreteCertificate.pricedCertificate.Break
+          W.concreteCertificate.pricedCertificate.breakFintype).sum
+          (fun breakEvent =>
+            @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+              W.concreteCertificate.pricedCertificate.Trace
+              W.concreteCertificate.pricedCertificate.Outcome
+              W.concreteCertificate.pricedCertificate.Break
+              W.concreteCertificate.pricedCertificate.traceFintype
+              W.concreteCertificate.pricedCertificate.breakFintype
+              W.concreteCertificate.pricedCertificate.game breakEvent) :=
+  W.concreteCertificate.pricedCertificate.unionBound_eq_acceptedSpendProb_add_breakProb_sum
+
 /-- The selected pricing witness exposes each concrete named-break component bound. -/
 theorem breakProb_le_breakBound
     (W : SelectedRustConcreteAcceptedSpendPricingWitness)
@@ -1904,6 +1921,23 @@ theorem SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le
       Cert.pricedCertificate.acceptedSpendBound :=
   Cert.pricedCertificate.acceptedSpendProb_le_acceptedSpendBound
 
+/-- The selected concrete numeric certificate exposes the accepted-spend plus named-break decomposition. -/
+theorem SelectedRustConcreteAcceptedSpendNumericCertificate.unionBound_eq_acceptedSpendProb_add_breakProb_sum
+    (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    Cert.pricedCertificate.unionBound =
+      Cert.pricedCertificate.acceptedSpendProb +
+        (@Finset.univ Cert.pricedCertificate.Break
+          Cert.pricedCertificate.breakFintype).sum
+          (fun breakEvent =>
+            @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+              Cert.pricedCertificate.Trace
+              Cert.pricedCertificate.Outcome
+              Cert.pricedCertificate.Break
+              Cert.pricedCertificate.traceFintype
+              Cert.pricedCertificate.breakFintype
+              Cert.pricedCertificate.game breakEvent) :=
+  Cert.pricedCertificate.unionBound_eq_acceptedSpendProb_add_breakProb_sum
+
 /-- The selected concrete numeric certificate exposes accepted-spend probability at most one. -/
 theorem SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendProb_le_one
     (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
@@ -2053,6 +2087,23 @@ theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_le_o
         Source.concreteCertificate.pricedCertificate.breakFintype
         Source.concreteCertificate.pricedCertificate.game breakEvent <= 1 :=
   Source.concreteCertificate.breakProb_le_one breakEvent
+
+/-- The source-bound concrete certificate exposes the accepted-spend plus named-break decomposition. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.unionBound_eq_acceptedSpendProb_add_breakProb_sum
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.pricedCertificate.unionBound =
+      Source.concreteCertificate.pricedCertificate.acceptedSpendProb +
+        (@Finset.univ Source.concreteCertificate.pricedCertificate.Break
+          Source.concreteCertificate.pricedCertificate.breakFintype).sum
+          (fun breakEvent =>
+            @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+              Source.concreteCertificate.pricedCertificate.Trace
+              Source.concreteCertificate.pricedCertificate.Outcome
+              Source.concreteCertificate.pricedCertificate.Break
+              Source.concreteCertificate.pricedCertificate.traceFintype
+              Source.concreteCertificate.pricedCertificate.breakFintype
+              Source.concreteCertificate.pricedCertificate.game breakEvent) :=
+  Source.concreteCertificate.unionBound_eq_acceptedSpendProb_add_breakProb_sum
 
 /-- The source-bound report says the accepted-spend numeric bound is priced. -/
 theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBoundPriced

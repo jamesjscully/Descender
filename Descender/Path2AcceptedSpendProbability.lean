@@ -141,6 +141,19 @@ theorem acceptedSpendOrBreakUnionBound_nonneg
     intro event _hEvent
     exact G.traceDist.acceptProb_nonneg (G.acceptedOrBreakEvent event))
 
+omit [DecidableEq Break] in
+/--
+The accepted-spend union expression is exactly the accepted-spend event
+probability plus the finite sum of active named-break probabilities.
+-/
+theorem acceptedSpendOrBreakUnionBound_eq_acceptedSpendProb_add_breakProb_sum
+    (G : AcceptedSpendNumericGame Trace Outcome Break) :
+    G.acceptedSpendOrBreakUnionBound =
+      G.acceptedSpendProb + Finset.univ.sum G.breakProb := by
+  unfold acceptedSpendOrBreakUnionBound acceptedSpendProb breakProb
+  rw [Fintype.sum_option]
+  rfl
+
 /--
 If deployment pricing supplies a concrete upper bound for the union expression,
 then the full-signature success probability is below that bound.
@@ -367,6 +380,21 @@ theorem unionBound_nonneg
       C.Trace C.Outcome C.Break C.traceFintype C.breakFintype
       C.game
 
+/-- The packaged union expression is accepted spend plus the named-break sum. -/
+theorem unionBound_eq_acceptedSpendProb_add_breakProb_sum
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.unionBound =
+      C.acceptedSpendProb +
+        (@Finset.univ C.Break C.breakFintype).sum
+          (fun breakEvent =>
+            @AcceptedSpendNumericGame.breakProb
+              C.Trace C.Outcome C.Break C.traceFintype C.breakFintype
+              C.game breakEvent) := by
+  exact
+    @AcceptedSpendNumericGame.acceptedSpendOrBreakUnionBound_eq_acceptedSpendProb_add_breakProb_sum
+      C.Trace C.Outcome C.Break C.traceFintype C.breakFintype
+      C.game
+
 /-- The priced certificate's accepted-spend probability is bounded by its component budget. -/
 theorem acceptedSpendProb_le_acceptedSpendBound
     (C : PricedAcceptedSpendNumericCertificate) :
@@ -576,6 +604,23 @@ theorem unionBound_nonneg
     (Source : SelectedAcceptedSpendNumericSource) :
     0 <= Source.pricedCertificate.unionBound :=
   Source.pricedCertificate.unionBound_nonneg
+
+/-- The selected source exposes the accepted-spend plus named-break decomposition. -/
+theorem unionBound_eq_acceptedSpendProb_add_breakProb_sum
+    (Source : SelectedAcceptedSpendNumericSource) :
+    Source.pricedCertificate.unionBound =
+      Source.pricedCertificate.acceptedSpendProb +
+        (@Finset.univ Source.pricedCertificate.Break
+          Source.pricedCertificate.breakFintype).sum
+          (fun breakEvent =>
+            @AcceptedSpendNumericGame.breakProb
+              Source.pricedCertificate.Trace
+              Source.pricedCertificate.Outcome
+              Source.pricedCertificate.Break
+              Source.pricedCertificate.traceFintype
+              Source.pricedCertificate.breakFintype
+              Source.pricedCertificate.game breakEvent) :=
+  Source.pricedCertificate.unionBound_eq_acceptedSpendProb_add_breakProb_sum
 
 /-- The selected source exposes the accepted-spend component bound. -/
 theorem acceptedSpendProb_le_acceptedSpendBound
