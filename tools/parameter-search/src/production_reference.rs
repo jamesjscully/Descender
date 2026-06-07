@@ -29293,6 +29293,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "let selectedRustAcceptedSpendEvidenceDigestBoundProof := True.intro",
         "let selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
         "let selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
+        "let selectedRustConcreteAcceptedSpendNumericCertificateSource : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
+        "let selectedRustConcreteAcceptedSpendNumericCertificateSource := {",
+        "let selectedRustConcreteAcceptedSpendNumericCertificateSource := ⟨",
         "let selectedRustConcreteAcceptedSpendNumericCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
         "let selectedRustConcreteAcceptedSpendNumericCertificate := {",
         "let selectedRustConcreteAcceptedSpendNumericCertificate := ⟨",
@@ -54278,6 +54281,17 @@ def selectedRustConcreteAcceptedSpendNumericCertificateSource :=
         assert!(
             !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 &global_vacuous_concrete_numeric_source
+            )
+        );
+        let local_vacuous_concrete_numeric_source =
+            accepted_spend_instantiation_shape.replacen(
+                "let selectedRustConcreteAcceptedSpendNumericCertificate :=\n    selectedRustConcreteAcceptedSpendNumericCertificateSource",
+                "let selectedRustConcreteAcceptedSpendNumericCertificateSource :=\n    { pricedCertificate := selectedRustPricedAcceptedSpendNumericCertificate\n      outcomeCarrierPinned := selectedRustAcceptedSpendOutcomeCarrierPinned\n      acceptedSpendEventPinned := selectedRustAcceptedSpendEventPinned\n      breakFamilyPinned := selectedRustAcceptedSpendBreakFamilyPinned\n      namedBreakEventsPinned := selectedRustAcceptedSpendNamedBreakEventsPinned }\n  let selectedRustConcreteAcceptedSpendNumericCertificate :=\n    selectedRustConcreteAcceptedSpendNumericCertificateSource",
+                1,
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &local_vacuous_concrete_numeric_source
             )
         );
         let concrete_numeric_source_mentioned_but_not_consumed =

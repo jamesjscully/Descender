@@ -1641,7 +1641,10 @@ The same gate now rejects global `def`/`abbrev` record literals for
 `selectedRustConcreteAcceptedSpendNumericCertificate`; a regression prepends
 such a source to the otherwise accepted theorem shape and keeps the gate open,
 so the concrete active-carrier wrapper must come from a named
-production-derived source route.
+production-derived source route. It now also rejects theorem-local
+`let selectedRustConcreteAcceptedSpendNumericCertificateSource := { ... }`
+construction immediately before the concrete certificate binding, so the final
+theorem cannot fabricate that source in its body.
 `Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
 active full-spend named breaks, so the numeric game can index its union bound by
 the actual active break family.
