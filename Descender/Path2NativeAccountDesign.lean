@@ -3528,6 +3528,97 @@ def SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndReductionPr
     queryBudgetPricedProof
     multiTargetLossPricedProof
 
+/--
+Production-reduction witness for the active selected full-signature report.
+
+This packages the report production bits together with the actual probability
+pinning, accepted-spend-game equality, active hash boundary, and production
+verifier/execution obligations consumed by the selected full-reduction
+certificate constructor.
+-/
+structure SelectedRustFullSignatureReductionProductionWitness where
+  acceptedSpendCertificate : SelectedRustAcceptedSpendSoundnessCertificate
+  hashBoundary : NativeHashBudgetBoundary
+  signatureForgerySuccessProb : ℝ
+  productionSignatureForgerySuccessProb : ℝ
+  signatureForgerySuccessProbPinned :
+    signatureForgerySuccessProb = productionSignatureForgerySuccessProb
+  signatureForgerySuccessMatchesAcceptedSpendGame :
+    signatureForgerySuccessProb =
+      acceptedSpendCertificate.pricedNumericCertificate.successProb
+  keygenDistributionModeled : Prop
+  keygenDistributionModeledProof : keygenDistributionModeled
+  signingOracleModeled : Prop
+  signingOracleModeledProof : signingOracleModeled
+  completenessModeled : Prop
+  completenessModeledProof : completenessModeled
+  verifierRelationMatchesImplementation : Prop
+  verifierRelationMatchesImplementationProof :
+    verifierRelationMatchesImplementation
+  fullForgeryImpliesAcceptedSpendForgery : Prop
+  fullForgeryImpliesAcceptedSpendForgeryProof :
+    fullForgeryImpliesAcceptedSpendForgery
+  checkedCoreFrameDomainSeparatedProof :
+    hashBoundary.checkedCoreFrameDomainSeparated
+  hiddenSourceFrameDomainSeparatedProof :
+    hashBoundary.hiddenSourceFrameDomainSeparated
+  queryBudgetPricedProof :
+    hashBoundary.queryBudgetPriced
+  multiTargetLossPricedProof :
+    hashBoundary.multiTargetLossPriced
+  productionSignatureProbabilityPinnedProof :
+    selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned = true
+  signatureSuccessMatchesAcceptedSpendGameProof :
+    selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame = true
+  acceptedSpendProbabilityLinkedProof :
+    selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = true
+  allActiveQuerySymbolsPricedProof :
+    selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = true
+  verifierGameMatchesProductionExecutionProof :
+    selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = true
+
+namespace SelectedRustFullSignatureReductionProductionWitness
+
+/-- The selected production witness supplies the active report production half. -/
+theorem productionFactsComplete
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    SelectedRustFullSignatureReductionEvidenceReport.ProductionFactsComplete
+      selectedRustFullSignatureReductionEvidenceReport :=
+  ⟨W.productionSignatureProbabilityPinnedProof,
+    W.signatureSuccessMatchesAcceptedSpendGameProof,
+    W.acceptedSpendProbabilityLinkedProof,
+    W.allActiveQuerySymbolsPricedProof,
+    W.verifierGameMatchesProductionExecutionProof⟩
+
+/-- Build the selected full-reduction certificate from the production witness. -/
+def toFullSignatureReductionCertificate
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    SelectedRustFullSignatureReductionCertificate :=
+  SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndReductionProductionFacts
+    (productionFactsComplete W)
+    W.acceptedSpendCertificate
+    W.hashBoundary
+    W.signatureForgerySuccessProb
+    W.productionSignatureForgerySuccessProb
+    W.signatureForgerySuccessProbPinned
+    W.signatureForgerySuccessMatchesAcceptedSpendGame
+    W.keygenDistributionModeled
+    W.keygenDistributionModeledProof
+    W.signingOracleModeled
+    W.signingOracleModeledProof
+    W.completenessModeled
+    W.completenessModeledProof
+    W.verifierRelationMatchesImplementation
+    W.verifierRelationMatchesImplementationProof
+    W.fullForgeryImpliesAcceptedSpendForgery
+    W.fullForgeryImpliesAcceptedSpendForgeryProof
+    W.checkedCoreFrameDomainSeparatedProof
+    W.hiddenSourceFrameDomainSeparatedProof
+    W.queryBudgetPricedProof
+    W.multiTargetLossPricedProof
+
+end SelectedRustFullSignatureReductionProductionWitness
+
 /-- No selected full-signature certificate exists for the current fail-closed report. -/
 theorem SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impossible
     (Cert : SelectedRustFullSignatureReductionCertificate) : False :=

@@ -2181,3 +2181,12 @@ selected public evidence report. It derives both the active
 certificate. This makes the remaining accepted-spend hard half a single object
 that must carry both real probability pricing and the selected report bits,
 rather than letting those obligations be supplied independently.
+AP2-N003 full-reduction production-witness note:
+`SelectedRustFullSignatureReductionProductionWitness` now packages the selected
+accepted-spend certificate, active hash boundary, production signature
+probability pin, equality to the accepted-spend game, keygen/signing/
+completeness/verifier/execution obligations, and the selected full-reduction
+production report bits. It derives both `ProductionFactsComplete` and the
+selected full-signature reduction certificate, so the remaining full-reduction
+hard half is tied to the actual reduction data rather than independent Boolean
+claims.
