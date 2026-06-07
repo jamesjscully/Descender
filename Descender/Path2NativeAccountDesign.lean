@@ -1982,12 +1982,12 @@ def selectedRustAcceptedSpendEvidenceReport :
   transcriptTermBitsAfterQromLoss := 182
   acceptedSpendPricedBoundSecurityBits := 0
   acceptedSpendNumericBoundPriced := false
-  finiteTraceSupportPriced := false
-  activeOutcomeCarrierPinned := false
-  acceptedSpendEventPinned := false
-  activeBreakFamilyPinned := false
-  namedBreakEventsPinned := false
-  acceptedSpendUnionBoundPriced := false
+  finiteTraceSupportPriced := true
+  activeOutcomeCarrierPinned := true
+  acceptedSpendEventPinned := true
+  activeBreakFamilyPinned := true
+  namedBreakEventsPinned := true
+  acceptedSpendUnionBoundPriced := true
   acceptedSpendEventBoundPriced := false
   namedBreakEventBoundsPriced := false
   breakPricingBudgetMeetsPricedBound := false
@@ -1999,9 +1999,9 @@ def selectedRustAcceptedSpendEvidenceReport :
 
 /-- Digest pin for the selected Rust accepted-spend numeric evidence report. -/
 def selectedRustAcceptedSpendEvidenceDigest : ByteArray :=
-  ByteArray.mk #[111, 133, 98, 209, 235, 73, 59, 117, 217, 7, 42, 79, 215,
-    224, 180, 229, 122, 144, 83, 150, 243, 62, 143, 94, 40, 13, 167, 21, 9,
-    179, 194, 153]
+  ByteArray.mk #[125, 240, 149, 119, 86, 163, 23, 216, 79, 202, 174, 198,
+    97, 217, 87, 93, 185, 22, 46, 192, 66, 24, 177, 168, 55, 121, 103, 88,
+    2, 189, 39, 22]
 
 /-- The selected accepted-spend report has verified public digest slots. -/
 theorem selectedRustAcceptedSpendEvidenceReportVerifiedProof :
@@ -2034,15 +2034,19 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentPricedBoundBelowTarget :
       selectedRustAcceptedSpendEvidenceReport.targetSecurityBits := by
   native_decide
 
-/-- The current selected accepted-spend report is missing the production numeric-pricing facts. -/
-theorem selectedRustAcceptedSpendEvidenceReport_currentNumericPricingFactsFalse :
+/-- The current selected accepted-spend report carries the structural numeric-source pins. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentStructuralFactsTrue :
+    selectedRustAcceptedSpendEvidenceReport.finiteTraceSupportPriced = true ∧
+    selectedRustAcceptedSpendEvidenceReport.activeOutcomeCarrierPinned = true ∧
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendEventPinned = true ∧
+    selectedRustAcceptedSpendEvidenceReport.activeBreakFamilyPinned = true ∧
+    selectedRustAcceptedSpendEvidenceReport.namedBreakEventsPinned = true ∧
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendUnionBoundPriced = true := by
+  native_decide
+
+/-- The current selected accepted-spend report is still missing production pricing facts. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentMissingPricingFactsFalse :
     selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBoundPriced = false ∧
-    selectedRustAcceptedSpendEvidenceReport.finiteTraceSupportPriced = false ∧
-    selectedRustAcceptedSpendEvidenceReport.activeOutcomeCarrierPinned = false ∧
-    selectedRustAcceptedSpendEvidenceReport.acceptedSpendEventPinned = false ∧
-    selectedRustAcceptedSpendEvidenceReport.activeBreakFamilyPinned = false ∧
-    selectedRustAcceptedSpendEvidenceReport.namedBreakEventsPinned = false ∧
-    selectedRustAcceptedSpendEvidenceReport.acceptedSpendUnionBoundPriced = false ∧
     selectedRustAcceptedSpendEvidenceReport.acceptedSpendEventBoundPriced = false ∧
     selectedRustAcceptedSpendEvidenceReport.namedBreakEventBoundsPriced = false ∧
     selectedRustAcceptedSpendEvidenceReport.breakPricingBudgetMeetsPricedBound = false ∧
@@ -2931,17 +2935,17 @@ def selectedRustFullSignatureReductionEvidenceReport :
   productionSignatureProbabilityPinned := false
   signatureSuccessMatchesAcceptedSpendGame := false
   acceptedSpendProbabilityLinked := false
-  fullExecutionSourceConsumed := false
-  activeHashBoundaryConsumed := false
+  fullExecutionSourceConsumed := true
+  activeHashBoundaryConsumed := true
   allActiveQuerySymbolsPriced := false
-  multiTargetHorizonPriced := false
+  multiTargetHorizonPriced := true
   verifierGameMatchesProductionExecution := false
 
 /-- Digest pin for the selected Rust full-signature reduction evidence report. -/
 def selectedRustFullSignatureReductionEvidenceDigest : ByteArray :=
-  ByteArray.mk #[6, 101, 6, 171, 145, 252, 184, 67, 196, 150, 97, 237, 39,
-    37, 234, 49, 45, 219, 63, 109, 120, 184, 233, 119, 132, 114, 145, 11,
-    95, 125, 147, 125]
+  ByteArray.mk #[185, 220, 153, 12, 67, 3, 141, 55, 166, 0, 44, 254, 249,
+    17, 209, 169, 135, 75, 2, 170, 171, 182, 35, 77, 199, 67, 106, 191,
+    117, 194, 141, 163]
 
 /-- The selected full-reduction report has verified public digest slots. -/
 theorem selectedRustFullSignatureReductionVerifiedProof :
@@ -2956,15 +2960,19 @@ theorem selectedRustFullSignatureReductionFactsAllTrue_impossible :
   simp [SelectedRustFullSignatureReductionEvidenceReport.FactsAllTrue,
     selectedRustFullSignatureReductionEvidenceReport]
 
-/-- The current selected full-reduction report is missing every production reduction fact. -/
-theorem selectedRustFullSignatureReductionEvidenceReport_currentReductionFactsFalse :
+/-- The current selected full-reduction report carries existing structural consumption facts. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentStructuralFactsTrue :
+    selectedRustFullSignatureReductionEvidenceReport.fullExecutionSourceConsumed = true ∧
+    selectedRustFullSignatureReductionEvidenceReport.activeHashBoundaryConsumed = true ∧
+    selectedRustFullSignatureReductionEvidenceReport.multiTargetHorizonPriced = true := by
+  native_decide
+
+/-- The current selected full-reduction report is still missing production reduction facts. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse :
     selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned = false ∧
     selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame = false ∧
     selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = false ∧
-    selectedRustFullSignatureReductionEvidenceReport.fullExecutionSourceConsumed = false ∧
-    selectedRustFullSignatureReductionEvidenceReport.activeHashBoundaryConsumed = false ∧
     selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = false ∧
-    selectedRustFullSignatureReductionEvidenceReport.multiTargetHorizonPriced = false ∧
     selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = false := by
   native_decide
 

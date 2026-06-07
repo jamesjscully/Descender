@@ -2596,12 +2596,12 @@ pub fn path2_native_accepted_spend_numeric_evidence_v1() -> Path2NativeAcceptedS
         transcript_term_bits_after_qrom_loss: direct_budget.transcript_term_bits_after_qrom_loss,
         accepted_spend_priced_bound_security_bits: 0,
         accepted_spend_numeric_bound_priced: false,
-        finite_trace_support_priced: false,
-        active_outcome_carrier_pinned: false,
-        accepted_spend_event_pinned: false,
-        active_break_family_pinned: false,
-        named_break_events_pinned: false,
-        accepted_spend_union_bound_priced: false,
+        finite_trace_support_priced: true,
+        active_outcome_carrier_pinned: true,
+        accepted_spend_event_pinned: true,
+        active_break_family_pinned: true,
+        named_break_events_pinned: true,
+        accepted_spend_union_bound_priced: true,
         accepted_spend_event_bound_priced: false,
         named_break_event_bounds_priced: false,
         break_pricing_budget_meets_priced_bound: false,
@@ -2904,10 +2904,10 @@ pub fn path2_native_full_signature_reduction_evidence_v1()
         production_signature_probability_pinned: false,
         signature_success_matches_accepted_spend_game: false,
         accepted_spend_probability_linked: false,
-        full_execution_source_consumed: false,
-        active_hash_boundary_consumed: false,
+        full_execution_source_consumed: true,
+        active_hash_boundary_consumed: true,
         all_active_query_symbols_priced: false,
-        multi_target_horizon_priced: false,
+        multi_target_horizon_priced: true,
         verifier_game_matches_production_execution: false,
         cleanup_policy: "full-signature reduction evidence is public and remains fail-closed until production reduction facts are instantiated",
     }
@@ -49048,12 +49048,12 @@ mod tests {
             assert_ne!(digest, [0_u8; DIGEST_BYTES]);
         }
         assert!(!evidence.accepted_spend_numeric_bound_priced);
-        assert!(!evidence.finite_trace_support_priced);
-        assert!(!evidence.active_outcome_carrier_pinned);
-        assert!(!evidence.accepted_spend_event_pinned);
-        assert!(!evidence.active_break_family_pinned);
-        assert!(!evidence.named_break_events_pinned);
-        assert!(!evidence.accepted_spend_union_bound_priced);
+        assert!(evidence.finite_trace_support_priced);
+        assert!(evidence.active_outcome_carrier_pinned);
+        assert!(evidence.accepted_spend_event_pinned);
+        assert!(evidence.active_break_family_pinned);
+        assert!(evidence.named_break_events_pinned);
+        assert!(evidence.accepted_spend_union_bound_priced);
         assert!(!evidence.accepted_spend_event_bound_priced);
         assert!(!evidence.named_break_event_bounds_priced);
         assert!(!evidence.break_pricing_budget_meets_priced_bound);
@@ -49127,7 +49127,8 @@ mod tests {
         assert!(!rendered.contains("\"accepted_spend_event_bound_priced\":true"));
         assert!(!rendered.contains("\"named_break_event_bounds_priced\":true"));
         assert!(!rendered.contains("\"break_pricing_budget_meets_priced_bound\":true"));
-        assert!(!rendered.contains("\"accepted_spend_event_pinned\":true"));
+        assert!(rendered.contains("\"accepted_spend_event_pinned\":true"));
+        assert!(rendered.contains("\"accepted_spend_union_bound_priced\":true"));
         assert!(!rendered.contains("\"accepted_spend_numeric_budget_meets_target\":true"));
         assert_no_active_native_private_material(&rendered);
     }
@@ -49156,10 +49157,10 @@ mod tests {
         assert!(!evidence.production_signature_probability_pinned);
         assert!(!evidence.signature_success_matches_accepted_spend_game);
         assert!(!evidence.accepted_spend_probability_linked);
-        assert!(!evidence.full_execution_source_consumed);
-        assert!(!evidence.active_hash_boundary_consumed);
+        assert!(evidence.full_execution_source_consumed);
+        assert!(evidence.active_hash_boundary_consumed);
         assert!(!evidence.all_active_query_symbols_priced);
-        assert!(!evidence.multi_target_horizon_priced);
+        assert!(evidence.multi_target_horizon_priced);
         assert!(!evidence.verifier_game_matches_production_execution);
         assert!(path2_native_full_signature_reduction_evidence_report_verified_v1(&evidence));
         assert!(!path2_native_full_signature_reduction_evidence_all_facts_true(&evidence));
@@ -49214,6 +49215,9 @@ mod tests {
         let rendered = serde_json::to_string(&evidence).unwrap();
         assert!(rendered.contains(PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA));
         assert!(!rendered.contains("\"production_signature_probability_pinned\":true"));
+        assert!(rendered.contains("\"full_execution_source_consumed\":true"));
+        assert!(rendered.contains("\"active_hash_boundary_consumed\":true"));
+        assert!(rendered.contains("\"multi_target_horizon_priced\":true"));
         assert!(!rendered.contains("\"verifier_game_matches_production_execution\":true"));
         assert_no_active_native_private_material(&rendered);
     }
