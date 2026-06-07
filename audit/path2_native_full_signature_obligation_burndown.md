@@ -1522,6 +1522,11 @@ full-forgery probability-bound projections plus union-bound pricing, and the
 accepted-spend certificate-to-boundary conversion consumes the selected source's
 union-bound pricing proof instead of reaching directly into the raw priced
 certificate.
+The accepted-spend certificate now also exposes
+`acceptedSpendForgeryProb_le_bound`, packaging the exported probability
+inequality before conversion to `NativeAcceptedSpendSoundnessBoundary`; the
+source gate requires the future selected theorem to consume this certificate
+projection.
 The concrete wrapper also exposes selected theorem projections for accepted-
 spend probability below the priced bound, full-forgery success below the union
 bound, and full-forgery success below the priced bound. The numeric-bound source

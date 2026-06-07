@@ -1764,6 +1764,60 @@ def SelectedRustAcceptedSpendSoundnessCertificate.pricedNumericCertificate
     Path2AcceptedSpendProbability.PricedAcceptedSpendNumericCertificate :=
   Cert.numericSource.pricedCertificate
 
+/-- The selected accepted-spend certificate proves its exported probability bound. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.acceptedSpendForgeryProb <= Cert.acceptedSpendForgeryBound := by
+  let _hVerified : Cert.evidenceReport.ReportVerified :=
+    Cert.selectedRustAcceptedSpendBoundVerifiedProof
+  let _hFacts : Cert.evidenceReport.FactsAllTrue :=
+    Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hReportBound : Cert.evidenceReportBound :=
+    Cert.evidenceReportBoundProof
+  let _hDigestBound : Cert.evidenceDigestBound :=
+    Cert.evidenceDigestBoundProof
+  let _hPricedBoundBitsMeetTarget :
+      Cert.evidenceReport.targetSecurityBits ≤
+        Cert.evidenceReport.acceptedSpendPricedBoundSecurityBits :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_pricedBoundSecurityMeetsTarget
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hActiveBudgetMarginPriced :
+      Cert.evidenceReport.targetSecurityBits +
+        Cert.evidenceReport.selectedMultiTargetHorizonLog2 ≤
+          Cert.evidenceReport.transcriptTermBitsAfterQromLoss :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetMarginPriced
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hActiveBudgetSlack :
+      Cert.evidenceReport.transcriptTermBitsAfterQromLoss -
+        (Cert.evidenceReport.targetSecurityBits +
+          Cert.evidenceReport.selectedMultiTargetHorizonLog2) = 22 :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_activeBudgetSlackBits
+        Cert.evidenceReport
+        Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  let _hPricedBoundSecurity :
+      Cert.pricedNumericCertificate.pricedBound <=
+        ((2 : ℝ) ^
+          Cert.evidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹ :=
+    Cert.acceptedSpendPricedBoundSecurityPriced
+  let _hProbPinned :
+      Cert.acceptedSpendForgeryProb =
+        Cert.productionAcceptedSpendForgeryProb :=
+    Cert.acceptedSpendForgeryProbPinned
+  let _hBoundPinned :
+      Cert.acceptedSpendForgeryBound =
+        Cert.productionAcceptedSpendForgeryBound :=
+    Cert.acceptedSpendForgeryBoundPinned
+  calc
+    Cert.acceptedSpendForgeryProb =
+        Cert.pricedNumericCertificate.unionBound :=
+      Cert.acceptedSpendForgeryProbMatchesUnionBound
+    _ <= Cert.pricedNumericCertificate.pricedBound :=
+      Cert.numericSource.unionBound_le_priced
+    _ = Cert.acceptedSpendForgeryBound :=
+      Cert.acceptedSpendForgeryBoundMatchesPriced.symm
+
 /-- Convert selected Rust accepted-spend numeric evidence into the boundary. -/
 def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
     (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
@@ -1822,14 +1876,7 @@ def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBounda
         Cert.acceptedSpendForgeryBound =
           Cert.productionAcceptedSpendForgeryBound :=
       Cert.acceptedSpendForgeryBoundPinned
-    calc
-      Cert.acceptedSpendForgeryProb =
-          Cert.pricedNumericCertificate.unionBound :=
-        Cert.acceptedSpendForgeryProbMatchesUnionBound
-      _ <= Cert.pricedNumericCertificate.pricedBound :=
-        Cert.numericSource.unionBound_le_priced
-      _ = Cert.acceptedSpendForgeryBound :=
-        Cert.acceptedSpendForgeryBoundMatchesPriced.symm
+    exact Cert.acceptedSpendForgeryProb_le_bound
   hiddenSourceProofSemanticsClosed :=
     Cert.hiddenSourceProofSemanticsClosed
   checkedCoreCompositionClosed :=

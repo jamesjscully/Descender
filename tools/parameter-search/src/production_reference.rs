@@ -29277,6 +29277,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "let selectedRustAcceptedSpendSoundnessCertificate :",
         "SelectedRustAcceptedSpendSoundnessCertificate",
         "SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound",
         "acceptedSpendNumericBoundPriced",
         "numericEvidenceDigestsVerified",
         "finiteTraceSupportDigest",
@@ -53467,6 +53468,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustActiveNoExportSerializer_instantiation_v1
   let _noExportClosure :=
     activeSerializerAllowlist_boundaryNoExportClosed
+  let _acceptedSpendCertificateProbBound :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound
   let selectedRustAcceptedSpendSoundnessCertificate :
       SelectedRustAcceptedSpendSoundnessCertificate :=
     SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
@@ -53660,6 +53663,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     selectedRustActiveNoExportSerializer_instantiation_v1
   let _noExportClosure :=
     activeSerializerAllowlist_boundaryNoExportClosed
+  let _acceptedSpendCertificateProbBound :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound
   let selectedRustAcceptedSpendSoundnessCertificate :
       SelectedRustAcceptedSpendSoundnessCertificate :=
     SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
