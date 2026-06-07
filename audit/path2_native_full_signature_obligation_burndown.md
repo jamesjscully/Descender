@@ -1489,6 +1489,11 @@ security bits `0` and the target predicate false, so it remains fail-closed.
 `((2 : ℝ) ^ evidenceReport.acceptedSpendPricedBoundSecurityBits)⁻¹`. The
 source gate requires the named selected proof and rejects `le_rfl` aliases, so
 reported security bits cannot remain detached from the probability bound.
+The source gate also rejects local/global `rfl` aliases for
+`selectedRustAcceptedSpendForgeryProbMatchesUnionBound` and
+`selectedRustAcceptedSpendForgeryBoundMatchesPriced`, keeping the exported
+accepted-spend probability and bound tied to selected evidence rather than
+local definitional shells.
 The accepted-spend numeric-bound source gate now requires the consumed
 `selectedRustAcceptedSpendNumericSource` binding to be exactly the result of
 `SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource`

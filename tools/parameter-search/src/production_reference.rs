@@ -28545,6 +28545,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "def selectedRustProductionAcceptedSpendForgeryBound := 0",
         "def selectedRustProductionAcceptedSpendForgeryBound : ℝ := 0",
         "def selectedRustProductionAcceptedSpendForgeryBound : ℝ := (0 : ℝ)",
+        "def selectedRustAcceptedSpendForgeryProbMatchesUnionBound := rfl",
+        "def selectedRustAcceptedSpendForgeryBoundMatchesPriced := rfl",
         "def selectedRustAcceptedSpendForgeryProbPinned := rfl",
         "def selectedRustAcceptedSpendForgeryBoundPinned := rfl",
         "def selectedRustAcceptedSpendForgeryLeBound := le_rfl",
@@ -28717,6 +28719,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "let selectedRustProductionAcceptedSpendForgeryBound := 0",
         "let selectedRustProductionAcceptedSpendForgeryBound : ℝ := 0",
         "let selectedRustProductionAcceptedSpendForgeryBound : ℝ := (0 : ℝ)",
+        "let selectedRustAcceptedSpendForgeryProbMatchesUnionBound := rfl",
+        "let selectedRustAcceptedSpendForgeryBoundMatchesPriced := rfl",
         "let selectedRustAcceptedSpendForgeryProbPinned := rfl",
         "let selectedRustAcceptedSpendForgeryBoundPinned := rfl",
         "let selectedRustAcceptedSpendForgeryLeBound := le_rfl",
@@ -52592,6 +52596,8 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
   let selectedRustAcceptedSpendForgeryBound : ℝ := (0 : ℝ)
   let selectedRustProductionAcceptedSpendForgeryProb : ℝ := 0
   let selectedRustProductionAcceptedSpendForgeryBound : ℝ := (0 : ℝ)
+  let selectedRustAcceptedSpendForgeryProbMatchesUnionBound := rfl
+  let selectedRustAcceptedSpendForgeryBoundMatchesPriced := rfl
   let selectedRustAcceptedSpendForgeryProbPinned := rfl
   let selectedRustAcceptedSpendForgeryBoundPinned := rfl
   let selectedRustAcceptedSpendForgeryLeBound := le_rfl
@@ -52640,6 +52646,8 @@ def selectedRustAcceptedSpendForgeryProb : ℝ := 0
 def selectedRustAcceptedSpendForgeryBound : ℝ := (0 : ℝ)
 def selectedRustProductionAcceptedSpendForgeryProb : ℝ := 0
 def selectedRustProductionAcceptedSpendForgeryBound : ℝ := (0 : ℝ)
+def selectedRustAcceptedSpendForgeryProbMatchesUnionBound := rfl
+def selectedRustAcceptedSpendForgeryBoundMatchesPriced := rfl
 def selectedRustAcceptedSpendHiddenSourceClosed := True
 def selectedRustAcceptedSpendCheckedCoreClosed := True
 def selectedRustAcceptedSpendLifecycleClosed := True
