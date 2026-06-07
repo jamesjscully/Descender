@@ -29052,6 +29052,7 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "selectedRustAcceptedSpendEvidenceDigestBoundProof",
         "selectedRustAcceptedSpendBoundVerifiedProof",
         "selectedRustAcceptedSpendFactsAllTrueProof",
+        "selectedRustConcreteAcceptedSpendNumericSourceCertificate",
         "selectedRustConcreteAcceptedSpendNumericCertificate",
         "selectedRustAcceptedSpendNumericSource",
         "selectedRustAcceptedSpendForgeryProb",
@@ -29117,6 +29118,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "def selectedRustConcreteAcceptedSpendNumericCertificateSource := {",
         "def selectedRustConcreteAcceptedSpendNumericCertificateSource : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
         "def selectedRustConcreteAcceptedSpendNumericCertificateSource := ⟨",
+        "def selectedRustConcreteAcceptedSpendNumericSourceCertificate := {",
+        "def selectedRustConcreteAcceptedSpendNumericSourceCertificate : SelectedRustConcreteAcceptedSpendNumericSourceCertificate :=",
+        "def selectedRustConcreteAcceptedSpendNumericSourceCertificate := ⟨",
         "def selectedRustConcreteAcceptedSpendNumericCertificate := {",
         "def selectedRustConcreteAcceptedSpendNumericCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
         "def selectedRustConcreteAcceptedSpendNumericCertificate := ⟨",
@@ -29153,6 +29157,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "abbrev selectedRustConcreteAcceptedSpendNumericCertificateSource := {",
         "abbrev selectedRustConcreteAcceptedSpendNumericCertificateSource : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
         "abbrev selectedRustConcreteAcceptedSpendNumericCertificateSource := ⟨",
+        "abbrev selectedRustConcreteAcceptedSpendNumericSourceCertificate := {",
+        "abbrev selectedRustConcreteAcceptedSpendNumericSourceCertificate : SelectedRustConcreteAcceptedSpendNumericSourceCertificate :=",
+        "abbrev selectedRustConcreteAcceptedSpendNumericSourceCertificate := ⟨",
         "abbrev selectedRustConcreteAcceptedSpendNumericCertificate := {",
         "abbrev selectedRustConcreteAcceptedSpendNumericCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
         "abbrev selectedRustConcreteAcceptedSpendNumericCertificate := ⟨",
@@ -29296,6 +29303,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "let selectedRustConcreteAcceptedSpendNumericCertificateSource : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
         "let selectedRustConcreteAcceptedSpendNumericCertificateSource := {",
         "let selectedRustConcreteAcceptedSpendNumericCertificateSource := ⟨",
+        "let selectedRustConcreteAcceptedSpendNumericSourceCertificate : SelectedRustConcreteAcceptedSpendNumericSourceCertificate :=",
+        "let selectedRustConcreteAcceptedSpendNumericSourceCertificate := {",
+        "let selectedRustConcreteAcceptedSpendNumericSourceCertificate := ⟨",
         "let selectedRustConcreteAcceptedSpendNumericCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate :=",
         "let selectedRustConcreteAcceptedSpendNumericCertificate := {",
         "let selectedRustConcreteAcceptedSpendNumericCertificate := ⟨",
@@ -29378,6 +29388,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedAcceptedSpendNumericSource.breakBudget_le_pricedBound",
         "selectedRustAcceptedSpendNumericOutcome",
         "SelectedRustConcreteAcceptedSpendNumericCertificate",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource",
         "outcomeCarrierPinned",
         "acceptedSpendEventPinned",
         "toPricedAcceptedSpendNumericCertificate",
@@ -29471,10 +29485,12 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "selectedRustAcceptedSpendEvidenceDigestBoundProof",
         "selectedRustAcceptedSpendBoundVerifiedProof",
         "selectedRustAcceptedSpendFactsAllTrueProof",
+        "selectedRustConcreteAcceptedSpendNumericSourceCertificate",
         "selectedRustConcreteAcceptedSpendNumericCertificate",
         "selectedRustAcceptedSpendNumericSource",
         "let selectedRustAcceptedSpendNumericSource :=",
-        "SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource\n      selectedRustConcreteAcceptedSpendNumericCertificate",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate\n      selectedRustConcreteAcceptedSpendNumericSourceCertificate",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource\n      selectedRustConcreteAcceptedSpendNumericSourceCertificate",
         "selectedRustAcceptedSpendForgeryProb",
         "selectedRustAcceptedSpendForgeryBound",
         "selectedRustProductionAcceptedSpendForgeryProb",
@@ -29507,6 +29523,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "PricedAcceptedSpendNumericCertificate.breakBudget_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.toPricedAcceptedSpendNumericCertificate",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate",
+        "SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.outcome_eq_selectedFullForgeryRun",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.acceptedSpendEvent_activeSound",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.break_eq_activeFullSpendBreakEvent",
@@ -53735,8 +53754,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericCertificate.outcomeCarrierPinned
   let _acceptedSpendConcretePricedCertificate :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.toPricedAcceptedSpendNumericCertificate
-  let _acceptedSpendConcreteNumericSource :=
+  let _acceptedSpendConcreteLegacyNumericSourceProjection :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource
+  let _acceptedSpendConcreteNumericSourceCertificate :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate
+  let _acceptedSpendConcreteNumericSourceConstructor :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate
+  let _acceptedSpendConcreteNumericSourceConcreteProjection :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate
+  let _acceptedSpendConcreteNumericSourceSelectedProjection :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource
   let _acceptedSpendConcreteOutcomeTheorem :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.outcome_eq_selectedFullForgeryRun
   let _acceptedSpendConcreteAcceptedSpendEventTheorem :=
@@ -53763,11 +53790,23 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_unionBound
   let _acceptedSpendConcreteSuccessProbPriced :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_pricedBound
+  let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate
+      selectedRustAcceptedSpendEvidenceReport
+      selectedRustAcceptedSpendEvidenceDigest
+      selectedRustAcceptedSpendEvidenceReportBound
+      selectedRustAcceptedSpendEvidenceReportBoundProof
+      selectedRustAcceptedSpendEvidenceDigestBound
+      selectedRustAcceptedSpendEvidenceDigestBoundProof
+      selectedRustAcceptedSpendBoundVerifiedProof
+      selectedRustAcceptedSpendFactsAllTrueProof
+      selectedRustConcreteAcceptedSpendNumericCertificateSource
   let selectedRustConcreteAcceptedSpendNumericCertificate :=
-    selectedRustConcreteAcceptedSpendNumericCertificateSource
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate
+      selectedRustConcreteAcceptedSpendNumericSourceCertificate
   let selectedRustAcceptedSpendNumericSource :=
-    SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource
-      selectedRustConcreteAcceptedSpendNumericCertificate
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource
+      selectedRustConcreteAcceptedSpendNumericSourceCertificate
   let _acceptedSpendPricedCertificate :=
     PricedAcceptedSpendNumericCertificate.unionBound_le_priced
   let _acceptedSpendPricedBreakPricing :=
@@ -54118,8 +54157,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericCertificate.outcomeCarrierPinned
   let _acceptedSpendConcretePricedCertificate :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.toPricedAcceptedSpendNumericCertificate
-  let _acceptedSpendConcreteNumericSource :=
+  let _acceptedSpendConcreteLegacyNumericSourceProjection :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource
+  let _acceptedSpendConcreteNumericSourceCertificate :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate
+  let _acceptedSpendConcreteNumericSourceConstructor :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate
+  let _acceptedSpendConcreteNumericSourceConcreteProjection :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate
+  let _acceptedSpendConcreteNumericSourceSelectedProjection :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource
   let _acceptedSpendConcreteOutcomeTheorem :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.outcome_eq_selectedFullForgeryRun
   let _acceptedSpendConcreteAcceptedSpendEventTheorem :=
@@ -54146,11 +54193,23 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_unionBound
   let _acceptedSpendConcreteSuccessProbPriced :=
     SelectedRustConcreteAcceptedSpendNumericCertificate.successProb_le_pricedBound
+  let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate
+      selectedRustAcceptedSpendEvidenceReport
+      selectedRustAcceptedSpendEvidenceDigest
+      selectedRustAcceptedSpendEvidenceReportBound
+      selectedRustAcceptedSpendEvidenceReportBoundProof
+      selectedRustAcceptedSpendEvidenceDigestBound
+      selectedRustAcceptedSpendEvidenceDigestBoundProof
+      selectedRustAcceptedSpendBoundVerifiedProof
+      selectedRustAcceptedSpendFactsAllTrueProof
+      selectedRustConcreteAcceptedSpendNumericCertificateSource
   let selectedRustConcreteAcceptedSpendNumericCertificate :=
-    selectedRustConcreteAcceptedSpendNumericCertificateSource
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate
+      selectedRustConcreteAcceptedSpendNumericSourceCertificate
   let selectedRustAcceptedSpendNumericSource :=
-    SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource
-      selectedRustConcreteAcceptedSpendNumericCertificate
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource
+      selectedRustConcreteAcceptedSpendNumericSourceCertificate
   let _acceptedSpendPricedCertificate :=
     PricedAcceptedSpendNumericCertificate.unionBound_le_priced
   let _acceptedSpendPricedBreakPricing :=
@@ -54283,9 +54342,30 @@ def selectedRustConcreteAcceptedSpendNumericCertificateSource :=
                 &global_vacuous_concrete_numeric_source
             )
         );
+        let global_vacuous_concrete_numeric_source_certificate = format!(
+            "{}\n{}",
+            r#"
+def selectedRustConcreteAcceptedSpendNumericSourceCertificate :=
+  { evidenceReport := selectedRustAcceptedSpendEvidenceReport
+    evidenceDigest := selectedRustAcceptedSpendEvidenceDigest
+    evidenceReportBound := selectedRustAcceptedSpendEvidenceReportBound
+    evidenceReportBoundProof := selectedRustAcceptedSpendEvidenceReportBoundProof
+    evidenceDigestBound := selectedRustAcceptedSpendEvidenceDigestBound
+    evidenceDigestBoundProof := selectedRustAcceptedSpendEvidenceDigestBoundProof
+    evidenceReportVerifiedProof := selectedRustAcceptedSpendBoundVerifiedProof
+    evidenceFactsAllTrueProof := selectedRustAcceptedSpendFactsAllTrueProof
+    concreteCertificate := selectedRustConcreteAcceptedSpendNumericCertificateSource }
+"#,
+            accepted_spend_instantiation_shape
+        );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &global_vacuous_concrete_numeric_source_certificate
+            )
+        );
         let local_vacuous_concrete_numeric_source =
             accepted_spend_instantiation_shape.replacen(
-                "let selectedRustConcreteAcceptedSpendNumericCertificate :=\n    selectedRustConcreteAcceptedSpendNumericCertificateSource",
+                "let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=\n    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate\n      selectedRustAcceptedSpendEvidenceReport\n      selectedRustAcceptedSpendEvidenceDigest\n      selectedRustAcceptedSpendEvidenceReportBound\n      selectedRustAcceptedSpendEvidenceReportBoundProof\n      selectedRustAcceptedSpendEvidenceDigestBound\n      selectedRustAcceptedSpendEvidenceDigestBoundProof\n      selectedRustAcceptedSpendBoundVerifiedProof\n      selectedRustAcceptedSpendFactsAllTrueProof\n      selectedRustConcreteAcceptedSpendNumericCertificateSource",
                 "let selectedRustConcreteAcceptedSpendNumericCertificateSource :=\n    { pricedCertificate := selectedRustPricedAcceptedSpendNumericCertificate\n      outcomeCarrierPinned := selectedRustAcceptedSpendOutcomeCarrierPinned\n      acceptedSpendEventPinned := selectedRustAcceptedSpendEventPinned\n      breakFamilyPinned := selectedRustAcceptedSpendBreakFamilyPinned\n      namedBreakEventsPinned := selectedRustAcceptedSpendNamedBreakEventsPinned }\n  let selectedRustConcreteAcceptedSpendNumericCertificate :=\n    selectedRustConcreteAcceptedSpendNumericCertificateSource",
                 1,
             );
@@ -54294,9 +54374,20 @@ def selectedRustConcreteAcceptedSpendNumericCertificateSource :=
                 &local_vacuous_concrete_numeric_source
             )
         );
+        let local_vacuous_concrete_numeric_source_certificate =
+            accepted_spend_instantiation_shape.replacen(
+                "let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=\n    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.ofReportAndConcreteCertificate\n      selectedRustAcceptedSpendEvidenceReport\n      selectedRustAcceptedSpendEvidenceDigest\n      selectedRustAcceptedSpendEvidenceReportBound\n      selectedRustAcceptedSpendEvidenceReportBoundProof\n      selectedRustAcceptedSpendEvidenceDigestBound\n      selectedRustAcceptedSpendEvidenceDigestBoundProof\n      selectedRustAcceptedSpendBoundVerifiedProof\n      selectedRustAcceptedSpendFactsAllTrueProof\n      selectedRustConcreteAcceptedSpendNumericCertificateSource",
+                "let selectedRustConcreteAcceptedSpendNumericSourceCertificate :=\n    { evidenceReport := selectedRustAcceptedSpendEvidenceReport\n      evidenceDigest := selectedRustAcceptedSpendEvidenceDigest\n      evidenceReportBound := selectedRustAcceptedSpendEvidenceReportBound\n      evidenceReportBoundProof := selectedRustAcceptedSpendEvidenceReportBoundProof\n      evidenceDigestBound := selectedRustAcceptedSpendEvidenceDigestBound\n      evidenceDigestBoundProof := selectedRustAcceptedSpendEvidenceDigestBoundProof\n      evidenceReportVerifiedProof := selectedRustAcceptedSpendBoundVerifiedProof\n      evidenceFactsAllTrueProof := selectedRustAcceptedSpendFactsAllTrueProof\n      concreteCertificate := selectedRustConcreteAcceptedSpendNumericCertificateSource }",
+                1,
+            );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &local_vacuous_concrete_numeric_source_certificate
+            )
+        );
         let concrete_numeric_source_mentioned_but_not_consumed =
             accepted_spend_instantiation_shape.replacen(
-                "let selectedRustAcceptedSpendNumericSource :=\n    SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource\n      selectedRustConcreteAcceptedSpendNumericCertificate",
+                "let selectedRustAcceptedSpendNumericSource :=\n    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource\n      selectedRustConcreteAcceptedSpendNumericSourceCertificate",
                 "let _selectedRustConcreteNumericSource :=\n    SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource\n      selectedRustConcreteAcceptedSpendNumericCertificate",
                 1,
             );

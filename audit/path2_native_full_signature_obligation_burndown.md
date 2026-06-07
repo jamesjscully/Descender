@@ -1630,21 +1630,31 @@ The source gate also rejects global `def`/`abbrev` aliases that set
 prepend those aliases to the otherwise accepted theorem shape and keep the
 active numeric-bound gate open.
 The accepted-spend numeric-bound source gate now requires the consumed
-`selectedRustAcceptedSpendNumericSource` binding to be exactly the result of
-`SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource`
-on a named `selectedRustConcreteAcceptedSpendNumericCertificate`. A regression
-rejects the previous shape where the concrete conversion was merely mentioned
-under another local name while `ofReportAndBound` received a generic selected
-numeric source.
+`selectedRustAcceptedSpendNumericSource` binding to come from
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedAcceptedSpendNumericSource`
+on a named `selectedRustConcreteAcceptedSpendNumericSourceCertificate`; the
+concrete wrapper must also be extracted through
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toConcreteAcceptedSpendNumericCertificate`.
+A regression rejects the previous shape where the concrete conversion was
+merely mentioned under another local name while `ofReportAndBound` received a
+generic selected numeric source.
 The same gate now rejects global `def`/`abbrev` record literals for
-`selectedRustConcreteAcceptedSpendNumericCertificateSource` or
-`selectedRustConcreteAcceptedSpendNumericCertificate`; a regression prepends
-such a source to the otherwise accepted theorem shape and keeps the gate open,
-so the concrete active-carrier wrapper must come from a named
-production-derived source route. It now also rejects theorem-local
-`let selectedRustConcreteAcceptedSpendNumericCertificateSource := { ... }`
-construction immediately before the concrete certificate binding, so the final
-theorem cannot fabricate that source in its body.
+`selectedRustConcreteAcceptedSpendNumericCertificateSource`,
+`selectedRustConcreteAcceptedSpendNumericSourceCertificate`, or
+`selectedRustConcreteAcceptedSpendNumericCertificate`; regressions prepend such
+sources to the otherwise accepted theorem shape and keep the gate open, so the
+concrete active-carrier wrapper must come from a named production-derived
+source route. It now also rejects theorem-local
+`let selectedRustConcreteAcceptedSpendNumericCertificateSource := { ... }` and
+`let selectedRustConcreteAcceptedSpendNumericSourceCertificate := { ... }`
+construction immediately before the active bindings, so the final theorem
+cannot fabricate that source in its body.
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate` now carries the
+accepted-spend evidence report, digest, report/digest binding proofs,
+`ReportVerified`, `FactsAllTrue`, and the concrete active-carrier numeric
+certificate. The remaining proof work is to construct that object from real
+production accepted-spend numeric evidence and then price the accepted-spend and
+named-break events through it.
 `Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
 active full-spend named breaks, so the numeric game can index its union bound by
 the actual active break family.

@@ -1023,6 +1023,94 @@ structure SelectedRustConcreteAcceptedSpendNumericCertificate where
             (pricedCertificate.observe trace)).spend
           (cast breakFamilyPinned breakEvent)
 
+/--
+Report-bound source route for the selected concrete accepted-spend numeric certificate.
+
+The final selected theorem should consume a concrete numeric certificate through
+this source route, so the active outcome/break wrapper is tied to the same
+report and digest facts used by the accepted-spend soundness certificate.
+-/
+structure SelectedRustConcreteAcceptedSpendNumericSourceCertificate where
+  evidenceReport :
+    Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport
+  evidenceDigest : ByteArray
+  evidenceReportBound : Prop
+  evidenceReportBoundProof : evidenceReportBound
+  evidenceDigestBound : Prop
+  evidenceDigestBoundProof : evidenceDigestBound
+  evidenceReportVerifiedProof :
+    evidenceReport.ReportVerified
+  evidenceFactsAllTrueProof :
+    evidenceReport.FactsAllTrue
+  concreteCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate
+
+namespace SelectedRustConcreteAcceptedSpendNumericSourceCertificate
+
+/-- Named constructor for a report-bound concrete accepted-spend numeric source. -/
+def ofReportAndConcreteCertificate
+    (evidenceReport :
+      Path2NativeAccountDesign.SelectedRustAcceptedSpendSoundnessEvidenceReport)
+    (evidenceDigest : ByteArray)
+    (evidenceReportBound : Prop)
+    (evidenceReportBoundProof : evidenceReportBound)
+    (evidenceDigestBound : Prop)
+    (evidenceDigestBoundProof : evidenceDigestBound)
+    (evidenceReportVerifiedProof :
+      evidenceReport.ReportVerified)
+    (evidenceFactsAllTrueProof :
+      evidenceReport.FactsAllTrue)
+    (concreteCertificate : SelectedRustConcreteAcceptedSpendNumericCertificate) :
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate where
+  evidenceReport := evidenceReport
+  evidenceDigest := evidenceDigest
+  evidenceReportBound := evidenceReportBound
+  evidenceReportBoundProof := evidenceReportBoundProof
+  evidenceDigestBound := evidenceDigestBound
+  evidenceDigestBoundProof := evidenceDigestBoundProof
+  evidenceReportVerifiedProof := evidenceReportVerifiedProof
+  evidenceFactsAllTrueProof := evidenceFactsAllTrueProof
+  concreteCertificate := concreteCertificate
+
+/-- Extract the concrete active-carrier numeric certificate from the source route. -/
+def toConcreteAcceptedSpendNumericCertificate
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    SelectedRustConcreteAcceptedSpendNumericCertificate :=
+  Source.concreteCertificate
+
+/-- Extract the generic selected numeric source from the source route. -/
+def toSelectedAcceptedSpendNumericSource
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Path2AcceptedSpendProbability.SelectedAcceptedSpendNumericSource :=
+  { pricedCertificate := Source.concreteCertificate.pricedCertificate
+    outcomeCarrierPinned :=
+      Source.concreteCertificate.pricedCertificate.Outcome =
+        selectedRustAcceptedSpendNumericOutcome
+    outcomeCarrierPinnedProof :=
+      Source.concreteCertificate.outcomeCarrierPinned
+    acceptedSpendEventPinned :=
+      forall trace : Source.concreteCertificate.pricedCertificate.Trace,
+        Source.concreteCertificate.pricedCertificate.acceptedSpendEvent trace = true ->
+          Path2FullSpendGame.AcceptedSpendConclusion
+            (concretePredicates selectedRustConcreteGameConfig)
+            (cast Source.concreteCertificate.outcomeCarrierPinned
+              (Source.concreteCertificate.pricedCertificate.observe trace)).spend
+    acceptedSpendEventPinnedProof :=
+      Source.concreteCertificate.acceptedSpendEventPinned
+    namedBreakEventsPinned :=
+      forall (trace : Source.concreteCertificate.pricedCertificate.Trace)
+          (breakEvent : Source.concreteCertificate.pricedCertificate.Break),
+        Source.concreteCertificate.pricedCertificate.namedBreakEvent trace breakEvent = true ->
+          (concretePredicates selectedRustConcreteGameConfig).breakFor
+            (cast Source.concreteCertificate.outcomeCarrierPinned
+              (Source.concreteCertificate.pricedCertificate.observe trace)).spend
+            (cast Source.concreteCertificate.breakFamilyPinned breakEvent)
+    namedBreakEventsPinnedProof :=
+      Source.concreteCertificate.namedBreakEventsPinned
+    breakFamilyPinnedProof :=
+      Source.concreteCertificate.breakFamilyPinned }
+
+end SelectedRustConcreteAcceptedSpendNumericSourceCertificate
+
 /-- Forget the concrete active-carrier wrapper after its pins are checked. -/
 def SelectedRustConcreteAcceptedSpendNumericCertificate.toPricedAcceptedSpendNumericCertificate
     (Cert : SelectedRustConcreteAcceptedSpendNumericCertificate) :
