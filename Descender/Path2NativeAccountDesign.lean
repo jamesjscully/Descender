@@ -1957,9 +1957,9 @@ def selectedRustAcceptedSpendEvidenceReport :
       184, 94, 226, 157, 26, 55, 237, 33, 21, 223, 183, 249, 34, 163, 53,
       42, 43, 237, 74, 214]
   acceptedSpendEventSemanticsDigest :=
-    ByteArray.mk #[154, 82, 55, 32, 245, 141, 94, 200, 4, 207, 199, 35, 83,
-      44, 79, 83, 224, 5, 120, 21, 31, 147, 12, 179, 173, 9, 40, 15, 13,
-      31, 6, 194]
+    ByteArray.mk #[112, 1, 106, 114, 152, 219, 192, 30, 40, 213, 35, 216,
+      213, 64, 13, 106, 221, 233, 44, 35, 75, 132, 16, 211, 158, 40, 212,
+      250, 25, 170, 9, 82]
   activeBreakFamilyDigest :=
     ByteArray.mk #[111, 3, 153, 201, 118, 101, 3, 131, 125, 95, 74, 112,
       104, 81, 255, 126, 60, 29, 241, 180, 122, 212, 12, 39, 240, 46, 175,
@@ -1999,9 +1999,9 @@ def selectedRustAcceptedSpendEvidenceReport :
 
 /-- Digest pin for the selected Rust accepted-spend numeric evidence report. -/
 def selectedRustAcceptedSpendEvidenceDigest : ByteArray :=
-  ByteArray.mk #[226, 205, 158, 142, 127, 164, 195, 233, 140, 131, 228,
-    186, 162, 159, 171, 239, 215, 115, 161, 101, 56, 181, 4, 105, 186,
-    120, 4, 209, 56, 75, 211, 22]
+  ByteArray.mk #[58, 243, 0, 178, 173, 176, 182, 4, 25, 95, 154, 86, 221,
+    98, 211, 156, 49, 15, 172, 211, 144, 152, 5, 74, 186, 166, 71, 2, 87,
+    88, 65, 77]
 
 /-- The selected accepted-spend report has verified public digest slots. -/
 theorem selectedRustAcceptedSpendEvidenceReportVerifiedProof :
@@ -2802,13 +2802,13 @@ def selectedRustFullSignatureReductionEvidenceReport :
   reportDigestVerified := true
   reductionEvidenceDigestsVerified := true
   productionSignatureProbabilityDigest :=
-    ByteArray.mk #[102, 50, 217, 80, 236, 55, 118, 51, 123, 235, 251, 15,
-      142, 30, 171, 255, 4, 248, 151, 146, 228, 162, 71, 87, 164, 35, 177,
-      147, 80, 17, 5, 25]
+    ByteArray.mk #[114, 146, 77, 165, 33, 44, 170, 41, 250, 236, 206, 234,
+      206, 157, 223, 86, 31, 15, 198, 160, 150, 219, 237, 210, 63, 213,
+      129, 35, 213, 140, 1, 116]
   signatureAcceptedSpendLinkDigest :=
-    ByteArray.mk #[26, 195, 2, 13, 73, 1, 237, 202, 97, 216, 13, 136, 92,
-      87, 167, 233, 55, 23, 106, 196, 12, 101, 133, 71, 59, 212, 99, 121,
-      120, 116, 19, 60]
+    ByteArray.mk #[92, 155, 115, 66, 130, 86, 117, 181, 59, 242, 66, 13,
+      72, 131, 33, 8, 113, 181, 238, 143, 137, 41, 144, 174, 132, 126, 65,
+      92, 150, 24, 113, 158]
   fullExecutionSourceDigest :=
     ByteArray.mk #[255, 181, 157, 198, 240, 129, 76, 113, 9, 35, 168, 216,
       204, 48, 31, 224, 238, 132, 237, 162, 151, 134, 201, 91, 85, 7, 117,
@@ -2840,9 +2840,9 @@ def selectedRustFullSignatureReductionEvidenceReport :
 
 /-- Digest pin for the selected Rust full-signature reduction evidence report. -/
 def selectedRustFullSignatureReductionEvidenceDigest : ByteArray :=
-  ByteArray.mk #[42, 73, 63, 227, 166, 189, 239, 168, 241, 196, 207, 198,
-    200, 230, 59, 48, 87, 51, 144, 168, 196, 176, 153, 179, 208, 191, 9,
-    155, 32, 158, 166, 46]
+  ByteArray.mk #[175, 32, 42, 208, 18, 19, 195, 51, 44, 203, 57, 245, 216,
+    104, 211, 127, 18, 49, 67, 73, 164, 174, 148, 22, 173, 91, 97, 79, 238,
+    76, 32, 213]
 
 /-- The selected full-reduction report has verified public digest slots. -/
 theorem selectedRustFullSignatureReductionVerifiedProof :
