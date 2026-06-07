@@ -28853,6 +28853,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "def selectedRustAcceptedSpendEvidenceDigest := ByteArray.empty",
         "def selectedRustAcceptedSpendEvidenceReportBound := True",
         "def selectedRustAcceptedSpendEvidenceDigestBound := True",
+        "def selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
+        "def selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
         "def selectedRustAcceptedSpendForgeryProb := 0",
         "def selectedRustAcceptedSpendForgeryProb : ℝ := 0",
         "def selectedRustAcceptedSpendForgeryProb : ℝ := (0 : ℝ)",
@@ -28879,6 +28881,8 @@ fn path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
         "abbrev selectedRustAcceptedSpendEvidenceDigest := ByteArray.empty",
         "abbrev selectedRustAcceptedSpendEvidenceReportBound := True",
         "abbrev selectedRustAcceptedSpendEvidenceDigestBound := True",
+        "abbrev selectedRustAcceptedSpendBoundVerifiedProof := True.intro",
+        "abbrev selectedRustAcceptedSpendFactsAllTrueProof := True.intro",
         "abbrev selectedRustAcceptedSpendForgeryProb := 0",
         "abbrev selectedRustAcceptedSpendForgeryBound := 0",
         "abbrev selectedRustProductionAcceptedSpendForgeryProb := 0",
@@ -53316,6 +53320,19 @@ end Path2NativeAccountDesign
         assert!(
             path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
                 accepted_spend_instantiation_shape
+            )
+        );
+        let global_vacuous_accepted_spend_report_proofs = format!(
+            "{}\n{}",
+            r#"
+def selectedRustAcceptedSpendBoundVerifiedProof := True.intro
+def selectedRustAcceptedSpendFactsAllTrueProof := True.intro
+"#,
+            accepted_spend_instantiation_shape
+        );
+        assert!(
+            !path2_native_accepted_spend_numeric_bound_instantiated_in_source_v1(
+                &global_vacuous_accepted_spend_report_proofs
             )
         );
         let concrete_numeric_source_mentioned_but_not_consumed =
