@@ -237,6 +237,18 @@ def unionBound (C : PricedAcceptedSpendNumericCertificate) : ℝ :=
   @AcceptedSpendNumericGame.acceptedSpendOrBreakUnionBound
     C.Trace C.Outcome C.Break C.traceFintype C.breakFintype C.game
 
+/-- The priced certificate exposes the accepted-spend component bound. -/
+def acceptedSpendBound (C : PricedAcceptedSpendNumericCertificate) : ℝ :=
+  letI : Fintype C.Trace := C.traceFintype
+  letI : Fintype C.Break := C.breakFintype
+  C.breakPricing.acceptedSpendBound
+
+/-- The priced certificate exposes the named-break component bounds. -/
+def breakBound (C : PricedAcceptedSpendNumericCertificate) : C.Break -> ℝ :=
+  letI : Fintype C.Trace := C.traceFintype
+  letI : Fintype C.Break := C.breakFintype
+  C.breakPricing.breakBound
+
 /-- The priced numeric certificate's union bound is derived from its break-pricing certificate. -/
 theorem unionBound_le_priced
     (C : PricedAcceptedSpendNumericCertificate) :
@@ -247,6 +259,45 @@ theorem unionBound_le_priced
   calc
     C.unionBound <= C.breakPricing.pricedBound :=
       C.breakPricing.unionBound_le_priced
+    _ = C.pricedBound :=
+      C.pricedBound_eq_breakPricing.symm
+
+/-- The priced certificate's accepted-spend probability is bounded by its component budget. -/
+theorem acceptedSpendProb_le_acceptedSpendBound
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.acceptedSpendProb <= C.acceptedSpendBound := by
+  letI : Fintype C.Trace := C.traceFintype
+  letI : Fintype C.Break := C.breakFintype
+  simpa [acceptedSpendProb, acceptedSpendBound,
+    AcceptedSpendNumericGame.acceptedSpendProb] using
+    C.breakPricing.acceptedSpendProb_le_bound
+
+/-- The priced certificate's named-break probabilities are bounded componentwise. -/
+theorem breakProb_le_breakBound
+    (C : PricedAcceptedSpendNumericCertificate)
+    (breakEvent : C.Break) :
+    @AcceptedSpendNumericGame.breakProb
+        C.Trace C.Outcome C.Break C.traceFintype C.breakFintype
+        C.game breakEvent <=
+      C.breakBound breakEvent := by
+  letI : Fintype C.Trace := C.traceFintype
+  letI : Fintype C.Break := C.breakFintype
+  simpa [breakBound, AcceptedSpendNumericGame.breakProb] using
+    C.breakPricing.breakProb_le_bound breakEvent
+
+/-- The priced certificate's constructive component budget fits below its priced bound. -/
+theorem breakBudget_le_pricedBound
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.acceptedSpendBound +
+        (@Finset.univ C.Break C.breakFintype).sum C.breakBound <=
+      C.pricedBound := by
+  letI : Fintype C.Trace := C.traceFintype
+  letI : Fintype C.Break := C.breakFintype
+  calc
+    C.acceptedSpendBound + Finset.univ.sum C.breakBound <=
+        C.breakPricing.pricedBound := by
+      simpa [acceptedSpendBound, breakBound] using
+        C.breakPricing.breakBudget_le_priced
     _ = C.pricedBound :=
       C.pricedBound_eq_breakPricing.symm
 
@@ -353,6 +404,37 @@ theorem unionBound_le_priced
     Source.pricedCertificate.unionBound <=
       Source.pricedCertificate.pricedBound :=
   Source.pricedCertificate.unionBound_le_priced
+
+/-- The selected source exposes the accepted-spend component bound. -/
+theorem acceptedSpendProb_le_acceptedSpendBound
+    (Source : SelectedAcceptedSpendNumericSource) :
+    Source.pricedCertificate.acceptedSpendProb <=
+      Source.pricedCertificate.acceptedSpendBound :=
+  Source.pricedCertificate.acceptedSpendProb_le_acceptedSpendBound
+
+/-- The selected source exposes each named-break component bound. -/
+theorem breakProb_le_breakBound
+    (Source : SelectedAcceptedSpendNumericSource)
+    (breakEvent : Source.pricedCertificate.Break) :
+    @AcceptedSpendNumericGame.breakProb
+        Source.pricedCertificate.Trace
+        Source.pricedCertificate.Outcome
+        Source.pricedCertificate.Break
+        Source.pricedCertificate.traceFintype
+        Source.pricedCertificate.breakFintype
+        Source.pricedCertificate.game breakEvent <=
+      Source.pricedCertificate.breakBound breakEvent :=
+  Source.pricedCertificate.breakProb_le_breakBound breakEvent
+
+/-- The selected source exposes the finite component budget below the priced bound. -/
+theorem breakBudget_le_pricedBound
+    (Source : SelectedAcceptedSpendNumericSource) :
+    Source.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Source.pricedCertificate.Break
+          Source.pricedCertificate.breakFintype).sum
+            Source.pricedCertificate.breakBound <=
+      Source.pricedCertificate.pricedBound :=
+  Source.pricedCertificate.breakBudget_le_pricedBound
 
 end SelectedAcceptedSpendNumericSource
 

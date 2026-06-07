@@ -29359,12 +29359,20 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "PricedAcceptedSpendNumericCertificate.namedBreakEvent",
         "PricedAcceptedSpendNumericCertificate.breakPricing",
         "PricedAcceptedSpendNumericCertificate.pricedBound_eq_breakPricing",
+        "PricedAcceptedSpendNumericCertificate.acceptedSpendBound",
+        "PricedAcceptedSpendNumericCertificate.breakBound",
+        "PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_acceptedSpendBound",
+        "PricedAcceptedSpendNumericCertificate.breakProb_le_breakBound",
+        "PricedAcceptedSpendNumericCertificate.breakBudget_le_pricedBound",
         "SelectedAcceptedSpendNumericSource",
         "SelectedAcceptedSpendNumericSource.toPricedAcceptedSpendNumericCertificate",
         "SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_pricedBound",
         "SelectedAcceptedSpendNumericSource.successProb_le_unionBound",
         "SelectedAcceptedSpendNumericSource.successProb_le_pricedBound",
         "SelectedAcceptedSpendNumericSource.unionBound_le_priced",
+        "SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_acceptedSpendBound",
+        "SelectedAcceptedSpendNumericSource.breakProb_le_breakBound",
+        "SelectedAcceptedSpendNumericSource.breakBudget_le_pricedBound",
         "selectedRustAcceptedSpendNumericOutcome",
         "SelectedRustConcreteAcceptedSpendNumericCertificate",
         "outcomeCarrierPinned",
@@ -29466,9 +29474,15 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedAcceptedSpendNumericSource.successProb_le_unionBound",
         "SelectedAcceptedSpendNumericSource.successProb_le_pricedBound",
         "SelectedAcceptedSpendNumericSource.unionBound_le_priced",
+        "SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_acceptedSpendBound",
+        "SelectedAcceptedSpendNumericSource.breakProb_le_breakBound",
+        "SelectedAcceptedSpendNumericSource.breakBudget_le_pricedBound",
         "AcceptedSpendBreakPricingCertificate.unionBound_le_priced",
         "PricedAcceptedSpendNumericCertificate.breakPricing",
         "PricedAcceptedSpendNumericCertificate.pricedBound_eq_breakPricing",
+        "PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_acceptedSpendBound",
+        "PricedAcceptedSpendNumericCertificate.breakProb_le_breakBound",
+        "PricedAcceptedSpendNumericCertificate.breakBudget_le_pricedBound",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.toPricedAcceptedSpendNumericCertificate",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.outcome_eq_selectedFullForgeryRun",
@@ -53634,6 +53648,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedAcceptedSpendNumericSource.successProb_le_pricedBound
   let _acceptedSpendSelectedSourceUnionBoundPriced :=
     SelectedAcceptedSpendNumericSource.unionBound_le_priced
+  let _acceptedSpendSelectedSourceAcceptedBound :=
+    SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_acceptedSpendBound
+  let _acceptedSpendSelectedSourceBreakBound :=
+    SelectedAcceptedSpendNumericSource.breakProb_le_breakBound
+  let _acceptedSpendSelectedSourceBreakBudget :=
+    SelectedAcceptedSpendNumericSource.breakBudget_le_pricedBound
   let _acceptedSpendConcreteOutcome :=
     selectedRustAcceptedSpendNumericOutcome
   let _acceptedSpendConcreteCertificate :=
@@ -53675,6 +53695,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     PricedAcceptedSpendNumericCertificate.breakPricing
   let _acceptedSpendPricedBoundMatchesBreakPricing :=
     PricedAcceptedSpendNumericCertificate.pricedBound_eq_breakPricing
+  let _acceptedSpendPricedAcceptedSpendBound :=
+    PricedAcceptedSpendNumericCertificate.acceptedSpendBound
+  let _acceptedSpendPricedBreakBound :=
+    PricedAcceptedSpendNumericCertificate.breakBound
+  let _acceptedSpendPricedAcceptedSpendProbBound :=
+    PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_acceptedSpendBound
+  let _acceptedSpendPricedBreakProbBound :=
+    PricedAcceptedSpendNumericCertificate.breakProb_le_breakBound
+  let _acceptedSpendPricedBreakBudget :=
+    PricedAcceptedSpendNumericCertificate.breakBudget_le_pricedBound
   let _acceptedSpendPricedBound :=
     AcceptedSpendNumericGame.successProb_le_pricedBound
   let _noExportInstantiation :=
@@ -53963,6 +53993,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedAcceptedSpendNumericSource.successProb_le_pricedBound
   let _acceptedSpendSelectedSourceUnionBoundPriced :=
     SelectedAcceptedSpendNumericSource.unionBound_le_priced
+  let _acceptedSpendSelectedSourceAcceptedBound :=
+    SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_acceptedSpendBound
+  let _acceptedSpendSelectedSourceBreakBound :=
+    SelectedAcceptedSpendNumericSource.breakProb_le_breakBound
+  let _acceptedSpendSelectedSourceBreakBudget :=
+    SelectedAcceptedSpendNumericSource.breakBudget_le_pricedBound
   let _acceptedSpendConcreteOutcome :=
     selectedRustAcceptedSpendNumericOutcome
   let _acceptedSpendConcreteCertificate :=
@@ -54004,6 +54040,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     PricedAcceptedSpendNumericCertificate.breakPricing
   let _acceptedSpendPricedBoundMatchesBreakPricing :=
     PricedAcceptedSpendNumericCertificate.pricedBound_eq_breakPricing
+  let _acceptedSpendPricedAcceptedSpendBound :=
+    PricedAcceptedSpendNumericCertificate.acceptedSpendBound
+  let _acceptedSpendPricedBreakBound :=
+    PricedAcceptedSpendNumericCertificate.breakBound
+  let _acceptedSpendPricedAcceptedSpendProbBound :=
+    PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_acceptedSpendBound
+  let _acceptedSpendPricedBreakProbBound :=
+    PricedAcceptedSpendNumericCertificate.breakProb_le_breakBound
+  let _acceptedSpendPricedBreakBudget :=
+    PricedAcceptedSpendNumericCertificate.breakBudget_le_pricedBound
   let _acceptedSpendPricedBound :=
     AcceptedSpendNumericGame.successProb_le_pricedBound
   let _noExportInstantiation :=
