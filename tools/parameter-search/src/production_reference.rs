@@ -28639,6 +28639,7 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "\ntheorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_targetSecurity",
         "\ntheorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTarget",
         "\ntheorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
+        "\ntheorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
         "\ndef SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
     ];
     certificate_checks
@@ -29014,6 +29015,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_targetSecurity",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTarget",
+        "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "selectedRustFullSignatureKeygenModeled",
         "selectedRustFullSignatureKeygenModeledProof",
@@ -29047,6 +29049,7 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_reportedSecurity",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_targetSecurity",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTarget",
+        "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
         "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_schemaMatches",
@@ -53248,6 +53251,9 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
   let _fullReductionErasedBoundaryToActive128BitTarget :=
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget
       selectedRustFullSignatureReductionCertificate
+  let _fullReductionErasedBoundarySuccessProbNonnegative :=
+    SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg
+      selectedRustFullSignatureReductionCertificate
   exact
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
       selectedRustFullSignatureReductionCertificate
@@ -53520,6 +53526,9 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustFullSignatureReductionCertificate
   let _fullReductionErasedBoundaryToActive128BitTarget :=
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionErasedBoundarySuccessProbNonnegative :=
+    SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg
       selectedRustFullSignatureReductionCertificate
   exact
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary

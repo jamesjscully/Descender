@@ -1701,11 +1701,12 @@ sign facts through the active concrete carrier/source route too, and
 accepted-spend probability and bound remain nonnegative after erasure to
 `NativeAcceptedSpendSoundnessBoundary`. `SelectedRustFullSignatureReductionCertificate`
 also proves selected and production signature-forgery success probabilities are
-nonnegative. The accepted-spend and full-reduction source gates exact-check
-those theorem names, so the future pricing package must expose nonnegative
-probabilities and budgets rather than only upper-bound inequalities, and it
-must preserve those sign facts through the concrete source and full-boundary
-handoffs.
+nonnegative, and the erased `NativeFullSignatureSecurityBoundary` preserves
+nonnegativity of `signatureForgerySuccessProb`. The accepted-spend and
+full-reduction source gates exact-check those theorem names, so the future
+pricing package must expose nonnegative probabilities and budgets rather than
+only upper-bound inequalities, and it must preserve those sign facts through
+the concrete source and full-boundary handoffs.
 The accepted-spend numeric and full-signature reduction certificates now bind
 their evidence reports and digests by equality to concrete selected Rust
 report/digest constants, rather than by arbitrary `Prop` slots. The selected

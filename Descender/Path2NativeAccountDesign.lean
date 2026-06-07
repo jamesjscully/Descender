@@ -2866,9 +2866,9 @@ def selectedRustFullSignatureReductionEvidenceReport :
       206, 157, 223, 86, 31, 15, 198, 160, 150, 219, 237, 210, 63, 213,
       129, 35, 213, 140, 1, 116]
   signatureAcceptedSpendLinkDigest :=
-    ByteArray.mk #[92, 155, 115, 66, 130, 86, 117, 181, 59, 242, 66, 13,
-      72, 131, 33, 8, 113, 181, 238, 143, 137, 41, 144, 174, 132, 126, 65,
-      92, 150, 24, 113, 158]
+    ByteArray.mk #[252, 138, 172, 20, 49, 172, 16, 33, 64, 39, 154, 202,
+      217, 151, 221, 248, 175, 192, 246, 131, 12, 234, 239, 28, 121, 62,
+      222, 206, 65, 175, 240, 71]
   fullExecutionSourceDigest :=
     ByteArray.mk #[255, 181, 157, 198, 240, 129, 76, 113, 9, 35, 168, 216,
       204, 48, 31, 224, 238, 132, 237, 162, 151, 134, 201, 91, 85, 7, 117,
@@ -2900,9 +2900,9 @@ def selectedRustFullSignatureReductionEvidenceReport :
 
 /-- Digest pin for the selected Rust full-signature reduction evidence report. -/
 def selectedRustFullSignatureReductionEvidenceDigest : ByteArray :=
-  ByteArray.mk #[175, 32, 42, 208, 18, 19, 195, 51, 44, 203, 57, 245, 216,
-    104, 211, 127, 18, 49, 67, 73, 164, 174, 148, 22, 173, 91, 97, 79, 238,
-    76, 32, 213]
+  ByteArray.mk #[6, 101, 6, 171, 145, 252, 184, 67, 196, 150, 97, 237, 39,
+    37, 234, 49, 45, 219, 63, 109, 120, 184, 233, 119, 132, 114, 145, 11,
+    95, 125, 147, 125]
 
 /-- The selected full-reduction report has verified public digest slots. -/
 theorem selectedRustFullSignatureReductionVerifiedProof :
@@ -3332,6 +3332,12 @@ theorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecur
     Cert.toNativeFullSignatureSecurityBoundary.signatureForgerySuccessProb <=
       ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
   Cert.signatureForgerySuccessProb_le_active128BitTarget
+
+/-- The erased full-signature boundary keeps the signature success probability nonnegative. -/
+theorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    0 <= Cert.toNativeFullSignatureSecurityBoundary.signatureForgerySuccessProb :=
+  Cert.signatureForgerySuccessProb_nonneg
 
 namespace NativeFullSignatureSecurityBoundary
 
