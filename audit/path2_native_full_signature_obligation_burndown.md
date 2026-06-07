@@ -1677,6 +1677,13 @@ full-execution source, active hash boundary, query-budget pricing,
 multi-target pricing, and verifier-game binding. The full-reduction certificate
 erasure consumes those projections, and the future selected theorem gate
 exact-checks them.
+The full-reduction report also now exposes named `FactsAllTrue` projections for
+each production reduction fact: signature probability pinning, accepted-spend
+game linkage, accepted-spend probability linkage, full-execution source
+consumption, active hash-boundary consumption, active query-symbol pricing,
+multi-target horizon pricing, and verifier-game binding. The full-reduction
+certificate erasure consumes those projections and the source gate exact-checks
+them, so those facts cannot remain hidden inside one opaque all-true witness.
 `Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
 active full-spend named breaks, so the numeric game can index its union bound by
 the actual active break family.

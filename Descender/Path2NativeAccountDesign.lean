@@ -2649,6 +2649,62 @@ def SelectedRustFullSignatureReductionEvidenceReport.FactsAllTrue
   E.multiTargetHorizonPriced = true ∧
   E.verifierGameMatchesProductionExecution = true
 
+/-- A complete full-reduction report pins the production signature probability. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_productionSignatureProbabilityPinned
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.productionSignatureProbabilityPinned = true := by
+  exact h.1
+
+/-- A complete full-reduction report links signature success to the accepted-spend game. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_signatureSuccessMatchesAcceptedSpendGame
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.signatureSuccessMatchesAcceptedSpendGame = true := by
+  exact h.2.1
+
+/-- A complete full-reduction report links accepted-spend probability. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_acceptedSpendProbabilityLinked
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.acceptedSpendProbabilityLinked = true := by
+  exact h.2.2.1
+
+/-- A complete full-reduction report consumes the concrete full-execution source. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_fullExecutionSourceConsumed
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.fullExecutionSourceConsumed = true := by
+  exact h.2.2.2.1
+
+/-- A complete full-reduction report consumes the active hash boundary. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_activeHashBoundaryConsumed
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.activeHashBoundaryConsumed = true := by
+  exact h.2.2.2.2.1
+
+/-- A complete full-reduction report prices every active query symbol. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_allActiveQuerySymbolsPriced
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.allActiveQuerySymbolsPriced = true := by
+  exact h.2.2.2.2.2.1
+
+/-- A complete full-reduction report prices the active multi-target horizon. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_multiTargetHorizonPriced
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.multiTargetHorizonPriced = true := by
+  exact h.2.2.2.2.2.2.1
+
+/-- A complete full-reduction report binds the verifier game to production execution. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_verifierGameMatchesProductionExecution
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.FactsAllTrue) :
+    E.verifierGameMatchesProductionExecution = true := by
+  exact h.2.2.2.2.2.2.2
+
 /--
 Selected Rust/model certificate for the full-signature reduction layer.
 
@@ -2913,6 +2969,30 @@ def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityB
     let _hVerifierGameDigest :=
       SelectedRustFullSignatureReductionEvidenceReport.reportVerified_verifierGameBindingDigest_nonempty
         Cert.evidenceReport _hVerified
+    let _hReportProbabilityPinned :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_productionSignatureProbabilityPinned
+        Cert.evidenceReport _hFacts
+    let _hReportAcceptedSpendGame :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_signatureSuccessMatchesAcceptedSpendGame
+        Cert.evidenceReport _hFacts
+    let _hReportAcceptedSpendLinked :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_acceptedSpendProbabilityLinked
+        Cert.evidenceReport _hFacts
+    let _hReportExecutionSource :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_fullExecutionSourceConsumed
+        Cert.evidenceReport _hFacts
+    let _hReportHashBoundary :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_activeHashBoundaryConsumed
+        Cert.evidenceReport _hFacts
+    let _hReportQuerySymbols :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_allActiveQuerySymbolsPriced
+        Cert.evidenceReport _hFacts
+    let _hReportMultiTarget :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_multiTargetHorizonPriced
+        Cert.evidenceReport _hFacts
+    let _hReportVerifierGame :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_verifierGameMatchesProductionExecution
+        Cert.evidenceReport _hFacts
     let _hReportBound : Cert.evidenceReportBound :=
       Cert.evidenceReportBoundProof
     let _hDigestBound : Cert.evidenceDigestBound :=
@@ -2960,6 +3040,30 @@ def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityB
     let _hVerifierGameDigest :=
       SelectedRustFullSignatureReductionEvidenceReport.reportVerified_verifierGameBindingDigest_nonempty
         Cert.evidenceReport _hVerified
+    let _hReportProbabilityPinned :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_productionSignatureProbabilityPinned
+        Cert.evidenceReport _hFacts
+    let _hReportAcceptedSpendGame :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_signatureSuccessMatchesAcceptedSpendGame
+        Cert.evidenceReport _hFacts
+    let _hReportAcceptedSpendLinked :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_acceptedSpendProbabilityLinked
+        Cert.evidenceReport _hFacts
+    let _hReportExecutionSource :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_fullExecutionSourceConsumed
+        Cert.evidenceReport _hFacts
+    let _hReportHashBoundary :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_activeHashBoundaryConsumed
+        Cert.evidenceReport _hFacts
+    let _hReportQuerySymbols :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_allActiveQuerySymbolsPriced
+        Cert.evidenceReport _hFacts
+    let _hReportMultiTarget :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_multiTargetHorizonPriced
+        Cert.evidenceReport _hFacts
+    let _hReportVerifierGame :=
+      SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_verifierGameMatchesProductionExecution
+        Cert.evidenceReport _hFacts
     let _hReportBound : Cert.evidenceReportBound :=
       Cert.evidenceReportBoundProof
     let _hDigestBound : Cert.evidenceDigestBound :=

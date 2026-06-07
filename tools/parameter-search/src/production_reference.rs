@@ -28977,6 +28977,14 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_queryBudgetPricingDigest_nonempty",
         "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_multiTargetPricingDigest_nonempty",
         "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_verifierGameBindingDigest_nonempty",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_productionSignatureProbabilityPinned",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_signatureSuccessMatchesAcceptedSpendGame",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_acceptedSpendProbabilityLinked",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_fullExecutionSourceConsumed",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_activeHashBoundaryConsumed",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_allActiveQuerySymbolsPriced",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_multiTargetHorizonPriced",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_verifierGameMatchesProductionExecution",
         "selectedRustFullSignatureReductionEvidenceReport",
         "selectedRustFullSignatureReductionEvidenceDigest",
         "selectedRustFullSignatureReductionEvidenceReportBound",
@@ -29043,6 +29051,14 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_queryBudgetPricingDigest_nonempty",
         "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_multiTargetPricingDigest_nonempty",
         "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_verifierGameBindingDigest_nonempty",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_productionSignatureProbabilityPinned",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_signatureSuccessMatchesAcceptedSpendGame",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_acceptedSpendProbabilityLinked",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_fullExecutionSourceConsumed",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_activeHashBoundaryConsumed",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_allActiveQuerySymbolsPriced",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_multiTargetHorizonPriced",
+        "SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_verifierGameMatchesProductionExecution",
     ];
     instantiation_checks
         .iter()
@@ -52997,6 +53013,22 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustFullSignatureReductionEvidenceReport.reportVerified_multiTargetPricingDigest_nonempty
   let _fullReductionVerifierGameDigestNonempty :=
     SelectedRustFullSignatureReductionEvidenceReport.reportVerified_verifierGameBindingDigest_nonempty
+  let _fullReductionReportProbabilityPinned :=
+    SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_productionSignatureProbabilityPinned
+  let _fullReductionReportAcceptedSpendGame :=
+    SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_signatureSuccessMatchesAcceptedSpendGame
+  let _fullReductionReportAcceptedSpendLinked :=
+    SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_acceptedSpendProbabilityLinked
+  let _fullReductionReportExecutionSource :=
+    SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_fullExecutionSourceConsumed
+  let _fullReductionReportHashBoundary :=
+    SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_activeHashBoundaryConsumed
+  let _fullReductionReportQuerySymbols :=
+    SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_allActiveQuerySymbolsPriced
+  let _fullReductionReportMultiTarget :=
+    SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_multiTargetHorizonPriced
+  let _fullReductionReportVerifierGame :=
+    SelectedRustFullSignatureReductionEvidenceReport.factsAllTrue_verifierGameMatchesProductionExecution
   let selectedRustFullSignatureReductionCertificate :
       SelectedRustFullSignatureReductionCertificate :=
     SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
