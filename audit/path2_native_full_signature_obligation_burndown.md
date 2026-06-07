@@ -1670,6 +1670,13 @@ requires all seven accepted-spend numeric digest slots to be nonempty
 `reportVerified_*_nonempty` projection theorems. This mirrors the Rust
 verifier's rejection of placeholder digest slots and prevents the Lean report
 verification route from collapsing to three Boolean flags.
+`SelectedRustFullSignatureReductionEvidenceReport.ReportVerified` now applies
+the same digest-presence requirement to the seven full-reduction evidence slots:
+production signature probability, signature-to-accepted-spend link,
+full-execution source, active hash boundary, query-budget pricing,
+multi-target pricing, and verifier-game binding. The full-reduction certificate
+erasure consumes those projections, and the future selected theorem gate
+exact-checks them.
 `Path2FullSpendGame.BreakEvent` now has a manual finite instance over the
 active full-spend named breaks, so the numeric game can index its union bound by
 the actual active break family.

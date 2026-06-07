@@ -28967,6 +28967,16 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "queryBudgetPricingDigest",
         "multiTargetPricingDigest",
         "verifierGameBindingDigest",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_schemaMatches",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reportDigestVerified",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reductionEvidenceDigestsVerified",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_productionSignatureProbabilityDigest_nonempty",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_signatureAcceptedSpendLinkDigest_nonempty",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_fullExecutionSourceDigest_nonempty",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_activeHashBoundaryDigest_nonempty",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_queryBudgetPricingDigest_nonempty",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_multiTargetPricingDigest_nonempty",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_verifierGameBindingDigest_nonempty",
         "selectedRustFullSignatureReductionEvidenceReport",
         "selectedRustFullSignatureReductionEvidenceDigest",
         "selectedRustFullSignatureReductionEvidenceReportBound",
@@ -29023,6 +29033,16 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_active128BitTarget",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_schemaMatches",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reportDigestVerified",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reductionEvidenceDigestsVerified",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_productionSignatureProbabilityDigest_nonempty",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_signatureAcceptedSpendLinkDigest_nonempty",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_fullExecutionSourceDigest_nonempty",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_activeHashBoundaryDigest_nonempty",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_queryBudgetPricingDigest_nonempty",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_multiTargetPricingDigest_nonempty",
+        "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_verifierGameBindingDigest_nonempty",
     ];
     instantiation_checks
         .iter()
@@ -52957,6 +52977,26 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustFullSignatureReductionEvidenceReport.multiTargetPricingDigest
   let _fullReductionVerifierGameDigest :=
     SelectedRustFullSignatureReductionEvidenceReport.verifierGameBindingDigest
+  let _fullReductionReportSchemaProof :=
+    SelectedRustFullSignatureReductionEvidenceReport.reportVerified_schemaMatches
+  let _fullReductionReportDigestProof :=
+    SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reportDigestVerified
+  let _fullReductionReportEvidenceDigestsProof :=
+    SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reductionEvidenceDigestsVerified
+  let _fullReductionProbabilityDigestNonempty :=
+    SelectedRustFullSignatureReductionEvidenceReport.reportVerified_productionSignatureProbabilityDigest_nonempty
+  let _fullReductionAcceptedSpendLinkDigestNonempty :=
+    SelectedRustFullSignatureReductionEvidenceReport.reportVerified_signatureAcceptedSpendLinkDigest_nonempty
+  let _fullReductionExecutionSourceDigestNonempty :=
+    SelectedRustFullSignatureReductionEvidenceReport.reportVerified_fullExecutionSourceDigest_nonempty
+  let _fullReductionHashBoundaryDigestNonempty :=
+    SelectedRustFullSignatureReductionEvidenceReport.reportVerified_activeHashBoundaryDigest_nonempty
+  let _fullReductionQueryPricingDigestNonempty :=
+    SelectedRustFullSignatureReductionEvidenceReport.reportVerified_queryBudgetPricingDigest_nonempty
+  let _fullReductionMultiTargetDigestNonempty :=
+    SelectedRustFullSignatureReductionEvidenceReport.reportVerified_multiTargetPricingDigest_nonempty
+  let _fullReductionVerifierGameDigestNonempty :=
+    SelectedRustFullSignatureReductionEvidenceReport.reportVerified_verifierGameBindingDigest_nonempty
   let selectedRustFullSignatureReductionCertificate :
       SelectedRustFullSignatureReductionCertificate :=
     SelectedRustFullSignatureReductionCertificate.ofReportAndReduction

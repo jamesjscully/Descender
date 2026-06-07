@@ -2551,7 +2551,91 @@ def SelectedRustFullSignatureReductionEvidenceReport.ReportVerified
     (E : SelectedRustFullSignatureReductionEvidenceReport) : Prop :=
   E.schemaMatches = true ∧
   E.reportDigestVerified = true ∧
-  E.reductionEvidenceDigestsVerified = true
+  E.reductionEvidenceDigestsVerified = true ∧
+  E.productionSignatureProbabilityDigest ≠ ByteArray.mk #[] ∧
+  E.signatureAcceptedSpendLinkDigest ≠ ByteArray.mk #[] ∧
+  E.fullExecutionSourceDigest ≠ ByteArray.mk #[] ∧
+  E.activeHashBoundaryDigest ≠ ByteArray.mk #[] ∧
+  E.queryBudgetPricingDigest ≠ ByteArray.mk #[] ∧
+  E.multiTargetPricingDigest ≠ ByteArray.mk #[] ∧
+  E.verifierGameBindingDigest ≠ ByteArray.mk #[]
+
+/-- A verified full-signature reduction report has the selected schema. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.reportVerified_schemaMatches
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ReportVerified) :
+    E.schemaMatches = true := by
+  exact h.1
+
+/-- A verified full-signature reduction report has its report digest checked. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reportDigestVerified
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ReportVerified) :
+    E.reportDigestVerified = true := by
+  exact h.2.1
+
+/-- A verified full-signature reduction report has its evidence digests checked. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reductionEvidenceDigestsVerified
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ReportVerified) :
+    E.reductionEvidenceDigestsVerified = true := by
+  exact h.2.2.1
+
+/-- A verified full-signature reduction report has a nonempty production-probability digest. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.reportVerified_productionSignatureProbabilityDigest_nonempty
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ReportVerified) :
+    E.productionSignatureProbabilityDigest ≠ ByteArray.mk #[] := by
+  rcases h with ⟨_, _, _, hProbability, _, _, _, _, _, _⟩
+  exact hProbability
+
+/-- A verified full-signature reduction report has a nonempty accepted-spend-link digest. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.reportVerified_signatureAcceptedSpendLinkDigest_nonempty
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ReportVerified) :
+    E.signatureAcceptedSpendLinkDigest ≠ ByteArray.mk #[] := by
+  rcases h with ⟨_, _, _, _, hLink, _, _, _, _, _⟩
+  exact hLink
+
+/-- A verified full-signature reduction report has a nonempty execution-source digest. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.reportVerified_fullExecutionSourceDigest_nonempty
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ReportVerified) :
+    E.fullExecutionSourceDigest ≠ ByteArray.mk #[] := by
+  rcases h with ⟨_, _, _, _, _, hExecution, _, _, _, _⟩
+  exact hExecution
+
+/-- A verified full-signature reduction report has a nonempty hash-boundary digest. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.reportVerified_activeHashBoundaryDigest_nonempty
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ReportVerified) :
+    E.activeHashBoundaryDigest ≠ ByteArray.mk #[] := by
+  rcases h with ⟨_, _, _, _, _, _, hHash, _, _, _⟩
+  exact hHash
+
+/-- A verified full-signature reduction report has a nonempty query-pricing digest. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.reportVerified_queryBudgetPricingDigest_nonempty
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ReportVerified) :
+    E.queryBudgetPricingDigest ≠ ByteArray.mk #[] := by
+  rcases h with ⟨_, _, _, _, _, _, _, hQuery, _, _⟩
+  exact hQuery
+
+/-- A verified full-signature reduction report has a nonempty multi-target digest. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.reportVerified_multiTargetPricingDigest_nonempty
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ReportVerified) :
+    E.multiTargetPricingDigest ≠ ByteArray.mk #[] := by
+  rcases h with ⟨_, _, _, _, _, _, _, _, hMultiTarget, _⟩
+  exact hMultiTarget
+
+/-- A verified full-signature reduction report has a nonempty verifier-game digest. -/
+theorem SelectedRustFullSignatureReductionEvidenceReport.reportVerified_verifierGameBindingDigest_nonempty
+    (E : SelectedRustFullSignatureReductionEvidenceReport)
+    (h : E.ReportVerified) :
+    E.verifierGameBindingDigest ≠ ByteArray.mk #[] := by
+  rcases h with ⟨_, _, _, _, _, _, _, _, _, hVerifierGame⟩
+  exact hVerifierGame
 
 /-- Every production full-signature reduction fact recorded by the report holds. -/
 def SelectedRustFullSignatureReductionEvidenceReport.FactsAllTrue
@@ -2799,6 +2883,36 @@ def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityB
       Cert.selectedRustFullSignatureReductionVerifiedProof
     let _hFacts : Cert.evidenceReport.FactsAllTrue :=
       Cert.selectedRustFullSignatureReductionFactsAllTrueProof
+    let _hSchema :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_schemaMatches
+        Cert.evidenceReport _hVerified
+    let _hReportDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reportDigestVerified
+        Cert.evidenceReport _hVerified
+    let _hReductionDigests :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reductionEvidenceDigestsVerified
+        Cert.evidenceReport _hVerified
+    let _hProductionProbabilityDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_productionSignatureProbabilityDigest_nonempty
+        Cert.evidenceReport _hVerified
+    let _hAcceptedSpendLinkDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_signatureAcceptedSpendLinkDigest_nonempty
+        Cert.evidenceReport _hVerified
+    let _hFullExecutionDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_fullExecutionSourceDigest_nonempty
+        Cert.evidenceReport _hVerified
+    let _hHashBoundaryDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_activeHashBoundaryDigest_nonempty
+        Cert.evidenceReport _hVerified
+    let _hQueryPricingDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_queryBudgetPricingDigest_nonempty
+        Cert.evidenceReport _hVerified
+    let _hMultiTargetDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_multiTargetPricingDigest_nonempty
+        Cert.evidenceReport _hVerified
+    let _hVerifierGameDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_verifierGameBindingDigest_nonempty
+        Cert.evidenceReport _hVerified
     let _hReportBound : Cert.evidenceReportBound :=
       Cert.evidenceReportBoundProof
     let _hDigestBound : Cert.evidenceDigestBound :=
@@ -2816,6 +2930,36 @@ def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityB
       Cert.selectedRustFullSignatureReductionVerifiedProof
     let _hFacts : Cert.evidenceReport.FactsAllTrue :=
       Cert.selectedRustFullSignatureReductionFactsAllTrueProof
+    let _hSchema :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_schemaMatches
+        Cert.evidenceReport _hVerified
+    let _hReportDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reportDigestVerified
+        Cert.evidenceReport _hVerified
+    let _hReductionDigests :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reductionEvidenceDigestsVerified
+        Cert.evidenceReport _hVerified
+    let _hProductionProbabilityDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_productionSignatureProbabilityDigest_nonempty
+        Cert.evidenceReport _hVerified
+    let _hAcceptedSpendLinkDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_signatureAcceptedSpendLinkDigest_nonempty
+        Cert.evidenceReport _hVerified
+    let _hFullExecutionDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_fullExecutionSourceDigest_nonempty
+        Cert.evidenceReport _hVerified
+    let _hHashBoundaryDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_activeHashBoundaryDigest_nonempty
+        Cert.evidenceReport _hVerified
+    let _hQueryPricingDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_queryBudgetPricingDigest_nonempty
+        Cert.evidenceReport _hVerified
+    let _hMultiTargetDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_multiTargetPricingDigest_nonempty
+        Cert.evidenceReport _hVerified
+    let _hVerifierGameDigest :=
+      SelectedRustFullSignatureReductionEvidenceReport.reportVerified_verifierGameBindingDigest_nonempty
+        Cert.evidenceReport _hVerified
     let _hReportBound : Cert.evidenceReportBound :=
       Cert.evidenceReportBoundProof
     let _hDigestBound : Cert.evidenceDigestBound :=
