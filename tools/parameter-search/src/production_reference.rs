@@ -27971,6 +27971,10 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "SelectedRustFullSignatureReductionEvidenceReport.FactsAllTrue",
         "SelectedRustFullSignatureReductionCertificate",
         "evidenceDigest",
+        "evidenceReportBound",
+        "evidenceReportBoundProof",
+        "evidenceDigestBound",
+        "evidenceDigestBoundProof",
         "selectedRustFullSignatureReductionVerifiedProof",
         "selectedRustFullSignatureReductionFactsAllTrueProof",
         "acceptedSpendCertificate : SelectedRustAcceptedSpendSoundnessCertificate",
@@ -28019,6 +28023,10 @@ fn path2_full_signature_reduction_certificate_instantiated_in_source_v1(
     let forbidden_declaration_terms = [
         "selectedRustFullSignatureReductionEvidenceReport",
         "selectedRustFullSignatureReductionEvidenceDigest",
+        "selectedRustFullSignatureReductionEvidenceReportBound",
+        "selectedRustFullSignatureReductionEvidenceReportBoundProof",
+        "selectedRustFullSignatureReductionEvidenceDigestBound",
+        "selectedRustFullSignatureReductionEvidenceDigestBoundProof",
         "selectedRustFullSignatureReductionVerifiedProof",
         "selectedRustFullSignatureReductionFactsAllTrueProof",
         "selectedRustAcceptedSpendCertificate",
@@ -28081,6 +28089,8 @@ fn path2_full_signature_reduction_certificate_instantiated_in_source_v1(
         "def selectedRustFullSignatureReductionEvidenceReport : SelectedRustFullSignatureReductionEvidenceReport :=",
         "def selectedRustFullSignatureReductionEvidenceReport := ⟨",
         "def selectedRustFullSignatureReductionEvidenceDigest := ByteArray.empty",
+        "def selectedRustFullSignatureReductionEvidenceReportBound := True",
+        "def selectedRustFullSignatureReductionEvidenceDigestBound := True",
         "def selectedRustSignatureForgerySuccessProb := 0",
         "def selectedRustSignatureForgerySuccessProb : ℝ := 0",
         "def selectedRustSignatureForgerySuccessProb : ℝ := (0 : ℝ)",
@@ -28096,6 +28106,8 @@ fn path2_full_signature_reduction_certificate_instantiated_in_source_v1(
         "def selectedRustFullForgeryImpliesAcceptedSpendForgery := True",
         "abbrev selectedRustFullSignatureReductionEvidenceReport := {",
         "abbrev selectedRustFullSignatureReductionEvidenceDigest := ByteArray.empty",
+        "abbrev selectedRustFullSignatureReductionEvidenceReportBound := True",
+        "abbrev selectedRustFullSignatureReductionEvidenceDigestBound := True",
         "abbrev selectedRustSignatureForgerySuccessProb := 0",
         "abbrev selectedRustProductionSignatureForgerySuccessProb := 0",
         "abbrev selectedRustFullSignatureKeygenModeled := True",
@@ -28188,6 +28200,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "NativeHashBudgetBoundary",
         "selectedRustFullSignatureReductionEvidenceReport",
         "selectedRustFullSignatureReductionEvidenceDigest",
+        "selectedRustFullSignatureReductionEvidenceReportBound",
+        "selectedRustFullSignatureReductionEvidenceReportBoundProof",
+        "selectedRustFullSignatureReductionEvidenceDigestBound",
+        "selectedRustFullSignatureReductionEvidenceDigestBoundProof",
         "selectedRustFullSignatureReductionVerifiedProof",
         "selectedRustFullSignatureReductionFactsAllTrueProof",
         "selectedRustAcceptedSpendCertificate",
@@ -28221,6 +28237,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "let selectedRustFullSignatureReductionEvidenceReport := {",
         "let selectedRustFullSignatureReductionEvidenceReport := ⟨",
         "let selectedRustFullSignatureReductionEvidenceDigest := ByteArray.empty",
+        "let selectedRustFullSignatureReductionEvidenceReportBound := True",
+        "let selectedRustFullSignatureReductionEvidenceReportBoundProof := True.intro",
+        "let selectedRustFullSignatureReductionEvidenceDigestBound := True",
+        "let selectedRustFullSignatureReductionEvidenceDigestBoundProof := True.intro",
         "let selectedRustFullSignatureReductionVerifiedProof := True.intro",
         "let selectedRustFullSignatureReductionFactsAllTrueProof := True.intro",
         "selectedRustFullSignatureReductionCertificate := {",
@@ -28265,6 +28285,10 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.ofReportAndReduction",
         "selectedRustFullSignatureReductionEvidenceReport",
         "selectedRustFullSignatureReductionEvidenceDigest",
+        "selectedRustFullSignatureReductionEvidenceReportBound",
+        "selectedRustFullSignatureReductionEvidenceReportBoundProof",
+        "selectedRustFullSignatureReductionEvidenceDigestBound",
+        "selectedRustFullSignatureReductionEvidenceDigestBoundProof",
         "selectedRustFullSignatureReductionVerifiedProof",
         "selectedRustFullSignatureReductionFactsAllTrueProof",
         "selectedRustAcceptedSpendCertificate",
@@ -51384,6 +51408,10 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
       selectedRustFullSignatureReductionEvidenceReport
       selectedRustFullSignatureReductionEvidenceDigest
+      selectedRustFullSignatureReductionEvidenceReportBound
+      selectedRustFullSignatureReductionEvidenceReportBoundProof
+      selectedRustFullSignatureReductionEvidenceDigestBound
+      selectedRustFullSignatureReductionEvidenceDigestBoundProof
       selectedRustFullSignatureReductionVerifiedProof
       selectedRustFullSignatureReductionFactsAllTrueProof
       selectedRustAcceptedSpendSoundness
@@ -51431,6 +51459,10 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
       selectedRustFullSignatureReductionEvidenceReport
       selectedRustFullSignatureReductionEvidenceDigest
+      selectedRustFullSignatureReductionEvidenceReportBound
+      selectedRustFullSignatureReductionEvidenceReportBoundProof
+      selectedRustFullSignatureReductionEvidenceDigestBound
+      selectedRustFullSignatureReductionEvidenceDigestBoundProof
       selectedRustFullSignatureReductionVerifiedProof
       selectedRustFullSignatureReductionFactsAllTrueProof
       selectedRustAcceptedSpendSoundness
@@ -51540,11 +51572,19 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
   let selectedRustFullSignatureCompletenessModeled := True
   let selectedRustVerifierRelationMatchesImplementation := True
   let selectedRustFullForgeryImpliesAcceptedSpendForgery := True
+  let selectedRustFullSignatureReductionEvidenceReportBound := True
+  let selectedRustFullSignatureReductionEvidenceReportBoundProof := True.intro
+  let selectedRustFullSignatureReductionEvidenceDigestBound := True
+  let selectedRustFullSignatureReductionEvidenceDigestBoundProof := True.intro
   let selectedRustFullSignatureReductionCertificate :
       SelectedRustFullSignatureReductionCertificate :=
     SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
       selectedRustFullSignatureReductionEvidenceReport
       selectedRustFullSignatureReductionEvidenceDigest
+      selectedRustFullSignatureReductionEvidenceReportBound
+      selectedRustFullSignatureReductionEvidenceReportBoundProof
+      selectedRustFullSignatureReductionEvidenceDigestBound
+      selectedRustFullSignatureReductionEvidenceDigestBoundProof
       selectedRustFullSignatureReductionVerifiedProof
       selectedRustFullSignatureReductionFactsAllTrueProof
       selectedRustAcceptedSpendCertificate
@@ -51606,6 +51646,10 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
       selectedRustFullSignatureReductionEvidenceReport
       selectedRustFullSignatureReductionEvidenceDigest
+      selectedRustFullSignatureReductionEvidenceReportBound
+      selectedRustFullSignatureReductionEvidenceReportBoundProof
+      selectedRustFullSignatureReductionEvidenceDigestBound
+      selectedRustFullSignatureReductionEvidenceDigestBoundProof
       selectedRustFullSignatureReductionVerifiedProof
       selectedRustFullSignatureReductionFactsAllTrueProof
       selectedRustAcceptedSpendCertificate

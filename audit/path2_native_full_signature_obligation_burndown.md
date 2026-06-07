@@ -1369,6 +1369,12 @@ aliases for the selected signature probability, production pin, accepted-spend
 inequality, and core full-signature modeling propositions, even when every
 active prerequisite marker is present. This remains a fail-closed scanner
 hardening; it does not instantiate the production full-reduction theorem.
+`SelectedRustFullSignatureReductionCertificate` now also carries
+`evidenceReportBound` and `evidenceDigestBound` proof fields, consumed by
+`toNativeFullSignatureSecurityBoundary` in both the probability inequality and
+complete-claim construction paths. The full-reduction source gate requires
+named selected report/digest binding propositions and proofs, and rejects
+`True` aliases for those bindings.
 The same all-candidate exact-name scan now applies to
 `concreteFullSignatureExecutionSource_instantiation_v1`, so full-execution
 source closure also rejects suffixed theorem spoofs without making a later

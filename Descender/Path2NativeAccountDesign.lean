@@ -1845,6 +1845,10 @@ accepted-spend game, and the active hash/QROM budget in one reviewed package.
 structure SelectedRustFullSignatureReductionCertificate where
   evidenceReport : SelectedRustFullSignatureReductionEvidenceReport
   evidenceDigest : ByteArray
+  evidenceReportBound : Prop
+  evidenceReportBoundProof : evidenceReportBound
+  evidenceDigestBound : Prop
+  evidenceDigestBoundProof : evidenceDigestBound
   selectedRustFullSignatureReductionVerifiedProof :
     evidenceReport.ReportVerified
   selectedRustFullSignatureReductionFactsAllTrueProof :
@@ -1891,6 +1895,10 @@ structure SelectedRustFullSignatureReductionCertificate where
 def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
     (evidenceReport : SelectedRustFullSignatureReductionEvidenceReport)
     (evidenceDigest : ByteArray)
+    (evidenceReportBound : Prop)
+    (evidenceReportBoundProof : evidenceReportBound)
+    (evidenceDigestBound : Prop)
+    (evidenceDigestBoundProof : evidenceDigestBound)
     (selectedRustFullSignatureReductionVerifiedProof :
       evidenceReport.ReportVerified)
     (selectedRustFullSignatureReductionFactsAllTrueProof :
@@ -1935,6 +1943,10 @@ def SelectedRustFullSignatureReductionCertificate.ofReportAndReduction
     SelectedRustFullSignatureReductionCertificate where
   evidenceReport := evidenceReport
   evidenceDigest := evidenceDigest
+  evidenceReportBound := evidenceReportBound
+  evidenceReportBoundProof := evidenceReportBoundProof
+  evidenceDigestBound := evidenceDigestBound
+  evidenceDigestBoundProof := evidenceDigestBoundProof
   selectedRustFullSignatureReductionVerifiedProof :=
     selectedRustFullSignatureReductionVerifiedProof
   selectedRustFullSignatureReductionFactsAllTrueProof :=
@@ -1994,6 +2006,10 @@ def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityB
       Cert.selectedRustFullSignatureReductionVerifiedProof
     let _hFacts : Cert.evidenceReport.FactsAllTrue :=
       Cert.selectedRustFullSignatureReductionFactsAllTrueProof
+    let _hReportBound : Cert.evidenceReportBound :=
+      Cert.evidenceReportBoundProof
+    let _hDigestBound : Cert.evidenceDigestBound :=
+      Cert.evidenceDigestBoundProof
     let _hSigPinned :
         Cert.signatureForgerySuccessProb =
           Cert.productionSignatureForgerySuccessProb :=
@@ -2014,6 +2030,10 @@ def SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityB
       Cert.selectedRustFullSignatureReductionVerifiedProof
     let _hFacts : Cert.evidenceReport.FactsAllTrue :=
       Cert.selectedRustFullSignatureReductionFactsAllTrueProof
+    let _hReportBound : Cert.evidenceReportBound :=
+      Cert.evidenceReportBoundProof
+    let _hDigestBound : Cert.evidenceDigestBound :=
+      Cert.evidenceDigestBoundProof
     exact
       ⟨Cert.keygenDistributionModeledProof,
         Cert.signingOracleModeledProof,
