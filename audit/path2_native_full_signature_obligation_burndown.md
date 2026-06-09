@@ -2284,6 +2284,14 @@ budget before the exported accepted-spend bound and fixed target. The
 full-reduction source gate requires these names, so the production reduction
 path must keep the accepted-spend component decomposition visible through the
 final signature theorem surface.
+AP2-N003 production-witness obligation projection note:
+`SelectedRustFullSignatureReductionProductionWitness` now exposes named
+projections for the selected key-generation, signing-oracle, completeness,
+verifier-relation, full-forgery-to-accepted-spend, checked-core
+domain-separation, and hidden-source domain-separation obligations. The
+full-reduction source gate requires these projection names along with
+query-budget and multi-target pricing, so the final production witness cannot
+carry the model obligations only as anonymous record fields.
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit

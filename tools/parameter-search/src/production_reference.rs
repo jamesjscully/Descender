@@ -28972,6 +28972,13 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_production",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_acceptedSpendGame",
         "SelectedRustFullSignatureReductionProductionWitness.acceptedSpendCertificate_prob_le_bound",
+        "SelectedRustFullSignatureReductionProductionWitness.keygenDistributionModeled_holds",
+        "SelectedRustFullSignatureReductionProductionWitness.signingOracleModeled_holds",
+        "SelectedRustFullSignatureReductionProductionWitness.completenessModeled_holds",
+        "SelectedRustFullSignatureReductionProductionWitness.verifierRelationMatchesImplementation_holds",
+        "SelectedRustFullSignatureReductionProductionWitness.fullForgeryImpliesAcceptedSpendForgery_holds",
+        "SelectedRustFullSignatureReductionProductionWitness.checkedCoreFrameDomainSeparated",
+        "SelectedRustFullSignatureReductionProductionWitness.hiddenSourceFrameDomainSeparated",
         "SelectedRustFullSignatureReductionProductionWitness.queryBudgetPriced",
         "SelectedRustFullSignatureReductionProductionWitness.multiTargetLossPriced",
         "SelectedRustFullSignatureReductionProductionWitness.toFullSignatureReductionCertificate",
@@ -29065,6 +29072,13 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_production",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_acceptedSpendGame",
         "SelectedRustFullSignatureReductionProductionWitness.acceptedSpendCertificate_prob_le_bound",
+        "SelectedRustFullSignatureReductionProductionWitness.keygenDistributionModeled_holds",
+        "SelectedRustFullSignatureReductionProductionWitness.signingOracleModeled_holds",
+        "SelectedRustFullSignatureReductionProductionWitness.completenessModeled_holds",
+        "SelectedRustFullSignatureReductionProductionWitness.verifierRelationMatchesImplementation_holds",
+        "SelectedRustFullSignatureReductionProductionWitness.fullForgeryImpliesAcceptedSpendForgery_holds",
+        "SelectedRustFullSignatureReductionProductionWitness.checkedCoreFrameDomainSeparated",
+        "SelectedRustFullSignatureReductionProductionWitness.hiddenSourceFrameDomainSeparated",
         "SelectedRustFullSignatureReductionProductionWitness.queryBudgetPriced",
         "SelectedRustFullSignatureReductionProductionWitness.multiTargetLossPriced",
         "SelectedRustFullSignatureReductionProductionWitness.toFullSignatureReductionCertificate",
@@ -53651,6 +53665,20 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_acceptedSpendGame
   let _fullReductionProductionWitnessAcceptedSpendBound :=
     SelectedRustFullSignatureReductionProductionWitness.acceptedSpendCertificate_prob_le_bound
+  let _fullReductionProductionWitnessKeygen :=
+    SelectedRustFullSignatureReductionProductionWitness.keygenDistributionModeled_holds
+  let _fullReductionProductionWitnessSigning :=
+    SelectedRustFullSignatureReductionProductionWitness.signingOracleModeled_holds
+  let _fullReductionProductionWitnessCompleteness :=
+    SelectedRustFullSignatureReductionProductionWitness.completenessModeled_holds
+  let _fullReductionProductionWitnessVerifier :=
+    SelectedRustFullSignatureReductionProductionWitness.verifierRelationMatchesImplementation_holds
+  let _fullReductionProductionWitnessFullForgery :=
+    SelectedRustFullSignatureReductionProductionWitness.fullForgeryImpliesAcceptedSpendForgery_holds
+  let _fullReductionProductionWitnessCheckedDomain :=
+    SelectedRustFullSignatureReductionProductionWitness.checkedCoreFrameDomainSeparated
+  let _fullReductionProductionWitnessHiddenDomain :=
+    SelectedRustFullSignatureReductionProductionWitness.hiddenSourceFrameDomainSeparated
   let _fullReductionProductionWitnessQueryBudget :=
     SelectedRustFullSignatureReductionProductionWitness.queryBudgetPriced
   let _fullReductionProductionWitnessMultiTarget :=

@@ -3675,6 +3675,48 @@ theorem acceptedSpendCertificate_prob_le_bound
       W.acceptedSpendCertificate.acceptedSpendForgeryBound :=
   W.acceptedSpendCertificate.acceptedSpendForgeryProb_le_bound
 
+/-- The production witness carries the selected key-generation model obligation. -/
+theorem keygenDistributionModeled_holds
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.keygenDistributionModeled :=
+  W.keygenDistributionModeledProof
+
+/-- The production witness carries the selected signing-oracle model obligation. -/
+theorem signingOracleModeled_holds
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.signingOracleModeled :=
+  W.signingOracleModeledProof
+
+/-- The production witness carries the selected completeness model obligation. -/
+theorem completenessModeled_holds
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.completenessModeled :=
+  W.completenessModeledProof
+
+/-- The production witness carries the selected verifier relation obligation. -/
+theorem verifierRelationMatchesImplementation_holds
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.verifierRelationMatchesImplementation :=
+  W.verifierRelationMatchesImplementationProof
+
+/-- The production witness carries the full-forgery-to-accepted-spend obligation. -/
+theorem fullForgeryImpliesAcceptedSpendForgery_holds
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.fullForgeryImpliesAcceptedSpendForgery :=
+  W.fullForgeryImpliesAcceptedSpendForgeryProof
+
+/-- The production witness carries checked-core frame domain separation. -/
+theorem checkedCoreFrameDomainSeparated
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.hashBoundary.checkedCoreFrameDomainSeparated :=
+  W.checkedCoreFrameDomainSeparatedProof
+
+/-- The production witness carries hidden-source frame domain separation. -/
+theorem hiddenSourceFrameDomainSeparated
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.hashBoundary.hiddenSourceFrameDomainSeparated :=
+  W.hiddenSourceFrameDomainSeparatedProof
+
 /-- The production witness carries active query-budget pricing through its hash boundary. -/
 theorem queryBudgetPriced
     (W : SelectedRustFullSignatureReductionProductionWitness) :
