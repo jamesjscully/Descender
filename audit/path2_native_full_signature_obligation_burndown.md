@@ -2275,6 +2275,15 @@ exported-bound, and packaged-success fixed 128-bit target facts. The accepted-
 spend source gate requires these names, so the full-reduction handoff cannot
 collapse the accepted-spend certificate to only an opaque final priced
 inequality.
+AP2-N003 full-reduction component-route note:
+`SelectedRustFullSignatureReductionCertificate` and
+`SelectedRustFullSignatureReductionProductionWitness` now expose
+`signatureForgerySuccessProb_le_componentBudget`, routing selected
+full-signature success through the accepted-spend certificate's component
+budget before the exported accepted-spend bound and fixed target. The
+full-reduction source gate requires these names, so the production reduction
+path must keep the accepted-spend component decomposition visible through the
+final signature theorem surface.
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit

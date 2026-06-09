@@ -3755,6 +3755,18 @@ theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessPro
     _ <= Cert.acceptedSpendCertificate.acceptedSpendForgeryProb :=
       Cert.acceptedSpendCertificate.successProb_le_acceptedSpendForgeryProb
 
+/-- The selected full-signature reduction reaches the accepted-spend component budget. -/
+theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_componentBudget
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.signatureForgerySuccessProb <=
+      Cert.acceptedSpendCertificate.componentBudget := by
+  calc
+    Cert.signatureForgerySuccessProb =
+        Cert.acceptedSpendCertificate.pricedNumericCertificate.successProb :=
+      Cert.signatureForgerySuccessProb_eq_acceptedSpendGame
+    _ <= Cert.acceptedSpendCertificate.componentBudget :=
+      Cert.acceptedSpendCertificate.successProb_le_componentBudget
+
 /-- The selected full-signature reduction reaches the exported accepted-spend bound. -/
 theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendBound
     (Cert : SelectedRustFullSignatureReductionCertificate) :
@@ -4045,6 +4057,13 @@ theorem signatureForgerySuccessProb_le_acceptedSpendForgeryProb
     W.signatureForgerySuccessProb <=
       W.acceptedSpendCertificate.acceptedSpendForgeryProb :=
   (toFullSignatureReductionCertificate W).signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+
+/-- The production witness reaches the accepted-spend component budget. -/
+theorem signatureForgerySuccessProb_le_componentBudget
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    W.signatureForgerySuccessProb <=
+      W.acceptedSpendCertificate.componentBudget :=
+  (toFullSignatureReductionCertificate W).signatureForgerySuccessProb_le_componentBudget
 
 /-- The production witness reaches the active 128-bit target. -/
 theorem signatureForgerySuccessProb_le_active128BitTarget
