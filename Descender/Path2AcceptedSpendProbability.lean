@@ -485,6 +485,60 @@ theorem breakBound_nonneg
   simpa [breakBound] using
     C.breakPricing.breakBound_nonneg breakEvent
 
+/-- The accepted-spend component bound is below the total component budget. -/
+theorem acceptedSpendBound_le_componentBudget
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.acceptedSpendBound <=
+      C.acceptedSpendBound +
+        (@Finset.univ C.Break C.breakFintype).sum C.breakBound := by
+  have hBreaks :
+      0 <= (@Finset.univ C.Break C.breakFintype).sum C.breakBound :=
+    Finset.sum_nonneg (by
+      intro breakEvent _hBreakEvent
+      exact C.breakBound_nonneg breakEvent)
+  exact le_add_of_nonneg_right hBreaks
+
+/-- Each named-break component bound is below the total component budget. -/
+theorem breakBound_le_componentBudget
+    (C : PricedAcceptedSpendNumericCertificate)
+    (breakEvent : C.Break) :
+    C.breakBound breakEvent <=
+      C.acceptedSpendBound +
+        (@Finset.univ C.Break C.breakFintype).sum C.breakBound := by
+  letI : Fintype C.Break := C.breakFintype
+  have hBreakLeSum :
+      C.breakBound breakEvent <=
+        (@Finset.univ C.Break C.breakFintype).sum C.breakBound :=
+    Finset.single_le_sum
+      (by
+        intro other _hOther
+        exact C.breakBound_nonneg other)
+      (Finset.mem_univ breakEvent)
+  have hAccepted : 0 <= C.acceptedSpendBound :=
+    C.acceptedSpendBound_nonneg
+  exact le_trans hBreakLeSum (le_add_of_nonneg_left hAccepted)
+
+/-- The accepted-spend probability is below the constructive component budget. -/
+theorem acceptedSpendProb_le_componentBudget
+    (C : PricedAcceptedSpendNumericCertificate) :
+    C.acceptedSpendProb <=
+      C.acceptedSpendBound +
+        (@Finset.univ C.Break C.breakFintype).sum C.breakBound :=
+  le_trans C.acceptedSpendProb_le_acceptedSpendBound
+    C.acceptedSpendBound_le_componentBudget
+
+/-- Each named-break probability is below the constructive component budget. -/
+theorem breakProb_le_componentBudget
+    (C : PricedAcceptedSpendNumericCertificate)
+    (breakEvent : C.Break) :
+    @AcceptedSpendNumericGame.breakProb
+        C.Trace C.Outcome C.Break C.traceFintype C.breakFintype
+        C.game breakEvent <=
+      C.acceptedSpendBound +
+        (@Finset.univ C.Break C.breakFintype).sum C.breakBound :=
+  le_trans (C.breakProb_le_breakBound breakEvent)
+    (C.breakBound_le_componentBudget breakEvent)
+
 /-- The priced certificate's final deployment bound is nonnegative. -/
 theorem pricedBound_nonneg
     (C : PricedAcceptedSpendNumericCertificate) :
@@ -726,6 +780,54 @@ theorem breakBound_nonneg
     (breakEvent : Source.pricedCertificate.Break) :
     0 <= Source.pricedCertificate.breakBound breakEvent :=
   Source.pricedCertificate.breakBound_nonneg breakEvent
+
+/-- The selected source exposes accepted-spend component budget inclusion. -/
+theorem acceptedSpendBound_le_componentBudget
+    (Source : SelectedAcceptedSpendNumericSource) :
+    Source.pricedCertificate.acceptedSpendBound <=
+      Source.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Source.pricedCertificate.Break
+          Source.pricedCertificate.breakFintype).sum
+            Source.pricedCertificate.breakBound :=
+  Source.pricedCertificate.acceptedSpendBound_le_componentBudget
+
+/-- The selected source exposes named-break component budget inclusion. -/
+theorem breakBound_le_componentBudget
+    (Source : SelectedAcceptedSpendNumericSource)
+    (breakEvent : Source.pricedCertificate.Break) :
+    Source.pricedCertificate.breakBound breakEvent <=
+      Source.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Source.pricedCertificate.Break
+          Source.pricedCertificate.breakFintype).sum
+            Source.pricedCertificate.breakBound :=
+  Source.pricedCertificate.breakBound_le_componentBudget breakEvent
+
+/-- The selected source bounds accepted-spend probability by the component budget. -/
+theorem acceptedSpendProb_le_componentBudget
+    (Source : SelectedAcceptedSpendNumericSource) :
+    Source.pricedCertificate.acceptedSpendProb <=
+      Source.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Source.pricedCertificate.Break
+          Source.pricedCertificate.breakFintype).sum
+            Source.pricedCertificate.breakBound :=
+  Source.pricedCertificate.acceptedSpendProb_le_componentBudget
+
+/-- The selected source bounds each named-break probability by the component budget. -/
+theorem breakProb_le_componentBudget
+    (Source : SelectedAcceptedSpendNumericSource)
+    (breakEvent : Source.pricedCertificate.Break) :
+    @AcceptedSpendNumericGame.breakProb
+        Source.pricedCertificate.Trace
+        Source.pricedCertificate.Outcome
+        Source.pricedCertificate.Break
+        Source.pricedCertificate.traceFintype
+        Source.pricedCertificate.breakFintype
+        Source.pricedCertificate.game breakEvent <=
+      Source.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Source.pricedCertificate.Break
+          Source.pricedCertificate.breakFintype).sum
+            Source.pricedCertificate.breakBound :=
+  Source.pricedCertificate.breakProb_le_componentBudget breakEvent
 
 /-- The selected source exposes nonnegativity of its final priced bound. -/
 theorem pricedBound_nonneg

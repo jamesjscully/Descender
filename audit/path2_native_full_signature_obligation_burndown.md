@@ -2256,6 +2256,17 @@ in addition to the priced-bound and success-probability active-target facts.
 The accepted-spend source gate requires these projections, so the final witness
 must expose the fixed-target consequence at each budget layer: component sum,
 union expression, and success probability.
+AP2-N003 component-probability target note:
+the accepted-spend pricing layer now exposes component-budget inclusion for the
+accepted-spend bound and each named-break bound, plus derived bounds from the
+actual accepted-spend probability and each actual named-break probability to the
+component budget. `SelectedRustConcreteAcceptedSpendPricingWitness` further
+derives `acceptedSpendProb_le_active128BitTarget` and
+`breakProb_le_active128BitTarget` from the selected pricing half. The active
+source gate exact-checks these theorem names, so the remaining production
+pricing package must prove not just an aggregate budget but the concrete active
+accepted-spend event and every named-break probability against the 128-bit
+target route.
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit
