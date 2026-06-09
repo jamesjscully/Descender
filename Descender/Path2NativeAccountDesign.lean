@@ -2432,6 +2432,30 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.currentSelectedReport_impo
     rw [← Cert.evidenceReportBoundProof]
     exact Cert.selectedRustAcceptedSpendFactsAllTrueProof)
 
+/-- The selected accepted-spend certificate carries hidden-source closure. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.hiddenSourceProofSemanticsClosed_holds
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.hiddenSourceProofSemanticsClosed :=
+  Cert.hiddenSourceProofSemanticsClosedProof
+
+/-- The selected accepted-spend certificate carries checked-core closure. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.checkedCoreCompositionClosed_holds
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.checkedCoreCompositionClosed :=
+  Cert.checkedCoreCompositionClosedProof
+
+/-- The selected accepted-spend certificate carries lifecycle/replay closure. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.lifecycleReplayClosed_holds
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.lifecycleReplayClosed :=
+  Cert.lifecycleReplayClosedProof
+
+/-- The selected accepted-spend certificate carries no-export closure. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.noExportClosed_holds
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.noExportClosed :=
+  Cert.noExportClosedProof
+
 /-- The priced numeric certificate validated by the selected accepted-spend source. -/
 def SelectedRustAcceptedSpendSoundnessCertificate.pricedNumericCertificate
     (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :

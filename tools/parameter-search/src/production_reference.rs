@@ -29739,6 +29739,10 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessCertificate",
         "SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound",
         "SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundPricingFacts",
+        "SelectedRustAcceptedSpendSoundnessCertificate.hiddenSourceProofSemanticsClosed_holds",
+        "SelectedRustAcceptedSpendSoundnessCertificate.checkedCoreCompositionClosed_holds",
+        "SelectedRustAcceptedSpendSoundnessCertificate.lifecycleReplayClosed_holds",
+        "SelectedRustAcceptedSpendSoundnessCertificate.noExportClosed_holds",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_unionBound",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_pricedBound",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_production",
@@ -55771,6 +55775,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.ofReportAndBound
   let _acceptedSpendCertificateSelectedConstructor :=
     SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundPricingFacts
+  let _acceptedSpendCertificateHiddenClosure :=
+    SelectedRustAcceptedSpendSoundnessCertificate.hiddenSourceProofSemanticsClosed_holds
+  let _acceptedSpendCertificateCheckedClosure :=
+    SelectedRustAcceptedSpendSoundnessCertificate.checkedCoreCompositionClosed_holds
+  let _acceptedSpendCertificateLifecycleClosure :=
+    SelectedRustAcceptedSpendSoundnessCertificate.lifecycleReplayClosed_holds
+  let _acceptedSpendCertificateNoExportClosure :=
+    SelectedRustAcceptedSpendSoundnessCertificate.noExportClosed_holds
   let _acceptedSpendCertificateToBoundary :=
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
   let _acceptedSpendBoundaryProbProduction :=

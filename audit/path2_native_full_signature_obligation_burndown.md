@@ -2282,6 +2282,12 @@ probability-to-bound inequality. Lean deliberately does not expose closure
 `*_holds` facts at this erased boundary because those fields are propositions,
 not proofs; closure proof ownership remains at the selected certificate and
 full-signature complete-claim layers.
+AP2-N003 accepted-spend certificate closure projection note:
+`SelectedRustAcceptedSpendSoundnessCertificate` now exposes named projections
+for hidden-source, checked-core, lifecycle/replay, and no-export closure proofs.
+The accepted-spend source gate requires these names, so closure ownership stays
+explicit at the selected certificate layer before erasure to
+`NativeAcceptedSpendSoundnessBoundary`.
 AP2-N003 full-reduction component-route note:
 `SelectedRustFullSignatureReductionCertificate` and
 `SelectedRustFullSignatureReductionProductionWitness` now expose
