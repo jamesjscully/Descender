@@ -3771,6 +3771,60 @@ theorem SelectedRustFullSignatureReductionCertificate.currentSelectedReport_impo
     rw [← Cert.evidenceReportBoundProof]
     exact Cert.selectedRustFullSignatureReductionFactsAllTrueProof)
 
+/-- The selected full-reduction certificate carries the key-generation model obligation. -/
+theorem SelectedRustFullSignatureReductionCertificate.keygenDistributionModeled_holds
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.keygenDistributionModeled :=
+  Cert.keygenDistributionModeledProof
+
+/-- The selected full-reduction certificate carries the signing-oracle model obligation. -/
+theorem SelectedRustFullSignatureReductionCertificate.signingOracleModeled_holds
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.signingOracleModeled :=
+  Cert.signingOracleModeledProof
+
+/-- The selected full-reduction certificate carries the completeness model obligation. -/
+theorem SelectedRustFullSignatureReductionCertificate.completenessModeled_holds
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.completenessModeled :=
+  Cert.completenessModeledProof
+
+/-- The selected full-reduction certificate carries the verifier relation obligation. -/
+theorem SelectedRustFullSignatureReductionCertificate.verifierRelationMatchesImplementation_holds
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.verifierRelationMatchesImplementation :=
+  Cert.verifierRelationMatchesImplementationProof
+
+/-- The selected full-reduction certificate carries the full-forgery-to-accepted-spend obligation. -/
+theorem SelectedRustFullSignatureReductionCertificate.fullForgeryImpliesAcceptedSpendForgery_holds
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.fullForgeryImpliesAcceptedSpendForgery :=
+  Cert.fullForgeryImpliesAcceptedSpendForgeryProof
+
+/-- The selected full-reduction certificate carries checked-core frame domain separation. -/
+theorem SelectedRustFullSignatureReductionCertificate.checkedCoreFrameDomainSeparated
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.hashBoundary.checkedCoreFrameDomainSeparated :=
+  Cert.checkedCoreFrameDomainSeparatedProof
+
+/-- The selected full-reduction certificate carries hidden-source frame domain separation. -/
+theorem SelectedRustFullSignatureReductionCertificate.hiddenSourceFrameDomainSeparated
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.hashBoundary.hiddenSourceFrameDomainSeparated :=
+  Cert.hiddenSourceFrameDomainSeparatedProof
+
+/-- The selected full-reduction certificate carries active query-budget pricing. -/
+theorem SelectedRustFullSignatureReductionCertificate.queryBudgetPriced
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.hashBoundary.queryBudgetPriced :=
+  Cert.queryBudgetPricedProof
+
+/-- The selected full-reduction certificate carries active multi-target-loss pricing. -/
+theorem SelectedRustFullSignatureReductionCertificate.multiTargetLossPriced
+    (Cert : SelectedRustFullSignatureReductionCertificate) :
+    Cert.hashBoundary.multiTargetLossPriced :=
+  Cert.multiTargetLossPricedProof
+
 /-- The selected full-signature success probability is pinned to production. -/
 theorem SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_production
     (Cert : SelectedRustFullSignatureReductionCertificate) :

@@ -29030,6 +29030,15 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "selectedRustSignatureForgerySuccessProbPinned",
         "selectedRustSignatureForgerySuccessMatchesAcceptedSpendGame",
         "successProb_le_acceptedSpendForgeryProb",
+        "SelectedRustFullSignatureReductionCertificate.keygenDistributionModeled_holds",
+        "SelectedRustFullSignatureReductionCertificate.signingOracleModeled_holds",
+        "SelectedRustFullSignatureReductionCertificate.completenessModeled_holds",
+        "SelectedRustFullSignatureReductionCertificate.verifierRelationMatchesImplementation_holds",
+        "SelectedRustFullSignatureReductionCertificate.fullForgeryImpliesAcceptedSpendForgery_holds",
+        "SelectedRustFullSignatureReductionCertificate.checkedCoreFrameDomainSeparated",
+        "SelectedRustFullSignatureReductionCertificate.hiddenSourceFrameDomainSeparated",
+        "SelectedRustFullSignatureReductionCertificate.queryBudgetPriced",
+        "SelectedRustFullSignatureReductionCertificate.multiTargetLossPriced",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_production",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_acceptedSpendGame",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
@@ -29089,6 +29098,15 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary",
         "SelectedRustFullSignatureReductionProductionWitness.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary",
+        "SelectedRustFullSignatureReductionCertificate.keygenDistributionModeled_holds",
+        "SelectedRustFullSignatureReductionCertificate.signingOracleModeled_holds",
+        "SelectedRustFullSignatureReductionCertificate.completenessModeled_holds",
+        "SelectedRustFullSignatureReductionCertificate.verifierRelationMatchesImplementation_holds",
+        "SelectedRustFullSignatureReductionCertificate.fullForgeryImpliesAcceptedSpendForgery_holds",
+        "SelectedRustFullSignatureReductionCertificate.checkedCoreFrameDomainSeparated",
+        "SelectedRustFullSignatureReductionCertificate.hiddenSourceFrameDomainSeparated",
+        "SelectedRustFullSignatureReductionCertificate.queryBudgetPriced",
+        "SelectedRustFullSignatureReductionCertificate.multiTargetLossPriced",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_production",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_acceptedSpendGame",
         "SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
@@ -53406,6 +53424,33 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
       selectedRustMultiTargetLossPricedProof
   let _fullReductionProductionPin :=
     SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_production
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionKeygen :=
+    SelectedRustFullSignatureReductionCertificate.keygenDistributionModeled_holds
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionSigning :=
+    SelectedRustFullSignatureReductionCertificate.signingOracleModeled_holds
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionCompleteness :=
+    SelectedRustFullSignatureReductionCertificate.completenessModeled_holds
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionVerifier :=
+    SelectedRustFullSignatureReductionCertificate.verifierRelationMatchesImplementation_holds
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionFullForgery :=
+    SelectedRustFullSignatureReductionCertificate.fullForgeryImpliesAcceptedSpendForgery_holds
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionCheckedDomain :=
+    SelectedRustFullSignatureReductionCertificate.checkedCoreFrameDomainSeparated
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionHiddenDomain :=
+    SelectedRustFullSignatureReductionCertificate.hiddenSourceFrameDomainSeparated
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionQueryBudget :=
+    SelectedRustFullSignatureReductionCertificate.queryBudgetPriced
+      selectedRustFullSignatureReductionCertificate
+  let _fullReductionMultiTarget :=
+    SelectedRustFullSignatureReductionCertificate.multiTargetLossPriced
       selectedRustFullSignatureReductionCertificate
   let _fullReductionAcceptedSpendGamePin :=
     SelectedRustFullSignatureReductionCertificate.signatureForgerySuccessProb_eq_acceptedSpendGame

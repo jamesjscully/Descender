@@ -2292,6 +2292,14 @@ domain-separation, and hidden-source domain-separation obligations. The
 full-reduction source gate requires these projection names along with
 query-budget and multi-target pricing, so the final production witness cannot
 carry the model obligations only as anonymous record fields.
+AP2-N003 full-reduction certificate obligation projection note:
+`SelectedRustFullSignatureReductionCertificate` now also exposes named
+projections for the selected key-generation, signing-oracle, completeness,
+verifier-relation, full-forgery-to-accepted-spend, checked-core/hidden-source
+domain separation, query-budget, and multi-target obligations. The
+full-reduction gate requires these certificate-level names, keeping the same
+production-model obligations visible after the witness is converted into the
+selected certificate.
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit
