@@ -1750,6 +1750,13 @@ impossible, and full-reduction `StructuralFactsComplete` holds while
 `ProductionFactsComplete` is impossible. The active blocker is therefore the
 missing pricing/production proof content, not report parsing, digest presence,
 QROM capacity, or structural source consumption.
+Lean now also exposes individual theorem names for every currently false
+accepted-spend pricing bit and full-reduction production bit. The Rust source
+gates require those names, so the fail-closed state is tracked at the specific
+missing-obligation level: aggregate numeric pricing, accepted-spend event
+pricing, named-break pricing, component-budget pricing, numeric target budget,
+production probability pinning, accepted-spend-game linkage, accepted-spend
+probability linkage, final query-symbol pricing, and verifier-game binding.
 The hard halves also now have named projection theorems, so future closure can
 consume pricing/production facts by name: accepted-spend component pricing,
 named-break component pricing, break-budget pricing, target/security cap

@@ -2205,6 +2205,31 @@ theorem selectedRustAcceptedSpendEvidenceReport_currentMissingPricingFactsFalse 
     selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBudgetMeetsTarget = false := by
   native_decide
 
+/-- The current selected accepted-spend report has not priced the aggregate numeric bound. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentNumericBoundPriced_false :
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBoundPriced = false :=
+  selectedRustAcceptedSpendEvidenceReport_currentMissingPricingFactsFalse.1
+
+/-- The current selected accepted-spend report has not priced the accepted-spend event component. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentAcceptedSpendEventBoundPriced_false :
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendEventBoundPriced = false :=
+  selectedRustAcceptedSpendEvidenceReport_currentMissingPricingFactsFalse.2.1
+
+/-- The current selected accepted-spend report has not priced the named-break components. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentNamedBreakEventBoundsPriced_false :
+    selectedRustAcceptedSpendEvidenceReport.namedBreakEventBoundsPriced = false :=
+  selectedRustAcceptedSpendEvidenceReport_currentMissingPricingFactsFalse.2.2.1
+
+/-- The current selected accepted-spend report has not shown the component budget fits the priced bound. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentBreakPricingBudgetMeetsPricedBound_false :
+    selectedRustAcceptedSpendEvidenceReport.breakPricingBudgetMeetsPricedBound = false :=
+  selectedRustAcceptedSpendEvidenceReport_currentMissingPricingFactsFalse.2.2.2.1
+
+/-- The current selected accepted-spend report has not shown the numeric budget reaches target. -/
+theorem selectedRustAcceptedSpendEvidenceReport_currentNumericBudgetMeetsTarget_false :
+    selectedRustAcceptedSpendEvidenceReport.acceptedSpendNumericBudgetMeetsTarget = false :=
+  selectedRustAcceptedSpendEvidenceReport_currentMissingPricingFactsFalse.2.2.2.2
+
 /-- The current selected accepted-spend report cannot complete the pricing half. -/
 theorem selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_impossible :
     ¬ selectedRustAcceptedSpendEvidenceReport.PricingFactsComplete := by
@@ -3394,6 +3419,31 @@ theorem selectedRustFullSignatureReductionEvidenceReport_currentMissingReduction
     selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = false ∧
     selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = false := by
   native_decide
+
+/-- The current selected full-reduction report has not pinned production signature probability. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionSignatureProbabilityPinned_false :
+    selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned = false :=
+  selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse.1
+
+/-- The current selected full-reduction report has not linked signature success to the accepted-spend game. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentSignatureSuccessMatchesAcceptedSpendGame_false :
+    selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame = false :=
+  selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse.2.1
+
+/-- The current selected full-reduction report has not linked accepted-spend probability. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentAcceptedSpendProbabilityLinked_false :
+    selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = false :=
+  selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse.2.2.1
+
+/-- The current selected full-reduction report has not priced every active final query symbol. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentAllActiveQuerySymbolsPriced_false :
+    selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = false :=
+  selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse.2.2.2.1
+
+/-- The current selected full-reduction report has not bound the verifier game to production execution. -/
+theorem selectedRustFullSignatureReductionEvidenceReport_currentVerifierGameMatchesProductionExecution_false :
+    selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = false :=
+  selectedRustFullSignatureReductionEvidenceReport_currentMissingReductionFactsFalse.2.2.2.2
 
 /-- The current selected full-reduction report cannot complete the production half. -/
 theorem selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_impossible :
