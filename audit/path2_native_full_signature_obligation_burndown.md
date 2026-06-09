@@ -2369,3 +2369,13 @@ transcript term. The missing-obligation helper must report
 `accepted_spend_priced_bound_security_within_transcript`, so future changes that
 widen priced-bound bits cannot accidentally drop the required
 `priced_bound_bits + multi_target_horizon <= transcript_term` check.
+AP2-N003 source-bound numeric-certificate projection note:
+`SelectedRustConcreteAcceptedSpendNumericSourceCertificate` now exposes the
+active outcome-carrier pin, accepted-spend event semantics, active break-family
+pin, named-break event semantics, accepted-spend component pricing, named-break
+component pricing, component-budget-to-priced-bound pricing,
+accepted-spend-probability-to-priced-bound pricing, success-to-union-bound
+pricing, and success-to-priced-bound pricing. The accepted-spend source gate
+requires these source-level projection names, so the final theorem must keep
+the report/digest-bound concrete source on the proof path instead of citing
+only raw `SelectedRustConcreteAcceptedSpendNumericCertificate` projections.

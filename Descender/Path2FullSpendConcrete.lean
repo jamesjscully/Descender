@@ -2289,6 +2289,45 @@ theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.unionBound_non
     0 <= Source.concreteCertificate.pricedCertificate.unionBound :=
   Source.concreteCertificate.unionBound_nonneg
 
+/-- The source-bound concrete certificate uses the active full-forgery run carrier. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.outcome_eq_selectedFullForgeryRun
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.pricedCertificate.Outcome =
+      selectedRustAcceptedSpendNumericOutcome :=
+  Source.concreteCertificate.outcome_eq_selectedFullForgeryRun
+
+/-- Source-bound accepted-spend events mean the active accepted-spend conclusion. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendEvent_activeSound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate)
+    (trace : Source.concreteCertificate.pricedCertificate.Trace)
+    (hAccepted :
+      Source.concreteCertificate.pricedCertificate.acceptedSpendEvent trace = true) :
+    Path2FullSpendGame.AcceptedSpendConclusion
+      (concretePredicates selectedRustConcreteGameConfig)
+      (cast Source.concreteCertificate.outcomeCarrierPinned
+        (Source.concreteCertificate.pricedCertificate.observe trace)).spend :=
+  Source.concreteCertificate.acceptedSpendEvent_activeSound trace hAccepted
+
+/-- Source-bound named break events mean active full-spend breaks. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.namedBreakEvents_activeSound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate)
+    (trace : Source.concreteCertificate.pricedCertificate.Trace)
+    (breakEvent : Source.concreteCertificate.pricedCertificate.Break)
+    (hBreak :
+      Source.concreteCertificate.pricedCertificate.namedBreakEvent trace breakEvent = true) :
+    (concretePredicates selectedRustConcreteGameConfig).breakFor
+      (cast Source.concreteCertificate.outcomeCarrierPinned
+        (Source.concreteCertificate.pricedCertificate.observe trace)).spend
+      (cast Source.concreteCertificate.breakFamilyPinned breakEvent) :=
+  Source.concreteCertificate.namedBreakEvents_activeSound trace breakEvent hBreak
+
+/-- The source-bound concrete certificate uses the active full-spend break family. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.break_eq_activeFullSpendBreakEvent
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.pricedCertificate.Break =
+      Path2FullSpendGame.BreakEvent :=
+  Source.concreteCertificate.break_eq_activeFullSpendBreakEvent
+
 /-- The source-bound concrete certificate exposes nonnegative success probability. -/
 theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_nonneg
     (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
@@ -2319,6 +2358,27 @@ theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_le_o
         Source.concreteCertificate.pricedCertificate.breakFintype
         Source.concreteCertificate.pricedCertificate.game breakEvent <= 1 :=
   Source.concreteCertificate.breakProb_le_one breakEvent
+
+/-- The source-bound concrete certificate exposes accepted-spend component pricing. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendProb_le_acceptedSpendBound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.pricedCertificate.acceptedSpendProb <=
+      Source.concreteCertificate.pricedCertificate.acceptedSpendBound :=
+  Source.concreteCertificate.acceptedSpendProb_le_acceptedSpendBound
+
+/-- The source-bound concrete certificate exposes each named-break component price. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_le_breakBound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate)
+    (breakEvent : Source.concreteCertificate.pricedCertificate.Break) :
+    @Path2AcceptedSpendProbability.AcceptedSpendNumericGame.breakProb
+        Source.concreteCertificate.pricedCertificate.Trace
+        Source.concreteCertificate.pricedCertificate.Outcome
+        Source.concreteCertificate.pricedCertificate.Break
+        Source.concreteCertificate.pricedCertificate.traceFintype
+        Source.concreteCertificate.pricedCertificate.breakFintype
+        Source.concreteCertificate.pricedCertificate.game breakEvent <=
+      Source.concreteCertificate.pricedCertificate.breakBound breakEvent :=
+  Source.concreteCertificate.breakProb_le_breakBound breakEvent
 
 /-- The source-bound concrete certificate exposes the accepted-spend plus named-break decomposition. -/
 theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.unionBound_eq_acceptedSpendProb_add_breakProb_sum
@@ -2404,6 +2464,37 @@ theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le
           Source.concreteCertificate.pricedCertificate.breakFintype).sum
             Source.concreteCertificate.pricedCertificate.breakBound :=
   Source.concreteCertificate.successProb_le_componentBudget
+
+/-- The source-bound concrete certificate checks the component budget against the priced bound. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakBudget_le_pricedBound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ Source.concreteCertificate.pricedCertificate.Break
+          Source.concreteCertificate.pricedCertificate.breakFintype).sum
+            Source.concreteCertificate.pricedCertificate.breakBound <=
+      Source.concreteCertificate.pricedCertificate.pricedBound :=
+  Source.concreteCertificate.breakBudget_le_pricedBound
+
+/-- The source-bound concrete certificate prices accepted-spend probability by the deployment bound. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendProb_le_pricedBound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.pricedCertificate.acceptedSpendProb <=
+      Source.concreteCertificate.pricedCertificate.pricedBound :=
+  Source.concreteCertificate.acceptedSpendProb_le_pricedBound
+
+/-- The source-bound concrete certificate prices full-forgery success by the union bound. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le_unionBound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.pricedCertificate.successProb <=
+      Source.concreteCertificate.pricedCertificate.unionBound :=
+  Source.concreteCertificate.successProb_le_unionBound
+
+/-- The source-bound concrete certificate prices full-forgery success by the deployment bound. -/
+theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le_pricedBound
+    (Source : SelectedRustConcreteAcceptedSpendNumericSourceCertificate) :
+    Source.concreteCertificate.pricedCertificate.successProb <=
+      Source.concreteCertificate.pricedCertificate.pricedBound :=
+  Source.concreteCertificate.successProb_le_pricedBound
 
 /-- The source-bound report says the accepted-spend numeric bound is priced. -/
 theorem SelectedRustConcreteAcceptedSpendNumericSourceCertificate.factsAllTrue_numericBoundPriced
