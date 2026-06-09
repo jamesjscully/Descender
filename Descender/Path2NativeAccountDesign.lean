@@ -1561,6 +1561,28 @@ structure NativeAcceptedSpendSoundnessBoundary where
   lifecycleReplayClosed : Prop
   noExportClosed : Prop
 
+namespace NativeAcceptedSpendSoundnessBoundary
+
+/-- The erased accepted-spend boundary exposes production probability pinning. -/
+theorem acceptedSpendForgeryProb_eq_production
+    (B : NativeAcceptedSpendSoundnessBoundary) :
+    B.acceptedSpendForgeryProb = B.productionAcceptedSpendForgeryProb :=
+  B.acceptedSpendForgeryProbPinned
+
+/-- The erased accepted-spend boundary exposes production bound pinning. -/
+theorem acceptedSpendForgeryBound_eq_production
+    (B : NativeAcceptedSpendSoundnessBoundary) :
+    B.acceptedSpendForgeryBound = B.productionAcceptedSpendForgeryBound :=
+  B.acceptedSpendForgeryBoundPinned
+
+/-- The erased accepted-spend boundary exposes the accepted-spend probability inequality. -/
+theorem acceptedSpendForgeryProb_le_bound
+    (B : NativeAcceptedSpendSoundnessBoundary) :
+    B.acceptedSpendForgeryProb <= B.acceptedSpendForgeryBound :=
+  B.acceptedSpendForgery_le_bound
+
+end NativeAcceptedSpendSoundnessBoundary
+
 /-- The all-zero 32-byte digest placeholder rejected by Rust evidence verifiers. -/
 def selectedRustZeroDigest32 : ByteArray :=
   ByteArray.mk (Array.replicate 32 (0 : UInt8))

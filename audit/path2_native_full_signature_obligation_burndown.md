@@ -2275,6 +2275,13 @@ exported-bound, and packaged-success fixed 128-bit target facts. The accepted-
 spend source gate requires these names, so the full-reduction handoff cannot
 collapse the accepted-spend certificate to only an opaque final priced
 inequality.
+AP2-N003 accepted-spend erased-boundary projection note:
+`NativeAcceptedSpendSoundnessBoundary` now exposes named projections for
+production probability pinning, production bound pinning, and the accepted-spend
+probability-to-bound inequality. Lean deliberately does not expose closure
+`*_holds` facts at this erased boundary because those fields are propositions,
+not proofs; closure proof ownership remains at the selected certificate and
+full-signature complete-claim layers.
 AP2-N003 full-reduction component-route note:
 `SelectedRustFullSignatureReductionCertificate` and
 `SelectedRustFullSignatureReductionProductionWitness` now expose

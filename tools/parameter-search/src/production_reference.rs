@@ -29493,6 +29493,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "acceptedSpendForgeryProb",
         "acceptedSpendForgeryBound",
         "acceptedSpendForgery_le_bound",
+        "NativeAcceptedSpendSoundnessBoundary.acceptedSpendForgeryProb_eq_production",
+        "NativeAcceptedSpendSoundnessBoundary.acceptedSpendForgeryBound_eq_production",
+        "NativeAcceptedSpendSoundnessBoundary.acceptedSpendForgeryProb_le_bound",
         "selectedRustProductionAcceptedSpendForgeryProb",
         "selectedRustProductionAcceptedSpendForgeryBound",
         "selectedRustAcceptedSpendForgeryProbMatchesUnionBound",
@@ -30026,6 +30029,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_nonneg",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_nonneg",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget",
+        "NativeAcceptedSpendSoundnessBoundary.acceptedSpendForgeryProb_eq_production",
+        "NativeAcceptedSpendSoundnessBoundary.acceptedSpendForgeryBound_eq_production",
+        "NativeAcceptedSpendSoundnessBoundary.acceptedSpendForgeryProb_le_bound",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_unionBoundPriced",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_numericBoundPriced",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_finiteTraceSupportPriced",
@@ -55767,6 +55773,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.ofSelectedReportAndBoundPricingFacts
   let _acceptedSpendCertificateToBoundary :=
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
+  let _acceptedSpendBoundaryProbProduction :=
+    NativeAcceptedSpendSoundnessBoundary.acceptedSpendForgeryProb_eq_production
+  let _acceptedSpendBoundaryBoundProduction :=
+    NativeAcceptedSpendSoundnessBoundary.acceptedSpendForgeryBound_eq_production
+  let _acceptedSpendBoundaryProbBound :=
+    NativeAcceptedSpendSoundnessBoundary.acceptedSpendForgeryProb_le_bound
   let selectedRustAcceptedSpendSoundnessCertificate :
       SelectedRustAcceptedSpendSoundnessCertificate :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.toSelectedRustAcceptedSpendSoundnessCertificate
