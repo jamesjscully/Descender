@@ -2353,7 +2353,12 @@ single witness object rather than only passing around a tuple-shaped
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit
-target, and the erased native full-signature boundary. The full-reduction
-source gate requires these witness-level projections along with the selected
-full-reduction certificate constructor, so the final AP2-N003 theorem must keep
-the production witness on the proof path through boundary erasure.
+target, and the erased native full-signature boundary. It also exposes named
+hard-bit projections for the five full-reduction production-half report facts:
+production probability pinning, signature-success/accepted-spend-game linkage,
+accepted-spend probability linkage, all-active-query-symbol pricing, and
+verifier-game/production-execution binding. The full-reduction source gate
+requires these witness-level projections along with the selected full-reduction
+certificate constructor, so the final AP2-N003 theorem must keep the production
+witness on the proof path through boundary erasure instead of hiding the hard
+production bits behind only `ProductionFactsComplete`.

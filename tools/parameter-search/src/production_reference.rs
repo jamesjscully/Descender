@@ -29057,6 +29057,11 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndReductionProductionFacts",
         "SelectedRustFullSignatureReductionProductionWitness",
         "SelectedRustFullSignatureReductionProductionWitness.productionFactsComplete",
+        "SelectedRustFullSignatureReductionProductionWitness.productionSignatureProbabilityPinned",
+        "SelectedRustFullSignatureReductionProductionWitness.signatureSuccessMatchesAcceptedSpendGame",
+        "SelectedRustFullSignatureReductionProductionWitness.acceptedSpendProbabilityLinked",
+        "SelectedRustFullSignatureReductionProductionWitness.allActiveQuerySymbolsPriced",
+        "SelectedRustFullSignatureReductionProductionWitness.verifierGameMatchesProductionExecution",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_production",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_acceptedSpendGame",
         "SelectedRustFullSignatureReductionProductionWitness.acceptedSpendCertificate_prob_le_bound",
@@ -29171,6 +29176,11 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.ofReportAndReduction",
         "SelectedRustFullSignatureReductionCertificate.ofSelectedReportAndReductionProductionFacts",
         "SelectedRustFullSignatureReductionProductionWitness.productionFactsComplete",
+        "SelectedRustFullSignatureReductionProductionWitness.productionSignatureProbabilityPinned",
+        "SelectedRustFullSignatureReductionProductionWitness.signatureSuccessMatchesAcceptedSpendGame",
+        "SelectedRustFullSignatureReductionProductionWitness.acceptedSpendProbabilityLinked",
+        "SelectedRustFullSignatureReductionProductionWitness.allActiveQuerySymbolsPriced",
+        "SelectedRustFullSignatureReductionProductionWitness.verifierGameMatchesProductionExecution",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_production",
         "SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_acceptedSpendGame",
         "SelectedRustFullSignatureReductionProductionWitness.acceptedSpendCertificate_prob_le_bound",
@@ -53920,6 +53930,16 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
     SelectedRustFullSignatureReductionProductionWitness
   let _fullReductionProductionWitnessFacts :=
     SelectedRustFullSignatureReductionProductionWitness.productionFactsComplete
+  let _fullReductionProductionWitnessProbabilityPinnedBit :=
+    SelectedRustFullSignatureReductionProductionWitness.productionSignatureProbabilityPinned
+  let _fullReductionProductionWitnessAcceptedSpendGameBit :=
+    SelectedRustFullSignatureReductionProductionWitness.signatureSuccessMatchesAcceptedSpendGame
+  let _fullReductionProductionWitnessAcceptedSpendLinkedBit :=
+    SelectedRustFullSignatureReductionProductionWitness.acceptedSpendProbabilityLinked
+  let _fullReductionProductionWitnessQuerySymbolsBit :=
+    SelectedRustFullSignatureReductionProductionWitness.allActiveQuerySymbolsPriced
+  let _fullReductionProductionWitnessVerifierGameBit :=
+    SelectedRustFullSignatureReductionProductionWitness.verifierGameMatchesProductionExecution
   let _fullReductionProductionWitnessProductionPin :=
     SelectedRustFullSignatureReductionProductionWitness.signatureForgerySuccessProb_eq_production
   let _fullReductionProductionWitnessAcceptedSpendGame :=

@@ -3751,6 +3751,36 @@ theorem productionFactsComplete
     W.allActiveQuerySymbolsPricedProof,
     W.verifierGameMatchesProductionExecutionProof⟩
 
+/-- The production witness exposes the active signature-probability pinning bit. -/
+theorem productionSignatureProbabilityPinned
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    selectedRustFullSignatureReductionEvidenceReport.productionSignatureProbabilityPinned = true :=
+  W.productionSignatureProbabilityPinnedProof
+
+/-- The production witness exposes the signature-success/accepted-spend game link bit. -/
+theorem signatureSuccessMatchesAcceptedSpendGame
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    selectedRustFullSignatureReductionEvidenceReport.signatureSuccessMatchesAcceptedSpendGame = true :=
+  W.signatureSuccessMatchesAcceptedSpendGameProof
+
+/-- The production witness exposes the accepted-spend probability linkage bit. -/
+theorem acceptedSpendProbabilityLinked
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    selectedRustFullSignatureReductionEvidenceReport.acceptedSpendProbabilityLinked = true :=
+  W.acceptedSpendProbabilityLinkedProof
+
+/-- The production witness exposes active query-symbol pricing. -/
+theorem allActiveQuerySymbolsPriced
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    selectedRustFullSignatureReductionEvidenceReport.allActiveQuerySymbolsPriced = true :=
+  W.allActiveQuerySymbolsPricedProof
+
+/-- The production witness exposes the verifier-game/production-execution binding bit. -/
+theorem verifierGameMatchesProductionExecution
+    (W : SelectedRustFullSignatureReductionProductionWitness) :
+    selectedRustFullSignatureReductionEvidenceReport.verifierGameMatchesProductionExecution = true :=
+  W.verifierGameMatchesProductionExecutionProof
+
 /-- The production witness pins selected signature success to the production probability. -/
 theorem signatureForgerySuccessProb_eq_production
     (W : SelectedRustFullSignatureReductionProductionWitness) :
