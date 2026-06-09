@@ -48,6 +48,21 @@ pub const PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeAcceptedSpendNumericEvidence.v1";
 pub const PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeFullSignatureReductionEvidence.v1";
+pub const PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_CURRENT_MISSING_PRICING_OBLIGATIONS: [&str; 6] = [
+    "accepted_spend_numeric_bound_priced",
+    "accepted_spend_event_bound_priced",
+    "named_break_event_bounds_priced",
+    "break_pricing_budget_meets_priced_bound",
+    "accepted_spend_numeric_budget_meets_target",
+    "accepted_spend_priced_bound_security_meets_target",
+];
+pub const PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_CURRENT_MISSING_PRODUCTION_OBLIGATIONS: [&str; 5] = [
+    "production_signature_probability_pinned",
+    "signature_success_matches_accepted_spend_game",
+    "accepted_spend_probability_linked",
+    "all_active_query_symbols_priced",
+    "verifier_game_matches_production_execution",
+];
 pub const PATH2_NATIVE_SIGNER_VERIFIER_PIPELINE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.NativeSignerVerifierPipelineEvidence.v1";
 pub const PATH2_NATIVE_SIGNER_PIPELINE_PUBLIC_OUTPUT_SCHEMA: &str =
@@ -2837,6 +2852,37 @@ pub fn path2_native_accepted_spend_numeric_evidence_all_facts_true(
         && evidence.no_export_closure_ready
 }
 
+pub fn path2_native_accepted_spend_numeric_missing_pricing_obligations_v1(
+    evidence: &Path2NativeAcceptedSpendNumericEvidenceV1,
+) -> Vec<&'static str> {
+    let mut missing = Vec::new();
+    if !evidence.accepted_spend_numeric_bound_priced {
+        missing.push("accepted_spend_numeric_bound_priced");
+    }
+    if !evidence.accepted_spend_event_bound_priced {
+        missing.push("accepted_spend_event_bound_priced");
+    }
+    if !evidence.named_break_event_bounds_priced {
+        missing.push("named_break_event_bounds_priced");
+    }
+    if !evidence.break_pricing_budget_meets_priced_bound {
+        missing.push("break_pricing_budget_meets_priced_bound");
+    }
+    if !evidence.accepted_spend_numeric_budget_meets_target {
+        missing.push("accepted_spend_numeric_budget_meets_target");
+    }
+    if evidence.accepted_spend_priced_bound_security_bits < evidence.target_security_bits {
+        missing.push("accepted_spend_priced_bound_security_meets_target");
+    }
+    if u32::from(evidence.accepted_spend_priced_bound_security_bits)
+        + u32::from(evidence.selected_multi_target_horizon_log2)
+        > u32::from(evidence.transcript_term_bits_after_qrom_loss)
+    {
+        missing.push("accepted_spend_priced_bound_security_within_transcript");
+    }
+    missing
+}
+
 pub fn verify_path2_native_accepted_spend_numeric_evidence_v1(
     evidence: &Path2NativeAcceptedSpendNumericEvidenceV1,
 ) -> Result<[u8; DIGEST_BYTES], String> {
@@ -3056,6 +3102,28 @@ pub fn path2_native_full_signature_reduction_evidence_all_facts_true(
         && evidence.all_active_query_symbols_priced
         && evidence.multi_target_horizon_priced
         && evidence.verifier_game_matches_production_execution
+}
+
+pub fn path2_native_full_signature_reduction_missing_production_obligations_v1(
+    evidence: &Path2NativeFullSignatureReductionEvidenceV1,
+) -> Vec<&'static str> {
+    let mut missing = Vec::new();
+    if !evidence.production_signature_probability_pinned {
+        missing.push("production_signature_probability_pinned");
+    }
+    if !evidence.signature_success_matches_accepted_spend_game {
+        missing.push("signature_success_matches_accepted_spend_game");
+    }
+    if !evidence.accepted_spend_probability_linked {
+        missing.push("accepted_spend_probability_linked");
+    }
+    if !evidence.all_active_query_symbols_priced {
+        missing.push("all_active_query_symbols_priced");
+    }
+    if !evidence.verifier_game_matches_production_execution {
+        missing.push("verifier_game_matches_production_execution");
+    }
+    missing
 }
 
 pub fn verify_path2_native_full_signature_reduction_evidence_v1(
@@ -28444,6 +28512,10 @@ fn path2_native_accepted_spend_numeric_evidence_source_present_v1() -> bool {
         "named_break_event_bounds_priced",
         "break_pricing_budget_meets_priced_bound",
         "accepted_spend_numeric_budget_meets_target",
+        "PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_CURRENT_MISSING_PRICING_OBLIGATIONS",
+        "path2_native_accepted_spend_numeric_missing_pricing_obligations_v1",
+        "accepted_spend_priced_bound_security_meets_target",
+        "accepted_spend_priced_bound_security_within_transcript",
         "hidden_source_closure_ready",
         "checked_core_closure_ready",
         "lifecycle_replay_closure_ready",
@@ -28527,6 +28599,8 @@ fn path2_native_full_signature_reduction_evidence_source_present_v1() -> bool {
         "all_active_query_symbols_priced",
         "multi_target_horizon_priced",
         "verifier_game_matches_production_execution",
+        "PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_CURRENT_MISSING_PRODUCTION_OBLIGATIONS",
+        "path2_native_full_signature_reduction_missing_production_obligations_v1",
         "path2_native_full_signature_reduction_evidence_v1",
         "path2_native_full_signature_reduction_evidence_v1_frame",
         "path2_native_full_signature_reduction_evidence_v1_digest",
@@ -28643,20 +28717,20 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "\ntheorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "\ntheorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
         "\ndef SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
-        "\ntheorem NativeFullSignatureSecurityBoundary.keygenDistributionModeled_holds",
-        "\ntheorem NativeFullSignatureSecurityBoundary.signingOracleModeled_holds",
-        "\ntheorem NativeFullSignatureSecurityBoundary.completenessModeled_holds",
-        "\ntheorem NativeFullSignatureSecurityBoundary.verifierRelationMatchesImplementation_holds",
-        "\ntheorem NativeFullSignatureSecurityBoundary.fullForgeryImpliesAcceptedSpendForgery_holds",
-        "\ntheorem NativeFullSignatureSecurityBoundary.hiddenSourceProofSemanticsClosed_holds",
-        "\ntheorem NativeFullSignatureSecurityBoundary.checkedCoreCompositionClosed_holds",
-        "\ntheorem NativeFullSignatureSecurityBoundary.lifecycleReplayClosed_holds",
-        "\ntheorem NativeFullSignatureSecurityBoundary.noExportClosed_holds",
-        "\ntheorem NativeFullSignatureSecurityBoundary.checkedCoreFrameDomainSeparated_holds",
-        "\ntheorem NativeFullSignatureSecurityBoundary.hiddenSourceFrameDomainSeparated_holds",
-        "\ntheorem NativeFullSignatureSecurityBoundary.queryBudgetPriced_holds",
-        "\ntheorem NativeFullSignatureSecurityBoundary.multiTargetLossPriced_holds",
-        "\ntheorem NativeFullSignatureSecurityBoundary.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
+        "\ntheorem keygenDistributionModeled_holds",
+        "\ntheorem signingOracleModeled_holds",
+        "\ntheorem completenessModeled_holds",
+        "\ntheorem verifierRelationMatchesImplementation_holds",
+        "\ntheorem fullForgeryImpliesAcceptedSpendForgery_holds",
+        "\ntheorem hiddenSourceProofSemanticsClosed_holds",
+        "\ntheorem checkedCoreCompositionClosed_holds",
+        "\ntheorem lifecycleReplayClosed_holds",
+        "\ntheorem noExportClosed_holds",
+        "\ntheorem checkedCoreFrameDomainSeparated_holds",
+        "\ntheorem hiddenSourceFrameDomainSeparated_holds",
+        "\ntheorem queryBudgetPriced_holds",
+        "\ntheorem multiTargetLossPriced_holds",
+        "\ntheorem signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
     ];
     certificate_checks
         .iter()
@@ -31142,6 +31216,8 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "PATH2_NATIVE_NO_EXPORT_SERIALIZER_EVIDENCE_SCHEMA",
         "PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_EVIDENCE_SCHEMA",
         "PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_EVIDENCE_SCHEMA",
+        "PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_CURRENT_MISSING_PRICING_OBLIGATIONS",
+        "PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_CURRENT_MISSING_PRODUCTION_OBLIGATIONS",
         "PATH2_NATIVE_HASH_BYTE_DOMAIN_EVIDENCE_SCHEMA",
         "PATH2_REVIEWED_FQ12_FIVE_SOURCE_CLOSURE_EVIDENCE_SCHEMA",
         "PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA",
@@ -31152,12 +31228,14 @@ fn path2_native_production_facade_exports_source_present_v1() -> bool {
         "path2_native_accepted_spend_numeric_evidence_v1_frame",
         "path2_native_accepted_spend_numeric_evidence_report_verified_v1",
         "path2_native_accepted_spend_numeric_evidence_all_facts_true",
+        "path2_native_accepted_spend_numeric_missing_pricing_obligations_v1",
         "verify_path2_native_accepted_spend_numeric_evidence_v1",
         "path2_native_full_signature_reduction_evidence_v1",
         "path2_native_full_signature_reduction_evidence_v1_digest",
         "path2_native_full_signature_reduction_evidence_v1_frame",
         "path2_native_full_signature_reduction_evidence_report_verified_v1",
         "path2_native_full_signature_reduction_evidence_all_facts_true",
+        "path2_native_full_signature_reduction_missing_production_obligations_v1",
         "verify_path2_native_full_signature_reduction_evidence_v1",
         "path2_native_consensus_carrier_v1_bytes",
         "path2_native_consensus_carrier_v1_digest",
@@ -49305,6 +49383,12 @@ mod tests {
         assert!(evidence.no_export_closure_ready);
         assert!(path2_native_accepted_spend_numeric_evidence_report_verified_v1(&evidence));
         assert!(!path2_native_accepted_spend_numeric_evidence_all_facts_true(&evidence));
+        let missing_pricing =
+            path2_native_accepted_spend_numeric_missing_pricing_obligations_v1(&evidence);
+        assert_eq!(
+            missing_pricing.as_slice(),
+            PATH2_NATIVE_ACCEPTED_SPEND_NUMERIC_CURRENT_MISSING_PRICING_OBLIGATIONS.as_slice()
+        );
         assert_ne!(
             path2_native_accepted_spend_numeric_evidence_v1_digest(&evidence).unwrap(),
             [0_u8; DIGEST_BYTES]
@@ -49334,6 +49418,10 @@ mod tests {
         forged_ready.break_pricing_budget_meets_priced_bound = true;
         forged_ready.accepted_spend_priced_bound_security_bits = evidence.target_security_bits;
         forged_ready.accepted_spend_numeric_budget_meets_target = true;
+        assert!(
+            path2_native_accepted_spend_numeric_missing_pricing_obligations_v1(&forged_ready)
+                .is_empty()
+        );
         assert!(!path2_native_accepted_spend_numeric_evidence_all_facts_true(&forged_ready));
         assert_eq!(
             verify_path2_native_accepted_spend_numeric_evidence_v1(&forged_ready).unwrap_err(),
@@ -49400,6 +49488,12 @@ mod tests {
         assert!(!evidence.verifier_game_matches_production_execution);
         assert!(path2_native_full_signature_reduction_evidence_report_verified_v1(&evidence));
         assert!(!path2_native_full_signature_reduction_evidence_all_facts_true(&evidence));
+        let missing_production =
+            path2_native_full_signature_reduction_missing_production_obligations_v1(&evidence);
+        assert_eq!(
+            missing_production.as_slice(),
+            PATH2_NATIVE_FULL_SIGNATURE_REDUCTION_CURRENT_MISSING_PRODUCTION_OBLIGATIONS.as_slice()
+        );
 
         let evidence_frame = path2_native_full_signature_reduction_evidence_v1_frame(&evidence);
         let expected_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&evidence_frame).into();
@@ -49421,6 +49515,10 @@ mod tests {
         forged_ready.all_active_query_symbols_priced = true;
         forged_ready.multi_target_horizon_priced = true;
         forged_ready.verifier_game_matches_production_execution = true;
+        assert!(
+            path2_native_full_signature_reduction_missing_production_obligations_v1(&forged_ready)
+                .is_empty()
+        );
         assert!(!path2_native_full_signature_reduction_evidence_all_facts_true(&forged_ready));
         assert_eq!(
             verify_path2_native_full_signature_reduction_evidence_v1(&forged_ready).unwrap_err(),
@@ -53552,6 +53650,24 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
   let _fullReductionErasedBoundarySuccessProbLeOne :=
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one
       selectedRustFullSignatureReductionCertificate
+  let _fullReductionCertificateKeygen :=
+    SelectedRustFullSignatureReductionCertificate.keygenDistributionModeled_holds
+  let _fullReductionCertificateSigning :=
+    SelectedRustFullSignatureReductionCertificate.signingOracleModeled_holds
+  let _fullReductionCertificateCompleteness :=
+    SelectedRustFullSignatureReductionCertificate.completenessModeled_holds
+  let _fullReductionCertificateVerifier :=
+    SelectedRustFullSignatureReductionCertificate.verifierRelationMatchesImplementation_holds
+  let _fullReductionCertificateFullForgery :=
+    SelectedRustFullSignatureReductionCertificate.fullForgeryImpliesAcceptedSpendForgery_holds
+  let _fullReductionCertificateCheckedDomain :=
+    SelectedRustFullSignatureReductionCertificate.checkedCoreFrameDomainSeparated
+  let _fullReductionCertificateHiddenDomain :=
+    SelectedRustFullSignatureReductionCertificate.hiddenSourceFrameDomainSeparated
+  let _fullReductionCertificateQueryBudget :=
+    SelectedRustFullSignatureReductionCertificate.queryBudgetPriced
+  let _fullReductionCertificateMultiTarget :=
+    SelectedRustFullSignatureReductionCertificate.multiTargetLossPriced
   let _nativeBoundaryKeygen :=
     NativeFullSignatureSecurityBoundary.keygenDistributionModeled_holds
   let _nativeBoundarySigning :=
@@ -53922,6 +54038,52 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
   let _fullReductionErasedBoundarySuccessProbLeOne :=
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one
       selectedRustFullSignatureReductionCertificate
+  let _fullReductionCertificateKeygen :=
+    SelectedRustFullSignatureReductionCertificate.keygenDistributionModeled_holds
+  let _fullReductionCertificateSigning :=
+    SelectedRustFullSignatureReductionCertificate.signingOracleModeled_holds
+  let _fullReductionCertificateCompleteness :=
+    SelectedRustFullSignatureReductionCertificate.completenessModeled_holds
+  let _fullReductionCertificateVerifier :=
+    SelectedRustFullSignatureReductionCertificate.verifierRelationMatchesImplementation_holds
+  let _fullReductionCertificateFullForgery :=
+    SelectedRustFullSignatureReductionCertificate.fullForgeryImpliesAcceptedSpendForgery_holds
+  let _fullReductionCertificateCheckedDomain :=
+    SelectedRustFullSignatureReductionCertificate.checkedCoreFrameDomainSeparated
+  let _fullReductionCertificateHiddenDomain :=
+    SelectedRustFullSignatureReductionCertificate.hiddenSourceFrameDomainSeparated
+  let _fullReductionCertificateQueryBudget :=
+    SelectedRustFullSignatureReductionCertificate.queryBudgetPriced
+  let _fullReductionCertificateMultiTarget :=
+    SelectedRustFullSignatureReductionCertificate.multiTargetLossPriced
+  let _nativeBoundaryKeygen :=
+    NativeFullSignatureSecurityBoundary.keygenDistributionModeled_holds
+  let _nativeBoundarySigning :=
+    NativeFullSignatureSecurityBoundary.signingOracleModeled_holds
+  let _nativeBoundaryCompleteness :=
+    NativeFullSignatureSecurityBoundary.completenessModeled_holds
+  let _nativeBoundaryVerifier :=
+    NativeFullSignatureSecurityBoundary.verifierRelationMatchesImplementation_holds
+  let _nativeBoundaryFullForgery :=
+    NativeFullSignatureSecurityBoundary.fullForgeryImpliesAcceptedSpendForgery_holds
+  let _nativeBoundaryHiddenSource :=
+    NativeFullSignatureSecurityBoundary.hiddenSourceProofSemanticsClosed_holds
+  let _nativeBoundaryCheckedCore :=
+    NativeFullSignatureSecurityBoundary.checkedCoreCompositionClosed_holds
+  let _nativeBoundaryLifecycle :=
+    NativeFullSignatureSecurityBoundary.lifecycleReplayClosed_holds
+  let _nativeBoundaryNoExport :=
+    NativeFullSignatureSecurityBoundary.noExportClosed_holds
+  let _nativeBoundaryCheckedDomain :=
+    NativeFullSignatureSecurityBoundary.checkedCoreFrameDomainSeparated_holds
+  let _nativeBoundaryHiddenDomain :=
+    NativeFullSignatureSecurityBoundary.hiddenSourceFrameDomainSeparated_holds
+  let _nativeBoundaryQueryBudget :=
+    NativeFullSignatureSecurityBoundary.queryBudgetPriced_holds
+  let _nativeBoundaryMultiTarget :=
+    NativeFullSignatureSecurityBoundary.multiTargetLossPriced_holds
+  let _nativeBoundaryAcceptedSpendReduction :=
+    NativeFullSignatureSecurityBoundary.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
   exact
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
       selectedRustFullSignatureReductionCertificate
@@ -54809,6 +54971,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedAcceptedSpendNumericSource.unionBound_le_componentBudget
   let _acceptedSpendSelectedSourceSuccessComponentBudget :=
     SelectedAcceptedSpendNumericSource.successProb_le_componentBudget
+  let _acceptedSpendSelectedSourceAcceptedBoundComponentBudget :=
+    SelectedAcceptedSpendNumericSource.acceptedSpendBound_le_componentBudget
+  let _acceptedSpendSelectedSourceBreakBoundComponentBudget :=
+    SelectedAcceptedSpendNumericSource.breakBound_le_componentBudget
+  let _acceptedSpendSelectedSourceAcceptedProbComponentBudget :=
+    SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_componentBudget
+  let _acceptedSpendSelectedSourceBreakProbComponentBudget :=
+    SelectedAcceptedSpendNumericSource.breakProb_le_componentBudget
   let _acceptedSpendSelectedSourceAcceptedBound :=
     SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_acceptedSpendBound
   let _acceptedSpendSelectedSourceAcceptedProbLeOne :=
@@ -55493,6 +55663,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedAcceptedSpendNumericSource.unionBound_le_componentBudget
   let _acceptedSpendSelectedSourceSuccessComponentBudget :=
     SelectedAcceptedSpendNumericSource.successProb_le_componentBudget
+  let _acceptedSpendSelectedSourceAcceptedBoundComponentBudget :=
+    SelectedAcceptedSpendNumericSource.acceptedSpendBound_le_componentBudget
+  let _acceptedSpendSelectedSourceBreakBoundComponentBudget :=
+    SelectedAcceptedSpendNumericSource.breakBound_le_componentBudget
+  let _acceptedSpendSelectedSourceAcceptedProbComponentBudget :=
+    SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_componentBudget
+  let _acceptedSpendSelectedSourceBreakProbComponentBudget :=
+    SelectedAcceptedSpendNumericSource.breakProb_le_componentBudget
   let _acceptedSpendSelectedSourceAcceptedBound :=
     SelectedAcceptedSpendNumericSource.acceptedSpendProb_le_acceptedSpendBound
   let _acceptedSpendSelectedSourceAcceptedProbLeOne :=
@@ -55733,6 +55911,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.unionBound_le_componentBudget
   let _acceptedSpendConcreteSourceSuccessComponentBudget :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_le_componentBudget
+  let _acceptedSpendConcreteSourceAcceptedBoundComponentBudget :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendBound_le_componentBudget
+  let _acceptedSpendConcreteSourceBreakBoundComponentBudget :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakBound_le_componentBudget
+  let _acceptedSpendConcreteSourceAcceptedProbComponentBudget :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.acceptedSpendProb_le_componentBudget
+  let _acceptedSpendConcreteSourceBreakProbComponentBudget :=
+    SelectedRustConcreteAcceptedSpendNumericSourceCertificate.breakProb_le_componentBudget
   let _acceptedSpendConcreteSourceSuccessProbNonnegative :=
     SelectedRustConcreteAcceptedSpendNumericSourceCertificate.successProb_nonneg
   let _acceptedSpendConcreteSourceSuccessProbLeOne :=
@@ -55759,6 +55945,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     PricedAcceptedSpendNumericCertificate.unionBound_le_componentBudget
   let _acceptedSpendPricedSuccessComponentBudget :=
     PricedAcceptedSpendNumericCertificate.successProb_le_componentBudget
+  let _acceptedSpendPricedAcceptedBoundComponentBudget :=
+    PricedAcceptedSpendNumericCertificate.acceptedSpendBound_le_componentBudget
+  let _acceptedSpendPricedBreakBoundComponentBudget :=
+    PricedAcceptedSpendNumericCertificate.breakBound_le_componentBudget
+  let _acceptedSpendPricedAcceptedProbComponentBudget :=
+    PricedAcceptedSpendNumericCertificate.acceptedSpendProb_le_componentBudget
+  let _acceptedSpendPricedBreakProbComponentBudget :=
+    PricedAcceptedSpendNumericCertificate.breakProb_le_componentBudget
   let _acceptedSpendPricedAcceptedSpendBound :=
     PricedAcceptedSpendNumericCertificate.acceptedSpendBound
   let _acceptedSpendPricedBreakBound :=

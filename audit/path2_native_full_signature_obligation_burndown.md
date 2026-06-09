@@ -2327,6 +2327,20 @@ signature-success-to-accepted-spend probability inequality. The full-reduction
 source gate requires these erased-boundary names, so the final theorem remains
 auditable after the selected certificate is erased to the native full-signature
 boundary.
+
+AP2-N003 public missing-obligation diagnostic note:
+Rust now exposes fixed current-missing obligation arrays and computed helpers
+for the two hard halves: `path2_native_accepted_spend_numeric_missing_pricing_obligations_v1`
+and `path2_native_full_signature_reduction_missing_production_obligations_v1`.
+The accepted-spend diagnostic reports the current missing aggregate numeric
+pricing, accepted-spend event pricing, named-break pricing, component-budget
+pricing, numeric target budget, and priced-bound target-security obligations.
+The full-reduction diagnostic reports the current missing production probability
+pin, accepted-spend-game linkage, accepted-spend probability linkage,
+all-active-query-symbol pricing, and verifier-game binding obligations. The
+focused fail-closed tests assert these exact arrays for the selected AP2-N003
+reports, and the production-reference facade exports the arrays/helpers for
+deployability tooling.
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit
