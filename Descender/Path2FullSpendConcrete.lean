@@ -1612,6 +1612,56 @@ theorem pricingFactsComplete
     W.acceptedSpendPricedBoundSecurityMeetsTargetProof,
     W.acceptedSpendPricedBoundSecurityWithinTranscriptProof⟩
 
+/-- The selected pricing witness exposes aggregate numeric-bound pricing. -/
+theorem acceptedSpendNumericBoundPriced
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendNumericBoundPriced =
+      true :=
+  W.acceptedSpendNumericBoundPricedProof
+
+/-- The selected pricing witness exposes accepted-spend event component pricing. -/
+theorem acceptedSpendEventBoundPriced
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendEventBoundPriced =
+      true :=
+  W.acceptedSpendEventBoundPricedProof
+
+/-- The selected pricing witness exposes named-break component pricing. -/
+theorem namedBreakEventBoundsPriced
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).namedBreakEventBoundsPriced =
+      true :=
+  W.namedBreakEventBoundsPricedProof
+
+/-- The selected pricing witness exposes component-budget-to-priced-bound pricing. -/
+theorem breakPricingBudgetMeetsPricedBound
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).breakPricingBudgetMeetsPricedBound =
+      true :=
+  W.breakPricingBudgetMeetsPricedBoundProof
+
+/-- The selected pricing witness exposes the active numeric target-budget fact. -/
+theorem acceptedSpendNumericBudgetMeetsTarget
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendNumericBudgetMeetsTarget =
+      true :=
+  W.acceptedSpendNumericBudgetMeetsTargetProof
+
+/-- The selected pricing witness exposes the reported priced-bound target inequality. -/
+theorem acceptedSpendPricedBoundSecurityMeetsTarget
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).targetSecurityBits ≤
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits :=
+  W.acceptedSpendPricedBoundSecurityMeetsTargetProof
+
+/-- The selected pricing witness exposes the reported priced-bound transcript cap. -/
+theorem acceptedSpendPricedBoundSecurityWithinTranscript
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).acceptedSpendPricedBoundSecurityBits +
+      (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).selectedMultiTargetHorizonLog2 ≤
+        (Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport).transcriptTermBitsAfterQromLoss :=
+  W.acceptedSpendPricedBoundSecurityWithinTranscriptProof
+
 /-- The selected pricing witness carries the real-valued priced-bound inequality. -/
 theorem pricedBound_le_reportedSecurity
     (W : SelectedRustConcreteAcceptedSpendPricingWitness) :

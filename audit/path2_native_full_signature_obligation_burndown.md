@@ -2341,6 +2341,15 @@ all-active-query-symbol pricing, and verifier-game binding obligations. The
 focused fail-closed tests assert these exact arrays for the selected AP2-N003
 reports, and the production-reference facade exports the arrays/helpers for
 deployability tooling.
+AP2-N003 pricing-witness hard-bit projection note:
+`SelectedRustConcreteAcceptedSpendPricingWitness` now exposes named projections
+for every accepted-spend pricing-half report fact: aggregate numeric pricing,
+accepted-spend event pricing, named-break pricing, component-budget pricing,
+numeric target budget, priced-bound target security, and priced-bound transcript
+capacity. The accepted-spend source gate requires these witness-level names, so
+the final theorem must keep the individual hard pricing bits visible at the
+single witness object rather than only passing around a tuple-shaped
+`PricingFactsComplete` proof.
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit

@@ -29751,6 +29751,13 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendNumericSourceCertificate",
         "SelectedRustConcreteAcceptedSpendPricingWitness",
         "SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendNumericBoundPriced",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendEventBoundPriced",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.namedBreakEventBoundsPriced",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.breakPricingBudgetMeetsPricedBound",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendNumericBudgetMeetsTarget",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityMeetsTarget",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityWithinTranscript",
         "SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound",
@@ -30003,6 +30010,13 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustConcreteAcceptedSpendNumericCertificate.toPricedAcceptedSpendNumericCertificate",
         "SelectedRustConcreteAcceptedSpendNumericCertificate.toSelectedAcceptedSpendNumericSource",
         "SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendNumericBoundPriced",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendEventBoundPriced",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.namedBreakEventBoundsPriced",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.breakPricingBudgetMeetsPricedBound",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendNumericBudgetMeetsTarget",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityMeetsTarget",
+        "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityWithinTranscript",
         "SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity",
         "SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendProb_le_acceptedSpendBound",
         "SelectedRustConcreteAcceptedSpendPricingWitness.breakProb_le_breakBound",
@@ -55019,6 +55033,20 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness
   let _acceptedSpendConcretePricingWitnessFacts :=
     SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete
+  let _acceptedSpendConcretePricingWitnessNumericBoundPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendNumericBoundPriced
+  let _acceptedSpendConcretePricingWitnessAcceptedSpendEventPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendEventBoundPriced
+  let _acceptedSpendConcretePricingWitnessNamedBreakEventsPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.namedBreakEventBoundsPriced
+  let _acceptedSpendConcretePricingWitnessBreakBudgetPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakPricingBudgetMeetsPricedBound
+  let _acceptedSpendConcretePricingWitnessNumericBudgetTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendNumericBudgetMeetsTarget
+  let _acceptedSpendConcretePricingWitnessReportedBitsTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityMeetsTarget
+  let _acceptedSpendConcretePricingWitnessReportedBitsTranscript :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityWithinTranscript
   let _acceptedSpendConcretePricingWitnessBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity
   let _acceptedSpendConcretePricingWitnessAcceptedBound :=
@@ -55193,6 +55221,20 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness
   let _acceptedSpendConcretePricingWitnessFacts :=
     SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete
+  let _acceptedSpendConcretePricingWitnessNumericBoundPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendNumericBoundPriced
+  let _acceptedSpendConcretePricingWitnessAcceptedSpendEventPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendEventBoundPriced
+  let _acceptedSpendConcretePricingWitnessNamedBreakEventsPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.namedBreakEventBoundsPriced
+  let _acceptedSpendConcretePricingWitnessBreakBudgetPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakPricingBudgetMeetsPricedBound
+  let _acceptedSpendConcretePricingWitnessNumericBudgetTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendNumericBudgetMeetsTarget
+  let _acceptedSpendConcretePricingWitnessReportedBitsTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityMeetsTarget
+  let _acceptedSpendConcretePricingWitnessReportedBitsTranscript :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityWithinTranscript
   let _acceptedSpendConcretePricingWitnessBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity
   let _acceptedSpendConcretePricingWitnessAcceptedBound :=
@@ -55815,6 +55857,20 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustConcreteAcceptedSpendPricingWitness
   let _acceptedSpendConcretePricingWitnessFacts :=
     SelectedRustConcreteAcceptedSpendPricingWitness.pricingFactsComplete
+  let _acceptedSpendConcretePricingWitnessNumericBoundPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendNumericBoundPriced
+  let _acceptedSpendConcretePricingWitnessAcceptedSpendEventPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendEventBoundPriced
+  let _acceptedSpendConcretePricingWitnessNamedBreakEventsPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.namedBreakEventBoundsPriced
+  let _acceptedSpendConcretePricingWitnessBreakBudgetPriced :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.breakPricingBudgetMeetsPricedBound
+  let _acceptedSpendConcretePricingWitnessNumericBudgetTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendNumericBudgetMeetsTarget
+  let _acceptedSpendConcretePricingWitnessReportedBitsTarget :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityMeetsTarget
+  let _acceptedSpendConcretePricingWitnessReportedBitsTranscript :=
+    SelectedRustConcreteAcceptedSpendPricingWitness.acceptedSpendPricedBoundSecurityWithinTranscript
   let _acceptedSpendConcretePricingWitnessBound :=
     SelectedRustConcreteAcceptedSpendPricingWitness.pricedBound_le_reportedSecurity
   let _acceptedSpendConcretePricingWitnessAcceptedBound :=
