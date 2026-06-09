@@ -1722,6 +1722,23 @@ theorem pricedBound_le_active128BitTarget
         (pricingFactsComplete W))
   simpa [hTarget] using pricedBound_le_targetSecurity W
 
+/-- The selected pricing witness prices its component budget by the active 128-bit target. -/
+theorem componentBudget_le_active128BitTarget
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.acceptedSpendBound +
+        (@Finset.univ W.concreteCertificate.pricedCertificate.Break
+          W.concreteCertificate.pricedCertificate.breakFintype).sum
+            W.concreteCertificate.pricedCertificate.breakBound <=
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  le_trans (breakBudget_le_pricedBound W) (pricedBound_le_active128BitTarget W)
+
+/-- The selected pricing witness prices the union expression by the active 128-bit target. -/
+theorem unionBound_le_active128BitTarget
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) :
+    W.concreteCertificate.pricedCertificate.unionBound <=
+      ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  le_trans (unionBound_le_componentBudget W) (componentBudget_le_active128BitTarget W)
+
 /-- The selected pricing witness prices full-forgery success by the active 128-bit target. -/
 theorem successProb_le_active128BitTarget
     (W : SelectedRustConcreteAcceptedSpendPricingWitness) :

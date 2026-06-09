@@ -2081,9 +2081,9 @@ def selectedRustAcceptedSpendEvidenceReport :
       184, 94, 226, 157, 26, 55, 237, 33, 21, 223, 183, 249, 34, 163, 53,
       42, 43, 237, 74, 214]
   acceptedSpendEventSemanticsDigest :=
-    ByteArray.mk #[211, 76, 156, 233, 94, 206, 42, 103, 227, 105, 124,
-      139, 112, 41, 158, 194, 32, 139, 161, 87, 158, 56, 21, 163, 95,
-      197, 250, 196, 54, 16, 69, 54]
+    ByteArray.mk #[3, 112, 7, 144, 136, 63, 62, 151, 69, 190, 249, 32,
+      71, 154, 95, 201, 241, 2, 177, 73, 79, 243, 184, 120, 44, 23, 1,
+      113, 148, 10, 116, 148]
   activeBreakFamilyDigest :=
     ByteArray.mk #[111, 3, 153, 201, 118, 101, 3, 131, 125, 95, 74, 112,
       104, 81, 255, 126, 60, 29, 241, 180, 122, 212, 12, 39, 240, 46, 175,
@@ -2123,9 +2123,9 @@ def selectedRustAcceptedSpendEvidenceReport :
 
 /-- Digest pin for the selected Rust accepted-spend numeric evidence report. -/
 def selectedRustAcceptedSpendEvidenceDigest : ByteArray :=
-  ByteArray.mk #[245, 32, 174, 249, 190, 97, 41, 199, 19, 193, 174, 76,
-    220, 24, 64, 34, 208, 16, 40, 139, 192, 1, 143, 39, 67, 194, 4,
-    111, 132, 21, 195, 72]
+  ByteArray.mk #[225, 34, 230, 213, 27, 95, 206, 55, 235, 131, 233, 150,
+    71, 93, 182, 123, 197, 86, 168, 26, 216, 69, 69, 42, 217, 222, 37,
+    3, 21, 21, 237, 111]
 
 /-- The selected accepted-spend report has verified public digest slots. -/
 theorem selectedRustAcceptedSpendEvidenceReportVerifiedProof :

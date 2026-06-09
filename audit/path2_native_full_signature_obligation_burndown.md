@@ -2249,6 +2249,13 @@ full-reduction report cannot produce
 `SelectedRustFullSignatureReductionProductionWitness`. The Rust source gates
 require these impossibility theorem names, so retiring the fail-closed state has
 to change the selected evidence facts rather than bypassing the witness objects.
+AP2-N003 pricing-witness active-target note:
+`SelectedRustConcreteAcceptedSpendPricingWitness` now projects
+`componentBudget_le_active128BitTarget` and `unionBound_le_active128BitTarget`
+in addition to the priced-bound and success-probability active-target facts.
+The accepted-spend source gate requires these projections, so the final witness
+must expose the fixed-target consequence at each budget layer: component sum,
+union expression, and success probability.
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit
