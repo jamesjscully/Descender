@@ -28643,6 +28643,20 @@ fn path2_full_signature_reduction_certificate_boundary_present_in_source_v1(
         "\ntheorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "\ntheorem SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_nonneg",
         "\ndef SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
+        "\ntheorem NativeFullSignatureSecurityBoundary.keygenDistributionModeled_holds",
+        "\ntheorem NativeFullSignatureSecurityBoundary.signingOracleModeled_holds",
+        "\ntheorem NativeFullSignatureSecurityBoundary.completenessModeled_holds",
+        "\ntheorem NativeFullSignatureSecurityBoundary.verifierRelationMatchesImplementation_holds",
+        "\ntheorem NativeFullSignatureSecurityBoundary.fullForgeryImpliesAcceptedSpendForgery_holds",
+        "\ntheorem NativeFullSignatureSecurityBoundary.hiddenSourceProofSemanticsClosed_holds",
+        "\ntheorem NativeFullSignatureSecurityBoundary.checkedCoreCompositionClosed_holds",
+        "\ntheorem NativeFullSignatureSecurityBoundary.lifecycleReplayClosed_holds",
+        "\ntheorem NativeFullSignatureSecurityBoundary.noExportClosed_holds",
+        "\ntheorem NativeFullSignatureSecurityBoundary.checkedCoreFrameDomainSeparated_holds",
+        "\ntheorem NativeFullSignatureSecurityBoundary.hiddenSourceFrameDomainSeparated_holds",
+        "\ntheorem NativeFullSignatureSecurityBoundary.queryBudgetPriced_holds",
+        "\ntheorem NativeFullSignatureSecurityBoundary.multiTargetLossPriced_holds",
+        "\ntheorem NativeFullSignatureSecurityBoundary.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
     ];
     certificate_checks
         .iter()
@@ -29123,6 +29137,20 @@ fn path2_full_signature_reduction_certificate_instantiation_candidate_source_v1(
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_active128BitTarget",
         "SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary",
+        "NativeFullSignatureSecurityBoundary.keygenDistributionModeled_holds",
+        "NativeFullSignatureSecurityBoundary.signingOracleModeled_holds",
+        "NativeFullSignatureSecurityBoundary.completenessModeled_holds",
+        "NativeFullSignatureSecurityBoundary.verifierRelationMatchesImplementation_holds",
+        "NativeFullSignatureSecurityBoundary.fullForgeryImpliesAcceptedSpendForgery_holds",
+        "NativeFullSignatureSecurityBoundary.hiddenSourceProofSemanticsClosed_holds",
+        "NativeFullSignatureSecurityBoundary.checkedCoreCompositionClosed_holds",
+        "NativeFullSignatureSecurityBoundary.lifecycleReplayClosed_holds",
+        "NativeFullSignatureSecurityBoundary.noExportClosed_holds",
+        "NativeFullSignatureSecurityBoundary.checkedCoreFrameDomainSeparated_holds",
+        "NativeFullSignatureSecurityBoundary.hiddenSourceFrameDomainSeparated_holds",
+        "NativeFullSignatureSecurityBoundary.queryBudgetPriced_holds",
+        "NativeFullSignatureSecurityBoundary.multiTargetLossPriced_holds",
+        "NativeFullSignatureSecurityBoundary.signatureForgerySuccessProb_le_acceptedSpendForgeryProb",
         "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_schemaMatches",
         "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reportDigestVerified",
         "SelectedRustFullSignatureReductionEvidenceReport.reportVerified_reductionEvidenceDigestsVerified",
@@ -53494,6 +53522,34 @@ theorem selectedRustFullSignatureReductionBoundary_instantiation_v1 :
   let _fullReductionErasedBoundarySuccessProbLeOne :=
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary_signatureForgerySuccessProb_le_one
       selectedRustFullSignatureReductionCertificate
+  let _nativeBoundaryKeygen :=
+    NativeFullSignatureSecurityBoundary.keygenDistributionModeled_holds
+  let _nativeBoundarySigning :=
+    NativeFullSignatureSecurityBoundary.signingOracleModeled_holds
+  let _nativeBoundaryCompleteness :=
+    NativeFullSignatureSecurityBoundary.completenessModeled_holds
+  let _nativeBoundaryVerifier :=
+    NativeFullSignatureSecurityBoundary.verifierRelationMatchesImplementation_holds
+  let _nativeBoundaryFullForgery :=
+    NativeFullSignatureSecurityBoundary.fullForgeryImpliesAcceptedSpendForgery_holds
+  let _nativeBoundaryHiddenClosure :=
+    NativeFullSignatureSecurityBoundary.hiddenSourceProofSemanticsClosed_holds
+  let _nativeBoundaryCheckedClosure :=
+    NativeFullSignatureSecurityBoundary.checkedCoreCompositionClosed_holds
+  let _nativeBoundaryLifecycle :=
+    NativeFullSignatureSecurityBoundary.lifecycleReplayClosed_holds
+  let _nativeBoundaryNoExport :=
+    NativeFullSignatureSecurityBoundary.noExportClosed_holds
+  let _nativeBoundaryCheckedDomain :=
+    NativeFullSignatureSecurityBoundary.checkedCoreFrameDomainSeparated_holds
+  let _nativeBoundaryHiddenDomain :=
+    NativeFullSignatureSecurityBoundary.hiddenSourceFrameDomainSeparated_holds
+  let _nativeBoundaryQuery :=
+    NativeFullSignatureSecurityBoundary.queryBudgetPriced_holds
+  let _nativeBoundaryMultiTarget :=
+    NativeFullSignatureSecurityBoundary.multiTargetLossPriced_holds
+  let _nativeBoundaryAcceptedSpendReduction :=
+    NativeFullSignatureSecurityBoundary.signatureForgerySuccessProb_le_acceptedSpendForgeryProb
   exact
     SelectedRustFullSignatureReductionCertificate.toNativeFullSignatureSecurityBoundary
       selectedRustFullSignatureReductionCertificate

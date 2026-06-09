@@ -2300,6 +2300,13 @@ domain separation, query-budget, and multi-target obligations. The
 full-reduction gate requires these certificate-level names, keeping the same
 production-model obligations visible after the witness is converted into the
 selected certificate.
+AP2-N003 erased-boundary obligation projection note:
+`NativeFullSignatureSecurityBoundary` now exposes named projections for every
+component of `fullSignatureSecurityClaimComplete`, plus the direct
+signature-success-to-accepted-spend probability inequality. The full-reduction
+source gate requires these erased-boundary names, so the final theorem remains
+auditable after the selected certificate is erased to the native full-signature
+boundary.
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit

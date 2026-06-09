@@ -4126,6 +4126,107 @@ def activePathForgeryBound
     (B : NativeFullSignatureSecurityBoundary) : ℝ :=
   B.acceptedSpendSoundness.acceptedSpendForgeryBound
 
+/-- The native full-signature boundary exposes its key-generation model obligation. -/
+theorem keygenDistributionModeled_holds
+    (B : NativeFullSignatureSecurityBoundary) :
+    B.keygenDistributionModeled := by
+  rcases B.fullSignatureSecurityClaimComplete with ⟨hKeygen, _⟩
+  exact hKeygen
+
+/-- The native full-signature boundary exposes its signing-oracle model obligation. -/
+theorem signingOracleModeled_holds
+    (B : NativeFullSignatureSecurityBoundary) :
+    B.signingOracleModeled := by
+  rcases B.fullSignatureSecurityClaimComplete with ⟨_, hSigning, _⟩
+  exact hSigning
+
+/-- The native full-signature boundary exposes its completeness model obligation. -/
+theorem completenessModeled_holds
+    (B : NativeFullSignatureSecurityBoundary) :
+    B.completenessModeled := by
+  rcases B.fullSignatureSecurityClaimComplete with ⟨_, _, hCompleteness, _⟩
+  exact hCompleteness
+
+/-- The native full-signature boundary exposes its verifier relation obligation. -/
+theorem verifierRelationMatchesImplementation_holds
+    (B : NativeFullSignatureSecurityBoundary) :
+    B.verifierRelationMatchesImplementation := by
+  rcases B.fullSignatureSecurityClaimComplete with ⟨_, _, _, hVerifier, _⟩
+  exact hVerifier
+
+/-- The native full-signature boundary exposes full-forgery reduction to accepted spend. -/
+theorem fullForgeryImpliesAcceptedSpendForgery_holds
+    (B : NativeFullSignatureSecurityBoundary) :
+    B.fullForgeryImpliesAcceptedSpendForgery := by
+  rcases B.fullSignatureSecurityClaimComplete with ⟨_, _, _, _, hFullForgery, _⟩
+  exact hFullForgery
+
+/-- The native full-signature boundary exposes hidden-source closure after erasure. -/
+theorem hiddenSourceProofSemanticsClosed_holds
+    (B : NativeFullSignatureSecurityBoundary) :
+    B.acceptedSpendSoundness.hiddenSourceProofSemanticsClosed := by
+  rcases B.fullSignatureSecurityClaimComplete with ⟨_, _, _, _, _, hHidden, _⟩
+  exact hHidden
+
+/-- The native full-signature boundary exposes checked-core closure after erasure. -/
+theorem checkedCoreCompositionClosed_holds
+    (B : NativeFullSignatureSecurityBoundary) :
+    B.acceptedSpendSoundness.checkedCoreCompositionClosed := by
+  rcases B.fullSignatureSecurityClaimComplete with ⟨_, _, _, _, _, _, hChecked, _⟩
+  exact hChecked
+
+/-- The native full-signature boundary exposes lifecycle/replay closure after erasure. -/
+theorem lifecycleReplayClosed_holds
+    (B : NativeFullSignatureSecurityBoundary) :
+    B.acceptedSpendSoundness.lifecycleReplayClosed := by
+  rcases B.fullSignatureSecurityClaimComplete with ⟨_, _, _, _, _, _, _, hLifecycle, _⟩
+  exact hLifecycle
+
+/-- The native full-signature boundary exposes no-export closure after erasure. -/
+theorem noExportClosed_holds
+    (B : NativeFullSignatureSecurityBoundary) :
+    B.acceptedSpendSoundness.noExportClosed := by
+  rcases B.fullSignatureSecurityClaimComplete with ⟨_, _, _, _, _, _, _, _, hNoExport, _⟩
+  exact hNoExport
+
+/-- The native full-signature boundary exposes checked-core frame domain separation. -/
+theorem checkedCoreFrameDomainSeparated_holds
+    (B : NativeFullSignatureSecurityBoundary) :
+    B.hashBoundary.checkedCoreFrameDomainSeparated := by
+  rcases B.fullSignatureSecurityClaimComplete with ⟨_, _, _, _, _, _, _, _, _, hCheckedDomain, _⟩
+  exact hCheckedDomain
+
+/-- The native full-signature boundary exposes hidden-source frame domain separation. -/
+theorem hiddenSourceFrameDomainSeparated_holds
+    (B : NativeFullSignatureSecurityBoundary) :
+    B.hashBoundary.hiddenSourceFrameDomainSeparated := by
+  rcases B.fullSignatureSecurityClaimComplete with
+    ⟨_, _, _, _, _, _, _, _, _, _, hHiddenDomain, _⟩
+  exact hHiddenDomain
+
+/-- The native full-signature boundary exposes active query-budget pricing. -/
+theorem queryBudgetPriced_holds
+    (B : NativeFullSignatureSecurityBoundary) :
+    B.hashBoundary.queryBudgetPriced := by
+  rcases B.fullSignatureSecurityClaimComplete with
+    ⟨_, _, _, _, _, _, _, _, _, _, _, hQueryBudget, _⟩
+  exact hQueryBudget
+
+/-- The native full-signature boundary exposes active multi-target-loss pricing. -/
+theorem multiTargetLossPriced_holds
+    (B : NativeFullSignatureSecurityBoundary) :
+    B.hashBoundary.multiTargetLossPriced := by
+  rcases B.fullSignatureSecurityClaimComplete with
+    ⟨_, _, _, _, _, _, _, _, _, _, _, _, hMultiTarget⟩
+  exact hMultiTarget
+
+/-- The native full-signature boundary exposes its reduction to accepted-spend probability. -/
+theorem signatureForgerySuccessProb_le_acceptedSpendForgeryProb
+    (B : NativeFullSignatureSecurityBoundary) :
+    B.signatureForgerySuccessProb <=
+      B.acceptedSpendSoundness.acceptedSpendForgeryProb :=
+  B.signatureForgerySuccess_le_acceptedSpend
+
 /--
 The active Path 2 full-signature bound follows only after the native full-game
 boundary supplies a reduction to accepted-spend soundness and the accepted-spend
