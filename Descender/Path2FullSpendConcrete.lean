@@ -1729,6 +1729,12 @@ theorem successProb_le_active128BitTarget
       ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
   le_trans (successProb_le_pricedBound W) (pricedBound_le_active128BitTarget W)
 
+/-- No selected pricing witness exists for the current fail-closed accepted-spend report. -/
+theorem currentSelectedReport_impossible
+    (W : SelectedRustConcreteAcceptedSpendPricingWitness) : False :=
+  Path2NativeAccountDesign.selectedRustAcceptedSpendEvidenceReport_currentPricingFactsComplete_impossible
+    (pricingFactsComplete W)
+
 /--
 Turn the selected pricing witness into the report-bound concrete numeric
 source certificate required by the accepted-spend soundness layer.

@@ -2081,9 +2081,9 @@ def selectedRustAcceptedSpendEvidenceReport :
       184, 94, 226, 157, 26, 55, 237, 33, 21, 223, 183, 249, 34, 163, 53,
       42, 43, 237, 74, 214]
   acceptedSpendEventSemanticsDigest :=
-    ByteArray.mk #[7, 196, 87, 199, 36, 136, 22, 66, 104, 55, 30, 166,
-      235, 251, 234, 224, 78, 71, 8, 8, 165, 190, 98, 86, 184, 144, 74,
-      139, 157, 110, 241, 232]
+    ByteArray.mk #[211, 76, 156, 233, 94, 206, 42, 103, 227, 105, 124,
+      139, 112, 41, 158, 194, 32, 139, 161, 87, 158, 56, 21, 163, 95,
+      197, 250, 196, 54, 16, 69, 54]
   activeBreakFamilyDigest :=
     ByteArray.mk #[111, 3, 153, 201, 118, 101, 3, 131, 125, 95, 74, 112,
       104, 81, 255, 126, 60, 29, 241, 180, 122, 212, 12, 39, 240, 46, 175,
@@ -2123,9 +2123,9 @@ def selectedRustAcceptedSpendEvidenceReport :
 
 /-- Digest pin for the selected Rust accepted-spend numeric evidence report. -/
 def selectedRustAcceptedSpendEvidenceDigest : ByteArray :=
-  ByteArray.mk #[183, 168, 70, 178, 211, 247, 180, 49, 125, 151, 36, 14,
-    132, 58, 159, 152, 192, 126, 250, 167, 239, 101, 12, 11, 144, 93,
-    199, 32, 54, 245, 35, 244]
+  ByteArray.mk #[245, 32, 174, 249, 190, 97, 41, 199, 19, 193, 174, 76,
+    220, 24, 64, 34, 208, 16, 40, 139, 192, 1, 143, 39, 67, 194, 4,
+    111, 132, 21, 195, 72]
 
 /-- The selected accepted-spend report has verified public digest slots. -/
 theorem selectedRustAcceptedSpendEvidenceReportVerifiedProof :
@@ -3648,6 +3648,12 @@ def toFullSignatureReductionCertificate
     W.hiddenSourceFrameDomainSeparatedProof
     W.queryBudgetPricedProof
     W.multiTargetLossPricedProof
+
+/-- No selected production witness exists for the current fail-closed full-reduction report. -/
+theorem currentSelectedReport_impossible
+    (W : SelectedRustFullSignatureReductionProductionWitness) : False :=
+  selectedRustFullSignatureReductionEvidenceReport_currentProductionFactsComplete_impossible
+    (productionFactsComplete W)
 
 end SelectedRustFullSignatureReductionProductionWitness
 

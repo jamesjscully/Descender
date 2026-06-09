@@ -2242,6 +2242,13 @@ AP2-N003 component-budget note: `PricedAcceptedSpendNumericCertificate`,
 accepted-spend source gate requires those projections, so the final pricing
 proof must explicitly pass through component-wise accepted-spend and named-break
 bounds before using the final priced-bound budget.
+AP2-N003 witness fail-closed note: Lean now proves the current selected
+accepted-spend report cannot produce
+`SelectedRustConcreteAcceptedSpendPricingWitness`, and the current selected
+full-reduction report cannot produce
+`SelectedRustFullSignatureReductionProductionWitness`. The Rust source gates
+require these impossibility theorem names, so retiring the fail-closed state has
+to change the selected evidence facts rather than bypassing the witness objects.
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit
