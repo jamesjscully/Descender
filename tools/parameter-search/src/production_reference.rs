@@ -29675,11 +29675,18 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_production",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_production",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.componentBudget",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_componentBudget",
+        "SelectedRustAcceptedSpendSoundnessCertificate.componentBudget_le_acceptedSpendForgeryBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_componentBudget",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_reportedSecurity",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_reportedSecurity",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_targetSecurity",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_active128BitTarget",
+        "SelectedRustAcceptedSpendSoundnessCertificate.componentBudget_le_active128BitTarget",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_targetSecurity",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget",
         "acceptedSpendNumericBoundPriced",
         "numericEvidenceDigestsVerified",
@@ -29935,13 +29942,20 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_production",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_eq_production",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.componentBudget",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_componentBudget",
+        "SelectedRustAcceptedSpendSoundnessCertificate.componentBudget_le_acceptedSpendForgeryBound",
+        "SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_componentBudget",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_nonneg",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_nonneg",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_reportedSecurity",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_reportedSecurity",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_targetSecurity",
+        "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_active128BitTarget",
+        "SelectedRustAcceptedSpendSoundnessCertificate.componentBudget_le_active128BitTarget",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_targetSecurity",
         "SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget",
+        "SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_active128BitTarget",
         "SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_one",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_nonneg",
         "SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryBound_nonneg",
@@ -54994,6 +55008,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     activeSerializerAllowlist_boundaryNoExportClosed
   let _acceptedSpendCertificateProbBound :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound
+  let _acceptedSpendCertificateComponentBudget :=
+    SelectedRustAcceptedSpendSoundnessCertificate.componentBudget
+  let _acceptedSpendCertificateProbComponentBudget :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_componentBudget
+  let _acceptedSpendCertificateComponentBudgetBound :=
+    SelectedRustAcceptedSpendSoundnessCertificate.componentBudget_le_acceptedSpendForgeryBound
+  let _acceptedSpendCertificateSuccessComponentBudget :=
+    SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_componentBudget
   let _acceptedSpendCertificateProbUnion :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_unionBound
   let _acceptedSpendCertificateBoundPriced :=
@@ -55008,10 +55030,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_reportedSecurity
   let _acceptedSpendCertificateBoundTarget :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_targetSecurity
+  let _acceptedSpendCertificateBoundActiveTarget :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_active128BitTarget
+  let _acceptedSpendCertificateComponentActiveTarget :=
+    SelectedRustAcceptedSpendSoundnessCertificate.componentBudget_le_active128BitTarget
   let _acceptedSpendCertificateProbTarget :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_targetSecurity
   let _acceptedSpendCertificateProbActiveTarget :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget
+  let _acceptedSpendCertificateSuccessActiveTarget :=
+    SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_active128BitTarget
   let _acceptedSpendCertificateErasedBoundaryActiveTarget :=
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget
   let selectedRustAcceptedSpendSoundnessCertificate :
@@ -55546,6 +55574,14 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     activeSerializerAllowlist_boundaryNoExportClosed
   let _acceptedSpendCertificateProbBound :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_bound
+  let _acceptedSpendCertificateComponentBudget :=
+    SelectedRustAcceptedSpendSoundnessCertificate.componentBudget
+  let _acceptedSpendCertificateProbComponentBudget :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_componentBudget
+  let _acceptedSpendCertificateComponentBudgetBound :=
+    SelectedRustAcceptedSpendSoundnessCertificate.componentBudget_le_acceptedSpendForgeryBound
+  let _acceptedSpendCertificateSuccessComponentBudget :=
+    SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_componentBudget
   let _acceptedSpendCertificateProbNonnegative :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_nonneg
   let _acceptedSpendCertificateSuccessProbLeOne :=
@@ -55566,10 +55602,16 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_reportedSecurity
   let _acceptedSpendCertificateBoundTarget :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_targetSecurity
+  let _acceptedSpendCertificateBoundActiveTarget :=
+    SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_active128BitTarget
+  let _acceptedSpendCertificateComponentActiveTarget :=
+    SelectedRustAcceptedSpendSoundnessCertificate.componentBudget_le_active128BitTarget
   let _acceptedSpendCertificateProbTarget :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_targetSecurity
   let _acceptedSpendCertificateProbActiveTarget :=
     SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_active128BitTarget
+  let _acceptedSpendCertificateSuccessActiveTarget :=
+    SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_active128BitTarget
   let _acceptedSpendCertificateErasedBoundaryActiveTarget :=
     SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary_acceptedSpendForgeryProb_le_active128BitTarget
   let _acceptedSpendCertificateErasedBoundaryProbNonnegative :=

@@ -2267,6 +2267,14 @@ source gate exact-checks these theorem names, so the remaining production
 pricing package must prove not just an aggregate budget but the concrete active
 accepted-spend event and every named-break probability against the 128-bit
 target route.
+AP2-N003 accepted-spend certificate component-route note:
+`SelectedRustAcceptedSpendSoundnessCertificate` now names its carried component
+budget and projects the exported accepted-spend probability through that
+component budget before the priced bound. It also derives component-budget,
+exported-bound, and packaged-success fixed 128-bit target facts. The accepted-
+spend source gate requires these names, so the full-reduction handoff cannot
+collapse the accepted-spend certificate to only an opaque final priced
+inequality.
 AP2-N003 production-witness route note:
 `SelectedRustFullSignatureReductionProductionWitness` now projects selected
 signature success through the accepted-spend probability, the active 128-bit

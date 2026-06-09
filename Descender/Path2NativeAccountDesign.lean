@@ -2416,6 +2416,14 @@ def SelectedRustAcceptedSpendSoundnessCertificate.pricedNumericCertificate
     Path2AcceptedSpendProbability.PricedAcceptedSpendNumericCertificate :=
   Cert.numericSource.pricedCertificate
 
+/-- The component budget carried by the selected accepted-spend certificate. -/
+def SelectedRustAcceptedSpendSoundnessCertificate.componentBudget
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) : ℝ :=
+  Cert.pricedNumericCertificate.acceptedSpendBound +
+    (@Finset.univ Cert.pricedNumericCertificate.Break
+      Cert.pricedNumericCertificate.breakFintype).sum
+        Cert.pricedNumericCertificate.breakBound
+
 /-- The exported accepted-spend probability is the selected numeric source's union bound. -/
 theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_eq_unionBound
     (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
@@ -2607,6 +2615,36 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_l
     _ = Cert.acceptedSpendForgeryBound :=
       Cert.acceptedSpendForgeryBound_eq_pricedBound.symm
 
+/-- The selected accepted-spend certificate exposes its union-to-component-budget route. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_componentBudget
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.acceptedSpendForgeryProb <= Cert.componentBudget := by
+  calc
+    Cert.acceptedSpendForgeryProb =
+        Cert.pricedNumericCertificate.unionBound :=
+      Cert.acceptedSpendForgeryProb_eq_unionBound
+    _ <= Cert.componentBudget := by
+      simpa [SelectedRustAcceptedSpendSoundnessCertificate.componentBudget] using
+        Cert.numericSource.unionBound_le_componentBudget
+
+/-- The selected accepted-spend certificate exposes its component budget below the exported bound. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.componentBudget_le_acceptedSpendForgeryBound
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.componentBudget <= Cert.acceptedSpendForgeryBound := by
+  calc
+    Cert.componentBudget <= Cert.pricedNumericCertificate.pricedBound := by
+      simpa [SelectedRustAcceptedSpendSoundnessCertificate.componentBudget] using
+        Cert.numericSource.breakBudget_le_pricedBound
+    _ = Cert.acceptedSpendForgeryBound :=
+      Cert.acceptedSpendForgeryBound_eq_pricedBound.symm
+
+/-- The selected accepted-spend certificate bounds packaged success by the component budget. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_componentBudget
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.pricedNumericCertificate.successProb <= Cert.componentBudget := by
+  simpa [SelectedRustAcceptedSpendSoundnessCertificate.componentBudget] using
+    Cert.numericSource.successProb_le_componentBudget
+
 /-- The selected accepted-spend certificate exports a nonnegative probability. -/
 theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_nonneg
     (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
@@ -2660,6 +2698,25 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_
       Cert.evidenceReport
       Cert.selectedRustAcceptedSpendFactsAllTrueProof)
 
+/-- The active selected accepted-spend certificate prices its bound by the fixed 128-bit target. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryBound_le_active128BitTarget
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.acceptedSpendForgeryBound <= ((2 : ℝ) ^ (128 : Nat))⁻¹ := by
+  have hTarget :
+      Cert.evidenceReport.targetSecurityBits = 128 :=
+    SelectedRustAcceptedSpendSoundnessEvidenceReport.factsAllTrue_targetSecurityBits
+      Cert.evidenceReport
+      Cert.selectedRustAcceptedSpendFactsAllTrueProof
+  simpa [hTarget] using Cert.acceptedSpendForgeryBound_le_targetSecurity
+
+/-- The active selected accepted-spend certificate prices its component budget by the fixed target. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.componentBudget_le_active128BitTarget
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.componentBudget <= ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  le_trans
+    Cert.componentBudget_le_acceptedSpendForgeryBound
+    Cert.acceptedSpendForgeryBound_le_active128BitTarget
+
 /-- The selected accepted-spend certificate prices accepted-spend probability by target bits. -/
 theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_le_targetSecurity
     (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
@@ -2681,6 +2738,14 @@ theorem SelectedRustAcceptedSpendSoundnessCertificate.acceptedSpendForgeryProb_l
       Cert.evidenceReport
       Cert.selectedRustAcceptedSpendFactsAllTrueProof
   simpa [hTarget] using Cert.acceptedSpendForgeryProb_le_targetSecurity
+
+/-- The active selected accepted-spend certificate prices packaged success by the fixed target. -/
+theorem SelectedRustAcceptedSpendSoundnessCertificate.successProb_le_active128BitTarget
+    (Cert : SelectedRustAcceptedSpendSoundnessCertificate) :
+    Cert.pricedNumericCertificate.successProb <= ((2 : ℝ) ^ (128 : Nat))⁻¹ :=
+  le_trans
+    Cert.successProb_le_componentBudget
+    Cert.componentBudget_le_active128BitTarget
 
 /-- Convert selected Rust accepted-spend numeric evidence into the boundary. -/
 def SelectedRustAcceptedSpendSoundnessCertificate.toAcceptedSpendSoundnessBoundary
