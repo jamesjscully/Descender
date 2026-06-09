@@ -2362,3 +2362,10 @@ requires these witness-level projections along with the selected full-reduction
 certificate constructor, so the final AP2-N003 theorem must keep the production
 witness on the proof path through boundary erasure instead of hiding the hard
 production bits behind only `ProductionFactsComplete`.
+AP2-N003 priced-bound transcript-cap guard note:
+The accepted-spend fail-closed regression now forges an otherwise pricing-ready
+report whose priced-bound security bits consume the whole QROM-discounted
+transcript term. The missing-obligation helper must report
+`accepted_spend_priced_bound_security_within_transcript`, so future changes that
+widen priced-bound bits cannot accidentally drop the required
+`priced_bound_bits + multi_target_horizon <= transcript_term` check.

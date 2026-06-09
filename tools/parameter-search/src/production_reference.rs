@@ -49451,6 +49451,17 @@ mod tests {
             verify_path2_native_accepted_spend_numeric_evidence_v1(&forged_ready).unwrap_err(),
             "Path 2 native accepted-spend numeric evidence mismatch"
         );
+
+        let mut forged_over_transcript = forged_ready;
+        forged_over_transcript.accepted_spend_priced_bound_security_bits =
+            evidence.transcript_term_bits_after_qrom_loss;
+        assert_eq!(
+            path2_native_accepted_spend_numeric_missing_pricing_obligations_v1(
+                &forged_over_transcript
+            ),
+            vec!["accepted_spend_priced_bound_security_within_transcript"]
+        );
+
         let mut tampered_digest = evidence;
         tampered_digest.accepted_spend_priced_bound_digest[0] ^= 1;
         assert!(!path2_native_accepted_spend_numeric_evidence_report_verified_v1(&tampered_digest));
