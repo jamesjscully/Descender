@@ -26,8 +26,8 @@ const PK_BYTES: usize = PK_SEED_BYTES + PK_PAYLOAD_BYTES;
 const FIELD_BITS: usize = 14;
 const REPS: usize = 26;
 const SLOT_ID_BYTES: usize = 4;
-const ALGEBRAIC_CHALLENGE_BYTES: usize = 17;
-const CHALLENGE_HARDENING_BYTES: usize = 4;
+const ALGEBRAIC_CHALLENGE_BYTES: usize = prodref::ALGEBRAIC_CHALLENGE_BYTES;
+const CHALLENGE_HARDENING_BYTES: usize = prodref::CHALLENGE_HARDENING_BYTES;
 const CHALLENGE_BYTES: usize = ALGEBRAIC_CHALLENGE_BYTES + CHALLENGE_HARDENING_BYTES;
 const CHALLENGE_BITS_PER_REP: usize = 5;
 const ALGEBRAIC_CHALLENGE_ENTROPY_BITS: usize = REPS * CHALLENGE_BITS_PER_REP;
@@ -35,7 +35,7 @@ const CHALLENGE_ENTROPY_BITS: usize =
     ALGEBRAIC_CHALLENGE_ENTROPY_BITS + 8 * CHALLENGE_HARDENING_BYTES;
 const FS_CLASSICAL_QUERY_BITS_FOR_128: usize = CHALLENGE_ENTROPY_BITS - 128;
 const FS_QUANTUM_QUERY_BITS_FOR_128: usize = (CHALLENGE_ENTROPY_BITS - 128) / 2;
-const ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK: u8 = 0x03;
+const ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK: u8 = prodref::ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK;
 const CHALLENGE_ACTION_RESIDUES: usize = SIS_FULL_RESPONSE_PUBLIC_ROWS;
 const CHALLENGE_ACTION_POLYNOMIAL_COEFFICIENTS_LOW_TO_HIGH: [u16; 13] =
     [25, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1];
@@ -2610,7 +2610,7 @@ fn masked_response_sampler_certificate() -> MaskedResponseSamplerCertificate {
         finite_distance_proof: "conditioning a uniform kernel-coefficient sampler by rejection on the same predicate that defines the ideal conditioned fiber law gives exactly the ideal law",
         finite_distance_bound_status: "exact TV distance is zero for the stated rejection-sampling law; exact support-size/min-entropy for q=12289 is tracked separately from the 14-bit capacity model",
         lean_certificate: "FullResponseMaskedResponseSamplerCertificate.witnessHiding",
-        conclusion: "The 254-byte proof may spend the 16-bit fiber-state equality but must not condition the hidden masked response on active pad outputs.",
+        conclusion: "The 260-byte proof may spend the 16-bit fiber-state equality but must not condition the hidden masked response on active pad outputs.",
     }
 }
 
@@ -2970,7 +2970,7 @@ fn accepted_fiber_constraint_report() -> AcceptedFiberConstraintReport {
         estimated_remaining_fiber_bits_after_acceptance,
         max_distinct_active_blocks_for_128_bits,
         max_distinct_active_blocks_for_nonzero_estimate,
-        interpretation: "For a fixed public statement, an alternate representative must preserve the local fiber state and, under the current representative semantics, the pad outputs on every distinct active block. The 254-byte route has enough room for the 2-byte fiber-state equality, but active pad constraints still overdetermine the fiber unless pad checks are composed outside the hidden representative.",
+        interpretation: "For a fixed public statement, an alternate representative must preserve the local fiber state and, under the current representative semantics, the pad outputs on every distinct active block. The 260-byte route has enough room for the 2-byte fiber-state equality, but active pad constraints still overdetermine the fiber unless pad checks are composed outside the hidden representative.",
     }
 }
 
@@ -5053,7 +5053,7 @@ fn reference_timing_report(iterations: usize) -> ReferenceTimingReport {
                 production_verify_ok,
             ),
         ],
-        caveat: "Reference/research timing only: not constant-time, not a production account manager, and the production-facade rows still wrap the legacy 254-byte proof callback rather than accepting 308-byte/Fq12 projection-carrier proof semantics.",
+        caveat: "Reference/research timing only: not constant-time, not a production account manager, and the production-facade rows still wrap the legacy 260-byte proof callback rather than accepting 314-byte/Fq12 projection-carrier proof semantics.",
     }
 }
 
@@ -5515,7 +5515,7 @@ fn committed_sigma_byte_frontier() -> CommittedSigmaByteFrontier {
                 6,
                 32,
                 false,
-                "Stress target: any signature-carried hidden-link proof must fit in six bytes under the 256-byte cap, with remaining binding pushed to account state.",
+                "Stress target: after the widened challenge a six-byte signature-carried hidden-link proof overshoots the 256-byte cap; binding must move to account state or the byte target must rise.",
             ),
             committed_sigma_byte_candidate(
                 "account-carried-fiber-state-preserving-hidden-link",
@@ -5523,10 +5523,10 @@ fn committed_sigma_byte_frontier() -> CommittedSigmaByteFrontier {
                 0,
                 64,
                 false,
-                "Conservative low-byte target retaining local fiber-state equality; proves the same interface but has only four spare signature bytes under 256.",
+                "Conservative target retaining local fiber-state equality; proves the same interface but no longer fits under the 256-byte cap after the widened challenge.",
             ),
         ],
-        interpretation: "The current 41-byte masked response reaches 254 bytes before a hidden-link proof, leaving only two bytes under a 256-byte cap. The low-byte proof route must therefore shrink the quotient response to 37 or 39 bytes, move the link into account state, or raise the byte target.",
+        interpretation: "With the widened 27-byte challenge the current 41-byte masked response reaches 260 bytes before a hidden-link proof, already past a 256-byte cap. The low-byte proof route must therefore shrink the quotient response to 37 bytes (exactly 256), move the link into account state, or raise the byte target.",
     }
 }
 
@@ -6275,7 +6275,7 @@ fn reference_implementation_report() -> ReferenceImplementationReport {
             "mutated slot id",
             "non-canonical parser payloads",
         ],
-        status: "full 254-byte public proof API is executable and deterministic for test vectors; it remains a research reference, not hardened wallet storage",
+        status: "full 260-byte public proof API is executable and deterministic for test vectors; it remains a research reference, not hardened wallet storage",
     }
 }
 
@@ -6785,9 +6785,525 @@ fn parse_bench_iterations(args: &[String]) -> usize {
         .unwrap_or(10_000)
 }
 
+// =====================================================================
+// KAT v0 — frozen Known-Answer-Test corpus (Phase 0 cross-tool anchor).
+//
+// Every vector below is produced from the REAL reference pipeline in this
+// binary (production_keygen -> production_sign -> production_verify), with
+// no hand-typed bytes. Because keygen/sign/verify are fully deterministic
+// (SHA256-seeded, no randomness), re-running the generator reproduces the
+// corpus byte-for-byte. The `kat-check` subcommand re-derives the corpus and
+// asserts equality against the frozen formal/kat/kat_v0.json so CI catches any
+// drift (e.g. the AP2-004 widening) across all implementations.
+// =====================================================================
+mod kat {
+    use super::*;
+
+    pub const KAT_FORMAT_VERSION: &str = "kat_v0";
+    pub const KAT_SIGNATURE_BYTES: usize = LINEAR_SIGMA_TARGET_TRANSACTION_SIGNATURE_BYTES;
+
+    #[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+    pub struct KatCorpus {
+        pub format_version: String,
+        pub profile: String,
+        /// Pins the exact reference pipeline that produced these vectors.
+        pub producing_version_digest: String,
+        pub q: u16,
+        pub pk_bytes: usize,
+        pub signature_bytes: usize,
+        /// Byte offsets inside the canonical 260-byte transaction signature.
+        pub signature_layout: SignatureLayout,
+        pub positive: Vec<PositiveVector>,
+        pub negative: Vec<NegativeVector>,
+    }
+
+    #[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+    pub struct SignatureLayout {
+        pub slot_id: ByteRange,
+        pub challenge: ByteRange,
+        pub response: ByteRange,
+        pub openings: ByteRange,
+        pub linear_sigma_proof: ByteRange,
+    }
+
+    #[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+    pub struct ByteRange {
+        pub offset: usize,
+        pub length: usize,
+    }
+
+    impl ByteRange {
+        fn new(offset: usize, length: usize) -> Self {
+            Self { offset, length }
+        }
+    }
+
+    #[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+    pub struct PositiveVector {
+        pub name: String,
+        pub description: String,
+        pub slot_count: usize,
+        pub slot_id: u32,
+        pub message_hex: String,
+        pub public_key_hex: String,
+        pub account_slot_commitment_hex: String,
+        pub signature_hex: String,
+        pub expected_accept: bool,
+        pub expected_reason: String,
+        pub expected_slot_consumed: bool,
+    }
+
+    #[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+    pub struct NegativeVector {
+        pub name: String,
+        pub description: String,
+        /// Which base case this negative vector is derived from (keygen seed).
+        pub slot_count: usize,
+        pub slot_id: u32,
+        pub message_hex: String,
+        pub public_key_hex: String,
+        /// The (possibly mutated) account-slot-0 commitment the verifier sees.
+        pub account_slot_commitment_hex: String,
+        /// The (possibly mutated / replayed-context) signature bytes.
+        pub signature_hex: String,
+        /// Whether the verifier is run against an account where slot 0 was
+        /// already consumed (replay probe).
+        pub account_slot0_consumed: bool,
+        pub expected_accept: bool,
+        pub expected_reason: String,
+    }
+
+    fn layout() -> SignatureLayout {
+        let response_start = SLOT_ID_BYTES + CHALLENGE_BYTES;
+        let opening_start = response_start + ACTIVE_RESPONSE_BYTES;
+        let proof_start = opening_start + LOCAL_OPENING_BYTES;
+        SignatureLayout {
+            slot_id: ByteRange::new(0, SLOT_ID_BYTES),
+            challenge: ByteRange::new(SLOT_ID_BYTES, CHALLENGE_BYTES),
+            response: ByteRange::new(response_start, ACTIVE_RESPONSE_BYTES),
+            openings: ByteRange::new(opening_start, LOCAL_OPENING_BYTES),
+            linear_sigma_proof: ByteRange::new(proof_start, LINEAR_SIGMA_TARGET_PROOF_BYTES),
+        }
+    }
+
+    fn slot0_commitment_hex(account: &ProductionAccountState) -> String {
+        hex_encode(account.get_slot(0).unwrap().commitment().as_bytes())
+    }
+
+    fn slot_commitment_hex(account: &ProductionAccountState, slot_id: u32) -> String {
+        hex_encode(account.get_slot(slot_id).unwrap().commitment().as_bytes())
+    }
+
+    /// Digest that pins the producing pipeline: covers the structural constants
+    /// plus a freshly recomputed positive signature. If any of the reference
+    /// logic drifts, this digest changes and the frozen corpus stops matching.
+    fn producing_version_digest() -> String {
+        let keypair = production_keygen(2);
+        let message = b"Descender.kat_v0.producing_version_probe";
+        let signature = production_sign(
+            &keypair.secret_key,
+            keypair.account.get_slot(0).unwrap(),
+            message,
+        )
+        .expect("kat producing-version probe signs");
+        let mut hasher = Sha256::new();
+        hasher.update(b"Descender.kat_v0.producing_version.v1");
+        hasher.update(PROFILE.as_bytes());
+        hasher.update((Q as u32).to_le_bytes());
+        hasher.update((PK_BYTES as u32).to_le_bytes());
+        hasher.update((KAT_SIGNATURE_BYTES as u32).to_le_bytes());
+        hasher.update((CHALLENGE_BYTES as u32).to_le_bytes());
+        hasher.update((ACTIVE_RESPONSE_BYTES as u32).to_le_bytes());
+        hasher.update((LOCAL_OPENING_BYTES as u32).to_le_bytes());
+        hasher.update((LINEAR_SIGMA_TARGET_PROOF_BYTES as u32).to_le_bytes());
+        hasher.update(&keypair.public_key.as_bytes());
+        hasher.update(signature.as_bytes());
+        hex_encode(&hasher.finalize())
+    }
+
+    fn positive_vector(
+        name: &str,
+        description: &str,
+        slot_count: usize,
+        slot_id: u32,
+        message: &[u8],
+    ) -> PositiveVector {
+        let keypair = production_keygen(slot_count);
+        let signature = production_sign(
+            &keypair.secret_key,
+            keypair.account.get_slot(slot_id).unwrap(),
+            message,
+        )
+        .expect("kat positive vector signs the reference slot");
+        let (report, next_account) =
+            production_verify(&keypair.public_key, message, &keypair.account, &signature);
+        assert!(
+            report.accepted,
+            "kat positive vector {name} must verify: {report:?}"
+        );
+        let consumed = !next_account.get_slot(slot_id).unwrap().is_unused();
+        assert!(consumed, "kat positive vector {name} must consume its slot");
+        PositiveVector {
+            name: name.to_string(),
+            description: description.to_string(),
+            slot_count,
+            slot_id,
+            message_hex: hex_encode(message),
+            public_key_hex: hex_encode(&keypair.public_key.as_bytes()),
+            account_slot_commitment_hex: slot_commitment_hex(&keypair.account, slot_id),
+            signature_hex: hex_encode(signature.as_bytes()),
+            expected_accept: true,
+            expected_reason: report.reason,
+            expected_slot_consumed: true,
+        }
+    }
+
+    /// Drives a negative scenario through the real verifier and snapshots the
+    /// exact reject result, so the frozen corpus records ground truth rather
+    /// than a guessed reason string.
+    fn run_negative(
+        name: &str,
+        description: &str,
+        slot_count: usize,
+        slot_id: u32,
+        message: &[u8],
+        account: &ProductionAccountState,
+        signature: &ProductionSignature,
+        public_key: &ProductionPublicKey,
+        account_slot0_consumed: bool,
+    ) -> NegativeVector {
+        let (report, _) = production_verify(public_key, message, account, signature);
+        assert!(
+            !report.accepted,
+            "kat negative vector {name} must be rejected: {report:?}"
+        );
+        NegativeVector {
+            name: name.to_string(),
+            description: description.to_string(),
+            slot_count,
+            slot_id,
+            message_hex: hex_encode(message),
+            public_key_hex: hex_encode(&public_key.as_bytes()),
+            account_slot_commitment_hex: slot0_commitment_hex(account),
+            signature_hex: hex_encode(signature.as_bytes()),
+            account_slot0_consumed,
+            expected_accept: false,
+            expected_reason: report.reason,
+        }
+    }
+
+    pub fn build_corpus() -> KatCorpus {
+        // ----- positive round-trips -----
+        let positive = vec![
+            positive_vector(
+                "pos_slot0_2slot",
+                "keygen(2) -> sign slot 0 -> verify accepts.",
+                2,
+                0,
+                b"Descender.kat_v0.positive.message.A",
+            ),
+            positive_vector(
+                "pos_slot1_2slot",
+                "keygen(2) -> sign slot 1 -> verify accepts (distinct slot).",
+                2,
+                1,
+                b"Descender.kat_v0.positive.message.B",
+            ),
+            positive_vector(
+                "pos_slot0_4slot",
+                "keygen(4) -> sign slot 0 -> verify accepts (distinct account size).",
+                4,
+                0,
+                b"Descender.kat_v0.positive.message.C",
+            ),
+        ];
+
+        // Base case reused by the byte-mutation negatives.
+        let base_slot_count = 2usize;
+        let base_slot_id = 0u32;
+        let base_message = b"Descender.kat_v0.negative.base.message".to_vec();
+        let keypair = production_keygen(base_slot_count);
+        let base_sig = production_sign(
+            &keypair.secret_key,
+            keypair.account.get_slot(base_slot_id).unwrap(),
+            &base_message,
+        )
+        .expect("kat negative base case signs");
+        let base_bytes = base_sig.as_bytes().to_vec();
+
+        let response_start = SLOT_ID_BYTES + CHALLENGE_BYTES;
+        let proof_start = response_start + ACTIVE_RESPONSE_BYTES + LOCAL_OPENING_BYTES;
+
+        let mut negative = Vec::new();
+
+        // (1) non-canonical encoding: signature truncated by one byte.
+        {
+            let mut bytes = base_bytes.clone();
+            bytes.pop();
+            negative.push(run_negative(
+                "neg_noncanonical_truncated",
+                "Non-canonical encoding: signature truncated to 259 bytes (wrong length).",
+                base_slot_count,
+                base_slot_id,
+                &base_message,
+                &keypair.account,
+                &ProductionSignature::new(bytes),
+                &keypair.public_key,
+                false,
+            ));
+        }
+
+        // (2) mutated challenge byte.
+        {
+            let mut bytes = base_bytes.clone();
+            bytes[SLOT_ID_BYTES] ^= 0x01;
+            negative.push(run_negative(
+                "neg_mutated_challenge",
+                "Mutated challenge: flip a bit in the algebraic challenge field.",
+                base_slot_count,
+                base_slot_id,
+                &base_message,
+                &keypair.account,
+                &ProductionSignature::new(bytes),
+                &keypair.public_key,
+                false,
+            ));
+        }
+
+        // (3) mutated response byte.
+        {
+            let mut bytes = base_bytes.clone();
+            bytes[response_start] ^= 0x01;
+            negative.push(run_negative(
+                "neg_mutated_response",
+                "Mutated response: flip a bit in the active response region.",
+                base_slot_count,
+                base_slot_id,
+                &base_message,
+                &keypair.account,
+                &ProductionSignature::new(bytes),
+                &keypair.public_key,
+                false,
+            ));
+        }
+
+        // (4a) mutated projection carrier — proof commitment (account-binding
+        //      surface): the carrier's first 32 bytes must equal the slot
+        //      randomizer commitment, so flipping a bit there is caught by the
+        //      account-binding layer.
+        {
+            let mut bytes = base_bytes.clone();
+            bytes[proof_start] ^= 0x01;
+            negative.push(run_negative(
+                "neg_mutated_carrier_commitment",
+                "Mutated carrier: flip a bit in the projection-carrier proof commitment \
+                 (breaks the slot randomizer binding).",
+                base_slot_count,
+                base_slot_id,
+                &base_message,
+                &keypair.account,
+                &ProductionSignature::new(bytes),
+                &keypair.public_key,
+                false,
+            ));
+        }
+
+        // (4b) mutated projection carrier — masked-witness response (sigma
+        //      surface): leaves the proof commitment intact so account binding
+        //      passes, then the inner linear-sigma equation rejects it.
+        {
+            let mut bytes = base_bytes.clone();
+            bytes[proof_start + LINEAR_SIGMA_PROOF_COMMITMENT_BYTES] ^= 0x01;
+            negative.push(run_negative(
+                "neg_mutated_carrier_masked_witness",
+                "Mutated carrier: flip a bit in the projection-carrier masked-witness response \
+                 (breaks the linear-sigma verifier equation).",
+                base_slot_count,
+                base_slot_id,
+                &base_message,
+                &keypair.account,
+                &ProductionSignature::new(bytes),
+                &keypair.public_key,
+                false,
+            ));
+        }
+
+        // (5) replayed slot: verify the genuine signature against an account
+        //     whose slot 0 was already consumed.
+        {
+            let (accept_report, next_account) = production_verify(
+                &keypair.public_key,
+                &base_message,
+                &keypair.account,
+                &base_sig,
+            );
+            assert!(
+                accept_report.accepted,
+                "kat replay base must first accept: {accept_report:?}"
+            );
+            negative.push(run_negative(
+                "neg_replayed_slot",
+                "Replayed slot: genuine signature re-presented after the slot was consumed.",
+                base_slot_count,
+                base_slot_id,
+                &base_message,
+                &next_account,
+                &base_sig,
+                &keypair.public_key,
+                true,
+            ));
+        }
+
+        // (6) stale account root: mutate the slot randomizer commitment so the
+        //     account no longer matches the bound transaction.
+        {
+            let mut mutated_account = keypair.account.clone();
+            let mut commitment =
+                *mutated_account.get_slot(0).unwrap().commitment().as_bytes();
+            commitment[DIGEST_BYTES] ^= 1;
+            mutated_account
+                .replace_slot_commitment_for_test(
+                    0,
+                    ProductionAccountCommitment::from_bytes(commitment)
+                        .expect("randomizer mutation remains canonical"),
+                )
+                .expect("replace slot commitment");
+            negative.push(run_negative(
+                "neg_stale_account_root",
+                "Stale account root: slot randomizer commitment mutated (account/state mismatch).",
+                base_slot_count,
+                base_slot_id,
+                &base_message,
+                &mutated_account,
+                &base_sig,
+                &keypair.public_key,
+                false,
+            ));
+        }
+
+        // (7) public-representative forgery probe: claim a slot id outside the
+        //     account. This is the cheapest public-only forgery attempt that
+        //     reaches the verifier with a structurally valid signature.
+        {
+            let mut bytes = base_bytes.clone();
+            bytes[..SLOT_ID_BYTES].copy_from_slice(&999_u32.to_le_bytes());
+            negative.push(run_negative(
+                "neg_public_representative_forgery_slot_oob",
+                "Public-representative forgery probe: signature claims a slot id outside the account.",
+                base_slot_count,
+                base_slot_id,
+                &base_message,
+                &keypair.account,
+                &ProductionSignature::new(bytes),
+                &keypair.public_key,
+                false,
+            ));
+        }
+
+        KatCorpus {
+            format_version: KAT_FORMAT_VERSION.to_string(),
+            profile: PROFILE.to_string(),
+            producing_version_digest: producing_version_digest(),
+            q: Q,
+            pk_bytes: PK_BYTES,
+            signature_bytes: KAT_SIGNATURE_BYTES,
+            signature_layout: layout(),
+            positive,
+            negative,
+        }
+    }
+
+    pub fn corpus_json() -> String {
+        let corpus = build_corpus();
+        let mut json =
+            serde_json::to_string_pretty(&corpus).expect("kat corpus serializes to json");
+        json.push('\n');
+        json
+    }
+
+    pub fn default_corpus_path() -> std::path::PathBuf {
+        // tools/parameter-search/Cargo.toml -> repo root is ../../
+        let manifest_dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        manifest_dir
+            .join("../../formal/kat/kat_v0.json")
+            .canonicalize()
+            .unwrap_or_else(|_| manifest_dir.join("../../formal/kat/kat_v0.json"))
+    }
+
+    /// Re-derives the corpus and compares it byte-for-byte against the frozen
+    /// JSON on disk. Returns Err with a human-readable diff summary on drift.
+    pub fn check_against(path: &std::path::Path) -> Result<(), String> {
+        let frozen = std::fs::read_to_string(path)
+            .map_err(|e| format!("read frozen corpus {}: {e}", path.display()))?;
+        let regenerated = corpus_json();
+        if frozen == regenerated {
+            return Ok(());
+        }
+        // Pinpoint the first divergence to make CI failures actionable.
+        let frozen_lines: Vec<&str> = frozen.lines().collect();
+        let regen_lines: Vec<&str> = regenerated.lines().collect();
+        let mut detail = String::new();
+        let max = frozen_lines.len().max(regen_lines.len());
+        for i in 0..max {
+            let f = frozen_lines.get(i).copied().unwrap_or("<missing>");
+            let r = regen_lines.get(i).copied().unwrap_or("<missing>");
+            if f != r {
+                detail = format!(
+                    "first divergence at line {}:\n  frozen:      {f}\n  regenerated: {r}",
+                    i + 1
+                );
+                break;
+            }
+        }
+        Err(format!(
+            "KAT v0 drift detected: regenerated corpus does not match {}.\n{detail}\n\
+             If this change is intentional, regenerate with `--kat-generate` and review the diff.",
+            path.display()
+        ))
+    }
+
+    pub fn run_cli(args: &[String]) -> Result<(), String> {
+        let mut path: Option<std::path::PathBuf> = None;
+        let mut iter = args.iter().enumerate();
+        while let Some((idx, arg)) = iter.next() {
+            if arg == "--out" || arg == "--path" {
+                let value = args
+                    .get(idx + 1)
+                    .ok_or_else(|| format!("{arg} requires a path value"))?;
+                path = Some(std::path::PathBuf::from(value));
+            }
+        }
+        if args.iter().any(|a| a == "--kat-generate") {
+            let target = path.unwrap_or_else(default_corpus_path);
+            if let Some(parent) = target.parent() {
+                std::fs::create_dir_all(parent)
+                    .map_err(|e| format!("create {}: {e}", parent.display()))?;
+            }
+            std::fs::write(&target, corpus_json())
+                .map_err(|e| format!("write {}: {e}", target.display()))?;
+            println!("wrote KAT v0 corpus to {}", target.display());
+            Ok(())
+        } else {
+            // --kat-check
+            let target = path.unwrap_or_else(default_corpus_path);
+            check_against(&target)?;
+            println!(
+                "KAT v0 corpus at {} reproduces byte-for-byte.",
+                target.display()
+            );
+            Ok(())
+        }
+    }
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.iter().any(|arg| arg == "--bench") {
+    if args.iter().any(|arg| arg == "--kat-generate" || arg == "--kat-check") {
+        if let Err(err) = kat::run_cli(&args) {
+            eprintln!("{err}");
+            std::process::exit(1);
+        }
+    } else if args.iter().any(|arg| arg == "--bench") {
         let iterations = parse_bench_iterations(&args);
         println!(
             "{}",
@@ -6807,33 +7323,77 @@ mod tests {
     use descender_parameter_search::production_reference::reviewed_response_link_code;
 
     #[test]
+    fn kat_v0_corpus_is_internally_consistent() {
+        let corpus = kat::build_corpus();
+        assert_eq!(corpus.format_version, "kat_v0");
+        assert!(
+            corpus.positive.len() >= 3,
+            "kat v0 needs at least 3 positive vectors"
+        );
+        // Count distinct reject reasons across the negative vectors.
+        let mut reasons: Vec<&str> = corpus
+            .negative
+            .iter()
+            .map(|n| n.expected_reason.as_str())
+            .collect();
+        reasons.sort_unstable();
+        reasons.dedup();
+        assert!(
+            reasons.len() >= 4,
+            "kat v0 needs at least 4 distinct negative reject reasons, got {reasons:?}"
+        );
+        for p in &corpus.positive {
+            assert!(p.expected_accept);
+            assert_eq!(p.signature_hex.len() / 2, kat::KAT_SIGNATURE_BYTES);
+        }
+        for n in &corpus.negative {
+            assert!(!n.expected_accept);
+            assert!(!n.expected_reason.is_empty());
+        }
+    }
+
+    #[test]
+    fn kat_v0_corpus_reproduces_frozen_json() {
+        // The frozen artifact MUST byte-for-byte match a fresh reference run.
+        // This is the same check CI runs via `--kat-check`.
+        let path = kat::default_corpus_path();
+        if !path.exists() {
+            panic!(
+                "frozen KAT corpus missing at {}; regenerate with `--kat-generate`",
+                path.display()
+            );
+        }
+        kat::check_against(&path).expect("frozen KAT v0 corpus reproduces from the reference");
+    }
+
+    #[test]
     fn constants_match_lean_profile() {
         assert_eq!(COMMITMENT_DOMAIN.len(), 41);
         assert_eq!(PAD_DOMAIN.len(), 45);
         assert_eq!(PAD_FRAME_BYTES, 46);
         assert_eq!(HIDDEN_PREIMAGE_BYTES, 34);
-        assert_eq!(ALGEBRAIC_CHALLENGE_BYTES, 17);
+        assert_eq!(ALGEBRAIC_CHALLENGE_BYTES, 23);
         assert_eq!(CHALLENGE_HARDENING_BYTES, 4);
-        assert_eq!(CHALLENGE_BYTES, 21);
+        assert_eq!(CHALLENGE_BYTES, 27);
         assert_eq!(ALGEBRAIC_CHALLENGE_ENTROPY_BITS, 130);
         assert_eq!(CHALLENGE_ENTROPY_BITS, 162);
         assert_eq!(FS_QUANTUM_QUERY_BITS_FOR_128, 17);
         assert_eq!(FS_CLASSICAL_QUERY_BITS_FOR_128, 34);
-        assert_eq!(STATEFUL_SPEND_SIGNATURE_BYTES, 177);
-        assert_eq!(STATEFUL_TRANSACTION_SIGNATURE_BYTES, 181);
+        assert_eq!(STATEFUL_SPEND_SIGNATURE_BYTES, 183);
+        assert_eq!(STATEFUL_TRANSACTION_SIGNATURE_BYTES, 187);
         assert_eq!(REVEALED_PREIMAGE_PROOF_BYTES, 41);
-        assert_eq!(REVEALED_PREIMAGE_TRANSACTION_SIGNATURE_BYTES, 222);
-        assert_eq!(STATELESS_SHA256_SIGNATURE_BYTES, 1009);
-        assert_eq!(PROOF_BYTES_UNDER_256, 75);
-        assert_eq!(PROOF_BYTES_BEAT_IMPLICIT_269, 87);
-        assert_eq!(PROOF_BYTES_TIE_IMPLICIT_269, 88);
+        assert_eq!(REVEALED_PREIMAGE_TRANSACTION_SIGNATURE_BYTES, 228);
+        assert_eq!(STATELESS_SHA256_SIGNATURE_BYTES, 1015);
+        assert_eq!(PROOF_BYTES_UNDER_256, 69);
+        assert_eq!(PROOF_BYTES_BEAT_IMPLICIT_269, 81);
+        assert_eq!(PROOF_BYTES_TIE_IMPLICIT_269, 82);
         assert_eq!(PROOF_BYTES_BEAT_STATELESS_SHA256, 827);
         assert_eq!(LINEAR_SIGMA_PROOF_COMMITMENT_BYTES, 32);
         assert_eq!(LINEAR_SIGMA_MASKED_WITNESS_BYTES, 41);
         assert_eq!(LINEAR_SIGMA_TARGET_PROOF_BYTES, 73);
-        assert_eq!(LINEAR_SIGMA_TARGET_TRANSACTION_SIGNATURE_BYTES, 254);
+        assert_eq!(LINEAR_SIGMA_TARGET_TRANSACTION_SIGNATURE_BYTES, 260);
         assert_eq!(REVIEWED_ACCOUNT_LINK_BYTES, 68);
-        assert_eq!(REVIEWED_TARGET_TRANSACTION_SIGNATURE_BYTES, 250);
+        assert_eq!(REVIEWED_TARGET_TRANSACTION_SIGNATURE_BYTES, 256);
     }
 
     #[test]
@@ -6875,7 +7435,7 @@ mod tests {
             "full-response-packed-sis-linear-sigma-opening"
         );
         assert_eq!(report.selected_opening_primitive.proof_bytes, 73);
-        assert_eq!(report.selected_opening_primitive.total_signature_bytes, 254);
+        assert_eq!(report.selected_opening_primitive.total_signature_bytes, 260);
         assert_eq!(
             report.selected_opening_primitive.verifier_equation,
             "L_statement(z) = a + challenge * statement.digest"
@@ -7008,11 +7568,11 @@ mod tests {
         assert_eq!(report.opening_proof_frontier.candidates.len(), 6);
         assert_eq!(
             report.opening_proof_frontier.candidates[1].total_signature_bytes,
-            222
+            228
         );
         assert_eq!(
             report.opening_proof_frontier.candidates[2].total_signature_bytes,
-            254
+            260
         );
         assert_eq!(report.assumption_review_targets.len(), 5);
         assert_eq!(report.assumption_closure_report.len(), 5);
@@ -7064,7 +7624,7 @@ mod tests {
         );
         assert_eq!(
             report.matrix_short_relation_probe.candidates_tested,
-            117_484
+            117484
         );
         assert_eq!(report.matrix_short_relation_probe.zero_relations_found, 0);
         assert_eq!(
@@ -7446,7 +8006,7 @@ mod tests {
         );
         assert_eq!(
             report.hiding_route_frontier[0].transaction_signature_bytes,
-            250
+            256
         );
         assert_eq!(report.hiding_route_frontier[0].residual_hiding_bits, 128);
         assert!(report.hiding_route_frontier[0].meets_128_hiding);
@@ -7456,34 +8016,34 @@ mod tests {
         );
         assert_eq!(
             report.hiding_route_frontier[1].transaction_signature_bytes,
-            252
+            258
         );
         assert_eq!(report.hiding_route_frontier[1].residual_hiding_bits, 128);
         assert_eq!(
             report.hiding_route_frontier[2].transaction_signature_bytes,
-            306
+            312
         );
         assert_eq!(
             report.hiding_route_frontier[3].transaction_signature_bytes,
-            308
+            314
         );
         assert_eq!(
             report
                 .committed_sigma_byte_frontier
                 .current_response_hidden_link_budget_under_256,
-            2
+            0
         );
         assert_eq!(
             report
                 .committed_sigma_byte_frontier
                 .fiber_saturated_hidden_link_budget_under_256,
-            6
+            0
         );
         assert_eq!(
             report
                 .committed_sigma_byte_frontier
                 .fiber_state_preserving_hidden_link_budget_under_256,
-            4
+            0
         );
         assert_eq!(
             report
@@ -7672,11 +8232,11 @@ mod tests {
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[0].transaction_bytes,
-            254
+            260
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[1].transaction_bytes,
-            250
+            256
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[1].name,
@@ -7688,7 +8248,7 @@ mod tests {
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[2].transaction_bytes,
-            250
+            256
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[2].account_hidden_link_bytes,
@@ -7696,7 +8256,7 @@ mod tests {
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[3].transaction_bytes,
-            256
+            262
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[3].hidden_link_opening_bytes,
@@ -7704,7 +8264,7 @@ mod tests {
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[4].transaction_bytes,
-            252
+            258
         );
         assert_eq!(
             report.assumption_closure_report[1].lean_game,
@@ -8065,7 +8625,7 @@ mod tests {
         );
         assert_eq!(
             report.fiat_shamir_frame_certificate.sample_challenge_hex,
-            "96c59f06d3e185e055df12c152791047020becf560"
+            "96c59f06d3e185e055df12c152791047fe0becf560c32f3849286d"
         );
         assert!(
             report
