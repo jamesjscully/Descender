@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  lean:
+    name: Lean build + theorem audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Descender (with mathlib cache)
+        uses: leanprover/lean-action@v1
+        with:
+          use-mathlib-cache: true
+      - name: Semantic theorem audit (axioms, gate endpoints, statement dump)
+        run: lake env lean --run scripts/audit_theorems.lean
+      - name: Fail if the statement dump drifted without being committed
+        run: git diff --exit-code audit/lean_theorem_statements.txt
+
+  rust:
+    name: Rust workspace check + retired-path tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/parameter-search
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tools/parameter-search
+      - name: Check every target (lib, bins, tests)
+        run: cargo check --all-targets
+      - name: Retired-path q12289 bin tests
+        run: cargo test --bin signature_q12289_local_delta_stateful
+      - name: KAT v0 corpus reproduces byte-for-byte (cross-tool anchor)
+        run: cargo run --bin signature_q12289_local_delta_stateful -- --kat-check
+
+  cryptanalysis:
+    name: Cryptanalysis artifacts (param sync + verified checks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Estimator constants match deployed Rust reference (WS3-c)
+        run: python3 scripts/research/check_estimator_param_sync.py
+      - name: Fq12 extension polynomial is irreducible (WS2-a/WS4)
+        run: python3 scripts/research/verify_fq12_irreducibility.py
+      - name: Concrete-security estimate runs
+        run: python3 scripts/research/cryptanalysis_concrete_security_estimate.py
