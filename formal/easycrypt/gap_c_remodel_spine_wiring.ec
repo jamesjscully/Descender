@@ -51,7 +51,12 @@ op eps_leaf     : real = eps_spr 256.   (* #2 prevalidation leaf binding (n=256)
 op eps_registry : real = eps_spr 256.   (* #3 prevalidation registry binding     *)
 op eps_checked  : real = eps_spr 214.   (* #6 checked-core message binding (n=214)*)
 
-(* Accepted-spend placeholder term (separately fail-closed pending AP2-N003). *)
+(* Accepted-spend term (AP2-N003).  No longer a bare placeholder: it is now
+   DISCHARGED by the reduction in accepted_spend_forgery_reduction.ec
+   (`accepted_spend_term_le_2pow_neg129`: the same-action fresh-message accepted
+   forgery is <= 2^-129), modulo the single EXTERNAL coded-SIS estimator axiom
+   (open_external_estimator) + the negligible QROM action-collision term.  The
+   2^-129 value below is the bound that reduction establishes. *)
 op eps_accepted : real = 1%r / (2%r ^ 129).
 
 (* =============================================================================
