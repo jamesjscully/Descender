@@ -86,7 +86,15 @@ mechanism; Attack 2 names the documentation/regression hazard. None contradicts 
 
 The witness-binding injectivity reduces cleanly to, and ONLY to:
 
-1. **SHA-256 collision resistance** on `reviewed_fq12_state_assisted_opening_commitment_frame`
+> **Update (2026-06-10, GAP C):** the EC reduction was subsequently re-modeled to the
+> tighter **SHA-256 SECOND-PREIMAGE resistance** (the leaf FIXES the target before the
+> adversary acts, so it is a second-preimage, not a free collision) — see
+> `gap_c_remodel_spine_wiring.ec` + `SECURITY_DOSSIER.md`. This closes the budget at
+> q=2⁶⁴ with no query cap; the "collision resistance" phrasing below is the earlier,
+> looser framing.
+
+1. **SHA-256 collision resistance** (now modeled as SECOND-PREIMAGE, see above) on
+   `reviewed_fq12_state_assisted_opening_commitment_frame`
    (and the `witness_opening_digest` frame) — maps to **`prevalidation_leaf_binding_break` /
    `qrom_or_domain_separation_break`**.
 2. **Unconditional bijectivity** of the 18-residue 14-bit packing — **NO new commitment assumption**;

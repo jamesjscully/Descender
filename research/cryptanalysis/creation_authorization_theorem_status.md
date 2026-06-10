@@ -1,5 +1,14 @@
 # Creation-Authorization Theorem Status
 
+> **SUPERSEDED (2026-06-10) — see `SECURITY_DOSSIER.md` for the authoritative state.**
+> Early-2026-06-10 snapshot. Since written: the 3 binding breaks were re-modeled from
+> free-birthday COLLISION-resistance to the tighter SECOND-PREIMAGE resistance (GAP C,
+> `gap_c_remodel_spine_wiring.ec`; budget closes at q=2⁶⁴ with no query cap); GAP C is
+> WIRED; GAP A is BUILT (`verify_path2_direct_creation_masked_state18_proof_v1`, proven
+> equivalent to the harness relation, production still fail-closed); GAP E (accepted-spend
+> ≤2⁻¹²⁹) is reduced to the external coded-SIS assumption. Where this doc says
+> "collision-resistance", "GAP A unbuilt", or "GAP C unwired", the dossier + code win.
+
 Target theorem: `account_creation_prevalidated_slot_authorization_or_break`
 (spec: `research/account_creation_prevalidated_slot_authorization_or_break.md`).
 
