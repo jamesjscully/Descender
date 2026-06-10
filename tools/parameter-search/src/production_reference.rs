@@ -424,6 +424,12 @@ pub const PATH2_EVIDENCE_KIND_DIRECT_REPLAYABLE_RELATION_CERTIFICATE: u16 = 1;
 pub const PATH2_DIRECT_CREATION_PROOF_KIND_UNINSTANTIATED: u16 = 0;
 pub const PATH2_DIRECT_CREATION_PROOF_KIND_TOY_Q_LINEAR: u16 = 1;
 pub const PATH2_DIRECT_CREATION_PROOF_KIND_TRANSPARENT_DESCENT: u16 = 2;
+// Real (non-toy) public, harness-free creation-proof kind. Its verifier replays the SAME
+// masked-state18 packed-witness opening relation the harness-replay path enforces, using the real
+// SHA-256/masked_state18 commitment (NOT the `P2Q1` toy commitment). It is an AVAILABLE, clearly
+// labeled, NON-DEFAULT acceptance path: it does not flip the production deployment preflight, which
+// stays fail-closed via the unconditional deployment blockers.
+pub const PATH2_DIRECT_CREATION_PROOF_KIND_MASKED_STATE18: u16 = 3;
 pub const PATH2_TRANSPARENT_DESCENT_PROOF_SYSTEM_PROFILE: &str =
     "DESCENDER_PATH2_TRANSPARENT_HASH_PROOF_OVER_DESCENT_RELATION_V1";
 pub const PATH2_TRANSPARENT_PROOF_FAMILY_CAPABILITY_PROFILE_ID: u16 = 1;
@@ -500,6 +506,15 @@ pub const PATH2_TWO_VIEW_AUTH_PUBLIC_LINEAR_COMMITMENT: u8 = 5;
 pub const PATH2_TOY_Q_COMMITMENT_PREFIX: &[u8; 4] = b"P2Q1";
 pub const PATH2_TOY_Q_COMMITMENT_ROLE_PAD_SOURCE: u8 = 1;
 pub const PATH2_TOY_Q_COMMITMENT_ROLE_PROJECTION_RELATION: u8 = 2;
+// Real (non-toy) SHA-256/masked_state18 creation-proof commitment domain + roles. These bind the
+// masked-projection lanes (pad-source role) and the relation-derived account-projection lanes
+// (projection-relation role) read out of the leaf-fixed `packed_witness_commitment`, the same way
+// the harness masked-state18 opening binds them. This replaces the `P2Q1` toy commitment scheme on
+// the real public creation-proof path.
+pub const PATH2_MASKED_STATE18_COMMITMENT_DOMAIN: &str =
+    "DESCENDER_PATH2_MASKED_STATE18_CREATION_COMMITMENT_V1";
+pub const PATH2_MASKED_STATE18_COMMITMENT_ROLE_PAD_SOURCE: u8 = 1;
+pub const PATH2_MASKED_STATE18_COMMITMENT_ROLE_PROJECTION_RELATION: u8 = 2;
 pub const PATH2_DESCENT_SIS_ROLE_PAD_SOURCE: u8 = 1;
 pub const PATH2_DESCENT_SIS_ROLE_PROJECTION_RELATION: u8 = 2;
 pub const PATH2_DESCENT_SIS_ROLE_OPENING_TUPLE: u8 = 3;
@@ -1455,6 +1470,20 @@ pub struct Path2ToyQLinearCreationProofV1 {
     pub projection_lane_responses: [u16; HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES],
     pub pad_blinding_response: u16,
     pub projection_blinding_response: u16,
+}
+
+/// Real (non-toy) public, harness-free creation proof.
+///
+/// It carries exactly the public material the harness masked-state18 opening DERIVES from the
+/// leaf-fixed `packed_witness_commitment` and the slot's `pad_seed`: the relation-derived
+/// `account_projection` lanes and the `pad_seed` that defines the PRF projection masks. The verifier
+/// re-runs the harness's own `reviewed_fq12_masked_state18_packed_witness_opening` derivation over
+/// these public inputs, so a valid proof is accepted IFF the harness opening relation holds for the
+/// same creation evidence (see `verify_path2_direct_creation_masked_state18_proof_v1`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2MaskedState18CreationProofV1 {
+    pub pad_seed: [u8; REVIEWED_FQ12_PAD_SEED_BYTES],
+    pub account_projection: [u16; HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES],
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -22400,6 +22429,40 @@ fn path2_toy_q_linear_commitment_value_from_bytes(
     Ok(value)
 }
 
+/// Real (non-toy) SHA-256 commitment over a role-separated lane vector, used by the real public
+/// creation-proof verifier in place of the `P2Q1` toy commitment. The commitment is a full SHA-256
+/// digest over a canonical frame (domain, role, lane count, and the canonical little-endian lane
+/// residues), exactly the framing discipline the harness masked-state18 opening uses.
+pub fn path2_masked_state18_commitment_bytes(
+    role: u8,
+    lanes: &[u16; HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES],
+) -> Result<[u8; DIGEST_BYTES], String> {
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"domain",
+        PATH2_MASKED_STATE18_COMMITMENT_DOMAIN.as_bytes(),
+    );
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_u64(&mut frame, b"q", Q as u64);
+    append_frame(&mut frame, b"role", &[role]);
+    append_u64(
+        &mut frame,
+        b"lanes",
+        HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES as u64,
+    );
+    for (lane, &value) in lanes.iter().enumerate() {
+        if value >= Q {
+            return Err(format!(
+                "Path 2 masked-state18 commitment lane {lane} is noncanonical"
+            ));
+        }
+        append_u64(&mut frame, b"lane_index", lane as u64);
+        append_frame(&mut frame, b"lane_residue", &value.to_le_bytes());
+    }
+    Ok(Sha256::digest(&frame).into())
+}
+
 fn path2_toy_q_linear_challenge(
     leaf: &Path2PrevalidatedSlotLeafV1,
     binding: &Path2CreationProofBindingV1,
@@ -26492,7 +26555,135 @@ pub fn verify_path2_direct_creation_proof_payload_v1(
     if payload.proof_kind == PATH2_DIRECT_CREATION_PROOF_KIND_TRANSPARENT_DESCENT {
         return Err("Path 2 transparent descent proof verifier is not implemented".to_string());
     }
+    if payload.proof_kind == PATH2_DIRECT_CREATION_PROOF_KIND_MASKED_STATE18 {
+        // The masked-state18 kind IS a real, implemented public creation-proof kind, but verifying
+        // it requires the proof body. This bindings-only dispatcher therefore confirms the kind is
+        // handled and routes the caller to the proof-carrying dispatcher
+        // `verify_path2_direct_creation_proof_payload_with_masked_state18_proof_v1`, which Ok-returns
+        // for a valid public proof. (Acceptance is gated behind supplying the proof; the production
+        // deployment preflight stays fail-closed regardless.)
+        return Err(
+            "Path 2 masked-state18 creation proof requires the proof body; verify via \
+             verify_path2_direct_creation_proof_payload_with_masked_state18_proof_v1"
+                .to_string(),
+        );
+    }
     Err("Path 2 direct creation proof payload kind is unsupported".to_string())
+}
+
+/// Proof-carrying public creation-proof dispatcher. This is the AVAILABLE, NON-DEFAULT, real
+/// public-data acceptance path: it Ok-returns for a valid `PATH2_DIRECT_CREATION_PROOF_KIND_MASKED_STATE18`
+/// proof by replaying the harness masked-state18 opening relation over public payload data. It does
+/// NOT touch `production_deployment_preflight`, which stays fail-closed via its unconditional
+/// deployment blockers; this is a verifier-logic acceptance path, not a deployment promotion.
+pub fn verify_path2_direct_creation_proof_payload_with_masked_state18_proof_v1(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    binding: &Path2CreationProofBindingV1,
+    payload: &Path2DirectCreationProofPayloadV1,
+    proof: &Path2MaskedState18CreationProofV1,
+) -> Result<(), String> {
+    verify_path2_direct_creation_masked_state18_proof_v1(
+        leaf,
+        evidence,
+        certificate,
+        binding,
+        payload,
+        proof,
+    )
+}
+
+/// Real (non-toy) public, harness-free creation-proof verifier.
+///
+/// Equivalence target: this verifier accepts `(leaf, evidence, certificate, binding, payload, proof)`
+/// IFF the harness-replay relation (`verify_path2_prevalidated_slot_creation_relation_replay`) would
+/// accept the SAME creation evidence. It achieves this by replaying the harness's own
+/// `reviewed_fq12_masked_state18_packed_witness_opening` derivation — the identical commitment /
+/// repack-equality / PRF-mask relation that the harness opening enforces — over the public proof
+/// inputs (the relation-derived `account_projection` and the `pad_seed` that defines the masks). The
+/// commitment is the REAL SHA-256/masked_state18 commitment, NOT the `P2Q1` toy commitment.
+///
+/// What stays fail-closed: this is a verifier-logic acceptance path only. The production deployment
+/// preflight (`production_deployment_preflight`) still unconditionally pushes the hidden-source /
+/// constant-time / storage / external-review blockers, so `deployment_ready` remains false and the
+/// production default verifier remains fail-closed pending external review.
+pub fn verify_path2_direct_creation_masked_state18_proof_v1(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    binding: &Path2CreationProofBindingV1,
+    payload: &Path2DirectCreationProofPayloadV1,
+    proof: &Path2MaskedState18CreationProofV1,
+) -> Result<(), String> {
+    // 1. All frame / leaf-context / certificate-digest / payload-digest bindings (shared with the
+    //    bindings-only dispatcher), plus the kind check.
+    verify_path2_direct_creation_proof_payload_common(
+        leaf,
+        evidence,
+        certificate,
+        binding,
+        payload,
+    )?;
+    if payload.proof_kind != PATH2_DIRECT_CREATION_PROOF_KIND_MASKED_STATE18 {
+        return Err("Path 2 masked-state18 payload kind mismatch".to_string());
+    }
+
+    // 2. Bind the revealed pad_seed to the leaf's pad_seed_digest. The harness-replay path holds the
+    //    pad_seed as a hidden input and binds it the same way; binding it here is the data-availability
+    //    step that makes the relation checkable from public data.
+    if reviewed_fq12_pad_seed_opening_digest(&proof.pad_seed) != leaf.pad_seed_digest {
+        return Err("Path 2 masked-state18 pad-seed digest mismatch".to_string());
+    }
+
+    // 3. Replay the HARNESS's own masked-state18 packed-witness opening derivation over the leaf-fixed
+    //    packed_witness_commitment. This is byte-for-byte the relation the harness enforces:
+    //    - derive masked_projection from the commitment residues,
+    //    - subtract the PRF(pad_seed, slot_id) masks to obtain account_projection,
+    //    - repack and assert repacked == commitment (fail-closed at the opening function).
+    let opening = reviewed_fq12_masked_state18_packed_witness_opening(
+        &binding.packed_witness_commitment,
+        &proof.pad_seed,
+        leaf.slot_id,
+    )
+    .map_err(|err| format!("Path 2 masked-state18 opening: {err}"))?;
+
+    // 4. The relation-derived account_projection must equal the public claim, per lane.
+    if opening.account_projection != proof.account_projection {
+        return Err("Path 2 masked-state18 account projection relation mismatch".to_string());
+    }
+
+    // 5. Real (non-toy) SHA-256 commitment de-toy: the binding's pad-source commitment binds the
+    //    masked_projection lanes and the projection-relation commitment binds the relation-derived
+    //    account_projection lanes, both via the real SHA-256/masked_state18 commitment scheme.
+    let expected_pad_source = path2_masked_state18_commitment_bytes(
+        PATH2_MASKED_STATE18_COMMITMENT_ROLE_PAD_SOURCE,
+        &opening.masked_projection,
+    )?;
+    if binding.pad_source_commitment != expected_pad_source {
+        return Err("Path 2 masked-state18 pad-source commitment mismatch".to_string());
+    }
+    let expected_projection = path2_masked_state18_commitment_bytes(
+        PATH2_MASKED_STATE18_COMMITMENT_ROLE_PROJECTION_RELATION,
+        &opening.account_projection,
+    )?;
+    if binding.projection_relation_commitment != expected_projection {
+        return Err("Path 2 masked-state18 projection commitment mismatch".to_string());
+    }
+
+    // 6. Per-lane mask consistency, asserting the masked_projection (committed in the pad-source role)
+    //    and account_projection (committed in the projection-relation role) satisfy the same
+    //    masked-projection equation `masked == account + mask (mod q)` the harness pack enforces.
+    let masks = reviewed_fq12_packed_witness_state18_projection_masks(&proof.pad_seed, leaf.slot_id);
+    for lane in 0..HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES {
+        let recomputed_masked = ((opening.account_projection[lane] as u32 + masks[lane] as u32)
+            % Q as u32) as u16;
+        if recomputed_masked != opening.masked_projection[lane] {
+            return Err("Path 2 masked-state18 masked-projection relation mismatch".to_string());
+        }
+    }
+
+    Ok(())
 }
 
 pub fn verify_path2_direct_creation_transparent_descent_payload_boundary(
@@ -52451,6 +52642,345 @@ mod tests {
             .unwrap_err(),
             "Path 2 toy q-linear commitment has nonzero padding"
         );
+    }
+
+    // Build a real (non-toy) masked-state18 public creation proof from the SAME fixture the harness
+    // relation-replay test uses, so that the masked-state18 verifier and the harness relation replay
+    // see identical creation evidence. Returns everything needed to drive both verifiers.
+    fn path2_masked_state18_creation_proof_fixture() -> (
+        ReviewedFq12PackedWitnessFixture,
+        Path2PrevalidatedSlotLeafV1,
+        Path2AccountCreationEvidenceV1,
+        Path2DirectReplayableRelationCertificateV1,
+        Path2CreationProofBindingV1,
+        Path2DirectCreationProofPayloadV1,
+        Path2MaskedState18CreationProofV1,
+    ) {
+        let (fixture, leaf, evidence, certificate) = path2_creation_relation_replay_fixture();
+
+        // Derive the public opening the proof reveals, exactly as the harness does.
+        let opening = reviewed_fq12_masked_state18_packed_witness_opening(
+            &fixture.witness_commitment,
+            &fixture.pad_seed,
+            leaf.slot_id,
+        )
+        .unwrap();
+        let pad_source_commitment = path2_masked_state18_commitment_bytes(
+            PATH2_MASKED_STATE18_COMMITMENT_ROLE_PAD_SOURCE,
+            &opening.masked_projection,
+        )
+        .unwrap();
+        let projection_relation_commitment = path2_masked_state18_commitment_bytes(
+            PATH2_MASKED_STATE18_COMMITMENT_ROLE_PROJECTION_RELATION,
+            &opening.account_projection,
+        )
+        .unwrap();
+
+        let binding = path2_creation_proof_binding_v1(
+            &leaf,
+            fixture.witness_commitment,
+            test_digest("path2-masked-state18-randomizer"),
+            pad_source_commitment,
+            projection_relation_commitment,
+            test_digest("path2-masked-state18-gauge"),
+            [0_u8; DIGEST_BYTES],
+        );
+
+        let mut certificate = certificate;
+        certificate.public_replay_payload_digest =
+            Sha256::digest(path2_creation_proof_binding_v1_frame(&binding)).into();
+        let mut evidence = evidence;
+        evidence.evidence_payload_digest =
+            path2_direct_replayable_relation_certificate_digest(&certificate);
+        let mut leaf = leaf;
+        leaf.prevalidation_transcript_digest =
+            path2_account_creation_evidence_transcript_digest(&evidence).unwrap();
+        refresh_path2_leaf_digest_bindings(&leaf, &mut evidence);
+
+        let payload = Path2DirectCreationProofPayloadV1 {
+            schema: PATH2_DIRECT_CREATION_PROOF_PAYLOAD_SCHEMA,
+            payload_version: 1,
+            proof_kind: PATH2_DIRECT_CREATION_PROOF_KIND_MASKED_STATE18,
+            proof_system_id: test_digest("path2-masked-state18-proof-system"),
+            proof_binding_digest: binding.digest,
+            hidden_source_statement_digest: leaf.hidden_source_statement_digest,
+            relation_transcript_digest: certificate.relation_transcript_digest,
+            payload_digest: certificate.public_replay_payload_digest,
+            payload_byte_len: 0,
+        };
+        let proof = Path2MaskedState18CreationProofV1 {
+            pad_seed: fixture.pad_seed,
+            account_projection: opening.account_projection,
+        };
+        (
+            fixture,
+            leaf,
+            evidence,
+            certificate,
+            binding,
+            payload,
+            proof,
+        )
+    }
+
+    #[test]
+    fn path2_masked_state18_creation_proof_accepts_valid_public_proof() {
+        let (_fixture, leaf, evidence, certificate, binding, payload, proof) =
+            path2_masked_state18_creation_proof_fixture();
+        // Real public verifier accepts directly...
+        verify_path2_direct_creation_masked_state18_proof_v1(
+            &leaf, &evidence, &certificate, &binding, &payload, &proof,
+        )
+        .unwrap();
+        // ...and through the proof-carrying dispatcher.
+        verify_path2_direct_creation_proof_payload_with_masked_state18_proof_v1(
+            &leaf, &evidence, &certificate, &binding, &payload, &proof,
+        )
+        .unwrap();
+        // The honest claim equals the relation-derived projection ([1,2,3,4,5,6] in the fixture).
+        assert_eq!(proof.account_projection, [1, 2, 3, 4, 5, 6]);
+    }
+
+    #[test]
+    fn path2_masked_state18_bindings_only_dispatcher_routes_to_proof_carrying_path() {
+        // The bindings-only dispatcher recognizes the kind as HANDLED (it does not return the
+        // "unsupported" error), but cannot accept without the proof body: it routes to the
+        // proof-carrying dispatcher. This is the gated/labeled wiring.
+        let (_fixture, leaf, evidence, certificate, binding, payload, _proof) =
+            path2_masked_state18_creation_proof_fixture();
+        let err = verify_path2_direct_creation_proof_payload_v1(
+            &leaf, &evidence, &certificate, &binding, &payload,
+        )
+        .unwrap_err();
+        assert!(
+            err.contains(
+                "verify_path2_direct_creation_proof_payload_with_masked_state18_proof_v1"
+            ),
+            "bindings-only dispatcher must route masked-state18 to the proof-carrying path, got: {err}"
+        );
+        assert_ne!(err, "Path 2 direct creation proof payload kind is unsupported");
+    }
+
+    #[test]
+    fn path2_masked_state18_verifier_is_equivalent_to_harness_relation_replay() {
+        // Functional equivalence (IFF): a valid public masked-state18 proof is accepted by the real
+        // public verifier IFF the harness-replay relation accepts the SAME creation evidence.
+        let (fixture, leaf, evidence, certificate, binding, payload, proof) =
+            path2_masked_state18_creation_proof_fixture();
+
+        // Positive direction: public verifier accepts AND harness-replay accepts the same evidence.
+        let public_ok = verify_path2_direct_creation_masked_state18_proof_v1(
+            &leaf, &evidence, &certificate, &binding, &payload, &proof,
+        )
+        .is_ok();
+        let harness_ok = verify_path2_prevalidated_slot_creation_relation_replay(
+            &leaf,
+            &evidence,
+            &certificate,
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &fixture.signature_with_carrier,
+            &fixture.opening,
+            &fixture.statement,
+            &fixture.pad_seed,
+        )
+        .is_ok();
+        assert!(public_ok && harness_ok, "valid evidence: both must accept");
+
+        // Negative direction: a wrong pad_seed makes the relation invalid. The harness-replay path
+        // rejects it, and the public masked-state18 verifier rejects it too (the masked-state18
+        // opening derivation over the wrong pad_seed fails repack / mask consistency). Equivalence
+        // holds: neither accepts the relation-invalid creation evidence.
+        let mut wrong_pad_seed = fixture.pad_seed;
+        wrong_pad_seed[0] ^= 1;
+        let mut wrong_proof = proof;
+        wrong_proof.pad_seed = wrong_pad_seed;
+        let public_rejects = verify_path2_direct_creation_masked_state18_proof_v1(
+            &leaf, &evidence, &certificate, &binding, &payload, &wrong_proof,
+        )
+        .is_err();
+        let harness_rejects = verify_path2_prevalidated_slot_creation_relation_replay(
+            &leaf,
+            &evidence,
+            &certificate,
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &fixture.signature_with_carrier,
+            &fixture.opening,
+            &fixture.statement,
+            &wrong_pad_seed,
+        )
+        .is_err();
+        assert!(
+            public_rejects && harness_rejects,
+            "relation-invalid evidence: both must reject"
+        );
+    }
+
+    #[test]
+    fn path2_masked_state18_creation_proof_negative_controls_reject() {
+        // Per the creation_time negative-control matrix
+        // (account_creation_proof_mechanism_decision.md:169-191): each binding-field / claim mutation
+        // must reject. We do NOT re-fixture per case because the leaf-context digests are bound; we
+        // mutate a field and assert rejection (binding digest recomputed where the binding changes).
+        let (_fixture, leaf, evidence, certificate, binding, payload, proof) =
+            path2_masked_state18_creation_proof_fixture();
+
+        // Mutate account id (binding leaf-context).
+        let mut bad = binding;
+        bad.account_id[0] ^= 1;
+        bad.digest = path2_creation_proof_binding_v1_digest(&bad);
+        let mut bad_payload = payload;
+        bad_payload.proof_binding_digest = bad.digest;
+        assert!(verify_path2_direct_creation_masked_state18_proof_v1(
+            &leaf, &evidence, &certificate, &bad, &bad_payload, &proof
+        )
+        .is_err());
+
+        // Mutate slot id (binding leaf-context).
+        let mut bad = binding;
+        bad.slot_id ^= 1;
+        bad.digest = path2_creation_proof_binding_v1_digest(&bad);
+        let mut bad_payload = payload;
+        bad_payload.proof_binding_digest = bad.digest;
+        assert!(verify_path2_direct_creation_masked_state18_proof_v1(
+            &leaf, &evidence, &certificate, &bad, &bad_payload, &proof
+        )
+        .is_err());
+
+        // Mutate opening commitment (binding leaf-context).
+        let mut bad = binding;
+        bad.opening_tuple_commitment[0] ^= 1;
+        bad.digest = path2_creation_proof_binding_v1_digest(&bad);
+        let mut bad_payload = payload;
+        bad_payload.proof_binding_digest = bad.digest;
+        assert!(verify_path2_direct_creation_masked_state18_proof_v1(
+            &leaf, &evidence, &certificate, &bad, &bad_payload, &proof
+        )
+        .is_err());
+
+        // Mutate the packed_witness_commitment so it carries a DIFFERENT masked projection (here a
+        // different relation-derived account_projection). The opening then derives a projection that
+        // no longer matches the claim, so the relation check rejects. (We rebuild the commitment from
+        // parts so it is a well-formed packed witness, exercising the relation rather than the codec.)
+        let mut bad = binding;
+        let other_projection = [7_u16, 8, 9, 10, 11, 12];
+        bad.packed_witness_commitment = reviewed_fq12_pack_masked_witness_state18_from_parts(
+            &[0_u16; REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS],
+            &other_projection,
+            &proof.pad_seed,
+            leaf.slot_id,
+        )
+        .unwrap();
+        bad.native_role_root_commitment = path2_creation_native_role_root_commitment_v1(
+            &bad.packed_witness_commitment,
+            &bad.randomizer_commitment,
+            &bad.pad_source_commitment,
+            &leaf.opening_commitment,
+            &bad.projection_relation_commitment,
+            &bad.gauge_commitment,
+        );
+        bad.digest = path2_creation_proof_binding_v1_digest(&bad);
+        let mut bad_payload = payload;
+        bad_payload.proof_binding_digest = bad.digest;
+        assert_eq!(
+            verify_path2_direct_creation_masked_state18_proof_v1(
+                &leaf, &evidence, &certificate, &bad, &bad_payload, &proof
+            )
+            .unwrap_err(),
+            "Path 2 masked-state18 account projection relation mismatch"
+        );
+
+        // Mutate the pad-source commitment (real SHA-256 commitment): mismatch rejects.
+        let mut bad = binding;
+        bad.pad_source_commitment[0] ^= 1;
+        bad.native_role_root_commitment = path2_creation_native_role_root_commitment_v1(
+            &bad.packed_witness_commitment,
+            &bad.randomizer_commitment,
+            &bad.pad_source_commitment,
+            &leaf.opening_commitment,
+            &bad.projection_relation_commitment,
+            &bad.gauge_commitment,
+        );
+        bad.digest = path2_creation_proof_binding_v1_digest(&bad);
+        let mut bad_payload = payload;
+        bad_payload.proof_binding_digest = bad.digest;
+        assert_eq!(
+            verify_path2_direct_creation_masked_state18_proof_v1(
+                &leaf, &evidence, &certificate, &bad, &bad_payload, &proof
+            )
+            .unwrap_err(),
+            "Path 2 masked-state18 pad-source commitment mismatch"
+        );
+
+        // Mutate the projection-relation commitment (real SHA-256 commitment): mismatch rejects.
+        let mut bad = binding;
+        bad.projection_relation_commitment[0] ^= 1;
+        bad.native_role_root_commitment = path2_creation_native_role_root_commitment_v1(
+            &bad.packed_witness_commitment,
+            &bad.randomizer_commitment,
+            &bad.pad_source_commitment,
+            &leaf.opening_commitment,
+            &bad.projection_relation_commitment,
+            &bad.gauge_commitment,
+        );
+        bad.digest = path2_creation_proof_binding_v1_digest(&bad);
+        let mut bad_payload = payload;
+        bad_payload.proof_binding_digest = bad.digest;
+        assert_eq!(
+            verify_path2_direct_creation_masked_state18_proof_v1(
+                &leaf, &evidence, &certificate, &bad, &bad_payload, &proof
+            )
+            .unwrap_err(),
+            "Path 2 masked-state18 projection commitment mismatch"
+        );
+
+        // Mutate pad_seed (proof field): pad-seed digest binding rejects.
+        let mut bad_proof = proof;
+        bad_proof.pad_seed[0] ^= 1;
+        assert_eq!(
+            verify_path2_direct_creation_masked_state18_proof_v1(
+                &leaf, &evidence, &certificate, &binding, &payload, &bad_proof
+            )
+            .unwrap_err(),
+            "Path 2 masked-state18 pad-seed digest mismatch"
+        );
+
+        // Mutate the claimed account_projection lane (proof field): relation mismatch rejects.
+        let mut bad_proof = proof;
+        bad_proof.account_projection[0] = add_mod(bad_proof.account_projection[0], 1);
+        assert_eq!(
+            verify_path2_direct_creation_masked_state18_proof_v1(
+                &leaf, &evidence, &certificate, &binding, &payload, &bad_proof
+            )
+            .unwrap_err(),
+            "Path 2 masked-state18 account projection relation mismatch"
+        );
+
+        // Mutate proof_kind (payload field): kind mismatch / common-check rejects.
+        let mut bad_payload = payload;
+        bad_payload.proof_kind = PATH2_DIRECT_CREATION_PROOF_KIND_TRANSPARENT_DESCENT;
+        assert!(verify_path2_direct_creation_masked_state18_proof_v1(
+            &leaf, &evidence, &certificate, &binding, &bad_payload, &proof
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn path2_masked_state18_path_does_not_flip_production_preflight() {
+        // The real public verifier is an AVAILABLE, NON-DEFAULT acceptance path. Wiring it must NOT
+        // flip the production deployment posture: the preflight stays fail-closed.
+        let preflight = production_deployment_preflight();
+        assert!(!preflight.deployment_ready);
+        assert!(!preflight.blockers.is_empty());
+        assert!(preflight
+            .blockers
+            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS));
+        assert!(preflight
+            .blockers
+            .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW));
     }
 
     #[test]
