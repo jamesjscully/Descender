@@ -447,3 +447,27 @@ items, fail-closed); the load-bearing piece reduces to ONE standard assumption
 lifecycle — same standard-assumption family as C1→QROM-hash. NEXT: discharge/accept the
 frame-PRF assumption via the `pre_signature_projection_mask_prf_ro_reduction` route. No
 redesign. Artifact: `deployable_pad_hiding_VERDICT.md`.
+
+**Beyond-box hardness (WS4 #2+#3) — NO INTERNAL OBSTRUCTION, exact frontier (2026-06-10).**
+The LAST internal could-force-redesign cryptanalysis. Two independent attacks (public-SIS
+fpylll LLL/BKZ + beyond-box kernel structure hunt) agree (high confidence), both rebuilt the
+committed instance (transcript SHA256 matches). VERIFIED crux: the L∞ box `[-96,96]^23` is the
+EXACT response-difference realizability frontier (RESPONSE_BOUND=48, stateful.rs:42; per-coord
+gate 4662; {a−b:a,b∈[-48,48]}=[-96,96]), NOT a margin. Min CODED kernel vector coeff 114>96
+(exact enum), corroborated by direct BKZ on the coded sublattice (L∞-min 120); census shows ZERO
+vectors in (96,114) — structureless dead-zone, zero approximate-forgery slack; no Vandermonde/
+block/automorphism structure. The bare 12×23 lattice is weak (coeff 68) but is a rejected negative
+control, NOT load-bearing. Residual = irreducibly EXTERNAL (`open_external_estimator`): asymptotic/
+quantum hardness of the response-link-CODED problem + SHA256 matrix-sampler pseudorandomness (NOTE:
+lattice-estimator needs Sage, absent — load-bearing internal evidence is the fpylll BKZ + exact
+enumeration; external estimator run on the CODED problem is the hand-off). Artifacts: `beyond_box_
+VERDICT.md`, `beyond_box_kernel_structure_hunt.md`, `public_sis_lattice_reduction_findings.md`,
+`scripts/research/beyond_box_*.py`.
+
+**EC per-event reductions (#16) progress (2026-06-10):** 2 of 2 STRUCTURAL breaks discharged as
+clean Pr[break]=0 (exit 0, zero admit/axiom): `slotReplayOrRollback` (consume-once) +
+`postchallengeSlotCreationOrRewrite` (prechallenge-fixation). `qromOrDomainSeparation` +
+`liveSlotLeakageOrKeygen` are =0 by the concrete classifier. **5 remain** — the binding/
+availability/QROM family where named STANDARD assumptions correctly enter: `checkedCoreMessageBinding`,
+`prevalidationLeafBinding`, `prevalidationRegistryBinding`, `creationTimeHiddenSource`,
+`prevalidationDataAvailability` (the last is the build-item #22 / fail-closed-until-built).
