@@ -429,3 +429,21 @@ real redesign risk: stop emitting pad openings in clear + fresh per-sig mask + c
 is unsound. NEXT risk-first action (task #24): determine whether the DEPLOYABLE design can
 hide the pad. Artifacts: `leakage_battery_VERDICT.md`, `leakage_battery_findings.md`,
 `hiding_sampler_discipline_audit.md`, `scripts/research/leakage_battery.py`, `--leak-sample`.
+
+**#24 resolution — the DEPLOYABLE design does NOT inherit the leak: CONDITIONAL-GAP-
+FIXABLE (2026-06-10, crux verified in code).** The decisive question — does the Fq12/
+prevalidation design hide the pad or inherit the scaffold's in-clear opening — resolves
+in favor of hiding. The deployable mask is `uniform_mod_from_hash(PROJECTION_MASK_DOMAIN,
+pad_seed‖slot_id, slot_id, lane, Q)` — PRF-fresh per-slot/per-lane SHA-256
+(`production_reference.rs:6385`), NOT the scaffold constant `[12,Q-12]`; distinct PRF
+domain from the pad, byte-disjoint frames, max |Pearson| 0.00488 over 50k seeds. The
+serialized surface is digest/masked-only (opening struct 777-785); `pad_seed` is a
+separate witness arg, never serialized; pad disclosure is two-phase CHARGED (masked +
+simulator-replaceable pre-spend, disclosed+charged only inside the accepted-spend
+certificate). So the scaffold leak is a placeholder artifact, NOT a design break. Residual:
+pad-hiding is tracked-but-incomplete (5 carried assumptions / 13 named breaks / 20 open
+items, fail-closed); the load-bearing piece reduces to ONE standard assumption
+`A_sha256_projection_mask_frame_prf` (SHA-256 as a frame-PRF) + the pad-seed single-use
+lifecycle — same standard-assumption family as C1→QROM-hash. NEXT: discharge/accept the
+frame-PRF assumption via the `pre_signature_projection_mask_prf_ro_reduction` route. No
+redesign. Artifact: `deployable_pad_hiding_VERDICT.md`.
