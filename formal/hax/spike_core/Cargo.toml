@@ -1,0 +1,13 @@
+[package]
+name = "spike_core"
+version = "0.1.0"
+edition = "2021"
+
+# Minimal standalone crate for the HAX-SPIKE.
+# Contains ONLY the pure arithmetic core of
+# `reviewed_fq12_account_carried_expected_response_syndrome`, copied verbatim
+# from tools/parameter-search/src/production_reference.rs, with `action(c)`
+# abstracted as an opaque oracle (per spike_target.md OBLIGATION).
+# NO rusqlite / serde / sha2 dependencies -> dodges the libsqlite3-sys build-script
+# blocker that stops hax from `cargo check`-ing the real crate.
+[dependencies]
