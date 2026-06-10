@@ -471,3 +471,19 @@ clean Pr[break]=0 (exit 0, zero admit/axiom): `slotReplayOrRollback` (consume-on
 availability/QROM family where named STANDARD assumptions correctly enter: `checkedCoreMessageBinding`,
 `prevalidationLeafBinding`, `prevalidationRegistryBinding`, `creationTimeHiddenSource`,
 `prevalidationDataAvailability` (the last is the build-item #22 / fail-closed-until-built).
+
+**Security-reduction consolidation (2026-06-10) — all 9 terms reduced modulo named assumptions.**
+GAP C closed ROBUSTLY: the 3 binding breaks re-modeled FREE→SECOND-PREIMAGE (operationally correct:
+verifier recomputes against leaf-fixed targets), budget closes at q=2⁶⁴ with NO query cap (leaf/
+registry 2⁻¹⁹², checked-core 2⁻¹⁵⁰; #6 verified second-preimage-fine at 214 bits, no widening);
+`gap_c_remodel_spine_wiring.ec` proves each ≤2⁻¹³³ + sum ≤2⁻¹²⁸ (0 admit/axiom). GAP E closed: the
+accepted-spend forgery (`accepted_spend_forgery_reduction.ec`, 17 qed, exit 0) reduces forgery ⟹
+coded-SIS-break ∨ action-collision (inside-box branch proven EMPTY via the coeff-114>96 certificate),
+deriving accept ≤2⁻¹²⁹ from the single EXTERNAL coded-SIS axiom + negligible QROM action term.
+**Net:** every break term (2 structural =0, 4 binding→SHA-256 SPR, creationTimeHiddenSource→verifier-
+exporter bridge, 2 classifier-=0) AND the accept term are reduced. Standing assumptions = {SHA-256
+SPR/CR, QROM, verifier-exporter bridge (#23), SHA-256 frame-PRF (pad hiding)} + the ONE external
+residual (coded-SIS beyond-box = open_external_estimator). REMAINING to close the theorem end-to-end:
+GAP A = build the accepting public creation verifier (#22, de-toy+wire+equivalence; also discharges #4
+prevalidationDataAvailability); GAP B = OB-1 coupling success_implies_split (Lean-derived, EC axiom);
+GAP D = abstract↔EC fidelity bridges (prose→formal). These are build/mechanical, NOT redesign-risk.
