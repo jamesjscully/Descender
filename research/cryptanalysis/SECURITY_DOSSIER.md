@@ -1,5 +1,26 @@
 # Descender Post-Quantum Signature — SECURITY DOSSIER (external-review package)
 
+> ## ⛔ RED-TEAM HOLD (2026-06-10) — DO NOT SUBMIT AS-IS
+> An authorized internal red-team found **THREE HIGH-severity breaks** (all reproduced;
+> see `RED_TEAM_REPORT.md` + `redteam_*.md`). They **REFUTE three claims in this dossier**
+> and must be FIXED before external submission:
+> - **HIGH-1 (refutes §5 SUF-CMA):** signature malleability — the local-delta verifier accepts
+>   any non-canonical opening (two in-box solutions) and Fiat-Shamir does not bind the
+>   response/opening bytes ⇒ keyless byte-distinct accepting signatures for an already-signed
+>   message. *Fix:* bind response/opening bytes into the FS frame (or enforce canonical openings).
+> - **HIGH-2 (refutes deployable witness-hiding for the creation-proof path):** the masked-state18
+>   public creation proof serializes `pad_seed` in the clear ⇒ key-free full-witness recovery.
+>   *Fix:* implement the transparent-descent ZK variant; gate the `pad_seed`-in-clear path.
+> - **HIGH-3 (refutes §2/§3 GAP-C "budget closes at q=2⁶⁴, no cap"):** the checked-core
+>   message-binding term is MULTI-TARGET (T·q/2²¹⁴ over T signing queries), not single-target;
+>   at T=2³², q=2⁶⁴ it is 2⁻¹¹⁸, breaching 2⁻¹²⁸ by ~10 bits. *Fix:* widen the checked core to
+>   ≥246 bits OR enforce a T≤2²² query cap with the spine restated as T·eps_spr(n).
+>
+> **SURVIVED** hard attacks (evidence base strengthened, not "unbreakable"): the lattice core
+> (coded vector L∞ 114>96; ring/module structure not yet attacked = external residual), the
+> 96<114 box frontier, and the consume-once lifecycle. The reductions/proofs below remain valid
+> *as stated*; the three findings are where the dossier's claims OVER-reached the as-built scheme.
+
 **Date:** 2026-06-10 · **Params:** n = 32, q = 12289, Fq12 = F_q[X]/(X¹²+X+25) ·
 **Tooling:** EasyCrypt 2026.05 / Z3 4.16.0 (all `.ec` exit 0, re-run this session);
 Lean 4 + Mathlib (build + axiom audit green per assumption ledger).
