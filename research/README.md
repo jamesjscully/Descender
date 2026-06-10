@@ -4,6 +4,21 @@ This directory holds the user-space research workflow that Armature invokes.
 Armature only provides triggers, logs, events, and run inspection; these scripts
 own the Descender-specific policy.
 
+## Cryptanalysis-First Master Tracker
+
+The single instrument for measuring progress toward internal
+cryptanalysis-readiness (do all the cryptanalysis a third party would, before
+external submission) is:
+
+```text
+research/cryptanalysis/cryptanalysis_first_master_tracker.md
+```
+
+It defines the recalibrated done-bar, the process change, the workstreams
+(assumption ledger → reduce-to-standard → verified estimator → empirical
+structural attacks → red-team dossier → aggregation decision → the real
+reduction), and a scorecard. The packages below are inputs it consolidates.
+
 ## Review Readiness
 
 The current deployable-cryptography preparation package for the q12289

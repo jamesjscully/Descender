@@ -3,15 +3,24 @@
 This file pins the current selected target for internal deployment-readiness work.
 It is a specification target, not a deployment claim.
 
+> Sizes updated 2026-06-09 to the post-AP2-004 challenge width (27-byte
+> challenge). The authoritative computed/tested value in
+> `production_reference.rs` is `REVIEWED_FQ12_ACCOUNT_CARRIED_WITH_FALLBACK_PROJECTION_BYTES == 314`.
+> The earlier `252 B` base / `308 B` envelope figures were pre-widening. NOTE:
+> several Rust human-readable strings and the fixture name
+> `selected_projection_valid_308_byte_fixture_accepts` still say "308"; those are
+> stale labels (the computed size is 314) and need a coordinated relabel because
+> the fixture name is inspected by source-gates.
+
 ## Selected Target
 
 - Profile: `Descender.Signature.q12289.local_delta.stateful.v1`
-- Selected envelope: `308 B/Fq12` projection-carrier hidden-source envelope
+- Selected envelope: `314 B/Fq12` projection-carrier hidden-source envelope
 - Status: fail-closed selected research track
 - Verifier state: deployment-shaped entrypoint exists, but must reject until the active-lane relation is promoted through preflight and the remaining account-witness opening, soundness, and zero-knowledge proof semantics close
-- Base checked-core transaction: `252 B`
+- Base checked-core transaction: `258 B`
 - Projection carrier: `56 B`
-- Total selected envelope: `308 B`
+- Total selected envelope: `314 B`
 - Account-state hidden-source commitment model: state-assisted opening tuple.
   The direct expanded account-opening slot commitment path is archived and not
   a deployment verifier surface.
@@ -19,7 +28,7 @@ It is a specification target, not a deployment claim.
 The selected envelope is:
 
 ```text
-reviewed_fq12_account_carried_signature[252]
+reviewed_fq12_account_carried_signature[258]
 || hidden_source_fallback_projection_carrier[56]
 ```
 
@@ -44,16 +53,16 @@ model is not the selected accepting relation for this byte target; with only a
 
 ## Archived Routes
 
-- `250 B` reviewed account-carried route: codec and account/challenge binding
+- `256 B` reviewed account-carried route: codec and account/challenge binding
   surface only. It is not the selected deployment verifier.
-- `254 B` full-response public quotient route: rejected as a deployable route
+- `260 B` full-response public quotient route: rejected as a deployable route
   because the public representative relation admitted a public forgery class.
-- `284 B/Fq12` RO-PoK handle route: archived aggressive research option. It uses
+- `290 B/Fq12` RO-PoK handle route: archived aggressive research option. It uses
   a 32-byte hidden-source proof handle and was superseded by the 56-byte
   projection carrier because the projection route gives concrete public
   algebraic material for exact certificate attempts.
 - direct expanded account-opening slot commitment route: archived
-  projection-wiring option. The selected 308-byte route must commit the
+  projection-wiring option. The selected 314-byte route must commit the
   state-assisted opening tuple instead, with the projection opening carried as
   `witness_opening_digest`.
 
@@ -62,7 +71,7 @@ model is not the selected accepting relation for this byte target; with only a
 Before this target can become deployable, the final verifier must accept only if
 all of the following hold:
 
-- the 252-byte Fq12 checked core parses canonically;
+- the 258-byte Fq12 checked core parses canonically;
 - account slot, witness commitment, randomizer commitment, and slot freshness
   checks pass;
 - the Fiat-Shamir challenge frame binds public key, message, slot id, witness
