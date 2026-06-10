@@ -56,7 +56,9 @@ import Descender.Path2HiddenSourceSemanticsBoundary
 import Descender.Path2CheckedCoreByteBridge
 import Descender.Path2FullSpendGame
 import Descender.Path2AcceptedSpendProbability
+import Descender.Path2AcceptedSpendClosure
 import Descender.Path2FullSpendConcrete
+import Descender.Path2TraceModel
 import Descender.Path2HashBudget
 import Descender.Path2HashDomainAndMultiTarget
 import Descender.Path2NoExport

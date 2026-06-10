@@ -1,0 +1,131 @@
+(non-theorem declaration) Descender.CommittedSigma.N32Q12289CommittedSigmaByteFrontier.ConcreteReviewedAccountCommitmentRepresentation.instantiation
+
+theorem Descender.Path2CheckedCoreByteBridge.checkedCoreByteCertificate_accepts_native_v1 :
+∀ {F : Descender.Path2NativeAccountDesign.NativeCheckedCoreFrameFields}
+  {B : Descender.Path2NativeAccountDesign.NativeCheckedCoreFrameBinding F}
+  {H : Descender.Path2NativeAccountDesign.NativeCheckedCoreVerifierHandleFields}
+  {P : Descender.Path2CheckedCoreByteBridge.CheckedCoreProofByteParser}
+  {q : Descender.Path2NativeAccountDesign.Boundary} {msg state : Nat}
+  {evidence : Descender.Path2NativeAccountDesign.NativeCheckedCoreSpendEvidence},
+  Descender.Path2CheckedCoreByteBridge.CheckedCoreByteAcceptCertificate B H P q msg state evidence →
+    Descender.Path2NativeAccountDesign.Path2NativeCheckedCoreAcceptV1 B H q msg state evidence
+
+(non-theorem declaration) Descender.Path2CheckedCoreByteBridge.selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1
+
+theorem Descender.Path2CheckedCoreByteBridge.selectedRustCheckedCoreByteSource_from_instantiation_inputs_valid_or_named_break :
+∀ {M : Descender.Path2NativeAccountDesign.MeaningProjection}
+  {Proj : Descender.Path2NativeAccountDesign.PublicProjections}
+  {V : Descender.Path2NativeAccountDesign.VerifierPredicates}
+  {F : Descender.Path2NativeAccountDesign.NativeCheckedCoreFrameFields}
+  (Bridge : Descender.Path2NativeAccountDesign.Path2NativeCheckedCoreAcceptV1Bridge M Proj V F)
+  (Soundness :
+    Descender.Path2NativeAccountDesign.Path2NativeCheckedCoreAcceptV1Soundness V F Bridge.nativeFrameBinding
+      Bridge.verifierHandleFields)
+  {P : Descender.Path2CheckedCoreByteBridge.CheckedCoreProofByteParser}
+  (Inputs :
+    Descender.Path2CheckedCoreByteBridge.SelectedRustCheckedCoreByteInstantiationInputs Bridge.nativeFrameBinding
+      Bridge.verifierHandleFields P V)
+  {q : Descender.Path2NativeAccountDesign.Boundary} {msg state : Nat}
+  {evidence : Descender.Path2NativeAccountDesign.NativeCheckedCoreSpendEvidence},
+  Descender.Path2CheckedCoreByteBridge.SelectedRustCheckedCoreByteSourceAcceptOrBreak
+      (Descender.Path2CheckedCoreByteBridge.selectedRustCheckedCoreByteSource_from_instantiation_inputs_v1 Inputs) q msg
+      state evidence →
+    Or (Soundness.validCheckedCoreEvidence q msg state evidence)
+      (Descender.Path2CheckedCoreByteBridge.CheckedCoreByteAndEquationBreakAlternatives V q)
+
+theorem Descender.Path2CheckedCoreByteBridge.selectedRustCheckedCoreByteSource_instantiation_v1 :
+∀ {F : Descender.Path2NativeAccountDesign.NativeCheckedCoreFrameFields}
+  {B : Descender.Path2NativeAccountDesign.NativeCheckedCoreFrameBinding F}
+  {H : Descender.Path2NativeAccountDesign.NativeCheckedCoreVerifierHandleFields}
+  {P : Descender.Path2CheckedCoreByteBridge.CheckedCoreProofByteParser}
+  {V : Descender.Path2NativeAccountDesign.VerifierPredicates},
+  Descender.Path2CheckedCoreByteBridge.ParserMatchesNativeHandle P H →
+    Exists fun _selectedRustCheckedCoreByteSource => True
+
+theorem Descender.Path2CheckedCoreByteBridge.selectedRustCheckedCoreCompositionClosure_from_instantiation_inputs :
+∀ {M : Descender.Path2NativeAccountDesign.MeaningProjection}
+  {Proj : Descender.Path2NativeAccountDesign.PublicProjections}
+  {V : Descender.Path2NativeAccountDesign.VerifierPredicates}
+  {F : Descender.Path2NativeAccountDesign.NativeCheckedCoreFrameFields}
+  (Bridge : Descender.Path2NativeAccountDesign.Path2NativeCheckedCoreAcceptV1Bridge M Proj V F)
+  (Soundness :
+    Descender.Path2NativeAccountDesign.Path2NativeCheckedCoreAcceptV1Soundness V F Bridge.nativeFrameBinding
+      Bridge.verifierHandleFields)
+  {P : Descender.Path2CheckedCoreByteBridge.CheckedCoreProofByteParser}
+  (Inputs :
+    Descender.Path2CheckedCoreByteBridge.SelectedRustCheckedCoreByteInstantiationInputs Bridge.nativeFrameBinding
+      Bridge.verifierHandleFields P V),
+  Descender.Path2CheckedCoreByteBridge.SelectedRustCheckedCoreCompositionClosure Bridge Soundness Inputs
+
+theorem Descender.Path2FullOpeningFieldEvidenceSourceAdapters.reviewed_fq12_certificate_soundness_from_concrete_role_root_source_route_local_instantiation_inputs :
+∀ {FieldParser : Descender.Path2FullOpeningFieldEvidenceByteBridge.ReviewedFq12FullOpeningFieldEvidenceByteParser}
+  {RouteParser : Descender.Path2FullOpeningFieldEvidenceByteBridge.ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+  (P : Descender.Path2NativeBoundary.Predicates)
+  (I :
+    Descender.Path2FullOpeningFieldEvidenceSourceAdapters.ReviewedFq12ConcreteRoleRootSourceRouteLocalInstantiationInputs
+      FieldParser RouteParser P),
+  Descender.Path2NativeBoundary.ReviewedFq12ExtractionCertificateSoundness P
+
+theorem Descender.Path2FullOpeningFieldEvidenceSourceAdapters.reviewed_fq12_certificate_soundness_from_source_route_local_instantiation_inputs :
+∀ {FieldParser : Descender.Path2FullOpeningFieldEvidenceByteBridge.ReviewedFq12FullOpeningFieldEvidenceByteParser}
+  {RouteParser : Descender.Path2FullOpeningFieldEvidenceByteBridge.ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+  (P : Descender.Path2NativeBoundary.Predicates)
+  (I :
+    Descender.Path2FullOpeningFieldEvidenceSourceAdapters.ReviewedFq12SourceRouteLocalInstantiationInputs FieldParser
+      RouteParser P),
+  Descender.Path2NativeBoundary.ReviewedFq12ExtractionCertificateSoundness P
+
+theorem Descender.Path2FullSpendConcrete.concreteFullSignatureExecutionSource_instantiation_v1 :
+Exists fun selectedRustFullExecutionSource =>
+  Descender.Path2FullSpendConcrete.ConcreteFullExecutionAcceptedSpendLift
+    Descender.Path2FullSpendConcrete.selectedRustConcreteGameConfig selectedRustFullExecutionSource
+
+theorem Descender.Path2HashDomainAndMultiTarget.checkedCoreFrameByteDomainSeparated_of_instantiation :
+∀ {R : Descender.Path2HashDomainAndMultiTarget.ActiveHashDomainRegistry}
+  (I : Descender.Path2HashDomainAndMultiTarget.ActiveHashByteDomainInstantiation R),
+  Descender.Path2HashDomainAndMultiTarget.CheckedCoreFrameByteDomainSeparated I
+
+theorem Descender.Path2HashDomainAndMultiTarget.hiddenSourceFrameByteDomainSeparated_of_instantiation :
+∀ {R : Descender.Path2HashDomainAndMultiTarget.ActiveHashDomainRegistry}
+  (I : Descender.Path2HashDomainAndMultiTarget.ActiveHashByteDomainInstantiation R),
+  Descender.Path2HashDomainAndMultiTarget.HiddenSourceFrameByteDomainSeparated I
+
+theorem Descender.Path2HiddenSourceSemanticsBoundary.reviewed_fq12_hidden_source_proof_semantics_closed_from_selected_rust_model_five_source_instantiation :
+∀ {FieldParser : Descender.Path2FullOpeningFieldEvidenceByteBridge.ReviewedFq12FullOpeningFieldEvidenceByteParser}
+  {RouteParser : Descender.Path2FullOpeningFieldEvidenceByteBridge.ReviewedFq12FullOpeningFieldSourceRouteByteParser}
+  {CanonicalParser :
+    Descender.Path2FullOpeningFieldEvidenceSourceAdapters.ReviewedFq12FullNativeOpeningCanonicalRepresentativeByteParser}
+  {WitnessParser :
+    Descender.Path2FullOpeningFieldEvidenceSourceAdapters.ReviewedFq12NativeRepresentativeDigestFrameWitnessByteParser}
+  (B : Descender.Path2NativeAccountDesign.NativeFullSignatureSecurityBoundary)
+  (selectedRustNativeBoundaryPredicateModelCertificate :
+    Descender.Path2HiddenSourceSemanticsBoundary.ReviewedFq12SelectedRustNativeBoundaryPredicateModelCertificate),
+  (∀ {b : Descender.Path2NativeBoundary.Boundary}
+      {payload : Descender.Path2NativeBoundary.ReviewedFq12HiddenSourcePayload},
+      selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates.reviewedFq12PayloadAccepts b payload →
+        And (Eq payload.nativeBoundaryDigest b.nativeBoundaryDigest) (Eq payload.slotId b.context.slotId) →
+          selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates.reviewedFq12PayloadProjectsFrom b
+            payload) →
+    Descender.Path2NativeBoundary.ReviewedFq12ExtractionCertificateAvailability
+        selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates →
+      Descender.Path2FullOpeningFieldEvidenceSourceAdapters.ReviewedFq12RoleRootFunctionalLiftSource
+          selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates →
+        ∀
+          (selectedRustSourceRouteByteSourceValue :
+            Descender.Path2FullOpeningFieldEvidenceByteBridge.SelectedRustReviewedFq12FullOpeningFieldSourceRouteByteSource
+              FieldParser RouteParser selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates),
+          Descender.Path2FullOpeningSourceConcrete.ReviewedFq12FieldConcreteAssemblyLocalSource
+              selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates →
+            Descender.Path2FullOpeningSourceConcrete.ReviewedFq12FieldConcreteCompatibilitySource
+                selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates →
+              ∀
+                (selectedRustSharedFrameWitnessSourcesValue :
+                  Descender.Path2FullOpeningFieldEvidenceSourceAdapters.ReviewedFq12SelectedRustSharedDigestFrameWitnessByteSources
+                    CanonicalParser WitnessParser
+                    selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates),
+                Descender.Path2HiddenSourceSemanticsBoundary.ReviewedFq12HiddenSourceProofSemanticsClosed
+                  selectedRustNativeBoundaryPredicateModelCertificate.toSource.toPredicates
+
+theorem Descender.Path2NoExportConcrete.selectedRustActiveNoExportSerializer_instantiation_v1 :
+Descender.Path2NoExport.ActiveNativeNoExportClosure Descender.Path2NoExportConcrete.selectedRustActiveNoExportPolicy
+  Descender.Path2NoExportConcrete.selectedRustActiveSerializer.surfaces
