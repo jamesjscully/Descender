@@ -392,3 +392,21 @@ soundness certificate REJECT it? Accept ⟹ redesign now. Artifacts:
 `creation_time_binding_{VERDICT,rank_analysis,soundness_characterization}.md`,
 `creation_time_witness_binding_findings.md`, survivor-search script+JSON,
 `tools/parameter-search/tests/creation_time_binding_rank_probe.rs`.
+
+**Relation-validity (the moved frontier) — also SOUND (2026-06-09→10, verified 4/4
+probe tests).** The soundness certificate `verify_reviewed_fq12_state_assisted_masked_
+projection_soundness_certificate` (production_reference.rs:38517) REJECTS relation-
+invalid openings including the strong forged-carrier form (→ `reject_fail_closed_
+invalid_projection_carrier`). No `creation_time_hidden_source_soundness_break`, no
+relation-arm redesign. Mechanism: the 6-lane `account_projection` is RECOMPUTED from
+the leaf-fixed commitment and the predicate enforces claimed==recomputed per lane — a
+forger has no slot to inject an invalid projection. So BOTH creation-time soundness
+questions (binding + relation-validity) are SOUND modulo named non-novel assumptions
+(SHA256 CR + the verifier-exporter bridge for the 52 inactive columns, task #23). The
+remaining creation-side gaps are NOT redesign risk: (build, task #22) the public
+harness-free creation-proof dispatcher (:26475) is fail-closed — wire+de-toy a non-toy
+public verifier (:26653) and prove it equivalent to the tested harness-replay relation
+(:26360); this is what flips creation fail-closed→accepting. Net risk-first status:
+the two highest-redesign-risk obstructions HELD; next risk-first target is #20 (SIS/
+response-link ≥2¹²⁸ margin, partly external) + the #23 bridge assumption. Artifacts:
+`creation_time_relation_validity_VERDICT.md`, `creation_time_relation_validity_probe.rs`.
