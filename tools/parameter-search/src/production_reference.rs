@@ -19,7 +19,7 @@ pub const PRODUCTION_SIGNER_CALLBACK_FAILURE_REASON: &str = "signer callback fai
 pub const PRODUCTION_VERIFIER_CALLBACK_FAILURE_REASON: &str = "verifier callback failed";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_CALLBACK_BOUNDARIES: &str =
     "deployment callback boundary profile is not sanitized";
-pub const PRODUCTION_DEPLOYMENT_BLOCKER_SELECTED_VERIFIER: &str = "selected 308-byte/Fq12 active-lane projection-carrier deployment verifier is fail-closed until active-lane preflight promotion and hidden-source semantics are implemented";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_SELECTED_VERIFIER: &str = "selected 314-byte/Fq12 active-lane projection-carrier deployment verifier is fail-closed until active-lane preflight promotion and hidden-source semantics are implemented";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_FINAL_VERIFIER: &str =
     PRODUCTION_DEPLOYMENT_BLOCKER_SELECTED_VERIFIER;
 pub const PRODUCTION_SELECTED_PROJECTION_INVALID_OPENING_REASON: &str =
@@ -28,7 +28,7 @@ pub const PRODUCTION_SELECTED_PROJECTION_INVALID_CARRIER_REASON: &str =
     "reject_fail_closed_invalid_projection_carrier";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_PAD_OPENING_BINDING: &str =
     "pad-opening witness binding is not implemented for the reviewed 258-byte/Fq12 path";
-pub const PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS: &str = "Path 2 account-creation prevalidation proof semantics are not complete; the reviewed 308-byte/Fq12 projection-carrier route remains a fail-closed baseline and negative-control source";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS: &str = "Path 2 account-creation prevalidation proof semantics are not complete; the reviewed 314-byte/Fq12 projection-carrier route remains a fail-closed baseline and negative-control source";
 pub const PRODUCTION_HIDDEN_SOURCE_PROOF_FAILURE_REASON: &str =
     "hidden-source proof verifier rejected reviewed 258-byte/Fq12 statement";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_CONSTANT_TIME: &str =
@@ -583,7 +583,7 @@ pub const HIDDEN_SOURCE_FALLBACK_PROJECTION_LANE_COEFFICIENTS: [u16;
 ];
 pub const HIDDEN_SOURCE_FALLBACK_EXPANDED_OPENING_COMMITMENT_DOMAIN: &str =
     "Descender.hidden_source.fallback_projection.expanded_account_opening_commitment.v1";
-pub const HIDDEN_SOURCE_FALLBACK_DIRECT_EXPANDED_OPENING_DEPLOYMENT_STATUS: &str = "archived_non_deployment_path: direct expanded account-opening slot commitment is superseded by the state-assisted opening tuple for the selected 308-byte/Fq12 route";
+pub const HIDDEN_SOURCE_FALLBACK_DIRECT_EXPANDED_OPENING_DEPLOYMENT_STATUS: &str = "archived_non_deployment_path: direct expanded account-opening slot commitment is superseded by the state-assisted opening tuple for the selected 314-byte/Fq12 route";
 pub const REVIEWED_FQ12_ACCEPTANCE_OBLIGATION_STATEMENT_BINDING: u16 = 1 << 0;
 pub const REVIEWED_FQ12_ACCEPTANCE_OBLIGATION_WITNESS_COMMITMENT_OPENING: u16 = 1 << 1;
 pub const REVIEWED_FQ12_ACCEPTANCE_OBLIGATION_PAD_SEED_OPENING: u16 = 1 << 2;
@@ -7894,7 +7894,7 @@ fn reviewed_fq12_active_lane_projection_carrier_source_present_v1() -> bool {
     let certificate_window = &source[certificate_start..certificate_end];
 
     let selected_tests_start = source
-        .find("\n    fn selected_projection_valid_308_byte_fixture_accepts()")
+        .find("\n    fn selected_projection_valid_314_byte_fixture_accepts()")
         .expect("reviewed Fq12 active-lane selected projection test start marker missing");
     let selected_tests_end = source[selected_tests_start..]
         .find("\n    fn path2_creation_relation_replay_accepts_reviewed_active_lane_certificate()")
@@ -7967,7 +7967,7 @@ fn reviewed_fq12_active_lane_projection_carrier_source_present_v1() -> bool {
         "carrier_transcript_binding: decoded_carrier.transcript_binding",
     ];
     let selected_test_checks = [
-        "selected_projection_valid_308_byte_fixture_accepts",
+        "selected_projection_valid_314_byte_fixture_accepts",
         "selected_projection_timing_fixture_accepts",
         "selected_projection_reject_carrier_lane_mutation",
         "selected_projection_reject_carrier_check_mutation",
@@ -38320,7 +38320,7 @@ pub struct ProductionSelectedProjectionCandidateTimingFixture {
 pub fn production_selected_projection_candidate_timing_fixture()
 -> ProductionSelectedProjectionCandidateTimingFixture {
     let public_key = ProductionPublicKey::new(vec![0_u8; PK_BYTES]).unwrap();
-    let message = b"selected 308-byte/Fq12 timing fixture".to_vec();
+    let message = b"selected 314-byte/Fq12 timing fixture".to_vec();
     let slot_id = 0_u32;
     let pad_seed = [0x42_u8; REVIEWED_FQ12_PAD_SEED_BYTES];
     let witness_syndrome = [0_u16; REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS];
@@ -48300,7 +48300,7 @@ mod tests {
     }
 
     #[test]
-    fn selected_projection_valid_308_byte_fixture_accepts() {
+    fn selected_projection_valid_314_byte_fixture_accepts() {
         let fixture = reviewed_fq12_packed_witness_fixture();
         assert_eq!(
             fixture.signature.as_bytes().len(),

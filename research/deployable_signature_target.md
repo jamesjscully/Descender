@@ -6,11 +6,13 @@ It is a specification target, not a deployment claim.
 > Sizes updated 2026-06-09 to the post-AP2-004 challenge width (27-byte
 > challenge). The authoritative computed/tested value in
 > `production_reference.rs` is `REVIEWED_FQ12_ACCOUNT_CARRIED_WITH_FALLBACK_PROJECTION_BYTES == 314`.
-> The earlier `252 B` base / `308 B` envelope figures were pre-widening. NOTE:
-> several Rust human-readable strings and the fixture name
-> `selected_projection_valid_308_byte_fixture_accepts` still say "308"; those are
-> stale labels (the computed size is 314) and need a coordinated relabel because
-> the fixture name is inspected by source-gates.
+> The earlier `252 B` base / `308 B` envelope figures were pre-widening. RELABEL
+> DONE 2026-06-09: the stale "308" Rust strings and the source-gate-inspected
+> fixture `selected_projection_valid_308_byte_fixture_accepts` were renamed to
+> `314` in coordinated lockstep (the `.find()` marker, the marker-name string, and
+> the `fn` definition all updated together; `PRODUCTION_DEPLOYMENT_BLOCKER_*` and
+> the timing-fixture message too). Verified: the renamed fixture test passes and
+> the source-gate still resolves the marker.
 
 ## Selected Target
 
