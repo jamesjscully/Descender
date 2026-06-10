@@ -370,3 +370,25 @@ harness on `checkedCoreMessageBinding` amortized across the 4 binding/availabili
 events; the accepted-spend SIS bound is the deepest, last). Security still NOT
 established — 6 reductions + the SIS bound + spec §6 path-hardening + external
 review all remain.
+
+**Risk-first pivot (2026-06-09, later session — James's standing riskiest-part-first
+policy):** attacked the highest-redesign-risk obstruction first — does the creation-
+time certificate bind the FULL account witness, or does the spend-only two-witnesses
+survivor (`projection_carrier_tuple_does_not_prove_full_witness_opening`, lib.rs:2205)
+reappear at creation? Prove-AND-break, 3 independent angles, UNANIMOUS high-confidence,
+independently re-verified (survivor search `creation_survivor_found=false`; 5/5 rank
+probe; ground-truth tests pass). **RESULT: WITNESS-BINDING is SOUND** — the certificate
+makes the opening map injective; the survivor is killed because the leaf fixes a single
+`account_witness_commitment` (`opening_commitment` SHA256 frame includes it,
+`production_reference.rs:44266`) and the 18-residue packing is an unconditional bijection.
+Reduces to SHA256 CR (named `prevalidation_leaf_binding`/`qrom_or_domain_sep` break),
+NOT an open algebraic gap. **Correction:** the closer is the `opening_commitment` leaf-
+binding, NOT the `masked_state18` repack alone (an algebraic identity; decision-doc line
+119 mislocates it). **Risk frontier MOVED** binding → relation-validity
+(`creation_time_hidden_source_soundness_break`): binding gives uniqueness, not relation-
+VALIDITY. Next risk-first target (task #21): negative control feeding a unique-but-
+relation-INVALID opening that still repacks to the leaf-fixed commitment — does the
+soundness certificate REJECT it? Accept ⟹ redesign now. Artifacts:
+`creation_time_binding_{VERDICT,rank_analysis,soundness_characterization}.md`,
+`creation_time_witness_binding_findings.md`, survivor-search script+JSON,
+`tools/parameter-search/tests/creation_time_binding_rank_probe.rs`.
