@@ -153,16 +153,19 @@ mass**. They are not hardness assumptions.
    max|Pearson| = 0.0049 over 50k seeds. Pad hiding reduces to SHA-256 being a good
    frame-PRF on the mask domain (`deployable_pad_hiding_VERDICT.md`). *Standard:*
    SHA-256-as-RO frame-PRF; non-novel.
-   *(2026-06-10 — a maximal-rigor attempt to fold this into the §3(b)(3) QROM
-   assumption did NOT genuinely discharge and was REVERTED/DELETED. The attempt
-   (`frame_prf_ro_reduction.ec`) typechecked, but its load-bearing axiom
-   `sha256_ro_indistinguishable` directly bounded the real-mask-vs-uniform-mask gap
-   — i.e. it ASSUMED the pad-hiding conclusion rather than reducing to an
-   Hsha-vs-true-RO distinguishing gap; the reduction functor was dead scaffolding
-   never wired into the bound. The adversarial verifier flagged it FAKED and the
-   file was deleted. So this remains an INDEPENDENT named-standard frame-PRF
-   assumption — NOT reuse of the action-map QROM axiom. An honest RO discharge
-   remains genuine future work.)*
+   *(2026-06-10 — DISCHARGED (classical), after a first faked attempt was caught +
+   reverted. `frame_prf_ro_reduction.ec` (exit 0, 7 qed, 0 admit/sorry, verified)
+   now proves `frame_prf_advantage`: |Pr[Real]−Pr[Ideal]| ≤ q·2⁻ᴴ, DERIVED via
+   `identical_until_bad` (no seed-bearing RO query ⟹ real ≡ ideal mask) composed
+   with `bad_event_bound` (Pr[seed-bearing query] ≤ q·2⁻ᴴ over the query list +
+   `pad_seed` min-entropy H=256). Every axiom is RO-behaviour / entropy / structural
+   — NONE bounds the advantage (audited). So pad-hiding FOLDS into {RO + `pad_seed`
+   min-entropy} rather than being a bare named assumption — it reuses the same RO
+   primitive as §3(b)(3). **Residual:** the proven bound is CLASSICAL (q·2⁻ᴴ); the
+   QROM/quantum variant swaps the union step for the standard O2H/query-extraction
+   bound (q²·2⁻ᴴ) — the identical-until-bad + bad-event structure built here is what
+   the quantum proof reuses, so only the O2H lemma swap remains. Status:
+   classically-discharged to RO+entropy; quantum-structured-pending-O2H.)*
 5. **Verifier-exporter bridge** (bears #1). An accepted-yet-broken creation's
    source discrepancy lands on a verifier-VISIBLE active column, never solely on
    one of the 52 excluded inactive columns. *Standard:* "the exporter does not leak
@@ -193,24 +196,29 @@ mass**. They are not hardness assumptions.
    run (Sage absent)** — the BKZ runs + in-repo exact enumeration are the
    load-bearing internal evidence, not an asymptotic core-SVP curve.
 
-**Tier counts: PROVEN = 6 classes · NAMED-STANDARD = 5 · EXTERNAL = 1.**
+**Tier counts: PROVEN = 6 classes · NAMED-STANDARD = 4 classical / 5 QROM-conservative
+(frame-PRF folds into RO classically; +1 until the quantum O2H swap) · EXTERNAL = 1.**
 
-**FINAL MINIMIZED ASSUMPTION SET (after the 2026-06-09 pass).** Unchanged tier
-counts — the only *genuine* reduction this pass was to a **seam**, not a tier
-item: the GAP B Lean↔EC coupling (§4) was reduced from **two probability-inequality
-axioms** to **one pointwise, probability-free predicate axiom** (`structural_split`),
-with the union bound itself now a PROVEN EC lemma. **No carried axiom in the
-union-bound spine carries probability mass anymore.** The other two attempted
-discharges did **not** reduce the set and were REVERTED/DELETED: the SHA-256
-frame-PRF (§3(b)4) fold-into-QROM attempt was FAKED (its axiom assumed the
-conclusion; dead RO scaffolding) and the file was deleted; the verifier-exporter
-bridge (§3(b)5) attempt only restated it as the LOGICALLY-EQUIVALENT contrapositive
-(axiom count 6 → 6, no weakening) and was reverted to the honest
-`verifier_exporter_bridge` axiom. The irreducible
-core is therefore: **SHA-256 SPR/CR + action-map QROM collision + SHA-256 frame-PRF
-+ verifier-exporter bridge soundness** (named-standard, 5) · **coded-SIS beyond-box
-hardness + SHA-256 matrix-sampler pseudorandomness** (external, 1) · plus the two
-correspondence seams GAP B (now a single pointwise predicate) and GAP D.
+**FINAL MINIMIZED ASSUMPTION SET (after the 2026-06-10 maximal-rigor pass).** TWO
+genuine reductions landed; one attempt was caught faked + reverted:
+- **GAP B (seam, §4):** reduced from **two probability-inequality axioms** to **one
+  pointwise, probability-free predicate** (`structural_split`), union bound now a
+  PROVEN EC lemma. **No carried axiom in the union-bound spine carries probability
+  mass anymore.**
+- **SHA-256 frame-PRF (§3(b)4):** GENUINELY DISCHARGED (classical) — pad-hiding now
+  FOLDS into {RO + `pad_seed` min-entropy} via the proven `frame_prf_advantage`
+  lemma (after a first faked attempt was caught + reverted). It reuses the §3(b)(3)
+  RO primitive, so it drops out of the independent named-standard set **classically**
+  (→ 4); the QROM/quantum bound is structured-pending-the-O2H-swap.
+- **Verifier-exporter bridge (§3(b)5):** the attempted "reduction" was a logically-
+  equivalent contrapositive (axiom 6→6, no weakening), caught + reverted. It is a
+  GENUINE modeling seam — stays named-standard, atop the PROVEN nullity-0.
+
+The irreducible core is therefore: **SHA-256 SPR/CR + action-map QROM collision +
+verifier-exporter bridge soundness** (named-standard, **4 classical** — frame-PRF
+folded into the RO/QROM; +1 if the quantum O2H swap is not yet done) · **coded-SIS
+beyond-box hardness + SHA-256 matrix-sampler pseudorandomness** (external, 1) · plus
+the two correspondence seams GAP B (now a single pointwise predicate) and GAP D.
 
 ---
 
