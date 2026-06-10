@@ -7296,8 +7296,185 @@ mod kat {
     }
 }
 
+/// WS4 #11 empirical leakage battery: dump a corpus of REAL signatures for a
+/// FIXED keypair/witness over varied messages and slots. We emit, per signature,
+/// the decoded transcript components (challenge active_block/sign per rep, the 52
+/// signed response residues, the 52 opening residues) PLUS the KNOWN secret
+/// witness coordinates (the 23 full-response residues of the slot's
+/// ideal_masked_witness_response, and the 16x2 secret-derived pad table) so the
+/// python battery can run a witness-correlation/key-recovery test against ground
+/// truth. Output is newline-delimited JSON (one record per signature) plus a
+/// single META line with the per-slot ground-truth witness.
+fn run_leak_sample(args: &[String]) -> Result<(), String> {
+    let mut count: usize = 100_000;
+    let mut slots: usize = 4;
+    let mut out_path = String::from("research/cryptanalysis/leakage_corpus.jsonl");
+    let mut iter = args.iter();
+    while let Some(a) = iter.next() {
+        match a.as_str() {
+            "--count" => {
+                count = iter
+                    .next()
+                    .ok_or("--count needs a value")?
+                    .parse()
+                    .map_err(|_| "bad --count")?
+            }
+            "--slots" => {
+                slots = iter
+                    .next()
+                    .ok_or("--slots needs a value")?
+                    .parse()
+                    .map_err(|_| "bad --slots")?
+            }
+            "--out" => out_path = iter.next().ok_or("--out needs a value")?.clone(),
+            _ => {}
+        }
+    }
+
+    let keypair = reference_keygen(slots);
+    let public_view = decode_public_key(&keypair.public_key).map_err(|e| e)?;
+
+    if let Some(parent) = std::path::Path::new(&out_path).parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    let _ = std::fs::remove_file(&out_path);
+    let mut buf = String::new();
+
+    // META: ground-truth witness per slot.
+    // - full_response: the 23 secret residues of the masked witness (the witness w).
+    // - pad_table: the 16x2 secret-derived pad residues (active pad outputs).
+    // - public_free: the 16x2 public free coordinates (drives the deterministic responses).
+    let public_free: Vec<[u16; LOCAL_FREE]> = public_view.free.to_vec();
+    let mut meta = String::from("{\"meta\":true,\"q\":12289,\"reps\":26,\"groups\":16,\"slots\":[");
+    for slot_id in 0..slots {
+        let mw = keypair.account.slots[slot_id]
+            .ideal_masked_witness_response
+            .expect("keygen slot has ideal masked witness");
+        let full = full_response_vector_from_masked_witness(&mw)
+            .expect("masked witness decodes to full response vector");
+        let seed: [u8; PAD_SEED_BYTES] = semantic_hidden_preimage_from_masked_witness(&mw)
+            [FIBER_STATE_BYTES..]
+            .try_into()
+            .unwrap();
+        let mut pad_table = Vec::with_capacity(GROUPS);
+        for block in 0..GROUPS {
+            pad_table.push(expand_pad_residues(&seed, block));
+        }
+        if slot_id > 0 {
+            meta.push(',');
+        }
+        meta.push_str(&format!("{{\"slot\":{slot_id},\"full_response\":["));
+        for (i, v) in full.iter().enumerate() {
+            if i > 0 {
+                meta.push(',');
+            }
+            meta.push_str(&v.to_string());
+        }
+        meta.push_str("],\"pad_table\":[");
+        for (b, p) in pad_table.iter().enumerate() {
+            if b > 0 {
+                meta.push(',');
+            }
+            meta.push_str(&format!("[{},{}]", p[0], p[1]));
+        }
+        meta.push(']');
+        meta.push('}');
+    }
+    meta.push_str("],\"public_free\":[");
+    for (b, f) in public_free.iter().enumerate() {
+        if b > 0 {
+            meta.push(',');
+        }
+        meta.push_str(&format!("[{},{}]", f[0], f[1]));
+    }
+    meta.push_str("]}\n");
+    buf.push_str(&meta);
+
+    let mut written = 0usize;
+    let mut idx: u64 = 0;
+    while written < count {
+        let slot_id = (idx as usize) % slots;
+        // vary the message so the Fiat-Shamir challenge changes each signature.
+        let message = format!("ws4-leak-battery/{idx}").into_bytes();
+        idx += 1;
+        let sig = match reference_sign_with_proof(&keypair, slot_id as u32, &message) {
+            Ok(s) => s,
+            Err(_) => continue,
+        };
+        // Decode the components straight from the serialized signature.
+        let mut off = SLOT_ID_BYTES;
+        let challenge_bytes = &sig[off..off + CHALLENGE_BYTES];
+        off += CHALLENGE_BYTES;
+        let responses = decode_responses(&sig[off..off + ACTIVE_RESPONSE_BYTES]).unwrap();
+        off += ACTIVE_RESPONSE_BYTES;
+        let openings = decode_openings(&sig[off..off + LOCAL_OPENING_BYTES]).unwrap();
+        let challenge = decode_challenge(challenge_bytes).unwrap();
+
+        let mut rec = String::with_capacity(512);
+        rec.push_str(&format!("{{\"slot\":{slot_id},\"block\":["));
+        for rep in 0..REPS {
+            if rep > 0 {
+                rec.push(',');
+            }
+            rec.push_str(&challenge.active_block[rep].to_string());
+        }
+        rec.push_str("],\"sign\":[");
+        for rep in 0..REPS {
+            if rep > 0 {
+                rec.push(',');
+            }
+            rec.push_str(&challenge.sign[rep].to_string());
+        }
+        rec.push_str("],\"resp\":[");
+        for rep in 0..REPS {
+            for coord in 0..LOCAL_FREE {
+                if rep > 0 || coord > 0 {
+                    rec.push(',');
+                }
+                rec.push_str(&responses.active_free[rep][coord].to_string());
+            }
+        }
+        rec.push_str("],\"open\":[");
+        for rep in 0..REPS {
+            for coord in 0..LOCAL_FREE {
+                if rep > 0 || coord > 0 {
+                    rec.push(',');
+                }
+                rec.push_str(&openings.active_free[rep][coord].to_string());
+            }
+        }
+        rec.push_str("]}\n");
+        buf.push_str(&rec);
+        written += 1;
+        if buf.len() > (8 << 20) {
+            std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(&out_path)
+                .and_then(|mut f| std::io::Write::write_all(&mut f, buf.as_bytes()))
+                .map_err(|e| e.to_string())?;
+            buf.clear();
+        }
+    }
+    std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&out_path)
+        .and_then(|mut f| std::io::Write::write_all(&mut f, buf.as_bytes()))
+        .map_err(|e| e.to_string())?;
+    eprintln!("wrote {written} signature records to {out_path}");
+    Ok(())
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
+    if args.iter().any(|arg| arg == "--leak-sample") {
+        if let Err(err) = run_leak_sample(&args) {
+            eprintln!("{err}");
+            std::process::exit(1);
+        }
+        return;
+    }
     if args.iter().any(|arg| arg == "--kat-generate" || arg == "--kat-check") {
         if let Err(err) = kat::run_cli(&args) {
             eprintln!("{err}");

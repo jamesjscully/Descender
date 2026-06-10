@@ -51,3 +51,6 @@ research/parameter_search/**
 
 # EasyCrypt compiled artifacts
 *.eco
+
+# large regenerable leakage sampling corpus (regenerate via --leak-sample)
+research/cryptanalysis/leakage_corpus.jsonl
