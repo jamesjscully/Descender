@@ -244,16 +244,36 @@ a proved projection-only relation with stated ZK/soundness").
   projection-only acceptable at spend? The notes (selected_hidden_source_path_decision.md:106–123)
   say yes — but that theorem is not yet closed.**
 
-### Headline recommendation
-**Lean toward Option B (formally scope v1 to projection-only), but treat both the
-spec-vs-KAT byte divergence and the prevalidation pivot as the prior questions to
-settle first.** Rationale: the team's own design notes already selected
-projection-only-at-spend + prevalidation-at-creation, the 314-B full-opening proof
-is acknowledged as hard and possibly superseded, and Option B matches what the code
-actually proves. **Do not** treat the 260-B path as the thing to harden — it is a
-byte anchor, and its forgery is a known-and-documented limitation, so the right move
-is to keep it labeled non-normative and ensure no deployable soundness claim ever
-rests on it.
+### Headline recommendation (CORRECTED 2026-06-09 — supersedes the earlier projection-only lean)
+
+**The earlier draft of this section recommended "scope v1 to projection-only." That
+was wrong and is retracted.** It conflated two different things: (i) *projection-only
+*at spend*, with the full hidden-source soundness discharged at account creation* —
+which IS the selected design — and (ii) *projection-only as the entire security
+claim, dropping full-witness binding* — which is exactly the underconstraint the
+whole Fq12 redesign exists to remove. Picking (ii) would re-enshrine the forgeability
+documented in §3.
+
+Corrected picture: **fail-closed is the project's scaffolding strategy, not evidence
+of abandonment.** The 314-B/Fq12 path is held fail-closed (`PRODUCTION_DEPLOYMENT_
+BLOCKER_SELECTED_VERIFIER`) *by design* — stand up the parser/exporter/verifier
+structure rejecting everything, then discharge the internal obligations and only then
+flip to accepting. The hidden-source soundness burden is **relocated** to account
+creation by the Path-2 prevalidation pivot (for byte cost + aggregation), **not
+dropped**: `selected_hidden_source_path_decision.md:64–123` lists the creation-time
+proof obligations explicitly, and the selected theorem is *accepted-spend ⟹ the slot
+was creation-validated for the same identity/slot/opening/pad/version/root, or a
+named break*. Projection-only *at spend* is acceptable **only because** creation is
+required to carry full validation — a theorem that is **not yet closed** and is the
+real Phase-2 target.
+
+So the live question is **not** "full-opening vs settle-for-projection-only." It is:
+finalize the **account-state / prevalidation layout** and **close the creation-time
+hidden-source validation + prevalidated-slot-authorization theorem** (which the
+landed `Path2TraceModel.lean` + the EC `slotReplayOrRollback` consume-once reduction
+already target). The 260-B linear-sigma path stays a byte anchor + negative control
+and must never carry a deployable soundness claim (§3 forgery). The maintainer owns
+the account-state-layout choice; this investigation does not assert it.
 
 ### Things that look like they *might* be mistakes (flagged as questions, not reversals)
 1. **Spec §2 vs KAT divergence.** The canonical spec normatively states 314-B, but
