@@ -48,3 +48,6 @@ research/path2_top_proof_risk_resolution_options.md
 research/path2_trace_commitment_binding_audit.md
 research/path2_inner_commitment_relation_refinement.md
 research/parameter_search/**
+
+# EasyCrypt compiled artifacts
+*.eco
