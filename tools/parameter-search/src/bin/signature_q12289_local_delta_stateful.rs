@@ -9130,6 +9130,159 @@ mod tests {
         );
     }
 
+    // RED-TEAM: signature malleability via non-canonical mask_view.
+    // The verifier checks only local_state(mask_view)==fiber_state and
+    // openings==mask_view+pad. It does NOT pin mask_view to the signer's
+    // canonical choice. With the all-zero reference PK (free coords = 0),
+    // the response equals the mask_view directly, so a second mask_view that
+    // hits the same fiber_state and stays in [-48,48] yields a DISTINCT
+    // signature that still verifies for the SAME (message, slot).
+    #[test]
+    fn redteam_response_opening_malleability_distinct_accepting_signature() {
+        let keypair = reference_keygen(1);
+        let message = b"redteam malleability message".to_vec();
+        let signature = reference_sign(&keypair, 0, &message).unwrap();
+
+        // Sanity: original signature accepts.
+        let (orig_report, _) = verify_quotient_stateful_signature(
+            &keypair.public_key,
+            &message,
+            &keypair.account,
+            &signature,
+        );
+        assert!(orig_report.accepted, "original must accept: {orig_report:?}");
+
+        // Confirm the canonical signer mask_view and the alternate one both
+        // realize the same fiber_state.
+        let canonical = [12_u16, Q - 12];
+        let fiber_state = local_state(canonical);
+        let alt = [mod_q(-38), mod_q(-11)]; // (-38, -11): -38 + 50*(-11) = -588 = same syndrome
+        assert_eq!(local_state(alt), fiber_state, "alt mask_view must match fiber state");
+        assert_ne!(alt, canonical);
+
+        // Decode original signature, then rebuild responses + openings from the
+        // ALT mask_view. PK is all-zero so free coords vanish; response == mask_view.
+        let hidden_preimage = keypair.account.slots[0]
+            .ideal_masked_witness_response
+            .unwrap();
+        let seed: [u8; PAD_SEED_BYTES] = hidden_preimage
+            [FIBER_STATE_BYTES..FIBER_STATE_BYTES + PAD_SEED_BYTES]
+            .try_into()
+            .unwrap();
+        let challenge =
+            decode_challenge(&signature[SLOT_ID_BYTES..SLOT_ID_BYTES + CHALLENGE_BYTES]).unwrap();
+        let public_view = decode_public_key(&keypair.public_key).unwrap();
+
+        let mut responses = CompactResponses {
+            active_free: [[0_i16; LOCAL_FREE]; REPS],
+        };
+        let mut openings = LocalOpenings {
+            active_free: [[0_u16; LOCAL_FREE]; REPS],
+        };
+        for rep in 0..REPS {
+            let block = challenge.active_block[rep];
+            let sign = challenge.sign[rep];
+            for coord in 0..LOCAL_FREE {
+                let response = add_mod(alt[coord], challenge_mul(sign, public_view.free[block][coord]));
+                responses.active_free[rep][coord] =
+                    centered_response_value(response).expect("alt response must stay in [-48,48]");
+            }
+            let pad = expand_pad_residues(&seed, block);
+            openings.active_free[rep] = [add_mod(alt[0], pad[0]), add_mod(alt[1], pad[1])];
+        }
+
+        // Reassemble the forged signature: same slot_id + challenge, new resp/open.
+        let response_start = SLOT_ID_BYTES + CHALLENGE_BYTES;
+        let opening_start = response_start + ACTIVE_RESPONSE_BYTES;
+        let mut forged = signature.clone();
+        forged[response_start..opening_start].copy_from_slice(&encode_responses(&responses));
+        forged[opening_start..].copy_from_slice(&encode_openings(&openings));
+
+        // The two signatures MUST be byte-distinct (uniqueness violated).
+        assert_ne!(
+            forged, signature,
+            "forged signature must differ from the honest one"
+        );
+
+        // And the forged one MUST verify against the SAME message/account.
+        let (forged_report, forged_next) = verify_quotient_stateful_signature(
+            &keypair.public_key,
+            &message,
+            &keypair.account,
+            &forged,
+        );
+        assert!(
+            forged_report.accepted,
+            "MALLEABILITY BREAK: forged distinct signature accepted: {forged_report:?}"
+        );
+        assert!(!forged_next.slots[0].unused);
+    }
+
+    // RED-TEAM: the SAME malleability survives on the deployable proof-carrying
+    // path (reference_verify_with_proof -> verify_public_quotient_proof_signature).
+    // The challenge frame binds proof_commitment but NOT the response/opening
+    // bytes, and verify_local_delta_relation_with_masked_witness accepts any
+    // mask_view with local_state==fiber_state. So a distinct proof-carrying
+    // signature for the same message is accepted.
+    #[test]
+    fn redteam_response_opening_malleability_deployable_proof_path() {
+        let keypair = reference_keygen(1);
+        let message = b"redteam malleability deployable";
+        let signature = reference_sign_with_proof(&keypair, 0, message).unwrap();
+        let (orig_report, _) =
+            reference_verify_with_proof(&keypair.public_key, message, &keypair.account, &signature);
+        assert!(orig_report.accepted, "{orig_report:?}");
+
+        let canonical = [12_u16, Q - 12];
+        let fiber_state = local_state(canonical);
+        let alt = [mod_q(-38), mod_q(-11)];
+        assert_eq!(local_state(alt), fiber_state);
+
+        // proof.masked_witness_response is the last LINEAR_SIGMA_MASKED_WITNESS_BYTES;
+        // its seed drives the pad. Pull the seed from it (same as verifier does).
+        let proof_start = STATEFUL_TRANSACTION_SIGNATURE_BYTES + LINEAR_SIGMA_PROOF_COMMITMENT_BYTES;
+        let masked_witness: [u8; LINEAR_SIGMA_MASKED_WITNESS_BYTES] =
+            signature[proof_start..proof_start + LINEAR_SIGMA_MASKED_WITNESS_BYTES]
+                .try_into()
+                .unwrap();
+        let semantic = semantic_hidden_preimage_from_masked_witness(&masked_witness);
+        let seed: [u8; PAD_SEED_BYTES] = semantic[FIBER_STATE_BYTES..].try_into().unwrap();
+
+        let challenge =
+            decode_challenge(&signature[SLOT_ID_BYTES..SLOT_ID_BYTES + CHALLENGE_BYTES]).unwrap();
+        let public_view = decode_public_key(&keypair.public_key).unwrap();
+        let mut responses = CompactResponses {
+            active_free: [[0_i16; LOCAL_FREE]; REPS],
+        };
+        let mut openings = LocalOpenings {
+            active_free: [[0_u16; LOCAL_FREE]; REPS],
+        };
+        for rep in 0..REPS {
+            let block = challenge.active_block[rep];
+            let sign = challenge.sign[rep];
+            for coord in 0..LOCAL_FREE {
+                let response = add_mod(alt[coord], challenge_mul(sign, public_view.free[block][coord]));
+                responses.active_free[rep][coord] = centered_response_value(response).unwrap();
+            }
+            let pad = expand_pad_residues(&seed, block);
+            openings.active_free[rep] = [add_mod(alt[0], pad[0]), add_mod(alt[1], pad[1])];
+        }
+        let response_start = SLOT_ID_BYTES + CHALLENGE_BYTES;
+        let opening_start = response_start + ACTIVE_RESPONSE_BYTES;
+        let mut forged = signature.clone();
+        forged[response_start..opening_start].copy_from_slice(&encode_responses(&responses));
+        forged[opening_start..opening_start + LOCAL_OPENING_BYTES]
+            .copy_from_slice(&encode_openings(&openings));
+        assert_ne!(forged, signature);
+
+        let (forged_report, _) =
+            reference_verify_with_proof(&keypair.public_key, message, &keypair.account, &forged);
+        assert!(
+            forged_report.accepted,
+            "MALLEABILITY BREAK (deployable proof path): {forged_report:?}"
+        );
+    }
+
     #[test]
     fn reference_api_signs_verifies_and_rejects_mutations() {
         let keypair = reference_keygen(2);

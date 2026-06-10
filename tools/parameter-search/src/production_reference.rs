@@ -52741,6 +52741,95 @@ mod tests {
         assert_eq!(proof.account_projection, [1, 2, 3, 4, 5, 6]);
     }
 
+    // VECTOR-4 RED-TEAM: key-free witness recovery from the DEPLOYABLE masked-state18 creation
+    // proof. The proof is `#[derive(Serialize)]` and carries `pad_seed` in clear. pad_seed is the
+    // master witness secret deriving (a) the projection masks, (b) the per-block pad residues, and
+    // (c) the hidden-source projection values themselves. So an observer of the PUBLIC creation
+    // proof recovers the entire hidden source with ZERO key material. This is the deployable path
+    // (PATH2_DIRECT_CREATION_PROOF_KIND_MASKED_STATE18 = 3), accepted by the real public verifier.
+    #[test]
+    fn redteam_masked_state18_creation_proof_leaks_full_witness_key_free() {
+        let (fixture, leaf, evidence, certificate, binding, payload, proof) =
+            path2_masked_state18_creation_proof_fixture();
+
+        // (1) The real DEPLOYABLE public verifier accepts the proof.
+        verify_path2_direct_creation_masked_state18_proof_v1(
+            &leaf, &evidence, &certificate, &binding, &payload, &proof,
+        )
+        .expect("deployable masked-state18 creation proof accepts");
+
+        // (2) The public wire surface (serde Serialize) contains pad_seed IN CLEAR.
+        let wire = serde_json::to_vec(&proof).expect("creation proof serializes");
+        // The serialized JSON must contain every pad_seed byte as a u8 array element. Confirm the
+        // pad_seed is fully recoverable from the public surface by reconstructing the struct.
+        let recovered: serde_json::Value =
+            serde_json::from_slice(&wire).expect("proof JSON parses");
+        let pad_arr = recovered
+            .get("pad_seed")
+            .and_then(|v| v.as_array())
+            .expect("pad_seed field present on public surface");
+        let mut attacker_pad_seed = [0_u8; REVIEWED_FQ12_PAD_SEED_BYTES];
+        for (i, b) in pad_arr.iter().enumerate() {
+            attacker_pad_seed[i] = b.as_u64().unwrap() as u8;
+        }
+        // The attacker reads pad_seed off the wire byte-for-byte.
+        assert_eq!(
+            attacker_pad_seed, fixture.pad_seed,
+            "attacker recovers pad_seed verbatim from the public creation proof"
+        );
+
+        // (3) From the public pad_seed ALONE (no key material), recover:
+        //   (a) the full hidden-source projection values (the witness),
+        let (_sym, attacker_proj) =
+            hidden_source_fallback_pad_prf_projection_values_from_seed(&attacker_pad_seed)
+                .expect("recover projection from public pad_seed");
+        let (_sym2, true_proj) =
+            hidden_source_fallback_pad_prf_projection_values_from_seed(&fixture.pad_seed)
+                .expect("ground-truth projection");
+        assert_eq!(
+            attacker_proj, true_proj,
+            "full hidden-source projection recovered key-free from the public proof"
+        );
+
+        //   (b) the per-block secret pad residue table,
+        for block in 0..GROUPS {
+            let attacker_block =
+                reviewed_fq12_pad_residues_from_seed_bounded(&attacker_pad_seed, block)
+                    .expect("attacker recomputes pad block");
+            let true_block = reviewed_fq12_pad_residues_from_seed_bounded(&fixture.pad_seed, block)
+                .expect("true pad block");
+            assert_eq!(
+                attacker_block, true_block,
+                "secret pad table block {block} recovered key-free"
+            );
+        }
+
+        //   (c) the per-lane projection masks (which the design claims "hide" the projection).
+        let attacker_masks =
+            reviewed_fq12_packed_witness_state18_projection_masks(&attacker_pad_seed, leaf.slot_id);
+        let true_masks =
+            reviewed_fq12_packed_witness_state18_projection_masks(&fixture.pad_seed, leaf.slot_id);
+        assert_eq!(
+            attacker_masks, true_masks,
+            "PRF-fresh projection masks fully recovered from the public pad_seed: \
+             the mask hides nothing once its seed is published alongside it"
+        );
+
+        // (4) The masked_projection on the committed witness is therefore fully unmasked by the
+        // attacker: masked - mask = account_projection (the witness), recovered key-free.
+        let opening = reviewed_fq12_masked_state18_packed_witness_opening(
+            &binding.packed_witness_commitment,
+            &attacker_pad_seed,
+            leaf.slot_id,
+        )
+        .expect("attacker reconstructs the full opening from public pad_seed");
+        assert_eq!(
+            opening.account_projection, proof.account_projection,
+            "attacker unmasks the committed projection to the witness with zero key material"
+        );
+        // BREAK: the deployable masked-state18 creation proof provides 0-bit hiding of the witness.
+    }
+
     #[test]
     fn path2_masked_state18_bindings_only_dispatcher_routes_to_proof_carrying_path() {
         // The bindings-only dispatcher recognizes the kind as HANDLED (it does not return the
