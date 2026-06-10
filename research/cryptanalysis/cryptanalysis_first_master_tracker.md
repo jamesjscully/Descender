@@ -410,3 +410,22 @@ public verifier (:26653) and prove it equivalent to the tested harness-replay re
 the two highest-redesign-risk obstructions HELD; next risk-first target is #20 (SIS/
 response-link ≥2¹²⁸ margin, partly external) + the #23 bridge assumption. Artifacts:
 `creation_time_relation_validity_VERDICT.md`, `creation_time_relation_validity_probe.rs`.
+
+**Risk-first #20 (statistical witness-hiding, WS4 #11) — CONDITIONAL-GAP, real
+pre-deployment blocker (2026-06-10).** Prove-AND-break on real transcripts (empirical
+battery over 100k signatures + sampler-discipline audit; verified directly in source).
+FINDING: the deployed `reference_sign_with_proof` — the LINEAR_SIGMA_TARGET 260B
+representative SCAFFOLD (4748, the "representative-style" path 6448) — publishes pad-
+conditioned openings IN CLEAR: `openings = const mask [12,Q-12] + pad(seed,block)`
+(4703/4746) with constant `proof_commitment` (97) and a static keygen-time seed, so the
+pad is recoverable KEY-FREE and pad witness-hiding is ~0 bits, not ≥140. RECLASSIFIED
+from the attack agent's "BROKEN": the leak is in the known non-deployable SCAFFOLD, and
+the `residual_hiding_meets_140` certificate EXPLICITLY excludes the pad (`excluded_
+conditioning`, 2596-2599 — it certifies the quotient FIBER only). The pad-hiding predicate
+(`pad_constraints_layer`, 2602) is specified-but-unrealized + already tracked by the HIGH
+finding 6459. So witness-hiding is NOT established for the pad (must close before deploy;
+real redesign risk: stop emitting pad openings in clear + fresh per-sig mask + charge
+`active_pad_constraint_bits`), but it is NOT a proof the intended conditioned-pad design
+is unsound. NEXT risk-first action (task #24): determine whether the DEPLOYABLE design can
+hide the pad. Artifacts: `leakage_battery_VERDICT.md`, `leakage_battery_findings.md`,
+`hiding_sampler_discipline_audit.md`, `scripts/research/leakage_battery.py`, `--leak-sample`.
