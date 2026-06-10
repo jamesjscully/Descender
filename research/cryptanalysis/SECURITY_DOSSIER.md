@@ -57,7 +57,7 @@ magnitude rests on the named assumption.
 | # | Event | EC file | Key proven lemma | ε @ q=2⁶⁴ | Rests on | Implication |
 |---|---|---|---|---|---|---|
 | — | accepted-spend forgery (same-action, fresh msg; AP2-N003 / GAP E) | `accepted_spend_forgery_reduction.ec` | `accepted_spend_term_le_2pow_neg129` (via `inside_box_impossible`, `forge_splits`, `forgeSA_le_codedSIS`) | ≤ 2⁻¹²⁹ | **EXTERNAL** coded-SIS beyond-box (`coded_sis_beyond_box_hard`) + QROM action-collision (`action_collision_qrom`, ~2⁻¹⁶²) | **PROVEN** |
-| 1 | `creationTimeHiddenSourceSoundness` | `break_creation_time_hidden_source.ec` | `break_implies_bridge_win` (qed) → `break_prob_zero_under_bridge` | = 0 (given bridge) | verifier-exporter bridge (`verifier_exporter_bridge`, 52-inactive-column exclusion) | **PROVEN** |
+| 1 | `creationTimeHiddenSourceSoundness` | `break_creation_time_hidden_source.ec` | `break_implies_bridge_win` (qed) → `break_prob_zero_under_bridge` | = 0 (given bridge) | verifier-exporter bridge — residual axiom `verifier_exporter_bridge` (52-inactive-column exclusion); a maximal-rigor attempt to restate it as the contrapositive `creation_validity_is_active` was REVERTED (logically-equivalent, not a discharge — see §3(b)5) | **PROVEN given bridge** |
 | 2 | `prevalidationLeafBinding` | `break_prevalidation_leaf_binding.ec` | `break_implies_second_preimage` → `break_le_spr` → `break_le_spr_bound` | 2⁻¹⁹² | SHA-256 second-preimage-resistance (n=256) | **PROVEN** |
 | 3 | `prevalidationRegistryBinding` | `break_prevalidation_registry_binding.ec` | `step_break_sets_second_preimage` → `B_wins_when_break` → `break_le_spr` → `registry_break_bound` | 2⁻¹⁹² | SHA-256 second-preimage-resistance (n=256) | **PROVEN** |
 | 4 | `prevalidationDataAvailability` | (no EC file — see §8) | — | n/a | held fail-closed; verifier built (§5), not yet an EC reduction | **build-item** |
@@ -69,7 +69,9 @@ magnitude rests on the named assumption.
 
 **Union-bound composition (the spine + gap_c wiring):**
 
-- `spike_union_bound.ec`: `success_le_union` (Goal 1, union bound) + `break_zero_of_never`
+- `spike_union_bound.ec`: `success_le_union` (Goal 1, union bound — **now PROVEN
+  from the pointwise `structural_split` predicate via `mu_le`+`mu_or`+`mu_has_le`,
+  no longer an axiom; see §4 GAP B**) + `break_zero_of_never`
   (Goal 2, never-firing ⇒ 0 — full `byphoare`) + `success_le_target` /
   `success_le_2pow_neg128` (Goal 3/3b: per-event ≤2⁻¹³³, accept ≤2⁻¹²⁹ ⇒ ≤2⁻¹²⁸,
   Bigreal.ler_sum + Z3 arithmetic, **no admit**).
@@ -151,14 +153,31 @@ mass**. They are not hardness assumptions.
    max|Pearson| = 0.0049 over 50k seeds. Pad hiding reduces to SHA-256 being a good
    frame-PRF on the mask domain (`deployable_pad_hiding_VERDICT.md`). *Standard:*
    SHA-256-as-RO frame-PRF; non-novel.
-5. **Verifier-exporter bridge** (bears #1; `verifier_exporter_bridge`). An
-   accepted-yet-broken creation's source discrepancy lands on a verifier-VISIBLE
-   active column, never solely on one of the 52 excluded inactive columns
-   (`bridge_semantics_closed`). *Standard:* "the exporter does not leak
+   *(2026-06-10 — a maximal-rigor attempt to fold this into the §3(b)(3) QROM
+   assumption did NOT genuinely discharge and was REVERTED/DELETED. The attempt
+   (`frame_prf_ro_reduction.ec`) typechecked, but its load-bearing axiom
+   `sha256_ro_indistinguishable` directly bounded the real-mask-vs-uniform-mask gap
+   — i.e. it ASSUMED the pad-hiding conclusion rather than reducing to an
+   Hsha-vs-true-RO distinguishing gap; the reduction functor was dead scaffolding
+   never wired into the bound. The adversarial verifier flagged it FAKED and the
+   file was deleted. So this remains an INDEPENDENT named-standard frame-PRF
+   assumption — NOT reuse of the action-map QROM axiom. An honest RO discharge
+   remains genuine future work.)*
+5. **Verifier-exporter bridge** (bears #1). An accepted-yet-broken creation's
+   source discrepancy lands on a verifier-VISIBLE active column, never solely on
+   one of the 52 excluded inactive columns. *Standard:* "the exporter does not leak
    verifier-invisible coordinates into acceptance" — sits atop the PROVEN
    relation-validity arm; not a novel hardness claim. (Listed here as a named
    standard *soundness* assumption; an external reviewer who considers it non-standard
    should escalate it to §6(iv).)
+   *(2026-06-10 — a maximal-rigor attempt to restate this as the contrapositive
+   `creation_validity_is_active` (`A ⟹ H` vs the old `¬H ⟹ ¬A`) was REVERTED:
+   the two are LOGICALLY EQUIVALENT (interderivable in pure FOL with no auxiliary
+   axioms, verified both directions in EC), axiom count unchanged 6 → 6 — a
+   rephrasing, NOT a discharge or weakening. The adversarial verifier flagged it
+   FAKED-as-reduction; the file was reverted to the honest `verifier_exporter_bridge`
+   axiom. This item genuinely remains a named-standard soundness assumption, sitting
+   atop the PROVEN relation-validity arm + the PROVEN active-subspace nullity-0.)*
 
 ### 3(c) EXTERNAL — irreducible, MUST go to third-party review
 
@@ -176,6 +195,23 @@ mass**. They are not hardness assumptions.
 
 **Tier counts: PROVEN = 6 classes · NAMED-STANDARD = 5 · EXTERNAL = 1.**
 
+**FINAL MINIMIZED ASSUMPTION SET (after the 2026-06-09 pass).** Unchanged tier
+counts — the only *genuine* reduction this pass was to a **seam**, not a tier
+item: the GAP B Lean↔EC coupling (§4) was reduced from **two probability-inequality
+axioms** to **one pointwise, probability-free predicate axiom** (`structural_split`),
+with the union bound itself now a PROVEN EC lemma. **No carried axiom in the
+union-bound spine carries probability mass anymore.** The other two attempted
+discharges did **not** reduce the set and were REVERTED/DELETED: the SHA-256
+frame-PRF (§3(b)4) fold-into-QROM attempt was FAKED (its axiom assumed the
+conclusion; dead RO scaffolding) and the file was deleted; the verifier-exporter
+bridge (§3(b)5) attempt only restated it as the LOGICALLY-EQUIVALENT contrapositive
+(axiom count 6 → 6, no weakening) and was reverted to the honest
+`verifier_exporter_bridge` axiom. The irreducible
+core is therefore: **SHA-256 SPR/CR + action-map QROM collision + SHA-256 frame-PRF
++ verifier-exporter bridge soundness** (named-standard, 5) · **coded-SIS beyond-box
+hardness + SHA-256 matrix-sampler pseudorandomness** (external, 1) · plus the two
+correspondence seams GAP B (now a single pointwise predicate) and GAP D.
+
 ---
 
 ## 4. SEAMS / CARRIED MODELING ASSUMPTIONS (GAP B / GAP D)
@@ -184,15 +220,26 @@ Cross-tool correspondence is **not** machine-checked end-to-end. Per
 `formal/README.md` (seam 1, seam 4) these are the **managed standing assumptions**;
 seams 2/3 (EasyCrypt↔Jasmin, spec↔Rust) are closed by proof/conformance.
 
-- **GAP B — Lean↔EC event-coupling (OB-1).** The coupling
-  `success ⇒ accepted ∨ ⋁ break` is **Lean-PROVEN**
+- **GAP B — Lean↔EC event-coupling (OB-1) — REDUCED 2026-06-09 (the union bound
+  is now a PROVEN EC lemma; only a pointwise, probability-free predicate axiom
+  remains).** The coupling `success ⇒ accepted ∨ ⋁ break` is **Lean-PROVEN**
   (`Path2AcceptedSpendClosure.lean:109`
   `success_implies_accepted_or_break_of_structural`, derived not assumed — no
-  `sorry`), but in EC it is **axiomatized** as `success_implies_split`
-  (`spike_union_bound.ec:129`), because the spike keeps success/accepted/break as
-  three separate procedures. The accepted-spend file *does* prove its analogous
-  single-experiment coupling for real (`ForgeSplit` + `split_prob`,
-  `accepted_spend_forgery_reduction.ec`). Also EC-primitive: `break_univ_uniq`,
+  `sorry`; `lake build Descender.Path2AcceptedSpendClosure` exit 0, 3297 jobs).
+  Previously the EC side carried **two probability-inequality axioms**
+  (`success_implies_split` + a duplicate `success_le_union_c`) that imported the
+  whole union bound. These are now **removed**; the EC residual is the single
+  pointwise predicate axiom `structural_split (o : outcome) : success_pred o =>
+  accepted_pred o \/ has (break_pred o) break_univ` (`spike_union_bound.ec:109`) —
+  the verbatim image of the Lean theorem's conclusion, carrying **no probability
+  mass**. From it the union bound `success_le_union` is a **PROVEN EC lemma**
+  (`mu_le` from the pointwise containment + `mu_or` + the stdlib union bound
+  `Distr.mu_has_le`), not an axiom. Teeth-tested: replacing `structural_split` with
+  `true` breaks the union-bound proof (exit 1, "does not apply to the goal"), so
+  the axiom is genuinely consumed and not vacuously closed. The new axiom is
+  **strictly more primitive**: the probability inequality is derivable from the
+  pointwise implication (done in-file) but not conversely. Net axiom change in
+  `spike_union_bound.ec`: **5 → 4**. Also EC-primitive: `break_univ_uniq`,
   `break_univ_total`, `break_card9` (Lean proves card by `decide`).
 - **GAP D — abstract↔EC fidelity bridges.** The registry-binding model (acceptance
   = digest-equality at a digest-keyed entry) and the hidden-source operational
@@ -203,7 +250,9 @@ seams 2/3 (EasyCrypt↔Jasmin, spec↔Rust) are closed by proof/conformance.
 **Reviewer-checklist items a human must confirm (the seam-1 checklist):**
 (i) the EC `GAME`/experiment models the same Σ-protocol/SIS relation as the Lean
 `AcceptedSpendNumericGame` and the canonical spec §3; (ii) the EC
-`success_implies_split` axiom is the faithful image of the Lean-derived coupling;
+`structural_split` axiom (`spike_union_bound.ec:109`) is the faithful pointwise
+image of the Lean-derived coupling `success_implies_accepted_or_break_of_structural`
+(the union bound `success_le_union` is now PROVEN from it in EC, no longer assumed);
 (iii) the per-event EC break predicates match `Path2FullSpendConcrete.ConcreteBreakFor`;
 (iv) the SPR/coded-SIS/bridge games in EC match the deployed verifier semantics
 (`production_reference.rs` line cites in each file header).
@@ -253,8 +302,10 @@ seams 2/3 (EasyCrypt↔Jasmin, spec↔Rust) are closed by proof/conformance.
    sampler that fixes the public matrix M is a sound PRG / behaves as a random
    matrix for SIS hardness (no algebraic shortcut from the sampler structure).
 3. **The seam-correspondence reviewer checklist** (§4): confirm Lean↔EC spec
-   correspondence (GAP B `success_implies_split`) and the abstract↔EC fidelity
-   bridges (GAP D), since these are not machine-checked end-to-end.
+   correspondence — now narrowed to the single pointwise predicate axiom GAP B
+   `structural_split` being the faithful image of the Lean theorem (the union bound
+   over it is PROVEN in EC) — and the abstract↔EC fidelity bridges (GAP D), since
+   these are not machine-checked end-to-end.
 4. **The carried named assumptions (§3(b)) if any is considered non-standard** —
    in particular the verifier-exporter bridge (52-inactive-column exclusion) and
    the SHA-256 frame-PRF pad-hiding assumption, if a reviewer does not accept them
@@ -293,8 +344,10 @@ This is exactly the recalibrated bar: a crisp, mostly-standard assumption set wi
   term** and forces a parameter change or redesign. A reviewer rejecting the
   verifier-exporter bridge as non-standard would re-open #1 as a gap.
 - *Positively (to claim closed, not just reduced):* (a) discharge the §3(c)
-  external residual via accepted third-party cryptanalysis; (b) close GAP B by
-  deriving `success_implies_split` against the EC experiment (replace the axiom);
+  external residual via accepted third-party cryptanalysis; (b) close the *residual*
+  GAP B by deriving the pointwise `structural_split` against the actual EC
+  experiment distribution (the union bound over it is already proven; the
+  probability-mass coupling axioms were removed 2026-06-09);
   (c) discharge or formally accept the GAP D fidelity bridges; (d) flip production
   to accepting only along the D3 ladder after external review.
 
