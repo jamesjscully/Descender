@@ -1,0 +1,40 @@
+{
+  "creation_survivor_found": false,
+  "field_bits": 14,
+  "generated_at": "2026-06-10T03:49:14.266131+00:00",
+  "projection_lanes": 6,
+  "q": 12289,
+  "results": {
+    "bijection": {
+      "collision": null,
+      "conclusion": "witness_commitment <-> (12 syndrome residues, 6 account_projection residues) is a bijection on canonical inputs for fixed (pad_seed, slot_id). Therefore a LEAF-FIXED commitment fixes ALL 18 residues, hence the account_projection (the 6-lane witness opening) is UNIQUELY determined.",
+      "distinct_parts_gave_distinct_commitments": true,
+      "round_trip_recovered_parts": true,
+      "trials": 20000
+    },
+    "repack_is_tautology": {
+      "conclusion": "repack is an algebraic identity (masked = (masked-mask)+mask); it adds no independent constraint. The binding power is entirely that the leaf FIXES account_witness_commitment, which fixes all 18 residues.",
+      "repack_always_matched_commitment": true,
+      "trials": 2000
+    },
+    "residual": {
+      "only_remaining_attack": "SHA256 collision on the opening_commitment frame or the witness_opening_digest frame -- this is the named `prevalidation_leaf_binding_break` / `qrom_or_domain_separation_break`, NOT an algebraic creation-time survivor",
+      "same_commitment_two_openings": "impossible (bijection)",
+      "witness_free_assignment": "impossible: account_projection is read out of the fixed commitment; exactly one opening per leaf"
+    },
+    "spend_survivor_under_creation": {
+      "conclusion": "The two spend-only survivor witnesses map to TWO DISTINCT opening_commitments. The leaf fixes exactly ONE opening_commitment. So at most ONE of {w_a, w_b} can satisfy a given leaf. The spend-only two-witnesses survivor is KILLED at creation time: it required the account_witness_commitment to move freely, but the leaf pins it.",
+      "opening_commitment_a": "be32f042d72dbaf779e763033ffd7b511818a4ba19a0037faf2c4a6472ba1daa",
+      "opening_commitment_b": "e684004c139f0b1522cf324499ebc9b2f6468cdee92fa3e303857d82c2feddf4",
+      "opening_commitments_distinct": true,
+      "witness_a": "0000000000000000000000000000000000000000000c5d03abe9c51bc7812d0a",
+      "witness_b": "0100000000000000000000000000000000000000000c5d03abe9c51bc7812d0a",
+      "witnesses_distinct": true
+    }
+  },
+  "schema": "Descender.creation_time_witness_binding_survivor_search.v1",
+  "slack_bits": 4,
+  "state18_rows": 18,
+  "syndrome_rows": 12,
+  "verdict": "NO creation-time algebraic survivor: the masked_state18 repack-to-LEAF-FIXED-commitment makes the account-witness opening map injective. The spend-only two-witnesses survivor is killed because the leaf pins a single account_witness_commitment and the 18-residue packing is a bijection. The binding reduces to SHA256 collision resistance (a named break), not an open algebraic gap."
+}
