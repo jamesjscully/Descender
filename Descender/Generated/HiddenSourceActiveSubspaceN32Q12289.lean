@@ -28,6 +28,9 @@
     instance : NeZero q := by
       unfold q
       infer_instance
+    instance : Fact (Nat.Prime q) := by
+      unfold q
+      exact ⟨by norm_num⟩
 
     def oldProjectionColumns : Nat := 64
     def activeProjectionLanes : Nat := 12
@@ -90,9 +93,10 @@
           52 := by
       native_decide
 
-    theorem activeLaneNullityZero_q12289 :
-        ActiveLaneNullityZero q activeProjectionLanes :=
-      activeLaneNullityZero q activeProjectionLanes
+    theorem activeCoefficientsNonzero_q12289 :
+        coefficientsNonzeroModQ q activeSymbols := by
+      unfold q coefficientsNonzeroModQ
+      native_decide
 
     def certificate : ActiveSubspaceCertificate q where
       oldProjectionColumns := oldProjectionColumns
@@ -106,7 +110,7 @@
       allLanes_lt := allActiveLanes_lt
       survivor_excluded := oldSurvivorColumn_excluded
       inactive_columns_eq := inactiveProjectionColumns_eq
-      active_lane_nullity_zero := activeLaneNullityZero_q12289
+      coefficients_nonzero := activeCoefficientsNonzero_q12289
 
     theorem exact_survivor_excluded_from_active_relation :
         oldSurvivorColumn ∉ sourceColumns activeSymbols :=
@@ -116,9 +120,9 @@
         activeSymbols.length = 12 := by
       native_decide
 
-    theorem active_projection_nullity_zero :
-        ActiveLaneNullityZero q 12 :=
-      activeLaneNullityZero q 12
+    theorem active_projection_readout_detects :
+        ActiveLaneReadoutDetects q activeSymbols :=
+      certificate.readout_detects
 
     theorem inactive_projection_columns_eq_52 :
         oldInactiveProjectionColumns oldProjectionColumns activeSymbols =

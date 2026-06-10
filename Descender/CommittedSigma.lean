@@ -873,7 +873,7 @@ end BoundedResponseLinkKernelCertificate
 /--
 Minimal account-carried hidden-link interface.
 
-This is the concrete theorem shape for the 250-byte stateful target: if the
+This is the concrete theorem shape for the 256-byte stateful target: if the
 account slot is well-formed, the sigma equation holds, and the public opening
 accepts, then the consumed account slot is backed by a single hidden witness and
 prechallenge randomizer, unless the account-link proof breaks.
@@ -1067,7 +1067,7 @@ def AccountCarriedVerifierAccepts
 /--
 Top-level account-carried soundness certificate.
 
-This is the deployment theorem surface for the 250-byte stateful route.  It is
+This is the deployment theorem surface for the 256-byte stateful route.  It is
 stronger than the generic committed-sigma certificate because the accepted
 transcript must be backed by the consumed account slot's witness, randomizer,
 and hidden-link commitments.
@@ -2797,7 +2797,7 @@ def hiddenLinkBudgetAt (cap maskedResponseBytes : Nat) : Nat :=
   cap - transactionBytes maskedResponseBytes 0
 
 theorem baseTransactionBytes_eq :
-    baseTransactionBytes = 181 := by
+    baseTransactionBytes = 187 := by
   native_decide
 
 theorem proofCommitmentBytes_eq :
@@ -2807,7 +2807,7 @@ theorem proofCommitmentBytes_eq :
 theorem transactionBytes_eq
     (maskedResponseBytes hiddenLinkOpeningBytes : Nat) :
     transactionBytes maskedResponseBytes hiddenLinkOpeningBytes =
-      181 + 32 + maskedResponseBytes + hiddenLinkOpeningBytes := by
+      187 + 32 + maskedResponseBytes + hiddenLinkOpeningBytes := by
   unfold transactionBytes proofBytes proofCommitmentBytes
   rw [statefulTransactionWithProofBytes_eq]
   norm_num [linearSigmaProofCommitmentBytes]
@@ -2830,7 +2830,7 @@ def currentPublicSigmaEquationCandidate : OpeningInstantiationCandidate where
   witnessHidingArgument := True
 
 theorem currentPublicSigmaEquation_transactionBytes_eq :
-    transactionBytes linearSigmaMaskedWitnessBytes 0 = 254 := by
+    transactionBytes linearSigmaMaskedWitnessBytes 0 = 260 := by
   native_decide
 
 theorem currentPublicSigmaEquationCandidate_not_structurallyAdmissible :
@@ -2840,75 +2840,82 @@ theorem currentPublicSigmaEquationCandidate_not_structurallyAdmissible :
     (by intro h; cases h)
 
 /--
-If the current 41-byte masked-response width is kept, a sub-256 transaction has
-room for at most two hidden-link bytes.  Any real proof link therefore needs a
-different architecture or a larger byte target.
+After the AP2-004 challenge widening (23 algebraic + 4 hardening bytes), the
+41-byte masked-response width no longer fits below a 256-byte transaction at
+all: the zero-hidden-link payload already reaches 260 bytes.  Any sub-256
+target therefore needs a narrower response or a different architecture; below
+269 bytes at most nine hidden-link bytes remain.
 -/
-theorem response41_under256_iff
+theorem response41_not_under256
     {hiddenLinkOpeningBytes : Nat} :
-    transactionBytes 41 hiddenLinkOpeningBytes ≤ 256 ↔
-      hiddenLinkOpeningBytes ≤ 2 := by
+    ¬ transactionBytes 41 hiddenLinkOpeningBytes ≤ 256 := by
   rw [transactionBytes_eq]
-  norm_num
+  omega
+
+theorem response41_under269_iff
+    {hiddenLinkOpeningBytes : Nat} :
+    transactionBytes 41 hiddenLinkOpeningBytes ≤ 269 ↔
+      hiddenLinkOpeningBytes ≤ 9 := by
+  rw [transactionBytes_eq]
   omega
 
 theorem currentResponse_hiddenLinkBudget_under256_eq :
-    hiddenLinkBudgetAt 256 linearSigmaMaskedWitnessBytes = 2 := by
+    hiddenLinkBudgetAt 256 linearSigmaMaskedWitnessBytes = 0 := by
   native_decide
 
 theorem currentResponse_hiddenLinkBudget_under269_eq :
-    hiddenLinkBudgetAt 269 linearSigmaMaskedWitnessBytes = 15 := by
+    hiddenLinkBudgetAt 269 linearSigmaMaskedWitnessBytes = 9 := by
   native_decide
 
 /--
-The 37-byte response target is the smallest currently modeled fiber-saturated
-quotient width that can still hit 250 bytes before adding extra hidden-link
-opening bytes.
+With the widened 27-byte hardened challenge, the 37-byte response target lands
+exactly on 256 bytes with no extra hidden-link opening bytes: there is no
+remaining sub-256 hidden-link budget on this width.
 -/
 abbrev fiberSaturatedResponseBytes : Nat := 37
 
 theorem fiberSaturatedNoExtra_transactionBytes_eq :
-    transactionBytes fiberSaturatedResponseBytes 0 = 250 := by
+    transactionBytes fiberSaturatedResponseBytes 0 = 256 := by
   native_decide
 
 theorem fiberSaturated_under256_iff
     {hiddenLinkOpeningBytes : Nat} :
     transactionBytes fiberSaturatedResponseBytes hiddenLinkOpeningBytes ≤ 256 ↔
-      hiddenLinkOpeningBytes ≤ 6 := by
+      hiddenLinkOpeningBytes = 0 := by
   rw [transactionBytes_eq]
-  change 181 + 32 + 37 + hiddenLinkOpeningBytes ≤ 256 ↔
-    hiddenLinkOpeningBytes ≤ 6
+  change 187 + 32 + 37 + hiddenLinkOpeningBytes ≤ 256 ↔
+    hiddenLinkOpeningBytes = 0
   omega
 
 theorem fiberSaturated_hiddenLinkBudget_under256_eq :
-    hiddenLinkBudgetAt 256 fiberSaturatedResponseBytes = 6 := by
+    hiddenLinkBudgetAt 256 fiberSaturatedResponseBytes = 0 := by
   native_decide
 
 theorem fiberSaturated_hiddenLinkBudget_under269_eq :
-    hiddenLinkBudgetAt 269 fiberSaturatedResponseBytes = 19 := by
+    hiddenLinkBudgetAt 269 fiberSaturatedResponseBytes = 13 := by
   native_decide
 
 /--
 The 39-byte response target models the variant that keeps the local fiber-state
-equality while retaining exactly four hidden-link bytes below 256.
+equality.  After the challenge widening it overshoots 256 bytes by two even
+with no hidden-link bytes, so it no longer has a sub-256 deployment shape.
 -/
 abbrev fiberStatePreservingResponseBytes : Nat := 39
 
 theorem fiberStatePreservingNoExtra_transactionBytes_eq :
-    transactionBytes fiberStatePreservingResponseBytes 0 = 252 := by
+    transactionBytes fiberStatePreservingResponseBytes 0 = 258 := by
   native_decide
 
-theorem fiberStatePreserving_under256_iff
+theorem fiberStatePreserving_not_under256
     {hiddenLinkOpeningBytes : Nat} :
-    transactionBytes fiberStatePreservingResponseBytes hiddenLinkOpeningBytes ≤
-      256 ↔ hiddenLinkOpeningBytes ≤ 4 := by
+    ¬ transactionBytes fiberStatePreservingResponseBytes hiddenLinkOpeningBytes ≤
+      256 := by
   rw [transactionBytes_eq]
-  change 181 + 32 + 39 + hiddenLinkOpeningBytes ≤ 256 ↔
-    hiddenLinkOpeningBytes ≤ 4
+  change ¬ 187 + 32 + 39 + hiddenLinkOpeningBytes ≤ 256
   omega
 
 theorem fiberStatePreserving_hiddenLinkBudget_under256_eq :
-    hiddenLinkBudgetAt 256 fiberStatePreservingResponseBytes = 4 := by
+    hiddenLinkBudgetAt 256 fiberStatePreservingResponseBytes = 0 := by
   native_decide
 
 /--
@@ -2989,20 +2996,20 @@ theorem signature_budget_under256_of_fiberSaturated
     (hresponse :
       I.maskedResponseBytes =
         N32Q12289CommittedSigmaByteFrontier.fiberSaturatedResponseBytes) :
-    I.transactionBytes ≤ 256 ↔ I.signatureHiddenLinkBytes ≤ 6 := by
+    I.transactionBytes ≤ 256 ↔ I.signatureHiddenLinkBytes = 0 := by
   unfold transactionBytes
   rw [hresponse]
   exact N32Q12289CommittedSigmaByteFrontier.fiberSaturated_under256_iff
 
-theorem signature_budget_under256_of_fiberStatePreserving
+theorem signature_budget_not_under256_of_fiberStatePreserving
     {I : AccountCarriedHiddenLinkInstantiation}
     (hresponse :
       I.maskedResponseBytes =
         N32Q12289CommittedSigmaByteFrontier.fiberStatePreservingResponseBytes) :
-    I.transactionBytes ≤ 256 ↔ I.signatureHiddenLinkBytes ≤ 4 := by
+    ¬ I.transactionBytes ≤ 256 := by
   unfold transactionBytes
   rw [hresponse]
-  exact N32Q12289CommittedSigmaByteFrontier.fiberStatePreserving_under256_iff
+  exact N32Q12289CommittedSigmaByteFrontier.fiberStatePreserving_not_under256
 
 end AccountCarriedHiddenLinkInstantiation
 
@@ -3029,7 +3036,7 @@ theorem accountCarriedFiberSaturatedTarget_transactionBytes_eq
     (accountHiddenLinkBytes proverWork verifierWork : Nat)
     (hInterface hRejects hHiding : Prop) :
     (accountCarriedFiberSaturatedTarget accountHiddenLinkBytes proverWork
-      verifierWork hInterface hRejects hHiding).transactionBytes = 250 := by
+      verifierWork hInterface hRejects hHiding).transactionBytes = 256 := by
   unfold AccountCarriedHiddenLinkInstantiation.transactionBytes
   exact fiberSaturatedNoExtra_transactionBytes_eq
 
@@ -3039,7 +3046,6 @@ theorem accountCarriedFiberSaturatedTarget_under256
     (accountCarriedFiberSaturatedTarget accountHiddenLinkBytes proverWork
       verifierWork hInterface hRejects hHiding).transactionBytes ≤ 256 := by
   rw [accountCarriedFiberSaturatedTarget_transactionBytes_eq]
-  omega
 
 theorem accountCarriedFiberSaturatedTarget_structurallyAdmissible
     {accountHiddenLinkBytes proverWork verifierWork : Nat}
@@ -3256,7 +3262,7 @@ theorem accountCarriedBoundedKernelFiberSaturatedTarget_transactionBytes_eq
     (hRejects hHiding : Prop) :
     (accountCarriedBoundedKernelFiberSaturatedTarget S O
       accountHiddenLinkBytes proverWork verifierWork hRejects
-      hHiding).transactionBytes = 250 := by
+      hHiding).transactionBytes = 256 := by
   exact
     accountCarriedFiberSaturatedTarget_transactionBytes_eq
       accountHiddenLinkBytes proverWork verifierWork
@@ -3298,7 +3304,6 @@ theorem accountCarriedBoundedKernelFiberSaturatedTarget_under256
       accountHiddenLinkBytes proverWork verifierWork hRejects
       hHiding).transactionBytes ≤ 256 := by
   rw [accountCarriedBoundedKernelFiberSaturatedTarget_transactionBytes_eq]
-  omega
 
 theorem accountCarriedBoundedKernelFiberSaturatedTarget_structurallyAdmissible
     {Witness Randomizer StatementDigest WitnessCommitment RandomizerCommitment
@@ -3636,7 +3641,7 @@ theorem accountCarriedBoundedKernelFiberSaturatedTargetOfGates_transactionBytes_
     (accountHiddenLinkBytes proverWork verifierWork : Nat)
     (G : BoundedKernelTargetStructuralGates) :
     (accountCarriedBoundedKernelFiberSaturatedTargetOfGates S O
-      accountHiddenLinkBytes proverWork verifierWork G).transactionBytes = 250 :=
+      accountHiddenLinkBytes proverWork verifierWork G).transactionBytes = 256 :=
   accountCarriedBoundedKernelFiberSaturatedTarget_transactionBytes_eq S O
     accountHiddenLinkBytes proverWork verifierWork
     G.postChallengeRepresentativeRejected G.witnessHidingArgument
@@ -3666,7 +3671,7 @@ theorem accountCarriedBoundedKernelFiberSaturatedTargetOfReview_transactionBytes
     (accountHiddenLinkBytes proverWork verifierWork : Nat)
     (R : BoundedKernelTargetStructuralReview) :
     (accountCarriedBoundedKernelFiberSaturatedTargetOfReview S O
-      accountHiddenLinkBytes proverWork verifierWork R).transactionBytes = 250 :=
+      accountHiddenLinkBytes proverWork verifierWork R).transactionBytes = 256 :=
   accountCarriedBoundedKernelFiberSaturatedTargetOfGates_transactionBytes_eq
     S O accountHiddenLinkBytes proverWork verifierWork R.gates
 
@@ -3850,7 +3855,7 @@ theorem target_transactionBytes_eq
         responseCommit)
     (accountHiddenLinkBytes proverWork verifierWork : Nat) :
     (I.target accountHiddenLinkBytes proverWork verifierWork).transactionBytes =
-      250 :=
+      256 :=
   accountCarriedBoundedKernelFiberSaturatedTargetOfReview_transactionBytes_eq
     I.preResponseSystem I.deployment accountHiddenLinkBytes proverWork
     verifierWork I.structuralReview
@@ -3913,7 +3918,7 @@ theorem accepts_accountBacked_and_target_of_noBreak
           (AccountCarriedOpening.localTranscript Tfull) w r) T ∧
     (I.target accountHiddenLinkBytes proverWork verifierWork).structurallyAdmissible ∧
     (I.target accountHiddenLinkBytes proverWork verifierWork).transactionBytes =
-      250 := by
+      256 := by
   constructor
   · exact I.accepts_accountBacked_of_noBreak hNoBreak T hAccept
   · constructor
@@ -4034,7 +4039,7 @@ theorem target_transactionBytes_eq
         (LocalOpening := LocalOpening) (LinkProof := LinkProof)
         A accountSlotWellFormed responseCommit)
     (proverWork verifierWork : Nat) :
-    (C.target proverWork verifierWork).transactionBytes = 250 :=
+    (C.target proverWork verifierWork).transactionBytes = 256 :=
   C.instantiation.target_transactionBytes_eq reviewedAccountHiddenLinkBytes
     proverWork verifierWork
 
@@ -4074,7 +4079,7 @@ theorem target_onlinePlusAccountBytes_eq
         A accountSlotWellFormed responseCommit)
     (proverWork verifierWork : Nat) :
     (C.target proverWork verifierWork).transactionBytes +
-      (C.target proverWork verifierWork).accountHiddenLinkBytes = 318 := by
+      (C.target proverWork verifierWork).accountHiddenLinkBytes = 324 := by
   rw [target_transactionBytes_eq C proverWork verifierWork,
     target_accountHiddenLinkBytes_eq C proverWork verifierWork]
 
@@ -4101,7 +4106,7 @@ theorem accepts_accountBacked_and_target_of_noBreak
         C.instantiation.preResponseSystem.localOpeningRelation
           (AccountCarriedOpening.localTranscript Tfull) w r) T ∧
     (C.target proverWork verifierWork).structurallyAdmissible ∧
-    (C.target proverWork verifierWork).transactionBytes = 250 := by
+    (C.target proverWork verifierWork).transactionBytes = 256 := by
   exact
     C.instantiation.accepts_accountBacked_and_target_of_noBreak hNoBreak
       reviewedAccountHiddenLinkBytes proverWork verifierWork T hAccept
@@ -4109,13 +4114,13 @@ theorem accepts_accountBacked_and_target_of_noBreak
 end ConcreteReviewedAccountCommitmentRepresentation
 
 /--
-Combined reviewed target theorem for the 250-byte account-carried row.
+Combined reviewed target theorem for the 256-byte account-carried row.
 
 This is the deployment-facing shape produced by the current proof architecture:
 bounded-kernel deployment obligations handle the accepting transcript, while the
 structural review object handles the byte-frontier admissibility gates.  Under
 the named no-break hypotheses, an accepting account-aware verifier transcript
-is backed by the hidden account witness/randomizer and the advertised 250-byte
+is backed by the hidden account witness/randomizer and the advertised 256-byte
 target is structurally admissible.
 -/
 theorem accountCarriedBoundedKernelReviewedTarget_accepts_accountBacked_and_structurallyAdmissible
@@ -4160,7 +4165,7 @@ theorem accountCarriedBoundedKernelReviewedTarget_accepts_accountBacked_and_stru
     (accountCarriedBoundedKernelFiberSaturatedTargetOfReview S O
       accountHiddenLinkBytes proverWork verifierWork R).structurallyAdmissible ∧
     (accountCarriedBoundedKernelFiberSaturatedTargetOfReview S O
-      accountHiddenLinkBytes proverWork verifierWork R).transactionBytes = 250 := by
+      accountHiddenLinkBytes proverWork verifierWork R).transactionBytes = 256 := by
   constructor
   · exact
       O.accepts_accountBacked_of_noBreaks S hNoPreResponseBreak

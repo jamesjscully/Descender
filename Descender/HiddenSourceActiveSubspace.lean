@@ -1,4 +1,5 @@
 import Mathlib.Data.ZMod.Basic
+import Mathlib.Tactic
 
 namespace Descender
 namespace HiddenSourceActiveSubspace
@@ -43,19 +44,52 @@ def survivorExcluded
   survivorColumn ∉ sourceColumns symbols
 
 /--
-The active projection equations are represented after the bridge semantics
-rewrite as one verifier-visible variable per active lane.  Nullity zero means
-that setting every verifier-visible lane equation to zero forces the active
-lane vector itself to be zero.
+Each active lane reads exactly one source column scaled by a coefficient: lane
+`s` evaluates to `s.coefficientModQ * x s.sourceColumn` on a source vector `x`
+over the old projection columns.
 -/
-def ActiveLaneNullityZero (q laneCount : Nat) [NeZero q] : Prop :=
-  ∀ x : Fin laneCount -> ZMod q, (∀ lane, x lane = 0) -> x = 0
+def laneValue (q : Nat) [NeZero q] (x : Nat -> ZMod q)
+    (s : ActiveLaneSymbol) : ZMod q :=
+  (s.coefficientModQ : ZMod q) * x s.sourceColumn
 
-theorem activeLaneNullityZero (q laneCount : Nat) [NeZero q] :
-    ActiveLaneNullityZero q laneCount := by
-  intro x hzero
-  funext lane
-  exact hzero lane
+/--
+Checkable non-degeneracy fact: every active lane coefficient is nonzero modulo
+`q`.  This is the literal-data condition that makes the readout faithful (a zero
+coefficient would let a source coordinate change without moving its lane).
+-/
+def coefficientsNonzeroModQ (q : Nat) [NeZero q]
+    (symbols : List ActiveLaneSymbol) : Prop :=
+  ∀ s ∈ symbols, (s.coefficientModQ : ZMod q) ≠ 0
+
+/--
+The faithful "active-lane nullity zero" property the bridge semantics intend:
+if every verifier-visible lane equation reads zero, then every active source
+coordinate read by a lane is itself zero.  Unlike the earlier placeholder, this
+is **not** a tautology — it fails whenever some lane coefficient is `0` modulo
+`q`, so proving it has real content (it pins down that the active readout cannot
+silently absorb a nonzero active-column perturbation).
+-/
+def ActiveLaneReadoutDetects (q : Nat) [NeZero q]
+    (symbols : List ActiveLaneSymbol) : Prop :=
+  ∀ x : Nat -> ZMod q,
+    (∀ s ∈ symbols, laneValue q x s = 0) ->
+      ∀ s ∈ symbols, x s.sourceColumn = 0
+
+/--
+When `q` is prime (`ZMod q` is a field, hence has no zero divisors) and every
+lane coefficient is nonzero, the active-lane readout detects every nonzero
+active-column perturbation.  This is the real content the generated certificate
+discharges over its literal coefficients.
+-/
+theorem activeLaneReadoutDetects_of_coefficientsNonzero
+    (q : Nat) [NeZero q] [Fact (Nat.Prime q)]
+    (symbols : List ActiveLaneSymbol)
+    (hco : coefficientsNonzeroModQ q symbols) :
+    ActiveLaneReadoutDetects q symbols := by
+  intro x hx s hs
+  rcases mul_eq_zero.mp (hx s hs) with h | h
+  · exact absurd h (hco s hs)
+  · exact h
 
 /--
 Concrete finite certificate facts for one generated active-subspace artifact.
@@ -82,8 +116,8 @@ structure ActiveSubspaceCertificate (q : Nat) [NeZero q] where
     survivorExcluded survivorColumn symbols
   inactive_columns_eq :
     oldInactiveProjectionColumns oldProjectionColumns symbols = 52
-  active_lane_nullity_zero :
-    ActiveLaneNullityZero q activeProjectionLanes
+  coefficients_nonzero :
+    coefficientsNonzeroModQ q symbols
 
 namespace ActiveSubspaceCertificate
 
@@ -99,12 +133,15 @@ theorem old_survivor_not_active
     C.survivorColumn ∉ sourceColumns C.symbols :=
   C.survivor_excluded
 
-theorem active_relation_only_zero
-    (C : ActiveSubspaceCertificate q)
-    (x : Fin C.activeProjectionLanes -> ZMod q)
-    (hzero : ∀ lane, x lane = 0) :
-    x = 0 :=
-  C.active_lane_nullity_zero x hzero
+/--
+The real readout-detection property for a certificate, derived from its
+literal nonzero coefficients (requires `q` prime so `ZMod q` is a field).
+Replaces the earlier vacuous `active_relation_only_zero`.
+-/
+theorem readout_detects [Fact (Nat.Prime q)]
+    (C : ActiveSubspaceCertificate q) :
+    ActiveLaneReadoutDetects q C.symbols :=
+  activeLaneReadoutDetects_of_coefficientsNonzero q C.symbols C.coefficients_nonzero
 
 theorem inactive_projection_column_count
     (C : ActiveSubspaceCertificate q) :
