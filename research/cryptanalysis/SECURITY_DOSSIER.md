@@ -1,13 +1,16 @@
 # Descender Post-Quantum Signature — SECURITY DOSSIER (external-review package)
 
-> ## ⛔ RED-TEAM HOLD (2026-06-10) — DO NOT SUBMIT AS-IS
+> ## ⛔ RED-TEAM HOLD (2026-06-10) — DO NOT SUBMIT AS-IS (2 of 3 fixed; HIGH-2 open)
 > An authorized internal red-team found **THREE HIGH-severity breaks** (all reproduced;
-> see `RED_TEAM_REPORT.md` + `redteam_*.md`). They **REFUTE three claims in this dossier**
-> and must be FIXED before external submission:
-> - **HIGH-1 (refutes §5 SUF-CMA):** signature malleability — the local-delta verifier accepts
->   any non-canonical opening (two in-box solutions) and Fiat-Shamir does not bind the
->   response/opening bytes ⇒ keyless byte-distinct accepting signatures for an already-signed
->   message. *Fix:* bind response/opening bytes into the FS frame (or enforce canonical openings).
+> see `RED_TEAM_REPORT.md` + `redteam_*.md`). **HIGH-1 and HIGH-3 are now FIXED + committed +
+> verified; HIGH-2 remains open** (awaiting the maintainer's descent-framed-ZK design decision).
+> Do not submit until HIGH-2 is resolved.
+> - **HIGH-1 (§5 SUF-CMA) — ✅ RESOLVED (2026-06-10):** signature malleability — the local-delta
+>   verifier accepted non-canonical openings (`local_state` has an in-box kernel (50,−1) ⇒ two
+>   valid openings) and FS did not bind the opening bytes ⇒ keyless 2nd accepting signature.
+>   *Fix applied:* canonical-response enforcement (the verifier rejects non-canonical kernel-coset
+>   reps; the honest signer already emits the canonical one). No byte/SIS/compute change; the two
+>   redteam malleability tests are flipped to assert REJECTION and pass. Commit `03924db`.
 > - **HIGH-2 (refutes deployable witness-hiding for the creation-proof path):** the masked-state18
 >   public creation proof serializes `pad_seed` in the clear ⇒ key-free full-witness recovery.
 >   *Fix:* implement the transparent-descent ZK variant; gate the `pad_seed`-in-clear path.
