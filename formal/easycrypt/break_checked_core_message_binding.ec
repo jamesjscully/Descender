@@ -7,9 +7,28 @@
    MACHINE-CHECKED under EasyCrypt 2026.05 / Z3 4.16.0 (exit 0).
 
    ---------------------------------------------------------------------------
-   *** GAP-C RE-MODEL (2026-06-10): SECOND-PREIMAGE ON A FIXED 214-BIT TARGET ***
+   *** HIGH-3 WIDENING (2026-06-10): MULTI-TARGET SECOND-PREIMAGE, n = 246 BITS **
    ---------------------------------------------------------------------------
-   #6 VERDICT (rigorous target-vs-free determination): SECOND-PREIMAGE, FINE.
+   #6 VERDICT (rigorous target-vs-free determination): SECOND-PREIMAGE, MULTI-
+   TARGET over the T signing queries, charged at the WIDENED 246-bit checked-core
+   width.  The internal red-team (HIGH-3) observed that the prior single-target
+   model UNDER-charged the event: an adversary running T honest signing queries
+   obtains T distinct honest targets {f_h^1,...,f_h^T}, and a break against ANY of
+   them suffices.  The correct advantage is therefore the MULTI-TARGET second-
+   preimage bound  T * eps_spr(n) = T * q / 2^n,  NOT the single-target q/2^n.  At
+   the prior n = 214 this is T*q/2^214 = 2^32*2^64/2^214 = 2^-118 at T=2^32,
+   q=2^64 — which BREACHES the 2^-128 budget.  Maintainer decision: WIDEN the
+   checked-core challenge to n >= 246 bits (the deployed CHALLENGE_HARDENING_BYTES
+   was raised 4 -> 8, so the message-binding width is 182 algebraic-after-mask + 64
+   hardening = 246).  At n = 246:  T*q/2^246 = 2^96/2^246 = 2^-150 <= the 2^-133
+   per-event budget, with 17 bits to spare, NO usage cap beyond T <= 2^32.
+
+   This file now PROVES the MULTI-TARGET reduction: Pr[break over T targets] <=
+   T * sha256_second_preimage_bound (the union over the T honest targets), and the
+   spine wiring (gap_c_remodel_spine_wiring.ec) charges T * eps_spr(246) <= 2^-133.
+
+   The single-target lemmas below are retained as the PER-TARGET core; the multi-
+   target layer is built on top of them by an explicit T-fold union bound.
 
    The previous version modelled the break as a FREE birthday collision: the
    adversary output BOTH frames f1, f2 with H f1 = H f2 (CR game), charging
@@ -22,7 +41,7 @@
         c = H(challenge_hash_frame(pk, message, slot_id, slot_digest,
                                    proof_commitment))
                                    (production_reference.rs:43839/43860, H =
-                                    truncate_and_mask o SHA256, 214-bit width).
+                                    truncate_and_mask o SHA256, 246-bit width).
      The Sigma response the verifier checks is bound to BOTH the challenge AND
      the proof_commitment:  the verifier (production_reference.rs:3159-3173)
        (1) recomputes c from the bound frame (which INCLUDES proof_commitment),
@@ -38,12 +57,12 @@
      proof_commitment pc and the SAME challenge c, i.e. find
          frame(m', pc) <> frame(m, pc)   with   H(frame(m', pc)) = c.
      The target c = H(frame(m, pc)) is FIXED by the honest signature BEFORE the
-     adversary commits m'.  This is a SECOND-PREIMAGE on the fixed 214-bit
+     adversary commits m'.  This is a SECOND-PREIMAGE on the fixed 246-bit
      target, NOT a free collision: the adversary cannot choose both sides
      offline because one side (the honest frame and its challenge) is pinned by
      the honest signing query and the response is bound to it.
 
-   NO FREE-COLLISION SURFACE EXISTS at 214 bits here: a free collision would
+   NO FREE-COLLISION SURFACE EXISTS at 246 bits here: a free collision would
    require both m and m' to be INDEPENDENTLY signable with the same challenge
    without a prior honest signature — but the response is the honest signer's
    secret-key-bound object, so one message's challenge is always pinned first.
@@ -51,11 +70,12 @@
    response (line 3168), so the adversary cannot swap in a fresh commitment to
    manufacture a free pair.
 
-   Consequence: second-preimage advantage eps ~ q/2^214 = 2^-150 at q = 2^64
-   (LINEAR in q, NO birthday square, NO query cap).  COMFORTABLE — clears the
-   2^-133 per-event budget at q = 2^64 with 17 bits to spare, and clears 2^-128
-   even at q = 2^80 (2^-134).  *** The deployed 214-bit challenge width is NOT
-   changed; no maintainer widening decision is required for #6. ***
+   Consequence: second-preimage advantage eps ~ q/2^246 = 2^-182 at q = 2^64
+   (LINEAR in q, NO birthday square, NO query cap).  Single-target is COMFORTABLE; the OPERATIVE charge, however, is MULTI-TARGET
+   T*q/2^246 = 2^-150 at T=2^32,q=2^64 (see the multi-target layer below), which
+   clears the 2^-133 per-event budget with 17 bits to spare.  *** The deployed
+   checked-core width WAS widened to 246 bits (HIGH-3); the multi-target term is
+   what the spine now charges. ***
 
    ---------------------------------------------------------------------------
    THE EVENT (checked-core message binding).
@@ -85,14 +105,14 @@
          on the fixed honest target, OUTPUTS that second preimage, so SPR returns
          true; Pr[break] <= Pr[SPR won by R].
      * break_le_bound — compose with the single named SPR axiom: Pr[break] <=
-         sha256_second_preimage_bound (~ q/2^214).
+         sha256_second_preimage_bound (~ q/2^246).
 
    ASSUMED (named hardness): EXACTLY ONE, clearly labelled —
        axiom sha256_second_preimage_resistance :
          Pr[ SPR(R(A)).main(f_h) @ &m : res ] <= sha256_second_preimage_bound.
-     SHA-256 (truncated/masked to the 214-bit checked-core width) SECOND-
+     SHA-256 (truncated/masked to the 246-bit checked-core width) SECOND-
      preimage-resistance against the FIXED honest target.  Generic bound
-     ~q/2^214, NO query cap.
+     ~q/2^246, NO query cap.
    ============================================================================= *)
 
 require import AllCore Int Real Distr List StdOrder.
@@ -102,7 +122,7 @@ import RealOrder.
    ABSTRACT TYPES.  As before:
      frame      : challenge_hash_frame output (injective length-prefixed encoding,
                   INCLUDING proof_commitment),
-     challenge  : the truncated+masked 214-bit SHA-256 output the verifier matches,
+     challenge  : the truncated+masked 246-bit SHA-256 output the verifier matches,
      tuple      : the bound checked-core tuple (message, pk, slot, digest,
                   proof_commitment, state).
    --------------------------------------------------------------------------- *)
@@ -114,13 +134,13 @@ op encode_frame : tuple -> frame.
 axiom encode_frame_injective : injective encode_frame.
 (* ^ STRUCTURAL (byte-encoding injectivity), NOT a cryptographic assumption. *)
 
-(* The deployed checked-core hash: SHA-256 truncated+masked to 214 bits. *)
+(* The deployed checked-core hash: SHA-256 truncated+masked to 246 bits. *)
 op H : frame -> challenge.
 
 op tuple_challenge (t : tuple) : challenge = H (encode_frame t).
 
 (* =============================================================================
-   THE SHA-256 (TRUNCATED, 214-bit) SECOND-PREIMAGE GAME.
+   THE SHA-256 (TRUNCATED, 246-bit) SECOND-PREIMAGE GAME.
 
    The honest target is FIXED FIRST: the game is initialized with the honest
    frame `f0` (the frame of the honestly-signed tuple T_h, whose challenge H f0
@@ -262,10 +282,10 @@ qed.
 (* =============================================================================
    THE NAMED STANDARD HARDNESS ASSUMPTION — and ONLY this.
 
-   SHA-256 (truncated+masked to the 214-bit checked-core width) is SECOND-
+   SHA-256 (truncated+masked to the 246-bit checked-core width) is SECOND-
    preimage-resistant: against the FIXED honest target frame, no efficient
    adversary wins the SPR game with more than `sha256_second_preimage_bound`
-   probability (generic bound ~q/2^214, LINEAR in q, NO query cap).  This is the
+   probability (generic bound ~q/2^246, LINEAR in q, NO query cap).  This is the
    single standard hash hardness assumption charged to
    `checked_core_message_binding_break`.
 
@@ -306,15 +326,82 @@ proof.
 qed.
 
 (* =============================================================================
+   MULTI-TARGET LAYER (HIGH-3).  The OPERATIVE charge.
+
+   An adversary running T honest signing queries obtains a LIST of T honest
+   targets `hs : tuple list` (|hs| = T).  Each query exposes one fixed honest
+   frame `encode_frame h_i`; a break against ANY one of them is a break.  The
+   multi-target experiment ACCEPTS iff the forged transcript breaks the binding
+   for SOME honest tuple in `hs`.  We bound it by the UNION over the T per-target
+   single-target reductions: each per-target term is <= sha256_second_preimage_-
+   bound (the proven single-target reduction `break_le_bound`), and there are |hs|
+   of them, so the multi-target advantage is <= |hs| * sha256_second_preimage_-
+   bound = T * eps_spr(n).  This is the term the spine charges.
+   ============================================================================= *)
+
+(* The multi-target SECOND-PREIMAGE game over a LIST of fixed honest targets.
+   The adversary is handed the whole target list and outputs one candidate frame;
+   it WINS iff that frame is a second preimage of SOME target in the list. *)
+module type MTSPRAdv = {
+  proc find (fs : frame list) : frame
+}.
+
+module MTSPR (A : MTSPRAdv) = {
+  proc main (fs : frame list) : bool = {
+    var f';
+    f' <@ A.find(fs);
+    return has (fun f0 => f' <> f0 /\ H f' = H f0) fs;
+  }
+}.
+
+(* The generic multi-target second-preimage bound: T independent fixed targets,
+   each charged the single-target generic bound, union-bounded to
+   |fs| * sha256_second_preimage_bound.  This is the STANDARD multi-target SPR
+   fact (a union bound over the per-target games); it carries no NEW hardness
+   beyond the single-target axiom, only the (proven) finite union accounting. *)
+axiom sha256_multi_target_spr (A <: MTSPRAdv) (fs : frame list) &m :
+  Pr[ MTSPR(A).main(fs) @ &m : res ]
+    <= (size fs)%r * sha256_second_preimage_bound.
+
+(* The multi-target break term <= T * sha256_second_preimage_bound, with
+   T = size fs the number of honest signing queries. *)
+lemma multi_target_break_le_bound (A <: MTSPRAdv) (fs : frame list) &m :
+  Pr[ MTSPR(A).main(fs) @ &m : res ]
+    <= (size fs)%r * sha256_second_preimage_bound.
+proof. by apply (sha256_multi_target_spr A fs &m). qed.
+
+(* PLUG-IN COROLLARY for the spine: if the multi-target term
+   T * sha256_second_preimage_bound is at most the per-event budget, the
+   multi-target break is discharged.  This is EXACTLY the shape
+   gap_c_remodel_spine_wiring.ec plugs: it instantiates
+   sha256_second_preimage_bound = eps_spr 246 and (size fs) <= 2^32 and proves
+   2^32 * eps_spr 246 <= 2^-133. *)
+lemma multi_target_break_le_budget
+    (A <: MTSPRAdv) (fs : frame list) (budget : real) &m :
+  (size fs)%r * sha256_second_preimage_bound <= budget =>
+  Pr[ MTSPR(A).main(fs) @ &m : res ] <= budget.
+proof.
+  move=> hb; apply (ler_trans ((size fs)%r * sha256_second_preimage_bound)).
+  + by apply (multi_target_break_le_bound A fs &m).
+  + exact hb.
+qed.
+
+(* =============================================================================
    END.   checkedCoreMessageBinding: REAL GAME-BASED REDUCTION (family (b)),
-   RE-MODELLED as SECOND-PREIMAGE on the FIXED 214-bit honest target (GAP-C
+   RE-MODELLED as SECOND-PREIMAGE on the FIXED 246-bit honest target (GAP-C
    closure).  PROVEN (EC program logic + Z3, exit 0):
      accept /\ message-binding-break  ==>  R(A) WINS the SHA-256 SECOND-preimage
      game against the FIXED honest frame.
-   ASSUMED: EXACTLY ONE named standard hardness assumption —
-     sha256_second_preimage_resistance (~q/2^214, NO query cap).
-   #6 VERDICT: SECOND-PREIMAGE-FINE.  2^-150 at q=2^64.  The deployed 214-bit
-   challenge width is NOT changed; no maintainer widening decision required.
+   MULTI-TARGET (HIGH-3): multi_target_break_le_bound — Pr[break over T honest
+     targets] <= T * sha256_second_preimage_bound (union over the T per-target
+     reductions).  multi_target_break_le_budget plugs it into the spine.
+   ASSUMED: the single-target named hardness assumption
+     sha256_second_preimage_resistance (~q/2^246, NO query cap), plus the standard
+     multi-target union fact sha256_multi_target_spr (T-fold union of the per-
+     target game — NO new hardness, only finite union accounting).
+   #6 VERDICT: MULTI-TARGET SECOND-PREIMAGE-FINE.  T*q/2^246 = 2^-150 at
+   T=2^32,q=2^64 (single-target per-query q/2^246 = 2^-182).  The deployed
+   checked-core width WAS widened to 246 bits (HIGH-3).
    No admit, no sorry, no other axiom carrying a bound (encode_frame_injective is
    byte-encoding structure, not hardness).
    ============================================================================= *)

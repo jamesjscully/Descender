@@ -13,18 +13,23 @@
    checked-core) were RE-MODELLED in
      break_prevalidation_leaf_binding.ec        (SPR, n = 256)
      break_prevalidation_registry_binding.ec    (SPR, n = 256)
-     break_checked_core_message_binding.ec      (SPR, n = 214)
+     break_checked_core_message_binding.ec      (MULTI-TARGET SPR, n = 246)
    from FREE birthday collisions (eps ~ q^2/2^n) to SECOND-PREIMAGE games against
    an honestly-FIXED target (eps ~ q/2^n).  The operational justification (the
    verifier recomputes the digest/challenge against a LEAF-FIXED committed value
    before the adversary acts) is recorded in each file's header and in
    research/cryptanalysis/gap_c_remodel_result.md.
 
-   Here we wire the concrete numeric bound  eps_spr(n) = q / 2^n  at q = 2^64,
-   and PROVE:
-     (1) each re-modelled break term <= 2^-133  at q = 2^64, NO query cap;
+   *** HIGH-3 (2026-06-10): the binding events are MULTI-TARGET over the T = 2^32
+   signing queries, so the OPERATIVE term is tQ * eps_spr(n) = T*q/2^n, NOT the
+   single-target q/2^n.  The checked-core width was WIDENED 214 -> 246 so this
+   multi-target term clears the budget. ***
+
+   Here we wire the concrete numeric MULTI-TARGET bound  tQ * eps_spr(n) =
+   T*q/2^n  at q = 2^64, T = 2^32, and PROVE:
+     (1) each re-modelled MULTI-TARGET break term <= 2^-133  (NO cap beyond T);
      (2) the SUM of the re-modelled break terms + the structural zeros +
-         the accepted-spend placeholder (2^-129) <= 2^-128 at q = 2^64.
+         the accepted-spend placeholder (2^-129) <= 2^-128.
 
    All real-arithmetic facts are proven by EC + Z3 with explicit exponent
    expansions (Z3 cannot expand symbolic powers).  No admit, no sorry.
@@ -46,10 +51,24 @@ op q : real = 2%r ^ 64.
    `sha256_second_preimage_resistance` carry. *)
 op eps_spr (n : int) : real = q / (2%r ^ n).
 
-(* The concrete per-event epsilons at the deployed digest widths. *)
-op eps_leaf     : real = eps_spr 256.   (* #2 prevalidation leaf binding (n=256) *)
-op eps_registry : real = eps_spr 256.   (* #3 prevalidation registry binding     *)
-op eps_checked  : real = eps_spr 214.   (* #6 checked-core message binding (n=214)*)
+(* -----------------------------------------------------------------------------
+   MULTI-TARGET HORIZON (HIGH-3).  T = 2^32 honest signing queries.  The checked-
+   core / leaf / registry binding events are MULTI-TARGET second preimages: over T
+   signing queries the adversary obtains T honest targets and a break against ANY
+   of them suffices, so the OPERATIVE advantage is the multi-target term
+   T * eps_spr(n) (the T-fold union of the per-target single-target reductions —
+   see break_checked_core_message_binding.ec `multi_target_break_le_bound`), NOT
+   the single-target eps_spr(n).  This T-multiplied term is what we charge below.
+   --------------------------------------------------------------------------- *)
+op tQ : real = 2%r ^ 32.   (* T = 2^32 signing-query horizon (maintainer cap) *)
+
+(* The concrete per-event MULTI-TARGET epsilons at the deployed digest widths.
+   #6 checked-core was WIDENED 214 -> 246 bits (HIGH-3) precisely so that the
+   multi-target term tQ * eps_spr 246 = 2^32 * 2^64 / 2^246 = 2^-150 stays under
+   the 2^-133 per-event budget; at the old n=214 it was 2^-118 (a breach). *)
+op eps_leaf     : real = tQ * eps_spr 256.   (* #2 leaf binding   (multi-target, n=256) *)
+op eps_registry : real = tQ * eps_spr 256.   (* #3 registry       (multi-target, n=256) *)
+op eps_checked  : real = tQ * eps_spr 246.   (* #6 checked-core   (multi-target, n=246) *)
 
 (* Accepted-spend term (AP2-N003).  No longer a bare placeholder: it is now
    DISCHARGED by the reduction in accepted_spend_forgery_reduction.ec
@@ -72,35 +91,43 @@ proof.
 qed.
 
 (* =============================================================================
-   GOAL (1) — each re-modelled break term <= 2^-133 at q = 2^64, NO query cap.
+   GOAL (1) — each re-modelled MULTI-TARGET break term <= 2^-133 at q = 2^64,
+   T = 2^32, NO query cap beyond T.
 
-   #2/#3 (n=256):  q/2^256 = 2^64/2^256 = 2^-192 <= 2^-133.
-   #6   (n=214):  q/2^214 = 2^64/2^214 = 2^-150 <= 2^-133.
-   We prove the dominant (largest) one, eps_checked (n=214) <= 2^-133, and the
+   The OPERATIVE term is the MULTI-TARGET advantage tQ * eps_spr n = 2^32 * 2^64
+   / 2^n = 2^96 / 2^n (HIGH-3).
+   #2/#3 (n=256):  2^96/2^256 = 2^-160 <= 2^-133.
+   #6   (n=246):  2^96/2^246 = 2^-150 <= 2^-133.
+   We prove the dominant (largest) one, eps_checked (n=246) <= 2^-133, and the
    n=256 ones a fortiori (they are strictly smaller).
    ============================================================================= *)
 
-(* General arithmetic lemma: for any width n with n = 133 + k (k >= 0) and
-   2^k >= 2^64 (i.e. k >= 64, so the digest is at least 64 bits wider than the
-   target budget exponent), eps_spr n = 2^64/2^n <= 2^-133.  We instantiate it
-   at n = 214 (k = 81) and n = 256 (k = 123).  The proof feeds Z3 the explicit
-   factorization 2^n = 2^133 * 2^(n-133) and 2^(n-133) >= 2^64 = q, so
-   2^64/2^n = (2^64/2^(n-133))/2^133 <= 1/2^133. *)
-lemma eps_spr_le_2pow_neg133 (n : int) :
-  2%r ^ 64 <= 2%r ^ (n - 133) =>
+(* General MULTI-TARGET arithmetic lemma: for any width n with n - 133 >= 0 and
+   2^(n-133) >= 2^96 = tQ * q (the multi-target numerator), the multi-target term
+   tQ * eps_spr n = 2^96/2^n <= 2^-133.  We instantiate it at n = 246 (n-133=113)
+   and n = 256 (n-133=123).  The proof feeds Z3 the explicit factorization
+   2^n = 2^133 * 2^(n-133) and 2^(n-133) >= 2^96 = tQ*q, so
+   2^96/2^n = (2^96/2^(n-133))/2^133 <= 1/2^133. *)
+lemma multi_target_le_2pow_neg133 (n : int) :
+  2%r ^ 96 <= 2%r ^ (n - 133) =>
   0 <= n - 133 =>
-  eps_spr n <= 1%r / (2%r ^ 133).
+  tQ * eps_spr n <= 1%r / (2%r ^ 133).
 proof.
   move=> hk hk0.
-  rewrite /eps_spr /q.
+  rewrite /eps_spr /q /tQ.
+  have hq96 : 2%r ^ 32 * 2%r ^ 64 = 2%r ^ 96.
+  + by rewrite -RField.exprD_nneg.
   have hn : 2%r ^ n = 2%r ^ 133 * 2%r ^ (n - 133).
   + rewrite -RField.exprD_nneg 1:// 1:/#; congr; smt().
   have p133 : 0%r < 2%r ^ 133  by apply RealOrder.expr_gt0.
   have pk   : 0%r < 2%r ^ (n - 133) by apply RealOrder.expr_gt0.
+  (* 2^32 * (2^64 / 2^n) = 2^96 / 2^n *)
+  have -> : 2%r ^ 32 * (2%r ^ 64 / 2%r ^ n) = 2%r ^ 96 / 2%r ^ n.
+  + rewrite -hq96; field; smt(RealOrder.expr_gt0).
   rewrite hn.
-  (* 2^64 / (2^133 * 2^(n-133)) <= 1/2^133 *)
-  have -> : 2%r ^ 64 / (2%r ^ 133 * 2%r ^ (n - 133))
-          = (2%r ^ 64 / 2%r ^ (n - 133)) / 2%r ^ 133.
+  (* 2^96 / (2^133 * 2^(n-133)) <= 1/2^133 *)
+  have -> : 2%r ^ 96 / (2%r ^ 133 * 2%r ^ (n - 133))
+          = (2%r ^ 96 / 2%r ^ (n - 133)) / 2%r ^ 133.
   + by field; smt().
   apply ler_wpmul2r; first by smt().
   by apply ler_pdivr_mulr; smt().
@@ -110,22 +137,22 @@ qed.
 lemma le_2pow (m n : int) : 0 <= m => m <= n => 2%r ^ m <= 2%r ^ n.
 proof. move=> h1 h2; apply ler_weexpn2l => //. qed.
 
-(* 2^64 <= 2^81 (= 2^(214-133)) and 2^64 <= 2^123 (= 2^(256-133)). *)
-lemma le_2pow_64_81  : 2%r ^ 64 <= 2%r ^ 81  by apply le_2pow.
-lemma le_2pow_64_123 : 2%r ^ 64 <= 2%r ^ 123 by apply le_2pow.
+(* 2^96 <= 2^113 (= 2^(246-133)) and 2^96 <= 2^123 (= 2^(256-133)). *)
+lemma le_2pow_96_113 : 2%r ^ 96 <= 2%r ^ 113 by apply le_2pow.
+lemma le_2pow_96_123 : 2%r ^ 96 <= 2%r ^ 123 by apply le_2pow.
 
 lemma eps_checked_le_2pow_neg133 : eps_checked <= 1%r / (2%r ^ 133).
 proof.
   rewrite /eps_checked.
-  apply (eps_spr_le_2pow_neg133 214) => //.
-  by rewrite (_ : 214 - 133 = 81) 1:// le_2pow_64_81.
+  apply (multi_target_le_2pow_neg133 246) => //.
+  by rewrite (_ : 246 - 133 = 113) 1:// le_2pow_96_113.
 qed.
 
 lemma eps_leaf_le_2pow_neg133 : eps_leaf <= 1%r / (2%r ^ 133).
 proof.
   rewrite /eps_leaf.
-  apply (eps_spr_le_2pow_neg133 256) => //.
-  by rewrite (_ : 256 - 133 = 123) 1:// le_2pow_64_123.
+  apply (multi_target_le_2pow_neg133 256) => //.
+  by rewrite (_ : 256 - 133 = 123) 1:// le_2pow_96_123.
 qed.
 
 lemma eps_registry_le_2pow_neg133 : eps_registry <= 1%r / (2%r ^ 133).
@@ -134,11 +161,11 @@ proof. rewrite /eps_registry -/eps_leaf; exact eps_leaf_le_2pow_neg133. qed.
 (* =============================================================================
    GOAL (2) — the summed budget closes at q = 2^64 WITHOUT a query cap.
 
-   Active terms (everything else is a structural 0):
+   Active terms (everything else is a structural 0; MULTI-TARGET, T = 2^32):
      accepted-spend     eps_accepted   = 2^-129
-     #2 leaf            eps_leaf       = 2^-192
-     #3 registry        eps_registry   = 2^-192
-     #6 checked-core    eps_checked    = 2^-150
+     #2 leaf            eps_leaf       = tQ*q/2^256 = 2^-160
+     #3 registry        eps_registry   = tQ*q/2^256 = 2^-160
+     #6 checked-core    eps_checked    = tQ*q/2^246 = 2^-150
    plus the 5 structural-zero / unmodelled-as-0 events (= 0).
 
    Claim:  eps_accepted + eps_leaf + eps_registry + eps_checked <= 2^-128.
@@ -186,14 +213,14 @@ proof.
 qed.
 
 (* =============================================================================
-   END.   GAP-C re-model spine wiring.
-   PROVEN (EC + Z3, exit 0): at q = 2^64 with NO classical query cap,
-     * each re-modelled binding break term (eps_spr at n=256 / n=214) <= 2^-133;
-     * the sum  accepted-spend(2^-129) + leaf(2^-192) + registry(2^-192)
+   END.   GAP-C re-model spine wiring (HIGH-3 multi-target).
+   PROVEN (EC + Z3, exit 0): at q = 2^64, T = 2^32 (no cap beyond T),
+     * each re-modelled MULTI-TARGET binding break term
+       (tQ * eps_spr at n=256 / n=246) <= 2^-133;
+     * the sum  accepted-spend(2^-129) + leaf(2^-160) + registry(2^-160)
        + checked-core(2^-150) + structural-zeros  <= 2^-128.
-   This discharges GAP C robustly for the re-modelled events: the closure no
-   longer depends on the deployment query cap (which was load-bearing under the
-   old free-birthday model).  The dominant break term is now the n=214 checked-
-   core SECOND-preimage at 2^-150 (was 2^-86 free at q=2^64), comfortably under
-   the 2^-133 per-event budget.
+   This discharges GAP C / HIGH-3: the binding events are charged at the CORRECT
+   multi-target rate T*q/2^n.  The checked-core width was WIDENED 214 -> 246
+   precisely so the dominant multi-target term tQ*q/2^246 = 2^-150 (was 2^-118 at
+   n=214 — a 2^-128 breach) stays comfortably under the 2^-133 per-event budget.
    ============================================================================= *)

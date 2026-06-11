@@ -3359,9 +3359,9 @@ def selectedRustFullSignatureReductionEvidenceReport :
       79, 245, 60, 179, 190, 228, 249, 236, 166, 174, 245, 192, 185, 107,
       85, 200, 81, 100, 237]
   queryBudgetPricingDigest :=
-    ByteArray.mk #[157, 227, 195, 195, 6, 136, 166, 200, 225, 244, 110, 44,
-      108, 33, 71, 74, 24, 161, 108, 148, 9, 31, 174, 69, 89, 193, 128, 81,
-      64, 28, 105, 233]
+    ByteArray.mk #[233, 21, 108, 53, 33, 254, 79, 99, 213, 214, 194, 144,
+      224, 47, 136, 20, 99, 117, 203, 37, 102, 235, 60, 203, 106, 71, 197,
+      88, 221, 87, 35, 87]
   multiTargetPricingDigest :=
     ByteArray.mk #[24, 85, 71, 199, 201, 152, 191, 90, 105, 103, 38, 92,
       211, 167, 99, 194, 113, 134, 176, 46, 139, 245, 67, 45, 191, 5, 96,
@@ -3381,9 +3381,9 @@ def selectedRustFullSignatureReductionEvidenceReport :
 
 /-- Digest pin for the selected Rust full-signature reduction evidence report. -/
 def selectedRustFullSignatureReductionEvidenceDigest : ByteArray :=
-  ByteArray.mk #[185, 220, 153, 12, 67, 3, 141, 55, 166, 0, 44, 254, 249,
-    17, 209, 169, 135, 75, 2, 170, 171, 182, 35, 77, 199, 67, 106, 191,
-    117, 194, 141, 163]
+  ByteArray.mk #[132, 227, 18, 82, 85, 156, 153, 34, 175, 229, 119, 109,
+    129, 110, 75, 25, 40, 30, 31, 128, 169, 61, 181, 22, 116, 120, 133,
+    132, 63, 195, 154, 56]
 
 /-- The selected full-reduction report has verified public digest slots. -/
 theorem selectedRustFullSignatureReductionVerifiedProof :

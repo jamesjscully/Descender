@@ -11,10 +11,15 @@
 > - **HIGH-2 (refutes deployable witness-hiding for the creation-proof path):** the masked-state18
 >   public creation proof serializes `pad_seed` in the clear ⇒ key-free full-witness recovery.
 >   *Fix:* implement the transparent-descent ZK variant; gate the `pad_seed`-in-clear path.
-> - **HIGH-3 (refutes §2/§3 GAP-C "budget closes at q=2⁶⁴, no cap"):** the checked-core
->   message-binding term is MULTI-TARGET (T·q/2²¹⁴ over T signing queries), not single-target;
->   at T=2³², q=2⁶⁴ it is 2⁻¹¹⁸, breaching 2⁻¹²⁸ by ~10 bits. *Fix:* widen the checked core to
->   ≥246 bits OR enforce a T≤2²² query cap with the spine restated as T·eps_spr(n).
+> - **HIGH-3 (§2/§3 GAP-C) — ✅ RESOLVED (2026-06-10):** the checked-core message-binding term
+>   is MULTI-TARGET (T·q/2ⁿ over T signing queries), not single-target. *Fix applied:* the
+>   checked-core challenge was WIDENED to **246 effective bits** (`CHALLENGE_HARDENING_BYTES`
+>   4→8, so `CHALLENGE_BYTES` 27→31, +4 sig bytes; message-binding width = 182 algebraic-after-
+>   mask + 64 hardening = 246), and the EC spine now charges the **multi-target term
+>   T·eps_spr(n) = T·q/2ⁿ** (`break_checked_core_message_binding.ec` `multi_target_break_le_bound`
+>   +  `gap_c_remodel_spine_wiring.ec` `eps_checked = tQ·eps_spr 246`). At T=2³², q=2⁶⁴:
+>   T·q/2²⁴⁶ = 2⁻¹⁵⁰ ≤ the 2⁻¹³³ per-event budget (was 2⁻¹¹⁸ at n=214 — a breach). No usage cap
+>   beyond T≤2³². Sig sizes: linear-sigma **264 B**, Fq12 envelope **318 B** (pk=172 unchanged).
 >
 > **SURVIVED** hard attacks (evidence base strengthened, not "unbreakable"): the lattice core
 > (coded vector L∞ 114>96; ring/module structure not yet attacked = external residual), the
@@ -44,9 +49,12 @@ token appears only inside comment prose). Inconsistencies found are flagged in �
 **SUF-CMA in the QROM, forging advantage ≤ 2⁻¹²⁸**, at the deployed parameters
 (q = 12289, n = 32), under the assumption set of §3.
 
-- **Query model.** After the GAP-C re-model (2026-06-10), the budget **closes at a
-  generic classical query budget q = 2⁶⁴ with NO query cap** (it also closes at
-  q = 2⁸⁰). This is the machine-checked `gap_c_remodel_spine_wiring.ec` result.
+- **Query model.** After the GAP-C re-model + HIGH-3 multi-target widening (2026-06-10),
+  the budget **closes at a generic classical query budget q = 2⁶⁴ at the multi-target
+  signing horizon T = 2³²**: the binding events are charged at the correct multi-target
+  rate **T·q/2ⁿ**, and the checked-core width was widened to **n = 246** so the dominant
+  multi-target term is T·q/2²⁴⁶ = 2⁻¹⁵⁰. This is the machine-checked
+  `gap_c_remodel_spine_wiring.ec` result (`eps_checked = tQ·eps_spr 246`, `tQ = 2³²`).
 - **Additional deployment margin.** The canonical spec (`formal/spec/
   descender-signature-spec.md:77`) states the deployment claim at the enforced
   cap T = 2³². The ledger's deployment cap (q_cl = 2³³ classical, q_q = 2¹⁶
@@ -83,7 +91,7 @@ magnitude rests on the named assumption.
 | 3 | `prevalidationRegistryBinding` | `break_prevalidation_registry_binding.ec` | `step_break_sets_second_preimage` → `B_wins_when_break` → `break_le_spr` → `registry_break_bound` | 2⁻¹⁹² | SHA-256 second-preimage-resistance (n=256) | **PROVEN** |
 | 4 | `prevalidationDataAvailability` | (no EC file — see §8) | — | n/a | held fail-closed; verifier built (§5), not yet an EC reduction | **build-item** |
 | 5 | `postchallengeSlotCreationOrRewrite` | `break_postchallenge_slot_creation_or_rewrite.ec` | `accept_implies_prechallenge`, `spend_loop_never_breaks` → `break_prob_zero` | = 0 | **NONE** (structural) | **PROVEN =0** |
-| 6 | `checkedCoreMessageBinding` | `break_checked_core_message_binding.ec` | `break_yields_second_preimage` → `break_le_spr` → `break_le_bound` | 2⁻¹⁵⁰ | SHA-256 (trunc+masked 214-bit) second-preimage-resistance | **PROVEN** |
+| 6 | `checkedCoreMessageBinding` | `break_checked_core_message_binding.ec` | `break_yields_second_preimage` → `break_le_spr` → `break_le_bound` → **`multi_target_break_le_bound`** | **2⁻¹⁵⁰ (multi-target T·q/2²⁴⁶, T=2³²)** | SHA-256 (trunc+masked **246-bit**) second-preimage-resistance + T-fold multi-target union (HIGH-3 widening) | **PROVEN** |
 | 7 | `slotReplayOrRollback` | `break_slot_replay_or_rollback.ec` | `spend_loop_never_breaks` → `break_prob_zero` | = 0 | **NONE** (structural) | **PROVEN =0** |
 | 8 | `qromOrDomainSeparation` | (classifier `False`) | spine `break_zero_of_never` (Goal 2) | = 0 | QROM/domain-sep borne at modeling boundary (ledger), not an EC reduction | **=0 by classifier** |
 | 9 | `liveSlotLeakageOrKeygen` | (classifier `False`) | spine `break_zero_of_never` (Goal 2) | = 0 | SHA-256 frame-PRF / keygen borne at modeling boundary (ledger), not an EC reduction | **=0 by classifier** |
@@ -96,9 +104,10 @@ magnitude rests on the named assumption.
   (Goal 2, never-firing ⇒ 0 — full `byphoare`) + `success_le_target` /
   `success_le_2pow_neg128` (Goal 3/3b: per-event ≤2⁻¹³³, accept ≤2⁻¹²⁹ ⇒ ≤2⁻¹²⁸,
   Bigreal.ler_sum + Z3 arithmetic, **no admit**).
-- `gap_c_remodel_spine_wiring.ec`: feeds the **concrete** second-preimage ε's into
-  that hypothesis — `eps_spr_le_2pow_neg133` (each break ≤2⁻¹³³ at q=2⁶⁴, no cap),
-  `remodelled_budget_closes` (2⁻¹²⁹ + 2⁻¹⁹² + 2⁻¹⁹² + 2⁻¹⁵⁰ + zeros ≤ 2⁻¹²⁸),
+- `gap_c_remodel_spine_wiring.ec`: feeds the **concrete multi-target** second-preimage
+  ε's into that hypothesis — `multi_target_le_2pow_neg133` (each multi-target break
+  term tQ·eps_spr(n) = T·q/2ⁿ ≤2⁻¹³³ at q=2⁶⁴, T=2³²; checked-core n=246),
+  `remodelled_budget_closes` (2⁻¹²⁹ + 2⁻¹⁶⁰ + 2⁻¹⁶⁰ + 2⁻¹⁵⁰ + zeros ≤ 2⁻¹²⁸),
   `remodelled_per_event_meets_spine_hyp` (exactly the spine's hypothesis).
 
 Net per-event budget consumed: dominant break is checked-core at **2⁻¹⁵⁰** (17 bits

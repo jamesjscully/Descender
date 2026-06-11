@@ -19,7 +19,7 @@ pub const PRODUCTION_SIGNER_CALLBACK_FAILURE_REASON: &str = "signer callback fai
 pub const PRODUCTION_VERIFIER_CALLBACK_FAILURE_REASON: &str = "verifier callback failed";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_CALLBACK_BOUNDARIES: &str =
     "deployment callback boundary profile is not sanitized";
-pub const PRODUCTION_DEPLOYMENT_BLOCKER_SELECTED_VERIFIER: &str = "selected 314-byte/Fq12 active-lane projection-carrier deployment verifier is fail-closed until active-lane preflight promotion and hidden-source semantics are implemented";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_SELECTED_VERIFIER: &str = "selected 318-byte/Fq12 active-lane projection-carrier deployment verifier is fail-closed until active-lane preflight promotion and hidden-source semantics are implemented";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_FINAL_VERIFIER: &str =
     PRODUCTION_DEPLOYMENT_BLOCKER_SELECTED_VERIFIER;
 pub const PRODUCTION_SELECTED_PROJECTION_INVALID_OPENING_REASON: &str =
@@ -27,10 +27,10 @@ pub const PRODUCTION_SELECTED_PROJECTION_INVALID_OPENING_REASON: &str =
 pub const PRODUCTION_SELECTED_PROJECTION_INVALID_CARRIER_REASON: &str =
     "reject_fail_closed_invalid_projection_carrier";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_PAD_OPENING_BINDING: &str =
-    "pad-opening witness binding is not implemented for the reviewed 258-byte/Fq12 path";
-pub const PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS: &str = "Path 2 account-creation prevalidation proof semantics are not complete; the reviewed 314-byte/Fq12 projection-carrier route remains a fail-closed baseline and negative-control source";
+    "pad-opening witness binding is not implemented for the reviewed 262-byte/Fq12 path";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS: &str = "Path 2 account-creation prevalidation proof semantics are not complete; the reviewed 318-byte/Fq12 projection-carrier route remains a fail-closed baseline and negative-control source";
 pub const PRODUCTION_HIDDEN_SOURCE_PROOF_FAILURE_REASON: &str =
-    "hidden-source proof verifier rejected reviewed 258-byte/Fq12 statement";
+    "hidden-source proof verifier rejected reviewed 262-byte/Fq12 statement";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_CONSTANT_TIME: &str =
     "constant-time signer, sampler, keygen, and verifier audit remains open";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_STORAGE: &str = "target-specific chain database binding, trusted restore-anchor placement review, and external storage review remain open";
@@ -188,7 +188,7 @@ pub const DIGEST_BYTES: usize = 32;
 pub const FIELD_BITS: usize = 14;
 pub const SLOT_ID_BYTES: usize = 4;
 pub const ALGEBRAIC_CHALLENGE_BYTES: usize = 23;
-pub const CHALLENGE_HARDENING_BYTES: usize = 4;
+pub const CHALLENGE_HARDENING_BYTES: usize = 8;
 pub const CHALLENGE_BYTES: usize = ALGEBRAIC_CHALLENGE_BYTES + CHALLENGE_HARDENING_BYTES;
 pub const CHALLENGE_BITS_PER_REP: usize = 5;
 pub const ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK: u8 = 0x3f;
@@ -598,7 +598,7 @@ pub const HIDDEN_SOURCE_FALLBACK_PROJECTION_LANE_COEFFICIENTS: [u16;
 ];
 pub const HIDDEN_SOURCE_FALLBACK_EXPANDED_OPENING_COMMITMENT_DOMAIN: &str =
     "Descender.hidden_source.fallback_projection.expanded_account_opening_commitment.v1";
-pub const HIDDEN_SOURCE_FALLBACK_DIRECT_EXPANDED_OPENING_DEPLOYMENT_STATUS: &str = "archived_non_deployment_path: direct expanded account-opening slot commitment is superseded by the state-assisted opening tuple for the selected 314-byte/Fq12 route";
+pub const HIDDEN_SOURCE_FALLBACK_DIRECT_EXPANDED_OPENING_DEPLOYMENT_STATUS: &str = "archived_non_deployment_path: direct expanded account-opening slot commitment is superseded by the state-assisted opening tuple for the selected 318-byte/Fq12 route";
 pub const REVIEWED_FQ12_ACCEPTANCE_OBLIGATION_STATEMENT_BINDING: u16 = 1 << 0;
 pub const REVIEWED_FQ12_ACCEPTANCE_OBLIGATION_WITNESS_COMMITMENT_OPENING: u16 = 1 << 1;
 pub const REVIEWED_FQ12_ACCEPTANCE_OBLIGATION_PAD_SEED_OPENING: u16 = 1 << 2;
@@ -7923,7 +7923,7 @@ fn reviewed_fq12_active_lane_projection_carrier_source_present_v1() -> bool {
     let certificate_window = &source[certificate_start..certificate_end];
 
     let selected_tests_start = source
-        .find("\n    fn selected_projection_valid_314_byte_fixture_accepts()")
+        .find("\n    fn selected_projection_valid_318_byte_fixture_accepts()")
         .expect("reviewed Fq12 active-lane selected projection test start marker missing");
     let selected_tests_end = source[selected_tests_start..]
         .find("\n    fn path2_creation_relation_replay_accepts_reviewed_active_lane_certificate()")
@@ -7996,7 +7996,7 @@ fn reviewed_fq12_active_lane_projection_carrier_source_present_v1() -> bool {
         "carrier_transcript_binding: decoded_carrier.transcript_binding",
     ];
     let selected_test_checks = [
-        "selected_projection_valid_314_byte_fixture_accepts",
+        "selected_projection_valid_318_byte_fixture_accepts",
         "selected_projection_timing_fixture_accepts",
         "selected_projection_reject_carrier_lane_mutation",
         "selected_projection_reject_carrier_check_mutation",
@@ -8563,10 +8563,10 @@ pub fn production_deployment_preflight() -> ProductionDeploymentPreflight {
     let reviewed_target_account_binding_present = reviewed_target_codec_present;
     let reviewed_target_challenge_binding_present = reviewed_target_account_binding_present;
     let reviewed_fq12_checked_core_present =
-        REVIEWED_FQ12_ACCOUNT_CARRIED_TRANSACTION_SIGNATURE_BYTES == 258
+        REVIEWED_FQ12_ACCOUNT_CARRIED_TRANSACTION_SIGNATURE_BYTES == 262
             && REVIEWED_FQ12_ACCOUNT_CARRIED_MASKED_RESPONSE_BYTES == 39;
     let reviewed_fq12_fallback_projection_codec_present =
-        REVIEWED_FQ12_ACCOUNT_CARRIED_WITH_FALLBACK_PROJECTION_BYTES == 314
+        REVIEWED_FQ12_ACCOUNT_CARRIED_WITH_FALLBACK_PROJECTION_BYTES == 318
             && HIDDEN_SOURCE_FALLBACK_PROJECTION_CARRIER_BYTES == 56;
     let reviewed_fq12_hidden_source_proof_callback_present =
         reviewed_fq12_hidden_source_proof_callback_source_present_v1();
@@ -28088,10 +28088,10 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
         "qromQuadraticLossBitsAtDeploymentBound := 32",
         "transcriptTermBitsAfterQromLoss := 182",
         "algebraicChallengeBytes := 23",
-        "challengeHardeningBytes := 4",
+        "challengeHardeningBytes := 8",
         "algebraicChallengeLastByteUsableBits := 6",
         "algebraicChallengeBitsAfterMask := 182",
-        "totalChallengeBitsAfterMask := 214",
+        "totalChallengeBitsAfterMask := 246",
         "actionCollisionFloorBits := 163",
         "actionCollisionQuantumBitsAtUnionBound := 131",
         "actionCollisionClassicalBitsAtUnionBound := 130",
@@ -28102,10 +28102,10 @@ fn path2_active_native_hash_budget_boundary_source_present_in_sources_v1(
     ];
     let shape_checks = [
         "B.algebraicChallengeBytes = 23",
-        "B.challengeHardeningBytes = 4",
+        "B.challengeHardeningBytes = 8",
         "B.algebraicChallengeLastByteUsableBits = 6",
         "B.algebraicChallengeBitsAfterMask = 182",
-        "B.totalChallengeBitsAfterMask = 214",
+        "B.totalChallengeBitsAfterMask = 246",
         "B.algebraicChallengeBitsAfterMask =\n      B.transcriptTermBitsAfterQromLoss",
         "B.totalChallengeBitsAfterMask =\n      B.algebraicChallengeBitsAfterMask + 8 * B.challengeHardeningBytes",
     ];
@@ -28291,10 +28291,10 @@ pub fn path2_auxiliary_fq12_qrom_horizon_complete_v1() -> bool {
     let review = path2_native_hash_qrom_review_v1();
     let byte_domain_evidence = path2_native_hash_byte_domain_evidence_v1();
     review.algebraic_challenge_bytes == 23
-        && review.challenge_hardening_bytes == 4
+        && review.challenge_hardening_bytes == 8
         && review.algebraic_challenge_last_byte_mask == 0x3f
         && review.algebraic_challenge_bits_after_mask == 182
-        && review.total_challenge_bits_after_mask == 214
+        && review.total_challenge_bits_after_mask == 246
         && review.algebraic_challenge_bits_after_mask == review.transcript_term_bits_after_qrom_loss
         && review.action_collision_floor_bits == 163
         && review.action_collision_quantum_bits_at_union_bound >= review.target_security_bits
@@ -38517,7 +38517,7 @@ pub struct ProductionSelectedProjectionCandidateTimingFixture {
 pub fn production_selected_projection_candidate_timing_fixture()
 -> ProductionSelectedProjectionCandidateTimingFixture {
     let public_key = ProductionPublicKey::new(vec![0_u8; PK_BYTES]).unwrap();
-    let message = b"selected 314-byte/Fq12 timing fixture".to_vec();
+    let message = b"selected 318-byte/Fq12 timing fixture".to_vec();
     let slot_id = 0_u32;
     let pad_seed = [0x42_u8; REVIEWED_FQ12_PAD_SEED_BYTES];
     let witness_syndrome = [0_u16; REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS];
@@ -46997,7 +46997,7 @@ mod tests {
         )
         .unwrap();
         assert_eq!(signature.len(), REVIEWED_TARGET_TRANSACTION_SIGNATURE_BYTES);
-        assert_eq!(signature.len(), 256);
+        assert_eq!(signature.len(), 260);
         assert_eq!(REVIEWED_ACCOUNT_CARRIED_MASKED_RESPONSE_BYTES, 37);
         assert_eq!(REVIEWED_ACCOUNT_CARRIED_PROOF_BYTES, 69);
 
@@ -47083,7 +47083,7 @@ mod tests {
             signature.len(),
             REVIEWED_FQ12_ACCOUNT_CARRIED_TRANSACTION_SIGNATURE_BYTES
         );
-        assert_eq!(signature.len(), 258);
+        assert_eq!(signature.len(), 262);
         assert_eq!(REVIEWED_FQ12_ACCOUNT_CARRIED_MASKED_RESPONSE_BYTES, 39);
         assert_eq!(REVIEWED_FQ12_ACCOUNT_CARRIED_PROOF_BYTES, 71);
 
@@ -48103,10 +48103,10 @@ mod tests {
         );
         assert_eq!(
             decode_reviewed_fq12_account_carried_with_hidden_source_proof(
-                &signature_with_hidden_proof.as_bytes()[..289]
+                &signature_with_hidden_proof.as_bytes()[..293]
             )
             .unwrap_err(),
-            "reviewed Fq12 account-carried signature plus hidden-source proof has 289 bytes, expected 290"
+            "reviewed Fq12 account-carried signature plus hidden-source proof has 293 bytes, expected 294"
         );
         assert_eq!(
             verify_reviewed_fq12_account_carried_hidden_source_witness(
@@ -48164,7 +48164,7 @@ mod tests {
             )
             .unwrap_err()
             .reason(),
-            "reviewed Fq12 account-carried signature plus hidden-source proof has 258 bytes, expected 290"
+            "reviewed Fq12 account-carried signature plus hidden-source proof has 262 bytes, expected 294"
         );
         let deployment_envelope_err =
             verify_reviewed_fq12_account_carried_signature_carried_deployment_verifier(
@@ -48534,7 +48534,7 @@ mod tests {
     }
 
     #[test]
-    fn selected_projection_valid_314_byte_fixture_accepts() {
+    fn selected_projection_valid_318_byte_fixture_accepts() {
         let fixture = reviewed_fq12_packed_witness_fixture();
         assert_eq!(
             fixture.signature.as_bytes().len(),
@@ -52517,7 +52517,7 @@ mod tests {
         );
         assert_eq!(
             REVIEWED_FQ12_ACCOUNT_CARRIED_TRANSACTION_SIGNATURE_BYTES,
-            258
+            262
         );
 
         let mut rebound_leaf = leaf_v2;
@@ -53126,10 +53126,10 @@ mod tests {
         assert_eq!(budget.qrom_quadratic_loss_bits_at_deployment_bound, 32);
         assert_eq!(budget.transcript_term_bits_after_qrom_loss, 182);
         assert_eq!(budget.algebraic_challenge_bytes, 23);
-        assert_eq!(budget.challenge_hardening_bytes, 4);
+        assert_eq!(budget.challenge_hardening_bytes, 8);
         assert_eq!(budget.algebraic_challenge_last_byte_mask, 0x3f);
         assert_eq!(budget.algebraic_challenge_bits_after_mask, 182);
-        assert_eq!(budget.total_challenge_bits_after_mask, 214);
+        assert_eq!(budget.total_challenge_bits_after_mask, 246);
         assert_eq!(budget.selected_multi_target_horizon_log2, 32);
         assert_eq!(budget.negative_control_horizon_log2, 54);
         assert_eq!(
@@ -53217,7 +53217,7 @@ mod tests {
             ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK
         );
         assert_eq!(review.algebraic_challenge_bits_after_mask, 182);
-        assert_eq!(review.total_challenge_bits_after_mask, 214);
+        assert_eq!(review.total_challenge_bits_after_mask, 246);
         assert_eq!(
             review.action_collision_floor_bits,
             PATH2_FQ12_ACTION_COLLISION_FLOOR_BITS
@@ -71741,20 +71741,20 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             preflight.executable_signature_bytes,
             LINEAR_SIGMA_TARGET_TRANSACTION_SIGNATURE_BYTES
         );
-        assert_eq!(preflight.executable_signature_bytes, 260);
+        assert_eq!(preflight.executable_signature_bytes, 264);
         assert_eq!(
             preflight.reviewed_target_signature_bytes,
             REVIEWED_TARGET_TRANSACTION_SIGNATURE_BYTES
         );
-        assert_eq!(preflight.reviewed_target_signature_bytes, 256);
-        assert_eq!(preflight.reviewed_fq12_fallback_signature_bytes, 258);
+        assert_eq!(preflight.reviewed_target_signature_bytes, 260);
+        assert_eq!(preflight.reviewed_fq12_fallback_signature_bytes, 262);
         assert_eq!(preflight.reviewed_fq12_hidden_source_proof_bytes, 32);
-        assert_eq!(preflight.reviewed_fq12_with_hidden_source_proof_bytes, 290);
+        assert_eq!(preflight.reviewed_fq12_with_hidden_source_proof_bytes, 294);
         assert_eq!(
             preflight.reviewed_fq12_fallback_projection_carrier_bytes,
             56
         );
-        assert_eq!(preflight.reviewed_fq12_with_fallback_projection_bytes, 314);
+        assert_eq!(preflight.reviewed_fq12_with_fallback_projection_bytes, 318);
         assert_eq!(
             preflight.reviewed_account_link_bytes,
             REVIEWED_ACCOUNT_LINK_BYTES

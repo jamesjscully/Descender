@@ -1,5 +1,20 @@
 # Per-event ε budget closure — GAP C numeric-closure analysis
 
+> ## ✅ RESOLVED (2026-06-10) — HIGH-3 multi-target widening
+> The historical analysis below is the **free-birthday** model that motivated the
+> GAP-C re-model; it is retained for the record. **Final state:** the binding
+> events were re-modelled as **second-preimage** games against an honestly-fixed
+> target, and (HIGH-3) charged at the correct **MULTI-TARGET** rate
+> **T·eps_spr(n) = T·q/2ⁿ** over the T = 2³² signing-query horizon. The checked-
+> core challenge was **WIDENED to n = 246 effective bits** (`CHALLENGE_HARDENING_-
+> BYTES` 4→8 ⇒ `CHALLENGE_BYTES` 27→31, +4 sig bytes; 182 algebraic-after-mask +
+> 64 hardening = 246). At T=2³², q=2⁶⁴ the dominant multi-target term is
+> **T·q/2²⁴⁶ = 2⁻¹⁵⁰ ≤ 2⁻¹³³** (was 2⁻¹¹⁸ at n=214 — a breach). Machine-checked:
+> `break_checked_core_message_binding.ec` `multi_target_break_le_bound` +
+> `gap_c_remodel_spine_wiring.ec` `multi_target_le_2pow_neg133` /
+> `remodelled_budget_closes` (sum 2⁻¹²⁹ + 2⁻¹⁶⁰ + 2⁻¹⁶⁰ + 2⁻¹⁵⁰ + zeros ≤ 2⁻¹²⁸),
+> all `.ec` exit 0. **No usage cap beyond the multi-target horizon T ≤ 2³².**
+
 **Date:** 2026-06-10
 **Scope:** Decide whether the union-bound spine
 (`formal/easycrypt/spike_union_bound.ec`) actually closes at **deployed

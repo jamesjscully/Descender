@@ -2610,7 +2610,7 @@ fn masked_response_sampler_certificate() -> MaskedResponseSamplerCertificate {
         finite_distance_proof: "conditioning a uniform kernel-coefficient sampler by rejection on the same predicate that defines the ideal conditioned fiber law gives exactly the ideal law",
         finite_distance_bound_status: "exact TV distance is zero for the stated rejection-sampling law; exact support-size/min-entropy for q=12289 is tracked separately from the 14-bit capacity model",
         lean_certificate: "FullResponseMaskedResponseSamplerCertificate.witnessHiding",
-        conclusion: "The 260-byte proof may spend the 16-bit fiber-state equality but must not condition the hidden masked response on active pad outputs.",
+        conclusion: "The 264-byte proof may spend the 16-bit fiber-state equality but must not condition the hidden masked response on active pad outputs.",
     }
 }
 
@@ -2970,7 +2970,7 @@ fn accepted_fiber_constraint_report() -> AcceptedFiberConstraintReport {
         estimated_remaining_fiber_bits_after_acceptance,
         max_distinct_active_blocks_for_128_bits,
         max_distinct_active_blocks_for_nonzero_estimate,
-        interpretation: "For a fixed public statement, an alternate representative must preserve the local fiber state and, under the current representative semantics, the pad outputs on every distinct active block. The 260-byte route has enough room for the 2-byte fiber-state equality, but active pad constraints still overdetermine the fiber unless pad checks are composed outside the hidden representative.",
+        interpretation: "For a fixed public statement, an alternate representative must preserve the local fiber state and, under the current representative semantics, the pad outputs on every distinct active block. The 264-byte route has enough room for the 2-byte fiber-state equality, but active pad constraints still overdetermine the fiber unless pad checks are composed outside the hidden representative.",
     }
 }
 
@@ -5127,7 +5127,7 @@ fn reference_timing_report(iterations: usize) -> ReferenceTimingReport {
                 production_verify_ok,
             ),
         ],
-        caveat: "Reference/research timing only: not constant-time, not a production account manager, and the production-facade rows still wrap the legacy 260-byte proof callback rather than accepting 314-byte/Fq12 projection-carrier proof semantics.",
+        caveat: "Reference/research timing only: not constant-time, not a production account manager, and the production-facade rows still wrap the legacy 264-byte proof callback rather than accepting 318-byte/Fq12 projection-carrier proof semantics.",
     }
 }
 
@@ -5763,16 +5763,16 @@ fn concrete_security_budgets() -> Vec<ConcreteSecurityBudget> {
             "256-bit seed/hash primitive target; square-root-loss budget leaves 128 quantum bits up to 2^64 pad-query scale.",
         ),
         budget(
-            "FiatShamirFrameAgreementGame-hardened-21-byte-challenge",
+            "FiatShamirFrameAgreementGame-hardened-31-byte-challenge",
             CHALLENGE_ENTROPY_BITS,
             FS_QUANTUM_QUERY_BITS_FOR_128,
-            "Hardened challenge has 130 algebraic bits plus 32 transcript-bound hardening bits; 128-bit quantum margin allows 2^17 generic challenge-oracle queries.",
+            "Hardened challenge has 130 algebraic bits plus 64 transcript-bound hardening bits; 128-bit quantum margin allows 2^33 generic challenge-oracle queries.",
         ),
         budget(
-            "FiatShamirFrameAgreementGame-hardened-21-byte-challenge-classical",
+            "FiatShamirFrameAgreementGame-hardened-31-byte-challenge-classical",
             CHALLENGE_ENTROPY_BITS,
             FS_CLASSICAL_QUERY_BITS_FOR_128,
-            "Hardened challenge has 130 algebraic bits plus 32 transcript-bound hardening bits; 128-bit classical margin allows 2^34 generic challenge-oracle queries.",
+            "Hardened challenge has 130 algebraic bits plus 64 transcript-bound hardening bits; 128-bit classical margin allows 2^66 generic challenge-oracle queries.",
         ),
     ]
 }
@@ -6349,7 +6349,7 @@ fn reference_implementation_report() -> ReferenceImplementationReport {
             "mutated slot id",
             "non-canonical parser payloads",
         ],
-        status: "full 260-byte public proof API is executable and deterministic for test vectors; it remains a research reference, not hardened wallet storage",
+        status: "full 264-byte public proof API is executable and deterministic for test vectors; it remains a research reference, not hardened wallet storage",
     }
 }
 
@@ -6885,7 +6885,7 @@ mod kat {
         pub q: u16,
         pub pk_bytes: usize,
         pub signature_bytes: usize,
-        /// Byte offsets inside the canonical 260-byte transaction signature.
+        /// Byte offsets inside the canonical 264-byte transaction signature.
         pub signature_layout: SignatureLayout,
         pub positive: Vec<PositiveVector>,
         pub negative: Vec<NegativeVector>,
@@ -7624,27 +7624,27 @@ mod tests {
         assert_eq!(PAD_FRAME_BYTES, 46);
         assert_eq!(HIDDEN_PREIMAGE_BYTES, 34);
         assert_eq!(ALGEBRAIC_CHALLENGE_BYTES, 23);
-        assert_eq!(CHALLENGE_HARDENING_BYTES, 4);
-        assert_eq!(CHALLENGE_BYTES, 27);
+        assert_eq!(CHALLENGE_HARDENING_BYTES, 8);
+        assert_eq!(CHALLENGE_BYTES, 31);
         assert_eq!(ALGEBRAIC_CHALLENGE_ENTROPY_BITS, 130);
-        assert_eq!(CHALLENGE_ENTROPY_BITS, 162);
-        assert_eq!(FS_QUANTUM_QUERY_BITS_FOR_128, 17);
-        assert_eq!(FS_CLASSICAL_QUERY_BITS_FOR_128, 34);
-        assert_eq!(STATEFUL_SPEND_SIGNATURE_BYTES, 183);
-        assert_eq!(STATEFUL_TRANSACTION_SIGNATURE_BYTES, 187);
+        assert_eq!(CHALLENGE_ENTROPY_BITS, 194);
+        assert_eq!(FS_QUANTUM_QUERY_BITS_FOR_128, 33);
+        assert_eq!(FS_CLASSICAL_QUERY_BITS_FOR_128, 66);
+        assert_eq!(STATEFUL_SPEND_SIGNATURE_BYTES, 187);
+        assert_eq!(STATEFUL_TRANSACTION_SIGNATURE_BYTES, 191);
         assert_eq!(REVEALED_PREIMAGE_PROOF_BYTES, 41);
-        assert_eq!(REVEALED_PREIMAGE_TRANSACTION_SIGNATURE_BYTES, 228);
-        assert_eq!(STATELESS_SHA256_SIGNATURE_BYTES, 1015);
-        assert_eq!(PROOF_BYTES_UNDER_256, 69);
-        assert_eq!(PROOF_BYTES_BEAT_IMPLICIT_269, 81);
-        assert_eq!(PROOF_BYTES_TIE_IMPLICIT_269, 82);
+        assert_eq!(REVEALED_PREIMAGE_TRANSACTION_SIGNATURE_BYTES, 232);
+        assert_eq!(STATELESS_SHA256_SIGNATURE_BYTES, 1019);
+        assert_eq!(PROOF_BYTES_UNDER_256, 65);
+        assert_eq!(PROOF_BYTES_BEAT_IMPLICIT_269, 77);
+        assert_eq!(PROOF_BYTES_TIE_IMPLICIT_269, 78);
         assert_eq!(PROOF_BYTES_BEAT_STATELESS_SHA256, 827);
         assert_eq!(LINEAR_SIGMA_PROOF_COMMITMENT_BYTES, 32);
         assert_eq!(LINEAR_SIGMA_MASKED_WITNESS_BYTES, 41);
         assert_eq!(LINEAR_SIGMA_TARGET_PROOF_BYTES, 73);
-        assert_eq!(LINEAR_SIGMA_TARGET_TRANSACTION_SIGNATURE_BYTES, 260);
+        assert_eq!(LINEAR_SIGMA_TARGET_TRANSACTION_SIGNATURE_BYTES, 264);
         assert_eq!(REVIEWED_ACCOUNT_LINK_BYTES, 68);
-        assert_eq!(REVIEWED_TARGET_TRANSACTION_SIGNATURE_BYTES, 256);
+        assert_eq!(REVIEWED_TARGET_TRANSACTION_SIGNATURE_BYTES, 260);
     }
 
     #[test]
@@ -7686,7 +7686,7 @@ mod tests {
             "full-response-packed-sis-linear-sigma-opening"
         );
         assert_eq!(report.selected_opening_primitive.proof_bytes, 73);
-        assert_eq!(report.selected_opening_primitive.total_signature_bytes, 260);
+        assert_eq!(report.selected_opening_primitive.total_signature_bytes, 264);
         assert_eq!(
             report.selected_opening_primitive.verifier_equation,
             "L_statement(z) = a + challenge * statement.digest"
@@ -7819,11 +7819,11 @@ mod tests {
         assert_eq!(report.opening_proof_frontier.candidates.len(), 6);
         assert_eq!(
             report.opening_proof_frontier.candidates[1].total_signature_bytes,
-            228
+            232
         );
         assert_eq!(
             report.opening_proof_frontier.candidates[2].total_signature_bytes,
-            260
+            264
         );
         assert_eq!(report.assumption_review_targets.len(), 5);
         assert_eq!(report.assumption_closure_report.len(), 5);
@@ -7857,12 +7857,12 @@ mod tests {
         );
         assert_eq!(
             report.concrete_security_budgets[3].game,
-            "FiatShamirFrameAgreementGame-hardened-21-byte-challenge"
+            "FiatShamirFrameAgreementGame-hardened-31-byte-challenge"
         );
-        assert_eq!(report.concrete_security_budgets[3].raw_security_bits, 162);
+        assert_eq!(report.concrete_security_budgets[3].raw_security_bits, 194);
         assert_eq!(
             report.concrete_security_budgets[3].adversary_query_bound_log2,
-            17
+            33
         );
         assert_eq!(
             report.concrete_security_budgets[3].quantum_security_bits_after_queries,
@@ -8135,7 +8135,7 @@ mod tests {
             report
                 .final_soundness_advantage_formula
                 .union_safe_min_hash_action_bits,
-            130
+            131
         );
         assert_eq!(
             report.quotient_hiding_sampler_review.lean_surface,
@@ -8257,7 +8257,7 @@ mod tests {
         );
         assert_eq!(
             report.hiding_route_frontier[0].transaction_signature_bytes,
-            256
+            260
         );
         assert_eq!(report.hiding_route_frontier[0].residual_hiding_bits, 128);
         assert!(report.hiding_route_frontier[0].meets_128_hiding);
@@ -8267,16 +8267,16 @@ mod tests {
         );
         assert_eq!(
             report.hiding_route_frontier[1].transaction_signature_bytes,
-            258
+            262
         );
         assert_eq!(report.hiding_route_frontier[1].residual_hiding_bits, 128);
         assert_eq!(
             report.hiding_route_frontier[2].transaction_signature_bytes,
-            312
+            316
         );
         assert_eq!(
             report.hiding_route_frontier[3].transaction_signature_bytes,
-            314
+            318
         );
         assert_eq!(
             report
@@ -8483,11 +8483,11 @@ mod tests {
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[0].transaction_bytes,
-            260
+            264
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[1].transaction_bytes,
-            256
+            260
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[1].name,
@@ -8499,7 +8499,7 @@ mod tests {
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[2].transaction_bytes,
-            256
+            260
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[2].account_hidden_link_bytes,
@@ -8507,7 +8507,7 @@ mod tests {
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[3].transaction_bytes,
-            262
+            266
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[3].hidden_link_opening_bytes,
@@ -8515,7 +8515,7 @@ mod tests {
         );
         assert_eq!(
             report.committed_sigma_byte_frontier.candidates[4].transaction_bytes,
-            258
+            262
         );
         assert_eq!(
             report.assumption_closure_report[1].lean_game,
@@ -8688,7 +8688,7 @@ mod tests {
             report
                 .fiat_shamir_fork_accounting_report
                 .challenge_entropy_bits,
-            162
+            194
         );
         assert_eq!(
             report
@@ -8700,7 +8700,7 @@ mod tests {
             report
                 .fiat_shamir_fork_accounting_report
                 .fs_quantum_query_bound_log2_for_128,
-            17
+            33
         );
         assert_eq!(
             report
@@ -8790,7 +8790,7 @@ mod tests {
             report
                 .fiat_shamir_fork_generation_ledger
                 .union_safe_classical_query_bound_log2_for_128,
-            33
+            34
         );
         assert!(
             report
@@ -8876,7 +8876,7 @@ mod tests {
         );
         assert_eq!(
             report.fiat_shamir_frame_certificate.sample_challenge_hex,
-            "96c59f06d3e185e055df12c152791047fe0becf560c32f3849286d"
+            "96c59f06d3e185e055df12c152791047fe0becf560c32f3849286d4544d4b1"
         );
         assert!(
             report
@@ -9044,7 +9044,7 @@ mod tests {
         let report = fiat_shamir_fork_accounting_report();
         assert_eq!(report.challenge_entropy_bits, CHALLENGE_ENTROPY_BITS);
         assert_eq!(report.action_collision_floor_bits, 163);
-        assert_eq!(report.fs_quantum_query_bound_log2_for_128, 17);
+        assert_eq!(report.fs_quantum_query_bound_log2_for_128, 33);
         assert_eq!(report.action_collision_quantum_query_bound_log2_for_128, 17);
         assert_eq!(report.bottleneck_quantum_query_bound_log2_for_128, 17);
         assert!(report.algebraic_fork_path_closed);

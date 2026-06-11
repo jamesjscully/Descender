@@ -57,10 +57,10 @@ def path2DirectQueryBudgetV1 : Path2DirectQueryBudgetV1 where
   qromQuadraticLossBitsAtDeploymentBound := 32
   transcriptTermBitsAfterQromLoss := 182
   algebraicChallengeBytes := 23
-  challengeHardeningBytes := 4
+  challengeHardeningBytes := 8
   algebraicChallengeLastByteUsableBits := 6
   algebraicChallengeBitsAfterMask := 182
-  totalChallengeBitsAfterMask := 214
+  totalChallengeBitsAfterMask := 246
   actionCollisionFloorBits := 163
   actionCollisionQuantumBitsAtUnionBound := 131
   actionCollisionClassicalBitsAtUnionBound := 130
@@ -120,10 +120,10 @@ budget that the checked-core Fq12 equation consumes after that prefix.
 def AuxiliaryFq12ChallengeShapeComplete
     (B : Path2DirectQueryBudgetV1) : Prop :=
   B.algebraicChallengeBytes = 23 ∧
-    B.challengeHardeningBytes = 4 ∧
+    B.challengeHardeningBytes = 8 ∧
     B.algebraicChallengeLastByteUsableBits = 6 ∧
     B.algebraicChallengeBitsAfterMask = 182 ∧
-    B.totalChallengeBitsAfterMask = 214 ∧
+    B.totalChallengeBitsAfterMask = 246 ∧
     B.algebraicChallengeBitsAfterMask =
       B.transcriptTermBitsAfterQromLoss ∧
     B.totalChallengeBitsAfterMask =
@@ -160,7 +160,7 @@ theorem path2_direct_query_budget_challenge_bits_match_transcript :
   path2DirectQueryBudgetV1.algebraicChallengeBitsMatchTranscript
 
 theorem path2_direct_query_budget_total_challenge_bits_after_mask :
-    path2DirectQueryBudgetV1.totalChallengeBitsAfterMask = 214 := by
+    path2DirectQueryBudgetV1.totalChallengeBitsAfterMask = 246 := by
   rfl
 
 theorem path2_direct_query_budget_auxiliary_fq12_challenge_shape_complete :
