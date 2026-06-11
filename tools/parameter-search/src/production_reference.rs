@@ -1480,6 +1480,19 @@ pub struct Path2ToyQLinearCreationProofV1 {
 /// re-runs the harness's own `reviewed_fq12_masked_state18_packed_witness_opening` derivation over
 /// these public inputs, so a valid proof is accepted IFF the harness opening relation holds for the
 /// same creation evidence (see `verify_path2_direct_creation_masked_state18_proof_v1`).
+///
+/// ⚠️ NON-HIDING — DATA-AVAILABILITY / DEBUG PATH ONLY. THIS IS NOT THE PRODUCTION HIDING PATH.
+/// This struct serializes `pad_seed` IN THE CLEAR (`#[derive(Serialize)]`). `pad_seed` is the master
+/// witness secret: it derives the projection masks, the per-block pad residues, and the hidden-source
+/// projection values themselves. Therefore ANY observer of the serialized public proof recovers the
+/// ENTIRE hidden-source witness with ZERO key material (red-team finding HIGH-2; reproduced by the
+/// test `redteam_masked_state18_creation_proof_leaks_full_witness_key_free`). This path provides NO
+/// witness-hiding and NO zero-knowledge. It exists only to make the creation relation checkable from
+/// public data (data-availability / debug), and is intentionally NON-DEFAULT behind the fail-closed
+/// `production_deployment_preflight`. The PRODUCTION witness-HIDING creation path is the
+/// transparent-descent ZK proof (`Path2TransparentDescentPublicViewV1` +
+/// `verify_path2_direct_creation_transparent_descent_*`), which carries NO `pad_seed` and is
+/// IN PROGRESS (the relation/opening check is still stubbed). HIGH-2 is NOT resolved by this struct.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2MaskedState18CreationProofV1 {
     pub pad_seed: [u8; REVIEWED_FQ12_PAD_SEED_BYTES],
@@ -1496,6 +1509,15 @@ pub struct Path2PublicAdmissionViewV1 {
     pub certificate: Path2DirectReplayableRelationCertificateV1,
 }
 
+/// Public view for the PRODUCTION witness-HIDING creation path (transparent-descent ZK; HIGH-2 fix).
+///
+/// Unlike `Path2MaskedState18CreationProofV1`, this view carries NO `pad_seed` and NO unmasked
+/// witness — only the masked projection lanes plus commitment ROOTS (`trace_commitment_root`,
+/// `constraint_commitment_root`) and the leaf/binding/aggregation/transcript digests. It is the
+/// leak-free vehicle for the descent-framed ZK opening proof that replaces the non-hiding
+/// masked-state18 data-availability path. The relation/opening check that consumes it
+/// (`verify_path2_direct_creation_transparent_descent_*`) is IN PROGRESS (stubbed at the relation
+/// step); design spec: `research/cryptanalysis/high2_transparent_descent_zk_design.md`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2TransparentDescentPublicViewV1 {
     pub schema: &'static str,
@@ -26608,6 +26630,15 @@ pub fn verify_path2_direct_creation_proof_payload_with_masked_state18_proof_v1(
 /// preflight (`production_deployment_preflight`) still unconditionally pushes the hidden-source /
 /// constant-time / storage / external-review blockers, so `deployment_ready` remains false and the
 /// production default verifier remains fail-closed pending external review.
+///
+/// ⚠️ NON-HIDING — DATA-AVAILABILITY / DEBUG PATH ONLY (red-team HIGH-2). The accepted proof carries
+/// `pad_seed` in the clear, which is the master witness secret; an observer recovers the full
+/// hidden-source witness key-free (see `Path2MaskedState18CreationProofV1` doc + the redteam leak
+/// test). This verifier provides NO witness-hiding / NO zero-knowledge — it only confirms the
+/// relation is satisfiable from published data. It is NOT the deployable hiding path. The production
+/// witness-HIDING creation path is the transparent-descent ZK verifier
+/// (`verify_path2_direct_creation_transparent_descent_*`), which never sees `pad_seed` and is
+/// IN PROGRESS. HIGH-2 remains OPEN; do not present this verifier as the hiding/deployable path.
 pub fn verify_path2_direct_creation_masked_state18_proof_v1(
     leaf: &Path2PrevalidatedSlotLeafV1,
     evidence: &Path2AccountCreationEvidenceV1,

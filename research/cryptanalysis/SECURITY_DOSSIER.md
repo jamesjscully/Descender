@@ -199,6 +199,13 @@ mass**. They are not hardness assumptions.
    bound (q²·2⁻ᴴ) — the identical-until-bad + bad-event structure built here is what
    the quantum proof reuses, so only the O2H lemma swap remains. Status:
    classically-discharged to RO+entropy; quantum-structured-pending-O2H.)*
+   *(SCOPE — do NOT conflate with HIGH-2. This frame-PRF pad-hiding result is for the
+   **spend-path** public surface, which is digest/masked-only and never serializes
+   `pad_seed` (`deployable_pad_hiding_VERDICT.md`). It does NOT cover the **creation-proof**
+   masked-state18 data-availability path (`Path2MaskedState18CreationProofV1`), which
+   serializes `pad_seed` in the clear and is NON-HIDING BY DESIGN (red-team HIGH-2, §5).
+   The hiding creation path is the transparent-descent ZK, IN PROGRESS — HIGH-2 not yet
+   resolved.)*
 5. **Verifier-exporter bridge** (bears #1). An accepted-yet-broken creation's
    source discrepancy lands on a verifier-VISIBLE active column, never solely on
    one of the 52 excluded inactive columns. *Standard:* "the exporter does not leak
@@ -322,13 +329,28 @@ image of the Lean-derived coupling `success_implies_accepted_or_break_of_structu
   review started) → (3) uncapped mainnet (real time-under-attack — **never
   reachable on self-review alone**). The flip from fail-closed to accepting is
   gated on external review, never internal sign-off.
-- **Residual: pad_seed-in-clear (no ZK).** The public proof carries `pad_seed` in
-  the clear so the verifier can recompute the PRF masks and replay the opening
-  (bound to `leaf.pad_seed_digest`). This is honest data-availability; it adds **no
-  hiding/zero-knowledge guarantee** over `pad_seed`. A ZK/hiding public proof that
-  withholds `pad_seed` (the transparent-descent kind) **remains future work and is
-  still fail-closed** (`public_creation_verifier_build_result.md` residual,
+- **HIGH-2 OPEN — the masked-state18 creation proof is NON-HIDING BY DESIGN
+  (data-availability / debug only), NOT the deployable hiding path.** The
+  `Path2MaskedState18CreationProofV1` public proof serializes `pad_seed` in the clear
+  so the verifier can recompute the PRF masks and replay the opening (bound to
+  `leaf.pad_seed_digest`). `pad_seed` is the master witness secret ⇒ an observer of
+  the public proof recovers the ENTIRE hidden-source witness **key-free** (red-team
+  HIGH-2; reproduced by `redteam_masked_state18_creation_proof_leaks_full_witness_key_free`).
+  This path provides **NO witness-hiding and NO zero-knowledge**; it exists only to make
+  the creation relation checkable from public data, and is NON-DEFAULT behind the
+  fail-closed preflight. It is now explicitly labeled NON-HIDING in code (struct +
+  verifier doc-comments). **The hiding production creation path is the
+  transparent-descent ZK** (`Path2TransparentDescentPublicViewV1` +
+  `verify_path2_direct_creation_transparent_descent_*`), which carries NO `pad_seed`
+  and is **IN PROGRESS** (verifier-side bindings/transcript/commitment plumbing built;
+  the relation/opening proof step is still stubbed). **HIGH-2 is NOT yet resolved.**
+  Design spec for the fix: `high2_transparent_descent_zk_design.md`
+  (`public_creation_verifier_build_result.md` residual,
   `creation_time_relation_validity_VERDICT.md §B`).
+  *Note — scope:* this NON-hiding property is specific to the **creation-proof**
+  masked-state18 data-availability path. It does NOT contradict the **spend-path**
+  pad-hiding result (`deployable_pad_hiding_VERDICT.md`), which holds: the on-chain
+  spend surface is digest/masked-only and never serializes `pad_seed`.
 
 ---
 

@@ -13,6 +13,19 @@ The scaffold leak (`reference_sign_with_proof`, `stateful.rs:4703/4746`: constan
 = const + pad(seed)) is a property of the **non-deployable linear-sigma byte anchor** and is
 **absent from the deployable path** verified below.
 
+> **SCOPE (added 2026-06-10 — read before citing this verdict against HIGH-2).** This verdict is
+> about the **SPEND-path** public surface: the on-chain spend/opening serialization is
+> digest/masked-only and **never serializes `pad_seed`**, so spend-path pad-hiding holds (modulo the
+> named frame-PRF assumption). It does **NOT** cover the **creation-proof** path. The separate
+> `Path2MaskedState18CreationProofV1` masked-state18 *creation* proof
+> (`production_reference.rs`, `verify_path2_direct_creation_masked_state18_proof_v1`) DOES serialize
+> `pad_seed` in the clear ⇒ key-free full-witness recovery (red-team **HIGH-2**). That creation-proof
+> path is **NON-HIDING BY DESIGN** (data-availability / debug only) and is explicitly NOT deployable
+> as a hiding path. The hiding *creation* path is the **transparent-descent ZK**
+> (`Path2TransparentDescentPublicViewV1`, no `pad_seed`), which is **IN PROGRESS** — design spec
+> `high2_transparent_descent_zk_design.md`. Do not read "the deployable path does not inherit the
+> pad leak" (true for SPEND) as "the creation proof hides the witness" (FALSE — HIGH-2 open).
+
 ---
 
 ## CLAIM 1 — Serialization excludes the pad. CONFIRMED in code.
