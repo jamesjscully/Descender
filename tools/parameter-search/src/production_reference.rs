@@ -54383,6 +54383,57 @@ mod tests {
         // The ZK path exposes no such recovery surface (asserted in A/B above).
     }
 
+    // RED-TEAM (HIGH-2 hiding audit): the transparent-descent ZK proof DOES leak the
+    // full witness AND the projection mask, key-free, from the serialized proof bytes.
+    // The "blinding" is a per-row additive scalar `b_row` that is transmitted IN CLEAR
+    // alongside the blinded cells (cell+b_row). De-blinding is a trivial modular
+    // subtraction: cell = blinded_cells[idx] - blind (mod Q). The earlier hiding test
+    // only does CONTIGUOUS-BYTE-WINDOW checks, which cannot see a value recoverable by
+    // arithmetic. This PoC reconstructs account_projection (the raw hidden-source
+    // witness) and mask = PRF(pad_seed, slot) from the proof bytes and matches them to
+    // the true secrets.
+    #[test]
+    fn redteam_transparent_descent_zk_proof_leaks_witness_and_mask_via_inclear_blind() {
+        let (leaf, _evidence, _certificate, binding, _payload, out, pad_seed) =
+            path2_transparent_zk_creation_fixture();
+
+        // True secrets (NOT on the wire as such).
+        let true_open = reviewed_fq12_masked_state18_packed_witness_opening(
+            &binding.packed_witness_commitment,
+            &pad_seed,
+            leaf.slot_id,
+        )
+        .unwrap();
+        let true_account = true_open.account_projection;
+        let true_masks = reviewed_fq12_packed_witness_state18_projection_masks(&pad_seed, leaf.slot_id);
+
+        // Attacker only has the public proof bytes. Decode the inner body exactly as
+        // the verifier does (body is the tail of length envelope.proof_body_byte_len).
+        let envelope =
+            decode_path2_transparent_proof_bytes_envelope_v1(&out.proof_bytes).unwrap();
+        let body_start = out.proof_bytes.len() - envelope.proof_body_byte_len as usize;
+        let body = path2_transparent_zk_decode_body(&out.proof_bytes[body_start..]).unwrap();
+
+        // Take ANY opened row; de-blind by subtracting the in-clear blind.
+        let opened = &body.opened_rows[0];
+        let blind = opened.blind;
+        let mut recovered_account = [0_u16; HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES];
+        let mut recovered_masks = [0_u16; HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES];
+        for lane in 0..HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES {
+            recovered_account[lane] = sub_mod(opened.blinded_cells[lane], blind);
+            recovered_masks[lane] = sub_mod(opened.blinded_cells[6 + lane], blind);
+        }
+
+        assert_eq!(
+            recovered_account, true_account,
+            "raw hidden-source account_projection recovered key-free from ZK proof bytes"
+        );
+        assert_eq!(
+            recovered_masks, true_masks,
+            "projection mask = PRF(pad_seed,slot) recovered key-free from ZK proof bytes"
+        );
+    }
+
     #[test]
     fn path2_masked_state18_creation_proof_accepts_valid_public_proof() {
         let (_fixture, leaf, evidence, certificate, binding, payload, proof) =

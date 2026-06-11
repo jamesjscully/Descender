@@ -1,32 +1,43 @@
 # Descender Post-Quantum Signature — SECURITY DOSSIER (external-review package)
 
-> ## ⛔ RED-TEAM HOLD (2026-06-10) — DO NOT SUBMIT AS-IS (3 of 3 hiding-fixed; HIGH-2 soundness extractor = named obligation)
+> ## ⛔ RED-TEAM HOLD (2026-06-10; HIGH-2 REOPENED 2026-06-11) — DO NOT SUBMIT AS-IS
 > An authorized internal red-team found **THREE HIGH-severity breaks** (all reproduced;
 > see `RED_TEAM_REPORT.md` + `redteam_*.md`). **HIGH-1 and HIGH-3 are FIXED + committed +
-> verified.** **HIGH-2 HIDING is now RESOLVED** via the transparent-descent ZK creation
-> proof (sentinel FLIPPED 2026-06-10; the verifier runs the REAL ZK opening check; no
-> `pad_seed` in the proof; hiding/round-trip/negative tests GREEN — `high2_transparent_descent_zk_build.md`).
-> The HIGH-2 **knowledge-soundness extractor** (`p2_sis_extractor`) is a **NAMED, not-yet-
-> discharged obligation** (testnet-acceptable; discharge before value-capped mainnet).
-> Do not submit until the extractor obligation + the external coded-SIS scope-widening (§6)
-> are signed off.
+> verified.** **HIGH-2 HIDING is REOPENED (2026-06-11) — the transparent-descent ZK "fix"
+> does NOT hide the witness.** A follow-up assumption/leak audit found the ZK opening
+> transmits the per-row additive blind `b_row` **in clear** alongside the blinded cells, so
+> the full hidden-source `account_projection` and the projection `mask = PRF(pad_seed,slot)`
+> are recoverable **key-free** by one modular subtraction from the serialized proof bytes.
+> REPRODUCED with a passing PoC
+> (`redteam_transparent_descent_zk_proof_leaks_witness_and_mask_via_inclear_blind`,
+> `production_reference.rs:54396`); the old substring-only hiding test passes simultaneously
+> (false assurance). See **`high2_zk_inclear_blind_leak_VERDICT.md`**. The fix is a genuine
+> opening-protocol redesign (open only blind-invariant combinations / never reveal the
+> blind) — NOT yet applied. The HIGH-2 **knowledge-soundness extractor** (`p2_sis_extractor`)
+> remains a separate NAMED, not-yet-discharged obligation. Production stays fail-closed, so
+> this is not live on any mainnet — but the earlier "HIGH-2 hiding RESOLVED" claim was FALSE
+> and is corrected here. Do not submit until HIGH-2 hiding is genuinely re-fixed, the
+> extractor obligation is discharged, and the §6 external coded-SIS scope is widened.
 > - **HIGH-1 (§5 SUF-CMA) — ✅ RESOLVED (2026-06-10):** signature malleability — the local-delta
 >   verifier accepted non-canonical openings (`local_state` has an in-box kernel (50,−1) ⇒ two
 >   valid openings) and FS did not bind the opening bytes ⇒ keyless 2nd accepting signature.
 >   *Fix applied:* canonical-response enforcement (the verifier rejects non-canonical kernel-coset
 >   reps; the honest signer already emits the canonical one). No byte/SIS/compute change; the two
 >   redteam malleability tests are flipped to assert REJECTION and pass. Commit `03924db`.
-> - **HIGH-2 (refuted deployable witness-hiding for the creation-proof path):** the masked-state18
->   public creation proof serializes `pad_seed` in the clear ⇒ key-free full-witness recovery.
->   *Hiding fix APPLIED (2026-06-10):* the transparent-descent ZK creation proof is built and the
->   verifier sentinel is FLIPPED — `verify_path2_direct_creation_transparent_descent_payload_boundary_with_proof_bytes`
->   now runs the REAL hash/Merkle/FRI opening check (`path2_transparent_descent_verify_zk_opening_v1`),
->   prover = `path2_transparent_descent_prove_creation_v1`. The proof carries NO `pad_seed`
->   (`path2_transparent_zk_proof_hides_pad_seed_and_witness` asserts it; round-trip + 6-way negative
->   matrix GREEN). The non-hiding masked-state18 path stays AVAILABLE/NON-DEFAULT + labeled.
->   *Residual (named):* the `p2_sis_extractor` knowledge-soundness obligation (testnet-acceptable,
->   discharge before value-capped mainnet) + the §6 external coded-SIS scope-widening for the new
->   public surface. See `high2_transparent_descent_zk_build.md`.
+> - **HIGH-2 (refuted deployable witness-hiding for the creation-proof path) — ⛔ REOPENED 2026-06-11:**
+>   the masked-state18 public creation proof serialized `pad_seed` in the clear ⇒ key-free
+>   full-witness recovery. *Hiding fix attempted (2026-06-10):* a transparent-descent ZK creation
+>   proof (Merkle/FRI) with the verifier sentinel FLIPPED. The verifier IS non-stub (it really runs
+>   hash/Merkle/FRI/constraint checks). **BUT the hiding is broken:** the opening transmits the
+>   per-row additive blind `b_row` in clear next to the blinded cells, so `cell = blinded_cells −
+>   blind` recovers the raw `account_projection` and `mask` key-free (PoC
+>   `redteam_transparent_descent_zk_proof_leaks_witness_and_mask_via_inclear_blind`, passing). The
+>   old `path2_transparent_zk_proof_hides_pad_seed_and_witness` test is a contiguous-substring scan
+>   and is blind to arithmetic recovery (it still passes — false assurance). The non-hiding
+>   masked-state18 path remains accepted by its verifier and is NOT hard-gated (doc label + preflight
+>   only). *Open work:* (1) genuine ZK opening redesign so the blind is never revealed; (2) the
+>   `p2_sis_extractor` knowledge-soundness obligation (separate, still named); (3) §6 external
+>   coded-SIS scope-widening. See **`high2_zk_inclear_blind_leak_VERDICT.md`**.
 > - **HIGH-3 (§2/§3 GAP-C) — ✅ RESOLVED (2026-06-10):** the checked-core message-binding term
 >   is MULTI-TARGET (T·q/2ⁿ over T signing queries), not single-target. *Fix applied:* the
 >   checked-core challenge was WIDENED to **246 effective bits** (`CHALLENGE_HARDENING_BYTES`
