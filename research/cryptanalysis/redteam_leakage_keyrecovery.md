@@ -1,16 +1,19 @@
-# VECTOR 4 — Statistical Leakage / Key-Recovery on the DEPLOYABLE path
+# VECTOR 4 — Statistical Leakage / Key-Recovery on the historical masked-state18 path
 
 **Date:** 2026-06-10. RISK-FIRST. Authorized red-team of the maintainer's own scheme.
+**Status update (2026-06-11):** ACCEPTANCE SURFACE HARD-GATED. The serialized proof object remains
+leaky, and the regression still demonstrates key-free witness recovery from that object, but
+`verify_path2_direct_creation_masked_state18_proof_v1` now rejects valid masked-state18 public proofs
+with `PATH2_MASKED_STATE18_PUBLIC_PROOF_DISABLED_ERROR`.
 
-## VERDICT: BROKEN (witness-hiding) — partial-weakness on deployability gating
+## VERDICT: BROKEN OBJECT; PUBLIC ACCEPTANCE NOW CLOSED
 
 The claim under attack (prompt): *"the deployable masked design (PRF-fresh projection
 mask, pad excluded from serialization) hides the witness."*
 
-**This claim is FALSE for the only built public creation-proof verifier on the deployable
-Path-2.** The deployable masked-state18 creation proof (`Path2MaskedState18CreationProofV1`,
-kind `PATH2_DIRECT_CREATION_PROOF_KIND_MASKED_STATE18 = 3`, verified by
-`verify_path2_direct_creation_masked_state18_proof_v1`) **serializes `pad_seed` in clear**.
+**This claim was false for the historical masked-state18 creation proof.** The proof object
+(`Path2MaskedState18CreationProofV1`, kind `PATH2_DIRECT_CREATION_PROOF_KIND_MASKED_STATE18 = 3`)
+**serializes `pad_seed` in clear**.
 `pad_seed` is the master witness secret: it deterministically derives (a) the projection
 masks, (b) the per-block secret pad residue table, and (c) the hidden-source projection
 values themselves. So any observer of the PUBLIC creation proof recovers the **entire hidden
@@ -23,15 +26,9 @@ hiding design. This is the SAME failure mode as the known-leaky 260B linear-sigm
 proof the maintainer actually built (GAP A, MEMORY 2026-06-10) — i.e., it is NOT confined to
 the scaffold.
 
-**Severity calibration (honest):** This is gated. `production_deployment_preflight()` stays
-fail-closed (`HIDDEN_SOURCE_PROOF_SEMANTICS` + `EXTERNAL_REVIEW` blockers; test
-`path2_masked_state18_path_does_not_flip_production_preflight` asserts it), and the verifier
-is labeled AVAILABLE/NON-DEFAULT. So this is not a live, shipped forgery/key-recovery — it is
-a **pre-deployment design break**: the only public creation-proof acceptance path that
-*exists* provides no witness hiding, and the genuinely-hiding alternative (transparent
-descent ZK proof) is unimplemented (returns `"Path 2 transparent descent proof verifier is
-not implemented"` in every form: lines 26556, 26705, 26802, 26841). Severity: **high**
-(would be critical if the masked-state18 path were the default/shipped acceptance path).
+**Severity calibration (current):** The acceptance surface is now closed in code. This remains a
+high-value regression because serializing this object publicly would still leak the witness, but the
+public verifier and proof-carrying dispatcher no longer accept it.
 
 ## Reproduction (machine-checked)
 
@@ -45,10 +42,11 @@ cargo test --release --lib redteam_masked_state18_creation_proof_leaks_full_witn
 # -> test result: ok. 1 passed
 ```
 
-What it proves, step by step, against the REAL deployable verifier and fixture:
+What it proves, step by step, against the historical fixture:
 
-1. `verify_path2_direct_creation_masked_state18_proof_v1(...)` **accepts** the honest proof
-   (the real public creation verifier — not the scaffold, not a toy).
+1. `verify_path2_direct_creation_masked_state18_proof_v1(...)` **rejects** the honest proof with
+   `PATH2_MASKED_STATE18_PUBLIC_PROOF_DISABLED_ERROR`; the internal debug checker still accepts the
+   relation so the fixture remains meaningful.
 2. `serde_json::to_vec(&proof)` (the public Serialize wire surface) contains the `pad_seed`
    field; the test re-parses the JSON and reconstructs `pad_seed` byte-for-byte (==
    `fixture.pad_seed`). **The attacker reads pad_seed off the wire with no key.**
@@ -88,15 +86,16 @@ The PRF-freshness of the mask buys ZERO hiding because the seed travels with it.
 
 - `1484-1487` — `Path2MaskedState18CreationProofV1 { pad_seed, account_projection }`,
   `#[derive(Serialize)]` ⇒ pad_seed on the public wire.
-- `26611-26687` — `verify_path2_direct_creation_masked_state18_proof_v1`: step 2 binds
-  `proof.pad_seed` to `leaf.pad_seed_digest` (pad_seed IS the proof input, in clear).
+- `verify_path2_direct_creation_masked_state18_proof_v1` — hard-gated public verifier for this proof.
+- `verify_path2_direct_creation_masked_state18_proof_debug_relation_v1` — internal historical
+  relation checker that still binds `proof.pad_seed` to `leaf.pad_seed_digest`.
 - `6404-6420` — `reviewed_fq12_packed_witness_state18_projection_masks(pad_seed, slot_id)`:
   masks are a deterministic SHA-256 PRF of `(pad_seed, slot_id, idx)`.
 - `37383-37405` — `reviewed_fq12_pad_residues_from_seed_bounded`: pad table from pad_seed.
 - `7139-7168` — `hidden_source_fallback_pad_prf_projection_values_from_seed`: the
   hidden-source projection (the witness) derives from pad_seed.
-- `26556 / 26705 / 26802 / 26841` — the genuinely-hiding transparent-descent verifier is
-  **unimplemented**; the masked-state18 leaky proof is the only built acceptance path.
+- The transparent-descent verifier is now the active hiding path under test; it no longer serializes
+  `pad_seed` and its opening uses masked-share rows.
 - `53061-53073` — `path2_masked_state18_path_does_not_flip_production_preflight`: production
   stays fail-closed (the gating that makes this pre-deployment, not live).
 

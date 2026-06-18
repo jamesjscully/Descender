@@ -31,16 +31,20 @@ cargo test --bin signature_q12289_local_delta_stateful redteam_response_opening
 ```
 Report: `research/cryptanalysis/redteam_implementation_malleability.md`.
 
-### HIGH-2 — Key-free FULL-WITNESS recovery from the only built public creation-proof verifier (Vector 4) — **BROKEN**
+### HIGH-2 — Key-free FULL-WITNESS recovery from the historical masked-state18 proof object (Vector 4) — **BROKEN OBJECT; ACCEPTOR HARD-GATED**
 
-`Path2MaskedState18CreationProofV1` (kind `PATH2_DIRECT_CREATION_PROOF_KIND_MASKED_STATE18=3`, accepted by `verify_path2_direct_creation_masked_state18_proof_v1`) is `#[derive(Serialize)]` and carries `pad_seed` IN CLEAR — confirmed at `production_reference.rs:1484-1487`:
+Status update (2026-06-11): `verify_path2_direct_creation_masked_state18_proof_v1` and the
+proof-carrying dispatcher now reject this proof kind with
+`PATH2_MASKED_STATE18_PUBLIC_PROOF_DISABLED_ERROR`. The object remains leaky if serialized.
+
+`Path2MaskedState18CreationProofV1` (kind `PATH2_DIRECT_CREATION_PROOF_KIND_MASKED_STATE18=3`) is `#[derive(Serialize)]` and carries `pad_seed` IN CLEAR — confirmed at `production_reference.rs:1484-1487`:
 ```rust
 pub struct Path2MaskedState18CreationProofV1 {
     pub pad_seed: [u8; REVIEWED_FQ12_PAD_SEED_BYTES],
     pub account_projection: [u16; HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES],
 }
 ```
-`pad_seed` is the master witness secret: it deterministically derives the projection masks (`reviewed_fq12_packed_witness_state18_projection_masks`), the per-block secret pad residue table (`reviewed_fq12_pad_residues_from_seed_bounded`), and the hidden-source projection VALUES (`hidden_source_fallback_pad_prf_projection_values_from_seed`). Any observer of the public creation proof recovers the entire hidden source with ZERO key material. The "PRF-fresh mask" hides nothing because its seed ships next to it. Witness-hiding = 0 bits. The genuinely-hiding transparent-descent ZK proof is UNIMPLEMENTED — confirmed: `"Path 2 transparent descent proof verifier is not implemented"` at `production_reference.rs:26556/26705/26802/26841`. So the only built acceptance path is the leaky one. Refutes "the deployable masked design hides the witness."
+`pad_seed` is the master witness secret: it deterministically derives the projection masks (`reviewed_fq12_packed_witness_state18_projection_masks`), the per-block secret pad residue table (`reviewed_fq12_pad_residues_from_seed_bounded`), and the hidden-source projection VALUES (`hidden_source_fallback_pad_prf_projection_values_from_seed`). Any observer of the serialized object recovers the entire hidden source with ZERO key material. The "PRF-fresh mask" hides nothing because its seed ships next to it. Witness-hiding = 0 bits. This refutes the historical masked-state18 public proof as a hiding design; the current transparent-descent ZK path is the active hiding candidate.
 
 **Reproduction (independently re-run, PASS):**
 ```

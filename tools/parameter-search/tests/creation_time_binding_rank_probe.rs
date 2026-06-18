@@ -7,14 +7,14 @@
 use descender_parameter_search::production_reference as pr;
 
 use pr::{
-    pack_reviewed_fq12_packed_witness_state18_from_parts,
+    DIGEST_BYTES, HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES as LANES, Q,
+    REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS as ROWS, REVIEWED_FQ12_PACKED_WITNESS_STATE18_ROWS,
+    REVIEWED_FQ12_PAD_SEED_BYTES, pack_reviewed_fq12_packed_witness_state18_from_parts,
     reviewed_fq12_masked_state18_packed_witness_opening,
     reviewed_fq12_pack_masked_witness_state18_from_parts,
     reviewed_fq12_packed_witness_state18_projection_masks,
-    reviewed_fq12_state_assisted_opening_commitment_digest, unpack_reviewed_fq12_packed_witness_state18,
-    HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES as LANES, Q,
-    REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS as ROWS, REVIEWED_FQ12_PACKED_WITNESS_STATE18_ROWS,
-    REVIEWED_FQ12_PAD_SEED_BYTES, DIGEST_BYTES,
+    reviewed_fq12_state_assisted_opening_commitment_digest,
+    unpack_reviewed_fq12_packed_witness_state18,
 };
 
 // Probe 1: the 18-residue packing is a bijection (invertible bit-packing, not a
@@ -63,12 +63,14 @@ fn probe2_masking_is_affine_bijection_per_lane() {
     let mut proj_b = proj_a;
     proj_b[2] = (proj_b[2] + 1) % Q; // move one account-witness coordinate
 
-    let commit_a =
-        reviewed_fq12_pack_masked_witness_state18_from_parts(&syndrome, &proj_a, &pad_seed, slot_id)
-            .unwrap();
-    let commit_b =
-        reviewed_fq12_pack_masked_witness_state18_from_parts(&syndrome, &proj_b, &pad_seed, slot_id)
-            .unwrap();
+    let commit_a = reviewed_fq12_pack_masked_witness_state18_from_parts(
+        &syndrome, &proj_a, &pad_seed, slot_id,
+    )
+    .unwrap();
+    let commit_b = reviewed_fq12_pack_masked_witness_state18_from_parts(
+        &syndrome, &proj_b, &pad_seed, slot_id,
+    )
+    .unwrap();
     // distinct account projections -> distinct commitments (mask is additive bijection)
     assert_ne!(commit_a, commit_b);
 
@@ -116,12 +118,20 @@ fn probe3_two_witnesses_cannot_share_opening_commitment() {
     syndrome_b[0] = 1;
     let proj = [3u16, 5, 8, 13, 21, 34]; // the exact selected_source_values from the 2205 test
 
-    let commit_a =
-        reviewed_fq12_pack_masked_witness_state18_from_parts(&syndrome_a, &proj, &pad_seed, slot_id)
-            .unwrap();
-    let commit_b =
-        reviewed_fq12_pack_masked_witness_state18_from_parts(&syndrome_b, &proj, &pad_seed, slot_id)
-            .unwrap();
+    let commit_a = reviewed_fq12_pack_masked_witness_state18_from_parts(
+        &syndrome_a,
+        &proj,
+        &pad_seed,
+        slot_id,
+    )
+    .unwrap();
+    let commit_b = reviewed_fq12_pack_masked_witness_state18_from_parts(
+        &syndrome_b,
+        &proj,
+        &pad_seed,
+        slot_id,
+    )
+    .unwrap();
     assert_ne!(
         commit_a, commit_b,
         "distinct syndromes must yield distinct witness commitments"
@@ -164,19 +174,28 @@ fn probe5_masked_state18_verifier_rejects_witness_swap() {
     let pad_seed = [0x5au8; REVIEWED_FQ12_PAD_SEED_BYTES];
     let slot_id: u64 = 0;
     let observed_blocks = [false; pr::GROUPS];
-    let pad_opening_statement = pr::reviewed_fq12_pad_opening_statement_from_seed(&pad_seed, &observed_blocks);
+    let pad_opening_statement =
+        pr::reviewed_fq12_pad_opening_statement_from_seed(&pad_seed, &observed_blocks);
 
     let syndrome_a = [0u16; ROWS];
     let mut syndrome_b = [0u16; ROWS];
     syndrome_b[0] = 1;
     let proj = [3u16, 5, 8, 13, 21, 34];
 
-    let commit_a =
-        reviewed_fq12_pack_masked_witness_state18_from_parts(&syndrome_a, &proj, &pad_seed, slot_id)
-            .unwrap();
-    let commit_b =
-        reviewed_fq12_pack_masked_witness_state18_from_parts(&syndrome_b, &proj, &pad_seed, slot_id)
-            .unwrap();
+    let commit_a = reviewed_fq12_pack_masked_witness_state18_from_parts(
+        &syndrome_a,
+        &proj,
+        &pad_seed,
+        slot_id,
+    )
+    .unwrap();
+    let commit_b = reviewed_fq12_pack_masked_witness_state18_from_parts(
+        &syndrome_b,
+        &proj,
+        &pad_seed,
+        slot_id,
+    )
+    .unwrap();
     assert_ne!(commit_a, commit_b);
 
     // Build the matching opening + statement for witness A.
@@ -225,7 +244,10 @@ fn probe5_masked_state18_verifier_rejects_witness_swap() {
         &statement_a,
         &pad_seed,
     );
-    assert!(ok.is_ok(), "honest masked_state18 opening must accept: {ok:?}");
+    assert!(
+        ok.is_ok(),
+        "honest masked_state18 opening must accept: {ok:?}"
+    );
 
     // (b) SURVIVOR MOVE: keep opening_a (bound to commit_a) but swap the
     // statement's witness commitment to commit_b. Spend-only carrier ignored

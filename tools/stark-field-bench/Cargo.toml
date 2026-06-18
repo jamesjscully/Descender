@@ -1,0 +1,39 @@
+[package]
+name = "stark-field-bench"
+version = "0.1.0"
+edition = "2021"
+description = "Plonky3 Poseidon2-AIR STARK benchmark across FFT-friendly fields (BabyBear, KoalaBear, Goldilocks) to choose a re-host field for the account-creation relation."
+
+[dependencies]
+p3-field = "0.6.1"
+p3-baby-bear = "0.6.1"
+p3-koala-bear = "0.6.1"
+p3-goldilocks = "0.6.1"
+p3-uni-stark = "0.6.1"
+p3-fri = "0.6.1"
+p3-merkle-tree = "0.6.1"
+p3-commit = "0.6.1"
+p3-dft = "0.6.1"
+p3-symmetric = "0.6.1"
+p3-poseidon2 = "0.6.1"
+p3-poseidon2-air = "0.6.1"
+p3-challenger = "0.6.1"
+p3-matrix = "0.6.1"
+p3-maybe-rayon = { version = "0.6.1", features = ["parallel"] }
+p3-keccak = "0.6.1"
+p3-air = "0.6.1"
+rand = "0.10"
+serde = { version = "1", features = ["derive"] }
+
+[features]
+default = ["parallel"]
+parallel = [
+    "p3-maybe-rayon/parallel",
+    "p3-poseidon2-air/parallel",
+    "p3-uni-stark/parallel",
+]
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1

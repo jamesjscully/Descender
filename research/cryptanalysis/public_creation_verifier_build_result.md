@@ -1,6 +1,12 @@
 # BUILD RESULT — Real Public Creation-Proof Verifier (GAP A / #22 / #4 prevalidationDataAvailability)
 
 **Date:** 2026-06-10 · **n=32, q=12289, Fq12**
+**Status update (2026-06-11):** HISTORICAL / SUPERSEDED. The masked-state18 public verifier was
+hard-gated after HIGH-2 confirmed that `Path2MaskedState18CreationProofV1` serializes `pad_seed` in
+clear. `verify_path2_direct_creation_masked_state18_proof_v1` and
+`verify_path2_direct_creation_proof_payload_with_masked_state18_proof_v1` now fail closed with
+`PATH2_MASKED_STATE18_PUBLIC_PROOF_DISABLED_ERROR`; the equivalence checker described below survives
+only as the internal debug helper `verify_path2_direct_creation_masked_state18_proof_debug_relation_v1`.
 **Target file:** `tools/parameter-search/src/production_reference.rs`
 **Predecessor:** `creation_time_relation_validity_VERDICT.md` (relation arm SOUND; residual = data-availability)
 
@@ -8,23 +14,22 @@
 
 ## SUMMARY
 
-A real (non-toy) public, harness-free account-creation-proof verifier was built, wired as an
-**AVAILABLE, NON-DEFAULT, clearly-labeled** acceptance path, and **proven functionally equivalent**
-(by test) to the tested harness-replay relation. The production deployment default **remains
-fail-closed**: the deployment preflight blockers are untouched and the fail-closed preflight test
-still passes.
+A real (non-toy) public, harness-free account-creation-proof verifier was originally built and
+tested for functional equivalence to the harness-replay relation. That acceptance surface is now
+disabled because it is non-hiding. Keep this document as the historical build record for the relation
+checker, not as a current deployable verifier claim.
 
 | Item | Status |
 |---|---|
-| Real (non-toy) public verifier built | YES — `verify_path2_direct_creation_masked_state18_proof_v1` |
+| Real (non-toy) public verifier built | HISTORICAL; now hard-gated |
 | Toy commitment de-toyed | YES — real SHA-256/masked_state18 commitment replaces `P2Q1` toy |
 | New proof kind added | YES — `PATH2_DIRECT_CREATION_PROOF_KIND_MASKED_STATE18 = 3` |
-| Wired into the `:26475` dispatcher | YES — handled kind; routes to proof-carrying dispatcher |
-| Equivalence to harness-replay relation | TESTED (IFF, positive + negative directions) |
+| Wired into the dispatcher | YES — handled kind; now returns `PATH2_MASKED_STATE18_PUBLIC_PROOF_DISABLED_ERROR` |
+| Equivalence to harness-replay relation | TESTED on internal debug relation checker |
 | Negative controls reject | YES — binding-field + claim + pad-seed mutations all reject |
 | Production stays fail-closed (preflight test) | YES — `deployment_preflight_fails_closed…` passes |
 | Source-marker gates / 314-byte fixture / KAT | ALL GREEN |
-| #4 prevalidationDataAvailability | CLOSED on the masked-state18 relation (residual named below) |
+| #4 prevalidationDataAvailability | CLOSED only as a historical/debug relation check; not an accepting public path |
 
 ---
 
@@ -60,8 +65,8 @@ commitment and replays the real harness opening relation, not the toy q-linear S
   generic "payload kind is unsupported"). Because it has no proof body, it returns a distinct error
   routing the caller to the proof-carrying dispatcher.
 - Proof-carrying dispatcher
-  `verify_path2_direct_creation_proof_payload_with_masked_state18_proof_v1` is the Ok-returning real
-  acceptance path for a valid public proof.
+  `verify_path2_direct_creation_proof_payload_with_masked_state18_proof_v1` is now hard-gated and
+  returns `PATH2_MASKED_STATE18_PUBLIC_PROOF_DISABLED_ERROR` for this non-hiding proof kind.
 
 ### 3. New public API
 

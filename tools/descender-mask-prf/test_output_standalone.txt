@@ -1,0 +1,21 @@
+   Compiling descender-mask-prf v0.1.0 (/home/jack/code/Descender/tools/descender-mask-prf)
+    Finished `release` profile [optimized] target(s) in 2.90s
+     Running unittests src/lib.rs (target/release/deps/descender_mask_prf-3d7963bd937e8d3b)
+
+running 7 tests
+test tests::field_inverse ... ok
+test tests::field_mul_kat ... ok
+test tests::mask_uniformity_smoke ... ok
+test tests::masks_deterministic ... ok
+test tests::masks_in_range ... ok
+test tests::permutation_matches_plonky3_published_kat ... ok
+test tests::wide_reduce_bias_margin_at_least_141_bits ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+   Doc-tests descender_mask_prf
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

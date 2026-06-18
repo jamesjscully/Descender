@@ -24,12 +24,14 @@ fn build_account() -> (
         selected_source_values: [3_u16; HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES],
     };
     let frame = encode_hidden_source_fallback_account_witness_opening_frame(&opening).unwrap();
-    let witness_commitment =
-        pack_reviewed_fq12_account_carried_syndrome_digest(&[1_u16; REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS])
-            .unwrap();
-    let randomizer_commitment =
-        pack_reviewed_fq12_account_carried_syndrome_digest(&[7_u16; REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS])
-            .unwrap();
+    let witness_commitment = pack_reviewed_fq12_account_carried_syndrome_digest(
+        &[1_u16; REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS],
+    )
+    .unwrap();
+    let randomizer_commitment = pack_reviewed_fq12_account_carried_syndrome_digest(
+        &[7_u16; REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS],
+    )
+    .unwrap();
     let account = hidden_source_fallback_projection_account_state_from_slot_frames([
         HiddenSourceFallbackProjectionAccountSlotFrameSeed {
             witness_commitment,
@@ -53,8 +55,7 @@ fn build_account() -> (
 #[test]
 fn attack_f_db_adapter_double_spend() {
     let (account, frame, _pad) = build_account();
-    let manager =
-        ProductionReviewedFq12StateAssistedAccountLifecycleManager::new(account).unwrap();
+    let manager = ProductionReviewedFq12StateAssistedAccountLifecycleManager::new(account).unwrap();
     let snapshot = manager.snapshot().unwrap();
     let pk = ProductionPublicKey::new(vec![0_u8; PK_BYTES]).unwrap();
 
@@ -94,8 +95,7 @@ fn attack_f_db_adapter_double_spend() {
 #[test]
 fn attack_e_ledger_record_tamper() {
     let (account, frame, pad) = build_account();
-    let manager =
-        ProductionReviewedFq12StateAssistedAccountLifecycleManager::new(account).unwrap();
+    let manager = ProductionReviewedFq12StateAssistedAccountLifecycleManager::new(account).unwrap();
     let snapshot = manager.snapshot().unwrap();
     let pk = ProductionPublicKey::new(vec![0_u8; PK_BYTES]).unwrap();
     let anchor = ProductionLifecycleRestoreAnchor {
@@ -123,12 +123,7 @@ fn attack_e_ledger_record_tamper() {
 
     // Replay on the ORIGINAL snapshot (slot 0 unused) with the tampered ledger.
     let replay = apply_selected_projection_consensus_opening_frame(
-        snapshot,
-        tampered,
-        anchor,
-        &pk,
-        0,
-        &frame,
+        snapshot, tampered, anchor, &pk, 0, &frame,
     );
     match replay {
         Ok(_) => println!(
@@ -152,8 +147,7 @@ fn attack_e_ledger_record_tamper() {
 #[test]
 fn attack_a_cross_public_key_double_spend() {
     let (account, frame, _pad) = build_account();
-    let manager =
-        ProductionReviewedFq12StateAssistedAccountLifecycleManager::new(account).unwrap();
+    let manager = ProductionReviewedFq12StateAssistedAccountLifecycleManager::new(account).unwrap();
     let snapshot = manager.snapshot().unwrap();
     let anchor = ProductionLifecycleRestoreAnchor {
         minimum_snapshot_sequence: 0,
@@ -263,8 +257,7 @@ fn attack_b_rollback_no_anchor_restore() {
 #[test]
 fn attack_c_consensus_snapshot_rollback_ledger_persists() {
     let (account, frame, _pad) = build_account();
-    let manager =
-        ProductionReviewedFq12StateAssistedAccountLifecycleManager::new(account).unwrap();
+    let manager = ProductionReviewedFq12StateAssistedAccountLifecycleManager::new(account).unwrap();
     let snapshot = manager.snapshot().unwrap();
     let pk = ProductionPublicKey::new(vec![0_u8; PK_BYTES]).unwrap();
 
@@ -294,9 +287,9 @@ fn attack_c_consensus_snapshot_rollback_ledger_persists() {
         &frame,
     );
     match rollback {
-        Ok(_) => panic!(
-            "BREAK: snapshot rollback (with persistent ledger) ACCEPTED a second consume."
-        ),
+        Ok(_) => {
+            panic!("BREAK: snapshot rollback (with persistent ledger) ACCEPTED a second consume.")
+        }
         Err(e) => println!("attack_c rejected by: {}", e.reason()),
     }
 }
@@ -341,8 +334,7 @@ fn attack_d_same_pad_seed_two_slots() {
             return;
         }
     };
-    let manager =
-        ProductionReviewedFq12StateAssistedAccountLifecycleManager::new(account).unwrap();
+    let manager = ProductionReviewedFq12StateAssistedAccountLifecycleManager::new(account).unwrap();
     let snapshot = manager.snapshot().unwrap();
     let pk = ProductionPublicKey::new(vec![0_u8; PK_BYTES]).unwrap();
     let anchor = ProductionLifecycleRestoreAnchor {
@@ -374,9 +366,7 @@ fn attack_d_same_pad_seed_two_slots() {
         &frame,
     );
     match t2 {
-        Ok(_) => panic!(
-            "BREAK: two slots sharing a pad seed both consumed (slot 0 then slot 1)."
-        ),
+        Ok(_) => panic!("BREAK: two slots sharing a pad seed both consumed (slot 0 then slot 1)."),
         Err(e) => println!("attack_d second slot rejected by: {}", e.reason()),
     }
 }

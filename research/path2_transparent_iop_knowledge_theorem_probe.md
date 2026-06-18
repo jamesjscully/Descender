@@ -157,6 +157,27 @@ recover one full hidden native-boundary trace whose role handles, masked query
 openings, range rows, blinding rows, opening-tuple rows, checked-core rows, and
 lifecycle/context rows all refer to the same accepted boundary.
 
+Current executable negative evidence:
+`research/path2_current_core_negative_theorem.md` shows the current core accepts
+public-only masked-share traces outside the hidden-opening language, and
+`research/path2_current_view_binding_negative_theorem.md` shows that keeping
+`creation_proof_binding_digest` in the transcript does not by itself link the
+accepted trace root to the binding's role commitments. A positive transparent
+IOP theorem must therefore prove both full hidden-relation knowledge and
+trace-to-role-binding consistency; sampled masked-share acceptance is unusable
+as the theorem premise.
+
+Positive sufficiency anchor:
+`research/path2_full_relation_backend_sufficiency_theorem.md` records the Lean
+certificate
+`SelectedTransparentFullRelationBackendCertificate` and theorem
+`selected_transparent_full_relation_backend_certificate_implies_account_admission`.
+That theorem is the exact interface-level proof target for a replacement
+full-relation backend. The Rust metadata now mirrors this with
+`Path2TransparentFullRelationBackendSufficiencyTargetV1`, which binds the Lean
+certificate/theorem/conclusion into the contract, obligations, and capability
+digests without claiming the concrete backend certificate exists.
+
 Lean now names the bridge and final adapter:
 
 ```text

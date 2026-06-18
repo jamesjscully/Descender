@@ -396,13 +396,15 @@ Named breaks:
   `PATH2_TRANSPARENT_COMMITMENT_API_SCHEMA`,
   `path2_transparent_commitment_api_v1`,
   `verify_path2_transparent_commitment_api`, and
-  `path2_transparent_commitment_api_v1_digest` derive the four active role
-  handles from `Path2CreationProofBindingV1`, require them to be authenticated
-  under the parent trace root, rederive the native role-root commitment from the
-  role handles, and reject role/root drift before the transparent fail-closed
-  verifier handoff. KAT coverage includes unauthenticated role handles,
-  duplicate role ids, and a self-consistent binding digest whose native role
-  root no longer matches the role handles.
+  `path2_transparent_commitment_api_v1_digest` derive all six active creation
+  role handles from `Path2CreationProofBindingV1` (`packed_witness`,
+  `randomizer`, `pad_source`, `projection_relation`, `opening_tuple`, and
+  `gauge`/blinding), require them to be authenticated under the parent trace
+  root, rederive the native role-root commitment from the role handles, and
+  reject role/root drift before the transparent fail-closed verifier handoff.
+  KAT coverage includes unauthenticated role handles, duplicate role ids, every
+  individual role-handle mismatch, and a self-consistent binding digest whose
+  native role root no longer matches the role handles.
   `research/path2_transparent_proof_family_gate.md` selects the conditional
   primary family `zk_masked_trace_iop` and marks vanilla Merkle/FRI raw trace
   opening dead for hidden columns. The next proof blocker is now the masked
@@ -498,15 +500,24 @@ Named breaks:
   verifier handoff. Transparent proof-byte parsing now has a canonical
   fail-closed envelope:
   `PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_SCHEMA`,
-  `path2_transparent_proof_bytes_envelope_v1_bytes`,
-  `decode_path2_transparent_proof_bytes_envelope_v1`,
-  `verify_path2_transparent_proof_bytes_envelope_v1`, and
+  crate-local `path2_transparent_proof_bytes_envelope_v1_bytes`,
+  crate-local `decode_path2_transparent_proof_bytes_envelope_v1`,
+  crate-local `verify_path2_transparent_proof_bytes_envelope_v1`, crate-local
+  raw backend verifier-result/receipt constructors and digest/receipt-byte
+  helpers, crate-local full-hidden subproof component/verifier-key/backend-proof/
+  proof-body digest helpers, crate-local full-hidden public-input digest
+  helpers, crate-local full-hidden statement serializers/decoders/digest
+  validators, crate-local transparent direct-statement/proof-byte/payload/
+  proof-family binding digest helpers, and
   `verify_path2_direct_creation_transparent_descent_payload_boundary_with_proof_bytes`
   bind proof bytes to the accepted public view, `R_core_66` layout digest,
   query-opening manifest digest, column profile, trace rows, query count, and
-  the Merkle-path and consistency-message component digests plus an opaque
-  proof-body digest/length before returning the proof-verifier-not-implemented
-  blocker. The envelope constructor/parser now also enforce the active
+  the Merkle-path, witness-check, local trace-binding, and direct
+  payload-statement bridge component digests plus an opaque proof-body
+  digest/length before returning the proof-verifier-not-implemented blocker.
+  The direct bridge slot is a wire/domain break: the active schema string is
+  `DESCENDER_PATH2_TRANSPARENT_PROOF_BYTES_ENVELOPE_V2` and the envelope
+  version is `2`. The envelope constructor/parser now also enforce the active
   16416-byte fallback threshold on the canonical encoded proof bytes, so an
   over-budget transparent proof cannot pass the fail-closed boundary as the
   active route. The transparent payload digest builder now rejects
@@ -681,6 +692,77 @@ Named breaks:
   verifier with honest/malformed coverage against this capability profile,
   encoded relation, validated query-opening manifest, and canonical proof-byte
   envelope.
+
+  2026-06-17 PROOF-FAMILY DECISION (adversarially verified, 16-agent workflow;
+  both skeptics held on every verdict). The relation-soundness backend choice is
+  resolved at the strategy level. **Transparent STARK/FRI IOP-of-knowledge
+  (Family A) is selected PRIMARY**; MITH/VOLEitH (B) is the theorem-clean
+  fallback; LaBRADOR/LatticeFold-class lattice folding (C) is the strategic
+  PQ-native long-term bet; native image-membership (D) is a statement-shrinking
+  probe only. A is the only candidate that is BOTH post-quantum AND has
+  production-deployed recursion/aggregation/IVC. The three flip conditions that
+  could displace A do not fire: (A) wide-challenge MITH is real and deployed
+  (FAEST/VOLEitH ~11-16 reps) but has NO native recursion — aggregating it
+  collapses to wrapping it in an external STARK, i.e. re-selecting A; the repo's
+  optimistic ~7.3 KB MITH floor is RETRACTED (size scales with gate count, honest
+  band ~5-30 KB). (B) lattice folding is research-grade, has NO integrated ZK
+  (open problem), proves only a ~2.07x norm-relaxed relation (the slack can let a
+  base-128 digit exceed 127 and break C4 repack injectivity), and carries a
+  documented soundness-FAILURE class from NTT-friendly rings (three LaBRADOR
+  impls collapsed to 1/~31/~6 bits): **the repo's preferred q=12289 is
+  NTT-friendly precisely because it splits, so "q=12289 is lattice-favorable" has
+  the SIGN BACKWARDS for soundness** — promoting C requires a non-splitting
+  modulus, which costs the q=12289 speed advantage. (C) STARK zk-masking does NOT
+  fail: zk-STARKs hide all 194 private lanes without raw openings (Haböck & Al
+  Kindi 2024/1037) and FRI is a genuine AoK with a quantified (quasi-polynomial,
+  oracle-codeword) extractor (Block/Garreta et al. 2023/1071). Honest STARK
+  caveats forced by the skeptics: the `[4096,12288] B` band is a repo planning
+  floor, NOT literature-grounded (real FRI/STIR/WHIR at 128-bit run 114-306 KiB)
+  so the "beats MITH on bytes" claim is RETRACTED (fine — bytes are the weakest
+  constraint at creation); the late-2025 disproof of the up-to-capacity
+  proximity-gap conjecture forces CONSERVATIVE Johnson-bound FRI parameters
+  (delta <= 1 - sqrt(rho), ~147 queries); and QROM has no tight FRI-specific
+  reduction (named-standard future-work seam). The 8-question argument-of-
+  knowledge test on STARK returns **CONDITIONAL-PASS**: Q1/Q3/Q6 PASS; Q2/Q4/Q5/
+  Q7/Q8 are instantiation debt = write the full 176-row AIR forcing C1/C2/C4/C6
+  (retires the public-only-synthetic-trace negatives), rebuild the opening to
+  never reveal the per-row blind (closes reopened HIGH-2; test hiding by
+  attempted arithmetic recovery, not substring scan), pin conservative FRI
+  params, and carry QROM as a named seam. Highest-leverage architectural point: a
+  Family-A recursive circuit can co-verify {creation proof + hash-digest-
+  referenced checked-core spend} into one O(1) succinct chain-state proof
+  (rollup-style), which dominates any per-proof byte tuning — but recursion
+  rewards an arithmetization-friendly hash, so the SHA-256 checked-core/role
+  bindings are a real conflict to plan around. Full aggregation/recursion
+  analysis: `research/path2_proof_family_aggregation_recursion_analysis.md`.
+  Updated route comparison: `research/path2_proof_family_route_clarity.md`.
+
+  2026-06-17 HIGHEST-RISK ACTIVE-ROUTE ITEM (risk-first). With A selected, the
+  riskiest remaining obstruction is the **C1/C2 consensus-SHA <-> proof-friendly-
+  commitment binding bridge**, analyzed in
+  `research/path2_stark_route_c1c2_sha_binding_bridge_risk.md`. Maintainer
+  APPROVED option (b) 2026-06-17: switch the projection-mask PRF to an
+  arithmetization-friendly hash (spend stays 262/318 B; spend verifier mask
+  recomputation + frame-PRF assumption change; injectivity re-proof from the
+  algebraic root required). Gating AF-hash now SELECTED in
+  `research/path2_stark_route_af_hash_selection.md`: **Poseidon2 / x^5 S-box over
+  Fq=12289** (x^3 invalid since 3 | q-1), capacity ~19 lanes for 128-bit CR,
+  FRI/IOP soundness on Fq12 (~168 bits), ~660 deg-5 constraints/perm (~2-3 orders
+  cheaper than 12x SHA-256), RO/PRF-modelable incl. post-quantum sponge
+  indifferentiability. R_P probe 2026-06-17 became a FINDING: the canonical tool
+  (validated vs BLS12-381 t=3 -> 8/56) outputs R_F=8/R_P=22 for t=24, but **that
+  is a small-field ARTIFACT and is NOT safe** — every algebraic inequality is
+  capped by min(M, prime_bit_len)/(prime_bit_len/2 ≈ 6.79), so R_P=22 certifies
+  ~14-bit not 128-bit algebraic resistance; no AF-hash is deployed/cryptanalyzed
+  below ~31 bits; 14-bit gives free degree caps (x^q-x) + 2^14 per-element search.
+  **Use the conservative un-capped R_P ≈ 60 (R_F=8; t=24 for 19-lane/128-bit
+  capacity) — nearly free (252 vs 214 S-boxes).** Note "run over Fq12" is NOT a
+  drop-in (extension field; x^5/x^7 fail since 5,7 | q^12-1). One open item
+  remains before any SUF-CMA claim leans on it: independent small-field (14-bit)
+  algebraic-margin review (primary residual, partly external) even at R_P≈60.
+  Downstream order: small-field review -> mask-PRF code swap (fail-closed marker + KATs)
+  -> injectivity re-proof from `pad_source_commitment` (LeafV2 scaffold exists)
+  -> re-charge EC spend spine -> write the 176-row Poseidon2/x^5 AIR.
 
 - [x] Carry over active-lane negative controls into creation time.
   Requirement: wrong witness digest, wrong pad seed, wrong public pad statement,

@@ -7232,8 +7232,7 @@ mod kat {
         //     account no longer matches the bound transaction.
         {
             let mut mutated_account = keypair.account.clone();
-            let mut commitment =
-                *mutated_account.get_slot(0).unwrap().commitment().as_bytes();
+            let mut commitment = *mutated_account.get_slot(0).unwrap().commitment().as_bytes();
             commitment[DIGEST_BYTES] ^= 1;
             mutated_account
                 .replace_slot_commitment_for_test(
@@ -7549,7 +7548,10 @@ fn main() {
         }
         return;
     }
-    if args.iter().any(|arg| arg == "--kat-generate" || arg == "--kat-check") {
+    if args
+        .iter()
+        .any(|arg| arg == "--kat-generate" || arg == "--kat-check")
+    {
         if let Err(err) = kat::run_cli(&args) {
             eprintln!("{err}");
             std::process::exit(1);
@@ -7873,10 +7875,7 @@ mod tests {
             report.cryptoanalysis_attack_surfaces[0].gate,
             "packed full-response extraction"
         );
-        assert_eq!(
-            report.matrix_short_relation_probe.candidates_tested,
-            117484
-        );
+        assert_eq!(report.matrix_short_relation_probe.candidates_tested, 117484);
         assert_eq!(report.matrix_short_relation_probe.zero_relations_found, 0);
         assert_eq!(
             report
@@ -9224,7 +9223,10 @@ mod tests {
             &keypair.account,
             &signature,
         );
-        assert!(orig_report.accepted, "original must accept: {orig_report:?}");
+        assert!(
+            orig_report.accepted,
+            "original must accept: {orig_report:?}"
+        );
 
         // Confirm the canonical signer mask_view and the alternate one both
         // realize the same fiber_state. After the HIGH-1 fix, `canonical` is the
@@ -9232,7 +9234,11 @@ mod tests {
         let canonical = [12_u16, Q - 12];
         let fiber_state = local_state(canonical);
         let alt = [mod_q(-38), mod_q(-11)]; // (-38, -11): -38 + 50*(-11) = -588 = same syndrome
-        assert_eq!(local_state(alt), fiber_state, "alt mask_view must match fiber state");
+        assert_eq!(
+            local_state(alt),
+            fiber_state,
+            "alt mask_view must match fiber state"
+        );
         assert_ne!(alt, canonical);
         assert!(
             mask_view_is_canonical(canonical),
@@ -9266,7 +9272,10 @@ mod tests {
             let block = challenge.active_block[rep];
             let sign = challenge.sign[rep];
             for coord in 0..LOCAL_FREE {
-                let response = add_mod(alt[coord], challenge_mul(sign, public_view.free[block][coord]));
+                let response = add_mod(
+                    alt[coord],
+                    challenge_mul(sign, public_view.free[block][coord]),
+                );
                 responses.active_free[rep][coord] =
                     centered_response_value(response).expect("alt response must stay in [-48,48]");
             }
@@ -9334,11 +9343,12 @@ mod tests {
 
         // proof.masked_witness_response is the last LINEAR_SIGMA_MASKED_WITNESS_BYTES;
         // its seed drives the pad. Pull the seed from it (same as verifier does).
-        let proof_start = STATEFUL_TRANSACTION_SIGNATURE_BYTES + LINEAR_SIGMA_PROOF_COMMITMENT_BYTES;
-        let masked_witness: [u8; LINEAR_SIGMA_MASKED_WITNESS_BYTES] =
-            signature[proof_start..proof_start + LINEAR_SIGMA_MASKED_WITNESS_BYTES]
-                .try_into()
-                .unwrap();
+        let proof_start =
+            STATEFUL_TRANSACTION_SIGNATURE_BYTES + LINEAR_SIGMA_PROOF_COMMITMENT_BYTES;
+        let masked_witness: [u8; LINEAR_SIGMA_MASKED_WITNESS_BYTES] = signature
+            [proof_start..proof_start + LINEAR_SIGMA_MASKED_WITNESS_BYTES]
+            .try_into()
+            .unwrap();
         let semantic = semantic_hidden_preimage_from_masked_witness(&masked_witness);
         let seed: [u8; PAD_SEED_BYTES] = semantic[FIBER_STATE_BYTES..].try_into().unwrap();
 
@@ -9355,7 +9365,10 @@ mod tests {
             let block = challenge.active_block[rep];
             let sign = challenge.sign[rep];
             for coord in 0..LOCAL_FREE {
-                let response = add_mod(alt[coord], challenge_mul(sign, public_view.free[block][coord]));
+                let response = add_mod(
+                    alt[coord],
+                    challenge_mul(sign, public_view.free[block][coord]),
+                );
                 responses.active_free[rep][coord] = centered_response_value(response).unwrap();
             }
             let pad = expand_pad_residues(&seed, block);

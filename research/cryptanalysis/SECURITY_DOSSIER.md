@@ -1,43 +1,77 @@
 # Descender Post-Quantum Signature — SECURITY DOSSIER (external-review package)
 
-> ## ⛔ RED-TEAM HOLD (2026-06-10; HIGH-2 REOPENED 2026-06-11) — DO NOT SUBMIT AS-IS
+> ## ⛔ RED-TEAM HOLD (2026-06-10; HIGH-2 IN-CLEAR BLIND FIX APPLIED 2026-06-11) — DO NOT SUBMIT AS-IS
 > An authorized internal red-team found **THREE HIGH-severity breaks** (all reproduced;
 > see `RED_TEAM_REPORT.md` + `redteam_*.md`). **HIGH-1 and HIGH-3 are FIXED + committed +
-> verified.** **HIGH-2 HIDING is REOPENED (2026-06-11) — the transparent-descent ZK "fix"
-> does NOT hide the witness.** A follow-up assumption/leak audit found the ZK opening
-> transmits the per-row additive blind `b_row` **in clear** alongside the blinded cells, so
-> the full hidden-source `account_projection` and the projection `mask = PRF(pad_seed,slot)`
-> are recoverable **key-free** by one modular subtraction from the serialized proof bytes.
-> REPRODUCED with a passing PoC
-> (`redteam_transparent_descent_zk_proof_leaks_witness_and_mask_via_inclear_blind`,
-> `production_reference.rs:54396`); the old substring-only hiding test passes simultaneously
-> (false assurance). See **`high2_zk_inclear_blind_leak_VERDICT.md`**. The fix is a genuine
-> opening-protocol redesign (open only blind-invariant combinations / never reveal the
-> blind) — NOT yet applied. The HIGH-2 **knowledge-soundness extractor** (`p2_sis_extractor`)
-> remains a separate NAMED, not-yet-discharged obligation. Production stays fail-closed, so
-> this is not live on any mainnet — but the earlier "HIGH-2 hiding RESOLVED" claim was FALSE
-> and is corrected here. Do not submit until HIGH-2 hiding is genuinely re-fixed, the
-> extractor obligation is discharged, and the §6 external coded-SIS scope is widened.
+> verified.** **HIGH-2's in-clear blind leak is now fixed in the transparent-descent opening
+> protocol.** The 2026-06-11 audit found that the prior ZK opening transmitted the per-row
+> additive blind `b_row` in clear next to the blinded cells, allowing key-free recovery of
+> `account_projection` and `mask = PRF(pad_seed,slot)` by modular subtraction. The Rust
+> reference now opens relation-preserving masked shares instead and no longer serializes a
+> public `blind` field; regression
+> `redteam_transparent_descent_zk_proof_blocks_inclear_blind_recovery` decodes only public
+> proof bytes and confirms the legacy recovery path no longer returns the raw witness or PRF
+> masks. See **`high2_zk_inclear_blind_leak_VERDICT.md`**. The HIGH-2
+> **full-relation backend certificate**, knowledge-soundness extractor
+> (`p2_sis_extractor`), and hidden range-proof/range-extractor obligations
+> remain NAMED, not-yet-discharged obligations, and the old pad-seed-in-clear
+> `Path2MaskedState18CreationProofV1` public path is hard-gated. Production stays
+> fail-closed. Do not submit until those remaining HIGH-2 obligations are discharged and
+> the §6 external coded-SIS scope is widened.
 > - **HIGH-1 (§5 SUF-CMA) — ✅ RESOLVED (2026-06-10):** signature malleability — the local-delta
 >   verifier accepted non-canonical openings (`local_state` has an in-box kernel (50,−1) ⇒ two
 >   valid openings) and FS did not bind the opening bytes ⇒ keyless 2nd accepting signature.
 >   *Fix applied:* canonical-response enforcement (the verifier rejects non-canonical kernel-coset
 >   reps; the honest signer already emits the canonical one). No byte/SIS/compute change; the two
 >   redteam malleability tests are flipped to assert REJECTION and pass. Commit `03924db`.
-> - **HIGH-2 (refuted deployable witness-hiding for the creation-proof path) — ⛔ REOPENED 2026-06-11:**
+> - **HIGH-2 (refuted deployable witness-hiding for the creation-proof path) — ⚠️ LEAKING ACCEPT PATH HARD-GATED; SOUNDNESS WORK OPEN:**
 >   the masked-state18 public creation proof serialized `pad_seed` in the clear ⇒ key-free
 >   full-witness recovery. *Hiding fix attempted (2026-06-10):* a transparent-descent ZK creation
 >   proof (Merkle/FRI) with the verifier sentinel FLIPPED. The verifier IS non-stub (it really runs
->   hash/Merkle/FRI/constraint checks). **BUT the hiding is broken:** the opening transmits the
->   per-row additive blind `b_row` in clear next to the blinded cells, so `cell = blinded_cells −
->   blind` recovers the raw `account_projection` and `mask` key-free (PoC
->   `redteam_transparent_descent_zk_proof_leaks_witness_and_mask_via_inclear_blind`, passing). The
->   old `path2_transparent_zk_proof_hides_pad_seed_and_witness` test is a contiguous-substring scan
->   and is blind to arithmetic recovery (it still passes — false assurance). The non-hiding
->   masked-state18 path remains accepted by its verifier and is NOT hard-gated (doc label + preflight
->   only). *Open work:* (1) genuine ZK opening redesign so the blind is never revealed; (2) the
->   `p2_sis_extractor` knowledge-soundness obligation (separate, still named); (3) §6 external
->   coded-SIS scope-widening. See **`high2_zk_inclear_blind_leak_VERDICT.md`**.
+>   hash/Merkle/FRI/constraint checks). The 2026-06-11 audit then found and reproduced an in-clear
+>   blind leak in that opening protocol. *Fix applied:* the opened row now carries masked-share
+>   cells satisfying the affine relation directly and no public deblinding scalar; regression
+>   `redteam_transparent_descent_zk_proof_blocks_inclear_blind_recovery` passes. *Soundness hardening
+>   applied (2026-06-11):* opened rows now enforce the **same account-share representative** per lane
+>   in both equations (`account_share + mask_share = masked_projection` and
+>   `account_share = lo_share + 128*hi_share`), not just a linear aggregate residual; regression
+>   `path2_transparent_zk_opened_row_relation_prevents_split_witness_cancellation` constructs a
+>   split row whose aggregate residual cancels to zero and confirms the per-lane digit check rejects.
+>   This clears the immediate sampled-row split-witness/cancellation bug, but it is not the full
+>   extractor theorem. *Blocker-1 negative result (2026-06-11):*
+>   `redteam_transparent_zk_core_accepts_public_only_synthetic_trace` builds an accepting core proof
+>   from public `masked_projection` alone, showing the current opening core still does not enforce
+>   pad-seed binding, PRF mask derivation, packed-witness repack equality, or role-commitment
+>   consistency. *Hard-gate applied
+>   (2026-06-11):* the pad-seed-in-clear masked-state18 public verifier and proof-carrying dispatcher
+>   now fail closed with `PATH2_MASKED_STATE18_PUBLIC_PROOF_DISABLED_ERROR`; the relation checker is
+>   internal/debug only. *Open work:* (1) full-relation backend certificate for
+>   C1/C2/C4/C6 and trace-to-role binding; (2) `p2_sis_extractor` knowledge soundness; (3) hidden
+>   range-proof/range-extractor soundness for the masked digit shares; (4) §6 external coded-SIS
+>   scope-widening. The public proof-bytes boundary now runs the incomplete core first, then
+>   fail-closes with `PATH2_TRANSPARENT_DESCENT_FULL_HIDDEN_RELATION_DISABLED_ERROR` for otherwise
+>   valid transcripts until full hidden-relation constraints are enforced. The production wrapper
+>   `verify_path2_direct_creation_transparent_descent_payload_boundary_with_proof_bytes_for_production`
+>   therefore also rejects valid transparent payload proofs at that same hidden-relation gate. The
+>   production proof-family capability gate
+>   `verify_path2_transparent_proof_family_capability_for_production` has the same behavior: validate
+>   the capability object first, then reject until the extractor/range obligations are closed. The
+>   capability object itself carries a digest of
+>   `Path2TransparentProductionSoundnessObligationsV1` with
+>   `sampled_row_same_representative_enforced = true`,
+>   `aggregate_cancellation_regression_covered = true`,
+>   `pad_seed_binding_constraint_enforced = false`,
+>   `prf_mask_derivation_constraint_enforced = false`,
+>   `packed_witness_repack_constraint_enforced = false`,
+>   `role_commitment_consistency_constraint_enforced = false`,
+>   `full_hidden_relation_constraints_enforced = false`,
+>   the uninstantiated full-relation backend sufficiency target,
+>   `full_relation_backend_certificate_instantiated = false`,
+>   `p2_sis_extractor_instantiated = false`, `hidden_range_extractor_instantiated = false`, and
+>   `external_coded_sis_review_complete = false`; it also carries
+>   `production_soundness_obligations_discharged = false`, so this state is transcript-bound rather
+>   than just prose. See
+>   **`high2_zk_inclear_blind_leak_VERDICT.md`**.
 > - **HIGH-3 (§2/§3 GAP-C) — ✅ RESOLVED (2026-06-10):** the checked-core message-binding term
 >   is MULTI-TARGET (T·q/2ⁿ over T signing queries), not single-target. *Fix applied:* the
 >   checked-core challenge was WIDENED to **246 effective bits** (`CHALLENGE_HARDENING_BYTES`
@@ -204,12 +238,22 @@ mass**. They are not hardness assumptions.
    verified irreducible. Per-fork soundness ~2⁻¹⁶². Axiom `action_collision_qrom`.
    *Standard:* generic QROM hash collision-resistance (ledger C1, reduced from
    NOVEL to STD-QROM).
-4. **SHA-256 frame-PRF** (projection-mask / pad hiding; bears #9 nominally). The
-   per-slot per-lane projection mask is `uniform_mod_from_hash` on a domain
+4. **Projection-mask frame-PRF** (projection-mask / pad hiding; bears #9 nominally).
+   *(2026-06-18 RE-CHARGE, branch `deployed-mask-prf-swap`: the deployed mask PRF
+   was swapped SHA-256 -> native KoalaBear-Poseidon2 sponge + wide-then-reduce, to
+   match the fast/recursion-friendly account-creation proof. Assumption re-tiered
+   `A_sha256_projection_mask_frame_prf` -> `A_poseidon2_projection_mask_prf`:
+   Poseidon2-over-the-VETTED-31-bit-KoalaBear-field as RO (quantum-indifferentiable,
+   arXiv 2504.16887), NAMED-STANDARD. `frame_prf_ro_reduction.ec` re-charged + still
+   exit 0; the abstract RO+min-entropy proof is unchanged. ONE honest delta: SHA's
+   rejection sampler was EXACTLY uniform; wide-then-reduce is 2^-141-uniform, adding
+   6*2^-141 << 2^-128 to the advantage — negligible. Mask stays HIDING-ONLY (forgery
+   reduction untouched). The pre-swap description below is retained for the SHA path.)*
+   The per-slot per-lane projection mask was `uniform_mod_from_hash` on a domain
    byte-frame-disjoint from the pad PRF (82 B vs 154 B); empirical
-   max|Pearson| = 0.0049 over 50k seeds. Pad hiding reduces to SHA-256 being a good
-   frame-PRF on the mask domain (`deployable_pad_hiding_VERDICT.md`). *Standard:*
-   SHA-256-as-RO frame-PRF; non-novel.
+   max|Pearson| = 0.0049 over 50k seeds. Pad hiding reduces to the mask PRF being a
+   good frame-PRF on the mask domain (`deployable_pad_hiding_VERDICT.md`). *Standard:*
+   Poseidon2-over-31-bit-field-as-RO (was SHA-256-as-RO); non-novel.
    *(2026-06-10 — DISCHARGED (classical), after a first faked attempt was caught +
    reverted. `frame_prf_ro_reduction.ec` (exit 0, 7 qed, 0 admit/sorry, verified)
    now proves `frame_prf_advantage`: |Pr[Real]−Pr[Ideal]| ≤ q·2⁻ᴴ, DERIVED via
@@ -333,49 +377,69 @@ image of the Lean-derived coupling `success_implies_accepted_or_break_of_structu
 
 ## 5. DEPLOYMENT POSTURE
 
-- **GAP-A public verifier is BUILT and PROVEN-EQUIVALENT.**
-  `verify_path2_direct_creation_masked_state18_proof_v1` replays the harness's own
-  masked-state18 opening derivation over public payload data; de-toyed (real
-  SHA-256/masked_state18 commitment replaces the `P2Q1` toy); wired as an
-  AVAILABLE, NON-DEFAULT, labeled path; tested functionally equivalent (IFF, both
-  directions) to `verify_path2_prevalidated_slot_creation_relation_replay`;
-  negative controls all reject (`public_creation_verifier_build_result.md`). This
-  CLOSES #4 prevalidationDataAvailability on the masked-state18 relation.
+- **GAP-A public masked-state18 verifier is HARD-GATED.**
+  The old `verify_path2_direct_creation_masked_state18_proof_v1` path no longer accepts any valid
+  public proof because that proof serializes `pad_seed` in clear. It still validates common frame
+  bindings and then returns `PATH2_MASKED_STATE18_PUBLIC_PROOF_DISABLED_ERROR`. The historical
+  masked-state18 relation equivalence is preserved only in the internal debug checker
+  `verify_path2_direct_creation_masked_state18_proof_debug_relation_v1`; negative controls continue
+  to exercise that relation (`public_creation_verifier_build_result.md` is now historical).
 - **Production REMAINS fail-closed.** `production_deployment_preflight` is
   UNCHANGED — it unconditionally pushes blockers (HIDDEN_SOURCE_PROOF_SEMANTICS,
   CONSTANT_TIME, STORAGE, EXTERNAL_REVIEW, SELECTED_VERIFIER) so
   `deployment_ready == false`. Tests
   `deployment_preflight_fails_closed_until_selected_verifier_and_reviews_land` and
-  `path2_masked_state18_path_does_not_flip_production_preflight` PASS. The new path
-  is verifier *logic*; the deployment *gate* stays closed.
+  `path2_masked_state18_path_does_not_flip_production_preflight` PASS. The old
+  masked-state18 acceptor is also hard-gated at verifier level.
 - **D3 staging ladder** (`cryptanalysis_first_master_tracker.md:258`): (1) testnet
   (valueless) → (2) value-capped mainnet (internal DoD complete **and** external
   review started) → (3) uncapped mainnet (real time-under-attack — **never
   reachable on self-review alone**). The flip from fail-closed to accepting is
   gated on external review, never internal sign-off.
-- **HIGH-2 HIDING RESOLVED via transparent-descent ZK (2026-06-10); soundness
-  extractor = NAMED OBLIGATION.** The non-hiding masked-state18 creation proof
+- **HIGH-2 HIDING RESOLVED via masked-share opening, but transparent creation proof is
+  PUBLIC-DISABLED until full hidden-relation constraints are enforced (2026-06-10/11).** The non-hiding masked-state18 creation proof
   (`Path2MaskedState18CreationProofV1`) serializes `pad_seed` in the clear ⇒
   key-free full-witness recovery (reproduced by
-  `redteam_masked_state18_creation_proof_leaks_full_witness_key_free`); it remains
-  AVAILABLE/NON-DEFAULT, labeled NON-HIDING (data-availability/debug only). **The
-  hiding production creation path — the transparent-descent ZK — is now BUILT and
-  its verifier sentinel is FLIPPED.** Prover:
+  `redteam_masked_state18_creation_proof_leaks_full_witness_key_free`); its public verifier is now
+  hard-disabled and the relation checker is debug-only. The transparent-descent masked-share prover
+  and incomplete debug core are built, but the public verifier is fail-closed because
+  `redteam_transparent_zk_core_accepts_public_only_synthetic_trace` shows the core does not enforce
+  pad-seed binding, PRF mask derivation, packed-witness repack equality, or role-commitment
+  consistency. Prover:
   `path2_transparent_descent_prove_creation_v1`. Verifier:
   `path2_transparent_descent_verify_zk_opening_v1`, wired into
   `verify_path2_direct_creation_transparent_descent_payload_boundary_with_proof_bytes`.
-  It is a transparent (hash/Merkle/FRI-style, NO trusted setup) proof of the
-  masked-state18 opening relation (C1–C7) over a PRIVATE trace; the public surface
+  The public surface
   is `Path2TransparentDescentPublicViewV1` (commitment roots + PRF-masked lanes
-  ONLY — NO `pad_seed`, NO raw witness). The verifier GENUINELY recomputes the FS
+  ONLY — NO `pad_seed`, NO raw witness). The debug core recomputes the FS
   challenges, authenticates every Merkle opening to the public roots, evaluates
-  C1–C7 at the FS-sampled rows, checks the C5 public/private masked-projection
-  seam, and verifies FRI low-degree folding (final-layer-zero verdict). HIDING is
+  the sampled masked-share row relation, checks the C5 public/private masked-projection
+  seam, and verifies FRI low-degree folding (final-layer-zero verdict). It does
+  not yet enforce C1/C2/C4/C6. HIDING is
   asserted for real by `path2_transparent_zk_proof_hides_pad_seed_and_witness`
   (no `pad_seed`/mask/projection window in the proof bytes; red-team recovery
   surface absent), round-trip + a 6-way negative-control matrix are GREEN. Payload
   ≈ 14.8 KB (uncompacted; under the 16,416 B fallback threshold; the ~0.7–1.3 KB
   design target needs a follow-up compacted opening encoding — size-only).
+  The missing full-relation proof is now a typed contract:
+  `Path2TransparentFullHiddenRelationProofContractV1` requires pad-seed digest
+  binding, PRF mask derivation, packed-witness repack equality, role-commitment
+  consistency, leaf-context binding, creation-binding digest binding, and public
+  masked-projection binding. The canonical contract is intentionally
+  uninstantiated and is bound into both production obligations and the
+  proof-family capability digest. The verifier boundary now also canonicalizes
+  `Path2TransparentFullHiddenRelationPublicInputsV1`, the public statement a
+  future backend must prove against, and calls
+  `verify_path2_transparent_full_hidden_relation_subproof_v1` after the
+  incomplete Merkle/FRI/row core accepts. The statement binds the contract/plan
+  digests, leaf and creation-binding context, all creation role commitments,
+	  public masked lanes, trace/constraint roots, and schedule, without revealing
+	  `pad_seed` or raw witness bytes. The proof body is now a suite wrapper with
+	  separate masked-share-core and full-hidden-relation subproof segments; the
+	  latter is a typed uninstantiated-backend envelope with the statement bytes
+	  as payload and a zero local trace-binding proof digest in the current
+	  fail-closed build. Public-view verification structurally checks any carried
+	  full-relation envelope segment before returning the disabled sentinel.
   **SPEND delta 0.** Build report: `high2_transparent_descent_zk_build.md`;
   design: `high2_transparent_descent_zk_design.md`.
   > **NAMED OBLIGATION — transparent-descent knowledge-soundness extractor
@@ -441,9 +505,9 @@ reduction is reduced to the union-bound spine; all 9 break terms are accounted
 creation-soundness→verifier-exporter bridge, 2 classifier-=0) and the
 accepted-spend term ≤2⁻¹²⁹ is **derived from a proven reduction** (the inside-box
 forgery branch is proven empty by the coeff-114>96 certificate). The budget closes
-at q=2⁶⁴ with no query cap. The accepting public verifier is built and proven
-equivalent to the harness relation; production stays fail-closed pending external
-review.
+at q=2⁶⁴ with no query cap. The old masked-state18 accepting public verifier is
+hard-disabled, and the transparent public verifier remains fail-closed until the
+full hidden relation is enforced and reviewed.
 
 **Security is NOT "established."** It is **reduced** to:
 - the §3(b) named standard assumptions (SHA-256 SPR/CR, QROM hash collision of the

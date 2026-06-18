@@ -2,20 +2,43 @@
    GENUINE frame-PRF -> RO/QROM reduction for Descender.
    MACHINE-CHECKED under EasyCrypt 2026.05 / Z3 (exit 0).
 
+   --- 2026-06-18 RE-CHARGE (mask-PRF swap SHA-256 -> KoalaBear-Poseidon2) ------
+   The deployed projection-mask PRF was swapped from SHA-256 to a native
+   KoalaBear-Poseidon2 sponge + wide-then-reduce (branch deployed-mask-prf-swap;
+   tools/descender-mask-prf, byte-identical to the account-creation proof's
+   in-circuit derivation).  This reduction is ABSTRACT (RO + min-entropy), so the
+   proof body, modules, and the derived conclusion `frame_prf_advantage` are
+   UNCHANGED.  Only the INSTANTIATION of the abstract RO changes:
+     * RO  : SHA-256-as-RO  ->  Poseidon2-sponge-as-RO (quantum-indifferentiable,
+             arXiv 2504.16887 (2025); Poseidon2 over the VETTED 31-bit KoalaBear
+             field -- NOT the 14-bit small-field concern).
+     * dmask uniformity : SHA's rejection sampler was EXACTLY uniform on Z_Q;
+             the wide-then-reduce is 2^-141-uniform (5 KoalaBear lanes mod q12289).
+             Idealized below as exact-uniform with a STATED 2^-141 modeling gap:
+             the real-world advantage is `frame_prf_advantage + 6*2^-141`
+             (6 mask lanes), still << 2^-128.  Negligible.
+   Assumption re-tier (dossier §3(b)4): A_sha256_projection_mask_frame_prf ->
+   A_poseidon2_projection_mask_prf, NAMED-STANDARD (Poseidon2-over-31-bit-field
+   as RO + the 2^-141 wide-then-reduce uniformity).  The mask remains HIDING-ONLY:
+   the spend forgery reduction (accepted_spend_forgery_reduction.ec) does not
+   reference the mask; this swap does not touch unforgeability.
+   ----------------------------------------------------------------------------
+
    ---------------------------------------------------------------------------
    WHAT THIS FILE DISCHARGES
    ---------------------------------------------------------------------------
    The projection mask of the reviewed-Fq12 packed-witness path is
 
-       mask[lane] = uniform_mod_from_hash(
-                       PROJECTION_MASK_DOMAIN,
-                       pad_seed || slot_id,        (* the PRF seed *)
-                       slot_id, lane, Q)
-                  = SHA256( DOMAIN || pad_seed || slot_id || slot_id
-                                   || lane || counter ) reduced mod Q
-   (tools/parameter-search/src/production_reference.rs:6405 + :46481).
+       mask[lane] = wide_then_reduce(
+                       Poseidon2_sponge( POSEIDON2_PROJECTION_MASK_DOMAIN,
+                                         pad_seed || slot_id ),   (* the PRF seed *)
+                       lane )                                     (* 5 lanes -> Z_Q *)
+   over the KoalaBear (31-bit) field, the 6 mask lanes reduced into Z_Q12289
+   (tools/descender-mask-prf/src/mask.rs; byte-identical to the proof AIR).
+   [Pre-2026-06-18 this was SHA256(DOMAIN||pad_seed||slot_id||slot_id||lane||ctr)
+    reduced mod Q via rejection sampling; see the RE-CHARGE banner above.]
 
-   Modeled in the QROM, SHA-256 is a random oracle RO.  Each (slot_id, lane)
+   Modeled in the QROM, the Poseidon2 sponge is a random oracle RO.  Each (slot_id, lane)
    selects a DISTINCT RO input point x* whose preimage CONTAINS the secret
    `pad_seed`.  `pad_seed` is a per-slot single-use secret of byte width
    REVIEWED_FQ12_PAD_SEED_BYTES = 32, i.e. min-entropy H = 256 bits
@@ -54,9 +77,10 @@
                               `dmask`, independent of the current table.  This is
                               the SAME primitive as the action-map QROM RO.
    dmask_ll / dmask_uni    -- the mask sampling distribution is a lossless
-                              uniform distribution on `mask_t` (the rejection
-                              sampler of uniform_mod_from_hash is uniform on
-                              Z_Q; modeled here as the uniform RO codomain).
+                              uniform distribution on `mask_t` (the Poseidon2
+                              wide-then-reduce is 2^-141-uniform on Z_Q; idealized
+                              here as the exact-uniform RO codomain, with the
+                              stated 2^-141 modeling gap charged in the banner).
    seed_minentropy         -- the structural entropy fact: a single query point
                               `q` collides with the secret seed-bearing point of
                               `pad_seed` with probability <= 2^-H over the fresh
@@ -103,9 +127,9 @@ op bearing (sd : seed) (x : qpt) : bool = (seed_of x = sd).
    (a) RO behaviour : the mask sampling distribution + lazy sampling.
 
    `dmask` is the uniform distribution on RO outputs (the QROM codomain; the
-   rejection sampler of `uniform_mod_from_hash` produces a uniform element of
-   Z_Q, abstracted here as a uniform `mask_t`).  These are STANDARD RO/QROM
-   structural facts, the SAME primitive used by the action-map QROM.
+   Poseidon2 wide-then-reduce produces a 2^-141-uniform element of Z_Q,
+   idealized here as a uniform `mask_t` with the stated 2^-141 gap).  These are
+   STANDARD RO/QROM structural facts, the SAME primitive used by the action-map QROM.
    --------------------------------------------------------------------------- *)
 op dmask : mask_t distr.
 axiom dmask_ll  : is_lossless dmask.      (* RO output distribution is total      *)

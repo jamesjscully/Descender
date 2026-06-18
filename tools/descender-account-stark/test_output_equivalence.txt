@@ -1,0 +1,11 @@
+   Compiling descender-account-stark v0.1.0 (/home/jack/code/Descender/tools/descender-account-stark)
+    Finished `release` profile [optimized] target(s) in 3.58s
+     Running tests/mask_prf_equivalence.rs (target/release/deps/mask_prf_equivalence-49f9582a2c554ada)
+
+running 3 tests
+test standalone_masks_byte_identical_to_proof ... ok
+test standalone_masks_match_proof_on_edge_inputs ... ok
+test standalone_permutation_byte_identical_to_plonky3 ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+

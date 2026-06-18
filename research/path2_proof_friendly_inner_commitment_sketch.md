@@ -258,6 +258,36 @@ proves:
 
 This validates the new proof shape: the core hidden-source payload relation can
 be expressed as small q12289 arithmetic once SHA-shaped openings are moved out
+of the proof.
+
+## Transparent Bridge Contract Pin
+
+`tools/parameter-search/src/production_reference.rs` now also carries the same
+decision into the transparent opening route:
+
+```text
+Path2TransparentProofFriendlyInnerCommitmentPlanV1
+path2_transparent_proof_friendly_inner_commitment_plan_v1
+```
+
+The plan is hashed into `Path2TransparentHiddenRelationConstraintPlanV1`. That
+means the transparent full-hidden-relation contract cannot claim C1/C2/C4/C6
+unless the proof-friendly inner commitment layer is also instantiated. The
+canonical plan requires:
+
+- SHA-256 outer consensus handles remain retained;
+- packed witness remains canonical residue packing;
+- pad-source, opening-tuple, and projection-relation roles use inner
+  proof-friendly commitments;
+- openings are role-separated algebraic openings;
+- raw pad seed, projection masks, and unmasked account projection are not
+  exported;
+- current SHA `pad_seed_digest` is not treated as the primary in-proof binding.
+
+KAT `path2_transparent_proof_family_capability_pins_active_assumptions` now
+rejects omission of the inner role-opening requirement, treating SHA
+`pad_seed_digest` as the primary binding, and premature claims that the inner
+commitment layer is instantiated.
 of the inner proof. It is not a cryptographic instantiation. The toy commitment
 group is `Z_q` with `q = 12289`, so it is neither binding nor hiding at the
 security level required for deployment.

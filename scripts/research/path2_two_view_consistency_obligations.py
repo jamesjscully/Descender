@@ -121,8 +121,11 @@ def build_model() -> dict[str, Any]:
             "the larger MPC/hash-ZK route."
         ),
         "next_blocker": (
-            "Run the linear leakage probe for the two-view masked leaf equations "
-            "before selecting a concrete proof-family implementation."
+            "Promote the already-passing linear leakage rule into a concrete "
+            "full-relation backend certificate obligation: every opened hidden "
+            "role must be exposed only as a masked public cell with a unique "
+            "mask-domain digest bound to proof_system_id, account/slot context, "
+            "role, column set, row, query index, and transcript."
         ),
         "non_claims": [
             "this does not prove two-view consistency",

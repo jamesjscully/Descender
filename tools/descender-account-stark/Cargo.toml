@@ -1,0 +1,46 @@
+[package]
+name = "descender-account-stark"
+version = "0.1.0"
+edition = "2021"
+description = "Production account-creation ZK-STARK (C1∧C2∧C4∧C6 relation) on Plonky3/KoalaBear: pinned vetted Poseidon2 constants, 128-bit-conjectured ZK FRI config, single-instance + batch prove/verify with a clean library API. The Plonky3 dependency is ISOLATED to this crate."
+
+# ---------------------------------------------------------------------------
+# Plonky3 0.6.1 (pinned). The whole Plonky3 dependency surface lives HERE and
+# nowhere else in tools/ — parameter-search must not depend on Plonky3.
+# ---------------------------------------------------------------------------
+[dependencies]
+p3-field = "0.6.1"
+p3-koala-bear = "0.6.1"
+p3-uni-stark = "0.6.1"
+p3-fri = "0.6.1"
+p3-merkle-tree = "0.6.1"
+p3-commit = "0.6.1"
+p3-dft = "0.6.1"
+p3-symmetric = "0.6.1"
+p3-poseidon2 = "0.6.1"
+p3-poseidon2-air = "0.6.1"
+p3-challenger = "0.6.1"
+p3-matrix = "0.6.1"
+p3-air = "0.6.1"
+p3-maybe-rayon = { version = "0.6.1", features = ["parallel"] }
+rand = "0.10"
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+# Standalone (NO-Plonky3) projection-mask PRF. Used ONLY by the equivalence test
+# `tests/mask_prf_equivalence.rs` to prove the deployed-signer PRF and this proof's
+# in-circuit PRF derive byte-identical masks (drift prevention).
+descender-mask-prf = { path = "../descender-mask-prf" }
+
+[features]
+default = ["parallel"]
+parallel = [
+    "p3-maybe-rayon/parallel",
+    "p3-poseidon2-air/parallel",
+    "p3-uni-stark/parallel",
+]
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1

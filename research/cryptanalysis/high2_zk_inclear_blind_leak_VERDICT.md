@@ -1,12 +1,45 @@
-# HIGH-2 REOPENED — transparent-descent ZK leaks the witness via an in-clear per-row blind
+# HIGH-2 In-Clear Blind Leak — transparent-descent opening protocol fixed
 
-**Date:** 2026-06-11 · **Severity:** CRITICAL (hiding) · **Status:** REPRODUCED (passing PoC) ·
-**Effect:** the HIGH-2 "fix" (commit `742c6b8`) does **NOT** hide the witness. The full
-hidden-source `account_projection` AND the projection `mask = PRF(pad_seed, slot)` are
-recoverable **key-free** from the serialized creation-proof bytes by a single modular
-subtraction. HIGH-2 hiding is **NOT resolved**.
+**Date opened:** 2026-06-11 · **Severity:** CRITICAL (hiding) ·
+**Current status:** FIX APPLIED in the Rust reference opening protocol; focused
+regression passes.
 
-## The break (verified by direct code reading + executable PoC)
+The original HIGH-2 transparent-descent "fix" (commit `742c6b8`) did **not**
+hide the witness: the full hidden-source `account_projection` and the projection
+`mask = PRF(pad_seed, slot)` were recoverable key-free from serialized
+creation-proof bytes by one modular subtraction.
+
+**Fix applied:** the transparent opening now uses relation-preserving masked
+shares instead of raw cells plus a public per-row blind.  The proof body no
+longer serializes `blind`.  For each lane, the prover opens masked shares
+
+```text
+account' = account + s + 128*t
+mask'    = mask - (s + 128*t)
+lo'      = lo + s
+hi'      = hi + t
+```
+
+and the verifier checks the affine constraints directly on those shares:
+
+```text
+account' + mask' = masked_projection
+account' = lo' + 128*hi'
+```
+
+without receiving `s`, `t`, `account`, or `mask`.
+
+Current regression:
+
+```text
+redteam_transparent_descent_zk_proof_blocks_inclear_blind_recovery
+```
+
+decodes only public proof bytes, verifies the opened row still satisfies the
+public C5 seam, and confirms the legacy blind-subtraction recovery no longer
+returns either the raw account projection or the PRF masks.
+
+## Historical Break
 
 The transparent-descent ZK arithmetizes the witness into a trace whose row cells are the
 **raw** secret values, then "blinds" each opened row with a single additive scalar `b_row`
@@ -57,32 +90,52 @@ and `account_projection`. A value recoverable by modular **arithmetic** is invis
 substring scan. Confirmed this session: the substring hiding test and the recovery PoC
 **both pass simultaneously**.
 
-## Reproduction (executable, this session)
+## Historical Reproduction
 
-`production_reference.rs::tests::redteam_transparent_descent_zk_proof_leaks_witness_and_mask_via_inclear_blind`
-(`:54396`) decodes only the public `out.proof_bytes`, takes `opened_rows[0]`, subtracts the
-in-clear blind, and asserts equality with the true secret `account_projection` and
-`mask = reviewed_fq12_packed_witness_state18_projection_masks(pad_seed, slot)`.
+The original PoC decoded only public `out.proof_bytes`, took `opened_rows[0]`,
+subtracted the in-clear blind, and asserted equality with the true secret
+`account_projection` and `mask =
+reviewed_fq12_packed_witness_state18_projection_masks(pad_seed, slot)`.
 
 ```
 test ...redteam_transparent_descent_zk_proof_leaks_witness_and_mask_via_inclear_blind ... ok
 test ...path2_transparent_zk_proof_hides_pad_seed_and_witness ... ok    # still green — blind to arithmetic
 ```
 
-## Required fix (genuine ZK redesign — NOT applied; flagged for maintainer decision)
+## Applied Fix
 
-The blind must never be opened in the clear for a cell that carries the witness. Options:
-- **(a)** Open only blind-invariant linear combinations of cells (the constraint check is
-  already affine — express acceptance purely over differences that cancel the per-row
-  blind), and never reveal `b_row`.
-- **(b)** Use independent per-cell blinds drawn from a committed-but-unopened randomness
-  column, with the constraint verified over blind-invariant combinations.
-- **(c)** A standard commit-and-prove / masked-evaluation argument where opened evaluations
-  are of a *blinded* low-degree extension and the blinding polynomial is committed but its
-  evaluations are never individually revealed.
+The selected repair is the masked-share version of option (a): open values whose
+affine constraints are directly checkable but whose raw witness components remain
+one-time padded by unopened share randomness.  The proof body and decoded opened
+row no longer include a public `blind` field.
 
-All three are real changes to the prover/verifier opening protocol (and to the proof byte
-layout / KAT). This is the "significant redesign" class — do not land silently.
+The 2026-06-11 follow-up soundness pass also found that the constraint-column
+residual was only a fixed linear aggregate, so failures in different lanes could
+cancel.  The verifier now checks each opened row's same-representative relation
+per lane: the same `account_share` cell must satisfy both
+`account_share + mask_share = masked_projection` and
+`account_share = lo_share + 128*hi_share`.  Regression
+`path2_transparent_zk_opened_row_relation_prevents_split_witness_cancellation`
+constructs a split row with aggregate residual zero and confirms the explicit
+per-lane digit check rejects it.
+
+The same pass then found the larger blocker-1 failure: the current opening core
+does not enforce the full hidden relation.  Red-team regression
+`redteam_transparent_zk_core_accepts_public_only_synthetic_trace` constructs an
+accepting proof from public `masked_projection` alone.  That proof exercises the
+real envelope, Merkle paths, sampled-row checks, and FRI verifier, but it proves
+neither pad-seed binding, PRF mask derivation, packed-witness repack equality,
+nor role-commitment consistency.
+
+The current Rust metadata now binds this as a fail-closed contract:
+`Path2TransparentFullHiddenRelationProofContractV1` is carried through production
+obligations and the proof-family capability, but its backend/verifier are
+uninstantiated and `full_hidden_relation_subproof_implemented = false`.
+
+This is still not a full soundness claim.  The visible base-128 digit range check
+is now an extractor/range-proof obligation, because checking raw digit ranges
+while hiding the digits requires a real range argument rather than opening the
+digits themselves.
 
 ## Scope / what is NOT affected
 
@@ -90,9 +143,8 @@ layout / KAT). This is the "significant redesign" class — do not land silently
   confirmed every serialized spend field is public-derived or an intended sigma opening;
   `pad_seed` / hidden source / masked representative are not serialized; projection mask is
   PRF-fresh per (slot,lane), pad excluded. (See spend-leak audit.)
-- This break is in the **creation-time** transparent-descent ZK only — the same surface as
-  the original HIGH-2 (`Path2MaskedState18CreationProofV1` pad_seed-in-clear). HIGH-2 is
-  **reopened**, not a new class.
+- This break was in the **creation-time** transparent-descent ZK only — the same surface as
+  the original HIGH-2 (`Path2MaskedState18CreationProofV1` pad_seed-in-clear).
 - Production stays **fail-closed** at the deployment preflight, so this is not live on a
   mainnet today — but the dossier's "HIGH-2 hiding RESOLVED" claim was **false** and is
   corrected.
@@ -108,18 +160,45 @@ layout / KAT). This is the "significant redesign" class — do not land silently
   the end-to-end `Pr[forgery] ≤ 2⁻¹²⁸` is composed on paper across independently-checked
   modules (the known GAP-B/D seam). Honest, but should not be read as one machine-checked
   theorem.
-- **The pad_seed-in-clear `Path2MaskedState18CreationProofV1` path is not hard-gated** — only
-  a doc label + the deployment preflight. `verify_path2_direct_creation_masked_state18_proof_v1`
-  still `Ok`-accepts a valid pad_seed-leaking payload; no compile/runtime guard prevents a
-  caller from wiring it as the active acceptor.
-- **Stale docs.** HEAD `742c6b8` says "hiding RESOLVED," but in-file comments
-  (`:1495,:1519,:26641`) still say the transparent path is "IN PROGRESS (stubbed)" and the
-  bindings dispatcher (`:26577-26578`) rejects TRANSPARENT_DESCENT as "not implemented." The
-  commit message over-claimed relative to the code's own comments.
+- **The pad_seed-in-clear `Path2MaskedState18CreationProofV1` path is now hard-gated
+  (2026-06-11).** `verify_path2_direct_creation_masked_state18_proof_v1` and the proof-carrying
+  dispatcher return `PATH2_MASKED_STATE18_PUBLIC_PROOF_DISABLED_ERROR` for a valid old payload. The
+  masked-state18 relation checker remains internal/debug-only for fixtures and red-team regression.
+- **Partial-boundary caveat.** The bindings-only transparent payload boundaries still return the
+  historical `"Path 2 transparent descent proof verifier is not implemented"` sentinel until the
+  caller supplies proof bytes. The full `*_with_proof_bytes` boundary now runs the incomplete core
+  first, then fail-closes with
+  `PATH2_TRANSPARENT_DESCENT_FULL_HIDDEN_RELATION_DISABLED_ERROR` for otherwise-valid transcripts.
 
-## Bottom line
+## Bottom Line
 
-The riskiest hiding obstruction reopened: the HIGH-2 transparent-descent ZK does not hide.
-This is exactly the risk-first payoff — caught internally, with a passing regression, before
-any external review or value-capped deployment. The fix is a real opening-protocol redesign;
-flagged for maintainer decision, not applied.
+The specific in-clear per-row blind leak is fixed in the transparent opening
+protocol and covered by an executable regression.  The immediate sampled-row
+same-representative/cancellation bug is also fixed by explicit per-lane checks.
+Remaining HIGH-2 work is now the full hidden-relation backend certificate, then
+the separate `p2_sis_extractor` / range-proof soundness obligation, plus
+widening the external coded-SIS review to the final public surface. The public
+proof-bytes boundary
+now rejects otherwise-valid transcripts with
+`PATH2_TRANSPARENT_DESCENT_FULL_HIDDEN_RELATION_DISABLED_ERROR`, so there is no
+public accepting transparent creation proof at this stage. The transparent proof-family
+capability object also carries a digest of
+`Path2TransparentProductionSoundnessObligationsV1`, which now records
+`sampled_row_same_representative_enforced = true` and
+`aggregate_cancellation_regression_covered = true`, while the current blockers
+are backed by a `Path2TransparentHiddenRelationConstraintPlanV1` digest and
+`Path2TransparentFullRelationBackendSufficiencyTargetV1` digest and remain
+`pad_seed_binding_constraint_enforced = false`,
+`prf_mask_derivation_constraint_enforced = false`,
+`packed_witness_repack_constraint_enforced = false`,
+`role_commitment_consistency_constraint_enforced = false`,
+`full_hidden_relation_constraints_enforced = false`,
+`full_relation_backend_certificate_instantiated = false`,
+`p2_sis_extractor_instantiated = false`,
+`hidden_range_extractor_instantiated = false`, and
+`external_coded_sis_review_complete = false`. It rejects a forged
+obligations digest or forged `production_soundness_obligations_discharged =
+true`, so the missing theorem state is digest-bound rather than only
+documented. Public views are pinned to the current capability digest through
+`proof_system_id`; a self-consistent view under any forged proof-system id is
+rejected before query or proof verification.

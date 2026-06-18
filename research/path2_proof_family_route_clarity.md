@@ -1,6 +1,47 @@
 # Path 2 Proof-Family Route Clarity
 
-Status: route-clarity note; no concrete proof family selected.
+Status: route-clarity note. 2026-06-17 UPDATE — strategy-level family SELECTED
+(see decision block below); concrete proof-system instantiation still open.
+
+## 2026-06-17 Decision (adversarially verified, 16-agent workflow)
+
+**SELECTED: Transparent STARK/FRI IOP-of-knowledge (Family A) PRIMARY.** MITH/
+VOLEitH (B) = theorem-clean fallback. LaBRADOR/LatticeFold-class lattice folding
+(C) = strategic PQ-native long-term bet. Native image-membership (D) = statement-
+shrinking probe only. A is the only candidate that is BOTH post-quantum AND has
+production-deployed recursion/aggregation/IVC, which is decisive for a blockchain.
+
+Flip-condition verdicts (each survived two independent adversarial skeptics):
+
+- **Flip A (wide-challenge MITH rises to primary): does NOT fire.** Few-round
+  MITH is real/deployed, but MITH has no native recursion; aggregating it
+  collapses to wrapping it in an external STARK = re-selecting A. Repo's ~7.3 KB
+  MITH floor RETRACTED (scales with gate count; honest band ~5-30 KB).
+- **Flip B (lattice folding makes C primary now): does NOT fire.** Research-grade,
+  no integrated ZK (open problem), only ~2.07x norm-relaxed knowledge soundness
+  (can break C4 repack injectivity), and a documented NTT-friendly-ring soundness-
+  FAILURE class. CRITICAL: **q=12289 is NTT-friendly because it splits, so it is
+  UNFAVORABLE for lattice-folding soundness** — promoting C needs a non-splitting
+  modulus (loses the q=12289 speed advantage).
+- **Flip C (STARK zk-masking fails): does NOT fire — STARK survives.** zk-STARKs
+  hide all 194 lanes without raw openings (2024/1037); FRI is a genuine AoK with
+  a quantified extractor (2023/1071). Caveats: byte band `[4096,12288] B` is a
+  repo planning floor (real STARK proofs are tens-to-hundreds of KB) so the
+  "beats MITH on bytes" claim is RETRACTED (bytes are the weakest constraint);
+  the late-2025 proximity-gap disproof forces conservative Johnson-bound FRI
+  params (~147 queries); QROM is a named seam.
+
+8-question AoK test on STARK = **CONDITIONAL-PASS** (Q1/Q3/Q6 pass; Q2/Q4/Q5/Q7/
+Q8 are instantiation debt). Highest-leverage move: a Family-A recursive circuit
+co-verifying {creation proof + checked-core spend} into one O(1) chain-state
+proof. Full aggregation/recursion analysis:
+`research/path2_proof_family_aggregation_recursion_analysis.md`. Highest-risk
+active-route obstruction now being attacked:
+`research/path2_stark_route_c1c2_sha_binding_bridge_risk.md`.
+
+---
+
+Original note (pre-decision):
 
 Purpose: decide whether the active proof-family blocker is merely an
 implementation theorem to prove, or whether the current masked trace route is
@@ -123,6 +164,36 @@ It fails for two separate reasons:
 Bare proximity is also insufficient unless paired with a witness-reconstruction
 theorem that binds the reconstructed witness to the same parent root and role
 handles.
+
+The current Rust masked-share core is now a concrete negative example of this
+failure mode. `research/path2_current_core_negative_theorem.md` proves that
+the executable core accepts a synthetic public-only language point with
+arbitrary public context digests and masked lanes, so it cannot imply knowledge
+of C1/C2/C4/C6. This does not kill the transparent route, but it does force the
+route to become a real argument of knowledge for the full relation rather than
+a sampled masked-share proximity proof.
+
+`research/path2_current_view_binding_negative_theorem.md` adds the companion
+composition no-go: the current transcript can bind a
+`creation_proof_binding_digest` next to a synthetic trace root without proving
+that the trace opens the binding's role commitments. The transparent route must
+therefore supply typed extractable role subcommitments or a full-relation
+subproof; two-hop digest co-location is not enough.
+Lean now also checks the minimal current-row-core countermodel as
+`current_masked_share_core_acceptance_does_not_imply_full_hidden_opening` and
+the minimal digest co-location countermodel as
+`digest_colocation_does_not_imply_trace_role_binding`; the combined current-route
+verdict is `current_transparent_route_blocker1_negative_witness`.
+
+The positive route is also now pinned:
+`research/path2_full_relation_backend_sufficiency_theorem.md` adds the Lean
+certificate
+`SelectedTransparentFullRelationBackendCertificate`. If a concrete backend
+instantiates that certificate, Lean proves it implies `AccountAdmissionSoundness`.
+Rust pins the same target with
+`Path2TransparentFullRelationBackendSufficiencyTargetV1`; its digest is carried
+by the full-hidden-relation contract, production obligations, and proof-family
+capability while the concrete certificate remains uninstantiated.
 
 ## Route Comparison
 

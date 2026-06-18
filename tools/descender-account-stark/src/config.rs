@@ -1,0 +1,134 @@
+//! PINNED PRODUCTION configuration of the account-creation ZK-STARK.
+//!
+//! This is the deployable config lifted from the re-host benchmark's
+//! `prod_bench.rs`:
+//!
+//!   * Poseidon2: the PINNED Plonky3 vetted instance
+//!     `default_koalabear_poseidon2_16()` (Grain-derived `RC_16` tables). The SAME
+//!     instance drives (a) the AIR Poseidon2 round constraints, (b) the witness
+//!     trace generator, and (c) the Merkle/MMCS hash + the Fiat–Shamir challenger.
+//!   * Hash/Merkle: Poseidon2-Merkle (recursion-friendly), NOT Keccak:
+//!     `PaddingFreeSponge<Perm,16,8,8>` leaf + `TruncatedPermutation<Perm,2,8,16>`
+//!     compression; 8-field-element digests.
+//!   * FRI (128-bit CONSERVATIVE / Johnson-bound, NOT capacity-regime):
+//!     `log_blowup = 4` (rate rho = 1/16; ZK requires >= 2),
+//!     `num_queries = 56`, `query_proof_of_work_bits = 16`.
+//!     See [`PROD_SOUNDNESS_BITS`] for the exact soundness calculation. The old
+//!     `56*2 + 16 = 128` label was the OPTIMISTIC capacity-regime formula
+//!     `num_queries*log_blowup + query_pow`, which assumed the up-to-capacity
+//!     proximity-gap conjecture — disproven late-2025. This config is sized for
+//!     the conservative Johnson estimate instead.
+//!   * ZK ON: `HidingFriPcs` (doubled domain + random codewords + ethSTARK R(X))
+//!     over a salted-leaf `MerkleTreeHidingMmcs`.
+
+use p3_challenger::DuplexChallenger;
+use p3_commit::ExtensionMmcs;
+use p3_field::extension::BinomialExtensionField;
+use p3_field::Field;
+use p3_fri::HidingFriPcs;
+use p3_merkle_tree::MerkleTreeHidingMmcs;
+use p3_symmetric::{PaddingFreeSponge, TruncatedPermutation};
+use p3_uni_stark::StarkConfig;
+use rand::rngs::SmallRng;
+
+use p3_koala_bear::{
+    GenericPoseidon2LinearLayersKoalaBear, KoalaBear, Poseidon2KoalaBear,
+    KOALABEAR_POSEIDON2_HALF_FULL_ROUNDS, KOALABEAR_POSEIDON2_PARTIAL_ROUNDS_16,
+    KOALABEAR_S_BOX_DEGREE,
+};
+
+// ---------------------------------------------------------------------------
+// Pinned scheme parameters (named consts).
+// ---------------------------------------------------------------------------
+
+/// Poseidon2 permutation width.
+pub const WIDTH: usize = 16;
+
+/// PINNED FRI: blowup exponent. Rate `rho = 1/2^PROD_LOG_BLOWUP = 1/16`.
+/// Chosen at 4 (not 2) so the CONSERVATIVE Johnson soundness reaches 128 bits at
+/// only 56 queries (the smallest-proof point — see `PROD_SOUNDNESS_BITS`). ZK
+/// requires `log_blowup >= 2`; 4 satisfies that.
+pub const PROD_LOG_BLOWUP: usize = 4;
+/// PINNED FRI: query count.
+pub const PROD_NUM_QUERIES: usize = 56;
+/// PINNED FRI: query proof-of-work grinding bits.
+pub const PROD_QUERY_POW_BITS: usize = 16;
+/// PINNED FRI: commit-phase proof-of-work bits.
+pub const PROD_COMMIT_POW_BITS: usize = 0;
+
+/// FRI soundness bits at the pinned config under the CONSERVATIVE Johnson-bound
+/// estimate (NOT the optimistic up-to-capacity / proximity-gap-conjecture regime,
+/// which was disproven late-2025 and is therefore unsafe to rely on).
+///
+/// Conservative model (ethSTARK / Johnson rule of thumb): at rate
+/// `rho = 1/2^log_blowup`, each query contributes a per-query soundness factor of
+/// `~ sqrt(rho)`, i.e. `-log2(sqrt(rho)) = 0.5 * log_blowup` bits — HALF the
+/// optimistic capacity-regime `log_blowup` bits/query. Adding the query-phase
+/// proof-of-work grinding:
+///
+///   conservative_bits = num_queries * (0.5 * log_blowup) + query_pow_bits
+///                     = 56 * (0.5 * 4)      + 16
+///                     = 56 * 2              + 16
+///                     = 128.
+///
+/// (For contrast the OPTIMISTIC capacity formula would read
+/// `num_queries*log_blowup + query_pow = 56*4 + 16 = 240` bits — we do NOT claim
+/// that. We size for the conservative 128.) Expressed as an integer-bits const,
+/// `0.5*log_blowup` is exact here because `log_blowup` is even.
+pub const PROD_SOUNDNESS_BITS: usize =
+    PROD_NUM_QUERIES * (PROD_LOG_BLOWUP / 2) + PROD_QUERY_POW_BITS;
+
+/// HidingFriPcs random codewords (>= opened points per matrix).
+pub const NUM_RANDOM_CODEWORDS: usize = 4;
+/// Salt field elems per hiding Merkle leaf (~31 bits each).
+pub const SALT_ELEMS: usize = 4;
+/// Poseidon2-Merkle digest width (field elements).
+pub const DIGEST_ELEMS: usize = 8;
+
+// ---------------------------------------------------------------------------
+// KoalaBear Poseidon2 const-generic parameters (the pinned instance's shape).
+// ---------------------------------------------------------------------------
+
+pub const SBOX_DEGREE: u64 = KOALABEAR_S_BOX_DEGREE;
+pub const SBOX_REGISTERS: usize = 0;
+pub const HALF_FULL_ROUNDS: usize = KOALABEAR_POSEIDON2_HALF_FULL_ROUNDS;
+pub const PARTIAL_ROUNDS: usize = KOALABEAR_POSEIDON2_PARTIAL_ROUNDS_16;
+
+// ---------------------------------------------------------------------------
+// Concrete type aliases for the pinned KoalaBear / Poseidon2-Merkle / ZK-FRI stack.
+// ---------------------------------------------------------------------------
+
+/// The base STARK field.
+pub type Val = KoalaBear;
+/// Degree-4 binomial extension (the challenge field, ~124 bits).
+pub type Challenge = BinomialExtensionField<Val, 4>;
+/// The pinned Poseidon2 permutation.
+pub type Perm = Poseidon2KoalaBear<16>;
+/// The Poseidon2 linear layers for the AIR.
+pub type LinLayers = GenericPoseidon2LinearLayersKoalaBear;
+
+/// Poseidon2-Merkle leaf hash.
+pub type MyHash = PaddingFreeSponge<Perm, 16, 8, DIGEST_ELEMS>;
+/// Poseidon2-Merkle 2-to-1 compression.
+pub type MyCompress = TruncatedPermutation<Perm, 2, DIGEST_ELEMS, 16>;
+/// Salted-leaf (ZK) Merkle MMCS.
+pub type HidingValMmcs = MerkleTreeHidingMmcs<
+    <Val as Field>::Packing,
+    <Val as Field>::Packing,
+    MyHash,
+    MyCompress,
+    SmallRng,
+    2,
+    DIGEST_ELEMS,
+    SALT_ELEMS,
+>;
+/// Extension-field MMCS over the hiding base MMCS.
+pub type HidingChallengeMmcs = ExtensionMmcs<Val, Challenge, HidingValMmcs>;
+/// Fiat–Shamir challenger (duplex sponge over the pinned Poseidon2).
+pub type Challenger = DuplexChallenger<Val, Perm, 16, 8>;
+/// FFT backend.
+pub type Dft = p3_dft::Radix2DitParallel<Val>;
+/// The ZK polynomial-commitment scheme (HidingFriPcs).
+pub type ZkPcs = HidingFriPcs<Val, Dft, HidingValMmcs, HidingChallengeMmcs, SmallRng>;
+/// The full STARK config.
+pub type ZkConfig = StarkConfig<ZkPcs, Challenge, Challenger>;

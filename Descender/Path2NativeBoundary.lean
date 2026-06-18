@@ -97,7 +97,13 @@ structure OperationalPrivateFiberDigests where
   operationalRandomizerDigest : Nat
   walletRecoveryDigest : Nat
 
-/-- Public view consumed by the two-view transparent payload theorem. -/
+/--
+Public view consumed by the two-view transparent payload theorem.
+
+The slot and hidden-source statement digest are explicit public anchors, not
+only transitive digest inputs, matching the Rust proof-bytes envelope and
+trace-binding context.
+-/
 structure TransparentPublicView where
   proofSystemId : Nat
   relationId : Nat
@@ -106,6 +112,8 @@ structure TransparentPublicView where
   columnProfile : Nat
   leafContextDigest : Nat
   nativeBoundaryDigest : Nat
+  slotId : Nat
+  hiddenSourceStatementDigest : Nat
   matrixDomainTranscriptDigest : Nat
   maskedProjection : Lane -> Nat
   aggregationContextDigest : Nat
@@ -993,6 +1001,32 @@ def selectedRoleMaskDomain : RoleId -> Nat
   | RoleId.blinding => 7
   | RoleId.constraint => 8
 
+/--
+The active table gives every non-public/opened role a distinct nonzero mask
+domain. This is the theorem-side form of the executable query-opening rule
+that rejects reused mask domains for opened masked cells.
+-/
+theorem selectedRoleMaskDomain_nonzero_unique
+    {r1 r2 : RoleId}
+    (h1 : selectedRoleMaskDomain r1 ≠ 0)
+    (h2 : selectedRoleMaskDomain r2 ≠ 0)
+    (hEq : selectedRoleMaskDomain r1 = selectedRoleMaskDomain r2) :
+    r1 = r2 := by
+  cases r1 <;> cases r2 <;> simp [selectedRoleMaskDomain] at *
+
+/-- The active selected mask-domain table is injective on nonzero domains. -/
+def SelectedMaskDomainsUnique : Prop :=
+  forall {r1 r2 : RoleId},
+    selectedRoleMaskDomain r1 ≠ 0 ->
+      selectedRoleMaskDomain r2 ≠ 0 ->
+        selectedRoleMaskDomain r1 = selectedRoleMaskDomain r2 ->
+          r1 = r2
+
+/-- Certificate-free proof of the selected mask-domain uniqueness table. -/
+theorem selectedMaskDomainsUnique : SelectedMaskDomainsUnique := by
+  intro r1 r2 h1 h2 hEq
+  exact selectedRoleMaskDomain_nonzero_unique h1 h2 hEq
+
 /-- Visibility class selected for each active theorem-level role. -/
 def selectedRoleVisibility : RoleId -> VisibilityClass
   | RoleId.contextPublic => VisibilityClass.vcPublic
@@ -1196,8 +1230,16 @@ structure Predicates where
   roleAuthenticationMaterialSimulatable :
     Boundary -> TransparentPublicView -> ColumnProfile -> Prop
   maskFreshnessHolds : Boundary -> TransparentPublicView -> ColumnProfile -> Prop
+  queryOpeningComponentsBound :
+    Boundary -> TransparentPublicView -> ColumnProfile -> Prop
   qromScheduleBound : Boundary -> TransparentPublicView -> ColumnProfile -> Prop
   qromExtractorRewindBound : Boundary -> TransparentPublicView -> ColumnProfile -> Prop
+  externalCodedSisReviewArtifact : Prop
+  proofFriendlyInnerCommitmentArtifact : Prop
+  padSeedBindingConstraintArtifact : Prop
+  prfMaskDerivationConstraintArtifact : Prop
+  packedWitnessRepackConstraintArtifact : Prop
+  roleCommitmentConsistencyConstraintArtifact : Prop
   rangeRowsBindRepresentative :
     Boundary ->
       TransparentPublicView ->
@@ -1891,6 +1933,28 @@ def MaskFreshnessSoundness (P : Predicates) : Prop :=
           P.maskFreshnessHolds b view profile ∨
             (exists breakEvent, P.boundaryBreakFor b.context b breakEvent)
 
+/--
+Unique mask-domain obligation for opened masked cells. This is named
+separately from generic mask freshness so the backend certificate can bind the
+linear-leakage rule proved for the selected two-view profile.
+-/
+def UniqueMaskDomainSoundness (_ : Predicates) : Prop :=
+  SelectedMaskDomainsUnique
+
+/--
+Opened-row component binding: the query-opening manifest components are bound to
+the authenticated opened rows carried by the proof body, or the proof exports a
+named context/row/component rebinding break.
+-/
+def QueryOpeningComponentBindingSoundness (P : Predicates) : Prop :=
+  forall {b : Boundary} {view : TransparentPublicView}
+      {profile : ColumnProfile},
+    P.transparentAccepts b view ->
+      TransparentViewProjectsFrom b view ->
+        ColumnProfileCompatibleWithBoundary b view profile ->
+          P.queryOpeningComponentsBound b view profile ∨
+            (exists breakEvent, P.boundaryBreakFor b.context b breakEvent)
+
 theorem mask_freshness_holds_or_break
     (P : Predicates)
     (hSound : MaskFreshnessSoundness P)
@@ -1900,6 +1964,18 @@ theorem mask_freshness_holds_or_break
     (hProjects : TransparentViewProjectsFrom b view)
     (hProfile : ColumnProfileCompatibleWithBoundary b view profile) :
     P.maskFreshnessHolds b view profile ∨
+      (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
+  hSound hAccept hProjects hProfile
+
+theorem query_opening_components_bound_or_break
+    (P : Predicates)
+    (hSound : QueryOpeningComponentBindingSoundness P)
+    {b : Boundary} {view : TransparentPublicView}
+    {profile : ColumnProfile}
+    (hAccept : P.transparentAccepts b view)
+    (hProjects : TransparentViewProjectsFrom b view)
+    (hProfile : ColumnProfileCompatibleWithBoundary b view profile) :
+    P.queryOpeningComponentsBound b view profile ∨
       (exists breakEvent, P.boundaryBreakFor b.context b breakEvent) :=
   hSound hAccept hProjects hProfile
 
@@ -2049,6 +2125,132 @@ theorem hybrid_base128_range_rows_imply_norm_range_soundness
           hExtracts hFiber hBoundRows
   | inr hBreak =>
       exact Or.inr hBreak
+
+/--
+Derived hidden range-extractor bundle.
+
+The selected hidden range extractor is derived from same-trace range-row binding
+plus the hybrid base-128 row and rows-to-norm soundness needed to conclude
+`NormRangeSoundness` for extracted hidden representatives.
+-/
+def HiddenRangeExtractorSoundness (P : Predicates) : Prop :=
+  TraceRangeRowsBindRepresentativeSoundness P ∧
+    HybridBase128RangeRowSoundness P ∧
+      HybridBase128RangeRowsToNormRangeSoundness P
+
+theorem selected_range_components_imply_hidden_range_extractor_soundness
+    (P : Predicates)
+    (hTraceRangeRows : TraceRangeRowsBindRepresentativeSoundness P)
+    (hRangeRows : HybridBase128RangeRowSoundness P)
+    (hRangeRowsToNorm : HybridBase128RangeRowsToNormRangeSoundness P) :
+    HiddenRangeExtractorSoundness P :=
+  ⟨hTraceRangeRows, hRangeRows, hRangeRowsToNorm⟩
+
+/--
+Production `external_coded_sis_review_complete` gate.
+
+This is intentionally an uninterpreted external-review proposition: the native
+boundary theorem can require it in the selected backend certificate, but this
+Lean interface cannot synthesize an independent cryptanalytic review of the
+response-link coded-SIS public surface.
+
+An inhabitant represents external sign-off that the response-link coded-SIS
+estimator/review covers the final public surface exposed by the transparent
+native-boundary opening protocol.
+-/
+def ExternalCodedSisReviewSoundness (P : Predicates) : Prop :=
+  P.externalCodedSisReviewArtifact
+
+/--
+Proof-friendly inner commitment deployment gate.
+
+This names the obligation that the private pad/opening/projection roles are
+bound by deployable proof-friendly commitments, while SHA-256 consensus handles
+remain outer anchors and raw hidden openings are not exported.
+-/
+def ProofFriendlyInnerCommitmentSoundness (P : Predicates) : Prop :=
+  P.proofFriendlyInnerCommitmentArtifact
+
+/--
+Deployable pad-seed binding constraint gate: the proof system must bind the
+private pad seed to the public leaf/slot/role context without exposing the seed.
+-/
+def PadSeedBindingConstraintSoundness (P : Predicates) : Prop :=
+  P.padSeedBindingConstraintArtifact
+
+/--
+Deployable PRF-mask derivation constraint gate: the proof system must derive
+the masked projection lanes from the bound pad seed and public slot/context.
+-/
+def PrfMaskDerivationConstraintSoundness (P : Predicates) : Prop :=
+  P.prfMaskDerivationConstraintArtifact
+
+/--
+Deployable packed-witness repack constraint gate: the proof system must bind
+the packed witness commitment to the canonical native-boundary residues used by
+the public masked projection.
+-/
+def PackedWitnessRepackConstraintSoundness (P : Predicates) : Prop :=
+  P.packedWitnessRepackConstraintArtifact
+
+/--
+Deployable role-commitment consistency gate: the proof system must bind the
+private pad/opening/projection roles to the native role root and full hidden
+opening relation.
+-/
+def RoleCommitmentConsistencyConstraintSoundness (P : Predicates) : Prop :=
+  P.roleCommitmentConsistencyConstraintArtifact
+
+/--
+Full hidden-relation constraint implementation gate.
+
+This is the theorem-side counterpart of the executable hidden-relation plan's
+pad-seed binding, PRF-mask derivation, packed-witness repack, and role
+commitment consistency implementation bits.
+-/
+def HiddenRelationConstraintImplementationSoundness (P : Predicates) : Prop :=
+  PadSeedBindingConstraintSoundness P ∧
+    PrfMaskDerivationConstraintSoundness P ∧
+      PackedWitnessRepackConstraintSoundness P ∧
+        RoleCommitmentConsistencyConstraintSoundness P
+
+/--
+Combined full-hidden backend implementation gate.
+
+This is the theorem-side aggregate corresponding to the Rust production gates
+for deployable proof-friendly inner commitments, private hidden-relation
+constraints, and the external coded-SIS review artifact.  It is separate from
+trace extraction: the selected trace/range/no-export obligations prove account
+admission, while this aggregate records that the replacement backend really
+implements the private full-hidden relation required by the certificate target.
+-/
+def FullHiddenRelationBackendImplementationSoundness (P : Predicates) : Prop :=
+  ProofFriendlyInnerCommitmentSoundness P ∧
+    HiddenRelationConstraintImplementationSoundness P ∧
+      ExternalCodedSisReviewSoundness P
+
+theorem selected_hidden_relation_components_imply_constraint_soundness
+    (P : Predicates)
+    (hPadSeed : PadSeedBindingConstraintSoundness P)
+    (hPrfMask : PrfMaskDerivationConstraintSoundness P)
+    (hRepack : PackedWitnessRepackConstraintSoundness P)
+    (hRoleCommitment : RoleCommitmentConsistencyConstraintSoundness P) :
+    HiddenRelationConstraintImplementationSoundness P :=
+  ⟨hPadSeed, hPrfMask, hRepack, hRoleCommitment⟩
+
+theorem selected_hidden_relation_backend_components_imply_full_backend_soundness
+    (P : Predicates)
+    (hInner : ProofFriendlyInnerCommitmentSoundness P)
+    (hPadSeed : PadSeedBindingConstraintSoundness P)
+    (hPrfMask : PrfMaskDerivationConstraintSoundness P)
+    (hRepack : PackedWitnessRepackConstraintSoundness P)
+    (hRoleCommitment : RoleCommitmentConsistencyConstraintSoundness P)
+    (hExternalReview : ExternalCodedSisReviewSoundness P) :
+    FullHiddenRelationBackendImplementationSoundness P :=
+  ⟨hInner,
+    selected_hidden_relation_components_imply_constraint_soundness
+      P hPadSeed hPrfMask hRepack hRoleCommitment,
+    hExternalReview⟩
 
 theorem trace_range_rows_bind_representative_or_break
     (P : Predicates)
@@ -2275,6 +2477,43 @@ def NativeBoundaryTraceKnowledgeSoundness (P : Predicates) : Prop :=
                 TraceAssemblySoundness P
 
 /--
+Production `p2_sis_extractor` gate.
+
+This names the proof-system-specific extractor obligation rather than leaving it
+as an implementation-side boolean: an accepted Path 2 transparent/SIS trace
+proof must provide the full native-boundary knowledge-soundness bundle, or the
+same named boundary-break surface.
+-/
+def P2SisExtractorSoundness (P : Predicates) : Prop :=
+  NativeBoundaryTraceKnowledgeSoundness P
+
+theorem selected_trace_components_imply_p2_sis_extractor_soundness
+    (P : Predicates)
+    (hParentSound : ParentRootRoleBindingSoundness P)
+    (hRoleSound : RoleRestrictionSoundness P)
+    (hCommitExtract : ParentTraceCommitmentExtractionSoundness P)
+    (hDoubleTraceBinding : ParentTraceDoubleBindingSoundness P)
+    (hMaskedConsistency : MaskedOpeningConsistencySoundness P)
+    (hRelationKnowledge : ExtractedTraceRelationKnowledgeSoundness P)
+    (hTraceAssemblyExists : TraceRepresentativeAssemblyExistenceSoundness P)
+    (hTraceAssemblyRoles : TraceAssemblyRolesCompleteSoundness P)
+    (hTraceAssemblyDerived : TraceAssemblyDerivedRolesSoundness P)
+    (hTraceAssemblyFiber : TraceAssemblyFiberSoundness P)
+    (hTraceAssemblyLocal : TraceAssemblyLocalValiditySoundness P)
+    (hTraceAssemblyDescent : TraceAssemblyDescentConsistencySoundness P) :
+    P2SisExtractorSoundness P := by
+  have hTraceExtract : ParentTraceExtractionSoundness P :=
+    commitment_extraction_and_relation_knowledge_imply_parent_trace_extraction
+      P hCommitExtract hDoubleTraceBinding hMaskedConsistency hRelationKnowledge
+  have hTraceAssembly : TraceAssemblySoundness P :=
+    decomposed_trace_assembly_implies_trace_assembly_soundness
+      P hTraceAssemblyExists hTraceAssemblyRoles hTraceAssemblyDerived
+        hTraceAssemblyFiber hTraceAssemblyLocal hTraceAssemblyDescent
+  exact
+    ⟨hParentSound, hRoleSound, hCommitExtract, hDoubleTraceBinding,
+      hRelationKnowledge, hMaskedConsistency, hTraceExtract, hTraceAssembly⟩
+
+/--
 The decomposed full-trace extractor assumptions imply the older two-view
 extraction and role-completeness surfaces for an accepted compatible view.
 -/
@@ -2323,7 +2562,8 @@ theorem trace_extraction_implies_hidden_representative_or_break
 def NativeBoundaryTraceZeroKnowledge (P : Predicates) : Prop :=
   NoExportSoundness P ∧
     RoleAuthenticationMaterialNoExportSoundness P ∧
-      MaskFreshnessSoundness P
+      MaskFreshnessSoundness P ∧
+        QueryOpeningComponentBindingSoundness P
 
 /-- The full named proof-family assumption, still abstract over the construction. -/
 def NativeBoundaryZkTraceBindingAndHiding (P : Predicates) : Prop :=
@@ -2421,6 +2661,8 @@ theorem transparent_view_full_interface_or_break
     (hNoExportSound : NoExportSoundness P)
     (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
     (hMaskFreshnessSound : MaskFreshnessSoundness P)
+    (hQueryOpeningComponentBindingSound :
+      QueryOpeningComponentBindingSoundness P)
     (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
     (hQromRewindSound : NativeBoundaryTraceQromExtractorRewindSoundness P)
     (hNormRangeSound : NormRangeSoundness P)
@@ -2461,25 +2703,29 @@ theorem transparent_view_full_interface_or_break
       rcases hAll with
         ⟨hRole, hNoExport, hRoleAuthNoExport, hMaskFresh, hParent,
           hExtract⟩
-      cases hQromSound hAccept hProjects hProfile with
-      | inl hQrom =>
-          cases hQromRewindSound hAccept hProjects hProfile with
-          | inl hQromRewind =>
-              rcases hExtract with
-                ⟨h, hTransparent, hComplete, hFiber, hLocal, hDescent⟩
-              cases
-                  hNormRangeSound hAccept hProjects hProfile hRangePolicy
-                    hTransparent hFiber with
-              | inl hNorm =>
+      cases hQueryOpeningComponentBindingSound hAccept hProjects hProfile with
+      | inl _hQueryComponentsBound =>
+          cases hQromSound hAccept hProjects hProfile with
+          | inl hQrom =>
+              cases hQromRewindSound hAccept hProjects hProfile with
+              | inl hQromRewind =>
+                  rcases hExtract with
+                    ⟨h, hTransparent, hComplete, hFiber, hLocal, hDescent⟩
                   cases
-                      hBlindSound hAccept hProjects hProfile hPolicy
+                      hNormRangeSound hAccept hProjects hProfile hRangePolicy
                         hTransparent hFiber with
-                  | inl hBlind =>
-                      exact Or.inl
-                        ⟨hRole, hNoExport, hRoleAuthNoExport, hMaskFresh,
-                          hQrom, hQromRewind, hParent, h, hTransparent,
-                          hComplete, hFiber, hLocal, hDescent, hNorm,
-                          hBlind⟩
+                  | inl hNorm =>
+                      cases
+                          hBlindSound hAccept hProjects hProfile hPolicy
+                            hTransparent hFiber with
+                      | inl hBlind =>
+                          exact Or.inl
+                            ⟨hRole, hNoExport, hRoleAuthNoExport, hMaskFresh,
+                              hQrom, hQromRewind, hParent, h, hTransparent,
+                              hComplete, hFiber, hLocal, hDescent, hNorm,
+                              hBlind⟩
+                      | inr hBreak =>
+                          exact Or.inr hBreak
                   | inr hBreak =>
                       exact Or.inr hBreak
               | inr hBreak =>
@@ -2510,6 +2756,8 @@ theorem transparent_view_full_interface_from_decomposed_or_break
     (hNoExportSound : NoExportSoundness P)
     (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
     (hMaskFreshnessSound : MaskFreshnessSoundness P)
+    (hQueryOpeningComponentBindingSound :
+      QueryOpeningComponentBindingSoundness P)
     (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
     (hQromRewindSound : NativeBoundaryTraceQromExtractorRewindSoundness P)
     (hTraceRangeRows : TraceRangeRowsBindRepresentativeSoundness P)
@@ -2592,46 +2840,52 @@ theorem transparent_view_full_interface_from_decomposed_or_break
                                 hMaskFreshnessSound hAccept hProjects
                                   hProfile with
                             | inl hMaskFresh =>
-                                cases hQromSound hAccept hProjects hProfile with
-                                | inl hQrom =>
-                                    cases
-                                        hQromRewindSound hAccept hProjects
-                                          hProfile with
-                                    | inl hQromRewind =>
+                                cases
+                                    hQueryOpeningComponentBindingSound hAccept
+                                      hProjects hProfile with
+                                | inl _hQueryComponentsBound =>
+                                    cases hQromSound hAccept hProjects hProfile with
+                                    | inl hQrom =>
                                         cases
-                                            hRangeRows hAccept hProjects
-                                              hProfile hRangePolicy
-                                              hTransparent hFiber with
-                                        | inl hBoundRangeRows =>
+                                            hQromRewindSound hAccept hProjects
+                                              hProfile with
+                                        | inl hQromRewind =>
                                             cases
-                                                hRangeRowsToNorm hAccept
-                                                  hProjects hProfile
-                                                  hRangePolicy hTransparent
-                                                  hFiber hBoundRangeRows with
-                                            | inl hNorm =>
+                                                hRangeRows hAccept hProjects
+                                                  hProfile hRangePolicy
+                                                  hTransparent hFiber with
+                                            | inl hBoundRangeRows =>
                                                 cases
-                                                    hBlindRows hAccept
+                                                    hRangeRowsToNorm hAccept
                                                       hProjects hProfile
-                                                      hPolicy hTransparent
-                                                      hFiber with
-                                                | inl hBoundBlindRows =>
+                                                      hRangePolicy hTransparent
+                                                      hFiber hBoundRangeRows with
+                                                | inl hNorm =>
                                                     cases
-                                                        hBlindRowsToBound
-                                                          hAccept hProjects
-                                                          hProfile hPolicy
-                                                          hTransparent hFiber
-                                                          hBoundBlindRows with
-                                                    | inl hBlind =>
-                                                        exact Or.inl
-                                                          ⟨hRole, hNoExport,
-                                                            hRoleAuthNoExport,
-                                                            hMaskFresh, hQrom,
-                                                            hQromRewind,
-                                                            hParent, h,
-                                                            hTransparent,
-                                                            hComplete, hFiber,
-                                                            hLocal, hDescent,
-                                                            hNorm, hBlind⟩
+                                                        hBlindRows hAccept
+                                                          hProjects hProfile
+                                                          hPolicy hTransparent
+                                                          hFiber with
+                                                    | inl hBoundBlindRows =>
+                                                        cases
+                                                            hBlindRowsToBound
+                                                              hAccept hProjects
+                                                              hProfile hPolicy
+                                                              hTransparent hFiber
+                                                              hBoundBlindRows with
+                                                        | inl hBlind =>
+                                                            exact Or.inl
+                                                              ⟨hRole, hNoExport,
+                                                                hRoleAuthNoExport,
+                                                                hMaskFresh, hQrom,
+                                                                hQromRewind,
+                                                                hParent, h,
+                                                                hTransparent,
+                                                                hComplete, hFiber,
+                                                                hLocal, hDescent,
+                                                                hNorm, hBlind⟩
+                                                        | inr hBreak =>
+                                                            exact Or.inr hBreak
                                                     | inr hBreak =>
                                                         exact Or.inr hBreak
                                                 | inr hBreak =>
@@ -2682,6 +2936,8 @@ theorem transparent_view_full_interface_from_atomic_gates_or_break
     (hNoExportSound : NoExportSoundness P)
     (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
     (hMaskFreshnessSound : MaskFreshnessSoundness P)
+    (hQueryOpeningComponentBindingSound :
+      QueryOpeningComponentBindingSoundness P)
     (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
     (hQromRewindSound : NativeBoundaryTraceQromExtractorRewindSoundness P)
     (hTraceRangeRows : TraceRangeRowsBindRepresentativeSoundness P)
@@ -2722,9 +2978,10 @@ theorem transparent_view_full_interface_from_atomic_gates_or_break
       P hCommitExtract hDoubleTraceBinding hMaskedConsistency hRelationKnowledge)
     hTraceAssemblyExists hTraceAssemblyRoles hTraceAssemblyDerived
     hTraceAssemblyFiber hTraceAssemblyLocal hTraceAssemblyDescent
-    hNoExportSound hRoleAuthNoExportSound hMaskFreshnessSound hQromSound
-    hQromRewindSound hTraceRangeRows hRangeRows hRangeRowsToNorm
-    hTraceBlindRows hBlindRows hBlindRowsToBound
+    hNoExportSound hRoleAuthNoExportSound hMaskFreshnessSound
+    hQueryOpeningComponentBindingSound hQromSound hQromRewindSound
+    hTraceRangeRows hRangeRows hRangeRowsToNorm hTraceBlindRows hBlindRows
+    hBlindRowsToBound
     hAccept hProjects hProfile hRoleComplete hSelected
     hRangePolicy hPolicy
 
@@ -2750,6 +3007,8 @@ theorem transparent_view_full_interface_from_selected_profile_atomic_gates_or_br
     (hNoExportSound : NoExportSoundness P)
     (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
     (hMaskFreshnessSound : MaskFreshnessSoundness P)
+    (hQueryOpeningComponentBindingSound :
+      QueryOpeningComponentBindingSoundness P)
     (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
     (hQromRewindSound : NativeBoundaryTraceQromExtractorRewindSoundness P)
     (hTraceRangeRows : TraceRangeRowsBindRepresentativeSoundness P)
@@ -2788,8 +3047,9 @@ theorem transparent_view_full_interface_from_selected_profile_atomic_gates_or_br
     hMaskedConsistency hRelationKnowledge hTraceAssemblyExists hTraceAssemblyRoles
     hTraceAssemblyDerived hTraceAssemblyFiber hTraceAssemblyLocal
     hTraceAssemblyDescent hNoExportSound hRoleAuthNoExportSound
-    hMaskFreshnessSound hQromSound hQromRewindSound hTraceRangeRows
-    hRangeRows hRangeRowsToNorm hTraceBlindRows hBlindRows hBlindRowsToBound
+    hMaskFreshnessSound hQueryOpeningComponentBindingSound hQromSound
+    hQromRewindSound hTraceRangeRows hRangeRows hRangeRowsToNorm
+    hTraceBlindRows hBlindRows hBlindRowsToBound
     hAccept hProjects hProfile
     (selected_active_column_profile_role_complete hSelectedProfile)
     (selected_active_column_profile_trace_modes hSelectedProfile)
@@ -2819,6 +3079,8 @@ theorem selected_transparent_view_atomic_gates_imply_account_admission
     (hNoExportSound : NoExportSoundness P)
     (hRoleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P)
     (hMaskFreshnessSound : MaskFreshnessSoundness P)
+    (hQueryOpeningComponentBindingSound :
+      QueryOpeningComponentBindingSoundness P)
     (hQromSound : NativeBoundaryTraceQromScheduleSoundness P)
     (hQromRewindSound : NativeBoundaryTraceQromExtractorRewindSoundness P)
     (hTraceRangeRows : TraceRangeRowsBindRepresentativeSoundness P)
@@ -2839,9 +3101,10 @@ theorem selected_transparent_view_atomic_gates_imply_account_admission
         hMaskedConsistency hRelationKnowledge hTraceAssemblyExists
         hTraceAssemblyRoles hTraceAssemblyDerived hTraceAssemblyFiber
         hTraceAssemblyLocal hTraceAssemblyDescent hNoExportSound
-        hRoleAuthNoExportSound hMaskFreshnessSound hQromSound
-        hQromRewindSound hTraceRangeRows hRangeRows hRangeRowsToNorm
-        hTraceBlindRows hBlindRows hBlindRowsToBound
+        hRoleAuthNoExportSound hMaskFreshnessSound
+        hQueryOpeningComponentBindingSound hQromSound hQromRewindSound
+        hTraceRangeRows hRangeRows hRangeRowsToNorm hTraceBlindRows
+        hBlindRows hBlindRowsToBound
         hAccept hProjects hProfile hSelectedProfile hRangePolicy hPolicy with
   | inl hClosed =>
       rcases hClosed with
@@ -2849,6 +3112,619 @@ theorem selected_transparent_view_atomic_gates_imply_account_admission
           _hQromRewind, _hParent, h, _hTransparent, _hComplete,
           hFiber, hLocal, hDescent, _hNorm, _hBlind⟩
       exact Or.inl ⟨h, hFiber, hLocal, hDescent⟩
+  | inr hBreak =>
+      exact Or.inr hBreak
+
+/--
+Minimal theorem-side model of the currently executable masked-share row core.
+
+This intentionally models only the public equations checked by the sampled core:
+the opened row must expose a masked share equal to the public masked projection,
+split that masked share as `accountShare + maskShare`, and split the account
+share as base-128 limbs. It does not model Merkle paths, FRI, or byte encodings;
+those are executable Rust checks. The point of this Lean model is the blocker-1
+logical gap: these public equations are satisfiable without any pad seed, PRF
+mask derivation, packed-witness opening, or role-opening witness.
+-/
+structure CurrentMaskedShareCoreRow where
+  loShare : Lane -> Nat
+  hiShare : Lane -> Nat
+  accountShare : Lane -> Nat
+  maskShare : Lane -> Nat
+  maskedShare : Lane -> Nat
+
+/-- The sampled public row equations enforced by the current masked-share core. -/
+def CurrentMaskedShareCoreRowAccepts
+    (view : TransparentPublicView)
+    (row : CurrentMaskedShareCoreRow) : Prop :=
+  forall lane : Lane,
+    row.maskedShare lane = view.maskedProjection lane ∧
+      row.accountShare lane + row.maskShare lane = row.maskedShare lane ∧
+        row.accountShare lane = row.loShare lane + 128 * row.hiShare lane
+
+/--
+Public-only satisfying assignment for the current row equations.
+
+It chooses zero account/base-128 limbs and puts the whole public masked lane into
+`maskShare`. This is the theorem-side analogue of the Rust synthetic-trace
+regressions: the row equations can be satisfied from public `maskedProjection`
+alone.
+-/
+def publicOnlyCurrentMaskedShareCoreRow
+    (view : TransparentPublicView) : CurrentMaskedShareCoreRow where
+  loShare := fun _ => 0
+  hiShare := fun _ => 0
+  accountShare := fun _ => 0
+  maskShare := fun lane => view.maskedProjection lane
+  maskedShare := fun lane => view.maskedProjection lane
+
+/--
+For every transparent public view, the current sampled row equations have a
+public-only satisfying row.
+-/
+theorem public_only_current_masked_share_core_row_accepts
+    (view : TransparentPublicView) :
+    CurrentMaskedShareCoreRowAccepts
+      view
+      (publicOnlyCurrentMaskedShareCoreRow view) := by
+  intro lane
+  simp [publicOnlyCurrentMaskedShareCoreRow]
+
+/--
+Shape of the unsound production inference for the current core.
+
+`FullHiddenOpening` stands for the missing C1/C2/C4/C6 hidden-opening relation:
+pad seed opens the leaf digest, PRF masks derive from that pad seed, packed
+witness repack opens the binding, and the trace opens the typed role
+commitments. The current row core by itself would be sufficient only if every
+accepted row implied that predicate.
+-/
+def CurrentCoreWouldImplyFullHiddenOpening
+    (FullHiddenOpening : TransparentPublicView -> Prop) : Prop :=
+  forall {view : TransparentPublicView} {row : CurrentMaskedShareCoreRow},
+    CurrentMaskedShareCoreRowAccepts view row ->
+      FullHiddenOpening view
+
+/--
+Negative blocker-1 theorem for the current sampled row core.
+
+There is a model of the missing full-hidden-opening predicate in which the
+current row equations accept but the hidden-opening predicate is false. Hence
+acceptance of the current sampled row equations alone is logically insufficient
+to prove the full hidden-opening relation; a concrete backend must add a
+separate full-relation certificate, or the proof family must change.
+-/
+theorem current_masked_share_core_acceptance_does_not_imply_full_hidden_opening
+    (view : TransparentPublicView) :
+    exists FullHiddenOpening : TransparentPublicView -> Prop,
+      exists row : CurrentMaskedShareCoreRow,
+        CurrentMaskedShareCoreRowAccepts view row ∧
+          ¬ FullHiddenOpening view ∧
+            ¬ CurrentCoreWouldImplyFullHiddenOpening FullHiddenOpening := by
+  let FullHiddenOpening : TransparentPublicView -> Prop := fun _ => False
+  let row := publicOnlyCurrentMaskedShareCoreRow view
+  refine ⟨FullHiddenOpening, row, ?_, ?_, ?_⟩
+  · exact public_only_current_masked_share_core_row_accepts view
+  · intro h
+    exact h
+  · intro hSound
+    exact hSound (public_only_current_masked_share_core_row_accepts view)
+
+/--
+Minimal theorem-side model of the current digest co-location binding shape.
+
+The Rust public view carries a creation-proof binding digest and a trace root in
+the same transcript context. Co-location is useful transcript hygiene, but it is
+not a semantic statement that the trace opens the roles named by that binding.
+-/
+structure CurrentTraceBindingView where
+  creationProofBindingDigest : Nat
+  traceCommitmentRoot : Nat
+  transparentTranscriptDigest : Nat
+
+/-- Current co-location preserves the binding digest as a public field. -/
+def SameCreationBindingDigest
+    (left right : CurrentTraceBindingView) : Prop :=
+  left.creationProofBindingDigest = right.creationProofBindingDigest
+
+/--
+A synthetic trace-root substitution can preserve the creation binding digest
+while changing the trace root.
+-/
+theorem same_creation_binding_digest_does_not_determine_trace_root
+    (bindingDigest honestRoot syntheticRoot honestTranscript syntheticTranscript : Nat)
+    (hRoots : honestRoot ≠ syntheticRoot) :
+    exists honest synthetic : CurrentTraceBindingView,
+      SameCreationBindingDigest honest synthetic ∧
+        honest.traceCommitmentRoot ≠ synthetic.traceCommitmentRoot := by
+  let honest : CurrentTraceBindingView :=
+    { creationProofBindingDigest := bindingDigest
+      traceCommitmentRoot := honestRoot
+      transparentTranscriptDigest := honestTranscript }
+  let synthetic : CurrentTraceBindingView :=
+    { creationProofBindingDigest := bindingDigest
+      traceCommitmentRoot := syntheticRoot
+      transparentTranscriptDigest := syntheticTranscript }
+  refine ⟨honest, synthetic, ?_, ?_⟩
+  · rfl
+  · exact hRoots
+
+/--
+Shape of the unsound composition inference for digest co-location alone.
+
+`TraceRoleBinding` stands for the missing semantic relation that the trace root
+opens the role commitments named by the creation-proof binding digest. Digest
+co-location would be sufficient only if preserving the public binding digest
+forced that relation for the trace root.
+-/
+def DigestCoLocationWouldImplyTraceRoleBinding
+    (TraceRoleBinding : CurrentTraceBindingView -> Prop) : Prop :=
+  forall {view : CurrentTraceBindingView},
+    TraceRoleBinding view
+
+/--
+Negative blocker-1 theorem for the current view-binding shape.
+
+There is a model of the missing trace-role-binding predicate in which a
+synthetic view preserves the creation binding digest but the trace-role binding
+predicate is false. Therefore transcript co-location alone cannot replace the
+full-relation proof obligation that the trace opens the role commitments.
+-/
+theorem digest_colocation_does_not_imply_trace_role_binding
+    (bindingDigest honestRoot syntheticRoot honestTranscript syntheticTranscript : Nat)
+    (hRoots : honestRoot ≠ syntheticRoot) :
+    exists honest synthetic : CurrentTraceBindingView,
+      exists TraceRoleBinding : CurrentTraceBindingView -> Prop,
+        SameCreationBindingDigest honest synthetic ∧
+          honest.traceCommitmentRoot ≠ synthetic.traceCommitmentRoot ∧
+            ¬ TraceRoleBinding synthetic ∧
+              ¬ DigestCoLocationWouldImplyTraceRoleBinding TraceRoleBinding := by
+  rcases
+      same_creation_binding_digest_does_not_determine_trace_root
+        bindingDigest honestRoot syntheticRoot honestTranscript syntheticTranscript hRoots with
+    ⟨honest, synthetic, hSame, hTraceNe⟩
+  let TraceRoleBinding : CurrentTraceBindingView -> Prop := fun _ => False
+  refine ⟨honest, synthetic, TraceRoleBinding, hSame, hTraceNe, ?_, ?_⟩
+  · intro h
+    exact h
+  · intro hSound
+    exact hSound (view := synthetic)
+
+/--
+Combined blocker-1 negative witness for the current transparent route.
+
+The current route has both missing pieces: the sampled row equations do not
+imply the full hidden opening, and digest co-location does not imply
+trace-to-role binding. This is the machine-checked theorem-level verdict for
+the current core/binding composition: production soundness requires either a
+separate full-relation backend certificate or a replacement proof family.
+-/
+theorem current_transparent_route_blocker1_negative_witness
+    (view : TransparentPublicView)
+    (bindingDigest honestRoot syntheticRoot honestTranscript syntheticTranscript : Nat)
+    (hRoots : honestRoot ≠ syntheticRoot) :
+    (exists FullHiddenOpening : TransparentPublicView -> Prop,
+      exists row : CurrentMaskedShareCoreRow,
+        CurrentMaskedShareCoreRowAccepts view row ∧
+          ¬ FullHiddenOpening view ∧
+            ¬ CurrentCoreWouldImplyFullHiddenOpening FullHiddenOpening) ∧
+    (exists honest synthetic : CurrentTraceBindingView,
+      exists TraceRoleBinding : CurrentTraceBindingView -> Prop,
+        SameCreationBindingDigest honest synthetic ∧
+          honest.traceCommitmentRoot ≠ synthetic.traceCommitmentRoot ∧
+            ¬ TraceRoleBinding synthetic ∧
+              ¬ DigestCoLocationWouldImplyTraceRoleBinding TraceRoleBinding) :=
+  And.intro
+    (current_masked_share_core_acceptance_does_not_imply_full_hidden_opening view)
+    (digest_colocation_does_not_imply_trace_role_binding
+      bindingDigest honestRoot syntheticRoot honestTranscript syntheticTranscript hRoots)
+
+/--
+Positive blocker-1 closure package for a replacement full-hidden-relation
+transparent backend.
+
+This structure does not assert that the current executable masked-share core is
+sufficient. Instead it names the exact proof obligations a concrete backend must
+provide after the current core negative results: account-create-to-view binding,
+parent/role binding, committed-trace extraction, double-trace binding,
+masked-opening consistency, full relation knowledge, trace assembly, no-export,
+QROM schedule/rewind, range, and blinding/noise soundness. In Rust terms, this
+is the theorem-level counterpart of instantiating the
+`Path2TransparentFullHiddenRelationProofContractV1` backend instead of the
+current uninstantiated fail-closed envelope.
+
+The Rust `Path2TransparentFullRelationBackendCertificatePayloadV1` wire shape is
+only a carrier for these obligations. Shape validation of that payload is not an
+inhabitant of this Lean certificate: while the backend proof contract is
+unimplemented, Rust acceptance validation rejects the payload even when its
+statement digests and obligation labels are well formed. The payload's
+`obligation_set_bound` bit may be true in the current carrier, but
+`all_obligation_proofs_verified`, `backend_acceptance_proof_verified`, the
+hidden/trace witness-check verified bits, and the explicit
+trace/constraint-root-to-hidden-witness verified bits are false in the raw
+digest constructor.  The check-bound constructor sets the hidden/trace
+witness-check bits and the trace/constraint-root bridge bits only after
+validating the actual hidden and trace-origin witness-check receipts against the
+same statement context; those receipts explicitly carry the pre-proof
+direct-payload statement bridge digest, full-hidden proof-contract digest, and
+hidden-relation constraint-plan digest.  Those checks now mint a typed local
+trace-binding proof object whose digest is carried separately from the 32
+backend obligation proof digests and is repeated by the certificate bundle
+header, full-hidden proof payload, and subproof envelope.
+That typed local proof hashes the hidden-check digest, trace-origin-check
+digest, direct-payload statement bridge digest, full-hidden proof-contract
+digest, hidden-relation constraint-plan digest, verified check bits,
+no-export bit, backend verifier result's trace schedule (`trace_rows`,
+`query_count`, and `query_index`) and transparent transcript digest, so the
+local bridge identity names the same sampled trace domain, statement bridge, and
+relation contract accepted by the opening verifier rather than only
+an opaque public-input digest.  The full-hidden proof payload and outer subproof envelope
+also repeat the hidden-check digest, trace-origin-check digest, transparent
+transcript digest, and trace schedule fields from the statement/proof-payload
+context.  The certificate payload, final proof payload, and outer subproof
+envelope also repeat and hash the full-hidden proof-contract digest and
+hidden-relation constraint-plan digest, and validation compares those anchors
+across the statement, embedded certificate, backend verifier receipt, and
+envelope before the backend gate is reached.  The envelope uses the local digest as a
+verifier-visible bridge identity: the current statement-only debug envelope
+must carry zero, while a typed full-hidden proof-payload envelope checked up to
+the backend-unimplemented gate carries the proof payload's nonzero local bridge,
+hidden-check, and trace-origin-check digests; the proof-suite boundary requires
+those three digests to be nonzero and rejects any mismatch.  The top-level
+proof-bytes envelope also carries a digest of that exact full-hidden subproof
+segment plus the decoded subproof envelope's local trace-binding proof digest
+and hidden/trace witness-check digests, so the outer proof bytes bind the bridge
+segment directly.  The backend verifier receipt also repeats the
+full-hidden proof-contract digest and hidden-relation constraint-plan digest
+beside that local bridge digest, so the receipt boundary does not collapse the
+bridge back to only an opaque verifier-result digest.  All of these bits, plus
+the backend obligation and acceptance proof bits, must be true before the
+payload can correspond to this certificate.  The Rust carrier also binds an
+explicit backend proof-system id and backend acceptance-verifier digest; in the
+current profile these name the uninstantiated disabled verifier, not an
+accepting certificate backend.  It also binds the digest of the backend proof
+payload claimed to have been verified and the digest of the typed backend
+verifier receipt envelope that carries those proof bytes; today the proof-
+payload digest is the disabled-backend marker, so proof acceptance cannot be
+obtained by setting booleans in the carrier.  The payload-only Rust validator is
+therefore permanently non-accepting; the proof-carrying verifier boundary must
+consume the digest-bound typed backend verifier receipt carrying backend proof
+bytes and a digest-bound verifier result before any future certificate can
+inhabit this Lean structure.  The
+statement, verifier result, verifier receipt, and certificate carrier
+explicitly bind the public trace-to-binding anchors: proof system id, relation
+id, column profile, leaf context, creation-proof binding digest, matrix-domain
+transcript digest, masked-projection digest, aggregation context digest, and
+native role-root commitment; the verifier result, verifier receipt, and
+certificate carrier also repeat the transparent transcript digest and trace schedule.  The public transparent view,
+transparent transcript digest, and trace-binding context digest also carry the
+native role-root commitment, so a trace root cannot be rebound to a different
+role-root target while preserving only the older public transcript shape.  The
+selected-view bridge and commitment API verifier also compare that public-view
+role-root field directly against the creation binding's native role root before
+the fail-closed backend boundary.  The top-level transparent proof payload and
+typed proof-bytes envelope additionally repeat the leaf/matrix/aggregation
+source anchors, trace and constraint commitment roots, transparent transcript
+digest, and trace schedule fields alongside the full transparent public-view
+digest, creation binding digest, native role-root commitment,
+masked-projection digest, trace-binding context digest, and full-hidden
+subproof digest, local trace-binding proof digest, and hidden/trace witness-check
+digests; the transparent proof payload hashes those bridge handles in its
+payload digest, and the proof-bytes boundary rejects zero or mismatched carried
+bridge handles before sampled-opening/backend acceptance.  Transparent descent
+uses a two-stage direct-payload bridge.  The full-hidden public inputs carry a
+pre-proof `direct_payload_statement_bridge_digest` computed from the certificate
+relation transcript, creation binding, selected public view, trace roots,
+transcript, schedule, and trace-binding context before proof bytes exist.  The
+backend-facing public inputs, subproof statement, backend verifier result,
+verifier receipt, certificate carrier, final full-hidden proof payload, and
+subproof envelope carry and hash that bridge.  The top transparent proof-bytes
+envelope repeats the same bridge digest from the full-hidden subproof envelope,
+with its wire version bumped for the added field, and the direct-creation
+proof-bytes boundary compares it with the transparent payload before the
+backend-gated verifier path.  The final replay payload digest and proof-family
+binding digest are deliberately not placed inside the
+full-hidden subproof, since both are computed from proof bytes that contain that
+subproof.  The generic direct creation proof payload also carries a post-proof
+proof-family public binding digest: it is zero for non-transparent proof kinds
+and, for transparent descent, hashes the transparent public view, the pre-proof
+statement bridge, and those same payload/proof-byte/subproof/local-bridge
+handles before the fail-closed backend gate.  The query-opening
+manifest carries the public-view/context anchors, `query_count`, and per-query
+records.  The full-hidden public-input digest also recomputes the native
+role-root commitment from the carried packed-witness, randomizer, pad-source,
+opening-tuple, projection-relation, and gauge commitments, so a decoded
+public-input object cannot preserve the public-view role root while swapping one
+role commitment.  These digest frames hash those anchors, so sampled openings
+and serialized proof bytes are bound to exactly that public view, transcript,
+schedule, and binding target, not only to separately repeated profile fields.
+The Rust plan now separates this reference bridge from production soundness:
+the reference hidden-relation checker records pad-seed binding, PRF-mask
+derivation, packed-witness-repack, and role-commitment consistency as checked,
+and the trace-to-binding reference bridge depends on that aggregate, while the
+production hidden-constraint/backend/extractor flags remain false.
+The canonical full-hidden public-input constructor also checks the creation
+binding's account, slot, verifier, state-root, lifecycle, opening-tuple, and
+creation-statement fields against the leaf before it emits the public-input
+digest, so the canonical bridge cannot pair a rebound creation-binding digest
+with the old leaf statement.
+The hidden-relation witness-check boundary repeats the slot and hidden-source
+statement comparison against the creation binding, so decoded public inputs with
+a rebound slot or statement digest fail before any trace-origin receipt can be
+minted.  The hidden-relation and trace-origin witness-check receipts also carry
+and hash that slot and hidden-source statement digest, and local bridge/certificate
+assembly rejects mixed receipts whose carried slot or statement context differs.
+The public
+opening verifier's full-hidden subproof envelope shape check also compares that
+envelope's public-view digest, creation binding digest, native role-root
+commitment, masked-projection digest, and trace-binding context digest against
+the selected public view before the fail-closed production-obligation boundary,
+so a neighboring-view subproof envelope is rejected before backend acceptance
+could be considered.  The proof-suite full-hidden binding helper also compares
+the top-level proof-bytes envelope's relation id, active relation-layout digest,
+public-view digest, leaf/matrix/aggregation anchors, slot, hidden-source
+statement digest, trace roots, creation binding digest, native role-root
+commitment, masked-projection digest, trace-binding context digest, transcript
+digest, and schedule fields against the canonical full-hidden public inputs
+before dispatching to the subproof verifier.  The public suite-shape verifier
+also compares the proof-bytes envelope slot/source pair against the decoded
+inner full-hidden subproof envelope before the backend gate, so a
+neighboring-view or neighboring-relation proof envelope cannot carry an
+otherwise canonical subproof through that helper.  The
+backend-facing full-hidden public inputs, subproof statement, backend verifier
+result, certificate carrier, hidden/trace witness-check receipts, full-hidden
+proof payload, and subproof envelope also carry and hash that same slot,
+hidden-source statement digest, relation id, column profile, transparent
+transcript digest, trace schedule, public-view digest, creation binding digest,
+native role-root commitment, masked-projection digest, trace-binding context
+digest, and pre-proof direct-payload statement bridge digest; the backend verifier result,
+verifier receipt, and certificate carrier also carry and hash those transcript
+and schedule fields.  The
+full-hidden statement, backend verifier result, verifier receipt, certificate
+carrier, proof payload, subproof envelope, and hidden/trace witness-check
+receipts therefore target the exact relation language, column policy, public
+view, transparent transcript, trace schedule, and binding context accepted by
+the opening verifier.  The final full-hidden proof payload and subproof
+envelope also repeat those anchors from the statement/public inputs before
+shape validation succeeds; the outer subproof envelope, backend verifier
+receipt, and final proof payload also repeat the hidden-relation and
+trace-origin witness-check receipt digests as well as the trace roots,
+trace-to-binding layer digest, and leaf/matrix/aggregation source anchors.  The
+backend verifier receipt also repeats the backend statement digest, public-input
+digest, verifier-key digest, backend proof-system id, backend acceptance-verifier
+digest, backend obligation-set digest, local trace-binding proof digest, trace
+commitment root, constraint commitment root, trace-to-binding layer digest, and
+the leaf/matrix/aggregation source anchors feeding the trace-binding context.
+Bundle and proof-payload validation compare those fields against the embedded
+certificate payload before the backend acceptance gate.  The envelope also
+rejects a forged nonzero local trace-binding proof digest on today's disabled
+statement-only route and requires equality with a checked typed proof payload
+before the backend-unimplemented gate; it also rejects a zero hidden-source
+statement digest and compares the envelope slot/source pair against the decoded
+statement-only or typed proof-payload carrier.  The
+hidden-relation and trace-origin witness-check
+receipts also carry the full-hidden proof-contract digest, hidden-relation
+constraint-plan digest, proof-system id, trace-to-binding layer digest,
+leaf/matrix/aggregation source anchors, creation binding digest, native
+role-root commitment, masked-projection digest, transparent transcript digest,
+trace roots, trace schedule, and trace-binding context digest before
+certificate assembly, so recomputed trace roots cannot be
+certified against a neighboring binding target through only an opaque
+public-input digest.  The
+full-hidden-relation proof payload bytes are themselves a typed
+certificate-plus-receipt-plus-check-record bundle whose schema is bound by the
+backend contract and verifier key, and those same verifier materials also bind
+the embedded certificate-payload, backend-verifier-result,
+backend-verifier-receipt, hidden-relation witness-check, and trace-origin
+witness-check schemas, so a bare certificate carrier or schema-swapped backend
+receipt is not a proof payload.  When the certificate claims the hidden/trace
+checks are verified, the bundle must carry the canonical check-record bytes,
+decode them, bind their digests to the certificate and receipt, bind the
+  trace-origin check back to the hidden-relation check, and recompute the typed
+  local trace-binding proof digest before proof-carrying verification is reached;
+  a checked digest-only bundle is rejected.  The backend verifier result and
+  certificate payload also reject a nonzero local trace-binding proof digest unless
+  the trace-root-to-hidden-witness verified flags are set; asymmetric one-root
+  verified states are rejected, so the bridge is all-or-nothing across trace and
+  constraint roots.  The standalone local/check/payload receipt validators reject
+  a neighboring transparent
+  proof-system id rather than merely hashing a nonzero id.  The digest-only local
+  proof validator is only a structural check; bridge evidence uses the
+  check-record-backed verifier that reconstructs the local proof from the
+  statement and carried hidden/trace check records, while backend-result local
+  proof construction remains internal for digest recomputation.  A forged outer
+  subproof envelope with a repaired payload digest but tampered carried check
+  bytes is rejected by the public-envelope shape verifier before the disabled
+  backend can be considered.
+The bundle layer also
+binds the receipt's verifier-result digest, public-view digest, creation binding
+digest, native role-root commitment, masked-projection digest, trace-binding
+context digest, verified proof-payload digest, and no-export bit back to the
+certificate fields.  The proof-carrying transparent-descent boundary calls the
+stricter proof-suite envelope check, so the generic outer-envelope parser is not
+the bridge acceptance point for a proof body that omits the full-hidden segment
+or carries only a statement-only full-hidden envelope with a zero local bridge
+digest.  The named proof-suite binding verifier enforces the same nonzero local
+bridge requirement.
+The standalone public opening verifier remains a rejection-only shape checker:
+it has no leaf/evidence/certificate/binding inputs, so it cannot recompute the
+direct statement bridge and is not an account-creation acceptance endpoint even
+after future aggregate production-soundness discharge.  The proof-carrying
+account-creation boundary is the accepting endpoint because it recomputes the
+direct statement bridge before the backend gate.  The full-hidden
+constraint-plan bit alone cannot make the trace-to-binding bridge accepting.
+
+The Rust production-obligations and proof-family capability records expose this
+intermediate state explicitly: the local trace-binding proof-payload shape check
+and public subproof-envelope check are true and digest-bound.  The capability
+also carries the external coded-SIS review target digest directly, matching the
+production-obligations target pin; that target remains an external-review
+artifact, not a theorem synthesized inside Lean.  The proof-friendly
+inner-commitment plan digest and reference constraint-check profile digest are
+also surfaced next to the hidden-relation plan digest, so the two target
+profiles that govern the remaining hidden-relation constraint gates are public
+capability pins rather than only nested plan contents.  The production-obligations
+and capability records also expose the backend payload-contract digest, backend
+acceptance-verifier digest, and disabled-backend proof-payload marker directly,
+so today's disabled backend is pinned at the public capability layer rather than
+only through the aggregate full-hidden proof-contract digest.  The
+trace-to-binding layer separately records that canonical check-record carriage,
+full-hidden proof-suite binding, the nonzero local bridge digest check, and the
+direct-payload statement bridge check are required and checked; it separately
+records that the public-view-only verifier is rejection-only and that the
+proof-bytes account-creation boundary is required, and records that the backend
+certificate payload-only verifier is rejection-only while the backend certificate
+proof-bundle endpoint is required.  It also records the reference certificate
+bridge verifier as checked local-shape evidence.  These
+checked reference obligations jointly set a digest-bound
+reference-trace-to-binding bridge status bit, while the full trace-to-binding
+relation bit remains false until the public certificate proof verifier and hidden
+relation plan are both discharged.  The P2/SIS extractor bundle is derived from
+the selected component obligations; the full hidden-relation constraints,
+backend certificate instantiation, hidden range extractor, external coded-SIS
+review, and aggregate production-soundness discharge remain false.
+The Rust reference certificate path validates only this local bridge shape: it
+consumes the full certificate proof bundle rather than raw receipt bytes,
+requires the embedded certificate payload to match the caller payload, and then
+checks the carried hidden-relation and trace-origin records, the matching backend
+receipt, and the recomputed nonzero local trace-binding proof digest. The public
+certificate proof verifier still rejects the disabled-backend reference bundle;
+the public subproof-envelope verifier also rejects that disabled reference bundle
+through the strict public proof-payload verifier.  Only the backend-gated shape
+helper may inspect it for construction/reference tests, and that does not
+discharge the full hidden-relation/backend extractor obligations.  The hidden
+range extractor obligation is no longer a standalone aggregate gate here: it is
+the selected combination of trace range rows, range rows, and rows-to-norm
+soundness.  The full hidden-relation constraints, backend certificate
+instantiation, external coded-SIS review, and aggregate production-soundness
+discharge remain false.
+That verifier result
+binds the obligation set together with a per-obligation verification bitmap and
+per-obligation proof digests plus hidden/trace witness-check verification bits
+and explicit trace-root and constraint-root binding verification bits, so the
+aggregate `all obligations proved` status cannot be claimed independently of
+the individual proof records, witness-check status, or bridge proof status.
+-/
+structure SelectedTransparentFullRelationBackendCertificate
+    (P : Predicates) where
+  createToView : AccountCreateSelectedTransparentViewSoundness P
+  parentSound : ParentRootRoleBindingSoundness P
+  roleSound : RoleRestrictionSoundness P
+  commitExtract : ParentTraceCommitmentExtractionSoundness P
+  doubleTraceBinding : ParentTraceDoubleBindingSoundness P
+  maskedConsistency : MaskedOpeningConsistencySoundness P
+  relationKnowledge : ExtractedTraceRelationKnowledgeSoundness P
+  traceAssemblyExists : TraceRepresentativeAssemblyExistenceSoundness P
+  traceAssemblyRoles : TraceAssemblyRolesCompleteSoundness P
+  traceAssemblyDerived : TraceAssemblyDerivedRolesSoundness P
+  traceAssemblyFiber : TraceAssemblyFiberSoundness P
+  traceAssemblyLocal : TraceAssemblyLocalValiditySoundness P
+  traceAssemblyDescent : TraceAssemblyDescentConsistencySoundness P
+  noExportSound : NoExportSoundness P
+  roleAuthNoExportSound : RoleAuthenticationMaterialNoExportSoundness P
+  maskFreshnessSound : MaskFreshnessSoundness P
+  uniqueMaskDomains : UniqueMaskDomainSoundness P
+  queryOpeningComponentsBound : QueryOpeningComponentBindingSoundness P
+  qromSound : NativeBoundaryTraceQromScheduleSoundness P
+  qromRewindSound : NativeBoundaryTraceQromExtractorRewindSoundness P
+  externalCodedSisReview : ExternalCodedSisReviewSoundness P
+  traceRangeRows : TraceRangeRowsBindRepresentativeSoundness P
+  rangeRows : HybridBase128RangeRowSoundness P
+  rangeRowsToNorm : HybridBase128RangeRowsToNormRangeSoundness P
+  traceBlindRows : TraceBlindingRowsBoundRepresentativeSoundness P
+  blindRows : BlindingNoiseBoundRowSoundness P
+  blindRowsToBound : BlindingNoiseRowsToBoundSoundness P
+  proofFriendlyInnerCommitments : ProofFriendlyInnerCommitmentSoundness P
+  padSeedBindingConstraint : PadSeedBindingConstraintSoundness P
+  prfMaskDerivationConstraint : PrfMaskDerivationConstraintSoundness P
+  packedWitnessRepackConstraint : PackedWitnessRepackConstraintSoundness P
+  roleCommitmentConsistencyConstraint :
+    RoleCommitmentConsistencyConstraintSoundness P
+
+/--
+Sufficiency theorem for the positive blocker-1 route.
+
+If a concrete backend supplies the selected transparent full-relation
+certificate above, then account creation has the native admission theorem: every
+accepted creation either yields a locally valid descent-consistent hidden
+representative in the accepted boundary fiber, or exports a named break.
+-/
+theorem selected_transparent_full_relation_backend_certificate_implies_account_admission
+    (P : Predicates)
+    (C : SelectedTransparentFullRelationBackendCertificate P) :
+    AccountAdmissionSoundness P := by
+  intro c b hCreate
+  rcases C.createToView hCreate with
+    ⟨hContext, view, profile, rangePolicy, policy, hAccept, hProjects,
+      hProfile, hSelectedProfile, hRangePolicy, hPolicy⟩
+  subst c
+  let hKnowledge :=
+    selected_trace_components_imply_p2_sis_extractor_soundness
+      P C.parentSound C.roleSound C.commitExtract C.doubleTraceBinding
+        C.maskedConsistency C.relationKnowledge C.traceAssemblyExists
+        C.traceAssemblyRoles C.traceAssemblyDerived C.traceAssemblyFiber
+        C.traceAssemblyLocal C.traceAssemblyDescent
+  let hHiddenRange :=
+    selected_range_components_imply_hidden_range_extractor_soundness
+      P C.traceRangeRows C.rangeRows C.rangeRowsToNorm
+  let _hUniqueMaskDomains : SelectedMaskDomainsUnique :=
+    C.uniqueMaskDomains
+  let _hFullBackend :=
+    selected_hidden_relation_backend_components_imply_full_backend_soundness
+      P C.proofFriendlyInnerCommitments C.padSeedBindingConstraint
+        C.prfMaskDerivationConstraint C.packedWitnessRepackConstraint
+        C.roleCommitmentConsistencyConstraint C.externalCodedSisReview
+  have hNormRange : NormRangeSoundness P :=
+    hybrid_base128_range_rows_imply_norm_range_soundness
+      P hHiddenRange.2.1 hHiddenRange.2.2
+  have hBlind : BlindingNoiseBoundSoundness P :=
+    blinding_noise_rows_imply_bound_soundness
+      P C.blindRows C.blindRowsToBound
+  have hRoleComplete : ProfileRoleComplete profile :=
+    selected_active_column_profile_role_complete hSelectedProfile
+  have hSelectedModes : UsesSelectedTraceKnowledgeModes profile :=
+    selected_active_column_profile_trace_modes hSelectedProfile
+  cases
+      trace_range_rows_bind_representative_or_break
+        P hKnowledge.2.2.2.2.2.2.1
+        hKnowledge.2.2.2.2.2.2.2 hHiddenRange.1
+        hAccept hProjects hProfile
+        hRoleComplete hSelectedModes hRangePolicy with
+  | inl _hSameTraceRange =>
+      cases
+          trace_blinding_rows_bound_representative_or_break
+            P hKnowledge.2.2.2.2.2.2.1
+            hKnowledge.2.2.2.2.2.2.2 C.traceBlindRows
+            hAccept hProjects hProfile
+            hRoleComplete hSelectedModes hPolicy with
+      | inl _hSameTraceBlind =>
+          cases
+              transparent_view_full_interface_or_break
+                P
+                hKnowledge.1
+                hKnowledge.2.1
+                hKnowledge.2.2.2.2.2.2.1
+                hKnowledge.2.2.2.2.2.2.2
+                C.noExportSound
+                C.roleAuthNoExportSound
+                C.maskFreshnessSound
+                C.queryOpeningComponentsBound
+                C.qromSound
+                C.qromRewindSound
+                hNormRange
+                hBlind
+                hAccept hProjects hProfile
+                hRoleComplete hSelectedModes hRangePolicy hPolicy with
+          | inl hClosed =>
+              rcases hClosed with
+                ⟨_hRole, _hNoExport, _hRoleAuthNoExport, _hMaskFresh, _hQrom,
+                  _hQromRewind, _hParent, h, _hTransparent, _hComplete,
+                  hFiber, hLocal, hDescent, _hNorm, _hBlind⟩
+              exact Or.inl ⟨h, hFiber, hLocal, hDescent⟩
+          | inr hBreak =>
+              exact Or.inr hBreak
+      | inr hBreak =>
+          exact Or.inr hBreak
   | inr hBreak =>
       exact Or.inr hBreak
 

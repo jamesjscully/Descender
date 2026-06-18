@@ -1,11 +1,31 @@
 # HIGH-2 — Transparent-Descent ZK Creation Proof: DESIGN SPEC
 
 **Date:** 2026-06-10 · **n=32, q=12289, Fq12 = F_q[X]/(X¹²+X+25)** · 6 projection lanes
-**Status:** DESIGN ONLY — no prover implemented. Resolves the rank blocker; pins the proof
-structure, soundness re-clearing, cost, and an incremental green-checkpointed build plan.
+**Status:** HISTORICAL DESIGN SPEC — prover/verifier now implemented in the Rust reference.
+This document records the route that resolved the rank blocker and pinned the proof
+structure, soundness re-clearing, cost, and incremental build plan.
 **Decision context:** maintainer chose the descent-framed transparent-descent ZK recommendation
 (`high2_descent_native_hiding_exploration.md`). This spec is the buildable elaboration of that
 recommendation.
+
+> **2026-06-11 implementation addendum.** The prover/verifier has since been
+> implemented in `tools/parameter-search/src/production_reference.rs`. The first
+> built opening protocol used raw trace cells plus a scalar per-row blind and
+> accidentally serialized that blind next to the opened cells; see
+> `high2_zk_inclear_blind_leak_VERDICT.md`. The active Rust reference now uses
+> relation-preserving masked-share openings instead. Any scalar-blind wording
+> below is historical design context, not the current opening protocol.
+> A same-representative follow-up also made per-lane digit reconstruction an
+> explicit sampled-row verifier condition: the same opened `account_share` cell
+> must satisfy both the masked-projection equation and the base-128 reconstruction
+> equation. This closes the local split-witness / aggregate-cancellation bug, but
+> does not by itself prove `p2_sis_extractor`.
+> A follow-up red-team test,
+> `redteam_transparent_zk_core_accepts_public_only_synthetic_trace`, then showed
+> the current core accepts a proof generated from public `masked_projection`
+> alone. The active verifier therefore still lacks full hidden-relation
+> constraints for pad-seed binding, PRF mask derivation, packed-witness repack
+> equality, and role-commitment consistency. Blocker 1 is not discharged.
 
 **What this fixes.** Red-team HIGH-2: `Path2MaskedState18CreationProofV1`
 (`tools/parameter-search/src/production_reference.rs:~1484`) serializes `pad_seed` in the clear, so
@@ -276,6 +296,20 @@ and the decisive advantage of the descent-framed route over a generic ZK bolt-on
 fix (the analog of the spend-path's per-event reductions). It is a standard but non-trivial knowledge-
 soundness/extraction argument for a FRI-style argument over this specific relation. It is *scoped and
 named*, not hand-waved: see §5 step 6.
+
+**2026-06-11 local seam hardening.** One sub-claim needed by this extractor is no
+longer speculative at the sampled-row level: opened rows now bind the masked
+equation and digit equation to the same representative cell per lane. The
+regression `path2_transparent_zk_opened_row_relation_prevents_split_witness_cancellation`
+exhibits a row whose fixed linear aggregate residual cancels to zero while two
+lanes use different digit representatives, and the verifier rejects it via the
+explicit per-lane digit check. The remaining `p2_sis_extractor` work is global:
+turn accepting Merkle/FRI/FS transcripts into a valid hidden opening, or a named
+binding/hash break.
+Current negative result: the existing Rust verifier cannot support that theorem
+as-is, because a public-only synthetic trace is accepted by the core verifier.
+The relation must be extended so C1/C2/C4/C6 are part of the proved trace, or
+this proof family must be replaced before moving to hidden range extraction.
 
 ---
 

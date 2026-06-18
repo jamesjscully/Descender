@@ -22,28 +22,28 @@
 use descender_parameter_search::production_reference as pr;
 
 use pr::{
-    challenge_bytes, decode_challenge,
-    encode_hidden_source_fallback_account_witness_opening_frame,
+    DIGEST_BYTES, HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES as ACCOUNT_LANES,
+    HIDDEN_SOURCE_FALLBACK_PROJECTION_CARRIER_BYTES,
+    HIDDEN_SOURCE_FALLBACK_PROJECTION_LANES as LANES,
+    HiddenSourceFallbackProjectionAccountWitnessOpening, HiddenSourceFallbackProjectionCarrier,
+    LOCAL_FREE, PK_BYTES, ProductionAccountCommitment, ProductionCompactResponses,
+    ProductionLocalOpenings, ProductionPublicKey, ProductionReviewedFq12AccountCarriedProof,
+    ProductionReviewedFq12StateAssistedAccountSlot,
+    ProductionReviewedFq12StateAssistedAccountState, ProductionReviewedFq12StateAssistedOpening,
+    ProductionSignature, Q, REPS, REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS as ROWS,
+    REVIEWED_FQ12_ACCOUNT_CARRIED_RESPONSE_RESIDUES, REVIEWED_FQ12_PAD_SEED_BYTES, challenge_bytes,
+    decode_challenge, encode_hidden_source_fallback_account_witness_opening_frame,
     encode_reviewed_fq12_account_carried_masked_response,
     encode_reviewed_fq12_account_carried_signature,
     encode_reviewed_fq12_account_carried_with_fallback_projection,
     hidden_source_fallback_projection_values_from_hidden_material,
-    pack_reviewed_fq12_account_carried_syndrome_digest, reviewed_fq12_pack_masked_witness_state18_from_parts,
-    reviewed_fq12_account_witness_projection_opening_digest, reviewed_fq12_pad_residues_from_seed,
-    reviewed_fq12_pad_seed_opening_digest,
-    reviewed_fq12_state_assisted_hidden_source_statement,
+    pack_reviewed_fq12_account_carried_syndrome_digest,
+    reviewed_fq12_account_witness_projection_opening_digest,
+    reviewed_fq12_pack_masked_witness_state18_from_parts, reviewed_fq12_pad_residues_from_seed,
+    reviewed_fq12_pad_seed_opening_digest, reviewed_fq12_state_assisted_hidden_source_statement,
     reviewed_fq12_state_assisted_opening_commitment_digest,
     reviewed_fq12_state_assisted_projection_carrier_binding,
     verify_reviewed_fq12_state_assisted_masked_projection_soundness_certificate,
-    HiddenSourceFallbackProjectionAccountWitnessOpening, HiddenSourceFallbackProjectionCarrier,
-    ProductionAccountCommitment, ProductionCompactResponses, ProductionLocalOpenings,
-    ProductionPublicKey, ProductionReviewedFq12AccountCarriedProof,
-    ProductionReviewedFq12StateAssistedAccountSlot, ProductionReviewedFq12StateAssistedAccountState,
-    ProductionReviewedFq12StateAssistedOpening, ProductionSignature, DIGEST_BYTES,
-    HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES as ACCOUNT_LANES,
-    HIDDEN_SOURCE_FALLBACK_PROJECTION_CARRIER_BYTES, HIDDEN_SOURCE_FALLBACK_PROJECTION_LANES as LANES,
-    LOCAL_FREE, PK_BYTES, Q, REPS, REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS as ROWS,
-    REVIEWED_FQ12_ACCOUNT_CARRIED_RESPONSE_RESIDUES, REVIEWED_FQ12_PAD_SEED_BYTES,
 };
 
 struct Fixture {
@@ -151,13 +151,14 @@ fn build_fixture() -> Fixture {
         &pad_seed,
     )
     .unwrap();
-    let (check_bytes, transcript_binding) = reviewed_fq12_state_assisted_projection_carrier_binding(
-        &opening_commitment,
-        &opening,
-        &statement,
-        &projection_lanes,
-    )
-    .unwrap();
+    let (check_bytes, transcript_binding) =
+        reviewed_fq12_state_assisted_projection_carrier_binding(
+            &opening_commitment,
+            &opening,
+            &statement,
+            &projection_lanes,
+        )
+        .unwrap();
     let mut carrier_bytes = [0_u8; HIDDEN_SOURCE_FALLBACK_PROJECTION_CARRIER_BYTES];
     for (lane, value) in projection_lanes.iter().enumerate() {
         carrier_bytes[lane * 2..lane * 2 + 2].copy_from_slice(&value.to_le_bytes());
@@ -166,7 +167,8 @@ fn build_fixture() -> Fixture {
     carrier_bytes[27..56].copy_from_slice(&transcript_binding);
     let carrier = HiddenSourceFallbackProjectionCarrier::from_bytes(&carrier_bytes).unwrap();
     let signature_with_carrier =
-        encode_reviewed_fq12_account_carried_with_fallback_projection(&signature, &carrier).unwrap();
+        encode_reviewed_fq12_account_carried_with_fallback_projection(&signature, &carrier)
+            .unwrap();
 
     Fixture {
         public_key,
@@ -185,8 +187,10 @@ fn build_fixture() -> Fixture {
 fn run_soundness(
     f: &Fixture,
     signature_with_carrier: &ProductionSignature,
-) -> Result<pr::ProductionReviewedFq12MaskedProjectionSoundnessCertificate, pr::ProductionAccountBindingError>
-{
+) -> Result<
+    pr::ProductionReviewedFq12MaskedProjectionSoundnessCertificate,
+    pr::ProductionAccountBindingError,
+> {
     verify_reviewed_fq12_state_assisted_masked_projection_soundness_certificate(
         &f.public_key,
         f.message,
@@ -257,19 +261,23 @@ fn relation_invalid_internally_consistent_carrier_is_rejected() {
     // Forge claimed lanes that differ from derived on the first account lane.
     let mut forged_lanes = derived;
     forged_lanes[0] = (forged_lanes[0] + 1) % Q;
-    assert_ne!(forged_lanes, derived, "forged lanes must differ from derived");
+    assert_ne!(
+        forged_lanes, derived,
+        "forged lanes must differ from derived"
+    );
 
     // Recompute a SELF-CONSISTENT carrier binding for the forged lanes, bound to
     // the unchanged opening_commitment + opening + statement. This makes the
     // carrier internally well-formed (defeats the check-bytes guard) while the
     // claimed projection is relation-INVALID.
-    let (check_bytes, transcript_binding) = reviewed_fq12_state_assisted_projection_carrier_binding(
-        &f.opening_commitment,
-        &f.opening,
-        &f.statement,
-        &forged_lanes,
-    )
-    .unwrap();
+    let (check_bytes, transcript_binding) =
+        reviewed_fq12_state_assisted_projection_carrier_binding(
+            &f.opening_commitment,
+            &f.opening,
+            &f.statement,
+            &forged_lanes,
+        )
+        .unwrap();
 
     let mut carrier_bytes = [0_u8; HIDDEN_SOURCE_FALLBACK_PROJECTION_CARRIER_BYTES];
     for (lane, value) in forged_lanes.iter().enumerate() {
@@ -320,12 +328,20 @@ fn opening_commitment_changes_under_syndrome_only_mutation() {
     let mut syndrome_b = [0_u16; ROWS];
     syndrome_b[0] = 1;
 
-    let commit_a =
-        reviewed_fq12_pack_masked_witness_state18_from_parts(&syndrome_a, &proj, &pad_seed, slot_id)
-            .unwrap();
-    let commit_b =
-        reviewed_fq12_pack_masked_witness_state18_from_parts(&syndrome_b, &proj, &pad_seed, slot_id)
-            .unwrap();
+    let commit_a = reviewed_fq12_pack_masked_witness_state18_from_parts(
+        &syndrome_a,
+        &proj,
+        &pad_seed,
+        slot_id,
+    )
+    .unwrap();
+    let commit_b = reviewed_fq12_pack_masked_witness_state18_from_parts(
+        &syndrome_b,
+        &proj,
+        &pad_seed,
+        slot_id,
+    )
+    .unwrap();
     assert_ne!(
         commit_a, commit_b,
         "syndrome-only mutation must change the witness commitment"

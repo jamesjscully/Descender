@@ -95,11 +95,13 @@ def build_model() -> dict[str, Any]:
             "column_profile value."
         ),
         "next_blocker": (
-            "Use these rules to define the concrete column-profile enum consumed "
-            "by Path2TransparentDescentPublicViewV1 and the QROM transcript."
+            "The concrete Rust column-profile enum and query-opening manifest now "
+            "consume these rules. The next backend blocker is to make the "
+            "unique-mask-domain manifest rule a proof obligation inside the "
+            "concrete full-relation backend certificate, not only a "
+            "verifier-side public-view/no-export check."
         ),
         "non_claims": [
-            "this does not implement the enum in Rust",
             "this does not prove simulator security",
             "this does not model nonlinear range leakage",
             "this does not make Path 2 deployable",

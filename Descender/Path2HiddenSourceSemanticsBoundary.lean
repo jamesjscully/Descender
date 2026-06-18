@@ -3221,6 +3221,8 @@ structure ReviewedFq12SelectedRustNativeBoundaryPredicateFieldSources where
     Path2NativeBoundary.Boundary -> TransparentPublicView -> ColumnProfile -> Prop
   selectedMaskFreshnessHolds :
     Path2NativeBoundary.Boundary -> TransparentPublicView -> ColumnProfile -> Prop
+  selectedQueryOpeningComponentsBound :
+    Path2NativeBoundary.Boundary -> TransparentPublicView -> ColumnProfile -> Prop
   selectedQromScheduleBound :
     Path2NativeBoundary.Boundary -> TransparentPublicView -> ColumnProfile -> Prop
   selectedQromExtractorRewindBound :
@@ -3519,6 +3521,15 @@ def selectedMaskFreshnessHolds
     (_profile : ColumnProfile) : Prop :=
   TransparentViewProjectsFrom b view ∧
     view.queryIndex < view.queryCount
+
+/-- Selected query-opening component binding provider. -/
+def selectedQueryOpeningComponentsBound
+    (b : Path2NativeBoundary.Boundary)
+    (view : TransparentPublicView)
+    (profile : ColumnProfile) : Prop :=
+  TransparentViewProjectsFrom b view ∧
+    view.queryIndex < view.queryCount ∧
+      view.columnProfile = profile.profileId
 
 /-- Selected QROM schedule-bound provider. -/
 def selectedQromScheduleBound
@@ -4385,6 +4396,7 @@ def selectedRustNativeBoundaryPredicateFieldSources
   selectedRoleAuthenticationMaterialSimulatable :=
     selectedRoleAuthenticationMaterialSimulatable
   selectedMaskFreshnessHolds := selectedMaskFreshnessHolds
+  selectedQueryOpeningComponentsBound := selectedQueryOpeningComponentsBound
   selectedQromScheduleBound := selectedQromScheduleBound
   selectedQromExtractorRewindBound := selectedQromExtractorRewindBound
   selectedRangeRowsBindRepresentative :=
@@ -5344,8 +5356,15 @@ def toPredicates
   roleAuthenticationMaterialSimulatable :=
     Sources.selectedRoleAuthenticationMaterialSimulatable
   maskFreshnessHolds := Sources.selectedMaskFreshnessHolds
+  queryOpeningComponentsBound := Sources.selectedQueryOpeningComponentsBound
   qromScheduleBound := Sources.selectedQromScheduleBound
   qromExtractorRewindBound := Sources.selectedQromExtractorRewindBound
+  externalCodedSisReviewArtifact := False
+  proofFriendlyInnerCommitmentArtifact := False
+  padSeedBindingConstraintArtifact := False
+  prfMaskDerivationConstraintArtifact := False
+  packedWitnessRepackConstraintArtifact := False
+  roleCommitmentConsistencyConstraintArtifact := False
   rangeRowsBindRepresentative :=
     Sources.selectedRangeRowsBindRepresentative
   rangeRowsBindTraceRepresentative :=
