@@ -145,6 +145,28 @@ fn run_sponge(elems: &[F], plan: &SpongePlan) -> Vec<F> {
     outputs
 }
 
+/// Poseidon2 byte-hash over arbitrary input, for Fiat–Shamir challenge derivation
+/// (the deployed checked-core FS frame re-host, replacing SHA-256). Domain-separated
+/// from the C2 mask PRF by an explicit `domain` prefix so the two sponges can never
+/// collide. Absorbs `domain ‖ input` one byte per field lane (each byte < P), runs
+/// the same capacity-preserving sponge as the mask PRF, and emits `OUT` bytes as the
+/// low byte of each squeezed field element. The (~2^-23 per byte) reduction bias is
+/// immaterial for a Fiat–Shamir challenge (collision/preimage resistance from the
+/// Poseidon2-sponge-as-RO assumption is what matters, not exact uniformity).
+pub fn poseidon2_hash_bytes<const OUT: usize>(domain: &[u8], input: &[u8]) -> [u8; OUT] {
+    let mut data: Vec<u32> = Vec::with_capacity(domain.len() + input.len());
+    data.extend(domain.iter().map(|&b| b as u32));
+    data.extend(input.iter().map(|&b| b as u32));
+    let plan = SpongePlan::new(data.len(), OUT.max(1));
+    let elems = build_elems(&data, &plan);
+    let outs = run_sponge(&elems, &plan);
+    let mut bytes = [0u8; OUT];
+    for (i, b) in bytes.iter_mut().enumerate() {
+        *b = (outs[i].as_u32() & 0xFF) as u8;
+    }
+    bytes
+}
+
 /// Reference wide-then-reduce: `mask_j = (Σ_i lane_{j,i} * p^i) mod q12289`
 /// (mirrors `reduce_gadget.rs::wide_reduce_masks`).
 fn wide_reduce_masks(lanes: &[u32; NUM_SQUEEZE]) -> [u32; NUM_OUTPUTS] {

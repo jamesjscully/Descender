@@ -3249,7 +3249,12 @@ pub fn decode_path2_native_checked_core_frame_v1(
 pub fn path2_native_checked_core_frame_v1_challenge(
     frame: &Path2NativeCheckedCoreFrameV1,
 ) -> Result<[u8; CHALLENGE_BYTES], String> {
-    Ok(hash_frame_to_challenge_bytes(
+    // Re-hosted to Poseidon2 (2026-06-18, approved): recursion-friendly FS for the
+    // checked-core relation. Prover + verifier both route through here, so the change
+    // is consistent; only the challenge VALUES change. The main LINEAR_SIGMA
+    // transaction challenge (`challenge_bytes`) still uses the SHA-256 derivation and
+    // its KAT corpus is untouched.
+    Ok(hash_frame_to_challenge_bytes_poseidon2(
         &path2_native_checked_core_frame_v1_bytes(frame)?,
     ))
 }
@@ -4350,7 +4355,7 @@ pub fn path2_native_checked_core_byte_instantiation_evidence_v1(
             .as_bytes(),
     );
     let checked_core_challenge_uses_hash_domain_frame =
-        checked_core_challenge == hash_frame_to_challenge_bytes(&checked_core_frame_bytes);
+        checked_core_challenge == hash_frame_to_challenge_bytes_poseidon2(&checked_core_frame_bytes);
     let checked_core_frame_digest_from_bytes: [u8; DIGEST_BYTES] =
         Sha256::digest(&checked_core_frame_bytes).into();
     let checked_core_frame_digest_matches_hash_domain_frame =
@@ -60586,6 +60591,27 @@ pub fn hash_frame_to_challenge_bytes(frame: &[u8]) -> [u8; CHALLENGE_BYTES] {
     out
 }
 
+/// Domain separator for the checked-core Fiat–Shamir challenge under Poseidon2.
+pub const PATH2_CHECKED_CORE_FS_POSEIDON2_DOMAIN: &str =
+    "Descender.Path2.checked_core.fiat_shamir.poseidon2.v1";
+
+/// Poseidon2 (KoalaBear) Fiat–Shamir challenge derivation — the recursion-friendly
+/// re-host of [`hash_frame_to_challenge_bytes`] for the CHECKED-CORE frame (approved
+/// 2026-06-18). Same 31-byte layout + last-byte mask as the SHA-256 version, so the
+/// downstream challenge parsing is unchanged; only the VALUES differ. Uses the
+/// Plonky3-free shared `descender-mask-prf` Poseidon2 sponge (so the deployed signer
+/// stays Plonky3-free), domain-separated from the C2 mask PRF. The FS soundness
+/// assumption moves SHA-256-as-RO -> Poseidon2-sponge-as-RO (the named-standard
+/// A_poseidon2_* assumption already carried for the mask PRF).
+pub fn hash_frame_to_challenge_bytes_poseidon2(frame: &[u8]) -> [u8; CHALLENGE_BYTES] {
+    let mut out = descender_mask_prf::poseidon2_hash_bytes::<CHALLENGE_BYTES>(
+        PATH2_CHECKED_CORE_FS_POSEIDON2_DOMAIN.as_bytes(),
+        frame,
+    );
+    out[ALGEBRAIC_CHALLENGE_BYTES - 1] &= ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK;
+    out
+}
+
 pub fn challenge_bytes(
     public_key: &[u8],
     message: &[u8],
@@ -67546,7 +67572,7 @@ mod tests {
         );
         assert_eq!(
             path2_native_checked_core_frame_v1_challenge(&frame).unwrap(),
-            hash_frame_to_challenge_bytes(&bytes)
+            hash_frame_to_challenge_bytes_poseidon2(&bytes)
         );
     }
 
@@ -79773,7 +79799,7 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         );
         assert_eq!(
             evidence.checked_core_challenge,
-            hash_frame_to_challenge_bytes(&checked_core_frame_bytes)
+            hash_frame_to_challenge_bytes_poseidon2(&checked_core_frame_bytes)
         );
         let checked_core_frame_digest: [u8; DIGEST_BYTES] =
             Sha256::digest(&checked_core_frame_bytes).into();

@@ -27,7 +27,7 @@ pub mod field;
 pub mod mask;
 pub mod poseidon2;
 
-pub use mask::{projection_masks, Q12289};
+pub use mask::{poseidon2_hash_bytes, projection_masks, Q12289};
 
 #[cfg(test)]
 mod tests {
@@ -135,5 +135,27 @@ mod tests {
         let pad = [0xABu8; 32];
         assert_eq!(projection_masks(&pad, 42), projection_masks(&pad, 42));
         assert_ne!(projection_masks(&pad, 42), projection_masks(&pad, 43));
+    }
+
+    /// Behavioural lock for the FS-challenge byte-hash: deterministic, domain-
+    /// separated, input-sensitive, and decorrelated from the mask-PRF sponge.
+    #[test]
+    fn poseidon2_hash_bytes_properties() {
+        let dom = b"Descender.test.fs.v1";
+        let other_dom = b"Descender.test.fs.v2";
+        let input = b"the quick brown fox checked-core frame bytes";
+        let h1 = poseidon2_hash_bytes::<31>(dom, input);
+        // deterministic
+        assert_eq!(h1, poseidon2_hash_bytes::<31>(dom, input));
+        // domain separation
+        assert_ne!(h1, poseidon2_hash_bytes::<31>(other_dom, input));
+        // input sensitivity (flip one byte)
+        let mut input2 = input.to_vec();
+        input2[0] ^= 1;
+        assert_ne!(h1, poseidon2_hash_bytes::<31>(dom, &input2));
+        // length sensitivity
+        assert_ne!(h1, poseidon2_hash_bytes::<31>(dom, &input[..input.len() - 1]));
+        // not all-zero
+        assert_ne!(h1, [0u8; 31]);
     }
 }
