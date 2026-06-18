@@ -1,0 +1,27 @@
+[package]
+name = "descender-recursion"
+version = "0.1.0"
+edition = "2021"
+description = "Recursive/aggregation layer for Descender: a hand-written verifier-as-AIR that re-verifies the account-creation leaf STARK in-circuit and (Phase 2+) co-verifies {creation + checked-core spend}, folding a block of admissions/spends into one O(1) chain-state proof. Plonky3 0.6.1 has no recursion primitive, so the FRI/Merkle/Fiat-Shamir verifier is built as an AIR using p3-poseidon2-air for the hash sub-circuits. See research/path2_recursion_circuit_concrete_design.md."
+
+[dependencies]
+# The leaf STARK whose proof this crate verifies in-circuit. Its config is the
+# SINGLE source of truth (FRI params, Poseidon2 instance, challenge ext field) —
+# the recursive verifier-AIR must mirror it exactly. Re-export discipline.
+descender-account-stark = { path = "../descender-account-stark" }
+p3-field = "0.6.1"
+p3-koala-bear = "0.6.1"
+p3-poseidon2 = "0.6.1"
+p3-poseidon2-air = "0.6.1"
+p3-air = "0.6.1"
+p3-matrix = "0.6.1"
+p3-uni-stark = "0.6.1"
+p3-fri = "0.6.1"
+p3-commit = "0.6.1"
+p3-challenger = "0.6.1"
+p3-symmetric = "0.6.1"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
