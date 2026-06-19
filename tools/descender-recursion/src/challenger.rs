@@ -278,6 +278,130 @@ pub mod constraints {
     }
 }
 
+/// Flat AIR column layout for gadget 1 + the trace serializer (the data half of the
+/// `Air<AB>` lift). Columns carry the one-hot `in_len`/`out_len` encodings the
+/// position-masked constraints (see the module doc "Lifting … into a Plonky3 Air<AB>")
+/// will read. This module fixes + validates the ENCODING; the polynomial `eval` over these
+/// columns is the next step and will reproduce [`constraints`] using these one-hots.
+pub mod air {
+    use super::{Op, Row, Val, RATE, WIDTH};
+    use p3_field::{PrimeCharacteristicRing, PrimeField32};
+
+    // Column offsets (flat row).
+    pub const C_IS_OBSERVE: usize = 0;
+    pub const C_IS_SAMPLE_DRAW: usize = 1;
+    pub const C_IS_PERMUTE: usize = 2;
+    pub const C_IS_PAD: usize = 3;
+    pub const C_SPONGE: usize = 4; // ..C_SPONGE+WIDTH
+    pub const C_IN_BUF: usize = C_SPONGE + WIDTH; // ..+RATE
+    pub const C_IN_SEL: usize = C_IN_BUF + RATE; // one-hot of in_len in 0..=RATE  (RATE+1 cols)
+    pub const C_OUT_BUF: usize = C_IN_SEL + (RATE + 1); // ..+RATE
+    pub const C_OUT_SEL: usize = C_OUT_BUF + RATE; // one-hot of out_len in 0..=RATE
+    pub const C_OBSERVED_VAL: usize = C_OUT_SEL + (RATE + 1);
+    pub const C_DRAW_OUT: usize = C_OBSERVED_VAL + 1;
+    pub const C_ABSORB_LEN_TAG: usize = C_DRAW_OUT + 1;
+    pub const C_IS_SQUEEZE: usize = C_ABSORB_LEN_TAG + 1;
+    /// Total AIR width for gadget 1.
+    pub const N_COLS: usize = C_IS_SQUEEZE + 1;
+
+    /// Serialize one [`Row`] into its flat column vector, including the one-hot
+    /// `in_len`/`out_len` selectors (the position-masking substrate).
+    pub fn pack_row(row: &Row) -> [Val; N_COLS] {
+        let mut c = [Val::ZERO; N_COLS];
+        match row.op {
+            Op::Observe => c[C_IS_OBSERVE] = Val::ONE,
+            Op::SampleDraw => c[C_IS_SAMPLE_DRAW] = Val::ONE,
+            Op::Permute => c[C_IS_PERMUTE] = Val::ONE,
+        }
+        c[C_SPONGE..C_SPONGE + WIDTH].copy_from_slice(&row.sponge);
+        c[C_IN_BUF..C_IN_BUF + RATE].copy_from_slice(&row.in_buf);
+        c[C_IN_SEL + row.in_len] = Val::ONE; // one-hot in_len
+        c[C_OUT_BUF..C_OUT_BUF + RATE].copy_from_slice(&row.out_buf);
+        c[C_OUT_SEL + row.out_len] = Val::ONE; // one-hot out_len
+        c[C_OBSERVED_VAL] = row.observed_val;
+        c[C_DRAW_OUT] = row.draw_out;
+        c[C_ABSORB_LEN_TAG] = Val::from_u8(row.absorb_len_tag as u8);
+        c[C_IS_SQUEEZE] = if row.is_squeeze_permute { Val::ONE } else { Val::ZERO };
+        c
+    }
+
+    /// A padding row (spec §4: `is_pad` tail rows freeze state). Used to pad the trace to a
+    /// power of two for FRI.
+    pub fn pad_row() -> [Val; N_COLS] {
+        let mut c = [Val::ZERO; N_COLS];
+        c[C_IS_PAD] = Val::ONE;
+        c[C_IN_SEL] = Val::ONE; // in_len = 0
+        c[C_OUT_SEL] = Val::ONE; // out_len = 0
+        c
+    }
+
+    /// Decode the one-hot length selector at `base` back to a length in `0..=RATE`
+    /// (returns `None` if not a valid one-hot — an encoding-integrity check).
+    fn decode_onehot(cols: &[Val], base: usize) -> Option<usize> {
+        let mut found = None;
+        for k in 0..=RATE {
+            if cols[base + k] == Val::ONE {
+                if found.is_some() {
+                    return None; // not one-hot
+                }
+                found = Some(k);
+            } else if cols[base + k] != Val::ZERO {
+                return None; // non-boolean
+            }
+        }
+        found
+    }
+
+    /// Decode a packed active (non-pad) row back to a [`Row`], validating the one-hot
+    /// selectors. Returns `None` on an ill-formed encoding.
+    pub fn unpack_row(cols: &[Val]) -> Option<Row> {
+        let op = match (
+            cols[C_IS_OBSERVE],
+            cols[C_IS_SAMPLE_DRAW],
+            cols[C_IS_PERMUTE],
+        ) {
+            (o, s, p) if o == Val::ONE && s == Val::ZERO && p == Val::ZERO => Op::Observe,
+            (o, s, p) if o == Val::ZERO && s == Val::ONE && p == Val::ZERO => Op::SampleDraw,
+            (o, s, p) if o == Val::ZERO && s == Val::ZERO && p == Val::ONE => Op::Permute,
+            _ => return None,
+        };
+        let in_len = decode_onehot(cols, C_IN_SEL)?;
+        let out_len = decode_onehot(cols, C_OUT_SEL)?;
+        let mut sponge = [Val::ZERO; WIDTH];
+        sponge.copy_from_slice(&cols[C_SPONGE..C_SPONGE + WIDTH]);
+        let mut in_buf = [Val::ZERO; RATE];
+        in_buf.copy_from_slice(&cols[C_IN_BUF..C_IN_BUF + RATE]);
+        let mut out_buf = [Val::ZERO; RATE];
+        out_buf.copy_from_slice(&cols[C_OUT_BUF..C_OUT_BUF + RATE]);
+        Some(Row {
+            op,
+            sponge,
+            in_buf,
+            in_len,
+            out_buf,
+            out_len,
+            observed_val: cols[C_OBSERVED_VAL],
+            draw_out: cols[C_DRAW_OUT],
+            absorb_len_tag: cols[C_ABSORB_LEN_TAG].as_canonical_u32() as usize,
+            is_squeeze_permute: cols[C_IS_SQUEEZE] == Val::ONE,
+        })
+    }
+
+    /// Serialize a full row trace to a flat matrix (row-major), padded to a power of two
+    /// with `is_pad` rows. Returns `(flat, n_cols)`.
+    pub fn trace_to_matrix(rows: &[Row]) -> (Vec<Val>, usize) {
+        let height = rows.len().next_power_of_two().max(2);
+        let mut flat = Vec::with_capacity(height * N_COLS);
+        for row in rows {
+            flat.extend_from_slice(&pack_row(row));
+        }
+        for _ in rows.len()..height {
+            flat.extend_from_slice(&pad_row());
+        }
+        (flat, N_COLS)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -490,6 +614,69 @@ mod tests {
         rows[0].sponge[3] += Val::ONE;
         assert!(!constraints::boundary_ok(&rows[0]));
         assert!(!constraints::trace_ok(&rows));
+    }
+
+    /// AIR column encoding round-trips: pack each honest row to columns and decode back to
+    /// the identical Row, and the decoded trace still satisfies the validated §4 constraints.
+    /// Validates the one-hot in_len/out_len encoding (the position-masking substrate) faithfully
+    /// carries the trace — the data half of the Air<AB> lift.
+    #[test]
+    fn air_column_encoding_round_trips_and_preserves_constraints() {
+        let mut r = RowChallenger::new();
+        let _ = drive_row(&mut r);
+        let rows = r.rows();
+
+        // pack -> unpack is identity on every active row.
+        let decoded: Vec<Row> = rows
+            .iter()
+            .map(|row| {
+                let cols = air::pack_row(row);
+                let back = air::unpack_row(&cols).expect("packed row decodes");
+                assert_eq!(back.op, row.op);
+                assert_eq!(back.sponge, row.sponge);
+                assert_eq!(back.in_buf, row.in_buf);
+                assert_eq!(back.in_len, row.in_len, "one-hot in_len must round-trip");
+                assert_eq!(back.out_buf, row.out_buf);
+                assert_eq!(back.out_len, row.out_len, "one-hot out_len must round-trip");
+                assert_eq!(back.observed_val, row.observed_val);
+                assert_eq!(back.draw_out, row.draw_out);
+                assert_eq!(back.absorb_len_tag, row.absorb_len_tag);
+                assert_eq!(back.is_squeeze_permute, row.is_squeeze_permute);
+                back
+            })
+            .collect();
+        // The column-decoded trace satisfies the same validated constraints.
+        assert!(constraints::trace_ok(&decoded));
+    }
+
+    /// The serialized matrix has power-of-two height and `N_COLS` width; pad rows decode to
+    /// the `is_pad` selector with zero lengths.
+    #[test]
+    fn trace_matrix_is_padded_power_of_two() {
+        let mut r = RowChallenger::new();
+        let _ = drive_row(&mut r);
+        let n_active = r.rows().len();
+        let (flat, ncols) = air::trace_to_matrix(r.rows());
+        assert_eq!(ncols, air::N_COLS);
+        let height = flat.len() / ncols;
+        assert!(height.is_power_of_two() && height >= n_active);
+        // A pad row (last) is NOT a valid active op (is_pad set, op selectors all zero).
+        let last = &flat[(height - 1) * ncols..];
+        assert_eq!(last[air::C_IS_PAD], Val::ONE);
+        assert!(air::unpack_row(last).is_none(), "pad row is not a valid active op");
+    }
+
+    /// Encoding-integrity: a corrupted (non-one-hot) length selector is rejected by the
+    /// decoder — the AIR will enforce one-hotness; the encoding check mirrors it.
+    #[test]
+    fn malformed_onehot_selector_is_rejected() {
+        let mut r = RowChallenger::new();
+        let _ = drive_row(&mut r);
+        let mut cols = air::pack_row(&r.rows()[0]);
+        // set a second in_sel bit -> not one-hot
+        cols[air::C_IN_SEL + 3] = Val::ONE;
+        cols[air::C_IN_SEL + 4] = Val::ONE;
+        assert!(air::unpack_row(&cols).is_none());
     }
 
     /// Boundary + one-hot structural checks on the emitted trace (spec §4.6 / §3.1):
