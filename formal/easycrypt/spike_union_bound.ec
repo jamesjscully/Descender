@@ -85,6 +85,7 @@ type break_t.                         (* Lean: BreakEvent (Fintype, card 9)    *
 op break_univ : break_t list.
 axiom break_univ_uniq  : uniq break_univ.
 axiom break_univ_total : forall (b : break_t), b \in break_univ.
+axiom break_card9      : size break_univ = 9.   (* theory-level so a clone can realize it *)
 
 (* -----------------------------------------------------------------------------
    The three boolean event PROJECTIONS of the single experiment outcome.
@@ -253,10 +254,8 @@ proof.
 qed.
 
 (* -----------------------------------------------------------------------------
-   GOAL 3b — concrete 128-bit closure.
+   GOAL 3b — concrete 128-bit closure.  (break_card9 is now theory-level, above.)
    --------------------------------------------------------------------------- *)
-axiom break_card9 : size break_univ = 9.
-
 lemma sum_break_le_card (breakBound : break_t -> real) (c : real) :
   (forall b, breakBound b <= c) =>
   big predT breakBound break_univ <= (size break_univ)%r * c.
