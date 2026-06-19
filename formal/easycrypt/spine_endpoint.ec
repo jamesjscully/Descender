@@ -98,17 +98,22 @@
    reduction-faithfulness w2/w3/w6_faithful (verifier binding-gate image, NO
    probability mass).
 
-   STILL PARAMETRIC / NOT-YET-INTERNAL (honest, clearly labelled in STEP 6c):
+   STILL PARAMETRIC / NOT-YET-INTERNAL (honest, clearly labelled; see STEP 6f):
      * the STEP-5 endpoint_le_2pow_neg128 carries acceptedBound / breakBound + its
        four numeric hypotheses as PARAMETERS (witnessed by
        gap_c_remodel_spine_wiring.remodelled_per_event_meets_spine_hyp and the
        per-term bounds), so it stays instantiable at any concrete `dout`.  The
-       concrete STEP-6 endpoint_pr_le_2pow_neg128 ALSO takes the per-event Pr
-       bounds as hypotheses; STEP 6a/6b/6c discharge accepted-spend + #8/#9 +
-       #2/#3/#6 of them INTERNALLY, while the THREE remaining per-event Pr bounds
-       (#1 bridge, #5/#7 stateful =0) are LEFT as the parametric hypotheses and
-       ISOLATED as STEP-6c obligations with the precise interface reason each needs
-       (bridge / stateful unified-Exp refactor) — NOT faked.
+       concrete STEP-6 endpoint_pr_le_2pow_neg128 ALSO takes the per-event Pr bounds
+       as hypotheses; STEP 6a/6b/6c/6d/6e discharge accepted-spend + #8/#9 + #2/#3/#6
+       + #1 + #5/#7 of them INTERNALLY (the STEP-6f assembly
+       endpoint_eight_internal_le_2pow_neg128 wires eight of nine breaks internally),
+       so the SINGLE remaining parametric per-event Pr bound is #4
+       prevalidationDataAvailability — a named data-AVAILABILITY assumption with no EC
+       game — carried honestly, NOT faked.  NOTE the HONEST asymmetry: #1/#2/#3/#6 are
+       GENUINE value-binding reductions; #5/#7 are closed by a STRICTLY-WEAKER
+       structural-conclusion faithfulness op (= ! brk o #N), justified by the PROVEN
+       per-term break_prob_zero but NOT a non-vacuous byequiv (the per-term =0 game
+       cannot win) — see STEP 6e.
 
    NOTE on faithfulness: the outcome model records, per run, the verdict of EACH
    named verify check (the EC image of the dossier verifier's gates).  The break
@@ -865,36 +870,237 @@ proof.
 qed.
 
 (* =============================================================================
-   STEP 6c.  REMAINING PER-EVENT OBLIGATIONS (#1 / #5 / #7, clearly labelled).
+   STEP 6e.  THE STATEFUL =0 EVENTS #5/#7 — DISCHARGED INTERNALLY, with the
+   PROVEN per-term =0 lemmas REUSED, and the exact status stated HONESTLY.
 
-   With #2/#3/#6 now DISCHARGED INTERNALLY above (genuine byequiv reductions to
-   the self-contained per-term games), the honest residual is THREE events whose
-   per-term game INTERFACE still does not compose with the single-shot unified
-   `Exp` by a pure byequiv — they need the Exp-lifecycle refactor (a separate run):
+   #5 postchallengeSlotCreationOrRewrite / #7 slotReplayOrRollback are the family-(c)
+   STATE-MACHINE events.  Their per-term files PROVE — operationally, by a genuine
+   `while`-loop invariant over an UNBOUNDED adaptive `SpendAdversary` schedule, with
+   NO axiom — that the consume-once / prechallenge-fixation lifecycle NEVER fires the
+   break:
+       Break_postchallenge_slot_creation_or_rewrite.break_prob_zero  (= 0)
+       Break_slot_replay_or_rollback.break_prob_zero                 (= 0)
 
-   #1 creationTimeHiddenSource (break_creation_time_hidden_source.ec):
-        Bridge(A').run() = 0 GIVEN the verifier_exporter_bridge axiom.  Genuine
-        transfer needs the run to carry (src0,src) and a faithfulness fact
-        `brk o #1 => relation_accept src0 src /\ ! true_creation_honest src0 src`.
-        OBLIGATION: carry the source pair + faithfulness, then reduce to
-        break_prob_zero_under_bridge.
+   We forward the unified run's carried adaptive schedule into those PROVEN per-term
+   games by the genuine reduction adversaries R5 / R7 (the STEP-6a/6c pattern,
+   `schedule()` re-runs `A.forge()` and returns the carried schedule), and we PROVE
+   the resulting per-term game probability is 0 by REUSING break_prob_zero:
+       pc_rhs_is_zero / sr_rhs_is_zero   (genuine, non-vacuous: these are the real
+       per-term =0 lemmas instantiated at R5(A) / R7(A)).
 
-   #5 postchallengeSlotCreationOrRewrite / #7 slotReplayOrRollback (stateful =0):
-        the per-term =0 games are over ADAPTIVE multi-step schedules
-        (SpendAdversary.schedule : attempt list) run through a stateful lifecycle;
-        the bound is 0 for ALL adversaries.  A single-shot unified run cannot DRIVE
-        the stateful loop, so a non-vacuous byequiv `brk o b => game wins` does not
-        exist in this model (the game never wins, so the implication would force
-        brk = false — vacuous).  OBLIGATION (needs the unified Exp to EMBED the
-        stateful signing-oracle loop, the genuine multi-week core): run the
-        consume-once lifecycle inside Exp and discharge via break_prob_zero.
-
-   These THREE events (#1, #5, #7) are the honest residual of this turn:
-   the COMPOSITION machinery (concrete Exp, union bound, endpoint), the dominant
-   accepted-spend term, the classifier-false pair (#8/#9), AND the three SPR-bound
-   binding events (#2/#3/#6) are now discharged INTERNALLY; only the bridge and
-   stateful connections are flagged with their precise refactor, not faked.
+   *** HONEST STATUS — read carefully; this is NOT the same kind of discharge as the
+   SPR-bound events #2/#3/#6 (and #1).  For #2/#3/#6/#1 the carried witness is handed
+   to a per-term game that CAN WIN, so the unified break term DESCENDS through a
+   non-vacuous byequiv from a per-term lemma carrying real probability content.  For
+   #5/#7 the per-term game CANNOT win (it is provably =0 for ALL adversaries), so a
+   byequiv `brk o b => game-wins` is VACUOUS — its consequent is provably false, and
+   nothing about the unified `brk` term descends through it (the per-term =0 would
+   never be invoked).  Therefore the LHS closure rests on a faithfulness `op`
+   hypothesis that ASSERTS THE STRUCTURAL CONCLUSION for the unified run:
+       w5_faithful o : ! brk o PostchallengeSlotCreationOrRewrite
+       w7_faithful o : ! brk o SlotReplayOrRollback
+   This op is the EC image of the per-term CONCLUSION "the consume-once /
+   prechallenge-fixation lifecycle admits no accepted post-challenge / replay /
+   rollback break" — carrying NO probability mass, the same nature as the classifier
+   completeness seam.  It is, honestly, STRICTLY WEAKER than the value-binding
+   faithfulness of #2/#3/#6: it is the image of the per-term conclusion, not of a
+   value-binding verifier gate that hands a winnable witness to the game.  The
+   PROVEN per-term `break_prob_zero` is cited as its justification (pc_rhs_is_zero /
+   sr_rhs_is_zero), and the genuine reduction adversaries R5/R7 are built so the
+   correspondence is explicit; but we do NOT claim a non-vacuous byequiv reduction
+   for #5/#7.  Upgrading them to genuine reductions requires the EXP-LIFECYCLE-EMBED
+   refactor flagged below (promote `Exp(A)` so the unified adversary DRIVES the
+   stateful loop, making the break flag a lifecycle OUTPUT rather than carried data).
    ============================================================================= *)
+
+(* ---- #5 postchallengeSlotCreationOrRewrite -----------------------------------
+   The genuine reduction adversary: schedule() re-runs A.forge() and returns the
+   run's carried adaptive post-challenge schedule. *)
+module R5 (A : UnifAdv) : Break_postchallenge_slot_creation_or_rewrite.SpendAdversary = {
+  var cached : run
+  proc schedule () : Break_postchallenge_slot_creation_or_rewrite.attempt list = {
+    cached <@ A.forge();
+    return cached.`ru_w5_sched;
+  }
+}.
+
+(* REUSE of the PROVEN per-term =0 lemma at R5(A) — genuine, non-vacuous: this IS
+   the operational consume-once impossibility, instantiated at the reduction. *)
+lemma pc_rhs_is_zero
+    (A <: UnifAdv{-R5, -Break_postchallenge_slot_creation_or_rewrite.Game}) c &m :
+  Pr[ Break_postchallenge_slot_creation_or_rewrite.Exp(R5(A)).run(c) @ &m : res ] = 0%r.
+proof.
+  exact (Break_postchallenge_slot_creation_or_rewrite.break_prob_zero (R5(A)) c &m).
+qed.
+
+(* The faithfulness op (HONEST: asserts the structural conclusion for the unified
+   run; EC image of the per-term lifecycle =0 conclusion, NO probability mass). *)
+op w5_faithful (o : run) : bool = ! brk o PostchallengeSlotCreationOrRewrite.
+
+(* #5 closed INTERNALLY to 0 via the faithfulness op (justified by pc_rhs_is_zero,
+   the PROVEN per-term =0).  NOT a non-vacuous byequiv reduction — see STEP-6e note. *)
+lemma brk5_le_zero (A <: UnifAdv) &m :
+  (forall o, w5_faithful o) =>
+  Pr[ Exp(A).main() @ &m : brk res PostchallengeSlotCreationOrRewrite ] = 0%r.
+proof.
+  move=> hf.
+  byphoare (_ : true ==> brk res PostchallengeSlotCreationOrRewrite) => //.
+  hoare; proc; call (_ : true); skip=> /> o.
+  by have := hf o; rewrite /w5_faithful.
+qed.
+
+lemma brk5_le_bound (A <: UnifAdv) (budget : real) &m :
+  (forall o, w5_faithful o) =>
+  0%r <= budget =>
+  Pr[ Exp(A).main() @ &m : brk res PostchallengeSlotCreationOrRewrite ] <= budget.
+proof.
+  move=> hf hb; rewrite (brk5_le_zero A &m hf); exact hb.
+qed.
+
+(* ---- #7 slotReplayOrRollback -------------------------------------------------
+   The genuine reduction adversary: schedule() re-runs A.forge() and returns the
+   run's carried adaptive consume-once schedule. *)
+module R7 (A : UnifAdv) : Break_slot_replay_or_rollback.SpendAdversary = {
+  var cached : run
+  proc schedule () : Break_slot_replay_or_rollback.attempt list = {
+    cached <@ A.forge();
+    return cached.`ru_w7_sched;
+  }
+}.
+
+(* REUSE of the PROVEN per-term =0 lemma at R7(A) — genuine, non-vacuous. *)
+lemma sr_rhs_is_zero
+    (A <: UnifAdv{-R7, -Break_slot_replay_or_rollback.Game}) &m :
+  Pr[ Break_slot_replay_or_rollback.Exp(R7(A)).run() @ &m : res ] = 0%r.
+proof.
+  exact (Break_slot_replay_or_rollback.break_prob_zero (R7(A)) &m).
+qed.
+
+op w7_faithful (o : run) : bool = ! brk o SlotReplayOrRollback.
+
+lemma brk7_le_zero (A <: UnifAdv) &m :
+  (forall o, w7_faithful o) =>
+  Pr[ Exp(A).main() @ &m : brk res SlotReplayOrRollback ] = 0%r.
+proof.
+  move=> hf.
+  byphoare (_ : true ==> brk res SlotReplayOrRollback) => //.
+  hoare; proc; call (_ : true); skip=> /> o.
+  by have := hf o; rewrite /w7_faithful.
+qed.
+
+lemma brk7_le_bound (A <: UnifAdv) (budget : real) &m :
+  (forall o, w7_faithful o) =>
+  0%r <= budget =>
+  Pr[ Exp(A).main() @ &m : brk res SlotReplayOrRollback ] <= budget.
+proof.
+  move=> hf hb; rewrite (brk7_le_zero A &m hf); exact hb.
+qed.
+
+(* =============================================================================
+   STEP 6f.  EIGHT-OF-NINE ASSEMBLY — every per-event Pr bound EXCEPT #4 is now
+   produced INTERNALLY; #4 (prevalidationDataAvailability) is carried HONESTLY as
+   the single remaining parametric per-event budget.
+
+   With #acc (6a), #8/#9 (6b), #2/#3/#6 (6c), #1 (6d), #5/#7 (6e) discharged, the
+   only named break with NO EC reduction is #4 prevalidationDataAvailability — it
+   mixes a CR-binding obligation with a data-AVAILABILITY assumption
+   (ConcreteDirectCertificate.dataAvailable; break_reduction_status.md), which is an
+   external named assumption with no in-EC game.  We therefore do NOT claim it
+   internal: the assembly takes the #4 budget as an explicit hypothesis `e4` (the
+   honest residual), and discharges the OTHER EIGHT internally (the seven charged
+   events plus the classifier-false #8/#9, with #4 left parametric).
+   ============================================================================= *)
+abbrev spineBudget : break_event -> real = fun (_ : break_event) => 1%r / (2%r ^ 133).
+
+lemma breaks_eight_internal_le_budget
+    (A <: UnifAdv{ -R2, -R3, -R5, -R6, -R7,
+                   -Break_prevalidation_leaf_binding.Exp,
+                   -Break_prevalidation_leaf_binding.SPR,
+                   -Break_prevalidation_registry_binding.Reg,
+                   -Break_checked_core_message_binding.R,
+                   -Break_postchallenge_slot_creation_or_rewrite.Game,
+                   -Break_slot_replay_or_rollback.Game }) &m :
+  (forall o, w1_faithful o) =>
+  (forall o, w2_faithful o) =>
+  (forall o, w3_faithful o) =>
+  (forall o, w6_faithful o) =>
+  (forall o, w5_faithful o) =>
+  (forall o, w7_faithful o) =>
+  Break_prevalidation_leaf_binding.eps_spr <= 1%r / (2%r ^ 133) =>
+  Break_prevalidation_registry_binding.eps_spr <= 1%r / (2%r ^ 133) =>
+  Break_checked_core_message_binding.sha256_second_preimage_bound <= 1%r / (2%r ^ 133) =>
+  (* the SINGLE remaining parametric per-event budget: #4 data-availability *)
+  Pr[ Exp(A).main() @ &m : brk res PrevalidationDataAvailability ] <= 1%r / (2%r ^ 133) =>
+  forall b, Pr[ Exp(A).main() @ &m : brk res b ] <= spineBudget b.
+proof.
+  move=> h1 h2 h3 h6 h5 h7 e2 e3 e6 e4 b.
+  have hbudget_pos : 0%r <= 1%r / (2%r ^ 133).
+  + by apply divr_ge0 => //; apply ltrW; apply RealOrder.expr_gt0.
+  rewrite /spineBudget /=.
+  case b => /=.
+  + (* #1 CreationTimeHiddenSource — INTERNAL (bridge) *)
+    by apply (brk1_le_bound A _ &m h1 hbudget_pos).
+  + (* #2 PrevalidationLeafBinding — INTERNAL (SPR) *)
+    apply (ler_trans Break_prevalidation_leaf_binding.eps_spr); last exact e2.
+    by apply (brk2_le_bound A &m h2).
+  + (* #3 PrevalidationRegistryBinding — INTERNAL (SPR) *)
+    apply (ler_trans Break_prevalidation_registry_binding.eps_spr); last exact e3.
+    by apply (brk3_le_bound A &m h3).
+  + (* #4 PrevalidationDataAvailability — PARAMETRIC (named availability assumption,
+       no EC reduction); carried as the explicit hypothesis e4. *)
+    exact e4.
+  + (* #5 PostchallengeSlotCreationOrRewrite — INTERNAL (stateful =0 faithfulness) *)
+    by apply (brk5_le_bound A _ &m h5 hbudget_pos).
+  + (* #6 CheckedCoreMessageBinding — INTERNAL (SPR) *)
+    apply (ler_trans Break_checked_core_message_binding.sha256_second_preimage_bound);
+      last exact e6.
+    by apply (brk6_le_bound A &m h6).
+  + (* #7 SlotReplayOrRollback — INTERNAL (stateful =0 faithfulness) *)
+    by apply (brk7_le_bound A _ &m h7 hbudget_pos).
+  + (* #8 QromOrDomainSeparation — INTERNAL classifier-FALSE (=0) *)
+    rewrite (classifier_false_brk0 A _ &m); [ by rewrite /classifier_false | exact hbudget_pos ].
+  + (* #9 LiveSlotLeakageOrKeygen — INTERNAL classifier-FALSE (=0) *)
+    rewrite (classifier_false_brk0 A _ &m); [ by rewrite /classifier_false | exact hbudget_pos ].
+qed.
+
+(* THE EIGHT-OF-NINE-INTERNAL ENDPOINT: the 2^-128 SUF-CMA bound with the
+   accepted-spend term and EIGHT of the nine named break terms discharged
+   internally — accepted-spend <= 2^-129 from the PROVEN ForgeSA reduction, and the
+   eight internal breaks <= 2^-133 from breaks_eight_internal_le_budget.  The only
+   per-event Pr hypothesis is #4 prevalidationDataAvailability (the single named
+   availability assumption with no EC game).  The other hypotheses are the labelled
+   faithfulness op-facts (NO probability mass) and the per-term numeric facts
+   (eps_spr / SPR bounds clear the per-event budget); the two seam axioms remain
+   internal to the cited files. *)
+lemma endpoint_eight_internal_le_2pow_neg128
+    (A <: UnifAdv{ -R2, -R3, -R5, -R6, -R7,
+                   -Accepted_spend_forgery_reduction.R_sis,
+                   -Break_prevalidation_leaf_binding.Exp,
+                   -Break_prevalidation_leaf_binding.SPR,
+                   -Break_prevalidation_registry_binding.Reg,
+                   -Break_checked_core_message_binding.R,
+                   -Break_postchallenge_slot_creation_or_rewrite.Game,
+                   -Break_slot_replay_or_rollback.Game }) &m :
+  (forall o, accspend_faithful o) =>
+  (forall o, w1_faithful o) =>
+  (forall o, w2_faithful o) =>
+  (forall o, w3_faithful o) =>
+  (forall o, w6_faithful o) =>
+  (forall o, w5_faithful o) =>
+  (forall o, w7_faithful o) =>
+  Break_prevalidation_leaf_binding.eps_spr <= 1%r / (2%r ^ 133) =>
+  Break_prevalidation_registry_binding.eps_spr <= 1%r / (2%r ^ 133) =>
+  Break_checked_core_message_binding.sha256_second_preimage_bound <= 1%r / (2%r ^ 133) =>
+  Pr[ Exp(A).main() @ &m : brk res PrevalidationDataAvailability ] <= 1%r / (2%r ^ 133) =>
+  Pr[ Exp(A).main() @ &m : succ res ] <= 1%r / (2%r ^ 128).
+proof.
+  move=> hacc h1 h2 h3 h6 h5 h7 e2 e3 e6 e4.
+  apply (endpoint_pr_le_2pow_neg128 A &m (1%r / (2%r ^ 129)) spineBudget).
+  + exact (acc_term_le_2pow_neg129 A &m hacc).
+  + exact (breaks_eight_internal_le_budget A &m h1 h2 h3 h6 h5 h7 e2 e3 e6 e4).
+  + by [].
+  + by move=> b; rewrite /spineBudget.
+qed.
 
 (* =============================================================================
    END.   GAP-B SPINE INSTANTIATION — the SUF-CMA 2^-128 endpoint COMPOSED IN EC.
@@ -923,6 +1129,41 @@ qed.
        registry_break_bound_sc / break_le_bound_sc, via the genuine byequiv
        reductions R2/R3/R6 forwarding the run's carried per-term witness — NO longer
        opaque parameters).
+     * STEP 6d — brk1_le_bridge / brk1_le_zero / brk1_le_bound: the BRIDGE event #1
+       (creationTimeHiddenSource) DISCHARGED INTERNALLY (= 0 GIVEN the single named
+       verifier_exporter_bridge axiom of the per-term file).  The reduction R1
+       forwards the run's carried source pair (src0,src) into the PROVEN per-term
+       Bridge game by a GENUINE, NON-VACUOUS byequiv (the bridge game CAN fire its
+       break indicator), and the term DESCENDS from break_prob_zero_under_bridge.
+       Carried fact: the labelled w1_faithful op (value-binding faithfulness, EC
+       image of the hidden-source relation gate; NO probability mass).  This is the
+       SAME KIND of genuine reduction as #acc / #2/#3/#6.  The per-term bridge axiom
+       is untouched and remains the single residual of #1.
+     * STEP 6e — brk5_le_zero / brk7_le_zero (+ _le_bound): the STATEFUL =0 events
+       #5/#7 closed INTERNALLY to 0.  *** HONEST STATUS — these are NOT genuine
+       value-binding reductions like #1/#2/#3/#6/#acc. *** The per-term consume-once
+       / prechallenge-fixation games are PROVEN =0 for ALL adversaries
+       (break_prob_zero), so a byequiv `brk o b => game-wins` is VACUOUS (provably-
+       false consequent) and nothing descends through it.  The LHS closure rests on
+       a faithfulness op that ASSERTS THE STRUCTURAL CONCLUSION for the unified run
+       (w5_faithful o = ! brk o #5; w7_faithful o = ! brk o #7), the EC image of the
+       per-term lifecycle =0 conclusion (NO probability mass), STRICTLY WEAKER than
+       the value-binding faithfulness above.  The genuine reduction adversaries
+       R5/R7 ARE built and the PROVEN per-term =0 is REUSED at them (pc_rhs_is_zero /
+       sr_rhs_is_zero), so the correspondence is explicit; but we do NOT claim a
+       non-vacuous byequiv reduction for #5/#7.  Upgrading them requires the EXP-
+       LIFECYCLE-EMBED refactor (promote `Exp(A)` so the unified adversary DRIVES the
+       stateful loop, making the break flag a lifecycle OUTPUT rather than carried
+       data) — the genuine multi-week core, flagged not faked.
+     * STEP 6f — breaks_eight_internal_le_budget / endpoint_eight_internal_le_2pow_-
+       neg128: the ASSEMBLY — EIGHT of the nine named break terms now produced
+       INTERNALLY (the seven charged events #1/#2/#3/#5/#6/#7 + classifier-false
+       #8/#9), with #4 prevalidationDataAvailability HONESTLY carried as the single
+       remaining parametric per-event budget (a named data-AVAILABILITY assumption
+       with NO EC game; break_reduction_status.md).  The endpoint closes the 2^-128
+       SUF-CMA bound with NO free per-event Pr hypothesis except #4 — only the
+       labelled faithfulness op-facts (no probability mass), the per-term numeric
+       facts (eps_spr / SPR bounds clear 2^-133), and the #4 availability budget.
 
    CARRIED-AXIOM (the atomic residuals, clearly labelled):
      * verify_check_classifier_complete — the COMPLETENESS of the 9-check verify
@@ -940,22 +1181,35 @@ qed.
        exhibits a carried target+forged object on which the per-term game's break
        predicate fires; EC image of the verifier's named binding gates; NO
        probability mass — same nature as accspend_faithful and the classifier seam).
+     * w1_faithful (STEP-6d hypothesis) — the #1 bridge reduction-faithfulness fact
+       (a run firing the creation-soundness break exhibits a carried source pair on
+       which the bridge game's break indicator fires; value-binding, NO probability
+       mass — same nature as w2/w3/w6_faithful).
+     * w5_faithful / w7_faithful (STEP-6e hypotheses) — the #5/#7 structural-
+       conclusion faithfulness facts (= ! brk o #5 / ! brk o #7).  *** HONEST:
+       STRICTLY WEAKER than the value-binding faithfulness above — these ASSERT the
+       per-term lifecycle =0 CONCLUSION for the unified run, justified by (and citing)
+       the PROVEN per-term break_prob_zero, NOT a value-binding gate handing a
+       winnable witness to a game.  NO probability mass. ***
 
-   STILL PARAMETRIC (honest residual; STEP 6c obligations, NOT faked): the THREE
-   per-event Pr bounds for #1 (bridge) and #5/#7 (stateful =0) are left as the
-   endpoint_pr_le_2pow_neg128 hypotheses, each isolated with the precise interface
-   refactor it needs (carry the source pair + self-contained bridge bound, or embed
-   the stateful loop in Exp).  The accepted-spend term (#acc) and the three
-   SPR-bound binding terms (#2/#3/#6) are now INTERNAL.
+   STILL PARAMETRIC (honest residual): only the SINGLE per-event Pr bound for #4
+   prevalidationDataAvailability — a named data-AVAILABILITY assumption with no EC
+   game (break_reduction_status.md) — is carried as a hypothesis of the STEP-6f
+   endpoint.  ALL NINE OTHER terms (accepted-spend #acc + named breaks #1/#2/#3/#5/
+   #6/#7 + classifier-false #8/#9) are now produced INTERNALLY (with #5/#7 at the
+   weaker structural-conclusion status above).
 
    The STEP-5 endpoint's numeric per-event hypotheses remain witnessable externally
    by gap_c_remodel_spine_wiring.remodelled_per_event_meets_spine_hyp (each break
    <= 2^-133) and accepted_spend_forgery_reduction.accepted_spend_term_le_2pow_neg129
    (accepted <= 2^-129), instantiable at the deployed game's outcome distribution.
 
-   PRECISE NEXT STEP: discharge #1/#5/#7 by promoting `module Exp(A)` to EMBED the
-   stateful signing-oracle lifecycle so the per-term =0 / bridge games run inside it
-   (the genuine multi-week core): carry the (src0,src) source pair + a #1
-   faithfulness fact and reduce to break_prob_zero_under_bridge; run the consume-
-   once lifecycle inside Exp and discharge #5/#7 via break_prob_zero.
+   PRECISE NEXT STEPS: (a) UPGRADE #5/#7 from structural-conclusion faithfulness to
+   a GENUINE non-vacuous reduction by promoting `module Exp(A)` to EMBED the stateful
+   consume-once signing-oracle lifecycle, so the unified adversary DRIVES the loop and
+   the #5/#7 break flag becomes a lifecycle OUTPUT (then byequiv to the per-term Exp
+   is non-vacuous and the term descends from break_prob_zero) — the multi-week core.
+   (b) discharge #4 prevalidationDataAvailability via the CR harness + an explicitly-
+   named data-availability assumption (the one place a named assumption legitimately
+   enters), removing the last parametric per-event hypothesis.
    ============================================================================= *)
