@@ -57,9 +57,25 @@ parent for the appended columns.
   work, and must also satisfy `for<'a> Air<DebugConstraintBuilder<'a,F>>` for testing (project
   the concrete debug builder too). Higher risk of subtle lifetime/associated-type friction.
 
+## Option C — perm-only wrapper, same-width, same-window chaining (UNVERIFIED note)
+
+For a sub-AIR that is PERM-DOMINATED and needs no extra columns, a wrapper whose width EQUALS
+`Poseidon2Cols` can call `Poseidon2Air::eval(builder)` on the full window (size matches, borrow
+OK) and ADD chaining/boundary constraints on the SAME window by reading `Poseidon2Cols` cells:
+`inputs: [T;WIDTH]` are cols `0..WIDTH`; the permutation OUTPUT is the last ending-full-round's
+`post` state (≈ the final `WIDTH` columns; exact offset = sum of `FullRound`/`PartialRound`
+sizes — `FullRound{sbox:[SBox;WIDTH], post:[T;WIDTH]}`, `SBox` with `REGISTERS=0` is degree-only).
+A multi-level Merkle fold then chains `next.inputs[0..8] == this.<last post>[0..8]` with the
+sibling as free witness in `inputs[8..16]`. CAVEAT (why this is a NOTE, not the decision): the
+per-level left/right INDEX BIT needs an extra column (digest into `inputs[0..8]` vs `[8..16]`),
+which breaks the same-width borrow — so Option C only cleanly handles a fixed orientation, and
+the FULL `recursive_air` needs the other gadgets' columns anyway (extra cols ⇒ borrow breaks).
+UNVERIFIED: exact `post` offset + the bit handling not yet tested. Useful if a perm-only
+gadget-2 variant is built first; does not change the recursive_air decision.
+
 ## Decision
 
-**Adopt Option A (monolithic, inlined Poseidon2 constraints).** It matches the validated
+**Adopt Option A (monolithic, inlined Poseidon2 constraints) for `recursive_air`.** It matches the validated
 gadget-1 pattern (custom columns + `check_constraints` + tamper tests), needs no p3-internals
 adapter, and is the standard shape for a hand-written verifier-AIR on uni-stark. The inlined
 Poseidon2 constraint routine is written ONCE and reused across all perm instances in the AIR.
