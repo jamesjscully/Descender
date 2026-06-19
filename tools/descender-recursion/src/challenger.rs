@@ -176,6 +176,34 @@ impl RowChallenger {
     }
 }
 
+/// # Lifting [`constraints`] into a Plonky3 `Air<AB>` (next step — NOT mechanical)
+///
+/// The [`constraints`] checker below is the validated reference logic, but it indexes by
+/// witness values (`in_buf[..in_len]`, `out_buf[out_len-1]`). An AIR constraint must be a
+/// FIXED polynomial — it cannot index a row by a witness-valued length. So the `Air<AB>`
+/// lift requires re-expressing each buffer op with POSITION MASKING, not value-indexing:
+///
+/// * Carry a one-hot encoding of `in_len` (`in_sel[0..=RATE]`, exactly one set) and of
+///   `out_len`. Booleanity + `Σ = 1` per row.
+/// * §4.1 observe append "`in_buf'[in_len] = observed_val`" becomes, for every lane `j`:
+///   `in_sel[j] * (in_buf'[j] − observed_val) = 0` and `(1 − Σ_{i≤j} in_sel[i]) * (...)`
+///   carry/copy masks — i.e. assert the relation at EVERY lane gated by the one-hot, so no
+///   variable index appears.
+/// * §4.3 LIFO pop "`draw_out = out_buf[out_len−1]`" becomes
+///   `Σ_j out_sel[j] * (out_buf[j−1] − draw_out) = 0` (a fixed linear combination).
+/// * §4.2 permute refill `out_buf'[j] = sponge'[j]` for `j<RATE` is already lane-fixed.
+///   The permuted state `sponge' = permute(absorb(sponge, in_buf, n))` is the GADGET-2 bus.
+///
+/// Column layout (flat, ~42 cols): `is_observe,is_sample_draw,is_permute,is_pad`,
+/// `sponge[16]`, `in_buf[RATE]`, `in_sel[RATE+1]`, `out_buf[RATE]`, `out_sel[RATE+1]`,
+/// `observed_val`, `draw_out`, `absorb_len_tag`, `is_squeeze_permute`. Serialize the [`Row`]
+/// trace (padded to a power of two with `is_pad` rows that freeze state) into a
+/// `RowMajorMatrix<Val>`. TEST via `p3_air::check_constraints` /
+/// `check_all_constraints(&air, &trace, &[]).is_ok()` for the honest trace, and
+/// `has_failures()` for each tamper — the same forgery-rejection discipline as the
+/// [`constraints`] tests below, but exercised through the real AIR builder. Degree stays ≤ 2
+/// (one-hot masks are linear; the single product `in_sel[j]*(...)` is degree 2).
+///
 /// Gadget-1 transition + boundary CONSTRAINTS (spec §4), as concrete checkers over the
 /// row trace. This is the constraint logic the eventual `Air<AB>` impl mirrors one-for-one
 /// (the same relationship the row reference has to the native challenger). Everything here
