@@ -133,6 +133,12 @@ fn assert_canonical<AB: AirBuilder>(builder: &mut AB, bits: &[AB::Expr]) {
     }
 }
 
+/// Public re-export of the canonical-uniqueness gate so the monolithic `recursive_air` reuses the
+/// SAME validated `Σ bits < p` lt-argument (DRY — one canonical gate, tested here, consumed there).
+pub fn assert_canonical_pub<AB: AirBuilder>(builder: &mut AB, bits: &[AB::Expr]) {
+    assert_canonical::<AB>(builder, bits);
+}
+
 impl<AB: AirBuilder<F = Val>> Air<AB> for IndexBusAir {
     fn eval(&self, builder: &mut AB) {
         let main = builder.main();

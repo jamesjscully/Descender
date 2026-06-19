@@ -87,10 +87,8 @@ pub mod index_bus; // cross-gadget index bus (begin) — bind Merkle/FRI query i
 pub mod deep; // gadget 4 — DEEP-ALI out-of-domain quotient relation (core) landed
 pub mod deep_air; // gadget 4 (proper) — DEEP-ALI OOD quotient relation as Air<AB> (deg-8 extension in-AIR)
 pub mod public_io; // gadget 5 — public-IO statement preservation landed
-//   mod fri_fold;         // gadget 3
-//   mod constraint_eval;  // gadget 4
-//   mod public_io;        // gadget 5
-//   mod recursive_air;    // assembles 1–5 into one verifier-AIR
+pub mod public_io_air; // gadget 5 (proper) — public-IO statement preservation as Air<AB>
+pub mod recursive_air; // capstone (BEGIN) — monolithic verifier-AIR: index/challenge bus + FRI consumer in one window
 
 /// Phase-1 milestone marker (kept until `recursive_air` lands). Asserts the
 /// re-exported leaf config is reachable so the crate's single-source-of-truth wiring
