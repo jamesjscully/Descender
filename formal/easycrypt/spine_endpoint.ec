@@ -138,6 +138,17 @@ require Accepted_spend_forgery_reduction.
 require Break_prevalidation_leaf_binding.
 require Break_prevalidation_registry_binding.
 require Break_checked_core_message_binding.
+(* The #1 verifier-exporter-bridge per-term reduction, required QUALIFIED so the
+   STEP-6d concrete reduction can carry its source pair (src0,src) and cite its
+   PROVEN `break_prob_zero_under_bridge` (= 0 GIVEN the single named bridge axiom)
+   without clashing the per-term local names (q, col, coef, relation_accept, …). *)
+require Break_creation_time_hidden_source.
+(* The #5/#7 stateful consume-once per-term reductions, required QUALIFIED so the
+   STEP-6d reductions can carry their adversary-chosen adaptive schedules and cite
+   the PROVEN structural `break_prob_zero` (= 0 for ALL adversaries) without
+   clashing the per-term local names (digest, attempt, Game, Exp, SpendAdversary). *)
+require Break_postchallenge_slot_creation_or_rewrite.
+require Break_slot_replay_or_rollback.
 
 (* =============================================================================
    STEP 1.  Instantiate the parametric spine at the concrete 9-event datatype.
@@ -201,7 +212,20 @@ type run = {
   ru_w3_key   : Break_prevalidation_registry_binding.key;      (* #3 attacked key           *)
   ru_w3_forge : Break_prevalidation_registry_binding.leaf;     (* #3 forged presented leaf  *)
   ru_w6_tuple : Break_checked_core_message_binding.tuple;      (* #6 honest signed tuple    *)
-  ru_w6_tr    : Break_checked_core_message_binding.transcript  (* #6 forged transcript      *)
+  ru_w6_tr    : Break_checked_core_message_binding.transcript; (* #6 forged transcript      *)
+  (* The CARRIED per-term witnesses for the STATEFUL/BRIDGE events #1/#5/#7 — the
+     EC images of (for #1) the honest + forged hidden-source vectors a creation-
+     soundness-break run exposes, and (for #5/#7) the adversary's adaptive lifecycle
+     schedule.  Each STEP-6d reduction forwards its witness into the corresponding
+     PROVEN per-term game (Bridge / consume-once Exp).  Like ru_fwit / ru_w2_*,
+     irrelevant to the structural decomposition; load-bearing only for the concrete
+     per-event reductions. *)
+  ru_w1_src0  : int -> int;                                    (* #1 honest hidden-source vector *)
+  ru_w1_src   : int -> int;                                    (* #1 forged hidden-source vector *)
+  ru_w5_sched : Break_postchallenge_slot_creation_or_rewrite.attempt list;
+                                                               (* #5 adaptive post-challenge schedule *)
+  ru_w5_chal  : int;                                           (* #5 fixed spend-challenge fence *)
+  ru_w7_sched : Break_slot_replay_or_rollback.attempt list     (* #7 adaptive consume-once schedule *)
 }.
 
 (* A forgery run is a SUCCESS (a break of SUF-CMA) iff the verifier accepted it AND
@@ -770,6 +794,74 @@ proof.
   apply (ler_trans (Pr[ Break_prevalidation_registry_binding.AccSC(R3(A)).run() @ &m : res ])).
   + by apply (brk3_le_accsc A &m).
   + by apply (Break_prevalidation_registry_binding.registry_break_bound_sc (R3(A)) &m).
+qed.
+
+(* =============================================================================
+   STEP 6d.  THE BRIDGE EVENT #1 — DISCHARGED INTERNALLY (genuine reduction to the
+   verifier-exporter-bridge game, = 0 GIVEN the single named bridge axiom).
+
+   creationTimeHiddenSource (break_creation_time_hidden_source.ec) is the relation-
+   soundness break on the hidden-source creation certificate.  Its per-term game
+   `Bridge(A').run()` reports the accepted-soundness-break indicator
+     `relation_accept src0 src /\ ! true_creation_honest src0 src`
+   for an adversary-chosen source pair, and is PROVEN = 0 GIVEN the single labelled
+   `verifier_exporter_bridge` axiom (break_prob_zero_under_bridge).  The reduction
+   R1(A) forwards the unified run's carried (src0,src) into that game by a genuine
+   byequiv (the STEP-6a/6c pattern); the per-event Pr bound DESCENDS from the PROVEN
+   per-term bound — NO longer an opaque parameter.
+
+   The only carried fact is the labelled reduction-faithfulness `w1_faithful`: a run
+   firing the named creation-soundness break exhibits a carried source pair on which
+   the bridge game's break indicator fires (the run is relation-accepted on the
+   active lanes yet not truly honest over the old projection columns).  This is the
+   EC image of the verifier's hidden-source relation gate — the SAME nature as
+   accspend_faithful / w2/w3/w6_faithful, carrying NO probability mass.  The bridge
+   axiom in the per-term file is UNTOUCHED (it stays the single residual of #1).
+   ============================================================================= *)
+module R1 (A : UnifAdv) : Break_creation_time_hidden_source.SourceAdversary = {
+  proc forge () : (int -> int) * (int -> int) = {
+    var o; o <@ A.forge(); return (o.`ru_w1_src0, o.`ru_w1_src);
+  }
+}.
+
+op w1_faithful (o : run) : bool =
+  brk o CreationTimeHiddenSource =>
+    (   Break_creation_time_hidden_source.relation_accept o.`ru_w1_src0 o.`ru_w1_src
+     /\ ! Break_creation_time_hidden_source.true_creation_honest o.`ru_w1_src0 o.`ru_w1_src).
+
+lemma brk1_le_bridge (A <: UnifAdv) &m :
+  (forall o, w1_faithful o) =>
+  Pr[ Exp(A).main() @ &m : brk res CreationTimeHiddenSource ]
+    <= Pr[ Break_creation_time_hidden_source.Bridge(R1(A)).run() @ &m : res ].
+proof.
+  move=> hf.
+  byequiv (_ : ={glob A} ==> brk res{1} CreationTimeHiddenSource => res{2}) => //.
+  proc; inline *; wp; call (_ : true); auto=> /> o.
+  have := hf o; rewrite /w1_faithful /=; smt().
+qed.
+
+(* #1 DISCHARGED: the creation-time hidden-source break term descends from the
+   PROVEN per-term bridge bound (= 0 GIVEN the single named verifier-exporter-bridge
+   axiom).  It is therefore <= any nonnegative budget, in particular the spine's
+   2^-133 per-event budget.  The bridge axiom remains the single residual of #1. *)
+lemma brk1_le_zero (A <: UnifAdv) &m :
+  (forall o, w1_faithful o) =>
+  Pr[ Exp(A).main() @ &m : brk res CreationTimeHiddenSource ] = 0%r.
+proof.
+  move=> hf.
+  have hle := brk1_le_bridge A &m hf.
+  have hz  := Break_creation_time_hidden_source.break_prob_zero_under_bridge (R1(A)) &m.
+  have hge : 0%r <= Pr[ Exp(A).main() @ &m : brk res CreationTimeHiddenSource ]
+    by rewrite Pr [mu_ge0].
+  smt().
+qed.
+
+lemma brk1_le_bound (A <: UnifAdv) (budget : real) &m :
+  (forall o, w1_faithful o) =>
+  0%r <= budget =>
+  Pr[ Exp(A).main() @ &m : brk res CreationTimeHiddenSource ] <= budget.
+proof.
+  move=> hf hb; rewrite (brk1_le_zero A &m hf); exact hb.
 qed.
 
 (* =============================================================================
