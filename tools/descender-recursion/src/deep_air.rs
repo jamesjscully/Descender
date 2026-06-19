@@ -25,15 +25,32 @@
 //! Honest `(zeta, tower, Q, C)` rows (built from the [`crate::deep`] reference) ACCEPT via the
 //! real `p3_air::check_all_constraints`; tampering `C`, `Q`, `zeta`, an intermediate tower power,
 //! or `Z_H` each REJECTS. Soundness by attempted forgery, never by inspection — mirroring the
-//! other gadget AIRs. The full `C(zeta)` = leaf-AIR constraint-polynomial evaluation is DEFERRED
-//! (it re-expresses the entire leaf folder); here `C(zeta)` and `Q(zeta)` are the OPENED values
-//! and the AIR constrains the QUOTIENT RELATION between them — exactly the bounded, honest piece
+//! other gadget AIRs.
+//!
+//! ## Leaf `C(zeta)` wiring (`wire_leaf`)
+//!
+//! With `DeepAir { wire_leaf: true, .. }` the AIR no longer trusts the FULL opened `C(zeta)`: it
+//! DECOMPOSES it as `C == C_partial + C_committed`, where
+//!   * `C_partial` is RE-COMPUTED in-circuit from the opened leaf trace cells via
+//!     [`crate::leaf_constraint_air::recompute_c_partial`] — the alpha-batched Poseidon2-FREE leaf
+//!     constraints (all 6 C4 lanes + C4-acc binding + SeamPadSeed + SeamOpeningAcc + relation_id
+//!     pinning; fidelity-PINned against `descender_account_stark::air::FullRelationAir`); and
+//!   * `C_committed` is the DEFERRED Poseidon2-permutation bulk (C1/C2/C6 sponges, role-root,
+//!     digest chain, the C2 reduce + carrier mod-q) — STILL a committed value (the next large
+//!     chunk, see the leaf_constraint_air DEFERRED list).
+//! Because `C_partial` is recomputed, a tampered opened leaf cell that violates a mirrored leaf
+//! constraint shifts `C_partial`, so the committed `C` no longer satisfies `C == Z_H·Q` ⇒ rejected
+//! END-TO-END (tested by `leaf_wired_tampered_leaf_cell_rejects_end_to_end` + control-row isolation).
+//!
+//! With `wire_leaf: false` (default / back-compat) `C(zeta)` and `Q(zeta)` are the OPENED values
+//! and the AIR constrains only the QUOTIENT RELATION between them — the bounded, honest piece
 //! [`crate::deep`] validates.
 
 use crate::fri_fold_air::{limbs, D, W};
+use crate::leaf_constraint_air as lc;
 use descender_account_stark::{Challenge, Val};
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
-use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
+use p3_field::{BasedVectorSpace, Field, PrimeCharacteristicRing};
 
 extern crate alloc;
 use alloc::vec::Vec;
@@ -56,9 +73,40 @@ pub const C_C: usize = C_Q + D;
 /// uniform.)
 pub const C_POW: usize = C_C + D;
 
-/// Column count for a DEEP AIR with `log_degree = k` (tower has `k+1` powers).
-pub const fn n_cols(log_degree: usize) -> usize {
+/// Base of the OPTIONAL leaf-mirror block (present iff `wire_leaf`). Sits AFTER the squaring tower.
+/// Layout: opened leaf cells (`lc::N_OPENED_CELLS · D`) ‖ `alpha`(`D`) ‖ `C_committed`(`D`).
+pub const fn leaf_base(log_degree: usize) -> usize {
     C_POW + (log_degree + 1) * D
+}
+/// Within the leaf block: opened cells region base.
+pub const LEAF_CELLS: usize = 0;
+/// Within the leaf block: the batching challenge `alpha`.
+pub const fn leaf_alpha(_log_degree: usize) -> usize {
+    LEAF_CELLS + lc::N_OPENED_CELLS * D
+}
+/// Within the leaf block: the committed DEFERRED summand `C_committed` (Poseidon2-perm bulk).
+pub const fn leaf_c_committed(log_degree: usize) -> usize {
+    leaf_alpha(log_degree) + D
+}
+/// Size of the leaf-mirror block (cells ‖ alpha ‖ C_committed).
+pub const fn leaf_block_size() -> usize {
+    lc::N_OPENED_CELLS * D + D + D
+}
+
+/// Column count for a DEEP AIR with `log_degree = k` (tower has `k+1` powers). When `wire_leaf`,
+/// the leaf-mirror block is appended.
+pub const fn n_cols_cfg(log_degree: usize, wire_leaf: bool) -> usize {
+    let base = C_POW + (log_degree + 1) * D;
+    if wire_leaf {
+        base + leaf_block_size()
+    } else {
+        base
+    }
+}
+
+/// Column count for a DEEP AIR with `log_degree = k` (no leaf wiring — back-compat).
+pub const fn n_cols(log_degree: usize) -> usize {
+    n_cols_cfg(log_degree, false)
 }
 
 /// Limb slice helper: the `j`-th tower power's column base.
@@ -83,6 +131,46 @@ pub fn pack_check(zeta: Challenge, q: Challenge, c: Challenge, log_degree: usize
         row[pow_base(j)..pow_base(j) + D].copy_from_slice(&limbs(p));
         p = p * p;
     }
+    row
+}
+
+/// Build one leaf-WIRED OOD-check row. The opened leaf cells + `alpha` recompute the honest
+/// Poseidon2-free `C_partial`; `c_committed` is the deferred Poseidon2-perm summand. The DEEP
+/// `C(zeta)` is set to `C_partial + c_committed`, and `q` is chosen so the OOD identity
+/// `C == Z_H(zeta)·q` holds (the prover supplies a genuine quotient). To keep the builder honest
+/// AND let tests pin both relations, the caller supplies `(zeta, c_committed, leaf_cells, alpha)`
+/// and `q` is DERIVED as `C / Z_H(zeta)` (Z_H(zeta) != 0 at a generic OOD point).
+pub fn pack_check_leaf(
+    zeta: Challenge,
+    leaf_cells: &[Challenge; lc::N_OPENED_CELLS],
+    alpha: Challenge,
+    c_committed: Challenge,
+    log_degree: usize,
+) -> Vec<Val> {
+    let c_partial = lc::partial_constraint_eval(leaf_cells, alpha);
+    let c = c_partial + c_committed;
+    let zh = crate::deep::vanishing_poly_at(zeta, log_degree);
+    let q = c * zh.inverse(); // genuine quotient (Z_H(zeta) != 0 at a generic zeta)
+
+    let mut row = vec![Val::ZERO; n_cols_cfg(log_degree, true)];
+    row[C_ZETA..C_ZETA + D].copy_from_slice(&limbs(zeta));
+    row[C_Q..C_Q + D].copy_from_slice(&limbs(q));
+    row[C_C..C_C + D].copy_from_slice(&limbs(c));
+    let mut p = zeta;
+    for j in 0..=log_degree {
+        row[pow_base(j)..pow_base(j) + D].copy_from_slice(&limbs(p));
+        p = p * p;
+    }
+    // leaf block.
+    let lb = leaf_base(log_degree);
+    for (ci, cell) in leaf_cells.iter().enumerate() {
+        let base = lb + LEAF_CELLS + ci * D;
+        row[base..base + D].copy_from_slice(&limbs(*cell));
+    }
+    let ab = lb + leaf_alpha(log_degree);
+    row[ab..ab + D].copy_from_slice(&limbs(alpha));
+    let cc = lb + leaf_c_committed(log_degree);
+    row[cc..cc + D].copy_from_slice(&limbs(c_committed));
     row
 }
 
@@ -117,13 +205,23 @@ fn octic_mul<AB: AirBuilder>(a: &[AB::Expr; D], b: &[AB::Expr; D]) -> [AB::Expr;
 
 /// DEEP-ALI OOD quotient-relation AIR (one check per row). `log_degree = log2(|H|)` is the
 /// trace-domain size; the squaring tower has `log_degree + 1` powers.
+///
+/// When `wire_leaf` is set, the AIR ALSO carries a leaf-mirror block and DECOMPOSES the DEEP
+/// `C(zeta)` into the recomputed Poseidon2-free leaf partial `C_partial` (from the opened leaf
+/// cells, via [`crate::leaf_constraint_air::recompute_c_partial`]) plus a committed DEFERRED
+/// summand `C_committed` (the Poseidon2-perm bulk): `C == C_partial + C_committed`. A tampered
+/// opened leaf cell that violates a mirrored leaf constraint changes `C_partial`, so `C` no longer
+/// equals `Z_H·Q` ⇒ rejected END-TO-END. The `C_committed` summand stays committed-not-constrained
+/// (the deferred bulk; see the module-level note + leaf_constraint_air DEFERRED list).
 pub struct DeepAir {
     pub log_degree: usize,
+    /// Wire the leaf-mirror C_partial into the DEEP C(zeta) (`false` = back-compat, C fully opened).
+    pub wire_leaf: bool,
 }
 
 impl<F: Sync> BaseAir<F> for DeepAir {
     fn width(&self) -> usize {
-        n_cols(self.log_degree)
+        n_cols_cfg(self.log_degree, self.wire_leaf)
     }
 }
 
@@ -165,6 +263,25 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for DeepAir {
         let zhq = octic_mul::<AB>(&zh, &q);
         for i in 0..D {
             builder.assert_zero(c[i].clone() - zhq[i].clone());
+        }
+
+        // ---- (OPTIONAL) leaf-mirror wiring: C == C_partial(opened leaf cells) + C_committed ----
+        // The Poseidon2-free leaf constraint contribution C_partial is RE-COMPUTED in-circuit from
+        // the opened leaf cells (not trusted as a committed value); C_committed is the deferred
+        // Poseidon2-perm bulk (still committed). This makes a tampered opened leaf cell reject via
+        // the OOD identity above (C is no longer Z_H·Q once C_partial shifts).
+        if self.wire_leaf {
+            let lb = leaf_base(k);
+            let leaf_cell = |c_idx: usize| -> [AB::Expr; D] { block(lb + LEAF_CELLS + c_idx * D) };
+            let alpha = block(lb + leaf_alpha(k));
+            let c_partial = lc::recompute_c_partial::<AB, _>(&leaf_cell, &alpha);
+            let c_committed = block(lb + leaf_c_committed(k));
+            // C == C_partial + C_committed (limb-for-limb).
+            for i in 0..D {
+                builder.assert_zero(
+                    c[i].clone() - (c_partial[i].clone() + c_committed[i].clone()),
+                );
+            }
         }
     }
 }
@@ -220,13 +337,13 @@ mod tests {
             // base-only
             let m = matrix(ext(123_457), ext(98_765), k);
             assert!(
-                check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok(),
+                check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok(),
                 "honest base-only OOD row rejected at k={k}"
             );
             // multi-limb (exercises the X^8 = W wraparound in the tower + product)
             let m2 = matrix(ext_multi(10 + k as u32), ext_multi(40 + k as u32), k);
             assert!(
-                check_all_constraints(&DeepAir { log_degree: k }, &m2, &[], None).is_ok(),
+                check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m2, &[], None).is_ok(),
                 "honest multi-limb OOD row rejected at k={k}"
             );
         }
@@ -240,7 +357,7 @@ mod tests {
         let k = 10;
         let mut m = matrix(ext(777), ext(42), k);
         m.values[C_C + 1] += Val::ONE; // tamper a C limb
-        assert!(!check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok());
+        assert!(!check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok());
     }
 
     /// Forgery — WRONG Q(zeta): a quotient ≠ C/Z_H is rejected (the relation binds both sides).
@@ -249,7 +366,7 @@ mod tests {
         let k = 12;
         let mut m = matrix(ext_multi(3), ext_multi(5), k);
         m.values[C_Q + 4] += Val::ONE; // tamper a high Q limb
-        assert!(!check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok());
+        assert!(!check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok());
     }
 
     /// Forgery — WRONG zeta / Z_H: changing the OOD point breaks the tower base (pow[0] != zeta)
@@ -260,7 +377,7 @@ mod tests {
         let k = 8;
         let mut m = matrix(ext_multi(11), ext_multi(13), k);
         m.values[C_ZETA + 2] += Val::ONE; // tower base no longer matches zeta; Z_H also wrong
-        assert!(!check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok());
+        assert!(!check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok());
     }
 
     /// Forgery — a tampered INTERMEDIATE tower power (a forged `zeta^{2^j}`) ⇒ the squaring
@@ -272,7 +389,7 @@ mod tests {
         let mut m = matrix(ext_multi(21), ext_multi(22), k);
         // corrupt pow[6] (a middle of the tower); breaks pow[6]==pow[5]^2 and pow[7]==pow[6]^2.
         m.values[pow_base(6) + 0] += Val::ONE;
-        assert!(!check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok());
+        assert!(!check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok());
     }
 
     /// Forgery — a tampered FINAL tower power `zeta^{2^k}` (hence a forged Z_H) with C/Q left
@@ -282,7 +399,7 @@ mod tests {
         let k = 10;
         let mut m = matrix(ext_multi(31), ext_multi(32), k);
         m.values[pow_base(k) + 3] += Val::ONE;
-        assert!(!check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok());
+        assert!(!check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok());
     }
 
     /// A multi-row trace of independent honest OOD checks (one per row) at a fixed log_degree
@@ -297,7 +414,7 @@ mod tests {
         }
         let m = RowMajorMatrix::new(flat, nc);
         assert!(
-            check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok(),
+            check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok(),
             "honest multi-row OOD trace rejected"
         );
     }
@@ -312,13 +429,126 @@ mod tests {
         let c = vanishing_poly_at(zeta, k) * q;
         assert!(crate::deep::verify_quotient_relation(c, q, zeta, k));
         let m = RowMajorMatrix::new(pack_check(zeta, q, c, k), n_cols(k));
-        assert!(check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok());
+        assert!(check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m, &[], None).is_ok());
 
         // tamper C -> reference rejects, AIR rejects.
         let c_bad = c + Challenge::ONE;
         assert!(!crate::deep::verify_quotient_relation(c_bad, q, zeta, k));
         let mut m_bad = RowMajorMatrix::new(pack_check(zeta, q, c, k), n_cols(k));
         m_bad.values[C_C] += Val::ONE; // make C = c+1 in the matrix
-        assert!(!check_all_constraints(&DeepAir { log_degree: k }, &m_bad, &[], None).is_ok());
+        assert!(!check_all_constraints(&DeepAir { log_degree: k, wire_leaf: false }, &m_bad, &[], None).is_ok());
+    }
+
+    // =======================================================================
+    // LEAF-WIRED DEEP block (wire_leaf = true): C == C_partial + C_committed,
+    // C == Z_H·Q.  C_partial is RE-COMPUTED in-AIR from the opened leaf cells,
+    // so a tampered opened leaf cell rejects END-TO-END via the OOD identity.
+    // =======================================================================
+
+    /// Honest off-domain opened leaf cells (every cell an arbitrary multi-limb extension element,
+    /// the real OOD opening shape).
+    fn leaf_cells(seed: u32) -> [Challenge; lc::N_OPENED_CELLS] {
+        core::array::from_fn(|c| ext_multi(seed.wrapping_mul(29).wrapping_add(c as u32)))
+    }
+
+    fn leaf_air(k: usize) -> DeepAir {
+        DeepAir { log_degree: k, wire_leaf: true }
+    }
+
+    /// GOLDEN (positive): a leaf-WIRED honest row accepts — both the OOD identity `C == Z_H·Q` AND
+    /// the decomposition `C == C_partial(opened cells) + C_committed` hold simultaneously.
+    #[test]
+    fn leaf_wired_honest_accepts() {
+        for &k in &[1usize, 6, 12] {
+            let cells = leaf_cells(7 + k as u32);
+            let row = pack_check_leaf(ext_multi(50 + k as u32), &cells, ext_multi(3), ext_multi(9), k);
+            let m = RowMajorMatrix::new(row, n_cols_cfg(k, true));
+            assert!(
+                check_all_constraints(&leaf_air(k), &m, &[], None).is_ok(),
+                "leaf-wired honest row rejected at k={k}"
+            );
+        }
+    }
+
+    /// END-TO-END FORGERY — a tampered OPENED LEAF CELL (one that feeds a mirrored leaf constraint)
+    /// shifts the in-AIR-recomputed `C_partial`, so `C` no longer equals `C_partial + C_committed`
+    /// (and, equivalently, the committed `C` no longer equals `Z_H·Q` for the recomputed C_partial)
+    /// ⇒ REJECTED through the DEEP block. This is the soundness link the task asks for: a leaf trace
+    /// cell that violates a mirrored constraint is caught at the DEEP OOD check.
+    #[test]
+    fn leaf_wired_tampered_leaf_cell_rejects_end_to_end() {
+        let k = 10;
+        let cells = leaf_cells(123);
+        // tamper representative cells of each mirrored class (C4 v/d_lo/bit/is96/inv, acc, pad, c6,
+        // relation_id) — each must reject end-to-end.
+        let targets = [
+            lc::L_CELLS + 0 * D,                       // C4 lane0 v
+            lc::L_CELLS + 1 * D,                       // C4 lane0 d_lo
+            lc::L_CELLS + 24 * D,                      // C4 lane0 is96
+            lc::L_CELLS + 25 * D,                      // C4 lane0 inv
+            lc::L_CELLS + (5 * lc::C4_CELLS) * D,      // C4 lane5 v
+        ];
+        let lb = leaf_base(k);
+        for &within in &targets {
+            let row = pack_check_leaf(ext_multi(55), &cells, ext_multi(4), ext_multi(8), k);
+            let mut m = RowMajorMatrix::new(row, n_cols_cfg(k, true));
+            m.values[lb + within] += Val::ONE; // tamper one opened-cell limb (C, C_committed unchanged)
+            assert!(
+                !check_all_constraints(&leaf_air(k), &m, &[], None).is_ok(),
+                "tampering opened leaf cell at +{within} was NOT rejected end-to-end"
+            );
+        }
+    }
+
+    /// FORGERY — tampering `C_committed` (the deferred summand) with everything else honest breaks
+    /// `C == C_partial + C_committed` ⇒ rejected. (A prover cannot smuggle a favorable deferred
+    /// bulk value either; it is bound by the decomposition.)
+    #[test]
+    fn leaf_wired_tampered_c_committed_rejects() {
+        let k = 8;
+        let cells = leaf_cells(321);
+        let row = pack_check_leaf(ext_multi(60), &cells, ext_multi(5), ext_multi(7), k);
+        let mut m = RowMajorMatrix::new(row, n_cols_cfg(k, true));
+        let cc = leaf_base(k) + leaf_c_committed(k);
+        m.values[cc + 2] += Val::ONE;
+        assert!(!check_all_constraints(&leaf_air(k), &m, &[], None).is_ok());
+    }
+
+    /// FORGERY — tampering the leaf-block `alpha` shifts the recomputed `C_partial`, breaking the
+    /// decomposition ⇒ rejected. (Once `alpha` is FS-bound a prover can't pick a batching point that
+    /// hides a violated leaf constraint.)
+    #[test]
+    fn leaf_wired_tampered_alpha_rejects() {
+        let k = 6;
+        let cells = leaf_cells(999);
+        let row = pack_check_leaf(ext_multi(70), &cells, ext_multi(6), ext_multi(2), k);
+        let mut m = RowMajorMatrix::new(row, n_cols_cfg(k, true));
+        let ab = leaf_base(k) + leaf_alpha(k);
+        m.values[ab + 1] += Val::ONE;
+        assert!(!check_all_constraints(&leaf_air(k), &m, &[], None).is_ok());
+    }
+
+    /// CONTROL-ROW ISOLATION — a 2-row leaf-wired trace where ONLY row 1's opened C4 cell is
+    /// tampered: row 0 (honest) stays satisfiable, the whole-trace check REJECTS because of row 1.
+    /// Confirms the rejection is attributable to the tampered row, not a layout artifact.
+    #[test]
+    fn leaf_wired_control_row_isolated_tamper() {
+        let k = 7;
+        let nc = n_cols_cfg(k, true);
+        let cells0 = leaf_cells(11);
+        let cells1 = leaf_cells(22);
+        let mut flat = Vec::new();
+        flat.extend_from_slice(&pack_check_leaf(ext_multi(80), &cells0, ext_multi(1), ext_multi(3), k));
+        flat.extend_from_slice(&pack_check_leaf(ext_multi(81), &cells1, ext_multi(1), ext_multi(3), k));
+        // honest 2-row trace accepts.
+        let m_ok = RowMajorMatrix::new(flat.clone(), nc);
+        assert!(check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(), "honest 2-row rejected");
+        // tamper row 1's C4 lane0 v only.
+        flat[nc + leaf_base(k) + lc::L_CELLS] += Val::ONE;
+        let m_bad = RowMajorMatrix::new(flat, nc);
+        assert!(
+            !check_all_constraints(&leaf_air(k), &m_bad, &[], None).is_ok(),
+            "tampered control-row trace was NOT rejected"
+        );
     }
 }
