@@ -81,6 +81,7 @@ pub mod perm; // gadget 2 building block — in-circuit Poseidon2 compression AI
 pub mod inlined_perm; // gadget 2 building block — INLINED Poseidon2-16 round constraints (Option A, byte-pinned)
 pub mod merkle_air; // gadget 2 (proper) — binary Merkle path-verify AIR (inlined perm + fold wiring)
 pub mod fri_fold; // gadget 3 — FRI commit-phase fold reference (binary) landed
+pub mod fri_fold_air; // gadget 3 (proper) — FRI commit-phase binary fold AIR (deg-8 extension in-AIR)
 pub mod deep; // gadget 4 — DEEP-ALI out-of-domain quotient relation (core) landed
 pub mod public_io; // gadget 5 — public-IO statement preservation landed
 //   mod fri_fold;         // gadget 3
