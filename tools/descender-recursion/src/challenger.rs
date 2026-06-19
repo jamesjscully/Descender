@@ -131,23 +131,29 @@ impl RowChallenger {
         self.out_buf.extend_from_slice(&self.sponge[..RATE]);
     }
 
-    /// Spec §1.2 `observe(value)`.
+    /// Spec §1.2 `observe(value)`. The row snapshots state at the START of the op (before
+    /// the clear/push), so the transition constraints relate this snapshot to the next.
     pub fn observe(&mut self, value: Val) {
-        self.out_buf.clear();
         self.push_row(Op::Observe, value, Val::ZERO, 0);
+        self.out_buf.clear();
         self.in_buf.push(value);
         if self.in_buf.len() == RATE {
             self.duplexing();
         }
     }
 
-    /// One base-field draw (spec §1.3 inner closure of `sample`).
+    /// One base-field draw (spec §1.3 inner closure of `sample`). The row snapshots the
+    /// PRE-pop state (out_len = m, draw_out = out_buf[m-1]); the pop's effect shows in the
+    /// next row (out_len = m-1) — matching `constraints::transition_ok`'s §4.3 rule.
     pub fn sample(&mut self) -> Val {
         if !self.in_buf.is_empty() || self.out_buf.is_empty() {
             self.duplexing();
         }
-        let v = self.out_buf.pop().expect("output buffer nonempty after duplexing");
+        let m = self.out_buf.len();
+        debug_assert!(m >= 1, "output buffer nonempty after duplexing");
+        let v = self.out_buf[m - 1];
         self.push_row(Op::SampleDraw, Val::ZERO, v, 0);
+        self.out_buf.pop();
         v
     }
 
@@ -167,6 +173,80 @@ impl RowChallenger {
     /// The recorded trace rows (the AIR substrate).
     pub fn rows(&self) -> &[Row] {
         &self.rows
+    }
+}
+
+/// Gadget-1 transition + boundary CONSTRAINTS (spec §4), as concrete checkers over the
+/// row trace. This is the constraint logic the eventual `Air<AB>` impl mirrors one-for-one
+/// (the same relationship the row reference has to the native challenger). Everything here
+/// is degree ≤ 2 in the row registers and is the SPONGE-WIRING half of gadget 1.
+///
+/// DEFERRED TO GADGET 2: the nonlinear permutation relation `next.sponge ==
+/// permute(absorb(local.sponge, local.in_buf, n))` on a `Permute` row. Gadget 1 constrains
+/// everything AROUND the permutation (buffer drain, length-tag presence via `absorb_len_tag`,
+/// output refill from the post-permute rate) but treats the permuted state as supplied by
+/// the Poseidon2 sub-AIR. Marked at each use with `// GADGET-2`.
+pub mod constraints {
+    use super::{Op, Row, Val, RATE, WIDTH};
+    use p3_field::PrimeCharacteristicRing;
+
+    /// Boundary (spec §4.6): the first active row starts from `new()` — zero sponge,
+    /// empty buffers.
+    pub fn boundary_ok(first: &Row) -> bool {
+        first.sponge == [Val::ZERO; WIDTH] && first.in_len == 0 && first.out_len == 0
+    }
+
+    /// One transition constraint check over consecutive rows `(local, next)`. `next`'s
+    /// snapshot is the state AFTER `local`'s op completes, so each rule relates `local`'s
+    /// recorded op to `next`'s starting state. Returns `true` iff every wiring constraint
+    /// for `local.op` holds.
+    pub fn transition_ok(local: &Row, next: &Row) -> bool {
+        match local.op {
+            // §4.1 observe: append observed_val at in_buf[in_len]; clear output; sponge
+            // unchanged; in_len += 1.
+            Op::Observe => {
+                let k = local.in_len;
+                k < RATE
+                    && next.in_len == k + 1
+                    && next.in_buf[..k] == local.in_buf[..k]
+                    && next.in_buf[k] == local.observed_val
+                    && next.out_len == 0
+                    && next.sponge == local.sponge
+            }
+            // §4.3 sample-draw: pop from the BACK (LIFO); out_len -= 1; sponge + input
+            // untouched. (Spec §7.4 — front-pop would reorder the challenge limbs.)
+            Op::SampleDraw => {
+                let m = local.out_len;
+                m >= 1
+                    && local.draw_out == local.out_buf[m - 1]
+                    && next.out_len == m - 1
+                    && next.out_buf[..m - 1] == local.out_buf[..m - 1]
+                    && next.sponge == local.sponge
+                    && next.in_len == local.in_len
+                    && next.in_buf[..local.in_len] == local.in_buf[..local.in_len]
+            }
+            // §4.2 permute (duplexing): buffer drains (in_len -> 0); output refills from the
+            // post-permute rate (out_buf == sponge[..RATE], out_len == RATE); squeeze flag
+            // agrees with n==0. The permuted-state correctness itself is GADGET-2.
+            Op::Permute => {
+                let n = local.absorb_len_tag;
+                n <= RATE
+                    && (local.is_squeeze_permute == (n == 0))
+                    && next.in_len == 0
+                    && next.out_len == RATE
+                    && next.out_buf[..RATE] == next.sponge[..RATE] // refill wiring (GADGET-2 supplies sponge)
+            }
+        }
+    }
+
+    /// Whole-trace check: boundary on row 0 + every consecutive transition. (The real AIR
+    /// additionally pads to a power of two with `is_pad` rows that freeze state; the row
+    /// reference emits no pad rows, so we check the active prefix.)
+    pub fn trace_ok(rows: &[Row]) -> bool {
+        if rows.is_empty() {
+            return false;
+        }
+        boundary_ok(&rows[0]) && rows.windows(2).all(|w| transition_ok(&w[0], &w[1]))
     }
 }
 
@@ -307,6 +387,81 @@ mod tests {
         let sb = b.sample(); // n=4 absorb
 
         assert_ne!(sa, sb, "length-tag not binding: [5,7] and [5,7,0,0] collided");
+    }
+
+    /// Spec §4 CONSTRAINTS — honest trace satisfies every transition + boundary.
+    #[test]
+    fn honest_trace_satisfies_gadget1_constraints() {
+        let mut r = RowChallenger::new();
+        let _ = drive_row(&mut r);
+        assert!(constraints::trace_ok(r.rows()), "honest challenger trace violated gadget-1 constraints");
+    }
+
+    /// Forged trace rejected: flipping a popped draw value breaks the LIFO-pop relation
+    /// (spec §4.3). Tested by the constraint REJECTING the tamper, not by substring scan.
+    #[test]
+    fn tampered_draw_value_is_rejected() {
+        let mut r = RowChallenger::new();
+        let _ = drive_row(&mut r);
+        let mut rows = r.rows().to_vec();
+        let i = rows.iter().position(|w| w.op == Op::SampleDraw).expect("a draw row exists");
+        rows[i].draw_out += Val::ONE; // claim a different popped element
+        assert!(!constraints::transition_ok(&rows[i], &rows[i + 1]));
+        assert!(!constraints::trace_ok(&rows));
+    }
+
+    /// Forged trace rejected: front-pop instead of back-pop (spec §7.4 — reorders the
+    /// challenge limbs). Set draw_out to the FRONT of the output buffer.
+    #[test]
+    fn front_pop_instead_of_lifo_is_rejected() {
+        let mut r = RowChallenger::new();
+        let _ = drive_row(&mut r);
+        let rows = r.rows().to_vec();
+        let i = rows
+            .iter()
+            .position(|w| w.op == Op::SampleDraw && w.out_len >= 2)
+            .expect("a draw row with >=2 buffered exists");
+        let mut row = rows[i].clone();
+        row.draw_out = row.out_buf[0]; // front element (LIFO requires out_buf[out_len-1])
+        assert!(!constraints::transition_ok(&row, &rows[i + 1]));
+    }
+
+    /// Forged trace rejected: mutating the sponge across a sample-draw (a draw must NOT
+    /// touch sponge state, spec §4.3).
+    #[test]
+    fn sponge_mutation_during_draw_is_rejected() {
+        let mut r = RowChallenger::new();
+        let _ = drive_row(&mut r);
+        let mut rows = r.rows().to_vec();
+        let i = rows.iter().position(|w| w.op == Op::SampleDraw).expect("a draw row exists");
+        rows[i + 1].sponge[0] += Val::ONE; // sponge changed across a pure draw
+        assert!(!constraints::transition_ok(&rows[i], &rows[i + 1]));
+    }
+
+    /// Forged trace rejected: squeeze-flag / length-tag inconsistency on a permute row
+    /// (spec §4.2 / §6 #2 — the `+= n` tag is what makes the absorb prefix-free).
+    #[test]
+    fn permute_squeeze_flag_inconsistency_is_rejected() {
+        let mut r = RowChallenger::new();
+        let _ = drive_row(&mut r);
+        let mut rows = r.rows().to_vec();
+        let i = rows
+            .iter()
+            .position(|w| w.op == Op::Permute && w.absorb_len_tag > 0)
+            .expect("an absorb-permute row exists");
+        rows[i].is_squeeze_permute = true; // claim squeeze while n>0
+        assert!(!constraints::transition_ok(&rows[i], &rows[i + 1]));
+    }
+
+    /// Boundary rejected: a nonzero starting sponge fails `new()` boundary (spec §4.6).
+    #[test]
+    fn nonzero_boundary_is_rejected() {
+        let mut r = RowChallenger::new();
+        let _ = drive_row(&mut r);
+        let mut rows = r.rows().to_vec();
+        rows[0].sponge[3] += Val::ONE;
+        assert!(!constraints::boundary_ok(&rows[0]));
+        assert!(!constraints::trace_ok(&rows));
     }
 
     /// Boundary + one-hot structural checks on the emitted trace (spec §4.6 / §3.1):
