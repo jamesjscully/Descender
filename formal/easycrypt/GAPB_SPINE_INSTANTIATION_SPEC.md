@@ -56,10 +56,26 @@ ABSTRACT. The term files each prove `Pr[Game_b(A_b) @ &m : res] ≤ bound_b` for
 4. **Discharge:** `apply spike_union_bound.success_le_2pow_neg128` with the bounds from (3),
    each ≤ 2⁻¹³³ (and accepted ≤ 2⁻¹²⁹) via `gap_c_remodel_spine_wiring`. Endpoint ≤ 2⁻¹²⁸.
 
+## Build prerequisite found (2026-06-19, tested empirically)
+
+`spike_union_bound.ec` is a FLAT declaration file (abstract `type break_t / outcome`, `op`s,
+`axiom`s at top level), NOT a clone-able `abstract theory`. A direct `clone Spike_union_bound
+with type break_t <- break_event …` FAILS to parse — you cannot instantiate the abstract types
+by cloning a flat file. So step 0 of the build is: **refactor `spike_union_bound.ec` to wrap its
+abstractions in `abstract theory Spine. type break_t. … end Spine.`** (re-proving the lemmas
+inside, keeping the file 10/10-typechecking), so the concrete experiment file can
+`clone import Spine with type break_t <- break_event, op break_univ <- break_event_univ` and
+discharge the finiteness axioms with `spine_break_events.ec`'s lemmas. This refactor touches a
+SOUNDNESS-CRITICAL working file → do it carefully with a typecheck gate, NOT at unsafe depth.
+`spine_break_events.ec` (the concrete 9-event datatype + finiteness, EC-verified) is ready to
+plug into that clone.
+
 ## Build order (each step a committable EC file/lemma, honest-checked)
 
+0. **Refactor `spike_union_bound.ec` → `abstract theory Spine`** (prerequisite, above).
 1. `spine_endpoint.ec` skeleton: `outcome` type + `Exp(A)` experiment + predicate defs +
-   `require import spike_union_bound gap_c_remodel_spine_wiring` + the term files. Typecheck.
+   `clone import Spine with type break_t <- break_event …` (discharge finiteness via
+   spine_break_events) + `require import gap_c_remodel_spine_wiring` + the term files. Typecheck.
 2. `structural_split` for the trivially-`=0` events (5,7,8,9 + 1-given-bridge) — structural,
    no probability. Lowest-risk; do first.
 3. Reductions R_b + bound for the PROVEN-bound events (2,3,6, accepted) — the substantive
