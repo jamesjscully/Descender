@@ -79,14 +79,13 @@ pub use air::{
     RELATION_ID, RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, SYNDROME_LANES,
 };
 pub use config::{
-    Challenge, Val, DIGEST_ELEMS, NUM_RANDOM_CODEWORDS, PROD_LOG_BLOWUP, PROD_NUM_QUERIES,
-    PROD_QUERY_POW_BITS, PROD_SOUNDNESS_BITS, SALT_ELEMS, WIDTH,
+    Challenge, Challenger, Perm, Val, DIGEST_ELEMS, NUM_RANDOM_CODEWORDS, PROD_LOG_BLOWUP,
+    PROD_NUM_QUERIES, PROD_QUERY_POW_BITS, PROD_SOUNDNESS_BITS, SALT_ELEMS, WIDTH,
 };
 
 use config::{
-    Challenger, Dft, HidingChallengeMmcs, HidingValMmcs, LinLayers, MyCompress, MyHash, Perm,
-    ZkConfig, ZkPcs, HALF_FULL_ROUNDS, PARTIAL_ROUNDS, PROD_COMMIT_POW_BITS, SBOX_DEGREE,
-    SBOX_REGISTERS,
+    Dft, HidingChallengeMmcs, HidingValMmcs, LinLayers, MyCompress, MyHash, ZkConfig, ZkPcs,
+    HALF_FULL_ROUNDS, PARTIAL_ROUNDS, PROD_COMMIT_POW_BITS, SBOX_DEGREE, SBOX_REGISTERS,
 };
 
 /// The concrete account-creation relation AIR (pinned KoalaBear Poseidon2 params).

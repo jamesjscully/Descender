@@ -57,8 +57,12 @@
 //!   Poseidon2-FS + spend SHA-FS coexisting; FRI QROM loss un-quantified).
 //! - Conservative Johnson-bound params for the OUTER STARK (recursion does NOT inherit
 //!   the inner's soundness).
-//! - Challenge field is ~124-bit (ext degree 4); the union over recursion rounds
-//!   erodes the 128-bit margin — consider ext degree 5 for deep recursion.
+//! - Challenge field is now ext degree 8 (|F| = p^8 ≈ 2^247.9; raised from deg-4 in
+//!   leaf commit 4c06f6b). The inner FRI-AoK field-bound term is cleared; the residual
+//!   ~2^-124 creation-soundness floor is the WIDTH-16 Poseidon2 sponge capacity + 8-elem
+//!   Merkle digest (industry-standard, accepted 2026-06-19 — see field-bound decision).
+//!   The recursion still owns its OWN outer-STARK soundness budget (does NOT inherit the
+//!   inner's); the per-round challenge union is now over the deg-8 field.
 
 // Re-export the leaf config as the single source of truth for the verifier-AIR
 // (the recursive verifier must NOT re-declare FRI/Poseidon2/field params).
@@ -71,7 +75,7 @@ pub use descender_account_stark::{
 // lands with its own negative tests (mirroring the leaf's adversarial-test
 // discipline: test soundness by attempted forgery, never by substring scan).
 //
-//   mod challenger;       // gadget 1
+pub mod challenger; // gadget 1 — reference layer (row-based DuplexChallenger) landed
 //   mod merkle_verify;    // gadget 2
 //   mod fri_fold;         // gadget 3
 //   mod constraint_eval;  // gadget 4
