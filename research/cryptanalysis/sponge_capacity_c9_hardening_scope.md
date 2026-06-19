@@ -1,7 +1,41 @@
 # Sponge capacity c=8→9 hardening scope (the second half of hard 2⁻¹²⁸)
 
+> ## ⚠ CRITICAL CORRECTION (2026-06-19, after deeper check — supersedes §6's original "RATE 8→7 suffices")
+>
+> **RATE 8→7 (capacity 9) alone does NOT reach hard 2⁻¹²⁸.** There are TWO independent
+> ~2⁻¹²³·⁹⁵ floors at the pinned WIDTH-16 Poseidon2, not one:
+> 1. **Sponge capacity** c=8 (fixable by RATE 8→7, capacity 9 — this doc's original plan).
+> 2. **Merkle DIGEST collision-resistance:** `DIGEST_ELEMS = 8` KoalaBear elems = 247.9-bit
+>    digest ⇒ birthday CR floor 2⁻¹²⁴. This caps STARK knowledge-soundness (a compression
+>    collision lets a prover equivocate an opened leaf) REGARDLESS of field size or queries.
+>    It is the dossier's "Poseidon2 CR" named-standard term, distinct from sponge-indiff.
+>
+> A 9-element digest needs the 2-to-1 compression `TruncatedPermutation<Perm,2,9,16>` to
+> absorb 2×9 = 18 inputs into a WIDTH-16 permutation — **IMPOSSIBLE** (`p3-symmetric`
+> `compression.rs:28` hard-asserts `CHUNK*N ≤ WIDTH`; 18 > 16). So a 128-bit digest forces
+> **WIDTH ≥ 18**, i.e. a different Poseidon2 instance.
+>
+> **⇒ Hard 2⁻¹²⁸ requires a FULL WIDTH 16→24 Poseidon2 re-host** (Plonky3 ships
+> `Poseidon2KoalaBear<24>` with vetted constants; width-24 admits capacity 9 AND digest 9
+> since 2×9=18 ≤ 24). That re-does the ENTIRE Poseidon2 layer: new width-24 constants, the
+> standalone `descender-mask-prf` permutation reimpl, the in-AIR Poseidon2, the Merkle
+> leaf+compression, the FS sponge, BOTH deployed KAT corpora, the mask-equivalence test, and
+> the recursion gadgets — at ~1.5–2× per-permutation cost applied everywhere. It is the
+> heaviest change in the project.
+>
+> **The RATE 8→7 change below is therefore NOT worth executing in isolation** — it disrupts
+> both deployed signatures (spend KAT regen) yet leaves the headline at 2⁻¹²⁴ (digest-bound).
+> Revised recommendation: **accept 2⁻¹²⁴** as the honest headline (the inherent ceiling of
+> the pinned, Plonky3-vetted, recursion-friendly WIDTH-16 Poseidon2; the deg-8 field bump in
+> commit 4c06f6b already removed the WORSE field-bound term), OR commit to the full width-24
+> re-host. James's call — see the report. 2⁻¹²⁴ is a strong PQ level, 4 bits under 128, and
+> is the level the former deg-4 extension already implied.
+
 **Date:** 2026-06-19. **Status:** SCOPE — analysis only, NO code changed. Flagged for
-James's go-ahead BEFORE execution because it re-touches BOTH deployed signatures.
+James's go-ahead BEFORE execution because it re-touches BOTH deployed signatures. (See the
+CRITICAL CORRECTION banner above: the original "RATE 8→7 ⇒ hard 128" conclusion is WRONG;
+hard 128 needs a full width-24 re-host. The body below remains accurate for the SPONGE floor
+specifically, but the sponge is only one of the two width-16 floors.)
 **Motivation:** `frame_prf_poseidon2_ro_reduction.md` §2.3 — the Poseidon2 sponge
 indifferentiability floor is `c/2 = 8·log2(p)/2 = 123.95 bits < 128`, set by CAPACITY
 `c = 8` KoalaBear elements. The deg-8 challenge-field bump (commit 4c06f6b) cleared the
