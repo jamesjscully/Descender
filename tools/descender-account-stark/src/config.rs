@@ -75,6 +75,14 @@ pub const PROD_COMMIT_POW_BITS: usize = 0;
 /// `num_queries*log_blowup + query_pow = 56*4 + 16 = 240` bits — we do NOT claim
 /// that. We size for the conservative 128.) Expressed as an integer-bits const,
 /// `0.5*log_blowup` is exact here because `log_blowup` is even.
+///
+/// IMPORTANT (2026-06-19): this is the QUERY-PHASE figure ONLY. The COMPOSED
+/// knowledge-soundness error also carries the FRI commit/fold + DEEP ADDITIVE term
+/// (~|L|/|F|), which is bounded by the CHALLENGE-FIELD size, not the query schedule.
+/// At the former degree-4 extension that additive term capped the composed figure at
+/// ~2^-104..-106 (production batches) — below this 128. The degree-8 `Challenge`
+/// (see its doc) restores the composed figure to ~2^-228..-230. See
+/// research/cryptanalysis/fri_aok_extractor_instantiation.md.
 pub const PROD_SOUNDNESS_BITS: usize =
     PROD_NUM_QUERIES * (PROD_LOG_BLOWUP / 2) + PROD_QUERY_POW_BITS;
 
@@ -100,8 +108,22 @@ pub const PARTIAL_ROUNDS: usize = KOALABEAR_POSEIDON2_PARTIAL_ROUNDS_16;
 
 /// The base STARK field.
 pub type Val = KoalaBear;
-/// Degree-4 binomial extension (the challenge field, ~124 bits).
-pub type Challenge = BinomialExtensionField<Val, 4>;
+/// Degree-8 binomial extension (the challenge field, |F| = p^8 ~ 2^247.9).
+///
+/// Raised from degree-4 (~124 bits) on 2026-06-19 to clear the FIELD-BOUND FRI
+/// knowledge-soundness term: the FRI commit/fold + DEEP additive error scales as
+/// ~|L|/|F|, and at the deployed degree-4 extension the COMPOSED knowledge soundness
+/// was only ~2^-104..-106 at production batch sizes (worse, ~2^-92..-100, for very
+/// large batches) — short of the 2^-128 target even though the query phase hits 128.
+/// A degree-5 BINOMIAL extension is impossible over KoalaBear (p-1 = 2^24*127,
+/// gcd(5,p-1)=1 => x^5-W always reducible); degree-8 is the next supported binomial
+/// (BinomialExtensionData<8>, EXT_TWO_ADICITY=27) and gives an unconditional +124-bit
+/// field margin (composed ~2^-228..-230), batch-size- and list-constant-independent.
+/// See research/cryptanalysis/{fri_aok_extractor_instantiation,degree5_field_rehost_scope}.md.
+/// NOTE: the Poseidon2-sponge indifferentiability floor (c/2 ~= 124, capacity-bound) is
+/// INDEPENDENT of this field and still caps the honest headline at 2^-124 until sponge
+/// capacity is widened to c=9 (separate work item).
+pub type Challenge = BinomialExtensionField<Val, 8>;
 /// The pinned Poseidon2 permutation.
 pub type Perm = Poseidon2KoalaBear<16>;
 /// The Poseidon2 linear layers for the AIR.

@@ -187,7 +187,7 @@ macro_rules! prod_bench_31bit {
         $SBOX_DEG:expr, $SBOX_REGS:expr, $HALF_FULL:expr, $PARTIAL:expr, $log_rows:expr
     ) => {{
         type Val = $Val;
-        type Challenge = BinomialExtensionField<Val, 4>;
+        type Challenge = BinomialExtensionField<Val, 8>;
         type Perm = $Perm;
 
         // ---- PINNED vetted Poseidon2 permutation (Grain-derived constants) ----

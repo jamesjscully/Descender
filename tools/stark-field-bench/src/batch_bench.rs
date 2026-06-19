@@ -99,7 +99,7 @@ const DIGEST_ELEMS: usize = 8;
 
 // KoalaBear pinned Poseidon2 type aliases (mirror prod_bench's koala! arm).
 type Val = KoalaBear;
-type Challenge = BinomialExtensionField<Val, 4>;
+type Challenge = BinomialExtensionField<Val, 8>;
 type Perm = Poseidon2KoalaBear<16>;
 type LinLayers = GenericPoseidon2LinearLayersKoalaBear;
 const SBOX_DEG: u64 = KOALABEAR_S_BOX_DEGREE;

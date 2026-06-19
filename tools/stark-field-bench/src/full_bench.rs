@@ -112,7 +112,7 @@ macro_rules! bench_full_31bit {
         $SBOX_DEG:expr, $SBOX_REGS:expr, $HALF_FULL:expr, $PARTIAL:expr, $log_rows:expr
     ) => {{
         type Val = $Val;
-        type Challenge = BinomialExtensionField<Val, 4>;
+        type Challenge = BinomialExtensionField<Val, 8>;
 
         type ByteHash = Keccak256Hash;
         let byte_hash = ByteHash {};
