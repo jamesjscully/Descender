@@ -86,6 +86,7 @@ pub mod fri_chain_air; // gadget 3 (chaining) — multi-round FRI fold CHAINING 
 pub mod index_bus; // cross-gadget index bus (begin) — bind Merkle/FRI query index to gadget-1 sample_bits
 pub mod deep; // gadget 4 — DEEP-ALI out-of-domain quotient relation (core) landed
 pub mod deep_air; // gadget 4 (proper) — DEEP-ALI OOD quotient relation as Air<AB> (deg-8 extension in-AIR)
+pub mod leaf_constraint_air; // gadget 4 (proper, PART 2) — leaf C(zeta) MIRROR: alpha-batched leaf C4 residue constraints at the OOD point (bounded start)
 pub mod public_io; // gadget 5 — public-IO statement preservation landed
 pub mod public_io_air; // gadget 5 (proper) — public-IO statement preservation as Air<AB>
 pub mod recursive_air; // capstone (BEGIN) — monolithic verifier-AIR: index/challenge bus + FRI consumer in one window
