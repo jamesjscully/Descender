@@ -277,6 +277,58 @@ proof.
 qed.
 
 (* =============================================================================
+   SELF-CONTAINED FORM (spine-composable; honest target SAMPLED INSIDE).
+   -----------------------------------------------------------------------------
+   The reduction above takes the honest committed frame `f0` as a PROCEDURE
+   ARGUMENT (Exp(A).run(f0)).  The unified SUF-CMA spine experiment (spine_-
+   endpoint.ec `module Exp(A)`) is a SINGLE-SHOT run with NO such argument, so a
+   byequiv from it cannot install `f0`.  We re-expose the bound here in a SELF-
+   CONTAINED game where the honest target is produced INSIDE the game by the
+   adversary (the EC image of the honest signer fixing the slot's authorization
+   frame before the adversary schedules its spends), so the bound is a clean
+   `Pr[ ExpSC(C).run() : res ] <= eps_spr` with no &m-side precondition and no
+   procedure argument.
+
+   This DOES NOT weaken the proven reduction: `ExpSC(C)` simply has C first emit
+   the honest frame `f0` (via `setup`), then runs the EXACT same `Exp(C).run(f0)`,
+   so its bound DESCENDS from `break_le_spr_bound` (which holds for EVERY f0) by a
+   bypr step that reads off the emitted f0.  The SPR axiom is untouched.
+   ============================================================================= *)
+
+(* The self-contained adversary: emits the honest committed frame, then (as a
+   LeafAdversary) schedules its spends.  `setup` is the EC image of honest slot
+   creation FIXING the authorization frame before the adversary acts. *)
+module type LeafAdversarySC = {
+  proc setup    () : preimage
+  proc schedule () : leaf list
+}.
+
+(* The self-contained experiment: sample the honest target INSIDE (from C.setup),
+   then run the leaf-binding experiment against it.  No argument, no precondition. *)
+module ExpSC (C : LeafAdversarySC) = {
+  proc run () : bool = {
+    var f0, r;
+    f0 <@ C.setup();        (* honest target FIXED inside the game *)
+    r  <@ Exp(C).run(f0);   (* the proven leaf-binding experiment on that target *)
+    return r;
+  }
+}.
+
+(* The self-contained bound: the leaf-binding break in ExpSC is <= eps_spr.
+   PROVEN by reducing, via bypr, to `break_le_spr_bound` for the emitted target
+   (the per-target bound holds for EVERY f0).  No &m-side precondition. *)
+lemma break_le_spr_bound_sc (C <: LeafAdversarySC{-Exp, -SPR}) &m :
+  Pr[ ExpSC(C).run() @ &m : res ] <= eps_spr.
+proof.
+  byphoare (_ : true ==> res) => //.
+  proc.
+  seq 1 : true 1%r eps_spr 0%r 0%r true => //.
+  call (_ : true ==> res); auto.
+  bypr=> &m0 _.
+  by apply (break_le_spr_bound C f0{m0} &m0).
+qed.
+
+(* =============================================================================
    END.   prevalidationLeafBinding: REAL GAME-BASED REDUCTION TO SHA-256
    SECOND-PREIMAGE RESISTANCE (re-modelled, GAP-C closure).
    The reduction implication (accept /\ leaf-binding-break against the FIXED

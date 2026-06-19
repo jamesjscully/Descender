@@ -326,6 +326,76 @@ proof.
 qed.
 
 (* =============================================================================
+   SELF-CONTAINED FORM (spine-composable; honest target SAMPLED INSIDE).
+   -----------------------------------------------------------------------------
+   The single-target reduction above (`break_le_bound`) takes the honest tuple `h`
+   as a PROCEDURE ARGUMENT (Exp(A).run(h)) AND requires a &m-side GLOBAL
+   precondition `R.honest_tuple{m} = h`.  The unified SUF-CMA spine experiment
+   (spine_endpoint.ec `module Exp(A)`) is a SINGLE-SHOT run with NO such argument
+   and CANNOT install that global from its own run, so a byequiv from it cannot
+   discharge this term in the proc-argument form.  We re-expose the bound here in a
+   SELF-CONTAINED game where the honest tuple is produced INSIDE the game by the
+   adversary (the EC image of the honest signature FIXING the checked-core
+   challenge target before the adversary forges) AND the global `R.honest_tuple` is
+   installed INSIDE the game, so the bound is a clean
+   `Pr[ ExpSC(C).run() : res ] <= sha256_second_preimage_bound` with no &m-side
+   precondition and no procedure argument.
+
+   This DOES NOT weaken the proven reduction: `ExpSC(C)` has C first emit the
+   honest tuple `h` (via `setup`), INSTALLS it into the reduction global
+   `R.honest_tuple`, then runs the EXACT same `Exp(C).run(h)`, so its bound
+   DESCENDS from `break_le_bound` (which holds for EVERY h with R.honest_tuple = h)
+   via the phoare-form `break_phoare`.  The SPR axiom is untouched.  (This is the
+   SINGLE-TARGET per-query term; the multi-target horizon T is folded into the
+   spine's per-event `breakBound` parameter — the single-target q/2^246 = 2^-182
+   already clears the spine's 2^-133 per-event budget.) *)
+module type BindAdvSC = {
+  proc setup () : tuple
+  proc forge (honest : tuple) : transcript
+}.
+
+(* phoare form of the per-target bound, with BOTH the procedure argument and the
+   global reduction target as the procedure's OWN precondition (so a single `bypr`
+   exposes them together — the proc-argument level where `break_le_bound` keys). *)
+lemma break_phoare (A <: BindAdv{-R}) (ht : tuple) :
+  phoare [ Exp(A).run : arg = ht /\ R.honest_tuple = ht ==> res ]
+       <= sha256_second_preimage_bound.
+proof.
+  bypr=> &m0 hpre.
+  have hr : R.honest_tuple{m0} = ht by smt().
+  have ha : h{m0} = ht by smt().
+  rewrite ha.
+  by apply (break_le_bound A ht &m0); rewrite hr.
+qed.
+
+(* The self-contained experiment: sample the honest tuple INSIDE (from C.setup),
+   install it into the reduction global, then run the binding experiment.  No
+   argument, no &m-side precondition. *)
+module ExpSC (C : BindAdvSC) = {
+  proc run () : bool = {
+    var h, r;
+    h <@ C.setup();                  (* honest target FIXED inside the game *)
+    R.honest_tuple <- h;             (* install the reduction global INSIDE *)
+    r <@ Exp(C).run(h);              (* the proven binding experiment on that target *)
+    return r;
+  }
+}.
+
+(* The self-contained single-target bound: the checked-core message-binding break
+   in ExpSC is <= sha256_second_preimage_bound.  PROVEN by sampling the honest
+   tuple inside, installing the global, then `call`ing the phoare-form bound on the
+   emitted tuple.  No &m-side precondition, no procedure argument. *)
+lemma break_le_bound_sc (C <: BindAdvSC{-R}) &m :
+  Pr[ ExpSC(C).run() @ &m : res ] <= sha256_second_preimage_bound.
+proof.
+  byphoare (_ : true ==> res) => //.
+  proc.
+  seq 1 : true 1%r sha256_second_preimage_bound 0%r 0%r true => //.
+  exists* h; elim* => hv.
+  wp; call (break_phoare C hv); auto.
+qed.
+
+(* =============================================================================
    MULTI-TARGET LAYER (HIGH-3).  The OPERATIVE charge.
 
    An adversary running T honest signing queries obtains a LIST of T honest

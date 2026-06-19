@@ -87,17 +87,28 @@
        hold); the EC image of the Lean classifier's "ConcreteBreakFor = False" for
        these two placeholders.  Matches the per-term ledger status exactly.
 
+   STEP 6c (2026-06-19) — the THREE SPR-BOUND BINDING EVENTS #2/#3/#6 DISCHARGED
+   INTERNALLY: each per-term file now exposes a SELF-CONTAINED bound (the honest
+   target sampled INSIDE the game, and for #6 the reduction global installed
+   inside — break_le_spr_bound_sc / registry_break_bound_sc / break_le_bound_sc),
+   and the reductions R2/R3/R6 forward the unified run's carried per-term witness
+   into those games by genuine byequiv (the STEP-6a R_acc pattern), so
+   brk2_le_bound / brk3_le_bound / brk6_le_bound DESCEND from the PROVEN per-term
+   bounds — NO longer opaque parameters.  Carried fact per event: the labelled
+   reduction-faithfulness w2/w3/w6_faithful (verifier binding-gate image, NO
+   probability mass).
+
    STILL PARAMETRIC / NOT-YET-INTERNAL (honest, clearly labelled in STEP 6c):
      * the STEP-5 endpoint_le_2pow_neg128 carries acceptedBound / breakBound + its
        four numeric hypotheses as PARAMETERS (witnessed by
        gap_c_remodel_spine_wiring.remodelled_per_event_meets_spine_hyp and the
        per-term bounds), so it stays instantiable at any concrete `dout`.  The
        concrete STEP-6 endpoint_pr_le_2pow_neg128 ALSO takes the per-event Pr
-       bounds as hypotheses; STEP 6a/6b discharge accepted-spend + #8/#9 of them
-       INTERNALLY, while the SIX remaining per-event Pr bounds (#1 bridge, #2/#3/#6
-       fixed-target SPR, #5/#7 stateful =0) are LEFT as the parametric hypotheses
-       and ISOLATED as STEP-6c obligations with the precise interface reason each
-       needs (fixed-target / stateful unified-Exp refactor) — NOT faked.
+       bounds as hypotheses; STEP 6a/6b/6c discharge accepted-spend + #8/#9 +
+       #2/#3/#6 of them INTERNALLY, while the THREE remaining per-event Pr bounds
+       (#1 bridge, #5/#7 stateful =0) are LEFT as the parametric hypotheses and
+       ISOLATED as STEP-6c obligations with the precise interface reason each needs
+       (bridge / stateful unified-Exp refactor) — NOT faked.
 
    NOTE on faithfulness: the outcome model records, per run, the verdict of EACH
    named verify check (the EC image of the dossier verifier's gates).  The break
@@ -119,6 +130,14 @@ require import Spine_break_events.
    PROVEN `accepted_spend_term_le_2pow_neg129` bound without clashing the many
    same-named local types/modules across the per-term files (verified clash-free). *)
 require Accepted_spend_forgery_reduction.
+(* The three SPR-bound binding per-term reductions (#2/#3/#6), required QUALIFIED
+   (no `import`) so their self-contained games (ExpSC / AccSC) and PROVEN per-event
+   bounds (break_le_spr_bound_sc / registry_break_bound_sc / break_le_bound_sc) can
+   be cited from STEP 6c's internal discharge without clashing the many same-named
+   local types/modules (leaf, digest, Exp, SPR, eps_spr, …) across the files. *)
+require Break_prevalidation_leaf_binding.
+require Break_prevalidation_registry_binding.
+require Break_checked_core_message_binding.
 
 (* =============================================================================
    STEP 1.  Instantiate the parametric spine at the concrete 9-event datatype.
@@ -164,12 +183,25 @@ type run = {
   ru_fresh    : bool;
   ru_accspend : bool;
   ru_check    : break_event -> bool;  (* per-check verdict: TRUE = check holds *)
-  ru_fwit     : Accepted_spend_forgery_reduction.forgery
+  ru_fwit     : Accepted_spend_forgery_reduction.forgery;
                 (* the CARRIED accepted-spend forgery transcript a response-path
                    run exposes — the witness the STEP-6 accepted-spend reduction
                    forwards into the proven per-term ForgeSA game.  Irrelevant to
                    the structural decomposition; load-bearing only for the
                    concrete reduction. *)
+  (* The CARRIED per-term binding witnesses for the SPR-bound events #2/#3/#6 —
+     the EC images of the on-chain honest target + the forged divergent object a
+     binding-break run exposes.  Each STEP-6c reduction forwards its witness into
+     the corresponding PROVEN self-contained per-term game (ExpSC / AccSC).  Like
+     ru_fwit, irrelevant to the structural decomposition; load-bearing only for
+     the concrete per-event reductions. *)
+  ru_w2_frame : Break_prevalidation_leaf_binding.preimage;     (* #2 honest committed frame *)
+  ru_w2_leaf  : Break_prevalidation_leaf_binding.leaf;         (* #2 forged divergent leaf  *)
+  ru_w3_leaf  : Break_prevalidation_registry_binding.leaf;     (* #3 honest committed leaf  *)
+  ru_w3_key   : Break_prevalidation_registry_binding.key;      (* #3 attacked key           *)
+  ru_w3_forge : Break_prevalidation_registry_binding.leaf;     (* #3 forged presented leaf  *)
+  ru_w6_tuple : Break_checked_core_message_binding.tuple;      (* #6 honest signed tuple    *)
+  ru_w6_tr    : Break_checked_core_message_binding.transcript  (* #6 forged transcript      *)
 }.
 
 (* A forgery run is a SUCCESS (a break of SUF-CMA) iff the verifier accepted it AND
@@ -566,14 +598,187 @@ proof.
 qed.
 
 (* =============================================================================
-   STEP 6c.  REMAINING PER-EVENT OBLIGATIONS (clearly labelled, NOT faked).
+   STEP 6c.  THE THREE SPR-BOUND BINDING EVENTS #2/#3/#6 — DISCHARGED INTERNALLY
+   (genuine reductions to the self-contained per-term games).
 
-   These per-term files PROVE their event's bound, but their game INTERFACE does
-   not compose with the single-shot unified `Exp` by a pure byequiv, so a genuine
-   internal discharge needs the noted refactor.  Each is the analogue of the
-   STEP-6a `accspend_faithful` reduction-faithfulness fact, but the probability
-   transfer additionally needs the listed structural change — so we STATE the
-   target as an obligation rather than assert a vacuous discharge.
+   Each per-term file's binding bound used to take the honest target as a PROCEDURE
+   ARGUMENT (f0 / l0 / h) — plus, for #6, a &m-side GLOBAL precondition
+   `R.honest_tuple{m} = h` — so a single-shot byequiv from the unified `Exp(A)`
+   could not install it.  Each file now EXPOSES a SELF-CONTAINED form where the
+   honest target is SAMPLED INSIDE the game (and, for #6, the reduction global is
+   installed inside), with a clean `Pr[Game(R(A))] <= bound` carrying NO procedure
+   argument and NO &m-side precondition:
+     #2  Break_prevalidation_leaf_binding.break_le_spr_bound_sc  (ExpSC)
+     #3  Break_prevalidation_registry_binding.registry_break_bound_sc (AccSC)
+     #6  Break_checked_core_message_binding.break_le_bound_sc    (ExpSC)
+   Here we forward each unified run's carried per-term binding witness into the
+   corresponding self-contained game by a genuine byequiv reduction (exactly the
+   STEP-6a `R_acc` pattern), so the per-event Pr bound DESCENDS from the PROVEN
+   per-term bound — NO longer an opaque parameter.
+
+   The only carried fact per event is the labelled reduction-faithfulness
+   (`w2_faithful` / `w3_faithful` / `w6_faithful`): a run firing the named binding
+   break exhibits a carried target+forged object on which the per-term game's break
+   predicate fires.  These are the EC images of the verifier's named binding gates
+   (slot-authorization digest / registry handle / checked-core challenge) — the
+   SAME nature as `accspend_faithful` and the classifier seam, carrying NO
+   probability mass.  The SPR axioms in the per-term files are UNTOUCHED.
+   ============================================================================= *)
+
+(* ---- #6 checkedCoreMessageBinding --------------------------------------------
+   The reduction forwards the run's carried (honest tuple, transcript) into the
+   self-contained per-term game ExpSC; the per-term game installs the honest tuple
+   into its reduction global and FS-checks the transcript. *)
+module R6 (A : UnifAdv) : Break_checked_core_message_binding.BindAdvSC = {
+  var cached : run
+  proc setup () : Break_checked_core_message_binding.tuple = {
+    cached <@ A.forge();
+    return cached.`ru_w6_tuple;
+  }
+  proc forge (honest : Break_checked_core_message_binding.tuple)
+      : Break_checked_core_message_binding.transcript = {
+    return cached.`ru_w6_tr;
+  }
+}.
+
+op w6_faithful (o : run) : bool =
+  brk o CheckedCoreMessageBinding =>
+    Break_checked_core_message_binding.binding_break o.`ru_w6_tuple o.`ru_w6_tr.
+
+lemma brk6_le_expsc (A <: UnifAdv{-R6, -Break_checked_core_message_binding.R}) &m :
+  (forall o, w6_faithful o) =>
+  Pr[ Exp(A).main() @ &m : brk res CheckedCoreMessageBinding ]
+    <= Pr[ Break_checked_core_message_binding.ExpSC(R6(A)).run() @ &m : res ].
+proof.
+  move=> hf.
+  byequiv (_ : ={glob A} ==> brk res{1} CheckedCoreMessageBinding => res{2}) => //.
+  proc; inline *; wp; call (_ : true); auto=> /> o.
+  have := hf o; rewrite /w6_faithful /=; smt().
+qed.
+
+(* #6 DISCHARGED: the checked-core message-binding break term descends from the
+   PROVEN self-contained single-target bound (q/2^246, which clears the spine's
+   2^-133 per-event budget; the multi-target horizon T stays folded into the
+   spine's per-event `breakBound` parameter). *)
+lemma brk6_le_bound (A <: UnifAdv{-R6, -Break_checked_core_message_binding.R}) &m :
+  (forall o, w6_faithful o) =>
+  Pr[ Exp(A).main() @ &m : brk res CheckedCoreMessageBinding ]
+    <= Break_checked_core_message_binding.sha256_second_preimage_bound.
+proof.
+  move=> hf.
+  apply (ler_trans (Pr[ Break_checked_core_message_binding.ExpSC(R6(A)).run() @ &m : res ])).
+  + by apply (brk6_le_expsc A &m).
+  + by apply (Break_checked_core_message_binding.break_le_bound_sc (R6(A)) &m).
+qed.
+
+(* ---- #2 prevalidationLeafBinding ---------------------------------------------
+   The reduction schedules the carried divergent leaf as a SINGLETON against the
+   carried honest committed frame; the leaf game's one-step loop fires the break
+   exactly when the carried witness is a second preimage of the frame. *)
+module R2 (A : UnifAdv) : Break_prevalidation_leaf_binding.LeafAdversarySC = {
+  var cached : run
+  proc setup () : Break_prevalidation_leaf_binding.preimage = {
+    cached <@ A.forge();
+    return cached.`ru_w2_frame;
+  }
+  proc schedule () : Break_prevalidation_leaf_binding.leaf list = {
+    return [ cached.`ru_w2_leaf ];
+  }
+}.
+
+op w2_faithful (o : run) : bool =
+  brk o PrevalidationLeafBinding =>
+    (   Break_prevalidation_leaf_binding.sha256
+          (Break_prevalidation_leaf_binding.leaf_frame o.`ru_w2_leaf)
+        = Break_prevalidation_leaf_binding.sha256 o.`ru_w2_frame
+     /\ Break_prevalidation_leaf_binding.leaf_frame o.`ru_w2_leaf <> o.`ru_w2_frame).
+
+lemma brk2_le_expsc (A <: UnifAdv{-R2, -Break_prevalidation_leaf_binding.Exp,
+                                  -Break_prevalidation_leaf_binding.SPR}) &m :
+  (forall o, w2_faithful o) =>
+  Pr[ Exp(A).main() @ &m : brk res PrevalidationLeafBinding ]
+    <= Pr[ Break_prevalidation_leaf_binding.ExpSC(R2(A)).run() @ &m : res ].
+proof.
+  move=> hf.
+  byequiv (_ : ={glob A} ==> brk res{1} PrevalidationLeafBinding => res{2}) => //.
+  proc; inline *.
+  rcondt{2} ^while; first by auto.
+  rcondf{2} ^while; first by auto.
+  wp; call (_ : true); auto=> /> o.
+  by have := hf o; rewrite /w2_faithful /=; smt().
+qed.
+
+(* #2 DISCHARGED: the leaf-binding break term descends from the PROVEN self-
+   contained SPR bound eps_spr (~q/2^256). *)
+lemma brk2_le_bound (A <: UnifAdv{-R2, -Break_prevalidation_leaf_binding.Exp,
+                                  -Break_prevalidation_leaf_binding.SPR}) &m :
+  (forall o, w2_faithful o) =>
+  Pr[ Exp(A).main() @ &m : brk res PrevalidationLeafBinding ]
+    <= Break_prevalidation_leaf_binding.eps_spr.
+proof.
+  move=> hf.
+  apply (ler_trans (Pr[ Break_prevalidation_leaf_binding.ExpSC(R2(A)).run() @ &m : res ])).
+  + by apply (brk2_le_expsc A &m).
+  + by apply (Break_prevalidation_leaf_binding.break_le_spr_bound_sc (R2(A)) &m).
+qed.
+
+(* ---- #3 prevalidationRegistryBinding -----------------------------------------
+   The reduction presents the carried forged (key, leaf) as a SINGLETON against
+   the carried honest committed leaf (installed at every key); the registry game's
+   one-step loop fires the break exactly when the forged leaf is a second preimage
+   of the committed leaf's authorization digest. *)
+module R3 (A : UnifAdv) : Break_prevalidation_registry_binding.RegAdvSC = {
+  var cached : run
+  proc setup () : Break_prevalidation_registry_binding.leaf = {
+    cached <@ A.forge();
+    return cached.`ru_w3_leaf;
+  }
+  proc present () : (Break_prevalidation_registry_binding.key *
+                     Break_prevalidation_registry_binding.leaf) list = {
+    return [ (cached.`ru_w3_key, cached.`ru_w3_forge) ];
+  }
+}.
+
+op w3_faithful (o : run) : bool =
+  brk o PrevalidationRegistryBinding =>
+    (   Break_prevalidation_registry_binding.dig o.`ru_w3_forge
+        = Break_prevalidation_registry_binding.dig o.`ru_w3_leaf
+     /\ o.`ru_w3_forge <> o.`ru_w3_leaf).
+
+lemma brk3_le_accsc (A <: UnifAdv{-R3, -Break_prevalidation_registry_binding.Reg}) &m :
+  (forall o, w3_faithful o) =>
+  Pr[ Exp(A).main() @ &m : brk res PrevalidationRegistryBinding ]
+    <= Pr[ Break_prevalidation_registry_binding.AccSC(R3(A)).run() @ &m : res ].
+proof.
+  move=> hf.
+  byequiv (_ : ={glob A} ==> brk res{1} PrevalidationRegistryBinding => res{2}) => //.
+  proc; inline *.
+  rcondt{2} ^while; first by auto.
+  rcondf{2} ^while; first by auto.
+  wp; call (_ : true); auto=> /> o.
+  by have := hf o; rewrite /w3_faithful /=; smt().
+qed.
+
+(* #3 DISCHARGED: the registry-binding break term descends from the PROVEN self-
+   contained SPR bound eps_spr (~q/2^256). *)
+lemma brk3_le_bound (A <: UnifAdv{-R3, -Break_prevalidation_registry_binding.Reg}) &m :
+  (forall o, w3_faithful o) =>
+  Pr[ Exp(A).main() @ &m : brk res PrevalidationRegistryBinding ]
+    <= Break_prevalidation_registry_binding.eps_spr.
+proof.
+  move=> hf.
+  apply (ler_trans (Pr[ Break_prevalidation_registry_binding.AccSC(R3(A)).run() @ &m : res ])).
+  + by apply (brk3_le_accsc A &m).
+  + by apply (Break_prevalidation_registry_binding.registry_break_bound_sc (R3(A)) &m).
+qed.
+
+(* =============================================================================
+   STEP 6c.  REMAINING PER-EVENT OBLIGATIONS (#1 / #5 / #7, clearly labelled).
+
+   With #2/#3/#6 now DISCHARGED INTERNALLY above (genuine byequiv reductions to
+   the self-contained per-term games), the honest residual is THREE events whose
+   per-term game INTERFACE still does not compose with the single-shot unified
+   `Exp` by a pure byequiv — they need the Exp-lifecycle refactor (a separate run):
 
    #1 creationTimeHiddenSource (break_creation_time_hidden_source.ec):
         Bridge(A').run() = 0 GIVEN the verifier_exporter_bridge axiom.  Genuine
@@ -581,17 +786,6 @@ qed.
         `brk o #1 => relation_accept src0 src /\ ! true_creation_honest src0 src`.
         OBLIGATION: carry the source pair + faithfulness, then reduce to
         break_prob_zero_under_bridge.
-
-   #2 prevalidationLeafBinding / #3 prevalidationRegistryBinding /
-   #6 checkedCoreMessageBinding (SPR / multi-target SPR):
-        the per-term lemmas (break_le_spr_bound / registry_break_bound /
-        multi_target_break_le_budget) are over a FIXED honest target supplied as a
-        procedure argument (f0 / l0 / fs) + a global-state setup precondition
-        (R.honest_tuple{m} = h for #6).  A single-shot byequiv cannot install that
-        global target from the unified run.  OBLIGATION (needs a per-term refactor):
-        re-expose each per-term bound as a self-contained `Pr[Game(R(A))] <= bound`
-        with the honest target sampled INSIDE the game from the run, so the
-        reduction composes without a &m-side global precondition.
 
    #5 postchallengeSlotCreationOrRewrite / #7 slotReplayOrRollback (stateful =0):
         the per-term =0 games are over ADAPTIVE multi-step schedules
@@ -603,11 +797,11 @@ qed.
         stateful signing-oracle loop, the genuine multi-week core): run the
         consume-once lifecycle inside Exp and discharge via break_prob_zero.
 
-   These SIX events (#1, #2, #3, #5, #6, #7) are the honest residual of this turn:
-   the COMPOSITION machinery (concrete Exp, union bound, endpoint) and the dominant
-   accepted-spend term + the classifier-false pair (#8/#9) are discharged
-   INTERNALLY; the fixed-target and stateful connections are flagged with their
-   precise refactor, not faked.
+   These THREE events (#1, #5, #7) are the honest residual of this turn:
+   the COMPOSITION machinery (concrete Exp, union bound, endpoint), the dominant
+   accepted-spend term, the classifier-false pair (#8/#9), AND the three SPR-bound
+   binding events (#2/#3/#6) are now discharged INTERNALLY; only the bridge and
+   stateful connections are flagged with their precise refactor, not faked.
    ============================================================================= *)
 
 (* =============================================================================
@@ -630,7 +824,13 @@ qed.
        DISCHARGED INTERNALLY (<= 2^-129 descends from the PROVEN per-term ForgeSA
        bound by a genuine byequiv reduction R_acc);
      * STEP 6b — classifier_false_brk0: events #8/#9 DISCHARGED INTERNALLY to 0
-       (definitional classifier-False, matching the per-term ledger).
+       (definitional classifier-False, matching the per-term ledger);
+     * STEP 6c — brk2_le_bound / brk3_le_bound / brk6_le_bound: the THREE SPR-bound
+       binding events #2/#3/#6 DISCHARGED INTERNALLY (each break term descends from
+       the PROVEN per-term SELF-CONTAINED bound break_le_spr_bound_sc /
+       registry_break_bound_sc / break_le_bound_sc, via the genuine byequiv
+       reductions R2/R3/R6 forwarding the run's carried per-term witness — NO longer
+       opaque parameters).
 
    CARRIED-AXIOM (the atomic residuals, clearly labelled):
      * verify_check_classifier_complete — the COMPLETENESS of the 9-check verify
@@ -643,23 +843,27 @@ qed.
        faithfulness fact (NO probability mass; same nature as the classifier seam).
      * classifier_false_events (STEP-6b axiom) — the #8/#9 definitional non-event
        fact (matches the per-term ledger; NO probability mass).
+     * w2_faithful / w3_faithful / w6_faithful (STEP-6c hypotheses) — the binding-
+       break reduction-faithfulness facts (a run firing the named binding break
+       exhibits a carried target+forged object on which the per-term game's break
+       predicate fires; EC image of the verifier's named binding gates; NO
+       probability mass — same nature as accspend_faithful and the classifier seam).
 
-   STILL PARAMETRIC (honest residual; STEP 6c obligations, NOT faked): the six
-   per-event Pr bounds for #1 (bridge), #2/#3/#6 (fixed-target SPR), #5/#7
-   (stateful =0) are left as the endpoint_pr_le_2pow_neg128 hypotheses, each
-   isolated with the precise interface refactor it needs (carry the per-term
-   witness + self-contained per-term bound, or embed the stateful loop in Exp).
-   The accepted-spend term (#acc) is now INTERNAL.
+   STILL PARAMETRIC (honest residual; STEP 6c obligations, NOT faked): the THREE
+   per-event Pr bounds for #1 (bridge) and #5/#7 (stateful =0) are left as the
+   endpoint_pr_le_2pow_neg128 hypotheses, each isolated with the precise interface
+   refactor it needs (carry the source pair + self-contained bridge bound, or embed
+   the stateful loop in Exp).  The accepted-spend term (#acc) and the three
+   SPR-bound binding terms (#2/#3/#6) are now INTERNAL.
 
    The STEP-5 endpoint's numeric per-event hypotheses remain witnessable externally
    by gap_c_remodel_spine_wiring.remodelled_per_event_meets_spine_hyp (each break
    <= 2^-133) and accepted_spend_forgery_reduction.accepted_spend_term_le_2pow_neg129
    (accepted <= 2^-129), instantiable at the deployed game's outcome distribution.
 
-   PRECISE NEXT STEP: discharge #2/#3/#6 by re-exposing each per-term binding bound
-   as a self-contained `Pr[Game(R(A))] <= bound` with the honest target sampled
-   INSIDE the game (removing the &m-side global-target precondition), then a
-   byequiv reduction like STEP 6a; and discharge #1/#5/#7 by promoting `module
-   Exp(A)` to EMBED the stateful signing-oracle lifecycle so the per-term =0 /
-   bridge games run inside it (the genuine multi-week core).
+   PRECISE NEXT STEP: discharge #1/#5/#7 by promoting `module Exp(A)` to EMBED the
+   stateful signing-oracle lifecycle so the per-term =0 / bridge games run inside it
+   (the genuine multi-week core): carry the (src0,src) source pair + a #1
+   faithfulness fact and reduce to break_prob_zero_under_bridge; run the consume-
+   once lifecycle inside Exp and discharge #5/#7 via break_prob_zero.
    ============================================================================= *)

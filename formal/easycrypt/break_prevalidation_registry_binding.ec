@@ -376,6 +376,72 @@ proof.
 qed.
 
 (* =============================================================================
+   SELF-CONTAINED FORM (spine-composable; honest target SAMPLED INSIDE).
+   -----------------------------------------------------------------------------
+   The reduction above takes the honest committed leaf `l0` as a PROCEDURE
+   ARGUMENT (Acc(A).run(fun _ => l0)).  The unified SUF-CMA spine experiment
+   (spine_endpoint.ec `module Exp(A)`) is a SINGLE-SHOT run with NO such argument,
+   so a byequiv from it cannot install `l0`.  We re-expose the bound here in a
+   SELF-CONTAINED game where the honest registry target is produced INSIDE the
+   game by the adversary (the EC image of the honest admission registry committing
+   the unique prevalidation leaf before the adversary acts), so the bound is a
+   clean `Pr[ AccSC(C).run() : res ] <= eps_spr` with no &m-side precondition and
+   no procedure argument.
+
+   This DOES NOT weaken the proven reduction: `AccSC(C)` simply has C first emit
+   the honest leaf `l0` (via `setup`), then runs the EXACT same
+   `Acc(C).run(fun _ => l0)`, so its bound DESCENDS from `registry_break_bound`
+   (which holds for EVERY l0) by a bypr step that reads off the emitted l0.  The
+   SPR axiom is untouched.
+   ============================================================================= *)
+
+(* The self-contained adversary: emits the honest committed leaf, then (as a
+   RegAdv) presents its spend attempts.  `setup` is the EC image of the honest
+   registry FIXING the committed prevalidation leaf before the adversary acts. *)
+module type RegAdvSC = {
+  proc setup   () : leaf
+  proc present () : (key * leaf) list
+}.
+
+(* The self-contained experiment: sample the honest registry leaf INSIDE (from
+   C.setup), install it at every key, then run the registry-binding experiment.
+   No argument, no precondition. *)
+module AccSC (C : RegAdvSC) = {
+  proc run () : bool = {
+    var l0, r;
+    l0 <@ C.setup();                 (* honest target FIXED inside the game *)
+    r  <@ Acc(C).run(fun _ => l0);   (* the proven registry-binding experiment *)
+    return r;
+  }
+}.
+
+(* phoare form of the per-target bound, keyed on the constant-registry argument.
+   PROVEN from `registry_break_bound` via bypr at the PROC-ARGUMENT level, where
+   the constant map `fun _ => l0` IS the formal argument (so the lambda matches
+   syntactically — the obstruction a post-`call` bypr hits at the call site). *)
+lemma registry_break_phoare (A <: RegAdv{-Reg}) (l0 : leaf) :
+  phoare [ Acc(A).run : arg = (fun (_ : key) => l0) ==> res ] <= eps_spr.
+proof.
+  bypr=> &m0 he.
+  rewrite he.
+  by apply (registry_break_bound A l0 &m0).
+qed.
+
+(* The self-contained bound: the registry-binding break in AccSC is <= eps_spr.
+   PROVEN by sampling the honest leaf inside, then `call`ing the phoare-form bound
+   on the emitted leaf (the per-target bound holds for EVERY l0).  No &m-side
+   precondition, no procedure argument. *)
+lemma registry_break_bound_sc (C <: RegAdvSC{-Reg}) &m :
+  Pr[ AccSC(C).run() @ &m : res ] <= eps_spr.
+proof.
+  byphoare (_ : true ==> res) => //.
+  proc.
+  seq 1 : true 1%r eps_spr 0%r 0%r true => //.
+  exists* l0; elim* => lv.
+  call (registry_break_phoare C lv); auto.
+qed.
+
+(* =============================================================================
    END.   prevalidationRegistryBinding: REAL GAME-BASED REDUCTION TO SHA-256
    SECOND-PREIMAGE RESISTANCE (re-modelled, GAP-C closure).
    The implication  accept /\ registry-binding-break ==> SHA-256 SECOND preimage
