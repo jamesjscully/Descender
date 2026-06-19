@@ -58,15 +58,44 @@
 //!      cannot verify statement `P` and re-expose `P'`. Substitution rejected
 //!      ([`tests::air_rejects_public_io_substitution`]).
 //!
+//!  11. **(a-FS+) MULTI-DRAW OFF ONE PERMUTE** (NEW; `sponge_draws`): successive base-field draws
+//!      are the LIFO pops of the SAME refilled output buffer — draw `d` is bound to
+//!      `perm.output[RATE-1-d]` (the challenger's `sample()` pops the back of `out_buf` WITHOUT
+//!      re-permuting while it is non-empty). Draw 0 is the index draw; draws `1..sponge_draws`
+//!      (≤ RATE) are carried in the sponge block's `extra_draws` columns. A forged successive draw
+//!      (≠ the output lane), or extra draws collapsed onto the index draw, is rejected
+//!      ([`tests::air_rejects_forged_successive_draw`],
+//!      [`tests::air_rejects_extra_draws_collapsed_to_index_draw`]).
+//!  12. **(a-FS++) ABSORB-PERMUTE FEEDING THE SQUEEZE** (NEW; `sponge_absorb`): `sponge_in` is no
+//!      longer a free committed column — it is the CONSTRAINED output of one absorb step over a
+//!      committed `prior_state` + `absorbed[RATE]` values, per [`crate::challenger`]'s `duplexing`
+//!      EXACTLY: rate lanes `[0..n]` overwritten with the absorbed values, lanes `[n..RATE]` zeroed,
+//!      capacity slot `RATE == prior_state[RATE] + n` (the prefix-free length tag), capacity slots
+//!      `[RATE+1..WIDTH]` carried (`n` = `sponge_absorb_n`; `n==0` carries the whole state). A
+//!      sponge state inconsistent with the absorbed values, a dropped length tag, or a nonzero
+//!      unfilled rate lane is rejected ([`tests::air_rejects_forged_absorbed_value`],
+//!      [`tests::air_rejects_forged_length_tag`], [`tests::air_rejects_nonzero_unfilled_rate_lane`]).
+//!      ONE absorb→permute→multi-draw duplex step is now fully constrained in-window
+//!      ([`tests::air_accepts_absorb_fed_multi_draw`]).
+//!
 //! ## Remaining assembly toward the full monolith (documented, NOT yet wired)
 //!
-//! - **full challenger-sponge transcript**: (a-FS) inlines the squeeze permutation that produces
-//!   ONE index draw, with `sponge_in` supplied as committed columns — i.e. the absorb chain
-//!   (observe inner commitments + ~190-elem public IO @ rate 8, the multi-permute duplexing
-//!   producing `sponge_in`, and the LIFO output-buffer threading across MULTIPLE draws) is still
-//!   DEFERRED. The bus betas/zeta (block (b)) likewise remain committed draw columns. Extending
-//!   (a-FS) across all draws + the full absorb transcript ([`crate::challenger::air::ChallengerAir`]
-//!   semantics, one [`crate::inlined_perm::eval_perm`] per permutation) is the remaining FS work.
+//! - **full challenger-sponge transcript PREFIX**: (a-FS)/(a-FS+)/(a-FS++) now constrain ONE full
+//!   duplex step — absorb(`prior_state`, `absorbed`, `n`) → permute → up to `RATE` LIFO draws — so
+//!   `sponge_in` and the draws are constrained, NOT free. What remains DEFERRED is the transcript
+//!   PREFIX that produces `prior_state`: the multi-permute absorb CHAIN over the inner commitments +
+//!   ~190-elem public IO at rate 8 (each `RATE`-element fill triggers a `duplexing`, so prior_state
+//!   should itself be the constrained output of the previous step's permute, threaded across rows /
+//!   across multiple in-window absorb sub-blocks). Concretely the next step is to make `prior_state`
+//!   the OUTPUT of a preceding absorb-permute (chain `prior_state_{k} == permute(absorb(state_{k-1},
+//!   block_k, RATE))`), repeated for the ⌈(8 cap + 190 IO)/8⌉ absorb rounds, with the FIRST round's
+//!   `prior_state` pinned to the `new()` zero boundary ([`crate::challenger`] boundary). Also still
+//!   committed: the bus betas/zeta (block (b)) remain free draw columns rather than being threaded
+//!   off their own squeeze permutes (the (a-FS+) multi-draw machinery is the building block to
+//!   replace them, once the per-challenge permute boundaries are laid out). The
+//!   [`crate::challenger::air::ChallengerAir`] op-program (observe → sample sequencing, in/out
+//!   buffer one-hots) is the reference for that chaining; one [`crate::inlined_perm::eval_perm`] per
+//!   permutation.
 //! - **deferred leaf C(zeta)**: the DEEP block opens `C(zeta)` / `Q(zeta)` as committed values and
 //!   constrains the QUOTIENT RELATION; the full `C(zeta) =` leaf-AIR-constraint-polynomial
 //!   evaluation (re-expressing the entire leaf folder) + the DEEP linear-combination / chunk
@@ -116,6 +145,28 @@ pub struct RecursiveConfig {
     /// full multi-permute absorb transcript that produces `sponge_in` stays DEFERRED (the perm's
     /// input sponge state is supplied as committed columns here; see module-header "remaining").
     pub inline_sponge_draw: bool,
+    /// (a-FS+) Number of SUCCESSIVE base-field draws popped off the SINGLE squeeze permute's output
+    /// buffer (LIFO): draw `d` is bound to `perm.output[RATE-1-d]` (challenger `sample()` pops the
+    /// back of the refilled `out_buf` without re-permuting while it is non-empty). Draw 0 is the
+    /// index draw (`C_DRAW_OUT`); draws `1..sponge_draws` are carried in the sponge block's
+    /// `extra_draws` columns and pinned to the successive output lanes. `0`/`1` = the original
+    /// single index draw. Requires `inline_sponge_draw`. Bounded by `RATE` (one buffer refill).
+    pub sponge_draws: usize,
+    /// (a-FS++) Derive the squeeze permute's input state `sponge_in` from a CONSTRAINED absorb-
+    /// permute, instead of carrying `sponge_in` as a free committed column. When `true` the sponge
+    /// block additionally carries `prior_state[WIDTH]` (the pre-absorb sponge) + `absorbed[RATE]`
+    /// (the rate values being absorbed) and constrains, per `challenger::duplexing` semantics, that
+    /// `sponge_in == absorb(prior_state, absorbed, n)`: rate lanes `[0..n]` overwritten with the
+    /// absorbed values, lanes `[n..RATE]` zeroed, capacity slot `RATE == prior_state[RATE] + n`
+    /// (the length tag), capacity slots `[RATE+1..WIDTH]` copied from `prior_state`. `n =
+    /// sponge_absorb_n`. This makes ONE absorb-permute feeding the index draw constrained; the
+    /// transcript PREFIX producing `prior_state` (the multi-permute absorb chain over inner
+    /// commitments + ~190-elem public IO) stays committed via `prior_state`. Requires
+    /// `inline_sponge_draw`.
+    pub sponge_absorb: bool,
+    /// (a-FS++) Number of rate lanes absorbed (`n` in `challenger::duplexing`), `0..=RATE`. Only
+    /// consumed when `sponge_absorb`.
+    pub sponge_absorb_n: usize,
     /// (c-pub) public-IO statement-preservation block: `public_io_len` element rows, each binding
     /// `outer == observed == inner`. 0 = no public-IO block.
     pub public_io_len: usize,
@@ -136,9 +187,16 @@ impl RecursiveConfig {
             num_rounds: 1,
             deep_log_degree: None,
             inline_sponge_draw: false,
+            sponge_draws: 1,
+            sponge_absorb: false,
+            sponge_absorb_n: 0,
             public_io_len: 0,
             bind_merkle_leaf_to_e0: false,
         }
+    }
+    /// Number of successive squeeze draws actually laid out (≥ 1, ≤ RATE).
+    pub fn sponge_draw_count(&self) -> usize {
+        self.sponge_draws.max(1)
     }
     /// Number of descent rounds actually laid out (≥ 1).
     pub fn rounds(&self) -> usize {
@@ -251,8 +309,19 @@ fn merkle_end(cfg: &RecursiveConfig) -> usize {
 const SP_SPONGE_IN: usize = 0;
 /// Sub-offset of the inlined perm block within the sponge block.
 const SP_PERM: usize = SP_SPONGE_IN + WIDTH;
-/// Total sponge-block columns.
+/// Base sponge-block columns (sponge_in ‖ perm). Extra-draw / absorb columns are appended after.
 pub const SPONGE_BLOCK: usize = SP_PERM + PERM_COLS;
+/// (a-FS+) Sub-offset of the `extra_draws` columns (draws 1..sponge_draws), appended after the
+/// base sponge block. `sponge_draws.max(1) - 1` columns.
+const SP_EXTRA_DRAWS: usize = SPONGE_BLOCK;
+/// (a-FS++) Sub-offset of the absorb sub-block (`prior_state[WIDTH] ‖ absorbed[RATE]`), appended
+/// after the extra-draw columns. Present iff `sponge_absorb`.
+fn sp_absorb(cfg: &RecursiveConfig) -> usize {
+    SP_EXTRA_DRAWS + (cfg.sponge_draw_count() - 1)
+}
+const SPA_PRIOR_STATE: usize = 0;
+const SPA_ABSORBED: usize = SPA_PRIOR_STATE + WIDTH;
+const ABSORB_SUBBLOCK: usize = SPA_ABSORBED + RATE;
 
 /// Base of the (a-FS) sponge block (present iff `inline_sponge_draw`).
 fn sponge_base(cfg: &RecursiveConfig) -> usize {
@@ -261,7 +330,11 @@ fn sponge_base(cfg: &RecursiveConfig) -> usize {
 
 fn sponge_size(cfg: &RecursiveConfig) -> usize {
     if cfg.inline_sponge_draw {
-        SPONGE_BLOCK
+        let mut sz = SPONGE_BLOCK + (cfg.sponge_draw_count() - 1);
+        if cfg.sponge_absorb {
+            sz += ABSORB_SUBBLOCK;
+        }
+        sz
     } else {
         0
     }
@@ -329,6 +402,11 @@ pub struct WindowInputs<'a> {
     /// `inline_sponge_draw`, `draw_out` is CHECKED to equal `permute(sponge_in)[RATE-1]` (and the
     /// honest builder DERIVES `draw_out` from it). When `inline_sponge_draw` is off this is unused.
     pub sponge_in: [Val; WIDTH],
+    /// (a-FS++) When `sponge_absorb`, the pre-absorb sponge state and the rate values being
+    /// absorbed; the honest builder DERIVES `sponge_in = absorb(prior_state, absorbed, n)` from
+    /// these (and `sponge_in` above is then ignored). When `sponge_absorb` is off these are unused.
+    pub prior_state: [Val; WIDTH],
+    pub absorbed: [Val; RATE],
     /// (c-pub) public-IO statement: per element `(outer, observed, inner)`. Length must equal
     /// `public_io_len`. The honest builder sets the three equal.
     pub public_io: &'a [(Val, Val, Val)],
@@ -348,9 +426,32 @@ impl<'a> WindowInputs<'a> {
             deep_zeta: Challenge::ZERO,
             deep_q: Challenge::ZERO,
             sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
             public_io: &[],
         }
     }
+}
+
+/// The pre-permute sponge state produced by absorbing `n` rate elements into `prior_state`, mirror
+/// of [`crate::challenger::RowChallenger::duplexing`] EXACTLY: rate lanes `[0..n]` overwritten with
+/// `absorbed[0..n]`, lanes `[n..RATE]` zeroed, capacity slot `RATE += n` (the length tag), capacity
+/// slots `[RATE+1..WIDTH]` carried from `prior_state`. For `n == 0` (a squeeze-only permute with an
+/// empty input buffer) NO rate lane is overwritten and NO tag is added, so the whole state is
+/// carried from `prior_state` unchanged — matching `duplexing`'s `if n > 0` guard exactly.
+pub fn absorb_state(prior_state: [Val; WIDTH], absorbed: [Val; RATE], n: usize) -> [Val; WIDTH] {
+    assert!(n <= RATE, "absorb n must be <= RATE");
+    let mut s = prior_state;
+    for i in 0..n {
+        s[i] = absorbed[i];
+    }
+    if n > 0 {
+        for i in n..RATE {
+            s[i] = Val::ZERO;
+        }
+        s[RATE] = prior_state[RATE] + Val::from_u8(n as u8);
+    }
+    s
 }
 
 /// The base-field index draw produced by squeezing `sponge_in`: the LIFO pop of the freshly
@@ -363,14 +464,34 @@ pub fn squeeze_draw(sponge_in: [Val; WIDTH]) -> Val {
     cols[inlined_perm::C_OUTPUT + (RATE - 1)]
 }
 
+/// The successive base-field draws popped off ONE squeeze permute of `sponge_in`: draw `d` =
+/// `permute(sponge_in)[RATE-1-d]` for `d in 0..count`. The challenger's `sample()` pops the BACK of
+/// the freshly-refilled `out_buf` (LIFO) WITHOUT re-permuting while the buffer is non-empty, so the
+/// first `count` draws (count ≤ RATE) all come from the same permute. Draw 0 is the index draw.
+pub fn squeeze_draws(sponge_in: [Val; WIDTH], count: usize) -> Vec<Val> {
+    assert!(count <= RATE, "at most RATE draws come from one squeeze permute");
+    let consts = inlined_perm::Constants::pinned();
+    let cols = inlined_perm::generate_perm_cols(sponge_in, &consts);
+    (0..count)
+        .map(|d| cols[inlined_perm::C_OUTPUT + (RATE - 1 - d)])
+        .collect()
+}
+
 /// Build one query window honestly. The index, fold point, tower, descent chain, Merkle perm
 /// blocks, and DEEP tower are all DERIVED (the authority the AIR is checked against); tamper tests
 /// mutate the matrix afterwards. When `inline_sponge_draw`, `draw_out` is DERIVED from `sponge_in`
 /// (the squeeze pop) so the index decomposition is over the genuine Poseidon2 sponge output.
 pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
     let h = cfg.log_height;
+    // (a-FS++) when absorbing, the squeeze permute's input is DERIVED from the absorb (prior_state,
+    // absorbed, n); otherwise it is the supplied committed sponge_in.
+    let sponge_in = if cfg.inline_sponge_draw && cfg.sponge_absorb {
+        absorb_state(inp.prior_state, inp.absorbed, cfg.sponge_absorb_n)
+    } else {
+        inp.sponge_in
+    };
     let draw_out = if cfg.inline_sponge_draw {
-        squeeze_draw(inp.sponge_in)
+        squeeze_draw(sponge_in)
     } else {
         inp.draw_out
     };
@@ -494,15 +615,33 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
     // sponge output.
     if cfg.inline_sponge_draw {
         let consts = inlined_perm::Constants::pinned();
-        let perm_cols = inlined_perm::generate_perm_cols(inp.sponge_in, &consts);
+        let perm_cols = inlined_perm::generate_perm_cols(sponge_in, &consts);
         let sb = sponge_base(cfg);
-        row[sb + SP_SPONGE_IN..sb + SP_SPONGE_IN + WIDTH].copy_from_slice(&inp.sponge_in);
+        row[sb + SP_SPONGE_IN..sb + SP_SPONGE_IN + WIDTH].copy_from_slice(&sponge_in);
         row[sb + SP_PERM..sb + SP_PERM + PERM_COLS].copy_from_slice(&perm_cols);
         debug_assert_eq!(
             row[C_DRAW_OUT],
             perm_cols[C_OUTPUT + (RATE - 1)],
             "draw_out != squeeze pop — sponge derivation mismatch"
         );
+        // (a-FS+) successive draws 1..sponge_draws are the next LIFO pops off the SAME refilled
+        // output buffer: draw d = output[RATE-1-d].
+        let n_draws = cfg.sponge_draw_count();
+        for d in 1..n_draws {
+            row[sb + SP_EXTRA_DRAWS + (d - 1)] = perm_cols[C_OUTPUT + (RATE - 1 - d)];
+        }
+        // (a-FS++) absorb sub-block: prior_state ‖ absorbed (the constrained derivation of
+        // sponge_in). sponge_in above was already set to absorb_state(prior_state, absorbed, n).
+        if cfg.sponge_absorb {
+            let ab = sb + sp_absorb(cfg);
+            row[ab + SPA_PRIOR_STATE..ab + SPA_PRIOR_STATE + WIDTH].copy_from_slice(&inp.prior_state);
+            row[ab + SPA_ABSORBED..ab + SPA_ABSORBED + RATE].copy_from_slice(&inp.absorbed);
+            debug_assert_eq!(
+                sponge_in,
+                absorb_state(inp.prior_state, inp.absorbed, cfg.sponge_absorb_n),
+                "sponge_in != absorb(prior_state, absorbed, n)"
+            );
+        }
     }
 
     // (c-pub) public-IO block.
@@ -858,6 +997,54 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             eval_perm::<AB, _>(builder, &cells, sb + SP_PERM, &consts);
             // index draw == squeeze pop = post-permute rate lane RATE-1 (challenger LIFO sample()).
             builder.assert_zero(l(C_DRAW_OUT) - l(sb + SP_PERM + C_OUTPUT + (RATE - 1)));
+            // (a-FS+) successive draws 1..sponge_draws == the next LIFO pops off the SAME refilled
+            // output buffer (no re-permute while out_buf non-empty): draw d == output[RATE-1-d].
+            let n_draws = cfg.sponge_draw_count();
+            for d in 1..n_draws {
+                builder.assert_zero(
+                    l(sb + SP_EXTRA_DRAWS + (d - 1)) - l(sb + SP_PERM + C_OUTPUT + (RATE - 1 - d)),
+                );
+            }
+            // (a-FS++) absorb derivation of sponge_in: per challenger::duplexing, the squeeze
+            // permute's input state is absorb(prior_state, absorbed, n). Constrain sponge_in to it
+            // lane-for-lane, so sponge_in is NOT a free committed column but a constrained function
+            // of the (committed) prior transcript state + the absorbed rate values + the length tag.
+            if cfg.sponge_absorb {
+                let n = cfg.sponge_absorb_n;
+                debug_assert!(n <= RATE);
+                let ab = sb + sp_absorb(&cfg);
+                // rate lanes [0..n] == absorbed[0..n] (overwrite).
+                for i in 0..n {
+                    builder.assert_zero(l(sb + SP_SPONGE_IN + i) - l(ab + SPA_ABSORBED + i));
+                }
+                if n > 0 {
+                    // rate lanes [n..RATE] == 0 (zeroed unfilled rate).
+                    for i in n..RATE {
+                        builder.assert_zero(l(sb + SP_SPONGE_IN + i));
+                    }
+                    // capacity slot RATE == prior_state[RATE] + n (the length tag).
+                    builder.assert_zero(
+                        l(sb + SP_SPONGE_IN + RATE)
+                            - l(ab + SPA_PRIOR_STATE + RATE)
+                            - AB::Expr::from(AB::F::from_u8(n as u8)),
+                    );
+                    // remaining capacity slots [RATE+1..WIDTH] carried from prior_state.
+                    for i in (RATE + 1)..WIDTH {
+                        builder.assert_zero(
+                            l(sb + SP_SPONGE_IN + i) - l(ab + SPA_PRIOR_STATE + i),
+                        );
+                    }
+                } else {
+                    // n == 0 (squeeze-only permute, empty input buffer): challenger::duplexing
+                    // overwrites NO rate lanes and adds NO length tag, so the whole state is carried
+                    // from prior_state unchanged. (sponge_in == prior_state.)
+                    for i in 0..WIDTH {
+                        builder.assert_zero(
+                            l(sb + SP_SPONGE_IN + i) - l(ab + SPA_PRIOR_STATE + i),
+                        );
+                    }
+                }
+            }
         }
 
         // ===== (c-pub) public-IO statement preservation (outer == observed == inner) =====
@@ -1118,6 +1305,7 @@ mod tests {
             deep_zeta: Challenge::ZERO,
             deep_q: Challenge::ZERO,
             sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             public_io: &[],
         };
         pack_window(cfg, &inp)
@@ -1174,7 +1362,7 @@ mod tests {
             merkle_leaf: leaves[forged_index],
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
-            sponge_in: [Val::ZERO; WIDTH], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], public_io: &[],
         };
         let mut row = pack_window(&cfg, &inp);
         // CONTROL: the FORGED Merkle blocks are internally valid — with a MATCHING forged bus
@@ -1193,7 +1381,7 @@ mod tests {
             descent: &[], merkle_leaf: leaves[honest_index],
             merkle_siblings: &tree.auth_path(honest_index),
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
-            sponge_in: [Val::ZERO; WIDTH], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], public_io: &[],
         });
         for c in C_DRAW_OUT..tower_end(levels) {
             row[c] = honest[c];
@@ -1387,7 +1575,7 @@ mod tests {
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
-            sponge_in: [Val::ZERO; WIDTH], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], public_io: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -1501,7 +1689,7 @@ mod tests {
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
             deep_zeta: zeta, deep_q: q,
-            sponge_in: [Val::ZERO; WIDTH], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], public_io: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -1622,7 +1810,7 @@ mod tests {
             merkle_leaf: leaves[index],
             merkle_siblings: &sibs,
             deep_zeta: ext_multi(55), deep_q: ext_multi(66),
-            sponge_in: [Val::ZERO; WIDTH], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], public_io: &[],
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -1655,6 +1843,7 @@ mod tests {
             merkle_siblings: &[],
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
             sponge_in,
+            prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             public_io: &[],
         };
         pack_window(cfg, &inp)
@@ -1768,6 +1957,292 @@ mod tests {
     }
 
     // ---------------------------------------------------------------------------------
+    // (a-FS+) MULTI-DRAW OFF ONE PERMUTE — successive LIFO pops of the SAME refilled output buffer.
+    // ---------------------------------------------------------------------------------
+
+    fn cfg_sponge_draws(h: usize, draws: usize) -> RecursiveConfig {
+        RecursiveConfig { inline_sponge_draw: true, sponge_draws: draws, ..RecursiveConfig::single_window(h) }
+    }
+
+    /// GOLDEN: with `sponge_draws` successive draws bound to the SAME squeeze permute, the index
+    /// draw is output[RATE-1] and draw d is output[RATE-1-d] (the challenger LIFO pop sequence,
+    /// no re-permute while the buffer is non-empty). ACCEPTS, and the extra-draw columns equal the
+    /// reference `squeeze_draws`.
+    #[test]
+    fn air_accepts_multi_draw_off_one_permute() {
+        for draws in [2usize, 4, 8] {
+            let h = 8usize;
+            let cfg = cfg_sponge_draws(h, draws);
+            for seed in [0u32, 7, 0xABCD, 0x9999] {
+                let sin = sponge_state(seed);
+                let row = sponge_window(&cfg, sin);
+                let want = squeeze_draws(sin, draws);
+                assert_eq!(row[C_DRAW_OUT], want[0], "index draw != squeeze draw 0");
+                let sb = sponge_base(&cfg);
+                for d in 1..draws {
+                    assert_eq!(row[sb + SP_EXTRA_DRAWS + (d - 1)], want[d], "extra draw {d} mismatch");
+                }
+                let m = RowMajorMatrix::new(row, n_cols(&cfg));
+                let report = check_all_constraints(&air(cfg), &m, &[], None);
+                assert!(report.is_ok(), "honest multi-draw ({draws}, seed {seed:#x}) rejected: {} failures", report.failures.len());
+            }
+        }
+    }
+
+    /// (a-FS+) FORGERY — FORGED SUCCESSIVE DRAW: a later draw value that is NOT the corresponding
+    /// LIFO output lane. The sponge perm + index draw stay honest; only the forged extra-draw lane
+    /// disagrees with output[RATE-1-d] ⇒ rejected. CONTROL: the honest row accepts, so the multi-
+    /// draw binding is the sole rejector of the tamper below.
+    #[test]
+    fn air_rejects_forged_successive_draw() {
+        let h = 8usize;
+        let draws = 4usize;
+        let cfg = cfg_sponge_draws(h, draws);
+        let sin = sponge_state(101);
+        let honest = sponge_window(&cfg, sin);
+        assert!(
+            check_all_constraints(&air(cfg), &RowMajorMatrix::new(honest.clone(), n_cols(&cfg)), &[], None).is_ok(),
+            "honest multi-draw control should accept — test would prove nothing otherwise"
+        );
+        let sb = sponge_base(&cfg);
+        // forge draw 2 (output[RATE-3]) to a wrong value; the index draw (draw 0) is untouched, so
+        // bits/index/tower/fold are unaffected — ONLY the (a-FS+) draw-2 binding can reject.
+        let mut row = honest;
+        row[sb + SP_EXTRA_DRAWS + (2 - 1)] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a forged successive draw (!= output[RATE-1-d]) was accepted — (a-FS+) not load-bearing"
+        );
+    }
+
+    /// (a-FS+) the extra draws are genuinely DISTINCT lanes (a forgery that just copies the index
+    /// draw into every extra lane must be rejected) — guards against an under-distinguishing
+    /// binding that would let a prover reuse one draw for all challenges.
+    #[test]
+    fn air_rejects_extra_draws_collapsed_to_index_draw() {
+        let h = 8usize;
+        let draws = 4usize;
+        let cfg = cfg_sponge_draws(h, draws);
+        let sin = sponge_state(202);
+        let mut row = sponge_window(&cfg, sin);
+        let sb = sponge_base(&cfg);
+        let idx_draw = row[C_DRAW_OUT];
+        // the honest output lanes are distinct from output[RATE-1] (overwhelmingly), so copying the
+        // index draw into the extra lanes breaks the per-lane binding.
+        for d in 1..draws {
+            row[sb + SP_EXTRA_DRAWS + (d - 1)] = idx_draw;
+        }
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "extra draws collapsed to the index draw were accepted — draws are not lane-distinct"
+        );
+    }
+
+    // ---------------------------------------------------------------------------------
+    // (a-FS++) ABSORB-PERMUTE FEEDING THE SQUEEZE — sponge_in derived from a constrained absorb.
+    // ---------------------------------------------------------------------------------
+
+    fn cfg_sponge_absorb(h: usize, n: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            inline_sponge_draw: true,
+            sponge_absorb: true,
+            sponge_absorb_n: n,
+            ..RecursiveConfig::single_window(h)
+        }
+    }
+
+    /// Build an absorb-fed sponge window: sponge_in is DERIVED from (prior_state, absorbed, n) by
+    /// the honest builder; the index draw is the squeeze of that derived state.
+    fn absorb_window(cfg: &RecursiveConfig, prior_state: [Val; WIDTH], absorbed: [Val; RATE]) -> Vec<Val> {
+        let inp = WindowInputs {
+            draw_out: Val::ZERO, // derived
+            e0: ext_multi(1), e1: ext_multi(2), beta: ext_multi(3),
+            descent: &[],
+            merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
+            merkle_siblings: &[],
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            sponge_in: [Val::ZERO; WIDTH], // ignored — derived from absorb
+            prior_state,
+            absorbed,
+            public_io: &[],
+        };
+        pack_window(cfg, &inp)
+    }
+
+    fn absorbed_vec(seed: u32) -> [Val; RATE] {
+        core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(40503).wrapping_add(i as u32 + 1)))
+    }
+
+    /// GOLDEN: an absorb-fed window — sponge_in == absorb(prior_state, absorbed, n) (rate overwrite,
+    /// rest zeroed, capacity += n length tag, capacity carried) and the index draw is the squeeze of
+    /// that DERIVED state — ACCEPTS. sponge_in is no longer a free column: it is pinned to the
+    /// committed prior_state + absorbed values + the length tag, exactly per challenger::duplexing.
+    #[test]
+    fn air_accepts_absorb_fed_sponge() {
+        for n in [0usize, 1, 3, 8] {
+            for h in [5usize, 8] {
+                let cfg = cfg_sponge_absorb(h, n);
+                // prior_state: a representative pre-absorb sponge (e.g. mid-transcript); for n>0 the
+                // capacity tag accumulates onto prior_state[RATE].
+                let prior = sponge_state(0xC0FFEE ^ (n as u32));
+                let absorbed = absorbed_vec(0xABBA + n as u32);
+                let row = absorb_window(&cfg, prior, absorbed);
+                // the derived sponge_in matches the reference absorb.
+                let sb = sponge_base(&cfg);
+                let want_sin = absorb_state(prior, absorbed, n);
+                for i in 0..WIDTH {
+                    assert_eq!(row[sb + SP_SPONGE_IN + i], want_sin[i], "sponge_in lane {i} != absorb (n={n})");
+                }
+                assert_eq!(row[C_DRAW_OUT], squeeze_draw(want_sin), "index draw != squeeze of absorbed state");
+                let m = RowMajorMatrix::new(row, n_cols(&cfg));
+                let report = check_all_constraints(&air(cfg), &m, &[], None);
+                assert!(report.is_ok(), "honest absorb-fed sponge (n={n}, h={h}) rejected: {} failures", report.failures.len());
+            }
+        }
+    }
+
+    /// (a-FS++) FORGERY — FORGED ABSORBED VALUE: change one absorbed rate element WITHOUT updating
+    /// the derived sponge_in/perm/draw. The absorb-derivation constraint (rate lane == absorbed)
+    /// then rejects: a prover cannot claim a sponge state inconsistent with the values it absorbed.
+    #[test]
+    fn air_rejects_forged_absorbed_value() {
+        let h = 8usize;
+        let n = 5usize;
+        let cfg = cfg_sponge_absorb(h, n);
+        let prior = sponge_state(0xDEAD);
+        let absorbed = absorbed_vec(0xBEEF);
+        let mut row = absorb_window(&cfg, prior, absorbed);
+        let sb = sponge_base(&cfg);
+        // corrupt absorbed[2] alone; sponge_in/perm/draw stay the honest absorb of the OLD absorbed.
+        let ab = sb + sp_absorb(&cfg);
+        row[ab + SPA_ABSORBED + 2] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a sponge_in inconsistent with the absorbed values was accepted — (a-FS++) absorb not load-bearing"
+        );
+    }
+
+    /// (a-FS++) FORGERY — FORGED SPONGE_IN (broken length tag): tamper the capacity-slot length tag
+    /// of sponge_in (and propagate it into perm.inputs + re-derive the perm/draw so the squeeze and
+    /// input-copy stay self-consistent). The absorb-derivation `sponge_in[RATE] == prior[RATE] + n`
+    /// then rejects — ONLY the absorb binding catches the dropped length tag (the prefix-freeness
+    /// guarantee). CONTROL: with sponge_absorb OFF (free sponge_in) the SAME forged state accepts.
+    #[test]
+    fn air_rejects_forged_length_tag() {
+        let h = 8usize;
+        let n = 4usize;
+        let prior = sponge_state(0x1234);
+        let absorbed = absorbed_vec(0x5678);
+        let honest_sin = absorb_state(prior, absorbed, n);
+        // forged state: same as honest absorb but the length tag dropped (slot RATE -= n) — i.e. the
+        // attacker absorbs the same values but omits the prefix-free tag, colliding distinct lengths.
+        let mut forged_sin = honest_sin;
+        forged_sin[RATE] -= Val::from_u8(n as u8);
+        assert_ne!(forged_sin[RATE], honest_sin[RATE]);
+
+        // CONTROL: sponge_absorb OFF — forged_sin is a perfectly valid free committed state, its
+        // squeeze is a valid index draw ⇒ accepts. So nothing but the absorb binding objects.
+        let cfg_off = cfg_sponge(h);
+        let control = sponge_window(&cfg_off, forged_sin);
+        assert!(
+            check_all_constraints(&air(cfg_off), &RowMajorMatrix::new(control, n_cols(&cfg_off)), &[], None).is_ok(),
+            "forged-length-tag control (absorb off) should accept — test would prove nothing otherwise"
+        );
+
+        // sponge_absorb ON: pack the perm/draw for forged_sin but carry the HONEST (prior, absorbed)
+        // in the absorb sub-block. The derivation requires sponge_in[RATE] == prior[RATE] + n, which
+        // forged_sin violates ⇒ rejected.
+        let cfg_on = cfg_sponge_absorb(h, n);
+        // Build an honest absorb window, then overwrite sponge_in + perm + draw block with the
+        // squeeze of forged_sin (self-consistent perm), leaving the (prior, absorbed) sub-block honest.
+        let mut row = absorb_window(&cfg_on, prior, absorbed);
+        let sb = sponge_base(&cfg_on);
+        let consts = inlined_perm::Constants::pinned();
+        let forged_perm = inlined_perm::generate_perm_cols(forged_sin, &consts);
+        row[sb + SP_SPONGE_IN..sb + SP_SPONGE_IN + WIDTH].copy_from_slice(&forged_sin);
+        row[sb + SP_PERM..sb + SP_PERM + PERM_COLS].copy_from_slice(&forged_perm);
+        // re-derive the whole bus (draw_out/bits/index/tower/fold) for the forged squeeze draw, so
+        // the only constraint that can object is the absorb-derivation (length tag), not the bus.
+        let forged_draw = forged_perm[C_OUTPUT + (RATE - 1)];
+        let forged_bus = pack_window(&cfg_off, &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)));
+        for c in C_DRAW_OUT..tower_end(h) {
+            row[c] = forged_bus[c];
+        }
+        let m = RowMajorMatrix::new(row, n_cols(&cfg_on));
+        assert!(
+            !check_all_constraints(&air(cfg_on), &m, &[], None).is_ok(),
+            "a sponge_in with a dropped length tag was accepted — (a-FS++) length-tag binding not load-bearing"
+        );
+    }
+
+    /// (a-FS++) the absorb derivation zeroes the UNFILLED rate lanes [n..RATE]: a nonzero stale
+    /// value in an unfilled rate lane of sponge_in is rejected (challenger::duplexing fills them
+    /// with ZERO before permuting). Tamper sponge_in lane n (and its perm.input copy) ⇒ the
+    /// derivation's `sponge_in[n..RATE] == 0` rejects.
+    #[test]
+    fn air_rejects_nonzero_unfilled_rate_lane() {
+        let h = 8usize;
+        let n = 3usize;
+        let cfg = cfg_sponge_absorb(h, n);
+        let prior = sponge_state(0x99);
+        let absorbed = absorbed_vec(0x11);
+        let mut row = absorb_window(&cfg, prior, absorbed);
+        let sb = sponge_base(&cfg);
+        // set unfilled rate lane n to nonzero in sponge_in AND its perm.input copy (so input==sponge_in
+        // still holds and only the derivation's zero-fill is violated). Re-derive perm/draw to keep
+        // the permutation self-consistent, leaving the absorb derivation as the sole objector.
+        let mut tampered_sin = absorb_state(prior, absorbed, n);
+        tampered_sin[n] += Val::ONE; // a stale unfilled rate lane
+        let consts = inlined_perm::Constants::pinned();
+        let perm = inlined_perm::generate_perm_cols(tampered_sin, &consts);
+        row[sb + SP_SPONGE_IN..sb + SP_SPONGE_IN + WIDTH].copy_from_slice(&tampered_sin);
+        row[sb + SP_PERM..sb + SP_PERM + PERM_COLS].copy_from_slice(&perm);
+        let forged_draw = perm[C_OUTPUT + (RATE - 1)];
+        let forged_bus = pack_window(&RecursiveConfig::single_window(h), &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)));
+        for c in C_DRAW_OUT..tower_end(h) {
+            row[c] = forged_bus[c];
+        }
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a nonzero unfilled rate lane was accepted — (a-FS++) zero-fill not load-bearing"
+        );
+    }
+
+    /// GOLDEN: absorb-fed sponge + multi-draw together — sponge_in derived from the absorb, and
+    /// `sponge_draws` successive challenges popped off the one squeeze. ACCEPTS. This is one full
+    /// constrained absorb→permute→multi-draw duplex step in-window.
+    #[test]
+    fn air_accepts_absorb_fed_multi_draw() {
+        let h = 8usize;
+        let n = 6usize;
+        let draws = 4usize;
+        let cfg = RecursiveConfig {
+            inline_sponge_draw: true,
+            sponge_absorb: true,
+            sponge_absorb_n: n,
+            sponge_draws: draws,
+            ..RecursiveConfig::single_window(h)
+        };
+        let prior = sponge_state(0xFACE);
+        let absorbed = absorbed_vec(0xCAFE);
+        let row = absorb_window(&cfg, prior, absorbed);
+        let want_sin = absorb_state(prior, absorbed, n);
+        let want_draws = squeeze_draws(want_sin, draws);
+        assert_eq!(row[C_DRAW_OUT], want_draws[0]);
+        let sb = sponge_base(&cfg);
+        for d in 1..draws {
+            assert_eq!(row[sb + SP_EXTRA_DRAWS + (d - 1)], want_draws[d], "draw {d} != squeeze draw");
+        }
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        let report = check_all_constraints(&air(cfg), &m, &[], None);
+        assert!(report.is_ok(), "honest absorb-fed multi-draw window rejected: {} failures", report.failures.len());
+    }
+
+    // ---------------------------------------------------------------------------------
     // (b-leaf) Merkle-opened leaf digest ↔ FRI round-0 e0.
     // ---------------------------------------------------------------------------------
 
@@ -1792,7 +2267,7 @@ mod tests {
             merkle_leaf: leaf,
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
-            sponge_in: [Val::ZERO; WIDTH], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], public_io: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -1838,7 +2313,7 @@ mod tests {
             draw_out: draw, e0: forged_e0, e1: ext_multi(2), beta: ext_multi(3),
             descent: &[], merkle_leaf: leaves[index], merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
-            sponge_in: [Val::ZERO; WIDTH], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], public_io: &[],
         };
         let row = pack_window(&cfg_off, &inp);
         assert!(
@@ -1873,6 +2348,7 @@ mod tests {
             merkle_siblings: &[],
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
             sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             public_io: stmt,
         };
         pack_window(cfg, &inp)
@@ -1970,6 +2446,7 @@ mod tests {
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
             sponge_in: sin,
+            prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             public_io: &stmt,
         };
         let row = pack_window(&cfg, &inp);
