@@ -1,5 +1,22 @@
 # Descender Post-Quantum Signature — SECURITY DOSSIER (external-review package)
 
+> ## SOUNDNESS-LEVEL FRAMING (2026-06-19, decided by James)
+> Two distinct properties at two distinct levels — NOT a single weakest-link:
+> - **SPEND signature SUF-CMA: ~2⁻¹²⁸.** Charged as SECOND-preimage (target fixed first by an
+>   honest party; ε ~ q/2ⁿ, no birthday square): prevalidationLeaf/Registry 2⁻¹⁹²,
+>   checkedCoreMessageBinding 2⁻¹⁵⁰, accepted-spend 2⁻¹²⁹. Does NOT use the STARK/Merkle.
+> - **Account-CREATION STARK knowledge-soundness: ~2⁻¹²⁴ (industry-standard, ACCEPTED).** The
+>   prover commits its own FRI Merkle tree, so the conservative charge is COLLISION on the
+>   8-element (~248-bit) Poseidon2 digest + the width-16 sponge capacity, both flooring at
+>   c/2 ≈ 123.95. This is THE universal STARK config (Plonky3/Polygon/RISC0/SP1/StarkWare Stone
+>   all ship 8×31-bit digests as "128-bit-class"); a hard 2⁻¹²⁸ would need a full WIDTH-24
+>   Poseidon2 re-host (9-elem digest needs width ≥ 18; the heaviest change in the project) for
+>   4 bits — declined. The deg-8 challenge-field bump (commit 4c06f6b) WAS applied: it lifted
+>   the FRI field-bound additive term from ~2⁻¹⁰⁴ (below the ceiling) up to the 124 ceiling, so
+>   the field is no longer the binding constraint. See
+>   research/cryptanalysis/{fri_aok_extractor_instantiation, degree5_field_rehost_scope,
+>   sponge_capacity_c9_hardening_scope}.md.
+
 > ## ⛔ RED-TEAM HOLD (2026-06-10; HIGH-2 IN-CLEAR BLIND FIX APPLIED 2026-06-11) — DO NOT SUBMIT AS-IS
 > An authorized internal red-team found **THREE HIGH-severity breaks** (all reproduced;
 > see `RED_TEAM_REPORT.md` + `redteam_*.md`). **HIGH-1 and HIGH-3 are FIXED + committed +
