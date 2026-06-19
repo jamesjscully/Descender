@@ -77,25 +77,47 @@
 //!      [`tests::air_rejects_forged_length_tag`], [`tests::air_rejects_nonzero_unfilled_rate_lane`]).
 //!      ONE absorb→permute→multi-draw duplex step is now fully constrained in-window
 //!      ([`tests::air_accepts_absorb_fed_multi_draw`]).
+//!  13. **(a-FS+++) TRANSCRIPT-PREFIX ABSORB CHAIN feeding `prior_state`** (NEW; `sponge_prefix_rounds`):
+//!      `prior_state` (the pre-absorb state of the final duplex step (a-FS++)) is no longer a free
+//!      committed column — it is the CONSTRAINED output of a multi-round absorb-permute CHAIN from the
+//!      `new()` zero boundary. Per round `k = 1..=sponge_prefix_rounds` the sponge block carries an
+//!      `absorbed_block_k[RATE]` (FULL-rate absorb, `n == RATE`) ‖ a Poseidon2 perm block, and the
+//!      AIR constrains `state_k == permute(absorb(state_{k-1}, block_k, RATE))` (rate overwrite +
+//!      `+= RATE` length tag + capacity carry, then [`crate::inlined_perm::eval_perm`]) with
+//!      `state_0` PINNED to the all-zero sponge ([`crate::challenger`] boundary) and `state_K` bound
+//!      limb-for-limb into `prior_state`. Optionally (`prefix_blocks_public`) each `block_k` is
+//!      pinned to public-value columns (the committed transcript = observed commitments + public IO).
+//!      Tamper-rejected: a non-zero round-0 state ([`tests::air_rejects_prefix_nonzero_round0_state`]),
+//!      a forged intermediate `state_k` ([`tests::air_rejects_prefix_forged_intermediate_state`]), a
+//!      broken inter-round carry ([`tests::air_rejects_prefix_broken_interround_carry`]), a forged
+//!      absorbed block ([`tests::air_rejects_prefix_forged_absorbed_block`]), a forged `state_K →
+//!      prior_state` link ([`tests::air_rejects_prefix_forged_final_link`]), and a public-transcript
+//!      mismatch ([`tests::air_prefix_blocks_bound_to_public_transcript`]). This is a BOUNDED prefix
+//!      (each round absorbs RATE = 8 elements); the full ~190-elem transcript needs
+//!      ⌈(8 cap + ~190 IO)/8⌉ ≈ 25 rounds (see remaining below).
 //!
 //! ## Remaining assembly toward the full monolith (documented, NOT yet wired)
 //!
-//! - **full challenger-sponge transcript PREFIX**: (a-FS)/(a-FS+)/(a-FS++) now constrain ONE full
-//!   duplex step — absorb(`prior_state`, `absorbed`, `n`) → permute → up to `RATE` LIFO draws — so
-//!   `sponge_in` and the draws are constrained, NOT free. What remains DEFERRED is the transcript
-//!   PREFIX that produces `prior_state`: the multi-permute absorb CHAIN over the inner commitments +
-//!   ~190-elem public IO at rate 8 (each `RATE`-element fill triggers a `duplexing`, so prior_state
-//!   should itself be the constrained output of the previous step's permute, threaded across rows /
-//!   across multiple in-window absorb sub-blocks). Concretely the next step is to make `prior_state`
-//!   the OUTPUT of a preceding absorb-permute (chain `prior_state_{k} == permute(absorb(state_{k-1},
-//!   block_k, RATE))`), repeated for the ⌈(8 cap + 190 IO)/8⌉ absorb rounds, with the FIRST round's
-//!   `prior_state` pinned to the `new()` zero boundary ([`crate::challenger`] boundary). Also still
-//!   committed: the bus betas/zeta (block (b)) remain free draw columns rather than being threaded
-//!   off their own squeeze permutes (the (a-FS+) multi-draw machinery is the building block to
-//!   replace them, once the per-challenge permute boundaries are laid out). The
-//!   [`crate::challenger::air::ChallengerAir`] op-program (observe → sample sequencing, in/out
-//!   buffer one-hots) is the reference for that chaining; one [`crate::inlined_perm::eval_perm`] per
-//!   permutation.
+//! - **full challenger-sponge transcript PREFIX (BOUNDED prefix now wired)**: (a-FS)/(a-FS+)/(a-FS++)
+//!   constrain ONE full duplex step — absorb(`prior_state`, `absorbed`, `n`) → permute → up to `RATE`
+//!   LIFO draws. (a-FS+++) now constrains a MULTI-ROUND absorb CHAIN producing `prior_state`:
+//!   `state_0 == 0` (zero boundary), `state_k == permute(absorb(state_{k-1}, block_k, RATE))`, with
+//!   `state_K` bound into `prior_state`. So `prior_state` is NO LONGER a free entry point — it is the
+//!   constrained output of `sponge_prefix_rounds` absorb-permute rounds from the `new()` boundary.
+//!   What remains is SCALE + transcript-IDENTITY: this wires a BOUNDED prefix (tested at 1–3 rounds =
+//!   8–24 absorbed elements; the absorbed blocks are bound to public values only when
+//!   `prefix_blocks_public`). The FULL leaf transcript is the ~8-elem commitment caps + ~190-elem
+//!   public IO + the quotient/commit-phase caps absorbed at rate 8 ⇒ ≈25+ rounds, AND those blocks
+//!   must be bound to the proof's ACTUAL committed transcript columns (commitment caps + the (c-pub)
+//!   public-IO block), and partial-fill / non-RATE-aligned final absorbs (the leaf's 19-elem IO
+//!   leaves a non-aligned buffer — a final `n < RATE` round, the building block of which is the
+//!   existing (a-FS++) `sponge_absorb_n`) must be threaded. The
+//!   [`crate::challenger::air::ChallengerAir`] op-program (observe → sample sequencing, in/out buffer
+//!   one-hots) is the reference for the exact absorb/sample interleaving (the prefix here assumes
+//!   pure FULL-rate absorbs feeding one final draw-phase). Also still committed: the bus betas/zeta
+//!   (block (b)) remain free draw columns rather than being threaded off their own squeeze permutes
+//!   (the (a-FS+) multi-draw machinery is the building block to replace them, once the per-challenge
+//!   permute boundaries are laid out). One [`crate::inlined_perm::eval_perm`] per permutation.
 //! - **deferred leaf C(zeta)**: the DEEP block opens `C(zeta)` / `Q(zeta)` as committed values and
 //!   constrains the QUOTIENT RELATION; the full `C(zeta) =` leaf-AIR-constraint-polynomial
 //!   evaluation (re-expressing the entire leaf folder) + the DEEP linear-combination / chunk
@@ -167,6 +189,25 @@ pub struct RecursiveConfig {
     /// (a-FS++) Number of rate lanes absorbed (`n` in `challenger::duplexing`), `0..=RATE`. Only
     /// consumed when `sponge_absorb`.
     pub sponge_absorb_n: usize,
+    /// (a-FS+++) Number of transcript-PREFIX absorb-permute rounds whose chained output FEEDS the
+    /// duplex step's `prior_state` (closing `prior_state` from a free column to the constrained
+    /// output of the preceding absorb chain). When `> 0`, the sponge block additionally carries, per
+    /// round `k = 1..=sponge_prefix_rounds`, an `absorbed_block_k[RATE]` (the observed transcript
+    /// values for that round, FULL-rate absorb `n == RATE`) ‖ a Poseidon2 perm block `perm_k`, and
+    /// constrains `state_k == permute(absorb(state_{k-1}, block_k, RATE))` with `state_0` PINNED to
+    /// the `new()` zero boundary (all-zero sponge) and `state_K` bound limb-for-limb into the duplex
+    /// step's `prior_state`. Requires `inline_sponge_draw && sponge_absorb`. Each round absorbs RATE
+    /// transcript elements; the FULL ~190-elem transcript needs ⌈(8 cap + ~190 IO)/8⌉ rounds — this
+    /// wires a BOUNDED prefix (see module-header "remaining"). The absorbed blocks are bound to the
+    /// proof's public/committed transcript columns via `prefix_blocks_public` (below).
+    pub sponge_prefix_rounds: usize,
+    /// (a-FS+++) bind each prefix round's `absorbed_block_k[RATE]` to public-value columns (the
+    /// committed transcript). When `true` and the public-values vector is exactly
+    /// `sponge_prefix_rounds * RATE` long, element `(k-1)*RATE + i` pins `absorbed_block_k[i]`. This
+    /// is what ties the absorb chain to the ACTUAL observed transcript (commitments + public IO),
+    /// not arbitrary prover-chosen blocks. Off ⇒ blocks are committed-but-unbound (the chain
+    /// mechanics are still constrained; only the transcript-identity binding is skipped).
+    pub prefix_blocks_public: bool,
     /// (c-pub) public-IO statement-preservation block: `public_io_len` element rows, each binding
     /// `outer == observed == inner`. 0 = no public-IO block.
     pub public_io_len: usize,
@@ -190,6 +231,8 @@ impl RecursiveConfig {
             sponge_draws: 1,
             sponge_absorb: false,
             sponge_absorb_n: 0,
+            sponge_prefix_rounds: 0,
+            prefix_blocks_public: false,
             public_io_len: 0,
             bind_merkle_leaf_to_e0: false,
         }
@@ -323,6 +366,28 @@ const SPA_PRIOR_STATE: usize = 0;
 const SPA_ABSORBED: usize = SPA_PRIOR_STATE + WIDTH;
 const ABSORB_SUBBLOCK: usize = SPA_ABSORBED + RATE;
 
+// ----- (a-FS+++) transcript-prefix absorb chain sub-block -----
+//
+// Appended AFTER the absorb sub-block. Per round k = 1..=sponge_prefix_rounds: an
+// `absorbed_block_k[RATE]` (the observed transcript values absorbed that round) ‖ a Poseidon2 perm
+// block `perm_k[PERM_COLS]` whose input is `absorb(state_{k-1}, block_k, RATE)` and whose output is
+// `state_k`. `state_0` is the all-zero `new()` boundary; `state_K` feeds `prior_state`.
+const SPP_BLOCK: usize = 0; // absorbed_block_k[RATE]
+const SPP_PERM: usize = SPP_BLOCK + RATE; // perm_k[PERM_COLS]
+const PREFIX_ROUND: usize = SPP_PERM + PERM_COLS;
+
+/// Sub-offset of the prefix-chain sub-block within the sponge block (after the absorb sub-block).
+/// Only meaningful when `sponge_absorb && sponge_prefix_rounds > 0`.
+fn sp_prefix(cfg: &RecursiveConfig) -> usize {
+    sp_absorb(cfg) + ABSORB_SUBBLOCK
+}
+
+/// Sub-offset of prefix round `k` (1-based) within the sponge block.
+fn prefix_round_base(cfg: &RecursiveConfig, k: usize) -> usize {
+    debug_assert!(k >= 1);
+    sp_prefix(cfg) + (k - 1) * PREFIX_ROUND
+}
+
 /// Base of the (a-FS) sponge block (present iff `inline_sponge_draw`).
 fn sponge_base(cfg: &RecursiveConfig) -> usize {
     merkle_end(cfg)
@@ -333,6 +398,7 @@ fn sponge_size(cfg: &RecursiveConfig) -> usize {
         let mut sz = SPONGE_BLOCK + (cfg.sponge_draw_count() - 1);
         if cfg.sponge_absorb {
             sz += ABSORB_SUBBLOCK;
+            sz += cfg.sponge_prefix_rounds * PREFIX_ROUND;
         }
         sz
     } else {
@@ -407,6 +473,11 @@ pub struct WindowInputs<'a> {
     /// these (and `sponge_in` above is then ignored). When `sponge_absorb` is off these are unused.
     pub prior_state: [Val; WIDTH],
     pub absorbed: [Val; RATE],
+    /// (a-FS+++) transcript-PREFIX absorb blocks: per round `k`, the RATE observed transcript
+    /// elements absorbed (each a FULL-rate absorb). Length must equal `sponge_prefix_rounds`. When
+    /// `sponge_prefix_rounds > 0` the honest builder DERIVES `prior_state = prefix_chain_state(blocks)`
+    /// (the all-zero-boundary chain), overriding the `prior_state` field above. When 0, unused.
+    pub prefix_blocks: &'a [[Val; RATE]],
     /// (c-pub) public-IO statement: per element `(outer, observed, inner)`. Length must equal
     /// `public_io_len`. The honest builder sets the three equal.
     pub public_io: &'a [(Val, Val, Val)],
@@ -428,6 +499,7 @@ impl<'a> WindowInputs<'a> {
             sponge_in: [Val::ZERO; WIDTH],
             prior_state: [Val::ZERO; WIDTH],
             absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
             public_io: &[],
         }
     }
@@ -452,6 +524,30 @@ pub fn absorb_state(prior_state: [Val; WIDTH], absorbed: [Val; RATE], n: usize) 
         s[RATE] = prior_state[RATE] + Val::from_u8(n as u8);
     }
     s
+}
+
+/// One prefix-chain absorb-permute round: `state_k = permute(absorb(state_prev, block, RATE))`,
+/// a FULL-rate absorb (`n == RATE`) followed by the Poseidon2 permutation — exactly what
+/// [`crate::challenger::RowChallenger::observe`] triggers when the input buffer fills to RATE. The
+/// returned state is the post-permute sponge (the `state_k` carried into the next round).
+pub fn prefix_round_state(state_prev: [Val; WIDTH], block: [Val; RATE]) -> [Val; WIDTH] {
+    let pre = absorb_state(state_prev, block, RATE);
+    let consts = inlined_perm::Constants::pinned();
+    let cols = inlined_perm::generate_perm_cols(pre, &consts);
+    inlined_perm::perm_output(&cols)
+}
+
+/// The chained prefix state after absorbing `blocks` (each a FULL RATE-element transcript block)
+/// starting from the `new()` all-zero boundary: `state_0 = ZERO`, `state_k =
+/// permute(absorb(state_{k-1}, block_k, RATE))`. The returned value is `state_K` — the constrained
+/// `prior_state` that feeds the final duplex step. The single source shared by the honest builder
+/// and (via `eval_perm` round-by-round) the (a-FS+++) AIR binding.
+pub fn prefix_chain_state(blocks: &[[Val; RATE]]) -> [Val; WIDTH] {
+    let mut state = [Val::ZERO; WIDTH];
+    for block in blocks {
+        state = prefix_round_state(state, *block);
+    }
+    state
 }
 
 /// The base-field index draw produced by squeezing `sponge_in`: the LIFO pop of the freshly
@@ -483,10 +579,18 @@ pub fn squeeze_draws(sponge_in: [Val; WIDTH], count: usize) -> Vec<Val> {
 /// (the squeeze pop) so the index decomposition is over the genuine Poseidon2 sponge output.
 pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
     let h = cfg.log_height;
+    // (a-FS+++) when a transcript-prefix absorb chain feeds the duplex step, the duplex step's
+    // prior_state is the chained output of absorbing the prefix blocks from the zero boundary; it
+    // overrides the supplied prior_state field.
+    let prior_state = if cfg.inline_sponge_draw && cfg.sponge_absorb && cfg.sponge_prefix_rounds > 0 {
+        prefix_chain_state(inp.prefix_blocks)
+    } else {
+        inp.prior_state
+    };
     // (a-FS++) when absorbing, the squeeze permute's input is DERIVED from the absorb (prior_state,
     // absorbed, n); otherwise it is the supplied committed sponge_in.
     let sponge_in = if cfg.inline_sponge_draw && cfg.sponge_absorb {
-        absorb_state(inp.prior_state, inp.absorbed, cfg.sponge_absorb_n)
+        absorb_state(prior_state, inp.absorbed, cfg.sponge_absorb_n)
     } else {
         inp.sponge_in
     };
@@ -634,13 +738,33 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
         // sponge_in). sponge_in above was already set to absorb_state(prior_state, absorbed, n).
         if cfg.sponge_absorb {
             let ab = sb + sp_absorb(cfg);
-            row[ab + SPA_PRIOR_STATE..ab + SPA_PRIOR_STATE + WIDTH].copy_from_slice(&inp.prior_state);
+            row[ab + SPA_PRIOR_STATE..ab + SPA_PRIOR_STATE + WIDTH].copy_from_slice(&prior_state);
             row[ab + SPA_ABSORBED..ab + SPA_ABSORBED + RATE].copy_from_slice(&inp.absorbed);
             debug_assert_eq!(
                 sponge_in,
-                absorb_state(inp.prior_state, inp.absorbed, cfg.sponge_absorb_n),
+                absorb_state(prior_state, inp.absorbed, cfg.sponge_absorb_n),
                 "sponge_in != absorb(prior_state, absorbed, n)"
             );
+            // (a-FS+++) transcript-prefix absorb chain: state_0 = ZERO (new() boundary), per round
+            // state_k = permute(absorb(state_{k-1}, block_k, RATE)); the final state_K == prior_state.
+            if cfg.sponge_prefix_rounds > 0 {
+                assert_eq!(
+                    inp.prefix_blocks.len(),
+                    cfg.sponge_prefix_rounds,
+                    "prefix_blocks must have sponge_prefix_rounds entries"
+                );
+                let mut state = [Val::ZERO; WIDTH];
+                for k in 1..=cfg.sponge_prefix_rounds {
+                    let block = inp.prefix_blocks[k - 1];
+                    let pre = absorb_state(state, block, RATE);
+                    let perm_cols = inlined_perm::generate_perm_cols(pre, &consts);
+                    let pb = sb + prefix_round_base(cfg, k);
+                    row[pb + SPP_BLOCK..pb + SPP_BLOCK + RATE].copy_from_slice(&block);
+                    row[pb + SPP_PERM..pb + SPP_PERM + PERM_COLS].copy_from_slice(&perm_cols);
+                    state = inlined_perm::perm_output(&perm_cols);
+                }
+                debug_assert_eq!(state, prior_state, "prefix chain output != prior_state");
+            }
         }
     }
 
@@ -1044,6 +1168,71 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                         );
                     }
                 }
+
+                // ===== (a-FS+++) TRANSCRIPT-PREFIX ABSORB CHAIN feeding prior_state =====
+                // Per round k = 1..=sponge_prefix_rounds, constrain
+                //   state_k == permute(absorb(state_{k-1}, block_k, RATE))   (FULL-rate absorb)
+                // with state_0 PINNED to the new() zero boundary, and state_K bound into the duplex
+                // step's prior_state. This makes prior_state the constrained output of the preceding
+                // absorb chain — not a free committed column. Each round reuses the FULL-rate absorb
+                // derivation + one eval_perm. The pre-permute input lives in perm_k.inputs; we bind
+                // it to absorb(state_{k-1}, block_k, RATE) lane-for-lane (state_{k-1} is the zero
+                // boundary for k==1, else perm_{k-1}.output), then eval_perm constrains the permute,
+                // and state_k = perm_k.output[..WIDTH].
+                let rounds = cfg.sponge_prefix_rounds;
+                if rounds > 0 {
+                    // reader for state_{k-1}: the all-zero boundary for k==1, else perm_{k-1}.output.
+                    let state_prev = |k: usize, i: usize| -> AB::Expr {
+                        if k == 1 {
+                            AB::Expr::ZERO // state_0 == new() zero boundary
+                        } else {
+                            let pp = sb + prefix_round_base(&cfg, k - 1);
+                            l(pp + SPP_PERM + C_OUTPUT + i)
+                        }
+                    };
+                    let rate_expr = AB::Expr::from(AB::F::from_u8(RATE as u8));
+                    for k in 1..=rounds {
+                        let pb = sb + prefix_round_base(&cfg, k);
+                        let inb = pb + SPP_PERM + inlined_perm::C_INPUTS;
+                        // FULL-rate absorb (n == RATE): rate lanes [0..RATE] == block_k (overwrite).
+                        for i in 0..RATE {
+                            builder.assert_zero(l(inb + i) - l(pb + SPP_BLOCK + i));
+                        }
+                        // capacity slot RATE == state_{k-1}[RATE] + RATE (length tag, n == RATE).
+                        builder.assert_zero(
+                            l(inb + RATE) - state_prev(k, RATE) - rate_expr.clone(),
+                        );
+                        // remaining capacity slots [RATE+1..WIDTH] carried from state_{k-1}.
+                        for i in (RATE + 1)..WIDTH {
+                            builder.assert_zero(l(inb + i) - state_prev(k, i));
+                        }
+                        // full Poseidon2 permutation over this round's perm block.
+                        eval_perm::<AB, _>(builder, &cells, pb + SPP_PERM, &consts);
+                    }
+                    // state_K == prior_state, limb-for-limb (the chain output feeds the duplex step).
+                    let lastp = sb + prefix_round_base(&cfg, rounds);
+                    for i in 0..WIDTH {
+                        builder.assert_zero(
+                            l(lastp + SPP_PERM + C_OUTPUT + i) - l(ab + SPA_PRIOR_STATE + i),
+                        );
+                    }
+                    // (a-FS+++) optionally bind each round's absorbed block to the public transcript:
+                    // public value (k-1)*RATE + i == block_k[i] (the actual observed commitments + IO).
+                    if cfg.prefix_blocks_public {
+                        let pubs: Vec<AB::Expr> =
+                            builder.public_values().iter().map(|p| (*p).into()).collect();
+                        if pubs.len() == rounds * RATE {
+                            for k in 1..=rounds {
+                                let pb = sb + prefix_round_base(&cfg, k);
+                                for i in 0..RATE {
+                                    builder.assert_zero(
+                                        l(pb + SPP_BLOCK + i) - pubs[(k - 1) * RATE + i].clone(),
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -1306,6 +1495,7 @@ mod tests {
             deep_q: Challenge::ZERO,
             sponge_in: [Val::ZERO; WIDTH],
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
             public_io: &[],
         };
         pack_window(cfg, &inp)
@@ -1362,7 +1552,7 @@ mod tests {
             merkle_leaf: leaves[forged_index],
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
         };
         let mut row = pack_window(&cfg, &inp);
         // CONTROL: the FORGED Merkle blocks are internally valid — with a MATCHING forged bus
@@ -1381,7 +1571,7 @@ mod tests {
             descent: &[], merkle_leaf: leaves[honest_index],
             merkle_siblings: &tree.auth_path(honest_index),
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
         });
         for c in C_DRAW_OUT..tower_end(levels) {
             row[c] = honest[c];
@@ -1575,7 +1765,7 @@ mod tests {
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -1689,7 +1879,7 @@ mod tests {
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
             deep_zeta: zeta, deep_q: q,
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -1810,7 +2000,7 @@ mod tests {
             merkle_leaf: leaves[index],
             merkle_siblings: &sibs,
             deep_zeta: ext_multi(55), deep_q: ext_multi(66),
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -1844,6 +2034,7 @@ mod tests {
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
             sponge_in,
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
             public_io: &[],
         };
         pack_window(cfg, &inp)
@@ -2066,6 +2257,7 @@ mod tests {
             sponge_in: [Val::ZERO; WIDTH], // ignored — derived from absorb
             prior_state,
             absorbed,
+            prefix_blocks: &[],
             public_io: &[],
         };
         pack_window(cfg, &inp)
@@ -2243,6 +2435,293 @@ mod tests {
     }
 
     // ---------------------------------------------------------------------------------
+    // (a-FS+++) TRANSCRIPT-PREFIX ABSORB CHAIN — prior_state is the constrained output of a
+    // multi-round absorb-permute chain from the new() zero boundary, not a free column.
+    // ---------------------------------------------------------------------------------
+
+    fn cfg_prefix(h: usize, n: usize, rounds: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            inline_sponge_draw: true,
+            sponge_absorb: true,
+            sponge_absorb_n: n,
+            sponge_prefix_rounds: rounds,
+            ..RecursiveConfig::single_window(h)
+        }
+    }
+
+    /// A representative RATE-element transcript block (stands in for an observed commitment cap /
+    /// public-IO chunk).
+    fn prefix_block(seed: u32) -> [Val; RATE] {
+        core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 * 31 + 1)))
+    }
+
+    /// Build a prefix-chained absorb window: prior_state is DERIVED by the honest builder from the
+    /// prefix blocks (zero-boundary chain), then the final duplex step absorbs `absorbed` (n lanes)
+    /// and squeezes the index draw.
+    fn prefix_window(
+        cfg: &RecursiveConfig,
+        blocks: &[[Val; RATE]],
+        absorbed: [Val; RATE],
+    ) -> Vec<Val> {
+        let inp = WindowInputs {
+            draw_out: Val::ZERO,
+            e0: ext_multi(1), e1: ext_multi(2), beta: ext_multi(3),
+            descent: &[],
+            merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
+            merkle_siblings: &[],
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH], // ignored — derived from the prefix chain
+            absorbed,
+            prefix_blocks: blocks,
+            public_io: &[],
+        };
+        pack_window(cfg, &inp)
+    }
+
+    /// GOLDEN: a 2- and 3-round transcript-prefix absorb chain feeding the duplex step. state_0 is
+    /// the new() zero boundary; each state_k == permute(absorb(state_{k-1}, block_k, RATE)); state_K
+    /// == prior_state, which the final duplex step absorbs `absorbed` (n) into and squeezes. ACCEPTS,
+    /// and the derived prior_state matches the reference prefix_chain_state. prior_state is no longer
+    /// a free column — it is the constrained output of the absorb chain.
+    #[test]
+    fn air_accepts_prefix_absorb_chain() {
+        for rounds in [1usize, 2, 3] {
+            for n in [0usize, 3, 8] {
+                let h = 8usize;
+                let cfg = cfg_prefix(h, n, rounds);
+                let blocks: Vec<[Val; RATE]> =
+                    (0..rounds as u32).map(|k| prefix_block(0xA11CE + k)).collect();
+                let absorbed = absorbed_vec(0xF00D + rounds as u32);
+                let row = prefix_window(&cfg, &blocks, absorbed);
+                // the derived prior_state matches the reference chain from the zero boundary.
+                let want_prior = prefix_chain_state(&blocks);
+                let sb = sponge_base(&cfg);
+                let ab = sb + sp_absorb(&cfg);
+                for i in 0..WIDTH {
+                    assert_eq!(row[ab + SPA_PRIOR_STATE + i], want_prior[i], "prior_state lane {i} != chain (rounds={rounds},n={n})");
+                }
+                // and the index draw is the squeeze of absorb(prior_state, absorbed, n).
+                let want_sin = absorb_state(want_prior, absorbed, n);
+                assert_eq!(row[C_DRAW_OUT], squeeze_draw(want_sin), "index draw != squeeze of chained state");
+                let m = RowMajorMatrix::new(row, n_cols(&cfg));
+                let report = check_all_constraints(&air(cfg), &m, &[], None);
+                assert!(report.is_ok(), "honest prefix chain (rounds={rounds}, n={n}) rejected: {} failures", report.failures.len());
+            }
+        }
+    }
+
+    /// (a-FS+++) FORGERY — NON-ZERO ROUND-0 STATE: the chain MUST start from the new() all-zero
+    /// boundary. Build an honest 2-round chain, then forge round 1's perm input to start from a
+    /// non-zero state_0 (and re-derive round-1's perm so the permutation stays self-consistent). The
+    /// boundary constraint (round-1 absorb input == absorb(ZERO, block_1, RATE)) then rejects: a
+    /// prover cannot seed the FS transcript from a chosen non-zero state. CONTROL: a chain built
+    /// honestly from that SAME non-zero state under a fresh (non-boundary) reference would accept —
+    /// here we isolate the zero-boundary by showing only it objects to the forged seed.
+    #[test]
+    fn air_rejects_prefix_nonzero_round0_state() {
+        let h = 8usize;
+        let n = 4usize;
+        let rounds = 2usize;
+        let cfg = cfg_prefix(h, n, rounds);
+        let blocks: Vec<[Val; RATE]> = (0..rounds as u32).map(|k| prefix_block(0xBEE5 + k)).collect();
+        let absorbed = absorbed_vec(0x1357);
+        let mut row = prefix_window(&cfg, &blocks, absorbed);
+        let sb = sponge_base(&cfg);
+        // CONTROL: the honest row (chain seeded from the zero boundary) accepts.
+        assert!(
+            check_all_constraints(&air(cfg), &RowMajorMatrix::new(row.clone(), n_cols(&cfg)), &[], None).is_ok(),
+            "honest prefix-chain control should accept — test would prove nothing otherwise"
+        );
+
+        // Forge a non-zero state_0: re-derive round-1's perm input as absorb(seed0, block_1, RATE)
+        // for a NON-ZERO seed0, write the matching perm cells (so eval_perm passes), but DO NOT
+        // propagate downstream (round 2 / prior_state / draw stay the honest zero-boundary chain).
+        // The ONLY violated constraint is round-1's capacity length tag: honest expects
+        // input[RATE] == 0 + RATE; the forged input carries seed0[RATE] + RATE != RATE.
+        let mut seed0 = [Val::ZERO; WIDTH];
+        seed0[RATE] += Val::ONE; // a non-zero capacity slot in the (illegal) starting state
+        let forged_pre = absorb_state(seed0, blocks[0], RATE);
+        let consts = inlined_perm::Constants::pinned();
+        let forged_perm = inlined_perm::generate_perm_cols(forged_pre, &consts);
+        let p1 = sb + prefix_round_base(&cfg, 1);
+        row[p1 + SPP_PERM..p1 + SPP_PERM + PERM_COLS].copy_from_slice(&forged_perm);
+        // round-1 block stays blocks[0]; eval_perm now passes on the forged perm, the FULL-rate
+        // absorb rate lanes == block_1 still hold, but capacity-slot tag (== 0 + RATE) is violated.
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a prefix chain seeded from a non-zero round-0 state was accepted — zero boundary not load-bearing"
+        );
+    }
+
+    /// (a-FS+++) FORGERY — FORGED INTERMEDIATE state_k: corrupt round-1's perm output (state_1) so it
+    /// is NOT permute(absorb(state_0, block_1, RATE)) — i.e. an intermediate chain state inconsistent
+    /// with its absorb-permute. The inlined Poseidon2 round constraints on round 1 reject (the
+    /// committed output no longer matches the recomputed permutation). Proves the chain link
+    /// state_k == permute(...) is constrained, not just carried.
+    #[test]
+    fn air_rejects_prefix_forged_intermediate_state() {
+        let h = 8usize;
+        let n = 5usize;
+        let rounds = 3usize;
+        let cfg = cfg_prefix(h, n, rounds);
+        let blocks: Vec<[Val; RATE]> = (0..rounds as u32).map(|k| prefix_block(0xCAFE + k)).collect();
+        let absorbed = absorbed_vec(0x2468);
+        let mut row = prefix_window(&cfg, &blocks, absorbed);
+        let sb = sponge_base(&cfg);
+        assert!(
+            check_all_constraints(&air(cfg), &RowMajorMatrix::new(row.clone(), n_cols(&cfg)), &[], None).is_ok(),
+            "honest 3-round prefix-chain control should accept — test would prove nothing otherwise"
+        );
+        // corrupt one OUTPUT lane of round-1's perm (the committed state_1) — leaving its inputs and
+        // interior posts intact ⇒ eval_perm's last-round post equality on that lane breaks.
+        let p1 = sb + prefix_round_base(&cfg, 1);
+        row[p1 + SPP_PERM + C_OUTPUT + 4] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a forged intermediate chain state (state_1 != permute(absorb(...))) was accepted — chain link not constrained"
+        );
+    }
+
+    /// (a-FS+++) FORGERY — CHAIN-LINK BROKEN BETWEEN ROUNDS: substitute round-2's absorb input so it
+    /// no longer carries round-1's output as state_1 (re-derive round-2's perm to stay
+    /// self-consistent). Round 2's absorb derivation requires input == absorb(state_1, block_2, RATE)
+    /// where state_1 == round-1 output; feeding a DIFFERENT prior breaks the carry. Only the
+    /// inter-round carry (capacity slots / tag) catches this — the per-round perm stays valid.
+    #[test]
+    fn air_rejects_prefix_broken_interround_carry() {
+        let h = 8usize;
+        let n = 2usize;
+        let rounds = 3usize;
+        let cfg = cfg_prefix(h, n, rounds);
+        let blocks: Vec<[Val; RATE]> = (0..rounds as u32).map(|k| prefix_block(0xD00D + k)).collect();
+        let absorbed = absorbed_vec(0x9753);
+        let mut row = prefix_window(&cfg, &blocks, absorbed);
+        let sb = sponge_base(&cfg);
+        assert!(
+            check_all_constraints(&air(cfg), &RowMajorMatrix::new(row.clone(), n_cols(&cfg)), &[], None).is_ok(),
+            "honest 3-round prefix-chain control should accept — test would prove nothing otherwise"
+        );
+        // Re-derive round-2's perm from a FORGED prior state (a chosen state, not round-1's output),
+        // keeping round-2's block. The capacity carry input[RATE] == state_1[RATE] + RATE and the
+        // [RATE+1..WIDTH] carry from state_1 are now violated (state_1 != forged prior).
+        let consts = inlined_perm::Constants::pinned();
+        let mut forged_prior = prefix_round_state([Val::ZERO; WIDTH], blocks[0]); // honest state_1...
+        forged_prior[WIDTH - 1] += Val::ONE; // ...with one capacity lane perturbed (!= true state_1)
+        let forged_pre = absorb_state(forged_prior, blocks[1], RATE);
+        let forged_perm = inlined_perm::generate_perm_cols(forged_pre, &consts);
+        let p2 = sb + prefix_round_base(&cfg, 2);
+        row[p2 + SPP_PERM..p2 + SPP_PERM + PERM_COLS].copy_from_slice(&forged_perm);
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a broken inter-round carry (round-2 prior != round-1 output) was accepted — carry not load-bearing"
+        );
+    }
+
+    /// (a-FS+++) FORGERY — FORGED ABSORBED TRANSCRIPT BLOCK: change one element of round-1's absorbed
+    /// block WITHOUT updating the derived perm/state. The round-1 FULL-rate absorb derivation (rate
+    /// lane == block) then rejects: a prover cannot claim a chain state inconsistent with the
+    /// transcript values it absorbed. This is the absorb-soundness of the prefix.
+    #[test]
+    fn air_rejects_prefix_forged_absorbed_block() {
+        let h = 8usize;
+        let n = 6usize;
+        let rounds = 2usize;
+        let cfg = cfg_prefix(h, n, rounds);
+        let blocks: Vec<[Val; RATE]> = (0..rounds as u32).map(|k| prefix_block(0xE0E0 + k)).collect();
+        let absorbed = absorbed_vec(0x1122);
+        let mut row = prefix_window(&cfg, &blocks, absorbed);
+        let sb = sponge_base(&cfg);
+        assert!(
+            check_all_constraints(&air(cfg), &RowMajorMatrix::new(row.clone(), n_cols(&cfg)), &[], None).is_ok(),
+            "honest prefix-chain control should accept — test would prove nothing otherwise"
+        );
+        // corrupt block_1[3] alone; the perm/state stay the honest absorb of the OLD block.
+        let p1 = sb + prefix_round_base(&cfg, 1);
+        row[p1 + SPP_BLOCK + 3] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a chain state inconsistent with its absorbed block was accepted — absorb not load-bearing"
+        );
+    }
+
+    /// (a-FS+++) FORGERY — FORGED FINAL state_K → prior_state link: corrupt the duplex step's
+    /// prior_state so it is NOT the final chain output state_K. The `state_K == prior_state` binding
+    /// rejects (the chain output must be exactly what the final duplex step absorbs). We also
+    /// re-derive the downstream sponge_in/perm/draw for the forged prior so the duplex step itself
+    /// stays self-consistent — isolating the state_K→prior_state link as the sole rejector.
+    #[test]
+    fn air_rejects_prefix_forged_final_link() {
+        let h = 8usize;
+        let n = 4usize;
+        let rounds = 2usize;
+        let cfg = cfg_prefix(h, n, rounds);
+        let blocks: Vec<[Val; RATE]> = (0..rounds as u32).map(|k| prefix_block(0x5A5A + k)).collect();
+        let absorbed = absorbed_vec(0x3344);
+        let mut row = prefix_window(&cfg, &blocks, absorbed);
+        let sb = sponge_base(&cfg);
+        let ab = sb + sp_absorb(&cfg);
+
+        // Forge prior_state (!= state_K) and re-derive the duplex step (sponge_in/perm/draw/bus) for
+        // it, leaving the chain (and its true state_K output) honest. The final-link equality fails.
+        let true_prior = prefix_chain_state(&blocks);
+        let mut forged_prior = true_prior;
+        forged_prior[0] += Val::ONE;
+        let forged_sin = absorb_state(forged_prior, absorbed, n);
+        let consts = inlined_perm::Constants::pinned();
+        let forged_perm = inlined_perm::generate_perm_cols(forged_sin, &consts);
+        row[ab + SPA_PRIOR_STATE..ab + SPA_PRIOR_STATE + WIDTH].copy_from_slice(&forged_prior);
+        row[sb + SP_SPONGE_IN..sb + SP_SPONGE_IN + WIDTH].copy_from_slice(&forged_sin);
+        row[sb + SP_PERM..sb + SP_PERM + PERM_COLS].copy_from_slice(&forged_perm);
+        let forged_draw = forged_perm[C_OUTPUT + (RATE - 1)];
+        let forged_bus = pack_window(&RecursiveConfig::single_window(h), &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)));
+        for c in C_DRAW_OUT..tower_end(h) {
+            row[c] = forged_bus[c];
+        }
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a prior_state != the chain output state_K was accepted — final link not load-bearing"
+        );
+    }
+
+    /// (a-FS+++) GOLDEN + BINDING: with `prefix_blocks_public`, each round's absorbed block is pinned
+    /// to public-value columns (the committed transcript). An honest window with public values =
+    /// flattened blocks ACCEPTS; a public value that disagrees with the absorbed block rejects.
+    #[test]
+    fn air_prefix_blocks_bound_to_public_transcript() {
+        let h = 8usize;
+        let n = 3usize;
+        let rounds = 2usize;
+        let cfg = RecursiveConfig { prefix_blocks_public: true, ..cfg_prefix(h, n, rounds) };
+        let blocks: Vec<[Val; RATE]> = (0..rounds as u32).map(|k| prefix_block(0x7E57 + k)).collect();
+        let absorbed = absorbed_vec(0x4455);
+        let row = prefix_window(&cfg, &blocks, absorbed);
+        // public values = the flattened transcript blocks (round 0 then round 1).
+        let mut pv: Vec<Val> = Vec::with_capacity(rounds * RATE);
+        for b in &blocks {
+            pv.extend_from_slice(b);
+        }
+        let m = RowMajorMatrix::new(row.clone(), n_cols(&cfg));
+        assert!(
+            check_all_constraints(&air(cfg), &m, &pv, None).is_ok(),
+            "honest prefix chain with public-bound transcript blocks rejected"
+        );
+        // FORGERY: a public transcript value that disagrees with the absorbed block ⇒ rejected.
+        let mut bad_pv = pv.clone();
+        bad_pv[RATE + 1] += Val::ONE; // round-2 block, element 1
+        let m2 = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m2, &bad_pv, None).is_ok(),
+            "a public transcript value != the absorbed block was accepted — prefix_blocks_public not load-bearing"
+        );
+    }
+
+    // ---------------------------------------------------------------------------------
     // (b-leaf) Merkle-opened leaf digest ↔ FRI round-0 e0.
     // ---------------------------------------------------------------------------------
 
@@ -2267,7 +2746,7 @@ mod tests {
             merkle_leaf: leaf,
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -2313,7 +2792,7 @@ mod tests {
             draw_out: draw, e0: forged_e0, e1: ext_multi(2), beta: ext_multi(3),
             descent: &[], merkle_leaf: leaves[index], merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
         };
         let row = pack_window(&cfg_off, &inp);
         assert!(
@@ -2349,6 +2828,7 @@ mod tests {
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
             sponge_in: [Val::ZERO; WIDTH],
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
             public_io: stmt,
         };
         pack_window(cfg, &inp)
@@ -2447,6 +2927,7 @@ mod tests {
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
             sponge_in: sin,
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
             public_io: &stmt,
         };
         let row = pack_window(&cfg, &inp);
