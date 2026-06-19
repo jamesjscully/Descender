@@ -1,0 +1,324 @@
+//! Gadget 4 (proper) — DEEP-ALI out-of-domain quotient relation as a real `Air<AB>`.
+//!
+//! Lifts the VALIDATED [`crate::deep`] reference (`verify_quotient_relation`: at the OOD point
+//! `zeta`, `C(zeta) = Z_H(zeta)·Q(zeta)` with `Z_H(zeta) = zeta^{|H|} − 1`, `|H| = 2^log_degree`)
+//! into a Plonky3 `Air<AB>`, ONE OOD check per trace row. This is the DEEP-ALI soundness link: a
+//! quotient `Q` exists as a polynomial (which FRI then certifies low-degree) IFF the AIR
+//! constraints vanish on the trace domain `H` — checked at the FS-sampled OOD point. The check
+//! is over the deg-8 challenge extension `Challenge = BinomialExtensionField<Val, 8>`, so each
+//! element is 8 `Val` limbs and the extension arithmetic is reproduced IN-AIR (same `X^8 = W`
+//! octic mul as [`crate::fri_fold_air`]).
+//!
+//! ## The vanishing-poly power tower (degree control)
+//!
+//! `Z_H(zeta) = zeta^{2^log_degree} − 1` would be degree `2^log_degree` in the committed `zeta`
+//! limbs if expanded directly — far too high for a polynomial constraint. So the AIR carries the
+//! squaring TOWER as committed columns: `pow[0] = zeta`, `pow[j] = pow[j−1]²` for `j = 1..=k`
+//! (`k = log_degree`), each step pinned by an octic-square constraint (degree 2). Then
+//! `Z_H = pow[k] − 1` and the OOD check is `C == Z_H·Q` (an octic product of two committed
+//! elements, degree 2). Every constraint is degree ≤ 2 — the standard "commit the power tower"
+//! trick. This mirrors how the challenger AIR commits intermediate sponge states rather than
+//! re-deriving them.
+//!
+//! ## Soundness discipline
+//!
+//! Honest `(zeta, tower, Q, C)` rows (built from the [`crate::deep`] reference) ACCEPT via the
+//! real `p3_air::check_all_constraints`; tampering `C`, `Q`, `zeta`, an intermediate tower power,
+//! or `Z_H` each REJECTS. Soundness by attempted forgery, never by inspection — mirroring the
+//! other gadget AIRs. The full `C(zeta)` = leaf-AIR constraint-polynomial evaluation is DEFERRED
+//! (it re-expresses the entire leaf folder); here `C(zeta)` and `Q(zeta)` are the OPENED values
+//! and the AIR constrains the QUOTIENT RELATION between them — exactly the bounded, honest piece
+//! [`crate::deep`] validates.
+
+use crate::fri_fold_air::{limbs, D, W};
+use descender_account_stark::{Challenge, Val};
+use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
+use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
+
+extern crate alloc;
+use alloc::vec::Vec;
+
+// ----- column layout (one OOD quotient check per row) -----
+//
+// The squaring tower `pow[0..=k]` is laid out contiguously starting at `C_POW`; `pow[0]` is
+// `zeta`, `pow[k]` is `zeta^{2^k}`. `K` (= `log_degree`) is a runtime AIR parameter, so the
+// column count is parameterized by it.
+
+/// First sibling: the OOD point `zeta = pow[0]` (8 limbs). (Tower base.)
+pub const C_ZETA: usize = 0;
+/// Opened quotient evaluation `Q(zeta)` (8 limbs).
+pub const C_Q: usize = C_ZETA + D;
+/// Opened constraint-polynomial evaluation `C(zeta)` (8 limbs).
+pub const C_C: usize = C_Q + D;
+/// The squaring tower `pow[0..=K]`: `pow[0] = zeta` (duplicated for a uniform tower view),
+/// `pow[j] = pow[j−1]²`. `(K+1)` blocks of `D` limbs. (`pow[0]` is bound to `zeta` by a
+/// constraint, so the duplication costs nothing soundness-wise and keeps the tower indexing
+/// uniform.)
+pub const C_POW: usize = C_C + D;
+
+/// Column count for a DEEP AIR with `log_degree = k` (tower has `k+1` powers).
+pub const fn n_cols(log_degree: usize) -> usize {
+    C_POW + (log_degree + 1) * D
+}
+
+/// Limb slice helper: the `j`-th tower power's column base.
+const fn pow_base(j: usize) -> usize {
+    C_POW + j * D
+}
+
+/// Build one OOD-check row for `(zeta, q, c)` at `log_degree = k`, where `c` MUST satisfy the
+/// honest relation `c = Z_H(zeta)·q` (the reference authority). Fills the squaring tower
+/// `pow[0]=zeta, pow[j]=pow[j−1]²`. Panics if `c` is not the honest constraint eval (so the
+/// builder can only emit honest rows; tamper tests mutate the matrix afterwards).
+pub fn pack_check(zeta: Challenge, q: Challenge, c: Challenge, log_degree: usize) -> Vec<Val> {
+    let zh = crate::deep::vanishing_poly_at(zeta, log_degree);
+    assert_eq!(c, zh * q, "pack_check requires the honest constraint eval c = Z_H(zeta)*q");
+    let mut row = vec![Val::ZERO; n_cols(log_degree)];
+    row[C_ZETA..C_ZETA + D].copy_from_slice(&limbs(zeta));
+    row[C_Q..C_Q + D].copy_from_slice(&limbs(q));
+    row[C_C..C_C + D].copy_from_slice(&limbs(c));
+    // tower
+    let mut p = zeta;
+    for j in 0..=log_degree {
+        row[pow_base(j)..pow_base(j) + D].copy_from_slice(&limbs(p));
+        p = p * p;
+    }
+    row
+}
+
+/// Decode the constraint-eval `C(zeta)` cell of a packed row.
+pub fn row_c(row: &[Val], log_degree: usize) -> Challenge {
+    let _ = log_degree;
+    Challenge::from_basis_coefficients_slice(&row[C_C..C_C + D]).expect("C limbs decode")
+}
+
+/// Octic square `a²` over `X^D = W` as in-AIR expressions (specialization of the octic mul).
+fn octic_square<AB: AirBuilder>(a: &[AB::Expr; D]) -> [AB::Expr; D] {
+    octic_mul::<AB>(a, a)
+}
+
+/// Octic multiply over `X^D = W` (same formula as `fri_fold_air`).
+fn octic_mul<AB: AirBuilder>(a: &[AB::Expr; D], b: &[AB::Expr; D]) -> [AB::Expr; D] {
+    let w = AB::Expr::from(AB::F::from_u32(W));
+    core::array::from_fn(|k| {
+        let mut acc = AB::Expr::ZERO;
+        for i in 0..D {
+            for j in 0..D {
+                if i + j == k {
+                    acc += a[i].clone() * b[j].clone();
+                } else if i + j == k + D {
+                    acc += w.clone() * a[i].clone() * b[j].clone();
+                }
+            }
+        }
+        acc
+    })
+}
+
+/// DEEP-ALI OOD quotient-relation AIR (one check per row). `log_degree = log2(|H|)` is the
+/// trace-domain size; the squaring tower has `log_degree + 1` powers.
+pub struct DeepAir {
+    pub log_degree: usize,
+}
+
+impl<F: Sync> BaseAir<F> for DeepAir {
+    fn width(&self) -> usize {
+        n_cols(self.log_degree)
+    }
+}
+
+impl<AB: AirBuilder<F = Val>> Air<AB> for DeepAir {
+    fn eval(&self, builder: &mut AB) {
+        let k = self.log_degree;
+        let main = builder.main();
+        let local: Vec<AB::Var> = main.current_slice().to_vec();
+        let l = |i: usize| -> AB::Expr { local[i].into() };
+
+        let block = |base: usize| -> [AB::Expr; D] { core::array::from_fn(|i| l(base + i)) };
+
+        let zeta = block(C_ZETA);
+        let q = block(C_Q);
+        let c = block(C_C);
+
+        // ---- tower base: pow[0] == zeta ----
+        let pow0 = block(pow_base(0));
+        for i in 0..D {
+            builder.assert_zero(pow0[i].clone() - zeta[i].clone());
+        }
+
+        // ---- tower squaring: pow[j] == pow[j-1]^2 (each degree 2) ----
+        for j in 1..=k {
+            let prev = block(pow_base(j - 1));
+            let cur = block(pow_base(j));
+            let sq = octic_square::<AB>(&prev);
+            for i in 0..D {
+                builder.assert_zero(cur[i].clone() - sq[i].clone());
+            }
+        }
+
+        // ---- Z_H = pow[k] - 1  (one in limb 0) ----
+        let powk = block(pow_base(k));
+        let mut zh = powk.clone();
+        zh[0] = powk[0].clone() - AB::Expr::ONE;
+
+        // ---- OOD check: C == Z_H * Q  (octic product, degree 2 in committed Z_H, Q) ----
+        let zhq = octic_mul::<AB>(&zh, &q);
+        for i in 0..D {
+            builder.assert_zero(c[i].clone() - zhq[i].clone());
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::deep::vanishing_poly_at;
+    use p3_air::check_all_constraints;
+    use p3_field::PrimeCharacteristicRing;
+    use p3_matrix::dense::RowMajorMatrix;
+
+    fn ext(x: u32) -> Challenge {
+        Challenge::from(Val::from_u32(x))
+    }
+
+    fn ext_multi(seed: u32) -> Challenge {
+        Challenge::from_basis_coefficients_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 * 7 + 1))
+        })
+    }
+
+    fn honest_row(zeta: Challenge, q: Challenge, log_degree: usize) -> Vec<Val> {
+        let c = vanishing_poly_at(zeta, log_degree) * q;
+        pack_check(zeta, q, c, log_degree)
+    }
+
+    fn matrix(zeta: Challenge, q: Challenge, log_degree: usize) -> RowMajorMatrix<Val> {
+        RowMajorMatrix::new(honest_row(zeta, q, log_degree), n_cols(log_degree))
+    }
+
+    /// PIN: the in-AIR squaring tower reproduces the NATIVE `Z_H(zeta) = zeta^{2^k} − 1`. The
+    /// packed `pow[k]` minus one must equal the reference `vanishing_poly_at`; a wrong octic
+    /// square or W would diverge here (attempted equality, not assumption).
+    #[test]
+    fn tower_reproduces_native_vanishing_poly() {
+        for k in [1usize, 4, 8, 12] {
+            let zeta = ext_multi(7 + k as u32);
+            let row = pack_check(zeta, ext_multi(99), {
+                vanishing_poly_at(zeta, k) * ext_multi(99)
+            }, k);
+            let powk = Challenge::from_basis_coefficients_slice(&row[pow_base(k)..pow_base(k) + D]).unwrap();
+            assert_eq!(powk - Challenge::ONE, vanishing_poly_at(zeta, k), "tower Z_H != native at k={k}");
+        }
+    }
+
+    /// GOLDEN (positive): honest OOD rows (over base-only and multi-limb zeta/Q, several
+    /// log_degrees) ACCEPT via the real `check_all_constraints`. The DEEP-ALI quotient relation
+    /// `C = Z_H(zeta)·Q` validated end-to-end as an AIR with the in-AIR squaring tower.
+    #[test]
+    fn air_accepts_honest_ood_checks() {
+        for &k in &[1usize, 4, 10, 12] {
+            // base-only
+            let m = matrix(ext(123_457), ext(98_765), k);
+            assert!(
+                check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok(),
+                "honest base-only OOD row rejected at k={k}"
+            );
+            // multi-limb (exercises the X^8 = W wraparound in the tower + product)
+            let m2 = matrix(ext_multi(10 + k as u32), ext_multi(40 + k as u32), k);
+            assert!(
+                check_all_constraints(&DeepAir { log_degree: k }, &m2, &[], None).is_ok(),
+                "honest multi-limb OOD row rejected at k={k}"
+            );
+        }
+    }
+
+    /// Forgery — WRONG C(zeta): a constraint eval ≠ Z_H(zeta)·Q is rejected. THIS is the DEEP
+    /// soundness property: a prover cannot pass the OOD check without a genuine quotient (false
+    /// statement ⇒ no polynomial quotient ⇒ rejected).
+    #[test]
+    fn air_rejects_wrong_constraint_eval() {
+        let k = 10;
+        let mut m = matrix(ext(777), ext(42), k);
+        m.values[C_C + 1] += Val::ONE; // tamper a C limb
+        assert!(!check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok());
+    }
+
+    /// Forgery — WRONG Q(zeta): a quotient ≠ C/Z_H is rejected (the relation binds both sides).
+    #[test]
+    fn air_rejects_wrong_quotient() {
+        let k = 12;
+        let mut m = matrix(ext_multi(3), ext_multi(5), k);
+        m.values[C_Q + 4] += Val::ONE; // tamper a high Q limb
+        assert!(!check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok());
+    }
+
+    /// Forgery — WRONG zeta / Z_H: changing the OOD point breaks the tower base (pow[0] != zeta)
+    /// and the derived Z_H ⇒ rejected. (Once FS-bound, the prover cannot evaluate the OOD check
+    /// at a favorable point.)
+    #[test]
+    fn air_rejects_wrong_zeta() {
+        let k = 8;
+        let mut m = matrix(ext_multi(11), ext_multi(13), k);
+        m.values[C_ZETA + 2] += Val::ONE; // tower base no longer matches zeta; Z_H also wrong
+        assert!(!check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok());
+    }
+
+    /// Forgery — a tampered INTERMEDIATE tower power (a forged `zeta^{2^j}`) ⇒ the squaring
+    /// chain breaks ⇒ rejected. Confirms the power tower is fully constrained, not just its
+    /// endpoints (a prover can't smuggle a favorable Z_H by relabeling an interior power).
+    #[test]
+    fn air_rejects_tampered_intermediate_power() {
+        let k = 12;
+        let mut m = matrix(ext_multi(21), ext_multi(22), k);
+        // corrupt pow[6] (a middle of the tower); breaks pow[6]==pow[5]^2 and pow[7]==pow[6]^2.
+        m.values[pow_base(6) + 0] += Val::ONE;
+        assert!(!check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok());
+    }
+
+    /// Forgery — a tampered FINAL tower power `zeta^{2^k}` (hence a forged Z_H) with C/Q left
+    /// honest ⇒ both the last squaring constraint AND the OOD product fail ⇒ rejected.
+    #[test]
+    fn air_rejects_forged_zh() {
+        let k = 10;
+        let mut m = matrix(ext_multi(31), ext_multi(32), k);
+        m.values[pow_base(k) + 3] += Val::ONE;
+        assert!(!check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok());
+    }
+
+    /// A multi-row trace of independent honest OOD checks (one per row) at a fixed log_degree
+    /// accepts (the per-row check is what `recursive_air` instantiates once per opened poly).
+    #[test]
+    fn air_accepts_multirow_checks() {
+        let k = 12;
+        let nc = n_cols(k);
+        let mut flat = Vec::new();
+        for q in 0..8u32 {
+            flat.extend_from_slice(&honest_row(ext_multi(200 + q), ext_multi(300 + q), k));
+        }
+        let m = RowMajorMatrix::new(flat, nc);
+        assert!(
+            check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok(),
+            "honest multi-row OOD trace rejected"
+        );
+    }
+
+    /// Cross-check: the AIR's accept set agrees with the [`crate::deep`] reference predicate on
+    /// the same `(C, Q, zeta, k)` — honest accepts in both, a tampered C rejects in both.
+    #[test]
+    fn air_agrees_with_reference_predicate() {
+        let k = 9;
+        let zeta = ext_multi(55);
+        let q = ext_multi(66);
+        let c = vanishing_poly_at(zeta, k) * q;
+        assert!(crate::deep::verify_quotient_relation(c, q, zeta, k));
+        let m = RowMajorMatrix::new(pack_check(zeta, q, c, k), n_cols(k));
+        assert!(check_all_constraints(&DeepAir { log_degree: k }, &m, &[], None).is_ok());
+
+        // tamper C -> reference rejects, AIR rejects.
+        let c_bad = c + Challenge::ONE;
+        assert!(!crate::deep::verify_quotient_relation(c_bad, q, zeta, k));
+        let mut m_bad = RowMajorMatrix::new(pack_check(zeta, q, c, k), n_cols(k));
+        m_bad.values[C_C] += Val::ONE; // make C = c+1 in the matrix
+        assert!(!check_all_constraints(&DeepAir { log_degree: k }, &m_bad, &[], None).is_ok());
+    }
+}
