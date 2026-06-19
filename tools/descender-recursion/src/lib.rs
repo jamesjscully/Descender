@@ -76,7 +76,7 @@ pub use descender_account_stark::{
 // discipline: test soundness by attempted forgery, never by substring scan).
 //
 pub mod challenger; // gadget 1 — reference layer (row-based DuplexChallenger) landed
-//   mod merkle_verify;    // gadget 2
+pub mod merkle; // gadget 2 — Merkle path-verify reference (binary fold) landed
 //   mod fri_fold;         // gadget 3
 //   mod constraint_eval;  // gadget 4
 //   mod public_io;        // gadget 5
