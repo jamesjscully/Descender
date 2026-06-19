@@ -20,8 +20,8 @@
 //!     arithmetic that reassembles `Q(zeta)` from the FRI-committed chunks.
 //!   * The DEEP quotient `(opened − p(zeta))/(x − zeta)` combination fed to FRI (gadget 3).
 
-use descender_account_stark::{Challenge, Val};
-use p3_field::{Field, PrimeCharacteristicRing, TwoAdicField};
+use descender_account_stark::Challenge;
+use p3_field::{Field, PrimeCharacteristicRing};
 
 /// Trace-domain vanishing polynomial at `zeta`: `Z_H(zeta) = zeta^{2^log_degree} − 1`
 /// (the standard subgroup vanishing poly for `|H| = 2^log_degree`).
@@ -57,6 +57,8 @@ pub fn verify_quotient_relation_div(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use descender_account_stark::Val;
+    use p3_field::TwoAdicField;
 
     fn ext(x: u32) -> Challenge {
         Challenge::from(Val::from_u32(x))

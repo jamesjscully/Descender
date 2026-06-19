@@ -400,6 +400,142 @@ pub mod air {
         }
         (flat, N_COLS)
     }
+
+    use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
+
+    /// Gadget-1 verifier-AIR (sponge-wiring half). Encodes [`super::constraints`] as
+    /// position-masked polynomial constraints over [`pack_row`]'s columns (degree ≤ 2). The
+    /// Poseidon2 permutation relation on a `Permute` row (`next.sponge ==
+    /// permute(absorb(...))`) is DEFERRED to gadget 2; everything around it is constrained.
+    pub struct ChallengerAir;
+
+    impl<F: Sync> BaseAir<F> for ChallengerAir {
+        fn width(&self) -> usize {
+            N_COLS
+        }
+    }
+
+    impl<AB: AirBuilder> Air<AB> for ChallengerAir {
+        fn eval(&self, builder: &mut AB) {
+            let main = builder.main();
+            let lo: Vec<AB::Var> = main.current_slice().to_vec();
+            let nx: Vec<AB::Var> = main.next_slice().to_vec();
+            let is_tr = builder.is_transition();
+            let one = AB::Expr::ONE;
+
+            let l = |i: usize| -> AB::Expr { lo[i].into() };
+            let n = |i: usize| -> AB::Expr { nx[i].into() };
+
+            // ---- per-row: op-selector booleanity + exactly-one (incl. is_pad) ----
+            let sels = [C_IS_OBSERVE, C_IS_SAMPLE_DRAW, C_IS_PERMUTE, C_IS_PAD];
+            let mut sel_sum = AB::Expr::ZERO;
+            for &s in &sels {
+                builder.assert_zero(l(s) * (l(s) - one.clone())); // boolean
+                sel_sum += l(s);
+            }
+            builder.assert_zero(sel_sum - one.clone()); // exactly one op
+
+            // ---- per-row: in_sel / out_sel one-hot (the in_len/out_len encoding) ----
+            let mut in_sum = AB::Expr::ZERO;
+            let mut out_sum = AB::Expr::ZERO;
+            for k in 0..=RATE {
+                builder.assert_zero(l(C_IN_SEL + k) * (l(C_IN_SEL + k) - one.clone()));
+                builder.assert_zero(l(C_OUT_SEL + k) * (l(C_OUT_SEL + k) - one.clone()));
+                in_sum += l(C_IN_SEL + k);
+                out_sum += l(C_OUT_SEL + k);
+            }
+            builder.assert_zero(in_sum - one.clone());
+            builder.assert_zero(out_sum - one.clone());
+
+            // ---- boundary (first row): new() zero sponge + empty buffers ----
+            {
+                let mut fb = builder.when_first_row();
+                for j in 0..WIDTH {
+                    fb.assert_zero(l(C_SPONGE + j));
+                }
+                fb.assert_zero(l(C_IN_SEL) - one.clone()); // in_len == 0
+                fb.assert_zero(l(C_OUT_SEL) - one.clone()); // out_len == 0
+            }
+
+            // strict "less-than" masks from the one-hot: lt_in[j] = 1 iff in_len > j.
+            let lt_in = |j: usize| -> AB::Expr {
+                let mut acc = AB::Expr::ZERO;
+                for i in (j + 1)..=RATE {
+                    acc += l(C_IN_SEL + i);
+                }
+                acc
+            };
+
+            // ---- §4.1 OBSERVE transition ----
+            let g_obs = is_tr.clone() * l(C_IS_OBSERVE);
+            {
+                let mut b = builder.when(g_obs);
+                b.assert_zero(n(C_OUT_SEL) - one.clone()); // output cleared (out_len 0)
+                for j in 0..WIDTH {
+                    b.assert_zero(n(C_SPONGE + j) - l(C_SPONGE + j)); // sponge unchanged
+                }
+                // append observed_val at index in_len: next.in_buf[j] = lt*cur + onehot*observed
+                for j in 0..RATE {
+                    b.assert_zero(
+                        n(C_IN_BUF + j) - lt_in(j) * l(C_IN_BUF + j) - l(C_IN_SEL + j) * l(C_OBSERVED_VAL),
+                    );
+                }
+                // in_len += 1: next.in_sel shifts up by one
+                b.assert_zero(n(C_IN_SEL)); // next in_len != 0
+                for k in 1..=RATE {
+                    b.assert_zero(n(C_IN_SEL + k) - l(C_IN_SEL + (k - 1)));
+                }
+            }
+
+            // ---- §4.3 SAMPLE-DRAW transition (LIFO pop) ----
+            let g_draw = is_tr.clone() * l(C_IS_SAMPLE_DRAW);
+            {
+                let mut b = builder.when(g_draw);
+                // draw_out == out_buf[out_len-1] (back), via one-hot: Σ out_sel[k]*out_buf[k-1]
+                let mut popped = AB::Expr::ZERO;
+                for k in 1..=RATE {
+                    popped += l(C_OUT_SEL + k) * l(C_OUT_BUF + (k - 1));
+                }
+                b.assert_zero(l(C_DRAW_OUT) - popped);
+                // out_len -= 1: next.out_sel shifts down by one
+                for k in 0..RATE {
+                    b.assert_zero(n(C_OUT_SEL + k) - l(C_OUT_SEL + (k + 1)));
+                }
+                b.assert_zero(n(C_OUT_SEL + RATE)); // top can't stay set
+                // kept prefix unchanged: kept[j]=1 iff out_len > j+1
+                for j in 0..RATE {
+                    let mut kept = AB::Expr::ZERO;
+                    for i in (j + 2)..=RATE {
+                        kept += l(C_OUT_SEL + i);
+                    }
+                    b.assert_zero(kept * (n(C_OUT_BUF + j) - l(C_OUT_BUF + j)));
+                }
+                // sponge + input untouched by a draw
+                for j in 0..WIDTH {
+                    b.assert_zero(n(C_SPONGE + j) - l(C_SPONGE + j));
+                }
+                for k in 0..=RATE {
+                    b.assert_zero(n(C_IN_SEL + k) - l(C_IN_SEL + k));
+                }
+                for j in 0..RATE {
+                    b.assert_zero(n(C_IN_BUF + j) - l(C_IN_BUF + j));
+                }
+            }
+
+            // ---- §4.2 PERMUTE transition (perm relation itself deferred to gadget 2) ----
+            let g_perm = is_tr.clone() * l(C_IS_PERMUTE);
+            {
+                let mut b = builder.when(g_perm);
+                b.assert_zero(n(C_IN_SEL) - one.clone()); // input drained (in_len 0)
+                b.assert_zero(n(C_OUT_SEL + RATE) - one.clone()); // out refilled (out_len RATE)
+                for j in 0..RATE {
+                    b.assert_zero(n(C_OUT_BUF + j) - n(C_SPONGE + j)); // refill from post-perm rate
+                }
+                // squeeze flag == (in_len == 0): is_squeeze must equal in_sel[0]
+                b.assert_zero(l(C_IS_SQUEEZE) - l(C_IN_SEL));
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -677,6 +813,88 @@ mod tests {
         cols[air::C_IN_SEL + 3] = Val::ONE;
         cols[air::C_IN_SEL + 4] = Val::ONE;
         assert!(air::unpack_row(&cols).is_none());
+    }
+
+    /// The gadget-1 `Air<AB>` ACCEPTS the honest trace and REJECTS each tamper, via the real
+    /// Plonky3 `check_all_constraints` (DebugConstraintBuilder) over the packed column matrix.
+    /// This is the position-masked constraint eval validated end-to-end as an AIR — the tamper
+    /// rejections guard against an underconstrained AIR. (Unpadded matrix: the last row's
+    /// `is_transition = 0` disables its transition, so no active→pad edge to special-case here.)
+    mod air_eval {
+        use super::super::air::{self, ChallengerAir};
+        use super::{drive_row, Op, RowChallenger};
+        use descender_account_stark::Val;
+        use p3_air::check_all_constraints;
+        use p3_field::PrimeCharacteristicRing;
+        use p3_matrix::dense::RowMajorMatrix;
+
+        fn matrix(rows: &[super::super::Row]) -> RowMajorMatrix<Val> {
+            let flat: Vec<Val> = rows.iter().flat_map(|r| air::pack_row(r)).collect();
+            RowMajorMatrix::new(flat, air::N_COLS)
+        }
+
+        #[test]
+        fn air_accepts_honest_trace() {
+            let mut r = RowChallenger::new();
+            let _ = drive_row(&mut r);
+            let m = matrix(r.rows());
+            let report = check_all_constraints(&ChallengerAir, &m, &[], None);
+            assert!(report.is_ok(), "honest trace failed gadget-1 AIR: {} failures", report.failures.len());
+        }
+
+        #[test]
+        fn air_rejects_tampered_draw_value() {
+            let mut r = RowChallenger::new();
+            let _ = drive_row(&mut r);
+            let mut rows = r.rows().to_vec();
+            let i = rows.iter().position(|w| w.op == Op::SampleDraw).unwrap();
+            rows[i].draw_out += Val::ONE;
+            assert!(check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false);
+        }
+
+        #[test]
+        fn air_rejects_sponge_mutation_during_draw() {
+            let mut r = RowChallenger::new();
+            let _ = drive_row(&mut r);
+            let mut rows = r.rows().to_vec();
+            let i = rows.iter().position(|w| w.op == Op::SampleDraw).unwrap();
+            rows[i + 1].sponge[0] += Val::ONE; // sponge changed across a pure draw
+            assert!(check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false);
+        }
+
+        #[test]
+        fn air_rejects_broken_observe_append() {
+            let mut r = RowChallenger::new();
+            let _ = drive_row(&mut r);
+            let mut rows = r.rows().to_vec();
+            // find an observe row that is NOT the last (so its transition fires) and whose
+            // next row should carry the appended value; corrupt the appended cell.
+            let i = rows.iter().position(|w| w.op == Op::Observe).unwrap();
+            let in_len = rows[i].in_len;
+            rows[i + 1].in_buf[in_len] += Val::ONE; // next.in_buf[in_len] != observed_val
+            assert!(check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false);
+        }
+
+        #[test]
+        fn air_rejects_nonzero_boundary() {
+            let mut r = RowChallenger::new();
+            let _ = drive_row(&mut r);
+            let mut rows = r.rows().to_vec();
+            rows[0].sponge[3] += Val::ONE; // first row must start from zero sponge
+            assert!(check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false);
+        }
+
+        #[test]
+        fn air_rejects_broken_onehot_selector() {
+            let mut r = RowChallenger::new();
+            let _ = drive_row(&mut r);
+            let mut rows = r.rows().to_vec();
+            // force in_len to a different value than the (untouched) buffer expects by also
+            // corrupting nothing else — a non-matching in_sel breaks the one-hot vs next shift.
+            rows[2].in_len = if rows[2].in_len == 0 { 1 } else { 0 };
+            // pack_row uses in_len for the one-hot, so this desyncs the append/shift relation.
+            assert!(check_all_constraints(&ChallengerAir, &matrix(&rows), &[], None).is_ok() == false);
+        }
     }
 
     /// Boundary + one-hot structural checks on the emitted trace (spec §4.6 / §3.1):
