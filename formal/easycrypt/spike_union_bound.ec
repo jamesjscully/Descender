@@ -61,6 +61,14 @@
 require import AllCore List Real Distr StdBigop StdOrder.
 import Bigreal.BRA.
 
+(* GAP-B step 0 (2026-06-19): wrapped in an `abstract theory` so the parametric
+   union-bound spine can be CLONED with concrete types (break_t <- break_event,
+   etc.) by spine_endpoint.ec. Contents + proofs are UNCHANGED — only namespaced
+   under `Spine` — so all prior facts (success_le_union, success_le_2pow_neg128, …)
+   are preserved and machine-checked. No consumers imported the flat file, so this
+   is non-breaking. *)
+abstract theory Spine.
+
 (* -----------------------------------------------------------------------------
    Outcome / break carriers.
 
@@ -300,3 +308,5 @@ end section CLOSURE.
    See research/cryptanalysis/lean_ec_seam_discharge.md (correspondence + GAP D
    reviewer checklist) and SPIKE_VERDICT.md.
    ============================================================================= *)
+
+end Spine.
