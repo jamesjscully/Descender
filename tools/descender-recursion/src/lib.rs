@@ -78,6 +78,7 @@ pub use descender_account_stark::{
 pub mod challenger; // gadget 1 — reference layer (row-based DuplexChallenger) landed
 pub mod merkle; // gadget 2 — Merkle path-verify reference (binary fold) landed
 pub mod fri_fold; // gadget 3 — FRI commit-phase fold reference (binary) landed
+pub mod deep; // gadget 4 — DEEP-ALI out-of-domain quotient relation (core) landed
 //   mod fri_fold;         // gadget 3
 //   mod constraint_eval;  // gadget 4
 //   mod public_io;        // gadget 5
