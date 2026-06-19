@@ -79,6 +79,7 @@ pub mod challenger; // gadget 1 — reference layer (row-based DuplexChallenger)
 pub mod merkle; // gadget 2 — Merkle path-verify reference (binary fold) landed
 pub mod perm; // gadget 2 building block — in-circuit Poseidon2 compression AIR (p3-poseidon2-air)
 pub mod inlined_perm; // gadget 2 building block — INLINED Poseidon2-16 round constraints (Option A, byte-pinned)
+pub mod merkle_air; // gadget 2 (proper) — binary Merkle path-verify AIR (inlined perm + fold wiring)
 pub mod fri_fold; // gadget 3 — FRI commit-phase fold reference (binary) landed
 pub mod deep; // gadget 4 — DEEP-ALI out-of-domain quotient relation (core) landed
 pub mod public_io; // gadget 5 — public-IO statement preservation landed
