@@ -21,6 +21,11 @@ p3-commit = "0.6.1"
 p3-challenger = "0.6.1"
 p3-symmetric = "0.6.1"
 
+[dev-dependencies]
+# Test-only: deterministic round-constants for the gadget-2 Poseidon2 compression AIR
+# integration check (RoundConstants::from_rng with a fixed SmallRng seed).
+rand = "0.10"
+
 [profile.release]
 opt-level = 3
 lto = "thin"
