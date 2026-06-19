@@ -47474,7 +47474,7 @@ fn path2_native_checked_core_frame_source_boundary_present_v1() -> bool {
     let test_checks = [
         "path2_native_checked_core_frame_v1_golden_vector_and_roundtrip",
         "decode_path2_native_checked_core_frame_v1(&bytes).unwrap()",
-        "hash_frame_to_challenge_bytes(&bytes)",
+        "hash_frame_to_challenge_bytes_poseidon2(&bytes)",
         "path2_native_checked_core_frame_v1_mutations_change_challenge",
         "account_creation_domain_digest",
         "native_boundary_digest",
