@@ -102,6 +102,35 @@ so SUF-CMA is PRESERVED under a clean assumption swap
 (`A_sha256_frame_prf → A_poseidon2_prf`); spend stays 262/318 B (values change,
 not bytes).
 
+## STATUS UPDATE (2026-06-19) — critical-path items 1–3 now DONE; remainder is formal+external
+
+This session's net effect on the list below: the INTERNAL critical-path (1–3) is essentially
+complete; what remains for "fully deployable" is formal mechanization (Lean/EC) + external
+cryptanalysis + review/gate-flip. Recursion (5) is OPTIONAL scale and was advanced separately.
+
+- **#1 wire account-stark** → ✅ DONE (Option A `descender-account-verifier` crate + producer
+  migration wired into `parameter-search`).
+- **#2 deployed spend mask-PRF swap + KAT** → ✅ DONE (on `deployed-mask-prf-swap`; full spend
+  FS re-hosted to Poseidon2 + `kat_v0` regenerated from the real pipeline, byte-reproduced).
+- **#3 AoK / injectivity for the re-hosted relation** → ✅ PAPER-LEVEL DONE — the
+  argument-of-knowledge for the re-hosted (KoalaBear-STARK) relation is
+  `fri_aok_extractor_instantiation.md` (extractor constructed + per-param error) + the
+  AIR-fully-constrained soundness audit. Lean/EC MECHANIZATION of it is the named GAP-B/D seam
+  (rolls into #6). NOTE: `Descender/Path2NativeAccountDesign.lean` (0 sorry/0 axiom) is the
+  q12289-era formalization; the re-hosted relation's mechanization is future formal-methods work.
+- **Soundness levels SETTLED this session:** spend SUF-CMA 2⁻¹²⁸ / creation-STARK knowledge
+  soundness 2⁻¹²⁴ (deg-8 challenge-field bump applied to lift the FRI field-bound term off
+  ~2⁻¹⁰⁴; 2⁻¹²⁴ = inherent industry-standard WIDTH-16 Poseidon2 ceiling, James-accepted). See
+  field-bound-soundness-ceiling + degree5_field_rehost_scope.md.
+- **#5 recursion** → OPTIONAL (scale). Advanced this session: all 5 gadget references validated,
+  gadget-1 a real `Air<AB>`, Poseidon2 dep de-risked, recursive extractor argued+reviewed,
+  composition architecture decided (monolithic-inline). Remaining = the multi-week monolithic
+  `recursive_air` build. NOT on the deployable critical path.
+
+⇒ **Internal prover/code work for the DEPLOYABLE base scheme is DONE.** Remaining blockers are
+all formal-mechanization (#3-mech, GAP-B/D) + external (third-party lattice cryptanalysis #6,
+external review + gate-flip #4) — none solvable by further prover code this session.
+
 ## REMAINING to deployable (integration + formal + external)
 
 1. **Wire `descender-account-stark` into the deployed flow** — `parameter-search`
