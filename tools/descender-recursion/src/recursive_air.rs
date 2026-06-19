@@ -41,29 +41,41 @@
 //!   7. **(b′) DEEP OOD block** (NEW; reuse [`crate::deep_air`]): the OOD quotient relation
 //!      `C(zeta) == Z_H(zeta)·Q(zeta)` at the bus-bound `zeta`, with `zeta` pinned to the challenger
 //!      draws by (b). Tamper: wrong `C` rejected.
+//!   8. **(a-FS) INLINED CHALLENGER SPONGE for the index draw** (NEW; `inline_sponge_draw`): the
+//!      index draw `C_DRAW_OUT` — which (1) decomposes into the query index + fold point — is the
+//!      CONSTRAINED output of a real Poseidon2 squeeze, NOT a free committed column. The window
+//!      carries a sponge block `sponge_in[WIDTH] ‖ perm` where `perm.inputs == sponge_in`,
+//!      [`crate::inlined_perm::eval_perm`] constrains the full permutation, and `C_DRAW_OUT ==
+//!      perm.output[RATE-1]` (the challenger's LIFO squeeze pop). A forged draw inconsistent with
+//!      the sponge state is rejected ([`tests::air_rejects_forged_sponge_draw`]). This closes the
+//!      FS-soundness loop for the index challenge — bounded to ONE draw (see remaining below).
+//!   9. **(b-leaf) Merkle-opened leaf ↔ FRI e0** (NEW; `bind_merkle_leaf_to_e0`): the leaf the
+//!      Merkle path authenticates (level-0 running, 8 lanes) is bound limb-for-limb to the round-0
+//!      `e0` (the value folded), so the opened value IS what is folded. Mismatch rejected
+//!      ([`tests::air_rejects_merkle_leaf_e0_mismatch`], with an isolating control row).
+//!  10. **(c-pub) public-IO statement preservation in-window** (NEW; `public_io_len`): a
+//!      [`crate::public_io_air`]-style `outer == observed == inner` block, per element, so a prover
+//!      cannot verify statement `P` and re-expose `P'`. Substitution rejected
+//!      ([`tests::air_rejects_public_io_substitution`]).
 //!
 //! ## Remaining assembly toward the full monolith (documented, NOT yet wired)
 //!
-//! - **inline the challenger sponge** so the `draw_out` / `draw_i` exports are themselves the
-//!   constrained output of the in-AIR duplex sponge ([`crate::challenger::air::ChallengerAir`] +
-//!   [`crate::inlined_perm::eval_perm`] for every perm). TODAY the bus takes the draws as committed
-//!   columns (the gadget-1 AIR separately proves they are the sponge outputs); the full monolith
-//!   derives them in the same window. This is the single largest remaining piece (it folds the
-//!   ~190-absorb / multi-permute transcript into the window).
+//! - **full challenger-sponge transcript**: (a-FS) inlines the squeeze permutation that produces
+//!   ONE index draw, with `sponge_in` supplied as committed columns — i.e. the absorb chain
+//!   (observe inner commitments + ~190-elem public IO @ rate 8, the multi-permute duplexing
+//!   producing `sponge_in`, and the LIFO output-buffer threading across MULTIPLE draws) is still
+//!   DEFERRED. The bus betas/zeta (block (b)) likewise remain committed draw columns. Extending
+//!   (a-FS) across all draws + the full absorb transcript ([`crate::challenger::air::ChallengerAir`]
+//!   semantics, one [`crate::inlined_perm::eval_perm`] per permutation) is the remaining FS work.
 //! - **deferred leaf C(zeta)**: the DEEP block opens `C(zeta)` / `Q(zeta)` as committed values and
 //!   constrains the QUOTIENT RELATION; the full `C(zeta) =` leaf-AIR-constraint-polynomial
 //!   evaluation (re-expressing the entire leaf folder) + the DEEP linear-combination / chunk
 //!   recomposition stay deferred (same boundary [`crate::deep_air`] documents).
-//! - **public-IO block**: [`crate::public_io_air`] statement preservation in the same window
-//!   (statement equality is structurally trivial; deferred only for layout brevity here).
-//! - **Merkle ↔ FRI eval binding**: today the Merkle block binds the leaf/root to public values and
-//!   its index to the bus; binding the OPENED leaf digest to the FRI `e0` limbs (so the Merkle-
-//!   verified value IS the folded eval) is the natural next cross-binding (the columns are present;
-//!   the equality is a follow-up).
 
 use crate::fri_fold::{fold_pair, fold_point};
 use crate::fri_fold_air::{limbs, D, W};
 use crate::index_bus::{assert_canonical_pub, FIELD_BITS};
+use crate::challenger::RATE;
 use crate::inlined_perm::{self, eval_perm, ConstantsExpr, PermCells, C_OUTPUT, PERM_COLS};
 use descender_account_stark::{Challenge, Val, DIGEST_ELEMS, WIDTH};
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
@@ -96,6 +108,22 @@ pub struct RecursiveConfig {
     /// (b′) DEEP OOD block: open `(zeta,Q,C)` + squaring tower at `log_degree` and check
     /// `C == Z_H(zeta)·Q`. `Some(log_degree)` enables it; `zeta` is bound to challenger draws.
     pub deep_log_degree: Option<usize>,
+    /// (a-FS) INLINE THE CHALLENGER SPONGE for the index draw. When `true`, the window carries a
+    /// squeeze-permute sponge block (`sponge_in[WIDTH]` ‖ inlined Poseidon2 perm) and CONSTRAINS
+    /// `C_DRAW_OUT == squeeze_rate[RATE-1]` (the LIFO pop of the freshly-refilled output buffer).
+    /// The `draw_out` that drives the index decomposition (1) is then the constrained output of a
+    /// real Poseidon2 permutation — the Fiat–Shamir-soundness closure, bounded to ONE draw. The
+    /// full multi-permute absorb transcript that produces `sponge_in` stays DEFERRED (the perm's
+    /// input sponge state is supplied as committed columns here; see module-header "remaining").
+    pub inline_sponge_draw: bool,
+    /// (c-pub) public-IO statement-preservation block: `public_io_len` element rows, each binding
+    /// `outer == observed == inner`. 0 = no public-IO block.
+    pub public_io_len: usize,
+    /// (b-leaf) bind the Merkle-OPENED leaf digest (level-0 running, 8 lanes) to the FRI round-0
+    /// `e0` limbs (8) so the value the Merkle path authenticates IS the value folded. Requires both
+    /// a Merkle block (`merkle_levels > 0`) and the round-0 FRI columns. The honest builder sets the
+    /// 8 leaf lanes equal to the 8 e0 limbs.
+    pub bind_merkle_leaf_to_e0: bool,
 }
 
 impl RecursiveConfig {
@@ -107,6 +135,9 @@ impl RecursiveConfig {
             bind_beta_to_draws: false,
             num_rounds: 1,
             deep_log_degree: None,
+            inline_sponge_draw: false,
+            public_io_len: 0,
+            bind_merkle_leaf_to_e0: false,
         }
     }
     /// Number of descent rounds actually laid out (≥ 1).
@@ -205,9 +236,54 @@ fn merkle_level_base(cfg: &RecursiveConfig, level: usize) -> usize {
     merkle_base(cfg) + level * MERKLE_LEVEL
 }
 
+/// End of the Merkle block (base of the appended sponge / public-IO blocks).
+fn merkle_end(cfg: &RecursiveConfig) -> usize {
+    merkle_base(cfg) + cfg.merkle_levels * MERKLE_LEVEL
+}
+
+// ----- (a-FS) inlined challenger-sponge squeeze block -----
+//
+// `sponge_in[WIDTH]` ‖ inlined Poseidon2 perm block (PERM_COLS). The perm's inputs[..WIDTH] are
+// bound to `sponge_in`; `eval_perm` constrains the whole permutation; the post-permute rate lanes
+// (perm output[0..RATE]) are the refilled output buffer; the index draw `C_DRAW_OUT` is bound to
+// the LIFO pop `output[RATE-1]`.
+/// Sub-offset of `sponge_in` within the sponge block.
+const SP_SPONGE_IN: usize = 0;
+/// Sub-offset of the inlined perm block within the sponge block.
+const SP_PERM: usize = SP_SPONGE_IN + WIDTH;
+/// Total sponge-block columns.
+pub const SPONGE_BLOCK: usize = SP_PERM + PERM_COLS;
+
+/// Base of the (a-FS) sponge block (present iff `inline_sponge_draw`).
+fn sponge_base(cfg: &RecursiveConfig) -> usize {
+    merkle_end(cfg)
+}
+
+fn sponge_size(cfg: &RecursiveConfig) -> usize {
+    if cfg.inline_sponge_draw {
+        SPONGE_BLOCK
+    } else {
+        0
+    }
+}
+
+// ----- (c-pub) public-IO statement-preservation block -----
+//
+// `public_io_len` element rows × (outer, observed, inner) = 3·public_io_len columns, laid flat in
+// the single window. Each element binds outer == observed == inner.
+const PIO_STRIDE: usize = 3;
+const PIO_OUTER: usize = 0;
+const PIO_OBSERVED: usize = 1;
+const PIO_INNER: usize = 2;
+
+/// Base of the public-IO block.
+fn public_io_base(cfg: &RecursiveConfig) -> usize {
+    sponge_base(cfg) + sponge_size(cfg)
+}
+
 /// Total column count for a window with this config.
 pub fn n_cols(cfg: &RecursiveConfig) -> usize {
-    merkle_base(cfg) + cfg.merkle_levels * MERKLE_LEVEL
+    public_io_base(cfg) + cfg.public_io_len * PIO_STRIDE
 }
 
 /// The `j`-th tower column (`sp[j]`).
@@ -249,6 +325,13 @@ pub struct WindowInputs<'a> {
     /// (b′) DEEP OOD inputs: `(zeta, Q)`; `C` is derived `Z_H(zeta)·Q`.
     pub deep_zeta: Challenge,
     pub deep_q: Challenge,
+    /// (a-FS) the pre-squeeze sponge state whose permutation produces the index draw. When
+    /// `inline_sponge_draw`, `draw_out` is CHECKED to equal `permute(sponge_in)[RATE-1]` (and the
+    /// honest builder DERIVES `draw_out` from it). When `inline_sponge_draw` is off this is unused.
+    pub sponge_in: [Val; WIDTH],
+    /// (c-pub) public-IO statement: per element `(outer, observed, inner)`. Length must equal
+    /// `public_io_len`. The honest builder sets the three equal.
+    pub public_io: &'a [(Val, Val, Val)],
 }
 
 impl<'a> WindowInputs<'a> {
@@ -264,22 +347,40 @@ impl<'a> WindowInputs<'a> {
             merkle_siblings: &[],
             deep_zeta: Challenge::ZERO,
             deep_q: Challenge::ZERO,
+            sponge_in: [Val::ZERO; WIDTH],
+            public_io: &[],
         }
     }
 }
 
+/// The base-field index draw produced by squeezing `sponge_in`: the LIFO pop of the freshly
+/// refilled output buffer = `permute(sponge_in)[RATE-1]` (challenger.rs `sample()` after a
+/// `duplexing()` pops `out_buf[m-1]` where `out_buf == sponge[..RATE]`). The single source shared
+/// by the honest builder (which DERIVES `draw_out` from it) and the (a-FS) AIR binding.
+pub fn squeeze_draw(sponge_in: [Val; WIDTH]) -> Val {
+    let consts = inlined_perm::Constants::pinned();
+    let cols = inlined_perm::generate_perm_cols(sponge_in, &consts);
+    cols[inlined_perm::C_OUTPUT + (RATE - 1)]
+}
+
 /// Build one query window honestly. The index, fold point, tower, descent chain, Merkle perm
 /// blocks, and DEEP tower are all DERIVED (the authority the AIR is checked against); tamper tests
-/// mutate the matrix afterwards.
+/// mutate the matrix afterwards. When `inline_sponge_draw`, `draw_out` is DERIVED from `sponge_in`
+/// (the squeeze pop) so the index decomposition is over the genuine Poseidon2 sponge output.
 pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
     let h = cfg.log_height;
-    let canon = inp.draw_out.as_canonical_u32();
+    let draw_out = if cfg.inline_sponge_draw {
+        squeeze_draw(inp.sponge_in)
+    } else {
+        inp.draw_out
+    };
+    let canon = draw_out.as_canonical_u32();
     let index = (canon & ((1u32 << h) - 1)) as usize;
     let s0 = fold_point(h, index);
     let folded0 = fold_pair(inp.e0, inp.e1, inp.beta, s0);
 
     let mut row = vec![Val::ZERO; n_cols(cfg)];
-    row[C_DRAW_OUT] = inp.draw_out;
+    row[C_DRAW_OUT] = draw_out;
     for i in 0..FIELD_BITS {
         row[C_BITS + i] = Val::from_u32((canon >> i) & 1);
     }
@@ -385,6 +486,38 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
             // next running = perm output[..8].
             running.copy_from_slice(&perm_cols[C_OUTPUT..C_OUTPUT + DIGEST_ELEMS]);
             idx >>= 1;
+        }
+    }
+
+    // (a-FS) inlined challenger-sponge squeeze block: sponge_in ‖ Poseidon2 perm. draw_out (above)
+    // was derived from this very block's output, so the index decomposition is over the genuine
+    // sponge output.
+    if cfg.inline_sponge_draw {
+        let consts = inlined_perm::Constants::pinned();
+        let perm_cols = inlined_perm::generate_perm_cols(inp.sponge_in, &consts);
+        let sb = sponge_base(cfg);
+        row[sb + SP_SPONGE_IN..sb + SP_SPONGE_IN + WIDTH].copy_from_slice(&inp.sponge_in);
+        row[sb + SP_PERM..sb + SP_PERM + PERM_COLS].copy_from_slice(&perm_cols);
+        debug_assert_eq!(
+            row[C_DRAW_OUT],
+            perm_cols[C_OUTPUT + (RATE - 1)],
+            "draw_out != squeeze pop — sponge derivation mismatch"
+        );
+    }
+
+    // (c-pub) public-IO block.
+    if cfg.public_io_len > 0 {
+        assert_eq!(
+            inp.public_io.len(),
+            cfg.public_io_len,
+            "public_io must have public_io_len entries"
+        );
+        let pb = public_io_base(cfg);
+        for (j, &(outer, observed, inner)) in inp.public_io.iter().enumerate() {
+            let e = pb + j * PIO_STRIDE;
+            row[e + PIO_OUTER] = outer;
+            row[e + PIO_OBSERVED] = observed;
+            row[e + PIO_INNER] = inner;
         }
     }
 
@@ -691,6 +824,51 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 }
             }
         }
+
+        // ===== (b-leaf) Merkle-opened leaf digest ↔ FRI round-0 e0 =====
+        // The leaf the Merkle path authenticates (level-0 running, 8 lanes) IS the value folded by
+        // the round-0 FRI fold (e0's 8 limbs). DIGEST_ELEMS == D == 8, so limb-for-limb. A mismatch
+        // (an opened value different from what is folded) rejects.
+        if cfg.bind_merkle_leaf_to_e0 && cfg.merkle_levels > 0 {
+            debug_assert_eq!(DIGEST_ELEMS, D, "leaf↔e0 binding assumes DIGEST_ELEMS == D");
+            let l0 = merkle_level_base(&cfg, 0);
+            for i in 0..D {
+                builder.assert_zero(l(l0 + ML_RUNNING + i) - l(C_E0 + i));
+            }
+        }
+
+        // ===== (a-FS) INLINE THE CHALLENGER SPONGE for the index draw =====
+        // The index draw C_DRAW_OUT (which (1) decomposes into the query index + fold point) is
+        // bound to the constrained output of a real Poseidon2 permutation of the supplied sponge
+        // state: perm.inputs == sponge_in (lane-for-lane), eval_perm constrains the full
+        // permutation, and C_DRAW_OUT == perm.output[RATE-1] (the LIFO squeeze pop). A forged
+        // draw_out inconsistent with the sponge state is rejected — the FS-soundness closure
+        // (bounded to one draw; the full absorb transcript producing sponge_in stays deferred).
+        if cfg.inline_sponge_draw {
+            let consts = ConstantsExpr::<AB>::pinned();
+            let cells = WindowCells::<AB> { row: local.clone() };
+            let sb = sponge_base(&cfg);
+            // perm inputs == sponge_in, lane-for-lane.
+            for i in 0..WIDTH {
+                builder.assert_zero(
+                    l(sb + SP_PERM + inlined_perm::C_INPUTS + i) - l(sb + SP_SPONGE_IN + i),
+                );
+            }
+            // full Poseidon2 permutation constraints over the sponge perm block.
+            eval_perm::<AB, _>(builder, &cells, sb + SP_PERM, &consts);
+            // index draw == squeeze pop = post-permute rate lane RATE-1 (challenger LIFO sample()).
+            builder.assert_zero(l(C_DRAW_OUT) - l(sb + SP_PERM + C_OUTPUT + (RATE - 1)));
+        }
+
+        // ===== (c-pub) public-IO statement preservation (outer == observed == inner) =====
+        if cfg.public_io_len > 0 {
+            let pb = public_io_base(&cfg);
+            for j in 0..cfg.public_io_len {
+                let e = pb + j * PIO_STRIDE;
+                builder.assert_zero(l(e + PIO_OUTER) - l(e + PIO_OBSERVED));
+                builder.assert_zero(l(e + PIO_OBSERVED) - l(e + PIO_INNER));
+            }
+        }
     }
 }
 
@@ -939,6 +1117,8 @@ mod tests {
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO,
             deep_q: Challenge::ZERO,
+            sponge_in: [Val::ZERO; WIDTH],
+            public_io: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -994,6 +1174,7 @@ mod tests {
             merkle_leaf: leaves[forged_index],
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            sponge_in: [Val::ZERO; WIDTH], public_io: &[],
         };
         let mut row = pack_window(&cfg, &inp);
         // CONTROL: the FORGED Merkle blocks are internally valid — with a MATCHING forged bus
@@ -1012,6 +1193,7 @@ mod tests {
             descent: &[], merkle_leaf: leaves[honest_index],
             merkle_siblings: &tree.auth_path(honest_index),
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            sponge_in: [Val::ZERO; WIDTH], public_io: &[],
         });
         for c in C_DRAW_OUT..tower_end(levels) {
             row[c] = honest[c];
@@ -1205,6 +1387,7 @@ mod tests {
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            sponge_in: [Val::ZERO; WIDTH], public_io: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -1318,6 +1501,7 @@ mod tests {
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
             deep_zeta: zeta, deep_q: q,
+            sponge_in: [Val::ZERO; WIDTH], public_io: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -1416,6 +1600,7 @@ mod tests {
             bind_beta_to_draws: true,
             num_rounds: rounds,
             deep_log_degree: Some(k),
+            ..RecursiveConfig::single_window(levels)
         };
         let n = 1usize << levels;
         let leaves: Vec<Digest> = (0..n as u32).map(digest).collect();
@@ -1437,10 +1622,359 @@ mod tests {
             merkle_leaf: leaves[index],
             merkle_siblings: &sibs,
             deep_zeta: ext_multi(55), deep_q: ext_multi(66),
+            sponge_in: [Val::ZERO; WIDTH], public_io: &[],
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         let report = check_all_constraints(&air(cfg), &m, &pubs(leaves[index], root), None);
         assert!(report.is_ok(), "full monolith window rejected: {} failures", report.failures.len());
+    }
+
+    // ---------------------------------------------------------------------------------
+    // (a-FS) INLINE THE CHALLENGER SPONGE — the index draw is the constrained Poseidon2 output.
+    // ---------------------------------------------------------------------------------
+
+    fn cfg_sponge(h: usize) -> RecursiveConfig {
+        RecursiveConfig { inline_sponge_draw: true, ..RecursiveConfig::single_window(h) }
+    }
+
+    /// A representative pre-squeeze sponge state (16 lanes) — stands in for the absorbed-transcript
+    /// boundary (the absorb chain producing it is the DEFERRED full-transcript piece).
+    fn sponge_state(seed: u32) -> [Val; WIDTH] {
+        core::array::from_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 * 1009 + 1))
+        })
+    }
+
+    fn sponge_window(cfg: &RecursiveConfig, sponge_in: [Val; WIDTH]) -> Vec<Val> {
+        let inp = WindowInputs {
+            draw_out: Val::ZERO, // ignored — derived from sponge_in
+            e0: ext_multi(1), e1: ext_multi(2), beta: ext_multi(3),
+            descent: &[],
+            merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
+            merkle_siblings: &[],
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            sponge_in,
+            public_io: &[],
+        };
+        pack_window(cfg, &inp)
+    }
+
+    /// GOLDEN: an honest sponge block — perm.inputs == sponge_in, the full Poseidon2 permutation
+    /// constrained, and `draw_out == permute(sponge_in)[RATE-1]` — ACCEPTS, and that derived
+    /// draw_out is what the index decomposition (1) + fold point (2) read. The index challenge is
+    /// genuinely FS-derived from a real Poseidon2 squeeze, not a free committed column.
+    #[test]
+    fn air_accepts_inlined_sponge_draw() {
+        for h in [5usize, 8, 12] {
+            let cfg = cfg_sponge(h);
+            for seed in [0u32, 1, 7, 0xABCD, 0x9999, 1_000_003] {
+                let sin = sponge_state(seed);
+                let row = sponge_window(&cfg, sin);
+                // the draw_out column IS the squeeze pop.
+                assert_eq!(row[C_DRAW_OUT], squeeze_draw(sin), "draw_out != squeeze pop (seed {seed:#x})");
+                let m = RowMajorMatrix::new(row, n_cols(&cfg));
+                let report = check_all_constraints(&air(cfg), &m, &[], None);
+                assert!(report.is_ok(), "honest inlined-sponge window rejected (h={h}, seed={seed:#x}): {} failures", report.failures.len());
+            }
+        }
+    }
+
+    /// (a-FS) FORGERY — FORGED DRAW: a `draw_out` (with its consistent index/bits/tower/fold) that
+    /// is NOT the sponge squeeze pop. We keep the sponge block honest and overwrite the whole bus
+    /// for a DIFFERENT (favorable) draw value; the (a-FS) equality `draw_out == squeeze[RATE-1]`
+    /// then rejects. CONTROL: the same bus, packed for THAT draw with the sponge OFF, accepts —
+    /// isolating the sponge binding as the sole rejector.
+    #[test]
+    fn air_rejects_forged_sponge_draw() {
+        let h = 10usize;
+        let cfg = cfg_sponge(h);
+        let sin = sponge_state(42);
+        let honest_draw = squeeze_draw(sin);
+        // pick a forged draw value != the squeeze pop.
+        let forged_draw = honest_draw + Val::ONE;
+        assert_ne!(forged_draw, honest_draw);
+
+        // CONTROL: with the sponge OFF, a window built for forged_draw is internally consistent
+        // (bits/index/tower/fold all derived from forged_draw) ⇒ accepts. So nothing in the bus
+        // machinery rejects forged_draw on its own.
+        let cfg_off = RecursiveConfig::single_window(h);
+        let control = pack_window(&cfg_off, &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)));
+        assert!(
+            check_all_constraints(&air(cfg_off), &RowMajorMatrix::new(control, n_cols(&cfg_off)), &[], None).is_ok(),
+            "forged-draw control (sponge off) should accept — test would prove nothing otherwise"
+        );
+
+        // Now: honest sponge block, but overwrite the bus (draw_out/bits/index/tower/fold) with the
+        // forged-draw bus. The sponge still squeezes honest_draw ⇒ (a-FS) draw==squeeze rejects.
+        let mut row = sponge_window(&cfg, sin);
+        let forged_bus = pack_window(&cfg_off, &WindowInputs::single(forged_draw, ext_multi(1), ext_multi(2), ext_multi(3)));
+        for c in C_DRAW_OUT..tower_end(h) {
+            row[c] = forged_bus[c];
+        }
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a draw_out != the sponge squeeze pop was accepted — (a-FS) sponge binding not load-bearing"
+        );
+    }
+
+    /// (a-FS) FORGERY — TAMPERED SPONGE STATE: corrupt one input lane of the sponge state but leave
+    /// the (honest, for the old state) perm cells. The inlined Poseidon2 round constraints then
+    /// reject (the permutation no longer maps the tampered input to the committed posts). Proves the
+    /// permutation itself is fully constrained, not just the input==sponge_in copy.
+    #[test]
+    fn air_rejects_inlined_sponge_tampered_state() {
+        let h = 8usize;
+        let cfg = cfg_sponge(h);
+        let mut row = sponge_window(&cfg, sponge_state(13));
+        let sb = sponge_base(&cfg);
+        // corrupt sponge_in lane 3 AND its copy into perm.inputs (so the input==sponge_in copy still
+        // holds); the permutation constraint vs the unchanged posts now fails.
+        row[sb + SP_SPONGE_IN + 3] += Val::ONE;
+        row[sb + SP_PERM + inlined_perm::C_INPUTS + 3] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a tampered sponge state with stale perm cells was accepted — perm not constrained"
+        );
+    }
+
+    /// (a-FS) FORGERY — TAMPERED INTERIOR PERM CELL: corrupt a committed begin-post cell of the
+    /// sponge perm ⇒ the inlined Poseidon2 round constraints reject.
+    #[test]
+    fn air_rejects_inlined_sponge_tampered_perm() {
+        let h = 8usize;
+        let cfg = cfg_sponge(h);
+        let mut row = sponge_window(&cfg, sponge_state(21));
+        let sb = sponge_base(&cfg);
+        row[sb + SP_PERM + inlined_perm::C_BEGIN_POST] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(!check_all_constraints(&air(cfg), &m, &[], None).is_ok());
+    }
+
+    /// (a-FS) FORGERY — INPUT-COPY BROKEN: the perm.inputs differ from sponge_in (so a prover could
+    /// try squeezing a state unrelated to the committed sponge) ⇒ rejected by the input==sponge_in
+    /// equality.
+    #[test]
+    fn air_rejects_inlined_sponge_input_mismatch() {
+        let h = 8usize;
+        let cfg = cfg_sponge(h);
+        let mut row = sponge_window(&cfg, sponge_state(33));
+        let sb = sponge_base(&cfg);
+        row[sb + SP_SPONGE_IN + 0] += Val::ONE; // sponge_in lane differs from perm.input lane
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(!check_all_constraints(&air(cfg), &m, &[], None).is_ok());
+    }
+
+    // ---------------------------------------------------------------------------------
+    // (b-leaf) Merkle-opened leaf digest ↔ FRI round-0 e0.
+    // ---------------------------------------------------------------------------------
+
+    fn cfg_leaf_e0(levels: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            merkle_levels: levels,
+            bind_merkle_leaf_to_e0: true,
+            ..RecursiveConfig::single_window(levels)
+        }
+    }
+
+    /// Build a Merkle window whose round-0 e0 limbs equal the opened leaf digest (the honest
+    /// builder for the (b-leaf) binding).
+    fn leaf_e0_window(cfg: &RecursiveConfig, draw: Val, tree: &RefTree, leaf: Digest, index: usize) -> Vec<Val> {
+        // e0 = the leaf digest as a Challenge (limb i = leaf[i]); DIGEST_ELEMS == D == 8.
+        let e0 = Challenge::from_basis_coefficients_slice(&leaf).unwrap();
+        let sibs = tree.auth_path(index);
+        let inp = WindowInputs {
+            draw_out: draw,
+            e0, e1: ext_multi(2), beta: ext_multi(3),
+            descent: &[],
+            merkle_leaf: leaf,
+            merkle_siblings: &sibs,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            sponge_in: [Val::ZERO; WIDTH], public_io: &[],
+        };
+        pack_window(cfg, &inp)
+    }
+
+    /// GOLDEN: an honest window where the Merkle-opened leaf IS the FRI-folded e0 ACCEPTS.
+    #[test]
+    fn air_accepts_merkle_leaf_bound_to_e0() {
+        let levels = 4usize;
+        let cfg = cfg_leaf_e0(levels);
+        let n = 1usize << levels;
+        let leaves: Vec<Digest> = (0..n as u32).map(digest).collect();
+        let tree = RefTree::new(leaves.clone());
+        let root = tree.root();
+        for raw in [0u32, 3, 6, 0xD, 0xABCDA] {
+            let draw = Val::from_u32(raw);
+            let index = (draw.as_canonical_u32() as usize) & (n - 1);
+            let row = leaf_e0_window(&cfg, draw, &tree, leaves[index], index);
+            let m = RowMajorMatrix::new(row, n_cols(&cfg));
+            let report = check_all_constraints(&air(cfg), &m, &pubs(leaves[index], root), None);
+            assert!(report.is_ok(), "honest leaf↔e0 window rejected (raw={raw:#x}): {} failures", report.failures.len());
+        }
+    }
+
+    /// (b-leaf) FORGERY — leaf ≠ folded value: fold an e0 DIFFERENT from the opened leaf digest (a
+    /// self-consistent FRI fold at that e0) while the Merkle path authenticates the real leaf. The
+    /// (b-leaf) equality `leaf == e0` rejects. CONTROL: the same row with the binding OFF accepts —
+    /// isolating (b-leaf) as the sole rejector.
+    #[test]
+    fn air_rejects_merkle_leaf_e0_mismatch() {
+        let levels = 4usize;
+        let n = 1usize << levels;
+        let leaves: Vec<Digest> = (0..n as u32).map(digest).collect();
+        let tree = RefTree::new(leaves.clone());
+        let root = tree.root();
+        let draw = Val::from_u32(0b0110);
+        let index = (draw.as_canonical_u32() as usize) & (n - 1);
+
+        // CONTROL: binding OFF — fold an e0 unrelated to the leaf (a valid (★) fold) ⇒ accepts.
+        let cfg_off = cfg_merkle(levels);
+        let sibs = tree.auth_path(index);
+        let forged_e0 = ext_multi(777); // not the leaf digest
+        let inp = WindowInputs {
+            draw_out: draw, e0: forged_e0, e1: ext_multi(2), beta: ext_multi(3),
+            descent: &[], merkle_leaf: leaves[index], merkle_siblings: &sibs,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            sponge_in: [Val::ZERO; WIDTH], public_io: &[],
+        };
+        let row = pack_window(&cfg_off, &inp);
+        assert!(
+            check_all_constraints(&air(cfg_off), &RowMajorMatrix::new(row.clone(), n_cols(&cfg_off)), &pubs(leaves[index], root), None).is_ok(),
+            "control (leaf↔e0 binding off) should accept — test would prove nothing otherwise"
+        );
+
+        // Binding ON: same columns (leaf and e0 layouts identical between cfgs) ⇒ leaf != e0 rejects.
+        let cfg_on = cfg_leaf_e0(levels);
+        assert_eq!(n_cols(&cfg_on), n_cols(&cfg_off), "leaf↔e0 binding must not change layout");
+        let m = RowMajorMatrix::new(row, n_cols(&cfg_on));
+        assert!(
+            !check_all_constraints(&air(cfg_on), &m, &pubs(leaves[index], root), None).is_ok(),
+            "a folded e0 != the opened leaf was accepted — (b-leaf) not load-bearing"
+        );
+    }
+
+    // ---------------------------------------------------------------------------------
+    // (c-pub) public-IO statement preservation in-window.
+    // ---------------------------------------------------------------------------------
+
+    fn cfg_public_io(h: usize, len: usize) -> RecursiveConfig {
+        RecursiveConfig { public_io_len: len, ..RecursiveConfig::single_window(h) }
+    }
+
+    fn pio_window(cfg: &RecursiveConfig, draw: Val, stmt: &[(Val, Val, Val)]) -> Vec<Val> {
+        let inp = WindowInputs {
+            draw_out: draw,
+            e0: ext_multi(1), e1: ext_multi(2), beta: ext_multi(3),
+            descent: &[],
+            merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
+            merkle_siblings: &[],
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            sponge_in: [Val::ZERO; WIDTH],
+            public_io: stmt,
+        };
+        pack_window(cfg, &inp)
+    }
+
+    /// GOLDEN: an honest public-IO block (outer == observed == inner, per element) ACCEPTS.
+    #[test]
+    fn air_accepts_public_io_block() {
+        let h = 8usize;
+        let len = 19usize;
+        let cfg = cfg_public_io(h, len);
+        let stmt: Vec<(Val, Val, Val)> =
+            (0..len as u32).map(|i| { let v = Val::from_u32(1000 + i); (v, v, v) }).collect();
+        let row = pio_window(&cfg, Val::from_u32(0xABCDE), &stmt);
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        let report = check_all_constraints(&air(cfg), &m, &[], None);
+        assert!(report.is_ok(), "honest public-IO block rejected: {} failures", report.failures.len());
+    }
+
+    /// (c-pub) FORGERY — STATEMENT SUBSTITUTION: the inner proof's public value differs from the
+    /// re-exposed outer value at one element ⇒ outer != inner ⇒ rejected. The prover cannot verify
+    /// statement P yet re-expose P'.
+    #[test]
+    fn air_rejects_public_io_substitution() {
+        let h = 8usize;
+        let len = 19usize;
+        let cfg = cfg_public_io(h, len);
+        let stmt: Vec<(Val, Val, Val)> =
+            (0..len as u32).map(|i| { let v = Val::from_u32(1000 + i); (v, v, v) }).collect();
+        let mut row = pio_window(&cfg, Val::from_u32(0xABCDE), &stmt);
+        // corrupt the INNER cell of element 7 (inner != outer) — statement substitution.
+        let pb = public_io_base(&cfg);
+        row[pb + 7 * PIO_STRIDE + PIO_INNER] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a substituted inner statement was accepted — (c-pub) not load-bearing"
+        );
+    }
+
+    /// (c-pub) FORGERY — FORGED OBSERVED cell: the value FS-observed by gadget 1 differs from the
+    /// outer/inner value ⇒ rejected (observed != outer).
+    #[test]
+    fn air_rejects_public_io_forged_observed() {
+        let h = 8usize;
+        let len = 12usize;
+        let cfg = cfg_public_io(h, len);
+        let stmt: Vec<(Val, Val, Val)> =
+            (0..len as u32).map(|i| { let v = Val::from_u32(2000 + i); (v, v, v) }).collect();
+        let mut row = pio_window(&cfg, Val::from_u32(0x1234), &stmt);
+        let pb = public_io_base(&cfg);
+        row[pb + 5 * PIO_STRIDE + PIO_OBSERVED] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(!check_all_constraints(&air(cfg), &m, &[], None).is_ok());
+    }
+
+    // ---------------------------------------------------------------------------------
+    // FULL MONOLITH + the three new pieces together.
+    // ---------------------------------------------------------------------------------
+
+    /// GOLDEN: a window with the sponge-derived index draw (a-FS), Merkle path with leaf↔e0
+    /// (b-leaf), and a public-IO block (c-pub) — all in ONE window — ACCEPTS. The index is the
+    /// genuine Poseidon2 squeeze, the opened leaf IS the folded e0, the statement is preserved.
+    #[test]
+    fn air_accepts_monolith_with_sponge_leaf_e0_and_public_io() {
+        let levels = 4usize;
+        let pio_len = 10usize;
+        let cfg = RecursiveConfig {
+            log_height: levels,
+            merkle_levels: levels,
+            bind_merkle_leaf_to_e0: true,
+            inline_sponge_draw: true,
+            public_io_len: pio_len,
+            ..RecursiveConfig::single_window(levels)
+        };
+        let n = 1usize << levels;
+        let leaves: Vec<Digest> = (0..n as u32).map(digest).collect();
+        let tree = RefTree::new(leaves.clone());
+        let root = tree.root();
+
+        // pick a sponge state; the index is the genuine squeeze of it.
+        let sin = sponge_state(0xBEEF);
+        let draw = squeeze_draw(sin);
+        let index = (draw.as_canonical_u32() as usize) & (n - 1);
+        let leaf = leaves[index];
+        let e0 = Challenge::from_basis_coefficients_slice(&leaf).unwrap(); // leaf↔e0
+        let sibs = tree.auth_path(index);
+        let stmt: Vec<(Val, Val, Val)> =
+            (0..pio_len as u32).map(|i| { let v = Val::from_u32(7000 + i); (v, v, v) }).collect();
+        let inp = WindowInputs {
+            draw_out: Val::ZERO, // derived from sponge_in
+            e0, e1: ext_multi(2), beta: ext_multi(3),
+            descent: &[],
+            merkle_leaf: leaf,
+            merkle_siblings: &sibs,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            sponge_in: sin,
+            public_io: &stmt,
+        };
+        let row = pack_window(&cfg, &inp);
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        let report = check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None);
+        assert!(report.is_ok(), "monolith (sponge+leaf↔e0+public-IO) rejected: {} failures", report.failures.len());
     }
 }
