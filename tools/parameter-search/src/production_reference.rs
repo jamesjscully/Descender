@@ -60583,7 +60583,15 @@ pub fn legacy_stateful_challenge_hash_frame(
     challenge_hash_frame_prefix(public_key, message, slot_id, digest)
 }
 
-pub fn hash_frame_to_challenge_bytes(frame: &[u8]) -> [u8; CHALLENGE_BYTES] {
+/// ARCHIVED SHA-256 Fiat–Shamir challenge body. Retained ONLY as the historical
+/// SHA-era anchor for the archived KAT / equivalence audit trail — it is NO LONGER
+/// on any production FS path (the full spend FS — transaction, authorization, and
+/// relation challenges — was re-hosted to Poseidon2 on 2026-06-18). Do NOT route a
+/// new FS caller here: that would silently re-introduce SHA-based Fiat–Shamir.
+#[deprecated(
+    note = "not on the FS path; Poseidon2 re-host 2026-06-18. SHA-era anchor only."
+)]
+pub fn hash_frame_to_challenge_bytes_sha256_legacy(frame: &[u8]) -> [u8; CHALLENGE_BYTES] {
     let digest = Sha256::digest(frame);
     let mut out = [0_u8; CHALLENGE_BYTES];
     out.copy_from_slice(&digest[..CHALLENGE_BYTES]);
@@ -60591,25 +60599,43 @@ pub fn hash_frame_to_challenge_bytes(frame: &[u8]) -> [u8; CHALLENGE_BYTES] {
     out
 }
 
-/// Domain separator for the checked-core Fiat–Shamir challenge under Poseidon2.
+/// Domain separator for the checked-core RELATION Fiat–Shamir challenge under Poseidon2.
 pub const PATH2_CHECKED_CORE_FS_POSEIDON2_DOMAIN: &str =
     "Descender.Path2.checked_core.fiat_shamir.poseidon2.v1";
 
-/// Poseidon2 (KoalaBear) Fiat–Shamir challenge derivation — the recursion-friendly
-/// re-host of [`hash_frame_to_challenge_bytes`] for the CHECKED-CORE frame (approved
-/// 2026-06-18). Same 31-byte layout + last-byte mask as the SHA-256 version, so the
-/// downstream challenge parsing is unchanged; only the VALUES differ. Uses the
-/// Plonky3-free shared `descender-mask-prf` Poseidon2 sponge (so the deployed signer
-/// stays Plonky3-free), domain-separated from the C2 mask PRF. The FS soundness
-/// assumption moves SHA-256-as-RO -> Poseidon2-sponge-as-RO (the named-standard
-/// A_poseidon2_* assumption already carried for the mask PRF).
-pub fn hash_frame_to_challenge_bytes_poseidon2(frame: &[u8]) -> [u8; CHALLENGE_BYTES] {
-    let mut out = descender_mask_prf::poseidon2_hash_bytes::<CHALLENGE_BYTES>(
-        PATH2_CHECKED_CORE_FS_POSEIDON2_DOMAIN.as_bytes(),
-        frame,
-    );
+/// Domain separator for the main LINEAR_SIGMA TRANSACTION Fiat–Shamir challenge under Poseidon2.
+pub const PATH2_TXN_FS_POSEIDON2_DOMAIN: &str =
+    "Descender.Path2.transaction.fiat_shamir.poseidon2.v1";
+
+/// Domain separator for the checked-core AUTHORIZATION Fiat–Shamir challenge under Poseidon2.
+pub const PATH2_AUTH_FS_POSEIDON2_DOMAIN: &str =
+    "Descender.Path2.checked_core.authorization.fiat_shamir.poseidon2.v1";
+
+/// Poseidon2 (KoalaBear) Fiat–Shamir challenge derivation, domain-separated. This is
+/// the unified spend-FS sponge body (recursion-friendly, Plonky3-free via the shared
+/// `descender-mask-prf` Poseidon2 sponge). Preserves the 31-byte algebraic+hardening
+/// layout and last-byte mask, so downstream challenge parsing is unchanged; only the
+/// VALUES differ from the archived SHA-256 body. Each FS context (relation, transaction,
+/// authorization) passes its own domain tag so the three sponges can never collide. The
+/// FS soundness assumption is SHA-256-as-RO -> Poseidon2-sponge-as-RO (the named-standard
+/// A_poseidon2_* assumption already carried for the mask PRF + relation frame).
+pub fn hash_frame_to_challenge_bytes_poseidon2_with_domain(
+    domain: &[u8],
+    frame: &[u8],
+) -> [u8; CHALLENGE_BYTES] {
+    let mut out = descender_mask_prf::poseidon2_hash_bytes::<CHALLENGE_BYTES>(domain, frame);
     out[ALGEBRAIC_CHALLENGE_BYTES - 1] &= ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK;
     out
+}
+
+/// Relation-domain Poseidon2 Fiat–Shamir challenge — thin wrapper over
+/// [`hash_frame_to_challenge_bytes_poseidon2_with_domain`] pinned to the CHECKED-CORE
+/// relation domain (back-compat for the relation-frame callers re-hosted 2026-06-18).
+pub fn hash_frame_to_challenge_bytes_poseidon2(frame: &[u8]) -> [u8; CHALLENGE_BYTES] {
+    hash_frame_to_challenge_bytes_poseidon2_with_domain(
+        PATH2_CHECKED_CORE_FS_POSEIDON2_DOMAIN.as_bytes(),
+        frame,
+    )
 }
 
 pub fn challenge_bytes(
@@ -60619,13 +60645,10 @@ pub fn challenge_bytes(
     digest: &[u8; DIGEST_BYTES],
     proof_commitment: &[u8; LINEAR_SIGMA_PROOF_COMMITMENT_BYTES],
 ) -> [u8; CHALLENGE_BYTES] {
-    hash_frame_to_challenge_bytes(&challenge_hash_frame(
-        public_key,
-        message,
-        slot_id,
-        digest,
-        proof_commitment,
-    ))
+    hash_frame_to_challenge_bytes_poseidon2_with_domain(
+        PATH2_TXN_FS_POSEIDON2_DOMAIN.as_bytes(),
+        &challenge_hash_frame(public_key, message, slot_id, digest, proof_commitment),
+    )
 }
 
 pub fn path2_checked_core_authorization_challenge_frame(
@@ -60675,16 +60698,19 @@ pub fn path2_checked_core_authorization_challenge_bytes(
     slot_authorization_digest: &[u8; DIGEST_BYTES],
     proof_commitment: &[u8; LINEAR_SIGMA_PROOF_COMMITMENT_BYTES],
 ) -> [u8; CHALLENGE_BYTES] {
-    hash_frame_to_challenge_bytes(&path2_checked_core_authorization_challenge_frame(
-        public_key,
-        message,
-        account_id,
-        account_state_root,
-        slot_id,
-        witness_commitment,
-        slot_authorization_digest,
-        proof_commitment,
-    ))
+    hash_frame_to_challenge_bytes_poseidon2_with_domain(
+        PATH2_AUTH_FS_POSEIDON2_DOMAIN.as_bytes(),
+        &path2_checked_core_authorization_challenge_frame(
+            public_key,
+            message,
+            account_id,
+            account_state_root,
+            slot_id,
+            witness_commitment,
+            slot_authorization_digest,
+            proof_commitment,
+        ),
+    )
 }
 
 pub fn require_path2_checked_core_authorization_challenge_binding(
@@ -102366,7 +102392,12 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 .any(|window| window == b"proof_commitment")
         );
 
-        let challenge = hash_frame_to_challenge_bytes(&frame);
+        // Full spend FS Poseidon2 re-host (2026-06-18): the transaction challenge now
+        // derives via the TXN-domain Poseidon2 sponge, not the archived SHA-256 body.
+        let challenge = hash_frame_to_challenge_bytes_poseidon2_with_domain(
+            PATH2_TXN_FS_POSEIDON2_DOMAIN.as_bytes(),
+            &frame,
+        );
         assert_eq!(
             challenge[ALGEBRAIC_CHALLENGE_BYTES - 1] & !ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK,
             0
@@ -102375,6 +102406,12 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             challenge,
             challenge_bytes(&public_key, message, 3, &digest, &proof_commitment)
         );
-        assert_ne!(challenge, hash_frame_to_challenge_bytes(&legacy));
+        assert_ne!(
+            challenge,
+            hash_frame_to_challenge_bytes_poseidon2_with_domain(
+                PATH2_TXN_FS_POSEIDON2_DOMAIN.as_bytes(),
+                &legacy,
+            )
+        );
     }
 }

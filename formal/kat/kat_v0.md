@@ -23,7 +23,7 @@ cargo run --bin signature_q12289_local_delta_stateful -- --kat-check
   which wraps `production_reference.rs` (`verify_with_account_binding` /
   `complete_verified_signature`). Keygen/sign/verify are fully deterministic
   (SHA256-seeded, no randomness), so the corpus is exactly reproducible.
-- **Producing-version digest:** `3f2d4c5f370f22909fee6a0c8f2a5cba1d78a5a8cef9672d6625b59db1e9982c`
+- **Producing-version digest:** `772dab5ce766c60d3c4821dcfd2d5e62e22ec47d65d7d53c40ef8192cb21c753`
   — SHA256 over the structural constants plus a freshly recomputed positive
   signature. Any drift in the reference logic changes this digest.
 - **q = 12289**, public key = 172 bytes, transaction signature = **260 bytes**.

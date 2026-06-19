@@ -3534,7 +3534,15 @@ fn legacy_stateful_challenge_hash_frame(
 }
 
 fn hash_frame_to_challenge_bytes(frame: &[u8]) -> [u8; CHALLENGE_BYTES] {
-    prodref::hash_frame_to_challenge_bytes(frame)
+    // Full spend FS Poseidon2 re-host (2026-06-18): the deployed signer's transaction
+    // Fiat–Shamir challenge now routes through the Plonky3-free Poseidon2 sponge under
+    // the TRANSACTION FS domain. Prover and verifier both hash through this single
+    // delegate, so they shift together. Same 31-byte layout / last-byte mask; only the
+    // challenge VALUES change (KATs regenerated from the real pipeline).
+    prodref::hash_frame_to_challenge_bytes_poseidon2_with_domain(
+        prodref::PATH2_TXN_FS_POSEIDON2_DOMAIN.as_bytes(),
+        frame,
+    )
 }
 
 fn challenge_action_vector(challenge: &[u8; CHALLENGE_BYTES]) -> [u16; CHALLENGE_ACTION_RESIDUES] {

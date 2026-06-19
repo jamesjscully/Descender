@@ -498,6 +498,10 @@ fn hash_frame_bytes(
     frame
 }
 
+// LEGACY SHA-256 Fiat–Shamir experiment, NOT the deployed signer / NOT the KAT path.
+// This is an experimental compact-format probe binary; it is out of scope for the
+// 2026-06-18 spend-FS Poseidon2 re-host (which covers the deployed stateful signer and
+// the prodref challenge/authorization derivations). Left on SHA-256 deliberately.
 fn hash_frame_to_challenge_bytes(frame: &[u8]) -> [u8; CHALLENGE_BYTES] {
     let digest = Sha256::digest(frame);
     let mut out = [0_u8; CHALLENGE_BYTES];
