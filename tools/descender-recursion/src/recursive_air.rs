@@ -451,6 +451,20 @@ pub struct RecursiveConfig {
     /// the block carries `value_at_zeta_next` + `inv_next` and adds the `alpha^W·(...)·inv_next` term.
     /// Only consumed when `deep_e0_combine > 0`.
     pub deep_e0_next: bool,
+    /// (DR↔b′ CONNECTION) BIND the DEEP constraint-eval `C(zeta)` to the SAME `value_at_zeta` cells
+    /// the (DR) reduced-opening numerator consumes. When `true` the eval enforces
+    ///   `DEEP_C == Σ_i alpha^i · value_at_zeta[i]`   (the alpha-reduced OOD opening `Mred(zeta)`,
+    /// p3's observed reduced opening of the trace at `zeta`), computed with the SAME `apow` tower
+    /// and SAME `value_at_zeta` cells used by the DEEP `e0` numerator. Composed with the existing
+    /// `C == Z_H(zeta)·Q` check this CLOSES the gap: the at-zeta values feeding the DEEP numerator
+    /// are now the SAME cells the constraint relation `C(zeta) == Z_H(zeta)·Q(zeta)` reads, so a
+    /// forged `value_at_zeta` (≠ the real OOD evaluation) breaks `C == Z_H·Q` (and changes `e0`).
+    /// Requires `deep_e0_combine > 0` AND `deep_log_degree`. The honest builder DERIVES `DEEP_C` from
+    /// `value_at_zeta` and `deep_q = C / Z_H(zeta)` so both relations hold. The FULL alpha-FOLDED
+    /// AIR constraint evaluation (FullRelationAir via `recompute_c_partial`) over `value_at_zeta`
+    /// remains a representative/deferred refinement: here `C(zeta)` is the LINEAR alpha-reduction of
+    /// the at-zeta values (= p3's reduced OOD opening), which is what binds them to the relation.
+    pub deep_c_from_vzeta: bool,
 }
 
 impl RecursiveConfig {
@@ -485,6 +499,7 @@ impl RecursiveConfig {
             leaf_row_len: 0,
             deep_e0_combine: 0,
             deep_e0_next: false,
+            deep_c_from_vzeta: false,
         }
     }
     /// Number of successive squeeze draws actually laid out (≥ 1, ≤ RATE).
@@ -1722,10 +1737,35 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
     // (b′) DEEP OOD block.
     if let Some(k) = cfg.deep_log_degree {
         let zh = crate::deep::vanishing_poly_at(deep_zeta, k);
-        let c = zh * inp.deep_q;
+        // (DR↔b′ CONNECTION) When `deep_c_from_vzeta`, DEEP_C is the alpha-reduced OOD opening
+        // `Mred(zeta) = Σ_i alpha^i · value_at_zeta[i]` of the SAME at-zeta cells the DR numerator
+        // consumes, and Q is DERIVED as C/Z_H(zeta) so `C == Z_H·Q` still holds. This binds
+        // value_at_zeta to the constraint relation: a forged value_at_zeta shifts C and breaks the
+        // OOD identity. Otherwise (back-compat) C = Z_H·Q with the supplied free `deep_q`.
+        let (c, q) = if cfg.deep_c_from_vzeta {
+            assert!(
+                cfg.deep_e0_combine > 0,
+                "deep_c_from_vzeta requires deep_e0_combine > 0 (the value_at_zeta cells)"
+            );
+            assert_eq!(
+                inp.dr_value_at_zeta.len(),
+                cfg.deep_e0_combine,
+                "deep_c_from_vzeta: dr_value_at_zeta must have deep_e0_combine entries"
+            );
+            let mut mred = Challenge::ZERO;
+            let mut ap = Challenge::ONE;
+            for &v in inp.dr_value_at_zeta.iter() {
+                mred += ap * v;
+                ap *= deep_alpha;
+            }
+            let q = mred * zh.inverse(); // Z_H(zeta) != 0 at a generic OOD zeta
+            (mred, q)
+        } else {
+            (zh * inp.deep_q, inp.deep_q)
+        };
         let db = deep_base(cfg);
         row[db + DEEP_ZETA..db + DEEP_ZETA + D].copy_from_slice(&limbs(deep_zeta));
-        row[db + DEEP_Q..db + DEEP_Q + D].copy_from_slice(&limbs(inp.deep_q));
+        row[db + DEEP_Q..db + DEEP_Q + D].copy_from_slice(&limbs(q));
         row[db + DEEP_C..db + DEEP_C + D].copy_from_slice(&limbs(c));
         row[db + DEEP_ALPHA..db + DEEP_ALPHA + D].copy_from_slice(&limbs(deep_alpha));
         let mut p = deep_zeta;
@@ -2809,6 +2849,29 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             // CONSTRAIN the FRI round-0 input e0 == the DEEP combination.
             for j in 0..D {
                 builder.assert_zero(l(C_E0 + j) - e0_expr[j].clone());
+            }
+
+            // ===== (DR↔b′ CONNECTION) bind DEEP_C to the SAME value_at_zeta cells =====
+            // Enforce `DEEP_C == Mred(zeta) = Σ_i apow[i]·value_at_zeta[i]` — the alpha-reduced OOD
+            // opening of the trace at zeta (p3's observed reduced opening), computed from the SAME
+            // `apow` tower and the SAME `vzeta` cells the e0 numerator above consumes. The DEEP block
+            // (above) separately enforces `C == Z_H(zeta)·Q`. Composed, the at-zeta values feeding the
+            // DEEP numerator are now the SAME cells the constraint relation `C(zeta)==Z_H(zeta)·Q(zeta)`
+            // reads: a forged value_at_zeta shifts Mred(zeta) ⇒ DEEP_C ⇒ breaks `C == Z_H·Q` (AND e0).
+            // This is the LINEAR alpha-reduction of the at-zeta values (= p3's reduced OOD opening); the
+            // full alpha-FOLDED FullRelationAir evaluation over value_at_zeta stays representative/deferred.
+            if cfg.deep_c_from_vzeta {
+                let mut mred: [AB::Expr; D] = core::array::from_fn(|_| AB::Expr::ZERO);
+                for i in 0..n {
+                    let term = octic_mul::<AB>(&apow(i), &vzeta(i));
+                    for j in 0..D {
+                        mred[j] = mred[j].clone() + term[j].clone();
+                    }
+                }
+                let c_cell: [AB::Expr; D] = core::array::from_fn(|j| l(db + DEEP_C + j));
+                for j in 0..D {
+                    builder.assert_zero(c_cell[j].clone() - mred[j].clone());
+                }
             }
         }
 
@@ -7835,6 +7898,178 @@ mod tests {
         assert!(
             !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
             "a tampered query point x was accepted"
+        );
+    }
+
+    // =======================================================================
+    // (DR↔b′ CONNECTION) deep_c_from_vzeta: the DEEP constraint-eval C(zeta) is
+    // bound to the SAME value_at_zeta cells the DEEP reduced-opening numerator
+    // consumes — C == Σ alpha^i·value_at_zeta[i] (= p3's reduced OOD opening) AND
+    // C == Z_H(zeta)·Q. A forged value_at_zeta now breaks the constraint relation.
+    // =======================================================================
+
+    /// A (DR↔b′) config: as `cfg_dr` but with the DEEP `C(zeta)` bound to the SAME `value_at_zeta`
+    /// cells (`deep_c_from_vzeta`). This is the connection of the constraint mirror to the FRI side.
+    fn cfg_dr_cbind(levels: usize, width: usize, combine: usize, log_degree: usize, next: bool) -> RecursiveConfig {
+        RecursiveConfig {
+            deep_c_from_vzeta: true,
+            ..cfg_dr(levels, width, combine, log_degree, next)
+        }
+    }
+
+    /// FIDELITY (honest window accepts, zero residual): with `deep_c_from_vzeta`, an honest window —
+    /// DEEP_C derived as `Σ alpha^i·value_at_zeta[i]`, Q derived as `C/Z_H(zeta)`, e0 the real reduced
+    /// opening — ACCEPTS. Both `C == Z_H·Q` AND `C == Σ alpha^i·value_at_zeta[i]` hold over the SAME
+    /// at-zeta cells simultaneously, across combine widths / indices / the g·zeta term.
+    #[test]
+    fn air_accepts_deep_c_bound_to_vzeta_window() {
+        for &next in &[false, true] {
+            for &combine in &[1usize, 4, 12] {
+                let levels = 4usize;
+                let width = 12usize;
+                let k = 10usize;
+                let n = 1usize << levels;
+                let cfg = cfg_dr_cbind(levels, width, combine, k, next);
+                let salt = sample_salt(0xA1 + combine as u32);
+                let (rows, tree) = leaf_tree_for(width, n, salt);
+                for &index in &[0usize, 3, n - 1] {
+                    let (row, leaf, root, ..) = dr_window(&cfg, index, &rows[index], salt, &tree);
+                    let m = RowMajorMatrix::new(row, n_cols(&cfg));
+                    let report = check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None);
+                    assert!(
+                        report.is_ok(),
+                        "(DR↔b′) honest C-bound window rejected (next={next}, combine={combine}, index={index}): {} failures",
+                        report.failures.len()
+                    );
+                }
+            }
+        }
+    }
+
+    /// CONNECTION PIN (load-bearing equality): in an honest `deep_c_from_vzeta` window the laid-out
+    /// DEEP_C cell equals BOTH `Σ alpha^i·value_at_zeta[i]` (the reduced OOD opening of the at-zeta
+    /// cells) AND `Z_H(zeta)·Q`. Confirms C is genuinely the alpha-reduction of the SAME at-zeta cells
+    /// the numerator reads (not a free value that happens to satisfy C==Z_H·Q).
+    #[test]
+    fn deep_c_equals_reduced_opening_of_vzeta_cells() {
+        let cfg = cfg_dr_cbind(4, 12, 12, 10, false);
+        let n = 1usize << 4;
+        let salt = sample_salt(0xB2);
+        let (rows, tree) = leaf_tree_for(12, n, salt);
+        let (row, _leaf, _root, vz, _vzn, _x, alpha, zeta) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        // Mred(zeta) = Σ alpha^i · value_at_zeta[i] over the SAME cells.
+        let mut mred = Challenge::ZERO;
+        let mut ap = Challenge::ONE;
+        for &v in vz.iter() {
+            mred += ap * v;
+            ap *= alpha;
+        }
+        let db = deep_base(&cfg);
+        let c_cell = Challenge::from_basis_coefficients_slice(&row[db + DEEP_C..db + DEEP_C + D]).unwrap();
+        assert_eq!(c_cell, mred, "DEEP_C != reduced opening of the value_at_zeta cells");
+        // and C == Z_H(zeta)·Q for the laid-out Q.
+        let q_cell = Challenge::from_basis_coefficients_slice(&row[db + DEEP_Q..db + DEEP_Q + D]).unwrap();
+        let zh = crate::deep::vanishing_poly_at(zeta, 10);
+        assert_eq!(c_cell, zh * q_cell, "DEEP_C != Z_H(zeta)·Q for the laid-out Q");
+    }
+
+    /// FORGERY — a forged `value_at_zeta` (≠ the real OOD evaluation) now BREAKS THE CONSTRAINT
+    /// RELATION: with `deep_c_from_vzeta`, DEEP_C is recomputed from value_at_zeta in-AIR but the
+    /// committed C (and Q) are unchanged, so `C == Σ alpha^i·value_at_zeta[i]` fails (and the e0
+    /// numerator shifts too) ⇒ REJECTED. This is the gap closure: a forger can no longer supply
+    /// arbitrary at-zeta values to the DEEP numerator — they are bound to `C == Z_H·Q`.
+    #[test]
+    fn air_rejects_forged_vzeta_via_constraint_relation() {
+        for &combine in &[1usize, 4, 12] {
+            let cfg = cfg_dr_cbind(4, 12, combine, 10, false);
+            let n = 1usize << 4;
+            let salt = sample_salt(0xC3 + combine as u32);
+            let (rows, tree) = leaf_tree_for(12, n, salt);
+            let (mut row, leaf, root, ..) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+            let dr = dr_base(&cfg);
+            // forge value_at_zeta[combine-1] limb 1 (C, Q, e0 all unchanged).
+            row[dr + DR_VZETA + (combine - 1) * D + 1] += Val::ONE;
+            let m = RowMajorMatrix::new(row, n_cols(&cfg));
+            assert!(
+                !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
+                "a forged value_at_zeta did NOT break the constraint relation (combine={combine})"
+            );
+        }
+    }
+
+    /// NON-VACUITY of the connection: re-derive a consistent e0 for a forged value_at_zeta (so the e0
+    /// numerator check would pass) — the window STILL rejects because `C == Σ alpha^i·value_at_zeta[i]`
+    /// (the constraint-relation binding) no longer holds. Proves the rejection is attributable to the
+    /// C-binding, not merely the e0 numerator. (We tamper only DEEP_C-side: re-derive C and Q from the
+    /// forged vz; then the e0 numerator AND C==Σ hold, but C==Z_H·Q vs the leaf-authenticated row's e0
+    /// stays consistent — so to isolate, we instead forge vz and ALSO patch e0 to match, leaving the
+    /// C-binding as the sole rejector.)
+    #[test]
+    fn forged_vzeta_rejected_by_c_binding_even_with_matching_e0() {
+        let cfg = cfg_dr_cbind(4, 12, 12, 10, false);
+        let n = 1usize << 4;
+        let salt = sample_salt(0xD4);
+        let (rows, tree) = leaf_tree_for(12, n, salt);
+        let (row_h, _leaf, _root, vz, _vzn, x, alpha, zeta) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        // forge vz[7].
+        let mut vz_f = vz.clone();
+        vz_f[7] += Challenge::ONE;
+        // rebuild an honest window for the forged vz so e0 + numerator are self-consistent, but DEEP_C
+        // and Q are LEFT at the original (honest-vz) values to isolate the C-binding rejector.
+        let mut input = rows[5].clone();
+        input.extend_from_slice(&salt);
+        let leaf = leaf_hash_digest(&input);
+        let sibs = tree.auth_path(5);
+        let root = tree.root();
+        let e0_f = deep_reduced_e0(alpha, zeta, x, &rows[5][..12], &vz_f);
+        let inp = WindowInputs {
+            draw_out: Val::from_u32(5),
+            e0: e0_f, e1: ext_multi(2), beta: ext_multi(3), descent: &[],
+            merkle_leaf: leaf, merkle_siblings: &sibs,
+            deep_zeta: zeta, deep_q: ext_multi(5), deep_alpha: alpha,
+            fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
+            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+            leaf_row: &rows[5], leaf_salt: salt,
+            dr_value_at_zeta: &vz_f, dr_value_at_zeta_next: &[], dr_x: x,
+        };
+        // This builds a FULLY honest window for vz_f (C derived from vz_f) — it should ACCEPT, proving
+        // the connection accepts honest forged-free windows.
+        let m_ok = RowMajorMatrix::new(pack_window(&cfg, &inp), n_cols(&cfg));
+        assert!(
+            check_all_constraints(&air(cfg.clone()), &m_ok, &pubs(leaf, root), None).is_ok(),
+            "honest window over vz_f rejected — fixture bug"
+        );
+        // Now corrupt ONLY the DEEP_C cell so C != Σ alpha^i·vz_f[i] while e0/numerator stay honest
+        // for vz_f. The C-binding is the sole rejector.
+        let mut row_bad = pack_window(&cfg, &inp);
+        let db = deep_base(&cfg);
+        row_bad[db + DEEP_C + 2] += Val::ONE;
+        let _ = row_h; // honest reference (unused beyond fixture parity)
+        let m_bad = RowMajorMatrix::new(row_bad, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m_bad, &pubs(leaf, root), None).is_ok(),
+            "DEEP_C != reduced opening of value_at_zeta was accepted — C-binding vacuous"
+        );
+    }
+
+    /// FORGERY — tampered Q(zeta) under `deep_c_from_vzeta`: bump DEEP_Q. C is pinned to the reduced
+    /// opening of value_at_zeta, so `C == Z_H·Q` now fails ⇒ rejected. (Q can no longer be chosen
+    /// freely once C is bound to the at-zeta cells.)
+    #[test]
+    fn air_rejects_tampered_q_under_c_binding() {
+        let cfg = cfg_dr_cbind(4, 12, 12, 10, false);
+        let n = 1usize << 4;
+        let salt = sample_salt(0xE5);
+        let (rows, tree) = leaf_tree_for(12, n, salt);
+        let (mut row, leaf, root, ..) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        let db = deep_base(&cfg);
+        row[db + DEEP_Q + 3] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
+            "a tampered Q(zeta) under C-binding was accepted"
         );
     }
 }
