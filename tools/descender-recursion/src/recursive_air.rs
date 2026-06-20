@@ -2364,6 +2364,26 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 for i in 0..DIGEST_ELEMS {
                     builder.assert_zero(l(llast + LO_ML_PERM + C_OUTPUT + i) - l(rb + i));
                 }
+                // ----- (LO≡FS-β) UNIFY the authentication root with the FS-OBSERVED commitment -----
+                // In real p3-fri (p3-fri-0.6.1 verifier.rs:300-310 vs :374-377/:535) there is ONE
+                // commitment per commit-phase round r: `commit_phase_commits[r]` is BOTH `observe`d to
+                // sample beta_r AND the MMCS root the round-r sibling `verify_batch`-opens against. Here
+                // the descent authenticates against `layer_commit_r` (this LO block, `rb + 0..DIGEST_ELEMS`)
+                // while the FS-β transcript observes `commit_phase_commit_r` (`fb_round_base(r) + FB_BLOCK`)
+                // to squeeze beta_r. They were two SEPARATE bound blocks — an adversary could authenticate
+                // siblings against a commitment DIFFERENT from the one that generated beta_r. When BOTH
+                // blocks are present for round r (an FS-β round exists, i.e. `r < fs_beta_rounds`), CONSTRAIN
+                // them equal limb-for-limb: the authentication root IS the FS-observed commitment. Then
+                // tampering round r's observed commitment moves beta_r (FS-β squeeze) AND breaks this
+                // round's sibling authentication — one digest, both effects, as in p3. When the LO block is
+                // used standalone (`fs_beta_rounds == 0`, no FS-β block exists) this residual is absent and
+                // `layer_commit_r` remains the sole bound root (prior behavior, unchanged).
+                if r < cfg.fs_beta_rounds {
+                    let fbr = fb_round_base(&cfg, r);
+                    for k in 0..DIGEST_ELEMS {
+                        builder.assert_zero(l(rb + k) - l(fbr + FB_BLOCK + k));
+                    }
+                }
             }
         }
 
@@ -6762,6 +6782,330 @@ mod tests {
         assert!(
             !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
             "a tampered descent folded value was accepted"
+        );
+    }
+
+    // ---------------------------------------------------------------------------------
+    // (LO≡FS-β) UNIFY the per-round FRI-layer AUTHENTICATION commitment (`layer_commit_r`, the
+    // root the round-r sibling opens against) with the FS-OBSERVED commit-phase commitment
+    // (`commit_phase_commit_r`, observed into the sponge to squeeze beta_r). In real p3-fri there is
+    // ONE commitment per commit-phase round (p3-fri-0.6.1 verifier.rs:300-310 observe→beta_r vs
+    // :374-377/:535 the SAME commit is the verify_batch root). The (LO≡FS-β) equality residual ties
+    // them: changing round r's observed commitment moves beta_r (FS squeeze) AND breaks the round-r
+    // sibling authentication — one digest, both effects.
+    // ---------------------------------------------------------------------------------
+
+    /// Config: a `rounds`-round descent that BOTH (a) FS-squeezes the commit-phase betas
+    /// (`fs_beta_rounds == rounds`, continuing the post-zeta transcript) AND (b) layer-authenticates
+    /// each round's sibling (`layer_open_rounds == rounds`, `levels`-deep trees). This is the only
+    /// config where BOTH the FS-β block and the LO block exist for every round, so the (LO≡FS-β)
+    /// residual `layer_commit_r == commit_phase_commit_r` is exercised.
+    fn cfg_lo_fb(h: usize, rounds: usize, levels: usize, pre_rounds: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            num_rounds: rounds,
+            deep_log_degree: Some(8),
+            fs_alpha_zeta: true,
+            fs_pre_alpha_rounds: pre_rounds,
+            fs_beta_rounds: rounds,
+            layer_open_rounds: rounds,
+            layer_open_levels: levels,
+            ..RecursiveConfig::single_window(h)
+        }
+    }
+
+    /// Build an honest UNIFIED window: each round's single digest is BOTH the FS-β observed
+    /// `commit_phase_commit_r` (→ beta_r) AND the round-r layer authentication root (`layer_commit_r`).
+    /// This mirrors real p3-fri: the MMCS root of the round-r layer is committed, observed to squeeze
+    /// beta_r, and opened against. Solved as the genuine sequential fixed point (beta_r depends only on
+    /// comms[0..=r]; the round-r tree's target leaf depends on round_pairs[r] which uses beta_{r-1}):
+    ///   round 0: pairs[0] = (e0,e1) are direct inputs → build tree_0 → root_0 = comm_0 → squeeze beta_0
+    ///   round r: e_fold_r = fold(e_fold_{r-1}, e_sib_{r-1}, beta_{r-1}, s_{r-1}); e_sib_r is a chosen
+    ///            input → build tree_r → root_r = comm_r → squeeze beta_r
+    /// Returns the packed window + the per-round (unified_digest, e_fold, e_sib, start_index).
+    #[allow(clippy::type_complexity)]
+    fn lo_fb_window(
+        cfg: &RecursiveConfig,
+        fs_prefix: &[[Val; RATE]],
+        index_draw: Val,
+    ) -> (Vec<Val>, Vec<([Val; DIGEST_ELEMS], Challenge, Challenge, usize)>) {
+        let h0 = cfg.log_height;
+        let rounds = cfg.rounds();
+        let levels = cfg.layer_open_levels;
+        let pre = cfg.fs_pre_alpha_rounds;
+        assert_eq!(fs_prefix.len(), pre + 1, "fs_prefix = pre-alpha rounds + quotient observe");
+        // beta-chain start = post-zeta state (no batch-combo alpha in this fixture).
+        let beta_start = fs_post_zeta_state(&fs_prefix[..pre], fs_prefix[pre]);
+
+        let index = (index_draw.as_canonical_u32() as usize) & ((1 << h0) - 1);
+        let n_nodes = 1usize << levels;
+
+        // chosen sibling inputs for rounds 1..rounds (e_sib_r). Round 0's pair is (e0, e1).
+        let e0_0 = ext_multi(0x5AB0);
+        let e1_0 = ext_multi(0x5AB1);
+        let e_sibs: Vec<Challenge> = (1..rounds).map(|r| ext_multi(0x6000 + r as u32)).collect();
+
+        // sequential fixed point: round-by-round build tree → root = comm → squeeze beta → next e_fold.
+        let mut comms: Vec<[Val; RATE]> = Vec::with_capacity(rounds);
+        let mut betas: Vec<Challenge> = Vec::with_capacity(rounds);
+        let mut round_pairs: Vec<(Challenge, Challenge)> = Vec::with_capacity(rounds);
+        let mut metas: Vec<([Val; DIGEST_ELEMS], Challenge, Challenge, usize)> = Vec::new();
+        let mut owned_sibs: Vec<Vec<[Val; DIGEST_ELEMS]>> = Vec::new();
+        let mut owned_salts: Vec<[Val; SALT_ELEMS]> = Vec::new();
+
+        let mut s_prev = fold_point(h0, index);
+        let mut e_fold = e0_0;
+        for r in 0..rounds {
+            let e_sib = if r == 0 { e1_0 } else { e_sibs[r - 1] };
+            let start_index = index >> r;
+            let parity = (start_index & 1) == 1;
+            let node = (start_index >> 1) & (n_nodes - 1);
+            let salt = lo_salt(0xB0 + r as u32);
+            let leaf = layer_leaf_digest(e_fold, e_sib, parity, &salt);
+            let leaves: Vec<Digest> = (0..n_nodes)
+                .map(|j| {
+                    if j == node {
+                        leaf
+                    } else {
+                        core::array::from_fn(|i| {
+                            Val::from_u32((j as u32 + 1) * 7919 + i as u32 + r as u32)
+                        })
+                    }
+                })
+                .collect();
+            let tree = LoRefTree::new(leaves);
+            let root = tree.root();
+            // the round-r FRI commitment: root is observed (→ beta_r) AND authenticated against.
+            comms.push(root); // Digest is [Val; DIGEST_ELEMS] == [Val; RATE]
+            owned_sibs.push(tree.auth_path(node));
+            owned_salts.push(salt);
+            round_pairs.push((e_fold, e_sib));
+            metas.push((root, e_fold, e_sib, start_index));
+            // squeeze beta_r by observing comms[0..=r] from the post-zeta start (matches pack_window).
+            let (bs, _) = fs_squeeze_betas(beta_start, &comms);
+            let beta_r = bs[r];
+            betas.push(beta_r);
+            // next round's e_fold = this round's fold output; s_r = s_{r-1}^2 (point-square).
+            let s_r = s_prev;
+            e_fold = fold_pair(e_fold, e_sib, beta_r, s_r);
+            s_prev = s_r * s_r;
+        }
+
+        // descent inputs: (e_sib_r, dummy beta) for rounds 1..rounds (betas overridden by FS-β).
+        let descent: Vec<(Challenge, Challenge)> =
+            (1..rounds).map(|r| (round_pairs[r].1, Challenge::ZERO)).collect();
+        let layer_opens: Vec<LayerOpenInput> = (0..rounds)
+            .map(|r| LayerOpenInput {
+                layer_commit: metas[r].0,
+                salt: owned_salts[r],
+                merkle_siblings: &owned_sibs[r],
+            })
+            .collect();
+
+        let inp = WindowInputs {
+            draw_out: index_draw,
+            e0: e0_0,
+            e1: e1_0,
+            beta: Challenge::ZERO, // overridden by FS-β round 0
+            descent: &descent,
+            merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
+            merkle_siblings: &[],
+            deep_zeta: Challenge::ZERO,
+            deep_q: ext_multi(0x9001),
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: fs_prefix,
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &comms,
+            fs_final_blocks: &[],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &layer_opens,
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+        };
+        (pack_window(cfg, &inp), metas)
+    }
+
+    /// GOLDEN (unified): an honest window where each round's single digest is BOTH the FS-β observed
+    /// commitment (→ beta_r) AND the layer authentication root — ACCEPTS with zero residual. Confirms
+    /// the (LO≡FS-β) equality residual holds on an honest, fixed-point-consistent transcript across
+    /// round/level counts. Also asserts the fixture is genuinely consistent: for every round r, the LO
+    /// `layer_commit_r` cells equal the FS-β `commit_phase_commit_r` block cells (one digest, both
+    /// roles — the real p3 MMCS root).
+    #[test]
+    fn air_accepts_unified_layer_commit_eq_fs_observed() {
+        let h = 12usize;
+        for rounds in [1usize, 2, 3] {
+            for levels in [2usize, 3] {
+                let pre = 2usize;
+                let cfg = cfg_lo_fb(h, rounds, levels, pre);
+                let fs_prefix: Vec<[Val; RATE]> =
+                    (0..(pre + 1) as u32).map(|r| fs_block(40 + r)).collect();
+                let (row, _) = lo_fb_window(&cfg, &fs_prefix, Val::from_u32(0xABCDE));
+                // the fixture uses ONE digest per round for both observe + authenticate.
+                for r in 0..rounds {
+                    let lo_rb = lo_round_base(&cfg, r);
+                    let fb_rb = fb_round_base(&cfg, r);
+                    for k in 0..DIGEST_ELEMS {
+                        assert_eq!(
+                            row[lo_rb + k],
+                            row[fb_rb + FB_BLOCK + k],
+                            "round {r} limb {k}: layer_commit != FS-observed commit (fixture inconsistent)"
+                        );
+                    }
+                }
+                let m = RowMajorMatrix::new(row, n_cols(&cfg));
+                let report = check_all_constraints(&air(cfg), &m, &[], None);
+                assert!(
+                    report.is_ok(),
+                    "honest unified layer-commit window rejected (rounds={rounds}, levels={levels}): {} failures",
+                    report.failures.len()
+                );
+            }
+        }
+    }
+
+    /// FORGERY — THE EXACT GAP (authenticate against a DIFFERENT valid commitment): this is the
+    /// soundness hole the (LO≡FS-β) residual closes, exhibited so it is caught ONLY by that residual
+    /// (root-binding + beta-bind both still pass). Take an honest unified window, then for round 1 build
+    /// a SECOND, fully VALID layer tree authenticating the SAME descent pair (e_fold_1, e_sib_1) but
+    /// under a DIFFERENT salt → a DIFFERENT leaf → a DIFFERENT real root R_auth. Replace round 1's LO
+    /// sub-block (layer_commit + salt + leaf-hash perms + path) with this alternate open: its path is a
+    /// real auth path, so the root binding (path reconstructs to layer_commit_1 = R_auth) STILL passes;
+    /// the FS-observed `commit_phase_commit_1` and the squeezed/consumed beta_1 are UNTOUCHED, so the
+    /// beta-bind STILL passes. The ONLY thing wrong: layer_commit_1 (R_auth) != commit_phase_commit_1.
+    /// Pre-fix this was ACCEPTED (siblings authenticated against a commitment that did NOT generate
+    /// beta_1). The (LO≡FS-β) equality residual is the load-bearing guard that rejects it.
+    #[test]
+    fn air_rejects_layer_commit_ne_fs_observed() {
+        let pre = 2usize;
+        let cfg = cfg_lo_fb(12, 2, 3, pre);
+        let levels = cfg.layer_open_levels;
+        let fs_prefix: Vec<[Val; RATE]> = (0..(pre + 1) as u32).map(|r| fs_block(40 + r)).collect();
+        let (mut row, metas) = lo_fb_window(&cfg, &fs_prefix, Val::from_u32(0xABCDE));
+        // round 1's honest descent pair + node (read straight from the consistent fixture).
+        let (_orig_root, e_fold, e_sib, start_index) = metas[1];
+        let parity = (start_index & 1) == 1;
+        let n_nodes = 1usize << levels;
+        let node = (start_index >> 1) & (n_nodes - 1);
+        // build an ALTERNATE valid tree for the SAME pair under a DIFFERENT salt → DIFFERENT real root.
+        let alt_salt = lo_salt(0xFEED);
+        let alt_leaf = layer_leaf_digest(e_fold, e_sib, parity, &alt_salt);
+        let alt_leaves: Vec<Digest> = (0..n_nodes)
+            .map(|j| {
+                if j == node {
+                    alt_leaf
+                } else {
+                    core::array::from_fn(|i| Val::from_u32((j as u32 + 1) * 5003 + i as u32 + 11))
+                }
+            })
+            .collect();
+        let alt_tree = LoRefTree::new(alt_leaves);
+        let alt_root = alt_tree.root();
+        let alt_sibs = alt_tree.auth_path(node);
+        assert_ne!(alt_root, metas[1].0, "alternate tree must yield a different real root");
+        // re-pack ONLY round 1's LO sub-block against the alternate (valid) open, leaving the FS-β
+        // observed block + beta_1 + descent untouched. Mirror pack_window's LO layout exactly.
+        let rb = lo_round_base(&cfg, 1);
+        let consts = inlined_perm::Constants::pinned();
+        // layer commitment (the authentication root) = the alternate real root.
+        row[rb..rb + DIGEST_ELEMS].copy_from_slice(&alt_root);
+        // flattened pair (unchanged pair, by parity) + alternate salt.
+        let flat = lo_flatten_pair(e_fold, e_sib, parity);
+        row[rb + LO_EVAL0..rb + LO_EVAL0 + 2 * D].copy_from_slice(&flat);
+        row[rb + LO_SALT..rb + LO_SALT + SALT_ELEMS].copy_from_slice(&alt_salt);
+        // leaf-hash perms over flatten(pair) ‖ alt_salt.
+        let input = lo_leaf_input(e_fold, e_sib, parity, &alt_salt);
+        let pre_states = leaf_hash_pre_states(&input);
+        for (k, st) in pre_states.iter().enumerate() {
+            let cols = inlined_perm::generate_perm_cols(*st, &consts);
+            let pb = rb + lo_leaf_perm_base(k);
+            row[pb..pb + PERM_COLS].copy_from_slice(&cols);
+        }
+        // Merkle path over the alternate auth path (selectors driven by the same FS node bits).
+        let mut running = alt_leaf;
+        let mut node_idx = start_index >> 1;
+        for (level, &sib) in alt_sibs.iter().enumerate() {
+            let bit = (node_idx & 1) == 1;
+            let lbase = lo_level_base(&cfg, 1, level);
+            row[lbase + LO_ML_RUNNING..lbase + LO_ML_RUNNING + DIGEST_ELEMS].copy_from_slice(&running);
+            row[lbase + LO_ML_SIBLING..lbase + LO_ML_SIBLING + DIGEST_ELEMS].copy_from_slice(&sib);
+            let (a, b) = if bit { (sib, running) } else { (running, sib) };
+            let mut input16 = [Val::ZERO; WIDTH];
+            input16[..DIGEST_ELEMS].copy_from_slice(&a);
+            input16[DIGEST_ELEMS..].copy_from_slice(&b);
+            let cols = inlined_perm::generate_perm_cols(input16, &consts);
+            row[lbase + LO_ML_PERM..lbase + LO_ML_PERM + PERM_COLS].copy_from_slice(&cols);
+            running = core::array::from_fn(|i| cols[C_OUTPUT + i]);
+            node_idx >>= 1;
+        }
+        assert_eq!(running, alt_root, "alternate in-row fold must reconstruct the alternate root");
+        // sanity: the authentication root now DIFFERS from the FS-observed commitment.
+        let fb_rb = fb_round_base(&cfg, 1);
+        let differs = (0..DIGEST_ELEMS).any(|k| row[rb + k] != row[fb_rb + FB_BLOCK + k]);
+        assert!(differs, "alternate root must differ from the FS-observed commit");
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a sibling authenticated against a VALID commitment != the FS-observed one was accepted — \
+             gap NOT closed (the equality residual is not load-bearing)"
+        );
+    }
+
+    /// MOVE-TOGETHER (one tamper, both effects): change round r's FS-OBSERVED commitment digest. In a
+    /// REAL transcript that single change moves beta_r (the FS squeeze observes it) AND must move the
+    /// authentication root (the same digest is the open root). We tamper ONLY the FS-β observed block
+    /// `commit_phase_commit_r`. Effect 1 (FS squeeze): beta_r recomputed from the tampered block no
+    /// longer matches the descent's consumed beta_r → the beta-bind residual rejects. Effect 2
+    /// (authentication): the (LO≡FS-β) residual now sees layer_commit_r != the tampered observed digest
+    /// → rejects. They MOVE TOGETHER — the digest is one and the same, exactly as in p3-fri. (Both
+    /// residuals fire; either alone proves the tie. We assert overall rejection.)
+    #[test]
+    fn air_rejects_tampered_fs_observed_breaks_both() {
+        let pre = 2usize;
+        let cfg = cfg_lo_fb(12, 2, 3, pre);
+        let fs_prefix: Vec<[Val; RATE]> = (0..(pre + 1) as u32).map(|r| fs_block(40 + r)).collect();
+        let (mut row, _) = lo_fb_window(&cfg, &fs_prefix, Val::from_u32(0xABCDE));
+        // tamper round-1's FS-observed commitment block (the digest observed to squeeze beta_1).
+        let fb_rb = fb_round_base(&cfg, 1);
+        row[fb_rb + FB_BLOCK + 2] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "tampering the FS-observed commitment was accepted — beta_r/authentication not tied to it"
+        );
+    }
+
+    /// MOVE-TOGETHER (positive surgical proof): the same tamper as above, but we ALSO re-derive
+    /// beta_1 from the tampered observed block and patch the descent's consumed beta_1 cells + the
+    /// LO `layer_commit_1` block to match the tampered digest — i.e. we try to "repair" the FS-squeeze
+    /// effect (Effect 1) and the equality effect (Effect 2). It STILL rejects: the tampered digest is
+    /// not the real Merkle root of round-1's layer tree, so the in-AIR re-folded root != layer_commit_1
+    /// (the root-binding residual). This proves the observed digest is genuinely the AUTHENTICATION
+    /// root, not a free observe block — one digest, both roles, inseparable.
+    #[test]
+    fn air_rejects_tampered_fs_observed_even_with_beta_and_eq_repaired() {
+        let pre = 2usize;
+        let cfg = cfg_lo_fb(12, 2, 3, pre);
+        let fs_prefix: Vec<[Val; RATE]> = (0..(pre + 1) as u32).map(|r| fs_block(40 + r)).collect();
+        let (mut row, _) = lo_fb_window(&cfg, &fs_prefix, Val::from_u32(0xABCDE));
+        let fb_rb = fb_round_base(&cfg, 1);
+        // tamper round-1's observed commitment digest, AND copy it into the LO layer_commit_1 block
+        // (repair Effect 2: equality residual). Effect 1 (beta) is left to fire — but even if a forger
+        // recomputed beta_1, the path can't reconstruct to a non-root digest. We assert rejection.
+        row[fb_rb + FB_BLOCK + 2] += Val::ONE;
+        let lo_rb = lo_round_base(&cfg, 1);
+        for k in 0..DIGEST_ELEMS {
+            row[lo_rb + k] = row[fb_rb + FB_BLOCK + k];
+        }
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a tampered observed digest forced into the authentication root was accepted — not a real root"
         );
     }
 }
