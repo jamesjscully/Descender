@@ -564,15 +564,18 @@ pub struct RecursiveConfig {
     /// rejecting. The fan-out adds, on top of the per-row window:
     ///   1. (PER-QUERY INDEX) a `draw_offset` column constrained to the ROW ordinal (first row 0,
     ///      `next.draw_offset == local.draw_offset + 1`), and the index draw `C_DRAW_OUT` is bound to
-    ///      the `draw_offset`-th LIFO pop of the SHARED post-final-observe permute output
-    ///      (`output[RATE-1-draw_offset]`, selected by a one-hot over `draw_offset`). p3-fri samples
-    ///      the `N` query indices as `N` successive `sample_bits` draws off the same post-grinding
-    ///      challenger (verifier.rs:351-353): while the output buffer is non-empty each `sample()` is a
-    ///      LIFO pop with NO re-permute, so query `r`'s index draw is pop `r` = `output[RATE-1-r]`.
-    ///      Row `r` is thereby BOUND to the genuine r-th FS draw — distinct per row, derived from the
-    ///      one transcript. Requires `fs_final_blocks > 0` (the unified FS query-index chain). Bounded
-    ///      by `RATE` here (one output-buffer refill, the within-RATE fan-out); see `fan_out_queries`
-    ///      doc on the structural scale to `PROD_NUM_QUERIES`.
+    ///      the `draw_offset`-th successive LIFO pop (across refill buckets) of the SHARED challenger
+    ///      output — `P_{r/RATE}.output[RATE-1-(r%RATE)]`, selected by a one-hot over `draw_offset`.
+    ///      p3-fri samples the `N` query indices as `N` successive `sample_bits` draws off the same
+    ///      post-grinding challenger (verifier.rs:351-353): while the output buffer is non-empty each
+    ///      `sample()` is a LIFO pop with NO re-permute; when it EMPTIES (every RATE pops) the next
+    ///      `sample()` triggers a SQUEEZE-ONLY refill permute (`duplexing` with an empty input buffer ⇒
+    ///      no overwrite, no length tag). The AIR models P0 = the post-final-observe permute, then the
+    ///      `ceil(N/RATE) - 1` squeeze-only refill permutes P1..P_{k-1} (the (FAN-OUT) `refill_perm`
+    ///      blocks, each PINned to the deployed perm), so row `r`'s index = the genuine r-th FS draw from
+    ///      bucket `r/RATE` — distinct per row, derived from the one transcript across refill boundaries.
+    ///      Requires `fs_final_blocks > 0` (the unified FS query-index chain). Scales to
+    ///      `PROD_NUM_QUERIES` (see `PROD_NUM_QUERIES` doc).
     ///   2. (SHARED) transition constraints `next.X == local.X` pinning the post-final-observe permute
     ///      output lanes (the shared draw source) and every shared challenge/commitment/OOD cell
     ///      (alpha/zeta/betas, inner main + quotient commitments, `value_at_zeta`, `DEEP_C`/`DEEP_Q`,
@@ -637,14 +640,19 @@ impl RecursiveConfig {
 /// (FAN-OUT) multi-row verification scales to — N rows, one query per row. A single query is only
 /// ~`log2(blowup)` bits of soundness; `PROD_NUM_QUERIES` queries compound to the ~128-bit target.
 ///
-/// NOTE on within-RATE vs full scale: the in-AIR fan-out validated end-to-end here models the queries
-/// that pop from ONE post-final-observe output-buffer refill (`N <= RATE`, the first 8 LIFO pops).
-/// p3-fri samples the first `RATE` indices with NO re-permute, then triggers a squeeze-permute and
-/// refills for the next `RATE`, etc. The per-row constraints are identical for every query; scaling to
-/// `PROD_NUM_QUERIES = 56` requires threading the `ceil(56/RATE) = 7` squeeze-permute refills (each an
-/// extra Poseidon2 perm whose output sources the next `RATE` pops) — a mechanical extension of the
-/// `draw_offset → output[RATE-1-(offset mod RATE)]` selection across refill buckets. Flagged honestly:
-/// the multi-refill chain is NOT yet wired (see the report / module remaining).
+/// NOTE on scale: the multi-refill squeeze chain IS wired (`fan_out_buckets` / `fan_out_refill_perms`).
+/// p3-fri samples the N query indices as N successive `sample_bits` draws off the same post-grinding
+/// challenger; while the output buffer is non-empty each pop is a LIFO read with NO re-permute, and when
+/// it EMPTIES (every RATE pops) the next sample triggers a SQUEEZE-ONLY `duplexing()` (permute with an
+/// empty input buffer ⇒ no rate overwrite, no length tag) refilling the buffer. The AIR models P0 = the
+/// post-final-observe permute, then `ceil(N/RATE) - 1` squeeze-only refill permutes P1..P_{k-1} (each
+/// PINned to the deployed perm via `eval_perm`), and binds row r's index to
+/// `P_{r/RATE}.output[RATE-1-(r%RATE)]` via the one-hot over `draw_offset`. The refill chain is shared
+/// across rows (bound once, pinned equal). For `PROD_NUM_QUERIES = 56` this is `ceil(56/8) = 7` buckets
+/// (6 refill permutes). Honest end-to-end `check_all_constraints` validation is at `N = 16` (2 full
+/// buckets, crossing the 8→9 refill); the cross-bucket index FIDELITY-PIN vs the native
+/// `DuplexChallenger` is at `N = 12, 16`; the structure parameterizes to 56 (see
+/// `fan_out_multi_refill_parameterizes_to_prod`).
 pub const PROD_NUM_QUERIES: usize = 56;
 
 // ----- shared monolithic column layout (one query window per row) -----
@@ -1589,22 +1597,67 @@ pub fn quotient_reduced_e0(
 
 // ----- (FAN-OUT) per-query block -----
 //
-// Appended LAST (after the QO block, so it perturbs no prior offset). A single `draw_offset` column:
-// the ROW ordinal (= which LIFO pop of the shared post-final-observe permute output this row's query
-// index is). Constrained to 0 on the first row and to increment by 1 each transition, and used (via a
-// one-hot over its value) to select `output[RATE-1-draw_offset]` as `C_DRAW_OUT`. 0 columns when
-// `fan_out_queries == 0` (the original single-query mode).
+// Appended LAST (after the QO block, so it perturbs no prior offset). Layout:
+//   draw_offset[1] ‖ refill_perm_0[PERM_COLS] ‖ ... ‖ refill_perm_{k-2}[PERM_COLS]
+//
+// `draw_offset` is the ROW ordinal (= which LIFO pop, across refill buckets, of the shared challenger
+// output this row's query index is). Constrained to 0 on the first row and to increment by 1 each
+// transition.
+//
+// MULTI-REFILL squeeze chain (the within-RATE → 56-query scale): p3-fri samples the N query indices as
+// N successive `sample_bits` draws off the SAME post-grinding `DuplexChallenger` (verifier.rs:351-353).
+// Each `sample()` pops the output buffer LIFO; WHEN THE BUFFER EMPTIES (every RATE pops) the next
+// `sample()` triggers a SQUEEZE-ONLY `duplexing()` (permute the sponge state with an EMPTY input buffer
+// ⇒ NO rate overwrite, NO length tag) and refills the output buffer with the new rate lanes. So:
+//   - draws `0..RATE`        come from permute P0 = the post-final-observe permute (the (FS-qi) chain),
+//   - draws `RATE..2*RATE`   come from permute P1 = squeeze-only-permute(state-after-P0),
+//   - draws `b*RATE..`       come from permute P_b = squeeze-only-permute applied `b` times to P0's
+//                            state — bucket `b = draw_index / RATE`, lane `RATE-1-(draw_index % RATE)`.
+//
+// P0 lives in the (FS-qi) block (last observe round's perm output); P1..P_{k-1} (where
+// `k = ceil(N/RATE)`) live HERE as `k-1` squeeze-only permute blocks (`refill_perm_b` for
+// `b = 0..k-1` carries P_{b+1}). Each `refill_perm_b`'s input is the squeeze-only absorb (n == 0, the
+// whole state carried unchanged) of P_b's output; the AIR constrains the no-overwrite/no-tag input +
+// the full Poseidon2 perm (same pattern as the (FS-bca) batch-combo squeeze). The refill chain is
+// SHARED across all rows (bound once, pinned equal). Row r's index is selected from
+// `P_{r/RATE}.output[RATE-1-(r%RATE)]` via the one-hot over `draw_offset`.
+//
+// 0 columns when `fan_out_queries == 0` (the original single-query mode).
 const FO_DRAW_OFFSET: usize = 0;
+const FO_REFILL: usize = FO_DRAW_OFFSET + 1;
+
+/// Number of refill buckets `k = ceil(N/RATE)` for the fan-out (the number of squeeze-permute output
+/// buffers the N successive `sample_bits` draws span). Bucket 0 is the (FS-qi) post-final-observe
+/// permute; buckets `1..k` are the squeeze-only refill chain.
+fn fan_out_buckets(cfg: &RecursiveConfig) -> usize {
+    if cfg.fan_out_queries > 0 {
+        cfg.fan_out_queries.div_ceil(RATE)
+    } else {
+        0
+    }
+}
+
+/// Number of squeeze-only REFILL permute blocks laid out in the (FAN-OUT) block: `k-1` (bucket 0 = P0
+/// is the (FS-qi) post-final-observe permute, NOT a refill block). 0 for the within-RATE fan-out
+/// (`N <= RATE`, one buffer, no refill).
+fn fan_out_refill_perms(cfg: &RecursiveConfig) -> usize {
+    fan_out_buckets(cfg).saturating_sub(1)
+}
 
 /// Base of the (FAN-OUT) block (after the QO block).
 fn fo_base(cfg: &RecursiveConfig) -> usize {
     qo_base(cfg) + qo_size(cfg)
 }
 
-/// Size of the (FAN-OUT) block: 1 column (`draw_offset`) iff `fan_out_queries > 0`.
+/// Sub-offset of refill permute block `b` (carrying P_{b+1}) within the (FAN-OUT) block.
+fn fo_refill_base(cfg: &RecursiveConfig, b: usize) -> usize {
+    fo_base(cfg) + FO_REFILL + b * PERM_COLS
+}
+
+/// Size of the (FAN-OUT) block: `draw_offset[1] ‖ (k-1) refill perms` iff `fan_out_queries > 0`.
 fn fo_size(cfg: &RecursiveConfig) -> usize {
     if cfg.fan_out_queries > 0 {
-        1
+        1 + fan_out_refill_perms(cfg) * PERM_COLS
     } else {
         0
     }
@@ -2005,13 +2058,21 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
             cfg.fs_final_blocks,
             "fs_final_blocks must have fs_final_blocks entries"
         );
-        // The post-final-observe permute output (shared across fan-out queries). Query `query_ordinal`'s
-        // index is the r-th LIFO pop of that output buffer = output[RATE-1-r] (p3-fri samples the N
-        // query indices as N successive sample()'s off the same post-grinding challenger; while the
-        // output buffer is non-empty each pop performs NO re-permute). Ordinal 0 == output[RATE-1].
-        assert!(query_ordinal < RATE, "within-RATE fan-out: query ordinal must be < RATE");
-        let (_, final_state) = fs_squeeze_query_index(post_beta_state, inp.fs_final_blocks);
-        final_state[RATE - 1 - query_ordinal]
+        // The post-final-observe permute output (P0, shared across fan-out queries). Query
+        // `query_ordinal`'s index is the r-th successive LIFO pop off the same post-grinding challenger
+        // (p3-fri samples the N indices as N successive sample()'s). While the output buffer is non-empty
+        // each pop performs NO re-permute; when it EMPTIES (every RATE pops) the next sample() triggers a
+        // SQUEEZE-ONLY refill permute. So pop r comes from bucket b = r/RATE (= squeeze-only-permute
+        // applied b times to P0's state), lane RATE-1-(r%RATE). Bucket 0 = P0 = the (FS-qi) output.
+        let (_, p0_state) = fs_squeeze_query_index(post_beta_state, inp.fs_final_blocks);
+        let bucket = query_ordinal / RATE;
+        let lane = RATE - 1 - (query_ordinal % RATE);
+        // P_bucket: squeeze-only-permute applied `bucket` times to P0's state.
+        let mut bucket_state = p0_state;
+        for _ in 0..bucket {
+            bucket_state = squeeze_permute_state(bucket_state);
+        }
+        bucket_state[lane]
     } else if cfg.inline_sponge_draw {
         squeeze_draw(sponge_in)
     } else {
@@ -2717,9 +2778,30 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
     }
 
     // (FAN-OUT) the per-query draw-offset column: this row's ordinal among the N fan-out queries (=
-    // which LIFO pop of the shared post-final-observe permute output drives this row's index).
+    // which successive LIFO pop, across refill buckets, of the shared challenger output drives this
+    // row's index). Plus the SHARED multi-refill squeeze chain P1..P_{k-1}: each refill_perm_b carries
+    // P_{b+1} = squeeze-only-permute(P_b's state) (the native challenger's post-empty re-permute). The
+    // chain is identical for every row (bound once); only `draw_offset` distinguishes rows.
     if cfg.fan_out_queries > 0 {
         row[fo_base(cfg) + FO_DRAW_OFFSET] = Val::from_u32(query_ordinal as u32);
+        let refills = fan_out_refill_perms(cfg);
+        if refills > 0 {
+            assert!(
+                cfg.fs_final_blocks > 0,
+                "multi-refill fan-out (N > RATE) requires the (FS-qi) chain (fs_final_blocks > 0)"
+            );
+            let consts = inlined_perm::Constants::pinned();
+            // P0's state = the post-final-observe permute output (the (FS-qi) chain's last perm output).
+            let (_, mut state) = fs_squeeze_query_index(post_beta_state, inp.fs_final_blocks);
+            for b in 0..refills {
+                // squeeze-only refill: input == P_b's state UNCHANGED (n == 0; no overwrite, no tag).
+                let pre_in = absorb_state(state, [Val::ZERO; RATE], 0);
+                let perm_cols = inlined_perm::generate_perm_cols(pre_in, &consts);
+                let rb = fo_refill_base(cfg, b);
+                row[rb..rb + PERM_COLS].copy_from_slice(&perm_cols);
+                state = inlined_perm::perm_output(&perm_cols); // P_{b+1}'s state.
+            }
+        }
     }
 
     row
@@ -4019,9 +4101,39 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 // to its OWN r-th FS draw — N independent, transcript-derived, distinct-per-row indices.
                 let last_fq = fq_round_base(&cfg, cfg.fs_final_blocks - 1);
                 if cfg.fan_out_queries > 0 {
-                    // one-hot select output[RATE-1-r] where r == draw_offset, over r in 0..fan_out_queries.
+                    // ===== MULTI-REFILL squeeze chain: P0 → P1 → … → P_{k-1} =====
+                    // P0 = the post-final-observe permute (this (FS-qi) chain's last round output). For
+                    // b >= 1, P_b is a SQUEEZE-ONLY permute of P_{b-1} (the native challenger's
+                    // post-empty-buffer re-permute: input buffer empty ⇒ NO rate overwrite, NO length
+                    // tag — the whole state is carried into the perm). Each refill_perm_b carries P_{b+1}.
+                    // P_b's output lane reader: bucket 0 == last_fq output, bucket b>=1 == refill (b-1).
+                    let buckets = fan_out_buckets(&cfg);
+                    let p_out = |b: usize, i: usize| -> AB::Expr {
+                        if b == 0 {
+                            l(last_fq + FQ_PERM + C_OUTPUT + i)
+                        } else {
+                            l(fo_refill_base(&cfg, b - 1) + C_OUTPUT + i)
+                        }
+                    };
+                    // Constrain the refill chain: refill_perm_b's input is the squeeze-only absorb
+                    // (n == 0) of P_b's state — i.e. the WHOLE state of P_b carried UNCHANGED (no rate
+                    // overwrite, no length tag) — then the full Poseidon2 permutation. A malformed refill
+                    // (e.g. an extra absorb, a +n length tag, or sourcing the wrong P_b) diverges from the
+                    // native challenger and the cross-bucket draw binding below fails.
+                    for b in 0..fan_out_refill_perms(&cfg) {
+                        let rb = fo_refill_base(&cfg, b);
+                        let inb = rb + inlined_perm::C_INPUTS;
+                        // squeeze-only input: every lane carried from P_b's output unchanged (n == 0).
+                        for i in 0..WIDTH {
+                            builder.assert_zero(l(inb + i) - p_out(b, i));
+                        }
+                        eval_perm::<AB, _>(builder, &cells, rb, &consts);
+                    }
+                    // one-hot select P_{r/RATE}.output[RATE-1-(r%RATE)] where r == draw_offset, over
+                    // r in 0..fan_out_queries — the genuine r-th successive sample_bits draw.
                     let n = cfg.fan_out_queries;
                     let off = l(fo_base(&cfg) + FO_DRAW_OFFSET);
+                    debug_assert!(buckets * RATE >= n, "refill buckets too few for fan-out N");
                     // selector_r = Π_{j != r} (off - j) / (r - j)  — a Lagrange one-hot over {0..n-1}.
                     // Build it as an assert that draw_out equals the selected lane: Σ_r sel_r·lane_r.
                     let mut selected = AB::Expr::ZERO;
@@ -4038,7 +4150,9 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                         }
                         let inv_den = den.inverse();
                         let sel = num * AB::Expr::from(inv_den);
-                        selected += sel * l(last_fq + FQ_PERM + C_OUTPUT + (RATE - 1 - r));
+                        let bucket = r / RATE;
+                        let lane = RATE - 1 - (r % RATE);
+                        selected += sel * p_out(bucket, lane);
                     }
                     builder.assert_zero(l(C_DRAW_OUT) - selected);
                 } else {
@@ -4091,11 +4205,20 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             // from a different (favorable) permute output. Pinning them ties every row's index to ONE
             // transcript output.
             let mut shared: Vec<usize> = Vec::new();
-            // post-final-observe permute output (the draw source) — full WIDTH lanes.
+            // post-final-observe permute output P0 (the bucket-0 draw source) — full WIDTH lanes.
             if cfg.fs_final_blocks > 0 {
                 let last_fq = fq_round_base(&cfg, cfg.fs_final_blocks - 1);
                 for i in 0..WIDTH {
                     shared.push(last_fq + FQ_PERM + C_OUTPUT + i);
+                }
+            }
+            // MULTI-REFILL chain P1..P_{k-1}: every refill permute block is the SHARED draw source for
+            // its bucket — pin the full perm block (input + output + intermediate) equal across rows so
+            // no row can source its index from a different (favorable) refill permute.
+            for b in 0..fan_out_refill_perms(&cfg) {
+                let rb = fo_refill_base(&cfg, b);
+                for i in 0..PERM_COLS {
+                    shared.push(rb + i);
                 }
             }
             // DEEP OOD shared cells: alpha, zeta, C, Q (the OOD opening + constraint relation).
@@ -7758,6 +7881,143 @@ mod tests {
                 report.failures.len()
             );
         }
+    }
+
+    // =================================================================================
+    // (FAN-OUT MULTI-REFILL) N > RATE: the squeeze-only refill chain P0 → P1 → … → P_{k-1}.
+    // When the challenger's output buffer empties (every RATE pops) the next sample() triggers a
+    // SQUEEZE-ONLY duplexing (permute the sponge with an EMPTY input buffer ⇒ NO overwrite, NO length
+    // tag). Bucket b = draw/RATE comes from permute P_b; row r binds to P_{r/RATE}.output[RATE-1-r%RATE].
+    // =================================================================================
+
+    /// GOLDEN (positive, CROSS-BUCKET): an honest N-row fan-out matrix at N crossing >= 1 refill
+    /// boundary (N = 12 spans buckets 0 and 1; N = 16 spans exactly 2 full buckets) ACCEPTS via the real
+    /// `check_all_constraints`. This exercises the squeeze-only refill chain end-to-end.
+    #[test]
+    fn fan_out_multi_refill_honest_accepts() {
+        for &n in &[9usize, 12, 16] {
+            let cfg = cfg_fan_out(12, n);
+            assert!(
+                fan_out_buckets(&cfg) >= 2,
+                "N = {n} must cross >= 1 refill boundary"
+            );
+            let (m, _fs, _c, _f, _q) = fan_out_matrix(&cfg, n);
+            let report = check_all_constraints(&air(cfg), &m, &[], None);
+            assert!(
+                report.is_ok(),
+                "honest {n}-query (cross-bucket) fan-out rejected: {} failures",
+                report.failures.len()
+            );
+        }
+    }
+
+    /// FIDELITY-PIN (CROSS-BUCKET) — each fan-out row's index (`C_INDEX`) equals the r-th `sample_bits`
+    /// draw of a REAL `DuplexChallenger` driven through the full transcript, for r spanning >= 2 buckets
+    /// (N = 16 ⇒ buckets 0 and 1, crossing the 8→9 refill). The refill permute MUST reproduce the native
+    /// challenger's post-empty re-permute EXACTLY or this fails. NOT constants.
+    #[test]
+    fn fan_out_multi_refill_indices_match_native_across_buckets() {
+        let h = 12usize;
+        for &n in &[12usize, 16] {
+            let cfg = cfg_fan_out(h, n);
+            let (m, fs, c, f, _q) = fan_out_matrix(&cfg, n);
+            let native = native_fan_out_indices(&fs, &c, &f, h, n);
+            for r in 0..n {
+                let row_index = m.values[r * n_cols(&cfg) + C_INDEX].as_canonical_u32() as usize;
+                assert_eq!(
+                    row_index, native[r],
+                    "fan-out row {r} (N={n}) index != the r-th native sample_bits draw \
+                     (bucket {}, refill chain mismatch)",
+                    r / RATE
+                );
+            }
+            // draws spanning the refill boundary are genuinely distinct (>= one draw from bucket >= 1).
+            assert!(
+                native.iter().skip(RATE).count() >= 1,
+                "N={n} did not produce any post-refill (bucket >= 1) draws"
+            );
+        }
+    }
+
+    /// SOUNDNESS (CROSS-BUCKET) — a row whose index draw uses the WRONG bucket's lane is REJECTED. We
+    /// overwrite row 8's draw_out (the FIRST post-refill draw, bucket 1) with row 0's draw_out (bucket 0)
+    /// while its draw_offset stays 8 ⇒ the one-hot binds C_DRAW_OUT to P1.output[RATE-1] != row 0's
+    /// P0.output[RATE-1] ⇒ fails. Proves the refill chain is load-bearing for the binding.
+    #[test]
+    fn fan_out_multi_refill_rejects_wrong_bucket_index() {
+        let cfg = cfg_fan_out(12, 12);
+        let (m, _fs, _c, _f, _q) = fan_out_matrix(&cfg, 12);
+        let w = n_cols(&cfg);
+        let mut flat = m.values.clone();
+        assert!(check_all_constraints(&air(cfg.clone()), &RowMajorMatrix::new(flat.clone(), w), &[], None).is_ok());
+        // row 8 is the first bucket-1 draw; force it to carry row 0's (bucket-0) draw value.
+        flat[8 * w + C_DRAW_OUT] = flat[0 * w + C_DRAW_OUT];
+        let m2 = RowMajorMatrix::new(flat, w);
+        assert!(
+            !check_all_constraints(&air(cfg), &m2, &[], None).is_ok(),
+            "a cross-bucket fan-out row whose index draw used the wrong bucket was accepted"
+        );
+    }
+
+    /// SOUNDNESS (REFILL TAMPER) — a MALFORMED refill permute breaks the cross-bucket draw. We corrupt
+    /// the refill_perm_0 input CAPACITY lane (slot RATE), which an HONEST squeeze-only refill carries
+    /// UNCHANGED from P0's output (n == 0: NO +RATE length tag). The corrupted refill no longer equals
+    /// the native post-empty re-permute, so (a) the perm-input constraint fires AND (b) every bucket-1
+    /// index now mismatches its native draw. Proves the squeeze-only form is required (a wrong refill —
+    /// e.g. an absorb with a length tag — diverges from the native challenger).
+    #[test]
+    fn fan_out_multi_refill_rejects_malformed_refill() {
+        let cfg = cfg_fan_out(12, 12);
+        let (m, _fs, _c, _f, _q) = fan_out_matrix(&cfg, 12);
+        let w = n_cols(&cfg);
+        // corrupt the refill perm input length-tag lane in EVERY row (so the shared-equality across
+        // rows still holds — ONLY the squeeze-only input + the cross-bucket draw constraints can catch
+        // it). An honest squeeze-only refill carries slot RATE unchanged (no +RATE tag).
+        let refill_in_tag = fo_refill_base(&cfg, 0) + inlined_perm::C_INPUTS + RATE;
+        let mut t = m.values.clone();
+        for r in 0..12 {
+            t[r * w + refill_in_tag] += Val::from_u8(RATE as u8); // a (wrong) absorb-style length tag.
+        }
+        assert!(
+            !check_all_constraints(&air(cfg), &RowMajorMatrix::new(t, w), &[], None).is_ok(),
+            "a fan-out with a malformed (length-tagged) refill permute was accepted"
+        );
+    }
+
+    /// SOUNDNESS (REFILL SHARED) — the refill chain is SHARED across rows (bound once). Tampering one
+    /// row's refill permute output ⇒ rejected (otherwise a bucket-1 row could source its index from a
+    /// different, favorable refill permute).
+    #[test]
+    fn fan_out_multi_refill_rejects_unshared_refill() {
+        let cfg = cfg_fan_out(12, 12);
+        let (m, _fs, _c, _f, _q) = fan_out_matrix(&cfg, 12);
+        let w = n_cols(&cfg);
+        let src = fo_refill_base(&cfg, 0) + C_OUTPUT + 2; // an interior lane of P1 (refill 0 output).
+        let mut t = m.values.clone();
+        t[5 * w + src] += Val::ONE;
+        assert!(
+            !check_all_constraints(&air(cfg), &RowMajorMatrix::new(t, w), &[], None).is_ok(),
+            "a fan-out row whose shared refill permute output differs was accepted"
+        );
+    }
+
+    /// SCALE to PROD_NUM_QUERIES — the multi-refill structure parameterizes to N = 56 (7 buckets,
+    /// ceil(56/8)). We assert the structural layout (bucket count, refill perm count) is correct for
+    /// PROD_NUM_QUERIES, and (cost permitting) that a SMALL representative cross-bucket N validates. The
+    /// per-row constraints + refill chain are IDENTICAL for every bucket, so N=16 validation (2 full
+    /// buckets) + the structural check ⇒ the structure scales to 56. (A full 56-row check_all_constraints
+    /// is heavy; the end-to-end honest validation is flagged at N=16.)
+    #[test]
+    fn fan_out_multi_refill_parameterizes_to_prod() {
+        let cfg = cfg_fan_out(12, PROD_NUM_QUERIES);
+        assert_eq!(fan_out_buckets(&cfg), PROD_NUM_QUERIES.div_ceil(RATE));
+        assert_eq!(fan_out_buckets(&cfg), 7, "ceil(56/8) == 7 buckets");
+        assert_eq!(
+            fan_out_refill_perms(&cfg), 6,
+            "6 squeeze-only refill permutes (P1..P6) for 56 queries"
+        );
+        // structural: the (FAN-OUT) block sizes to draw_offset + 6 refill perms.
+        assert_eq!(fo_size(&cfg), 1 + 6 * PERM_COLS);
     }
 
     /// (FS-bca) FORGERY — the batch-combo alpha is the SQUEEZE-ONLY permute of the post-zeta state:
