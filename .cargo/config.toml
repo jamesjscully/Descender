@@ -1,0 +1,13 @@
+# Raise the per-thread MINIMUM stack for every process cargo launches in this repo (notably the
+# `cargo test` harness threads, which otherwise default to ~2 MiB).
+#
+# WHY: the descender-recursion leaf C(zeta) MIRROR (`leaf_constraint_air::recompute_c_partial`) is a
+# single AIR `eval` that re-derives the ENTIRE leaf constraint polynomial in-circuit — the C1/C2/C6
+# + role-root Poseidon2 sponges, the wide-then-reduce gadget, AND the batch digest chain (24 per-row
+# Poseidon2 perms). Even with the per-class blocks extracted into their own `#[inline(never)]`
+# frames, that `eval` frame (and the `p3-air` debug-constraint evaluation that drives it row-wise)
+# exceeds the 2 MiB default test-thread stack. This is a STACK-SIZE floor only; it changes no
+# behaviour. The deployed verifier runs the AIR on the STARK backend's worker threads (larger
+# stacks), so production is unaffected — this knob exists so `cargo test` does not abort.
+[env]
+RUST_MIN_STACK = "536870912"

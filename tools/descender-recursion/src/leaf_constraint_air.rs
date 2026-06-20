@@ -360,6 +360,76 @@ pub const N_C2: usize = N_C2_INPUT_BIND + N_C2_PERM;
 // layout is pinned by `reduce_shape_matches_leaf`):
 pub use crate::reduce_consts::*;
 
+// ----- BATCH DIGEST CHAIN (the per-row running Poseidon2 sponge + the CROSS-ROW transition) -----
+//
+// Mirrors `descender_account_stark::air::FullRelationAir::eval_digest_chain` (air.rs:1109-1260) +
+// the off-circuit reference `descender_account_stark::air::chain_digest` / the trace-fill in
+// `generate_batch_trace` (lib.rs:1899-1936). This is the LAST large committed-not-constrained piece
+// of the leaf `C(zeta)` mirror, and it differs from the per-row sponges (C1/C2/C6/role) because the
+// running digest carries ACROSS ROWS: row r's `chain_in` is row (r-1)'s `chain_out`.
+//
+// Per row the absorbed message is `m = [enable, enable·pubio[0..PUBIO_ELEMS]]`, zero-padded to
+// `CHAIN_PERMS_PER_ROW · CHAIN_RATE`. The chain step absorbs `m` into the 16-wide running state
+// `chain_in` across `CHAIN_PERMS_PER_ROW` Poseidon2 perms (rate-8 absorb, capacity carried), giving
+// `absorbed = last-perm output`; then `chain_out = enable ? absorbed : chain_in` (padding rows are
+// TRUE no-ops). The cross-row binding is `chain_in == prev_chain_out` and the count accumulator is
+// `count_acc == prev_count_acc + enable`.
+//
+// ## How the cross-row PREV value is bound (the NEW shape) — READ THIS
+//
+// The recursion `C(zeta)` mirror is a SINGLE-ROW harness (one opened OOD row's cells). A genuine
+// multi-row STARK transition (`next.chain_in == cur.chain_out`, accessed via the two-row window)
+// is NOT expressible in this single-row folder. We therefore model the transition the way air.rs
+// relates the two rows, but with the PREVIOUS row's `chain_out` carried as its OWN opened cell
+// block `prev_chain_out[16]` (and `prev_count_acc`):
+//   * `chain_in[c] - prev_chain_out[c]`        (the carry; mirror of `next.chain_in==cur.chain_out`)
+//   * `count_acc   - (prev_count_acc + enable)` (mirror of `next.count_acc==cur.count_acc+next.enable`)
+// `prev_chain_out`/`prev_count_acc` ARE real bound cells (their own columns), and these residuals
+// bind `chain_in`/`count_acc` to them — so within the harness the carry is NOT free: a tampered
+// `prev_chain_out` (a swapped/altered prior-row digest) breaks the transition residual and rejects.
+// In a real opened multi-row trace these cells WOULD be the opened previous-row `chain_out`/
+// `count_acc` (which a real DEEP opening exposes), so the residual is the genuine cross-row binding.
+//
+// HONESTLY-FLAGGED SCOPE LIMIT: because this is a single-row harness, the only thing NOT modeled
+// here (vs the full multi-row AIR) is (i) the boundary selectors — first-row `chain_in==0` /
+// `count_acc==enable`, last-row `chain_out[0..8]==public digest` / `count_acc==public N` — and
+// (ii) the monotone-enable prefix constraint `next.enable·(1-cur.enable)==0`. Those depend on
+// `is_first_row`/`is_last_row` selectors + STARK public values that the single-row recursion mirror
+// does not carry; they ride with the eventual scaling to the REAL opened multi-row trace + the
+// beta/zeta FS public-digest binding. The per-row absorb, the running fold, the no-op padding
+// branch, the cross-row carry, and the count accumulator ARE modeled and fidelity-PINned here.
+
+/// Chain running-state width (= PERM_WIDTH = 16, the Poseidon2 perm WIDTH). Mirrors `chain_width`.
+pub const CHAIN_W: usize = WIDTH; // 16
+/// Number of pubio field elements absorbed per row (the per-instance statement). Mirrors air.rs.
+pub const CHAIN_PUBIO: usize = descender_account_stark::PUBIO_ELEMS;
+/// Sponge rate for the chain (= CHAIN_RATE = RATE = 8). Mirrors air.rs.
+pub const CHAIN_RT: usize = descender_account_stark::CHAIN_RATE; // 8
+/// Permutations per row to absorb `1 + PUBIO_ELEMS` elems at CHAIN_RATE. Mirrors air.rs.
+pub const CHAIN_NPERMS: usize = descender_account_stark::CHAIN_PERMS_PER_ROW;
+/// Padded per-row absorb-stream length (`CHAIN_NPERMS · CHAIN_RT`).
+pub const CHAIN_PADDED_LEN: usize = CHAIN_NPERMS * CHAIN_RT;
+
+/// Chain residual count:
+///   * 1 enable-boolean
+///   * input/capacity bindings (CHAIN_W per perm)
+///   * per-perm Poseidon2 round residuals
+///   * chain_out binding (CHAIN_W)
+///   * cross-row carry: chain_in == prev_chain_out (CHAIN_W)
+///   * count accumulator: count_acc == prev_count_acc + enable (1)
+pub const N_CHAIN_ENABLE: usize = 1;
+pub const N_CHAIN_INPUT_BIND: usize = CHAIN_NPERMS * CHAIN_W;
+pub const N_CHAIN_PERM: usize = CHAIN_NPERMS * inlined_perm_octic::PERM_RESIDUALS;
+pub const N_CHAIN_OUT_BIND: usize = CHAIN_W;
+pub const N_CHAIN_CARRY: usize = CHAIN_W;
+pub const N_CHAIN_COUNT: usize = 1;
+pub const N_CHAIN: usize = N_CHAIN_ENABLE
+    + N_CHAIN_INPUT_BIND
+    + N_CHAIN_PERM
+    + N_CHAIN_OUT_BIND
+    + N_CHAIN_CARRY
+    + N_CHAIN_COUNT;
+
 /// C2 sponge cells: ONLY the 8 NEW slot_id input lanes (pad_seed reused from `O_C2_PAD`) + perm
 /// blocks. NO output digest cells (the 30 squeezed lanes are read from the perm OUTPUT cells).
 pub const C2_CELLS: usize = C2_SLOT_LANES + C2_N_PERMS * PERM_COLS;
@@ -369,6 +439,17 @@ pub const C2_CELLS: usize = C2_SLOT_LANES + C2_N_PERMS * PERM_COLS;
 /// account_projection (the carrier `acc`) is the EXISTING `O_ACC` carry_acc cells (reused).
 pub const CARRIER_CELLS: usize = N_LANES + N_LANES * MODQ_CELLS;
 pub const REDUCE_BLOCK_CELLS: usize = REDUCE_CELLS + CARRIER_CELLS;
+
+/// Batch-digest-chain opened cells: prev_chain_out[16] ‖ chain_in[16] ‖ CHAIN_NPERMS perm blocks ‖
+/// chain_out[16] ‖ enable[1] ‖ prev_count_acc[1] ‖ count_acc[1] ‖ pubio[PUBIO_ELEMS].
+pub const CHAIN_CELLS: usize = CHAIN_W // prev_chain_out
+    + CHAIN_W // chain_in
+    + CHAIN_NPERMS * PERM_COLS // per-row absorb perms
+    + CHAIN_W // chain_out
+    + 1 // enable
+    + 1 // prev_count_acc
+    + 1 // count_acc
+    + CHAIN_PUBIO; // absorbed pubio lanes
 
 /// N_REDUCE residual count. Mirrors `eval_reduce_gadget` assertion count per mask + the carrier:
 ///   per mask: 5 lane-bind + per step [11 value-recompose + 11·(bit-bool over their widths) +
@@ -388,7 +469,8 @@ pub const N_CONSTRAINTS: usize = C4_LANES * C4_N_PER_LANE
     + N_C6
     + N_ROLE
     + N_C2
-    + N_REDUCE;
+    + N_REDUCE
+    + N_CHAIN;
 
 // ===========================================================================
 // Column layout (one leaf-constraint-mirror check per row)
@@ -427,7 +509,8 @@ pub const N_OPENED_CELLS: usize = C4_LANES * C4_CELLS // C4 lanes
     + C6_CELLS // C6 sponge (byte-lanes ‖ perm blocks ‖ opening_tuple_commitment)
     + ROLE_CELLS // role-root sponge (masked[6] ‖ perm blocks ‖ role_root[8]); inputs 0..20 CHAINED
     + C2_CELLS // C2 mask-PRF sponge (slot_id[8] ‖ perm blocks); pad_seed[32] reused from O_C2_PAD
-    + REDUCE_BLOCK_CELLS; // wide-then-reduce gadget cells + carrier (masked[6] ‖ mod-q blocks)
+    + REDUCE_BLOCK_CELLS // wide-then-reduce gadget cells + carrier (masked[6] ‖ mod-q blocks)
+    + CHAIN_CELLS; // batch digest chain (prev_state ‖ chain_in ‖ perms ‖ chain_out ‖ acc ‖ pubio)
 
 // Cell-block offsets (in units of cells, each `D` limbs).
 const O_C4: usize = 0;
@@ -461,6 +544,16 @@ const O_C2_PERMS: usize = O_C2_SLOT + C2_SLOT_LANES;
 const O_REDUCE: usize = O_C2_PERMS + C2_N_PERMS * PERM_COLS;
 const O_CARRIER_MASKED: usize = O_REDUCE + REDUCE_CELLS;
 const O_CARRIER_MODQ: usize = O_CARRIER_MASKED + N_LANES;
+// Batch-digest-chain block: prev_chain_out[16], chain_in[16], CHAIN_NPERMS perm blocks,
+// chain_out[16], enable[1], prev_count_acc[1], count_acc[1], pubio[PUBIO_ELEMS].
+const O_CHAIN_PREV_OUT: usize = O_CARRIER_MODQ + N_LANES * MODQ_CELLS;
+const O_CHAIN_IN: usize = O_CHAIN_PREV_OUT + CHAIN_W;
+const O_CHAIN_PERMS: usize = O_CHAIN_IN + CHAIN_W;
+const O_CHAIN_OUT: usize = O_CHAIN_PERMS + CHAIN_NPERMS * PERM_COLS;
+const O_CHAIN_ENABLE: usize = O_CHAIN_OUT + CHAIN_W;
+const O_CHAIN_PREV_COUNT: usize = O_CHAIN_ENABLE + 1;
+const O_CHAIN_COUNT: usize = O_CHAIN_PREV_COUNT + 1;
+const O_CHAIN_PUBIO: usize = O_CHAIN_COUNT + 1;
 
 /// First column: the opened OOD cells, each `D` limbs.
 pub const L_CELLS: usize = 0;
@@ -561,6 +654,60 @@ const fn carrier_masked_cell(j: usize) -> usize {
 /// First cell of carrier mod-q witness block for lane `j`; the block spans `MODQ_CELLS` cells.
 const fn carrier_modq_base(j: usize) -> usize {
     O_CARRIER_MODQ + j * MODQ_CELLS
+}
+
+// ----- batch-digest-chain cell accessors -----
+/// Previous-row chain_out lane `c` (`c < CHAIN_W`) — the cross-row carry source (a BOUND cell; in a
+/// real opened multi-row trace this is the opened previous row's `chain_out`).
+const fn chain_prev_out_cell(c: usize) -> usize {
+    O_CHAIN_PREV_OUT + c
+}
+/// This row's incoming running state lane `c` (`c < CHAIN_W`).
+const fn chain_in_cell(c: usize) -> usize {
+    O_CHAIN_IN + c
+}
+/// First cell of chain absorb-perm block `p` (`p < CHAIN_NPERMS`); spans `PERM_COLS` cells.
+const fn chain_perm_base(p: usize) -> usize {
+    O_CHAIN_PERMS + p * PERM_COLS
+}
+/// This row's outgoing running state lane `c` (`c < CHAIN_W`).
+const fn chain_out_cell(c: usize) -> usize {
+    O_CHAIN_OUT + c
+}
+/// This row's enable selector (1 = real account, 0 = padding no-op).
+const fn chain_enable_cell() -> usize {
+    O_CHAIN_ENABLE
+}
+/// Previous-row running count accumulator (a BOUND cell; the prior row's `count_acc`).
+const fn chain_prev_count_cell() -> usize {
+    O_CHAIN_PREV_COUNT
+}
+/// This row's running count accumulator.
+const fn chain_count_cell() -> usize {
+    O_CHAIN_COUNT
+}
+/// This row's absorbed pubio field-element lane `i` (`i < CHAIN_PUBIO`).
+const fn chain_pubio_cell(i: usize) -> usize {
+    O_CHAIN_PUBIO + i
+}
+
+/// The absorbed chain stream element at position `pos` (`pos < CHAIN_PADDED_LEN`). Mirrors the
+/// per-row message `m = [enable, enable·pubio[0..PUBIO_ELEMS]]` zero-padded: `pos == 0` → enable;
+/// `pos ∈ 1..=PUBIO_ELEMS` → enable·pubio[pos-1]; else → ZERO. The `enable·pubio` product makes
+/// padding rows (enable=0) absorb the all-zero message, exactly as air.rs builds `msg`.
+enum ChainAbsorb {
+    Enable,
+    EnablePubio(usize),
+    Zero,
+}
+fn chain_absorb_source(pos: usize) -> ChainAbsorb {
+    if pos == 0 {
+        ChainAbsorb::Enable
+    } else if pos <= CHAIN_PUBIO {
+        ChainAbsorb::EnablePubio(pos - 1)
+    } else {
+        ChainAbsorb::Zero
+    }
 }
 
 /// The absorbed C2 stream element at position `pos` (`pos < C2_PADDED_LEN`), as a cell index OR a
@@ -1247,6 +1394,95 @@ fn reduce_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
     (acc + mask) - (masked + wrap * cv(q))
 }
 
+/// The `k`-th NATIVE batch-digest-chain residual over the opened cells, `k ∈ [0, N_CHAIN)`. Mirrors
+/// `descender_account_stark::air::FullRelationAir::eval_digest_chain` (air.rs:1109-1260) + the
+/// off-circuit reference (`chain_digest` / the `generate_batch_trace` fill) EXACTLY, over `Challenge`
+/// arithmetic, in the SAME assertion order as the in-AIR mirror in `recompute_c_partial`:
+///   * `0`                                : enable boolean `enable·(enable−1)`.
+///   * next `N_CHAIN_INPUT_BIND`          : per-perm input/capacity bindings (CHAIN_W per perm).
+///         perm 0:  inputs[r] − (chain_in[r] + msg[r])  (r<RATE) ; inputs[c] − chain_in[c] (c≥RATE).
+///         perm p>0: inputs[r] − (prev_out[r] + msg[p·RATE+r]) ; inputs[c] − prev_out[c].
+///       where `msg[0]=enable`, `msg[1+i]=enable·pubio[i]`, else 0.
+///   * next `N_CHAIN_PERM`                : per-perm Poseidon2 round residuals (inlined_perm_octic).
+///   * next `N_CHAIN_OUT_BIND`            : chain_out[c] − (enable·absorbed[c] + (1−enable)·chain_in[c]).
+///   * next `N_CHAIN_CARRY`               : chain_in[c] − prev_chain_out[c] (the CROSS-ROW carry).
+///   * next `N_CHAIN_COUNT`               : count_acc − (prev_count_acc + enable).
+fn chain_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
+    let perm_input = |p: usize, i: usize| cells[chain_perm_base(p) + C_INPUTS + i];
+    let perm_output = |p: usize, i: usize| cells[chain_perm_base(p) + C_OUTPUT + i];
+    let enable = cells[chain_enable_cell()];
+    // msg element at stream position `pos` (with the enable·pubio products folded in).
+    let msg = |pos: usize| -> Challenge {
+        match chain_absorb_source(pos) {
+            ChainAbsorb::Enable => enable,
+            ChainAbsorb::EnablePubio(i) => enable * cells[chain_pubio_cell(i)],
+            ChainAbsorb::Zero => Challenge::ZERO,
+        }
+    };
+
+    // (a) enable boolean.
+    if k < N_CHAIN_ENABLE {
+        return enable * (enable - Challenge::ONE);
+    }
+    let mut k = k - N_CHAIN_ENABLE;
+
+    // (b) per-perm input/capacity bindings.
+    if k < N_CHAIN_INPUT_BIND {
+        let p = k / CHAIN_W;
+        let lane = k % CHAIN_W;
+        if p == 0 {
+            // first absorb: state = chain_in, add message to rate lanes.
+            if lane < CHAIN_RT {
+                return perm_input(0, lane) - (cells[chain_in_cell(lane)] + msg(lane));
+            }
+            return perm_input(0, lane) - cells[chain_in_cell(lane)];
+        }
+        let prev = perm_output(p - 1, lane);
+        if lane < CHAIN_RT {
+            return perm_input(p, lane) - (prev + msg(p * CHAIN_RT + lane));
+        }
+        return perm_input(p, lane) - prev;
+    }
+    k -= N_CHAIN_INPUT_BIND;
+
+    // (c) per-perm Poseidon2 round residuals.
+    if k < N_CHAIN_PERM {
+        let per = inlined_perm_octic::PERM_RESIDUALS;
+        let p = k / per;
+        let ri = k % per;
+        let inputs: [Challenge; WIDTH] = core::array::from_fn(|i| perm_input(p, i));
+        let committed: Vec<Challenge> = (0..per)
+            .map(|i| cells[chain_perm_base(p) + c1_post_cell_offset(i)])
+            .collect();
+        let res = inlined_perm_octic::native_perm_residuals(inputs, &committed);
+        return res[ri];
+    }
+    k -= N_CHAIN_PERM;
+
+    // (d) chain_out binding: chain_out[c] == enable·absorbed[c] + (1−enable)·chain_in[c].
+    // absorbed[c] = the LAST absorb perm's output cell.
+    if k < N_CHAIN_OUT_BIND {
+        let c = k;
+        let absorbed = perm_output(CHAIN_NPERMS - 1, c);
+        let chain_in = cells[chain_in_cell(c)];
+        let expected = enable * absorbed + (Challenge::ONE - enable) * chain_in;
+        return cells[chain_out_cell(c)] - expected;
+    }
+    k -= N_CHAIN_OUT_BIND;
+
+    // (e) cross-row carry: chain_in[c] == prev_chain_out[c]. `prev_chain_out` is a BOUND opened cell
+    // (the previous row's chain_out); a swapped/altered prior digest breaks this residual.
+    if k < N_CHAIN_CARRY {
+        let c = k;
+        return cells[chain_in_cell(c)] - cells[chain_prev_out_cell(c)];
+    }
+    k -= N_CHAIN_CARRY;
+
+    // (f) count accumulator: count_acc == prev_count_acc + enable.
+    debug_assert!(k < N_CHAIN_COUNT);
+    cells[chain_count_cell()] - (cells[chain_prev_count_cell()] + enable)
+}
+
 /// Map the `ri`-th committed post (in `inlined_perm_octic::perm_residuals` order: begin-full posts,
 /// then partial post_sbox, then end-full posts) to its CELL offset within a `PERM_COLS` block (the
 /// `inlined_perm` column layout). Used to read the OPENED committed-post cell for the C1 residual.
@@ -1327,9 +1563,14 @@ pub fn constraint_residual(cells: &[Challenge; N_OPENED_CELLS], r: usize) -> Cha
         return c2_residual(cells, r);
     }
     r -= N_C2;
-    // wide-then-reduce + carrier residuals (30 squeezed lanes -> 6 masks -> masked_projection mod q).
-    debug_assert!(r < N_REDUCE);
-    reduce_residual(cells, r)
+    if r < N_REDUCE {
+        // wide-then-reduce + carrier residuals (30 squeezed lanes -> 6 masks -> masked_projection mod q).
+        return reduce_residual(cells, r);
+    }
+    r -= N_REDUCE;
+    // batch digest chain residuals (per-row absorb + chain_out + CROSS-ROW carry + count acc).
+    debug_assert!(r < N_CHAIN);
+    chain_residual(cells, r)
 }
 
 /// Native alpha-batched leaf partial constraint eval over opened cells:
@@ -1446,11 +1687,144 @@ pub fn carrier_masked_cell_idx(j: usize) -> usize {
 pub fn carrier_modq_cell_idx(j: usize, within: usize) -> usize {
     carrier_modq_base(j) + within
 }
+/// TEST-ONLY: batch-digest-chain cell accessors for cross-module tamper tests.
+#[cfg(test)]
+pub fn chain_prev_out_cell_idx(c: usize) -> usize {
+    chain_prev_out_cell(c)
+}
+#[cfg(test)]
+pub fn chain_in_cell_idx(c: usize) -> usize {
+    chain_in_cell(c)
+}
+#[cfg(test)]
+pub fn chain_perm_cell_idx(p: usize, within: usize) -> usize {
+    chain_perm_base(p) + within
+}
+#[cfg(test)]
+pub fn chain_out_cell_idx(c: usize) -> usize {
+    chain_out_cell(c)
+}
+#[cfg(test)]
+pub fn chain_enable_cell_idx() -> usize {
+    chain_enable_cell()
+}
+#[cfg(test)]
+pub fn chain_prev_count_cell_idx() -> usize {
+    chain_prev_count_cell()
+}
+#[cfg(test)]
+pub fn chain_count_cell_idx() -> usize {
+    chain_count_cell()
+}
+#[cfg(test)]
+pub fn chain_pubio_cell_idx(i: usize) -> usize {
+    chain_pubio_cell(i)
+}
 
 /// Decode the committed `C_partial` cell of a packed row.
 pub fn row_c_partial(row: &[Val]) -> Challenge {
     Challenge::from_basis_coefficients_slice(&row[L_CPARTIAL..L_CPARTIAL + D])
         .expect("C_partial decode")
+}
+
+/// Push the BATCH DIGEST CHAIN residuals (the per-row running Poseidon2 sponge + the CROSS-ROW
+/// transition) onto `residuals`, in the SAME order as the native [`chain_residual`]. EXTRACTED from
+/// [`recompute_c_partial`] into its own (`#[inline(never)]`) frame because the chain folds 24
+/// Poseidon2 perms — keeping its large per-perm locals out of the already-huge `recompute_c_partial`
+/// frame is what prevents a stack overflow when the mirror is evaluated row-wise. Mirrors
+/// `descender_account_stark::air::FullRelationAir::eval_digest_chain` (air.rs:1109-1260).
+#[inline(never)]
+fn push_chain_residuals<AB, FCell>(cell: &FCell, residuals: &mut Vec<[AB::Expr; D]>)
+where
+    AB: AirBuilder<F = Val>,
+    FCell: Fn(usize) -> [AB::Expr; D],
+{
+    struct CellAdapter<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> {
+        cell: &'a FCell,
+        _ab: core::marker::PhantomData<AB>,
+    }
+    impl<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> OcticPermCells<AB>
+        for CellAdapter<'a, AB, FCell>
+    {
+        fn at(&self, idx: usize) -> [AB::Expr; D] {
+            (self.cell)(idx)
+        }
+    }
+    let adapter = CellAdapter::<AB, FCell> { cell, _ab: core::marker::PhantomData };
+    let one = octic_scalar::<AB>(1);
+
+    let perm_input = |p: usize, i: usize| cell(chain_perm_base(p) + C_INPUTS + i);
+    let perm_output = |p: usize, i: usize| cell(chain_perm_base(p) + C_OUTPUT + i);
+    let enable = cell(chain_enable_cell());
+    // msg element at stream position `pos` (enable·pubio products folded in).
+    let msg = |pos: usize| -> [AB::Expr; D] {
+        match chain_absorb_source(pos) {
+            ChainAbsorb::Enable => enable.clone(),
+            ChainAbsorb::EnablePubio(i) => octic_mul::<AB>(&enable, &cell(chain_pubio_cell(i))),
+            ChainAbsorb::Zero => octic_scalar::<AB>(0),
+        }
+    };
+
+    // (a) enable boolean.
+    {
+        let em1 = octic_sub::<AB>(&enable, &one);
+        residuals.push(octic_mul::<AB>(&enable, &em1));
+    }
+
+    // (b) input/capacity bindings.
+    for p in 0..CHAIN_NPERMS {
+        for lane in 0..CHAIN_W {
+            let inp = perm_input(p, lane);
+            let expected = if p == 0 {
+                let chain_in = cell(chain_in_cell(lane));
+                if lane < CHAIN_RT {
+                    octic_add::<AB>(&chain_in, &msg(lane))
+                } else {
+                    chain_in
+                }
+            } else {
+                let prev = perm_output(p - 1, lane);
+                if lane < CHAIN_RT {
+                    octic_add::<AB>(&prev, &msg(p * CHAIN_RT + lane))
+                } else {
+                    prev
+                }
+            };
+            residuals.push(octic_sub::<AB>(&inp, &expected));
+        }
+    }
+
+    // (c) per-perm Poseidon2 round residuals.
+    for p in 0..CHAIN_NPERMS {
+        let mut pr = inlined_perm_octic::perm_residuals::<AB, _>(&adapter, chain_perm_base(p));
+        residuals.append(&mut pr);
+    }
+
+    // (d) chain_out binding: chain_out[c] == enable·absorbed[c] + (1−enable)·chain_in[c].
+    for c in 0..CHAIN_W {
+        let absorbed = perm_output(CHAIN_NPERMS - 1, c);
+        let chain_in = cell(chain_in_cell(c));
+        let one_minus_en = octic_sub::<AB>(&one, &enable);
+        let expected = octic_add::<AB>(
+            &octic_mul::<AB>(&enable, &absorbed),
+            &octic_mul::<AB>(&one_minus_en, &chain_in),
+        );
+        residuals.push(octic_sub::<AB>(&cell(chain_out_cell(c)), &expected));
+    }
+
+    // (e) cross-row carry: chain_in[c] == prev_chain_out[c].
+    for c in 0..CHAIN_W {
+        residuals.push(octic_sub::<AB>(
+            &cell(chain_in_cell(c)),
+            &cell(chain_prev_out_cell(c)),
+        ));
+    }
+
+    // (f) count accumulator: count_acc == prev_count_acc + enable.
+    {
+        let expected = octic_add::<AB>(&cell(chain_prev_count_cell()), &enable);
+        residuals.push(octic_sub::<AB>(&cell(chain_count_cell()), &expected));
+    }
 }
 
 // ===========================================================================
@@ -1557,311 +1931,231 @@ where
         residuals.push(octic_sub::<AB>(&rid, &pinned));
     }
 
-    // (6) C1 sponge (pad_source_commitment squeeze) — the first mirrored leaf sponge. Order MUST
-    // match the native `c1_residual`: input/capacity bindings (WIDTH/perm), then per-perm Poseidon2
-    // round residuals (inlined_perm_octic), then squeeze-output equalities.
+    // (6) C1 / (7) C6 / (8) role-root squeeze sponges — EXTRACTED into the generic
+    // `push_squeeze_sponge_residuals` (its own stack frame per call), to keep this function's frame
+    // small enough to evaluate row-wise without a stack overflow. Each call mirrors the native
+    // `c1_residual` / `c6_residual` / `role_residual` EXACTLY (input/capacity bindings, per-perm
+    // Poseidon2 round residuals, squeeze-output equalities) — same order, same constants. The role
+    // sponge's `role_absorb_source` reads the ALREADY-MIRRORED C1/C6 output cells (the chaining).
+    push_squeeze_sponge_residuals::<AB, FCell>(
+        cell, &mut residuals, C1_N_PERMS, C1_N_ABSORB, C1_RATE, C1_PADDED_LEN, N_C1_OUT,
+        c1_perm_base, c1_absorb_source, c1_output_source, c1_out_cell,
+    );
+    push_squeeze_sponge_residuals::<AB, FCell>(
+        cell, &mut residuals, C6_N_PERMS, C6_N_ABSORB, C6_RATE, C6_PADDED_LEN, N_C6_OUT,
+        c6_perm_base, c6_absorb_source, c6_output_source, c6_out_cell,
+    );
+    push_squeeze_sponge_residuals::<AB, FCell>(
+        cell, &mut residuals, ROLE_N_PERMS, ROLE_N_ABSORB, ROLE_RATE, ROLE_PADDED_LEN, N_ROLE_OUT,
+        role_perm_base, role_absorb_source, role_output_source, role_out_cell,
+    );
+
+    // (9) C2 mask-PRF sponge — the LARGEST mirrored leaf sponge. EXTRACTED into
+    // `push_c2_residuals` (its own stack frame) alongside the reduce/chain extractions, to keep this
+    // function's frame small enough to evaluate row-wise without a stack overflow. Order MUST match
+    // the native `c2_residual`: input/capacity bindings (WIDTH/perm), then per-perm Poseidon2 round
+    // residuals. NO squeeze-output equality sub-class.
+    push_c2_residuals::<AB, FCell>(cell, &mut residuals);
+
+    // (10) WIDE-THEN-REDUCE + carrier — the genuinely-NEW constraint shape. EXTRACTED into
+    // `push_reduce_residuals` (its own stack frame) alongside the chain extraction, to keep this
+    // function's frame small enough to evaluate row-wise without a stack overflow. Mirrors
+    // `reduce_gadget::eval_reduce_gadget` + the C4 carrier mod-q reduction, SAME order as the native
+    // `reduce_residual`.
+    push_reduce_residuals::<AB, FCell>(cell, &mut residuals);
+
+    // (11) BATCH DIGEST CHAIN — EXTRACTED into `push_chain_residuals` (its own stack frame). The
+    // chain folds 24 Poseidon2 perms; keeping its locals out of this frame avoids a stack overflow
+    // when the whole mirror is evaluated row-wise. Order MUST match the native `chain_residual`.
+    push_chain_residuals::<AB, FCell>(cell, &mut residuals);
+
+    debug_assert_eq!(residuals.len(), N_CONSTRAINTS);
+
+    // ----- alpha-batch: acc = Σ_r alpha^r · residual_r -----
+    let mut acc = octic_scalar::<AB>(0);
+    let mut a_pow = octic_scalar::<AB>(1);
+    for res in residuals.iter() {
+        let term = octic_mul::<AB>(&a_pow, res);
+        acc = octic_add::<AB>(&acc, &term);
+        a_pow = octic_mul::<AB>(&a_pow, alpha);
+    }
+    acc
+}
+
+/// Push a SQUEEZE sponge's residuals (input/capacity bindings ‖ per-perm Poseidon2 round residuals ‖
+/// squeeze-output equalities) onto `residuals`, in the SAME order as the per-sponge native reference
+/// (`c1_residual` / `c6_residual` / `role_residual`). GENERIC over the sponge constants + the
+/// absorb-source / perm-base / output-source / output-cell mappings, so C1/C6/role share ONE body.
+/// EXTRACTED from [`recompute_c_partial`] into its own (`#[inline(never)]`) frame per call to keep
+/// the main folder frame small. Mirrors `eval_sponge`.
+#[inline(never)]
+#[allow(clippy::too_many_arguments)]
+fn push_squeeze_sponge_residuals<AB, FCell>(
+    cell: &FCell,
+    residuals: &mut Vec<[AB::Expr; D]>,
+    n_perms: usize,
+    n_absorb: usize,
+    rate: usize,
+    padded_len: usize,
+    n_out: usize,
+    perm_base: fn(usize) -> usize,
+    absorb_source: fn(usize) -> C1Absorb,
+    output_source: fn(usize) -> (usize, usize),
+    out_cell: fn(usize) -> usize,
+) where
+    AB: AirBuilder<F = Val>,
+    FCell: Fn(usize) -> [AB::Expr; D],
+{
+    struct CellAdapter<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> {
+        cell: &'a FCell,
+        _ab: core::marker::PhantomData<AB>,
+    }
+    impl<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> OcticPermCells<AB>
+        for CellAdapter<'a, AB, FCell>
     {
-        // adapter exposing the octic opened cells to inlined_perm_octic::perm_residuals.
-        struct CellAdapter<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> {
-            cell: &'a FCell,
-            _ab: core::marker::PhantomData<AB>,
+        fn at(&self, idx: usize) -> [AB::Expr; D] {
+            (self.cell)(idx)
         }
-        impl<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> OcticPermCells<AB>
-            for CellAdapter<'a, AB, FCell>
-        {
-            fn at(&self, idx: usize) -> [AB::Expr; D] {
-                (self.cell)(idx)
-            }
+    }
+    let adapter = CellAdapter::<AB, FCell> { cell, _ab: core::marker::PhantomData };
+
+    let perm_input = |p: usize, i: usize| cell(perm_base(p) + C_INPUTS + i);
+    let perm_output = |p: usize, i: usize| cell(perm_base(p) + C_OUTPUT + i);
+    let absorb = |pos: usize| -> [AB::Expr; D] {
+        match absorb_source(pos) {
+            C1Absorb::Cell(c) => cell(c),
+            C1Absorb::One => octic_scalar::<AB>(1),
+            C1Absorb::Zero => octic_scalar::<AB>(0),
         }
-        let adapter = CellAdapter::<AB, FCell> { cell, _ab: core::marker::PhantomData };
+    };
 
-        let perm_input = |p: usize, i: usize| cell(c1_perm_base(p) + C_INPUTS + i);
-        let perm_output = |p: usize, i: usize| cell(c1_perm_base(p) + C_OUTPUT + i);
-        let absorb = |pos: usize| -> [AB::Expr; D] {
-            match c1_absorb_source(pos) {
-                C1Absorb::Cell(c) => cell(c),
-                C1Absorb::One => octic_scalar::<AB>(1),
-                C1Absorb::Zero => octic_scalar::<AB>(0),
-            }
-        };
-
-        // (a) input/capacity bindings.
-        for p in 0..C1_N_PERMS {
-            let is_absorb = p < C1_N_ABSORB;
-            for lane in 0..WIDTH {
-                let inp = perm_input(p, lane);
-                let expected = if p == 0 {
-                    if lane < C1_RATE {
-                        absorb(lane)
-                    } else {
-                        octic_scalar::<AB>(0)
-                    }
+    // (a) input/capacity bindings.
+    for p in 0..n_perms {
+        let is_absorb = p < n_absorb;
+        for lane in 0..WIDTH {
+            let inp = perm_input(p, lane);
+            let expected = if p == 0 {
+                if lane < rate {
+                    absorb(lane)
                 } else {
-                    let prev = perm_output(p - 1, lane);
-                    if lane < C1_RATE {
-                        if is_absorb {
-                            let pos = p * C1_RATE + lane;
-                            let elem = if pos < C1_PADDED_LEN {
-                                absorb(pos)
-                            } else {
-                                octic_scalar::<AB>(0)
-                            };
-                            octic_add::<AB>(&prev, &elem)
-                        } else {
-                            prev
-                        }
+                    octic_scalar::<AB>(0)
+                }
+            } else {
+                let prev = perm_output(p - 1, lane);
+                if lane < rate {
+                    if is_absorb {
+                        let pos = p * rate + lane;
+                        let elem = if pos < padded_len { absorb(pos) } else { octic_scalar::<AB>(0) };
+                        octic_add::<AB>(&prev, &elem)
                     } else {
                         prev
                     }
-                };
-                residuals.push(octic_sub::<AB>(&inp, &expected));
-            }
-        }
-
-        // (b) per-perm Poseidon2 round residuals.
-        for p in 0..C1_N_PERMS {
-            let mut pr = inlined_perm_octic::perm_residuals::<AB, _>(&adapter, c1_perm_base(p));
-            residuals.append(&mut pr);
-        }
-
-        // (c) squeeze-output equalities: pad_source_commitment[j] − squeezed_output[j].
-        // squeezed_output[j] is the OPENED committed-output cell of the source perm (the leaf's
-        // `pcols.ending_full_rounds[..].post[lane]` = the C_OUTPUT cell), so the residual reads two
-        // opened cells. Soundness of the squeeze value vs the absorbed data is enforced by the
-        // per-perm round residuals (b), which bind that output cell to the recomputed permutation.
-        for j in 0..N_C1_OUT {
-            let (sp, lane) = c1_output_source(j);
-            let out_cell = cell(c1_perm_base(sp) + C_OUTPUT + lane);
-            let committed = cell(c1_out_cell(j));
-            residuals.push(octic_sub::<AB>(&committed, &out_cell));
+                } else {
+                    prev
+                }
+            };
+            residuals.push(octic_sub::<AB>(&inp, &expected));
         }
     }
 
-    // (7) C6 sponge (opening_tuple_commitment squeeze) — the second mirrored leaf sponge. Order
-    // MUST match the native `c6_residual`: input/capacity bindings (WIDTH/perm), then per-perm
-    // Poseidon2 round residuals (inlined_perm_octic), then squeeze-output equalities. Structurally
-    // identical to the C1 block above with the C6 constants / absorb source / output target.
+    // (b) per-perm Poseidon2 round residuals.
+    for p in 0..n_perms {
+        let mut pr = inlined_perm_octic::perm_residuals::<AB, _>(&adapter, perm_base(p));
+        residuals.append(&mut pr);
+    }
+
+    // (c) squeeze-output equalities: committed_digest[j] − squeezed_output[j] (the source perm's
+    // C_OUTPUT cell; bound to the recomputed permutation by the round residuals in (b)).
+    for j in 0..n_out {
+        let (sp, lane) = output_source(j);
+        let src = cell(perm_base(sp) + C_OUTPUT + lane);
+        let committed = cell(out_cell(j));
+        residuals.push(octic_sub::<AB>(&committed, &src));
+    }
+}
+
+/// Push the C2 mask-PRF sponge residuals onto `residuals`, in the SAME order as the native
+/// [`c2_residual`]. EXTRACTED from [`recompute_c_partial`] into its own (`#[inline(never)]`) frame
+/// to keep the main folder frame small. Mirrors `eval_sponge` for the C2 SpongePlan.
+#[inline(never)]
+fn push_c2_residuals<AB, FCell>(cell: &FCell, residuals: &mut Vec<[AB::Expr; D]>)
+where
+    AB: AirBuilder<F = Val>,
+    FCell: Fn(usize) -> [AB::Expr; D],
+{
+    struct CellAdapter<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> {
+        cell: &'a FCell,
+        _ab: core::marker::PhantomData<AB>,
+    }
+    impl<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> OcticPermCells<AB>
+        for CellAdapter<'a, AB, FCell>
     {
-        struct CellAdapter<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> {
-            cell: &'a FCell,
-            _ab: core::marker::PhantomData<AB>,
+        fn at(&self, idx: usize) -> [AB::Expr; D] {
+            (self.cell)(idx)
         }
-        impl<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> OcticPermCells<AB>
-            for CellAdapter<'a, AB, FCell>
-        {
-            fn at(&self, idx: usize) -> [AB::Expr; D] {
-                (self.cell)(idx)
-            }
+    }
+    let adapter = CellAdapter::<AB, FCell> { cell, _ab: core::marker::PhantomData };
+
+    let perm_input = |p: usize, i: usize| cell(c2_perm_base(p) + C_INPUTS + i);
+    let perm_output = |p: usize, i: usize| cell(c2_perm_base(p) + C_OUTPUT + i);
+    let absorb = |pos: usize| -> [AB::Expr; D] {
+        match c2_absorb_source(pos) {
+            C1Absorb::Cell(c) => cell(c),
+            C1Absorb::One => octic_scalar::<AB>(1),
+            C1Absorb::Zero => octic_scalar::<AB>(0),
         }
-        let adapter = CellAdapter::<AB, FCell> { cell, _ab: core::marker::PhantomData };
+    };
 
-        let perm_input = |p: usize, i: usize| cell(c6_perm_base(p) + C_INPUTS + i);
-        let perm_output = |p: usize, i: usize| cell(c6_perm_base(p) + C_OUTPUT + i);
-        let absorb = |pos: usize| -> [AB::Expr; D] {
-            match c6_absorb_source(pos) {
-                C1Absorb::Cell(c) => cell(c),
-                C1Absorb::One => octic_scalar::<AB>(1),
-                C1Absorb::Zero => octic_scalar::<AB>(0),
-            }
-        };
-
-        // (a) input/capacity bindings.
-        for p in 0..C6_N_PERMS {
-            let is_absorb = p < C6_N_ABSORB;
-            for lane in 0..WIDTH {
-                let inp = perm_input(p, lane);
-                let expected = if p == 0 {
-                    if lane < C6_RATE {
-                        absorb(lane)
-                    } else {
-                        octic_scalar::<AB>(0)
-                    }
+    // (a) input/capacity bindings.
+    for p in 0..C2_N_PERMS {
+        let is_absorb = p < C2_N_ABSORB;
+        for lane in 0..WIDTH {
+            let inp = perm_input(p, lane);
+            let expected = if p == 0 {
+                if lane < C2_RATE {
+                    absorb(lane)
                 } else {
-                    let prev = perm_output(p - 1, lane);
-                    if lane < C6_RATE {
-                        if is_absorb {
-                            let pos = p * C6_RATE + lane;
-                            let elem = if pos < C6_PADDED_LEN {
-                                absorb(pos)
-                            } else {
-                                octic_scalar::<AB>(0)
-                            };
-                            octic_add::<AB>(&prev, &elem)
+                    octic_scalar::<AB>(0)
+                }
+            } else {
+                let prev = perm_output(p - 1, lane);
+                if lane < C2_RATE {
+                    if is_absorb {
+                        let pos = p * C2_RATE + lane;
+                        let elem = if pos < C2_PADDED_LEN {
+                            absorb(pos)
                         } else {
-                            prev
-                        }
+                            octic_scalar::<AB>(0)
+                        };
+                        octic_add::<AB>(&prev, &elem)
                     } else {
                         prev
                     }
-                };
-                residuals.push(octic_sub::<AB>(&inp, &expected));
-            }
-        }
-
-        // (b) per-perm Poseidon2 round residuals.
-        for p in 0..C6_N_PERMS {
-            let mut pr = inlined_perm_octic::perm_residuals::<AB, _>(&adapter, c6_perm_base(p));
-            residuals.append(&mut pr);
-        }
-
-        // (c) squeeze-output equalities: opening_tuple_commitment[j] − squeezed_output[j].
-        for j in 0..N_C6_OUT {
-            let (sp, lane) = c6_output_source(j);
-            let out_cell = cell(c6_perm_base(sp) + C_OUTPUT + lane);
-            let committed = cell(c6_out_cell(j));
-            residuals.push(octic_sub::<AB>(&committed, &out_cell));
-        }
-    }
-
-    // (8) role-root sponge (CLASS A) — the third mirrored leaf sponge, CHAINED to the C1/C6 squeeze
-    // outputs. Order MUST match the native `role_residual`: input/capacity bindings (WIDTH/perm),
-    // then per-perm Poseidon2 round residuals (inlined_perm_octic), then squeeze-output equalities.
-    // Structurally identical to the C1/C6 blocks; the ONLY differences are the role constants and
-    // that `role_absorb_source` reads the ALREADY-MIRRORED `c1_out_cell`/`c6_out_cell` cells for
-    // input lanes 0..20 (the chaining; air.rs:919-931) + the masked_projection cells for 20..26.
-    {
-        struct CellAdapter<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> {
-            cell: &'a FCell,
-            _ab: core::marker::PhantomData<AB>,
-        }
-        impl<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> OcticPermCells<AB>
-            for CellAdapter<'a, AB, FCell>
-        {
-            fn at(&self, idx: usize) -> [AB::Expr; D] {
-                (self.cell)(idx)
-            }
-        }
-        let adapter = CellAdapter::<AB, FCell> { cell, _ab: core::marker::PhantomData };
-
-        let perm_input = |p: usize, i: usize| cell(role_perm_base(p) + C_INPUTS + i);
-        let perm_output = |p: usize, i: usize| cell(role_perm_base(p) + C_OUTPUT + i);
-        let absorb = |pos: usize| -> [AB::Expr; D] {
-            match role_absorb_source(pos) {
-                C1Absorb::Cell(c) => cell(c),
-                C1Absorb::One => octic_scalar::<AB>(1),
-                C1Absorb::Zero => octic_scalar::<AB>(0),
-            }
-        };
-
-        // (a) input/capacity bindings.
-        for p in 0..ROLE_N_PERMS {
-            let is_absorb = p < ROLE_N_ABSORB;
-            for lane in 0..WIDTH {
-                let inp = perm_input(p, lane);
-                let expected = if p == 0 {
-                    if lane < ROLE_RATE {
-                        absorb(lane)
-                    } else {
-                        octic_scalar::<AB>(0)
-                    }
                 } else {
-                    let prev = perm_output(p - 1, lane);
-                    if lane < ROLE_RATE {
-                        if is_absorb {
-                            let pos = p * ROLE_RATE + lane;
-                            let elem = if pos < ROLE_PADDED_LEN {
-                                absorb(pos)
-                            } else {
-                                octic_scalar::<AB>(0)
-                            };
-                            octic_add::<AB>(&prev, &elem)
-                        } else {
-                            prev
-                        }
-                    } else {
-                        prev
-                    }
-                };
-                residuals.push(octic_sub::<AB>(&inp, &expected));
-            }
-        }
-
-        // (b) per-perm Poseidon2 round residuals.
-        for p in 0..ROLE_N_PERMS {
-            let mut pr = inlined_perm_octic::perm_residuals::<AB, _>(&adapter, role_perm_base(p));
-            residuals.append(&mut pr);
-        }
-
-        // (c) squeeze-output equalities: role_root[j] − squeezed_output[j].
-        for j in 0..N_ROLE_OUT {
-            let (sp, lane) = role_output_source(j);
-            let out_cell = cell(role_perm_base(sp) + C_OUTPUT + lane);
-            let committed = cell(role_out_cell(j));
-            residuals.push(octic_sub::<AB>(&committed, &out_cell));
+                    prev
+                }
+            };
+            residuals.push(octic_sub::<AB>(&inp, &expected));
         }
     }
 
-    // (9) C2 mask-PRF sponge — the LARGEST mirrored leaf sponge. Order MUST match the native
-    // `c2_residual`: input/capacity bindings (WIDTH/perm), then per-perm Poseidon2 round residuals.
-    // NO squeeze-output equality sub-class (the 30 squeezed lanes feed the reduce gadget, read from
-    // the perm OUTPUT cells). Absorb source: pad_seed[32] REUSED from `O_C2_PAD` ‖ slot_id[8].
-    {
-        struct CellAdapter<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> {
-            cell: &'a FCell,
-            _ab: core::marker::PhantomData<AB>,
-        }
-        impl<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> OcticPermCells<AB>
-            for CellAdapter<'a, AB, FCell>
-        {
-            fn at(&self, idx: usize) -> [AB::Expr; D] {
-                (self.cell)(idx)
-            }
-        }
-        let adapter = CellAdapter::<AB, FCell> { cell, _ab: core::marker::PhantomData };
-
-        let perm_input = |p: usize, i: usize| cell(c2_perm_base(p) + C_INPUTS + i);
-        let perm_output = |p: usize, i: usize| cell(c2_perm_base(p) + C_OUTPUT + i);
-        let absorb = |pos: usize| -> [AB::Expr; D] {
-            match c2_absorb_source(pos) {
-                C1Absorb::Cell(c) => cell(c),
-                C1Absorb::One => octic_scalar::<AB>(1),
-                C1Absorb::Zero => octic_scalar::<AB>(0),
-            }
-        };
-
-        // (a) input/capacity bindings.
-        for p in 0..C2_N_PERMS {
-            let is_absorb = p < C2_N_ABSORB;
-            for lane in 0..WIDTH {
-                let inp = perm_input(p, lane);
-                let expected = if p == 0 {
-                    if lane < C2_RATE {
-                        absorb(lane)
-                    } else {
-                        octic_scalar::<AB>(0)
-                    }
-                } else {
-                    let prev = perm_output(p - 1, lane);
-                    if lane < C2_RATE {
-                        if is_absorb {
-                            let pos = p * C2_RATE + lane;
-                            let elem = if pos < C2_PADDED_LEN {
-                                absorb(pos)
-                            } else {
-                                octic_scalar::<AB>(0)
-                            };
-                            octic_add::<AB>(&prev, &elem)
-                        } else {
-                            prev
-                        }
-                    } else {
-                        prev
-                    }
-                };
-                residuals.push(octic_sub::<AB>(&inp, &expected));
-            }
-        }
-
-        // (b) per-perm Poseidon2 round residuals.
-        for p in 0..C2_N_PERMS {
-            let mut pr = inlined_perm_octic::perm_residuals::<AB, _>(&adapter, c2_perm_base(p));
-            residuals.append(&mut pr);
-        }
+    // (b) per-perm Poseidon2 round residuals.
+    for p in 0..C2_N_PERMS {
+        let mut pr = inlined_perm_octic::perm_residuals::<AB, _>(&adapter, c2_perm_base(p));
+        residuals.append(&mut pr);
     }
+}
 
-    // (10) WIDE-THEN-REDUCE + carrier — the genuinely-NEW constraint shape. Mirrors
-    // `reduce_gadget::eval_reduce_gadget` (per-mask Horner steps) + the C4 carrier mod-q reduction
-    // (air.rs:856-906) EXACTLY, in the SAME assertion order as the native `reduce_residual`.
+/// Push the WIDE-THEN-REDUCE gadget + carrier residuals onto `residuals`, in the SAME order as the
+/// native [`reduce_residual`]. EXTRACTED from [`recompute_c_partial`] into its own
+/// (`#[inline(never)]`) frame to keep the main folder frame small. Mirrors
+/// `descender_account_stark::reduce_gadget::eval_reduce_gadget` + the C4 carrier (air.rs:856-906).
+#[inline(never)]
+fn push_reduce_residuals<AB, FCell>(cell: &FCell, residuals: &mut Vec<[AB::Expr; D]>)
+where
+    AB: AirBuilder<F = Val>,
+    FCell: Fn(usize) -> [AB::Expr; D],
+{
     {
         let (p_lo, p_hi, q, two16) = reduce_field_consts();
         let one = octic_scalar::<AB>(1);
@@ -1911,14 +2205,14 @@ where
                     (StepOff::D1, StepOff::D1_BITS, S_TOP_BITS),
                 ];
                 for (val_off, bits_off, nbits) in blocks.iter().copied() {
-                    let rc = push_recompose(&mut residuals, sb + bits_off, nbits);
+                    let rc = push_recompose(&mut *residuals, sb + bits_off, nbits);
                     residuals.push(octic_sub::<AB>(&rcell(sb + val_off), &rc));
                 }
                 // r_t (bits then eq).
-                let r_rc = push_recompose(&mut residuals, sb + StepOff::R_BITS, MASK_BITS);
+                let r_rc = push_recompose(&mut *residuals, sb + StepOff::R_BITS, MASK_BITS);
                 residuals.push(octic_sub::<AB>(&rcell(sb + StepOff::R), &r_rc));
                 // slack (bits then eq).
-                let slack_rc = push_recompose(&mut residuals, sb + StepOff::SLACK_BITS, MASK_BITS);
+                let slack_rc = push_recompose(&mut *residuals, sb + StepOff::SLACK_BITS, MASK_BITS);
                 residuals.push(octic_sub::<AB>(&rcell(sb + StepOff::SLACK), &slack_rc));
 
                 // value handles.
@@ -2027,18 +2321,6 @@ where
             residuals.push(octic_sub::<AB>(&lhs, &rhs));
         }
     }
-
-    debug_assert_eq!(residuals.len(), N_CONSTRAINTS);
-
-    // ----- alpha-batch: acc = Σ_r alpha^r · residual_r -----
-    let mut acc = octic_scalar::<AB>(0);
-    let mut a_pow = octic_scalar::<AB>(1);
-    for res in residuals.iter() {
-        let term = octic_mul::<AB>(&a_pow, res);
-        acc = octic_add::<AB>(&acc, &term);
-        a_pow = octic_mul::<AB>(&a_pow, alpha);
-    }
-    acc
 }
 
 /// Leaf-constraint-mirror AIR: recomputes the alpha-batched Poseidon2-free leaf constraint
@@ -2160,7 +2442,99 @@ mod tests {
         // squeezed lanes -> 6 masks, then the carrier masked = (acc + mask) mod q (acc = vals[..],
         // in [0,q)). MUST run after the pad_seed cells (c2_pad) + acc cells are set.
         fill_honest_c2_and_reduce(&mut cells, pad_seed_seed, vals);
+        // batch digest chain: honest per-row absorb of an enabled (enable=1) pubio over a chosen
+        // prev_chain_out running state, then chain_out = absorbed, count_acc = prev_count_acc + 1.
+        fill_honest_chain(&mut cells, pad_seed_seed, true);
         cells
+    }
+
+    /// Fill the batch-digest-chain cells (prev_chain_out[16] ‖ chain_in[16] ‖ CHAIN_NPERMS perm
+    /// blocks ‖ chain_out[16] ‖ enable ‖ prev_count_acc ‖ count_acc ‖ pubio[PUBIO_ELEMS]) with an
+    /// HONEST chain step over a chosen prev-row state + pubio, running the deployed Val permutation
+    /// for each absorb perm, exactly mirroring `eval_digest_chain` / `chain_digest` / the
+    /// `generate_batch_trace` fill, then lifting every cell into the extension. This is the chain
+    /// fidelity AUTHORITY. We build an ENABLED (enable=1) real row (the soundness-relevant case;
+    /// padding rows enable=0 are a TRUE no-op and exercised separately by a fidelity test).
+    fn fill_honest_chain(cells: &mut [Challenge; N_OPENED_CELLS], seed: u32, enabled: bool) {
+        use crate::inlined_perm::{self, generate_perm_cols, C_OUTPUT as IP_OUTPUT, PERM_COLS};
+        let consts = inlined_perm::Constants::pinned();
+
+        let enable = if enabled { 1u64 } else { 0u64 };
+        cells[chain_enable_cell()] = Challenge::from(Val::from_u64(enable));
+
+        // prev-row running state (the cross-row carry source) + prev count. Field-valued.
+        let mut prev_state = [Val::ZERO; CHAIN_W];
+        for c in 0..CHAIN_W {
+            let v = seed.wrapping_mul(1009).wrapping_add(c as u32 * 17 + 3);
+            prev_state[c] = Val::from_u32(v);
+            cells[chain_prev_out_cell(c)] = Challenge::from(prev_state[c]);
+        }
+        let prev_count = 5u64;
+        cells[chain_prev_count_cell()] = Challenge::from(Val::from_u64(prev_count));
+        cells[chain_count_cell()] = Challenge::from(Val::from_u64(prev_count + enable));
+
+        // chain_in == prev_chain_out (the carry).
+        for c in 0..CHAIN_W {
+            cells[chain_in_cell(c)] = cells[chain_prev_out_cell(c)];
+        }
+
+        // pubio lanes: field-valued (the per-instance statement), lifted to one-limb base elements.
+        let mut pubio = [Val::ZERO; CHAIN_PUBIO];
+        for i in 0..CHAIN_PUBIO {
+            let v = seed.wrapping_mul(131).wrapping_add(i as u32 * 7 + 1);
+            pubio[i] = Val::from_u32(v);
+            cells[chain_pubio_cell(i)] = Challenge::from(pubio[i]);
+        }
+
+        // message: m[0]=enable, m[1+i]=enable*pubio[i], zero-padded to CHAIN_PADDED_LEN. For a
+        // padding row (enable=0) the message is all-zero — a TRUE no-op absorb, as in air.rs.
+        let enable_v = Val::from_u64(enable);
+        let msg = |pos: usize| -> Val {
+            if pos == 0 {
+                enable_v
+            } else if pos <= CHAIN_PUBIO {
+                enable_v * pubio[pos - 1]
+            } else {
+                Val::ZERO
+            }
+        };
+
+        // absorb across CHAIN_NPERMS perms seeded by chain_in (= prev_state).
+        let mut prev_out = prev_state;
+        let mut absorbed = prev_state;
+        for p in 0..CHAIN_NPERMS {
+            let mut perm_in = [Val::ZERO; WIDTH];
+            if p == 0 {
+                for r in 0..CHAIN_RT {
+                    perm_in[r] = prev_state[r] + msg(r);
+                }
+                for c in CHAIN_RT..WIDTH {
+                    perm_in[c] = prev_state[c];
+                }
+            } else {
+                for r in 0..CHAIN_RT {
+                    perm_in[r] = prev_out[r] + msg(p * CHAIN_RT + r);
+                }
+                for c in CHAIN_RT..WIDTH {
+                    perm_in[c] = prev_out[c];
+                }
+            }
+            let block = generate_perm_cols(perm_in, &consts);
+            let base = chain_perm_base(p);
+            for c in 0..PERM_COLS {
+                cells[base + c] = Challenge::from(block[c]);
+            }
+            let mut out = [Val::ZERO; WIDTH];
+            out.copy_from_slice(&block[IP_OUTPUT..IP_OUTPUT + WIDTH]);
+            prev_out = out;
+            absorbed = out;
+        }
+
+        // chain_out = enable ? absorbed : chain_in (the no-op fold for padding rows).
+        for c in 0..CHAIN_W {
+            let out = if enabled { absorbed[c] } else { prev_state[c] };
+            cells[chain_out_cell(c)] = Challenge::from(out);
+        }
     }
 
     /// Fill the C1 sponge cells (input lanes ‖ 8 perm blocks ‖ pad_source_commitment) with an
@@ -3280,8 +3654,8 @@ mod tests {
         assert_eq!(N_C2, C2_N_PERMS * WIDTH + C2_N_PERMS * inlined_perm_octic::PERM_RESIDUALS);
         // reduce + carrier total.
         assert_eq!(N_REDUCE, NUM_OUTPUTS * N_REDUCE_PER_MASK + N_LANES * N_CARRIER_PER_LANE);
-        // total covers everything up to N_CONSTRAINTS.
-        assert_eq!(REDUCE_RESIDUAL_BASE + N_REDUCE, N_CONSTRAINTS);
+        // the chain class follows reduce; reduce+chain cover everything up to N_CONSTRAINTS.
+        assert_eq!(REDUCE_RESIDUAL_BASE + N_REDUCE + N_CHAIN, N_CONSTRAINTS);
     }
 
     /// FIDELITY PIN (C2) — an HONEST C2 sponge (built from the deployed byte-pinned Val permutation
@@ -3497,5 +3871,198 @@ mod tests {
                 );
             }
         }
+    }
+
+    // =======================================================================
+    // BATCH DIGEST CHAIN — the per-row running Poseidon2 sponge + CROSS-ROW transition.
+    // =======================================================================
+
+    /// Base residual index of the batch-digest-chain class within `constraint_residual`.
+    const CHAIN_RESIDUAL_BASE: usize = REDUCE_RESIDUAL_BASE + N_REDUCE;
+
+    /// SHAPE SANITY — the chain residual counts agree with the structural constants, and the chain
+    /// class is the LAST class (covers exactly up to N_CONSTRAINTS).
+    #[test]
+    fn chain_residual_counts_consistent() {
+        assert_eq!(
+            N_CHAIN,
+            1 + CHAIN_NPERMS * CHAIN_W
+                + CHAIN_NPERMS * inlined_perm_octic::PERM_RESIDUALS
+                + CHAIN_W
+                + CHAIN_W
+                + 1
+        );
+        assert_eq!(CHAIN_RESIDUAL_BASE + N_CHAIN, N_CONSTRAINTS);
+        // sanity: the chain uses the full 16-wide perm and rate-8 absorb (mirrors air.rs).
+        assert_eq!(CHAIN_W, WIDTH);
+        assert_eq!(CHAIN_RT, 8);
+        assert_eq!(CHAIN_PADDED_LEN, CHAIN_NPERMS * CHAIN_RT);
+    }
+
+    /// FIDELITY PIN (chain) — an HONEST chain step (built from the deployed byte-pinned Val
+    /// permutation via `fill_honest_chain`, lifted to the extension) makes EVERY chain residual zero:
+    /// the enable-bool, the per-row absorb input/capacity wiring across all CHAIN_NPERMS perm blocks,
+    /// the chain_out fold, the cross-row carry (chain_in == prev_chain_out), and the count
+    /// accumulator. A wrong octic perm / absorb wiring / fold / carry would make some honest residual
+    /// nonzero — caught by attempted equality.
+    #[test]
+    fn chain_honest_all_residuals_zero() {
+        for seed in [1u32, 7, 42, 255] {
+            let cells = honest_cells([0, 1, 127, 128, 12288, 5000], seed);
+            for k in 0..N_CHAIN {
+                assert_eq!(
+                    constraint_residual(&cells, CHAIN_RESIDUAL_BASE + k),
+                    Challenge::ZERO,
+                    "honest chain residual {k} nonzero (seed={seed})"
+                );
+            }
+        }
+    }
+
+    /// FIDELITY PIN (chain) — the in-AIR per-row absorb + fold equals the LEAF's own reference
+    /// `chain_digest` over a single enabled pubio tuple, starting from the SAME prev state. I.e. the
+    /// opened `chain_out` lanes must equal `Poseidon2-sponge(chain_in, [1, pubio...])` exactly — the
+    /// authority is the deployed `run_chain_step` semantics (mirrored by `fill_honest_chain`). We
+    /// independently re-run the absorb over the recovered prev-state + pubio and require equality.
+    #[test]
+    fn chain_out_matches_deployed_perm_fold() {
+        use crate::inlined_perm::{self, generate_perm_cols, C_OUTPUT as IP_OUTPUT};
+        let consts = inlined_perm::Constants::pinned();
+        let cells = honest_cells([7000, 0, 12288, 128, 5000, 96], 9);
+
+        // recover prev-state, pubio, enable from the opened cells.
+        let prev_state: [Val; CHAIN_W] = core::array::from_fn(|c| {
+            let s: &[Val] = Challenge::as_basis_coefficients_slice(&cells[chain_prev_out_cell(c)]);
+            s[0]
+        });
+        let pubio: Vec<Val> = (0..CHAIN_PUBIO)
+            .map(|i| {
+                let s: &[Val] = Challenge::as_basis_coefficients_slice(&cells[chain_pubio_cell(i)]);
+                s[0]
+            })
+            .collect();
+        let enable: Val = Challenge::as_basis_coefficients_slice(&cells[chain_enable_cell()])[0];
+        assert_eq!(enable, Val::ONE, "fidelity uses an enabled row");
+
+        // re-run the per-row absorb independently (msg = [1, pubio...] zero-padded).
+        let msg = |pos: usize| -> Val {
+            if pos == 0 {
+                Val::ONE
+            } else if pos <= CHAIN_PUBIO {
+                pubio[pos - 1]
+            } else {
+                Val::ZERO
+            }
+        };
+        let mut prev_out = prev_state;
+        for p in 0..CHAIN_NPERMS {
+            let mut perm_in = [Val::ZERO; WIDTH];
+            let base_state = if p == 0 { prev_state } else { prev_out };
+            for r in 0..CHAIN_RT {
+                perm_in[r] = base_state[r] + msg(p * CHAIN_RT + r);
+            }
+            for c in CHAIN_RT..WIDTH {
+                perm_in[c] = base_state[c];
+            }
+            let block = generate_perm_cols(perm_in, &consts);
+            let mut out = [Val::ZERO; WIDTH];
+            out.copy_from_slice(&block[IP_OUTPUT..IP_OUTPUT + WIDTH]);
+            prev_out = out;
+        }
+        // chain_out (enable=1) must equal the re-derived absorbed state lane-for-lane.
+        for c in 0..CHAIN_W {
+            let opened: Val = Challenge::as_basis_coefficients_slice(&cells[chain_out_cell(c)])[0];
+            assert_eq!(opened, prev_out[c], "chain_out lane {c} != deployed-perm fold");
+        }
+    }
+
+    /// FIDELITY PIN (chain) — a PADDING row (enable=0) is a TRUE no-op: chain_out == chain_in
+    /// regardless of the absorb perms, and count_acc == prev_count_acc. We build a padding row by
+    /// hand (enable=0, chain_in carried, chain_out=chain_in, count_acc=prev_count) and require all
+    /// chain residuals to vanish — mirroring `generate_batch_trace`'s padding branch.
+    #[test]
+    fn chain_padding_row_is_noop() {
+        // build a proper padding row: enable=0 ⇒ all-zero absorb message, perms run over the zero
+        // message, chain_out == chain_in, count_acc == prev_count_acc. ALL chain residuals vanish.
+        let mut cells = honest_cells([1, 2, 3, 4, 5, 6], 17);
+        fill_honest_chain(&mut cells, 17, false);
+        // chain_out must equal chain_in (the no-op fold).
+        for c in 0..CHAIN_W {
+            assert_eq!(
+                cells[chain_out_cell(c)],
+                cells[chain_in_cell(c)],
+                "padding row chain_out lane {c} != chain_in"
+            );
+        }
+        for k in 0..N_CHAIN {
+            assert_eq!(
+                constraint_residual(&cells, CHAIN_RESIDUAL_BASE + k),
+                Challenge::ZERO,
+                "padding (enable=0) chain residual {k} nonzero — no-op branch broken"
+            );
+        }
+    }
+
+    /// FORGERY (chain) — tampering ANY chain cell that feeds a mirrored chain constraint shifts the
+    /// recomputed C_partial ⇒ rejected at the mirror. Covers: enable, an absorbed pubio lane, a
+    /// chain_in lane, an interior perm post, the squeeze-source (last-perm) output, a chain_out lane,
+    /// the count accumulator, and the prev_count. (The CROSS-ROW prev_chain_out tamper is its own
+    /// test below.)
+    #[test]
+    fn chain_air_rejects_tampered_cell() {
+        use crate::inlined_perm::{C_BEGIN_POST, C_OUTPUT as IP_OUTPUT};
+        let cells = honest_cells([10, 20, 30, 40, 50, 60], 3);
+        let targets = [
+            chain_enable_cell(),                       // enable (boolean + fold + count)
+            chain_pubio_cell(0),                       // absorbed pubio lane 0
+            chain_pubio_cell(CHAIN_PUBIO - 1),         // absorbed pubio last lane
+            chain_in_cell(0),                          // chain_in lane 0 (absorb + carry)
+            chain_in_cell(CHAIN_W - 1),                // chain_in capacity lane (carry + cap bind)
+            chain_perm_base(0) + C_BEGIN_POST,         // interior perm post (perm 0)
+            chain_perm_base(CHAIN_NPERMS - 1) + IP_OUTPUT + 1, // last-perm output (the absorbed fold src)
+            chain_out_cell(0),                         // chain_out lane 0 (the running digest)
+            chain_count_cell(),                        // count accumulator
+            chain_prev_count_cell(),                   // prev count (cross-row count carry)
+        ];
+        for &cell_idx in &targets {
+            let mut m = matrix(&cells, ext_multi(21));
+            m.values[cell_base(cell_idx)] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "tampered chain cell {cell_idx} NOT rejected — that residual is underconstrained"
+            );
+        }
+    }
+
+    /// FORGERY (chain) — the CROSS-ROW tamper: altering a `prev_chain_out` lane (a swapped/forged
+    /// prior-row digest) breaks the cross-row carry `chain_in == prev_chain_out` ⇒ rejected. This is
+    /// the running-accumulator soundness: a forger who tries to swap the prior row's state cannot keep
+    /// the chain consistent. (prev_chain_out is a BOUND cell — see the module note on how the
+    /// single-row harness binds the prev value.)
+    #[test]
+    fn chain_air_rejects_cross_row_tamper() {
+        let cells = honest_cells([100, 200, 300, 400, 500, 600], 5);
+        for c in [0usize, 7, CHAIN_W - 1] {
+            let mut m = matrix(&cells, ext_multi(33));
+            m.values[cell_base(chain_prev_out_cell(c))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "CROSS-ROW tamper of prev_chain_out lane {c} NOT rejected — the carry is underconstrained"
+            );
+        }
+    }
+
+    /// FIDELITY PIN (chain) — the enable boolean is enforced: a non-boolean enable (e.g. 2) makes the
+    /// enable-bool residual nonzero. Mirrors `assert_bool(enable)` (air.rs:1148).
+    #[test]
+    fn chain_enable_must_be_boolean() {
+        let mut cells = honest_cells([1, 2, 3, 4, 5, 6], 7);
+        cells[chain_enable_cell()] = Challenge::from(Val::from_u32(2));
+        // the enable-bool residual is the FIRST chain residual.
+        assert_ne!(
+            constraint_residual(&cells, CHAIN_RESIDUAL_BASE),
+            Challenge::ZERO,
+            "enable-boolean residual blind to a non-boolean enable"
+        );
     }
 }

@@ -662,6 +662,45 @@ mod tests {
         }
     }
 
+    /// END-TO-END FORGERY (BATCH DIGEST CHAIN) — with a leaf-WIRED DEEP row built over an HONEST
+    /// chain step (real byte-pinned Val permutation, lifted to the extension), tampering a chain cell
+    /// — the enable selector, an absorbed pubio lane, a chain_in lane, an interior perm post, the
+    /// last-perm fold source, a chain_out (running-digest) lane, the count accumulator, OR the
+    /// CROSS-ROW prev_chain_out (a swapped/forged prior-row digest) — shifts the in-AIR-recomputed
+    /// `C_partial`, so the committed `C` no longer equals `Z_H·Q` ⇒ REJECTED through the DEEP block.
+    /// The batch digest chain (incl. the cross-row carry) is now caught at the DEEP OOD check.
+    #[test]
+    fn leaf_wired_tampered_chain_cell_rejects_end_to_end() {
+        use crate::inlined_perm::{C_BEGIN_POST, C_OUTPUT as IP_OUTPUT};
+        let k = 9;
+        let cells = lc::honest_cells_for_test([0, 1, 127, 12288, 5000, 96], 17);
+        // honest leaf-wired row accepts.
+        let row_ok = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
+        let m_ok = RowMajorMatrix::new(row_ok, n_cols_cfg(k, true));
+        assert!(check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(), "honest chain row rejected");
+
+        let targets = [
+            lc::chain_enable_cell_idx(),                              // enable selector
+            lc::chain_pubio_cell_idx(0),                             // absorbed pubio lane 0
+            lc::chain_in_cell_idx(3),                                // chain_in lane 3
+            lc::chain_perm_cell_idx(0, C_BEGIN_POST),                // interior perm post (perm 0)
+            lc::chain_perm_cell_idx(lc::CHAIN_NPERMS - 1, IP_OUTPUT + 2), // last-perm fold source lane 2
+            lc::chain_out_cell_idx(0),                               // running-digest lane 0
+            lc::chain_count_cell_idx(),                              // count accumulator
+            lc::chain_prev_out_cell_idx(5),                          // CROSS-ROW: swapped prior-row digest
+        ];
+        let lb = leaf_base(k);
+        for &cell_idx in &targets {
+            let row = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
+            let mut m = RowMajorMatrix::new(row, n_cols_cfg(k, true));
+            m.values[lb + lc::L_CELLS + cell_idx * D] += Val::ONE;
+            assert!(
+                !check_all_constraints(&leaf_air(k), &m, &[], None).is_ok(),
+                "tampering chain cell {cell_idx} was NOT rejected end-to-end"
+            );
+        }
+    }
+
     /// FORGERY — tampering `C_committed` (the deferred summand) with everything else honest breaks
     /// `C == C_partial + C_committed` ⇒ rejected. (A prover cannot smuggle a favorable deferred
     /// bulk value either; it is bound by the decomposition.)
