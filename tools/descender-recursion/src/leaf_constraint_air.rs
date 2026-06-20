@@ -59,13 +59,24 @@
 //!     (air.rs:1278-1289) — a degree-2 algebraic gadget, not the sponge; rides with the byte/reduce
 //!     gadgets in a later chunk.
 //!
+//!   * **C6 — `opening_tuple_commitment` squeeze** (air.rs:740-756, `eval_sponge` C6 plan):
+//!     RE-COMPUTED in-circuit via [`crate::inlined_perm_octic`] over the absorbed leaf cells,
+//!     matching the leaf `SpongePlan` (rate-8 absorb of account_projection[6] FIELD lanes ‖
+//!     lifecycle[32] ‖ nonce_c6[16] ‖ account_id[32] byte-lanes = 86 input lanes, ONE padding marker
+//!     at stream pos `n_input`(=86) + zero-fill, capacity-preserving across 11 absorb perms + 1
+//!     squeeze perm = 12 perms), with the committed `opening_tuple_commitment[10]` digest constrained
+//!     == the squeezed sponge output. Added as the `N_C6` residual class. The 6 FIELD absorb lanes
+//!     are the EXISTING `O_C6_FIELD` SeamOpeningAcc cells (reused). Fidelity-PINned against the
+//!     deployed byte-pinned Val permutation (`c6_honest_sponge_all_residuals_zero`,
+//!     `c6_squeeze_matches_deployed_perm_output`) and tamper-rejected end-to-end through DEEP
+//!     (`leaf_wired_tampered_c6_sponge_cell_rejects_end_to_end`). DEFERRED for C6 (same as C1): the
+//!     per-lane BYTE-RANGE decomposition of the 80 byte-lanes (air.rs:1278-1289).
+//!
 //! ## DEFERRED (the rest of leaf `C(zeta)` — STILL committed-not-constrained)
 //!
 //!   * **C2 — mask PRF sponge** (air.rs:728-737): 40-lane absorb (pad_seed[32] ‖ slot_id[8]),
 //!     30 squeezed lanes, PLUS the WIDE-THEN-REDUCE `eval_reduce_gadget` (30 wide lanes → 6 masks)
 //!     and the carrier mod-q reduction. Largest remaining sponge.
-//!   * **C6 — opening-tuple-commitment sponge** (air.rs:740-756): account_projection[6] (field) ‖
-//!     lifecycle_anchor[32] ‖ nonce_c6[16] ‖ account_id[32] (bytes), squeezed to 10 lanes.
 //!   * **role-root sponge** (CLASS A, air.rs:910-944): 26 role-handle lanes (pad_source_commitment
 //!     ‖ opening_tuple_commitment ‖ masked_projection) → 8-lane `role_root`, with input lanes bound
 //!     to the real commitment columns and the squeezed root == public `role_root`.
@@ -173,9 +184,56 @@ pub const N_C1_PERM: usize = C1_N_PERMS * inlined_perm_octic::PERM_RESIDUALS;
 pub const N_C1_OUT: usize = C1_N_OUT;
 pub const N_C1: usize = N_C1_INPUT_BIND + N_C1_PERM + N_C1_OUT;
 
+// ----- C6 sponge (opening_tuple_commitment squeeze) — the SECOND mirrored leaf sponge -----
+//
+// Mirrors `descender_account_stark::air::FullRelationAir::eval_sponge` for the C6 SpongePlan
+// (air.rs:740-756, plan built at air.rs:436-438). C6 has the SAME absorb/capacity/squeeze shape
+// as C1 (rate-8 absorb with the ONE padding marker at stream position `n_input` + zero-fill,
+// capacity-preserving across the absorb perms + 1 squeeze perm), only with a LARGER input:
+//   * C6 input lanes: account_projection[6] (FIELD lanes) ‖ lifecycle_anchor[32] ‖
+//     blinding_nonce_c6[16] ‖ account_id[32] (byte-lanes)  ⇒ C6_INPUT_LANES = 6 + 80 = 86.
+//   * RATE-8 absorb, padding marker at pos n_input(=86), zero-fill ⇒ padded = ceil(87/8)·8 = 88
+//     ⇒ C6_N_ABSORB = 11.  n_out = 10 ⇒ 1 squeeze perm ⇒ C6_N_PERMS = 12.
+//   * squeeze: `opening_tuple_commitment[0..7]` from the LAST absorb perm's output, `[8..9]` from
+//     the squeeze perm's output (same `SpongePlan::output_source` mapping as C1, since n_out=10).
+// The committed `opening_tuple_commitment[10]` digest is the leaf's PUBLIC C6 output (air.rs:747-756);
+// the mirror constrains it == the squeezed sponge output.
+//
+// The FIRST 6 C6 absorb lanes are the `account_projection` FIELD lanes, which are ALREADY present in
+// the mirror as the `O_C6_FIELD` cells (the SeamOpeningAcc lanes — `local[c6_off + c6.lanes + i]`,
+// i<6, air.rs:777). They are REUSED as absorb positions 0..6. The remaining 80 byte-lanes
+// (lifecycle ‖ nonce ‖ account_id) are added as new opened cells here.
+//
+// DEFERRED for the C6 sponge (same as C1): the per-lane BYTE-RANGE decomposition of the 80
+// byte-lanes (air.rs:1278-1289) — a degree-2 algebraic gadget, not the sponge; rides with the
+// byte/reduce gadgets in a later chunk. (The 6 FIELD lanes are NOT byte-ranged in air.rs.)
+
+/// C6 input lanes count: account_projection[6] ‖ lifecycle[32] ‖ nonce_c6[16] ‖ account_id[32].
+/// Mirrors air.rs `C6_INPUT_LANES = C6_FIELD_LANES + C6_BYTE_LANES`.
+pub const C6_FIELD_LANES: usize = N_LANES; // 6 (the account_projection field lanes)
+pub const C6_BYTE_LANES: usize = 32 + 16 + 32; // 80 (lifecycle ‖ nonce_c6 ‖ account_id)
+pub const C6_INPUT_LANES: usize = C6_FIELD_LANES + C6_BYTE_LANES; // 86
+/// Sponge rate (shared with C1). Mirrors air.rs `RATE`.
+pub const C6_RATE: usize = 8;
+/// Number of absorb permutations: `ceil((n_input + 1)/RATE)` = `ceil(87/8)` = 11.
+pub const C6_N_ABSORB: usize = 11;
+/// Total C6 sponge permutations (absorb + squeeze). `n_out = 10` ⇒ 1 squeeze perm ⇒ 12.
+pub const C6_N_PERMS: usize = 12;
+/// Padded absorb-stream length (`C6_N_ABSORB · RATE`).
+pub const C6_PADDED_LEN: usize = C6_N_ABSORB * C6_RATE; // 88
+/// opening_tuple_commitment output lanes. Mirrors air.rs `N_COMMIT_LANES`.
+pub const C6_N_OUT: usize = N_COMMIT_LANES; // 10
+
+/// C6 residual count: input/capacity bindings (WIDTH/perm) + perm round residuals + squeeze-output
+/// equalities — same structure as C1, with C6's perm count.
+pub const N_C6_INPUT_BIND: usize = C6_N_PERMS * WIDTH;
+pub const N_C6_PERM: usize = C6_N_PERMS * inlined_perm_octic::PERM_RESIDUALS;
+pub const N_C6_OUT: usize = C6_N_OUT;
+pub const N_C6: usize = N_C6_INPUT_BIND + N_C6_PERM + N_C6_OUT;
+
 /// Total residuals batched into `C_partial`.
 pub const N_CONSTRAINTS: usize =
-    C4_LANES * C4_N_PER_LANE + N_C4_ACC + N_SEAM_PAD + N_SEAM_ACC + N_RELATION_ID + N_C1;
+    C4_LANES * C4_N_PER_LANE + N_C4_ACC + N_SEAM_PAD + N_SEAM_ACC + N_RELATION_ID + N_C1 + N_C6;
 
 // ===========================================================================
 // Column layout (one leaf-constraint-mirror check per row)
@@ -194,14 +252,19 @@ pub const N_CONSTRAINTS: usize =
 /// Number of opened OOD cells in the C1 sponge block: input lanes + perm blocks + output digest.
 pub const C1_CELLS: usize = C1_INPUT_LANES + C1_N_PERMS * PERM_COLS + C1_N_OUT;
 
+/// Number of opened OOD cells in the C6 sponge block: byte-lanes (the 6 FIELD lanes are REUSED from
+/// `O_C6_FIELD`) + perm blocks + output digest.
+pub const C6_CELLS: usize = C6_BYTE_LANES + C6_N_PERMS * PERM_COLS + C6_N_OUT;
+
 /// Number of opened OOD cells fed to the mirror.
 pub const N_OPENED_CELLS: usize = C4_LANES * C4_CELLS // C4 lanes
     + N_LANES // carry_acc
     + PAD_SEED_BYTES // C1 pad_seed
     + PAD_SEED_BYTES // C2 pad_seed
-    + N_LANES // C6 field lanes
+    + N_LANES // C6 field lanes (also the C6 sponge absorb positions 0..6)
     + RELATION_ID_ELEMS // relation_id
-    + C1_CELLS; // C1 sponge (input lanes ‖ perm blocks ‖ pad_source_commitment)
+    + C1_CELLS // C1 sponge (input lanes ‖ perm blocks ‖ pad_source_commitment)
+    + C6_CELLS; // C6 sponge (byte-lanes ‖ perm blocks ‖ opening_tuple_commitment)
 
 // Cell-block offsets (in units of cells, each `D` limbs).
 const O_C4: usize = 0;
@@ -214,6 +277,11 @@ const O_RELATION_ID: usize = O_C6_FIELD + N_LANES;
 const O_C1_INPUT: usize = O_RELATION_ID + RELATION_ID_ELEMS;
 const O_C1_PERMS: usize = O_C1_INPUT + C1_INPUT_LANES;
 const O_C1_OUT: usize = O_C1_PERMS + C1_N_PERMS * PERM_COLS;
+// C6 sponge block: byte-lanes, then 12 perm blocks, then the 10-lane opening_tuple_commitment.
+// (The 6 FIELD absorb lanes live at `O_C6_FIELD`, reused.)
+const O_C6_BYTE: usize = O_C1_OUT + C1_N_OUT;
+const O_C6_PERMS: usize = O_C6_BYTE + C6_BYTE_LANES;
+const O_C6_OUT: usize = O_C6_PERMS + C6_N_PERMS * PERM_COLS;
 
 /// First column: the opened OOD cells, each `D` limbs.
 pub const L_CELLS: usize = 0;
@@ -263,6 +331,19 @@ const fn c1_perm_base(p: usize) -> usize {
 const fn c1_out_cell(j: usize) -> usize {
     O_C1_OUT + j
 }
+/// C6 byte-lane `b` (`b < C6_BYTE_LANES`) — the absorbed lifecycle/nonce/account_id field element.
+/// (Absorb positions 6..86; positions 0..6 are the FIELD lanes at `O_C6_FIELD`.)
+const fn c6_byte_cell(b: usize) -> usize {
+    O_C6_BYTE + b
+}
+/// First cell of C6 perm block `p` (`p < C6_N_PERMS`); the block spans `PERM_COLS` cells.
+const fn c6_perm_base(p: usize) -> usize {
+    O_C6_PERMS + p * PERM_COLS
+}
+/// C6 opening_tuple_commitment output lane `j` (`j < C6_N_OUT`) — the squeezed digest cell.
+const fn c6_out_cell(j: usize) -> usize {
+    O_C6_OUT + j
+}
 
 /// The absorbed stream element at position `pos` (`pos < C1_PADDED_LEN`), as a cell index OR a
 /// constant marker. Mirrors `absorb_elem_expr` (air.rs:1360): `pos < n_input` → input lane cell;
@@ -290,6 +371,33 @@ const fn c1_output_source(o: usize) -> (usize, usize) {
         (C1_N_ABSORB - 1, o)
     } else {
         (C1_N_ABSORB, o - C1_RATE)
+    }
+}
+
+/// The absorbed C6 stream element at position `pos` (`pos < C6_PADDED_LEN`), as a cell index OR a
+/// constant marker. Mirrors `absorb_elem_expr` (air.rs:1360): `pos < n_input(=86)` → input lane cell
+/// (the 6 FIELD lanes for pos<6, else a byte-lane); `pos == n_input` → the ONE padding marker; else
+/// → ZERO. The FIELD lanes are the `O_C6_FIELD` cells, the byte-lanes the `O_C6_BYTE` cells.
+fn c6_absorb_source(pos: usize) -> C1Absorb {
+    if pos < C6_FIELD_LANES {
+        C1Absorb::Cell(c6_field_cell(pos))
+    } else if pos < C6_INPUT_LANES {
+        C1Absorb::Cell(c6_byte_cell(pos - C6_FIELD_LANES))
+    } else if pos == C6_INPUT_LANES {
+        C1Absorb::One
+    } else {
+        C1Absorb::Zero
+    }
+}
+
+/// `(perm_index, lane)` the C6 squeeze reads output `o` from. Same mapping as C1 (`n_out = 10`):
+/// outputs `0..RATE` from the LAST absorb perm (`C6_N_ABSORB-1`), the remainder from the squeeze
+/// perm (`C6_N_ABSORB`). Mirrors `SpongePlan::output_source`.
+const fn c6_output_source(o: usize) -> (usize, usize) {
+    if o < C6_RATE {
+        (C6_N_ABSORB - 1, o)
+    } else {
+        (C6_N_ABSORB, o - C6_RATE)
     }
 }
 
@@ -466,6 +574,66 @@ fn c1_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
     cells[c1_out_cell(j)] - perm_output(sp, lane)
 }
 
+/// The `k`-th NATIVE C6-sponge residual over the opened cells, `k ∈ [0, N_C6)`. STRUCTURALLY
+/// identical to [`c1_residual`] (the absorb/capacity/squeeze pattern is shared by `eval_sponge`),
+/// differing only in the C6 constants (`C6_*`), the absorb source (6 FIELD lanes ‖ 80 byte-lanes),
+/// the perm/output cells, and the squeezed digest target (`opening_tuple_commitment`).
+fn c6_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
+    let perm_input = |p: usize, i: usize| cells[c6_perm_base(p) + C_INPUTS + i];
+    let perm_output = |p: usize, i: usize| cells[c6_perm_base(p) + C_OUTPUT + i];
+    let absorb = |pos: usize| -> Challenge {
+        match c6_absorb_source(pos) {
+            C1Absorb::Cell(c) => cells[c],
+            C1Absorb::One => Challenge::ONE,
+            C1Absorb::Zero => Challenge::ZERO,
+        }
+    };
+
+    // (a) input/capacity bindings (WIDTH per perm).
+    if k < N_C6_INPUT_BIND {
+        let p = k / WIDTH;
+        let lane = k % WIDTH;
+        let is_absorb = p < C6_N_ABSORB;
+        if p == 0 {
+            if lane < C6_RATE {
+                return perm_input(0, lane) - absorb(lane);
+            }
+            return perm_input(0, lane);
+        }
+        let prev = perm_output(p - 1, lane);
+        if lane < C6_RATE {
+            if is_absorb {
+                let pos = p * C6_RATE + lane;
+                let elem = if pos < C6_PADDED_LEN { absorb(pos) } else { Challenge::ZERO };
+                return perm_input(p, lane) - (prev + elem);
+            }
+            return perm_input(p, lane) - prev;
+        }
+        return perm_input(p, lane) - prev;
+    }
+    let mut k = k - N_C6_INPUT_BIND;
+
+    // (b) per-perm Poseidon2 round residuals.
+    if k < N_C6_PERM {
+        let per = inlined_perm_octic::PERM_RESIDUALS;
+        let p = k / per;
+        let ri = k % per;
+        let inputs: [Challenge; WIDTH] = core::array::from_fn(|i| perm_input(p, i));
+        let committed: Vec<Challenge> = (0..per)
+            .map(|i| cells[c6_perm_base(p) + c1_post_cell_offset(i)])
+            .collect();
+        let res = inlined_perm_octic::native_perm_residuals(inputs, &committed);
+        return res[ri];
+    }
+    k -= N_C6_PERM;
+
+    // (c) squeeze-output equality: opening_tuple_commitment[j] − opened_output_cell[j].
+    debug_assert!(k < N_C6_OUT);
+    let j = k;
+    let (sp, lane) = c6_output_source(j);
+    cells[c6_out_cell(j)] - perm_output(sp, lane)
+}
+
 /// Map the `ri`-th committed post (in `inlined_perm_octic::perm_residuals` order: begin-full posts,
 /// then partial post_sbox, then end-full posts) to its CELL offset within a `PERM_COLS` block (the
 /// `inlined_perm` column layout). Used to read the OPENED committed-post cell for the C1 residual.
@@ -523,9 +691,14 @@ pub fn constraint_residual(cells: &[Challenge; N_OPENED_CELLS], r: usize) -> Cha
         return cells[relation_id_cell(j)] - Challenge::from(Val::from_u32(RELATION_ID[j]));
     }
     r -= N_RELATION_ID;
-    // C1 sponge residuals (pad_source_commitment squeeze).
-    debug_assert!(r < N_C1);
-    c1_residual(cells, r)
+    if r < N_C1 {
+        // C1 sponge residuals (pad_source_commitment squeeze).
+        return c1_residual(cells, r);
+    }
+    r -= N_C1;
+    // C6 sponge residuals (opening_tuple_commitment squeeze).
+    debug_assert!(r < N_C6);
+    c6_residual(cells, r)
 }
 
 /// Native alpha-batched leaf partial constraint eval over opened cells:
@@ -578,6 +751,22 @@ pub fn c1_out_cell_idx(j: usize) -> usize {
 #[cfg(test)]
 pub fn c1_perm_cell_idx(p: usize, within: usize) -> usize {
     c1_perm_base(p) + within
+}
+#[cfg(test)]
+pub fn c6_byte_cell_idx(b: usize) -> usize {
+    c6_byte_cell(b)
+}
+#[cfg(test)]
+pub fn c6_field_cell_idx(i: usize) -> usize {
+    c6_field_cell(i)
+}
+#[cfg(test)]
+pub fn c6_out_cell_idx(j: usize) -> usize {
+    c6_out_cell(j)
+}
+#[cfg(test)]
+pub fn c6_perm_cell_idx(p: usize, within: usize) -> usize {
+    c6_perm_base(p) + within
 }
 
 /// Decode the committed `C_partial` cell of a packed row.
@@ -770,6 +959,82 @@ where
         }
     }
 
+    // (7) C6 sponge (opening_tuple_commitment squeeze) — the second mirrored leaf sponge. Order
+    // MUST match the native `c6_residual`: input/capacity bindings (WIDTH/perm), then per-perm
+    // Poseidon2 round residuals (inlined_perm_octic), then squeeze-output equalities. Structurally
+    // identical to the C1 block above with the C6 constants / absorb source / output target.
+    {
+        struct CellAdapter<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> {
+            cell: &'a FCell,
+            _ab: core::marker::PhantomData<AB>,
+        }
+        impl<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> OcticPermCells<AB>
+            for CellAdapter<'a, AB, FCell>
+        {
+            fn at(&self, idx: usize) -> [AB::Expr; D] {
+                (self.cell)(idx)
+            }
+        }
+        let adapter = CellAdapter::<AB, FCell> { cell, _ab: core::marker::PhantomData };
+
+        let perm_input = |p: usize, i: usize| cell(c6_perm_base(p) + C_INPUTS + i);
+        let perm_output = |p: usize, i: usize| cell(c6_perm_base(p) + C_OUTPUT + i);
+        let absorb = |pos: usize| -> [AB::Expr; D] {
+            match c6_absorb_source(pos) {
+                C1Absorb::Cell(c) => cell(c),
+                C1Absorb::One => octic_scalar::<AB>(1),
+                C1Absorb::Zero => octic_scalar::<AB>(0),
+            }
+        };
+
+        // (a) input/capacity bindings.
+        for p in 0..C6_N_PERMS {
+            let is_absorb = p < C6_N_ABSORB;
+            for lane in 0..WIDTH {
+                let inp = perm_input(p, lane);
+                let expected = if p == 0 {
+                    if lane < C6_RATE {
+                        absorb(lane)
+                    } else {
+                        octic_scalar::<AB>(0)
+                    }
+                } else {
+                    let prev = perm_output(p - 1, lane);
+                    if lane < C6_RATE {
+                        if is_absorb {
+                            let pos = p * C6_RATE + lane;
+                            let elem = if pos < C6_PADDED_LEN {
+                                absorb(pos)
+                            } else {
+                                octic_scalar::<AB>(0)
+                            };
+                            octic_add::<AB>(&prev, &elem)
+                        } else {
+                            prev
+                        }
+                    } else {
+                        prev
+                    }
+                };
+                residuals.push(octic_sub::<AB>(&inp, &expected));
+            }
+        }
+
+        // (b) per-perm Poseidon2 round residuals.
+        for p in 0..C6_N_PERMS {
+            let mut pr = inlined_perm_octic::perm_residuals::<AB, _>(&adapter, c6_perm_base(p));
+            residuals.append(&mut pr);
+        }
+
+        // (c) squeeze-output equalities: opening_tuple_commitment[j] − squeezed_output[j].
+        for j in 0..N_C6_OUT {
+            let (sp, lane) = c6_output_source(j);
+            let out_cell = cell(c6_perm_base(sp) + C_OUTPUT + lane);
+            let committed = cell(c6_out_cell(j));
+            residuals.push(octic_sub::<AB>(&committed, &out_cell));
+        }
+    }
+
     debug_assert_eq!(residuals.len(), N_CONSTRAINTS);
 
     // ----- alpha-batch: acc = Σ_r alpha^r · residual_r -----
@@ -891,6 +1156,9 @@ mod tests {
         // C1 sponge: honest absorb/perm/squeeze over byte-valued input lanes (built from the real
         // byte-pinned Val sponge, lifted to the extension — the fidelity authority).
         fill_honest_c1(&mut cells, pad_seed_seed);
+        // C6 sponge: honest absorb/perm/squeeze over the 6 FIELD lanes (already = vals[..], set
+        // above) ‖ 80 byte-valued lanes (built from the real byte-pinned Val sponge).
+        fill_honest_c6(&mut cells, pad_seed_seed);
         cells
     }
 
@@ -963,6 +1231,81 @@ mod tests {
             let (sp, lane) = c1_output_source(j);
             let out_cell = cells[c1_perm_base(sp) + IP_OUTPUT + lane];
             cells[c1_out_cell(j)] = out_cell;
+        }
+    }
+
+    /// Fill the C6 sponge cells (byte-lanes ‖ 12 perm blocks ‖ opening_tuple_commitment) with an
+    /// HONEST sponge over: the 6 FIELD lanes already set in `cells[c6_field_cell(..)]` (the
+    /// account_projection lanes, NOT byte-ranged) ‖ 80 byte-valued lanes derived from `seed`. Runs
+    /// the deployed Val permutation for each absorb/squeeze perm, exactly mirroring the leaf
+    /// `eval_sponge` absorb/capacity wiring, then lifts every cell into the extension. This is the
+    /// C6 fidelity AUTHORITY. PRECONDITION: the 6 FIELD lanes must already be base-field elements
+    /// (one limb) so they round-trip to `Val`; `honest_cells` sets them to `ext(vals[..])`.
+    fn fill_honest_c6(cells: &mut [Challenge; N_OPENED_CELLS], seed: u32) {
+        use crate::inlined_perm::{self, generate_perm_cols, C_OUTPUT as IP_OUTPUT, PERM_COLS};
+        let consts = inlined_perm::Constants::pinned();
+
+        // input lanes (as Val): FIELD lanes from the existing C6 field cells, byte-lanes fresh.
+        let mut input_lane = [Val::ZERO; C6_INPUT_LANES];
+        for i in 0..C6_FIELD_LANES {
+            input_lane[i] = Challenge::as_basis_coefficients_slice(&cells[c6_field_cell(i)])[0];
+        }
+        for b in 0..C6_BYTE_LANES {
+            let v = (seed.wrapping_mul(53).wrapping_add(b as u32 + 1)) % 256;
+            input_lane[C6_FIELD_LANES + b] = Val::from_u32(v);
+            cells[c6_byte_cell(b)] = Challenge::from(input_lane[C6_FIELD_LANES + b]);
+        }
+
+        let absorb = |pos: usize| -> Val {
+            if pos < C6_INPUT_LANES {
+                input_lane[pos]
+            } else if pos == C6_INPUT_LANES {
+                Val::ONE
+            } else {
+                Val::ZERO
+            }
+        };
+
+        let mut prev_out: Option<[Val; WIDTH]> = None;
+        for p in 0..C6_N_PERMS {
+            let is_absorb = p < C6_N_ABSORB;
+            let mut perm_in = [Val::ZERO; WIDTH];
+            match prev_out {
+                None => {
+                    for r in 0..C6_RATE {
+                        perm_in[r] = absorb(r);
+                    }
+                }
+                Some(prev) => {
+                    for r in 0..C6_RATE {
+                        if is_absorb {
+                            let pos = p * C6_RATE + r;
+                            let elem = if pos < C6_PADDED_LEN { absorb(pos) } else { Val::ZERO };
+                            perm_in[r] = prev[r] + elem;
+                        } else {
+                            perm_in[r] = prev[r];
+                        }
+                    }
+                    for c in C6_RATE..WIDTH {
+                        perm_in[c] = prev[c];
+                    }
+                }
+            }
+            let block = generate_perm_cols(perm_in, &consts);
+            let base = c6_perm_base(p);
+            for c in 0..PERM_COLS {
+                cells[base + c] = Challenge::from(block[c]);
+            }
+            let mut out = [Val::ZERO; WIDTH];
+            out.copy_from_slice(&block[IP_OUTPUT..IP_OUTPUT + WIDTH]);
+            prev_out = Some(out);
+        }
+
+        // squeeze: opening_tuple_commitment[j] = source-perm output lane.
+        for j in 0..C6_N_OUT {
+            let (sp, lane) = c6_output_source(j);
+            let out_cell = cells[c6_perm_base(sp) + IP_OUTPUT + lane];
+            cells[c6_out_cell(j)] = out_cell;
         }
     }
 
@@ -1332,6 +1675,167 @@ mod tests {
             assert!(
                 !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
                 "tampered C1 interior perm cell {cell_idx} NOT rejected"
+            );
+        }
+    }
+
+    // =======================================================================
+    // C6 SPONGE (opening_tuple_commitment squeeze) — the SECOND mirrored leaf sponge.
+    // =======================================================================
+
+    /// Base residual index of the C6 sponge class within `constraint_residual`.
+    const C6_RESIDUAL_BASE: usize =
+        C4_LANES * C4_N_PER_LANE + N_C4_ACC + N_SEAM_PAD + N_SEAM_ACC + N_RELATION_ID + N_C1;
+
+    /// FIDELITY PIN (C6) — an HONEST C6 sponge (built from the deployed byte-pinned Val permutation
+    /// via `fill_honest_c6`, over 6 FIELD lanes ‖ 80 byte-lanes, lifted to the extension) makes EVERY
+    /// C6 residual zero: the absorb / capacity wiring across all 12 perm blocks and the squeeze-output
+    /// equality. A wrong octic perm / absorb wiring / output mapping would make some honest residual
+    /// nonzero — caught here by attempted equality, not inspection.
+    #[test]
+    fn c6_honest_sponge_all_residuals_zero() {
+        for seed in [1u32, 7, 42, 255] {
+            let cells = honest_cells([0, 1, 127, 128, 12288, 5000], seed);
+            for k in 0..N_C6 {
+                assert_eq!(
+                    constraint_residual(&cells, C6_RESIDUAL_BASE + k),
+                    Challenge::ZERO,
+                    "honest C6 residual {k} nonzero (seed={seed})"
+                );
+            }
+        }
+    }
+
+    /// FIDELITY PIN (C6) — the squeezed opening_tuple_commitment cells equal the source-perm OUTPUT
+    /// cells (the leaf's `pcols.post[lane]`, air.rs:1355), AND those outputs are the deployed
+    /// permutation applied to the absorbed stream (6 FIELD lanes ‖ 80 byte-lanes ‖ ONE-pad ‖
+    /// zero-fill). We re-derive the source perms' outputs independently from the real Val perm and
+    /// check the committed digest matches — pins the C6 sponge against the leaf AIR's own sponge.
+    #[test]
+    fn c6_squeeze_matches_deployed_perm_output() {
+        use crate::inlined_perm::{self, generate_perm_cols, C_OUTPUT as IP_OUTPUT};
+        let cells = honest_cells([7000, 0, 12288, 128, 5000, 96], 9);
+        let consts = inlined_perm::Constants::pinned();
+        // input lanes as Val: 6 FIELD lanes ‖ 80 byte-lanes.
+        let mut input_lane = [Val::ZERO; C6_INPUT_LANES];
+        for i in 0..C6_FIELD_LANES {
+            input_lane[i] = Challenge::as_basis_coefficients_slice(&cells[c6_field_cell(i)])[0];
+        }
+        for b in 0..C6_BYTE_LANES {
+            input_lane[C6_FIELD_LANES + b] =
+                Challenge::as_basis_coefficients_slice(&cells[c6_byte_cell(b)])[0];
+        }
+        let absorb = |pos: usize| -> Val {
+            if pos < C6_INPUT_LANES {
+                input_lane[pos]
+            } else if pos == C6_INPUT_LANES {
+                Val::ONE
+            } else {
+                Val::ZERO
+            }
+        };
+        let mut prev: Option<[Val; WIDTH]> = None;
+        let mut outs: Vec<[Val; WIDTH]> = Vec::new();
+        for p in 0..C6_N_PERMS {
+            let is_absorb = p < C6_N_ABSORB;
+            let mut pin = [Val::ZERO; WIDTH];
+            match prev {
+                None => {
+                    for r in 0..C6_RATE {
+                        pin[r] = absorb(r);
+                    }
+                }
+                Some(pv) => {
+                    for r in 0..C6_RATE {
+                        if is_absorb {
+                            let pos = p * C6_RATE + r;
+                            pin[r] = pv[r] + if pos < C6_PADDED_LEN { absorb(pos) } else { Val::ZERO };
+                        } else {
+                            pin[r] = pv[r];
+                        }
+                    }
+                    for c in C6_RATE..WIDTH {
+                        pin[c] = pv[c];
+                    }
+                }
+            }
+            let block = generate_perm_cols(pin, &consts);
+            let mut out = [Val::ZERO; WIDTH];
+            out.copy_from_slice(&block[IP_OUTPUT..IP_OUTPUT + WIDTH]);
+            outs.push(out);
+            prev = Some(out);
+        }
+        for j in 0..C6_N_OUT {
+            let (sp, lane) = c6_output_source(j);
+            let committed = cells[c6_out_cell(j)];
+            assert_eq!(
+                committed,
+                Challenge::from(outs[sp][lane]),
+                "C6 squeeze lane {j} != deployed perm output (perm {sp} lane {lane})"
+            );
+        }
+    }
+
+    /// FORGERY (C6) — a forged opening_tuple_commitment digest cell ⇒ the squeeze-output equality
+    /// residual is nonzero ⇒ the AIR rejects.
+    #[test]
+    fn c6_air_rejects_forged_opening_tuple_commitment() {
+        let cells = honest_cells([1, 2, 3, 4, 5, 6], 11);
+        for j in 0..C6_N_OUT {
+            let mut m = matrix(&cells, ext_multi(13));
+            m.values[cell_base(c6_out_cell(j))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "forged opening_tuple_commitment lane {j} NOT rejected"
+            );
+        }
+    }
+
+    /// FORGERY (C6) — a tampered absorbed lane (a FIELD account_projection lane OR a byte-lane such
+    /// as a lifecycle / account_id byte) propagates into the absorb-perm input bindings ⇒ the
+    /// input-binding residual + downstream perm residuals shift ⇒ the AIR rejects. Note the FIELD
+    /// lane is ALSO bound by SeamOpeningAcc, so it rejects via two classes — both are soundness.
+    #[test]
+    fn c6_air_rejects_tampered_absorbed_lane() {
+        let cells = honest_cells([10, 20, 30, 40, 50, 60], 3);
+        // a representative byte-lane in each block: lifecycle[0], nonce[0]=byte 32, account_id[0]=byte 48.
+        for &b in &[0usize, 32, 48, C6_BYTE_LANES - 1] {
+            let mut m = matrix(&cells, ext_multi(21));
+            m.values[cell_base(c6_byte_cell(b))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "tampered C6 absorbed byte-lane {b} NOT rejected"
+            );
+        }
+        // a FIELD absorb lane (account_projection lane 3).
+        let mut m = matrix(&cells, ext_multi(22));
+        m.values[cell_base(c6_field_cell(3))] += Val::ONE;
+        assert!(
+            !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+            "tampered C6 FIELD absorb lane NOT rejected"
+        );
+    }
+
+    /// FORGERY (C6) — a tampered INTERIOR perm cell (a committed round post / a perm input / the
+    /// output lane the squeeze reads) of some C6 perm block ⇒ the inlined octic Poseidon2 round
+    /// residuals reject. Confirms the C6 perm sub-blocks are fully constrained, not just the squeeze.
+    #[test]
+    fn c6_air_rejects_tampered_interior_perm_cell() {
+        use crate::inlined_perm::{C_BEGIN_POST, C_INPUTS, C_PARTIAL_POST_SBOX};
+        let cells = honest_cells([100, 200, 300, 400, 500, 600], 5);
+        let targets = [
+            c6_perm_base(0) + C_INPUTS + 3,
+            c6_perm_base(5) + C_BEGIN_POST + 7,
+            c6_perm_base(9) + C_PARTIAL_POST_SBOX + 10,
+            c6_perm_base(C6_N_ABSORB - 1) + C_OUTPUT + 1, // last-absorb output lane (squeeze source)
+            c6_perm_base(C6_N_ABSORB) + C_OUTPUT + 0,     // squeeze perm output lane
+        ];
+        for &cell_idx in &targets {
+            let mut m = matrix(&cells, ext_multi(33));
+            m.values[cell_base(cell_idx)] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "tampered C6 interior perm cell {cell_idx} NOT rejected"
             );
         }
     }
