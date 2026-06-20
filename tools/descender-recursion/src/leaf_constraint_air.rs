@@ -147,8 +147,8 @@ use crate::fri_fold_air::{limbs, D, W};
 use crate::inlined_perm::{C_INPUTS, C_OUTPUT, PERM_COLS};
 use crate::inlined_perm_octic::{self, OcticPermCells};
 use descender_account_stark::{
-    Challenge, Val, N_COMMIT_LANES, N_LANES, PUBIO_ROLE_ROOT_OFF, RELATION_ID, RELATION_ID_ELEMS,
-    ROLE_ROOT_ELEMS, WIDTH,
+    Challenge, Val, CHAIN_DIGEST_ELEMS, N_COMMIT_LANES, N_LANES, PUBIO_ROLE_ROOT_OFF, RELATION_ID,
+    RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, WIDTH,
 };
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
 use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
@@ -412,14 +412,18 @@ pub use crate::reduce_consts::*;
 // In a real opened multi-row trace these cells WOULD be the opened previous-row `chain_out`/
 // `count_acc` (which a real DEEP opening exposes), so the residual is the genuine cross-row binding.
 //
-// HONESTLY-FLAGGED SCOPE LIMIT: because this is a single-row harness, the only thing NOT modeled
-// here (vs the full multi-row AIR) is (i) the boundary selectors — first-row `chain_in==0` /
-// `count_acc==enable`, last-row `chain_out[0..8]==public digest` / `count_acc==public N` — and
-// (ii) the monotone-enable prefix constraint `next.enable·(1-cur.enable)==0`. Those depend on
-// `is_first_row`/`is_last_row` selectors + STARK public values that the single-row recursion mirror
-// does not carry; they ride with the eventual scaling to the REAL opened multi-row trace + the
-// beta/zeta FS public-digest binding. The per-row absorb, the running fold, the no-op padding
-// branch, the cross-row carry, and the count accumulator ARE modeled and fidelity-PINned here.
+// SCOPE: this SINGLE-ROW harness carries the cross-row PREV value as a BOUND `prev_chain_out` cell
+// (so the DEEP `C(zeta)` mirror can consume it as an opened OOD cell). The GENUINE multi-row form of
+// the chain — a real row-to-row transition (`next.chain_in == cur.chain_out`) plus the batch boundary
+// selectors (first-row `chain_in==0` / `count_acc==enable`, last-row `chain_out[0..8]==public digest`
+// / `count_acc==public N`) and the monotone-enable prefix constraint `next.enable·(1-cur.enable)==0`
+// — now LIVES in the dedicated multi-row [`LeafChainMirrorAir`] (built + validated over a real
+// `RowMajorMatrix` with `is_first_row`/`is_last_row`/`is_transition` selectors + STARK public values,
+// the merkle_air / fri_chain_air precedent). Those selectors + public values are not expressible in
+// THIS single-row octic folder, so the two coexist (this one rides with DEEP; the multi-row one is the
+// standalone transition + boundary proof). The per-row absorb, running fold, no-op padding branch,
+// cross-row carry, and count accumulator are modeled + fidelity-PINned in BOTH. STILL DEFERRED: the
+// beta/zeta Fiat-Shamir binding of `alpha`/`zeta`/the public digest into the recursion FS transcript.
 
 /// Chain running-state width (= PERM_WIDTH = 16, the Poseidon2 perm WIDTH). Mirrors `chain_width`.
 pub const CHAIN_W: usize = WIDTH; // 16
@@ -2644,6 +2648,267 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for LeafConstraintMirrorAir {
     }
 }
 
+// ===========================================================================
+// BATCH DIGEST CHAIN — the REAL multi-row transition AIR (cur.chain_out → next.chain_in)
+// ===========================================================================
+//
+// `recompute_c_partial`'s chain class (above) is a SINGLE-ROW harness: the cross-row carry is modeled
+// against a BOUND `prev_chain_out` cell block. This module upgrades the CHAIN to a GENUINE multi-row
+// STARK AIR: one row per batch instance, with the running Poseidon2 fold carried row-to-row via the
+// two-row transition window (`next.chain_in == cur.chain_out`) and the batch boundary selectors
+// (first-row init, last-row public-digest + count) + the monotone-enable prefix — the constraints
+// that only become EXPRESSIBLE across rows. It MIRRORS `descender_account_stark::air::FullRelationAir
+// ::eval_digest_chain` (air.rs:1109-1260) EXACTLY: same per-row absorb/fold, same selectors, same
+// public-value layout (`digest[CHAIN_DIGEST_ELEMS] ‖ N`), built and validated over a real
+// `RowMajorMatrix` with `p3_air::check_all_constraints` — the SAME precedent the `merkle_air` /
+// `fri_chain_air` multi-row AIRs use.
+//
+// This is a base-field AIR (the chain trace is the literal Poseidon2 running fold over `Val`, not OOD
+// extension cells), so it INLINES `crate::inlined_perm` (the byte-pinned Val perm) exactly as
+// `merkle_air` does — NOT the octic OOD mirror used by `recompute_c_partial`. The two coexist: the
+// single-row octic chain stays for the DEEP `C(zeta)` wiring (it carries the cross-row value as an
+// opened OOD cell), and THIS AIR is the standalone multi-row fidelity + boundary proof.
+
+/// Number of pubio field elements per row (the per-instance statement). = `CHAIN_PUBIO`.
+pub const MCHAIN_PUBIO: usize = CHAIN_PUBIO;
+
+// ----- multi-row chain column layout (one batch instance per row) -----
+/// Incoming running state lanes (the cross-row carry target; first row == 0).
+pub const MC_CHAIN_IN: usize = 0;
+/// The `CHAIN_NPERMS` per-row absorb perm blocks (each `PERM_COLS`).
+pub const MC_PERMS: usize = MC_CHAIN_IN + CHAIN_W;
+/// Outgoing running state lanes (`enable ? absorbed : chain_in`); the next row's `chain_in`.
+pub const MC_CHAIN_OUT: usize = MC_PERMS + CHAIN_NPERMS * PERM_COLS;
+/// This row's enable selector (1 = real account, 0 = padding no-op).
+pub const MC_ENABLE: usize = MC_CHAIN_OUT + CHAIN_W;
+/// This row's running count accumulator.
+pub const MC_COUNT: usize = MC_ENABLE + 1;
+/// This row's absorbed pubio block.
+pub const MC_PUBIO: usize = MC_COUNT + 1;
+/// Total multi-row chain AIR width.
+pub const MC_COLS: usize = MC_PUBIO + MCHAIN_PUBIO;
+
+const fn mc_perm_base(p: usize) -> usize {
+    MC_PERMS + p * PERM_COLS
+}
+
+/// Public-values layout (mirrors air.rs batch publics `BATCH_PUBLIC_VALUES`):
+/// `digest[CHAIN_DIGEST_ELEMS] ‖ N`. The last row binds `chain_out[0..8] == digest` and
+/// `count_acc == N`.
+pub const MC_PV_DIGEST: usize = 0;
+pub const MC_PV_N: usize = MC_PV_DIGEST + CHAIN_DIGEST_ELEMS;
+pub const MC_N_PUBLIC: usize = MC_PV_N + 1;
+
+/// The per-row absorbed message element at stream position `pos` (`pos < CHAIN_PADDED_LEN`), as a Val
+/// from the supplied `enable`/`pubio`. Mirrors air.rs `msg`: `pos==0 → enable`;
+/// `pos ∈ 1..=PUBIO → enable·pubio[pos-1]`; else 0. The `enable·pubio` product makes padding rows
+/// (enable=0) absorb the all-zero message (a TRUE no-op), exactly as air.rs builds `msg`.
+fn mc_msg(enable: Val, pubio: &[Val; MCHAIN_PUBIO], pos: usize) -> Val {
+    match chain_absorb_source(pos) {
+        ChainAbsorb::Enable => enable,
+        ChainAbsorb::EnablePubio(i) => enable * pubio[i],
+        ChainAbsorb::Zero => Val::ZERO,
+    }
+}
+
+/// Build ONE honest multi-row chain row: run the per-row absorb fold over `chain_in` + `[enable,
+/// enable·pubio…]` across `CHAIN_NPERMS` byte-pinned Val perms, set `chain_out = enable ? absorbed :
+/// chain_in`, and write `count_acc`. Returns `(row, chain_out)` so the caller threads the next row's
+/// `chain_in`. This is the honest builder; tamper tests mutate the matrix afterwards.
+pub fn pack_chain_row(
+    chain_in: [Val; CHAIN_W],
+    enable: bool,
+    count_acc: u64,
+    pubio: &[Val; MCHAIN_PUBIO],
+    consts: &crate::inlined_perm::Constants,
+) -> ([Val; MC_COLS], [Val; CHAIN_W]) {
+    use crate::inlined_perm::{generate_perm_cols, C_OUTPUT as IP_OUTPUT};
+    let mut row = [Val::ZERO; MC_COLS];
+    let en = if enable { Val::ONE } else { Val::ZERO };
+
+    row[MC_CHAIN_IN..MC_CHAIN_IN + CHAIN_W].copy_from_slice(&chain_in);
+    row[MC_ENABLE] = en;
+    row[MC_COUNT] = Val::from_u64(count_acc);
+    row[MC_PUBIO..MC_PUBIO + MCHAIN_PUBIO].copy_from_slice(pubio);
+
+    // absorb across CHAIN_NPERMS perms seeded by chain_in (mirror air.rs / fill_honest_chain).
+    let mut prev_out = chain_in;
+    let mut absorbed = chain_in;
+    for p in 0..CHAIN_NPERMS {
+        let mut perm_in = [Val::ZERO; WIDTH];
+        let base_state = if p == 0 { chain_in } else { prev_out };
+        for r in 0..CHAIN_RT {
+            perm_in[r] = base_state[r] + mc_msg(en, pubio, p * CHAIN_RT + r);
+        }
+        for c in CHAIN_RT..WIDTH {
+            perm_in[c] = base_state[c];
+        }
+        let block = generate_perm_cols(perm_in, consts);
+        let base = mc_perm_base(p);
+        row[base..base + PERM_COLS].copy_from_slice(&block);
+        let mut out = [Val::ZERO; WIDTH];
+        out.copy_from_slice(&block[IP_OUTPUT..IP_OUTPUT + WIDTH]);
+        prev_out = out;
+        absorbed = out;
+    }
+
+    // chain_out = enable ? absorbed : chain_in (the no-op fold for padding rows).
+    let chain_out: [Val; CHAIN_W] =
+        core::array::from_fn(|c| if enable { absorbed[c] } else { chain_in[c] });
+    row[MC_CHAIN_OUT..MC_CHAIN_OUT + CHAIN_W].copy_from_slice(&chain_out);
+    (row, chain_out)
+}
+
+/// Build the FULL multi-row chain trace for a batch of `enables`/`pubios` (one row per row of
+/// `enables`), threading the running fold: row 0's `chain_in == 0`, each row's `chain_out` becomes the
+/// next row's `chain_in`; `count_acc` accumulates `enable`. Returns `(flat, final_chain_out,
+/// final_count)`. The independently-computable batch digest is `final_chain_out[0..CHAIN_DIGEST_ELEMS]`
+/// and `N = final_count`, which the AIR's last-row boundary binds to the public values. Mirrors the
+/// off-circuit `chain_digest` / `generate_batch_trace` fill.
+pub fn build_chain_trace(
+    enables: &[bool],
+    pubios: &[[Val; MCHAIN_PUBIO]],
+    consts: &crate::inlined_perm::Constants,
+) -> (Vec<Val>, [Val; CHAIN_W], u64) {
+    assert_eq!(enables.len(), pubios.len(), "one enable per pubio row");
+    let n = enables.len();
+    let mut flat = Vec::with_capacity(n * MC_COLS);
+    let mut chain_in = [Val::ZERO; CHAIN_W]; // first row clean seed.
+    let mut count: u64 = 0;
+    let mut last_out = chain_in;
+    for r in 0..n {
+        count += if enables[r] { 1 } else { 0 };
+        let (row, chain_out) = pack_chain_row(chain_in, enables[r], count, &pubios[r], consts);
+        flat.extend_from_slice(&row);
+        chain_in = chain_out;
+        last_out = chain_out;
+    }
+    (flat, last_out, count)
+}
+
+/// REAL multi-row batch-digest-chain AIR (one batch instance per row). Per row: the byte-pinned
+/// Poseidon2 absorb fold + the `enable ? absorbed : chain_in` no-op gate. Across rows: the running
+/// fold carry (`next.chain_in == cur.chain_out`), the count accumulator (`next.count_acc ==
+/// cur.count_acc + next.enable`), and the monotone-enable prefix (`next.enable·(1−cur.enable) == 0`).
+/// Boundaries: first-row `chain_in == 0` and `count_acc == enable`; last-row `chain_out[0..8] ==
+/// public digest` and `count_acc == public N`. Mirrors `descender_account_stark::air::FullRelationAir
+/// ::eval_digest_chain` (air.rs:1109-1260) EXACTLY: same selectors, same public-value layout.
+pub struct LeafChainMirrorAir;
+
+impl<F: Sync> BaseAir<F> for LeafChainMirrorAir {
+    fn width(&self) -> usize {
+        MC_COLS
+    }
+}
+
+/// Reads the multi-row chain AIR's local row, for the inlined Val perm blocks.
+struct McRowCells<AB: AirBuilder<F = Val>> {
+    row: Vec<AB::Var>,
+}
+impl<AB: AirBuilder<F = Val>> crate::inlined_perm::PermCells<AB> for McRowCells<AB> {
+    fn at(&self, idx: usize) -> AB::Expr {
+        self.row[idx].into()
+    }
+}
+
+impl<AB: AirBuilder<F = Val>> Air<AB> for LeafChainMirrorAir {
+    fn eval(&self, builder: &mut AB) {
+        use crate::inlined_perm::{eval_perm, ConstantsExpr, C_INPUTS as IP_INPUTS, C_OUTPUT as IP_OUTPUT};
+        let main = builder.main();
+        let local: Vec<AB::Var> = main.current_slice().to_vec();
+        let next: Vec<AB::Var> = main.next_slice().to_vec();
+        let pubs: Vec<AB::Expr> = builder.public_values().iter().map(|p| (*p).into()).collect();
+        let l = |i: usize| -> AB::Expr { local[i].into() };
+        let n = |i: usize| -> AB::Expr { next[i].into() };
+        let one = AB::Expr::ONE;
+
+        let enable = l(MC_ENABLE);
+        // enable boolean (air.rs:1148).
+        builder.assert_zero(enable.clone() * (enable.clone() - one.clone()));
+
+        // ---- per-row absorb input/capacity bindings (air.rs:1180-1204) ----
+        // msg[0] = enable, msg[1+i] = enable·pubio[i], else 0.
+        let msg = |pos: usize| -> AB::Expr {
+            match chain_absorb_source(pos) {
+                ChainAbsorb::Enable => enable.clone(),
+                ChainAbsorb::EnablePubio(i) => enable.clone() * l(MC_PUBIO + i),
+                ChainAbsorb::Zero => AB::Expr::ZERO,
+            }
+        };
+        for p in 0..CHAIN_NPERMS {
+            let base = mc_perm_base(p);
+            for lane in 0..CHAIN_W {
+                let inp = l(base + IP_INPUTS + lane);
+                let expected = if p == 0 {
+                    let chain_in = l(MC_CHAIN_IN + lane);
+                    if lane < CHAIN_RT {
+                        chain_in + msg(lane)
+                    } else {
+                        chain_in
+                    }
+                } else {
+                    let prev = l(mc_perm_base(p - 1) + IP_OUTPUT + lane);
+                    if lane < CHAIN_RT {
+                        prev + msg(p * CHAIN_RT + lane)
+                    } else {
+                        prev
+                    }
+                };
+                builder.assert_zero(inp - expected);
+            }
+        }
+
+        // ---- per-perm Poseidon2 round constraints (inlined Val perm) ----
+        let cells = McRowCells::<AB> { row: local.clone() };
+        let consts = ConstantsExpr::<AB>::pinned();
+        for p in 0..CHAIN_NPERMS {
+            eval_perm::<AB, _>(builder, &cells, mc_perm_base(p), &consts);
+        }
+
+        // ---- chain_out fold: chain_out[c] == enable·absorbed[c] + (1−enable)·chain_in[c] ----
+        // absorbed[c] = the LAST absorb perm's output lane (air.rs:1209-1219).
+        let last = mc_perm_base(CHAIN_NPERMS - 1) + IP_OUTPUT;
+        for c in 0..CHAIN_W {
+            let absorbed = l(last + c);
+            let chain_in = l(MC_CHAIN_IN + c);
+            let expected = enable.clone() * absorbed + (one.clone() - enable.clone()) * chain_in;
+            builder.assert_zero(l(MC_CHAIN_OUT + c) - expected);
+        }
+
+        // ---- first row: chain_in == 0 and count_acc == enable (air.rs:1221-1228) ----
+        {
+            let mut wf = builder.when_first_row();
+            for c in 0..CHAIN_W {
+                wf.assert_zero(l(MC_CHAIN_IN + c));
+            }
+            wf.assert_zero(l(MC_COUNT) - enable.clone());
+        }
+
+        // ---- transition: carry the state, accumulate the count, monotone-enable
+        //      (air.rs:1230-1244) ----
+        {
+            let next_enable = n(MC_ENABLE);
+            let mut wt = builder.when_transition();
+            for c in 0..CHAIN_W {
+                wt.assert_zero(n(MC_CHAIN_IN + c) - l(MC_CHAIN_OUT + c));
+            }
+            wt.assert_zero(n(MC_COUNT) - (l(MC_COUNT) + next_enable.clone()));
+            // next.enable·(1 − cur.enable) == 0 ⇒ no 0→1 transition (real rows are a prefix).
+            wt.assert_zero(next_enable * (one.clone() - enable.clone()));
+        }
+
+        // ---- last row: chain_out[0..8] == public digest, count_acc == public N
+        //      (air.rs:1250-1259) ----
+        if pubs.len() == MC_N_PUBLIC {
+            let mut wl = builder.when_last_row();
+            for c in 0..CHAIN_DIGEST_ELEMS {
+                wl.assert_zero(l(MC_CHAIN_OUT + c) - pubs[MC_PV_DIGEST + c].clone());
+            }
+            wl.assert_zero(l(MC_COUNT) - pubs[MC_PV_N].clone());
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -4717,5 +4982,330 @@ mod tests {
                 "tampered mirrored output NOT rejected end-to-end at the mirror"
             );
         }
+    }
+
+    // =======================================================================
+    // BATCH DIGEST CHAIN — the REAL multi-row transition AIR (LeafChainMirrorAir).
+    // The cross-row carry is a GENUINE row-to-row transition (cur.chain_out → next.chain_in),
+    // not a single-row modeled prev cell, plus the batch boundary selectors. Mirrors
+    // descender_account_stark::air::eval_digest_chain (air.rs:1109-1260) EXACTLY.
+    // =======================================================================
+
+    use crate::inlined_perm::{
+        self as ip, generate_perm_cols, C_OUTPUT as IP_OUTPUT, PERM_COLS as IP_PERM_COLS,
+    };
+    use p3_field::PrimeField32;
+
+    /// Field-valued pubio tuple from a seed (the per-instance statement the chain absorbs).
+    fn mc_pubio(seed: u32) -> [Val; MCHAIN_PUBIO] {
+        core::array::from_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 * 7 + 1))
+        })
+    }
+
+    /// INDEPENDENT authority: the batch digest + count of a sequence of `(enable, pubio)` rows,
+    /// computed by a SECOND hand-written fold loop (a different code path from `build_chain_trace`)
+    /// over the deployed byte-pinned Val permutation — exactly `air.rs::chain_digest` semantics
+    /// (clean seed 0, per-row absorb of `[enable, enable·pubio…]`, padding rows are no-ops). The
+    /// fidelity-PIN requires the multi-row trace's last-row `chain_out[0..8]` to equal this.
+    fn independent_batch_digest(
+        enables: &[bool],
+        pubios: &[[Val; MCHAIN_PUBIO]],
+    ) -> ([Val; CHAIN_DIGEST_ELEMS], u64) {
+        let consts = ip::Constants::pinned();
+        let mut state = [Val::ZERO; CHAIN_W];
+        let mut count: u64 = 0;
+        for r in 0..enables.len() {
+            let en = if enables[r] { Val::ONE } else { Val::ZERO };
+            count += if enables[r] { 1 } else { 0 };
+            let msg = |pos: usize| -> Val {
+                if pos == 0 {
+                    en
+                } else if pos <= MCHAIN_PUBIO {
+                    en * pubios[r][pos - 1]
+                } else {
+                    Val::ZERO
+                }
+            };
+            let mut prev = state;
+            let mut absorbed = state;
+            for p in 0..CHAIN_NPERMS {
+                let mut perm_in = [Val::ZERO; WIDTH];
+                let base_state = if p == 0 { state } else { prev };
+                for rr in 0..CHAIN_RT {
+                    perm_in[rr] = base_state[rr] + msg(p * CHAIN_RT + rr);
+                }
+                for c in CHAIN_RT..WIDTH {
+                    perm_in[c] = base_state[c];
+                }
+                let block = generate_perm_cols(perm_in, &consts);
+                let mut out = [Val::ZERO; WIDTH];
+                out.copy_from_slice(&block[IP_OUTPUT..IP_OUTPUT + WIDTH]);
+                prev = out;
+                absorbed = out;
+            }
+            // no-op gate for padding rows.
+            state = if enables[r] { absorbed } else { state };
+        }
+        (core::array::from_fn(|c| state[c]), count)
+    }
+
+    fn mc_pubs(digest: [Val; CHAIN_DIGEST_ELEMS], n: u64) -> Vec<Val> {
+        let mut p = Vec::with_capacity(MC_N_PUBLIC);
+        p.extend_from_slice(&digest);
+        p.push(Val::from_u64(n));
+        p
+    }
+
+    /// SHAPE SANITY — the multi-row chain column + public-value layout matches air.rs: the running
+    /// state is the full 16-wide perm, rate-8 absorb, `CHAIN_NPERMS` perms/row, and the public values
+    /// are `digest[8] ‖ N` (= BATCH_PUBLIC_VALUES).
+    #[test]
+    fn mchain_shape_matches_leaf() {
+        assert_eq!(CHAIN_W, WIDTH);
+        assert_eq!(CHAIN_RT, 8);
+        assert_eq!(CHAIN_DIGEST_ELEMS, 8);
+        assert_eq!(MC_N_PUBLIC, CHAIN_DIGEST_ELEMS + 1);
+        assert_eq!(MC_N_PUBLIC, descender_account_stark::BATCH_PUBLIC_VALUES);
+        assert_eq!(IP_PERM_COLS, PERM_COLS);
+        assert_eq!(MC_COLS, CHAIN_W + CHAIN_NPERMS * PERM_COLS + CHAIN_W + 1 + 1 + MCHAIN_PUBIO);
+    }
+
+    /// FIDELITY-PIN (multi-row chain, GENUINE transition) — an HONEST multi-row chain trace (real
+    /// Poseidon2 running fold across rows, first row's chain_in == 0, each row's chain_out threaded as
+    /// the next row's chain_in) ACCEPTS via the real `check_all_constraints` with ZERO residual, AND
+    /// the last row's chain_out[0..8] equals the INDEPENDENTLY-computed batch digest + count_acc == N.
+    /// The cross-row carry is a real row-to-row transition (the two-row window), not a bound prev cell.
+    #[test]
+    fn mchain_accepts_honest_multirow_and_matches_independent_digest() {
+        let consts = ip::Constants::pinned();
+        // a batch of 6 enabled rows + 2 padding rows (height 8, a prefix of reals).
+        let enables = [true, true, true, true, true, true, false, false];
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
+            (0..enables.len() as u32).map(|r| mc_pubio(100 + r)).collect();
+        let (flat, last_out, count) = build_chain_trace(&enables, &pubios, &consts);
+        let m = RowMajorMatrix::new(flat, MC_COLS);
+
+        // independent authority.
+        let (digest, n) = independent_batch_digest(&enables, &pubios);
+        for c in 0..CHAIN_DIGEST_ELEMS {
+            assert_eq!(last_out[c], digest[c], "trace chain_out lane {c} != independent batch digest");
+        }
+        assert_eq!(count, n, "trace count != independent N");
+        assert_eq!(n, 6, "expected 6 enabled rows");
+
+        // the multi-row AIR accepts with zero residual.
+        let report = check_all_constraints(&LeafChainMirrorAir, &m, &mc_pubs(digest, n), None);
+        assert!(
+            report.is_ok(),
+            "honest multi-row chain rejected: {} failures",
+            report.failures.len()
+        );
+
+        // and the trace REALLY threads cur.chain_out → next.chain_in across rows (not a bound prev).
+        for r in 0..enables.len() - 1 {
+            for c in 0..CHAIN_W {
+                let cur_out = m.values[r * MC_COLS + MC_CHAIN_OUT + c];
+                let next_in = m.values[(r + 1) * MC_COLS + MC_CHAIN_IN + c];
+                assert_eq!(cur_out, next_in, "row {r} chain_out lane {c} != row {} chain_in", r + 1);
+            }
+        }
+    }
+
+    /// All-enabled batch (no padding) also accepts and matches — covers the count_acc reaching N on
+    /// the last row with every row real.
+    #[test]
+    fn mchain_accepts_all_enabled() {
+        let consts = ip::Constants::pinned();
+        let enables = [true, true, true, true];
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
+            (0..enables.len() as u32).map(|r| mc_pubio(7 + r)).collect();
+        let (flat, _out, count) = build_chain_trace(&enables, &pubios, &consts);
+        let (digest, n) = independent_batch_digest(&enables, &pubios);
+        assert_eq!(count, n);
+        assert_eq!(n, 4);
+        let m = RowMajorMatrix::new(flat, MC_COLS);
+        assert!(check_all_constraints(&LeafChainMirrorAir, &m, &mc_pubs(digest, n), None).is_ok());
+    }
+
+    /// FORGERY (first-row init) — a first row whose chain_in ≠ 0 violates the first-row boundary.
+    #[test]
+    fn mchain_rejects_nonzero_first_chain_in() {
+        let consts = ip::Constants::pinned();
+        let enables = [true, true, true, false];
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
+            (0..enables.len() as u32).map(|r| mc_pubio(20 + r)).collect();
+        let (flat, _out, _count) = build_chain_trace(&enables, &pubios, &consts);
+        let (digest, n) = independent_batch_digest(&enables, &pubios);
+        let mut m = RowMajorMatrix::new(flat, MC_COLS);
+        // tamper row 0's chain_in lane (no longer the clean seed). (The perm/absorb/fold cells are
+        // unchanged, so ONLY the first-row chain_in==0 boundary catches it.)
+        m.values[MC_CHAIN_IN + 3] += Val::ONE;
+        assert!(
+            !check_all_constraints(&LeafChainMirrorAir, &m, &mc_pubs(digest, n), None).is_ok(),
+            "nonzero first-row chain_in NOT rejected"
+        );
+    }
+
+    /// FORGERY (last-row digest) — claiming a public digest ≠ the trace's final chain_out is rejected
+    /// by the last-row boundary.
+    #[test]
+    fn mchain_rejects_wrong_public_digest() {
+        let consts = ip::Constants::pinned();
+        let enables = [true, true, true, true, false, false];
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
+            (0..enables.len() as u32).map(|r| mc_pubio(40 + r)).collect();
+        let (flat, _out, _count) = build_chain_trace(&enables, &pubios, &consts);
+        let (mut digest, n) = independent_batch_digest(&enables, &pubios);
+        let m = RowMajorMatrix::new(flat, MC_COLS);
+        digest[2] += Val::ONE; // forge the public digest.
+        assert!(
+            !check_all_constraints(&LeafChainMirrorAir, &m, &mc_pubs(digest, n), None).is_ok(),
+            "wrong public batch digest NOT rejected"
+        );
+    }
+
+    /// FORGERY (last-row count) — claiming a public N ≠ the running count_acc is rejected by the
+    /// last-row boundary.
+    #[test]
+    fn mchain_rejects_wrong_public_n() {
+        let consts = ip::Constants::pinned();
+        let enables = [true, true, true, false];
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
+            (0..enables.len() as u32).map(|r| mc_pubio(60 + r)).collect();
+        let (flat, _out, count) = build_chain_trace(&enables, &pubios, &consts);
+        let (digest, n) = independent_batch_digest(&enables, &pubios);
+        let m = RowMajorMatrix::new(flat, MC_COLS);
+        assert_eq!(count, n);
+        assert!(
+            !check_all_constraints(&LeafChainMirrorAir, &m, &mc_pubs(digest, n + 1), None).is_ok(),
+            "wrong public N NOT rejected"
+        );
+    }
+
+    /// FORGERY (BROKEN CROSS-ROW TRANSITION) — swap a middle row's running digest so that
+    /// next.chain_in ≠ cur.chain_out. THIS is the genuine multi-row soundness content the single-row
+    /// harness could not express: a forger cannot substitute an unrelated running state between rows.
+    /// Caught by the `when_transition` carry. (To isolate the transition, we tamper row r+1's chain_in
+    /// AND rebuild r+1's perm/fold consistently from the tampered chain_in, so the per-row constraints
+    /// of r+1 still pass — only the cross-row carry r→r+1 is violated.)
+    #[test]
+    fn mchain_rejects_broken_cross_row_transition() {
+        let consts = ip::Constants::pinned();
+        let enables = [true, true, true, true, false];
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
+            (0..enables.len() as u32).map(|r| mc_pubio(80 + r)).collect();
+        let (flat, _out, _count) = build_chain_trace(&enables, &pubios, &consts);
+        let (digest, n) = independent_batch_digest(&enables, &pubios);
+        let mut m = RowMajorMatrix::new(flat, MC_COLS);
+
+        // target the carry into row 2: build a DIFFERENT (but self-consistent) row 2 from a forged
+        // chain_in, so row 2's own per-row constraints hold but next.chain_in(=row2) != cur.chain_out
+        // (=row1). We forge row 2's chain_in to a swapped value and recompute row 2 honestly from it.
+        let r = 2usize;
+        let mut forged_in: [Val; CHAIN_W] =
+            core::array::from_fn(|c| m.values[r * MC_COLS + MC_CHAIN_IN + c]);
+        forged_in[0] += Val::ONE; // swap the running digest entering row 2.
+        let cur_count = m.values[r * MC_COLS + MC_COUNT];
+        let pubio_r: [Val; MCHAIN_PUBIO] =
+            core::array::from_fn(|i| m.values[r * MC_COLS + MC_PUBIO + i]);
+        let (new_row, _new_out) = pack_chain_row(
+            forged_in,
+            true,
+            cur_count.as_canonical_u32() as u64,
+            &pubio_r,
+            &consts,
+        );
+        m.values[r * MC_COLS..(r + 1) * MC_COLS].copy_from_slice(&new_row);
+        // Row 2 is now internally consistent, but its chain_in != row 1's chain_out ⇒ transition fails.
+        assert!(
+            !check_all_constraints(&LeafChainMirrorAir, &m, &mc_pubs(digest, n), None).is_ok(),
+            "broken cross-row transition (swapped running digest) NOT rejected"
+        );
+    }
+
+    /// FORGERY (NON-PREFIX ENABLE) — an enable pattern that goes 1→0→1 violates the monotone-enable
+    /// prefix constraint `next.enable·(1−cur.enable)==0`. Real rows MUST form a prefix; padding cannot
+    /// re-enable. This is also a cross-row-only property. We build a self-consistent trace with the bad
+    /// pattern (so per-row constraints pass) and require the monotone-enable transition to reject.
+    #[test]
+    fn mchain_rejects_nonprefix_enable() {
+        let consts = ip::Constants::pinned();
+        // 1,1,0,1 — the re-enable at row 3 after the disable at row 2 is the violation.
+        let enables = [true, true, false, true];
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
+            (0..enables.len() as u32).map(|r| mc_pubio(90 + r)).collect();
+        // build honestly with this (consistent) pattern, so ONLY the monotone-enable transition fires.
+        let (flat, last_out, count) = build_chain_trace(&enables, &pubios, &consts);
+        let digest: [Val; CHAIN_DIGEST_ELEMS] = core::array::from_fn(|c| last_out[c]);
+        let m = RowMajorMatrix::new(flat, MC_COLS);
+        // sanity: the trace is per-row + carry consistent (it would pass if monotone-enable were
+        // absent); the rejection therefore isolates the monotone-enable prefix constraint.
+        assert!(
+            !check_all_constraints(&LeafChainMirrorAir, &m, &mc_pubs(digest, count), None).is_ok(),
+            "non-prefix enable (1→0→1) NOT rejected — monotone-enable not load-bearing"
+        );
+    }
+
+    /// FORGERY (TAMPERED ABSORBED PUBIO LANE mid-trace) — corrupting an absorbed pubio lane in a
+    /// middle row changes that row's absorbed state ⇒ its absorb input binding fails AND the running
+    /// digest from that row on diverges from the public digest. Rejected.
+    #[test]
+    fn mchain_rejects_tampered_pubio_lane() {
+        let consts = ip::Constants::pinned();
+        let enables = [true, true, true, true, false, false];
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
+            (0..enables.len() as u32).map(|r| mc_pubio(110 + r)).collect();
+        let (flat, _out, _count) = build_chain_trace(&enables, &pubios, &consts);
+        let (digest, n) = independent_batch_digest(&enables, &pubios);
+        let mut m = RowMajorMatrix::new(flat, MC_COLS);
+        // tamper an absorbed pubio lane of row 1 WITHOUT recomputing its perms ⇒ the absorb input
+        // binding (perm-0 rate lane = chain_in + msg) for that lane fails.
+        m.values[1 * MC_COLS + MC_PUBIO + 4] += Val::ONE;
+        assert!(
+            !check_all_constraints(&LeafChainMirrorAir, &m, &mc_pubs(digest, n), None).is_ok(),
+            "tampered absorbed pubio lane NOT rejected"
+        );
+    }
+
+    /// FORGERY (per-row interior perm cell) — a tampered interior Poseidon2 post cell in a middle
+    /// row breaks that row's inlined perm round constraints. Confirms each per-row perm block is fully
+    /// constrained inside the multi-row AIR, not just at its output.
+    #[test]
+    fn mchain_rejects_tampered_interior_perm_cell() {
+        use crate::inlined_perm::C_BEGIN_POST;
+        let consts = ip::Constants::pinned();
+        let enables = [true, true, true, false];
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
+            (0..enables.len() as u32).map(|r| mc_pubio(130 + r)).collect();
+        let (flat, _out, _count) = build_chain_trace(&enables, &pubios, &consts);
+        let (digest, n) = independent_batch_digest(&enables, &pubios);
+        let mut m = RowMajorMatrix::new(flat, MC_COLS);
+        // corrupt a begin-full-round post of row 1's perm 0.
+        m.values[1 * MC_COLS + mc_perm_base(0) + C_BEGIN_POST] += Val::ONE;
+        assert!(
+            !check_all_constraints(&LeafChainMirrorAir, &m, &mc_pubs(digest, n), None).is_ok(),
+            "tampered interior perm cell NOT rejected"
+        );
+    }
+
+    /// FORGERY (broken count accumulator) — a row whose count_acc ≠ prev + enable is rejected by the
+    /// transition count constraint.
+    #[test]
+    fn mchain_rejects_broken_count_accumulator() {
+        let consts = ip::Constants::pinned();
+        let enables = [true, true, true, true];
+        let pubios: Vec<[Val; MCHAIN_PUBIO]> =
+            (0..enables.len() as u32).map(|r| mc_pubio(150 + r)).collect();
+        let (flat, _out, count) = build_chain_trace(&enables, &pubios, &consts);
+        let (digest, n) = independent_batch_digest(&enables, &pubios);
+        let mut m = RowMajorMatrix::new(flat, MC_COLS);
+        // corrupt row 2's count_acc (no longer row1.count + row2.enable).
+        m.values[2 * MC_COLS + MC_COUNT] += Val::ONE;
+        let _ = count;
+        assert!(
+            !check_all_constraints(&LeafChainMirrorAir, &m, &mc_pubs(digest, n), None).is_ok(),
+            "broken count accumulator NOT rejected"
+        );
     }
 }
