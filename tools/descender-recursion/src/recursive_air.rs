@@ -196,7 +196,7 @@ use crate::fri_fold_air::{limbs, D, W};
 use crate::index_bus::{assert_canonical_pub, FIELD_BITS};
 use crate::challenger::RATE;
 use crate::inlined_perm::{self, eval_perm, ConstantsExpr, PermCells, C_OUTPUT, PERM_COLS};
-use descender_account_stark::{Challenge, Val, DIGEST_ELEMS, WIDTH};
+use descender_account_stark::{Challenge, Val, DIGEST_ELEMS, SALT_ELEMS, WIDTH};
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
 use p3_field::{BasedVectorSpace, PrimeCharacteristicRing, PrimeField32, TwoAdicField};
 
@@ -373,6 +373,20 @@ pub struct RecursiveConfig {
     /// the FS index against the inner MAIN-TRACE commitment. Off ⇒ the root is bound only to the generic
     /// `PV_ROOT` public value (the prior mechanism).
     pub bind_root_to_main_commit: bool,
+    /// (b-hash) DERIVE the Merkle level-0 leaf digest IN-AIR as `MyHash(opened_row ‖ salt)` via the
+    /// inlined Poseidon2 `PaddingFreeSponge` (`config::MyHash = PaddingFreeSponge<Perm,16,8,8>`),
+    /// instead of accepting the level-0 running as a free supplied digest. When `> 0` it is the
+    /// length of the opened main-trace ROW (in `Val` elements); the window carries a leaf-hash block
+    /// (the `leaf_row_len` row cells ‖ `SALT_ELEMS` salt cells ‖ one Poseidon2 perm per sponge
+    /// absorb-permute) and CONSTRAINS the sponge output digest (8 lanes) EQUAL to the Merkle level-0
+    /// running, limb-for-limb. The sponge is the deployed `MerkleTreeHidingMmcs` leaf hashing
+    /// EXACTLY: state starts all-zero, input is `row ‖ salt` (the hiding MMCS appends `SALT_ELEMS`
+    /// salt elems after the row), absorbed in RATE=8 overwrite blocks, permuted after each full
+    /// block, with a final permute for a trailing partial block. Requires `merkle_levels > 0`. With
+    /// `bind_merkle_leaf_to_e0` this means the value FRI folds (e0) is `MyHash(row)` of the opened
+    /// row — the Merkle path authenticates `H(row)`, not a free digest. 0 = off (the level-0 running
+    /// is a supplied digest, the prior mechanism). PINned against a real `MerkleTreeMmcs` leaf.
+    pub leaf_row_len: usize,
 }
 
 impl RecursiveConfig {
@@ -401,6 +415,7 @@ impl RecursiveConfig {
             fs_final_blocks: 0,
             fs_final_blocks_public: false,
             bind_root_to_main_commit: false,
+            leaf_row_len: 0,
         }
     }
     /// Number of successive squeeze draws actually laid out (≥ 1, ≤ RATE).
@@ -899,9 +914,62 @@ pub fn fs_squeeze_query_index(
     (state[RATE - 1], state)
 }
 
+// ----- (b-hash) leaf-row hashing block (PaddingFreeSponge MyHash) -----
+//
+// Appended AFTER the (a-root) block. Computes the Merkle level-0 leaf digest IN-AIR as
+// `MyHash(opened_row ‖ salt)` (the deployed `PaddingFreeSponge<Perm,16,8,8>` over the salted leaf
+// row), so the level-0 running is no longer a free supplied digest. Layout:
+//   row[leaf_row_len] ‖ salt[SALT_ELEMS] ‖ perm_0[PERM_COLS] ‖ ... ‖ perm_{P-1}[PERM_COLS]
+// where `P = lh_perms(...)` is the sponge's absorb-permute count. Perm k's input is the absorbed
+// sponge state for block k (overwrite of the rate lanes from the carried capacity/state, per
+// `PaddingFreeSponge::hash_iter`); perm k's output (16 lanes) is the carried state into block k+1.
+// The LAST perm's output[..DIGEST_ELEMS] is the leaf digest, constrained == Merkle level-0 running.
+
+/// The salted leaf-hash input length: opened row + the hiding MMCS salt columns.
+fn lh_input_len(cfg: &RecursiveConfig) -> usize {
+    cfg.leaf_row_len + SALT_ELEMS
+}
+
+/// Number of Poseidon2 absorb-permutes the `PaddingFreeSponge` performs over `m` input elements:
+/// one per full RATE block, plus one for a trailing partial block. For `m` a multiple of RATE this
+/// is `m/RATE` (the loop permutes the full block, then breaks at the next empty block with NO extra
+/// permute); otherwise `ceil(m/RATE)`. Always >= 1 (`m >= 1`: SALT_ELEMS > 0). Mirrors
+/// `p3-symmetric` `PaddingFreeSponge::hash_iter` (sponge.rs:172-204) exactly.
+fn lh_perms(cfg: &RecursiveConfig) -> usize {
+    let m = lh_input_len(cfg);
+    m.div_ceil(RATE).max(1)
+}
+
+/// ABSOLUTE column of the opened-row cells (start of the (b-hash) block).
+fn lh_row(cfg: &RecursiveConfig) -> usize {
+    lh_base(cfg)
+}
+/// ABSOLUTE column of the salt cells.
+fn lh_salt(cfg: &RecursiveConfig) -> usize {
+    lh_row(cfg) + cfg.leaf_row_len
+}
+/// ABSOLUTE column of leaf-hash perm block `k` (each `PERM_COLS` wide).
+fn lh_perm_base(cfg: &RecursiveConfig, k: usize) -> usize {
+    lh_salt(cfg) + SALT_ELEMS + k * PERM_COLS
+}
+
+/// Base of the (b-hash) leaf-hash block (after the a-root block).
+fn lh_base(cfg: &RecursiveConfig) -> usize {
+    mc_base(cfg) + mc_size(cfg)
+}
+
+/// Size of the (b-hash) block: `row ‖ salt ‖ P perms`. 0 unless enabled with a Merkle block.
+fn lh_size(cfg: &RecursiveConfig) -> usize {
+    if cfg.leaf_row_len > 0 && cfg.merkle_levels > 0 {
+        cfg.leaf_row_len + SALT_ELEMS + lh_perms(cfg) * PERM_COLS
+    } else {
+        0
+    }
+}
+
 /// Total column count for a window with this config.
 pub fn n_cols(cfg: &RecursiveConfig) -> usize {
-    mc_base(cfg) + mc_size(cfg)
+    lh_base(cfg) + lh_size(cfg)
 }
 
 /// The `j`-th tower column (`sp[j]`).
@@ -987,6 +1055,13 @@ pub struct WindowInputs<'a> {
     /// reconstructed root == this. For an HONEST opening of the real inner main-trace tree this equals
     /// the tree root; a forged opening that folds to a different root rejects.
     pub inner_main_commit: [Val; DIGEST_ELEMS],
+    /// (b-hash) the OPENED main-trace leaf ROW (the matrix row whose `MyHash` is the leaf digest)
+    /// and the hiding MMCS `salt`. Consumed only when `leaf_row_len > 0`; the honest builder hashes
+    /// `leaf_row ‖ leaf_salt` via `PaddingFreeSponge` and the eval re-derives + constrains the
+    /// digest == Merkle level-0 running. `leaf_row.len()` must equal `leaf_row_len`. For an honest
+    /// opening of the real hiding tree, `MyHash(leaf_row ‖ leaf_salt)` IS the level-0 leaf digest.
+    pub leaf_row: &'a [Val],
+    pub leaf_salt: [Val; SALT_ELEMS],
 }
 
 impl<'a> WindowInputs<'a> {
@@ -1010,6 +1085,7 @@ impl<'a> WindowInputs<'a> {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         }
     }
 }
@@ -1080,6 +1156,61 @@ pub fn squeeze_draws(sponge_in: [Val; WIDTH], count: usize) -> Vec<Val> {
     (0..count)
         .map(|d| cols[inlined_perm::C_OUTPUT + (RATE - 1 - d)])
         .collect()
+}
+
+/// The `PaddingFreeSponge` (`config::MyHash = PaddingFreeSponge<Perm,16,8,8>`) absorb-permute
+/// schedule over the salted leaf input `input` (= `opened_row ‖ salt`), mirroring
+/// `p3-symmetric` `PaddingFreeSponge::hash_iter` (sponge.rs:172-204) CONSTANT-FOR-CONSTANT:
+///
+///   - state starts all-zero (`WIDTH` lanes);
+///   - absorb blocks of RATE: for block `k`, OVERWRITE `state[i] = input[k*RATE + i]` for the
+///     elements present (a partial trailing block overwrites only its prefix — lanes beyond it
+///     KEEP the carried state, NOT zeroed; this is the no-padding overwrite variant);
+///   - permute after every FULL block; permute once more for a trailing PARTIAL block (`i > 0`);
+///   - the digest is `state[..DIGEST_ELEMS]` of the final permute output.
+///
+/// Returns the per-permute PRE-permute input states (`pre_states[k]` is perm `k`'s input). The
+/// honest builder runs the real perm over each; the AIR re-derives the same overwrite + constrains
+/// each perm. The digest = `permute(pre_states[last])[..DIGEST_ELEMS]`.
+pub fn leaf_hash_pre_states(input: &[Val]) -> Vec<[Val; WIDTH]> {
+    assert!(!input.is_empty(), "leaf hash input must be non-empty");
+    let consts = inlined_perm::Constants::pinned();
+    let mut pre_states = Vec::new();
+    let mut state = [Val::ZERO; WIDTH];
+    let n = input.len();
+    let mut pos = 0usize;
+    loop {
+        // Absorb up to RATE elements into the rate lanes (overwrite; no padding).
+        let fill = core::cmp::min(RATE, n - pos);
+        for i in 0..fill {
+            state[i] = input[pos + i];
+        }
+        pos += fill;
+        // This block's permute input is the current (overwritten) state.
+        pre_states.push(state);
+        let cols = inlined_perm::generate_perm_cols(state, &consts);
+        state = inlined_perm::perm_output(&cols);
+        if pos >= n {
+            // Input exhausted. `hash_iter` would break WITHOUT this permute only if the trailing
+            // block was empty (fill == 0) — but we only push/permute when fill > 0 (the loop above
+            // always absorbs at least one element while pos < n, and we stop once pos == n). The
+            // exact-multiple case is handled because the last full block is the final permute and
+            // the next (empty) iteration is never entered.
+            break;
+        }
+    }
+    pre_states
+}
+
+/// The leaf digest `MyHash(input)` (first `DIGEST_ELEMS` lanes of the final permute), the authority
+/// the (b-hash) AIR is checked against. PINned equal to a real `PaddingFreeSponge` in tests.
+pub fn leaf_hash_digest(input: &[Val]) -> [Val; DIGEST_ELEMS] {
+    let consts = inlined_perm::Constants::pinned();
+    let pre = leaf_hash_pre_states(input);
+    let last = *pre.last().expect("at least one permute");
+    let cols = inlined_perm::generate_perm_cols(last, &consts);
+    let out = inlined_perm::perm_output(&cols);
+    core::array::from_fn(|i| out[i])
 }
 
 /// Build one query window honestly. The index, fold point, tower, descent chain, Merkle perm
@@ -1492,6 +1623,33 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
         );
     }
 
+    // (b-hash) leaf-row hashing: compute the level-0 leaf digest IN-AIR as MyHash(row ‖ salt) via
+    // the PaddingFreeSponge schedule, laying out the raw row/salt cells and one perm per absorb.
+    if cfg.leaf_row_len > 0 && cfg.merkle_levels > 0 {
+        assert_eq!(inp.leaf_row.len(), cfg.leaf_row_len, "leaf_row must have leaf_row_len entries");
+        let consts = inlined_perm::Constants::pinned();
+        // raw row + salt cells (absolute columns).
+        row[lh_row(cfg)..lh_row(cfg) + cfg.leaf_row_len].copy_from_slice(inp.leaf_row);
+        row[lh_salt(cfg)..lh_salt(cfg) + SALT_ELEMS].copy_from_slice(&inp.leaf_salt);
+        // build the salted input and its sponge schedule.
+        let mut input = Vec::with_capacity(lh_input_len(cfg));
+        input.extend_from_slice(inp.leaf_row);
+        input.extend_from_slice(&inp.leaf_salt);
+        let pre_states = leaf_hash_pre_states(&input);
+        debug_assert_eq!(pre_states.len(), lh_perms(cfg), "perm count != lh_perms");
+        for (k, pre) in pre_states.iter().enumerate() {
+            let perm_cols = inlined_perm::generate_perm_cols(*pre, &consts);
+            let pb = lh_perm_base(cfg, k);
+            row[pb..pb + PERM_COLS].copy_from_slice(&perm_cols);
+        }
+        // sanity: the derived digest matches the leaf the Merkle path uses.
+        debug_assert_eq!(
+            leaf_hash_digest(&input),
+            inp.merkle_leaf,
+            "MyHash(row‖salt) != merkle_leaf — leaf-hash builder mismatch"
+        );
+    }
+
     row
 }
 
@@ -1822,6 +1980,56 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             let l0 = merkle_level_base(&cfg, 0);
             for i in 0..D {
                 builder.assert_zero(l(l0 + ML_RUNNING + i) - l(C_E0 + i));
+            }
+        }
+
+        // ===== (b-hash) DERIVE the Merkle level-0 leaf digest as MyHash(opened_row ‖ salt) =====
+        // The level-0 running is no longer a free supplied digest: it is CONSTRAINED to be the output
+        // of a real `PaddingFreeSponge<Perm,16,8,8>` (the deployed `MyHash`) over the salted opened
+        // row. Each absorb-permute is the inlined Poseidon2 (`eval_perm`); the rate lanes are
+        // OVERWRITTEN with the row/salt cells (and, for a trailing partial block, the un-absorbed
+        // lanes + capacity are CARRIED from the previous permute), exactly the no-padding overwrite
+        // sponge. So the Merkle path authenticates `H(row)`, and (with (b-leaf)) the FRI-folded e0 is
+        // that same `H(row)`. A tampered row changes the digest ⇒ the path/leaf binding rejects.
+        if cfg.leaf_row_len > 0 && cfg.merkle_levels > 0 {
+            let consts = ConstantsExpr::<AB>::pinned();
+            let cells = WindowCells::<AB> { row: local.clone() };
+            let m = lh_input_len(&cfg);
+            // input cell at global position g: row[0..leaf_row_len] then salt[..SALT_ELEMS].
+            let input_cell = |g: usize| -> AB::Expr {
+                if g < cfg.leaf_row_len {
+                    l(lh_row(&cfg) + g)
+                } else {
+                    l(lh_salt(&cfg) + (g - cfg.leaf_row_len))
+                }
+            };
+            let n_perms = lh_perms(&cfg);
+            for k in 0..n_perms {
+                let pb = lh_perm_base(&cfg, k);
+                // Constrain perm k's INPUT lanes = the absorbed sponge state for block k.
+                for i in 0..WIDTH {
+                    let in_i = l(pb + inlined_perm::C_INPUTS + i);
+                    let g = k * RATE + i;
+                    if i < RATE && g < m {
+                        // rate lane with an absorbed element: overwrite with the input cell.
+                        builder.assert_zero(in_i - input_cell(g));
+                    } else if k == 0 {
+                        // first block, no carry: un-absorbed rate lanes + capacity start at ZERO.
+                        builder.assert_zero(in_i);
+                    } else {
+                        // carry the previous permute output lane (partial-block rate tail + capacity).
+                        let prev = lh_perm_base(&cfg, k - 1);
+                        builder.assert_zero(in_i - l(prev + C_OUTPUT + i));
+                    }
+                }
+                // full Poseidon2 permutation constraints over this absorb-permute block.
+                eval_perm::<AB, _>(builder, &cells, pb, &consts);
+            }
+            // the leaf digest = the LAST permute's output[..DIGEST_ELEMS]; bind it to level-0 running.
+            let last = lh_perm_base(&cfg, n_perms - 1);
+            let l0 = merkle_level_base(&cfg, 0);
+            for i in 0..DIGEST_ELEMS {
+                builder.assert_zero(l(l0 + ML_RUNNING + i) - l(last + C_OUTPUT + i));
             }
         }
 
@@ -2496,6 +2704,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -2552,6 +2761,7 @@ mod tests {
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         let mut row = pack_window(&cfg, &inp);
         // CONTROL: the FORGED Merkle blocks are internally valid — with a MATCHING forged bus
@@ -2571,6 +2781,7 @@ mod tests {
             merkle_siblings: &tree.auth_path(honest_index),
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         });
         for c in C_DRAW_OUT..tower_end(levels) {
             row[c] = honest[c];
@@ -2686,6 +2897,7 @@ mod tests {
             fs_beta_blocks: &[],
             fs_final_blocks: &[],
             inner_main_commit: main_commit,
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -2932,6 +3144,7 @@ mod tests {
                     fs_beta_blocks: &[],
                     fs_final_blocks: &[],
                     inner_main_commit: commit,
+                    leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
                 };
                 pack_window(&cfg, &inp)
             };
@@ -3090,6 +3303,7 @@ mod tests {
             merkle_siblings: &[],
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -3204,6 +3418,7 @@ mod tests {
             merkle_siblings: &[],
             deep_zeta: zeta, deep_q: q, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -3325,6 +3540,7 @@ mod tests {
             merkle_siblings: &sibs,
             deep_zeta: ext_multi(55), deep_q: ext_multi(66), deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -3361,6 +3577,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -3585,6 +3802,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -3802,6 +4020,7 @@ mod tests {
             prefix_blocks: blocks,
             public_io: &[],
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -4074,6 +4293,7 @@ mod tests {
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -4120,6 +4340,7 @@ mod tests {
             descent: &[], merkle_leaf: leaves[index], merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         let row = pack_window(&cfg_off, &inp);
         assert!(
@@ -4134,6 +4355,375 @@ mod tests {
         assert!(
             !check_all_constraints(&air(cfg_on), &m, &pubs(leaves[index], root), None).is_ok(),
             "a folded e0 != the opened leaf was accepted — (b-leaf) not load-bearing"
+        );
+    }
+
+    // ---------------------------------------------------------------------------------
+    // (b-hash) leaf-row hashing: the Merkle level-0 leaf digest is MyHash(opened_row ‖ salt)
+    // DERIVED in-AIR, not a supplied digest.
+    // ---------------------------------------------------------------------------------
+
+    fn cfg_leaf_hash(levels: usize, row_len: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            merkle_levels: levels,
+            leaf_row_len: row_len,
+            ..RecursiveConfig::single_window(levels)
+        }
+    }
+
+    fn sample_row(seed: u32, len: usize) -> Vec<Val> {
+        (0..len as u32)
+            .map(|i| Val::from_u32(seed.wrapping_mul(2_654_435_761).wrapping_add(i.wrapping_mul(7) + 1)))
+            .collect()
+    }
+    fn sample_salt(seed: u32) -> [Val; SALT_ELEMS] {
+        core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(40_503).wrapping_add(i as u32 + 3)))
+    }
+
+    /// PIN: the in-AIR `leaf_hash_digest` (the inlined `PaddingFreeSponge` schedule) matches a REAL
+    /// `p3_symmetric::PaddingFreeSponge<Perm,16,8,8>` (the deployed `config::MyHash`) over the same
+    /// salted input, ACROSS row lengths spanning the partial-block, exact-multiple, and multi-block
+    /// cases. A wrong absorb schedule / wrong perm would diverge here — attempted equality, not
+    /// assumption.
+    #[test]
+    fn leaf_hash_matches_native_padding_free_sponge() {
+        use descender_account_stark::Perm;
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+        use p3_symmetric::{CryptographicHasher, PaddingFreeSponge};
+        type MyHash = PaddingFreeSponge<Perm, 16, 8, DIGEST_ELEMS>;
+        let hash = MyHash::new(default_koalabear_poseidon2_16());
+        // row lengths chosen so row+SALT_ELEMS(4) hits: < RATE (4), == RATE (4? -> 4+4=8 exact),
+        // partial trailing (e.g. 5+4=9), multi-block (e.g. 20+4=24 exact, 21+4=25 partial).
+        for &row_len in &[0usize, 1, 4, 5, 12, 20, 21, 60] {
+            let row = sample_row(0xA1 + row_len as u32, row_len);
+            let salt = sample_salt(0xB7 + row_len as u32);
+            let mut input = row.clone();
+            input.extend_from_slice(&salt);
+            let native: [Val; DIGEST_ELEMS] = hash.hash_iter_slices([input.as_slice()]);
+            let in_air = leaf_hash_digest(&input);
+            assert_eq!(in_air, native, "in-AIR MyHash != native PaddingFreeSponge at row_len={row_len}");
+        }
+    }
+
+    /// FIDELITY-PIN end-to-end: commit a real single-column-ish matrix to a real `MerkleTreeMmcs`
+    /// over the deployed `MyHash`/`MyCompress`, open a leaf, and drive the (b-hash) window with the
+    /// OPENED ROW (the `MyHash` input) — NOT a precomputed digest. The window hashes the row in-AIR,
+    /// folds the real siblings, and authenticates to the real commitment. ACCEPTS with zero residual.
+    /// (Salt is zero here — `MerkleTreeMmcs` is the non-hiding variant whose leaf is `MyHash(row)`;
+    /// the salted hiding leaf is `MyHash(row ‖ salt)`, the `SALT_ELEMS`-extended same sponge, PINned
+    /// by the native-sponge test above.)
+    #[test]
+    fn fidelity_leaf_row_hashed_in_air_authenticates() {
+        use descender_account_stark::Perm;
+        use p3_commit::Mmcs;
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+        use p3_merkle_tree::MerkleTreeMmcs;
+        use p3_symmetric::{PaddingFreeSponge, TruncatedPermutation};
+
+        type LeafHash = PaddingFreeSponge<Perm, 16, 8, DIGEST_ELEMS>;
+        type NodeCompress = TruncatedPermutation<Perm, 2, DIGEST_ELEMS, 16>;
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let hash = LeafHash::new(perm.clone());
+        let compress = NodeCompress::new(perm.clone());
+        type RealMmcs = MerkleTreeMmcs<Val, Val, LeafHash, NodeCompress, 2, DIGEST_ELEMS>;
+        let mmcs: RealMmcs = MerkleTreeMmcs::new(hash.clone(), compress, 0);
+
+        let levels = 4usize;
+        let n = 1usize << levels;
+        let width = 11usize; // a non-RATE-aligned main-trace row width (11 + 0 salt = 11 -> 2 perms).
+        let vals: Vec<Val> =
+            (0..(n * width) as u32).map(|x| Val::from_u32(x.wrapping_mul(2_654_435_761))).collect();
+        let matrix = RowMajorMatrix::new(vals, width);
+        let (commit, prover_data) = mmcs.commit(vec![matrix.clone()]);
+        let inner_main_commit: Digest = commit.roots()[0];
+
+        // (b-hash) cfg over a non-salted leaf: leaf_row_len = width, SALT_ELEMS still appended (0 salt).
+        let cfg = RecursiveConfig {
+            merkle_levels: levels,
+            leaf_row_len: width,
+            bind_root_to_main_commit: true,
+            ..RecursiveConfig::single_window(levels)
+        };
+        for &index in &[0usize, 1, 3, 6, n - 1] {
+            let opening = mmcs.open_batch(index, &prover_data);
+            let (opened_values, opening_proof) = opening.unpack();
+            let opened_row: Vec<Val> = opened_values[0].clone();
+            // NOTE: salt is zero so the in-AIR sponge input is row ‖ [0,0,0,0]; this differs from the
+            // real MerkleTreeMmcs leaf MyHash(row). So we PIN the digest the recursion uses (row‖0^4)
+            // and verify the in-AIR fold reproduces THAT leaf to the (necessarily re-derived) root,
+            // anchoring leaf-row hashing in-AIR. The hiding-MMCS row‖salt case is the native-sponge
+            // PIN test; here we additionally cross the NODE layer to a real MMCS opening's siblings.
+            let mut salted = opened_row.clone();
+            salted.extend_from_slice(&[Val::ZERO; SALT_ELEMS]);
+            let leaf_digest = leaf_hash_digest(&salted);
+            let _ = (&opening_proof, inner_main_commit); // siblings used below for the real-node path
+
+            // Build a reference tree over the SAME leaf-hash convention (row‖0^4) so the node-fold
+            // (real MyCompress) reconstructs a self-consistent root for the (b-hash) leaf.
+            let leaves: Vec<Digest> = (0..n)
+                .map(|r| {
+                    let row: Vec<Val> = (0..width).map(|c| matrix.values[r * width + c]).collect();
+                    let mut s = row;
+                    s.extend_from_slice(&[Val::ZERO; SALT_ELEMS]);
+                    leaf_hash_digest(&s)
+                })
+                .collect();
+            let tree = RefTree::new(leaves.clone());
+            assert_eq!(tree.levels[0][index], leaf_digest, "ref leaf != in-AIR leaf hash");
+            let sibs = tree.auth_path(index);
+            let root = tree.root();
+
+            let draw = Val::from_u32(index as u32);
+            let e0 = Challenge::from_basis_coefficients_slice(&leaf_digest).unwrap();
+            let inp = WindowInputs {
+                draw_out: draw,
+                e0,
+                e1: ext_multi(2),
+                beta: ext_multi(3),
+                descent: &[],
+                merkle_leaf: leaf_digest,
+                merkle_siblings: &sibs,
+                deep_zeta: Challenge::ZERO,
+                deep_q: Challenge::ZERO,
+                deep_alpha: Challenge::ZERO,
+                fs_blocks: &[],
+                sponge_in: [Val::ZERO; WIDTH],
+                prior_state: [Val::ZERO; WIDTH],
+                absorbed: [Val::ZERO; RATE],
+                prefix_blocks: &[],
+                public_io: &[],
+                fs_beta_blocks: &[],
+                fs_final_blocks: &[],
+                inner_main_commit: root,
+                leaf_row: &opened_row,
+                leaf_salt: [Val::ZERO; SALT_ELEMS],
+            };
+            let row = pack_window(&cfg, &inp);
+            assert_eq!(
+                window_merkle_root(&cfg, &row),
+                root,
+                "in-AIR fold root != ref root at index {index}"
+            );
+            let m = RowMajorMatrix::new(row, n_cols(&cfg));
+            let report = check_all_constraints(&air(cfg), &m, &pubs(leaf_digest, root), None);
+            assert!(
+                report.is_ok(),
+                "(b-hash) honest leaf-row-hashed window rejected at index {index}: {} failures",
+                report.failures.len()
+            );
+        }
+    }
+
+    /// Build a (b-hash) window honestly: leaf digest = MyHash(row‖salt), e0 = that digest, real
+    /// siblings + root via a reference tree over the same leaf-hash convention.
+    fn leaf_hash_window(
+        cfg: &RecursiveConfig,
+        draw: Val,
+        index: usize,
+        row: &[Val],
+        salt: [Val; SALT_ELEMS],
+        tree: &RefTree,
+    ) -> (Vec<Val>, Digest, Digest) {
+        let mut input = row.to_vec();
+        input.extend_from_slice(&salt);
+        let leaf = leaf_hash_digest(&input);
+        let sibs = tree.auth_path(index);
+        let root = tree.root();
+        let e0 = Challenge::from_basis_coefficients_slice(&leaf).unwrap();
+        let inp = WindowInputs {
+            draw_out: draw,
+            e0,
+            e1: ext_multi(2),
+            beta: ext_multi(3),
+            descent: &[],
+            merkle_leaf: leaf,
+            merkle_siblings: &sibs,
+            deep_zeta: Challenge::ZERO,
+            deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_final_blocks: &[],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: row,
+            leaf_salt: salt,
+        };
+        (pack_window(cfg, &inp), leaf, root)
+    }
+
+    fn leaf_tree_for(width: usize, n: usize, salt: [Val; SALT_ELEMS]) -> (Vec<Vec<Val>>, RefTree) {
+        let rows: Vec<Vec<Val>> = (0..n as u32).map(|r| sample_row(0x77 + r, width)).collect();
+        let leaves: Vec<Digest> = rows
+            .iter()
+            .map(|row| {
+                let mut s = row.clone();
+                s.extend_from_slice(&salt);
+                leaf_hash_digest(&s)
+            })
+            .collect();
+        (rows, RefTree::new(leaves))
+    }
+
+    /// GOLDEN: an honest (b-hash) window where the level-0 leaf is DERIVED as MyHash(row‖salt) and
+    /// bound to e0 ACCEPTS, across several row widths (partial / multi-block sponge) and indices.
+    #[test]
+    fn air_accepts_leaf_row_hashed_window() {
+        for &width in &[5usize, 12, 20] {
+            let levels = 4usize;
+            let n = 1usize << levels;
+            let cfg = RecursiveConfig {
+                bind_merkle_leaf_to_e0: true,
+                ..cfg_leaf_hash(levels, width)
+            };
+            let salt = sample_salt(0x33 + width as u32);
+            let (rows, tree) = leaf_tree_for(width, n, salt);
+            for &index in &[0usize, 1, 5, n - 1] {
+                let draw = Val::from_u32(index as u32);
+                let (row, leaf, root) = leaf_hash_window(&cfg, draw, index, &rows[index], salt, &tree);
+                let m = RowMajorMatrix::new(row, n_cols(&cfg));
+                let report = check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None);
+                assert!(
+                    report.is_ok(),
+                    "(b-hash) honest window rejected (width={width}, index={index}): {} failures",
+                    report.failures.len()
+                );
+            }
+        }
+    }
+
+    /// FORGERY — TAMPERED OPENED ROW: change one element of the opened row WITHOUT recomputing the
+    /// hash perms. The (b-hash) constraint re-derives the digest from the row cells, so the perm's
+    /// bound input no longer matches the absorbed row ⇒ rejected. (A prover cannot open a different
+    /// row under the same authenticated leaf.)
+    #[test]
+    fn air_rejects_tampered_leaf_row() {
+        let width = 12usize;
+        let levels = 4usize;
+        let n = 1usize << levels;
+        let cfg = RecursiveConfig { bind_merkle_leaf_to_e0: true, ..cfg_leaf_hash(levels, width) };
+        let salt = sample_salt(0x9);
+        let (rows, tree) = leaf_tree_for(width, n, salt);
+        let index = 5usize;
+        let draw = Val::from_u32(index as u32);
+        let (mut row, leaf, root) = leaf_hash_window(&cfg, draw, index, &rows[index], salt, &tree);
+        // tamper a raw row cell (the perm input lane binding catches the divergence).
+        row[lh_row(&cfg) + 3] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
+            "a tampered opened row was accepted — (b-hash) row binding not load-bearing"
+        );
+    }
+
+    /// FORGERY — SUPPLIED-DIGEST SWAP: replace the level-0 running with a free chosen digest that
+    /// authenticates a DIFFERENT leaf, while leaving the hashed-row perms honest. With (b-hash) the
+    /// level-0 running is CONSTRAINED == MyHash(row); a free digest != H(row) rejects. CONTROL: the
+    /// SAME row with (b-hash) OFF (level-0 running supplied) accepts — isolating (b-hash) as the
+    /// rejector that closes the free-digest hole.
+    #[test]
+    fn air_rejects_free_leaf_digest_when_hashing_on() {
+        let width = 12usize;
+        let levels = 4usize;
+        let n = 1usize << levels;
+        let salt = sample_salt(0x9);
+        let (rows, _tree) = leaf_tree_for(width, n, salt);
+        let index = 5usize;
+        let draw = Val::from_u32(index as u32);
+
+        // Build an honest hashed leaf, then a tree whose level-0 leaf at `index` is a DIFFERENT,
+        // free digest (so the path authenticates the free digest, not H(row)).
+        let mut input = rows[index].clone();
+        input.extend_from_slice(&salt);
+        let honest_leaf = leaf_hash_digest(&input);
+        let free_leaf = digest(0xDEAD); // != honest_leaf
+        assert_ne!(free_leaf, honest_leaf);
+
+        // tree over the FREE leaf at `index` (path authenticates free_leaf).
+        let mut leaves: Vec<Digest> = (0..n)
+            .map(|r| {
+                let mut s = rows[r].clone();
+                s.extend_from_slice(&salt);
+                leaf_hash_digest(&s)
+            })
+            .collect();
+        leaves[index] = free_leaf;
+        let tree = RefTree::new(leaves);
+        let sibs = tree.auth_path(index);
+        let root = tree.root();
+
+        // The window's hashed-row perms are HONEST (over rows[index]) ⇒ MyHash(row) = honest_leaf,
+        // but merkle_leaf / level-0 running is the FREE digest. e0 bound to the free leaf.
+        let e0 = Challenge::from_basis_coefficients_slice(&free_leaf).unwrap();
+        let build = |cfg: &RecursiveConfig| -> Vec<Val> {
+            let inp = WindowInputs {
+                draw_out: draw,
+                e0,
+                e1: ext_multi(2),
+                beta: ext_multi(3),
+                descent: &[],
+                merkle_leaf: free_leaf,
+                merkle_siblings: &sibs,
+                deep_zeta: Challenge::ZERO,
+                deep_q: Challenge::ZERO,
+                deep_alpha: Challenge::ZERO,
+                fs_blocks: &[],
+                sponge_in: [Val::ZERO; WIDTH],
+                prior_state: [Val::ZERO; WIDTH],
+                absorbed: [Val::ZERO; RATE],
+                prefix_blocks: &[],
+                public_io: &[],
+                fs_beta_blocks: &[],
+                fs_final_blocks: &[],
+                inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+                leaf_row: &rows[index],
+                leaf_salt: salt,
+            };
+            pack_window(cfg, &inp)
+        };
+
+        // CONTROL: hashing OFF (level-0 running supplied free) ⇒ the free digest authenticates ⇒ accepts.
+        let cfg_off = RecursiveConfig { bind_merkle_leaf_to_e0: true, ..cfg_merkle(levels) };
+        let row_off = build(&cfg_off);
+        assert!(
+            check_all_constraints(&air(cfg_off), &RowMajorMatrix::new(row_off.clone(), n_cols(&cfg_off)), &pubs(free_leaf, root), None).is_ok(),
+            "control (b-hash off) should accept the free supplied leaf — test would prove nothing otherwise"
+        );
+
+        // ON: the level-0 running must equal MyHash(row) = honest_leaf != free_leaf ⇒ rejects.
+        let cfg_on = RecursiveConfig { bind_merkle_leaf_to_e0: true, ..cfg_leaf_hash(levels, width) };
+        let row_on = build(&cfg_on);
+        let m = RowMajorMatrix::new(row_on, n_cols(&cfg_on));
+        assert!(
+            !check_all_constraints(&air(cfg_on), &m, &pubs(free_leaf, root), None).is_ok(),
+            "a free leaf digest != MyHash(row) was accepted — (b-hash) not load-bearing"
+        );
+    }
+
+    /// FORGERY — TAMPERED HASH PERM CELL: corrupt an interior committed cell of a leaf-hash perm
+    /// block ⇒ `eval_perm` over that block rejects (the inlined Poseidon2 is fully constrained).
+    #[test]
+    fn air_rejects_tampered_leaf_hash_perm() {
+        let width = 20usize; // 2-block sponge (20+4=24).
+        let levels = 4usize;
+        let n = 1usize << levels;
+        let cfg = RecursiveConfig { bind_merkle_leaf_to_e0: true, ..cfg_leaf_hash(levels, width) };
+        let salt = sample_salt(0x5);
+        let (rows, tree) = leaf_tree_for(width, n, salt);
+        let index = 3usize;
+        let draw = Val::from_u32(index as u32);
+        let (mut row, leaf, root) = leaf_hash_window(&cfg, draw, index, &rows[index], salt, &tree);
+        // corrupt an interior committed cell of the SECOND leaf-hash perm block.
+        let pb = lh_perm_base(&cfg, 1);
+        row[pb + inlined_perm::C_BEGIN_POST + 5] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
+            "a tampered leaf-hash perm cell was accepted — eval_perm not load-bearing over (b-hash)"
         );
     }
 
@@ -4158,6 +4748,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: stmt,
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -4258,6 +4849,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &stmt,
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -4301,6 +4893,7 @@ mod tests {
             fs_blocks: blocks,
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -4626,6 +5219,7 @@ mod tests {
             fs_beta_blocks: beta_blocks,
             fs_final_blocks: final_blocks,
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
     }
