@@ -186,10 +186,27 @@
 //!   (`commit_proof_of_work_bits`) and query PoW (`query_proof_of_work_bits`) are modeled as zero-bit
 //!   (`check_witness(0, _)` short-circuits with NO observe / NO sample); a nonzero-bit PoW would add an
 //!   `observe(witness)` before the relevant sample (a bounded extra observe round).
+//!  18. **(DR) DERIVE the FRI round-0 input `e0` from the DEEP / reduced-opening combination of the
+//!      AUTHENTICATED opened row** (NEW; `deep_e0_combine`): `e0` is no longer a supplied / leaf-digest-
+//!      bound free value — it is CONSTRAINED to the p3 `two_adic_pcs::open` reduced opening (lines
+//!      632-658) of the opened main-trace row at the FS-bound `alpha` (DEEP_ALPHA) + `zeta` (DEEP_ZETA):
+//!      `e0 == Σ_i alpha^i·(value_at_zeta[i] − opened_row[i]) · 1/(zeta − x)` [+ the `alpha^n·(...)·
+//!      1/(zeta_next − x)` term at `zeta_next = g·zeta` when `deep_e0_next`]. `opened_row[i]` ARE the
+//!      authenticated `lh_row` leaf-hash cells (so a tampered row changes `e0` AND breaks the leaf
+//!      authentication). Division is SOUND: a witnessed inverse cell is pinned `inv·(zeta − x) == 1`;
+//!      the `alpha`-power batching tower is constrained (`apow[i] == apow[i-1]·alpha`), not free.
+//!      FIDELITY-PINned against p3's own `dot_product(alpha.powers(), …)` reduced opening
+//!      ([`tests::deep_reduced_e0_matches_p3_reduced_opening`]). Tamper-rejected: `e0 ≠ combination`,
+//!      tampered opened row, wrong alpha/zeta, unsound inverse(s), tampered at-zeta value, forged
+//!      alpha-power, tampered `x`. This ties the verified inner-proof opening to the FRI input.
 //! - **deferred leaf C(zeta)**: the DEEP block opens `C(zeta)` / `Q(zeta)` as committed values and
 //!   constrains the QUOTIENT RELATION; the full `C(zeta) =` leaf-AIR-constraint-polynomial
 //!   evaluation (re-expressing the entire leaf folder) + the DEEP linear-combination / chunk
 //!   recomposition stay deferred (same boundary [`crate::deep_air`] documents).
+//! - **(DR) scope**: the reduced opening is modeled for ONE query, the SINGLE main-trace matrix, opened
+//!   at `zeta` (+ optional `zeta_next`); the quotient-CHUNK openings' contribution to the reduced
+//!   opening, the random-codeword matrices, the 56-query fan-out, and authenticating the at-zeta values
+//!   to the OOD opening (they are committed cells here) stay deferred.
 
 use crate::fri_fold::{fold_pair, fold_point};
 use crate::fri_fold_air::{limbs, D, W};
@@ -198,7 +215,7 @@ use crate::challenger::RATE;
 use crate::inlined_perm::{self, eval_perm, ConstantsExpr, PermCells, C_OUTPUT, PERM_COLS};
 use descender_account_stark::{Challenge, Val, DIGEST_ELEMS, SALT_ELEMS, WIDTH};
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
-use p3_field::{BasedVectorSpace, PrimeCharacteristicRing, PrimeField32, TwoAdicField};
+use p3_field::{BasedVectorSpace, Field, PrimeCharacteristicRing, PrimeField32, TwoAdicField};
 
 extern crate alloc;
 use alloc::vec::Vec;
@@ -411,6 +428,29 @@ pub struct RecursiveConfig {
     /// row — the Merkle path authenticates `H(row)`, not a free digest. 0 = off (the level-0 running
     /// is a supplied digest, the prior mechanism). PINned against a real `MerkleTreeMmcs` leaf.
     pub leaf_row_len: usize,
+    /// (DR) DERIVE the FRI round-0 input `e0` from the p3 DEEP / reduced-opening combination of the
+    /// AUTHENTICATED opened main-trace row, using the FS-squeezed `alpha` (DEEP_ALPHA) and OOD point
+    /// `zeta` (DEEP_ZETA). When `> 0` it is the number of opened trace COLUMNS combined; the window
+    /// carries a reduced-opening block (`value_at_zeta` ‖ optional `value_at_zeta_next` ‖ query point
+    /// `x` ‖ committed `alpha`-power tower ‖ witnessed inverse cell(s)) and CONSTRAINS, mirroring
+    /// `p3_fri::two_adic_pcs::open` (lines 632-658) EXACTLY for the single main-trace matrix opened at
+    /// `zeta`:
+    ///   `e0 == Σ_i alpha^i·(value_at_zeta[i] − opened_row[i]) · inv_zeta`
+    /// where `inv_zeta = 1/(zeta − x)` (p3 `compute_inverse_denominators`: `z − x`), `opened_row[i]`
+    /// is the authenticated opened LDE row cell (the SAME `leaf_row` cell the leaf hash authenticates),
+    /// `value_at_zeta[i]` the opened at-zeta column value, and `alpha^i` the committed batching tower.
+    /// Division is SOUND: the inverse cell is constrained `inv_zeta·(zeta − x) == 1`. With
+    /// `deep_e0_next` the analogous `alpha^W·(...)·inv_next` term at `zeta_next = g·zeta` is added (p3's
+    /// second opening point with `alpha_pow_offset = alpha^width`). Requires `deep_log_degree` (for
+    /// alpha/zeta) and `leaf_row_len >= deep_e0_combine` (the authenticated opened row). REPLACES the
+    /// `bind_merkle_leaf_to_e0` digest binding of `e0`: now `e0` is the DEEP combination of the opened
+    /// row, not a free / digest-bound value. 0 = off. PINned against a real p3 reduced-opening.
+    pub deep_e0_combine: usize,
+    /// (DR) include the `zeta_next = g·zeta` "next row" opening-point term in the DEEP `e0` combination
+    /// (p3 opens the trace at BOTH `zeta` and `zeta_next` when the AIR uses the next row). When `true`
+    /// the block carries `value_at_zeta_next` + `inv_next` and adds the `alpha^W·(...)·inv_next` term.
+    /// Only consumed when `deep_e0_combine > 0`.
+    pub deep_e0_next: bool,
 }
 
 impl RecursiveConfig {
@@ -443,6 +483,8 @@ impl RecursiveConfig {
             layer_open_levels: 0,
             final_poly_len: 0,
             leaf_row_len: 0,
+            deep_e0_combine: 0,
+            deep_e0_next: false,
         }
     }
     /// Number of successive squeeze draws actually laid out (≥ 1, ≤ RATE).
@@ -1134,9 +1176,117 @@ fn lh_size(cfg: &RecursiveConfig) -> usize {
     }
 }
 
+// ----- (DR) DEEP reduced-opening of e0 block -----
+//
+// Appended AFTER the (b-hash) leaf-hash block. Derives the FRI round-0 input e0 from the p3
+// DEEP / reduced-opening combination of the AUTHENTICATED opened main-trace row. Layout (with
+// `n = deep_e0_combine` combined columns):
+//   value_at_zeta[n·D] ‖ [value_at_zeta_next[n·D] (if next)] ‖ x[1] ‖ alpha_pow[n·D]
+//     ‖ inv_zeta[D] ‖ [inv_next[D] (if next)]
+// The opened-row cells are NOT carried here — they ARE the authenticated `lh_row` cells (the
+// leaf-hash block's opened row), so e0 binds to the same cells the leaf hash + Merkle path
+// authenticate.
+const DR_VZETA: usize = 0;
+fn dr_vzeta_next(cfg: &RecursiveConfig) -> usize {
+    DR_VZETA + cfg.deep_e0_combine * D
+}
+fn dr_x(cfg: &RecursiveConfig) -> usize {
+    let mut o = dr_vzeta_next(cfg);
+    if cfg.deep_e0_next {
+        o += cfg.deep_e0_combine * D;
+    }
+    o
+}
+fn dr_alpha_pow(cfg: &RecursiveConfig) -> usize {
+    dr_x(cfg) + 1
+}
+fn dr_inv_zeta(cfg: &RecursiveConfig) -> usize {
+    dr_alpha_pow(cfg) + cfg.deep_e0_combine * D
+}
+fn dr_inv_next(cfg: &RecursiveConfig) -> usize {
+    dr_inv_zeta(cfg) + D
+}
+
+/// Base of the (DR) DEEP reduced-opening block (after the b-hash leaf-hash block).
+fn dr_base(cfg: &RecursiveConfig) -> usize {
+    lh_base(cfg) + lh_size(cfg)
+}
+
+/// Size of the (DR) block. 0 unless `deep_e0_combine > 0`.
+fn dr_size(cfg: &RecursiveConfig) -> usize {
+    if cfg.deep_e0_combine == 0 {
+        return 0;
+    }
+    let n = cfg.deep_e0_combine;
+    let mut sz = n * D /* vzeta */ + 1 /* x */ + n * D /* alpha_pow */ + D /* inv_zeta */;
+    if cfg.deep_e0_next {
+        sz += n * D /* vzeta_next */ + D /* inv_next */;
+    }
+    sz
+}
+
+/// REFERENCE (native) p3 DEEP / reduced-opening of the FRI round-0 input `e0` for the single
+/// main-trace matrix opened at `zeta` (and optionally `zeta_next = g·zeta`), at query point `x`.
+/// Mirrors `p3_fri::two_adic_pcs::open` (lines 632-658) EXACTLY:
+///   `Mred(x)    = Σ_i alpha^i · opened_row[i]`           (base-field LDE row cells)
+///   `Mred(zeta) = Σ_i alpha^i · value_at_zeta[i]`        (the at-zeta opened values)
+///   `e0 = (Mred(zeta) − Mred(x)) · 1/(zeta − x)`         (alpha_pow_offset = 1)
+///        [+ alpha^n · (Mred(zeta_next) − Mred(x_next)) · 1/(zeta_next − x)  if `next`]
+/// where for the next opening point `alpha_pow_offset = alpha^n` (n = width), the row is the SAME
+/// opened LDE row, and `inv_denom = 1/(zeta_next − x)`. This is the value FRI folds at round 0.
+pub fn deep_reduced_e0(
+    alpha: Challenge,
+    zeta: Challenge,
+    x: Val,
+    opened_row: &[Val],
+    value_at_zeta: &[Challenge],
+) -> Challenge {
+    let n = opened_row.len();
+    debug_assert_eq!(value_at_zeta.len(), n);
+    // Mred(x) = Σ alpha^i · opened_row[i]  (base-field row cells scaled by extension alpha^i).
+    let mut alpha_pow = Challenge::ONE;
+    let mut mred_x = Challenge::ZERO;
+    let mut mred_zeta = Challenge::ZERO;
+    for i in 0..n {
+        mred_x += alpha_pow * Challenge::from(opened_row[i]);
+        mred_zeta += alpha_pow * value_at_zeta[i];
+        alpha_pow *= alpha;
+    }
+    let inv_zeta = (zeta - Challenge::from(x)).inverse();
+    (mred_zeta - mred_x) * inv_zeta
+}
+
+/// REFERENCE with the next opening point, taking `g` (the trace-domain generator) so `zeta_next =
+/// g·zeta` and `inv_next = 1/(zeta_next − x)` are derived exactly as p3 does.
+pub fn deep_reduced_e0_with_next(
+    alpha: Challenge,
+    zeta: Challenge,
+    g: Val,
+    x: Val,
+    opened_row: &[Val],
+    value_at_zeta: &[Challenge],
+    value_at_zeta_next: &[Challenge],
+) -> Challenge {
+    let n = opened_row.len();
+    let mut alpha_pow = Challenge::ONE;
+    let mut mred_x = Challenge::ZERO;
+    let mut mred_zeta = Challenge::ZERO;
+    let mut mred_zn = Challenge::ZERO;
+    for i in 0..n {
+        mred_x += alpha_pow * Challenge::from(opened_row[i]);
+        mred_zeta += alpha_pow * value_at_zeta[i];
+        mred_zn += alpha_pow * value_at_zeta_next[i];
+        alpha_pow *= alpha; // ends at alpha^n
+    }
+    let inv_zeta = (zeta - Challenge::from(x)).inverse();
+    let zeta_next = zeta * Challenge::from(g);
+    let inv_next = (zeta_next - Challenge::from(x)).inverse();
+    (mred_zeta - mred_x) * inv_zeta + alpha_pow * (mred_zn - mred_x) * inv_next
+}
+
 /// Total column count for a window with this config.
 pub fn n_cols(cfg: &RecursiveConfig) -> usize {
-    lh_base(cfg) + lh_size(cfg)
+    dr_base(cfg) + dr_size(cfg)
 }
 
 /// The `j`-th tower column (`sp[j]`).
@@ -1254,6 +1404,15 @@ pub struct WindowInputs<'a> {
     /// opening of the real hiding tree, `MyHash(leaf_row ‖ leaf_salt)` IS the level-0 leaf digest.
     pub leaf_row: &'a [Val],
     pub leaf_salt: [Val; SALT_ELEMS],
+    /// (DR) DEEP reduced-opening of `e0`: the opened at-`zeta` column values, the optional at-
+    /// `zeta_next` values, and the query point `x`. The opened ROW is NOT supplied here — it is the
+    /// authenticated `leaf_row` (the first `deep_e0_combine` cells). The honest builder computes the
+    /// alpha-power tower, the witnessed inverse(s), and DERIVES `e0` (overriding `inp.e0`) as the p3
+    /// reduced-opening combination. `dr_value_at_zeta.len()` must equal `deep_e0_combine`; when
+    /// `deep_e0_next`, `dr_value_at_zeta_next.len()` must too. Consumed only when `deep_e0_combine>0`.
+    pub dr_value_at_zeta: &'a [Challenge],
+    pub dr_value_at_zeta_next: &'a [Challenge],
+    pub dr_x: Val,
 }
 
 impl<'a> WindowInputs<'a> {
@@ -1279,6 +1438,7 @@ impl<'a> WindowInputs<'a> {
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         }
     }
 }
@@ -1940,6 +2100,76 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
         );
     }
 
+    // (DR) DEEP reduced-opening of e0: derive e0 from the p3 reduced-opening combination of the
+    // AUTHENTICATED opened row (the first `deep_e0_combine` leaf_row cells), the at-zeta values, the
+    // FS-bound alpha/zeta, and the query point x. OVERWRITES C_E0 so the value FRI folds at round 0
+    // IS the DEEP combination of the opened row, not a free / digest-bound value.
+    if cfg.deep_e0_combine > 0 {
+        let n = cfg.deep_e0_combine;
+        assert!(cfg.deep_log_degree.is_some(), "deep_e0_combine requires deep_log_degree");
+        assert!(
+            cfg.leaf_row_len >= n && cfg.merkle_levels > 0,
+            "deep_e0_combine requires leaf_row_len >= deep_e0_combine and a Merkle/leaf-hash block"
+        );
+        assert_eq!(inp.dr_value_at_zeta.len(), n, "dr_value_at_zeta must have deep_e0_combine entries");
+        let k = cfg.deep_log_degree.unwrap();
+        let g = Val::two_adic_generator(k); // trace-domain generator: zeta_next = g·zeta
+        let dr = dr_base(cfg);
+        let opened_row = &inp.leaf_row[..n];
+
+        // value_at_zeta cells.
+        for i in 0..n {
+            let base = dr + DR_VZETA + i * D;
+            row[base..base + D].copy_from_slice(&limbs(inp.dr_value_at_zeta[i]));
+        }
+        // query point x.
+        row[dr + dr_x(cfg)] = inp.dr_x;
+        // alpha-power tower alpha^0..alpha^{n-1}.
+        let mut ap = Challenge::ONE;
+        for i in 0..n {
+            let base = dr + dr_alpha_pow(cfg) + i * D;
+            row[base..base + D].copy_from_slice(&limbs(ap));
+            ap *= deep_alpha;
+        }
+        // witnessed inverse inv_zeta = 1/(zeta − x).
+        let inv_zeta = (deep_zeta - Challenge::from(inp.dr_x)).inverse();
+        row[dr + dr_inv_zeta(cfg)..dr + dr_inv_zeta(cfg) + D].copy_from_slice(&limbs(inv_zeta));
+
+        let e0 = if cfg.deep_e0_next {
+            assert_eq!(
+                inp.dr_value_at_zeta_next.len(),
+                n,
+                "dr_value_at_zeta_next must have deep_e0_combine entries"
+            );
+            for i in 0..n {
+                let base = dr + dr_vzeta_next(cfg) + i * D;
+                row[base..base + D].copy_from_slice(&limbs(inp.dr_value_at_zeta_next[i]));
+            }
+            let zeta_next = deep_zeta * Challenge::from(g);
+            let inv_next = (zeta_next - Challenge::from(inp.dr_x)).inverse();
+            row[dr + dr_inv_next(cfg)..dr + dr_inv_next(cfg) + D].copy_from_slice(&limbs(inv_next));
+            deep_reduced_e0_with_next(
+                deep_alpha,
+                deep_zeta,
+                g,
+                inp.dr_x,
+                opened_row,
+                inp.dr_value_at_zeta,
+                inp.dr_value_at_zeta_next,
+            )
+        } else {
+            deep_reduced_e0(deep_alpha, deep_zeta, inp.dr_x, opened_row, inp.dr_value_at_zeta)
+        };
+        // The round-0 FRI input e0 (already laid out from `inp.e0`, and threaded through the descent
+        // fold) MUST be the DEEP combination — the caller passes `inp.e0 = deep_reduced_e0(...)` so the
+        // descent is consistent, and the eval CONSTRAINS C_E0 == this combination. Sanity-check here.
+        debug_assert_eq!(
+            inp.e0, e0,
+            "deep_e0_combine: inp.e0 must equal the DEEP reduced-opening of the opened row"
+        );
+        let _ = e0;
+    }
+
     row
 }
 
@@ -2468,6 +2698,117 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             let l0 = merkle_level_base(&cfg, 0);
             for i in 0..DIGEST_ELEMS {
                 builder.assert_zero(l(l0 + ML_RUNNING + i) - l(last + C_OUTPUT + i));
+            }
+        }
+
+        // ===== (DR) DERIVE e0 from the p3 DEEP / reduced-opening combination of the opened row =====
+        // Constrain the FRI round-0 input e0 EQUAL to the p3 reduced-opening combination
+        // (`two_adic_pcs::open` lines 632-658) over the AUTHENTICATED opened main-trace row:
+        //   e0 == Σ_i alpha^i·(value_at_zeta[i] − opened_row[i]) · 1/(zeta − x)
+        //        [+ alpha^n·Σ_i alpha^i·(value_at_zeta_next[i] − opened_row[i]) · 1/(zeta_next − x)]
+        // with alpha = DEEP_ALPHA, zeta = DEEP_ZETA (FS-bound), opened_row[i] = the leaf-hash block's
+        // authenticated `lh_row` cells (the same cells the leaf hash + Merkle path authenticate),
+        // zeta_next = g·zeta (g = trace-domain generator). Division is SOUND: inv·(zeta − x) == 1 is
+        // constrained for a witnessed inverse cell. So e0 is DERIVED from the opened row, not free.
+        if cfg.deep_e0_combine > 0 {
+            let n = cfg.deep_e0_combine;
+            let db = deep_base(&cfg);
+            let dr = dr_base(&cfg);
+            // FS-bound alpha/zeta (the DEEP block cells).
+            let alpha: [AB::Expr; D] = core::array::from_fn(|i| l(db + DEEP_ALPHA + i));
+            let zeta: [AB::Expr; D] = core::array::from_fn(|i| l(db + DEEP_ZETA + i));
+            let x = l(dr + dr_x(&cfg));
+            // authenticated opened-row cells (base-field scalars) = the leaf-hash row cells.
+            let opened = |i: usize| -> AB::Expr { l(lh_row(&cfg) + i) };
+            let vzeta = |i: usize| -> [AB::Expr; D] {
+                core::array::from_fn(|j| l(dr + DR_VZETA + i * D + j))
+            };
+            let apow = |i: usize| -> [AB::Expr; D] {
+                core::array::from_fn(|j| l(dr + dr_alpha_pow(&cfg) + i * D + j))
+            };
+
+            // --- alpha-power tower: apow[0] == 1, apow[i] == apow[i-1]·alpha (octic) ---
+            let a0 = apow(0);
+            builder.assert_zero(a0[0].clone() - AB::Expr::ONE);
+            for j in 1..D {
+                builder.assert_zero(a0[j].clone());
+            }
+            for i in 1..n {
+                let prev = apow(i - 1);
+                let cur = apow(i);
+                let prod = octic_mul::<AB>(&prev, &alpha);
+                for j in 0..D {
+                    builder.assert_zero(cur[j].clone() - prod[j].clone());
+                }
+            }
+
+            // --- witnessed inverse: inv_zeta·(zeta − x) == 1 (x base scalar ⇒ subtract from limb 0) ---
+            let inv_zeta: [AB::Expr; D] = core::array::from_fn(|j| l(dr + dr_inv_zeta(&cfg) + j));
+            let mut zeta_minus_x = zeta.clone();
+            zeta_minus_x[0] = zeta[0].clone() - x.clone();
+            let one_check = octic_mul::<AB>(&inv_zeta, &zeta_minus_x);
+            builder.assert_zero(one_check[0].clone() - AB::Expr::ONE);
+            for j in 1..D {
+                builder.assert_zero(one_check[j].clone());
+            }
+
+            // --- numerator num = Σ_i apow[i]·(value_at_zeta[i] − opened_row[i]) ---
+            let mut num: [AB::Expr; D] = core::array::from_fn(|_| AB::Expr::ZERO);
+            for i in 0..n {
+                let vz = vzeta(i);
+                let mut diff = vz; // (extension) − (base scalar) ⇒ subtract from limb 0
+                diff[0] = diff[0].clone() - opened(i);
+                let term = octic_mul::<AB>(&apow(i), &diff);
+                for j in 0..D {
+                    num[j] = num[j].clone() + term[j].clone();
+                }
+            }
+            // e0_zeta = num · inv_zeta.
+            let e0_zeta = octic_mul::<AB>(&num, &inv_zeta);
+
+            // accumulate e0 (start with the zeta term).
+            let mut e0_expr: [AB::Expr; D] = core::array::from_fn(|j| e0_zeta[j].clone());
+
+            if cfg.deep_e0_next {
+                let g = AB::F::from(Val::two_adic_generator(cfg.deep_log_degree.unwrap()));
+                let vzn = |i: usize| -> [AB::Expr; D] {
+                    core::array::from_fn(|j| l(dr + dr_vzeta_next(&cfg) + i * D + j))
+                };
+                // zeta_next = g·zeta (g base scalar ⇒ scale every limb).
+                let zeta_next: [AB::Expr; D] =
+                    core::array::from_fn(|j| zeta[j].clone() * AB::Expr::from(g));
+                // witnessed inverse inv_next·(zeta_next − x) == 1.
+                let inv_next: [AB::Expr; D] = core::array::from_fn(|j| l(dr + dr_inv_next(&cfg) + j));
+                let mut zn_minus_x = zeta_next;
+                zn_minus_x[0] = zn_minus_x[0].clone() - x.clone();
+                let one_n = octic_mul::<AB>(&inv_next, &zn_minus_x);
+                builder.assert_zero(one_n[0].clone() - AB::Expr::ONE);
+                for j in 1..D {
+                    builder.assert_zero(one_n[j].clone());
+                }
+                // num_next = Σ_i apow[i]·(value_at_zeta_next[i] − opened_row[i]).
+                let mut num_n: [AB::Expr; D] = core::array::from_fn(|_| AB::Expr::ZERO);
+                for i in 0..n {
+                    let mut diff = vzn(i);
+                    diff[0] = diff[0].clone() - opened(i);
+                    let term = octic_mul::<AB>(&apow(i), &diff);
+                    for j in 0..D {
+                        num_n[j] = num_n[j].clone() + term[j].clone();
+                    }
+                }
+                // alpha^n = apow[n-1]·alpha (the alpha_pow_offset for the second opening point).
+                let alpha_n = octic_mul::<AB>(&apow(n - 1), &alpha);
+                // term_next = alpha^n · num_next · inv_next.
+                let t1 = octic_mul::<AB>(&num_n, &inv_next);
+                let term_next = octic_mul::<AB>(&alpha_n, &t1);
+                for j in 0..D {
+                    e0_expr[j] = e0_expr[j].clone() + term_next[j].clone();
+                }
+            }
+
+            // CONSTRAIN the FRI round-0 input e0 == the DEEP combination.
+            for j in 0..D {
+                builder.assert_zero(l(C_E0 + j) - e0_expr[j].clone());
             }
         }
 
@@ -3144,6 +3485,7 @@ mod tests {
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -3202,6 +3544,7 @@ mod tests {
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         let mut row = pack_window(&cfg, &inp);
         // CONTROL: the FORGED Merkle blocks are internally valid — with a MATCHING forged bus
@@ -3223,6 +3566,7 @@ mod tests {
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         });
         for c in C_DRAW_OUT..tower_end(levels) {
             row[c] = honest[c];
@@ -3340,6 +3684,7 @@ mod tests {
             inner_main_commit: main_commit,
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -3588,6 +3933,7 @@ mod tests {
                     inner_main_commit: commit,
                     layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
                     leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+                    dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
                 };
                 pack_window(&cfg, &inp)
             };
@@ -3748,6 +4094,7 @@ mod tests {
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -3864,6 +4211,7 @@ mod tests {
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -3987,6 +4335,7 @@ mod tests {
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -4025,6 +4374,7 @@ mod tests {
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -4251,6 +4601,7 @@ mod tests {
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -4470,6 +4821,7 @@ mod tests {
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -4744,6 +5096,7 @@ mod tests {
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -4792,6 +5145,7 @@ mod tests {
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         let row = pack_window(&cfg_off, &inp);
         assert!(
@@ -4949,6 +5303,7 @@ mod tests {
                 layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
                 leaf_row: &opened_row,
                 leaf_salt: [Val::ZERO; SALT_ELEMS],
+                dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             };
             let row = pack_window(&cfg, &inp);
             assert_eq!(
@@ -5005,6 +5360,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: row,
             leaf_salt: salt,
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         (pack_window(cfg, &inp), leaf, root)
     }
@@ -5136,6 +5492,7 @@ mod tests {
                 layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
                 leaf_row: &rows[index],
                 leaf_salt: salt,
+                dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             };
             pack_window(cfg, &inp)
         };
@@ -5204,6 +5561,7 @@ mod tests {
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -5306,6 +5664,7 @@ mod tests {
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -5351,6 +5710,7 @@ mod tests {
             prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -5678,6 +6038,7 @@ mod tests {
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -6488,6 +6849,7 @@ mod tests {
             final_poly_coeffs: &fp_coeffs,
             leaf_row: &[],
             leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         (pack_window(cfg, &inp), metas)
     }
@@ -6608,6 +6970,7 @@ mod tests {
             final_poly_coeffs: &[],
             leaf_row: &[],
             leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         let row = pack_window(&cfg, &inp);
         // zero-residual reconstructed root == reference root.
@@ -6926,6 +7289,7 @@ mod tests {
             final_poly_coeffs: &[],
             leaf_row: &[],
             leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
         };
         (pack_window(cfg, &inp), metas)
     }
@@ -7106,6 +7470,371 @@ mod tests {
         assert!(
             !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
             "a tampered observed digest forced into the authentication root was accepted — not a real root"
+        );
+    }
+
+    // =======================================================================
+    // (DR) DEEP reduced-opening of e0: e0 == p3 reduced-opening combination of
+    // the AUTHENTICATED opened row, FS alpha/zeta, witnessed inverse.
+    // =======================================================================
+
+    /// p3-FAITHFUL reference: re-derive the round-0 reduced opening for the single main-trace matrix
+    /// EXACTLY as `p3_fri::two_adic_pcs::open` (lines 641-658), using p3's OWN `dot_product` over
+    /// `alpha.powers()` — NOT a constant. For one opening point `zeta` at query point `x`:
+    ///   `Mred(zeta) = dot_product(alpha.powers(), value_at_zeta)`   (extension·extension)
+    ///   `Mred(x)    = dot_product(alpha.powers(), opened_row as ext)`(alpha^i · base cell)
+    ///   `contribution = (Mred(zeta) − Mred(x)) · 1/(zeta − x)`       (alpha_pow_offset = 1)
+    /// and for the next opening point `zeta_next = g·zeta`, `alpha_pow_offset = alpha^width`.
+    fn p3_reduced_e0(
+        alpha: Challenge,
+        zeta: Challenge,
+        g: Val,
+        x: Val,
+        opened_row: &[Val],
+        vz: &[Challenge],
+        vz_next: Option<&[Challenge]>,
+    ) -> Challenge {
+        use p3_field::dot_product;
+        let n = opened_row.len();
+        let row_ext: Vec<Challenge> = opened_row.iter().map(|&c| Challenge::from(c)).collect();
+        let mred_zeta: Challenge = dot_product(alpha.powers().take(n), vz.iter().copied());
+        let mred_x: Challenge = dot_product(alpha.powers().take(n), row_ext.iter().copied());
+        let inv_zeta = (zeta - Challenge::from(x)).inverse();
+        let mut e0 = (mred_zeta - mred_x) * inv_zeta;
+        if let Some(vzn) = vz_next {
+            let mred_zn: Challenge = dot_product(alpha.powers().take(n), vzn.iter().copied());
+            let zeta_next = zeta * Challenge::from(g);
+            let inv_next = (zeta_next - Challenge::from(x)).inverse();
+            // alpha_pow_offset = alpha^width (num_reduced advances by mat.width() after the first point).
+            let offset = alpha.exp_u64(n as u64);
+            e0 += offset * (mred_zn - mred_x) * inv_next;
+        }
+        e0
+    }
+
+    fn dr_g(k: usize) -> Val {
+        Val::two_adic_generator(k)
+    }
+
+    /// FIDELITY-PIN: the module's `deep_reduced_e0` / `deep_reduced_e0_with_next` reproduce the
+    /// p3-faithful reduced opening (computed via p3's own `dot_product` over `alpha.powers()`) across
+    /// random alpha/zeta/x/rows — NOT a constant. A wrong batching order, sign, or denominator diverges.
+    #[test]
+    fn deep_reduced_e0_matches_p3_reduced_opening() {
+        let k = 10usize;
+        let g = dr_g(k);
+        for seed in 0..16u32 {
+            let n = 1 + (seed as usize % 14);
+            let alpha = ext_multi(seed.wrapping_mul(13) + 1);
+            let zeta = ext_multi(seed.wrapping_mul(29) + 7);
+            let x = Val::from_u32(seed.wrapping_mul(97).wrapping_add(3));
+            let row: Vec<Val> = (0..n as u32).map(|i| Val::from_u32(seed.wrapping_mul(7) + i + 1)).collect();
+            let vz: Vec<Challenge> = (0..n as u32).map(|i| ext_multi(seed.wrapping_mul(101) + i)).collect();
+            let vzn: Vec<Challenge> = (0..n as u32).map(|i| ext_multi(seed.wrapping_mul(211) + i)).collect();
+
+            // single opening point.
+            assert_eq!(
+                deep_reduced_e0(alpha, zeta, x, &row, &vz),
+                p3_reduced_e0(alpha, zeta, g, x, &row, &vz, None),
+                "deep_reduced_e0 != p3 reduced opening (single point) at seed={seed}"
+            );
+            // with the g·zeta next term.
+            assert_eq!(
+                deep_reduced_e0_with_next(alpha, zeta, g, x, &row, &vz, &vzn),
+                p3_reduced_e0(alpha, zeta, g, x, &row, &vz, Some(&vzn)),
+                "deep_reduced_e0_with_next != p3 reduced opening (next term) at seed={seed}"
+            );
+        }
+    }
+
+    /// A (DR) config: a real Merkle/leaf-hash window at `levels` + DEEP at `log_degree`, deriving e0
+    /// from the reduced opening of `combine` columns of the opened row. `next` toggles the g·zeta term.
+    fn cfg_dr(levels: usize, width: usize, combine: usize, log_degree: usize, next: bool) -> RecursiveConfig {
+        RecursiveConfig {
+            merkle_levels: levels,
+            leaf_row_len: width,
+            deep_log_degree: Some(log_degree),
+            deep_e0_combine: combine,
+            deep_e0_next: next,
+            ..RecursiveConfig::single_window(levels)
+        }
+    }
+
+    /// Build an honest (DR) window: real opened row + Merkle path, DEEP alpha/zeta, and e0 DERIVED as
+    /// the reduced opening of the opened row. Returns (row, leaf_digest, root, the at-zeta vectors, x,
+    /// alpha, zeta) for tamper tests.
+    #[allow(clippy::type_complexity)]
+    fn dr_window(
+        cfg: &RecursiveConfig,
+        index: usize,
+        opened_row: &[Val],
+        salt: [Val; SALT_ELEMS],
+        tree: &RefTree,
+    ) -> (Vec<Val>, Digest, Digest, Vec<Challenge>, Vec<Challenge>, Val, Challenge, Challenge) {
+        let n = cfg.deep_e0_combine;
+        let k = cfg.deep_log_degree.unwrap();
+        let g = dr_g(k);
+        let alpha = ext_multi(0x5151);
+        let zeta = ext_multi(0x9292); // generic off-domain
+        let x = Val::from_u32(0x1234);
+        let vz: Vec<Challenge> = (0..n as u32).map(|i| ext_multi(0x300 + i)).collect();
+        let vzn: Vec<Challenge> = (0..n as u32).map(|i| ext_multi(0x700 + i)).collect();
+
+        let mut input = opened_row.to_vec();
+        input.extend_from_slice(&salt);
+        let leaf = leaf_hash_digest(&input);
+        let sibs = tree.auth_path(index);
+        let root = tree.root();
+
+        let e0 = if cfg.deep_e0_next {
+            deep_reduced_e0_with_next(alpha, zeta, g, x, &opened_row[..n], &vz, &vzn)
+        } else {
+            deep_reduced_e0(alpha, zeta, x, &opened_row[..n], &vz)
+        };
+
+        let inp = WindowInputs {
+            draw_out: Val::from_u32(index as u32),
+            e0,
+            e1: ext_multi(2),
+            beta: ext_multi(3),
+            descent: &[],
+            merkle_leaf: leaf,
+            merkle_siblings: &sibs,
+            deep_zeta: zeta,
+            deep_q: ext_multi(5),
+            deep_alpha: alpha,
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_final_blocks: &[],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+            leaf_row: opened_row,
+            leaf_salt: salt,
+            dr_value_at_zeta: &vz,
+            dr_value_at_zeta_next: &vzn,
+            dr_x: x,
+        };
+        (pack_window(cfg, &inp), leaf, root, vz, vzn, x, alpha, zeta)
+    }
+
+    /// GOLDEN: an honest (DR) window — e0 derived as the reduced opening of the AUTHENTICATED opened
+    /// row, witnessed inverse, FS-style alpha/zeta cells — ACCEPTS, with and without the g·zeta term,
+    /// across several combine widths and indices.
+    #[test]
+    fn air_accepts_deep_reduced_e0_window() {
+        for &next in &[false, true] {
+            for &combine in &[1usize, 4, 12] {
+                let levels = 4usize;
+                let width = 12usize;
+                let k = 10usize;
+                let n = 1usize << levels;
+                let cfg = cfg_dr(levels, width, combine, k, next);
+                let salt = sample_salt(0x55 + combine as u32);
+                let (rows, tree) = leaf_tree_for(width, n, salt);
+                for &index in &[0usize, 3, n - 1] {
+                    let (row, leaf, root, ..) = dr_window(&cfg, index, &rows[index], salt, &tree);
+                    let m = RowMajorMatrix::new(row, n_cols(&cfg));
+                    let report = check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None);
+                    assert!(
+                        report.is_ok(),
+                        "(DR) honest window rejected (next={next}, combine={combine}, index={index}): {} failures",
+                        report.failures.len()
+                    );
+                }
+            }
+        }
+    }
+
+    /// FORGERY — e0 != the DEEP combination: tamper the laid-out e0 limb ⇒ the (DR) constraint
+    /// `e0 == Σ alpha^i (vz−row)/(zeta−x)` fails ⇒ rejected. (The round-0 fold would also break, but
+    /// the DR equality is the load-bearing rejector here.)
+    #[test]
+    fn air_rejects_deep_reduced_e0_tampered_e0() {
+        let cfg = cfg_dr(4, 12, 12, 10, true);
+        let n = 1usize << 4;
+        let salt = sample_salt(0x9);
+        let (rows, tree) = leaf_tree_for(12, n, salt);
+        let (mut row, leaf, root, ..) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        row[C_E0 + 2] += Val::ONE; // e0 no longer the reduced opening
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
+            "e0 != DEEP combination was accepted"
+        );
+    }
+
+    /// FORGERY — TAMPERED OPENED ROW changes e0: with everything else honest, bumping an opened-row
+    /// cell changes the reduced opening (so the committed e0 no longer matches) AND breaks the leaf-hash
+    /// authentication ⇒ rejected. This is the e0↔AUTHENTICATED-row binding: a forger cannot fold a
+    /// value derived from a row different from the one the leaf hash authenticates.
+    #[test]
+    fn air_rejects_deep_reduced_e0_tampered_opened_row() {
+        let cfg = cfg_dr(4, 12, 12, 10, false);
+        let n = 1usize << 4;
+        let salt = sample_salt(0x21);
+        let (rows, tree) = leaf_tree_for(12, n, salt);
+        let (mut row, leaf, root, ..) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        // tamper an opened-row cell (the DR numerator AND the leaf-hash absorb both read it).
+        row[lh_row(&cfg) + 3] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
+            "a tampered opened row (DR e0 + leaf-hash) was accepted"
+        );
+    }
+
+    /// CONTROL (non-vacuity of the row binding): re-deriving e0 for the TAMPERED row makes the DR
+    /// equality hold again, but the leaf-hash authentication STILL rejects — so the opened row is bound
+    /// to BOTH the folded e0 and the authenticated leaf. (Proves the DR e0 truly depends on the row:
+    /// the same tamper with a matching e0 only survives the DR check, not the whole window.)
+    #[test]
+    fn deep_reduced_e0_depends_on_opened_row() {
+        let cfg = cfg_dr(4, 12, 12, 10, false);
+        let n = 1usize << 4;
+        let salt = sample_salt(0x21);
+        let (rows, tree) = leaf_tree_for(12, n, salt);
+        let (row, _leaf, _root, vz, _vzn, x, alpha, zeta) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        let e0_honest = deep_reduced_e0(alpha, zeta, x, &rows[5][..12], &vz);
+        let mut tampered = rows[5].clone();
+        tampered[3] += Val::ONE;
+        let e0_tampered = deep_reduced_e0(alpha, zeta, x, &tampered[..12], &vz);
+        assert_ne!(e0_honest, e0_tampered, "DR e0 does NOT depend on the opened row — vacuous binding");
+        // and the in-AIR e0 cell is the honest reduced opening (load-bearing equality).
+        let e0_cell = Challenge::from_basis_coefficients_slice(&row[C_E0..C_E0 + D]).unwrap();
+        assert_eq!(e0_cell, e0_honest, "laid-out e0 != reduced opening of the opened row");
+    }
+
+    /// FORGERY — WRONG alpha (!= the DEEP/FS-bound alpha cell): bump the DEEP_ALPHA cell. e0 was
+    /// derived with the honest alpha, so the recomputed combination diverges ⇒ rejected. (Once alpha is
+    /// FS-bound the prover cannot pick a batching point that hides a forged e0.)
+    #[test]
+    fn air_rejects_deep_reduced_e0_wrong_alpha() {
+        let cfg = cfg_dr(4, 12, 12, 10, false);
+        let n = 1usize << 4;
+        let salt = sample_salt(0x33);
+        let (rows, tree) = leaf_tree_for(12, n, salt);
+        let (mut row, leaf, root, ..) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        let db = deep_base(&cfg);
+        row[db + DEEP_ALPHA + 1] += Val::ONE; // alpha != the alpha e0 was combined under
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
+            "wrong alpha was accepted"
+        );
+    }
+
+    /// FORGERY — WRONG zeta (!= the DEEP/FS-bound zeta cell): bump DEEP_ZETA. Both the denominator
+    /// `1/(zeta − x)` and the witnessed-inverse constraint `inv·(zeta − x) == 1` now mismatch ⇒
+    /// rejected. (The DEEP squaring tower also re-pins zeta, an independent rejector.)
+    #[test]
+    fn air_rejects_deep_reduced_e0_wrong_zeta() {
+        let cfg = cfg_dr(4, 12, 12, 10, true);
+        let n = 1usize << 4;
+        let salt = sample_salt(0x44);
+        let (rows, tree) = leaf_tree_for(12, n, salt);
+        let (mut row, leaf, root, ..) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        let db = deep_base(&cfg);
+        row[db + DEEP_ZETA + 2] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
+            "wrong zeta was accepted"
+        );
+    }
+
+    /// FORGERY — UNSOUND INVERSE: replace inv_zeta with a value where inv·(zeta − x) != 1. The
+    /// witnessed-inverse constraint rejects (a free inv without this check would be a soundness hole:
+    /// a forger could pick inv to make any e0 satisfy `e0 == num·inv`).
+    #[test]
+    fn air_rejects_deep_reduced_e0_unsound_inverse() {
+        let cfg = cfg_dr(4, 12, 12, 10, false);
+        let n = 1usize << 4;
+        let salt = sample_salt(0x55);
+        let (rows, tree) = leaf_tree_for(12, n, salt);
+        let (mut row, leaf, root, ..) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        let dr = dr_base(&cfg);
+        row[dr + dr_inv_zeta(&cfg)] += Val::ONE; // inv·(zeta − x) != 1 now
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
+            "an unsound inverse (inv·(zeta−x) != 1) was accepted — division soundness hole"
+        );
+    }
+
+    /// FORGERY — UNSOUND NEXT INVERSE: same as above for the g·zeta term's inv_next.
+    #[test]
+    fn air_rejects_deep_reduced_e0_unsound_next_inverse() {
+        let cfg = cfg_dr(4, 12, 12, 10, true);
+        let n = 1usize << 4;
+        let salt = sample_salt(0x56);
+        let (rows, tree) = leaf_tree_for(12, n, salt);
+        let (mut row, leaf, root, ..) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        let dr = dr_base(&cfg);
+        row[dr + dr_inv_next(&cfg) + 1] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
+            "an unsound next inverse was accepted"
+        );
+    }
+
+    /// FORGERY — TAMPERED at-zeta VALUE: bump a `value_at_zeta` cell. The combination uses it in the
+    /// numerator, so the recomputed e0 diverges from the committed e0 ⇒ rejected.
+    #[test]
+    fn air_rejects_deep_reduced_e0_tampered_at_zeta() {
+        let cfg = cfg_dr(4, 12, 12, 10, false);
+        let n = 1usize << 4;
+        let salt = sample_salt(0x66);
+        let (rows, tree) = leaf_tree_for(12, n, salt);
+        let (mut row, leaf, root, ..) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        let dr = dr_base(&cfg);
+        row[dr + DR_VZETA + 4 * D + 1] += Val::ONE; // tamper value_at_zeta[4] limb 1
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
+            "a tampered at-zeta value was accepted"
+        );
+    }
+
+    /// FORGERY — FORGED alpha-power tower entry: bump a committed `alpha_pow[i]` so it != alpha^i. The
+    /// tower-chain constraint (`apow[i] == apow[i-1]·alpha`) breaks AND the combination shifts ⇒
+    /// rejected. (The batching powers are constrained, not free.)
+    #[test]
+    fn air_rejects_deep_reduced_e0_forged_alpha_power() {
+        let cfg = cfg_dr(4, 12, 12, 10, false);
+        let n = 1usize << 4;
+        let salt = sample_salt(0x77);
+        let (rows, tree) = leaf_tree_for(12, n, salt);
+        let (mut row, leaf, root, ..) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        let dr = dr_base(&cfg);
+        row[dr + dr_alpha_pow(&cfg) + 6 * D] += Val::ONE; // forge alpha_pow[6]
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
+            "a forged alpha-power tower entry was accepted"
+        );
+    }
+
+    /// FORGERY — TAMPERED QUERY POINT x: bump x. Both denominators change, so the witnessed inverses no
+    /// longer satisfy `inv·(zeta − x) == 1` ⇒ rejected.
+    #[test]
+    fn air_rejects_deep_reduced_e0_tampered_x() {
+        let cfg = cfg_dr(4, 12, 12, 10, true);
+        let n = 1usize << 4;
+        let salt = sample_salt(0x88);
+        let (rows, tree) = leaf_tree_for(12, n, salt);
+        let (mut row, leaf, root, ..) = dr_window(&cfg, 5, &rows[5], salt, &tree);
+        let dr = dr_base(&cfg);
+        row[dr + dr_x(&cfg)] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
+            "a tampered query point x was accepted"
         );
     }
 }
