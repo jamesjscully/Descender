@@ -95,6 +95,31 @@
 //!      mismatch ([`tests::air_prefix_blocks_bound_to_public_transcript`]). This is a BOUNDED prefix
 //!      (each round absorbs RATE = 8 elements); the full ~190-elem transcript needs
 //!      ⌈(8 cap + ~190 IO)/8⌉ ≈ 25 rounds (see remaining below).
+//!  14. **(FS-αζ) SQUEEZE alpha + zeta** (NEW; `fs_alpha_zeta`): the DEEP/batch combination challenge
+//!      `alpha` and the OOD point `zeta` are SQUEEZED from the inline duplex challenger in the EXACT
+//!      p3-uni-stark order — observe(metadata ‖ main-trace commitment ‖ public values) → SAMPLE alpha
+//!      → observe(quotient-chunks commitment) → SAMPLE zeta — and CONSTRAINED to equal the DEEP
+//!      folder's `alpha`/`zeta` cells (no longer free). Fidelity-PINned against the native
+//!      `DuplexChallenger` ([`tests::fs_squeeze_matches_native_duplex_challenger`]); wrong-order /
+//!      forged / statement-decoupled challenges rejected.
+//!  15. **(FS-β) SQUEEZE the FRI commit-phase betas, CONTINUING the post-zeta transcript** (NEW;
+//!      `fs_beta_rounds`): the FRI folding challenges `beta_0 .. beta_{R-1}` are SQUEEZED CONTINUING
+//!      from the post-zeta sponge state, in the EXACT p3-fri verifier order (p3-fri-0.6.1
+//!      verifier.rs:299-312): per commit-phase round `r`, `observe(commit_phase_commit_r)` (FULL-rate
+//!      absorb-permute into the carried state) → `sample_algebra_element()` = beta_r. state_0 = the
+//!      quotient-observe round's perm output (sampling zeta is non-mutating), so alpha, zeta, and ALL
+//!      betas come from ONE ordered sponge transcript. Each beta_r is bound limb-for-limb to the (c)
+//!      descent's `round_beta(r)` cell — the FRI fold consumes the FS-squeezed challenge, REPLACING the
+//!      free-column `bind_beta_to_draws` pin. Fidelity-PINned against the native `DuplexChallenger`
+//!      ([`tests::fs_squeeze_betas_match_native_duplex_challenger`]). Tamper-rejected: a fold using a
+//!      beta != squeezed beta_r ([`tests::air_rejects_fold_beta_not_squeezed`]), a tampered beta cell
+//!      ([`tests::air_rejects_tampered_beta_cell`]), a changed fold commitment with stale betas
+//!      ([`tests::air_rejects_changed_fold_commitment_keeping_stale_betas`] — comm_r change moves
+//!      beta_r AND every subsequent beta), a wrong-round beta
+//!      ([`tests::air_rejects_wrong_round_beta`]), a tampered perm
+//!      ([`tests::air_rejects_fs_beta_tampered_perm`]), a broken inter-round carry
+//!      ([`tests::air_rejects_fs_beta_broken_interround_carry`]), and a broken post-zeta continuation
+//!      ([`tests::air_rejects_fs_beta_broken_postzeta_continuation`]).
 //!
 //! ## Remaining assembly toward the full monolith (documented, NOT yet wired)
 //!
@@ -114,10 +139,21 @@
 //!   existing (a-FS++) `sponge_absorb_n`) must be threaded. The
 //!   [`crate::challenger::air::ChallengerAir`] op-program (observe → sample sequencing, in/out buffer
 //!   one-hots) is the reference for the exact absorb/sample interleaving (the prefix here assumes
-//!   pure FULL-rate absorbs feeding one final draw-phase). Also still committed: the bus betas/zeta
-//!   (block (b)) remain free draw columns rather than being threaded off their own squeeze permutes
-//!   (the (a-FS+) multi-draw machinery is the building block to replace them, once the per-challenge
-//!   permute boundaries are laid out). One [`crate::inlined_perm::eval_perm`] per permutation.
+//!   pure FULL-rate absorbs feeding one final draw-phase). The FRI commit-phase betas are NOW
+//!   FS-squeezed and bound (item 15, `fs_beta_rounds`); `zeta` and the DEEP `alpha` are FS-squeezed
+//!   (item 14). The free-column `bind_beta_to_draws` block (b) is RETAINED only for configs that do
+//!   not enable item 15. One [`crate::inlined_perm::eval_perm`] per permutation.
+//! - **ONE-TRANSCRIPT scope, honest flags (items 14–15)**: alpha → zeta → beta_0 .. beta_{R-1} now
+//!   share ONE ordered sponge state (the beta chain CONTINUES the post-zeta state; tested by
+//!   [`tests::air_rejects_fs_beta_broken_postzeta_continuation`]). STILL SEPARATE: (1) the query-INDEX
+//!   draw (the (a-FS) `C_DRAW_OUT` chain) is its own committed-`sponge_in` squeeze, NOT yet stitched
+//!   onto the post-last-beta state — unifying it (continue the index draw from the final beta round's
+//!   output, after observing final_poly + the log-arity schedule + the query-PoW witness, per
+//!   verifier.rs:323-353) is the precise NEXT step. (2) The FRI batch-combination alpha
+//!   (verifier.rs:195 — a single `sample_algebra_element` with NO observe, between zeta and the first
+//!   beta) is not yet modeled as an intervening squeeze; the beta chain currently treats the first
+//!   commit-phase observe as the immediate continuation of the quotient-observe round. Both are
+//!   bounded, local refinements of the SAME carried-state primitive.
 //! - **deferred leaf C(zeta)**: the DEEP block opens `C(zeta)` / `Q(zeta)` as committed values and
 //!   constrains the QUOTIENT RELATION; the full `C(zeta) =` leaf-AIR-constraint-polynomial
 //!   evaluation (re-expressing the entire leaf folder) + the DEEP linear-combination / chunk
@@ -246,6 +282,26 @@ pub struct RecursiveConfig {
     /// inner commitments + public digest, so a forger cannot fix alpha/zeta independent of the
     /// statement. Off ⇒ blocks committed-but-unbound (the squeeze mechanics are still constrained).
     pub fs_blocks_public: bool,
+    /// (FS-β) SQUEEZE the FRI commit-phase folding challenges `beta_0 .. beta_{R-1}` CONTINUING from
+    /// the post-zeta sponge state, in the EXACT p3-fri verifier order
+    /// (p3-fri-0.6.1 verifier.rs:299-312): for each commit-phase round `r`,
+    /// `observe(commit_phase_commit_r)` → `sample_algebra_element()` = beta_r. `R = fs_beta_rounds`.
+    /// When `> 0` the window carries, AFTER the (FS-αζ) block, a per-round
+    /// `block[RATE] ‖ perm[PERM_COLS] ‖ beta_r[D]` chain whose FIRST round continues from the
+    /// quotient-observe round's output (the post-zeta state — sampling zeta does not mutate the
+    /// sponge), each subsequent round continues from the previous beta round's output. Each beta_r is
+    /// bound limb-for-limb to the (c) descent's `round_beta(r)` cell, so the FRI fold actually uses the
+    /// FS-squeezed challenge (NOT a free draw column). Requires `fs_alpha_zeta` and `num_rounds >= R`.
+    /// REPLACES the free-column `bind_beta_to_draws` pin for these rounds: a fold using a beta != the
+    /// squeezed beta_r is rejected, and changing comm_r changes beta_r and every subsequent beta.
+    pub fs_beta_rounds: usize,
+    /// (FS-β) bind each FRI commit-phase round's absorbed block (`commit_phase_commit_r`) to
+    /// public-value columns (the committed transcript), exactly like `fs_blocks_public` does for the
+    /// alpha/zeta prefix. When `true` and the public-values vector is exactly `fs_beta_rounds * RATE`
+    /// long, element `r*RATE + i` pins commit-phase round `r`'s absorbed block lane `i`. Ties the beta
+    /// squeeze to the ACTUAL observed fold-round commitments. Off ⇒ blocks committed-but-unbound (the
+    /// squeeze mechanics are still constrained).
+    pub fs_betas_public: bool,
 }
 
 impl RecursiveConfig {
@@ -268,6 +324,8 @@ impl RecursiveConfig {
             fs_alpha_zeta: false,
             fs_pre_alpha_rounds: 0,
             fs_blocks_public: false,
+            fs_beta_rounds: 0,
+            fs_betas_public: false,
         }
     }
     /// Number of successive squeeze draws actually laid out (≥ 1, ≤ RATE).
@@ -518,6 +576,38 @@ fn fs_size(cfg: &RecursiveConfig) -> usize {
     }
 }
 
+// ----- (FS-β) FRI commit-phase beta squeeze block -----
+//
+// Appended AFTER the (FS-αζ) block. Per commit-phase round `r = 0..fs_beta_rounds`:
+//   block[RATE] ‖ perm[PERM_COLS] ‖ beta_r[D]
+// `block` is the observed commit-phase commitment; `perm`'s input is absorb(state_r, block, RATE)
+// where state_0 is the post-zeta state (the quotient-observe round's output) and state_{r+1} is round
+// r's perm output; beta_r is the LIFO squeeze of round r's perm output rate. Each beta_r is bound to
+// the (c) descent round_beta(r) cell.
+const FB_BLOCK: usize = 0;
+const FB_PERM: usize = FB_BLOCK + RATE;
+const FB_BETA: usize = FB_PERM + PERM_COLS;
+const FB_ROUND: usize = FB_BETA + D;
+
+/// Base of the (FS-β) block (after the FS-αζ block).
+fn fb_base(cfg: &RecursiveConfig) -> usize {
+    fs_base(cfg) + fs_size(cfg)
+}
+
+/// Sub-offset of (FS-β) round `r` within the window.
+fn fb_round_base(cfg: &RecursiveConfig, r: usize) -> usize {
+    fb_base(cfg) + r * FB_ROUND
+}
+
+/// Size of the (FS-β) block: `fs_beta_rounds` rounds.
+fn fb_size(cfg: &RecursiveConfig) -> usize {
+    if cfg.fs_beta_rounds > 0 {
+        cfg.fs_beta_rounds * FB_ROUND
+    } else {
+        0
+    }
+}
+
 /// The (alpha, zeta) the inline FS challenger squeezes for `fs_blocks` (the observed transcript:
 /// `fs_pre_alpha_rounds` pre-alpha FULL-rate blocks + 1 quotient-commitment block), in p3 order:
 /// observe pre-alpha prefix → SAMPLE alpha → observe quotient → SAMPLE zeta. The single source the
@@ -546,9 +636,57 @@ pub fn fs_squeeze_alpha_zeta(
     (alpha, zeta)
 }
 
+/// The post-zeta sponge state — the SHARED continuation point for the FRI commit-phase beta squeeze
+/// (and, ultimately, the query-index draw). After observing the quotient commitment and SAMPLING
+/// zeta (which does NOT mutate the sponge state in a duplex challenger), the sponge state is exactly
+/// the quotient-observe round's permute output. This is the single source the honest builder and the
+/// (FS-β) AIR binding both continue from, so betas are squeezed from ONE ordered transcript that
+/// already includes alpha + zeta.
+pub fn fs_post_zeta_state(
+    pre_alpha_blocks: &[[Val; RATE]],
+    quot_block: [Val; RATE],
+) -> [Val; WIDTH] {
+    assert!(
+        !pre_alpha_blocks.is_empty(),
+        "fs_post_zeta_state requires >= 1 pre-alpha round"
+    );
+    let pre_state = prefix_chain_state(pre_alpha_blocks);
+    prefix_round_state(pre_state, quot_block)
+}
+
+/// SQUEEZE the FRI commit-phase folding challenges `beta_0 .. beta_{R-1}` CONTINUING from the
+/// post-zeta sponge state, in the EXACT p3-fri verifier order (p3-fri-0.6.1 verifier.rs:299-312):
+/// for each commit-phase round `r`: `observe(commit_phase_commit_r)` (one FULL-rate absorb-permute
+/// into the carried sponge state) → `sample_algebra_element()` (LIFO 8-base-draw squeeze = beta_r).
+/// The carried sponge state threads round → round (state_{r+1} = permute(absorb(state_r, comm_r))),
+/// so changing comm_r changes beta_r AND every subsequent beta. `start_state` is the post-zeta state
+/// (`fs_post_zeta_state`) — the same continuation the alpha/zeta chain ended on, making alpha, zeta,
+/// and all betas come from ONE ordered sponge transcript.
+///
+/// NOTE on FRI batch-alpha: the real p3 PCS samples a FRI *batch-combination* alpha (verifier.rs:195)
+/// after zeta and before the betas. That alpha is a distinct challenge from the uni-stark constraint
+/// alpha modeled by `fs_squeeze_alpha_zeta`. This recursive-AIR fragment models the commit-phase
+/// betas as the next squeezes after the quotient-observe round; wiring the intervening FRI batch-alpha
+/// sample (a single `sample_algebra_element` with no observe) is the precise next refinement and is
+/// flagged in the module header.
+pub fn fs_squeeze_betas(
+    start_state: [Val; WIDTH],
+    commit_blocks: &[[Val; RATE]],
+) -> (Vec<Challenge>, [Val; WIDTH]) {
+    let mut state = start_state;
+    let mut betas = Vec::with_capacity(commit_blocks.len());
+    for block in commit_blocks {
+        // observe(commit_phase_commit_r): one FULL-rate absorb-permute into the carried state.
+        state = prefix_round_state(state, *block);
+        // sample beta_r: LIFO squeeze of this round's permute output rate.
+        betas.push(Challenge::from_basis_coefficients_fn(|i| state[RATE - 1 - i]));
+    }
+    (betas, state)
+}
+
 /// Total column count for a window with this config.
 pub fn n_cols(cfg: &RecursiveConfig) -> usize {
-    fs_base(cfg) + fs_size(cfg)
+    fb_base(cfg) + fb_size(cfg)
 }
 
 /// The `j`-th tower column (`sp[j]`).
@@ -617,6 +755,12 @@ pub struct WindowInputs<'a> {
     /// (c-pub) public-IO statement: per element `(outer, observed, inner)`. Length must equal
     /// `public_io_len`. The honest builder sets the three equal.
     pub public_io: &'a [(Val, Val, Val)],
+    /// (FS-β) the observed FRI commit-phase commitments (one RATE-element block per fold round) the
+    /// betas are squeezed from. Length must equal `fs_beta_rounds` when `fs_beta_rounds > 0`. The
+    /// honest builder DERIVES each `beta_r` (overriding the descent's supplied `beta`/`descent` betas
+    /// for rounds `0..fs_beta_rounds`) from these by continuing the post-zeta sponge state. Unused
+    /// otherwise.
+    pub fs_beta_blocks: &'a [[Val; RATE]],
 }
 
 impl<'a> WindowInputs<'a> {
@@ -639,6 +783,7 @@ impl<'a> WindowInputs<'a> {
             absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
+            fs_beta_blocks: &[],
         }
     }
 }
@@ -740,7 +885,38 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
     let canon = draw_out.as_canonical_u32();
     let index = (canon & ((1u32 << h) - 1)) as usize;
     let s0 = fold_point(h, index);
-    let folded0 = fold_pair(inp.e0, inp.e1, inp.beta, s0);
+    let rounds = cfg.rounds();
+
+    // (FS-β) when squeezing the FRI commit-phase betas, DERIVE them by continuing the post-zeta
+    // sponge state, and OVERRIDE the descent's supplied betas for rounds 0..fs_beta_rounds so the
+    // fold actually consumes the FS-squeezed challenge. Computed before the fold so folded_r uses it.
+    let fs_betas: Vec<Challenge> = if cfg.fs_beta_rounds > 0 {
+        assert!(cfg.fs_alpha_zeta, "fs_beta_rounds requires fs_alpha_zeta");
+        assert!(rounds >= cfg.fs_beta_rounds, "num_rounds must be >= fs_beta_rounds");
+        assert_eq!(
+            inp.fs_beta_blocks.len(),
+            cfg.fs_beta_rounds,
+            "fs_beta_blocks must have fs_beta_rounds entries"
+        );
+        let (pre, quot) = inp.fs_blocks.split_at(cfg.fs_pre_alpha_rounds);
+        let start = fs_post_zeta_state(pre, quot[0]);
+        fs_squeeze_betas(start, inp.fs_beta_blocks).0
+    } else {
+        Vec::new()
+    };
+    // Effective per-round betas: FS-squeezed for rounds 0..fs_beta_rounds, else the supplied inputs.
+    let round_beta_val = |r: usize| -> Challenge {
+        if r < cfg.fs_beta_rounds {
+            fs_betas[r]
+        } else if r == 0 {
+            inp.beta
+        } else {
+            inp.descent[r - 1].1
+        }
+    };
+
+    let beta0 = round_beta_val(0);
+    let folded0 = fold_pair(inp.e0, inp.e1, beta0, s0);
 
     let mut row = vec![Val::ZERO; n_cols(cfg)];
     row[C_DRAW_OUT] = draw_out;
@@ -750,7 +926,7 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
     row[C_INDEX] = Val::from_u32(index as u32);
     row[C_E0..C_E0 + D].copy_from_slice(&limbs(inp.e0));
     row[C_E1..C_E1 + D].copy_from_slice(&limbs(inp.e1));
-    row[C_BETA..C_BETA + D].copy_from_slice(&limbs(inp.beta));
+    row[C_BETA..C_BETA + D].copy_from_slice(&limbs(beta0));
     row[C_S] = s0;
     row[C_FOLDED..C_FOLDED + D].copy_from_slice(&limbs(folded0));
 
@@ -768,14 +944,14 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
     debug_assert_eq!(acc, s0, "tower product != fold_point — base/bit convention mismatch");
 
     // (c) descent rounds r = 1..num_rounds: s_r = s_{r-1}², e0_r = folded_{r-1}, e1_r/beta_r given.
-    let rounds = cfg.rounds();
     if rounds > 1 {
         assert_eq!(inp.descent.len(), rounds - 1, "descent must supply rounds-1 (e1,beta) pairs");
     }
     let mut s_prev = s0;
     let mut folded_prev = folded0;
     for r in 1..rounds {
-        let (e1_r, beta_r) = inp.descent[r - 1];
+        let e1_r = inp.descent[r - 1].0;
+        let beta_r = round_beta_val(r); // (FS-β) FS-squeezed for r < fs_beta_rounds, else supplied
         let e0_r = folded_prev; // chain-link
         let s_r = s_prev * s_prev; // point-square
         let folded_r = fold_pair(e0_r, e1_r, beta_r, s_r);
@@ -824,14 +1000,9 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
     // binding constraint pins beta/zeta == these draw columns). Honest builder copies the limbs.
     if cfg.bind_beta_to_draws {
         let mut dbase = draw_block_base(cfg);
-        // round betas (round 0 beta, then descent betas).
-        let mut betas: Vec<Challenge> = Vec::with_capacity(rounds);
-        betas.push(inp.beta);
-        for r in 1..rounds {
-            betas.push(inp.descent[r - 1].1);
-        }
-        for b in &betas {
-            row[dbase..dbase + D].copy_from_slice(&limbs(*b));
+        // round betas (the effective betas — FS-squeezed for r < fs_beta_rounds, else supplied).
+        for r in 0..rounds {
+            row[dbase..dbase + D].copy_from_slice(&limbs(round_beta_val(r)));
             dbase += D;
         }
         if cfg.deep_log_degree.is_some() {
@@ -986,6 +1157,28 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
             },
             "FS block pack != fs_squeeze_alpha_zeta reference"
         );
+    }
+
+    // (FS-β) FRI commit-phase beta squeeze block: continuing from the post-zeta sponge state, per
+    // round r: observe(commit_phase_commit_r) FULL-rate absorb-permute → squeeze beta_r. Each beta_r
+    // is laid into this round's beta cell (and was already used as round_beta_val(r) by the fold).
+    if cfg.fs_beta_rounds > 0 {
+        let consts = inlined_perm::Constants::pinned();
+        let (pre, quot) = inp.fs_blocks.split_at(cfg.fs_pre_alpha_rounds);
+        // state_0 = post-zeta state (the quotient-observe round's output; sampling zeta is non-mutating).
+        let mut state = fs_post_zeta_state(pre, quot[0]);
+        for r in 0..cfg.fs_beta_rounds {
+            let block = inp.fs_beta_blocks[r];
+            let pre_in = absorb_state(state, block, RATE);
+            let perm_cols = inlined_perm::generate_perm_cols(pre_in, &consts);
+            let rb = fb_round_base(cfg, r);
+            row[rb + FB_BLOCK..rb + FB_BLOCK + RATE].copy_from_slice(&block);
+            row[rb + FB_PERM..rb + FB_PERM + PERM_COLS].copy_from_slice(&perm_cols);
+            state = inlined_perm::perm_output(&perm_cols);
+            let beta_r = Challenge::from_basis_coefficients_fn(|i| state[RATE - 1 - i]);
+            row[rb + FB_BETA..rb + FB_BETA + D].copy_from_slice(&limbs(beta_r));
+            debug_assert_eq!(beta_r, fs_betas[r], "FS-β block beta_r != fs_squeeze_betas reference");
+        }
     }
 
     row
@@ -1558,6 +1751,75 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 }
             }
         }
+
+        // ===== (FS-β) SQUEEZE the FRI commit-phase betas, CONTINUING the post-zeta transcript =====
+        // p3-fri verifier FS order (p3-fri-0.6.1 verifier.rs:299-312): for each commit-phase round r,
+        //   observe(commit_phase_commit_r)  → sample_algebra_element() = beta_r
+        // The sponge state is CARRIED: state_0 = the post-zeta state (the quotient-observe round's
+        // perm output; sampling zeta is non-mutating in a duplex challenger), state_{r+1} = round r's
+        // perm output. So alpha, zeta, and ALL betas come from ONE ordered sponge transcript. Each
+        // beta_r is bound limb-for-limb to the (c) descent round_beta(r) cell, so the FRI fold uses the
+        // FS-squeezed challenge — REPLACING the free-column bind_beta_to_draws pin for these rounds. A
+        // beta != the squeezed beta_r is rejected; changing comm_r changes beta_r AND every subsequent
+        // beta (the carried state threads the rounds).
+        if cfg.fs_beta_rounds > 0 {
+            let consts = ConstantsExpr::<AB>::pinned();
+            let cells = WindowCells::<AB> { row: local.clone() };
+            let rate_expr = AB::Expr::from(AB::F::from_u8(RATE as u8));
+            let qb = fs_quot_round_base(&cfg);
+            // state_{r} reader: r == 0 is the post-zeta state (quotient-observe round's perm output);
+            // r >= 1 is FS-β round (r-1)'s perm output.
+            let fb_state_prev = |r: usize, i: usize| -> AB::Expr {
+                if r == 0 {
+                    l(qb + FS_PERM + C_OUTPUT + i)
+                } else {
+                    let pp = fb_round_base(&cfg, r - 1);
+                    l(pp + FB_PERM + C_OUTPUT + i)
+                }
+            };
+            for r in 0..cfg.fs_beta_rounds {
+                let rb = fb_round_base(&cfg, r);
+                let inb = rb + FB_PERM + inlined_perm::C_INPUTS;
+                // observe(commit_phase_commit_r): FULL-rate absorb — rate lanes [0..RATE] == block_r.
+                for i in 0..RATE {
+                    builder.assert_zero(l(inb + i) - l(rb + FB_BLOCK + i));
+                }
+                // capacity slot RATE == state_{r}[RATE] + RATE (length tag, n == RATE).
+                builder.assert_zero(l(inb + RATE) - fb_state_prev(r, RATE) - rate_expr.clone());
+                // remaining capacity slots [RATE+1..WIDTH] carried from state_{r}.
+                for i in (RATE + 1)..WIDTH {
+                    builder.assert_zero(l(inb + i) - fb_state_prev(r, i));
+                }
+                // full Poseidon2 permutation over this round's perm block.
+                eval_perm::<AB, _>(builder, &cells, rb + FB_PERM, &consts);
+                // beta_r == LIFO squeeze of this round's perm output rate: beta_r[i] == out[RATE-1-i].
+                for i in 0..D {
+                    builder.assert_zero(
+                        l(rb + FB_BETA + i) - l(rb + FB_PERM + C_OUTPUT + (RATE - 1 - i)),
+                    );
+                }
+                // BIND beta_r to the (c) descent round_beta(r) cell — the FRI fold uses THIS challenge.
+                let consumer = round_beta(r);
+                for i in 0..D {
+                    builder.assert_zero(consumer[i].clone() - l(rb + FB_BETA + i));
+                }
+            }
+
+            // (FS-β) optionally bind each commit-phase round's absorbed block to the PUBLIC transcript:
+            // public value r*RATE + i == FS-β round r's block (the actual fold-round commitments).
+            if cfg.fs_betas_public {
+                let pubs: Vec<AB::Expr> =
+                    builder.public_values().iter().map(|p| (*p).into()).collect();
+                if pubs.len() == cfg.fs_beta_rounds * RATE {
+                    for r in 0..cfg.fs_beta_rounds {
+                        let rb = fb_round_base(&cfg, r);
+                        for i in 0..RATE {
+                            builder.assert_zero(l(rb + FB_BLOCK + i) - pubs[r * RATE + i].clone());
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -1812,6 +2074,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
+            fs_beta_blocks: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -1867,7 +2130,7 @@ mod tests {
             merkle_leaf: leaves[forged_index],
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[],
         };
         let mut row = pack_window(&cfg, &inp);
         // CONTROL: the FORGED Merkle blocks are internally valid — with a MATCHING forged bus
@@ -1886,7 +2149,7 @@ mod tests {
             descent: &[], merkle_leaf: leaves[honest_index],
             merkle_siblings: &tree.auth_path(honest_index),
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[],
         });
         for c in C_DRAW_OUT..tower_end(levels) {
             row[c] = honest[c];
@@ -2080,7 +2343,7 @@ mod tests {
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -2194,7 +2457,7 @@ mod tests {
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
             deep_zeta: zeta, deep_q: q, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -2315,7 +2578,7 @@ mod tests {
             merkle_leaf: leaves[index],
             merkle_siblings: &sibs,
             deep_zeta: ext_multi(55), deep_q: ext_multi(66), deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[],
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -2351,6 +2614,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
+            fs_beta_blocks: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -2574,6 +2838,7 @@ mod tests {
             absorbed,
             prefix_blocks: &[],
             public_io: &[],
+            fs_beta_blocks: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -2790,6 +3055,7 @@ mod tests {
             absorbed,
             prefix_blocks: blocks,
             public_io: &[],
+            fs_beta_blocks: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -3061,7 +3327,7 @@ mod tests {
             merkle_leaf: leaf,
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -3107,7 +3373,7 @@ mod tests {
             draw_out: draw, e0: forged_e0, e1: ext_multi(2), beta: ext_multi(3),
             descent: &[], merkle_leaf: leaves[index], merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[],
         };
         let row = pack_window(&cfg_off, &inp);
         assert!(
@@ -3145,6 +3411,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: stmt,
+            fs_beta_blocks: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -3244,6 +3511,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &stmt,
+            fs_beta_blocks: &[],
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -3286,7 +3554,7 @@ mod tests {
             deep_zeta: Challenge::ZERO, deep_q: q, deep_alpha: Challenge::ZERO,
             fs_blocks: blocks,
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
-            prefix_blocks: &[], public_io: &[],
+            prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -3548,6 +3816,332 @@ mod tests {
         assert!(
             !check_all_constraints(&air(cfg), &RowMajorMatrix::new(row, n_cols(&cfg)), &bad_pubs, None).is_ok(),
             "a public transcript inconsistent with the FS absorbed block was accepted"
+        );
+    }
+
+    // ---------------------------------------------------------------------------------
+    // (FS-β) SQUEEZE the FRI commit-phase betas, CONTINUING the post-zeta transcript.
+    // p3-fri-0.6.1 verifier.rs:299-312 order: per round observe(comm_r) → sample beta_r.
+    // ---------------------------------------------------------------------------------
+
+    /// A representative FRI commit-phase commitment block (RATE elements).
+    fn fb_block(seed: u32) -> [Val; RATE] {
+        core::array::from_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(2246822519).wrapping_add(i as u32 * 97 + 3))
+        })
+    }
+
+    fn cfg_fb(h: usize, k: usize, pre_rounds: usize, beta_rounds: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            num_rounds: beta_rounds, // one descent round per FRI commit-phase beta
+            deep_log_degree: Some(k),
+            fs_alpha_zeta: true,
+            fs_pre_alpha_rounds: pre_rounds,
+            fs_beta_rounds: beta_rounds,
+            ..RecursiveConfig::single_window(h)
+        }
+    }
+
+    /// Build an FS-β window: alpha/zeta prefix blocks + beta commit-phase blocks; the descent rounds
+    /// (one per beta) are folded with the FS-squeezed betas (the supplied descent betas are ignored
+    /// for those rounds — only the descent e1 sibling matters).
+    fn fb_window(
+        cfg: &RecursiveConfig,
+        fs_blocks: &[[Val; RATE]],
+        beta_blocks: &[[Val; RATE]],
+        q: Challenge,
+    ) -> Vec<Val> {
+        // descent e1 siblings for rounds 1..num_rounds (beta is overridden, so any value works).
+        let descent: Vec<(Challenge, Challenge)> = (1..cfg.rounds())
+            .map(|r| (ext_multi(500 + r as u32), Challenge::ZERO))
+            .collect();
+        let inp = WindowInputs {
+            draw_out: Val::from_u32(0xABCDE),
+            e0: ext_multi(1), e1: ext_multi(2), beta: Challenge::ZERO,
+            descent: &descent,
+            merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
+            merkle_siblings: &[],
+            deep_zeta: Challenge::ZERO, deep_q: q, deep_alpha: Challenge::ZERO,
+            fs_blocks,
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[], public_io: &[],
+            fs_beta_blocks: beta_blocks,
+        };
+        pack_window(cfg, &inp)
+    }
+
+    /// FIDELITY-PIN: `fs_squeeze_betas` (and hence the packed bus) reproduces EVERY beta_r a REAL
+    /// `DuplexChallenger` produces, driving observe-main→alpha→observe-quot→zeta→[observe-comm_r→
+    /// beta_r]* in the EXACT p3 + p3-fri order. Element-for-element equality against the native
+    /// challenger for each beta_r, NOT a hand-picked constant.
+    #[test]
+    fn fs_squeeze_betas_match_native_duplex_challenger() {
+        for pre_rounds in [1usize, 2] {
+            for beta_rounds in [1usize, 2, 3] {
+                let pre: Vec<[Val; RATE]> = (0..pre_rounds as u32).map(|r| fs_block(10 + r)).collect();
+                let quot = fs_block(900);
+                let comms: Vec<[Val; RATE]> =
+                    (0..beta_rounds as u32).map(|r| fb_block(200 + r)).collect();
+
+                // native: observe pre-alpha prefix, sample alpha, observe quotient, sample zeta,
+                // then per FRI commit-phase round: observe(comm_r), sample beta_r.
+                let mut ch = Challenger::new(default_koalabear_poseidon2_16());
+                for block in &pre {
+                    for &x in block.iter() { ch.observe(x); }
+                }
+                let _alpha: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+                for &x in quot.iter() { ch.observe(x); }
+                let _zeta: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+                let betas_native: Vec<Challenge> = comms
+                    .iter()
+                    .map(|comm| {
+                        for &x in comm.iter() { ch.observe(x); }
+                        Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() })
+                    })
+                    .collect();
+
+                // ours: continue from the post-zeta state.
+                let start = fs_post_zeta_state(&pre, quot);
+                let (betas, _) = fs_squeeze_betas(start, &comms);
+                assert_eq!(betas.len(), beta_rounds);
+                for (r, (b, bn)) in betas.iter().zip(betas_native.iter()).enumerate() {
+                    assert_eq!(
+                        b, bn,
+                        "FS beta_{r} diverges from native challenger (pre={pre_rounds}, rounds={beta_rounds})"
+                    );
+                }
+            }
+        }
+    }
+
+    /// GOLDEN (positive): an honest FS-β window — alpha/zeta squeeze ‖ per-round commit observe +
+    /// beta squeeze, with each FRI fold consuming the FS-squeezed beta_r — ACCEPTS via the real
+    /// `check_all_constraints`, across pre-round and beta-round counts.
+    #[test]
+    fn air_accepts_fs_betas() {
+        for &pre_rounds in &[1usize, 2] {
+            for &beta_rounds in &[1usize, 2, 3] {
+                let cfg = cfg_fb(12, 8, pre_rounds, beta_rounds);
+                let fs_blocks: Vec<[Val; RATE]> =
+                    (0..(pre_rounds + 1) as u32).map(|r| fs_block(20 + r)).collect();
+                let comms: Vec<[Val; RATE]> =
+                    (0..beta_rounds as u32).map(|r| fb_block(300 + r)).collect();
+                let row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(66));
+                // each FS-β round's beta cell == the squeezed beta_r, and the descent consumer cell
+                // equals it.
+                let start = fs_post_zeta_state(&fs_blocks[..pre_rounds], fs_blocks[pre_rounds]);
+                let (betas, _) = fs_squeeze_betas(start, &comms);
+                for r in 0..beta_rounds {
+                    let rb = fb_round_base(&cfg, r);
+                    assert_eq!(
+                        Challenge::from_basis_coefficients_slice(&row[rb + FB_BETA..rb + FB_BETA + D]).unwrap(),
+                        betas[r], "FS-β round {r} beta cell != squeezed beta_r"
+                    );
+                }
+                let m = RowMajorMatrix::new(row, n_cols(&cfg));
+                let report = check_all_constraints(&air(cfg), &m, &[], None);
+                assert!(
+                    report.is_ok(),
+                    "honest FS-β window rejected (pre={pre_rounds}, rounds={beta_rounds}): {} failures",
+                    report.failures.len()
+                );
+            }
+        }
+    }
+
+    /// (FS-β) FORGERY — a FOLD using a beta != the squeezed beta_r is rejected. We keep the FS-β
+    /// squeeze block honest and corrupt the descent's consumer beta cell (round 0's C_BETA) plus
+    /// re-fold it; the consumer != squeezed binding rejects. Attempted forgery, never substring scan.
+    #[test]
+    fn air_rejects_fold_beta_not_squeezed() {
+        let cfg = cfg_fb(12, 8, 2, 2);
+        let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(30 + r)).collect();
+        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(400 + r)).collect();
+        let mut row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(7));
+        // corrupt round-0's consumer beta cell (C_BETA) so the fold uses beta != squeezed beta_0.
+        row[C_BETA + 1] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a FRI fold using a beta != the FS-squeezed beta_0 was accepted — beta not FS-bound"
+        );
+    }
+
+    /// (FS-β) FORGERY — corrupting the squeezed beta CELL (not the consumer) is rejected: it must
+    /// equal the round's LIFO squeeze pop. Pins beta_r to the genuine permute output.
+    #[test]
+    fn air_rejects_tampered_beta_cell() {
+        let cfg = cfg_fb(12, 8, 1, 2);
+        let fs_blocks: Vec<[Val; RATE]> = (0..2u32).map(|r| fs_block(45 + r)).collect();
+        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(420 + r)).collect();
+        let mut row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(8));
+        let rb = fb_round_base(&cfg, 1);
+        row[rb + FB_BETA + 2] += Val::ONE; // beta_1 cell != squeeze pop
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a beta cell != the round's squeeze pop was accepted — beta not bound to the permute"
+        );
+    }
+
+    /// (FS-β) FORGERY — changing a fold-round COMMITMENT changes that round's beta AND every
+    /// subsequent beta (the carried sponge state threads the rounds). We tamper comm_0, re-pack the
+    /// squeeze HONESTLY for the tampered comm, but KEEP the OLD descent consumer betas (the stale
+    /// favorable challenges) ⇒ rejected. Proves betas are bound to the commitments.
+    #[test]
+    fn air_rejects_changed_fold_commitment_keeping_stale_betas() {
+        let cfg = cfg_fb(12, 8, 2, 3);
+        let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(50 + r)).collect();
+        let comms: Vec<[Val; RATE]> = (0..3u32).map(|r| fb_block(440 + r)).collect();
+        // honest window accepts.
+        let honest = fb_window(&cfg, &fs_blocks, &comms, ext_multi(11));
+        assert!(check_all_constraints(&air(cfg), &RowMajorMatrix::new(honest, n_cols(&cfg)), &[], None).is_ok());
+
+        // changing comm_0 must move beta_0 AND beta_1 AND beta_2 (carried state).
+        let mut tampered = comms.clone();
+        tampered[0][4] += Val::ONE;
+        let start = fs_post_zeta_state(&fs_blocks[..2], fs_blocks[2]);
+        let (old_betas, _) = fs_squeeze_betas(start, &comms);
+        let (new_betas, _) = fs_squeeze_betas(start, &tampered);
+        for r in 0..3 {
+            assert_ne!(old_betas[r], new_betas[r], "comm_0 change did not move beta_{r} (subsequent-round binding)");
+        }
+
+        // re-pack with the tampered comm (honest squeeze), then OVERWRITE the descent consumer betas
+        // back to the OLD (stale) betas and re-fold each round so the per-round (★) is internally
+        // consistent at the stale beta — the ONLY rejector is consumer != squeezed.
+        let mut row = fb_window(&cfg, &fs_blocks, &tampered, ext_multi(11));
+        // round 0 consumer = C_BETA; re-fold round 0 with old beta_0.
+        let e0_0 = Challenge::from_basis_coefficients_slice(&row[C_E0..C_E0 + D]).unwrap();
+        let e1_0 = Challenge::from_basis_coefficients_slice(&row[C_E1..C_E1 + D]).unwrap();
+        let s0 = row[C_S];
+        let folded0 = fold_pair(e0_0, e1_0, old_betas[0], s0);
+        row[C_BETA..C_BETA + D].copy_from_slice(&limbs(old_betas[0]));
+        row[C_FOLDED..C_FOLDED + D].copy_from_slice(&limbs(folded0));
+        // rounds 1.. : re-fold with old beta_r, threading the chain-link e0_r == folded_{r-1}.
+        let mut folded_prev = folded0;
+        for r in 1..cfg.rounds() {
+            let b = extra_round_base(&cfg, r);
+            let e1_r = Challenge::from_basis_coefficients_slice(&row[b + D..b + 2 * D]).unwrap();
+            let s_r = row[b + 3 * D];
+            let e0_r = folded_prev;
+            let folded_r = fold_pair(e0_r, e1_r, old_betas[r], s_r);
+            row[b..b + D].copy_from_slice(&limbs(e0_r));
+            row[b + 2 * D..b + 3 * D].copy_from_slice(&limbs(old_betas[r]));
+            row[b + 3 * D + 1..b + 4 * D + 1].copy_from_slice(&limbs(folded_r));
+            folded_prev = folded_r;
+        }
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a changed fold commitment with stale (favorable) betas was accepted — betas not commitment-bound"
+        );
+    }
+
+    /// (FS-β) FORGERY — WRONG-ROUND beta (using round r+1's beta in round r) is rejected. The carried
+    /// state makes beta_0 != beta_1; placing beta_1 in round 0's consumer (and re-folding) breaks the
+    /// round-0 consumer == squeezed-beta_0 binding. Proves the per-round observe→sample ORDER /
+    /// round-indexing is load-bearing (a swapped beta is a soundness bug).
+    #[test]
+    fn air_rejects_wrong_round_beta() {
+        let cfg = cfg_fb(12, 8, 2, 2);
+        let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(60 + r)).collect();
+        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(460 + r)).collect();
+        let start = fs_post_zeta_state(&fs_blocks[..2], fs_blocks[2]);
+        let (betas, _) = fs_squeeze_betas(start, &comms);
+        assert_ne!(betas[0], betas[1], "beta_0 == beta_1 (carried-state threading broke)");
+
+        let mut row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(13));
+        // put beta_1 in round 0's consumer (C_BETA) and re-fold round 0 — wrong-round beta.
+        let e0_0 = Challenge::from_basis_coefficients_slice(&row[C_E0..C_E0 + D]).unwrap();
+        let e1_0 = Challenge::from_basis_coefficients_slice(&row[C_E1..C_E1 + D]).unwrap();
+        let folded0 = fold_pair(e0_0, e1_0, betas[1], row[C_S]);
+        row[C_BETA..C_BETA + D].copy_from_slice(&limbs(betas[1]));
+        row[C_FOLDED..C_FOLDED + D].copy_from_slice(&limbs(folded0));
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "round 0 using round 1's beta (wrong-round) was accepted — beta round-indexing not bound"
+        );
+    }
+
+    /// (FS-β) FORGERY — a tampered FS-β perm interior cell ⇒ the inlined Poseidon2 round constraints
+    /// reject (the beta squeeze permute is fully constrained, not just the input copy).
+    #[test]
+    fn air_rejects_fs_beta_tampered_perm() {
+        let cfg = cfg_fb(12, 8, 1, 2);
+        let fs_blocks: Vec<[Val; RATE]> = (0..2u32).map(|r| fs_block(70 + r)).collect();
+        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(480 + r)).collect();
+        let mut row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(15));
+        let rb = fb_round_base(&cfg, 0);
+        row[rb + FB_PERM + inlined_perm::C_BEGIN_POST] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(!check_all_constraints(&air(cfg), &m, &[], None).is_ok());
+    }
+
+    /// (FS-β) FORGERY — broken inter-round carry: corrupt round 1's perm input CAPACITY lane (which
+    /// must equal absorb(round-0 output, comm_1, RATE)'s capacity carry) so the round-0→round-1 carry
+    /// breaks (the carried-state threading is load-bearing).
+    #[test]
+    fn air_rejects_fs_beta_broken_interround_carry() {
+        let cfg = cfg_fb(12, 8, 2, 2);
+        let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(80 + r)).collect();
+        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(500 + r)).collect();
+        let mut row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(17));
+        let rb1 = fb_round_base(&cfg, 1);
+        row[rb1 + FB_PERM + inlined_perm::C_INPUTS + (RATE + 1)] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(!check_all_constraints(&air(cfg), &m, &[], None).is_ok());
+    }
+
+    /// (FS-β) FORGERY — broken continuation from the post-zeta state: corrupt round 0's perm input
+    /// CAPACITY lane (which must be carried from the quotient-observe round's output = the post-zeta
+    /// state). Proves the beta chain genuinely CONTINUES the alpha/zeta transcript (not a fresh chain).
+    #[test]
+    fn air_rejects_fs_beta_broken_postzeta_continuation() {
+        let cfg = cfg_fb(12, 8, 1, 1);
+        let fs_blocks: Vec<[Val; RATE]> = (0..2u32).map(|r| fs_block(90 + r)).collect();
+        let comms: Vec<[Val; RATE]> = vec![fb_block(520)];
+        let mut row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(19));
+        let rb0 = fb_round_base(&cfg, 0);
+        // round 0's perm input capacity slot RATE+1 must == post-zeta state slot RATE+1; corrupt it.
+        row[rb0 + FB_PERM + inlined_perm::C_INPUTS + (RATE + 1)] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a round-0 beta chain NOT continuing the post-zeta state was accepted — chain not unified"
+        );
+    }
+
+    /// (FS-β) PUBLIC-TRANSCRIPT BINDING: with `fs_betas_public`, the FRI commit-phase commitments are
+    /// pinned to the public-values vector. Honest accepts; a public value inconsistent with the
+    /// absorbed commitment rejects.
+    #[test]
+    fn air_fs_betas_bound_to_public_transcript() {
+        let beta_rounds = 2usize;
+        let cfg = RecursiveConfig {
+            num_rounds: beta_rounds,
+            deep_log_degree: Some(8),
+            fs_alpha_zeta: true,
+            fs_pre_alpha_rounds: 2,
+            fs_beta_rounds: beta_rounds,
+            fs_betas_public: true,
+            ..RecursiveConfig::single_window(12)
+        };
+        let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(130 + r)).collect();
+        let comms: Vec<[Val; RATE]> = (0..beta_rounds as u32).map(|r| fb_block(540 + r)).collect();
+        let row = fb_window(&cfg, &fs_blocks, &comms, ext_multi(23));
+        let pubs: Vec<Val> = comms.iter().flatten().copied().collect();
+        assert_eq!(pubs.len(), beta_rounds * RATE);
+        assert!(
+            check_all_constraints(&air(cfg), &RowMajorMatrix::new(row.clone(), n_cols(&cfg)), &pubs, None).is_ok(),
+            "honest FS-β public-transcript binding rejected"
+        );
+        let mut bad_pubs = pubs.clone();
+        bad_pubs[RATE + 1] += Val::ONE;
+        assert!(
+            !check_all_constraints(&air(cfg), &RowMajorMatrix::new(row, n_cols(&cfg)), &bad_pubs, None).is_ok(),
+            "a public transcript inconsistent with the FS-β absorbed commitment was accepted"
         );
     }
 }
