@@ -213,6 +213,7 @@ use crate::fri_fold_air::{limbs, D, W};
 use crate::index_bus::{assert_canonical_pub, FIELD_BITS};
 use crate::challenger::RATE;
 use crate::inlined_perm::{self, eval_perm, ConstantsExpr, PermCells, C_OUTPUT, PERM_COLS};
+use crate::leaf_constraint_air as lc;
 use descender_account_stark::{Challenge, Val, DIGEST_ELEMS, SALT_ELEMS, WIDTH};
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
 use p3_field::{BasedVectorSpace, Field, PrimeCharacteristicRing, PrimeField32, TwoAdicField};
@@ -465,6 +466,33 @@ pub struct RecursiveConfig {
     /// remains a representative/deferred refinement: here `C(zeta)` is the LINEAR alpha-reduction of
     /// the at-zeta values (= p3's reduced OOD opening), which is what binds them to the relation.
     pub deep_c_from_vzeta: bool,
+    /// (CAPSTONE) BIND the DEEP constraint-eval `C(zeta)` to the FULL alpha-FOLDED leaf constraint
+    /// `recompute_c_partial(value_at_zeta) + C_committed`, REPLACING the LINEAR alpha-reduction of
+    /// `deep_c_from_vzeta`. When `true` the window carries a NEW leaf-mirror block (after the (DR)
+    /// block, perturbing no prior offset): the FULL leaf-trace OOD opening — `lc::N_OPENED_CELLS`
+    /// at-zeta cells, indexed in the leaf-witness column order `recompute_c_partial` expects, so
+    /// `cell(i)` returns leaf trace column `i`'s value at `zeta` — ‖ the deferred committed summand
+    /// `C_committed[D]`. The eval enforces
+    ///   `DEEP_C == lc::recompute_c_partial(cell := full value_at_zeta, DEEP_ALPHA) + C_committed`
+    /// (the SAME `recompute_c_partial` the standalone [`crate::deep_air::DeepAir { wire_leaf: true }`]
+    /// gadget uses — all C1/C2/C6/role sponges + reduce/carrier + seams + relation_id + batch chain +
+    /// byte-range, alpha-batched), with the alpha being the FS-bound `DEEP_ALPHA` (strictly stronger
+    /// than deep_air's free alpha). Composed with the DEEP block's `C == Z_H(zeta)·Q`, a forged
+    /// value_at_zeta column (≠ the real OOD eval) now breaks the FULL folded leaf constraint ⇒
+    /// `C != Z_H·Q` ⇒ rejected — the inner proof is verified to prove the real C1∧C2∧C4∧C6 relation,
+    /// not a linear reduction. Requires `deep_log_degree`. Takes precedence over `deep_c_from_vzeta`
+    /// (when both set, the FULL fold is used; the linear reduction is the back-compat fallback).
+    ///
+    /// SCOPE (HONESTLY FLAGGED — exactly what is FOLDED vs COMMITTED): `recompute_c_partial` folds the
+    /// ENTIRE per-row leaf `C_partial` (all 17796 residual classes: C1/C2/C6/role Poseidon2 sponges,
+    /// the C2 wide-then-reduce + carrier mod-q, the C4 base-128 residue, the seams, relation_id
+    /// pinning, the single-row batch-digest-chain step, the per-lane byte-range, and the sponge-output
+    /// → public-value bindings). The DEFERRED summand `C_committed` carries ONLY what the leaf folder
+    /// itself leaves committed (the leaf_constraint_air DEFERRED list: the multi-row chain
+    /// boundary/transition selectors + STARK public values, and the alpha/zeta FS-binding of the leaf
+    /// folder) — NOT silently-dropped per-row constraints. With an honest faithful row `C_committed`
+    /// is the residual `C(zeta) − C_partial(value_at_zeta)`; the per-row leaf C(zeta) is FULLY folded.
+    pub deep_c_full_leaf: bool,
 }
 
 impl RecursiveConfig {
@@ -500,6 +528,7 @@ impl RecursiveConfig {
             deep_e0_combine: 0,
             deep_e0_next: false,
             deep_c_from_vzeta: false,
+            deep_c_full_leaf: false,
         }
     }
     /// Number of successive squeeze draws actually laid out (≥ 1, ≤ RATE).
@@ -1299,9 +1328,37 @@ pub fn deep_reduced_e0_with_next(
     (mred_zeta - mred_x) * inv_zeta + alpha_pow * (mred_zn - mred_x) * inv_next
 }
 
+// ----- (LC) FULL-leaf-constraint mirror block (the CAPSTONE) -----
+//
+// Present iff `deep_c_full_leaf`. Placed LAST in the window (after the (DR) block) so it perturbs no
+// prior offset. Layout (mirroring `deep_air`'s leaf_base block, minus its free `alpha` — we REUSE the
+// FS-bound `DEEP_ALPHA`):
+//   full_value_at_zeta[lc::N_OPENED_CELLS · D]  ‖  C_committed[D]
+// `full_value_at_zeta` is the FULL leaf-trace OOD opening at `zeta`, indexed in the leaf-witness
+// column order `recompute_c_partial` expects: cell `c` (`c < lc::N_OPENED_CELLS`) lives at
+// `LC_VZETA + c·D` and holds leaf trace column `c`'s value at `zeta` (an 8-limb extension element).
+const LC_VZETA: usize = 0;
+fn lc_c_committed(_cfg: &RecursiveConfig) -> usize {
+    LC_VZETA + lc::N_OPENED_CELLS * D
+}
+
+/// Base of the (LC) full-leaf-mirror block (after the (DR) block).
+fn lc_base(cfg: &RecursiveConfig) -> usize {
+    dr_base(cfg) + dr_size(cfg)
+}
+
+/// Size of the (LC) block. 0 unless `deep_c_full_leaf`.
+fn lc_size(cfg: &RecursiveConfig) -> usize {
+    if cfg.deep_c_full_leaf {
+        lc::N_OPENED_CELLS * D + D /* C_committed */
+    } else {
+        0
+    }
+}
+
 /// Total column count for a window with this config.
 pub fn n_cols(cfg: &RecursiveConfig) -> usize {
-    dr_base(cfg) + dr_size(cfg)
+    lc_base(cfg) + lc_size(cfg)
 }
 
 /// The `j`-th tower column (`sp[j]`).
@@ -1428,6 +1485,17 @@ pub struct WindowInputs<'a> {
     pub dr_value_at_zeta: &'a [Challenge],
     pub dr_value_at_zeta_next: &'a [Challenge],
     pub dr_x: Val,
+    /// (LC) the FULL leaf-trace OOD opening at `zeta` — leaf trace column `c`'s value at `zeta` for
+    /// every `c < lc::N_OPENED_CELLS`, in the leaf-witness column order `recompute_c_partial`
+    /// expects. Consumed only when `deep_c_full_leaf`; `lc_value_at_zeta.len()` must equal
+    /// `lc::N_OPENED_CELLS`. The honest builder lays these into the (LC) block, recomputes the FULL
+    /// alpha-folded `C_partial = partial_constraint_eval(cells, DEEP_ALPHA)`, and DERIVES
+    /// `DEEP_C = C_partial + lc_c_committed`, `DEEP_Q = DEEP_C / Z_H(zeta)` so both `C == Z_H·Q` and
+    /// `C == recompute_c_partial(value_at_zeta) + C_committed` hold.
+    pub lc_value_at_zeta: &'a [Challenge],
+    /// (LC) the DEFERRED committed summand `C_committed` of the leaf `C(zeta)` decomposition (see
+    /// `deep_c_full_leaf`). Consumed only when `deep_c_full_leaf`.
+    pub lc_c_committed: Challenge,
 }
 
 impl<'a> WindowInputs<'a> {
@@ -1454,6 +1522,7 @@ impl<'a> WindowInputs<'a> {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         }
     }
 }
@@ -1742,7 +1811,23 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
         // consumes, and Q is DERIVED as C/Z_H(zeta) so `C == Z_H·Q` still holds. This binds
         // value_at_zeta to the constraint relation: a forged value_at_zeta shifts C and breaks the
         // OOD identity. Otherwise (back-compat) C = Z_H·Q with the supplied free `deep_q`.
-        let (c, q) = if cfg.deep_c_from_vzeta {
+        let (c, q) = if cfg.deep_c_full_leaf {
+            // (CAPSTONE) DEEP_C = recompute_c_partial(full value_at_zeta, DEEP_ALPHA) + C_committed,
+            // the FULL alpha-FOLDED leaf constraint over the full leaf-trace OOD opening (NOT the
+            // linear reduction). Q is DERIVED as C/Z_H(zeta) so `C == Z_H·Q` still holds.
+            assert_eq!(
+                inp.lc_value_at_zeta.len(),
+                lc::N_OPENED_CELLS,
+                "deep_c_full_leaf: lc_value_at_zeta must have lc::N_OPENED_CELLS entries"
+            );
+            let cells: [Challenge; lc::N_OPENED_CELLS] =
+                core::array::from_fn(|i| inp.lc_value_at_zeta[i]);
+            // FULL leaf C_partial via the SAME native reference deep_air uses (alpha = DEEP_ALPHA).
+            let c_partial = lc::partial_constraint_eval(&cells, deep_alpha);
+            let c = c_partial + inp.lc_c_committed;
+            let q = c * zh.inverse(); // Z_H(zeta) != 0 at a generic OOD zeta
+            (c, q)
+        } else if cfg.deep_c_from_vzeta {
             assert!(
                 cfg.deep_e0_combine > 0,
                 "deep_c_from_vzeta requires deep_e0_combine > 0 (the value_at_zeta cells)"
@@ -1773,6 +1858,25 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
             row[db + DEEP_POW + j * D..db + DEEP_POW + j * D + D].copy_from_slice(&limbs(p));
             p = p * p;
         }
+    }
+
+    // (LC) FULL-leaf-constraint mirror block: lay out the full leaf-trace OOD opening + C_committed.
+    // The eval recomputes `recompute_c_partial(value_at_zeta, DEEP_ALPHA)` over THESE cells and binds
+    // `DEEP_C == that + C_committed`. (The DEEP_C/Q laid out above were already derived from this in
+    // the `deep_c_full_leaf` branch, so the eval's equality holds with zero residual on an honest row.)
+    if cfg.deep_c_full_leaf {
+        assert_eq!(
+            inp.lc_value_at_zeta.len(),
+            lc::N_OPENED_CELLS,
+            "deep_c_full_leaf: lc_value_at_zeta must have lc::N_OPENED_CELLS entries"
+        );
+        let lcb = lc_base(cfg);
+        for (c_idx, v) in inp.lc_value_at_zeta.iter().enumerate() {
+            let base = lcb + LC_VZETA + c_idx * D;
+            row[base..base + D].copy_from_slice(&limbs(*v));
+        }
+        let cc = lcb + lc_c_committed(cfg);
+        row[cc..cc + D].copy_from_slice(&limbs(inp.lc_c_committed));
     }
 
     // (b) challenger-draw columns: one per bound challenge (= the challenge limbs themselves; the
@@ -2251,6 +2355,37 @@ fn octic_mul<AB: AirBuilder>(a: &[AB::Expr; D], b: &[AB::Expr; D]) -> [AB::Expr;
     })
 }
 
+/// (LC CAPSTONE) Enforce `C == lc::recompute_c_partial(full value_at_zeta, DEEP_ALPHA) + C_committed`
+/// — the FULL alpha-FOLDED leaf constraint over the full leaf-trace OOD opening (the (LC) block),
+/// limb-for-limb against the committed DEEP `C(zeta)`. EXTRACTED into its own `#[inline(never)]` frame
+/// (the leaf-constraint eval is the heavy one — 17796 octic residuals; keep its locals off the main
+/// `eval` frame, mirroring the per-class `#[inline(never)]` extraction in `leaf_constraint_air`).
+#[inline(never)]
+fn eval_full_leaf_c<AB: AirBuilder<F = Val>>(
+    builder: &mut AB,
+    cfg: &RecursiveConfig,
+    local: &[AB::Var],
+    c: &[AB::Expr; D],
+) {
+    let l = |i: usize| -> AB::Expr { local[i].into() };
+    let db = deep_base(cfg);
+    let lcb = lc_base(cfg);
+    // alpha = the FS-bound DEEP_ALPHA (strictly stronger than deep_air's free leaf alpha).
+    let alpha: [AB::Expr; D] = core::array::from_fn(|i| l(db + DEEP_ALPHA + i));
+    // cell(c_idx) = the (LC) block's full value_at_zeta cell c_idx (leaf trace column c_idx at zeta),
+    // in the leaf-witness column order recompute_c_partial expects.
+    let cell = |c_idx: usize| -> [AB::Expr; D] {
+        core::array::from_fn(|j| l(lcb + LC_VZETA + c_idx * D + j))
+    };
+    let c_partial = lc::recompute_c_partial::<AB, _>(&cell, &alpha);
+    let c_committed: [AB::Expr; D] =
+        core::array::from_fn(|j| l(lcb + lc_c_committed(cfg) + j));
+    // C == C_partial + C_committed (limb-for-limb).
+    for i in 0..D {
+        builder.assert_zero(c[i].clone() - (c_partial[i].clone() + c_committed[i].clone()));
+    }
+}
+
 /// In-AIR cleared FRI fold identity (★) `folded·2s == e0(beta+s) − e1(beta−s)` over deg-8.
 fn fold_identity<AB: AirBuilder>(
     builder: &mut AB,
@@ -2438,6 +2573,20 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             let zhq = octic_mul::<AB>(&zh, &q);
             for i in 0..D {
                 builder.assert_zero(c[i].clone() - zhq[i].clone());
+            }
+
+            // ===== (LC CAPSTONE) C == recompute_c_partial(full value_at_zeta) + C_committed =====
+            // The DEEP constraint-eval C(zeta) is the FULL alpha-FOLDED leaf constraint
+            // (FullRelationAir mirror, all 17796 residual classes), RE-COMPUTED in-AIR from the FULL
+            // leaf-trace OOD opening cells via the SAME `lc::recompute_c_partial` the standalone
+            // `deep_air::DeepAir { wire_leaf: true }` uses, alpha = the FS-bound DEEP_ALPHA. Composed
+            // with `C == Z_H·Q` above, a forged value_at_zeta column (≠ the real OOD eval) breaks the
+            // FULL folded constraint ⇒ C != Z_H·Q ⇒ rejected. This REPLACES the linear alpha-reduction
+            // of `deep_c_from_vzeta` (which only enforced C == Σ alpha^i·value_at_zeta[i]). The eval is
+            // EXTRACTED into its own `#[inline(never)]` frame (the leaf-constraint eval is the heavy
+            // one — 17796 octic residuals — keep it off this frame to respect stack discipline).
+            if cfg.deep_c_full_leaf {
+                eval_full_leaf_c::<AB>(builder, &cfg, &local, &c);
             }
         }
 
@@ -2858,9 +3007,12 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
             // (above) separately enforces `C == Z_H(zeta)·Q`. Composed, the at-zeta values feeding the
             // DEEP numerator are now the SAME cells the constraint relation `C(zeta)==Z_H(zeta)·Q(zeta)`
             // reads: a forged value_at_zeta shifts Mred(zeta) ⇒ DEEP_C ⇒ breaks `C == Z_H·Q` (AND e0).
-            // This is the LINEAR alpha-reduction of the at-zeta values (= p3's reduced OOD opening); the
-            // full alpha-FOLDED FullRelationAir evaluation over value_at_zeta stays representative/deferred.
-            if cfg.deep_c_from_vzeta {
+            // This is the LINEAR alpha-reduction of the at-zeta values (= p3's reduced OOD opening); when
+            // `deep_c_full_leaf` is set the FULL alpha-FOLDED FullRelationAir evaluation (above) BINDS
+            // DEEP_C instead, so this linear binding is SKIPPED (the full fold takes precedence — binding
+            // DEEP_C to both the linear reduction over `deep_e0_combine` cells AND the full fold over the
+            // (LC) cells would be contradictory).
+            if cfg.deep_c_from_vzeta && !cfg.deep_c_full_leaf {
                 let mut mred: [AB::Expr; D] = core::array::from_fn(|_| AB::Expr::ZERO);
                 for i in 0..n {
                     let term = octic_mul::<AB>(&apow(i), &vzeta(i));
@@ -3549,6 +3701,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -3608,6 +3761,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         let mut row = pack_window(&cfg, &inp);
         // CONTROL: the FORGED Merkle blocks are internally valid — with a MATCHING forged bus
@@ -3630,6 +3784,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         });
         for c in C_DRAW_OUT..tower_end(levels) {
             row[c] = honest[c];
@@ -3748,6 +3903,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -3997,6 +4153,7 @@ mod tests {
                     layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
                     leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
                     dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
                 };
                 pack_window(&cfg, &inp)
             };
@@ -4158,6 +4315,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -4275,6 +4433,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -4399,6 +4558,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -4438,6 +4598,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -4665,6 +4826,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -4885,6 +5047,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -5160,6 +5323,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -5209,6 +5373,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         let row = pack_window(&cfg_off, &inp);
         assert!(
@@ -5367,6 +5532,7 @@ mod tests {
                 leaf_row: &opened_row,
                 leaf_salt: [Val::ZERO; SALT_ELEMS],
                 dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
             };
             let row = pack_window(&cfg, &inp);
             assert_eq!(
@@ -5424,6 +5590,7 @@ mod tests {
             leaf_row: row,
             leaf_salt: salt,
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         (pack_window(cfg, &inp), leaf, root)
     }
@@ -5556,6 +5723,7 @@ mod tests {
                 leaf_row: &rows[index],
                 leaf_salt: salt,
                 dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
             };
             pack_window(cfg, &inp)
         };
@@ -5625,6 +5793,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -5728,6 +5897,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -5774,6 +5944,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -6102,6 +6273,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         pack_window(cfg, &inp)
     }
@@ -6913,6 +7085,7 @@ mod tests {
             leaf_row: &[],
             leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         (pack_window(cfg, &inp), metas)
     }
@@ -7034,6 +7207,7 @@ mod tests {
             leaf_row: &[],
             leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         let row = pack_window(&cfg, &inp);
         // zero-residual reconstructed root == reference root.
@@ -7353,6 +7527,7 @@ mod tests {
             leaf_row: &[],
             leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         (pack_window(cfg, &inp), metas)
     }
@@ -7681,6 +7856,8 @@ mod tests {
             dr_value_at_zeta: &vz,
             dr_value_at_zeta_next: &vzn,
             dr_x: x,
+            lc_value_at_zeta: &[],
+            lc_c_committed: Challenge::ZERO,
         };
         (pack_window(cfg, &inp), leaf, root, vz, vzn, x, alpha, zeta)
     }
@@ -8033,6 +8210,7 @@ mod tests {
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &rows[5], leaf_salt: salt,
             dr_value_at_zeta: &vz_f, dr_value_at_zeta_next: &[], dr_x: x,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
         };
         // This builds a FULLY honest window for vz_f (C derived from vz_f) — it should ACCEPT, proving
         // the connection accepts honest forged-free windows.
@@ -8070,6 +8248,200 @@ mod tests {
         assert!(
             !check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None).is_ok(),
             "a tampered Q(zeta) under C-binding was accepted"
+        );
+    }
+
+    // =======================================================================
+    // (LC CAPSTONE) deep_c_full_leaf: the live window's DEEP C(zeta) is the FULL
+    // alpha-FOLDED leaf constraint recompute_c_partial(value_at_zeta) + C_committed
+    // (NOT the linear reduction), composed with C == Z_H(zeta)·Q. A forged
+    // value_at_zeta column now breaks the FULL folded constraint.
+    // =======================================================================
+
+    /// A minimal full-leaf config: a single window (no Merkle / draws / sponge) carrying just the DEEP
+    /// OOD block + the (LC) full-leaf-mirror block. `deep_c_full_leaf` REPLACES the linear reduction.
+    fn cfg_full_leaf(h: usize, k: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            deep_log_degree: Some(k),
+            deep_c_full_leaf: true,
+            ..RecursiveConfig::single_window(h)
+        }
+    }
+
+    /// Build one honest full-leaf window: the (LC) block carries an HONEST full leaf-trace OOD opening
+    /// (`lc::honest_cells_for_test` — canonical C4 lanes + matching seams/relation_id + honest
+    /// C1/C2/C6/role sponges + reduce/carrier + chain + byte-range, every mirrored residual vanishing),
+    /// `alpha = deep_alpha`, an arbitrary `c_committed`, and the builder derives DEEP_C = C_partial +
+    /// C_committed, Q = C/Z_H(zeta). Returns (row, cells, alpha, zeta, c_committed).
+    fn full_leaf_window(
+        cfg: &RecursiveConfig,
+        c4_vals: [u32; lc::C4_LANES],
+        pad_seed: u32,
+        alpha: Challenge,
+        zeta: Challenge,
+        c_committed: Challenge,
+    ) -> (Vec<Val>, [Challenge; lc::N_OPENED_CELLS]) {
+        let cells = lc::honest_cells_for_test(c4_vals, pad_seed);
+        let mut inp = WindowInputs::single(Val::from_u32(0), ext_multi(1), ext_multi(2), ext_multi(3));
+        inp.deep_zeta = zeta;
+        inp.deep_alpha = alpha;
+        inp.lc_value_at_zeta = &cells;
+        inp.lc_c_committed = c_committed;
+        let row = pack_window(cfg, &inp);
+        (row, cells)
+    }
+
+    /// GOLDEN (positive) + FIDELITY-PIN (zero residual): an honest full-leaf window ACCEPTS, and the
+    /// laid-out DEEP_C cell equals BOTH `recompute_c_partial(value_at_zeta, alpha) + C_committed` (the
+    /// leaf's own folded C(zeta), via the native `partial_constraint_eval` reference deep_air uses) AND
+    /// `Z_H(zeta)·Q`. Confirms the live DEEP_C is the FULL folded leaf constraint over the OOD opening,
+    /// reproduced with zero residual against the leaf folder.
+    #[test]
+    fn full_leaf_honest_accepts_and_c_is_full_fold() {
+        for &k in &[1usize, 6, 10] {
+            let cfg = cfg_full_leaf(8, k);
+            let alpha = ext_multi(40 + k as u32);
+            let zeta = ext_multi(50 + k as u32);
+            let c_committed = ext_multi(9);
+            let (row, cells) =
+                full_leaf_window(&cfg, [0, 1, 127, 12288, 5000, 96], 17, alpha, zeta, c_committed);
+            // FIDELITY-PIN: DEEP_C == the leaf's own folded C(zeta) + C_committed (native reference).
+            let c_partial = lc::partial_constraint_eval(&cells, alpha);
+            let db = deep_base(&cfg);
+            let c_cell =
+                Challenge::from_basis_coefficients_slice(&row[db + DEEP_C..db + DEEP_C + D]).unwrap();
+            assert_eq!(
+                c_cell,
+                c_partial + c_committed,
+                "DEEP_C != recompute_c_partial(value_at_zeta) + C_committed at k={k}"
+            );
+            // and C == Z_H(zeta)·Q.
+            let q_cell =
+                Challenge::from_basis_coefficients_slice(&row[db + DEEP_Q..db + DEEP_Q + D]).unwrap();
+            assert_eq!(
+                c_cell,
+                crate::deep::vanishing_poly_at(zeta, k) * q_cell,
+                "DEEP_C != Z_H(zeta)·Q at k={k}"
+            );
+            // ACCEPT via the real check_all_constraints (no public values: merkle_levels = 0).
+            let m = RowMajorMatrix::new(row, n_cols(&cfg));
+            let report = check_all_constraints(&air(cfg), &m, &[], None);
+            assert!(
+                report.is_ok(),
+                "honest full-leaf window rejected at k={k}: {} failures",
+                report.failures.len()
+            );
+        }
+    }
+
+    /// FORGERY — a forged `value_at_zeta` column (≠ the real OOD eval) now BREAKS THE FULL FOLDED
+    /// CONSTRAINT: DEEP_C is recomputed from the (LC) cells in-AIR but the committed C/Q are unchanged,
+    /// so `C == recompute_c_partial(value_at_zeta) + C_committed` fails ⇒ REJECTED. We tamper across
+    /// multiple mirrored classes (C4 algebraic, a C1 sponge cell, a C2/reduce cell, a chain cell, a
+    /// byte-range cell) — at least one of these is a tamper the LINEAR alpha-reduction would have MISSED
+    /// (it only summed Σ alpha^i·vzeta[i]; a sponge/perm interior cell changes the FULL fold but the
+    /// linear sum's structure is degree-1 — see `full_leaf_catches_tamper_linear_reduction_misses`).
+    #[test]
+    fn full_leaf_rejects_forged_vzeta_column() {
+        let k = 8;
+        let cfg = cfg_full_leaf(8, k);
+        let alpha = ext_multi(41);
+        let zeta = ext_multi(51);
+        let c_committed = ext_multi(7);
+        let lcb = lc_base(&cfg);
+        // representative cells across the mirrored classes (cell INDEX into the (LC) block).
+        let targets = [
+            lc::L_CELLS + 0,                                  // C4 lane0 v (algebraic)
+            lc::L_CELLS + 24,                                 // C4 lane0 is96
+            lc::c1_out_cell_idx(0),                           // C1 squeeze output (sponge)
+            lc::c1_perm_cell_idx(0, crate::inlined_perm::C_BEGIN_POST), // C1 interior perm post
+            lc::c2_squeeze_output_cell_idx(15),              // C2 squeezed lane (reduce input)
+            lc::carrier_masked_cell_idx(4),                  // carrier masked_projection
+            lc::chain_out_cell_idx(0),                        // batch-chain running digest
+            lc::byterange_absorbed_cell_idx(0),              // byte-range absorbed lane
+        ];
+        for &cell_idx in &targets {
+            let (mut row, _cells) =
+                full_leaf_window(&cfg, [0, 1, 127, 12288, 5000, 96], 17, alpha, zeta, c_committed);
+            // tamper limb 0 of the opened (LC) cell (DEEP_C, DEEP_Q, C_committed unchanged).
+            row[lcb + LC_VZETA + cell_idx * D] += Val::ONE;
+            let m = RowMajorMatrix::new(row, n_cols(&cfg));
+            assert!(
+                !check_all_constraints(&air(cfg.clone()), &m, &[], None).is_ok(),
+                "forged value_at_zeta cell {cell_idx} did NOT break the FULL folded constraint"
+            );
+        }
+    }
+
+    /// STRONGER-THAN-LINEAR PIN: a tamper to a C1 sponge INTERIOR perm cell (an absorb/round-state
+    /// cell that the leaf folder reads but that is NOT one of the `deep_e0_combine` linear-reduction
+    /// cells) is caught by the FULL fold. The prior `deep_c_from_vzeta` linear reduction bound DEEP_C
+    /// to `Σ alpha^i·value_at_zeta[i]` over only the `deep_e0_combine` (≤12) opened-row columns, so it
+    /// could NOT see a sponge interior cell at all (those cells were never in its sum). The full fold
+    /// now constrains them ⇒ the tamper rejects. This demonstrates a tamper the linear reduction misses.
+    #[test]
+    fn full_leaf_catches_tamper_linear_reduction_misses() {
+        let k = 8;
+        let cfg = cfg_full_leaf(8, k);
+        let alpha = ext_multi(42);
+        let zeta = ext_multi(52);
+        let c_committed = ext_multi(3);
+        let lcb = lc_base(&cfg);
+        // A C1 sponge interior perm post cell (perm 3, an interior round-state limb). This cell is part
+        // of the FULL leaf C(zeta) (its perm round residuals) but would never appear in a degree-1
+        // linear reduction of a fixed set of opened-row columns.
+        let interior = lc::c1_perm_cell_idx(3, crate::inlined_perm::C_BEGIN_POST + 5);
+        let (mut row, cells) =
+            full_leaf_window(&cfg, [0, 1, 127, 12288, 5000, 96], 17, alpha, zeta, c_committed);
+        // Sanity: honest accepts first.
+        let m_ok = RowMajorMatrix::new(row.clone(), n_cols(&cfg));
+        assert!(check_all_constraints(&air(cfg.clone()), &m_ok, &[], None).is_ok(), "honest rejected");
+        // Confirm the tamper actually changes the FULL fold (native reference): C_partial shifts.
+        let mut tampered_cells = cells;
+        tampered_cells[interior] += Challenge::from(Val::ONE);
+        assert_ne!(
+            lc::partial_constraint_eval(&cells, alpha),
+            lc::partial_constraint_eval(&tampered_cells, alpha),
+            "interior perm cell tamper did NOT change the full fold — bad probe"
+        );
+        // In-AIR: tamper the cell, DEEP_C unchanged ⇒ reject.
+        row[lcb + LC_VZETA + interior * D] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a sponge interior tamper (linear reduction would miss it) was NOT rejected by the full fold"
+        );
+    }
+
+    /// FORGERY — tampered Q(zeta): with C bound to the full fold, bumping DEEP_Q breaks `C == Z_H·Q`
+    /// ⇒ rejected (Q can no longer be chosen freely once C is the full folded leaf constraint).
+    #[test]
+    fn full_leaf_rejects_tampered_q() {
+        let cfg = cfg_full_leaf(8, 8);
+        let (mut row, _cells) =
+            full_leaf_window(&cfg, [0, 1, 127, 12288, 5000, 96], 17, ext_multi(43), ext_multi(53), ext_multi(2));
+        let db = deep_base(&cfg);
+        row[db + DEEP_Q + 3] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "tampered Q(zeta) under full-leaf C-binding was accepted"
+        );
+    }
+
+    /// FORGERY — tampered C_committed (the deferred summand): with everything else honest, breaking
+    /// `C == C_partial + C_committed` ⇒ rejected (the deferred bulk is bound by the decomposition).
+    #[test]
+    fn full_leaf_rejects_tampered_c_committed() {
+        let cfg = cfg_full_leaf(8, 8);
+        let (mut row, _cells) =
+            full_leaf_window(&cfg, [0, 1, 127, 12288, 5000, 96], 17, ext_multi(44), ext_multi(54), ext_multi(5));
+        let cc = lc_base(&cfg) + lc_c_committed(&cfg);
+        row[cc + 2] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "tampered C_committed under full-leaf C-binding was accepted"
         );
     }
 }
