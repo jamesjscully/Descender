@@ -701,6 +701,50 @@ mod tests {
         }
     }
 
+    /// END-TO-END FORGERY (PER-LANE BYTE-RANGE / canonicality) — with a leaf-WIRED DEEP row built
+    /// over HONEST cells (the C1/C2/C6 sponge input lanes byte-decomposed), tampering a byte-range
+    /// cell — a non-boolean bit, OR the ACTUAL absorbed sponge input lane (with its bits unchanged,
+    /// the recompose mismatch) — shifts the in-AIR-recomputed `C_partial`, so the committed `C` no
+    /// longer equals `Z_H·Q` ⇒ REJECTED through the DEEP block. This catches the canonicality of the
+    /// genuine sponge preimage at the DEEP OOD check, end-to-end, and confirms the byte-range bits
+    /// bind the REAL consumed lanes (the absorbed-lane tamper rejecting proves non-vacuity).
+    #[test]
+    fn leaf_wired_tampered_byterange_cell_rejects_end_to_end() {
+        let k = 9;
+        let cells = lc::honest_cells_for_test([0, 1, 127, 12288, 5000, 96], 17);
+        // honest leaf-wired row accepts.
+        let row_ok = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
+        let m_ok = RowMajorMatrix::new(row_ok, n_cols_cfg(k, true));
+        assert!(check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(), "honest byterange row rejected");
+
+        // probe one lane per sponge (C1 idx 0, C2 idx 48+35, C6 idx 48+40+40); for each, tamper
+        // (a) a bit cell (non-boolean) and (b) the absorbed lane cell (recompose mismatch).
+        let probes = [0usize, 48 + 35, 48 + 40 + 40];
+        let lb = leaf_base(k);
+        for &g in &probes {
+            // (a) non-boolean bit.
+            {
+                let row = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
+                let mut m = RowMajorMatrix::new(row, n_cols_cfg(k, true));
+                m.values[lb + lc::L_CELLS + lc::byterange_bit_cell_idx(g, 1) * D] += Val::from_u32(2);
+                assert!(
+                    !check_all_constraints(&leaf_air(k), &m, &[], None).is_ok(),
+                    "non-boolean byte-range bit (lane {g}) NOT rejected end-to-end"
+                );
+            }
+            // (b) absorbed-lane recompose mismatch (bits unchanged) — proves non-vacuity end-to-end.
+            {
+                let row = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
+                let mut m = RowMajorMatrix::new(row, n_cols_cfg(k, true));
+                m.values[lb + lc::L_CELLS + lc::byterange_absorbed_cell_idx(g) * D] += Val::ONE;
+                assert!(
+                    !check_all_constraints(&leaf_air(k), &m, &[], None).is_ok(),
+                    "byte-range absorbed-lane mismatch (lane {g}) NOT rejected end-to-end — VACUOUS"
+                );
+            }
+        }
+    }
+
     /// FORGERY — tampering `C_committed` (the deferred summand) with everything else honest breaks
     /// `C == C_partial + C_committed` ⇒ rejected. (A prover cannot smuggle a favorable deferred
     /// bulk value either; it is bound by the decomposition.)

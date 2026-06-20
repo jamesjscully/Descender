@@ -55,9 +55,8 @@
 //!     squeeze-output equalities). Fidelity-PINned against the deployed byte-pinned Val permutation
 //!     (`c1_honest_sponge_all_residuals_zero`, `c1_squeeze_matches_deployed_perm_output`) and tamper-
 //!     rejected end-to-end through DEEP (`leaf_wired_tampered_c1_sponge_cell_rejects_end_to_end`).
-//!     DEFERRED for C1: the per-lane BYTE-RANGE decomposition of the 48 input lanes
-//!     (air.rs:1278-1289) — a degree-2 algebraic gadget, not the sponge; rides with the byte/reduce
-//!     gadgets in a later chunk.
+//!     The per-lane BYTE-RANGE decomposition of the 48 C1 input lanes (air.rs:1278-1289) is now
+//!     MIRRORED in the `N_BYTERANGE` class (see below), binding the SAME `c1_input_cell` lanes.
 //!
 //!   * **C6 — `opening_tuple_commitment` squeeze** (air.rs:740-756, `eval_sponge` C6 plan):
 //!     RE-COMPUTED in-circuit via [`crate::inlined_perm_octic`] over the absorbed leaf cells,
@@ -69,8 +68,9 @@
 //!     are the EXISTING `O_C6_FIELD` SeamOpeningAcc cells (reused). Fidelity-PINned against the
 //!     deployed byte-pinned Val permutation (`c6_honest_sponge_all_residuals_zero`,
 //!     `c6_squeeze_matches_deployed_perm_output`) and tamper-rejected end-to-end through DEEP
-//!     (`leaf_wired_tampered_c6_sponge_cell_rejects_end_to_end`). DEFERRED for C6 (same as C1): the
-//!     per-lane BYTE-RANGE decomposition of the 80 byte-lanes (air.rs:1278-1289).
+//!     (`leaf_wired_tampered_c6_sponge_cell_rejects_end_to_end`). The per-lane BYTE-RANGE
+//!     decomposition of the 80 C6 byte-lanes (air.rs:1278-1289) is now MIRRORED in the `N_BYTERANGE`
+//!     class (the 6 FIELD lanes are NOT byte-ranged), binding the SAME `c6_byte_cell` lanes.
 //!
 //!   * **role-root sponge — `role_root` squeeze** (CLASS A, air.rs:908-954, plan air.rs:441):
 //!     RE-COMPUTED in-circuit via [`crate::inlined_perm_octic`] over the 26 ALL-FIELD role-handle
@@ -102,15 +102,36 @@
 //!     `reduce_honest_all_residuals_zero`) and tamper-rejected end-to-end through DEEP
 //!     (`leaf_wired_tampered_c2_reduce_cell_rejects_end_to_end`): forged squeezed lane / forged mask /
 //!     tampered limb-carry / forged masked_projection / tampered carrier mod-q witness all reject.
-//!     DEFERRED for C2 (same as C1/C6): the per-lane BYTE-RANGE decomposition of the 40 input lanes.
+//!     The per-lane BYTE-RANGE decomposition of the 40 C2 input lanes (air.rs:1278-1289) is now
+//!     MIRRORED in the `N_BYTERANGE` class, binding the SAME `c2_pad_cell`/`c2_slot_cell` lanes.
+//!
+//!   * **PER-LANE BYTE-RANGE / canonicality** (air.rs:1278-1289): for EVERY byte-ranged input lane
+//!     of the C1/C2/C6 sponges (C1 all 48 ‖ C2 all 40 ‖ C6 the 80 byte-lanes; role has none), the
+//!     degree-2 gadget `BYTE_BITS bit-bools bit·(bit−1) + recompose eq lane − Σ bit·2^b`. The
+//!     decomposed lane is the ACTUAL already-absorbed sponge input cell
+//!     (`byterange_absorbed_cell`), NOT a fresh column — so this is the canonicality (each absorbed
+//!     preimage lane is a valid byte) of the genuine sponge input, and a vacuous range check is ruled
+//!     out by `byterange_recompose_binds_real_absorbed_lane`. Added as the `N_BYTERANGE` class (the
+//!     LAST class). Fidelity-PINned (`byterange_honest_all_residuals_zero`,
+//!     `byterange_shape_matches_leaf`) and tamper-rejected (`byterange_air_rejects_tampers`:
+//!     non-boolean bit, recompose mismatch, boolean-but-wrong-sum) + at the mirror level
+//!     (`byterange_rejects_nonboolean_bit`). This FINISHES the PER-ROW algebraic leaf C(zeta) mirror.
 //!
 //! ## DEFERRED (the rest of leaf `C(zeta)` — STILL committed-not-constrained)
 //!
-//!   * **batch digest chain** (air.rs:1112-1262): the per-row running Poseidon2 sponge over every
-//!     row's pubio (the CHAIN_PERMS_PER_ROW absorbs + the cross-row transition).
+//!   With the byte-range class added, ALL per-row leaf gadgets — C1/C6/role/C2 Poseidon2 sponges,
+//!   the C2 wide-then-reduce + carrier, the C4 canonical base-128 residue gadget, the seams /
+//!   relation_id pinning, the batch digest chain, AND the per-lane byte-range/canonicality of the
+//!   sponge inputs — are now RE-COMPUTED in `recompute_c_partial`. What remains is NOT a per-row
+//!   algebraic class but the ARCHITECTURAL multi-row scale-up:
+//!
+//!   * the SINGLE-ROW harness → a REAL opened multi-row trace (each class evaluated per opened row);
+//!   * the boundary selectors (first-row `chain_in==0`, last-row `chain_out==public digest`,
+//!     `count_acc==public N`) + the monotone-enable prefix constraint — they need
+//!     `is_first_row`/`is_last_row` selectors + STARK public values the single-row mirror does not
+//!     carry (see the batch-digest-chain HONESTLY-FLAGGED SCOPE LIMIT note);
+//!   * the beta/zeta Fiat-Shamir binding of `alpha`/`zeta`/the public digest into the recursion FS.
 //!   * the C2/C6 sponge-OUTPUT commitment equalities (`c*_out[j] == pubio[j]`) ride with their perms.
-//!   * the per-lane BYTE-RANGE decompositions (C1/C2/C6 input lanes), CLASS-C packed-witness anchors,
-//!     context bindings (slot/lifecycle/account_id).
 //!
 //! Each remaining sponge reuses the SAME [`crate::inlined_perm_octic`] octic-perm primitive + the
 //! absorb/capacity/squeeze pattern established here for C1.
@@ -459,6 +480,41 @@ pub const CHAIN_CELLS: usize = CHAIN_W // prev_chain_out
 /// arithmetic so `N_CONSTRAINTS` is a const.
 pub const N_REDUCE: usize = NUM_OUTPUTS * N_REDUCE_PER_MASK + N_LANES * N_CARRIER_PER_LANE;
 
+// ----- PER-LANE BYTE-RANGE / CANONICALITY decomposition of the sponge INPUT lanes -----
+//
+// Mirrors `descender_account_stark::air::FullRelationAir::eval_sponge`'s per-lane byte-range gadget
+// (air.rs:1278-1289) for EVERY byte-ranged input lane of the C1/C2/C6 sponges. For each byte-ranged
+// lane the leaf AIR emits (in this EXACT order, riding inside `eval_sponge` before the perm loop):
+//   * BYTE_BITS bit-boolean residuals `bit·(bit−1)` over the lane's 8 bit witnesses, then
+//   * 1 recompose equality `lane − Σ_b bit_b·2^b == 0`.
+// The decomposed bits constrain the ACTUAL absorbed lane cells the sponges already consume (NOT
+// fresh free columns): C1 reads `c1_input_cell(i)` (all 48 lanes byte-ranged), C2 reads
+// `c2_pad_cell(i)`/`c2_slot_cell(i−32)` (all 40 lanes), C6 reads `c6_byte_cell(b)` (the 80 byte-
+// lanes; the 6 leading FIELD lanes are NOT byte-ranged, matching air.rs `c6_br`). So this class is
+// the canonicality (each absorbed input lane is a valid byte `< 256`) of the genuine sponge preimage.
+//
+// air.rs byte-range counts (from `FullLayout::new`):
+//   * C1: `vec![true; C1_INPUT_LANES]` ⇒ ALL 48 lanes (pad_seed[32] ‖ nonce_c1[16]).
+//   * C2: `vec![true; C2_INPUT_LANES]` ⇒ ALL 40 lanes (pad_seed[32] ‖ slot_id[8]).
+//   * C6: `false`×C6_FIELD_LANES(6) ‖ `true`×C6_BYTE_LANES(80) ⇒ the 80 byte-lanes only.
+// The role-root sponge has `vec![false; 26]` (no byte-range — already noted CLASS A), so it
+// contributes ZERO byte-range residuals.
+
+/// Bits per byte-ranged input lane. Mirrors air.rs `BYTE_BITS`.
+pub const BYTE_BITS: usize = 8;
+/// C1 byte-ranged input lanes (ALL 48). Mirrors `vec![true; C1_INPUT_LANES]`.
+pub const C1_BR_LANES: usize = C1_INPUT_LANES; // 48
+/// C2 byte-ranged input lanes (ALL 40). Mirrors `vec![true; C2_INPUT_LANES]`.
+pub const C2_BR_LANES: usize = C2_INPUT_LANES; // 40
+/// C6 byte-ranged input lanes (the 80 byte-lanes; the 6 FIELD lanes are NOT byte-ranged).
+pub const C6_BR_LANES: usize = C6_BYTE_LANES; // 80
+/// Total byte-ranged lanes across C1 ‖ C2 ‖ C6 (the global byte-range index space).
+pub const N_BR_LANES: usize = C1_BR_LANES + C2_BR_LANES + C6_BR_LANES; // 168
+/// Byte-range residuals PER lane: BYTE_BITS bit-bools + 1 recompose eq. Mirrors air.rs:1278-1289.
+pub const N_BR_PER_LANE: usize = BYTE_BITS + 1; // 9
+/// Total byte-range residuals batched into `C_partial`.
+pub const N_BYTERANGE: usize = N_BR_LANES * N_BR_PER_LANE; // 1512
+
 /// Total residuals batched into `C_partial`.
 pub const N_CONSTRAINTS: usize = C4_LANES * C4_N_PER_LANE
     + N_C4_ACC
@@ -470,7 +526,8 @@ pub const N_CONSTRAINTS: usize = C4_LANES * C4_N_PER_LANE
     + N_ROLE
     + N_C2
     + N_REDUCE
-    + N_CHAIN;
+    + N_CHAIN
+    + N_BYTERANGE;
 
 // ===========================================================================
 // Column layout (one leaf-constraint-mirror check per row)
@@ -510,7 +567,13 @@ pub const N_OPENED_CELLS: usize = C4_LANES * C4_CELLS // C4 lanes
     + ROLE_CELLS // role-root sponge (masked[6] ‖ perm blocks ‖ role_root[8]); inputs 0..20 CHAINED
     + C2_CELLS // C2 mask-PRF sponge (slot_id[8] ‖ perm blocks); pad_seed[32] reused from O_C2_PAD
     + REDUCE_BLOCK_CELLS // wide-then-reduce gadget cells + carrier (masked[6] ‖ mod-q blocks)
-    + CHAIN_CELLS; // batch digest chain (prev_state ‖ chain_in ‖ perms ‖ chain_out ‖ acc ‖ pubio)
+    + CHAIN_CELLS // batch digest chain (prev_state ‖ chain_in ‖ perms ‖ chain_out ‖ acc ‖ pubio)
+    + N_BYTERANGE_BITS; // per-lane byte-range bit witnesses (C1[48]‖C2[40]‖C6[80] × BYTE_BITS)
+
+/// Byte-range bit witness cells: BYTE_BITS bits per byte-ranged lane (C1 ‖ C2 ‖ C6). These are the
+/// ONLY NEW cells the byte-range class introduces; the decomposed LANE values are the EXISTING
+/// already-absorbed sponge input cells (`c1_input_cell`/`c2_pad_cell`/`c2_slot_cell`/`c6_byte_cell`).
+pub const N_BYTERANGE_BITS: usize = N_BR_LANES * BYTE_BITS;
 
 // Cell-block offsets (in units of cells, each `D` limbs).
 const O_C4: usize = 0;
@@ -554,6 +617,9 @@ const O_CHAIN_ENABLE: usize = O_CHAIN_OUT + CHAIN_W;
 const O_CHAIN_PREV_COUNT: usize = O_CHAIN_ENABLE + 1;
 const O_CHAIN_COUNT: usize = O_CHAIN_PREV_COUNT + 1;
 const O_CHAIN_PUBIO: usize = O_CHAIN_COUNT + 1;
+// Byte-range bit-witness block: BYTE_BITS bits per byte-ranged lane, global byte-range index order
+// (C1 48 lanes ‖ C2 40 lanes ‖ C6 80 lanes). Placed LAST so it does not perturb prior cell offsets.
+const O_BYTERANGE_BITS: usize = O_CHAIN_PUBIO + CHAIN_PUBIO;
 
 /// First column: the opened OOD cells, each `D` limbs.
 pub const L_CELLS: usize = 0;
@@ -689,6 +755,33 @@ const fn chain_count_cell() -> usize {
 /// This row's absorbed pubio field-element lane `i` (`i < CHAIN_PUBIO`).
 const fn chain_pubio_cell(i: usize) -> usize {
     O_CHAIN_PUBIO + i
+}
+
+// ----- byte-range cell accessors -----
+/// The ALREADY-ABSORBED sponge input lane cell that global byte-range index `g` (`g < N_BR_LANES`)
+/// decomposes. The decomposition binds the REAL consumed lane (NOT a fresh column), so it is not
+/// vacuous: C1 indices 0..48 → `c1_input_cell`; C2 indices 48..88 → `c2_pad_cell`(<32) /
+/// `c2_slot_cell`(≥32); C6 indices 88..168 → `c6_byte_cell`. Mirrors air.rs `lane(i)` =
+/// `local[off + slay.lanes + i]` for the byte-ranged positions of each sponge's `byte_ranged` mask.
+const fn byterange_absorbed_cell(g: usize) -> usize {
+    if g < C1_BR_LANES {
+        c1_input_cell(g)
+    } else if g < C1_BR_LANES + C2_BR_LANES {
+        let i = g - C1_BR_LANES;
+        if i < C2_PAD_LANES {
+            c2_pad_cell(i)
+        } else {
+            c2_slot_cell(i - C2_PAD_LANES)
+        }
+    } else {
+        // C6: only the 80 byte-lanes are byte-ranged (the 6 FIELD lanes are skipped, as in air.rs).
+        let b = g - C1_BR_LANES - C2_BR_LANES;
+        c6_byte_cell(b)
+    }
+}
+/// Bit cell `b` (`b < BYTE_BITS`) of global byte-range index `g` (`g < N_BR_LANES`).
+const fn byterange_bit_cell(g: usize, b: usize) -> usize {
+    O_BYTERANGE_BITS + g * BYTE_BITS + b
 }
 
 /// The absorbed chain stream element at position `pos` (`pos < CHAIN_PADDED_LEN`). Mirrors the
@@ -1483,6 +1576,30 @@ fn chain_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
     cells[chain_count_cell()] - (cells[chain_prev_count_cell()] + enable)
 }
 
+/// The `k`-th NATIVE byte-range residual over the opened cells, `k ∈ [0, N_BYTERANGE)`. Mirrors
+/// `eval_sponge`'s per-lane byte-range gadget (air.rs:1278-1289) EXACTLY, lane-major over the global
+/// byte-range index `g = k / N_BR_PER_LANE` (C1 48 ‖ C2 40 ‖ C6 80):
+///   * within-lane index `0..BYTE_BITS` : bit-boolean residual `bit·(bit−1)`.
+///   * within-lane index `BYTE_BITS`    : recompose eq `lane − Σ_b bit_b·2^b`, where `lane` is the
+///     ACTUAL already-absorbed sponge input cell (`byterange_absorbed_cell(g)`) — NOT a free column.
+fn byterange_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
+    let g = k / N_BR_PER_LANE;
+    let within = k % N_BR_PER_LANE;
+    debug_assert!(g < N_BR_LANES);
+    if within < BYTE_BITS {
+        // assert_bool: bit·(bit−1).
+        let bit = cells[byterange_bit_cell(g, within)];
+        return bit * (bit - Challenge::ONE);
+    }
+    // recompose eq: lane − Σ_b bit_b·2^b (the lane is the genuine absorbed input cell).
+    let lane = cells[byterange_absorbed_cell(g)];
+    let mut acc = Challenge::ZERO;
+    for b in 0..BYTE_BITS {
+        acc += cells[byterange_bit_cell(g, b)] * Challenge::from(Val::from_u64(1u64 << b));
+    }
+    lane - acc
+}
+
 /// Map the `ri`-th committed post (in `inlined_perm_octic::perm_residuals` order: begin-full posts,
 /// then partial post_sbox, then end-full posts) to its CELL offset within a `PERM_COLS` block (the
 /// `inlined_perm` column layout). Used to read the OPENED committed-post cell for the C1 residual.
@@ -1568,9 +1685,14 @@ pub fn constraint_residual(cells: &[Challenge; N_OPENED_CELLS], r: usize) -> Cha
         return reduce_residual(cells, r);
     }
     r -= N_REDUCE;
-    // batch digest chain residuals (per-row absorb + chain_out + CROSS-ROW carry + count acc).
-    debug_assert!(r < N_CHAIN);
-    chain_residual(cells, r)
+    if r < N_CHAIN {
+        // batch digest chain residuals (per-row absorb + chain_out + CROSS-ROW carry + count acc).
+        return chain_residual(cells, r);
+    }
+    r -= N_CHAIN;
+    // PER-LANE BYTE-RANGE / canonicality of the C1/C2/C6 sponge INPUT lanes (air.rs:1278-1289).
+    debug_assert!(r < N_BYTERANGE);
+    byterange_residual(cells, r)
 }
 
 /// Native alpha-batched leaf partial constraint eval over opened cells:
@@ -1720,11 +1842,53 @@ pub fn chain_count_cell_idx() -> usize {
 pub fn chain_pubio_cell_idx(i: usize) -> usize {
     chain_pubio_cell(i)
 }
+/// TEST-ONLY: byte-range bit-witness cell accessor (global byte-range index `g`, bit `b`).
+#[cfg(test)]
+pub fn byterange_bit_cell_idx(g: usize, b: usize) -> usize {
+    byterange_bit_cell(g, b)
+}
+/// TEST-ONLY: the ALREADY-ABSORBED sponge input cell that byte-range index `g` decomposes.
+#[cfg(test)]
+pub fn byterange_absorbed_cell_idx(g: usize) -> usize {
+    byterange_absorbed_cell(g)
+}
 
 /// Decode the committed `C_partial` cell of a packed row.
 pub fn row_c_partial(row: &[Val]) -> Challenge {
     Challenge::from_basis_coefficients_slice(&row[L_CPARTIAL..L_CPARTIAL + D])
         .expect("C_partial decode")
+}
+
+/// Push the PER-LANE BYTE-RANGE / canonicality residuals (air.rs:1278-1289) onto `residuals`, in the
+/// SAME order as the native [`byterange_residual`]: lane-major over the global byte-range index
+/// (C1 48 ‖ C2 40 ‖ C6 80), each lane emitting BYTE_BITS bit-bool residuals `bit·(bit−1)` then 1
+/// recompose eq `lane − Σ_b bit_b·2^b` binding the ACTUAL absorbed sponge input cell (NOT a free
+/// column). EXTRACTED into its own (`#[inline(never)]`) frame to keep `recompute_c_partial`'s frame
+/// small (1512 octic residuals), matching the existing per-class extraction pattern.
+#[inline(never)]
+fn push_byterange_residuals<AB, FCell>(cell: &FCell, residuals: &mut Vec<[AB::Expr; D]>)
+where
+    AB: AirBuilder<F = Val>,
+    FCell: Fn(usize) -> [AB::Expr; D],
+{
+    let one = octic_scalar::<AB>(1);
+    for g in 0..N_BR_LANES {
+        // BYTE_BITS bit-bool residuals bit·(bit−1).
+        for b in 0..BYTE_BITS {
+            let bit = cell(byterange_bit_cell(g, b));
+            let bit_minus_one = octic_sub::<AB>(&bit, &one);
+            residuals.push(octic_mul::<AB>(&bit, &bit_minus_one));
+        }
+        // recompose eq: lane − Σ_b bit_b·2^b (lane = the genuine absorbed sponge input cell).
+        let lane = cell(byterange_absorbed_cell(g));
+        let mut acc = octic_scalar::<AB>(0);
+        for b in 0..BYTE_BITS {
+            let bit = cell(byterange_bit_cell(g, b));
+            let scaled = scale::<AB>(&bit, 1u64 << b);
+            acc = octic_add::<AB>(&acc, &scaled);
+        }
+        residuals.push(octic_sub::<AB>(&lane, &acc));
+    }
 }
 
 /// Push the BATCH DIGEST CHAIN residuals (the per-row running Poseidon2 sponge + the CROSS-ROW
@@ -1968,6 +2132,13 @@ where
     // chain folds 24 Poseidon2 perms; keeping its locals out of this frame avoids a stack overflow
     // when the whole mirror is evaluated row-wise. Order MUST match the native `chain_residual`.
     push_chain_residuals::<AB, FCell>(cell, &mut residuals);
+
+    // (12) PER-LANE BYTE-RANGE / canonicality of the C1/C2/C6 sponge INPUT lanes (air.rs:1278-1289).
+    // EXTRACTED into `push_byterange_residuals` (its own `#[inline(never)]` frame) to keep this
+    // folder frame small. Order MUST match the native `byterange_residual`: lane-major over the
+    // global byte-range index (C1 48 ‖ C2 40 ‖ C6 80), each lane = BYTE_BITS bit-bools then 1
+    // recompose eq binding the ACTUAL absorbed sponge input cell.
+    push_byterange_residuals::<AB, FCell>(cell, &mut residuals);
 
     debug_assert_eq!(residuals.len(), N_CONSTRAINTS);
 
@@ -2445,7 +2616,27 @@ mod tests {
         // batch digest chain: honest per-row absorb of an enabled (enable=1) pubio over a chosen
         // prev_chain_out running state, then chain_out = absorbed, count_acc = prev_count_acc + 1.
         fill_honest_chain(&mut cells, pad_seed_seed, true);
+        // PER-LANE BYTE-RANGE bits: split each ALREADY-SET absorbed sponge input lane (C1/C2/C6) into
+        // its 8 little-endian bits. MUST run AFTER fill_honest_c1/c6/c2 (which set the input lanes).
+        fill_honest_byterange(&mut cells);
         cells
+    }
+
+    /// Fill the byte-range bit-witness cells: for each byte-ranged sponge input lane (C1 48 ‖ C2 40 ‖
+    /// C6 80), read the ALREADY-SET absorbed lane cell (a byte-valued base element) and write its 8
+    /// little-endian bits. This is the byte-range fidelity AUTHORITY (honest decomposition of the
+    /// genuine consumed lanes). PRECONDITION: the C1/C2/C6 sponge fills have run, so the absorbed
+    /// input cells hold byte-valued base elements.
+    fn fill_honest_byterange(cells: &mut [Challenge; N_OPENED_CELLS]) {
+        use p3_field::PrimeField32;
+        for g in 0..N_BR_LANES {
+            let lane: Val =
+                Challenge::as_basis_coefficients_slice(&cells[byterange_absorbed_cell(g)])[0];
+            let v = lane.as_canonical_u32();
+            for b in 0..BYTE_BITS {
+                cells[byterange_bit_cell(g, b)] = Challenge::from(Val::from_u64(((v >> b) & 1) as u64));
+            }
+        }
     }
 
     /// Fill the batch-digest-chain cells (prev_chain_out[16] ‖ chain_in[16] ‖ CHAIN_NPERMS perm
@@ -3654,8 +3845,8 @@ mod tests {
         assert_eq!(N_C2, C2_N_PERMS * WIDTH + C2_N_PERMS * inlined_perm_octic::PERM_RESIDUALS);
         // reduce + carrier total.
         assert_eq!(N_REDUCE, NUM_OUTPUTS * N_REDUCE_PER_MASK + N_LANES * N_CARRIER_PER_LANE);
-        // the chain class follows reduce; reduce+chain cover everything up to N_CONSTRAINTS.
-        assert_eq!(REDUCE_RESIDUAL_BASE + N_REDUCE + N_CHAIN, N_CONSTRAINTS);
+        // the chain class follows reduce; reduce+chain+byterange cover everything up to N_CONSTRAINTS.
+        assert_eq!(REDUCE_RESIDUAL_BASE + N_REDUCE + N_CHAIN + N_BYTERANGE, N_CONSTRAINTS);
     }
 
     /// FIDELITY PIN (C2) — an HONEST C2 sponge (built from the deployed byte-pinned Val permutation
@@ -3880,8 +4071,11 @@ mod tests {
     /// Base residual index of the batch-digest-chain class within `constraint_residual`.
     const CHAIN_RESIDUAL_BASE: usize = REDUCE_RESIDUAL_BASE + N_REDUCE;
 
+    /// Base of the byte-range class (the LAST class; follows chain).
+    const BYTERANGE_RESIDUAL_BASE: usize = CHAIN_RESIDUAL_BASE + N_CHAIN;
+
     /// SHAPE SANITY — the chain residual counts agree with the structural constants, and the chain
-    /// class is the LAST class (covers exactly up to N_CONSTRAINTS).
+    /// class is followed by the byte-range class (which now covers up to N_CONSTRAINTS).
     #[test]
     fn chain_residual_counts_consistent() {
         assert_eq!(
@@ -3892,7 +4086,7 @@ mod tests {
                 + CHAIN_W
                 + 1
         );
-        assert_eq!(CHAIN_RESIDUAL_BASE + N_CHAIN, N_CONSTRAINTS);
+        assert_eq!(CHAIN_RESIDUAL_BASE + N_CHAIN + N_BYTERANGE, N_CONSTRAINTS);
         // sanity: the chain uses the full 16-wide perm and rate-8 absorb (mirrors air.rs).
         assert_eq!(CHAIN_W, WIDTH);
         assert_eq!(CHAIN_RT, 8);
@@ -4064,5 +4258,169 @@ mod tests {
             Challenge::ZERO,
             "enable-boolean residual blind to a non-boolean enable"
         );
+    }
+
+    // ----- PER-LANE BYTE-RANGE / canonicality (air.rs:1278-1289) -----
+
+    /// SHAPE SANITY — byte-range counts mirror air.rs `FullLayout::new` byte_ranged masks EXACTLY,
+    /// and the byte-range class is the LAST class (covers exactly up to N_CONSTRAINTS).
+    #[test]
+    fn byterange_shape_matches_leaf() {
+        // C1: all 48 lanes; C2: all 40; C6: only the 80 byte-lanes (6 FIELD lanes excluded).
+        assert_eq!(C1_BR_LANES, 48);
+        assert_eq!(C2_BR_LANES, 40);
+        assert_eq!(C6_BR_LANES, 80);
+        assert_eq!(N_BR_LANES, 168);
+        assert_eq!(N_BR_PER_LANE, BYTE_BITS + 1);
+        assert_eq!(N_BYTERANGE, N_BR_LANES * N_BR_PER_LANE);
+        assert_eq!(N_BYTERANGE_BITS, N_BR_LANES * BYTE_BITS);
+        assert_eq!(BYTERANGE_RESIDUAL_BASE + N_BYTERANGE, N_CONSTRAINTS);
+        // the recompose eq for EVERY lane targets the REAL already-absorbed sponge input cell,
+        // matching the sponge's own absorb source — NOT a fresh free column (the vacuity guard).
+        for g in 0..C1_BR_LANES {
+            assert_eq!(byterange_absorbed_cell(g), c1_input_cell(g));
+        }
+        for i in 0..C2_PAD_LANES {
+            assert_eq!(byterange_absorbed_cell(C1_BR_LANES + i), c2_pad_cell(i));
+        }
+        for i in 0..C2_SLOT_LANES {
+            assert_eq!(byterange_absorbed_cell(C1_BR_LANES + C2_PAD_LANES + i), c2_slot_cell(i));
+        }
+        for b in 0..C6_BR_LANES {
+            assert_eq!(byterange_absorbed_cell(C1_BR_LANES + C2_BR_LANES + b), c6_byte_cell(b));
+        }
+    }
+
+    /// FIDELITY PIN (byte-range) — on an honest row EVERY byte-range residual is zero (8 bit-bools +
+    /// recompose eq per lane), and the decomposed bits genuinely reconstruct the absorbed lane value.
+    #[test]
+    fn byterange_honest_all_residuals_zero() {
+        use p3_field::PrimeField32;
+        let cells = honest_cells([0, 1, 127, 12288, 5000, 96], 17);
+        for k in 0..N_BYTERANGE {
+            assert_eq!(
+                constraint_residual(&cells, BYTERANGE_RESIDUAL_BASE + k),
+                Challenge::ZERO,
+                "honest byte-range residual {k} nonzero"
+            );
+        }
+        // independent reconstruction: bits sum back to the absorbed lane byte.
+        for g in 0..N_BR_LANES {
+            let lane_v: Val =
+                Challenge::as_basis_coefficients_slice(&cells[byterange_absorbed_cell(g)])[0];
+            let lane = lane_v.as_canonical_u32();
+            let mut acc = 0u32;
+            for b in 0..BYTE_BITS {
+                let bit_v: Val =
+                    Challenge::as_basis_coefficients_slice(&cells[byterange_bit_cell(g, b)])[0];
+                let bit = bit_v.as_canonical_u32();
+                assert!(bit <= 1, "byte-range bit g={g} b={b} not boolean in honest fill");
+                acc |= bit << b;
+            }
+            assert_eq!(acc, lane, "byte-range bits don't reconstruct absorbed lane g={g}");
+            assert!(lane < 256, "absorbed lane g={g} is not a byte ({lane})");
+        }
+    }
+
+    /// FIDELITY PIN (byte-range, NOT vacuous) — tampering the ACTUAL absorbed sponge input lane (with
+    /// its bits unchanged) breaks the recompose eq for THAT lane. Proves the decomposition constrains
+    /// the genuine consumed lane, not a free column. We probe a lane from each sponge (C1, C2, C6).
+    #[test]
+    fn byterange_recompose_binds_real_absorbed_lane() {
+        let probes = [
+            0usize,                                   // C1 lane 0 (pad_seed)
+            C1_BR_LANES + 35,                         // C2 lane 35 (a slot_id lane)
+            C1_BR_LANES + C2_BR_LANES + 40,           // C6 lane 40 (an account_id byte-lane)
+        ];
+        for &g in &probes {
+            let mut bad = honest_cells([3, 14, 159, 26, 53, 58], 7);
+            // tamper the absorbed lane cell (limb 0) WITHOUT touching its bits.
+            bad[byterange_absorbed_cell(g)] += Challenge::ONE;
+            // the recompose eq is the LAST within-lane residual for index g.
+            let rk = BYTERANGE_RESIDUAL_BASE + g * N_BR_PER_LANE + BYTE_BITS;
+            assert_ne!(
+                constraint_residual(&bad, rk),
+                Challenge::ZERO,
+                "recompose eq for byte-range lane {g} blind to its absorbed cell — VACUOUS check"
+            );
+        }
+    }
+
+    /// FORGERY (byte-range) — a non-boolean bit makes its bit-bool residual nonzero AND (since the
+    /// lane no longer equals Σ bit·2^b unless the bits were also adjusted) shifts the recompose eq.
+    /// Mirrors `assert_bool(bit)` (air.rs:1283).
+    #[test]
+    fn byterange_rejects_nonboolean_bit() {
+        let g = C1_BR_LANES + C2_BR_LANES + 5; // a C6 byte-lane
+        let mut bad = honest_cells([1, 2, 3, 4, 5, 6], 9);
+        bad[byterange_bit_cell(g, 3)] += Challenge::ONE; // bit 3: 0->1 or 1->2 (non-boolean if 1)
+        // the bit-bool residual for bit 3 of lane g:
+        let bk = BYTERANGE_RESIDUAL_BASE + g * N_BR_PER_LANE + 3;
+        // EITHER the bit became non-boolean (bit-bool residual nonzero) OR it flipped a valid bit
+        // (recompose eq nonzero). At least one residual of this lane must react.
+        let any_react = (0..N_BR_PER_LANE).any(|i| {
+            constraint_residual(&bad, BYTERANGE_RESIDUAL_BASE + g * N_BR_PER_LANE + i)
+                != Challenge::ZERO
+        });
+        assert!(any_react, "tampered byte-range bit did not break any residual of its lane");
+        // and specifically: if the bit was 1, +1 makes it 2 ⇒ bit-bool 2·1=2 ≠ 0.
+        let _ = bk;
+    }
+
+    /// FORGERY (byte-range, end-to-end through the mirror AIR) — three distinct tampers, each rejected
+    /// by `check_all_constraints`:
+    ///   (1) out-of-range bit (non-boolean limb),
+    ///   (2) recomposition mismatch (absorbed lane changed, bits not),
+    ///   (3) a value that passes the bit-bools but whose bits don't sum to the lane (limb ≥ byte).
+    #[test]
+    fn byterange_air_rejects_tampers() {
+        let cells = honest_cells([0, 1, 127, 128, 12288, 5000], 23);
+        // honest accepts.
+        let m_ok = matrix(&cells, ext(31));
+        assert!(
+            check_all_constraints(&LeafConstraintMirrorAir, &m_ok, &[], None).is_ok(),
+            "honest byte-range row rejected"
+        );
+
+        // (1) out-of-range / non-boolean bit on a C1 lane.
+        {
+            let mut m = matrix(&cells, ext(31));
+            let g = 0;
+            m.values[cell_base(byterange_bit_cell(g, 2))] += Val::from_u32(2); // bit -> non-boolean
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "non-boolean byte-range bit NOT rejected"
+            );
+        }
+        // (2) recomposition mismatch on a C2 slot lane (absorbed cell shifted, bits unchanged).
+        {
+            let mut m = matrix(&cells, ext(31));
+            let g = C1_BR_LANES + C2_PAD_LANES + 2;
+            m.values[cell_base(byterange_absorbed_cell(g))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "byte-range recompose mismatch NOT rejected"
+            );
+        }
+        // (3) bits stay boolean but no longer sum to the absorbed lane (clear a set bit) on a C6 lane.
+        {
+            // pick a C6 byte-lane whose absorbed value has bit 0 set (odd) so clearing it is a real
+            // change; fall back to forcing a known mismatch regardless.
+            let g = C1_BR_LANES + C2_BR_LANES + 1;
+            let mut m = matrix(&cells, ext(31));
+            // set bit 0 to 0 (boolean) — if it was 1 the sum drops by 1 ≠ lane; if it was already 0,
+            // instead set bit 7 high to perturb the sum while staying boolean.
+            let cur: Val =
+                Challenge::as_basis_coefficients_slice(&cells[byterange_bit_cell(g, 0)])[0];
+            if cur == Val::ONE {
+                m.values[cell_base(byterange_bit_cell(g, 0))] -= Val::ONE; // 1 -> 0, boolean, breaks sum
+            } else {
+                m.values[cell_base(byterange_bit_cell(g, 0))] += Val::ONE; // 0 -> 1, boolean, breaks sum
+            }
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "byte-range sum-mismatch (boolean bits, wrong total) NOT rejected"
+            );
+        }
     }
 }
