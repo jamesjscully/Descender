@@ -745,6 +745,58 @@ mod tests {
         }
     }
 
+    /// END-TO-END FORGERY (SPONGE-OUTPUT → PUBLIC-VALUE binding) — with a leaf-WIRED DEEP row built
+    /// over HONEST cells (where the absorbed per-row pubio commitment lanes equal the mirrored
+    /// C1/C6/masked/role outputs, exactly as the batch leaf AIR binds the squeezed output to the
+    /// per-row pubio block), tampering EITHER side of a per-instance commitment equality — a forged
+    /// public commitment lane (the pubio cell the digest chain absorbs) OR a tampered mirrored sponge
+    /// output — shifts the in-AIR-recomputed `C_partial`, so the committed `C` no longer equals
+    /// `Z_H·Q` ⇒ REJECTED through the DEEP block. Critically: the public commitment is bound to the
+    /// MIRRORED (recomputed) sponge output, so a forger cannot supply a public commitment inconsistent
+    /// with the in-circuit sponge. Probes one lane of each of the four commitment outputs.
+    #[test]
+    fn leaf_wired_tampered_pubio_bind_cell_rejects_end_to_end() {
+        use descender_account_stark::{N_COMMIT_LANES, N_LANES};
+        let k = 9;
+        let cells = lc::honest_cells_for_test([0, 1, 127, 12288, 5000, 96], 17);
+        // honest leaf-wired row accepts.
+        let row_ok = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
+        let m_ok = RowMajorMatrix::new(row_ok, n_cols_cfg(k, true));
+        assert!(check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(), "honest pubio-bind row rejected");
+
+        // one binding index per commitment output (C1, C6, masked, role).
+        let bind_ks = [
+            0usize,                            // C1 pad_source_commitment lane 0
+            N_COMMIT_LANES + 4,                // C6 opening_tuple_commitment lane 4
+            2 * N_COMMIT_LANES + 1,            // masked_projection lane 1
+            2 * N_COMMIT_LANES + N_LANES + 6,  // role_root lane 6
+        ];
+        let lb = leaf_base(k);
+        for &bk in &bind_ks {
+            let (out_cell, pubio_cell) = lc::pubio_bind_pair_idx(bk);
+            // (a) forge the PUBLIC commitment lane (the pubio cell) ≠ mirrored output ⇒ reject.
+            {
+                let row = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
+                let mut m = RowMajorMatrix::new(row, n_cols_cfg(k, true));
+                m.values[lb + lc::L_CELLS + pubio_cell * D] += Val::ONE;
+                assert!(
+                    !check_all_constraints(&leaf_air(k), &m, &[], None).is_ok(),
+                    "forged public commitment (binding {bk}) NOT rejected end-to-end"
+                );
+            }
+            // (b) tamper the MIRRORED sponge output ≠ public commitment ⇒ reject.
+            {
+                let row = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
+                let mut m = RowMajorMatrix::new(row, n_cols_cfg(k, true));
+                m.values[lb + lc::L_CELLS + out_cell * D] += Val::ONE;
+                assert!(
+                    !check_all_constraints(&leaf_air(k), &m, &[], None).is_ok(),
+                    "tampered mirrored output (binding {bk}) NOT rejected end-to-end"
+                );
+            }
+        }
+    }
+
     /// FORGERY — tampering `C_committed` (the deferred summand) with everything else honest breaks
     /// `C == C_partial + C_committed` ⇒ rejected. (A prover cannot smuggle a favorable deferred
     /// bulk value either; it is bound by the decomposition.)

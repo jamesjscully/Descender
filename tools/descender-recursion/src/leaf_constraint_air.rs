@@ -147,7 +147,8 @@ use crate::fri_fold_air::{limbs, D, W};
 use crate::inlined_perm::{C_INPUTS, C_OUTPUT, PERM_COLS};
 use crate::inlined_perm_octic::{self, OcticPermCells};
 use descender_account_stark::{
-    Challenge, Val, N_COMMIT_LANES, N_LANES, RELATION_ID, RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, WIDTH,
+    Challenge, Val, N_COMMIT_LANES, N_LANES, PUBIO_ROLE_ROOT_OFF, RELATION_ID, RELATION_ID_ELEMS,
+    ROLE_ROOT_ELEMS, WIDTH,
 };
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
 use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
@@ -515,6 +516,41 @@ pub const N_BR_PER_LANE: usize = BYTE_BITS + 1; // 9
 /// Total byte-range residuals batched into `C_partial`.
 pub const N_BYTERANGE: usize = N_BR_LANES * N_BR_PER_LANE; // 1512
 
+// ----- SPONGE-OUTPUT → PUBLIC-VALUE binding (the per-instance commitment equalities) -----
+//
+// Mirrors `descender_account_stark::air::FullRelationAir::eval` (BATCH mode) where each mirrored
+// sponge OUTPUT is constrained EQUAL to the leaf's PUBLIC statement value, which in batch mode is
+// the per-row `pubio` block `local[lay.pubio_off + off]` (air.rs:712-756, 898-906, 941-953). The
+// recursion already models that per-row pubio block as the `chain_pubio_cell(i)` cells — the SAME
+// cells the batch digest chain ABSORBS (`chain_residual` reads `chain_pubio_cell(i)` for the running
+// fold). So binding the mirrored outputs to `chain_pubio_cell(off)` ties them to the ONE source of
+// truth for the public statement (a forger cannot expose a public commitment inconsistent with the
+// in-circuit sponge, and a tampered public lane changes both the chain digest AND this equality).
+//
+// air.rs batch bindings (pubio offsets within one row's pubio block):
+//   * pad_source_commitment[0..10]   == pubio[0..10]                       (= C1 squeeze output)
+//   * opening_tuple_commitment[0..10]== pubio[N_COMMIT_LANES..2·N_COMMIT_LANES] (= C6 squeeze output)
+//   * masked_projection[0..6]        == pubio[2·N_COMMIT_LANES..+N_LANES]  (= carrier masked output)
+//   * role_root[0..8]                == pubio[PUBIO_ROLE_ROOT_OFF..+8]     (= role-root squeeze output)
+//
+// The mirrored outputs are the ALREADY-CONSTRAINED `c1_out_cell` / `c6_out_cell` /
+// `carrier_masked_cell` / `role_out_cell` cells (bound to their recomputed sponges/gadget by the
+// earlier classes), so this class CHAINS them to the public-IO model — it does NOT introduce fresh
+// columns on either side.
+//
+// SCOPE NOTE (HONESTLY FLAGGED): the relation_id pubio binding (air.rs:962-968,
+// `pubio[PUBIO_RELATION_ID_OFF + j] == RELATION_ID[j]`) is ALREADY covered by the existing
+// `N_RELATION_ID` class (relation_id pinning over the SAME constant); the recursion pins relation_id
+// directly. The context==pubio, syndrome, and packed_witness pubio bindings are NOT yet mirrored as
+// in-circuit sponges in this harness (their producing gadgets are deferred), so they are not bound
+// here; they ride with their gadgets' future mirror. The four bindings here are exactly the four
+// per-instance COMMITMENT outputs whose sponges/gadgets ARE already mirrored.
+pub const N_PUBIO_C1: usize = N_COMMIT_LANES; // pad_source_commitment[10]
+pub const N_PUBIO_C6: usize = N_COMMIT_LANES; // opening_tuple_commitment[10]
+pub const N_PUBIO_MASKED: usize = N_LANES; // masked_projection[6]
+pub const N_PUBIO_ROLE: usize = ROLE_ROOT_ELEMS; // role_root[8]
+pub const N_PUBIO_BIND: usize = N_PUBIO_C1 + N_PUBIO_C6 + N_PUBIO_MASKED + N_PUBIO_ROLE; // 34
+
 /// Total residuals batched into `C_partial`.
 pub const N_CONSTRAINTS: usize = C4_LANES * C4_N_PER_LANE
     + N_C4_ACC
@@ -527,7 +563,8 @@ pub const N_CONSTRAINTS: usize = C4_LANES * C4_N_PER_LANE
     + N_C2
     + N_REDUCE
     + N_CHAIN
-    + N_BYTERANGE;
+    + N_BYTERANGE
+    + N_PUBIO_BIND;
 
 // ===========================================================================
 // Column layout (one leaf-constraint-mirror check per row)
@@ -1600,6 +1637,41 @@ fn byterange_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challeng
     lane - acc
 }
 
+/// Map the `k`-th sponge-output→public-value binding (`k ∈ [0, N_PUBIO_BIND)`) to the
+/// `(output_cell, pubio_lane)` pair it equates. The `output_cell` is the ALREADY-MIRRORED sponge /
+/// gadget output cell; the `pubio_lane` is the offset within the per-row pubio block (= the
+/// `chain_pubio_cell` index — the SAME cell the digest chain absorbs). Mirrors the air.rs BATCH
+/// bindings EXACTLY:
+///   * `0..10`  : `c1_out_cell(j)`        == `chain_pubio_cell(j)`                       (C1).
+///   * `10..20` : `c6_out_cell(j)`        == `chain_pubio_cell(N_COMMIT_LANES + j)`      (C6).
+///   * `20..26` : `carrier_masked_cell(j)`== `chain_pubio_cell(2·N_COMMIT_LANES + j)`    (masked).
+///   * `26..34` : `role_out_cell(j)`      == `chain_pubio_cell(PUBIO_ROLE_ROOT_OFF + j)` (role).
+const fn pubio_bind_pair(k: usize) -> (usize, usize) {
+    if k < N_PUBIO_C1 {
+        let j = k;
+        (c1_out_cell(j), chain_pubio_cell(j))
+    } else if k < N_PUBIO_C1 + N_PUBIO_C6 {
+        let j = k - N_PUBIO_C1;
+        (c6_out_cell(j), chain_pubio_cell(N_COMMIT_LANES + j))
+    } else if k < N_PUBIO_C1 + N_PUBIO_C6 + N_PUBIO_MASKED {
+        let j = k - N_PUBIO_C1 - N_PUBIO_C6;
+        (carrier_masked_cell(j), chain_pubio_cell(2 * N_COMMIT_LANES + j))
+    } else {
+        let j = k - N_PUBIO_C1 - N_PUBIO_C6 - N_PUBIO_MASKED;
+        (role_out_cell(j), chain_pubio_cell(PUBIO_ROLE_ROOT_OFF + j))
+    }
+}
+
+/// The `k`-th NATIVE sponge-output→public-value binding residual over the opened cells,
+/// `k ∈ [0, N_PUBIO_BIND)`: `output_cell − pubio_cell` for the `(output, pubio)` pair from
+/// [`pubio_bind_pair`]. On an honest row the mirrored sponge output already equals the public-IO
+/// lane the chain absorbs, so the residual vanishes; a forged public commitment (≠ mirrored output)
+/// or a tampered mirrored output makes it non-zero ⇒ rejects.
+fn pubio_bind_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
+    let (out_cell, pubio_cell) = pubio_bind_pair(k);
+    cells[out_cell] - cells[pubio_cell]
+}
+
 /// Map the `ri`-th committed post (in `inlined_perm_octic::perm_residuals` order: begin-full posts,
 /// then partial post_sbox, then end-full posts) to its CELL offset within a `PERM_COLS` block (the
 /// `inlined_perm` column layout). Used to read the OPENED committed-post cell for the C1 residual.
@@ -1690,9 +1762,16 @@ pub fn constraint_residual(cells: &[Challenge; N_OPENED_CELLS], r: usize) -> Cha
         return chain_residual(cells, r);
     }
     r -= N_CHAIN;
-    // PER-LANE BYTE-RANGE / canonicality of the C1/C2/C6 sponge INPUT lanes (air.rs:1278-1289).
-    debug_assert!(r < N_BYTERANGE);
-    byterange_residual(cells, r)
+    if r < N_BYTERANGE {
+        // PER-LANE BYTE-RANGE / canonicality of the C1/C2/C6 sponge INPUT lanes (air.rs:1278-1289).
+        return byterange_residual(cells, r);
+    }
+    r -= N_BYTERANGE;
+    // SPONGE-OUTPUT → PUBLIC-VALUE binding (the per-instance commitment equalities, air.rs batch
+    // bindings): pad_source_commitment / opening_tuple_commitment / masked_projection / role_root
+    // == the SAME per-row pubio cells the digest chain absorbs.
+    debug_assert!(r < N_PUBIO_BIND);
+    pubio_bind_residual(cells, r)
 }
 
 /// Native alpha-batched leaf partial constraint eval over opened cells:
@@ -1842,6 +1921,17 @@ pub fn chain_count_cell_idx() -> usize {
 pub fn chain_pubio_cell_idx(i: usize) -> usize {
     chain_pubio_cell(i)
 }
+/// TEST-ONLY: the `(mirrored-output cell, public/pubio cell)` pair the `k`-th sponge-output→
+/// public-value binding equates (`k < N_PUBIO_BIND`). Used by cross-module end-to-end tamper tests.
+#[cfg(test)]
+pub fn pubio_bind_pair_idx(k: usize) -> (usize, usize) {
+    pubio_bind_pair(k)
+}
+/// TEST-ONLY: number of sponge-output→public-value bindings.
+#[cfg(test)]
+pub fn n_pubio_bind() -> usize {
+    N_PUBIO_BIND
+}
 /// TEST-ONLY: byte-range bit-witness cell accessor (global byte-range index `g`, bit `b`).
 #[cfg(test)]
 pub fn byterange_bit_cell_idx(g: usize, b: usize) -> usize {
@@ -1988,6 +2078,24 @@ where
     {
         let expected = octic_add::<AB>(&cell(chain_prev_count_cell()), &enable);
         residuals.push(octic_sub::<AB>(&cell(chain_count_cell()), &expected));
+    }
+}
+
+/// Push the SPONGE-OUTPUT → PUBLIC-VALUE binding residuals (`output_cell − pubio_cell` for each
+/// per-instance commitment output) onto `residuals`, in the SAME order as the native
+/// [`pubio_bind_residual`]. Mirrors the air.rs BATCH bindings (air.rs:712-756, 898-906, 941-953):
+/// the mirrored C1/C6/masked/role outputs are constrained EQUAL to the per-row pubio cells the
+/// digest chain absorbs (`chain_pubio_cell` — the SAME public-value cells, one source of truth).
+/// EXTRACTED into its own (`#[inline(never)]`) frame to keep `recompute_c_partial`'s frame small.
+#[inline(never)]
+fn push_pubio_bind_residuals<AB, FCell>(cell: &FCell, residuals: &mut Vec<[AB::Expr; D]>)
+where
+    AB: AirBuilder<F = Val>,
+    FCell: Fn(usize) -> [AB::Expr; D],
+{
+    for k in 0..N_PUBIO_BIND {
+        let (out_cell, pubio_cell) = pubio_bind_pair(k);
+        residuals.push(octic_sub::<AB>(&cell(out_cell), &cell(pubio_cell)));
     }
 }
 
@@ -2139,6 +2247,12 @@ where
     // global byte-range index (C1 48 ‖ C2 40 ‖ C6 80), each lane = BYTE_BITS bit-bools then 1
     // recompose eq binding the ACTUAL absorbed sponge input cell.
     push_byterange_residuals::<AB, FCell>(cell, &mut residuals);
+
+    // (13) SPONGE-OUTPUT → PUBLIC-VALUE binding — EXTRACTED into `push_pubio_bind_residuals` (its own
+    // `#[inline(never)]` frame). Binds the mirrored C1/C6/masked/role outputs EQUAL to the per-row
+    // pubio cells the digest chain absorbs (the SAME public-value cells — one source of truth). Order
+    // MUST match the native `pubio_bind_residual`. This is the LAST class.
+    push_pubio_bind_residuals::<AB, FCell>(cell, &mut residuals);
 
     debug_assert_eq!(residuals.len(), N_CONSTRAINTS);
 
@@ -2670,10 +2784,38 @@ mod tests {
         }
 
         // pubio lanes: field-valued (the per-instance statement), lifted to one-limb base elements.
+        // The COMMITMENT lanes (C1/C6/masked/role) are set EQUAL to the already-filled mirrored
+        // sponge / gadget OUTPUT cells — so the sponge-output→public-value binding class
+        // (`pubio_bind_residual`) vanishes on the honest row, exactly as the batch leaf AIR binds the
+        // squeezed output to the per-row pubio block. The OTHER pubio lanes (context, relation_id,
+        // syndrome, packed_witness) are arbitrary field values (the chain absorbs them regardless);
+        // they are not bound by this class (their producing gadgets are not yet mirrored). MUST run
+        // after fill_honest_c1/c6/role/c2_and_reduce.
         let mut pubio = [Val::ZERO; CHAIN_PUBIO];
+        let out_val = |cells: &[Challenge; N_OPENED_CELLS], c: usize| -> Val {
+            Challenge::as_basis_coefficients_slice(&cells[c])[0]
+        };
         for i in 0..CHAIN_PUBIO {
             let v = seed.wrapping_mul(131).wrapping_add(i as u32 * 7 + 1);
             pubio[i] = Val::from_u32(v);
+        }
+        // C1 squeeze output → pubio[0..10].
+        for j in 0..N_COMMIT_LANES {
+            pubio[j] = out_val(cells, c1_out_cell(j));
+        }
+        // C6 squeeze output → pubio[N_COMMIT_LANES..2·N_COMMIT_LANES].
+        for j in 0..N_COMMIT_LANES {
+            pubio[N_COMMIT_LANES + j] = out_val(cells, c6_out_cell(j));
+        }
+        // carrier masked_projection → pubio[2·N_COMMIT_LANES..+N_LANES].
+        for j in 0..N_LANES {
+            pubio[2 * N_COMMIT_LANES + j] = out_val(cells, carrier_masked_cell(j));
+        }
+        // role-root squeeze output → pubio[PUBIO_ROLE_ROOT_OFF..+ROLE_ROOT_ELEMS].
+        for j in 0..ROLE_ROOT_ELEMS {
+            pubio[PUBIO_ROLE_ROOT_OFF + j] = out_val(cells, role_out_cell(j));
+        }
+        for i in 0..CHAIN_PUBIO {
             cells[chain_pubio_cell(i)] = Challenge::from(pubio[i]);
         }
 
@@ -3845,8 +3987,11 @@ mod tests {
         assert_eq!(N_C2, C2_N_PERMS * WIDTH + C2_N_PERMS * inlined_perm_octic::PERM_RESIDUALS);
         // reduce + carrier total.
         assert_eq!(N_REDUCE, NUM_OUTPUTS * N_REDUCE_PER_MASK + N_LANES * N_CARRIER_PER_LANE);
-        // the chain class follows reduce; reduce+chain+byterange cover everything up to N_CONSTRAINTS.
-        assert_eq!(REDUCE_RESIDUAL_BASE + N_REDUCE + N_CHAIN + N_BYTERANGE, N_CONSTRAINTS);
+        // the chain class follows reduce; reduce+chain+byterange+pubio-bind cover up to N_CONSTRAINTS.
+        assert_eq!(
+            REDUCE_RESIDUAL_BASE + N_REDUCE + N_CHAIN + N_BYTERANGE + N_PUBIO_BIND,
+            N_CONSTRAINTS
+        );
     }
 
     /// FIDELITY PIN (C2) — an HONEST C2 sponge (built from the deployed byte-pinned Val permutation
@@ -4071,8 +4216,11 @@ mod tests {
     /// Base residual index of the batch-digest-chain class within `constraint_residual`.
     const CHAIN_RESIDUAL_BASE: usize = REDUCE_RESIDUAL_BASE + N_REDUCE;
 
-    /// Base of the byte-range class (the LAST class; follows chain).
+    /// Base of the byte-range class (follows chain).
     const BYTERANGE_RESIDUAL_BASE: usize = CHAIN_RESIDUAL_BASE + N_CHAIN;
+
+    /// Base of the sponge-output→public-value binding class (the LAST class; follows byte-range).
+    const PUBIO_BIND_RESIDUAL_BASE: usize = BYTERANGE_RESIDUAL_BASE + N_BYTERANGE;
 
     /// SHAPE SANITY — the chain residual counts agree with the structural constants, and the chain
     /// class is followed by the byte-range class (which now covers up to N_CONSTRAINTS).
@@ -4086,7 +4234,7 @@ mod tests {
                 + CHAIN_W
                 + 1
         );
-        assert_eq!(CHAIN_RESIDUAL_BASE + N_CHAIN + N_BYTERANGE, N_CONSTRAINTS);
+        assert_eq!(CHAIN_RESIDUAL_BASE + N_CHAIN + N_BYTERANGE + N_PUBIO_BIND, N_CONSTRAINTS);
         // sanity: the chain uses the full 16-wide perm and rate-8 absorb (mirrors air.rs).
         assert_eq!(CHAIN_W, WIDTH);
         assert_eq!(CHAIN_RT, 8);
@@ -4263,7 +4411,7 @@ mod tests {
     // ----- PER-LANE BYTE-RANGE / canonicality (air.rs:1278-1289) -----
 
     /// SHAPE SANITY — byte-range counts mirror air.rs `FullLayout::new` byte_ranged masks EXACTLY,
-    /// and the byte-range class is the LAST class (covers exactly up to N_CONSTRAINTS).
+    /// and the byte-range class is followed by the pubio-bind class (together up to N_CONSTRAINTS).
     #[test]
     fn byterange_shape_matches_leaf() {
         // C1: all 48 lanes; C2: all 40; C6: only the 80 byte-lanes (6 FIELD lanes excluded).
@@ -4274,7 +4422,7 @@ mod tests {
         assert_eq!(N_BR_PER_LANE, BYTE_BITS + 1);
         assert_eq!(N_BYTERANGE, N_BR_LANES * N_BR_PER_LANE);
         assert_eq!(N_BYTERANGE_BITS, N_BR_LANES * BYTE_BITS);
-        assert_eq!(BYTERANGE_RESIDUAL_BASE + N_BYTERANGE, N_CONSTRAINTS);
+        assert_eq!(BYTERANGE_RESIDUAL_BASE + N_BYTERANGE + N_PUBIO_BIND, N_CONSTRAINTS);
         // the recompose eq for EVERY lane targets the REAL already-absorbed sponge input cell,
         // matching the sponge's own absorb source — NOT a fresh free column (the vacuity guard).
         for g in 0..C1_BR_LANES {
@@ -4420,6 +4568,153 @@ mod tests {
             assert!(
                 !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
                 "byte-range sum-mismatch (boolean bits, wrong total) NOT rejected"
+            );
+        }
+    }
+
+    // ----- SPONGE-OUTPUT → PUBLIC-VALUE binding (the per-instance commitment equalities) -----
+
+    /// SHAPE SANITY — the pubio-bind class is the LAST class (covers exactly up to N_CONSTRAINTS),
+    /// its count is the four per-instance commitment outputs, and EVERY binding maps the
+    /// already-mirrored sponge/gadget OUTPUT cell to the SAME per-row pubio cell the digest chain
+    /// absorbs (`chain_pubio_cell`) at the air.rs batch offset — one source of truth, not a fresh
+    /// column on either side.
+    #[test]
+    fn pubio_bind_shape_matches_leaf() {
+        assert_eq!(N_PUBIO_C1, N_COMMIT_LANES);
+        assert_eq!(N_PUBIO_C6, N_COMMIT_LANES);
+        assert_eq!(N_PUBIO_MASKED, N_LANES);
+        assert_eq!(N_PUBIO_ROLE, ROLE_ROOT_ELEMS);
+        assert_eq!(N_PUBIO_BIND, 2 * N_COMMIT_LANES + N_LANES + ROLE_ROOT_ELEMS);
+        assert_eq!(PUBIO_BIND_RESIDUAL_BASE + N_PUBIO_BIND, N_CONSTRAINTS);
+        // C1: c1_out_cell(j) == chain_pubio_cell(j).
+        for j in 0..N_COMMIT_LANES {
+            assert_eq!(pubio_bind_pair(j), (c1_out_cell(j), chain_pubio_cell(j)));
+        }
+        // C6: c6_out_cell(j) == chain_pubio_cell(N_COMMIT_LANES + j).
+        for j in 0..N_COMMIT_LANES {
+            assert_eq!(
+                pubio_bind_pair(N_COMMIT_LANES + j),
+                (c6_out_cell(j), chain_pubio_cell(N_COMMIT_LANES + j))
+            );
+        }
+        // masked: carrier_masked_cell(j) == chain_pubio_cell(2·N_COMMIT_LANES + j).
+        for j in 0..N_LANES {
+            assert_eq!(
+                pubio_bind_pair(2 * N_COMMIT_LANES + j),
+                (carrier_masked_cell(j), chain_pubio_cell(2 * N_COMMIT_LANES + j))
+            );
+        }
+        // role: role_out_cell(j) == chain_pubio_cell(PUBIO_ROLE_ROOT_OFF + j).
+        for j in 0..ROLE_ROOT_ELEMS {
+            assert_eq!(
+                pubio_bind_pair(2 * N_COMMIT_LANES + N_LANES + j),
+                (role_out_cell(j), chain_pubio_cell(PUBIO_ROLE_ROOT_OFF + j))
+            );
+        }
+    }
+
+    /// FIDELITY PIN (pubio-bind) — on an honest row EVERY pubio-bind residual is zero: the
+    /// fixture sets the absorbed pubio commitment lanes EQUAL to the actual mirrored sponge/gadget
+    /// outputs (exactly as the batch leaf AIR binds the squeezed output to the per-row pubio block),
+    /// so `output − pubio == 0`. ALSO checks the bound pubio cells genuinely carry the sponge-output
+    /// values (NOT zero / NOT the arbitrary non-commitment fill) — the non-vacuity of the fixture.
+    #[test]
+    fn pubio_bind_honest_all_residuals_zero() {
+        let cells = honest_cells([0, 1, 127, 12288, 5000, 96], 17);
+        for k in 0..N_PUBIO_BIND {
+            assert_eq!(
+                constraint_residual(&cells, PUBIO_BIND_RESIDUAL_BASE + k),
+                Challenge::ZERO,
+                "honest pubio-bind residual {k} nonzero"
+            );
+        }
+        // non-vacuity: the bound pubio cell really holds the mirrored output value (so the equality
+        // is meaningful, not "both sides happen to be zero"). At least one output is nonzero.
+        let mut any_nonzero = false;
+        for k in 0..N_PUBIO_BIND {
+            let (out_cell, pubio_cell) = pubio_bind_pair(k);
+            assert_eq!(cells[out_cell], cells[pubio_cell], "pubio cell != mirrored output at {k}");
+            if cells[out_cell] != Challenge::ZERO {
+                any_nonzero = true;
+            }
+        }
+        assert!(any_nonzero, "all mirrored outputs zero — pubio-bind fixture is vacuous");
+    }
+
+    /// FORGERY (pubio-bind, FORGED PUBLIC COMMITMENT) — a public commitment lane (the per-row pubio
+    /// cell the chain absorbs) set to a value ≠ the mirrored sponge output breaks the binding residual
+    /// for that lane. THIS is the core soundness property: a forger cannot expose a public commitment
+    /// inconsistent with the in-circuit sponge. We probe one lane of each of the four commitment
+    /// outputs (C1, C6, masked, role).
+    #[test]
+    fn pubio_bind_rejects_forged_public_commitment() {
+        let probes = [
+            0usize,                                   // C1 pad_source_commitment lane 0
+            N_COMMIT_LANES + 3,                       // C6 opening_tuple_commitment lane 3
+            2 * N_COMMIT_LANES + 2,                   // masked_projection lane 2
+            2 * N_COMMIT_LANES + N_LANES + 5,         // role_root lane 5
+        ];
+        for &k in &probes {
+            let mut bad = honest_cells([3, 14, 159, 26, 53, 58], 7);
+            let (_out_cell, pubio_cell) = pubio_bind_pair(k);
+            bad[pubio_cell] += Challenge::ONE; // forge the public commitment lane
+            assert_ne!(
+                constraint_residual(&bad, PUBIO_BIND_RESIDUAL_BASE + k),
+                Challenge::ZERO,
+                "forged public commitment lane {k} not caught by the binding"
+            );
+        }
+    }
+
+    /// FORGERY (pubio-bind, TAMPERED SPONGE OUTPUT) — conversely, a mirrored sponge OUTPUT cell ≠ the
+    /// public commitment breaks the binding residual. (The output is ALSO bound to its recomputed
+    /// sponge by the earlier class, so a real forger can't move it freely; here we confirm the binding
+    /// reacts to a mismatch from the output side too.)
+    #[test]
+    fn pubio_bind_rejects_tampered_sponge_output() {
+        let probes = [0usize, N_COMMIT_LANES, 2 * N_COMMIT_LANES, 2 * N_COMMIT_LANES + N_LANES];
+        for &k in &probes {
+            let mut bad = honest_cells([1, 2, 3, 4, 5, 6], 9);
+            let (out_cell, _pubio_cell) = pubio_bind_pair(k);
+            bad[out_cell] += Challenge::ONE; // tamper the mirrored output
+            assert_ne!(
+                constraint_residual(&bad, PUBIO_BIND_RESIDUAL_BASE + k),
+                Challenge::ZERO,
+                "tampered sponge output lane {k} not caught by the binding"
+            );
+        }
+    }
+
+    /// FORGERY (pubio-bind, end-to-end through the mirror AIR) — a forged public commitment lane and a
+    /// tampered mirrored output are each rejected by the real `check_all_constraints` on the
+    /// `LeafConstraintMirrorAir`. Soundness by attempted forgery, never by inspection.
+    #[test]
+    fn pubio_bind_air_rejects_tampers() {
+        let cells = honest_cells([0, 1, 127, 128, 12288, 5000], 23);
+        let m_ok = matrix(&cells, ext(31));
+        assert!(
+            check_all_constraints(&LeafConstraintMirrorAir, &m_ok, &[], None).is_ok(),
+            "honest pubio-bind row rejected"
+        );
+        // (a) forge a public commitment lane (C6 lane 0 = the pubio cell the chain absorbs).
+        {
+            let mut m = matrix(&cells, ext(31));
+            let (_oc, pubio_cell) = pubio_bind_pair(N_COMMIT_LANES);
+            m.values[cell_base(pubio_cell)] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "forged public commitment NOT rejected end-to-end at the mirror"
+            );
+        }
+        // (b) tamper a mirrored output lane (role_root lane 0).
+        {
+            let mut m = matrix(&cells, ext(31));
+            let (out_cell, _pc) = pubio_bind_pair(2 * N_COMMIT_LANES + N_LANES);
+            m.values[cell_base(out_cell)] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "tampered mirrored output NOT rejected end-to-end at the mirror"
             );
         }
     }
