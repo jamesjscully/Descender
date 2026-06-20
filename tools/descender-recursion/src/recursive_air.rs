@@ -373,6 +373,30 @@ pub struct RecursiveConfig {
     /// the FS index against the inner MAIN-TRACE commitment. Off ⇒ the root is bound only to the generic
     /// `PV_ROOT` public value (the prior mechanism).
     pub bind_root_to_main_commit: bool,
+    /// (LO) COMPOSE the standalone-proven per-round FRI-LAYER opening into the (c) descent: for each
+    /// commit-phase round `r = 0..layer_open_rounds`, the window carries that round's FRI-layer
+    /// commitment `layer_commit_r[DIGEST_ELEMS]` (a BOUND recursion input, like `inner_main_commit`)
+    /// plus the full [`crate::fri_layer_air::FriLayerOpenAir`] residual — flattened arity-2 pair,
+    /// salt, the `MyHash(pair ‖ salt)` leaf-hash perms, and `layer_open_levels` Merkle path levels —
+    /// authenticating round `r`'s opened SIBLING at the FS query index shifted by `r`
+    /// (`folded_index_r = FS_index >> r`; per-level selectors bound to FS-index bits) against
+    /// `layer_commit_r`. The authenticated `e_fold` is bound to the descent's `round_e0(r)` and the
+    /// authenticated `e_sib` to `round_e1(r)`, so the FRI fold consumes the AUTHENTICATED sibling —
+    /// not a free column. A descent sibling != the authenticated layer-open output rejects; a
+    /// `layer_commit_r` != the real round-r commitment rejects; cross-round confusion (round `r`'s
+    /// sibling/commit used in round `r'`) rejects. 0 = off. Requires `num_rounds >= layer_open_rounds`.
+    pub layer_open_rounds: usize,
+    /// (LO) Number of Merkle path levels per per-round layer open (the FRI-layer tree depth). Each
+    /// level's selector bit is bound to FS-index bit `r+1+level`. Only consumed when
+    /// `layer_open_rounds > 0`.
+    pub layer_open_levels: usize,
+    /// (FP) ENFORCE the FRI final-polynomial check INSIDE the descent: bind the fully-folded value
+    /// after the last commit-phase round (`round_folded(rounds-1)`) to a committed final polynomial
+    /// evaluated at a query point `x` (p3-fri verifier.rs:402-409, `folded == Σ coeff·x^k`). When
+    /// `> 0` it is the final-poly coefficient count (`fp_len`); the window carries `x ‖ coeffs[fp_len·D]`
+    /// and CONSTRAINS `round_folded(last) == Horner(coeffs, x)`. A folded value != final_poly(x), or a
+    /// tampered final-poly coefficient, rejects. 0 = off.
+    pub final_poly_len: usize,
     /// (b-hash) DERIVE the Merkle level-0 leaf digest IN-AIR as `MyHash(opened_row ‖ salt)` via the
     /// inlined Poseidon2 `PaddingFreeSponge` (`config::MyHash = PaddingFreeSponge<Perm,16,8,8>`),
     /// instead of accepting the level-0 running as a free supplied digest. When `> 0` it is the
@@ -415,6 +439,9 @@ impl RecursiveConfig {
             fs_final_blocks: 0,
             fs_final_blocks_public: false,
             bind_root_to_main_commit: false,
+            layer_open_rounds: 0,
+            layer_open_levels: 0,
+            final_poly_len: 0,
             leaf_row_len: 0,
         }
     }
@@ -776,6 +803,146 @@ fn mc_size(cfg: &RecursiveConfig) -> usize {
     }
 }
 
+// ----- (LO) per-round FRI commit-phase LAYER-open block -----
+//
+// Appended AFTER the (a-root) block. Per commit-phase round `r = 0..layer_open_rounds`, a layer-open
+// sub-block authenticates round r's opened SIBLING against round r's FRI-layer commitment, then binds
+// the authenticated pair (e_fold, e_sib) to the descent's (round_e0(r), round_e1(r)). The residual
+// re-expresses [`crate::fri_layer_air::FriLayerOpenAir`] INSIDE this window (binding to the descent's
+// existing cells), constant-for-constant.
+//
+// Per-round sub-block layout:
+//   layer_commit[DIGEST_ELEMS]          the round-r FRI-layer commitment (the bound root)
+//   evals[2·D]                          the flattened arity-2 pair [evals0; D] ‖ [evals1; D]
+//   salt[SALT_ELEMS]                    the hiding-MMCS salt of the opened leaf row
+//   leaf_perm_0[PERM_COLS] .. _{P-1}    the MyHash(evals ‖ salt) PaddingFreeSponge perms
+//   level_0 .. level_{L-1}              the Merkle path levels (running[8] ‖ sibling[8] ‖ perm)
+//
+// The parity (in-group bit) and per-level node selectors are NOT free: they are read directly from
+// the bus index bits — parity = bits[r], level-j selector = bits[r+1+j] (the folded-node index of
+// round r is FS_index >> (r+1)). So the layer open is presented at the FS-forced node, not a chosen one.
+/// `evals[0]` limbs offset (start of the flattened pair).
+const LO_EVAL0: usize = DIGEST_ELEMS;
+/// `evals[1]` limbs offset.
+const LO_EVAL1: usize = LO_EVAL0 + D;
+/// salt offset (after the flattened pair).
+const LO_SALT: usize = LO_EVAL1 + D;
+/// start of the leaf-hash perm blocks (after the salt).
+const LO_LEAF_PERMS: usize = LO_SALT + SALT_ELEMS;
+
+/// The salted leaf-row input length for a layer leaf: `2·D` flattened pair + `SALT_ELEMS` salt.
+const LO_LEAF_INPUT_LEN: usize = 2 * D + SALT_ELEMS;
+
+/// Number of `PaddingFreeSponge` absorb-permutes over the `2·D + SALT_ELEMS` salted layer-leaf input
+/// (mirrors [`lh_perms`] / `leaf_hash_pre_states`).
+const fn lo_leaf_perms() -> usize {
+    let m = LO_LEAF_INPUT_LEN;
+    let c = m.div_ceil(RATE);
+    if c == 0 { 1 } else { c }
+}
+
+/// Offset of leaf-hash perm block `k` within a layer-open sub-block.
+const fn lo_leaf_perm_base(k: usize) -> usize {
+    LO_LEAF_PERMS + k * PERM_COLS
+}
+
+/// Offset of the Merkle path level blocks within a layer-open sub-block.
+const fn lo_merkle_base() -> usize {
+    lo_leaf_perm_base(lo_leaf_perms())
+}
+
+/// Per-level Merkle sub-block within a layer open: `running[8] ‖ sibling[8] ‖ perm`. (No per-level
+/// bit column — the selector is read from the bus index bits, not stored.)
+const LO_ML_RUNNING: usize = 0;
+const LO_ML_SIBLING: usize = DIGEST_ELEMS;
+const LO_ML_PERM: usize = 2 * DIGEST_ELEMS;
+const LO_MERKLE_LEVEL: usize = LO_ML_PERM + PERM_COLS;
+
+/// Size of ONE per-round layer-open sub-block for `levels` path levels.
+fn lo_round_size(levels: usize) -> usize {
+    lo_merkle_base() + levels * LO_MERKLE_LEVEL
+}
+
+/// Base of the (LO) block (after the a-root block).
+fn lo_base(cfg: &RecursiveConfig) -> usize {
+    mc_base(cfg) + mc_size(cfg)
+}
+
+/// Base of layer-open round `r`'s sub-block within the window.
+fn lo_round_base(cfg: &RecursiveConfig, r: usize) -> usize {
+    lo_base(cfg) + r * lo_round_size(cfg.layer_open_levels)
+}
+
+/// Offset of layer-open round `r`'s Merkle level `level`.
+fn lo_level_base(cfg: &RecursiveConfig, r: usize, level: usize) -> usize {
+    lo_round_base(cfg, r) + lo_merkle_base() + level * LO_MERKLE_LEVEL
+}
+
+/// Size of the (LO) block: `layer_open_rounds` sub-blocks. 0 unless enabled.
+fn lo_size(cfg: &RecursiveConfig) -> usize {
+    if cfg.layer_open_rounds > 0 {
+        cfg.layer_open_rounds * lo_round_size(cfg.layer_open_levels)
+    } else {
+        0
+    }
+}
+
+// ----- (FP) final-polynomial check block -----
+//
+// Appended AFTER the (LO) block. `x ‖ coeffs[final_poly_len·D]`. CONSTRAINS the descent's
+// round_folded(rounds-1) == Horner(coeffs, x) (p3-fri verifier.rs:402-409).
+const FP_X: usize = 0;
+const FP_COEFFS: usize = FP_X + 1;
+
+fn fp_coeff_base(c: usize) -> usize {
+    FP_COEFFS + c * D
+}
+
+/// Base of the (FP) final-poly block (after the LO block).
+fn fp_base(cfg: &RecursiveConfig) -> usize {
+    lo_base(cfg) + lo_size(cfg)
+}
+
+/// Size of the (FP) block: `x` + `final_poly_len·D` coeff columns. 0 unless enabled.
+fn fp_size(cfg: &RecursiveConfig) -> usize {
+    if cfg.final_poly_len > 0 {
+        1 + cfg.final_poly_len * D
+    } else {
+        0
+    }
+}
+
+/// The flattened arity-2 leaf row `[evals0; D] ‖ [evals1; D]` placed by parity: `evals[parity] =
+/// e_fold`, the other slot = `e_sib`. Mirrors [`crate::fri_layer_air::flatten_pair`].
+fn lo_flatten_pair(e_fold: Challenge, e_sib: Challenge, parity: bool) -> [Val; 2 * D] {
+    let (e0, e1) = if parity { (e_sib, e_fold) } else { (e_fold, e_sib) };
+    let mut row = [Val::ZERO; 2 * D];
+    row[..D].copy_from_slice(e0.as_basis_coefficients_slice());
+    row[D..].copy_from_slice(e1.as_basis_coefficients_slice());
+    row
+}
+
+/// The salted leaf-hash input `flatten(evals) ‖ salt` for a layer leaf.
+fn lo_leaf_input(e_fold: Challenge, e_sib: Challenge, parity: bool, salt: &[Val; SALT_ELEMS]) -> Vec<Val> {
+    let mut v = lo_flatten_pair(e_fold, e_sib, parity).to_vec();
+    v.extend_from_slice(salt);
+    v
+}
+
+/// The layer leaf digest `MyHash(flatten(evals) ‖ salt)` — the value the Merkle path authenticates.
+pub fn layer_leaf_digest(e_fold: Challenge, e_sib: Challenge, parity: bool, salt: &[Val; SALT_ELEMS]) -> [Val; DIGEST_ELEMS] {
+    leaf_hash_digest(&lo_leaf_input(e_fold, e_sib, parity, salt))
+}
+
+/// Reference Horner eval of a committed final poly at base point `x` (p3-fri verifier.rs:404-405).
+pub fn final_poly_eval(x: Val, coeffs: &[Challenge]) -> Challenge {
+    let mut eval = Challenge::ZERO;
+    for &coeff in coeffs.iter().rev() {
+        eval = eval * x + coeff;
+    }
+    eval
+}
+
 /// The (alpha, zeta) the inline FS challenger squeezes for `fs_blocks` (the observed transcript:
 /// `fs_pre_alpha_rounds` pre-alpha FULL-rate blocks + 1 quotient-commitment block), in p3 order:
 /// observe pre-alpha prefix → SAMPLE alpha → observe quotient → SAMPLE zeta. The single source the
@@ -953,9 +1120,9 @@ fn lh_perm_base(cfg: &RecursiveConfig, k: usize) -> usize {
     lh_salt(cfg) + SALT_ELEMS + k * PERM_COLS
 }
 
-/// Base of the (b-hash) leaf-hash block (after the a-root block).
+/// Base of the (b-hash) leaf-hash block (after the a-root, LO, and FP blocks).
 fn lh_base(cfg: &RecursiveConfig) -> usize {
-    mc_base(cfg) + mc_size(cfg)
+    fp_base(cfg) + fp_size(cfg)
 }
 
 /// Size of the (b-hash) block: `row ‖ salt ‖ P perms`. 0 unless enabled with a Merkle block.
@@ -992,6 +1159,18 @@ fn tower_bases(log_height: usize) -> Vec<Val> {
 // ======================================================================================
 // Window builder.
 // ======================================================================================
+
+/// (LO) honest inputs for ONE per-round FRI commit-phase layer open: the round's FRI-layer
+/// commitment (root the path folds to), the hiding-MMCS salt of the opened leaf row, and the
+/// bottom-to-top Merkle auth path. The opened pair is taken from the descent (not here).
+pub struct LayerOpenInput<'a> {
+    /// The round-r FRI-layer commitment (the root the authenticated path must reconstruct).
+    pub layer_commit: [Val; DIGEST_ELEMS],
+    /// The hiding-MMCS salt of the opened arity-2 leaf row.
+    pub salt: [Val; SALT_ELEMS],
+    /// The bottom-to-top Merkle auth path (`layer_open_levels` siblings).
+    pub merkle_siblings: &'a [[Val; DIGEST_ELEMS]],
+}
 
 /// All honest inputs to one query window. The Merkle / beta-draw / descent / DEEP fields are only
 /// consumed when the corresponding config block is enabled.
@@ -1055,6 +1234,19 @@ pub struct WindowInputs<'a> {
     /// reconstructed root == this. For an HONEST opening of the real inner main-trace tree this equals
     /// the tree root; a forged opening that folds to a different root rejects.
     pub inner_main_commit: [Val; DIGEST_ELEMS],
+    /// (LO) per-round FRI commit-phase layer-open inputs, one per `layer_open_rounds` round. Each
+    /// supplies that round's FRI-layer commitment, the opened leaf salt, and the bottom-to-top Merkle
+    /// auth path (`layer_open_levels` siblings). The opened pair `(e_fold, e_sib)` is NOT supplied — it
+    /// is DERIVED from the descent: `e_fold = round_e0(r)`, `e_sib = round_e1(r)` (the honest builder
+    /// reads them from the fold chain so the authenticated sibling IS the folded one). For an honest
+    /// opening of the real FRI-layer tree, `MyHash(flatten(e_fold,e_sib) ‖ salt)` authenticates to
+    /// `layer_commit`. Length must equal `layer_open_rounds`.
+    pub layer_opens: &'a [LayerOpenInput<'a>],
+    /// (FP) the committed FRI final-polynomial coefficients and the query point `x`. The descent's
+    /// fully-folded value (`round_folded(rounds-1)`) is constrained to equal `Horner(coeffs, x)`.
+    /// `coeffs.len()` must equal `final_poly_len`. Consumed only when `final_poly_len > 0`.
+    pub final_poly_x: Val,
+    pub final_poly_coeffs: &'a [Challenge],
     /// (b-hash) the OPENED main-trace leaf ROW (the matrix row whose `MyHash` is the leaf digest)
     /// and the hiding MMCS `salt`. Consumed only when `leaf_row_len > 0`; the honest builder hashes
     /// `leaf_row ‖ leaf_salt` via `PaddingFreeSponge` and the eval re-derives + constrains the
@@ -1085,6 +1277,7 @@ impl<'a> WindowInputs<'a> {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         }
     }
@@ -1328,6 +1521,11 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
     }
     let mut s_prev = s0;
     let mut folded_prev = folded0;
+    // (LO) per-round opened pair (e_fold = round_e0(r), e_sib = round_e1(r)) the layer open
+    // authenticates; round 0 is (e0, e1). folded_last is the value the (FP) final-poly check binds.
+    let mut round_pairs: Vec<(Challenge, Challenge)> = Vec::with_capacity(rounds);
+    round_pairs.push((inp.e0, inp.e1));
+    let mut folded_last = folded0;
     for r in 1..rounds {
         let e1_r = inp.descent[r - 1].0;
         let beta_r = round_beta_val(r); // (FS-β) FS-squeezed for r < fs_beta_rounds, else supplied
@@ -1340,8 +1538,10 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
         row[base + 2 * D..base + 3 * D].copy_from_slice(&limbs(beta_r));
         row[base + 3 * D] = s_r;
         row[base + 3 * D + 1..base + 4 * D + 1].copy_from_slice(&limbs(folded_r));
+        round_pairs.push((e0_r, e1_r));
         s_prev = s_r;
         folded_prev = folded_r;
+        folded_last = folded_r;
     }
 
     // (FS-αζ) when squeezing, alpha + zeta are DERIVED from the FS transcript (the observed
@@ -1620,6 +1820,96 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
         debug_assert!(
             cfg.merkle_levels > 0,
             "bind_root_to_main_commit requires a Merkle block (merkle_levels > 0)"
+        );
+    }
+
+    // (LO) per-round FRI commit-phase LAYER opening: for each round r, authenticate the opened
+    // sibling against round r's layer commitment at the FS-shifted node, then bind (e_fold, e_sib) to
+    // the descent's (round_e0(r), round_e1(r)) so the FRI fold consumes the AUTHENTICATED sibling.
+    if cfg.layer_open_rounds > 0 {
+        assert!(
+            rounds >= cfg.layer_open_rounds,
+            "num_rounds must be >= layer_open_rounds"
+        );
+        assert_eq!(
+            inp.layer_opens.len(),
+            cfg.layer_open_rounds,
+            "layer_opens must have layer_open_rounds entries"
+        );
+        let levels = cfg.layer_open_levels;
+        let consts = inlined_perm::Constants::pinned();
+        for r in 0..cfg.layer_open_rounds {
+            let lo = &inp.layer_opens[r];
+            assert_eq!(
+                lo.merkle_siblings.len(),
+                levels,
+                "layer open round {r}: merkle_siblings must have layer_open_levels entries"
+            );
+            let (e_fold, e_sib) = round_pairs[r];
+            // round r authenticates the pair at node index (FS_index >> r); parity = bit r.
+            let start_index = index >> r;
+            let parity = (start_index & 1) == 1;
+            let rb = lo_round_base(cfg, r);
+            // layer commitment (bound root).
+            row[rb..rb + DIGEST_ELEMS].copy_from_slice(&lo.layer_commit);
+            // flattened pair (by parity) + salt.
+            let flat = lo_flatten_pair(e_fold, e_sib, parity);
+            row[rb + LO_EVAL0..rb + LO_EVAL0 + 2 * D].copy_from_slice(&flat);
+            row[rb + LO_SALT..rb + LO_SALT + SALT_ELEMS].copy_from_slice(&lo.salt);
+            // leaf-hash perms over flatten(evals) ‖ salt.
+            let input = lo_leaf_input(e_fold, e_sib, parity, &lo.salt);
+            let pre = leaf_hash_pre_states(&input);
+            debug_assert_eq!(pre.len(), lo_leaf_perms(), "layer leaf perm count mismatch");
+            for (k, st) in pre.iter().enumerate() {
+                let cols = inlined_perm::generate_perm_cols(*st, &consts);
+                let pb = rb + lo_leaf_perm_base(k);
+                row[pb..pb + PERM_COLS].copy_from_slice(&cols);
+            }
+            let leaf = layer_leaf_digest(e_fold, e_sib, parity, &lo.salt);
+            // Merkle path: fold bottom-to-top; level-j selector = bit (j+1) of start_index =
+            // bit (r+1+j) of FS_index (the folded-node index of round r is FS_index >> (r+1)).
+            let mut running = leaf;
+            let mut node_idx = start_index >> 1;
+            for (level, &sib) in lo.merkle_siblings.iter().enumerate() {
+                let bit = (node_idx & 1) == 1;
+                let lbase = lo_level_base(cfg, r, level);
+                row[lbase + LO_ML_RUNNING..lbase + LO_ML_RUNNING + DIGEST_ELEMS]
+                    .copy_from_slice(&running);
+                row[lbase + LO_ML_SIBLING..lbase + LO_ML_SIBLING + DIGEST_ELEMS]
+                    .copy_from_slice(&sib);
+                let (a, b) = if bit { (sib, running) } else { (running, sib) };
+                let mut input16 = [Val::ZERO; WIDTH];
+                input16[..DIGEST_ELEMS].copy_from_slice(&a);
+                input16[DIGEST_ELEMS..].copy_from_slice(&b);
+                let cols = inlined_perm::generate_perm_cols(input16, &consts);
+                row[lbase + LO_ML_PERM..lbase + LO_ML_PERM + PERM_COLS].copy_from_slice(&cols);
+                running = core::array::from_fn(|i| cols[C_OUTPUT + i]);
+                node_idx >>= 1;
+            }
+            debug_assert_eq!(
+                running, lo.layer_commit,
+                "layer open round {r}: in-AIR fold root != layer_commit (honest build)"
+            );
+        }
+    }
+
+    // (FP) final-poly check: bind the descent's fully-folded value == Horner(coeffs, x).
+    if cfg.final_poly_len > 0 {
+        assert_eq!(
+            inp.final_poly_coeffs.len(),
+            cfg.final_poly_len,
+            "final_poly_coeffs must have final_poly_len entries"
+        );
+        let fb = fp_base(cfg);
+        row[fb + FP_X] = inp.final_poly_x;
+        for (c, &coeff) in inp.final_poly_coeffs.iter().enumerate() {
+            let cb = fb + fp_coeff_base(c);
+            row[cb..cb + D].copy_from_slice(&limbs(coeff));
+        }
+        debug_assert_eq!(
+            folded_last,
+            final_poly_eval(inp.final_poly_x, inp.final_poly_coeffs),
+            "folded_last != final_poly(x) — (FP) honest build mismatch"
         );
     }
 
@@ -1968,6 +2258,134 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                         l(llast + ML_PERM + C_OUTPUT + i) - l(mb + MC_MAIN_COMMIT + i),
                     );
                 }
+            }
+        }
+
+        // ===== (LO) COMPOSE the per-round FRI-LAYER open into the descent =====
+        // For each commit-phase round r, RE-EXPRESS fri_layer_air::FriLayerOpenAir INSIDE this window
+        // and bind its authenticated pair to the (c) descent's (round_e0(r), round_e1(r)). This makes
+        // the descent fold consume the AUTHENTICATED sibling: e_sib is no longer free, it is the value
+        // MyHash(flatten(e_fold,e_sib)‖salt)-authenticated against round r's layer commitment at the
+        // FS-forced node (FS_index >> r). p3-fri verify_query (verifier.rs:508-540) constant-for-constant:
+        //   - the arity-2 pair (evals[0],evals[1]) is (e_fold,e_sib) ordered by parity = FS bit r;
+        //   - the leaf digest is the deployed MyHash(flatten ‖ salt) PaddingFreeSponge;
+        //   - the path authenticates at folded-node index FS_index >> (r+1) (level-j selector = FS bit
+        //     r+1+j), reconstructing the bound round-r layer commitment.
+        if cfg.layer_open_rounds > 0 {
+            let consts = ConstantsExpr::<AB>::pinned();
+            let cells = WindowCells::<AB> { row: local.clone() };
+            let one = AB::Expr::ONE;
+            let levels = cfg.layer_open_levels;
+            for r in 0..cfg.layer_open_rounds {
+                let rb = lo_round_base(&cfg, r);
+                // parity = FS index bit r (the in-group bit of start_index = FS_index >> r).
+                let parity = bits[r].clone();
+                // ----- pair placement by parity: evals[0]=(1-p)·e_fold+p·e_sib, evals[1]=swap -----
+                // e_fold/e_sib are the DESCENT's round_e0(r)/round_e1(r) — the composition binding.
+                let efold = round_e0(r);
+                let esib = round_e1(r);
+                for i in 0..D {
+                    builder.assert_zero(
+                        l(rb + LO_EVAL0 + i)
+                            - ((one.clone() - parity.clone()) * efold[i].clone()
+                                + parity.clone() * esib[i].clone()),
+                    );
+                    builder.assert_zero(
+                        l(rb + LO_EVAL1 + i)
+                            - ((one.clone() - parity.clone()) * esib[i].clone()
+                                + parity.clone() * efold[i].clone()),
+                    );
+                }
+                // ----- leaf-hash: derive MyHash(flatten(evals) ‖ salt) IN-AIR -----
+                let m = LO_LEAF_INPUT_LEN;
+                let n_perms = lo_leaf_perms();
+                let input_cell = |g: usize| -> AB::Expr {
+                    if g < 2 * D {
+                        l(rb + LO_EVAL0 + g)
+                    } else {
+                        l(rb + LO_SALT + (g - 2 * D))
+                    }
+                };
+                for k in 0..n_perms {
+                    let pb = rb + lo_leaf_perm_base(k);
+                    for i in 0..WIDTH {
+                        let in_i = l(pb + inlined_perm::C_INPUTS + i);
+                        let g = k * RATE + i;
+                        if i < RATE && g < m {
+                            builder.assert_zero(in_i - input_cell(g));
+                        } else if k == 0 {
+                            builder.assert_zero(in_i);
+                        } else {
+                            let prev = rb + lo_leaf_perm_base(k - 1);
+                            builder.assert_zero(in_i - l(prev + C_OUTPUT + i));
+                        }
+                    }
+                    eval_perm::<AB, _>(builder, &cells, pb, &consts);
+                }
+                // leaf digest = last leaf-hash permute output[..8]; bind it to level-0 running.
+                let last_lh = rb + lo_leaf_perm_base(n_perms - 1);
+                let l0 = lo_level_base(&cfg, r, 0);
+                for i in 0..DIGEST_ELEMS {
+                    builder.assert_zero(l(l0 + LO_ML_RUNNING + i) - l(last_lh + C_OUTPUT + i));
+                }
+                // ----- Merkle path: per-level placement by the FS-shifted node bit + perm + chain -----
+                for level in 0..levels {
+                    let lbase = lo_level_base(&cfg, r, level);
+                    // selector = FS index bit (r+1+level) (the folded-node index of round r is
+                    // FS_index >> (r+1); its bit `level` is FS bit r+1+level). NON-VACUOUS index
+                    // binding: the path is authenticated at the node the FS index SELECTS for round r.
+                    let bit = bits[r + 1 + level].clone();
+                    for i in 0..DIGEST_ELEMS {
+                        let running_i = l(lbase + LO_ML_RUNNING + i);
+                        let sibling_i = l(lbase + LO_ML_SIBLING + i);
+                        let in_a = l(lbase + LO_ML_PERM + inlined_perm::C_INPUTS + i);
+                        let in_b = l(lbase + LO_ML_PERM + inlined_perm::C_INPUTS + DIGEST_ELEMS + i);
+                        builder.assert_zero(
+                            in_a - ((one.clone() - bit.clone()) * running_i.clone()
+                                + bit.clone() * sibling_i.clone()),
+                        );
+                        builder.assert_zero(
+                            in_b - ((one.clone() - bit.clone()) * sibling_i
+                                + bit.clone() * running_i),
+                        );
+                    }
+                    eval_perm::<AB, _>(builder, &cells, lbase + LO_ML_PERM, &consts);
+                    if level + 1 < levels {
+                        let nbase = lo_level_base(&cfg, r, level + 1);
+                        for i in 0..DIGEST_ELEMS {
+                            builder.assert_zero(
+                                l(nbase + LO_ML_RUNNING + i) - l(lbase + LO_ML_PERM + C_OUTPUT + i),
+                            );
+                        }
+                    }
+                }
+                // ----- root binding: reconstructed root == round-r layer commitment -----
+                let llast = lo_level_base(&cfg, r, levels - 1);
+                for i in 0..DIGEST_ELEMS {
+                    builder.assert_zero(l(llast + LO_ML_PERM + C_OUTPUT + i) - l(rb + i));
+                }
+            }
+        }
+
+        // ===== (FP) FINAL-POLY check inside the descent =====
+        // After the last commit-phase round, the fully-folded value must equal the committed FRI final
+        // polynomial at the query point x (p3-fri verifier.rs:402-409: folded == Σ coeff·x^k). x is a
+        // BASE-field scalar, so acc·x scales each extension limb (no octic mul). A folded value !=
+        // final_poly(x) or a tampered final-poly coefficient rejects.
+        if cfg.final_poly_len > 0 {
+            let fb = fp_base(&cfg);
+            let x = l(fb + FP_X);
+            let mut acc: [AB::Expr; D] = core::array::from_fn(|_| AB::Expr::ZERO);
+            for c in (0..cfg.final_poly_len).rev() {
+                let cb = fb + fp_coeff_base(c);
+                for i in 0..D {
+                    acc[i] = acc[i].clone() * x.clone() + l(cb + i);
+                }
+            }
+            // bind to the descent's fully-folded value (round_folded(rounds-1)).
+            let folded = round_folded(rounds - 1);
+            for i in 0..D {
+                builder.assert_zero(folded[i].clone() - acc[i].clone());
             }
         }
 
@@ -2704,6 +3122,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
@@ -2761,6 +3180,7 @@ mod tests {
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         let mut row = pack_window(&cfg, &inp);
@@ -2781,6 +3201,7 @@ mod tests {
             merkle_siblings: &tree.auth_path(honest_index),
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         });
         for c in C_DRAW_OUT..tower_end(levels) {
@@ -2897,6 +3318,7 @@ mod tests {
             fs_beta_blocks: &[],
             fs_final_blocks: &[],
             inner_main_commit: main_commit,
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
@@ -3144,6 +3566,7 @@ mod tests {
                     fs_beta_blocks: &[],
                     fs_final_blocks: &[],
                     inner_main_commit: commit,
+                    layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
                     leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
                 };
                 pack_window(&cfg, &inp)
@@ -3303,6 +3726,7 @@ mod tests {
             merkle_siblings: &[],
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
@@ -3418,6 +3842,7 @@ mod tests {
             merkle_siblings: &[],
             deep_zeta: zeta, deep_q: q, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
@@ -3540,6 +3965,7 @@ mod tests {
             merkle_siblings: &sibs,
             deep_zeta: ext_multi(55), deep_q: ext_multi(66), deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         let row = pack_window(&cfg, &inp);
@@ -3577,6 +4003,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
@@ -3802,6 +4229,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
@@ -4020,6 +4448,7 @@ mod tests {
             prefix_blocks: blocks,
             public_io: &[],
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
@@ -4293,6 +4722,7 @@ mod tests {
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
@@ -4340,6 +4770,7 @@ mod tests {
             descent: &[], merkle_leaf: leaves[index], merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         let row = pack_window(&cfg_off, &inp);
@@ -4495,6 +4926,7 @@ mod tests {
                 fs_beta_blocks: &[],
                 fs_final_blocks: &[],
                 inner_main_commit: root,
+                layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
                 leaf_row: &opened_row,
                 leaf_salt: [Val::ZERO; SALT_ELEMS],
             };
@@ -4550,6 +4982,7 @@ mod tests {
             fs_beta_blocks: &[],
             fs_final_blocks: &[],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: row,
             leaf_salt: salt,
         };
@@ -4680,6 +5113,7 @@ mod tests {
                 fs_beta_blocks: &[],
                 fs_final_blocks: &[],
                 inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+                layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
                 leaf_row: &rows[index],
                 leaf_salt: salt,
             };
@@ -4748,6 +5182,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: stmt,
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
@@ -4849,6 +5284,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &stmt,
             fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         let row = pack_window(&cfg, &inp);
@@ -4893,6 +5329,7 @@ mod tests {
             fs_blocks: blocks,
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
@@ -5219,6 +5656,7 @@ mod tests {
             fs_beta_blocks: beta_blocks,
             fs_final_blocks: final_blocks,
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
         };
         pack_window(cfg, &inp)
@@ -5857,6 +6295,473 @@ mod tests {
         assert!(
             !check_all_constraints(&air(cfg), &RowMajorMatrix::new(row, n_cols(&cfg)), &bad_pubs, None).is_ok(),
             "a public transcript inconsistent with the FS-qi observed block was accepted"
+        );
+    }
+
+    // ---------------------------------------------------------------------------------
+    // (LO) per-round FRI commit-phase LAYER open COMPOSED into the (c) descent + (FP) final-poly.
+    // The descent's fold now consumes the AUTHENTICATED sibling: round_e1(r) is bound to a sibling
+    // Merkle-authenticated against round r's layer commitment at the FS-shifted node. After the last
+    // round the fully-folded value is bound to the committed final polynomial.
+    // ---------------------------------------------------------------------------------
+
+    /// A reference binary Merkle tree over the deployed compression (mirror of fri_layer_air::RefTree).
+    struct LoRefTree {
+        levels: Vec<Vec<Digest>>,
+    }
+    impl LoRefTree {
+        fn new(mut leaves: Vec<Digest>) -> Self {
+            let c = compressor();
+            let mut levels = vec![leaves.clone()];
+            while leaves.len() > 1 {
+                let next: Vec<Digest> =
+                    leaves.chunks_exact(2).map(|p| c.compress([p[0], p[1]])).collect();
+                levels.push(next.clone());
+                leaves = next;
+            }
+            Self { levels }
+        }
+        fn root(&self) -> Digest {
+            self.levels.last().unwrap()[0]
+        }
+        fn auth_path(&self, index: usize) -> Vec<Digest> {
+            let mut sibs = Vec::new();
+            let mut idx = index;
+            for level in &self.levels[..self.levels.len() - 1] {
+                sibs.push(level[idx ^ 1]);
+                idx >>= 1;
+            }
+            sibs
+        }
+    }
+
+    fn lo_salt(seed: u32) -> [Val; SALT_ELEMS] {
+        core::array::from_fn(|i| Val::from_u32(seed.wrapping_mul(40503).wrapping_add(i as u32 + 1)))
+    }
+
+    /// Config: an `lo_rounds`-round descent whose every round's sibling is layer-authenticated
+    /// (`layer_open_rounds == num_rounds`), with `levels`-deep per-round layer trees, plus the (FP)
+    /// final-poly check on the fully-folded value.
+    fn cfg_lo(h: usize, rounds: usize, levels: usize, with_fp: bool) -> RecursiveConfig {
+        RecursiveConfig {
+            num_rounds: rounds,
+            layer_open_rounds: rounds,
+            layer_open_levels: levels,
+            final_poly_len: if with_fp { 1 } else { 0 },
+            ..RecursiveConfig::single_window(h)
+        }
+    }
+
+    /// Build an honest layer-open descent window: derive the descent (e0/e1/folded per round) from a
+    /// real folded polynomial, then for each round build a REAL reference layer tree whose
+    /// `(FS_index >> (r+1))`-th leaf is `MyHash(flatten(e_fold,e_sib) ‖ salt)`, take the real auth
+    /// path + root as the round's layer commitment, and (optionally) a constant final poly == folded.
+    /// Returns the packed window and the per-round (layer_commit, e_fold, e_sib, start_index).
+    #[allow(clippy::type_complexity)]
+    fn lo_window(
+        cfg: &RecursiveConfig,
+        index_draw: Val,
+    ) -> (Vec<Val>, Vec<([Val; DIGEST_ELEMS], Challenge, Challenge, usize)>) {
+        let h0 = cfg.log_height;
+        let rounds = cfg.rounds();
+        let levels = cfg.layer_open_levels;
+        let coeffs: Vec<Challenge> = (0..(1u32 << rounds)).map(|k| ext_multi(k + 1)).collect();
+        let betas: Vec<Challenge> = (0..rounds as u32).map(|r| ext_multi(100 + r)).collect();
+        let index = (index_draw.as_canonical_u32() as usize) & ((1 << h0) - 1);
+        let (e0_0, e1_0, beta0, descent) = honest_descent(&coeffs, &betas, h0, index);
+
+        // recompute per-round (e_fold, e_sib) exactly as pack_window's descent does.
+        let mut round_pairs: Vec<(Challenge, Challenge)> = vec![(e0_0, e1_0)];
+        {
+            let s0 = fold_point(h0, index);
+            let mut s_prev = s0;
+            let mut folded_prev = fold_pair(e0_0, e1_0, beta0, s0);
+            for r in 1..rounds {
+                let e1_r = descent[r - 1].0;
+                let beta_r = descent[r - 1].1;
+                let e0_r = folded_prev;
+                let s_r = s_prev * s_prev;
+                round_pairs.push((e0_r, e1_r));
+                folded_prev = fold_pair(e0_r, e1_r, beta_r, s_r);
+                s_prev = s_r;
+            }
+        }
+        let folded_last = {
+            // last round's folded value (= round_folded(rounds-1)).
+            let s0 = fold_point(h0, index);
+            let mut s_prev = s0;
+            let mut folded = fold_pair(e0_0, e1_0, beta0, s0);
+            for r in 1..rounds {
+                let (e0_r, e1_r) = round_pairs[r];
+                let s_r = s_prev * s_prev;
+                folded = fold_pair(e0_r, e1_r, descent[r - 1].1, s_r);
+                s_prev = s_r;
+            }
+            folded
+        };
+
+        // the path consumes only `levels` node-selector bits, so a `levels`-deep tree authenticates the
+        // node at `(start_index >> 1) & ((1<<levels)-1)` — exactly the selectors the AIR reads from the
+        // FS bits (bit r+1+level).
+        let n_nodes = 1usize << levels;
+        let mut metas: Vec<([Val; DIGEST_ELEMS], Challenge, Challenge, usize)> = Vec::new();
+        let mut owned_sibs: Vec<Vec<[Val; DIGEST_ELEMS]>> = Vec::new();
+        let mut owned_salts: Vec<[Val; SALT_ELEMS]> = Vec::new();
+        for r in 0..cfg.layer_open_rounds {
+            let (e_fold, e_sib) = round_pairs[r];
+            let start_index = index >> r;
+            let parity = (start_index & 1) == 1;
+            let node = (start_index >> 1) & (n_nodes - 1);
+            let salt = lo_salt(0x70 + r as u32);
+            let leaf = layer_leaf_digest(e_fold, e_sib, parity, &salt);
+            let leaves: Vec<Digest> = (0..n_nodes)
+                .map(|j| {
+                    if j == node {
+                        leaf
+                    } else {
+                        core::array::from_fn(|i| Val::from_u32((j as u32 + 1) * 7919 + i as u32 + r as u32))
+                    }
+                })
+                .collect();
+            let tree = LoRefTree::new(leaves);
+            owned_sibs.push(tree.auth_path(node));
+            owned_salts.push(salt);
+            metas.push((tree.root(), e_fold, e_sib, start_index));
+        }
+        let layer_opens: Vec<LayerOpenInput> = (0..cfg.layer_open_rounds)
+            .map(|r| LayerOpenInput {
+                layer_commit: metas[r].0,
+                salt: owned_salts[r],
+                merkle_siblings: &owned_sibs[r],
+            })
+            .collect();
+
+        let (fp_x, fp_coeffs): (Val, Vec<Challenge>) = if cfg.final_poly_len > 0 {
+            // constant final poly == folded_last (eval is the constant for any x).
+            (Val::from_u32(0x9E3779B1), vec![folded_last])
+        } else {
+            (Val::ZERO, Vec::new())
+        };
+
+        let inp = WindowInputs {
+            draw_out: index_draw,
+            e0: e0_0,
+            e1: e1_0,
+            beta: beta0,
+            descent: &descent,
+            merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
+            merkle_siblings: &[],
+            deep_zeta: Challenge::ZERO,
+            deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_final_blocks: &[],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &layer_opens,
+            final_poly_x: fp_x,
+            final_poly_coeffs: &fp_coeffs,
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+        };
+        (pack_window(cfg, &inp), metas)
+    }
+
+    /// GOLDEN: an honest end-to-end query — every descent round's sibling layer-authenticated against
+    /// the real round commitment at the FS-shifted node, the fold consuming it, the fully-folded value
+    /// equal to the final poly — ACCEPTS with zero residual.
+    #[test]
+    fn air_accepts_honest_layer_open_descent() {
+        let h = 12usize;
+        for rounds in [1usize, 2, 3] {
+            for levels in [2usize, 3] {
+                let cfg = cfg_lo(h, rounds, levels, true);
+                let (row, _) = lo_window(&cfg, Val::from_u32(0xABCDE));
+                let m = RowMajorMatrix::new(row, n_cols(&cfg));
+                let report = check_all_constraints(&air(cfg), &m, &[], None);
+                assert!(
+                    report.is_ok(),
+                    "honest layer-open descent rejected (rounds={rounds}, levels={levels}): {} failures",
+                    report.failures.len()
+                );
+            }
+        }
+    }
+
+    /// FIDELITY-PIN (round 0, real p3 MMCS): build a real arity-2 FRI commit-phase layer, commit a real
+    /// `MerkleTreeMmcs`, confirm the REAL `Mmcs::verify_batch` accepts the honest opening (anchoring the
+    /// deployed leaf MyHash + node MyCompress), then drive the COMPOSED round-0 layer open with the real
+    /// auth path/root and confirm the in-window reconstructed root matches the reference tree.
+    #[test]
+    fn fidelity_real_mmcs_round0_layer_open_in_descent() {
+        use descender_account_stark::Perm;
+        use p3_commit::Mmcs;
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+        use p3_matrix::Dimensions;
+        use p3_merkle_tree::MerkleTreeMmcs;
+        use p3_symmetric::{PaddingFreeSponge, TruncatedPermutation};
+
+        type LeafHash = PaddingFreeSponge<Perm, 16, 8, DIGEST_ELEMS>;
+        type NodeCompress = TruncatedPermutation<Perm, 2, DIGEST_ELEMS, 16>;
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let mmcs: MerkleTreeMmcs<Val, Val, LeafHash, NodeCompress, 2, DIGEST_ELEMS> =
+            MerkleTreeMmcs::new(LeafHash::new(perm.clone()), NodeCompress::new(perm.clone()), 0);
+        let node_levels = 3usize;
+        let n_nodes = 1usize << node_levels;
+        let width = 2 * D;
+        let vals: Vec<Val> = (0..(n_nodes * width) as u32)
+            .map(|x| Val::from_u32(x.wrapping_mul(2_654_435_761)))
+            .collect();
+        let matrix = RowMajorMatrix::new(vals.clone(), width);
+        let (commit, prover_data) = mmcs.commit(vec![matrix]);
+        // the real MMCS verifies an honest opening (anchors the deployed leaf + node hashing).
+        let opening = mmcs.open_batch(2, &prover_data);
+        let (opened_values, opening_proof) = opening.unpack();
+        mmcs.verify_batch(
+            &commit,
+            &[Dimensions { width, height: n_nodes }],
+            2,
+            p3_commit::BatchOpeningRef::new(&opened_values, &opening_proof),
+        )
+        .expect("real Mmcs::verify_batch must accept the honest layer opening");
+
+        // now drive the COMPOSED round-0 open over a salt-0 reference tree (mirrors leaf_hash_digest).
+        let leaves: Vec<Digest> = (0..n_nodes)
+            .map(|j| {
+                let row: Vec<Val> = (0..width).map(|c| vals[j * width + c]).collect();
+                let mut s = row;
+                s.extend_from_slice(&[Val::ZERO; SALT_ELEMS]);
+                leaf_hash_digest(&s)
+            })
+            .collect();
+        let tree = LoRefTree::new(leaves);
+        // pick FS index so round-0 start_index hits node 2 (start_index = index, node = index>>1).
+        // index = 4 or 5 → node 2.
+        let h = node_levels + 1; // FS index needs >= node_levels+1 bits.
+        let cfg = RecursiveConfig {
+            num_rounds: 1,
+            layer_open_rounds: 1,
+            layer_open_levels: node_levels,
+            ..RecursiveConfig::single_window(h)
+        };
+        let index = 4usize;
+        let parity = (index & 1) == 1;
+        let node = index >> 1;
+        let pair: Vec<Val> = (0..width).map(|c| vals[node * width + c]).collect();
+        let evals0 = Challenge::from_basis_coefficients_slice(&pair[..D]).unwrap();
+        let evals1 = Challenge::from_basis_coefficients_slice(&pair[D..]).unwrap();
+        let (e_fold, e_sib) = if parity { (evals1, evals0) } else { (evals0, evals1) };
+        let beta0 = ext_multi(7);
+        let sibs = tree.auth_path(node);
+        let layer_opens = [LayerOpenInput {
+            layer_commit: tree.root(),
+            salt: [Val::ZERO; SALT_ELEMS],
+            merkle_siblings: &sibs,
+        }];
+        let inp = WindowInputs {
+            draw_out: Val::from_u32(index as u32),
+            e0: e_fold,
+            e1: e_sib,
+            beta: beta0,
+            descent: &[],
+            merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
+            merkle_siblings: &[],
+            deep_zeta: Challenge::ZERO,
+            deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_final_blocks: &[],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &layer_opens,
+            final_poly_x: Val::ZERO,
+            final_poly_coeffs: &[],
+            leaf_row: &[],
+            leaf_salt: [Val::ZERO; SALT_ELEMS],
+        };
+        let row = pack_window(&cfg, &inp);
+        // zero-residual reconstructed root == reference root.
+        let llast = lo_level_base(&cfg, 0, node_levels - 1);
+        let recon: [Val; DIGEST_ELEMS] =
+            core::array::from_fn(|i| row[llast + LO_ML_PERM + C_OUTPUT + i]);
+        assert_eq!(recon, tree.root(), "in-window round-0 layer root != real reference root");
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        let report = check_all_constraints(&air(cfg), &m, &[], None);
+        assert!(report.is_ok(), "composed round-0 layer open rejected: {} failures", report.failures.len());
+    }
+
+    /// LOAD-BEARING (the gap closed): a descent whose sibling != the AUTHENTICATED layer-open output is
+    /// REJECTED. Tamper round 0's descent sibling cell (C_E1) AND the matching flattened pair lane so
+    /// the pair-placement constraint still passes — the leaf hash then no longer authenticates to the
+    /// committed root. If the composition were a parallel unbound decoration this would pass.
+    #[test]
+    fn air_rejects_descent_sibling_not_authenticated() {
+        let cfg = cfg_lo(12, 2, 3, false);
+        let (mut row, _) = lo_window(&cfg, Val::from_u32(0xABCDE));
+        // round 0, FS index 0xABCDE is even → parity 0 → evals[1] == e_sib.
+        let rb = lo_round_base(&cfg, 0);
+        row[C_E1 + 1] += Val::ONE; // descent sibling
+        row[rb + LO_EVAL1 + 1] += Val::ONE; // matching flattened lane (placement still holds)
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a descent sibling != the authenticated layer-open output was accepted — composition not load-bearing"
+        );
+    }
+
+    /// LOAD-BEARING (placement guard): tampering ONLY the descent sibling cell (leaving the flattened
+    /// pair stale) is caught even earlier by the pair-placement constraint — the descent's round_e1(r)
+    /// IS the value hashed into the authenticated leaf.
+    #[test]
+    fn air_rejects_descent_sibling_placement_guard() {
+        let cfg = cfg_lo(12, 2, 3, false);
+        let (mut row, _) = lo_window(&cfg, Val::from_u32(0xABCDE));
+        row[C_E1 + 1] += Val::ONE; // only the descent sibling; pair lane left stale
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a tampered descent sibling (placement) was accepted"
+        );
+    }
+
+    /// FORGERY — WRONG LAYER COMMITMENT: layer_commit_r != the real round-r commitment ⇒ root binding
+    /// rejects.
+    #[test]
+    fn air_rejects_wrong_layer_commit() {
+        let cfg = cfg_lo(12, 2, 3, false);
+        let (mut row, _) = lo_window(&cfg, Val::from_u32(0xABCDE));
+        let rb = lo_round_base(&cfg, 1);
+        row[rb + 2] += Val::ONE; // tamper round-1 layer commitment
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a wrong layer commitment was accepted"
+        );
+    }
+
+    /// FORGERY — CROSS-ROUND CONFUSION (layer commitment swap): use round 1's layer commitment in
+    /// round 0's slot. Round 0's path authenticates to round-0's root, not round-1's ⇒ rejected. (The
+    /// layer commitment + sibling + node used must be the SAME round's; cross-round = soundness hole.)
+    #[test]
+    fn air_rejects_cross_round_layer_commit_swap() {
+        let cfg = cfg_lo(12, 2, 3, false);
+        let (mut row, metas) = lo_window(&cfg, Val::from_u32(0xABCDE));
+        // overwrite round-0's layer commitment with round-1's real commitment.
+        let rb0 = lo_round_base(&cfg, 0);
+        let r1_commit = metas[1].0;
+        for i in 0..DIGEST_ELEMS {
+            row[rb0 + i] = r1_commit[i];
+        }
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "round 0 authenticating to round 1's layer commitment was accepted — cross-round confusion"
+        );
+    }
+
+    /// FORGERY — CROSS-ROUND CONFUSION (sibling + commitment swap): take round 1's ENTIRE authenticated
+    /// sibling open (commitment, salt, path, evals) and present it in round 0's slot, also binding the
+    /// descent's round-0 sibling to round 1's sibling. The node selectors of round 0 are read from FS
+    /// bits 1.. (round 0's folded-node index) but round 1's path was built for FS bits 2.. (round 1's
+    /// node) ⇒ the path no longer reconstructs round 1's root at round 0's node ⇒ rejected.
+    #[test]
+    fn air_rejects_cross_round_sibling_swap() {
+        let cfg = cfg_lo(12, 2, 3, false);
+        let (mut row, _) = lo_window(&cfg, Val::from_u32(0xABCDE));
+        let rb0 = lo_round_base(&cfg, 0);
+        let rb1 = lo_round_base(&cfg, 1);
+        let sz = lo_round_size(cfg.layer_open_levels);
+        // copy round-1's entire layer-open sub-block into round-0's slot.
+        let r1_block: Vec<Val> = row[rb1..rb1 + sz].to_vec();
+        row[rb0..rb0 + sz].copy_from_slice(&r1_block);
+        // and bind round-0's descent sibling (C_E1) to round-1's sibling so placement could pass.
+        let r1_esib: Vec<Val> = {
+            let b = extra_round_base(&cfg, 1);
+            row[b + D..b + 2 * D].to_vec()
+        };
+        row[C_E1..C_E1 + D].copy_from_slice(&r1_esib);
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "round 1's full layer open presented at round 0 was accepted — cross-round confusion"
+        );
+    }
+
+    /// FORGERY — WRONG PER-ROUND INDEX SHIFT: corrupt the bus index so round r's folded-node bits no
+    /// longer match the path the prover built (built for the honest FS index). The path then authenticates
+    /// to a different root than the committed one ⇒ rejected. Confirms the per-round node selector is
+    /// bound to FS bit (r+1+level), not free.
+    #[test]
+    fn air_rejects_wrong_per_round_index_shift() {
+        let cfg = cfg_lo(12, 2, 3, false);
+        // honest window at one index, then flip a high bit that feeds round-1's node selector but keep
+        // the rest honest — the index/draw decomposition AND the layer path both break.
+        let (mut row, _) = lo_window(&cfg, Val::from_u32(0xABCDE));
+        // flip FS bit 3 (feeds round 0 level 2 selector = bit 3, and round 1 level 1 selector = bit 3).
+        let bitpos = 3usize;
+        row[C_BITS + bitpos] = if row[C_BITS + bitpos] == Val::ONE { Val::ZERO } else { Val::ONE };
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a flipped FS index bit (wrong per-round node) was accepted — index binding vacuous"
+        );
+    }
+
+    /// FORGERY — TAMPERED LAYER LEAF PERM: corrupt an interior cell of a round's leaf-hash permutation
+    /// so the derived leaf digest is inconsistent ⇒ the eval_perm constraint (or the leaf→running
+    /// binding) rejects. Confirms the MyHash leaf is genuinely re-derived in-window.
+    #[test]
+    fn air_rejects_tampered_layer_leaf_perm() {
+        let cfg = cfg_lo(12, 2, 2, false);
+        let (mut row, _) = lo_window(&cfg, Val::from_u32(0xABCDE));
+        let pb = lo_round_base(&cfg, 0) + lo_leaf_perm_base(0);
+        row[pb + inlined_perm::C_OUTPUT + 1] += Val::ONE; // tamper a perm output cell
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a tampered layer leaf perm was accepted"
+        );
+    }
+
+    /// (FP) FORGERY — FOLDED != FINAL_POLY(x): perturb the fully-folded value's final-poly coefficient
+    /// so folded != final_poly(x) ⇒ rejected by the in-descent final-poly equality.
+    #[test]
+    fn air_rejects_folded_ne_final_poly() {
+        let cfg = cfg_lo(12, 2, 3, true);
+        let (mut row, _) = lo_window(&cfg, Val::from_u32(0xABCDE));
+        let fb = fp_base(&cfg);
+        row[fb + fp_coeff_base(0) + 2] += Val::ONE; // tamper the (constant) final poly coeff
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a folded value != final_poly(x) was accepted — (FP) not enforced in the descent"
+        );
+    }
+
+    /// (FP) FORGERY — TAMPERED FOLDED VALUE: perturb the descent's last-round folded cell so it no
+    /// longer equals final_poly(x). Rejected by (FP) (and, since folded feeds nothing downstream here,
+    /// (FP) is the load-bearing guard). Confirms the final-poly check binds the DESCENT's folded value.
+    #[test]
+    fn air_rejects_tampered_descent_folded_vs_final_poly() {
+        let cfg = cfg_lo(12, 2, 3, true);
+        let (mut row, _) = lo_window(&cfg, Val::from_u32(0xABCDE));
+        // round 1 is the last round; its folded cell.
+        let b1 = extra_round_base(&cfg, 1);
+        row[b1 + 3 * D + 1 + 2] += Val::ONE; // tamper folded — breaks (★) at round 1 AND (FP)
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a tampered descent folded value was accepted"
         );
     }
 }
