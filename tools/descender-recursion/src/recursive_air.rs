@@ -10968,3 +10968,584 @@ mod tests {
         );
     }
 }
+
+// =====================================================================================
+// FIDELITY CAPSTONE — bind the recursion verifier-AIR's Fiat-Shamir model to a REAL
+// `descender_account_stark::prove_account_creation` proof.
+//
+// Every prior `*_match_native_duplex_challenger` PIN drives the native `DuplexChallenger`
+// through a SYNTHETIC ordered transcript (fs_block/fb_block/fq_block representative blocks)
+// and shows the recursion's FS squeeze model reproduces it element-for-element. That proves
+// the FS MODEL is challenger-faithful, but never on ONE coherent real proof.
+//
+// This module closes that gap. It (1) runs a real (small-but-real-pipeline) prove + verify,
+// (2) drives a native `Challenger` through p3-uni-stark + p3-fri's EXACT verify transcript
+// on the REAL proof's real commitments / public values / FRI commit-phase commitments /
+// final polynomial / PoW witnesses to extract the REAL alpha / zeta / batch-combo-alpha /
+// betas / query-indices (ground truth — and `verify_account_creation` accepting the same
+// proof proves these ARE the challenges the proof was bound to), and (3) replays the SAME
+// real flat observe-stream through the recursion crate's OWN duplex primitives (`absorb_state`
+// + the inlined Poseidon2 perm — the exact pieces the in-AIR FS blocks are built from) and
+// asserts that replay reproduces the ground-truth challenges + indices, AND that the
+// recursion's published `fs_squeeze_*` helpers reproduce them on the RATE-aligned segments.
+//
+// HONEST SCOPE (see the report): this module binds the FS-challenge + query-index side to a
+// real proof (alpha, zeta, batch-combo alpha, every beta, all 56 query indices). It does NOT
+// run the leaf C(zeta) fold or Merkle/FRI opening verification on the real proof's openings via
+// `check_all_constraints` — those stay COST-DEFERRED (the OOD opened-values stream alone is
+// ~145k field elements, and the full-fold + opening arithmetic is already covered by the
+// pre-existing SYNTHETIC `check_all_constraints` PINs). What is proven here is FS-transcript
+// fidelity end-to-end on ONE genuine proof.
+// =====================================================================================
+#[cfg(test)]
+mod real_proof_capstone {
+    use super::*;
+    use descender_account_stark::{
+        prove_account_creation_with_seed, verify_account_creation, AccountCreationSecrets,
+        Challenge, Challenger, Val, N_LANES, SYNDROME_LANES,
+    };
+    use p3_challenger::{CanObserve, CanSample, CanSampleBits, GrindingChallenger};
+    use p3_field::{BasedVectorSpace, PrimeCharacteristicRing, PrimeField32};
+    use p3_koala_bear::default_koalabear_poseidon2_16;
+
+    /// A minimal but VALID account-creation witness (canonical q12289 lanes), deterministic so
+    /// the whole capstone is reproducible.
+    fn capstone_secrets() -> AccountCreationSecrets {
+        AccountCreationSecrets {
+            pad_seed: core::array::from_fn(|i| (i as u8).wrapping_mul(11).wrapping_add(3)),
+            slot_id: 0x0000_0000_DEAD_BEEF,
+            account_projection: [7, 1234, 88, 9090, 4321, 12288],
+            lifecycle_anchor: core::array::from_fn(|i| (i as u8).wrapping_mul(7).wrapping_add(9)),
+            c1_nonce: core::array::from_fn(|i| (i as u8).wrapping_mul(5).wrapping_add(1)),
+            c6_nonce: core::array::from_fn(|i| (i as u8).wrapping_mul(13).wrapping_add(2)),
+            account_id: core::array::from_fn(|i| (i as u8).wrapping_mul(17).wrapping_add(4)),
+            verifier_version: 0x0A0B_0C0D,
+            account_state_root: core::array::from_fn(|i| (i as u8).wrapping_mul(19).wrapping_add(6)),
+            syndrome: core::array::from_fn(|i| ((i as u32 * 911 + 13) % 12289) as u16),
+        }
+    }
+
+    /// Re-embed the public statement into the EXACT `public_values` vector the prover/verifier
+    /// feed to p3 (mirrors `descender_account_stark::public_values_vec`, which is private). The
+    /// field order is fixed by the AIR's public-value layout: pad_source ‖ opening_tuple ‖
+    /// masked_projection ‖ context(account_id‖slot‖vv‖state_root‖lifecycle) ‖ role_root ‖
+    /// relation_id ‖ syndrome ‖ packed_witness_commitment.
+    fn public_values_vec(p: &descender_account_stark::AccountCreationPublic) -> Vec<Val> {
+        let mut v = Vec::new();
+        v.extend_from_slice(&p.pad_source_commitment);
+        v.extend_from_slice(&p.opening_tuple_commitment);
+        v.extend_from_slice(&p.masked_projection);
+        // context, same embedding as the AIR `context` block
+        v.extend(p.account_id.iter().map(|&b| Val::from_u32(b as u32)));
+        v.extend(p.slot_id.to_le_bytes().iter().map(|&b| Val::from_u32(b as u32)));
+        v.extend(
+            p.verifier_version
+                .to_le_bytes()
+                .iter()
+                .map(|&b| Val::from_u32(b as u32)),
+        );
+        v.extend(p.account_state_root.iter().map(|&b| Val::from_u32(b as u32)));
+        v.extend(p.lifecycle_anchor.iter().map(|&b| Val::from_u32(b as u32)));
+        v.extend_from_slice(&p.role_root);
+        v.extend_from_slice(&p.relation_id);
+        v.extend_from_slice(&p.syndrome);
+        v.extend_from_slice(&p.packed_witness_commitment);
+        v
+    }
+
+    /// Flatten a commitment (`MerkleCap<Val, [Val; 8]>`) into its base-field elements, in the
+    /// SAME order `CanObserve<&MerkleCap>` observes them (each root digest's lanes in order). This
+    /// is what the native challenger absorbs for `observe(commitment)`.
+    fn cap_elems<I: IntoIterator<Item = [Val; DIGEST_ELEMS]>>(cap: I) -> Vec<Val> {
+        let mut v = Vec::new();
+        for digest in cap {
+            v.extend_from_slice(&digest);
+        }
+        v
+    }
+
+    /// Ground-truth challenges extracted by driving a native `DuplexChallenger` through the
+    /// EXACT p3-uni-stark + p3-fri verify transcript on a REAL proof.
+    struct RealChallenges {
+        alpha: Challenge,
+        zeta: Challenge,
+        bca: Challenge,
+        betas: Vec<Challenge>,
+        indices: Vec<usize>,
+        /// The complete pre-alpha observe stream (degree tags ‖ trace commit ‖ public values).
+        pre_alpha_stream: Vec<Val>,
+        /// The observe stream between alpha-sample and zeta-sample (the quotient commitment, and
+        /// — under ZK — the random commitment).
+        quot_stream: Vec<Val>,
+        /// The observe stream between zeta-sample and the FRI batch-combination alpha sample: all
+        /// opened-point value vectors (public ‖ merged hiding random codewords), in p3 round /
+        /// matrix / point order — pcs.verify's `observe_algebra_slice` loop (two_adic_pcs.rs:694).
+        ood_stream: Vec<Val>,
+        /// Per-round FRI commit-phase commitment streams (each fed before sampling beta_r).
+        comm_streams: Vec<Vec<Val>>,
+        /// The post-last-beta observe stream (final_poly ‖ log_arities ‖ query-PoW witness).
+        post_beta_stream: Vec<Val>,
+        index_bits: usize,
+    }
+
+    /// Drive a native `Challenger` through p3's EXACT verify order on a real proof and return
+    /// every challenge AND the flat observe-stream segments (the ground truth the recursion's FS
+    /// model must reproduce). This mirrors p3-uni-stark verifier.rs:399-430 and p3-fri
+    /// verifier.rs:195-353 line-for-line.
+    fn extract_real_challenges(
+        proof: &descender_account_stark::Proof,
+        public_values: &[Val],
+    ) -> RealChallenges {
+        let perm = default_koalabear_poseidon2_16();
+        let mut ch = Challenger::new(perm);
+
+        let degree_bits = proof.degree_bits;
+        let is_zk = 1usize; // HidingFriPcs::ZK
+        let base_degree_bits = degree_bits - is_zk;
+        let preprocessed_width = 0usize; // this AIR has no preprocessed trace
+
+        // ---- pre-alpha stream: instance tags ‖ trace commitment ‖ public values ----
+        let mut pre_alpha_stream: Vec<Val> = Vec::new();
+        pre_alpha_stream.push(Val::from_usize(degree_bits));
+        pre_alpha_stream.push(Val::from_usize(base_degree_bits));
+        pre_alpha_stream.push(Val::from_usize(preprocessed_width));
+        pre_alpha_stream.extend(cap_elems(proof.commitments.trace.clone()));
+        pre_alpha_stream.extend_from_slice(public_values);
+        for &x in &pre_alpha_stream {
+            ch.observe(x);
+        }
+        let alpha: Challenge = ch.sample();
+
+        // ---- quot stream: quotient_chunks commitment, then (ZK) random commitment ----
+        let mut quot_stream: Vec<Val> = Vec::new();
+        quot_stream.extend(cap_elems(proof.commitments.quotient_chunks.clone()));
+        if let Some(r) = proof.commitments.random.clone() {
+            quot_stream.extend(cap_elems(r));
+        }
+        for &x in &quot_stream {
+            ch.observe(x);
+        }
+        let zeta: Challenge = ch.sample();
+
+        // ---- pcs.verify observes ALL opened-point value vectors before verify_fri ----
+        // (two_adic_pcs.rs:694-702: observe_algebra_slice for every opened point, in round /
+        // matrix / point order, with the hiding random openings already merged onto the public
+        // ones — hiding_pcs.rs:430). We reconstruct that exact stream from the real proof.
+        let (rand_openings, fri_proof) = &proof.opening_proof;
+        let opened = &proof.opened_values;
+        let mut ood_stream: Vec<Val> = Vec::new();
+        // Round 0 (ZK only): the random commitment, opened at zeta. rand_openings[round][mat][pt].
+        // Round order in uni-stark `coms_to_verify`: [random?, trace, quotient_chunks].
+        let push_ext = |stream: &mut Vec<Val>, e: &Challenge| {
+            for c in e.as_basis_coefficients_slice() {
+                stream.push(*c);
+            }
+        };
+        // The verifier builds coms_to_verify = [random?, trace, quotient]. pcs.verify observes
+        // each point's values (public ‖ merged random codewords). We mirror that: for each round
+        // the opened point value vectors, with the hiding random openings appended per point.
+        // random round
+        if let Some(rv) = &opened.random {
+            // random commitment opened at zeta: public values then its random codewords
+            for e in rv {
+                push_ext(&mut ood_stream, e);
+            }
+            if let Some(round0) = rand_openings.first() {
+                for mat in round0 {
+                    for pt in mat {
+                        for e in pt {
+                            push_ext(&mut ood_stream, e);
+                        }
+                    }
+                }
+            }
+        }
+        // trace round: trace_local at zeta (+ trace_next at zeta_next if present), then its random.
+        {
+            for e in &opened.trace_local {
+                push_ext(&mut ood_stream, e);
+            }
+            // random openings for the trace round
+            let trace_round_idx = if opened.random.is_some() { 1 } else { 0 };
+            if let Some(round) = rand_openings.get(trace_round_idx) {
+                // point 0 (zeta)
+                if let Some(mat) = round.first() {
+                    if let Some(pt) = mat.first() {
+                        for e in pt {
+                            push_ext(&mut ood_stream, e);
+                        }
+                    }
+                }
+            }
+            if let Some(tn) = &opened.trace_next {
+                for e in tn {
+                    push_ext(&mut ood_stream, e);
+                }
+                if let Some(round) = rand_openings.get(trace_round_idx) {
+                    if let Some(mat) = round.first() {
+                        if let Some(pt) = mat.get(1) {
+                            for e in pt {
+                                push_ext(&mut ood_stream, e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // quotient_chunks round: each chunk opened at zeta, then its random openings.
+        {
+            let quot_round_idx = if opened.random.is_some() { 2 } else { 1 };
+            for (ci, chunk) in opened.quotient_chunks.iter().enumerate() {
+                for e in chunk {
+                    push_ext(&mut ood_stream, e);
+                }
+                if let Some(round) = rand_openings.get(quot_round_idx) {
+                    if let Some(mat) = round.get(ci) {
+                        for pt in mat {
+                            for e in pt {
+                                push_ext(&mut ood_stream, e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for &x in &ood_stream {
+            ch.observe(x);
+        }
+
+        // ---- verify_fri: batch-combination alpha (NO observe before) ----
+        let bca: Challenge = ch.sample();
+
+        // ---- per commit-phase round: observe(comm_r) → check PoW → sample beta_r ----
+        let mut comm_streams: Vec<Vec<Val>> = Vec::new();
+        let mut betas: Vec<Challenge> = Vec::new();
+        for (comm, _witness) in fri_proof
+            .commit_phase_commits
+            .iter()
+            .zip(&fri_proof.commit_pow_witnesses)
+        {
+            let s: Vec<Val> = cap_elems(comm.clone());
+            for &x in &s {
+                ch.observe(x);
+            }
+            // commit PoW bits = PROD_COMMIT_POW_BITS = 0 -> check_witness(0,_) does NOT observe.
+            let _ = ch.check_witness(0, *_witness);
+            betas.push(ch.sample());
+            comm_streams.push(s);
+        }
+
+        // ---- post-beta stream: final_poly ‖ log_arities ‖ query-PoW witness ----
+        let log_arities: Vec<usize> = fri_proof.query_proofs[0]
+            .commit_phase_openings
+            .iter()
+            .map(|o| o.log_arity as usize)
+            .collect();
+        let log_blowup = descender_account_stark::PROD_LOG_BLOWUP;
+        let log_final_poly_len = 0usize;
+        let log_global_max_height: usize =
+            log_arities.iter().sum::<usize>() + log_blowup + log_final_poly_len;
+
+        let mut post_beta_stream: Vec<Val> = Vec::new();
+        // observe_algebra_slice(final_poly): each coeff's base-field limbs.
+        for coeff in &fri_proof.final_poly {
+            for c in coeff.as_basis_coefficients_slice() {
+                post_beta_stream.push(*c);
+            }
+        }
+        for &la in &log_arities {
+            post_beta_stream.push(Val::from_usize(la));
+        }
+        for &x in &post_beta_stream {
+            ch.observe(x);
+        }
+        // query PoW witness: observed by check_witness (GrindingChallenger observes the witness
+        // then samples; with PROD_QUERY_POW_BITS=16 the witness IS observed). We thread it the
+        // way the native GrindingChallenger does by calling check_witness directly below, but to
+        // capture the stream segment we record the witness element too.
+        post_beta_stream.push(fri_proof.query_pow_witness);
+
+        // index_bits = log_global_max_height + extra_query_index_bits (=0).
+        let index_bits = log_global_max_height;
+
+        // The native verify path calls check_witness(query_pow_bits, query_pow_witness) which
+        // observes the witness and samples until the low bits are zero. We replicate the EXACT
+        // grinding-challenger behavior so the per-query indices line up with the real proof.
+        let query_pow_bits = descender_account_stark::PROD_QUERY_POW_BITS;
+        let ok = ch.check_witness(query_pow_bits, fri_proof.query_pow_witness);
+        assert!(ok, "real proof's query PoW witness must satisfy the grind");
+
+        // ---- per query: sample_bits(index_bits) ----
+        let mut indices: Vec<usize> = Vec::new();
+        for _ in &fri_proof.query_proofs {
+            indices.push(ch.sample_bits(index_bits));
+        }
+
+        RealChallenges {
+            alpha,
+            zeta,
+            bca,
+            betas,
+            indices,
+            pre_alpha_stream,
+            quot_stream,
+            ood_stream,
+            comm_streams,
+            post_beta_stream,
+            index_bits,
+        }
+    }
+
+    /// A faithful re-implementation of `DuplexChallenger` over the recursion crate's OWN duplex
+    /// primitives (`absorb_state` + the inlined Poseidon2 perm via `prefix`-style rounds). This is
+    /// the EXACT arithmetic the in-AIR FS blocks are constrained to; if it reproduces a real
+    /// proof's challenges, the recursion's FS model composes on a genuine proof.
+    struct ModelChallenger {
+        state: [Val; WIDTH],
+        input_buffer: Vec<Val>,
+        output_buffer: Vec<Val>,
+    }
+    impl ModelChallenger {
+        fn new() -> Self {
+            Self {
+                state: [Val::ZERO; WIDTH],
+                input_buffer: Vec::new(),
+                output_buffer: Vec::new(),
+            }
+        }
+        fn duplexing(&mut self) {
+            let n = self.input_buffer.len();
+            assert!(n <= RATE);
+            let mut block = [Val::ZERO; RATE];
+            for (i, v) in self.input_buffer.drain(..).enumerate() {
+                block[i] = v;
+            }
+            // absorb_state mirrors DuplexChallenger::duplexing: overwrite rate[0..n], zero
+            // rate[n..RATE], add length tag to capacity[RATE] (only when n>0), then permute.
+            let pre = absorb_state(self.state, block, n);
+            let consts = inlined_perm::Constants::pinned();
+            let cols = inlined_perm::generate_perm_cols(pre, &consts);
+            self.state = inlined_perm::perm_output(&cols);
+            self.output_buffer.clear();
+            self.output_buffer.extend_from_slice(&self.state[..RATE]);
+        }
+        fn observe(&mut self, v: Val) {
+            self.output_buffer.clear();
+            self.input_buffer.push(v);
+            if self.input_buffer.len() == RATE {
+                self.duplexing();
+            }
+        }
+        fn observe_slice(&mut self, s: &[Val]) {
+            for &v in s {
+                self.observe(v);
+            }
+        }
+        fn sample(&mut self) -> Val {
+            if !self.input_buffer.is_empty() || self.output_buffer.is_empty() {
+                self.duplexing();
+            }
+            self.output_buffer.pop().expect("output buffer non-empty")
+        }
+        fn sample_ext(&mut self) -> Challenge {
+            Challenge::from_basis_coefficients_fn(|_| self.sample())
+        }
+        fn sample_bits(&mut self, bits: usize) -> usize {
+            // mirror CanSampleBits: take a base-field sample, mask to `bits` low bits.
+            let v = self.sample();
+            (v.as_canonical_u32() as usize) & ((1usize << bits) - 1)
+        }
+        /// GrindingChallenger::check_witness(bits, witness): observe the witness, then
+        /// sample_bits(bits) and require it == 0.
+        fn check_witness(&mut self, bits: usize, witness: Val) -> bool {
+            // p3 GrindingChallenger::check_witness short-circuits `return true` for bits==0 (NO
+            // observe, NO sample) — so a zero-bit PoW round does NOT perturb the sponge. For
+            // bits>0 it observes the witness then sample_bits(bits)==0.
+            if bits == 0 {
+                return true;
+            }
+            self.observe(witness);
+            self.sample_bits(bits) == 0
+        }
+    }
+
+    /// SANITY: a REAL `prove_account_creation` proof verifies. Real pipeline (real FRI, real
+    /// Poseidon2-Merkle, ZK on), smallest viable trace (2 rows). This is the genuine proof the
+    /// capstone binds the recursion FS model to.
+    #[test]
+    fn real_proof_prove_verify_sanity() {
+        let s = capstone_secrets();
+        let (public, proof) =
+            prove_account_creation_with_seed(&s, 0xCAFE_F00D).expect("prove succeeds");
+        verify_account_creation(&public, &proof).expect("real proof verifies");
+        // shape sanity
+        assert_eq!(public.masked_projection.len(), N_LANES);
+        assert_eq!(public.syndrome.len(), SYNDROME_LANES);
+        assert_eq!(
+            proof.opening_proof.1.query_proofs.len(),
+            descender_account_stark::PROD_NUM_QUERIES,
+            "real proof must carry the production query count"
+        );
+    }
+
+    /// CAPSTONE PIN: the recursion crate's own duplex primitives reproduce the REAL proof's
+    /// actual Fiat-Shamir challenges (alpha, zeta, batch-combo alpha, every beta) AND every query
+    /// index — extracted by driving a native `DuplexChallenger` through p3's EXACT verify
+    /// transcript on the real proof, and confirmed real by `verify_account_creation` accepting the
+    /// SAME proof. Element-for-element equality on genuine proof data, not synthetic blocks.
+    #[test]
+    fn recursion_primitives_reproduce_real_proof_challenges() {
+        let s = capstone_secrets();
+        let (public, proof) =
+            prove_account_creation_with_seed(&s, 0x1234_5678).expect("prove succeeds");
+        // (1) the proof is genuinely valid -> the extracted challenges ARE the real ones.
+        verify_account_creation(&public, &proof).expect("real proof verifies");
+
+        let pv = public_values_vec(&public);
+        let real = extract_real_challenges(&proof, &pv);
+
+        // (2) Replay the SAME real flat observe-stream through the recursion crate's OWN duplex
+        //     primitives and assert it reproduces the ground-truth challenges + indices.
+        let mut m = ModelChallenger::new();
+        m.observe_slice(&real.pre_alpha_stream);
+        let m_alpha = m.sample_ext();
+        assert_eq!(
+            m_alpha, real.alpha,
+            "recursion-primitive DEEP alpha != real proof alpha"
+        );
+
+        m.observe_slice(&real.quot_stream);
+        let m_zeta = m.sample_ext();
+        assert_eq!(
+            m_zeta, real.zeta,
+            "recursion-primitive zeta != real proof zeta"
+        );
+
+        // pcs.verify observes ALL opened-point value vectors (public ‖ merged random codewords)
+        // AFTER zeta and BEFORE the FRI batch-combo alpha (two_adic_pcs.rs:694 -> verify_fri:195).
+        m.observe_slice(&real.ood_stream);
+        let m_bca = m.sample_ext();
+        assert_eq!(
+            m_bca, real.bca,
+            "recursion-primitive FRI batch-combo alpha != real proof bca"
+        );
+
+        assert_eq!(real.betas.len(), real.comm_streams.len());
+        for (r, comm) in real.comm_streams.iter().enumerate() {
+            m.observe_slice(comm);
+            // PROD_COMMIT_POW_BITS == 0 -> check_witness(0,_) short-circuits (no observe, no
+            // sample), so the commit-phase round is exactly observe(comm) -> sample beta_r.
+            let m_beta = m.sample_ext();
+            assert_eq!(
+                m_beta, real.betas[r],
+                "recursion-primitive beta_{r} != real proof beta_{r}"
+            );
+        }
+
+        // post-beta + query indices
+        m.observe_slice(&real.post_beta_stream[..real.post_beta_stream.len() - 1]);
+        let witness = *real.post_beta_stream.last().unwrap();
+        let ok = m.check_witness(descender_account_stark::PROD_QUERY_POW_BITS, witness);
+        assert!(ok, "recursion-primitive replay failed the real query grind");
+        for (q, &idx) in real.indices.iter().enumerate() {
+            let m_idx = m.sample_bits(real.index_bits);
+            assert_eq!(
+                m_idx, idx,
+                "recursion-primitive query index {q} != real proof index {q}"
+            );
+        }
+
+        // sanity: we actually extracted the production-sized challenge set.
+        assert_eq!(
+            real.indices.len(),
+            descender_account_stark::PROD_NUM_QUERIES
+        );
+        assert!(!real.betas.is_empty(), "real proof has FRI commit rounds");
+    }
+
+    /// CAPSTONE PIN (published helpers): the recursion's PUBLISHED `fs_squeeze_*` functions — the
+    /// EXACT helpers the in-AIR FS blocks are derived from — reproduce the REAL proof's betas and
+    /// query index, fed the REAL proof's RATE-aligned commit-phase commitments + post-beta stream,
+    /// continued from the REAL post-batch-combo-alpha sponge state.
+    ///
+    /// SCOPE NOTE (honest): the commit-phase commitment segments are each exactly RATE (8) and the
+    /// betas chain from a single carried state, so the published `fs_squeeze_betas` applies
+    /// directly to real data. The pre-alpha (201 elems) and post-beta (11 elems) segments are NOT
+    /// RATE-aligned, so the published full-block `fs_squeeze_alpha_zeta` / RATE-aligned
+    /// `fs_squeeze_query_index` do NOT model those real segments; the faithful duplex replay
+    /// (`recursion_primitives_reproduce_real_proof_challenges`) covers them via the partial-absorb
+    /// primitive. Also: the real proof observes the entire opened-values (OOD) stream BETWEEN zeta
+    /// and the FRI batch-combo alpha (p3 pcs.verify -> verify_fri), so the published
+    /// `fs_squeeze_batch_combo_alpha`'s "no observe between zeta and bca" model does NOT hold for
+    /// this proof — the real bca's continuation state is taken from the faithful replay here.
+    #[test]
+    fn published_fs_helpers_reproduce_real_proof_betas_and_index() {
+        let s = capstone_secrets();
+        let (public, proof) =
+            prove_account_creation_with_seed(&s, 0x9E37_79B9).expect("prove succeeds");
+        verify_account_creation(&public, &proof).expect("real proof verifies");
+        let pv = public_values_vec(&public);
+        let real = extract_real_challenges(&proof, &pv);
+
+        // Faithful replay up to the post-batch-combo-alpha sponge state (the betas' continuation
+        // point), since the pre-bca transcript has non-RATE-aligned + OOD-observe segments.
+        let mut m = ModelChallenger::new();
+        m.observe_slice(&real.pre_alpha_stream);
+        let _ = m.sample_ext(); // alpha
+        m.observe_slice(&real.quot_stream);
+        let _ = m.sample_ext(); // zeta
+        m.observe_slice(&real.ood_stream);
+        let m_bca = m.sample_ext();
+        assert_eq!(m_bca, real.bca);
+        let post_bca_state = m.state; // == fs_squeeze_batch_combo_alpha's returned state
+
+        // PUBLISHED helper: each comm stream is exactly RATE -> one RATE block.
+        let comm_blocks: Vec<[Val; RATE]> = real
+            .comm_streams
+            .iter()
+            .map(|s| {
+                assert_eq!(s.len(), RATE, "commit-phase commitment must be one RATE block");
+                core::array::from_fn(|i| s[i])
+            })
+            .collect();
+        let (betas, post_beta_state) = fs_squeeze_betas(post_bca_state, &comm_blocks);
+        assert_eq!(
+            betas, real.betas,
+            "published fs_squeeze_betas != real proof betas"
+        );
+
+        // PUBLISHED helper (partial path): the post-beta stream (final_poly ‖ log_arities ‖ query
+        // PoW witness) is 11 elems (non-RATE-aligned). The published `fs_squeeze_query_p0_state`
+        // models exactly the native trailing-partial absorb the first post-stream sample triggers.
+        // Chunk the FULL post-beta stream (incl. the query PoW witness, which IS observed since
+        // PROD_QUERY_POW_BITS > 0) into full RATE blocks + a trailing partial.
+        let stream = &real.post_beta_stream;
+        let n_full = stream.len() / RATE;
+        let full_blocks: Vec<[Val; RATE]> =
+            (0..n_full).map(|b| core::array::from_fn(|i| stream[b * RATE + i])).collect();
+        let rem = stream.len() % RATE;
+        let mut partial = [Val::ZERO; RATE];
+        for i in 0..rem {
+            partial[i] = stream[n_full * RATE + i];
+        }
+        let p0 = fs_squeeze_query_p0_state(post_beta_state, &full_blocks, partial, rem);
+        // The query PoW grind: sample_bits(query_pow_bits) == 0 (pop 0 of P0), which the native
+        // GrindingChallenger consumed before the per-query index draws. So index q is pop (q+1).
+        // The first index = the (pop after the PoW pop). Build the draws LIFO from P0's rate.
+        let pow_bits = descender_account_stark::PROD_QUERY_POW_BITS;
+        // pop 0 is consumed by the PoW grind's sample_bits; its low `pow_bits` bits are 0.
+        assert_eq!(
+            (p0[RATE - 1].as_canonical_u32() as usize) & ((1usize << pow_bits) - 1),
+            0,
+            "real proof query PoW grind: pop 0 low bits must be zero"
+        );
+        // The first index draw is the NEXT pop (pop 1) masked to index_bits. p3 sample_bits pops
+        // one base element per call from the LIFO output buffer.
+        let first_index =
+            (p0[RATE - 1 - 1].as_canonical_u32() as usize) & ((1usize << real.index_bits) - 1);
+        assert_eq!(
+            first_index, real.indices[0],
+            "published fs_squeeze_query_p0_state-derived first index != real proof index 0"
+        );
+    }
+}
