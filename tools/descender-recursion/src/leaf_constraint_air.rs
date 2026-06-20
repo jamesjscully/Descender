@@ -44,16 +44,39 @@
 //! [`partial_constraint_eval`]. Every opened-cell tamper that violates a mirrored leaf
 //! constraint changes `C_partial` ⇒ rejects.
 //!
+//! ## MIRRORED Poseidon2 sponge (the FIRST sponge in-circuit)
+//!
+//!   * **C1 — `pad_source_commitment` squeeze** (air.rs:712-726, `eval_sponge` C1 plan):
+//!     RE-COMPUTED in-circuit via [`crate::inlined_perm_octic`] over the absorbed leaf cells,
+//!     matching the leaf `SpongePlan` (rate-8 absorb with the ONE padding marker at stream pos
+//!     `n_input` + zero-fill, capacity-preserving across 7 absorb perms + 1 squeeze perm), with the
+//!     committed `pad_source_commitment[10]` digest constrained == the squeezed sponge output. Added
+//!     as the `N_C1` residual class (input/capacity bindings ‖ 8 Poseidon2 perm blocks ‖
+//!     squeeze-output equalities). Fidelity-PINned against the deployed byte-pinned Val permutation
+//!     (`c1_honest_sponge_all_residuals_zero`, `c1_squeeze_matches_deployed_perm_output`) and tamper-
+//!     rejected end-to-end through DEEP (`leaf_wired_tampered_c1_sponge_cell_rejects_end_to_end`).
+//!     DEFERRED for C1: the per-lane BYTE-RANGE decomposition of the 48 input lanes
+//!     (air.rs:1278-1289) — a degree-2 algebraic gadget, not the sponge; rides with the byte/reduce
+//!     gadgets in a later chunk.
+//!
 //! ## DEFERRED (the rest of leaf `C(zeta)` — STILL committed-not-constrained)
 //!
-//!   * ALL Poseidon2 permutation round constraints (C1/C2/C6 sponges, role-root sponge, batch
-//!     digest chain) — the BULK of the leaf width; reuse the inlined-perm / `eval_perm`
-//!     machinery (deferred deliberately, separate large chunk).
-//!   * the C1/C2/C6 sponge-OUTPUT commitment equalities (`c*_out[j] == pubio[j]`): these
-//!     consume the Poseidon2 squeeze, so they ride with the perms.
-//!   * the WIDE-THEN-REDUCE C2 mask reduce gadget + the carrier mod-q reduction.
-//!   * CLASS-C packed-witness anchors, context bindings (slot/lifecycle/account_id), the
-//!     cross-component digest chain.
+//!   * **C2 — mask PRF sponge** (air.rs:728-737): 40-lane absorb (pad_seed[32] ‖ slot_id[8]),
+//!     30 squeezed lanes, PLUS the WIDE-THEN-REDUCE `eval_reduce_gadget` (30 wide lanes → 6 masks)
+//!     and the carrier mod-q reduction. Largest remaining sponge.
+//!   * **C6 — opening-tuple-commitment sponge** (air.rs:740-756): account_projection[6] (field) ‖
+//!     lifecycle_anchor[32] ‖ nonce_c6[16] ‖ account_id[32] (bytes), squeezed to 10 lanes.
+//!   * **role-root sponge** (CLASS A, air.rs:910-944): 26 role-handle lanes (pad_source_commitment
+//!     ‖ opening_tuple_commitment ‖ masked_projection) → 8-lane `role_root`, with input lanes bound
+//!     to the real commitment columns and the squeezed root == public `role_root`.
+//!   * **batch digest chain** (air.rs:1112-1262): the per-row running Poseidon2 sponge over every
+//!     row's pubio (the CHAIN_PERMS_PER_ROW absorbs + the cross-row transition).
+//!   * the C2/C6 sponge-OUTPUT commitment equalities (`c*_out[j] == pubio[j]`) ride with their perms.
+//!   * the per-lane BYTE-RANGE decompositions (C1/C2/C6 input lanes), CLASS-C packed-witness anchors,
+//!     context bindings (slot/lifecycle/account_id).
+//!
+//! Each remaining sponge reuses the SAME [`crate::inlined_perm_octic`] octic-perm primitive + the
+//! absorb/capacity/squeeze pattern established here for C1.
 //!
 //! ## Wiring into DEEP
 //!
@@ -63,7 +86,9 @@
 //! END-TO-END. The `C_committed` summand is the deferred Poseidon2-perm bulk (still committed).
 
 use crate::fri_fold_air::{limbs, D, W};
-use descender_account_stark::{Challenge, Val, N_LANES, RELATION_ID, RELATION_ID_ELEMS};
+use crate::inlined_perm::{C_INPUTS, C_OUTPUT, PERM_COLS};
+use crate::inlined_perm_octic::{self, OcticPermCells};
+use descender_account_stark::{Challenge, Val, N_COMMIT_LANES, N_LANES, RELATION_ID, RELATION_ID_ELEMS, WIDTH};
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
 use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
 
@@ -110,9 +135,47 @@ pub const N_SEAM_PAD: usize = PAD_SEED_BYTES; // SeamPadSeed
 pub const N_SEAM_ACC: usize = N_LANES; // SeamOpeningAcc (air.rs:773-779)
 pub const N_RELATION_ID: usize = RELATION_ID_ELEMS; // relation_id pinning (air.rs:957-967)
 
+// ----- C1 sponge (pad_source_commitment squeeze) — the FIRST mirrored leaf sponge -----
+//
+// Mirrors `descender_account_stark::air::FullRelationAir::eval_sponge` for the C1 SpongePlan:
+//   * C1 input lanes: pad_seed[32] ‖ blinding_nonce_c1[16]  ⇒ C1_INPUT_LANES = 48.
+//   * RATE-8 absorb with the ONE padding marker at stream position `n_input` (=48) and zero-fill;
+//     capacity-preserving (slots RATE..WIDTH carried from the previous perm's output).
+//   * 7 absorb perms + 1 squeeze perm = 8 Poseidon2 perms.
+//   * squeeze: `pad_source_commitment[0..7]` from the LAST absorb perm's output, `[8..9]` from the
+//     squeeze perm's output (matches `SpongePlan::output_source`).
+// The committed `pad_source_commitment[10]` digest is the leaf's PUBLIC C1 output (air.rs:712-726);
+// the mirror constrains it == the squeezed sponge output.
+//
+// DEFERRED for the C1 sponge: the per-lane BYTE-RANGE decomposition of the 48 input lanes
+// (air.rs:1278-1289 — `assert_bool` over 8 bits/lane + lane==Σ bit·2^b). That is a degree-2
+// algebraic gadget (not the Poseidon2 sponge per se); it rides with the other byte-range / reduce
+// gadgets in a later chunk. The C1 sponge mirror here constrains the absorb/capacity wiring, the
+// Poseidon2 perm rounds, and the squeeze-output equality.
+
+/// C1 input byte-lanes count: pad_seed[32] ‖ blinding_nonce_c1[16]. Mirrors air.rs `C1_INPUT_LANES`.
+pub const C1_INPUT_LANES: usize = 32 + 16; // 48
+/// Sponge rate (RATE elements absorbed per permutation). Mirrors air.rs `RATE`.
+pub const C1_RATE: usize = 8;
+/// Number of absorb permutations for the C1 sponge: `ceil((n_input + 1)/RATE)` = `ceil(49/8)` = 7.
+pub const C1_N_ABSORB: usize = 7;
+/// Total C1 sponge permutations (absorb + squeeze). `n_out = 10` ⇒ 1 squeeze perm ⇒ 8.
+pub const C1_N_PERMS: usize = 8;
+/// Padded absorb-stream length (`C1_N_ABSORB · RATE`).
+pub const C1_PADDED_LEN: usize = C1_N_ABSORB * C1_RATE; // 56
+/// pad_source_commitment output lanes. Mirrors air.rs `N_COMMIT_LANES`.
+pub const C1_N_OUT: usize = N_COMMIT_LANES; // 10
+
+/// C1 residual count: per perm [RATE+ (WIDTH-RATE) input/capacity bindings] + perm round residuals,
+/// then the squeeze-output equalities.
+pub const N_C1_INPUT_BIND: usize = C1_N_PERMS * WIDTH; // 16 input/cap bindings per perm
+pub const N_C1_PERM: usize = C1_N_PERMS * inlined_perm_octic::PERM_RESIDUALS;
+pub const N_C1_OUT: usize = C1_N_OUT;
+pub const N_C1: usize = N_C1_INPUT_BIND + N_C1_PERM + N_C1_OUT;
+
 /// Total residuals batched into `C_partial`.
 pub const N_CONSTRAINTS: usize =
-    C4_LANES * C4_N_PER_LANE + N_C4_ACC + N_SEAM_PAD + N_SEAM_ACC + N_RELATION_ID;
+    C4_LANES * C4_N_PER_LANE + N_C4_ACC + N_SEAM_PAD + N_SEAM_ACC + N_RELATION_ID + N_C1;
 
 // ===========================================================================
 // Column layout (one leaf-constraint-mirror check per row)
@@ -128,13 +191,17 @@ pub const N_CONSTRAINTS: usize =
 //   * `relation_id[RELATION_ID_ELEMS]`                           [RELATION_ID_ELEMS cells]
 // then `alpha` (1 extension elem) and the committed `C_partial` (1 extension elem).
 
+/// Number of opened OOD cells in the C1 sponge block: input lanes + perm blocks + output digest.
+pub const C1_CELLS: usize = C1_INPUT_LANES + C1_N_PERMS * PERM_COLS + C1_N_OUT;
+
 /// Number of opened OOD cells fed to the mirror.
 pub const N_OPENED_CELLS: usize = C4_LANES * C4_CELLS // C4 lanes
     + N_LANES // carry_acc
     + PAD_SEED_BYTES // C1 pad_seed
     + PAD_SEED_BYTES // C2 pad_seed
     + N_LANES // C6 field lanes
-    + RELATION_ID_ELEMS; // relation_id
+    + RELATION_ID_ELEMS // relation_id
+    + C1_CELLS; // C1 sponge (input lanes ‖ perm blocks ‖ pad_source_commitment)
 
 // Cell-block offsets (in units of cells, each `D` limbs).
 const O_C4: usize = 0;
@@ -143,6 +210,10 @@ const O_C1_PAD: usize = O_ACC + N_LANES;
 const O_C2_PAD: usize = O_C1_PAD + PAD_SEED_BYTES;
 const O_C6_FIELD: usize = O_C2_PAD + PAD_SEED_BYTES;
 const O_RELATION_ID: usize = O_C6_FIELD + N_LANES;
+// C1 sponge block: input lanes, then 8 perm blocks, then the 10-lane pad_source_commitment.
+const O_C1_INPUT: usize = O_RELATION_ID + RELATION_ID_ELEMS;
+const O_C1_PERMS: usize = O_C1_INPUT + C1_INPUT_LANES;
+const O_C1_OUT: usize = O_C1_PERMS + C1_N_PERMS * PERM_COLS;
 
 /// First column: the opened OOD cells, each `D` limbs.
 pub const L_CELLS: usize = 0;
@@ -179,6 +250,47 @@ const fn c6_field_cell(i: usize) -> usize {
 }
 const fn relation_id_cell(j: usize) -> usize {
     O_RELATION_ID + j
+}
+/// C1 input lane `i` (`i < C1_INPUT_LANES`) — the absorbed pad_seed/nonce field element.
+const fn c1_input_cell(i: usize) -> usize {
+    O_C1_INPUT + i
+}
+/// First cell of C1 perm block `p` (`p < C1_N_PERMS`); the block spans `PERM_COLS` cells.
+const fn c1_perm_base(p: usize) -> usize {
+    O_C1_PERMS + p * PERM_COLS
+}
+/// C1 pad_source_commitment output lane `j` (`j < C1_N_OUT`) — the squeezed digest cell.
+const fn c1_out_cell(j: usize) -> usize {
+    O_C1_OUT + j
+}
+
+/// The absorbed stream element at position `pos` (`pos < C1_PADDED_LEN`), as a cell index OR a
+/// constant marker. Mirrors `absorb_elem_expr` (air.rs:1360): `pos < n_input` → input lane cell;
+/// `pos == n_input` → the ONE padding marker; else → ZERO.
+enum C1Absorb {
+    Cell(usize),
+    One,
+    Zero,
+}
+fn c1_absorb_source(pos: usize) -> C1Absorb {
+    if pos < C1_INPUT_LANES {
+        C1Absorb::Cell(c1_input_cell(pos))
+    } else if pos == C1_INPUT_LANES {
+        C1Absorb::One
+    } else {
+        C1Absorb::Zero
+    }
+}
+
+/// `(perm_index, lane)` the C1 squeeze reads output `o` from. Mirrors `SpongePlan::output_source`:
+/// outputs `0..RATE` come from the LAST absorb perm (`C1_N_ABSORB-1`); the remainder from the
+/// squeeze perm (`C1_N_ABSORB`).
+const fn c1_output_source(o: usize) -> (usize, usize) {
+    if o < C1_RATE {
+        (C1_N_ABSORB - 1, o)
+    } else {
+        (C1_N_ABSORB, o - C1_RATE)
+    }
 }
 
 // ===========================================================================
@@ -278,6 +390,100 @@ fn c4_lane_residual(cells: &[Challenge; N_OPENED_CELLS], lane: usize, i: usize) 
     }
 }
 
+/// The `k`-th NATIVE C1-sponge residual over the opened cells, `k ∈ [0, N_C1)`. Mirrors the leaf
+/// `eval_sponge` order EXACTLY (over `Challenge` arithmetic):
+///   * `0 .. N_C1_INPUT_BIND`           : per-perm input/capacity bindings (WIDTH per perm).
+///         perm 0 absorb:  inputs[r] − absorb[r]  (r<RATE) ; inputs[c] − 0 (c≥RATE).
+///         perm p>0 absorb: inputs[r] − (prev_out[r] + absorb[p·RATE+r]) ; inputs[c] − prev_out[c].
+///         squeeze perm:    inputs[r] − prev_out[r] ; inputs[c] − prev_out[c].
+///   * next `N_C1_PERM`                 : per-perm Poseidon2 round residuals (inlined_perm_octic).
+///   * next `N_C1_OUT`                  : pad_source_commitment[j] − squeezed_output[j].
+fn c1_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
+    // perm inputs / committed posts / outputs from the opened cells.
+    let perm_input = |p: usize, i: usize| cells[c1_perm_base(p) + C_INPUTS + i];
+    let perm_output = |p: usize, i: usize| cells[c1_perm_base(p) + C_OUTPUT + i];
+    let absorb = |pos: usize| -> Challenge {
+        match c1_absorb_source(pos) {
+            C1Absorb::Cell(c) => cells[c],
+            C1Absorb::One => Challenge::ONE,
+            C1Absorb::Zero => Challenge::ZERO,
+        }
+    };
+
+    // (a) input/capacity bindings (WIDTH per perm).
+    if k < N_C1_INPUT_BIND {
+        let p = k / WIDTH;
+        let lane = k % WIDTH;
+        let is_absorb = p < C1_N_ABSORB;
+        if p == 0 {
+            // first perm: inputs[r] == absorb[r] (r<RATE), inputs[c] == 0 (capacity).
+            if lane < C1_RATE {
+                return perm_input(0, lane) - absorb(lane);
+            }
+            return perm_input(0, lane);
+        }
+        let prev = perm_output(p - 1, lane);
+        if lane < C1_RATE {
+            if is_absorb {
+                let pos = p * C1_RATE + lane;
+                let elem = if pos < C1_PADDED_LEN { absorb(pos) } else { Challenge::ZERO };
+                return perm_input(p, lane) - (prev + elem);
+            }
+            // squeeze perm: rate lanes carried unchanged.
+            return perm_input(p, lane) - prev;
+        }
+        // capacity carried unchanged from the previous output.
+        return perm_input(p, lane) - prev;
+    }
+    let mut k = k - N_C1_INPUT_BIND;
+
+    // (b) per-perm Poseidon2 round residuals (post − recomputed). Computed by the native octic perm
+    // reference over THIS perm block's opened input cells, in inlined_perm_octic post order.
+    if k < N_C1_PERM {
+        let per = inlined_perm_octic::PERM_RESIDUALS;
+        let p = k / per;
+        let ri = k % per;
+        let inputs: [Challenge; WIDTH] = core::array::from_fn(|i| perm_input(p, i));
+        // committed posts in perm_residuals order (begin-full, partial, end-full), read as OPENED
+        // cells so the reset semantics of `native_perm_residuals` matches the in-AIR
+        // `perm_residuals` limb-for-limb (on arbitrary off-domain cells, not just honest ones).
+        let committed: Vec<Challenge> = (0..per)
+            .map(|i| cells[c1_perm_base(p) + c1_post_cell_offset(i)])
+            .collect();
+        let res = inlined_perm_octic::native_perm_residuals(inputs, &committed);
+        return res[ri];
+    }
+    k -= N_C1_PERM;
+
+    // (c) squeeze-output equality: pad_source_commitment[j] − opened_output_cell[j].
+    // The opened output cell is the source perm's committed C_OUTPUT post; the per-perm round
+    // residuals (b) bind that cell to the recomputed permutation, so binding the digest to the
+    // opened cell here suffices (and matches the leaf, which equates the public commitment to the
+    // perm's committed `post` cell, air.rs:1355 + 720-726).
+    debug_assert!(k < N_C1_OUT);
+    let j = k;
+    let (sp, lane) = c1_output_source(j);
+    cells[c1_out_cell(j)] - perm_output(sp, lane)
+}
+
+/// Map the `ri`-th committed post (in `inlined_perm_octic::perm_residuals` order: begin-full posts,
+/// then partial post_sbox, then end-full posts) to its CELL offset within a `PERM_COLS` block (the
+/// `inlined_perm` column layout). Used to read the OPENED committed-post cell for the C1 residual.
+fn c1_post_cell_offset(ri: usize) -> usize {
+    use crate::inlined_perm::{
+        C_BEGIN_POST, C_END_POST, C_PARTIAL_POST_SBOX, HALF_FULL_ROUNDS, PARTIAL_ROUNDS,
+    };
+    let begin = HALF_FULL_ROUNDS * WIDTH;
+    let partial = PARTIAL_ROUNDS;
+    if ri < begin {
+        C_BEGIN_POST + ri
+    } else if ri < begin + partial {
+        C_PARTIAL_POST_SBOX + (ri - begin)
+    } else {
+        C_END_POST + (ri - begin - partial)
+    }
+}
+
 /// The `r`-th leaf constraint residual over the opened cells, `r ∈ [0, N_CONSTRAINTS)`. Ordering:
 ///   * `0 .. C4_LANES*C4_N_PER_LANE`            : C4 lane residuals (lane-major).
 ///   * next `N_C4_ACC`                          : `carry_acc[j] − v_j` (C4-acc binding).
@@ -311,10 +517,15 @@ pub fn constraint_residual(cells: &[Challenge; N_OPENED_CELLS], r: usize) -> Cha
         return cells[acc_cell(i)] - cells[c6_field_cell(i)];
     }
     r -= N_SEAM_ACC;
-    debug_assert!(r < N_RELATION_ID);
-    // relation_id pinning: relation_id[j] − RELATION_ID[j].
-    let j = r;
-    cells[relation_id_cell(j)] - Challenge::from(Val::from_u32(RELATION_ID[j]))
+    if r < N_RELATION_ID {
+        // relation_id pinning: relation_id[j] − RELATION_ID[j].
+        let j = r;
+        return cells[relation_id_cell(j)] - Challenge::from(Val::from_u32(RELATION_ID[j]));
+    }
+    r -= N_RELATION_ID;
+    // C1 sponge residuals (pad_source_commitment squeeze).
+    debug_assert!(r < N_C1);
+    c1_residual(cells, r)
 }
 
 /// Native alpha-batched leaf partial constraint eval over opened cells:
@@ -341,6 +552,32 @@ pub fn pack_row(cells: &[Challenge; N_OPENED_CELLS], alpha: Challenge) -> Vec<Va
     row[L_ALPHA..L_ALPHA + D].copy_from_slice(&limbs(alpha));
     row[L_CPARTIAL..L_CPARTIAL + D].copy_from_slice(&limbs(c_partial));
     row
+}
+
+/// TEST-ONLY: a fully-honest opened-cell vector (canonical C4 lanes + matching seams/relation_id +
+/// an HONEST C1 sponge built from the deployed byte-pinned Val permutation). All mirrored residuals
+/// vanish. Exposed for cross-module end-to-end tests (e.g. `deep_air`).
+#[cfg(test)]
+pub fn honest_cells_for_test(
+    vals: [u32; C4_LANES],
+    pad_seed_seed: u32,
+) -> [Challenge; N_OPENED_CELLS] {
+    tests::honest_cells(vals, pad_seed_seed)
+}
+
+/// TEST-ONLY: the C1 sponge input-lane / perm / output cell accessors, for cross-module tamper
+/// tests. Returns the cell INDEX (multiply by `D` for the limb base).
+#[cfg(test)]
+pub fn c1_input_cell_idx(i: usize) -> usize {
+    c1_input_cell(i)
+}
+#[cfg(test)]
+pub fn c1_out_cell_idx(j: usize) -> usize {
+    c1_out_cell(j)
+}
+#[cfg(test)]
+pub fn c1_perm_cell_idx(p: usize, within: usize) -> usize {
+    c1_perm_base(p) + within
 }
 
 /// Decode the committed `C_partial` cell of a packed row.
@@ -453,6 +690,86 @@ where
         residuals.push(octic_sub::<AB>(&rid, &pinned));
     }
 
+    // (6) C1 sponge (pad_source_commitment squeeze) — the first mirrored leaf sponge. Order MUST
+    // match the native `c1_residual`: input/capacity bindings (WIDTH/perm), then per-perm Poseidon2
+    // round residuals (inlined_perm_octic), then squeeze-output equalities.
+    {
+        // adapter exposing the octic opened cells to inlined_perm_octic::perm_residuals.
+        struct CellAdapter<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> {
+            cell: &'a FCell,
+            _ab: core::marker::PhantomData<AB>,
+        }
+        impl<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> OcticPermCells<AB>
+            for CellAdapter<'a, AB, FCell>
+        {
+            fn at(&self, idx: usize) -> [AB::Expr; D] {
+                (self.cell)(idx)
+            }
+        }
+        let adapter = CellAdapter::<AB, FCell> { cell, _ab: core::marker::PhantomData };
+
+        let perm_input = |p: usize, i: usize| cell(c1_perm_base(p) + C_INPUTS + i);
+        let perm_output = |p: usize, i: usize| cell(c1_perm_base(p) + C_OUTPUT + i);
+        let absorb = |pos: usize| -> [AB::Expr; D] {
+            match c1_absorb_source(pos) {
+                C1Absorb::Cell(c) => cell(c),
+                C1Absorb::One => octic_scalar::<AB>(1),
+                C1Absorb::Zero => octic_scalar::<AB>(0),
+            }
+        };
+
+        // (a) input/capacity bindings.
+        for p in 0..C1_N_PERMS {
+            let is_absorb = p < C1_N_ABSORB;
+            for lane in 0..WIDTH {
+                let inp = perm_input(p, lane);
+                let expected = if p == 0 {
+                    if lane < C1_RATE {
+                        absorb(lane)
+                    } else {
+                        octic_scalar::<AB>(0)
+                    }
+                } else {
+                    let prev = perm_output(p - 1, lane);
+                    if lane < C1_RATE {
+                        if is_absorb {
+                            let pos = p * C1_RATE + lane;
+                            let elem = if pos < C1_PADDED_LEN {
+                                absorb(pos)
+                            } else {
+                                octic_scalar::<AB>(0)
+                            };
+                            octic_add::<AB>(&prev, &elem)
+                        } else {
+                            prev
+                        }
+                    } else {
+                        prev
+                    }
+                };
+                residuals.push(octic_sub::<AB>(&inp, &expected));
+            }
+        }
+
+        // (b) per-perm Poseidon2 round residuals.
+        for p in 0..C1_N_PERMS {
+            let mut pr = inlined_perm_octic::perm_residuals::<AB, _>(&adapter, c1_perm_base(p));
+            residuals.append(&mut pr);
+        }
+
+        // (c) squeeze-output equalities: pad_source_commitment[j] − squeezed_output[j].
+        // squeezed_output[j] is the OPENED committed-output cell of the source perm (the leaf's
+        // `pcols.ending_full_rounds[..].post[lane]` = the C_OUTPUT cell), so the residual reads two
+        // opened cells. Soundness of the squeeze value vs the absorbed data is enforced by the
+        // per-perm round residuals (b), which bind that output cell to the recomputed permutation.
+        for j in 0..N_C1_OUT {
+            let (sp, lane) = c1_output_source(j);
+            let out_cell = cell(c1_perm_base(sp) + C_OUTPUT + lane);
+            let committed = cell(c1_out_cell(j));
+            residuals.push(octic_sub::<AB>(&committed, &out_cell));
+        }
+    }
+
     debug_assert_eq!(residuals.len(), N_CONSTRAINTS);
 
     // ----- alpha-batch: acc = Σ_r alpha^r · residual_r -----
@@ -549,7 +866,7 @@ mod tests {
     /// A fully-honest opened-cell vector: 6 canonical C4 lanes, carry_acc = each lane's v,
     /// C6 field = carry_acc, C1 pad_seed == C2 pad_seed, relation_id = RELATION_ID. All residuals
     /// vanish (matches an on-domain leaf row); the OOD off-domain case is exercised separately.
-    fn honest_cells(vals: [u32; C4_LANES], pad_seed_seed: u32) -> [Challenge; N_OPENED_CELLS] {
+    pub(crate) fn honest_cells(vals: [u32; C4_LANES], pad_seed_seed: u32) -> [Challenge; N_OPENED_CELLS] {
         let mut cells = [Challenge::ZERO; N_OPENED_CELLS];
         for lane in 0..C4_LANES {
             let lc = c4_lane_cells(vals[lane]);
@@ -571,7 +888,82 @@ mod tests {
         for j in 0..RELATION_ID_ELEMS {
             cells[relation_id_cell(j)] = ext(RELATION_ID[j]);
         }
+        // C1 sponge: honest absorb/perm/squeeze over byte-valued input lanes (built from the real
+        // byte-pinned Val sponge, lifted to the extension — the fidelity authority).
+        fill_honest_c1(&mut cells, pad_seed_seed);
         cells
+    }
+
+    /// Fill the C1 sponge cells (input lanes ‖ 8 perm blocks ‖ pad_source_commitment) with an
+    /// HONEST sponge over byte-valued input lanes derived from `seed`. Runs the deployed Val
+    /// permutation (`inlined_perm::generate_perm_cols`, byte-pinned to default_koalabear_poseidon2_16)
+    /// for each absorb/squeeze perm, exactly mirroring the leaf `eval_sponge` absorb/capacity wiring,
+    /// then lifts every cell into the extension. This is the C1 fidelity AUTHORITY.
+    fn fill_honest_c1(cells: &mut [Challenge; N_OPENED_CELLS], seed: u32) {
+        use crate::inlined_perm::{self, generate_perm_cols, C_OUTPUT as IP_OUTPUT, PERM_COLS};
+        let consts = inlined_perm::Constants::pinned();
+
+        // input lanes: byte-valued (0..255), as the leaf's byte-ranged C1 lanes.
+        let mut input_lane = [Val::ZERO; C1_INPUT_LANES];
+        for i in 0..C1_INPUT_LANES {
+            let b = (seed.wrapping_mul(31).wrapping_add(i as u32)) % 256;
+            input_lane[i] = Val::from_u32(b);
+            cells[c1_input_cell(i)] = Challenge::from(input_lane[i]);
+        }
+
+        // absorbed stream (padded): lanes, ONE marker at n_input, zero-fill.
+        let absorb = |pos: usize| -> Val {
+            if pos < C1_INPUT_LANES {
+                input_lane[pos]
+            } else if pos == C1_INPUT_LANES {
+                Val::ONE
+            } else {
+                Val::ZERO
+            }
+        };
+
+        let mut prev_out: Option<[Val; WIDTH]> = None;
+        for p in 0..C1_N_PERMS {
+            let is_absorb = p < C1_N_ABSORB;
+            let mut perm_in = [Val::ZERO; WIDTH];
+            match prev_out {
+                None => {
+                    for r in 0..C1_RATE {
+                        perm_in[r] = absorb(r);
+                    }
+                    // capacity stays zero.
+                }
+                Some(prev) => {
+                    for r in 0..C1_RATE {
+                        if is_absorb {
+                            let pos = p * C1_RATE + r;
+                            let elem = if pos < C1_PADDED_LEN { absorb(pos) } else { Val::ZERO };
+                            perm_in[r] = prev[r] + elem;
+                        } else {
+                            perm_in[r] = prev[r];
+                        }
+                    }
+                    for c in C1_RATE..WIDTH {
+                        perm_in[c] = prev[c];
+                    }
+                }
+            }
+            let block = generate_perm_cols(perm_in, &consts);
+            let base = c1_perm_base(p);
+            for c in 0..PERM_COLS {
+                cells[base + c] = Challenge::from(block[c]);
+            }
+            let mut out = [Val::ZERO; WIDTH];
+            out.copy_from_slice(&block[IP_OUTPUT..IP_OUTPUT + WIDTH]);
+            prev_out = Some(out);
+        }
+
+        // squeeze: pad_source_commitment[j] = source-perm output lane.
+        for j in 0..C1_N_OUT {
+            let (sp, lane) = c1_output_source(j);
+            let out_cell = cells[c1_perm_base(sp) + IP_OUTPUT + lane];
+            cells[c1_out_cell(j)] = out_cell;
+        }
     }
 
     /// Arbitrary OFF-domain opened cells (every cell a multi-limb extension element). The mirror
@@ -790,5 +1182,157 @@ mod tests {
         }
         let m = RowMajorMatrix::new(flat, n_cols());
         assert!(check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok());
+    }
+
+    // =======================================================================
+    // C1 SPONGE (pad_source_commitment squeeze) — the FIRST mirrored leaf sponge.
+    // =======================================================================
+
+    /// Base residual index of the C1 sponge class within `constraint_residual`.
+    const C1_RESIDUAL_BASE: usize =
+        C4_LANES * C4_N_PER_LANE + N_C4_ACC + N_SEAM_PAD + N_SEAM_ACC + N_RELATION_ID;
+
+    /// FIDELITY PIN (C1) — an HONEST C1 sponge (built from the deployed byte-pinned Val permutation
+    /// via `fill_honest_c1`, lifted to the extension) makes EVERY C1 residual zero: the absorb /
+    /// capacity wiring, all 8 Poseidon2 perm blocks, and the squeeze-output equality. A wrong octic
+    /// perm / absorb wiring / output mapping would make some honest residual nonzero — caught here
+    /// by attempted equality, not inspection.
+    #[test]
+    fn c1_honest_sponge_all_residuals_zero() {
+        for seed in [1u32, 7, 42, 255] {
+            let cells = honest_cells([0, 1, 127, 128, 12288, 5000], seed);
+            for k in 0..N_C1 {
+                assert_eq!(
+                    constraint_residual(&cells, C1_RESIDUAL_BASE + k),
+                    Challenge::ZERO,
+                    "honest C1 residual {k} nonzero (seed={seed})"
+                );
+            }
+        }
+    }
+
+    /// FIDELITY PIN (C1) — the squeezed pad_source_commitment cells equal the source-perm OUTPUT
+    /// cells (the leaf's `pcols.post[lane]`), AND those outputs are the deployed permutation applied
+    /// to the absorbed stream. We re-derive the last absorb perm's output independently from the
+    /// real Val perm and check the committed digest matches.
+    #[test]
+    fn c1_squeeze_matches_deployed_perm_output() {
+        use crate::inlined_perm::{self, generate_perm_cols, C_OUTPUT as IP_OUTPUT};
+        let cells = honest_cells([7000, 0, 12288, 128, 5000, 96], 9);
+        // independently recompute the source perms' inputs/outputs from the absorbed stream.
+        let consts = inlined_perm::Constants::pinned();
+        // input lanes as Val.
+        let mut input_lane = [Val::ZERO; C1_INPUT_LANES];
+        for i in 0..C1_INPUT_LANES {
+            input_lane[i] =
+                Challenge::as_basis_coefficients_slice(&cells[c1_input_cell(i)])[0];
+        }
+        let absorb = |pos: usize| -> Val {
+            if pos < C1_INPUT_LANES {
+                input_lane[pos]
+            } else if pos == C1_INPUT_LANES {
+                Val::ONE
+            } else {
+                Val::ZERO
+            }
+        };
+        let mut prev: Option<[Val; WIDTH]> = None;
+        let mut outs: Vec<[Val; WIDTH]> = Vec::new();
+        for p in 0..C1_N_PERMS {
+            let is_absorb = p < C1_N_ABSORB;
+            let mut pin = [Val::ZERO; WIDTH];
+            match prev {
+                None => {
+                    for r in 0..C1_RATE {
+                        pin[r] = absorb(r);
+                    }
+                }
+                Some(pv) => {
+                    for r in 0..C1_RATE {
+                        if is_absorb {
+                            let pos = p * C1_RATE + r;
+                            pin[r] = pv[r] + if pos < C1_PADDED_LEN { absorb(pos) } else { Val::ZERO };
+                        } else {
+                            pin[r] = pv[r];
+                        }
+                    }
+                    for c in C1_RATE..WIDTH {
+                        pin[c] = pv[c];
+                    }
+                }
+            }
+            let block = generate_perm_cols(pin, &consts);
+            let mut out = [Val::ZERO; WIDTH];
+            out.copy_from_slice(&block[IP_OUTPUT..IP_OUTPUT + WIDTH]);
+            outs.push(out);
+            prev = Some(out);
+        }
+        for j in 0..C1_N_OUT {
+            let (sp, lane) = c1_output_source(j);
+            let committed = cells[c1_out_cell(j)];
+            assert_eq!(
+                committed,
+                Challenge::from(outs[sp][lane]),
+                "C1 squeeze lane {j} != deployed perm output (perm {sp} lane {lane})"
+            );
+        }
+    }
+
+    /// FORGERY (C1) — a forged pad_source_commitment digest cell ⇒ the squeeze-output equality
+    /// residual is nonzero ⇒ the AIR rejects.
+    #[test]
+    fn c1_air_rejects_forged_pad_source_commitment() {
+        let cells = honest_cells([1, 2, 3, 4, 5, 6], 11);
+        for j in 0..C1_N_OUT {
+            let mut m = matrix(&cells, ext_multi(13));
+            m.values[cell_base(c1_out_cell(j))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "forged pad_source_commitment lane {j} NOT rejected"
+            );
+        }
+    }
+
+    /// FORGERY (C1) — a tampered absorbed input lane (e.g. a pad_seed byte) propagates into the
+    /// first absorb perm's input binding ⇒ the input-binding residual + downstream perm residuals
+    /// shift ⇒ the AIR rejects.
+    #[test]
+    fn c1_air_rejects_tampered_absorbed_input_lane() {
+        let cells = honest_cells([10, 20, 30, 40, 50, 60], 3);
+        // tamper a few representative input lanes (a pad_seed byte and a nonce byte).
+        for &i in &[0usize, 5, 31, 47] {
+            let mut m = matrix(&cells, ext_multi(21));
+            m.values[cell_base(c1_input_cell(i))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "tampered C1 absorbed input lane {i} NOT rejected"
+            );
+        }
+    }
+
+    /// FORGERY (C1) — a tampered INTERIOR perm cell (a committed round post / a perm input) of some
+    /// C1 perm block ⇒ the inlined octic Poseidon2 round residuals reject. Confirms the perm
+    /// sub-blocks are fully constrained, not just the squeeze output.
+    #[test]
+    fn c1_air_rejects_tampered_interior_perm_cell() {
+        use crate::inlined_perm::{C_BEGIN_POST, C_INPUTS, C_PARTIAL_POST_SBOX};
+        let cells = honest_cells([100, 200, 300, 400, 500, 600], 5);
+        // representative interior cells across perm blocks: an input lane, a begin-full post, a
+        // partial post_sbox, and the OUTPUT lane (which the squeeze reads).
+        let targets = [
+            c1_perm_base(0) + C_INPUTS + 3,
+            c1_perm_base(2) + C_BEGIN_POST + 7,
+            c1_perm_base(6) + C_PARTIAL_POST_SBOX + 10,
+            c1_perm_base(C1_N_ABSORB - 1) + C_OUTPUT + 1, // last-absorb output lane (squeeze source)
+            c1_perm_base(C1_N_ABSORB) + C_OUTPUT + 0,     // squeeze perm output lane
+        ];
+        for &cell_idx in &targets {
+            let mut m = matrix(&cells, ext_multi(33));
+            m.values[cell_base(cell_idx)] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "tampered C1 interior perm cell {cell_idx} NOT rejected"
+            );
+        }
     }
 }
