@@ -576,6 +576,46 @@ mod tests {
         }
     }
 
+    /// END-TO-END FORGERY (ROLE-ROOT SPONGE, CHAINED) — with a leaf-WIRED DEEP row built over an
+    /// HONEST role-root sponge (real byte-pinned Val permutation over the CHAINED C1/C6 squeeze
+    /// outputs ‖ masked_projection, lifted to the extension), tampering a role-root cell — a forged
+    /// role_root digest, a tampered masked_projection input lane, a tampered interior perm post, OR a
+    /// tampered CHAINED C1/C6 squeeze output (which the role absorb reads as input) — shifts the
+    /// in-AIR-recomputed `C_partial`, so the committed `C` no longer equals `Z_H·Q` ⇒ REJECTED
+    /// through the DEEP block. The THIRD mirrored leaf sponge, and its chaining to C1/C6, is now
+    /// caught at the DEEP OOD check, end-to-end.
+    #[test]
+    fn leaf_wired_tampered_role_root_sponge_cell_rejects_end_to_end() {
+        use crate::inlined_perm::{C_BEGIN_POST, C_OUTPUT as IP_OUTPUT};
+        let k = 9;
+        let cells = lc::honest_cells_for_test([0, 1, 127, 12288, 5000, 96], 17);
+        // honest leaf-wired row accepts.
+        let row_ok = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
+        let m_ok = RowMajorMatrix::new(row_ok, n_cols_cfg(k, true));
+        assert!(check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(), "honest role-root row rejected");
+
+        // tamper representative role-root cells; each must reject end-to-end.
+        let targets = [
+            lc::role_out_cell_idx(0),                  // forged role_root lane 0
+            lc::role_out_cell_idx(7),                  // forged role_root lane 7
+            lc::role_masked_cell_idx(2),               // tampered masked_projection input lane
+            lc::role_perm_cell_idx(0, C_BEGIN_POST),   // tampered interior perm post (perm 0)
+            lc::role_perm_cell_idx(3, IP_OUTPUT + 1),  // tampered last-absorb output (squeeze source)
+            lc::c1_out_chain_cell_idx(0),              // CHAINING: tampered C1 output feeding role absorb
+            lc::c6_out_cell_idx(9),                    // CHAINING: tampered C6 output feeding role absorb
+        ];
+        let lb = leaf_base(k);
+        for &cell_idx in &targets {
+            let row = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
+            let mut m = RowMajorMatrix::new(row, n_cols_cfg(k, true));
+            m.values[lb + lc::L_CELLS + cell_idx * D] += Val::ONE;
+            assert!(
+                !check_all_constraints(&leaf_air(k), &m, &[], None).is_ok(),
+                "tampering role-root cell {cell_idx} was NOT rejected end-to-end"
+            );
+        }
+    }
+
     /// FORGERY — tampering `C_committed` (the deferred summand) with everything else honest breaks
     /// `C == C_partial + C_committed` ⇒ rejected. (A prover cannot smuggle a favorable deferred
     /// bulk value either; it is bound by the decomposition.)

@@ -72,14 +72,26 @@
 //!     (`leaf_wired_tampered_c6_sponge_cell_rejects_end_to_end`). DEFERRED for C6 (same as C1): the
 //!     per-lane BYTE-RANGE decomposition of the 80 byte-lanes (air.rs:1278-1289).
 //!
+//!   * **role-root sponge — `role_root` squeeze** (CLASS A, air.rs:908-954, plan air.rs:441):
+//!     RE-COMPUTED in-circuit via [`crate::inlined_perm_octic`] over the 26 ALL-FIELD role-handle
+//!     absorb lanes (NO byte-range): pad_source_commitment[10] ‖ opening_tuple_commitment[10] ‖
+//!     masked_projection[6], ONE padding marker at stream pos `n_input`(=26) + zero-fill,
+//!     capacity-preserving across 4 absorb perms (n_out=8 ≤ RATE ⇒ 0 squeeze perms), with the
+//!     committed `role_root[8]` digest constrained == the squeezed sponge output. Added as the
+//!     `N_ROLE` residual class. CHAINED: the 20 commitment input lanes are bound to the ALREADY-
+//!     MIRRORED C1/C6 squeeze-output cells (`c1_out_cell`/`c6_out_cell`), NOT fresh columns — so the
+//!     role input IS the genuine C1/C6 output (air.rs:919-931). Fidelity-PINned against the deployed
+//!     byte-pinned Val permutation (`role_honest_sponge_all_residuals_zero`,
+//!     `role_squeeze_matches_deployed_perm_output_over_chained_inputs`) and tamper-rejected end-to-end
+//!     through DEEP (`leaf_wired_tampered_role_root_sponge_cell_rejects_end_to_end`), INCLUDING a
+//!     tampered C1/C6 output that breaks the role-root via the chaining
+//!     (`role_air_rejects_tampered_chained_c1_c6_output`).
+//!
 //! ## DEFERRED (the rest of leaf `C(zeta)` — STILL committed-not-constrained)
 //!
 //!   * **C2 — mask PRF sponge** (air.rs:728-737): 40-lane absorb (pad_seed[32] ‖ slot_id[8]),
 //!     30 squeezed lanes, PLUS the WIDE-THEN-REDUCE `eval_reduce_gadget` (30 wide lanes → 6 masks)
 //!     and the carrier mod-q reduction. Largest remaining sponge.
-//!   * **role-root sponge** (CLASS A, air.rs:910-944): 26 role-handle lanes (pad_source_commitment
-//!     ‖ opening_tuple_commitment ‖ masked_projection) → 8-lane `role_root`, with input lanes bound
-//!     to the real commitment columns and the squeezed root == public `role_root`.
 //!   * **batch digest chain** (air.rs:1112-1262): the per-row running Poseidon2 sponge over every
 //!     row's pubio (the CHAIN_PERMS_PER_ROW absorbs + the cross-row transition).
 //!   * the C2/C6 sponge-OUTPUT commitment equalities (`c*_out[j] == pubio[j]`) ride with their perms.
@@ -99,7 +111,9 @@
 use crate::fri_fold_air::{limbs, D, W};
 use crate::inlined_perm::{C_INPUTS, C_OUTPUT, PERM_COLS};
 use crate::inlined_perm_octic::{self, OcticPermCells};
-use descender_account_stark::{Challenge, Val, N_COMMIT_LANES, N_LANES, RELATION_ID, RELATION_ID_ELEMS, WIDTH};
+use descender_account_stark::{
+    Challenge, Val, N_COMMIT_LANES, N_LANES, RELATION_ID, RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, WIDTH,
+};
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
 use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
 
@@ -231,9 +245,61 @@ pub const N_C6_PERM: usize = C6_N_PERMS * inlined_perm_octic::PERM_RESIDUALS;
 pub const N_C6_OUT: usize = C6_N_OUT;
 pub const N_C6: usize = N_C6_INPUT_BIND + N_C6_PERM + N_C6_OUT;
 
+// ----- role-root sponge (CLASS A) — the THIRD mirrored leaf sponge, CHAINED to C1/C6 -----
+//
+// Mirrors `descender_account_stark::air::FullRelationAir`'s CLASS-A role-root sponge
+// (air.rs:908-954, plan built at air.rs:441 `role_plan = SpongePlan::new(vec![false; 26], 8)`).
+// The role-root sponge is the cleanest sponge: ALL-FIELD 26 input lanes (NO byte-range), a single
+// 8-lane squeeze, and its INPUTS are the C1/C6 commitment squeeze outputs — so it CHAINS the two
+// already-mirrored sponges:
+//   * role input lanes 0..10  == `pad_source_commitment[10]`  ≡ the C1 squeeze output cells.
+//   * role input lanes 10..20 == `opening_tuple_commitment[10]` ≡ the C6 squeeze output cells.
+//   * role input lanes 20..26 == `masked_projection[6]`         (NEW opened cells).
+// We do NOT introduce fresh committed columns for the first 20 input lanes; the role absorb reads
+// the ALREADY-MIRRORED `c1_out_cell(j)` / `c6_out_cell(j)` cells directly (air.rs:919-931 binds the
+// role sponge's input lanes EQUAL to the real commitment columns, which here ARE the mirrored C1/C6
+// outputs). Tampering a C1/C6 output thus ALSO breaks the role-root — the chaining.
+//
+//   * RATE-8 absorb, padding marker at pos n_input(=26), zero-fill ⇒ padded = ceil(27/8)·8 = 32
+//     ⇒ ROLE_N_ABSORB = 4.  n_out = 8 ≤ RATE ⇒ 0 squeeze perms ⇒ ROLE_N_PERMS = 4.
+//   * squeeze: `role_root[0..8]` all from the LAST absorb perm (perm 3), lanes 0..8
+//     (`SpongePlan::output_source` with n_out=8 ≤ RATE).
+// The committed `role_root[8]` digest is the leaf's PUBLIC CLASS-A output (air.rs:941-953); the
+// mirror constrains it == the squeezed sponge output.
+
+/// Role-handle input lanes: pad_source_commitment[10] ‖ opening_tuple_commitment[10] ‖
+/// masked_projection[6]. Mirrors air.rs `ROLE_HANDLE_LANES`.
+pub const ROLE_INPUT_LANES: usize = N_COMMIT_LANES + N_COMMIT_LANES + N_LANES; // 26
+/// Role masked_projection input lanes (the only NEW role input cells; the first 20 are the chained
+/// C1/C6 squeeze outputs).
+pub const ROLE_MASKED_LANES: usize = N_LANES; // 6
+/// Sponge rate (shared with C1/C6). Mirrors air.rs `RATE`.
+pub const ROLE_RATE: usize = 8;
+/// Number of absorb permutations: `ceil((n_input + 1)/RATE)` = `ceil(27/8)` = 4.
+pub const ROLE_N_ABSORB: usize = 4;
+/// Total role-root sponge permutations (absorb + squeeze). `n_out = 8 ≤ RATE` ⇒ 0 squeeze ⇒ 4.
+pub const ROLE_N_PERMS: usize = 4;
+/// Padded absorb-stream length (`ROLE_N_ABSORB · RATE`).
+pub const ROLE_PADDED_LEN: usize = ROLE_N_ABSORB * ROLE_RATE; // 32
+/// Squeezed role_root output lanes. Mirrors air.rs `ROLE_ROOT_ELEMS`.
+pub const ROLE_N_OUT: usize = ROLE_ROOT_ELEMS; // 8
+
+/// Role-root residual count: input/capacity bindings (WIDTH/perm) + perm round residuals +
+/// squeeze-output equalities — same structure as C1/C6, with the role perm count.
+pub const N_ROLE_INPUT_BIND: usize = ROLE_N_PERMS * WIDTH;
+pub const N_ROLE_PERM: usize = ROLE_N_PERMS * inlined_perm_octic::PERM_RESIDUALS;
+pub const N_ROLE_OUT: usize = ROLE_N_OUT;
+pub const N_ROLE: usize = N_ROLE_INPUT_BIND + N_ROLE_PERM + N_ROLE_OUT;
+
 /// Total residuals batched into `C_partial`.
-pub const N_CONSTRAINTS: usize =
-    C4_LANES * C4_N_PER_LANE + N_C4_ACC + N_SEAM_PAD + N_SEAM_ACC + N_RELATION_ID + N_C1 + N_C6;
+pub const N_CONSTRAINTS: usize = C4_LANES * C4_N_PER_LANE
+    + N_C4_ACC
+    + N_SEAM_PAD
+    + N_SEAM_ACC
+    + N_RELATION_ID
+    + N_C1
+    + N_C6
+    + N_ROLE;
 
 // ===========================================================================
 // Column layout (one leaf-constraint-mirror check per row)
@@ -256,6 +322,11 @@ pub const C1_CELLS: usize = C1_INPUT_LANES + C1_N_PERMS * PERM_COLS + C1_N_OUT;
 /// `O_C6_FIELD`) + perm blocks + output digest.
 pub const C6_CELLS: usize = C6_BYTE_LANES + C6_N_PERMS * PERM_COLS + C6_N_OUT;
 
+/// Number of opened OOD cells in the role-root sponge block: ONLY the masked_projection[6] input
+/// lanes (the other 20 input lanes are the CHAINED C1/C6 squeeze-output cells, not fresh) + perm
+/// blocks + role_root[8] output digest.
+pub const ROLE_CELLS: usize = ROLE_MASKED_LANES + ROLE_N_PERMS * PERM_COLS + ROLE_N_OUT;
+
 /// Number of opened OOD cells fed to the mirror.
 pub const N_OPENED_CELLS: usize = C4_LANES * C4_CELLS // C4 lanes
     + N_LANES // carry_acc
@@ -264,7 +335,8 @@ pub const N_OPENED_CELLS: usize = C4_LANES * C4_CELLS // C4 lanes
     + N_LANES // C6 field lanes (also the C6 sponge absorb positions 0..6)
     + RELATION_ID_ELEMS // relation_id
     + C1_CELLS // C1 sponge (input lanes ‖ perm blocks ‖ pad_source_commitment)
-    + C6_CELLS; // C6 sponge (byte-lanes ‖ perm blocks ‖ opening_tuple_commitment)
+    + C6_CELLS // C6 sponge (byte-lanes ‖ perm blocks ‖ opening_tuple_commitment)
+    + ROLE_CELLS; // role-root sponge (masked[6] ‖ perm blocks ‖ role_root[8]); inputs 0..20 CHAINED
 
 // Cell-block offsets (in units of cells, each `D` limbs).
 const O_C4: usize = 0;
@@ -282,6 +354,11 @@ const O_C1_OUT: usize = O_C1_PERMS + C1_N_PERMS * PERM_COLS;
 const O_C6_BYTE: usize = O_C1_OUT + C1_N_OUT;
 const O_C6_PERMS: usize = O_C6_BYTE + C6_BYTE_LANES;
 const O_C6_OUT: usize = O_C6_PERMS + C6_N_PERMS * PERM_COLS;
+// Role-root sponge block: masked_projection[6] input lanes (the only NEW role inputs), then 4 perm
+// blocks, then the 8-lane role_root. Input lanes 0..20 are the CHAINED `c1_out_cell`/`c6_out_cell`.
+const O_ROLE_MASKED: usize = O_C6_OUT + C6_N_OUT;
+const O_ROLE_PERMS: usize = O_ROLE_MASKED + ROLE_MASKED_LANES;
+const O_ROLE_OUT: usize = O_ROLE_PERMS + ROLE_N_PERMS * PERM_COLS;
 
 /// First column: the opened OOD cells, each `D` limbs.
 pub const L_CELLS: usize = 0;
@@ -343,6 +420,46 @@ const fn c6_perm_base(p: usize) -> usize {
 /// C6 opening_tuple_commitment output lane `j` (`j < C6_N_OUT`) — the squeezed digest cell.
 const fn c6_out_cell(j: usize) -> usize {
     O_C6_OUT + j
+}
+/// Role masked_projection input lane `i` (`i < ROLE_MASKED_LANES`) — absorb positions 20..26.
+const fn role_masked_cell(i: usize) -> usize {
+    O_ROLE_MASKED + i
+}
+/// First cell of role perm block `p` (`p < ROLE_N_PERMS`); the block spans `PERM_COLS` cells.
+const fn role_perm_base(p: usize) -> usize {
+    O_ROLE_PERMS + p * PERM_COLS
+}
+/// Role_root output lane `j` (`j < ROLE_N_OUT`) — the squeezed digest cell.
+const fn role_out_cell(j: usize) -> usize {
+    O_ROLE_OUT + j
+}
+
+/// The absorbed role-root stream element at position `pos` (`pos < ROLE_PADDED_LEN`), as a cell
+/// index OR a constant marker. Mirrors `absorb_elem_expr` (air.rs:1372) over the role input lanes —
+/// the CHAINED layout (air.rs:919-931 binds role input lanes EQUAL to the commitment columns):
+///   * `pos ∈ 0..10`  → C1 squeeze output cell `c1_out_cell(pos)`   (pad_source_commitment).
+///   * `pos ∈ 10..20` → C6 squeeze output cell `c6_out_cell(pos-10)` (opening_tuple_commitment).
+///   * `pos ∈ 20..26` → masked_projection cell `role_masked_cell(pos-20)`.
+///   * `pos == 26`    → the ONE padding marker; else → ZERO.
+fn role_absorb_source(pos: usize) -> C1Absorb {
+    if pos < N_COMMIT_LANES {
+        C1Absorb::Cell(c1_out_cell(pos))
+    } else if pos < 2 * N_COMMIT_LANES {
+        C1Absorb::Cell(c6_out_cell(pos - N_COMMIT_LANES))
+    } else if pos < ROLE_INPUT_LANES {
+        C1Absorb::Cell(role_masked_cell(pos - 2 * N_COMMIT_LANES))
+    } else if pos == ROLE_INPUT_LANES {
+        C1Absorb::One
+    } else {
+        C1Absorb::Zero
+    }
+}
+
+/// `(perm_index, lane)` the role-root squeeze reads output `o` from. With `n_out = 8 ≤ RATE`, ALL 8
+/// outputs come from the LAST absorb perm (`ROLE_N_ABSORB-1`), lanes `0..8`. Mirrors
+/// `SpongePlan::output_source`.
+const fn role_output_source(o: usize) -> (usize, usize) {
+    (ROLE_N_ABSORB - 1, o)
 }
 
 /// The absorbed stream element at position `pos` (`pos < C1_PADDED_LEN`), as a cell index OR a
@@ -634,6 +751,68 @@ fn c6_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
     cells[c6_out_cell(j)] - perm_output(sp, lane)
 }
 
+/// The `k`-th NATIVE role-root-sponge residual over the opened cells, `k ∈ [0, N_ROLE)`. The
+/// role-root sponge (CLASS A, air.rs:908-954) is STRUCTURALLY identical to [`c1_residual`] /
+/// [`c6_residual`] (the absorb/capacity/squeeze pattern is shared by `eval_sponge`), differing only
+/// in the role constants (`ROLE_*`), the absorb source — which CHAINS the C1/C6 squeeze outputs
+/// (`role_absorb_source` reads `c1_out_cell`/`c6_out_cell` for input lanes 0..20, the masked lanes
+/// for 20..26) — the perm/output cells, and the squeezed digest target (`role_root`).
+fn role_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
+    let perm_input = |p: usize, i: usize| cells[role_perm_base(p) + C_INPUTS + i];
+    let perm_output = |p: usize, i: usize| cells[role_perm_base(p) + C_OUTPUT + i];
+    let absorb = |pos: usize| -> Challenge {
+        match role_absorb_source(pos) {
+            C1Absorb::Cell(c) => cells[c],
+            C1Absorb::One => Challenge::ONE,
+            C1Absorb::Zero => Challenge::ZERO,
+        }
+    };
+
+    // (a) input/capacity bindings (WIDTH per perm).
+    if k < N_ROLE_INPUT_BIND {
+        let p = k / WIDTH;
+        let lane = k % WIDTH;
+        let is_absorb = p < ROLE_N_ABSORB;
+        if p == 0 {
+            if lane < ROLE_RATE {
+                return perm_input(0, lane) - absorb(lane);
+            }
+            return perm_input(0, lane);
+        }
+        let prev = perm_output(p - 1, lane);
+        if lane < ROLE_RATE {
+            if is_absorb {
+                let pos = p * ROLE_RATE + lane;
+                let elem = if pos < ROLE_PADDED_LEN { absorb(pos) } else { Challenge::ZERO };
+                return perm_input(p, lane) - (prev + elem);
+            }
+            return perm_input(p, lane) - prev;
+        }
+        return perm_input(p, lane) - prev;
+    }
+    let mut k = k - N_ROLE_INPUT_BIND;
+
+    // (b) per-perm Poseidon2 round residuals.
+    if k < N_ROLE_PERM {
+        let per = inlined_perm_octic::PERM_RESIDUALS;
+        let p = k / per;
+        let ri = k % per;
+        let inputs: [Challenge; WIDTH] = core::array::from_fn(|i| perm_input(p, i));
+        let committed: Vec<Challenge> = (0..per)
+            .map(|i| cells[role_perm_base(p) + c1_post_cell_offset(i)])
+            .collect();
+        let res = inlined_perm_octic::native_perm_residuals(inputs, &committed);
+        return res[ri];
+    }
+    k -= N_ROLE_PERM;
+
+    // (c) squeeze-output equality: role_root[j] − opened_output_cell[j].
+    debug_assert!(k < N_ROLE_OUT);
+    let j = k;
+    let (sp, lane) = role_output_source(j);
+    cells[role_out_cell(j)] - perm_output(sp, lane)
+}
+
 /// Map the `ri`-th committed post (in `inlined_perm_octic::perm_residuals` order: begin-full posts,
 /// then partial post_sbox, then end-full posts) to its CELL offset within a `PERM_COLS` block (the
 /// `inlined_perm` column layout). Used to read the OPENED committed-post cell for the C1 residual.
@@ -658,6 +837,9 @@ fn c1_post_cell_offset(ri: usize) -> usize {
 ///   * next `N_SEAM_PAD`                        : `c1_pad_seed[b] − c2_pad_seed[b]` (SeamPadSeed).
 ///   * next `N_SEAM_ACC`                        : `carry_acc[i] − c6_field[i]` (SeamOpeningAcc).
 ///   * next `N_RELATION_ID`                     : `relation_id[j] − RELATION_ID[j]` (pinning).
+///   * next `N_C1`                              : C1 sponge residuals (pad_source_commitment).
+///   * next `N_C6`                              : C6 sponge residuals (opening_tuple_commitment).
+///   * next `N_ROLE`                            : role-root sponge residuals (CLASS A, chained).
 pub fn constraint_residual(cells: &[Challenge; N_OPENED_CELLS], r: usize) -> Challenge {
     let mut r = r;
     let c4_total = C4_LANES * C4_N_PER_LANE;
@@ -696,9 +878,14 @@ pub fn constraint_residual(cells: &[Challenge; N_OPENED_CELLS], r: usize) -> Cha
         return c1_residual(cells, r);
     }
     r -= N_C1;
-    // C6 sponge residuals (opening_tuple_commitment squeeze).
-    debug_assert!(r < N_C6);
-    c6_residual(cells, r)
+    if r < N_C6 {
+        // C6 sponge residuals (opening_tuple_commitment squeeze).
+        return c6_residual(cells, r);
+    }
+    r -= N_C6;
+    // role-root sponge residuals (CLASS A, CHAINED to C1/C6 outputs).
+    debug_assert!(r < N_ROLE);
+    role_residual(cells, r)
 }
 
 /// Native alpha-batched leaf partial constraint eval over opened cells:
@@ -767,6 +954,24 @@ pub fn c6_out_cell_idx(j: usize) -> usize {
 #[cfg(test)]
 pub fn c6_perm_cell_idx(p: usize, within: usize) -> usize {
     c6_perm_base(p) + within
+}
+#[cfg(test)]
+pub fn role_masked_cell_idx(i: usize) -> usize {
+    role_masked_cell(i)
+}
+#[cfg(test)]
+pub fn role_out_cell_idx(j: usize) -> usize {
+    role_out_cell(j)
+}
+#[cfg(test)]
+pub fn role_perm_cell_idx(p: usize, within: usize) -> usize {
+    role_perm_base(p) + within
+}
+/// TEST-ONLY: cross-module C1/C6 output cell accessors for the CHAINING tamper (a tampered C1/C6
+/// squeeze output must ALSO break the role-root since the role absorb reads those cells).
+#[cfg(test)]
+pub fn c1_out_chain_cell_idx(j: usize) -> usize {
+    c1_out_cell(j)
 }
 
 /// Decode the committed `C_partial` cell of a packed row.
@@ -1035,6 +1240,84 @@ where
         }
     }
 
+    // (8) role-root sponge (CLASS A) — the third mirrored leaf sponge, CHAINED to the C1/C6 squeeze
+    // outputs. Order MUST match the native `role_residual`: input/capacity bindings (WIDTH/perm),
+    // then per-perm Poseidon2 round residuals (inlined_perm_octic), then squeeze-output equalities.
+    // Structurally identical to the C1/C6 blocks; the ONLY differences are the role constants and
+    // that `role_absorb_source` reads the ALREADY-MIRRORED `c1_out_cell`/`c6_out_cell` cells for
+    // input lanes 0..20 (the chaining; air.rs:919-931) + the masked_projection cells for 20..26.
+    {
+        struct CellAdapter<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> {
+            cell: &'a FCell,
+            _ab: core::marker::PhantomData<AB>,
+        }
+        impl<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> OcticPermCells<AB>
+            for CellAdapter<'a, AB, FCell>
+        {
+            fn at(&self, idx: usize) -> [AB::Expr; D] {
+                (self.cell)(idx)
+            }
+        }
+        let adapter = CellAdapter::<AB, FCell> { cell, _ab: core::marker::PhantomData };
+
+        let perm_input = |p: usize, i: usize| cell(role_perm_base(p) + C_INPUTS + i);
+        let perm_output = |p: usize, i: usize| cell(role_perm_base(p) + C_OUTPUT + i);
+        let absorb = |pos: usize| -> [AB::Expr; D] {
+            match role_absorb_source(pos) {
+                C1Absorb::Cell(c) => cell(c),
+                C1Absorb::One => octic_scalar::<AB>(1),
+                C1Absorb::Zero => octic_scalar::<AB>(0),
+            }
+        };
+
+        // (a) input/capacity bindings.
+        for p in 0..ROLE_N_PERMS {
+            let is_absorb = p < ROLE_N_ABSORB;
+            for lane in 0..WIDTH {
+                let inp = perm_input(p, lane);
+                let expected = if p == 0 {
+                    if lane < ROLE_RATE {
+                        absorb(lane)
+                    } else {
+                        octic_scalar::<AB>(0)
+                    }
+                } else {
+                    let prev = perm_output(p - 1, lane);
+                    if lane < ROLE_RATE {
+                        if is_absorb {
+                            let pos = p * ROLE_RATE + lane;
+                            let elem = if pos < ROLE_PADDED_LEN {
+                                absorb(pos)
+                            } else {
+                                octic_scalar::<AB>(0)
+                            };
+                            octic_add::<AB>(&prev, &elem)
+                        } else {
+                            prev
+                        }
+                    } else {
+                        prev
+                    }
+                };
+                residuals.push(octic_sub::<AB>(&inp, &expected));
+            }
+        }
+
+        // (b) per-perm Poseidon2 round residuals.
+        for p in 0..ROLE_N_PERMS {
+            let mut pr = inlined_perm_octic::perm_residuals::<AB, _>(&adapter, role_perm_base(p));
+            residuals.append(&mut pr);
+        }
+
+        // (c) squeeze-output equalities: role_root[j] − squeezed_output[j].
+        for j in 0..N_ROLE_OUT {
+            let (sp, lane) = role_output_source(j);
+            let out_cell = cell(role_perm_base(sp) + C_OUTPUT + lane);
+            let committed = cell(role_out_cell(j));
+            residuals.push(octic_sub::<AB>(&committed, &out_cell));
+        }
+    }
+
     debug_assert_eq!(residuals.len(), N_CONSTRAINTS);
 
     // ----- alpha-batch: acc = Σ_r alpha^r · residual_r -----
@@ -1159,6 +1442,9 @@ mod tests {
         // C6 sponge: honest absorb/perm/squeeze over the 6 FIELD lanes (already = vals[..], set
         // above) ‖ 80 byte-valued lanes (built from the real byte-pinned Val sponge).
         fill_honest_c6(&mut cells, pad_seed_seed);
+        // role-root sponge: honest absorb/perm/squeeze over the CHAINED C1/C6 squeeze outputs (set
+        // by the two fills above) ‖ 6 masked_projection lanes. MUST run after fill_honest_c1/c6.
+        fill_honest_role(&mut cells, pad_seed_seed);
         cells
     }
 
@@ -1306,6 +1592,88 @@ mod tests {
             let (sp, lane) = c6_output_source(j);
             let out_cell = cells[c6_perm_base(sp) + IP_OUTPUT + lane];
             cells[c6_out_cell(j)] = out_cell;
+        }
+    }
+
+    /// Fill the role-root sponge cells (masked[6] ‖ 4 perm blocks ‖ role_root[8]) with an HONEST
+    /// sponge over the CHAINED input lanes: pad_source_commitment[10] (= the C1 squeeze output cells
+    /// `c1_out_cell`) ‖ opening_tuple_commitment[10] (= the C6 squeeze output cells `c6_out_cell`) ‖
+    /// masked_projection[6] (fresh field-valued lanes). PRECONDITION: `fill_honest_c1`/`fill_honest_c6`
+    /// must have run first so the chained output cells are set. The role inputs are FIELD elements
+    /// (no byte-range), so they round-trip to `Val` (the C1/C6 squeeze outputs are deployed-perm
+    /// outputs, single-limb base elements). This is the role-root fidelity AUTHORITY.
+    fn fill_honest_role(cells: &mut [Challenge; N_OPENED_CELLS], seed: u32) {
+        use crate::inlined_perm::{self, generate_perm_cols, C_OUTPUT as IP_OUTPUT, PERM_COLS};
+        let consts = inlined_perm::Constants::pinned();
+
+        // masked_projection lanes: fresh field-valued (one limb), as the leaf's masked carrier lanes.
+        let mut masked = [Val::ZERO; ROLE_MASKED_LANES];
+        for i in 0..ROLE_MASKED_LANES {
+            let v = seed.wrapping_mul(97).wrapping_add(i as u32 * 13 + 1);
+            masked[i] = Val::from_u32(v);
+            cells[role_masked_cell(i)] = Challenge::from(masked[i]);
+        }
+
+        // input lanes (as Val): CHAINED C1 out ‖ C6 out ‖ masked — snapshot now (the chained C1/C6
+        // outputs are already set by fill_honest_c1/c6) so the absorb closure does not borrow `cells`
+        // across the mutable perm-cell writes below.
+        let mut input_lane = [Val::ZERO; ROLE_INPUT_LANES];
+        for pos in 0..ROLE_INPUT_LANES {
+            input_lane[pos] = match role_absorb_source(pos) {
+                C1Absorb::Cell(c) => Challenge::as_basis_coefficients_slice(&cells[c])[0],
+                _ => unreachable!("role input lanes 0..26 are all cells"),
+            };
+        }
+        let absorb = |pos: usize| -> Val {
+            if pos < ROLE_INPUT_LANES {
+                input_lane[pos]
+            } else if pos == ROLE_INPUT_LANES {
+                Val::ONE
+            } else {
+                Val::ZERO
+            }
+        };
+
+        let mut prev_out: Option<[Val; WIDTH]> = None;
+        for p in 0..ROLE_N_PERMS {
+            let is_absorb = p < ROLE_N_ABSORB;
+            let mut perm_in = [Val::ZERO; WIDTH];
+            match prev_out {
+                None => {
+                    for r in 0..ROLE_RATE {
+                        perm_in[r] = absorb(r);
+                    }
+                }
+                Some(prev) => {
+                    for r in 0..ROLE_RATE {
+                        if is_absorb {
+                            let pos = p * ROLE_RATE + r;
+                            let elem = if pos < ROLE_PADDED_LEN { absorb(pos) } else { Val::ZERO };
+                            perm_in[r] = prev[r] + elem;
+                        } else {
+                            perm_in[r] = prev[r];
+                        }
+                    }
+                    for c in ROLE_RATE..WIDTH {
+                        perm_in[c] = prev[c];
+                    }
+                }
+            }
+            let block = generate_perm_cols(perm_in, &consts);
+            let base = role_perm_base(p);
+            for c in 0..PERM_COLS {
+                cells[base + c] = Challenge::from(block[c]);
+            }
+            let mut out = [Val::ZERO; WIDTH];
+            out.copy_from_slice(&block[IP_OUTPUT..IP_OUTPUT + WIDTH]);
+            prev_out = Some(out);
+        }
+
+        // squeeze: role_root[j] = source-perm output lane.
+        for j in 0..ROLE_N_OUT {
+            let (sp, lane) = role_output_source(j);
+            let out_cell = cells[role_perm_base(sp) + IP_OUTPUT + lane];
+            cells[role_out_cell(j)] = out_cell;
         }
     }
 
@@ -1838,5 +2206,223 @@ mod tests {
                 "tampered C6 interior perm cell {cell_idx} NOT rejected"
             );
         }
+    }
+
+    // =======================================================================
+    // ROLE-ROOT SPONGE (CLASS A) — the THIRD mirrored leaf sponge, CHAINED to
+    // the C1/C6 squeeze outputs (role input lanes 0..20 ARE the C1/C6 outputs).
+    // =======================================================================
+
+    /// Base residual index of the role-root sponge class within `constraint_residual`.
+    const ROLE_RESIDUAL_BASE: usize = C4_LANES * C4_N_PER_LANE
+        + N_C4_ACC
+        + N_SEAM_PAD
+        + N_SEAM_ACC
+        + N_RELATION_ID
+        + N_C1
+        + N_C6;
+
+    /// FIDELITY PIN (role-root) — an HONEST role-root sponge (built from the deployed byte-pinned Val
+    /// permutation via `fill_honest_role`, over the CHAINED C1/C6 squeeze outputs ‖ 6 masked lanes,
+    /// lifted to the extension) makes EVERY role residual zero: the absorb / capacity wiring across
+    /// all 4 perm blocks and the 8-lane squeeze-output equality. A wrong octic perm / absorb wiring /
+    /// output mapping would make some honest residual nonzero — caught here by attempted equality.
+    #[test]
+    fn role_honest_sponge_all_residuals_zero() {
+        for seed in [1u32, 7, 42, 255] {
+            let cells = honest_cells([0, 1, 127, 128, 12288, 5000], seed);
+            for k in 0..N_ROLE {
+                assert_eq!(
+                    constraint_residual(&cells, ROLE_RESIDUAL_BASE + k),
+                    Challenge::ZERO,
+                    "honest role-root residual {k} nonzero (seed={seed})"
+                );
+            }
+        }
+    }
+
+    /// FIDELITY PIN (role-root) — the squeezed role_root cells equal the source-perm OUTPUT cells
+    /// (the leaf's `pcols.ending_full_rounds[..].post[lane]`, air.rs:1355), AND those outputs are the
+    /// deployed permutation applied to the absorbed stream: pad_source_commitment[10] ‖
+    /// opening_tuple_commitment[10] ‖ masked_projection[6] ‖ ONE-pad ‖ zero-fill — where the first 20
+    /// lanes are the CHAINED C1/C6 squeeze outputs. We re-derive the source perm's output
+    /// independently from the real Val perm and check the committed role_root matches. This pins both
+    /// the role-root sponge AND the chaining (the role input IS the C1/C6 mirrored output).
+    #[test]
+    fn role_squeeze_matches_deployed_perm_output_over_chained_inputs() {
+        use crate::inlined_perm::{self, generate_perm_cols, C_OUTPUT as IP_OUTPUT};
+        let cells = honest_cells([7000, 0, 12288, 128, 5000, 96], 9);
+        let consts = inlined_perm::Constants::pinned();
+        // input lanes as Val: the CHAINED C1 out ‖ C6 out ‖ masked lanes (read from the cells).
+        let mut input_lane = [Val::ZERO; ROLE_INPUT_LANES];
+        for pos in 0..ROLE_INPUT_LANES {
+            let c = match role_absorb_source(pos) {
+                C1Absorb::Cell(c) => c,
+                _ => unreachable!(),
+            };
+            input_lane[pos] = Challenge::as_basis_coefficients_slice(&cells[c])[0];
+        }
+        // sanity: the first 20 chained inputs ARE the C1/C6 commitment digests.
+        for j in 0..N_COMMIT_LANES {
+            assert_eq!(
+                Challenge::from(input_lane[j]),
+                cells[c1_out_cell(j)],
+                "role input lane {j} != C1 squeeze output (chaining broken)"
+            );
+            assert_eq!(
+                Challenge::from(input_lane[N_COMMIT_LANES + j]),
+                cells[c6_out_cell(j)],
+                "role input lane {} != C6 squeeze output (chaining broken)",
+                N_COMMIT_LANES + j
+            );
+        }
+        let absorb = |pos: usize| -> Val {
+            if pos < ROLE_INPUT_LANES {
+                input_lane[pos]
+            } else if pos == ROLE_INPUT_LANES {
+                Val::ONE
+            } else {
+                Val::ZERO
+            }
+        };
+        let mut prev: Option<[Val; WIDTH]> = None;
+        let mut outs: Vec<[Val; WIDTH]> = Vec::new();
+        for p in 0..ROLE_N_PERMS {
+            let is_absorb = p < ROLE_N_ABSORB;
+            let mut pin = [Val::ZERO; WIDTH];
+            match prev {
+                None => {
+                    for r in 0..ROLE_RATE {
+                        pin[r] = absorb(r);
+                    }
+                }
+                Some(pv) => {
+                    for r in 0..ROLE_RATE {
+                        if is_absorb {
+                            let pos = p * ROLE_RATE + r;
+                            pin[r] = pv[r] + if pos < ROLE_PADDED_LEN { absorb(pos) } else { Val::ZERO };
+                        } else {
+                            pin[r] = pv[r];
+                        }
+                    }
+                    for c in ROLE_RATE..WIDTH {
+                        pin[c] = pv[c];
+                    }
+                }
+            }
+            let block = generate_perm_cols(pin, &consts);
+            let mut out = [Val::ZERO; WIDTH];
+            out.copy_from_slice(&block[IP_OUTPUT..IP_OUTPUT + WIDTH]);
+            outs.push(out);
+            prev = Some(out);
+        }
+        for j in 0..ROLE_N_OUT {
+            let (sp, lane) = role_output_source(j);
+            let committed = cells[role_out_cell(j)];
+            assert_eq!(
+                committed,
+                Challenge::from(outs[sp][lane]),
+                "role_root lane {j} != deployed perm output (perm {sp} lane {lane})"
+            );
+        }
+    }
+
+    /// FORGERY (role-root) — a forged role_root digest cell ⇒ the squeeze-output equality residual is
+    /// nonzero ⇒ the AIR rejects.
+    #[test]
+    fn role_air_rejects_forged_role_root() {
+        let cells = honest_cells([1, 2, 3, 4, 5, 6], 11);
+        for j in 0..ROLE_N_OUT {
+            let mut m = matrix(&cells, ext_multi(13));
+            m.values[cell_base(role_out_cell(j))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "forged role_root lane {j} NOT rejected"
+            );
+        }
+    }
+
+    /// FORGERY (role-root) — a tampered masked_projection input lane (the only NEW role input cells)
+    /// propagates into the absorb-perm input bindings ⇒ the input-binding residual + downstream perm
+    /// residuals shift ⇒ the AIR rejects.
+    #[test]
+    fn role_air_rejects_tampered_masked_input_lane() {
+        let cells = honest_cells([10, 20, 30, 40, 50, 60], 3);
+        for i in 0..ROLE_MASKED_LANES {
+            let mut m = matrix(&cells, ext_multi(21));
+            m.values[cell_base(role_masked_cell(i))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "tampered role masked_projection lane {i} NOT rejected"
+            );
+        }
+    }
+
+    /// FORGERY (role-root) — a tampered INTERIOR perm cell (a committed round post / a perm input /
+    /// the output lane the squeeze reads) of some role perm block ⇒ the inlined octic Poseidon2 round
+    /// residuals reject. Confirms the role perm sub-blocks are fully constrained, not just the squeeze.
+    /// NOTE: the role sponge has NO separate squeeze perm (n_out=8 ≤ RATE); perms 0..4 are absorbs and
+    /// perm 3 is the squeeze SOURCE.
+    #[test]
+    fn role_air_rejects_tampered_interior_perm_cell() {
+        use crate::inlined_perm::{C_BEGIN_POST, C_INPUTS, C_PARTIAL_POST_SBOX};
+        let cells = honest_cells([100, 200, 300, 400, 500, 600], 5);
+        let targets = [
+            role_perm_base(0) + C_INPUTS + 3,
+            role_perm_base(1) + C_BEGIN_POST + 7,
+            role_perm_base(2) + C_PARTIAL_POST_SBOX + 10,
+            role_perm_base(ROLE_N_ABSORB - 1) + C_OUTPUT + 1, // last-absorb output (squeeze source)
+            role_perm_base(ROLE_N_ABSORB - 1) + C_OUTPUT + 7, // another squeezed output lane
+        ];
+        for &cell_idx in &targets {
+            let mut m = matrix(&cells, ext_multi(33));
+            m.values[cell_base(cell_idx)] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "tampered role interior perm cell {cell_idx} NOT rejected"
+            );
+        }
+    }
+
+    /// CHAINING SOUNDNESS (role-root) — a tampered C1 OR C6 squeeze output cell must ALSO break the
+    /// role-root, because the role absorb reads those cells as input lanes 0..20. Tampering the C1/C6
+    /// output (without touching the role perm cells) shifts the role absorb-input binding ⇒ the role
+    /// residuals reject. (The C1/C6 output is ALSO bound by its own squeeze-output equality, so it
+    /// rejects via two classes — both are soundness; here we confirm the role-root chaining link.)
+    #[test]
+    fn role_air_rejects_tampered_chained_c1_c6_output() {
+        let cells = honest_cells([3, 14, 159, 26, 53, 58], 7);
+        // a C1 output lane and a C6 output lane (both feed the role absorb input lanes 0..20).
+        let targets = [c1_out_cell(0), c1_out_cell(9), c6_out_cell(0), c6_out_cell(9)];
+        for &cell_idx in &targets {
+            let mut m = matrix(&cells, ext_multi(44));
+            m.values[cell_base(cell_idx)] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "tampered chained C1/C6 output cell {cell_idx} NOT rejected at role-root mirror"
+            );
+        }
+    }
+
+    /// CHAINING ISOLATION (role-root) — verify the role-root residual class SPECIFICALLY reacts to a
+    /// tampered C1/C6 output, not merely the C1/C6 own squeeze class. We tamper a C1 output cell and
+    /// assert at least one ROLE residual (in the role residual range) becomes nonzero — proving the
+    /// chaining is a genuine in-role binding, not an artifact of the C1 class alone.
+    #[test]
+    fn role_residual_class_reacts_to_chained_output_tamper() {
+        let cells = honest_cells([1, 2, 3, 4, 5, 6], 17);
+        // honest: all role residuals zero.
+        for k in 0..N_ROLE {
+            assert_eq!(constraint_residual(&cells, ROLE_RESIDUAL_BASE + k), Challenge::ZERO);
+        }
+        // tamper C1 output lane 0 (a role absorb input at pos 0).
+        let mut bad = cells;
+        bad[c1_out_cell(0)] += Challenge::ONE;
+        let any_role_nonzero =
+            (0..N_ROLE).any(|k| constraint_residual(&bad, ROLE_RESIDUAL_BASE + k) != Challenge::ZERO);
+        assert!(
+            any_role_nonzero,
+            "role-root residual class is BLIND to a tampered chained C1 output — chaining underconstrained"
+        );
     }
 }
