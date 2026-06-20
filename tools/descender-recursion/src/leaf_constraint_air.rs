@@ -147,8 +147,8 @@ use crate::fri_fold_air::{limbs, D, W};
 use crate::inlined_perm::{C_INPUTS, C_OUTPUT, PERM_COLS};
 use crate::inlined_perm_octic::{self, OcticPermCells};
 use descender_account_stark::{
-    Challenge, Val, CHAIN_DIGEST_ELEMS, N_COMMIT_LANES, N_LANES, PUBIO_ROLE_ROOT_OFF, RELATION_ID,
-    RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, WIDTH,
+    Challenge, Val, CHAIN_DIGEST_ELEMS, N_COMMIT_LANES, N_LANES, PACKED_WITNESS_COMMITMENT_BYTES,
+    PUBIO_ROLE_ROOT_OFF, RELATION_ID, RELATION_ID_ELEMS, ROLE_ROOT_ELEMS, SYNDROME_LANES, WIDTH,
 };
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
 use p3_field::{BasedVectorSpace, PrimeCharacteristicRing};
@@ -542,18 +542,80 @@ pub const N_BYTERANGE: usize = N_BR_LANES * N_BR_PER_LANE; // 1512
 // earlier classes), so this class CHAINS them to the public-IO model — it does NOT introduce fresh
 // columns on either side.
 //
-// SCOPE NOTE (HONESTLY FLAGGED): the relation_id pubio binding (air.rs:962-968,
-// `pubio[PUBIO_RELATION_ID_OFF + j] == RELATION_ID[j]`) is ALREADY covered by the existing
-// `N_RELATION_ID` class (relation_id pinning over the SAME constant); the recursion pins relation_id
-// directly. The context==pubio, syndrome, and packed_witness pubio bindings are NOT yet mirrored as
-// in-circuit sponges in this harness (their producing gadgets are deferred), so they are not bound
-// here; they ride with their gadgets' future mirror. The four bindings here are exactly the four
-// per-instance COMMITMENT outputs whose sponges/gadgets ARE already mirrored.
+// SCOPE NOTE (UPDATED 2026-06-20 — remaining inner public-statement fields now bound below):
+// the relation_id pubio binding (air.rs:962-968, `pubio[PUBIO_RELATION_ID_OFF + j] == RELATION_ID[j]`)
+// is ALREADY covered by the existing `N_RELATION_ID` class (relation_id pinning over the SAME
+// constant); the recursion pins relation_id directly. The four bindings here are the four per-instance
+// COMMITMENT outputs (C1/C6/masked/role). The CONTEXT, SYNDROME and PACKED_WITNESS public-statement
+// fields are now ALSO bound — see the `N_CTXBIND` and `N_CLASSC` classes below (they were previously
+// deferred). All of context/syndrome/masked/packed are absorbed by the digest chain regardless
+// (`chain_residual` folds the full `pubio[0..PUBIO_ELEMS]`); these extra classes additionally tie
+// the IN-CIRCUIT producing source (the C2/C6 sponge absorb lanes; the range-checked syndrome
+// witnesses; the LE bit-packing) to the SAME `chain_pubio_cell` the chain absorbs, so the recursion
+// re-exposes the FULL inner statement bound to its in-circuit derivation, not just to the digest.
 pub const N_PUBIO_C1: usize = N_COMMIT_LANES; // pad_source_commitment[10]
 pub const N_PUBIO_C6: usize = N_COMMIT_LANES; // opening_tuple_commitment[10]
 pub const N_PUBIO_MASKED: usize = N_LANES; // masked_projection[6]
 pub const N_PUBIO_ROLE: usize = ROLE_ROOT_ELEMS; // role_root[8]
 pub const N_PUBIO_BIND: usize = N_PUBIO_C1 + N_PUBIO_C6 + N_PUBIO_MASKED + N_PUBIO_ROLE; // 34
+
+// ----- CONTEXT-FIELD binding (the in-circuit-bound context: slot/lifecycle/account_id) -----
+//
+// Mirrors air.rs:806-831: the slot_id absorbed into the C2 PRF, and the lifecycle_anchor + account_id
+// absorbed into the C6 opening tuple, are constrained EQUAL to the PUBLIC context echoed in the pubio
+// block (in batch mode air.rs binds absorb-lane == ctx == pubio-context, lines 798-831, composed here
+// to absorb-lane == pubio-context — the SAME `chain_pubio_cell` the digest chain absorbs). So a
+// tampered slot/lifecycle/account_id in the re-exposed statement no longer matches the value actually
+// fed to the C2/C6 sponge ⇒ rejects. verifier_version + account_state_root have NO sponge source
+// (pure-context, transcript-bound); they are bound by the digest-chain absorb alone (no extra class),
+// exactly as in the leaf batch AIR.
+//
+// Within the pubio block, the context region starts at `PUBIO_CONTEXT_OFF`; the per-field byte offsets
+// (account_id[32] ‖ slot[8] ‖ verifier_version[4] ‖ state_root[32] ‖ lifecycle[32]) MIRROR air.rs
+// `CTX_*_OFF`. The C2 slot absorb lanes are `c2_slot_cell(0..8)`; the C6 byte-lanes (lifecycle ‖
+// nonce_c6 ‖ account_id) are `c6_byte_cell(0..80)` so lifecycle = `c6_byte_cell(0..32)` and account_id
+// = `c6_byte_cell(48..80)` (after lifecycle[32] ‖ nonce_c6[16]).
+pub const PUBIO_CONTEXT_OFF: usize = 2 * N_COMMIT_LANES + N_LANES; // 26 (mirror air.rs ctx region)
+pub const CTX_ACCOUNT_ID_OFF: usize = 0;
+pub const CTX_SLOT_OFF: usize = CTX_ACCOUNT_ID_OFF + 32; // after account_id[32]
+pub const CTX_VERIFIER_VERSION_OFF: usize = CTX_SLOT_OFF + 8; // after slot[8]
+pub const CTX_STATE_ROOT_OFF: usize = CTX_VERIFIER_VERSION_OFF + 4; // after verifier_version[4]
+pub const CTX_LIFECYCLE_OFF: usize = CTX_STATE_ROOT_OFF + 32; // after state_root[32]
+pub const CTX_SLOT_BYTES: usize = 8;
+pub const CTX_LIFECYCLE_BYTES: usize = 32;
+pub const CTX_ACCOUNT_ID_BYTES: usize = 32;
+/// C6 byte-lane offset of the account_id block (after lifecycle[32] ‖ nonce_c6[16]).
+pub const C6_BYTE_ACCOUNT_ID_OFF: usize = 32 + 16; // 48
+pub const N_CTXBIND: usize = CTX_SLOT_BYTES + CTX_LIFECYCLE_BYTES + CTX_ACCOUNT_ID_BYTES; // 72
+
+// ----- CLASS C — checked-core syndrome + packed_witness_commitment binding -----
+//
+// Mirrors air.rs:979-1070 (CLASS-C). The 12 PUBLIC syndrome residues (residues 0..11 of the
+// packed-witness frame) are range-checked `< q12289` IN-AIR and bound EQUAL to `pubio[PUBIO_SYNDROME_OFF
+// + lane]`; then the 256-bit packed stream `[syndrome[0..12]·14bit-LE ‖ masked[0..6]·14bit-LE]` is
+// recomposed into the 32 `packed_witness_commitment` byte anchors, each bound EQUAL to
+// `pubio[PUBIO_PACKED_WITNESS_OFF + k]`. The masked-residue 14 bits are REUSED from the carrier mod-q
+// block (`carrier_modq_base(j)+1+b`), exactly as air.rs reuses the carrier bits — so the 6 masked
+// residues in the packed stream are the SAME masked_projection already bound to pubio. The 12 syndrome
+// residues get their OWN opened witness cells (value ‖ 14 bits ‖ slack ‖ 14 slack-bits = SYNDROME_CELLS,
+// the SAME 30-cell layout as the leaf's `SYNDROME_CELLS`).
+pub const SYNDROME_CELLS: usize = 1 + MODQ_BITS + 1 + MODQ_BITS; // 30 (value, bits14, slack, slack_bits14)
+/// Per-syndrome-lane residual count: value-eq-pubio + MODQ_BITS bit-bool + val-recompose-eq +
+/// MODQ_BITS slack-bool + slack-recompose-eq + canonical (value+slack==q-1).
+pub const N_SYNDROME_PER_LANE: usize = 1 + MODQ_BITS + 1 + MODQ_BITS + 1 + 1; // 32
+pub const N_SYNDROME: usize = SYNDROME_LANES * N_SYNDROME_PER_LANE; // 384
+/// One byte-equality per packed_witness_commitment byte.
+pub const N_PACKED: usize = PACKED_WITNESS_COMMITMENT_BYTES; // 32
+pub const N_CLASSC: usize = N_SYNDROME + N_PACKED;
+
+// Derived pubio offsets (mirror air.rs `PUBIO_*_OFF`; the leaf does not re-export them at crate root).
+pub const PUBIO_RELATION_ID_OFF_LOCAL: usize = PUBIO_ROLE_ROOT_OFF + ROLE_ROOT_ELEMS;
+pub const PUBIO_SYNDROME_OFF_LOCAL: usize = PUBIO_RELATION_ID_OFF_LOCAL + RELATION_ID_ELEMS;
+pub const PUBIO_PACKED_WITNESS_OFF_LOCAL: usize = PUBIO_SYNDROME_OFF_LOCAL + SYNDROME_LANES;
+
+/// Total bits in the packed-witness residue stream (18 residues × 14 bits). Mirrors air.rs
+/// `PACKED_STREAM_BITS`.
+pub const PACKED_STREAM_BITS: usize = (SYNDROME_LANES + N_LANES) * MODQ_BITS; // 252
 
 /// Total residuals batched into `C_partial`.
 pub const N_CONSTRAINTS: usize = C4_LANES * C4_N_PER_LANE
@@ -568,7 +630,9 @@ pub const N_CONSTRAINTS: usize = C4_LANES * C4_N_PER_LANE
     + N_REDUCE
     + N_CHAIN
     + N_BYTERANGE
-    + N_PUBIO_BIND;
+    + N_PUBIO_BIND
+    + N_CTXBIND
+    + N_CLASSC;
 
 // ===========================================================================
 // Column layout (one leaf-constraint-mirror check per row)
@@ -609,7 +673,13 @@ pub const N_OPENED_CELLS: usize = C4_LANES * C4_CELLS // C4 lanes
     + C2_CELLS // C2 mask-PRF sponge (slot_id[8] ‖ perm blocks); pad_seed[32] reused from O_C2_PAD
     + REDUCE_BLOCK_CELLS // wide-then-reduce gadget cells + carrier (masked[6] ‖ mod-q blocks)
     + CHAIN_CELLS // batch digest chain (prev_state ‖ chain_in ‖ perms ‖ chain_out ‖ acc ‖ pubio)
-    + N_BYTERANGE_BITS; // per-lane byte-range bit witnesses (C1[48]‖C2[40]‖C6[80] × BYTE_BITS)
+    + N_BYTERANGE_BITS // per-lane byte-range bit witnesses (C1[48]‖C2[40]‖C6[80] × BYTE_BITS)
+    + SYNDROME_BLOCK_CELLS; // CLASS-C syndrome witness cells (12 lanes × SYNDROME_CELLS)
+
+/// CLASS-C syndrome witness cells: SYNDROME_CELLS per lane (value ‖ 14 bits ‖ slack ‖ 14 slack-bits).
+/// The ONLY NEW cells CLASS-C introduces; the masked-residue bits are REUSED from the carrier mod-q
+/// block and the packed bytes are read from the pubio block (no fresh columns).
+pub const SYNDROME_BLOCK_CELLS: usize = SYNDROME_LANES * SYNDROME_CELLS; // 360
 
 /// Byte-range bit witness cells: BYTE_BITS bits per byte-ranged lane (C1 ‖ C2 ‖ C6). These are the
 /// ONLY NEW cells the byte-range class introduces; the decomposed LANE values are the EXISTING
@@ -659,8 +729,11 @@ const O_CHAIN_PREV_COUNT: usize = O_CHAIN_ENABLE + 1;
 const O_CHAIN_COUNT: usize = O_CHAIN_PREV_COUNT + 1;
 const O_CHAIN_PUBIO: usize = O_CHAIN_COUNT + 1;
 // Byte-range bit-witness block: BYTE_BITS bits per byte-ranged lane, global byte-range index order
-// (C1 48 lanes ‖ C2 40 lanes ‖ C6 80 lanes). Placed LAST so it does not perturb prior cell offsets.
+// (C1 48 lanes ‖ C2 40 lanes ‖ C6 80 lanes). Placed near-LAST so it does not perturb prior offsets.
 const O_BYTERANGE_BITS: usize = O_CHAIN_PUBIO + CHAIN_PUBIO;
+// CLASS-C syndrome witness block: SYNDROME_CELLS per lane (value ‖ bits14 ‖ slack ‖ slack_bits14).
+// Placed LAST so it does not perturb any prior cell offset.
+const O_SYNDROME: usize = O_BYTERANGE_BITS + N_BYTERANGE_BITS;
 
 /// First column: the opened OOD cells, each `D` limbs.
 pub const L_CELLS: usize = 0;
@@ -796,6 +869,41 @@ const fn chain_count_cell() -> usize {
 /// This row's absorbed pubio field-element lane `i` (`i < CHAIN_PUBIO`).
 const fn chain_pubio_cell(i: usize) -> usize {
     O_CHAIN_PUBIO + i
+}
+
+// ----- CLASS-C syndrome cell accessors -----
+/// First cell of syndrome lane `lane`'s witness block (`lane < SYNDROME_LANES`); the block spans
+/// `SYNDROME_CELLS` cells laid out as [value][bits14][slack][slack_bits14], MIRRORING air.rs.
+const fn syndrome_base(lane: usize) -> usize {
+    O_SYNDROME + lane * SYNDROME_CELLS
+}
+/// The syndrome residue VALUE cell for lane `lane`.
+const fn syndrome_value_cell(lane: usize) -> usize {
+    syndrome_base(lane)
+}
+/// The `b`-th value-bit cell for syndrome lane `lane` (`b < MODQ_BITS`).
+const fn syndrome_bit_cell(lane: usize, b: usize) -> usize {
+    syndrome_base(lane) + 1 + b
+}
+/// The slack VALUE cell for syndrome lane `lane` (slack = q-1 - value).
+const fn syndrome_slack_cell(lane: usize) -> usize {
+    syndrome_base(lane) + 1 + MODQ_BITS
+}
+/// The `b`-th slack-bit cell for syndrome lane `lane` (`b < MODQ_BITS`).
+const fn syndrome_slack_bit_cell(lane: usize, b: usize) -> usize {
+    syndrome_base(lane) + 1 + MODQ_BITS + 1 + b
+}
+/// The k-th packed-stream bit cell: residues 0..11 are syndrome bits (this block), residues 12..17
+/// are masked_projection bits REUSED from the carrier mod-q block. Mirrors air.rs's `stream` build.
+const fn packed_stream_bit_cell(pos: usize) -> usize {
+    let residue = pos / MODQ_BITS;
+    let bit = pos % MODQ_BITS;
+    if residue < SYNDROME_LANES {
+        syndrome_bit_cell(residue, bit)
+    } else {
+        // masked residue (12..17) → carrier mod-q block bits (carrier_modq_base + 1 + b).
+        carrier_modq_base(residue - SYNDROME_LANES) + 1 + bit
+    }
 }
 
 // ----- byte-range cell accessors -----
@@ -1641,6 +1749,89 @@ fn byterange_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challeng
     lane - acc
 }
 
+/// Map the `k`-th context-field binding (`k ∈ [0, N_CTXBIND)`) to the `(absorb_cell, pubio_cell)`
+/// pair it equates: the C2/C6 sponge absorb lane EQUAL to the pubio context byte the chain absorbs.
+/// Layout: `0..8` slot (C2 slot lanes), `8..40` lifecycle (C6 byte-lanes 0..32), `40..72` account_id
+/// (C6 byte-lanes 48..80). Mirrors air.rs:806-831 composed with the batch ctx==pubio (798-803).
+const fn ctxbind_pair(k: usize) -> (usize, usize) {
+    if k < CTX_SLOT_BYTES {
+        let b = k;
+        (c2_slot_cell(b), chain_pubio_cell(PUBIO_CONTEXT_OFF + CTX_SLOT_OFF + b))
+    } else if k < CTX_SLOT_BYTES + CTX_LIFECYCLE_BYTES {
+        let b = k - CTX_SLOT_BYTES;
+        (c6_byte_cell(b), chain_pubio_cell(PUBIO_CONTEXT_OFF + CTX_LIFECYCLE_OFF + b))
+    } else {
+        let b = k - CTX_SLOT_BYTES - CTX_LIFECYCLE_BYTES;
+        (
+            c6_byte_cell(C6_BYTE_ACCOUNT_ID_OFF + b),
+            chain_pubio_cell(PUBIO_CONTEXT_OFF + CTX_ACCOUNT_ID_OFF + b),
+        )
+    }
+}
+
+/// The `k`-th NATIVE context-field binding residual (`k ∈ [0, N_CTXBIND)`): `absorb_cell − pubio_cell`.
+/// On an honest row the value absorbed into the C2/C6 sponge equals the context echoed in the pubio
+/// (and folded by the digest chain); a tampered re-exposed slot/lifecycle/account_id ⇒ non-zero.
+fn ctxbind_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
+    let (absorb_cell, pubio_cell) = ctxbind_pair(k);
+    cells[absorb_cell] - cells[pubio_cell]
+}
+
+/// The `k`-th NATIVE CLASS-C residual (`k ∈ [0, N_CLASSC)`). Mirrors air.rs:1008-1069 EXACTLY:
+///   syndrome lanes (N_SYNDROME residuals, lane-major, N_SYNDROME_PER_LANE each):
+///     value==pubio[syndrome], MODQ_BITS bit-bool, value==recompose(bits), MODQ_BITS slack-bool,
+///     slack==recompose(slack_bits), value+slack==q-1.
+///   then packed bytes (N_PACKED residuals): byte k == Σ_{b<8} stream[8k+b]·2^b == pubio[packed].
+fn classc_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
+    let (qm1, q) = ((Q12289 - 1) as u64, Q12289 as u64);
+    if k < N_SYNDROME {
+        let lane = k / N_SYNDROME_PER_LANE;
+        let i = k % N_SYNDROME_PER_LANE;
+        let value = cells[syndrome_value_cell(lane)];
+        // 0: value == pubio[syndrome lane] (the SAME cell the chain absorbs).
+        if i == 0 {
+            return value - cells[chain_pubio_cell(PUBIO_SYNDROME_OFF_LOCAL + lane)];
+        }
+        let mut ii = i - 1;
+        // 1..1+MODQ_BITS: value-bit bool.
+        if ii < MODQ_BITS {
+            let bit = cells[syndrome_bit_cell(lane, ii)];
+            return bit * (bit - Challenge::ONE);
+        }
+        ii -= MODQ_BITS;
+        // value == recompose(value bits).
+        if ii == 0 {
+            let rc = native_recompose_n(cells, syndrome_bit_cell(lane, 0), MODQ_BITS);
+            return value - rc;
+        }
+        ii -= 1;
+        // slack-bit bool.
+        if ii < MODQ_BITS {
+            let bit = cells[syndrome_slack_bit_cell(lane, ii)];
+            return bit * (bit - Challenge::ONE);
+        }
+        ii -= MODQ_BITS;
+        // slack == recompose(slack bits).
+        if ii == 0 {
+            let rc = native_recompose_n(cells, syndrome_slack_bit_cell(lane, 0), MODQ_BITS);
+            return cells[syndrome_slack_cell(lane)] - rc;
+        }
+        // value + slack == q-1 (canonical < q).
+        return (value + cells[syndrome_slack_cell(lane)]) - Challenge::from(Val::from_u64(qm1));
+    }
+    let _ = q;
+    // packed_witness_commitment byte k': byte == Σ_{b<8} stream[8k'+b]·2^b, bound == pubio[packed].
+    let kp = k - N_SYNDROME;
+    let mut byte = Challenge::ZERO;
+    for b in 0..BYTE_BITS {
+        let pos = kp * BYTE_BITS + b;
+        if pos < PACKED_STREAM_BITS {
+            byte += cells[packed_stream_bit_cell(pos)] * Challenge::from(Val::from_u64(1u64 << b));
+        }
+    }
+    byte - cells[chain_pubio_cell(PUBIO_PACKED_WITNESS_OFF_LOCAL + kp)]
+}
+
 /// Map the `k`-th sponge-output→public-value binding (`k ∈ [0, N_PUBIO_BIND)`) to the
 /// `(output_cell, pubio_lane)` pair it equates. The `output_cell` is the ALREADY-MIRRORED sponge /
 /// gadget output cell; the `pubio_lane` is the offset within the per-row pubio block (= the
@@ -1771,11 +1962,23 @@ pub fn constraint_residual(cells: &[Challenge; N_OPENED_CELLS], r: usize) -> Cha
         return byterange_residual(cells, r);
     }
     r -= N_BYTERANGE;
-    // SPONGE-OUTPUT → PUBLIC-VALUE binding (the per-instance commitment equalities, air.rs batch
-    // bindings): pad_source_commitment / opening_tuple_commitment / masked_projection / role_root
-    // == the SAME per-row pubio cells the digest chain absorbs.
-    debug_assert!(r < N_PUBIO_BIND);
-    pubio_bind_residual(cells, r)
+    if r < N_PUBIO_BIND {
+        // SPONGE-OUTPUT → PUBLIC-VALUE binding (the per-instance commitment equalities, air.rs batch
+        // bindings): pad_source_commitment / opening_tuple_commitment / masked_projection / role_root
+        // == the SAME per-row pubio cells the digest chain absorbs.
+        return pubio_bind_residual(cells, r);
+    }
+    r -= N_PUBIO_BIND;
+    if r < N_CTXBIND {
+        // CONTEXT-FIELD binding: slot/lifecycle/account_id absorbed into the C2/C6 sponges ==
+        // the SAME pubio context cells the digest chain absorbs (air.rs:806-831 ∘ 798-803).
+        return ctxbind_residual(cells, r);
+    }
+    r -= N_CTXBIND;
+    // CLASS C — checked-core syndrome (range-checked < q, == pubio[syndrome]) + packed_witness_commitment
+    // (14-bit-LE packing of syndrome ‖ masked, == pubio[packed]). air.rs:1008-1069.
+    debug_assert!(r < N_CLASSC);
+    classc_residual(cells, r)
 }
 
 /// Native alpha-batched leaf partial constraint eval over opened cells:
@@ -2103,6 +2306,86 @@ where
     }
 }
 
+/// Push the CONTEXT-FIELD binding residuals (`absorb_cell − pubio_cell` for slot/lifecycle/account_id)
+/// onto `residuals`, in the SAME order as the native [`ctxbind_residual`]. EXTRACTED into its own
+/// `#[inline(never)]` frame to keep `recompute_c_partial`'s frame small.
+#[inline(never)]
+fn push_ctxbind_residuals<AB, FCell>(cell: &FCell, residuals: &mut Vec<[AB::Expr; D]>)
+where
+    AB: AirBuilder<F = Val>,
+    FCell: Fn(usize) -> [AB::Expr; D],
+{
+    for k in 0..N_CTXBIND {
+        let (absorb_cell, pubio_cell) = ctxbind_pair(k);
+        residuals.push(octic_sub::<AB>(&cell(absorb_cell), &cell(pubio_cell)));
+    }
+}
+
+/// Push the CLASS-C (syndrome + packed_witness_commitment) residuals onto `residuals`, in the SAME
+/// order as the native [`classc_residual`]. Mirrors air.rs:1008-1069: per-lane syndrome range-check +
+/// pubio-eq, then the 14-bit-LE packing of syndrome ‖ masked into the 32 packed bytes == pubio.
+/// EXTRACTED into its own `#[inline(never)]` frame to keep `recompute_c_partial`'s frame small.
+#[inline(never)]
+fn push_classc_residuals<AB, FCell>(cell: &FCell, residuals: &mut Vec<[AB::Expr; D]>)
+where
+    AB: AirBuilder<F = Val>,
+    FCell: Fn(usize) -> [AB::Expr; D],
+{
+    let one = octic_scalar::<AB>(1);
+    let recompose = |start_cell: usize| -> [AB::Expr; D] {
+        let mut acc = octic_scalar::<AB>(0);
+        for b in 0..MODQ_BITS {
+            let bit = cell(start_cell + b);
+            acc = octic_add::<AB>(&acc, &scale::<AB>(&bit, 1u64 << b));
+        }
+        acc
+    };
+    // ----- syndrome lanes -----
+    for lane in 0..SYNDROME_LANES {
+        let value = cell(syndrome_value_cell(lane));
+        // value == pubio[syndrome lane].
+        residuals.push(octic_sub::<AB>(
+            &value,
+            &cell(chain_pubio_cell(PUBIO_SYNDROME_OFF_LOCAL + lane)),
+        ));
+        // value-bit bools.
+        for b in 0..MODQ_BITS {
+            let bit = cell(syndrome_bit_cell(lane, b));
+            residuals.push(octic_mul::<AB>(&bit, &octic_sub::<AB>(&bit, &one)));
+        }
+        // value == recompose(value bits).
+        residuals.push(octic_sub::<AB>(&value, &recompose(syndrome_bit_cell(lane, 0))));
+        // slack-bit bools.
+        for b in 0..MODQ_BITS {
+            let bit = cell(syndrome_slack_bit_cell(lane, b));
+            residuals.push(octic_mul::<AB>(&bit, &octic_sub::<AB>(&bit, &one)));
+        }
+        // slack == recompose(slack bits).
+        residuals.push(octic_sub::<AB>(
+            &cell(syndrome_slack_cell(lane)),
+            &recompose(syndrome_slack_bit_cell(lane, 0)),
+        ));
+        // value + slack == q-1.
+        let sum = octic_add::<AB>(&value, &cell(syndrome_slack_cell(lane)));
+        residuals.push(octic_sub::<AB>(&sum, &octic_scalar::<AB>((Q12289 - 1) as u64)));
+    }
+    // ----- packed_witness_commitment bytes -----
+    for kp in 0..PACKED_WITNESS_COMMITMENT_BYTES {
+        let mut byte = octic_scalar::<AB>(0);
+        for b in 0..BYTE_BITS {
+            let pos = kp * BYTE_BITS + b;
+            if pos < PACKED_STREAM_BITS {
+                let bit = cell(packed_stream_bit_cell(pos));
+                byte = octic_add::<AB>(&byte, &scale::<AB>(&bit, 1u64 << b));
+            }
+        }
+        residuals.push(octic_sub::<AB>(
+            &byte,
+            &cell(chain_pubio_cell(PUBIO_PACKED_WITNESS_OFF_LOCAL + kp)),
+        ));
+    }
+}
+
 // ===========================================================================
 // The AIR
 // ===========================================================================
@@ -2257,6 +2540,14 @@ where
     // pubio cells the digest chain absorbs (the SAME public-value cells — one source of truth). Order
     // MUST match the native `pubio_bind_residual`. This is the LAST class.
     push_pubio_bind_residuals::<AB, FCell>(cell, &mut residuals);
+
+    // (14) CONTEXT-FIELD binding — slot/lifecycle/account_id absorbed into the C2/C6 sponges ==
+    // the SAME pubio context cells the chain absorbs (air.rs:806-831 ∘ 798-803). Own frame.
+    push_ctxbind_residuals::<AB, FCell>(cell, &mut residuals);
+
+    // (15) CLASS C — checked-core syndrome (range-check + pubio-eq) + packed_witness_commitment
+    // (14-bit-LE packing of syndrome ‖ masked == pubio) (air.rs:1008-1069). Own frame. LAST class.
+    push_classc_residuals::<AB, FCell>(cell, &mut residuals);
 
     debug_assert_eq!(residuals.len(), N_CONSTRAINTS);
 
@@ -3027,6 +3318,7 @@ mod tests {
     /// padding rows enable=0 are a TRUE no-op and exercised separately by a fidelity test).
     fn fill_honest_chain(cells: &mut [Challenge; N_OPENED_CELLS], seed: u32, enabled: bool) {
         use crate::inlined_perm::{self, generate_perm_cols, C_OUTPUT as IP_OUTPUT, PERM_COLS};
+        use p3_field::PrimeField32;
         let consts = inlined_perm::Constants::pinned();
 
         let enable = if enabled { 1u64 } else { 0u64 };
@@ -3079,6 +3371,48 @@ mod tests {
         // role-root squeeze output → pubio[PUBIO_ROLE_ROOT_OFF..+ROLE_ROOT_ELEMS].
         for j in 0..ROLE_ROOT_ELEMS {
             pubio[PUBIO_ROLE_ROOT_OFF + j] = out_val(cells, role_out_cell(j));
+        }
+        // ----- CONTEXT-FIELD binding: pubio context == the C2/C6 sponge absorb lanes -----
+        // slot_id (C2 slot lanes) → pubio context slot region.
+        for b in 0..CTX_SLOT_BYTES {
+            pubio[PUBIO_CONTEXT_OFF + CTX_SLOT_OFF + b] = out_val(cells, c2_slot_cell(b));
+        }
+        // lifecycle_anchor (C6 byte-lanes 0..32) → pubio context lifecycle region.
+        for b in 0..CTX_LIFECYCLE_BYTES {
+            pubio[PUBIO_CONTEXT_OFF + CTX_LIFECYCLE_OFF + b] = out_val(cells, c6_byte_cell(b));
+        }
+        // account_id (C6 byte-lanes 48..80) → pubio context account_id region.
+        for b in 0..CTX_ACCOUNT_ID_BYTES {
+            pubio[PUBIO_CONTEXT_OFF + CTX_ACCOUNT_ID_OFF + b] =
+                out_val(cells, c6_byte_cell(C6_BYTE_ACCOUNT_ID_OFF + b));
+        }
+        // ----- CLASS C: syndrome witness cells + packed_witness_commitment -----
+        // Choose canonical (< q12289) syndrome residues from the seed; fill the witness block
+        // (value ‖ bits14 ‖ slack ‖ slack_bits14) honestly, and echo into the pubio syndrome lanes.
+        let qm1 = Q12289 - 1;
+        for lane in 0..SYNDROME_LANES {
+            let value = (seed.wrapping_mul(1009).wrapping_add(lane as u32 * 31 + 7)) % Q12289;
+            let slack = qm1 - value;
+            cells[syndrome_value_cell(lane)] = ext(value);
+            cells[syndrome_slack_cell(lane)] = ext(slack);
+            for b in 0..MODQ_BITS {
+                cells[syndrome_bit_cell(lane, b)] = ext((value >> b) & 1);
+                cells[syndrome_slack_bit_cell(lane, b)] = ext((slack >> b) & 1);
+            }
+            pubio[PUBIO_SYNDROME_OFF_LOCAL + lane] = Val::from_u32(value);
+        }
+        // packed_witness_commitment bytes: 14-bit-LE packing of syndrome[0..12] ‖ masked[0..6].
+        // The masked bits live in the carrier mod-q block (set by fill_honest_c2_and_reduce).
+        for kp in 0..PACKED_WITNESS_COMMITMENT_BYTES {
+            let mut byte = 0u32;
+            for b in 0..BYTE_BITS {
+                let pos = kp * BYTE_BITS + b;
+                if pos < PACKED_STREAM_BITS {
+                    let bit = out_val(cells, packed_stream_bit_cell(pos)).as_canonical_u32();
+                    byte |= bit << b;
+                }
+            }
+            pubio[PUBIO_PACKED_WITNESS_OFF_LOCAL + kp] = Val::from_u32(byte);
         }
         for i in 0..CHAIN_PUBIO {
             cells[chain_pubio_cell(i)] = Challenge::from(pubio[i]);
@@ -4252,9 +4586,16 @@ mod tests {
         assert_eq!(N_C2, C2_N_PERMS * WIDTH + C2_N_PERMS * inlined_perm_octic::PERM_RESIDUALS);
         // reduce + carrier total.
         assert_eq!(N_REDUCE, NUM_OUTPUTS * N_REDUCE_PER_MASK + N_LANES * N_CARRIER_PER_LANE);
-        // the chain class follows reduce; reduce+chain+byterange+pubio-bind cover up to N_CONSTRAINTS.
+        // the chain class follows reduce; reduce+chain+byterange+pubio-bind+ctxbind+classc cover up
+        // to N_CONSTRAINTS.
         assert_eq!(
-            REDUCE_RESIDUAL_BASE + N_REDUCE + N_CHAIN + N_BYTERANGE + N_PUBIO_BIND,
+            REDUCE_RESIDUAL_BASE
+                + N_REDUCE
+                + N_CHAIN
+                + N_BYTERANGE
+                + N_PUBIO_BIND
+                + N_CTXBIND
+                + N_CLASSC,
             N_CONSTRAINTS
         );
     }
@@ -4499,7 +4840,10 @@ mod tests {
                 + CHAIN_W
                 + 1
         );
-        assert_eq!(CHAIN_RESIDUAL_BASE + N_CHAIN + N_BYTERANGE + N_PUBIO_BIND, N_CONSTRAINTS);
+        assert_eq!(
+            CHAIN_RESIDUAL_BASE + N_CHAIN + N_BYTERANGE + N_PUBIO_BIND + N_CTXBIND + N_CLASSC,
+            N_CONSTRAINTS
+        );
         // sanity: the chain uses the full 16-wide perm and rate-8 absorb (mirrors air.rs).
         assert_eq!(CHAIN_W, WIDTH);
         assert_eq!(CHAIN_RT, 8);
@@ -4687,7 +5031,10 @@ mod tests {
         assert_eq!(N_BR_PER_LANE, BYTE_BITS + 1);
         assert_eq!(N_BYTERANGE, N_BR_LANES * N_BR_PER_LANE);
         assert_eq!(N_BYTERANGE_BITS, N_BR_LANES * BYTE_BITS);
-        assert_eq!(BYTERANGE_RESIDUAL_BASE + N_BYTERANGE + N_PUBIO_BIND, N_CONSTRAINTS);
+        assert_eq!(
+            BYTERANGE_RESIDUAL_BASE + N_BYTERANGE + N_PUBIO_BIND + N_CTXBIND + N_CLASSC,
+            N_CONSTRAINTS
+        );
         // the recompose eq for EVERY lane targets the REAL already-absorbed sponge input cell,
         // matching the sponge's own absorb source — NOT a fresh free column (the vacuity guard).
         for g in 0..C1_BR_LANES {
@@ -4839,8 +5186,8 @@ mod tests {
 
     // ----- SPONGE-OUTPUT → PUBLIC-VALUE binding (the per-instance commitment equalities) -----
 
-    /// SHAPE SANITY — the pubio-bind class is the LAST class (covers exactly up to N_CONSTRAINTS),
-    /// its count is the four per-instance commitment outputs, and EVERY binding maps the
+    /// SHAPE SANITY — the pubio-bind class (followed by ctxbind + classc, which close out
+    /// N_CONSTRAINTS), its count is the four per-instance commitment outputs, and EVERY binding maps the
     /// already-mirrored sponge/gadget OUTPUT cell to the SAME per-row pubio cell the digest chain
     /// absorbs (`chain_pubio_cell`) at the air.rs batch offset — one source of truth, not a fresh
     /// column on either side.
@@ -4851,7 +5198,11 @@ mod tests {
         assert_eq!(N_PUBIO_MASKED, N_LANES);
         assert_eq!(N_PUBIO_ROLE, ROLE_ROOT_ELEMS);
         assert_eq!(N_PUBIO_BIND, 2 * N_COMMIT_LANES + N_LANES + ROLE_ROOT_ELEMS);
-        assert_eq!(PUBIO_BIND_RESIDUAL_BASE + N_PUBIO_BIND, N_CONSTRAINTS);
+        // pubio-bind is now followed by the ctxbind + classc classes (no longer the LAST class).
+        assert_eq!(
+            PUBIO_BIND_RESIDUAL_BASE + N_PUBIO_BIND + N_CTXBIND + N_CLASSC,
+            N_CONSTRAINTS
+        );
         // C1: c1_out_cell(j) == chain_pubio_cell(j).
         for j in 0..N_COMMIT_LANES {
             assert_eq!(pubio_bind_pair(j), (c1_out_cell(j), chain_pubio_cell(j)));
@@ -4980,6 +5331,239 @@ mod tests {
             assert!(
                 !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
                 "tampered mirrored output NOT rejected end-to-end at the mirror"
+            );
+        }
+    }
+
+    // =======================================================================
+    // CONTEXT-FIELD binding (slot / lifecycle / account_id) + CLASS-C (syndrome +
+    // packed_witness_commitment). The genuinely-unbound inner public-statement fields, now bound to
+    // the SAME per-row pubio cells the digest chain absorbs (one source of truth).
+    // =======================================================================
+
+    const CTXBIND_RESIDUAL_BASE: usize = PUBIO_BIND_RESIDUAL_BASE + N_PUBIO_BIND;
+    const CLASSC_RESIDUAL_BASE: usize = CTXBIND_RESIDUAL_BASE + N_CTXBIND;
+
+    /// SHAPE SANITY — the ctxbind + classc classes close out N_CONSTRAINTS, and every ctxbind pair
+    /// maps a real C2/C6 sponge ABSORB cell to the SAME pubio context cell the chain absorbs
+    /// (`chain_pubio_cell`) at the air.rs context offset — one source of truth, no fresh columns.
+    #[test]
+    fn ctxbind_classc_shape_matches_leaf() {
+        assert_eq!(N_CTXBIND, CTX_SLOT_BYTES + CTX_LIFECYCLE_BYTES + CTX_ACCOUNT_ID_BYTES);
+        assert_eq!(N_CTXBIND, 8 + 32 + 32);
+        assert_eq!(N_CLASSC, N_SYNDROME + N_PACKED);
+        assert_eq!(N_SYNDROME, SYNDROME_LANES * N_SYNDROME_PER_LANE);
+        assert_eq!(N_PACKED, PACKED_WITNESS_COMMITMENT_BYTES);
+        // the ctxbind+classc classes are the LAST classes (cover exactly up to N_CONSTRAINTS).
+        assert_eq!(CLASSC_RESIDUAL_BASE + N_CLASSC, N_CONSTRAINTS);
+        // context-field bindings tie the genuine sponge absorb cells to the pubio context lanes.
+        for b in 0..CTX_SLOT_BYTES {
+            assert_eq!(
+                ctxbind_pair(b),
+                (c2_slot_cell(b), chain_pubio_cell(PUBIO_CONTEXT_OFF + CTX_SLOT_OFF + b))
+            );
+        }
+        for b in 0..CTX_LIFECYCLE_BYTES {
+            assert_eq!(
+                ctxbind_pair(CTX_SLOT_BYTES + b),
+                (c6_byte_cell(b), chain_pubio_cell(PUBIO_CONTEXT_OFF + CTX_LIFECYCLE_OFF + b))
+            );
+        }
+        for b in 0..CTX_ACCOUNT_ID_BYTES {
+            assert_eq!(
+                ctxbind_pair(CTX_SLOT_BYTES + CTX_LIFECYCLE_BYTES + b),
+                (
+                    c6_byte_cell(C6_BYTE_ACCOUNT_ID_OFF + b),
+                    chain_pubio_cell(PUBIO_CONTEXT_OFF + CTX_ACCOUNT_ID_OFF + b)
+                )
+            );
+        }
+        // FIDELITY-PIN the derived pubio offsets against the leaf's authoritative layout: the context
+        // region is exactly [PUBIO_CONTEXT_OFF, PUBIO_ROLE_ROOT_OFF), i.e. CONTEXT_ELEMS wide, and the
+        // syndrome/packed offsets follow role_root ‖ relation_id.
+        assert_eq!(
+            PUBIO_CONTEXT_OFF + descender_account_stark::CONTEXT_ELEMS,
+            PUBIO_ROLE_ROOT_OFF
+        );
+        assert_eq!(CTX_LIFECYCLE_OFF + CTX_LIFECYCLE_BYTES, descender_account_stark::CONTEXT_ELEMS);
+        assert_eq!(
+            PUBIO_SYNDROME_OFF_LOCAL,
+            2 * N_COMMIT_LANES
+                + N_LANES
+                + descender_account_stark::CONTEXT_ELEMS
+                + ROLE_ROOT_ELEMS
+                + RELATION_ID_ELEMS
+        );
+        assert_eq!(PUBIO_PACKED_WITNESS_OFF_LOCAL, PUBIO_SYNDROME_OFF_LOCAL + SYNDROME_LANES);
+        // and the whole pubio block ends exactly at PUBIO_ELEMS (no off-by-one in the layout).
+        assert_eq!(
+            PUBIO_PACKED_WITNESS_OFF_LOCAL + PACKED_WITNESS_COMMITMENT_BYTES,
+            descender_account_stark::PUBIO_ELEMS
+        );
+    }
+
+    /// FIDELITY PIN — on an honest row EVERY ctxbind + classc residual is zero: the fixture derives
+    /// the pubio context/syndrome/packed lanes from the actual sponge absorb cells / syndrome
+    /// witnesses / packed bit stream, so each binding equality holds. Plus non-vacuity: the bound
+    /// context cells genuinely carry the absorb values (≠ the arbitrary non-bound fill).
+    #[test]
+    fn ctxbind_classc_honest_all_residuals_zero() {
+        let cells = honest_cells([0, 1, 127, 12288, 5000, 96], 17);
+        for k in 0..N_CTXBIND {
+            assert_eq!(
+                constraint_residual(&cells, CTXBIND_RESIDUAL_BASE + k),
+                Challenge::ZERO,
+                "honest ctxbind residual {k} nonzero"
+            );
+        }
+        for k in 0..N_CLASSC {
+            assert_eq!(
+                constraint_residual(&cells, CLASSC_RESIDUAL_BASE + k),
+                Challenge::ZERO,
+                "honest classc residual {k} nonzero"
+            );
+        }
+        // non-vacuity: the bound pubio context cell == the genuine sponge absorb cell, and at least
+        // one is nonzero (not "both sides zero").
+        let mut any_nonzero = false;
+        for k in 0..N_CTXBIND {
+            let (absorb_cell, pubio_cell) = ctxbind_pair(k);
+            assert_eq!(cells[absorb_cell], cells[pubio_cell], "ctx pubio != absorb at {k}");
+            if cells[absorb_cell] != Challenge::ZERO {
+                any_nonzero = true;
+            }
+        }
+        assert!(any_nonzero, "all context absorb cells zero — ctxbind fixture vacuous");
+        // non-vacuity: at least one syndrome value cell is nonzero and equals its pubio lane.
+        let mut syn_nonzero = false;
+        for lane in 0..SYNDROME_LANES {
+            assert_eq!(
+                cells[syndrome_value_cell(lane)],
+                cells[chain_pubio_cell(PUBIO_SYNDROME_OFF_LOCAL + lane)],
+                "syndrome pubio != value at lane {lane}"
+            );
+            if cells[syndrome_value_cell(lane)] != Challenge::ZERO {
+                syn_nonzero = true;
+            }
+        }
+        assert!(syn_nonzero, "all syndrome values zero — classc fixture vacuous");
+    }
+
+    /// FORGERY (context substitution) — tampering the re-exposed slot_id / lifecycle_anchor /
+    /// account_id in the pubio (the value the recursion re-exposes) ≠ the value absorbed into the
+    /// C2/C6 sponge ⇒ the ctxbind residual is nonzero ⇒ rejected. The core property: one proof is
+    /// bound to exactly one (account, slot, lifecycle) — a forger cannot re-expose a different
+    /// context than the sponge consumed.
+    #[test]
+    fn ctxbind_rejects_context_substitution() {
+        // one probe per in-circuit-bound context field.
+        let probes = [
+            0usize,                                  // slot_id byte 0
+            CTX_SLOT_BYTES + 5,                      // lifecycle byte 5
+            CTX_SLOT_BYTES + CTX_LIFECYCLE_BYTES + 9, // account_id byte 9
+        ];
+        for &k in &probes {
+            let mut bad = honest_cells([3, 14, 159, 26, 53, 58], 7);
+            let (_absorb, pubio_cell) = ctxbind_pair(k);
+            bad[pubio_cell] += Challenge::ONE; // re-expose a tampered context value
+            assert_ne!(
+                constraint_residual(&bad, CTXBIND_RESIDUAL_BASE + k),
+                Challenge::ZERO,
+                "context substitution at ctxbind {k} not caught"
+            );
+        }
+    }
+
+    /// FORGERY (forged syndrome lane) — a re-exposed syndrome residue (pubio) ≠ the range-checked
+    /// witness value breaks the syndrome value-eq residual; ALSO the packed_witness byte recomposed
+    /// from that syndrome's bits no longer matches its pubio byte (if we only move the value), and a
+    /// tampered syndrome bit breaks both the bit-recompose and the packed bytes. We probe both the
+    /// value-eq and a bit tamper.
+    #[test]
+    fn classc_rejects_forged_syndrome_lane() {
+        // (a) forge the re-exposed syndrome value (pubio) for lane 4 -> value-eq residual nonzero.
+        {
+            let mut bad = honest_cells([1, 2, 3, 4, 5, 6], 11);
+            let lane = 4;
+            bad[chain_pubio_cell(PUBIO_SYNDROME_OFF_LOCAL + lane)] += Challenge::ONE;
+            let k = lane * N_SYNDROME_PER_LANE; // the value-eq residual for this lane
+            assert_ne!(
+                constraint_residual(&bad, CLASSC_RESIDUAL_BASE + k),
+                Challenge::ZERO,
+                "forged syndrome value lane {lane} not caught (value-eq)"
+            );
+        }
+        // (b) tamper a syndrome WITNESS bit -> the value-recompose residual AND the packed byte
+        //     residual that consumes this bit both break.
+        {
+            let mut bad = honest_cells([7, 8, 9, 10, 11, 12], 13);
+            let lane = 2;
+            let bit = 3;
+            bad[syndrome_bit_cell(lane, bit)] += Challenge::ONE; // no longer a bit / no longer recomposes
+            // value-recompose residual for this lane (index 1 + MODQ_BITS within the lane block).
+            let kv = lane * N_SYNDROME_PER_LANE + 1 + MODQ_BITS;
+            assert_ne!(
+                constraint_residual(&bad, CLASSC_RESIDUAL_BASE + kv),
+                Challenge::ZERO,
+                "tampered syndrome bit not caught (value-recompose)"
+            );
+        }
+    }
+
+    /// FORGERY (forged packed_witness_commitment) — a re-exposed packed byte (pubio) ≠ the byte
+    /// recomposed from the 14-bit-LE syndrome‖masked stream breaks that byte's residual ⇒ rejected.
+    /// This is the anchor the deployed leaf/spend packed_witness_commitment is later checked against.
+    #[test]
+    fn classc_rejects_forged_packed_witness_commitment() {
+        for &kp in &[0usize, 7, 15, 31] {
+            let mut bad = honest_cells([0, 1, 127, 128, 12288, 5000], 19);
+            bad[chain_pubio_cell(PUBIO_PACKED_WITNESS_OFF_LOCAL + kp)] += Challenge::ONE;
+            let k = N_SYNDROME + kp; // the packed-byte residual within CLASS-C
+            assert_ne!(
+                constraint_residual(&bad, CLASSC_RESIDUAL_BASE + k),
+                Challenge::ZERO,
+                "forged packed_witness byte {kp} not caught"
+            );
+        }
+    }
+
+    /// FORGERY (end-to-end through the mirror AIR) — a context substitution, a forged syndrome lane,
+    /// and a forged packed_witness byte are EACH rejected by the real `check_all_constraints` on the
+    /// `LeafConstraintMirrorAir`. Soundness by attempted forgery, never by inspection.
+    #[test]
+    fn ctxbind_classc_air_rejects_tampers() {
+        let cells = honest_cells([0, 1, 127, 128, 12288, 5000], 23);
+        let m_ok = matrix(&cells, ext(31));
+        assert!(
+            check_all_constraints(&LeafConstraintMirrorAir, &m_ok, &[], None).is_ok(),
+            "honest ctxbind/classc row rejected"
+        );
+        // (a) context substitution (re-expose a different slot_id byte).
+        {
+            let mut m = matrix(&cells, ext(31));
+            let (_a, pubio_cell) = ctxbind_pair(0);
+            m.values[cell_base(pubio_cell)] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "context substitution NOT rejected end-to-end at the mirror"
+            );
+        }
+        // (b) forged syndrome lane (re-exposed syndrome value).
+        {
+            let mut m = matrix(&cells, ext(31));
+            m.values[cell_base(chain_pubio_cell(PUBIO_SYNDROME_OFF_LOCAL + 3))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "forged syndrome lane NOT rejected end-to-end at the mirror"
+            );
+        }
+        // (c) forged packed_witness_commitment byte.
+        {
+            let mut m = matrix(&cells, ext(31));
+            m.values[cell_base(chain_pubio_cell(PUBIO_PACKED_WITNESS_OFF_LOCAL + 10))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "forged packed_witness byte NOT rejected end-to-end at the mirror"
             );
         }
     }
