@@ -552,6 +552,34 @@ pub struct RecursiveConfig {
     /// `deep_e0_combine` powers per opening point, so the quotient continues from there). Typically
     /// `deep_e0_combine * (1 + deep_e0_next as usize)`. Only consumed when `quot_chunks > 0`.
     pub quot_alpha_offset: usize,
+    /// (FAN-OUT) Verify N INDEPENDENT FRI queries, one per matrix ROW, all sharing the SAME FS
+    /// challenges + inner commitments + OOD opening. This is what gives FRI its multi-query soundness
+    /// (a single query is only ~`log2(blowup)` bits; `N` queries compound to ~`N·log2(blowup)` bits).
+    ///
+    /// 0 = the original single-query single-row mode (back-compat; all the tamper/fidelity tests use
+    /// this). When `> 0` it is the number of fan-out queries `N` (the matrix is built with `N` rows by
+    /// [`pack_fan_out`]). The per-query verification of each row is the EXISTING per-row window — every
+    /// row independently runs the full index↔draw / Merkle-open / DEEP-`e0` / fold-chain / final-poly
+    /// / quotient-open constraints — so each query is independently sound and independently tamper-
+    /// rejecting. The fan-out adds, on top of the per-row window:
+    ///   1. (PER-QUERY INDEX) a `draw_offset` column constrained to the ROW ordinal (first row 0,
+    ///      `next.draw_offset == local.draw_offset + 1`), and the index draw `C_DRAW_OUT` is bound to
+    ///      the `draw_offset`-th LIFO pop of the SHARED post-final-observe permute output
+    ///      (`output[RATE-1-draw_offset]`, selected by a one-hot over `draw_offset`). p3-fri samples
+    ///      the `N` query indices as `N` successive `sample_bits` draws off the same post-grinding
+    ///      challenger (verifier.rs:351-353): while the output buffer is non-empty each `sample()` is a
+    ///      LIFO pop with NO re-permute, so query `r`'s index draw is pop `r` = `output[RATE-1-r]`.
+    ///      Row `r` is thereby BOUND to the genuine r-th FS draw — distinct per row, derived from the
+    ///      one transcript. Requires `fs_final_blocks > 0` (the unified FS query-index chain). Bounded
+    ///      by `RATE` here (one output-buffer refill, the within-RATE fan-out); see `fan_out_queries`
+    ///      doc on the structural scale to `PROD_NUM_QUERIES`.
+    ///   2. (SHARED) transition constraints `next.X == local.X` pinning the post-final-observe permute
+    ///      output lanes (the shared draw source) and every shared challenge/commitment/OOD cell
+    ///      (alpha/zeta/betas, inner main + quotient commitments, `value_at_zeta`, `DEEP_C`/`DEEP_Q`,
+    ///      final-poly coeffs) EQUAL across all rows. Without this an adversary could pick favorable
+    ///      per-query challenges (unsound). With it, the shared values are bound ONCE and identical for
+    ///      every query, while the index + opened values + paths + fold chain stay per-query.
+    pub fan_out_queries: usize,
 }
 
 impl RecursiveConfig {
@@ -591,6 +619,7 @@ impl RecursiveConfig {
             quot_chunks: 0,
             quot_merkle_levels: 0,
             quot_alpha_offset: 0,
+            fan_out_queries: 0,
         }
     }
     /// Number of successive squeeze draws actually laid out (≥ 1, ≤ RATE).
@@ -602,6 +631,21 @@ impl RecursiveConfig {
         self.num_rounds.max(1)
     }
 }
+
+/// Production FRI query count: the number of INDEPENDENT FRI queries the inner verifier checks
+/// (matches the deployed `descender_account_stark` FRI config `num_queries`). This is the target the
+/// (FAN-OUT) multi-row verification scales to — N rows, one query per row. A single query is only
+/// ~`log2(blowup)` bits of soundness; `PROD_NUM_QUERIES` queries compound to the ~128-bit target.
+///
+/// NOTE on within-RATE vs full scale: the in-AIR fan-out validated end-to-end here models the queries
+/// that pop from ONE post-final-observe output-buffer refill (`N <= RATE`, the first 8 LIFO pops).
+/// p3-fri samples the first `RATE` indices with NO re-permute, then triggers a squeeze-permute and
+/// refills for the next `RATE`, etc. The per-row constraints are identical for every query; scaling to
+/// `PROD_NUM_QUERIES = 56` requires threading the `ceil(56/RATE) = 7` squeeze-permute refills (each an
+/// extra Poseidon2 perm whose output sources the next `RATE` pops) — a mechanical extension of the
+/// `draw_offset → output[RATE-1-(offset mod RATE)]` selection across refill buckets. Flagged honestly:
+/// the multi-refill chain is NOT yet wired (see the report / module remaining).
+pub const PROD_NUM_QUERIES: usize = 56;
 
 // ----- shared monolithic column layout (one query window per row) -----
 //
@@ -1543,9 +1587,32 @@ pub fn quotient_reduced_e0(
     acc
 }
 
+// ----- (FAN-OUT) per-query block -----
+//
+// Appended LAST (after the QO block, so it perturbs no prior offset). A single `draw_offset` column:
+// the ROW ordinal (= which LIFO pop of the shared post-final-observe permute output this row's query
+// index is). Constrained to 0 on the first row and to increment by 1 each transition, and used (via a
+// one-hot over its value) to select `output[RATE-1-draw_offset]` as `C_DRAW_OUT`. 0 columns when
+// `fan_out_queries == 0` (the original single-query mode).
+const FO_DRAW_OFFSET: usize = 0;
+
+/// Base of the (FAN-OUT) block (after the QO block).
+fn fo_base(cfg: &RecursiveConfig) -> usize {
+    qo_base(cfg) + qo_size(cfg)
+}
+
+/// Size of the (FAN-OUT) block: 1 column (`draw_offset`) iff `fan_out_queries > 0`.
+fn fo_size(cfg: &RecursiveConfig) -> usize {
+    if cfg.fan_out_queries > 0 {
+        1
+    } else {
+        0
+    }
+}
+
 /// Total column count for a window with this config.
 pub fn n_cols(cfg: &RecursiveConfig) -> usize {
-    qo_base(cfg) + qo_size(cfg)
+    fo_base(cfg) + fo_size(cfg)
 }
 
 /// The `j`-th tower column (`sp[j]`).
@@ -1870,6 +1937,19 @@ pub fn leaf_hash_digest(input: &[Val]) -> [Val; DIGEST_ELEMS] {
 /// mutate the matrix afterwards. When `inline_sponge_draw`, `draw_out` is DERIVED from `sponge_in`
 /// (the squeeze pop) so the index decomposition is over the genuine Poseidon2 sponge output.
 pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
+    pack_window_query(cfg, inp, 0)
+}
+
+/// Build one query window honestly for fan-out query ordinal `query_ordinal` (the r-th FRI query). For
+/// `query_ordinal == 0` this is identical to [`pack_window`]. For `r > 0` (only meaningful with
+/// `fan_out_queries > 0` and the unified FS query-index chain `fs_final_blocks > 0`), the index draw
+/// `draw_out` is the r-th LIFO pop of the SHARED post-final-observe permute output
+/// (`output[RATE-1-r]`) — the genuine r-th p3-fri `sample_bits` draw off the same post-grinding
+/// challenger — and the `draw_offset` column is set to `r`. The caller supplies, in `inp`, that query's
+/// index-dependent openings (e0/leaf-row/Merkle path/x/...) consistent with the r-th index, plus the
+/// SHARED fs blocks + commitments + OOD (identical for every ordinal). `r` must be `< RATE` (the
+/// within-RATE fan-out: one output-buffer refill).
+pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordinal: usize) -> Vec<Val> {
     let h = cfg.log_height;
     // (a-FS+++) when a transcript-prefix absorb chain feeds the duplex step, the duplex step's
     // prior_state is the chained output of absorbing the prefix blocks from the zero boundary; it
@@ -1925,7 +2005,13 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
             cfg.fs_final_blocks,
             "fs_final_blocks must have fs_final_blocks entries"
         );
-        fs_squeeze_query_index(post_beta_state, inp.fs_final_blocks).0
+        // The post-final-observe permute output (shared across fan-out queries). Query `query_ordinal`'s
+        // index is the r-th LIFO pop of that output buffer = output[RATE-1-r] (p3-fri samples the N
+        // query indices as N successive sample()'s off the same post-grinding challenger; while the
+        // output buffer is non-empty each pop performs NO re-permute). Ordinal 0 == output[RATE-1].
+        assert!(query_ordinal < RATE, "within-RATE fan-out: query ordinal must be < RATE");
+        let (_, final_state) = fs_squeeze_query_index(post_beta_state, inp.fs_final_blocks);
+        final_state[RATE - 1 - query_ordinal]
     } else if cfg.inline_sponge_draw {
         squeeze_draw(sponge_in)
     } else {
@@ -2628,6 +2714,12 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
             .unwrap(),
             "quotient recombination != DEEP_Q (honest build)"
         );
+    }
+
+    // (FAN-OUT) the per-query draw-offset column: this row's ordinal among the N fan-out queries (=
+    // which LIFO pop of the shared post-final-observe permute output drives this row's index).
+    if cfg.fan_out_queries > 0 {
+        row[fo_base(cfg) + FO_DRAW_OFFSET] = Val::from_u32(query_ordinal as u32);
     }
 
     row
@@ -3918,13 +4010,42 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                     // full Poseidon2 permutation over this round's perm block.
                     eval_perm::<AB, _>(builder, &cells, rb + FQ_PERM, &consts);
                 }
-                // index draw_out == top LIFO pop of the LAST observe round's perm output rate. (The
-                // last full-rate observe refilled the output buffer and emptied the input buffer, so the
-                // index sample() performs NO further permute — it pops output[RATE-1].)
+                // index draw_out == the `draw_offset`-th LIFO pop of the LAST observe round's perm
+                // output rate. (The last full-rate observe refilled the output buffer and emptied the
+                // input buffer, so the index sample()'s perform NO further permute while the buffer is
+                // non-empty — query r pops output[RATE-1-r].) In single-query mode (fan_out_queries==0)
+                // draw_offset is fixed 0 ⇒ output[RATE-1], the original binding. In fan-out mode the
+                // (FAN-OUT) block constrains draw_offset to the row ordinal, so EACH ROW binds its index
+                // to its OWN r-th FS draw — N independent, transcript-derived, distinct-per-row indices.
                 let last_fq = fq_round_base(&cfg, cfg.fs_final_blocks - 1);
-                builder.assert_zero(
-                    l(C_DRAW_OUT) - l(last_fq + FQ_PERM + C_OUTPUT + (RATE - 1)),
-                );
+                if cfg.fan_out_queries > 0 {
+                    // one-hot select output[RATE-1-r] where r == draw_offset, over r in 0..fan_out_queries.
+                    let n = cfg.fan_out_queries;
+                    let off = l(fo_base(&cfg) + FO_DRAW_OFFSET);
+                    // selector_r = Π_{j != r} (off - j) / (r - j)  — a Lagrange one-hot over {0..n-1}.
+                    // Build it as an assert that draw_out equals the selected lane: Σ_r sel_r·lane_r.
+                    let mut selected = AB::Expr::ZERO;
+                    for r in 0..n {
+                        // Lagrange basis L_r(off) = Π_{j!=r} (off - j)/(r - j).
+                        let mut num = AB::Expr::ONE;
+                        let mut den = Val::ONE;
+                        for j in 0..n {
+                            if j == r {
+                                continue;
+                            }
+                            num = num * (off.clone() - AB::Expr::from(AB::F::from_u32(j as u32)));
+                            den *= Val::from_u32(r as u32) - Val::from_u32(j as u32);
+                        }
+                        let inv_den = den.inverse();
+                        let sel = num * AB::Expr::from(inv_den);
+                        selected += sel * l(last_fq + FQ_PERM + C_OUTPUT + (RATE - 1 - r));
+                    }
+                    builder.assert_zero(l(C_DRAW_OUT) - selected);
+                } else {
+                    builder.assert_zero(
+                        l(C_DRAW_OUT) - l(last_fq + FQ_PERM + C_OUTPUT + (RATE - 1)),
+                    );
+                }
 
                 // (FS-qi) optionally bind each post-beta observe block to the PUBLIC transcript:
                 // public value r*RATE + i == FS-qi round r's block (final_poly ‖ log_arities ‖ PoW).
@@ -3941,6 +4062,101 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                         }
                     }
                 }
+            }
+        }
+
+        // ===== (FAN-OUT) multi-query: per-row index ordinal + shared-value equality across rows =====
+        // Each ROW verifies an INDEPENDENT FRI query (the full per-row window above). On top of that:
+        //   (i)  draw_offset is pinned to the row ordinal: first row 0, next == local + 1. Composed
+        //        with the (FS-qi) one-hot binding above, row r's index is the r-th LIFO pop of the
+        //        SHARED post-final-observe permute output = the genuine r-th p3-fri sample_bits draw.
+        //   (ii) the SHARED values (the post-final-observe permute output lanes that source the draws,
+        //        plus alpha/zeta/betas, inner main + quotient commitments, value_at_zeta, DEEP_C/Q,
+        //        final-poly coeffs) are pinned EQUAL across consecutive rows (next == local). Bound
+        //        once, identical for every query — a fan-out with free per-query challenges is unsound.
+        if cfg.fan_out_queries > 0 {
+            let next: Vec<AB::Var> = main.next_slice().to_vec();
+            let nx = |i: usize| -> AB::Expr { next[i].into() };
+            let off_col = fo_base(&cfg) + FO_DRAW_OFFSET;
+
+            // (i) draw_offset ordinal: first row == 0; transition next == local + 1.
+            builder.when_first_row().assert_zero(l(off_col));
+            builder
+                .when_transition()
+                .assert_zero(nx(off_col) - l(off_col) - AB::Expr::ONE);
+
+            // (ii) shared-value equality across rows (transition next == local). Collect the shared
+            // column ranges, then pin each limb. The post-final-observe permute output lanes are the
+            // SHARED draw source: if they were not equal across rows, each row could source its index
+            // from a different (favorable) permute output. Pinning them ties every row's index to ONE
+            // transcript output.
+            let mut shared: Vec<usize> = Vec::new();
+            // post-final-observe permute output (the draw source) — full WIDTH lanes.
+            if cfg.fs_final_blocks > 0 {
+                let last_fq = fq_round_base(&cfg, cfg.fs_final_blocks - 1);
+                for i in 0..WIDTH {
+                    shared.push(last_fq + FQ_PERM + C_OUTPUT + i);
+                }
+            }
+            // DEEP OOD shared cells: alpha, zeta, C, Q (the OOD opening + constraint relation).
+            if cfg.deep_log_degree.is_some() {
+                let db = deep_base(&cfg);
+                for i in 0..D {
+                    shared.push(db + DEEP_ALPHA + i);
+                    shared.push(db + DEEP_ZETA + i);
+                    shared.push(db + DEEP_C + i);
+                    shared.push(db + DEEP_Q + i);
+                }
+            }
+            // FRI commit-phase betas (shared folding challenges).
+            for r in 0..cfg.fs_beta_rounds {
+                let rb = fb_round_base(&cfg, r);
+                for i in 0..D {
+                    shared.push(rb + FB_BETA + i);
+                }
+            }
+            // inner main-trace commitment (shared inner commitment).
+            if cfg.bind_root_to_main_commit {
+                let mb = mc_base(&cfg);
+                for i in 0..DIGEST_ELEMS {
+                    shared.push(mb + MC_MAIN_COMMIT + i);
+                }
+            }
+            // inner quotient commitment + chunk OOD at-zeta openings (shared).
+            if cfg.quot_chunks > 0 {
+                let qb = qo_base(&cfg);
+                for i in 0..DIGEST_ELEMS {
+                    shared.push(qb + QO_COMMIT + i);
+                }
+                for i in 0..(cfg.quot_chunks * D) {
+                    shared.push(qb + qo_at_zeta(&cfg) + i);
+                }
+            }
+            // DEEP reduced-opening at-zeta values (shared OOD opening of the trace).
+            if cfg.deep_e0_combine > 0 {
+                let dr = dr_base(&cfg);
+                for i in 0..(cfg.deep_e0_combine * D) {
+                    shared.push(dr + DR_VZETA + i);
+                }
+                if cfg.deep_e0_next {
+                    for i in 0..(cfg.deep_e0_combine * D) {
+                        shared.push(dr + dr_vzeta_next(&cfg) + i);
+                    }
+                }
+            }
+            // final-poly coefficients (shared committed final polynomial).
+            if cfg.final_poly_len > 0 {
+                let fpb = fp_base(&cfg);
+                for c in 0..cfg.final_poly_len {
+                    let cb = fpb + fp_coeff_base(c);
+                    for i in 0..D {
+                        shared.push(cb + i);
+                    }
+                }
+            }
+            let mut tb = builder.when_transition();
+            for &col in &shared {
+                tb.assert_zero(nx(col) - l(col));
             }
         }
     }
@@ -7279,6 +7495,268 @@ mod tests {
                     );
                 }
             }
+        }
+    }
+
+    // =================================================================================
+    // (FAN-OUT) multi-query: N INDEPENDENT FRI queries, one per ROW, all sharing the SAME
+    // FS challenges + commitments + OOD. Each row's index is the r-th sample_bits draw off the
+    // SHARED post-final-observe challenger (p3-fri verifier.rs:351-353). Validated end-to-end via
+    // the real `check_all_constraints` over a multi-row RowMajorMatrix.
+    // =================================================================================
+
+    /// Build a full FS window honestly for fan-out query ordinal `r` (the r-th query). All shared
+    /// inputs (fs_blocks / comms / finals / q) are the SAME for every ordinal; only the index draw
+    /// (the r-th LIFO pop of the shared post-final-observe permute) and the index-dependent fold cells
+    /// differ. `pack_window_query` derives `draw_out = final_state[RATE-1-r]` and sets draw_offset = r.
+    fn fan_out_row(
+        cfg: &RecursiveConfig,
+        fs_blocks: &[[Val; RATE]],
+        comms: &[[Val; RATE]],
+        finals: &[[Val; RATE]],
+        q: Challenge,
+        r: usize,
+    ) -> Vec<Val> {
+        let descent: Vec<(Challenge, Challenge)> = (1..cfg.rounds())
+            .map(|rr| (ext_multi(500 + rr as u32), Challenge::ZERO))
+            .collect();
+        let inp = WindowInputs {
+            draw_out: Val::from_u32(0xABCDE),
+            e0: ext_multi(1), e1: ext_multi(2), beta: Challenge::ZERO,
+            descent: &descent,
+            merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
+            merkle_siblings: &[],
+            deep_zeta: Challenge::ZERO, deep_q: q, deep_alpha: Challenge::ZERO,
+            fs_blocks,
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[], public_io: &[],
+            fs_beta_blocks: comms,
+            fs_final_blocks: finals,
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
+        };
+        pack_window_query(cfg, &inp, r)
+    }
+
+    /// A fan-out config: the full FS transcript (alpha/zeta/batch-combo/betas/query-index) + N queries.
+    fn cfg_fan_out(h: usize, n: usize) -> RecursiveConfig {
+        RecursiveConfig { fan_out_queries: n, ..cfg_fbq(h, 8, 2, 2, true, 1) }
+    }
+
+    /// Build the honest N-row fan-out matrix (one query per row) + return the shared transcript blocks
+    /// so tests can recompute the native indices.
+    #[allow(clippy::type_complexity)]
+    fn fan_out_matrix(
+        cfg: &RecursiveConfig,
+        n: usize,
+    ) -> (RowMajorMatrix<Val>, Vec<[Val; RATE]>, Vec<[Val; RATE]>, Vec<[Val; RATE]>, Challenge) {
+        let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
+        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let finals: Vec<[Val; RATE]> = vec![fq_block(70)];
+        let q = ext_multi(66);
+        let mut flat = Vec::with_capacity(n * n_cols(cfg));
+        for r in 0..n {
+            flat.extend_from_slice(&fan_out_row(cfg, &fs_blocks, &comms, &finals, q, r));
+        }
+        (RowMajorMatrix::new(flat, n_cols(cfg)), fs_blocks, comms, finals, q)
+    }
+
+    /// The N native FRI query indices: drive a real `DuplexChallenger` through the FULL ordered FS
+    /// transcript and take N successive `sample_bits` draws (p3-fri verifier.rs:351-353).
+    fn native_fan_out_indices(
+        fs_blocks: &[[Val; RATE]],
+        comms: &[[Val; RATE]],
+        finals: &[[Val; RATE]],
+        h: usize,
+        n: usize,
+    ) -> Vec<usize> {
+        let pre = &fs_blocks[..fs_blocks.len() - 1];
+        let quot = fs_blocks[fs_blocks.len() - 1];
+        let mut ch = Challenger::new(default_koalabear_poseidon2_16());
+        for block in pre { for &x in block.iter() { ch.observe(x); } }
+        let _alpha: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        for &x in quot.iter() { ch.observe(x); }
+        let _zeta: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        let _bca: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        for comm in comms {
+            for &x in comm.iter() { ch.observe(x); }
+            let _b: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        }
+        for block in finals { for &x in block.iter() { ch.observe(x); } }
+        (0..n).map(|_| ch.sample_bits(h)).collect()
+    }
+
+    /// GOLDEN (positive): an honest N-row fan-out matrix — N independent FRI queries, each at its own
+    /// FS-derived index, all sharing the FS challenges + commitments + OOD — ACCEPTS via the real
+    /// `check_all_constraints`. Validated at N = 2, 4 (within-RATE).
+    #[test]
+    fn fan_out_honest_multi_query_accepts() {
+        for &n in &[2usize, 4] {
+            let cfg = cfg_fan_out(12, n);
+            let (m, _fs, _c, _f, _q) = fan_out_matrix(&cfg, n);
+            let report = check_all_constraints(&air(cfg), &m, &[], None);
+            assert!(
+                report.is_ok(),
+                "honest {n}-query fan-out rejected: {} failures",
+                report.failures.len()
+            );
+        }
+    }
+
+    /// FIDELITY-PIN: each fan-out row's index (`C_INDEX`) equals the r-th `sample_bits` draw of a REAL
+    /// `DuplexChallenger` driven through the full transcript — row r ↔ the r-th native draw, NOT a
+    /// constant. The N indices are DISTINCT FS draws bound to the one transcript.
+    #[test]
+    fn fan_out_indices_are_independent_native_draws() {
+        let h = 12usize;
+        let n = 6usize; // within RATE = 8.
+        let cfg = cfg_fan_out(h, n);
+        let (m, fs, c, f, _q) = fan_out_matrix(&cfg, n);
+        let native = native_fan_out_indices(&fs, &c, &f, h, n);
+        // row r's C_INDEX == native draw r.
+        for r in 0..n {
+            let row_index = m.values[r * n_cols(&cfg) + C_INDEX].as_canonical_u32() as usize;
+            assert_eq!(
+                row_index, native[r],
+                "fan-out row {r} index != the r-th native sample_bits draw"
+            );
+        }
+        // the draws are genuinely distinct per row (the LIFO pops differ); at least two differ.
+        assert!(
+            native.iter().collect::<std::collections::HashSet<_>>().len() >= 2,
+            "the N FS query indices are not distinct draws (transcript collapse)"
+        );
+    }
+
+    /// SOUNDNESS — a row using a WRONG index (≠ its r-th FS draw) is REJECTED. We take the honest
+    /// matrix and overwrite row 1's draw_out/index/fold with row 0's (so row 1 carries the 0-th draw,
+    /// not its 1st draw) while its draw_offset stays 1 ⇒ the one-hot FS-index binding fails.
+    #[test]
+    fn fan_out_rejects_row_with_wrong_index() {
+        let cfg = cfg_fan_out(12, 4);
+        let (m, _fs, _c, _f, _q) = fan_out_matrix(&cfg, 4);
+        let w = n_cols(&cfg);
+        let mut flat = m.values.clone();
+        // honest control accepts.
+        assert!(check_all_constraints(&air(cfg.clone()), &RowMajorMatrix::new(flat.clone(), w), &[], None).is_ok());
+        // overwrite row 1's draw_out with the value it would have if it used pop 0 (row 0's draw) —
+        // but draw_offset stays 1, so the (FS-qi) one-hot binds C_DRAW_OUT to output[RATE-1-1] ≠ this.
+        flat[1 * w + C_DRAW_OUT] = flat[0 * w + C_DRAW_OUT];
+        let m2 = RowMajorMatrix::new(flat, w);
+        assert!(
+            !check_all_constraints(&air(cfg), &m2, &[], None).is_ok(),
+            "a fan-out row whose index draw != its r-th FS draw was accepted"
+        );
+    }
+
+    /// SOUNDNESS — the draw_offset MUST be the row ordinal (first 0, +1 per row). Tampering it (so row r
+    /// no longer maps to pop r) is REJECTED by the boundary/transition constraints.
+    #[test]
+    fn fan_out_rejects_tampered_draw_offset() {
+        let cfg = cfg_fan_out(12, 4);
+        let (m, _fs, _c, _f, _q) = fan_out_matrix(&cfg, 4);
+        let w = n_cols(&cfg);
+        let off = fo_base(&cfg) + FO_DRAW_OFFSET;
+        // (a) break the first-row boundary (row 0 offset != 0).
+        let mut a = m.values.clone();
+        a[0 * w + off] += Val::ONE;
+        assert!(
+            !check_all_constraints(&air(cfg.clone()), &RowMajorMatrix::new(a, w), &[], None).is_ok(),
+            "fan-out accepted a non-zero first-row draw_offset"
+        );
+        // (b) break the +1 transition (row 2 offset wrong).
+        let mut b = m.values.clone();
+        b[2 * w + off] += Val::ONE;
+        assert!(
+            !check_all_constraints(&air(cfg), &RowMajorMatrix::new(b, w), &[], None).is_ok(),
+            "fan-out accepted a draw_offset that does not increment by 1"
+        );
+    }
+
+    /// SOUNDNESS — the SHARED challenges MUST be equal across rows. A fan-out where a row carries a
+    /// DIFFERENT alpha / zeta / beta than the bound transcript value is REJECTED (otherwise an
+    /// adversary picks favorable per-query challenges). We tamper a shared cell in row 1 and confirm
+    /// the cross-row equality constraint fires. (The tampered row still has self-consistent per-row
+    /// cells via the honest build for row 1, so ONLY the shared-equality transition catches it.)
+    #[test]
+    fn fan_out_rejects_unshared_challenge() {
+        let cfg = cfg_fan_out(12, 4);
+        let (m, _fs, _c, _f, _q) = fan_out_matrix(&cfg, 4);
+        let w = n_cols(&cfg);
+        let db = deep_base(&cfg);
+        // honest control accepts.
+        assert!(check_all_constraints(&air(cfg.clone()), &RowMajorMatrix::new(m.values.clone(), w), &[], None).is_ok());
+        // tamper row 1's shared DEEP_ALPHA limb (a shared challenge) ⇒ cross-row equality fails.
+        for &(label, col) in &[
+            ("alpha", db + DEEP_ALPHA),
+            ("zeta", db + DEEP_ZETA),
+            ("Q", db + DEEP_Q),
+        ] {
+            let mut t = m.values.clone();
+            t[1 * w + col] += Val::ONE;
+            assert!(
+                !check_all_constraints(&air(cfg.clone()), &RowMajorMatrix::new(t, w), &[], None).is_ok(),
+                "fan-out accepted a row whose shared {label} differs from the bound transcript value"
+            );
+        }
+    }
+
+    /// SOUNDNESS — the shared post-final-observe permute output (the draw SOURCE) must be equal across
+    /// rows. Tampering it in one row ⇒ rejected: that row could otherwise source its index from a
+    /// different (favorable) permute output.
+    #[test]
+    fn fan_out_rejects_unshared_draw_source() {
+        let cfg = cfg_fan_out(12, 4);
+        let (m, _fs, _c, _f, _q) = fan_out_matrix(&cfg, 4);
+        let w = n_cols(&cfg);
+        let last_fq = fq_round_base(&cfg, cfg.fs_final_blocks - 1);
+        let src = last_fq + FQ_PERM + C_OUTPUT + 3; // an interior lane of the shared draw source.
+        let mut t = m.values.clone();
+        t[2 * w + src] += Val::ONE;
+        assert!(
+            !check_all_constraints(&air(cfg), &RowMajorMatrix::new(t, w), &[], None).is_ok(),
+            "fan-out accepted a row whose shared draw-source permute output differs"
+        );
+    }
+
+    /// PER-QUERY SOUNDNESS PRESERVED — each row still independently rejects a tampered per-query cell.
+    /// We tamper one row's FRI fold output (folded ≠ the real fold of its e0/e1/beta at its point) and
+    /// confirm that single row's per-row fold constraint fires (the fan-out does not weaken per-query
+    /// verification).
+    #[test]
+    fn fan_out_per_query_tamper_still_rejects() {
+        let cfg = cfg_fan_out(12, 4);
+        let (m, _fs, _c, _f, _q) = fan_out_matrix(&cfg, 4);
+        let w = n_cols(&cfg);
+        let mut t = m.values.clone();
+        t[3 * w + C_FOLDED + 2] += Val::ONE; // row 3's fold output limb.
+        assert!(
+            !check_all_constraints(&air(cfg), &RowMajorMatrix::new(t, w), &[], None).is_ok(),
+            "fan-out accepted a row with a tampered per-query FRI fold"
+        );
+    }
+
+    /// SCALE — the fan-out is parameterized by `fan_out_queries`; the per-row constraints are IDENTICAL
+    /// for every row, so the structure scales to `PROD_NUM_QUERIES`. We validate the honest matrix
+    /// across N = 2..=8 (the full within-RATE range: one output-buffer refill). At N = RATE the matrix
+    /// uses all 8 LIFO pops of the shared permute output as the 8 distinct query indices.
+    #[test]
+    fn fan_out_scales_within_rate() {
+        for n in 2..=RATE {
+            let cfg = cfg_fan_out(12, n);
+            let (m, _fs, _c, _f, _q) = fan_out_matrix(&cfg, n);
+            let report = check_all_constraints(&air(cfg), &m, &[], None);
+            assert!(
+                report.is_ok(),
+                "honest {n}-query fan-out rejected: {} failures",
+                report.failures.len()
+            );
         }
     }
 
