@@ -130,7 +130,7 @@ use crate::challenger::RATE;
 use crate::inlined_perm::{self, eval_perm, ConstantsExpr, PermCells, C_OUTPUT, PERM_COLS};
 use descender_account_stark::{Challenge, Val, DIGEST_ELEMS, WIDTH};
 use p3_air::{Air, AirBuilder, BaseAir, WindowAccess};
-use p3_field::{PrimeCharacteristicRing, PrimeField32, TwoAdicField};
+use p3_field::{BasedVectorSpace, PrimeCharacteristicRing, PrimeField32, TwoAdicField};
 
 extern crate alloc;
 use alloc::vec::Vec;
@@ -216,6 +216,36 @@ pub struct RecursiveConfig {
     /// a Merkle block (`merkle_levels > 0`) and the round-0 FRI columns. The honest builder sets the
     /// 8 leaf lanes equal to the 8 e0 limbs.
     pub bind_merkle_leaf_to_e0: bool,
+    /// (FS-αζ) SQUEEZE the DEEP/batch combination challenge `alpha` and the OOD point `zeta` from
+    /// the inline Fiat–Shamir challenger, in the EXACT p3-uni-stark / leaf verifier order:
+    ///   observe(metadata + main-trace commitment + public values) → SAMPLE alpha →
+    ///   observe(quotient-chunks commitment) → SAMPLE zeta.
+    /// When `true` the window carries an FS block: `fs_pre_alpha_rounds` FULL-rate absorb-permute
+    /// rounds from the `new()` zero boundary (the observed transcript prefix producing the
+    /// pre-alpha state) ‖ `alpha[D]` (bound limb-for-limb to the last pre-alpha permute's LIFO
+    /// squeeze pops, EXACTLY `sample_algebra_element` = 8 base draws) ‖ a quotient-observe
+    /// absorb-permute round (FULL-rate absorb of the quotient commitment into the post-alpha-squeeze
+    /// sponge state) ‖ `zeta[D]` (bound to that round's LIFO squeeze pops). Then `alpha`/`zeta` are
+    /// CONSTRAINED to equal the DEEP folder's `deep_alpha`/`deep_zeta` cells (residual
+    /// `deep_alpha − squeezed_alpha == 0`, `deep_zeta − squeezed_zeta == 0`), so they are NO LONGER
+    /// free inputs. Requires `deep_log_degree` (the consumer). The honest builder DERIVES alpha/zeta
+    /// from the transcript so the bus carries the genuine FS challenges.
+    pub fs_alpha_zeta: bool,
+    /// (FS-αζ) Number of FULL-rate (RATE=8 elements) absorb-permute rounds in the pre-alpha observed
+    /// transcript prefix (metadata ‖ main-trace commitment ‖ public values), from the zero boundary.
+    /// The last round's squeeze produces `alpha`. MUST be >= 1 (the native challenger always permutes
+    /// before the first sample, so the alpha squeeze source is always `permute(absorb(...))`, never
+    /// the un-permuted zero boundary). Only consumed when `fs_alpha_zeta`.
+    pub fs_pre_alpha_rounds: usize,
+    /// (FS-αζ) bind each FS round's absorbed block (the `fs_pre_alpha_rounds` pre-alpha rounds plus
+    /// the single quotient-observe round) to public-value columns (the committed transcript), exactly
+    /// like `prefix_blocks_public` does for the index-draw chain. When `true` and the public-values
+    /// vector is exactly `(fs_pre_alpha_rounds + 1) * RATE` long, element `r*RATE + i` pins FS round
+    /// `r`'s absorbed block lane `i` (rounds `0..fs_pre_alpha_rounds` are the pre-alpha prefix, round
+    /// `fs_pre_alpha_rounds` is the quotient commitment). Ties the FS squeeze to the ACTUAL observed
+    /// inner commitments + public digest, so a forger cannot fix alpha/zeta independent of the
+    /// statement. Off ⇒ blocks committed-but-unbound (the squeeze mechanics are still constrained).
+    pub fs_blocks_public: bool,
 }
 
 impl RecursiveConfig {
@@ -235,6 +265,9 @@ impl RecursiveConfig {
             prefix_blocks_public: false,
             public_io_len: 0,
             bind_merkle_leaf_to_e0: false,
+            fs_alpha_zeta: false,
+            fs_pre_alpha_rounds: 0,
+            fs_blocks_public: false,
         }
     }
     /// Number of successive squeeze draws actually laid out (≥ 1, ≤ RATE).
@@ -296,7 +329,11 @@ fn deep_base(cfg: &RecursiveConfig) -> usize {
 const DEEP_ZETA: usize = 0;
 const DEEP_Q: usize = DEEP_ZETA + D;
 const DEEP_C: usize = DEEP_Q + D;
-const DEEP_POW: usize = DEEP_C + D; // pow[0..=k]
+/// The DEEP/batch combination challenge `alpha` (8 limbs) the leaf folder uses to batch the
+/// constraint polynomials. A committed cell here; the (FS-αζ) block CONSTRAINS it to equal the
+/// FS-squeezed alpha so it is not free.
+const DEEP_ALPHA: usize = DEEP_C + D;
+const DEEP_POW: usize = DEEP_ALPHA + D; // pow[0..=k]
 
 fn deep_size(log_degree: usize) -> usize {
     DEEP_POW + (log_degree + 1) * D
@@ -420,9 +457,98 @@ fn public_io_base(cfg: &RecursiveConfig) -> usize {
     sponge_base(cfg) + sponge_size(cfg)
 }
 
+// ----- (FS-αζ) alpha/zeta Fiat–Shamir squeeze block -----
+//
+// Layout (appended after the public-IO block):
+//   [pre-alpha round 0]  block[RATE] ‖ perm[PERM_COLS]
+//   ...
+//   [pre-alpha round R-1] block[RATE] ‖ perm[PERM_COLS]      (R = fs_pre_alpha_rounds)
+//   alpha[D]                                                  (the SAMPLE alpha)
+//   [quotient round]      block[RATE] ‖ perm[PERM_COLS]       (observe quotient commitment)
+//   zeta[D]                                                   (the SAMPLE zeta)
+//
+// Each round is a FULL-rate (n == RATE) absorb-permute, EXACTLY like the index-draw prefix chain
+// (`prefix_round_state`). `state_0 == ZERO` (new() boundary); `state_k == permute(absorb(...))`.
+// alpha is the LIFO squeeze of the last pre-alpha round's permute (8 base draws =
+// `sample_algebra_element`); the quotient round absorbs into THAT permute's output sponge state
+// (sampling does not change sponge_state); zeta is the LIFO squeeze of the quotient round's permute.
+
+/// One FS round sub-block: `block[RATE] ‖ perm[PERM_COLS]` (reuses the prefix-chain shape).
+const FS_BLOCK: usize = 0;
+const FS_PERM: usize = FS_BLOCK + RATE;
+const FS_ROUND: usize = FS_PERM + PERM_COLS;
+
+/// Base of the (FS-αζ) block.
+fn fs_base(cfg: &RecursiveConfig) -> usize {
+    public_io_base(cfg) + cfg.public_io_len * PIO_STRIDE
+}
+
+/// Total FS rounds laid out: `fs_pre_alpha_rounds` pre-alpha rounds + 1 quotient-observe round.
+fn fs_total_rounds(cfg: &RecursiveConfig) -> usize {
+    cfg.fs_pre_alpha_rounds + 1
+}
+
+/// Sub-offset of FS round `r` (0-based: rounds `0..fs_pre_alpha_rounds` are the pre-alpha prefix,
+/// round `fs_pre_alpha_rounds` is the quotient-observe round) within the FS block.
+fn fs_round_base(cfg: &RecursiveConfig, r: usize) -> usize {
+    fs_base(cfg) + r * FS_ROUND
+}
+
+/// Sub-offset of the `alpha[D]` cell (after the pre-alpha rounds, before the quotient round).
+fn fs_alpha(cfg: &RecursiveConfig) -> usize {
+    fs_base(cfg) + cfg.fs_pre_alpha_rounds * FS_ROUND
+}
+
+/// Sub-offset of the quotient-observe round (after the alpha cell).
+fn fs_quot_round_base(cfg: &RecursiveConfig) -> usize {
+    fs_alpha(cfg) + D
+}
+
+/// Sub-offset of the `zeta[D]` cell (after the quotient round).
+fn fs_zeta(cfg: &RecursiveConfig) -> usize {
+    fs_quot_round_base(cfg) + FS_ROUND
+}
+
+/// Size of the (FS-αζ) block: (R+1) rounds + alpha[D] + zeta[D].
+fn fs_size(cfg: &RecursiveConfig) -> usize {
+    if cfg.fs_alpha_zeta {
+        fs_total_rounds(cfg) * FS_ROUND + 2 * D
+    } else {
+        0
+    }
+}
+
+/// The (alpha, zeta) the inline FS challenger squeezes for `fs_blocks` (the observed transcript:
+/// `fs_pre_alpha_rounds` pre-alpha FULL-rate blocks + 1 quotient-commitment block), in p3 order:
+/// observe pre-alpha prefix → SAMPLE alpha → observe quotient → SAMPLE zeta. The single source the
+/// honest builder DERIVES alpha/zeta from and the (FS-αζ) AIR binding is checked against. The 8
+/// `sample()` calls of `sample_algebra_element` map to LIFO pops `output[RATE-1-i]` (challenge limb
+/// `i` = `sample()` call `i`).
+pub fn fs_squeeze_alpha_zeta(
+    pre_alpha_blocks: &[[Val; RATE]],
+    quot_block: [Val; RATE],
+) -> (Challenge, Challenge) {
+    // pre_alpha_blocks must be non-empty: the native DuplexChallenger always permutes before the
+    // first sample (an empty output buffer triggers a duplexing), so the alpha squeeze source is
+    // ALWAYS permute(absorb(...)) — never the un-permuted zero boundary. The real leaf transcript
+    // (metadata ‖ trace commitment ‖ public values) guarantees >= 1 full-rate round before alpha.
+    assert!(
+        !pre_alpha_blocks.is_empty(),
+        "fs_squeeze requires >= 1 pre-alpha round (the native challenger permutes before sampling)"
+    );
+    // pre-alpha absorb chain from the zero boundary.
+    let pre_state = prefix_chain_state(pre_alpha_blocks);
+    // alpha = squeeze of the last pre-alpha permute = the rate of pre_state (LIFO pops).
+    let alpha = Challenge::from_basis_coefficients_fn(|i| pre_state[RATE - 1 - i]);
+    // observe(quotient): one FULL-rate absorb-permute into pre_state (sampling did not change it).
+    let post_state = prefix_round_state(pre_state, quot_block);
+    let zeta = Challenge::from_basis_coefficients_fn(|i| post_state[RATE - 1 - i]);
+    (alpha, zeta)
+}
+
 /// Total column count for a window with this config.
 pub fn n_cols(cfg: &RecursiveConfig) -> usize {
-    public_io_base(cfg) + cfg.public_io_len * PIO_STRIDE
+    fs_base(cfg) + fs_size(cfg)
 }
 
 /// The `j`-th tower column (`sp[j]`).
@@ -464,6 +590,16 @@ pub struct WindowInputs<'a> {
     /// (b′) DEEP OOD inputs: `(zeta, Q)`; `C` is derived `Z_H(zeta)·Q`.
     pub deep_zeta: Challenge,
     pub deep_q: Challenge,
+    /// (FS-αζ) the DEEP/batch combination challenge `alpha` placed in the `DEEP_ALPHA` cell. When
+    /// `fs_alpha_zeta`, the honest builder OVERRIDES both this and `deep_zeta` with the values
+    /// DERIVED from the FS transcript (`fs_squeeze_alpha_zeta`), so the bus carries the genuine FS
+    /// challenges. When `fs_alpha_zeta` is off this is the committed alpha (unconstrained by FS).
+    pub deep_alpha: Challenge,
+    /// (FS-αζ) the observed transcript blocks for the FS squeeze: `fs_pre_alpha_rounds` pre-alpha
+    /// FULL-rate blocks (metadata ‖ trace commitment ‖ public values) followed by ONE quotient-
+    /// commitment block. Length must equal `fs_pre_alpha_rounds + 1` when `fs_alpha_zeta`. The
+    /// honest builder DERIVES alpha/zeta + the per-round perm blocks from these. Unused otherwise.
+    pub fs_blocks: &'a [[Val; RATE]],
     /// (a-FS) the pre-squeeze sponge state whose permutation produces the index draw. When
     /// `inline_sponge_draw`, `draw_out` is CHECKED to equal `permute(sponge_in)[RATE-1]` (and the
     /// honest builder DERIVES `draw_out` from it). When `inline_sponge_draw` is off this is unused.
@@ -496,6 +632,8 @@ impl<'a> WindowInputs<'a> {
             merkle_siblings: &[],
             deep_zeta: Challenge::ZERO,
             deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH],
             prior_state: [Val::ZERO; WIDTH],
             absorbed: [Val::ZERO; RATE],
@@ -651,15 +789,31 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
         folded_prev = folded_r;
     }
 
+    // (FS-αζ) when squeezing, alpha + zeta are DERIVED from the FS transcript (the observed
+    // pre-alpha prefix + quotient commitment), overriding the supplied deep_alpha/deep_zeta so the
+    // DEEP bus carries the genuine FS challenges.
+    let (deep_alpha, deep_zeta) = if cfg.fs_alpha_zeta {
+        assert_eq!(
+            inp.fs_blocks.len(),
+            cfg.fs_pre_alpha_rounds + 1,
+            "fs_blocks must have fs_pre_alpha_rounds + 1 entries"
+        );
+        let (pre, quot) = inp.fs_blocks.split_at(cfg.fs_pre_alpha_rounds);
+        fs_squeeze_alpha_zeta(pre, quot[0])
+    } else {
+        (inp.deep_alpha, inp.deep_zeta)
+    };
+
     // (b′) DEEP OOD block.
     if let Some(k) = cfg.deep_log_degree {
-        let zh = crate::deep::vanishing_poly_at(inp.deep_zeta, k);
+        let zh = crate::deep::vanishing_poly_at(deep_zeta, k);
         let c = zh * inp.deep_q;
         let db = deep_base(cfg);
-        row[db + DEEP_ZETA..db + DEEP_ZETA + D].copy_from_slice(&limbs(inp.deep_zeta));
+        row[db + DEEP_ZETA..db + DEEP_ZETA + D].copy_from_slice(&limbs(deep_zeta));
         row[db + DEEP_Q..db + DEEP_Q + D].copy_from_slice(&limbs(inp.deep_q));
         row[db + DEEP_C..db + DEEP_C + D].copy_from_slice(&limbs(c));
-        let mut p = inp.deep_zeta;
+        row[db + DEEP_ALPHA..db + DEEP_ALPHA + D].copy_from_slice(&limbs(deep_alpha));
+        let mut p = deep_zeta;
         for j in 0..=k {
             row[db + DEEP_POW + j * D..db + DEEP_POW + j * D + D].copy_from_slice(&limbs(p));
             p = p * p;
@@ -681,7 +835,7 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
             dbase += D;
         }
         if cfg.deep_log_degree.is_some() {
-            row[dbase..dbase + D].copy_from_slice(&limbs(inp.deep_zeta));
+            row[dbase..dbase + D].copy_from_slice(&limbs(deep_zeta));
         }
     }
 
@@ -782,6 +936,56 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
             row[e + PIO_OBSERVED] = observed;
             row[e + PIO_INNER] = inner;
         }
+    }
+
+    // (FS-αζ) alpha/zeta FS-squeeze block: pre-alpha absorb chain ‖ alpha ‖ quotient round ‖ zeta.
+    // The same FULL-rate absorb-permute primitive as the index-draw prefix chain, but its squeezes
+    // produce the DEEP/batch combination challenge alpha (after the pre-alpha prefix) and the OOD
+    // point zeta (after observing the quotient commitment), mirroring p3-uni-stark's FS order.
+    if cfg.fs_alpha_zeta {
+        assert!(cfg.fs_pre_alpha_rounds >= 1, "fs_pre_alpha_rounds must be >= 1");
+        assert_eq!(
+            inp.fs_blocks.len(),
+            cfg.fs_pre_alpha_rounds + 1,
+            "fs_blocks must have fs_pre_alpha_rounds + 1 entries"
+        );
+        let consts = inlined_perm::Constants::pinned();
+        // pre-alpha rounds: state_0 = ZERO, state_k = permute(absorb(state_{k-1}, block_k, RATE)).
+        let mut state = [Val::ZERO; WIDTH];
+        for r in 0..cfg.fs_pre_alpha_rounds {
+            let block = inp.fs_blocks[r];
+            let pre = absorb_state(state, block, RATE);
+            let perm_cols = inlined_perm::generate_perm_cols(pre, &consts);
+            let rb = fs_round_base(cfg, r);
+            row[rb + FS_BLOCK..rb + FS_BLOCK + RATE].copy_from_slice(&block);
+            row[rb + FS_PERM..rb + FS_PERM + PERM_COLS].copy_from_slice(&perm_cols);
+            state = inlined_perm::perm_output(&perm_cols);
+        }
+        // alpha = LIFO squeeze of the pre-alpha state's rate (the 8 sample() pops).
+        let alpha = Challenge::from_basis_coefficients_fn(|i| state[RATE - 1 - i]);
+        let ab = fs_alpha(cfg);
+        row[ab..ab + D].copy_from_slice(&limbs(alpha));
+        // quotient-observe round: absorb the quotient commitment into the (unchanged) post-alpha
+        // sponge state (sampling does not mutate sponge_state), then permute.
+        let quot_block = inp.fs_blocks[cfg.fs_pre_alpha_rounds];
+        let pre_q = absorb_state(state, quot_block, RATE);
+        let q_perm = inlined_perm::generate_perm_cols(pre_q, &consts);
+        let qb = fs_quot_round_base(cfg);
+        row[qb + FS_BLOCK..qb + FS_BLOCK + RATE].copy_from_slice(&quot_block);
+        row[qb + FS_PERM..qb + FS_PERM + PERM_COLS].copy_from_slice(&q_perm);
+        let post = inlined_perm::perm_output(&q_perm);
+        // zeta = LIFO squeeze of the quotient round's state rate.
+        let zeta = Challenge::from_basis_coefficients_fn(|i| post[RATE - 1 - i]);
+        let zb = fs_zeta(cfg);
+        row[zb..zb + D].copy_from_slice(&limbs(zeta));
+        debug_assert_eq!(
+            (alpha, zeta),
+            {
+                let (pre, quot) = inp.fs_blocks.split_at(cfg.fs_pre_alpha_rounds);
+                fs_squeeze_alpha_zeta(pre, quot[0])
+            },
+            "FS block pack != fs_squeeze_alpha_zeta reference"
+        );
     }
 
     row
@@ -1245,6 +1449,115 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 builder.assert_zero(l(e + PIO_OBSERVED) - l(e + PIO_INNER));
             }
         }
+
+        // ===== (FS-αζ) SQUEEZE alpha + zeta from the inline FS challenger, in p3 order =====
+        // p3-uni-stark / leaf verifier FS order (verifier.rs:400-430):
+        //   observe(metadata ‖ main-trace commitment ‖ public values)  [pre-alpha prefix rounds]
+        //   alpha = sample_algebra_element()                            [SAMPLE alpha]
+        //   observe(quotient-chunks commitment)                        [quotient-observe round]
+        //   zeta  = sample_algebra_element()                           [SAMPLE zeta]
+        // Each round is a FULL-rate (n == RATE) absorb-permute from the new() zero boundary (the same
+        // primitive as the index-draw prefix chain). alpha/zeta are the LIFO squeeze pops of the
+        // last pre-alpha / quotient permute (challenge limb i == sample() call i == output[RATE-1-i],
+        // matching sample_algebra_element = from_basis_coefficients_fn(|_| self.sample())). The
+        // squeezed alpha/zeta are then CONSTRAINED to equal the DEEP folder's alpha/zeta cells, so
+        // those are NO LONGER free inputs — a forger cannot pick alpha/zeta independent of the
+        // observed (inner commitments + public digest) transcript.
+        if cfg.fs_alpha_zeta {
+            let consts = ConstantsExpr::<AB>::pinned();
+            let cells = WindowCells::<AB> { row: local.clone() };
+            let rate_expr = AB::Expr::from(AB::F::from_u8(RATE as u8));
+            let pre_rounds = cfg.fs_pre_alpha_rounds;
+
+            // state_{r} reader: r == 0 is the new() zero boundary; else FS round (r-1)'s perm output.
+            let fs_state_prev = |r: usize, i: usize| -> AB::Expr {
+                if r == 0 {
+                    AB::Expr::ZERO
+                } else {
+                    let pp = fs_round_base(&cfg, r - 1);
+                    l(pp + FS_PERM + C_OUTPUT + i)
+                }
+            };
+            // Constrain each pre-alpha FULL-rate absorb-permute round.
+            for r in 0..pre_rounds {
+                let rb = fs_round_base(&cfg, r);
+                let inb = rb + FS_PERM + inlined_perm::C_INPUTS;
+                // FULL-rate absorb: rate lanes [0..RATE] == block_r (overwrite).
+                for i in 0..RATE {
+                    builder.assert_zero(l(inb + i) - l(rb + FS_BLOCK + i));
+                }
+                // capacity slot RATE == state_{r}[RATE] + RATE (length tag, n == RATE).
+                builder.assert_zero(l(inb + RATE) - fs_state_prev(r, RATE) - rate_expr.clone());
+                // remaining capacity slots [RATE+1..WIDTH] carried from state_{r}.
+                for i in (RATE + 1)..WIDTH {
+                    builder.assert_zero(l(inb + i) - fs_state_prev(r, i));
+                }
+                // full Poseidon2 permutation over this round's perm block.
+                eval_perm::<AB, _>(builder, &cells, rb + FS_PERM, &consts);
+            }
+
+            // The pre-alpha state (the squeeze source for alpha): the last pre-alpha round's perm
+            // output, or the zero boundary if there are no pre-alpha rounds.
+            let pre_alpha_out = |i: usize| -> AB::Expr { fs_state_prev(pre_rounds, i) };
+
+            // alpha == LIFO squeeze of the pre-alpha state's rate: alpha_limb[i] == out[RATE-1-i].
+            let ab = fs_alpha(&cfg);
+            for i in 0..D {
+                builder.assert_zero(l(ab + i) - pre_alpha_out(RATE - 1 - i));
+            }
+
+            // quotient-observe round: absorb the quotient commitment into the (UNCHANGED, sampling
+            // does not mutate sponge_state) pre-alpha state, then permute. Its squeeze is zeta.
+            let qb = fs_quot_round_base(&cfg);
+            let qinb = qb + FS_PERM + inlined_perm::C_INPUTS;
+            for i in 0..RATE {
+                builder.assert_zero(l(qinb + i) - l(qb + FS_BLOCK + i));
+            }
+            builder.assert_zero(l(qinb + RATE) - pre_alpha_out(RATE) - rate_expr.clone());
+            for i in (RATE + 1)..WIDTH {
+                builder.assert_zero(l(qinb + i) - pre_alpha_out(i));
+            }
+            eval_perm::<AB, _>(builder, &cells, qb + FS_PERM, &consts);
+
+            // zeta == LIFO squeeze of the quotient round's state rate: zeta_limb[i] == out[RATE-1-i].
+            let zb = fs_zeta(&cfg);
+            for i in 0..D {
+                builder.assert_zero(l(zb + i) - l(qb + FS_PERM + C_OUTPUT + (RATE - 1 - i)));
+            }
+
+            // ----- BIND the FS-squeezed alpha/zeta to the DEEP folder's consumer cells -----
+            // residual: deep_alpha − squeezed_alpha == 0, deep_zeta − squeezed_zeta == 0 ⇒ the DEEP
+            // folder's alpha/zeta are NO LONGER free; they are the FS challenges.
+            if cfg.deep_log_degree.is_some() {
+                let db = deep_base(&cfg);
+                for i in 0..D {
+                    builder.assert_zero(l(db + DEEP_ALPHA + i) - l(ab + i));
+                    builder.assert_zero(l(db + DEEP_ZETA + i) - l(zb + i));
+                }
+            }
+
+            // (FS-αζ) optionally bind each round's absorbed block to the PUBLIC transcript: public
+            // value r*RATE + i == FS round r's block (rounds 0..pre_rounds = pre-alpha prefix, round
+            // pre_rounds = quotient commitment). This ties the squeeze to the ACTUAL observed inner
+            // commitments + public digest, so a forger cannot fix alpha/zeta independent of the
+            // statement.
+            if cfg.fs_blocks_public {
+                let pubs: Vec<AB::Expr> =
+                    builder.public_values().iter().map(|p| (*p).into()).collect();
+                let total = pre_rounds + 1;
+                if pubs.len() == total * RATE {
+                    for r in 0..pre_rounds {
+                        let rb = fs_round_base(&cfg, r);
+                        for i in 0..RATE {
+                            builder.assert_zero(l(rb + FS_BLOCK + i) - pubs[r * RATE + i].clone());
+                        }
+                    }
+                    for i in 0..RATE {
+                        builder.assert_zero(l(qb + FS_BLOCK + i) - pubs[pre_rounds * RATE + i].clone());
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -1493,6 +1806,8 @@ mod tests {
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO,
             deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH],
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
@@ -1551,7 +1866,7 @@ mod tests {
             descent: &[],
             merkle_leaf: leaves[forged_index],
             merkle_siblings: &sibs,
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
         };
         let mut row = pack_window(&cfg, &inp);
@@ -1570,7 +1885,7 @@ mod tests {
             draw_out: draw, e0: ext_multi(1), e1: ext_multi(2), beta: ext_multi(3),
             descent: &[], merkle_leaf: leaves[honest_index],
             merkle_siblings: &tree.auth_path(honest_index),
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
         });
         for c in C_DRAW_OUT..tower_end(levels) {
@@ -1764,7 +2079,7 @@ mod tests {
             descent: &descent,
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
         };
         pack_window(cfg, &inp)
@@ -1878,7 +2193,7 @@ mod tests {
             descent: &[],
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: zeta, deep_q: q,
+            deep_zeta: zeta, deep_q: q, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
         };
         pack_window(cfg, &inp)
@@ -1999,7 +2314,7 @@ mod tests {
             descent: &descent,
             merkle_leaf: leaves[index],
             merkle_siblings: &sibs,
-            deep_zeta: ext_multi(55), deep_q: ext_multi(66),
+            deep_zeta: ext_multi(55), deep_q: ext_multi(66), deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
         };
         let row = pack_window(&cfg, &inp);
@@ -2031,7 +2346,7 @@ mod tests {
             descent: &[],
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in,
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
@@ -2253,7 +2568,7 @@ mod tests {
             descent: &[],
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], // ignored — derived from absorb
             prior_state,
             absorbed,
@@ -2469,7 +2784,7 @@ mod tests {
             descent: &[],
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH],
             prior_state: [Val::ZERO; WIDTH], // ignored — derived from the prefix chain
             absorbed,
@@ -2745,7 +3060,7 @@ mod tests {
             descent: &[],
             merkle_leaf: leaf,
             merkle_siblings: &sibs,
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
         };
         pack_window(cfg, &inp)
@@ -2791,7 +3106,7 @@ mod tests {
         let inp = WindowInputs {
             draw_out: draw, e0: forged_e0, e1: ext_multi(2), beta: ext_multi(3),
             descent: &[], merkle_leaf: leaves[index], merkle_siblings: &sibs,
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
         };
         let row = pack_window(&cfg_off, &inp);
@@ -2825,7 +3140,7 @@ mod tests {
             descent: &[],
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: [Val::ZERO; WIDTH],
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
@@ -2924,7 +3239,7 @@ mod tests {
             descent: &[],
             merkle_leaf: leaf,
             merkle_siblings: &sibs,
-            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
             sponge_in: sin,
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
@@ -2934,5 +3249,305 @@ mod tests {
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
         let report = check_all_constraints(&air(cfg), &m, &pubs(leaf, root), None);
         assert!(report.is_ok(), "monolith (sponge+leaf↔e0+public-IO) rejected: {} failures", report.failures.len());
+    }
+
+    // ---------------------------------------------------------------------------------
+    // (FS-αζ) SQUEEZE alpha + zeta from the inline FS challenger, p3-uni-stark order.
+    // ---------------------------------------------------------------------------------
+
+    use p3_challenger::{CanObserve, CanSample};
+    use descender_account_stark::Challenger;
+    use p3_koala_bear::default_koalabear_poseidon2_16;
+
+    fn cfg_fs(h: usize, k: usize, pre_rounds: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            deep_log_degree: Some(k),
+            fs_alpha_zeta: true,
+            fs_pre_alpha_rounds: pre_rounds,
+            ..RecursiveConfig::single_window(h)
+        }
+    }
+
+    /// A representative observed-transcript block (RATE elements) — stands in for a chunk of the
+    /// observed (metadata ‖ trace-commitment ‖ public-values ‖ quotient-commitment) stream.
+    fn fs_block(seed: u32) -> [Val; RATE] {
+        core::array::from_fn(|i| {
+            Val::from_u32(seed.wrapping_mul(2654435761).wrapping_add(i as u32 * 131 + 7))
+        })
+    }
+
+    fn fs_window(cfg: &RecursiveConfig, blocks: &[[Val; RATE]], q: Challenge) -> Vec<Val> {
+        let inp = WindowInputs {
+            draw_out: Val::from_u32(0xABCDE),
+            e0: ext_multi(1), e1: ext_multi(2), beta: ext_multi(3),
+            descent: &[],
+            merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
+            merkle_siblings: &[],
+            deep_zeta: Challenge::ZERO, deep_q: q, deep_alpha: Challenge::ZERO,
+            fs_blocks: blocks,
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[], public_io: &[],
+        };
+        pack_window(cfg, &inp)
+    }
+
+    /// FIDELITY-PIN: `fs_squeeze_alpha_zeta` (and hence the packed bus) reproduces the SAME alpha
+    /// and zeta a REAL `DuplexChallenger` produces for the SAME observations in the SAME p3 order —
+    /// observe pre-alpha prefix → sample_algebra_element (alpha) → observe quotient → sample (zeta).
+    /// Element-for-element equality against the native challenger, NOT a hand-picked constant.
+    #[test]
+    fn fs_squeeze_matches_native_duplex_challenger() {
+        // pre_rounds >= 1: the real leaf ALWAYS observes (metadata ‖ trace commitment ‖ public
+        // values) before sampling alpha, so the alpha squeeze source is permute(absorb(...)), never
+        // the raw zero state. (A pre_rounds == 0 config would squeeze the un-permuted zero boundary,
+        // which the native challenger never does — its first sample with an empty output buffer still
+        // duplex-permutes. That config is disallowed; see fs_squeeze_alpha_zeta's assert.)
+        for pre_rounds in [1usize, 2, 3] {
+            let pre: Vec<[Val; RATE]> = (0..pre_rounds as u32).map(|r| fs_block(10 + r)).collect();
+            let quot = fs_block(900);
+
+            // native: observe each pre-alpha block (RATE elems each, auto-duplexing on the 8th),
+            // sample alpha (extension = 8 base draws), observe quotient block, sample zeta.
+            let mut ch = Challenger::new(default_koalabear_poseidon2_16());
+            for block in &pre {
+                for &x in block.iter() {
+                    ch.observe(x);
+                }
+            }
+            let alpha_native: Challenge = {
+                Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() })
+            };
+            for &x in quot.iter() {
+                ch.observe(x);
+            }
+            let zeta_native: Challenge = {
+                Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() })
+            };
+
+            let (alpha, zeta) = fs_squeeze_alpha_zeta(&pre, quot);
+            assert_eq!(alpha, alpha_native, "FS alpha diverges from native challenger (pre={pre_rounds})");
+            assert_eq!(zeta, zeta_native, "FS zeta diverges from native challenger (pre={pre_rounds})");
+        }
+    }
+
+    /// GOLDEN (positive): an honest FS-αζ window — pre-alpha absorb chain ‖ alpha squeeze ‖ quotient
+    /// round ‖ zeta squeeze, with the DEEP folder's alpha/zeta cells bound to the squeezed values —
+    /// ACCEPTS via the real `check_all_constraints`, across several pre-round counts + log_degrees.
+    #[test]
+    fn air_accepts_fs_alpha_zeta() {
+        for &pre_rounds in &[1usize, 2, 3] {
+            for &k in &[4usize, 8, 12] {
+                let cfg = cfg_fs(10, k, pre_rounds);
+                let blocks: Vec<[Val; RATE]> =
+                    (0..(pre_rounds + 1) as u32).map(|r| fs_block(20 + r)).collect();
+                let row = fs_window(&cfg, &blocks, ext_multi(66));
+                // the DEEP alpha/zeta cells equal the FS squeeze.
+                let (alpha, zeta) = fs_squeeze_alpha_zeta(&blocks[..pre_rounds], blocks[pre_rounds]);
+                let db = deep_base(&cfg);
+                assert_eq!(
+                    Challenge::from_basis_coefficients_slice(&row[db + DEEP_ALPHA..db + DEEP_ALPHA + D]).unwrap(),
+                    alpha, "DEEP alpha cell != FS-squeezed alpha"
+                );
+                assert_eq!(
+                    Challenge::from_basis_coefficients_slice(&row[db + DEEP_ZETA..db + DEEP_ZETA + D]).unwrap(),
+                    zeta, "DEEP zeta cell != FS-squeezed zeta"
+                );
+                let m = RowMajorMatrix::new(row, n_cols(&cfg));
+                let report = check_all_constraints(&air(cfg), &m, &[], None);
+                assert!(report.is_ok(), "honest FS-αζ window rejected (pre={pre_rounds}, k={k}): {} failures", report.failures.len());
+            }
+        }
+    }
+
+    /// (FS-αζ) FORGERY — a DEEP alpha NOT equal to the squeezed alpha is rejected. We keep the FS
+    /// squeeze block honest and overwrite the DEEP alpha cell (and re-derive nothing — alpha is not
+    /// used in the C==Z_H·Q relation in this config, so the ONLY rejector is the FS binding).
+    /// Tested by attempted forgery, never substring scan.
+    #[test]
+    fn air_rejects_forged_deep_alpha() {
+        let cfg = cfg_fs(10, 8, 2);
+        let blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(30 + r)).collect();
+        let mut row = fs_window(&cfg, &blocks, ext_multi(7));
+        let db = deep_base(&cfg);
+        row[db + DEEP_ALPHA + 2] += Val::ONE; // alpha != squeezed alpha
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a DEEP alpha != the FS-squeezed alpha was accepted — alpha not FS-bound"
+        );
+    }
+
+    /// (FS-αζ) FORGERY — a DEEP zeta NOT equal to the squeezed zeta is rejected. CONTROL: the DEEP
+    /// block is self-consistent (C == Z_H(zeta)·Q) at the honest zeta; forging zeta to a DIFFERENT
+    /// OOD point while keeping the FS squeeze honest breaks the zeta↔squeeze binding (and the DEEP
+    /// tower). A forger cannot open at a favorable OOD point.
+    #[test]
+    fn air_rejects_forged_deep_zeta() {
+        let cfg = cfg_fs(10, 8, 2);
+        let blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(40 + r)).collect();
+        let mut row = fs_window(&cfg, &blocks, ext_multi(9));
+        let db = deep_base(&cfg);
+        row[db + DEEP_ZETA + 1] += Val::ONE; // zeta != squeezed zeta
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a DEEP zeta != the FS-squeezed zeta was accepted — zeta not FS-bound"
+        );
+    }
+
+    /// (FS-αζ) FORGERY — changing an OBSERVED transcript block CHANGES the squeezed alpha/zeta (so a
+    /// forger cannot fix challenges independent of the statement). We flip one element of a pre-alpha
+    /// block: the honest squeeze of the TAMPERED block differs from the alpha/zeta in the (now stale)
+    /// DEEP cells ⇒ rejected. The squeeze permute is honest for the tampered block (we re-pack), so
+    /// the rejector is purely "observed block changed ⇒ challenge changed ⇒ binding broke".
+    #[test]
+    fn air_rejects_changed_observed_block_keeping_stale_challenge() {
+        let cfg = cfg_fs(10, 8, 2);
+        let blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(50 + r)).collect();
+        // honest window for the original blocks.
+        let honest = fs_window(&cfg, &blocks, ext_multi(11));
+        assert!(check_all_constraints(&air(cfg), &RowMajorMatrix::new(honest.clone(), n_cols(&cfg)), &[], None).is_ok());
+
+        // tamper a pre-alpha block, re-pack the FS squeeze HONESTLY for the tampered block (so the
+        // perm chain is internally valid), but KEEP the OLD DEEP alpha/zeta cells (the stale challenge
+        // the forger wanted to lock in). The squeeze now yields a different alpha/zeta ⇒ binding fails.
+        let mut tampered = blocks.clone();
+        tampered[0][3] += Val::ONE;
+        let (old_alpha, old_zeta) = fs_squeeze_alpha_zeta(&blocks[..2], blocks[2]);
+        let (new_alpha, new_zeta) = fs_squeeze_alpha_zeta(&tampered[..2], tampered[2]);
+        assert_ne!(old_alpha, new_alpha, "observed block change did not move alpha");
+        assert_ne!(old_zeta, new_zeta, "observed block change did not move zeta");
+
+        let mut row = fs_window(&cfg, &tampered, ext_multi(11));
+        // re-pin the DEEP block to the OLD (stale) challenge: zeta + its tower + C, and alpha.
+        let db = deep_base(&cfg);
+        let k = 8usize;
+        let zh = crate::deep::vanishing_poly_at(old_zeta, k);
+        let c = zh * ext_multi(11);
+        row[db + DEEP_ZETA..db + DEEP_ZETA + D].copy_from_slice(&limbs(old_zeta));
+        row[db + DEEP_ALPHA..db + DEEP_ALPHA + D].copy_from_slice(&limbs(old_alpha));
+        row[db + DEEP_C..db + DEEP_C + D].copy_from_slice(&limbs(c));
+        let mut p = old_zeta;
+        for j in 0..=k {
+            row[db + DEEP_POW + j * D..db + DEEP_POW + j * D + D].copy_from_slice(&limbs(p));
+            p = p * p;
+        }
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a changed observed block with a stale (favorable) challenge was accepted — FS not statement-bound"
+        );
+    }
+
+    /// (FS-αζ) FORGERY — a tampered FS perm interior cell ⇒ the inlined Poseidon2 round constraints
+    /// reject (the squeeze permute is fully constrained, not just the input copy).
+    #[test]
+    fn air_rejects_fs_tampered_perm() {
+        let cfg = cfg_fs(10, 8, 2);
+        let blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(60 + r)).collect();
+        let mut row = fs_window(&cfg, &blocks, ext_multi(13));
+        // corrupt a begin-post cell of the FIRST pre-alpha round's perm.
+        let rb = fs_round_base(&cfg, 0);
+        row[rb + FS_PERM + inlined_perm::C_BEGIN_POST] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(!check_all_constraints(&air(cfg), &m, &[], None).is_ok());
+    }
+
+    /// (FS-αζ) FORGERY — a forged FS round length tag (capacity slot RATE not == prev[RATE] + RATE)
+    /// is rejected (the prefix-free absorb tag is what makes the transcript binding non-malleable).
+    #[test]
+    fn air_rejects_fs_forged_length_tag() {
+        let cfg = cfg_fs(10, 8, 1);
+        let blocks: Vec<[Val; RATE]> = (0..2u32).map(|r| fs_block(70 + r)).collect();
+        let mut row = fs_window(&cfg, &blocks, ext_multi(15));
+        // corrupt the quotient round's perm input capacity length-tag slot.
+        let qb = fs_quot_round_base(&cfg);
+        row[qb + FS_PERM + inlined_perm::C_INPUTS + RATE] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(!check_all_constraints(&air(cfg), &m, &[], None).is_ok());
+    }
+
+    /// (FS-αζ) FORGERY — broken inter-round carry: corrupt the SECOND pre-alpha round's perm input
+    /// (which must equal absorb(round-0 output, block_1, RATE)); the round-0→round-1 chain breaks.
+    #[test]
+    fn air_rejects_fs_broken_interround_carry() {
+        let cfg = cfg_fs(10, 8, 2);
+        let blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(80 + r)).collect();
+        let mut row = fs_window(&cfg, &blocks, ext_multi(17));
+        // tamper a CAPACITY input lane of round 1 (carried from round 0's output) so the carry breaks.
+        let rb1 = fs_round_base(&cfg, 1);
+        row[rb1 + FS_PERM + inlined_perm::C_INPUTS + (RATE + 1)] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(!check_all_constraints(&air(cfg), &m, &[], None).is_ok());
+    }
+
+    /// (FS-αζ) FORGERY — REORDERED FS chain (alpha squeezed AFTER observing the quotient): if the
+    /// alpha cell is pinned to the QUOTIENT round's squeeze (a wrong FS order) instead of the
+    /// pre-alpha state, it no longer equals the honest pre-alpha squeeze ⇒ rejected. Proves the
+    /// observe→alpha→observe→zeta ORDER is load-bearing (a wrong order is a soundness bug).
+    #[test]
+    fn air_rejects_fs_reordered_alpha_after_quotient() {
+        let cfg = cfg_fs(10, 8, 2);
+        let blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(90 + r)).collect();
+        let mut row = fs_window(&cfg, &blocks, ext_multi(19));
+        // set the DEEP alpha cell to the QUOTIENT round's squeeze (= zeta) — the "alpha after observe
+        // quotient" wrong order. Honest alpha is the pre-alpha squeeze, so this differs ⇒ reject.
+        let qb = fs_quot_round_base(&cfg);
+        let wrong_alpha: [Val; D] =
+            core::array::from_fn(|i| row[qb + FS_PERM + C_OUTPUT + (RATE - 1 - i)]);
+        let db = deep_base(&cfg);
+        row[db + DEEP_ALPHA..db + DEEP_ALPHA + D].copy_from_slice(&wrong_alpha);
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "alpha squeezed in the WRONG FS order (after the quotient observe) was accepted"
+        );
+    }
+
+    /// (FS-αζ) FORGERY — non-zero round-0 boundary state: the first pre-alpha round must absorb into
+    /// the new() ALL-ZERO sponge. Forcing a non-zero round-0 input capacity (a non-zero state_0)
+    /// breaks the boundary length-tag constraint (state_0[RATE] must be 0 ⇒ slot RATE == RATE).
+    #[test]
+    fn air_rejects_fs_nonzero_round0_boundary() {
+        let cfg = cfg_fs(10, 8, 2);
+        let blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(110 + r)).collect();
+        let mut row = fs_window(&cfg, &blocks, ext_multi(21));
+        // corrupt round-0 perm input capacity slot RATE (the length tag): boundary requires == RATE.
+        let rb0 = fs_round_base(&cfg, 0);
+        row[rb0 + FS_PERM + inlined_perm::C_INPUTS + RATE] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(!check_all_constraints(&air(cfg), &m, &[], None).is_ok());
+    }
+
+    /// (FS-αζ) PUBLIC-TRANSCRIPT BINDING: with `fs_blocks_public`, the FS rounds' absorbed blocks are
+    /// pinned to the public-values vector (the actual observed inner commitments + public digest).
+    /// Honest accepts; a public value inconsistent with the absorbed block rejects.
+    #[test]
+    fn air_fs_blocks_bound_to_public_transcript() {
+        let pre_rounds = 2usize;
+        let cfg = RecursiveConfig {
+            deep_log_degree: Some(8),
+            fs_alpha_zeta: true,
+            fs_pre_alpha_rounds: pre_rounds,
+            fs_blocks_public: true,
+            ..RecursiveConfig::single_window(10)
+        };
+        let blocks: Vec<[Val; RATE]> = (0..(pre_rounds + 1) as u32).map(|r| fs_block(130 + r)).collect();
+        let row = fs_window(&cfg, &blocks, ext_multi(23));
+        // public values = the concatenated absorbed blocks (the committed transcript).
+        let pubs: Vec<Val> = blocks.iter().flatten().copied().collect();
+        assert_eq!(pubs.len(), (pre_rounds + 1) * RATE);
+        let m = RowMajorMatrix::new(row.clone(), n_cols(&cfg));
+        assert!(
+            check_all_constraints(&air(cfg), &m, &pubs, None).is_ok(),
+            "honest FS public-transcript binding rejected"
+        );
+        // a public value inconsistent with the absorbed block ⇒ rejected.
+        let mut bad_pubs = pubs.clone();
+        bad_pubs[RATE + 2] += Val::ONE;
+        assert!(
+            !check_all_constraints(&air(cfg), &RowMajorMatrix::new(row, n_cols(&cfg)), &bad_pubs, None).is_ok(),
+            "a public transcript inconsistent with the FS absorbed block was accepted"
+        );
     }
 }
