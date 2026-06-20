@@ -199,14 +199,38 @@
 //!      ([`tests::deep_reduced_e0_matches_p3_reduced_opening`]). Tamper-rejected: `e0 ≠ combination`,
 //!      tampered opened row, wrong alpha/zeta, unsound inverse(s), tampered at-zeta value, forged
 //!      alpha-power, tampered `x`. This ties the verified inner-proof opening to the FRI input.
+//!  19. **(QO) AUTHENTICATE the QUOTIENT-chunk opening, fold its reduced-opening contribution into
+//!      `e0`, and TIE `DEEP_Q` to the chunk OOD recombination** (NEW; `quot_chunks`): replicates the
+//!      (a)/(b-hash) main-trace opening pattern for the inner QUOTIENT commitment. (1) The opened
+//!      quotient chunks (each a width-`D` extension column) are hashed IN-AIR as
+//!      `MyHash(quot_opened ‖ salt)` (deployed `PaddingFreeSponge`) and the Merkle path is folded at
+//!      the FS query index (per-level selector = bus index bit `level`) against the BOUND inner
+//!      quotient commitment `quot_commit` — a path folding to a different root, a corrupted commitment,
+//!      a tampered opened chunk, or an open at a non-FS index all reject. (2) The quotient contribution
+//!      `Σ_c apow_q[c]·(quot_at_zeta[c] − quot_opened[c]) · 1/(zeta − x)` is ADDED to the (DR) `e0`
+//!      numerator, batched by the UNIFIED alpha sequence (continuing the trace columns' powers by
+//!      `quot_alpha_offset` — p3 `open_input` verifier.rs:720-752 keys reduced openings by log-height,
+//!      one alpha power per opened column). (3) `DEEP_Q == Σ_c quot_zps[c]·quot_at_zeta[c]` (p3
+//!      `recompose_quotient_from_chunks` uni-stark verifier.rs:98-135), so `C == Z_H(zeta)·DEEP_Q`
+//!      (the (b′) block) now binds the constraint to the AUTHENTICATED quotient OOD opening — `DEEP_Q`
+//!      is no longer a free committed value. FIDELITY-PINned against a real p3 `MerkleTreeMmcs`
+//!      quotient commitment + `verify_batch` (zero-residual root match,
+//!      [`tests::fidelity_real_mmcs_quotient_opening_authenticates_in_air`]) and the REAL Lagrange
+//!      `zps` selectors over real quotient-chunk coset domains
+//!      ([`tests::fidelity_real_quotient_ood_recombination`]). Tamper-rejected: opened chunk, wrong
+//!      commitment, non-FS index, `DEEP_Q ≠ recombination` (with a re-derived `C == Z_H·Q` control, so
+//!      ONLY the tie catches it), altered quotient reduced-opening contribution, tampered `zps`.
+//! - **(QO) scope**: ONE query, the quotient bucket sharing the trace log-height (its contribution
+//!   folds into the SAME round-0 `e0`); the random-codeword hiding columns, the per-chunk separate
+//!   log-height bucketing for unequal heights, and the 56-query fan-out stay deferred.
 //! - **deferred leaf C(zeta)**: the DEEP block opens `C(zeta)` / `Q(zeta)` as committed values and
 //!   constrains the QUOTIENT RELATION; the full `C(zeta) =` leaf-AIR-constraint-polynomial
 //!   evaluation (re-expressing the entire leaf folder) + the DEEP linear-combination / chunk
 //!   recomposition stay deferred (same boundary [`crate::deep_air`] documents).
 //! - **(DR) scope**: the reduced opening is modeled for ONE query, the SINGLE main-trace matrix, opened
 //!   at `zeta` (+ optional `zeta_next`); the quotient-CHUNK openings' contribution to the reduced
-//!   opening, the random-codeword matrices, the 56-query fan-out, and authenticating the at-zeta values
-//!   to the OOD opening (they are committed cells here) stay deferred.
+//!   opening + the chunk OOD recombination are NOW handled by item 19 (QO); the random-codeword
+//!   matrices and the 56-query fan-out stay deferred.
 
 use crate::fri_fold::{fold_pair, fold_point};
 use crate::fri_fold_air::{limbs, D, W};
@@ -493,6 +517,41 @@ pub struct RecursiveConfig {
     /// folder) — NOT silently-dropped per-row constraints. With an honest faithful row `C_committed`
     /// is the residual `C(zeta) − C_partial(value_at_zeta)`; the per-row leaf C(zeta) is FULLY folded.
     pub deep_c_full_leaf: bool,
+    /// (QO) AUTHENTICATE the QUOTIENT-chunk opening at the FS query index against the inner QUOTIENT
+    /// commitment, fold the quotient contribution into the DEEP reduced opening `e0`, and TIE `DEEP_Q`
+    /// to the quotient chunks' OOD (at-`zeta`) openings. When `> 0` it is the number of opened quotient
+    /// chunks (deployed: 8 = `num_quotient_chunks`); the window carries a (QO) block appended LAST (so
+    /// it perturbs no prior offset) with:
+    ///   - the bound inner quotient commitment `quot_commit[DIGEST_ELEMS]`,
+    ///   - the opened chunk LDE values at the query point `quot_opened[quot_chunks·D]` (the cells the
+    ///     Merkle leaf authenticates — each chunk is a width-`D` extension column, p3 verifier.rs:746),
+    ///   - the chunk OOD openings at `zeta` `quot_at_zeta[quot_chunks·D]` (one extension elt per chunk),
+    ///   - the hiding-MMCS salt, the query point `quot_x`, a witnessed inverse `1/(zeta − quot_x)`,
+    ///   - the quotient bucket alpha-power tower (continuing the trace columns' alpha sequence by the
+    ///     offset `quot_alpha_offset`, p3 `open_input` verifier.rs:720-752 — one alpha-power per opened
+    ///     column, advancing across all quotient chunks),
+    ///   - the per-chunk recombination selectors `quot_zps[quot_chunks·D]` (p3
+    ///     `recompose_quotient_from_chunks` uni-stark verifier.rs:98-135),
+    ///   - the `MyHash(quot_opened ‖ salt)` leaf-hash perms, and `quot_merkle_levels` Merkle path levels
+    ///     (selector bit `level` bound to FS-index bit `level`, the SAME index the main-trace path uses).
+    /// The eval (1) Merkle-authenticates `MyHash(quot_opened ‖ salt)` to `quot_commit` at the FS index;
+    /// (2) ADDS `Σ_c apow[c]·(quot_at_zeta[c] − quot_opened[c]) · inv` to the (DR) `e0` numerator
+    /// (batched by the continued alpha sequence); (3) constrains `DEEP_Q == Σ_c quot_zps[c]·quot_at_zeta[c]`,
+    /// so `C == Z_H(zeta)·DEEP_Q` now binds the constraint to the AUTHENTICATED quotient OOD opening
+    /// (DEEP_Q is no longer free). Requires `deep_log_degree`, `deep_e0_combine > 0` (the trace e0 block),
+    /// and `merkle_levels > 0`. 0 = off. PINned against a real p3 quotient MMCS + reduced opening +
+    /// the real `recompose_quotient_from_chunks` recombination. NOTE: the quotient bucket shares the
+    /// trace's log-height in this single-matrix model, so the quotient contribution is added to the SAME
+    /// `e0` the trace reduced opening feeds (p3 keys `reduced_openings` by `log_height`).
+    pub quot_chunks: usize,
+    /// (QO) Number of Merkle path levels for the quotient-chunk tree (the quotient commitment depth).
+    /// Only consumed when `quot_chunks > 0`.
+    pub quot_merkle_levels: usize,
+    /// (QO) alpha-power offset where the quotient chunk columns begin in the unified alpha sequence
+    /// (p3 batches trace + quotient under ONE alpha sequence per log-height bucket; the trace consumes
+    /// `deep_e0_combine` powers per opening point, so the quotient continues from there). Typically
+    /// `deep_e0_combine * (1 + deep_e0_next as usize)`. Only consumed when `quot_chunks > 0`.
+    pub quot_alpha_offset: usize,
 }
 
 impl RecursiveConfig {
@@ -529,6 +588,9 @@ impl RecursiveConfig {
             deep_e0_next: false,
             deep_c_from_vzeta: false,
             deep_c_full_leaf: false,
+            quot_chunks: 0,
+            quot_merkle_levels: 0,
+            quot_alpha_offset: 0,
         }
     }
     /// Number of successive squeeze draws actually laid out (≥ 1, ≤ RATE).
@@ -1356,9 +1418,134 @@ fn lc_size(cfg: &RecursiveConfig) -> usize {
     }
 }
 
+// ----- (QO) quotient-chunk opening block -----
+//
+// Appended LAST in the window (after the (LC) block) so it perturbs no prior offset. Authenticates the
+// opened quotient chunks at the FS query index against the inner quotient commitment, folds the
+// quotient contribution into the (DR) e0 reduced opening, and ties DEEP_Q to the chunk OOD openings.
+// Layout (q = quot_chunks, L = quot_merkle_levels):
+//   quot_commit[DIGEST_ELEMS]            the bound inner quotient commitment (the Merkle root)
+//   quot_opened[q·D]                     opened chunk LDE values at the query point x (Merkle leaf row)
+//   quot_at_zeta[q·D]                    chunk OOD openings at zeta (one extension elt per chunk)
+//   salt[SALT_ELEMS]                     hiding-MMCS salt of the opened leaf row
+//   quot_x[1]                            the query point x (the LDE domain element at the FS index)
+//   quot_inv[D]                          witnessed inverse 1/(zeta − x)
+//   quot_apow[q·D]                       alpha-power tower (continuing the trace sequence by the offset)
+//   quot_zps[q·D]                        per-chunk recombination selectors zps[c] for Q(zeta)
+//   leaf_perm_0 .. _{P-1}[PERM_COLS]     the MyHash(quot_opened ‖ salt) PaddingFreeSponge perms
+//   level_0 .. level_{L-1}               the Merkle path levels (running[8] ‖ sibling[8] ‖ perm)
+// The per-level selector bit is bound to FS-index bit `level` (the SAME bus index the main-trace path
+// uses) — so the quotient open is presented at the FS-forced node, not a chosen one.
+const QO_COMMIT: usize = 0;
+fn qo_opened(_cfg: &RecursiveConfig) -> usize {
+    QO_COMMIT + DIGEST_ELEMS
+}
+fn qo_at_zeta(cfg: &RecursiveConfig) -> usize {
+    qo_opened(cfg) + cfg.quot_chunks * D
+}
+fn qo_salt(cfg: &RecursiveConfig) -> usize {
+    qo_at_zeta(cfg) + cfg.quot_chunks * D
+}
+fn qo_x(cfg: &RecursiveConfig) -> usize {
+    qo_salt(cfg) + SALT_ELEMS
+}
+fn qo_inv(cfg: &RecursiveConfig) -> usize {
+    qo_x(cfg) + 1
+}
+fn qo_apow(cfg: &RecursiveConfig) -> usize {
+    qo_inv(cfg) + D
+}
+fn qo_zps(cfg: &RecursiveConfig) -> usize {
+    qo_apow(cfg) + cfg.quot_chunks * D
+}
+fn qo_leaf_perms_base(cfg: &RecursiveConfig) -> usize {
+    qo_zps(cfg) + cfg.quot_chunks * D
+}
+/// The salted quotient-leaf-hash input length: `quot_chunks·D` opened cells + the hiding MMCS salt.
+fn qo_leaf_input_len(cfg: &RecursiveConfig) -> usize {
+    cfg.quot_chunks * D + SALT_ELEMS
+}
+/// Number of `PaddingFreeSponge` absorb-permutes over the salted quotient-leaf input.
+fn qo_leaf_perms(cfg: &RecursiveConfig) -> usize {
+    qo_leaf_input_len(cfg).div_ceil(RATE).max(1)
+}
+fn qo_leaf_perm_base(cfg: &RecursiveConfig, k: usize) -> usize {
+    qo_leaf_perms_base(cfg) + k * PERM_COLS
+}
+fn qo_merkle_base(cfg: &RecursiveConfig) -> usize {
+    qo_leaf_perm_base(cfg, qo_leaf_perms(cfg))
+}
+/// Per-level quotient Merkle sub-block: `running[8] ‖ sibling[8] ‖ perm`. Selector read from the bus.
+const QO_ML_RUNNING: usize = 0;
+const QO_ML_SIBLING: usize = DIGEST_ELEMS;
+const QO_ML_PERM: usize = 2 * DIGEST_ELEMS;
+const QO_MERKLE_LEVEL: usize = QO_ML_PERM + PERM_COLS;
+
+fn qo_level_base(cfg: &RecursiveConfig, level: usize) -> usize {
+    qo_base(cfg) + qo_merkle_base(cfg) + level * QO_MERKLE_LEVEL
+}
+
+/// Base of the (QO) block (after the (LC) block).
+fn qo_base(cfg: &RecursiveConfig) -> usize {
+    lc_base(cfg) + lc_size(cfg)
+}
+
+/// Size of the (QO) block. 0 unless `quot_chunks > 0`.
+fn qo_size(cfg: &RecursiveConfig) -> usize {
+    if cfg.quot_chunks == 0 {
+        return 0;
+    }
+    qo_merkle_base(cfg) + cfg.quot_merkle_levels * QO_MERKLE_LEVEL
+}
+
+/// The salted quotient-leaf-hash input `quot_opened ‖ salt`.
+fn qo_leaf_input(opened: &[Val], salt: &[Val; SALT_ELEMS]) -> Vec<Val> {
+    let mut v = opened.to_vec();
+    v.extend_from_slice(salt);
+    v
+}
+
+/// REFERENCE (native) p3 quotient OOD recombination `Q(zeta) = Σ_c zps[c]·chunk_at_zeta[c]`
+/// (p3-uni-stark verifier.rs:98-135 `recompose_quotient_from_chunks`). The `zps[c]` selectors are the
+/// Lagrange products over the quotient-chunk coset domains; they are supplied (verifier-derived from
+/// zeta + the chunk domains) and the recombination is constrained in-AIR.
+pub fn quotient_recombine(zps: &[Challenge], chunk_at_zeta: &[Challenge]) -> Challenge {
+    debug_assert_eq!(zps.len(), chunk_at_zeta.len());
+    let mut q = Challenge::ZERO;
+    for (z, c) in zps.iter().zip(chunk_at_zeta.iter()) {
+        q += *z * *c;
+    }
+    q
+}
+
+/// REFERENCE (native) p3 quotient contribution to the FRI round-0 reduced opening (p3-fri
+/// `open_input` verifier.rs:720-752): for each opened quotient chunk `c` (opened only at `zeta`),
+///   `Σ_c alpha^{offset + c}·(chunk_at_zeta[c] − chunk_at_x[c]) · 1/(zeta − x)`
+/// where `chunk_at_x[c]` is the opened LDE value at the query point and `alpha^{offset}` continues the
+/// trace columns' alpha sequence (each chunk is a single width-`D` extension column ⇒ one alpha power
+/// per chunk). Added to the trace reduced opening (same log-height bucket) to form the full `e0`.
+pub fn quotient_reduced_e0(
+    alpha: Challenge,
+    zeta: Challenge,
+    x: Val,
+    alpha_offset: usize,
+    chunk_at_x: &[Challenge],
+    chunk_at_zeta: &[Challenge],
+) -> Challenge {
+    debug_assert_eq!(chunk_at_x.len(), chunk_at_zeta.len());
+    let inv = (zeta - Challenge::from(x)).inverse();
+    let mut apow = alpha.exp_u64(alpha_offset as u64);
+    let mut acc = Challenge::ZERO;
+    for (cx, cz) in chunk_at_x.iter().zip(chunk_at_zeta.iter()) {
+        acc += apow * (*cz - *cx) * inv;
+        apow *= alpha;
+    }
+    acc
+}
+
 /// Total column count for a window with this config.
 pub fn n_cols(cfg: &RecursiveConfig) -> usize {
-    lc_base(cfg) + lc_size(cfg)
+    qo_base(cfg) + qo_size(cfg)
 }
 
 /// The `j`-th tower column (`sp[j]`).
@@ -1496,6 +1683,31 @@ pub struct WindowInputs<'a> {
     /// (LC) the DEFERRED committed summand `C_committed` of the leaf `C(zeta)` decomposition (see
     /// `deep_c_full_leaf`). Consumed only when `deep_c_full_leaf`.
     pub lc_c_committed: Challenge,
+    /// (QO) the inner proof's QUOTIENT commitment (the quotient-chunk Merkle tree root). Consumed only
+    /// when `quot_chunks > 0`; the honest builder copies it into the `quot_commit` column block and the
+    /// eval constrains the reconstructed quotient-path root == this.
+    pub quot_commit: [Val; DIGEST_ELEMS],
+    /// (QO) the opened quotient-chunk LDE values at the query point x — chunk `c`'s width-`D` extension
+    /// column (`quot_opened_at_x[c]`). These ARE the cells the quotient Merkle leaf authenticates AND
+    /// the `chunk_at_x` the reduced-opening numerator subtracts. `len()` must equal `quot_chunks`.
+    pub quot_opened_at_x: &'a [Challenge],
+    /// (QO) the chunk OOD openings at `zeta` (`quot_at_zeta[c]`), one extension elt per chunk. These
+    /// feed BOTH the reduced-opening numerator AND the `DEEP_Q == Σ zps·chunk_at_zeta` recombination.
+    /// `len()` must equal `quot_chunks`.
+    pub quot_at_zeta: &'a [Challenge],
+    /// (QO) the per-chunk recombination selectors `zps[c]` (p3 `recompose_quotient_from_chunks`). The
+    /// honest builder supplies them (verifier-derived from zeta + the chunk coset domains). `len()`
+    /// must equal `quot_chunks`.
+    pub quot_zps: &'a [Challenge],
+    /// (QO) the hiding-MMCS salt of the opened quotient leaf row.
+    pub quot_salt: [Val; SALT_ELEMS],
+    /// (QO) the query point x for the quotient LDE (the domain element at the FS index). The honest
+    /// builder uses the SAME x as the trace (`dr_x`) — the quotient bucket shares the trace log-height.
+    pub quot_x: Val,
+    /// (QO) the bottom-to-top Merkle auth path for the opened quotient leaf (`quot_merkle_levels`
+    /// siblings). For an honest opening of the real quotient tree, `MyHash(quot_opened ‖ salt)`
+    /// authenticates to `quot_commit`.
+    pub quot_siblings: &'a [[Val; DIGEST_ELEMS]],
 }
 
 impl<'a> WindowInputs<'a> {
@@ -1523,6 +1735,9 @@ impl<'a> WindowInputs<'a> {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS],
+            quot_opened_at_x: &[], quot_at_zeta: &[], quot_zps: &[],
+            quot_salt: [Val::ZERO; SALT_ELEMS], quot_x: Val::ZERO, quot_siblings: &[],
         }
     }
 }
@@ -2304,14 +2519,115 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
         } else {
             deep_reduced_e0(deep_alpha, deep_zeta, inp.dr_x, opened_row, inp.dr_value_at_zeta)
         };
+        // (QO) ADD the quotient-chunk reduced-opening contribution: the quotient chunks share the
+        // trace's log-height bucket, so p3 (`open_input` verifier.rs:720-752) folds their contribution
+        // into the SAME round-0 e0 (continuing the alpha sequence by `quot_alpha_offset`).
+        let e0 = if cfg.quot_chunks > 0 {
+            e0 + quotient_reduced_e0(
+                deep_alpha,
+                deep_zeta,
+                inp.quot_x,
+                cfg.quot_alpha_offset,
+                inp.quot_opened_at_x,
+                inp.quot_at_zeta,
+            )
+        } else {
+            e0
+        };
         // The round-0 FRI input e0 (already laid out from `inp.e0`, and threaded through the descent
         // fold) MUST be the DEEP combination — the caller passes `inp.e0 = deep_reduced_e0(...)` so the
         // descent is consistent, and the eval CONSTRAINS C_E0 == this combination. Sanity-check here.
         debug_assert_eq!(
             inp.e0, e0,
-            "deep_e0_combine: inp.e0 must equal the DEEP reduced-opening of the opened row"
+            "deep_e0_combine: inp.e0 must equal the DEEP reduced-opening (trace + quotient)"
         );
         let _ = e0;
+    }
+
+    // (QO) quotient-chunk opening: bound commitment, opened chunks at x + at zeta, salt, x, witnessed
+    // inverse, the continued alpha tower, the recombination selectors, the MyHash(opened ‖ salt) leaf
+    // perms, and the Merkle path at the FS index.
+    if cfg.quot_chunks > 0 {
+        let q = cfg.quot_chunks;
+        assert!(cfg.deep_log_degree.is_some(), "quot_chunks requires deep_log_degree");
+        assert!(cfg.deep_e0_combine > 0, "quot_chunks requires deep_e0_combine > 0 (trace e0)");
+        assert!(cfg.merkle_levels > 0, "quot_chunks requires a Merkle/leaf-hash block");
+        assert_eq!(inp.quot_opened_at_x.len(), q, "quot_opened_at_x must have quot_chunks entries");
+        assert_eq!(inp.quot_at_zeta.len(), q, "quot_at_zeta must have quot_chunks entries");
+        assert_eq!(inp.quot_zps.len(), q, "quot_zps must have quot_chunks entries");
+        assert_eq!(inp.quot_siblings.len(), cfg.quot_merkle_levels, "quot_siblings must have quot_merkle_levels entries");
+        let consts = inlined_perm::Constants::pinned();
+        let qb = qo_base(cfg);
+        // bound inner quotient commitment.
+        row[qb + QO_COMMIT..qb + QO_COMMIT + DIGEST_ELEMS].copy_from_slice(&inp.quot_commit);
+        // opened chunk LDE values at x (the Merkle leaf row) ‖ at-zeta openings.
+        let mut opened_flat: Vec<Val> = Vec::with_capacity(q * D);
+        for (c_idx, v) in inp.quot_opened_at_x.iter().enumerate() {
+            let base = qb + qo_opened(cfg) + c_idx * D;
+            row[base..base + D].copy_from_slice(&limbs(*v));
+            opened_flat.extend_from_slice(&limbs(*v));
+        }
+        for (c_idx, v) in inp.quot_at_zeta.iter().enumerate() {
+            let base = qb + qo_at_zeta(cfg) + c_idx * D;
+            row[base..base + D].copy_from_slice(&limbs(*v));
+        }
+        // salt, x, witnessed inverse 1/(zeta − x).
+        row[qb + qo_salt(cfg)..qb + qo_salt(cfg) + SALT_ELEMS].copy_from_slice(&inp.quot_salt);
+        row[qb + qo_x(cfg)] = inp.quot_x;
+        let inv = (deep_zeta - Challenge::from(inp.quot_x)).inverse();
+        row[qb + qo_inv(cfg)..qb + qo_inv(cfg) + D].copy_from_slice(&limbs(inv));
+        // alpha-power tower: apow[0] == alpha^{quot_alpha_offset}, apow[c] == apow[c-1]·alpha.
+        let mut ap = deep_alpha.exp_u64(cfg.quot_alpha_offset as u64);
+        for c_idx in 0..q {
+            let base = qb + qo_apow(cfg) + c_idx * D;
+            row[base..base + D].copy_from_slice(&limbs(ap));
+            ap *= deep_alpha;
+        }
+        // recombination selectors zps[c].
+        for (c_idx, v) in inp.quot_zps.iter().enumerate() {
+            let base = qb + qo_zps(cfg) + c_idx * D;
+            row[base..base + D].copy_from_slice(&limbs(*v));
+        }
+        // MyHash(quot_opened ‖ salt) leaf perms.
+        let leaf_input = qo_leaf_input(&opened_flat, &inp.quot_salt);
+        let pre = leaf_hash_pre_states(&leaf_input);
+        debug_assert_eq!(pre.len(), qo_leaf_perms(cfg), "quot leaf perm count mismatch");
+        for (k, st) in pre.iter().enumerate() {
+            let cols = inlined_perm::generate_perm_cols(*st, &consts);
+            let pb = qb + qo_leaf_perm_base(cfg, k);
+            row[pb..pb + PERM_COLS].copy_from_slice(&cols);
+        }
+        let leaf = leaf_hash_digest(&leaf_input);
+        // Merkle path at the FS index (selector bit at level = bus index bit `level`).
+        let mut running = leaf;
+        let mut node_idx = index;
+        for (level, &sib) in inp.quot_siblings.iter().enumerate() {
+            let bit = (node_idx & 1) == 1;
+            let lbase = qo_level_base(cfg, level);
+            row[lbase + QO_ML_RUNNING..lbase + QO_ML_RUNNING + DIGEST_ELEMS].copy_from_slice(&running);
+            row[lbase + QO_ML_SIBLING..lbase + QO_ML_SIBLING + DIGEST_ELEMS].copy_from_slice(&sib);
+            let (a, b) = if bit { (sib, running) } else { (running, sib) };
+            let mut input16 = [Val::ZERO; WIDTH];
+            input16[..DIGEST_ELEMS].copy_from_slice(&a);
+            input16[DIGEST_ELEMS..].copy_from_slice(&b);
+            let cols = inlined_perm::generate_perm_cols(input16, &consts);
+            row[lbase + QO_ML_PERM..lbase + QO_ML_PERM + PERM_COLS].copy_from_slice(&cols);
+            running = core::array::from_fn(|i| cols[C_OUTPUT + i]);
+            node_idx >>= 1;
+        }
+        debug_assert_eq!(
+            running, inp.quot_commit,
+            "quotient open: in-AIR fold root != quot_commit (honest build)"
+        );
+        // sanity: DEEP_Q == Σ zps·at_zeta (the recombination the eval enforces).
+        debug_assert_eq!(
+            quotient_recombine(inp.quot_zps, inp.quot_at_zeta),
+            Challenge::from_basis_coefficients_slice(
+                &row[deep_base(cfg) + DEEP_Q..deep_base(cfg) + DEEP_Q + D]
+            )
+            .unwrap(),
+            "quotient recombination != DEEP_Q (honest build)"
+        );
     }
 
     row
@@ -2995,6 +3311,80 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 }
             }
 
+            // ===== (QO) ADD the quotient-chunk reduced-opening contribution to e0 =====
+            // The quotient chunks share the trace's log-height bucket, so p3 folds their contribution
+            // into the SAME round-0 e0 (p3-fri `open_input` verifier.rs:720-752), continuing the alpha
+            // sequence: chunk `c`'s opened value at x is `quot_opened[c]`, its OOD opening at zeta is
+            // `quot_at_zeta[c]`, and its contribution is `apow_q[c]·(at_zeta[c] − opened_x[c])·inv` with
+            // `inv = 1/(zeta − quot_x)` (witnessed) and `apow_q[c] = alpha^{quot_alpha_offset + c}`.
+            if cfg.quot_chunks > 0 {
+                let q = cfg.quot_chunks;
+                let qb = qo_base(&cfg);
+                let qx = l(qb + qo_x(&cfg));
+                let qopened = |c: usize| -> [AB::Expr; D] {
+                    core::array::from_fn(|j| l(qb + qo_opened(&cfg) + c * D + j))
+                };
+                let qzeta = |c: usize| -> [AB::Expr; D] {
+                    core::array::from_fn(|j| l(qb + qo_at_zeta(&cfg) + c * D + j))
+                };
+                let qapow = |c: usize| -> [AB::Expr; D] {
+                    core::array::from_fn(|j| l(qb + qo_apow(&cfg) + c * D + j))
+                };
+                // --- alpha tower: apow_q[0] == alpha^{offset}, apow_q[c] == apow_q[c-1]·alpha ---
+                // alpha^{offset} is bound by relating apow_q[0] to the TRACE apow tower when the offset
+                // falls within it; here the offset = deep_e0_combine·(1+next), the next alpha power
+                // after the trace consumed its powers, so apow_q[0] == (trace apow[n-1]·alpha)^... We
+                // derive alpha^{offset} via repeated multiply from the trace tower's last power (the
+                // trace tower apow[i] = alpha^i is already constrained above), which equals alpha^n,
+                // then times alpha per next-point. We bind apow_q[0] == alpha^{offset} by an explicit
+                // squaring/multiply chain anchored at the trace tower's alpha^{n-1}·alpha == alpha^n.
+                {
+                    // build alpha^{offset} from `alpha` by repeated multiply (offset is a small const).
+                    let mut target: [AB::Expr; D] = core::array::from_fn(|j| {
+                        if j == 0 { AB::Expr::ONE } else { AB::Expr::ZERO }
+                    });
+                    for _ in 0..cfg.quot_alpha_offset {
+                        target = octic_mul::<AB>(&target, &alpha);
+                    }
+                    let a0 = qapow(0);
+                    for j in 0..D {
+                        builder.assert_zero(a0[j].clone() - target[j].clone());
+                    }
+                }
+                for c in 1..q {
+                    let prev = qapow(c - 1);
+                    let cur = qapow(c);
+                    let prod = octic_mul::<AB>(&prev, &alpha);
+                    for j in 0..D {
+                        builder.assert_zero(cur[j].clone() - prod[j].clone());
+                    }
+                }
+                // --- witnessed inverse: qinv·(zeta − quot_x) == 1 ---
+                let qinv: [AB::Expr; D] = core::array::from_fn(|j| l(qb + qo_inv(&cfg) + j));
+                let mut zeta_minus_qx = zeta.clone();
+                zeta_minus_qx[0] = zeta[0].clone() - qx.clone();
+                let qone = octic_mul::<AB>(&qinv, &zeta_minus_qx);
+                builder.assert_zero(qone[0].clone() - AB::Expr::ONE);
+                for j in 1..D {
+                    builder.assert_zero(qone[j].clone());
+                }
+                // --- quotient numerator: Σ_c apow_q[c]·(at_zeta[c] − opened_x[c]) ---
+                let mut qnum: [AB::Expr; D] = core::array::from_fn(|_| AB::Expr::ZERO);
+                for c in 0..q {
+                    let zc = qzeta(c);
+                    let xc = qopened(c);
+                    let diff: [AB::Expr; D] = core::array::from_fn(|j| zc[j].clone() - xc[j].clone());
+                    let term = octic_mul::<AB>(&qapow(c), &diff);
+                    for j in 0..D {
+                        qnum[j] = qnum[j].clone() + term[j].clone();
+                    }
+                }
+                let qcontrib = octic_mul::<AB>(&qnum, &qinv);
+                for j in 0..D {
+                    e0_expr[j] = e0_expr[j].clone() + qcontrib[j].clone();
+                }
+            }
+
             // CONSTRAIN the FRI round-0 input e0 == the DEEP combination.
             for j in 0..D {
                 builder.assert_zero(l(C_E0 + j) - e0_expr[j].clone());
@@ -3023,6 +3413,116 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 let c_cell: [AB::Expr; D] = core::array::from_fn(|j| l(db + DEEP_C + j));
                 for j in 0..D {
                     builder.assert_zero(c_cell[j].clone() - mred[j].clone());
+                }
+            }
+        }
+
+        // ===== (QO) AUTHENTICATE the quotient-chunk opening + TIE DEEP_Q to the chunk OOD openings =====
+        // (1) DERIVE the quotient leaf digest IN-AIR as MyHash(quot_opened ‖ salt) (the deployed
+        //     PaddingFreeSponge), Merkle-fold it at the FS index against the bound inner quotient
+        //     commitment quot_commit. (2) TIE DEEP_Q == Σ_c zps[c]·quot_at_zeta[c] (p3-uni-stark
+        //     `recompose_quotient_from_chunks`), so `C == Z_H(zeta)·DEEP_Q` (above) binds the
+        //     constraint to the AUTHENTICATED quotient OOD opening — DEEP_Q is no longer free.
+        // The quotient reduced-opening contribution to e0 was already folded into the (DR) e0 numerator.
+        if cfg.quot_chunks > 0 {
+            let consts = ConstantsExpr::<AB>::pinned();
+            let cells = WindowCells::<AB> { row: local.clone() };
+            let one = AB::Expr::ONE;
+            let q = cfg.quot_chunks;
+            let qb = qo_base(&cfg);
+
+            // ----- leaf-hash: MyHash(quot_opened ‖ salt) IN-AIR -----
+            let m = qo_leaf_input_len(&cfg);
+            let n_perms = qo_leaf_perms(&cfg);
+            // input element g: g < q·D ⇒ opened cell g; else ⇒ salt[g − q·D].
+            let input_cell = |g: usize| -> AB::Expr {
+                if g < q * D {
+                    l(qb + qo_opened(&cfg) + g)
+                } else {
+                    l(qb + qo_salt(&cfg) + (g - q * D))
+                }
+            };
+            for k in 0..n_perms {
+                let pb = qb + qo_leaf_perm_base(&cfg, k);
+                for i in 0..WIDTH {
+                    let in_i = l(pb + inlined_perm::C_INPUTS + i);
+                    let g = k * RATE + i;
+                    if i < RATE && g < m {
+                        builder.assert_zero(in_i - input_cell(g));
+                    } else if k == 0 {
+                        builder.assert_zero(in_i);
+                    } else {
+                        let prev = qb + qo_leaf_perm_base(&cfg, k - 1);
+                        builder.assert_zero(in_i - l(prev + C_OUTPUT + i));
+                    }
+                }
+                eval_perm::<AB, _>(builder, &cells, pb, &consts);
+            }
+            // leaf digest = last leaf-hash permute output[..8]; bind it to level-0 running (if a path).
+            let last_lh = qb + qo_leaf_perm_base(&cfg, n_perms - 1);
+            if cfg.quot_merkle_levels > 0 {
+                let l0 = qo_level_base(&cfg, 0);
+                for i in 0..DIGEST_ELEMS {
+                    builder.assert_zero(l(l0 + QO_ML_RUNNING + i) - l(last_lh + C_OUTPUT + i));
+                }
+            }
+            // ----- Merkle path: per-level placement by the FS-index bit + perm + chain -----
+            for level in 0..cfg.quot_merkle_levels {
+                let lbase = qo_level_base(&cfg, level);
+                // selector = bus index bit `level` (the SAME FS index the main-trace path uses).
+                let bit = bits[level].clone();
+                for i in 0..DIGEST_ELEMS {
+                    let running_i = l(lbase + QO_ML_RUNNING + i);
+                    let sibling_i = l(lbase + QO_ML_SIBLING + i);
+                    let in_a = l(lbase + QO_ML_PERM + inlined_perm::C_INPUTS + i);
+                    let in_b = l(lbase + QO_ML_PERM + inlined_perm::C_INPUTS + DIGEST_ELEMS + i);
+                    builder.assert_zero(
+                        in_a - ((one.clone() - bit.clone()) * running_i.clone()
+                            + bit.clone() * sibling_i.clone()),
+                    );
+                    builder.assert_zero(
+                        in_b - ((one.clone() - bit.clone()) * sibling_i
+                            + bit.clone() * running_i),
+                    );
+                }
+                eval_perm::<AB, _>(builder, &cells, lbase + QO_ML_PERM, &consts);
+                if level + 1 < cfg.quot_merkle_levels {
+                    let nbase = qo_level_base(&cfg, level + 1);
+                    for i in 0..DIGEST_ELEMS {
+                        let this_out = l(lbase + QO_ML_PERM + C_OUTPUT + i);
+                        let next_running = l(nbase + QO_ML_RUNNING + i);
+                        builder.assert_zero(next_running - this_out);
+                    }
+                }
+            }
+            // reconstructed quotient root == bound inner quotient commitment, limb-for-limb.
+            if cfg.quot_merkle_levels > 0 {
+                let llast = qo_level_base(&cfg, cfg.quot_merkle_levels - 1);
+                for i in 0..DIGEST_ELEMS {
+                    builder.assert_zero(
+                        l(llast + QO_ML_PERM + C_OUTPUT + i) - l(qb + QO_COMMIT + i),
+                    );
+                }
+            }
+
+            // ----- TIE DEEP_Q to the quotient chunk OOD openings: DEEP_Q == Σ_c zps[c]·at_zeta[c] -----
+            if let Some(_k) = cfg.deep_log_degree {
+                let db = deep_base(&cfg);
+                let qzeta = |c: usize| -> [AB::Expr; D] {
+                    core::array::from_fn(|j| l(qb + qo_at_zeta(&cfg) + c * D + j))
+                };
+                let qzps = |c: usize| -> [AB::Expr; D] {
+                    core::array::from_fn(|j| l(qb + qo_zps(&cfg) + c * D + j))
+                };
+                let mut recomb: [AB::Expr; D] = core::array::from_fn(|_| AB::Expr::ZERO);
+                for c in 0..q {
+                    let term = octic_mul::<AB>(&qzps(c), &qzeta(c));
+                    for j in 0..D {
+                        recomb[j] = recomb[j].clone() + term[j].clone();
+                    }
+                }
+                for j in 0..D {
+                    builder.assert_zero(l(db + DEEP_Q + j) - recomb[j].clone());
                 }
             }
         }
@@ -3702,6 +4202,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -3762,6 +4265,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         let mut row = pack_window(&cfg, &inp);
         // CONTROL: the FORGED Merkle blocks are internally valid — with a MATCHING forged bus
@@ -3785,6 +4291,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         });
         for c in C_DRAW_OUT..tower_end(levels) {
             row[c] = honest[c];
@@ -3904,6 +4413,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -4154,6 +4666,9 @@ mod tests {
                     leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
                     dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
                 };
                 pack_window(&cfg, &inp)
             };
@@ -4316,6 +4831,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -4434,6 +4952,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -4559,6 +5080,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -4599,6 +5123,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -4827,6 +5354,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -5048,6 +5578,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -5324,6 +5857,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -5374,6 +5910,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         let row = pack_window(&cfg_off, &inp);
         assert!(
@@ -5533,6 +6072,9 @@ mod tests {
                 leaf_salt: [Val::ZERO; SALT_ELEMS],
                 dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
             };
             let row = pack_window(&cfg, &inp);
             assert_eq!(
@@ -5591,6 +6133,9 @@ mod tests {
             leaf_salt: salt,
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         (pack_window(cfg, &inp), leaf, root)
     }
@@ -5724,6 +6269,9 @@ mod tests {
                 leaf_salt: salt,
                 dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
             };
             pack_window(cfg, &inp)
         };
@@ -5794,6 +6342,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -5898,6 +6449,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -5945,6 +6499,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -6274,6 +6831,9 @@ mod tests {
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         pack_window(cfg, &inp)
     }
@@ -7086,6 +7646,9 @@ mod tests {
             leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         (pack_window(cfg, &inp), metas)
     }
@@ -7208,6 +7771,9 @@ mod tests {
             leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         let row = pack_window(&cfg, &inp);
         // zero-residual reconstructed root == reference root.
@@ -7528,6 +8094,9 @@ mod tests {
             leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         (pack_window(cfg, &inp), metas)
     }
@@ -7858,6 +8427,9 @@ mod tests {
             dr_x: x,
             lc_value_at_zeta: &[],
             lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         (pack_window(cfg, &inp), leaf, root, vz, vzn, x, alpha, zeta)
     }
@@ -8211,6 +8783,9 @@ mod tests {
             leaf_row: &rows[5], leaf_salt: salt,
             dr_value_at_zeta: &vz_f, dr_value_at_zeta_next: &[], dr_x: x,
             lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
         };
         // This builds a FULLY honest window for vz_f (C derived from vz_f) — it should ACCEPT, proving
         // the connection accepts honest forged-free windows.
@@ -8442,6 +9017,559 @@ mod tests {
         assert!(
             !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
             "tampered C_committed under full-leaf C-binding was accepted"
+        );
+    }
+
+    // ---------------------------------------------------------------------------------
+    // (QO) quotient-chunk opening: Merkle-auth at FS index, e0 quotient contribution, DEEP_Q tie.
+    // ---------------------------------------------------------------------------------
+
+    /// Config: a (DR) trace e0 block + the (QO) quotient block. `q` chunks, quotient path depth =
+    /// `levels` (same FS index decomposition as the main trace).
+    fn cfg_quot(levels: usize, width: usize, combine: usize, k: usize, q: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            merkle_levels: levels,
+            leaf_row_len: width,
+            deep_log_degree: Some(k),
+            deep_e0_combine: combine,
+            deep_e0_next: false,
+            quot_chunks: q,
+            quot_merkle_levels: levels,
+            // p3 batches trace + quotient under one alpha sequence; the trace consumed `combine` powers
+            // (single opening point, deep_e0_next=false), so the quotient continues from alpha^combine.
+            quot_alpha_offset: combine,
+            ..RecursiveConfig::single_window(levels)
+        }
+    }
+
+    /// Build a quotient RefTree over `n` leaves, each leaf = MyHash(quot_opened_flat ‖ salt). Returns
+    /// (per-leaf opened-chunk vectors, salt, tree).
+    fn quot_tree_for(
+        q: usize,
+        n: usize,
+        salt: [Val; SALT_ELEMS],
+    ) -> (Vec<Vec<Challenge>>, RefTree) {
+        let opened: Vec<Vec<Challenge>> = (0..n as u32)
+            .map(|r| (0..q as u32).map(|c| ext_multi(0xC00u32.wrapping_add(r * 31 + c))).collect())
+            .collect();
+        let leaves: Vec<Digest> = opened
+            .iter()
+            .map(|chunks| {
+                let mut flat: Vec<Val> = Vec::with_capacity(q * D);
+                for ch in chunks {
+                    flat.extend_from_slice(&limbs(*ch));
+                }
+                flat.extend_from_slice(&salt);
+                leaf_hash_digest(&flat)
+            })
+            .collect();
+        (opened, RefTree::new(leaves))
+    }
+
+    /// Build an honest (DR + QO) window. Returns (row, trace_leaf, trace_root, quot_root) for tamper
+    /// tests. The quotient `at_zeta`/`zps` are chosen so the recombination equals DEEP_Q (= deep_q),
+    /// and the trace+quotient e0 is derived faithfully.
+    #[allow(clippy::type_complexity)]
+    fn quot_window(
+        cfg: &RecursiveConfig,
+        index: usize,
+        trace_row: &[Val],
+        trace_salt: [Val; SALT_ELEMS],
+        trace_tree: &RefTree,
+        quot_opened_at_x: &[Challenge],
+        quot_salt: [Val; SALT_ELEMS],
+        quot_tree: &RefTree,
+    ) -> (Vec<Val>, Digest, Digest, Digest, Challenge, Vec<Challenge>, Vec<Challenge>) {
+        let n = cfg.deep_e0_combine;
+        let q = cfg.quot_chunks;
+        let k = cfg.deep_log_degree.unwrap();
+        let _ = k;
+        let alpha = ext_multi(0x5151);
+        let zeta = ext_multi(0x9292);
+        let x = Val::from_u32(0x1234);
+        let vz: Vec<Challenge> = (0..n as u32).map(|i| ext_multi(0x300 + i)).collect();
+
+        // DEEP_Q (free in this cfg) — pick it, then build quotient at_zeta/zps that recombine to it.
+        let deep_q = ext_multi(5);
+        // at_zeta freely chosen; zps[0..q-1] freely chosen; solve zps[q-1] so Σ zps·at_zeta == deep_q.
+        let at_zeta: Vec<Challenge> = (0..q as u32).map(|c| ext_multi(0xA00 + c)).collect();
+        let mut zps: Vec<Challenge> = (0..q as u32).map(|c| ext_multi(0xB00 + c)).collect();
+        let partial: Challenge = (0..q - 1).map(|c| zps[c] * at_zeta[c]).sum();
+        zps[q - 1] = (deep_q - partial) * at_zeta[q - 1].inverse();
+        debug_assert_eq!(quotient_recombine(&zps, &at_zeta), deep_q);
+
+        // trace leaf + path.
+        let mut tinput = trace_row.to_vec();
+        tinput.extend_from_slice(&trace_salt);
+        let trace_leaf = leaf_hash_digest(&tinput);
+        let trace_sibs = trace_tree.auth_path(index);
+        let trace_root = trace_tree.root();
+        let quot_sibs = quot_tree.auth_path(index);
+        let quot_root = quot_tree.root();
+
+        // faithful e0 = trace reduced opening + quotient reduced opening.
+        let trace_e0 = deep_reduced_e0(alpha, zeta, x, &trace_row[..n], &vz);
+        let quot_e0 = quotient_reduced_e0(alpha, zeta, x, cfg.quot_alpha_offset, quot_opened_at_x, &at_zeta);
+        let e0 = trace_e0 + quot_e0;
+
+        let inp = WindowInputs {
+            draw_out: Val::from_u32(index as u32),
+            e0,
+            e1: ext_multi(2),
+            beta: ext_multi(3),
+            descent: &[],
+            merkle_leaf: trace_leaf,
+            merkle_siblings: &trace_sibs,
+            deep_zeta: zeta,
+            deep_q,
+            deep_alpha: alpha,
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_final_blocks: &[],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+            leaf_row: trace_row,
+            leaf_salt: trace_salt,
+            dr_value_at_zeta: &vz,
+            dr_value_at_zeta_next: &[],
+            dr_x: x,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: quot_root,
+            quot_opened_at_x,
+            quot_at_zeta: &at_zeta,
+            quot_zps: &zps,
+            quot_salt,
+            quot_x: x,
+            quot_siblings: &quot_sibs,
+        };
+        (pack_window(cfg, &inp), trace_leaf, trace_root, quot_root, deep_q, at_zeta, zps)
+    }
+
+    /// GOLDEN: an honest (DR + QO) window — quotient opening Merkle-authenticated at the FS index, the
+    /// quotient contribution folded into e0, and DEEP_Q tied to the chunk OOD recombination — ACCEPTS,
+    /// across several chunk counts and indices.
+    #[test]
+    fn air_accepts_quotient_open_window() {
+        for &q in &[1usize, 4, 8] {
+            let levels = 4usize;
+            let width = 12usize;
+            let combine = 12usize;
+            let k = 10usize;
+            let n = 1usize << levels;
+            let cfg = cfg_quot(levels, width, combine, k, q);
+            let tsalt = sample_salt(0x70 + q as u32);
+            let qsalt = sample_salt(0x90 + q as u32);
+            let (trows, ttree) = leaf_tree_for(width, n, tsalt);
+            let (qopened, qtree) = quot_tree_for(q, n, qsalt);
+            for &index in &[0usize, 3, n - 1] {
+                let (row, tleaf, troot, ..) =
+                    quot_window(&cfg, index, &trows[index], tsalt, &ttree, &qopened[index], qsalt, &qtree);
+                let m = RowMajorMatrix::new(row, n_cols(&cfg));
+                let report = check_all_constraints(&air(cfg), &m, &pubs(tleaf, troot), None);
+                assert!(
+                    report.is_ok(),
+                    "(QO) honest window rejected (q={q}, index={index}): {} failures",
+                    report.failures.len()
+                );
+            }
+        }
+    }
+
+    /// FORGERY — tampered quotient opened chunk: bump an opened-at-x cell ⇒ the leaf digest changes ⇒
+    /// the Merkle path no longer folds to quot_commit ⇒ rejected. (e0 also shifts, but the leaf-hash /
+    /// path is the load-bearing rejector of an opened-value tamper.)
+    #[test]
+    fn quotient_open_rejects_tampered_opened_chunk() {
+        let levels = 4usize;
+        let cfg = cfg_quot(levels, 12, 12, 10, 8);
+        let n = 1usize << levels;
+        let tsalt = sample_salt(0x71);
+        let qsalt = sample_salt(0x91);
+        let (trows, ttree) = leaf_tree_for(12, n, tsalt);
+        let (qopened, qtree) = quot_tree_for(8, n, qsalt);
+        let (mut row, tleaf, troot, ..) =
+            quot_window(&cfg, 5, &trows[5], tsalt, &ttree, &qopened[5], qsalt, &qtree);
+        let qb = qo_base(&cfg);
+        row[qb + qo_opened(&cfg) + 3] += Val::ONE; // tamper opened chunk 0 limb 3
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(tleaf, troot), None).is_ok(),
+            "tampered quotient opened chunk was accepted"
+        );
+    }
+
+    /// FORGERY — quotient root != inner quotient commitment: corrupt the bound quot_commit ⇒ the
+    /// reconstructed path root no longer equals it ⇒ rejected.
+    #[test]
+    fn quotient_open_rejects_wrong_commitment() {
+        let levels = 4usize;
+        let cfg = cfg_quot(levels, 12, 12, 10, 8);
+        let n = 1usize << levels;
+        let tsalt = sample_salt(0x72);
+        let qsalt = sample_salt(0x92);
+        let (trows, ttree) = leaf_tree_for(12, n, tsalt);
+        let (qopened, qtree) = quot_tree_for(8, n, qsalt);
+        let (mut row, tleaf, troot, ..) =
+            quot_window(&cfg, 5, &trows[5], tsalt, &ttree, &qopened[5], qsalt, &qtree);
+        let qb = qo_base(&cfg);
+        row[qb + QO_COMMIT] += Val::ONE; // corrupt the bound quotient commitment
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(tleaf, troot), None).is_ok(),
+            "a corrupted inner quotient commitment was accepted"
+        );
+    }
+
+    /// FORGERY — quotient open at the WRONG (non-FS) index: build the window at the FS index but splice
+    /// in the auth path + opened chunks of a DIFFERENT leaf. The per-level selector bits are bound to
+    /// the FS index, so the spliced path folds to a different root ⇒ rejected.
+    #[test]
+    fn quotient_open_rejects_wrong_index() {
+        let levels = 4usize;
+        let cfg = cfg_quot(levels, 12, 12, 10, 8);
+        let n = 1usize << levels;
+        let tsalt = sample_salt(0x73);
+        let qsalt = sample_salt(0x93);
+        let (trows, ttree) = leaf_tree_for(12, n, tsalt);
+        let (qopened, qtree) = quot_tree_for(8, n, qsalt);
+        let fs_index = 5usize;
+        let other = 10usize;
+        // honest window at fs_index, then splice the OTHER leaf's opened chunks + path.
+        let (mut row, tleaf, troot, ..) =
+            quot_window(&cfg, fs_index, &trows[fs_index], tsalt, &ttree, &qopened[fs_index], qsalt, &qtree);
+        // re-pack the QO opened cells + path levels for the OTHER leaf (keeping FS bits = fs_index).
+        let qb = qo_base(&cfg);
+        let other_sibs = qtree.auth_path(other);
+        // opened chunks for `other`.
+        for (c, ch) in qopened[other].iter().enumerate() {
+            let base = qb + qo_opened(&cfg) + c * D;
+            row[base..base + D].copy_from_slice(&limbs(*ch));
+        }
+        // rebuild the leaf-hash perms + path for `other`'s leaf at fs_index's selector bits.
+        let consts = inlined_perm::Constants::pinned();
+        let mut flat: Vec<Val> = Vec::new();
+        for ch in &qopened[other] {
+            flat.extend_from_slice(&limbs(*ch));
+        }
+        flat.extend_from_slice(&qsalt);
+        let pre = leaf_hash_pre_states(&flat);
+        for (kk, st) in pre.iter().enumerate() {
+            let cols = inlined_perm::generate_perm_cols(*st, &consts);
+            let pb = qb + qo_leaf_perm_base(&cfg, kk);
+            row[pb..pb + PERM_COLS].copy_from_slice(&cols);
+        }
+        let mut running = leaf_hash_digest(&flat);
+        let mut node_idx = fs_index; // selector bits are FS-forced
+        for (level, &sib) in other_sibs.iter().enumerate() {
+            let bit = (node_idx & 1) == 1;
+            let lbase = qo_level_base(&cfg, level);
+            row[lbase + QO_ML_RUNNING..lbase + QO_ML_RUNNING + DIGEST_ELEMS].copy_from_slice(&running);
+            row[lbase + QO_ML_SIBLING..lbase + QO_ML_SIBLING + DIGEST_ELEMS].copy_from_slice(&sib);
+            let (a, b) = if bit { (sib, running) } else { (running, sib) };
+            let mut input16 = [Val::ZERO; WIDTH];
+            input16[..DIGEST_ELEMS].copy_from_slice(&a);
+            input16[DIGEST_ELEMS..].copy_from_slice(&b);
+            let cols = inlined_perm::generate_perm_cols(input16, &consts);
+            row[lbase + QO_ML_PERM..lbase + QO_ML_PERM + PERM_COLS].copy_from_slice(&cols);
+            running = core::array::from_fn(|i| cols[C_OUTPUT + i]);
+            node_idx >>= 1;
+        }
+        // running now != quot_commit (other leaf's path folded at fs_index's bits) ⇒ reject.
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(tleaf, troot), None).is_ok(),
+            "a quotient open at the wrong (non-FS) index was accepted"
+        );
+    }
+
+    /// FORGERY — DEEP_Q != the chunk-OOD recombination: bump the DEEP_Q cell (and re-derive C = Z_H·Q
+    /// so the b' identity still holds), leaving the recombination cells honest ⇒ the (QO) tie
+    /// `DEEP_Q == Σ zps·at_zeta` rejects. A free DEEP_Q defeats C == Z_H·Q, so this binding is
+    /// load-bearing.
+    #[test]
+    fn quotient_open_rejects_deep_q_not_recombination() {
+        let levels = 4usize;
+        let cfg = cfg_quot(levels, 12, 12, 10, 8);
+        let n = 1usize << levels;
+        let tsalt = sample_salt(0x74);
+        let qsalt = sample_salt(0x94);
+        let (trows, ttree) = leaf_tree_for(12, n, tsalt);
+        let (qopened, qtree) = quot_tree_for(8, n, qsalt);
+        let (mut row, tleaf, troot, _quot_root, deep_q, ..) =
+            quot_window(&cfg, 5, &trows[5], tsalt, &ttree, &qopened[5], qsalt, &qtree);
+        // forge DEEP_Q to a different value AND re-derive DEEP_C = Z_H(zeta)·forged_q so C == Z_H·Q
+        // still passes — ONLY the (QO) recombination tie should catch the divergence.
+        let db = deep_base(&cfg);
+        let zeta = Challenge::from_basis_coefficients_slice(&row[db + DEEP_ZETA..db + DEEP_ZETA + D]).unwrap();
+        let zh = crate::deep::vanishing_poly_at(zeta, 10);
+        let forged_q = deep_q + ext_multi(1);
+        row[db + DEEP_Q..db + DEEP_Q + D].copy_from_slice(&limbs(forged_q));
+        row[db + DEEP_C..db + DEEP_C + D].copy_from_slice(&limbs(zh * forged_q));
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(tleaf, troot), None).is_ok(),
+            "DEEP_Q != chunk-OOD recombination was accepted (free Q defeats C==Z_H·Q)"
+        );
+    }
+
+    /// FORGERY — altered quotient contribution to e0: bump a chunk's at-zeta cell. This changes BOTH
+    /// the e0 quotient numerator AND the DEEP_Q recombination (the same at_zeta cell feeds both), so
+    /// the window rejects — the quotient contribution to the reduced opening is load-bearing.
+    #[test]
+    fn quotient_open_rejects_altered_reduced_opening_contribution() {
+        let levels = 4usize;
+        let cfg = cfg_quot(levels, 12, 12, 10, 8);
+        let n = 1usize << levels;
+        let tsalt = sample_salt(0x75);
+        let qsalt = sample_salt(0x95);
+        let (trows, ttree) = leaf_tree_for(12, n, tsalt);
+        let (qopened, qtree) = quot_tree_for(8, n, qsalt);
+        let (mut row, tleaf, troot, ..) =
+            quot_window(&cfg, 5, &trows[5], tsalt, &ttree, &qopened[5], qsalt, &qtree);
+        let qb = qo_base(&cfg);
+        row[qb + qo_at_zeta(&cfg) + 2] += Val::ONE; // changes e0 numerator AND DEEP_Q recombination
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(tleaf, troot), None).is_ok(),
+            "an altered quotient reduced-opening contribution was accepted"
+        );
+    }
+
+    /// FIDELITY-PIN against a REAL p3 `MerkleTreeMmcs` quotient commitment: commit a matrix whose rows
+    /// are `q·D` chunk limbs ‖ `SALT_ELEMS` salt (so the real `MyHash(row)` == the AIR's
+    /// `MyHash(quot_opened ‖ salt)`), open a leaf, drive the in-AIR (QO) block with the REAL siblings,
+    /// and check (i) the real `Mmcs::verify_batch` accepts the same opening, (ii) the in-AIR
+    /// reconstructed quotient root == the real commitment with ZERO residual, and (iii) the whole window
+    /// (incl. the e0 quotient contribution + DEEP_Q tie) ACCEPTS. Tamper (corrupt the real commitment)
+    /// ⇒ rejects. This pins the quotient Merkle-open to the deployed MMCS, not a hand-rolled stand-in.
+    #[test]
+    fn fidelity_real_mmcs_quotient_opening_authenticates_in_air() {
+        use descender_account_stark::Perm;
+        use p3_commit::Mmcs;
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+        use p3_matrix::Dimensions;
+        use p3_merkle_tree::MerkleTreeMmcs;
+        use p3_symmetric::{PaddingFreeSponge, TruncatedPermutation};
+
+        type LeafHash = PaddingFreeSponge<Perm, 16, 8, DIGEST_ELEMS>;
+        type NodeCompress = TruncatedPermutation<Perm, 2, DIGEST_ELEMS, 16>;
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let hash = LeafHash::new(perm.clone());
+        let compress = NodeCompress::new(perm.clone());
+        type RealMmcs = MerkleTreeMmcs<Val, Val, LeafHash, NodeCompress, 2, DIGEST_ELEMS>;
+        let mmcs: RealMmcs = MerkleTreeMmcs::new(hash.clone(), compress, 0);
+
+        let levels = 4usize;
+        let n = 1usize << levels;
+        let q = 8usize;
+        let combine = 12usize;
+        let k = 10usize;
+        let cfg = cfg_quot(levels, combine, combine, k, q);
+
+        // REAL quotient MMCS: row = q·D chunk limbs ‖ SALT_ELEMS salt (so MyHash(row) == AIR leaf).
+        let qsalt = sample_salt(0xABCD);
+        let qwidth = q * D + SALT_ELEMS;
+        let mut vals: Vec<Val> = Vec::with_capacity(n * qwidth);
+        for r in 0..n as u32 {
+            for c in 0..(q * D) as u32 {
+                vals.push(Val::from_u32(r.wrapping_mul(0x9E37_79B1).wrapping_add(c).wrapping_add(7)));
+            }
+            vals.extend_from_slice(&qsalt);
+        }
+        let qmatrix = RowMajorMatrix::new(vals, qwidth);
+        let (qcommit, qprover_data) = mmcs.commit(vec![qmatrix.clone()]);
+        assert_eq!(qcommit.num_roots(), 1);
+        let quot_commit: Digest = qcommit.roots()[0];
+
+        let tsalt = sample_salt(0x76);
+        let (trows, ttree) = leaf_tree_for(combine, n, tsalt);
+        let zeta = ext_multi(0x9292);
+        let alpha = ext_multi(0x5151);
+        let x = Val::from_u32(0x1234);
+
+        for &index in &[0usize, 1, 6, n - 1] {
+            let opening = mmcs.open_batch(index, &qprover_data);
+            let (opened_values, opening_proof) = opening.unpack();
+            assert_eq!(opened_values.len(), 1);
+            assert_eq!(opening_proof.len(), levels);
+            let dims = [Dimensions { width: qwidth, height: n }];
+            mmcs.verify_batch(
+                &qcommit,
+                &dims,
+                index,
+                p3_commit::BatchOpeningRef::new(&opened_values, &opening_proof),
+            )
+            .expect("real Mmcs::verify_batch must accept the honest quotient opening");
+
+            let opened_row: &[Val] = opened_values[0].as_slice();
+            // first q·D = chunk limbs; last SALT_ELEMS = salt (== qsalt, by construction).
+            let opened_chunks: Vec<Challenge> = (0..q)
+                .map(|c| Challenge::from_basis_coefficients_slice(&opened_row[c * D..(c + 1) * D]).unwrap())
+                .collect();
+            let quot_siblings: Vec<Digest> = opening_proof.clone();
+
+            // DEEP_Q (free) = recombination of the opened chunks (used as at_zeta here); pick zps so the
+            // recombination equals deep_q (we choose deep_q := recombination directly for fidelity).
+            let zps: Vec<Challenge> = (0..q as u32).map(|c| ext_multi(0xB00 + c)).collect();
+            let deep_q = quotient_recombine(&zps, &opened_chunks);
+
+            let n_tr = cfg.deep_e0_combine;
+            let vz: Vec<Challenge> = (0..n_tr as u32).map(|i| ext_multi(0x300 + i)).collect();
+            let trace_e0 = deep_reduced_e0(alpha, zeta, x, &trows[index][..n_tr], &vz);
+            let quot_e0 = quotient_reduced_e0(alpha, zeta, x, cfg.quot_alpha_offset, &opened_chunks, &opened_chunks);
+            let mut tinput = trows[index].clone();
+            tinput.extend_from_slice(&tsalt);
+            let trace_leaf = leaf_hash_digest(&tinput);
+
+            let build = |qc: Digest| -> Vec<Val> {
+                let inp = WindowInputs {
+                    draw_out: Val::from_u32(index as u32),
+                    e0: trace_e0 + quot_e0,
+                    e1: ext_multi(2), beta: ext_multi(3), descent: &[],
+                    merkle_leaf: trace_leaf, merkle_siblings: &ttree.auth_path(index),
+                    deep_zeta: zeta, deep_q, deep_alpha: alpha,
+                    fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
+                    absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
+                    fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+                    layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+                    leaf_row: &trows[index], leaf_salt: tsalt,
+                    dr_value_at_zeta: &vz, dr_value_at_zeta_next: &[], dr_x: x,
+                    lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+                    quot_commit: qc,
+                    quot_opened_at_x: &opened_chunks,
+                    quot_at_zeta: &opened_chunks,
+                    quot_zps: &zps,
+                    quot_salt: qsalt, quot_x: x,
+                    quot_siblings: &quot_siblings,
+                };
+                pack_window(&cfg, &inp)
+            };
+            let row = build(quot_commit);
+            // ZERO-RESIDUAL: the in-AIR reconstructed quotient root == the REAL commitment.
+            let llast = qo_level_base(&cfg, cfg.quot_merkle_levels - 1);
+            let mut recon = [Val::ZERO; DIGEST_ELEMS];
+            recon.copy_from_slice(&row[llast + QO_ML_PERM + C_OUTPUT..llast + QO_ML_PERM + C_OUTPUT + DIGEST_ELEMS]);
+            assert_eq!(recon, quot_commit, "in-AIR quotient fold root != real MMCS commitment at index {index}");
+            let m = RowMajorMatrix::new(row, n_cols(&cfg));
+            let report = check_all_constraints(&air(cfg.clone()), &m, &pubs(trace_leaf, ttree.root()), None);
+            assert!(
+                report.is_ok(),
+                "real-MMCS quotient opening rejected in-AIR at index {index}: {} failures",
+                report.failures.len()
+            );
+            // Tamper: a corrupted real commitment ⇒ the (QO) root binding rejects.
+            let mut bad = quot_commit;
+            bad[0] += Val::ONE;
+            let bad_row = build(bad);
+            let bm = RowMajorMatrix::new(bad_row, n_cols(&cfg));
+            assert!(
+                !check_all_constraints(&air(cfg.clone()), &bm, &pubs(trace_leaf, ttree.root()), None).is_ok(),
+                "a corrupted inner quotient commitment was accepted at index {index}"
+            );
+        }
+    }
+
+    /// FIDELITY-PIN the quotient OOD recombination against the REAL p3 Lagrange `zps` selectors over
+    /// real quotient-chunk coset domains (`recompose_quotient_from_chunks`, uni-stark verifier.rs:98-135):
+    /// build `q` real chunk coset domains, compute `zps[i] = Π_{j≠i} Z_{Dj}(zeta)/Z_{Dj}(shift_i)`, and
+    /// drive a window with DEEP_Q == Σ zps·at_zeta — the (QO) tie must ACCEPT with zero residual, AND a
+    /// tampered `zps` must reject. Pins the recombination algebra to p3, not a constant.
+    #[test]
+    fn fidelity_real_quotient_ood_recombination() {
+        use p3_commit::PolynomialSpace;
+        use p3_field::TwoAdicField;
+        use p3_field::coset::TwoAdicMultiplicativeCoset;
+
+        let levels = 4usize;
+        let n = 1usize << levels;
+        let q = 8usize;
+        let combine = 12usize;
+        let k = 10usize;
+        let cfg = cfg_quot(levels, combine, combine, k, q);
+
+        // q real quotient-chunk coset domains (mirroring p3 split_domains: shift_i = g_quot·gen^i).
+        let log_chunk = 3usize;
+        let log_total = log_chunk + (q.ilog2() as usize);
+        let g_quot = Val::GENERATOR;
+        let gen = Val::two_adic_generator(log_total);
+        let chunk_domains: Vec<TwoAdicMultiplicativeCoset<Val>> = (0..q)
+            .map(|i| TwoAdicMultiplicativeCoset::new(g_quot * gen.exp_u64(i as u64), log_chunk).unwrap())
+            .collect();
+        let zeta = ext_multi(0x9292);
+        let zps_real: Vec<Challenge> = (0..q)
+            .map(|i| {
+                chunk_domains
+                    .iter()
+                    .enumerate()
+                    .filter(|(j, _)| *j != i)
+                    .map(|(_, dj)| {
+                        dj.vanishing_poly_at_point(zeta)
+                            * dj.vanishing_poly_at_point(chunk_domains[i].first_point()).inverse()
+                    })
+                    .product::<Challenge>()
+            })
+            .collect();
+
+        let at_zeta: Vec<Challenge> = (0..q as u32).map(|c| ext_multi(0xA00 + c)).collect();
+        let deep_q = quotient_recombine(&zps_real, &at_zeta);
+
+        let tsalt = sample_salt(0x77);
+        let qsalt = sample_salt(0x97);
+        let (trows, ttree) = leaf_tree_for(combine, n, tsalt);
+        let (qopened, qtree) = quot_tree_for(q, n, qsalt);
+        let index = 6usize;
+        let alpha = ext_multi(0x5151);
+        let x = Val::from_u32(0x1234);
+        let n_tr = cfg.deep_e0_combine;
+        let vz: Vec<Challenge> = (0..n_tr as u32).map(|i| ext_multi(0x300 + i)).collect();
+        let trace_e0 = deep_reduced_e0(alpha, zeta, x, &trows[index][..n_tr], &vz);
+        let quot_e0 = quotient_reduced_e0(alpha, zeta, x, cfg.quot_alpha_offset, &qopened[index], &at_zeta);
+        let mut tinput = trows[index].clone();
+        tinput.extend_from_slice(&tsalt);
+        let trace_leaf = leaf_hash_digest(&tinput);
+        let build = |zps: &[Challenge], dq: Challenge| -> Vec<Val> {
+            let inp = WindowInputs {
+                draw_out: Val::from_u32(index as u32),
+                e0: trace_e0 + quot_e0,
+                e1: ext_multi(2), beta: ext_multi(3), descent: &[],
+                merkle_leaf: trace_leaf, merkle_siblings: &ttree.auth_path(index),
+                deep_zeta: zeta, deep_q: dq, deep_alpha: alpha,
+                fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
+                absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
+                fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+                layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+                leaf_row: &trows[index], leaf_salt: tsalt,
+                dr_value_at_zeta: &vz, dr_value_at_zeta_next: &[], dr_x: x,
+                lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+                quot_commit: qtree.root(),
+                quot_opened_at_x: &qopened[index],
+                quot_at_zeta: &at_zeta,
+                quot_zps: zps,
+                quot_salt: qsalt, quot_x: x,
+                quot_siblings: &qtree.auth_path(index),
+            };
+            pack_window(&cfg, &inp)
+        };
+        // honest: DEEP_Q == real-zps recombination ⇒ accept.
+        let row = build(&zps_real, deep_q);
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            check_all_constraints(&air(cfg.clone()), &m, &pubs(trace_leaf, ttree.root()), None).is_ok(),
+            "honest real-zps recombination window rejected"
+        );
+        // tamper a zps selector (keep DEEP_Q at the honest recombination) ⇒ tie rejects.
+        let mut bad_zps = zps_real.clone();
+        bad_zps[2] += ext_multi(1);
+        let bad_row = build(&bad_zps, deep_q);
+        let bm = RowMajorMatrix::new(bad_row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &bm, &pubs(trace_leaf, ttree.root()), None).is_ok(),
+            "a tampered zps selector was accepted"
         );
     }
 }
