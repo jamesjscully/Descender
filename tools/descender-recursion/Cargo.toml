@@ -25,6 +25,12 @@ p3-symmetric = "0.6.1"
 # Test-only: deterministic round-constants for the gadget-2 Poseidon2 compression AIR
 # integration check (RoundConstants::from_rng with a fixed SmallRng seed).
 rand = "0.10"
+# Test-only: build a REAL p3 `MerkleTreeMmcs` over the deployed `MyHash`/`MyCompress` node layer,
+# open a leaf, and FIDELITY-PIN that the in-AIR main-trace Merkle opening reproduces the real root
+# with zero residual — the node-fold layer the recursion mirrors. (`MyHash`/`MyCompress` and the
+# `Mmcs` trait `commit`/`open_batch`/`verify_batch` come from `descender-account-stark` /
+# `p3-commit`, already deps; this adds the tree builder.)
+p3-merkle-tree = "0.6.1"
 
 [profile.release]
 opt-level = 3

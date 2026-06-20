@@ -360,6 +360,19 @@ pub struct RecursiveConfig {
     /// `fs_final_blocks * RATE` long, element `r*RATE + i` pins the post-beta round `r`'s observed block
     /// lane `i`. Ties the query index to the ACTUAL final polynomial + grinding witness.
     pub fs_final_blocks_public: bool,
+    /// (a-root) BIND the FS-index-driven main-trace Merkle opening's reconstructed root to the inner
+    /// proof's MAIN-TRACE commitment, carried as a BOUND recursion input (a window column block, not a
+    /// free witness). When `true` the window carries a `main_commit[DIGEST_ELEMS]` column block and
+    /// CONSTRAINS the last Merkle level's reconstructed root (`output[..8]`) EQUAL to it, limb-for-limb.
+    /// The constraint then reads: "the opened main-trace leaf at the FS-derived query index (the index
+    /// bits the Merkle path selectors are bound to, via the (a) bus binding) authenticates to the inner
+    /// main-trace root." The inner main-trace commitment is supplied by the recursion (the leaf proof's
+    /// `commitments.trace` / first PCS round root); the honest builder copies it into the column. An
+    /// opening that folds to a DIFFERENT root than this committed inner root rejects. Requires
+    /// `merkle_levels > 0`. This is the FIRST piece of actual inner-proof opening verification driven by
+    /// the FS index against the inner MAIN-TRACE commitment. Off ⇒ the root is bound only to the generic
+    /// `PV_ROOT` public value (the prior mechanism).
+    pub bind_root_to_main_commit: bool,
 }
 
 impl RecursiveConfig {
@@ -387,6 +400,7 @@ impl RecursiveConfig {
             fs_batch_combo_alpha: false,
             fs_final_blocks: 0,
             fs_final_blocks_public: false,
+            bind_root_to_main_commit: false,
         }
     }
     /// Number of successive squeeze draws actually laid out (≥ 1, ≤ RATE).
@@ -725,6 +739,28 @@ fn fq_size(cfg: &RecursiveConfig) -> usize {
     }
 }
 
+// ----- (a-root) inner main-trace commitment block -----
+//
+// Appended AFTER the (FS-qi) block. A single `main_commit[DIGEST_ELEMS]` column block carrying the
+// inner proof's MAIN-TRACE commitment as a BOUND recursion input. The eval constrains the last
+// Merkle level's reconstructed root EQUAL to this block, limb-for-limb (only when `merkle_levels > 0`).
+const MC_MAIN_COMMIT: usize = 0;
+const MC_SIZE: usize = MC_MAIN_COMMIT + DIGEST_ELEMS;
+
+/// Base of the (a-root) main-trace commitment block (after the FS-qi block).
+fn mc_base(cfg: &RecursiveConfig) -> usize {
+    fq_base(cfg) + fq_size(cfg)
+}
+
+/// Size of the (a-root) block: `DIGEST_ELEMS` columns iff `bind_root_to_main_commit`.
+fn mc_size(cfg: &RecursiveConfig) -> usize {
+    if cfg.bind_root_to_main_commit {
+        MC_SIZE
+    } else {
+        0
+    }
+}
+
 /// The (alpha, zeta) the inline FS challenger squeezes for `fs_blocks` (the observed transcript:
 /// `fs_pre_alpha_rounds` pre-alpha FULL-rate blocks + 1 quotient-commitment block), in p3 order:
 /// observe pre-alpha prefix → SAMPLE alpha → observe quotient → SAMPLE zeta. The single source the
@@ -865,7 +901,7 @@ pub fn fs_squeeze_query_index(
 
 /// Total column count for a window with this config.
 pub fn n_cols(cfg: &RecursiveConfig) -> usize {
-    fq_base(cfg) + fq_size(cfg)
+    mc_base(cfg) + mc_size(cfg)
 }
 
 /// The `j`-th tower column (`sp[j]`).
@@ -945,6 +981,12 @@ pub struct WindowInputs<'a> {
     /// `fs_final_blocks > 0`. The honest builder DERIVES the query index `draw_out` from these by
     /// continuing the post-last-beta sponge state. Unused otherwise.
     pub fs_final_blocks: &'a [[Val; RATE]],
+    /// (a-root) the inner proof's MAIN-TRACE commitment (the first PCS round Merkle root) the FS-index-
+    /// driven Merkle opening must authenticate to. Consumed only when `bind_root_to_main_commit`; the
+    /// honest builder copies it into the `main_commit` column block and the eval constrains the
+    /// reconstructed root == this. For an HONEST opening of the real inner main-trace tree this equals
+    /// the tree root; a forged opening that folds to a different root rejects.
+    pub inner_main_commit: [Val; DIGEST_ELEMS],
 }
 
 impl<'a> WindowInputs<'a> {
@@ -967,7 +1009,7 @@ impl<'a> WindowInputs<'a> {
             absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[],
+            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         }
     }
 }
@@ -1437,6 +1479,19 @@ pub fn pack_window(cfg: &RecursiveConfig, inp: &WindowInputs) -> Vec<Val> {
         }
     }
 
+    // (a-root) inner main-trace commitment column: the bound recursion input the FS-index-driven
+    // Merkle opening must authenticate to. Honest builder copies it in; for an honest opening of the
+    // real inner main-trace tree this equals the reconstructed root, so the (a-root) equality holds.
+    if cfg.bind_root_to_main_commit {
+        let mb = mc_base(cfg);
+        row[mb + MC_MAIN_COMMIT..mb + MC_MAIN_COMMIT + DIGEST_ELEMS]
+            .copy_from_slice(&inp.inner_main_commit);
+        debug_assert!(
+            cfg.merkle_levels > 0,
+            "bind_root_to_main_commit requires a Merkle block (merkle_levels > 0)"
+        );
+    }
+
     row
 }
 
@@ -1736,6 +1791,23 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                 for i in 0..DIGEST_ELEMS {
                     builder.assert_zero(
                         l(llast + ML_PERM + C_OUTPUT + i) - pubs[PV_ROOT + i].clone(),
+                    );
+                }
+            }
+
+            // ===== (a-root) reconstructed root == inner MAIN-TRACE commitment (bound input) =====
+            // The last Merkle level's reconstructed root (output[..8]) — the root the FS-index-driven
+            // path folds to — is constrained EQUAL to the inner proof's main-trace commitment carried
+            // in the `main_commit` column block. Combined with the per-level index-bit↔bus binding
+            // above (the path verified is the one the FS index SELECTS, not an adversary's), this says:
+            // "the opened main-trace leaf at FS-index i authenticates to the inner main-trace root."
+            // A path that folds to a DIFFERENT root than the committed inner root rejects.
+            if cfg.bind_root_to_main_commit {
+                let mb = mc_base(&cfg);
+                let llast = merkle_level_base(&cfg, cfg.merkle_levels - 1);
+                for i in 0..DIGEST_ELEMS {
+                    builder.assert_zero(
+                        l(llast + ML_PERM + C_OUTPUT + i) - l(mb + MC_MAIN_COMMIT + i),
                     );
                 }
             }
@@ -2423,7 +2495,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[],
+            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -2479,7 +2551,7 @@ mod tests {
             merkle_leaf: leaves[forged_index],
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         };
         let mut row = pack_window(&cfg, &inp);
         // CONTROL: the FORGED Merkle blocks are internally valid — with a MATCHING forged bus
@@ -2498,7 +2570,7 @@ mod tests {
             descent: &[], merkle_leaf: leaves[honest_index],
             merkle_siblings: &tree.auth_path(honest_index),
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         });
         for c in C_DRAW_OUT..tower_end(levels) {
             row[c] = honest[c];
@@ -2562,6 +2634,331 @@ mod tests {
         let mut bad_root = tree.root();
         bad_root[0] += Val::ONE;
         assert!(!check_all_constraints(&air(cfg), &m, &pubs(leaves[index], bad_root), None).is_ok());
+    }
+
+    // ---------------------------------------------------------------------------------
+    // (a-root) FS-index-driven main-trace Merkle opening verified against the inner
+    // MAIN-TRACE commitment carried as a BOUND recursion input.
+    //
+    // The (a) bus binding already forces the path's per-level selector bits to equal the
+    // FS-derived query-index bits; the (a-root) constraint adds "reconstructed root == inner
+    // main-trace commitment (a bound column input)", so the composite reads: the opened
+    // main-trace leaf at the FS-derived index authenticates to the inner main-trace root.
+    // ---------------------------------------------------------------------------------
+
+    /// Merkle config with the (a-root) root↔inner-main-commit binding enabled.
+    fn cfg_merkle_root_bound(levels: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            merkle_levels: levels,
+            bind_root_to_main_commit: true,
+            ..RecursiveConfig::single_window(levels)
+        }
+    }
+
+    /// Build a (a-root) window: open `leaf` at `index` in `tree`, with the inner main-trace
+    /// commitment column set to `main_commit`. The FS index is `draw`'s low `levels` bits.
+    fn merkle_window_root_bound(
+        cfg: &RecursiveConfig,
+        draw: Val,
+        tree: &RefTree,
+        leaf: Digest,
+        index: usize,
+        main_commit: Digest,
+    ) -> Vec<Val> {
+        let sibs = tree.auth_path(index);
+        let inp = WindowInputs {
+            draw_out: draw,
+            e0: ext_multi(1),
+            e1: ext_multi(2),
+            beta: ext_multi(3),
+            descent: &[],
+            merkle_leaf: leaf,
+            merkle_siblings: &sibs,
+            deep_zeta: Challenge::ZERO,
+            deep_q: Challenge::ZERO,
+            deep_alpha: Challenge::ZERO,
+            fs_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH],
+            prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[],
+            public_io: &[],
+            fs_beta_blocks: &[],
+            fs_final_blocks: &[],
+            inner_main_commit: main_commit,
+        };
+        pack_window(cfg, &inp)
+    }
+
+    /// GOLDEN (a-root): an honest main-trace opening at the FS-forced index, whose reconstructed
+    /// root is bound to the inner main-trace commitment (= the tree root), ACCEPTS. The (a-root)
+    /// equality holds because the path folds to exactly the committed inner root. (We pass the
+    /// matching public root too, so the prior PV_ROOT boundary is satisfied simultaneously.)
+    #[test]
+    fn air_accepts_main_trace_opening_root_bound_to_inner_commit() {
+        let levels = 4usize;
+        let cfg = cfg_merkle_root_bound(levels);
+        let n = 1usize << levels;
+        let leaves: Vec<Digest> = (0..n as u32).map(digest).collect();
+        let tree = RefTree::new(leaves.clone());
+        let root = tree.root();
+        for raw in [0u32, 1, 6, 0xB, 0xD, 0xF, 0xABCDA] {
+            let draw = Val::from_u32(raw);
+            let index = (draw.as_canonical_u32() as usize) & (n - 1);
+            let row = merkle_window_root_bound(&cfg, draw, &tree, leaves[index], index, root);
+            let m = RowMajorMatrix::new(row, n_cols(&cfg));
+            let report = check_all_constraints(&air(cfg), &m, &pubs(leaves[index], root), None);
+            assert!(
+                report.is_ok(),
+                "honest root-bound main-trace opening rejected (raw={raw:#x}): {} failures",
+                report.failures.len()
+            );
+        }
+    }
+
+    /// (a-root) FORGERY — AUTHENTICATES TO A DIFFERENT ROOT than the inner main-trace commitment:
+    /// the path folds honestly to `tree.root()`, but the inner main-trace commitment column carries
+    /// a DIFFERENT root. The (a-root) equality (reconstructed root == committed inner root) rejects.
+    /// THIS is the property the task wants load-bearing: an opening that does not authenticate to the
+    /// inner main-trace root is not accepted, even if it is a valid opening of SOME tree.
+    #[test]
+    fn air_rejects_opening_authenticating_to_different_root() {
+        let levels = 4usize;
+        let cfg = cfg_merkle_root_bound(levels);
+        let n = 1usize << levels;
+        let leaves: Vec<Digest> = (0..n as u32).map(digest).collect();
+        let tree = RefTree::new(leaves.clone());
+        let root = tree.root();
+        let draw = Val::from_u32(0b1011);
+        let index = (draw.as_canonical_u32() as usize) & (n - 1);
+        // The committed "inner main-trace commitment" is a DIFFERENT root than the one the path folds
+        // to (e.g. some other proof's main-trace root). The opening is internally valid for `tree`.
+        let mut other_commit = root;
+        other_commit[0] += Val::ONE;
+        let row = merkle_window_root_bound(&cfg, draw, &tree, leaves[index], index, other_commit);
+        // CONTROL: with the matching commit (== tree root) the same opening ACCEPTS — so the ONLY
+        // thing rejecting below is the (a-root) root↔inner-commit equality, nothing else.
+        let control = merkle_window_root_bound(&cfg, draw, &tree, leaves[index], index, root);
+        assert!(
+            check_all_constraints(
+                &air(cfg),
+                &RowMajorMatrix::new(control, n_cols(&cfg)),
+                &pubs(leaves[index], root),
+                None
+            )
+            .is_ok(),
+            "control (commit == tree root) should accept — test would prove nothing otherwise"
+        );
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        // PV_ROOT still carries the real tree root (the path's actual root), so the PV boundary is
+        // satisfied; ONLY (a-root) — reconstructed root != committed inner main-trace root — rejects.
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaves[index], root), None).is_ok(),
+            "an opening authenticating to a DIFFERENT root than the inner main-trace commitment was accepted — (a-root) not load-bearing"
+        );
+    }
+
+    /// (a-root) FORGERY — tampered inner-main-commit column: corrupting the committed inner root (so
+    /// it no longer equals the honestly-reconstructed root) rejects. The binding is an equality, so
+    /// breaking EITHER side breaks it (complements the different-root test above).
+    #[test]
+    fn air_rejects_tampered_inner_main_commit_column() {
+        let levels = 4usize;
+        let cfg = cfg_merkle_root_bound(levels);
+        let n = 1usize << levels;
+        let leaves: Vec<Digest> = (0..n as u32).map(digest).collect();
+        let tree = RefTree::new(leaves.clone());
+        let root = tree.root();
+        let draw = Val::from_u32(0b0111);
+        let index = (draw.as_canonical_u32() as usize) & (n - 1);
+        let mut row = merkle_window_root_bound(&cfg, draw, &tree, leaves[index], index, root);
+        let mb = mc_base(&cfg);
+        row[mb + MC_MAIN_COMMIT + 3] += Val::ONE; // corrupt one committed-root limb
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(!check_all_constraints(&air(cfg), &m, &pubs(leaves[index], root), None).is_ok());
+    }
+
+    /// (a-root) FORGERY — MERKLE AT THE WRONG INDEX, with the root bound to the inner commit. Open at
+    /// a DIFFERENT index than the FS-forced query, then swap in the honest bus block. The per-level
+    /// index bits now disagree with the path's perm placements ⇒ the (a) index↔bus binding rejects —
+    /// confirming the selector bits are NOT free: a prover cannot open a favorable leaf and still
+    /// authenticate to the inner main-trace root. (Binding to free selector bits would be vacuous.)
+    #[test]
+    fn air_rejects_root_bound_opening_at_wrong_index() {
+        let levels = 4usize;
+        let cfg = cfg_merkle_root_bound(levels);
+        let n = 1usize << levels;
+        let leaves: Vec<Digest> = (0..n as u32).map(digest).collect();
+        let tree = RefTree::new(leaves.clone());
+        let root = tree.root();
+        let draw = Val::from_u32(0b0110);
+        let honest_index = (draw.as_canonical_u32() as usize) & (n - 1);
+        let forged_index = honest_index ^ 0b101;
+        assert_ne!(forged_index, honest_index);
+        // Build the row for the FORGED index (path + selector bits for forged_index), committed to the
+        // real inner root (the forged leaf's path also folds to the same tree root, so (a-root) holds).
+        let forged_draw = Val::from_u32(forged_index as u32);
+        let mut row = merkle_window_root_bound(
+            &cfg,
+            forged_draw,
+            &tree,
+            leaves[forged_index],
+            forged_index,
+            root,
+        );
+        // CONTROL: with its own (forged) bus the row ACCEPTS — every path folds to the same root and
+        // the (a-root) commit matches — so only the index↔bus binding can reject the swapped-bus row.
+        assert!(
+            check_all_constraints(
+                &air(cfg),
+                &RowMajorMatrix::new(row.clone(), n_cols(&cfg)),
+                &pubs(leaves[forged_index], root),
+                None
+            )
+            .is_ok(),
+            "forged-index control row should accept with its own bus"
+        );
+        // Overwrite the bus block (draw_out/bits/index/tower/fold) with the HONEST query: now
+        // bits[level] say honest_index but the Merkle perm placements are for forged_index.
+        let honest = merkle_window_root_bound(
+            &cfg,
+            draw,
+            &tree,
+            leaves[honest_index],
+            honest_index,
+            root,
+        );
+        for c in C_DRAW_OUT..tower_end(levels) {
+            row[c] = honest[c];
+        }
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &pubs(leaves[forged_index], root), None).is_ok(),
+            "a root-bound Merkle path opened at a DIFFERENT index than the FS query was accepted — selector bits not bound to the FS index"
+        );
+    }
+
+    // ---------------------------------------------------------------------------------
+    // (a-root) FIDELITY-PIN against a REAL p3 `MerkleTreeMmcs` (deployed MyHash/MyCompress node
+    // layer): an honest opening from the real MMCS reproduces the real root in-AIR with ZERO
+    // residual, and binds == the real commitment. This pins the in-AIR node-fold to the deployed
+    // Merkle, not a hand-rolled stand-in.
+    // ---------------------------------------------------------------------------------
+
+    /// FIDELITY-PIN: commit a single-column main-trace-shaped matrix to a REAL p3 `MerkleTreeMmcs`
+    /// over the DEPLOYED `MyHash`/`MyCompress` (the same Poseidon2-16 the inlined perm is pinned to),
+    /// open a leaf, and drive the in-AIR (a-root) window with `(leaf_digest = MyHash(row), siblings,
+    /// FS-index, root)`. The window folds to the real root with zero residual (ACCEPTS via
+    /// `check_all_constraints`) AND the (a-root) binding to the real commitment holds. ALSO checks the
+    /// real `Mmcs::verify_batch` accepts the same opening — anchoring the in-AIR fold to the deployed
+    /// verifier's own node hashing. Tamper (corrupt the real commitment) ⇒ rejects.
+    #[test]
+    fn fidelity_real_mmcs_main_trace_opening_authenticates_in_air() {
+        use descender_account_stark::Perm;
+        use p3_commit::Mmcs;
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+        use p3_matrix::Dimensions;
+        use p3_merkle_tree::MerkleTreeMmcs;
+        use p3_symmetric::{CryptographicHasher, PaddingFreeSponge, TruncatedPermutation};
+
+        // The DEPLOYED node layer, reconstructed from the re-exported `Perm` (the SAME
+        // `default_koalabear_poseidon2_16` the inlined perm + `merkle::compressor()` are pinned to).
+        // These const params (`16,8,8` / `2,8,16`) are byte-identical to `config::MyHash`/`MyCompress`
+        // (cross-checked: account-stark `config.rs` declares the same aliases over the same `Perm`).
+        type LeafHash = PaddingFreeSponge<Perm, 16, 8, DIGEST_ELEMS>;
+        type NodeCompress = TruncatedPermutation<Perm, 2, DIGEST_ELEMS, 16>;
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let hash = LeafHash::new(perm.clone());
+        let compress = NodeCompress::new(perm.clone());
+        type RealMmcs = MerkleTreeMmcs<Val, Val, LeafHash, NodeCompress, 2, DIGEST_ELEMS>;
+        let mmcs: RealMmcs = MerkleTreeMmcs::new(hash.clone(), compress, /*cap_height=*/ 0);
+
+        let levels = 4usize;
+        let n = 1usize << levels; // power-of-two height ⇒ clean binary tree, one binary level/depth.
+        let width = 5usize; // a small main-trace-shaped row width.
+        // Deterministic single committed matrix (one PCS round = the main trace).
+        let vals: Vec<Val> = (0..(n * width) as u32).map(|x| Val::from_u32(x.wrapping_mul(2_654_435_761))).collect();
+        let matrix = RowMajorMatrix::new(vals, width);
+        let (commit, prover_data) = mmcs.commit(vec![matrix.clone()]);
+        // cap_height 0 ⇒ the cap has exactly ONE root: the inner main-trace Merkle root.
+        assert_eq!(commit.num_roots(), 1, "cap_height 0 must yield a single root");
+        let inner_main_commit: Digest = commit.roots()[0];
+
+        let cfg = cfg_merkle_root_bound(levels);
+        for &index in &[0usize, 1, 3, 6, 9, n - 1] {
+            // Open the real MMCS at this leaf index.
+            let opening = mmcs.open_batch(index, &prover_data);
+            let (opened_values, opening_proof) = opening.unpack();
+            assert_eq!(opened_values.len(), 1, "single committed matrix");
+            assert_eq!(opening_proof.len(), levels, "binary path depth == levels");
+            // FIDELITY: the leaf node entering the Merkle path is MyHash(opened_row) — exactly the
+            // deployed leaf hashing. (Leaf-row hashing itself is a documented follow-on; here we pin
+            // the NODE-FOLD layer the recursion mirrors.)
+            let leaf_digest: Digest = hash.hash_iter_slices([opened_values[0].as_slice()]);
+            let siblings: Vec<Digest> = opening_proof.clone();
+
+            // Sanity: the real verifier accepts this opening against the real commitment.
+            let dims = [Dimensions { width, height: n }];
+            mmcs.verify_batch(
+                &commit,
+                &dims,
+                index,
+                p3_commit::BatchOpeningRef::new(&opened_values, &opening_proof),
+            )
+            .expect("real Mmcs::verify_batch must accept the honest opening");
+
+            // Drive the in-AIR (a-root) window: the FS index is `index` (we set draw_out == index so
+            // the bus low bits select exactly this leaf), the path is the real siblings, the leaf is
+            // MyHash(row), the bound inner main-trace commitment is the real root.
+            let draw = Val::from_u32(index as u32);
+            let build = |commit: Digest| -> Vec<Val> {
+                let inp = WindowInputs {
+                    draw_out: draw,
+                    e0: ext_multi(1),
+                    e1: ext_multi(2),
+                    beta: ext_multi(3),
+                    descent: &[],
+                    merkle_leaf: leaf_digest,
+                    merkle_siblings: &siblings,
+                    deep_zeta: Challenge::ZERO,
+                    deep_q: Challenge::ZERO,
+                    deep_alpha: Challenge::ZERO,
+                    fs_blocks: &[],
+                    sponge_in: [Val::ZERO; WIDTH],
+                    prior_state: [Val::ZERO; WIDTH],
+                    absorbed: [Val::ZERO; RATE],
+                    prefix_blocks: &[],
+                    public_io: &[],
+                    fs_beta_blocks: &[],
+                    fs_final_blocks: &[],
+                    inner_main_commit: commit,
+                };
+                pack_window(&cfg, &inp)
+            };
+            let row = build(inner_main_commit);
+            // ZERO-RESIDUAL fidelity: the in-AIR reconstructed root equals the REAL commitment.
+            assert_eq!(
+                window_merkle_root(&cfg, &row),
+                inner_main_commit,
+                "in-AIR fold root != real MMCS commitment at index {index} — node-fold fidelity broken"
+            );
+            let m = RowMajorMatrix::new(row, n_cols(&cfg));
+            let report = check_all_constraints(&air(cfg), &m, &pubs(leaf_digest, inner_main_commit), None);
+            assert!(
+                report.is_ok(),
+                "real-MMCS opening rejected in-AIR at index {index}: {} failures",
+                report.failures.len()
+            );
+            // Tamper: a corrupted real commitment ⇒ the (a-root) binding rejects.
+            let mut bad_commit = inner_main_commit;
+            bad_commit[0] += Val::ONE;
+            let bad_row = build(bad_commit);
+            let bm = RowMajorMatrix::new(bad_row, n_cols(&cfg));
+            assert!(
+                !check_all_constraints(&air(cfg), &bm, &pubs(leaf_digest, bad_commit), None).is_ok(),
+                "a corrupted inner main-trace commitment was accepted at index {index}"
+            );
+        }
     }
 
     // ---------------------------------------------------------------------------------
@@ -2692,7 +3089,7 @@ mod tests {
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -2806,7 +3203,7 @@ mod tests {
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
             deep_zeta: zeta, deep_q: q, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -2927,7 +3324,7 @@ mod tests {
             merkle_leaf: leaves[index],
             merkle_siblings: &sibs,
             deep_zeta: ext_multi(55), deep_q: ext_multi(66), deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -2963,7 +3360,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[],
+            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -3187,7 +3584,7 @@ mod tests {
             absorbed,
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[],
+            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -3404,7 +3801,7 @@ mod tests {
             absorbed,
             prefix_blocks: blocks,
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[],
+            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -3676,7 +4073,7 @@ mod tests {
             merkle_leaf: leaf,
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -3722,7 +4119,7 @@ mod tests {
             draw_out: draw, e0: forged_e0, e1: ext_multi(2), beta: ext_multi(3),
             descent: &[], merkle_leaf: leaves[index], merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         };
         let row = pack_window(&cfg_off, &inp);
         assert!(
@@ -3760,7 +4157,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: stmt,
-            fs_beta_blocks: &[], fs_final_blocks: &[],
+            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -3860,7 +4257,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &stmt,
-            fs_beta_blocks: &[], fs_final_blocks: &[],
+            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         };
         let row = pack_window(&cfg, &inp);
         let m = RowMajorMatrix::new(row, n_cols(&cfg));
@@ -3903,7 +4300,7 @@ mod tests {
             deep_zeta: Challenge::ZERO, deep_q: q, deep_alpha: Challenge::ZERO,
             fs_blocks: blocks,
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
-            prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[],
+            prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         };
         pack_window(cfg, &inp)
     }
@@ -4228,6 +4625,7 @@ mod tests {
             prefix_blocks: &[], public_io: &[],
             fs_beta_blocks: beta_blocks,
             fs_final_blocks: final_blocks,
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
         };
         pack_window(cfg, &inp)
     }
