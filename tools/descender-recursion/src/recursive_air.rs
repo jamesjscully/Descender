@@ -402,6 +402,28 @@ pub struct RecursiveConfig {
     /// `fs_final_blocks * RATE` long, element `r*RATE + i` pins the post-beta round `r`'s observed block
     /// lane `i`. Ties the query index to the ACTUAL final polynomial + grinding witness.
     pub fs_final_blocks_public: bool,
+    /// (FS-qi-partial) Number of rate lanes `n` (`0..RATE`) in the TRAILING PARTIAL absorb round of the
+    /// post-beta observe stream. The real post-beta stream (final_poly ‖ log_arities ‖ query-PoW
+    /// witness) length `L` is NOT a multiple of RATE: the native challenger buffers the leftover
+    /// `n = L mod RATE` observed elements and the FRACTIONAL block is absorbed by the FIRST `sample()`
+    /// after the stream (the PoW `sample_bits` or, with no PoW, the query index draw) — a PARTIAL
+    /// duplexing of `n` lanes (rate lanes `[0..n]` overwritten, `[n..RATE]` zeroed, capacity slot
+    /// `+= n`, per `challenger::duplexing`), NOT a full-rate absorb. When `> 0` the window carries ONE
+    /// extra (FS-qi) round whose absorb is `n`-lane (not RATE), appended AFTER the `fs_final_blocks`
+    /// full rounds; the query-index / PoW draws then squeeze THIS partial-absorb permute (P0), not the
+    /// last full round. `0` ⇒ the legacy RATE-aligned model (last full round = P0). Requires
+    /// `fs_final_blocks > 0`. Native-PINned by [`tests::fs_partial_absorb_matches_native_duplex`].
+    pub fs_final_partial: usize,
+    /// (FS-qi-pow) Query-phase PoW bit count (p3-fri `params.query_proof_of_work_bits`). When `> 0`,
+    /// the verifier's `check_witness(bits, w)` (verifier.rs:339) does `observe(w); sample_bits(bits)`
+    /// BEFORE the per-query index `sample_bits` (verifier.rs:352) — so pop 0 (the LAST observe round's
+    /// `output[RATE-1]`) is the PoW sample (its low `bits` MUST be zero, the grinding check) and the
+    /// query indices SHIFT by one pop (query `r` is pop `r+1`). The PoW witness `w` is the LAST
+    /// observed element of the post-beta stream (the trailing partial absorb's last lane). `0` ⇒ the
+    /// legacy zero-bit model (`check_witness(0,_)` short-circuits: NO observe, NO sample, NO draw
+    /// shift). Requires `fs_final_blocks > 0`. Native-PINned by
+    /// [`tests::fs_query_pow_matches_native_grind`]; a witness failing the zero-bits check REJECTS.
+    pub query_pow_bits: usize,
     /// (a-root) BIND the FS-index-driven main-trace Merkle opening's reconstructed root to the inner
     /// proof's MAIN-TRACE commitment, carried as a BOUND recursion input (a window column block, not a
     /// free witness). When `true` the window carries a `main_commit[DIGEST_ELEMS]` column block and
@@ -610,6 +632,8 @@ impl RecursiveConfig {
             fs_batch_combo_alpha: false,
             fs_final_blocks: 0,
             fs_final_blocks_public: false,
+            fs_final_partial: 0,
+            query_pow_bits: 0,
             bind_root_to_main_commit: false,
             layer_open_rounds: 0,
             layer_open_levels: 0,
@@ -952,12 +976,16 @@ fn fb_size(cfg: &RecursiveConfig) -> usize {
 
 // ----- (FS-qi) FRI query-index draw block -----
 //
-// Appended AFTER the (FS-β) block. Per post-beta observe round `r = 0..fs_final_blocks`:
+// Appended AFTER the (FS-β) block. Per post-beta observe round `r = 0..fq_total_rounds`:
 //   block[RATE] ‖ perm[PERM_COLS]
 // `block` is a RATE-chunk of the post-beta transcript (final_poly ‖ log_arities ‖ query-PoW witness);
-// `perm`'s input is absorb(state_r, block, RATE) where state_0 is the post-last-beta state and
-// state_{r+1} is round r's perm output. The query index draw (`C_DRAW_OUT`) is bound to the top LIFO
-// pop of the LAST round's perm output rate.
+// rounds `0..fs_final_blocks` are FULL-rate absorbs (`n == RATE`). When `fs_final_partial > 0` ONE
+// extra TRAILING round (index `fs_final_blocks`) is a PARTIAL absorb of `fs_final_partial` lanes
+// (`n < RATE`): the FRACTIONAL leftover of the non-RATE-aligned stream, duplexed by the first
+// `sample()` after the stream (the native `duplexing()` with a non-empty input buffer). `perm`'s
+// input is absorb(state_r, block, n_r) where state_0 is the post-last-beta state and state_{r+1} is
+// round r's perm output. The query index draw (`C_DRAW_OUT`) is bound to the LIFO pop of the LAST
+// round's (P0's) perm output rate (lane shifted by the query PoW, if any).
 const FQ_BLOCK: usize = 0;
 const FQ_PERM: usize = FQ_BLOCK + RATE;
 const FQ_ROUND: usize = FQ_PERM + PERM_COLS;
@@ -972,10 +1000,36 @@ fn fq_round_base(cfg: &RecursiveConfig, r: usize) -> usize {
     fq_base(cfg) + r * FQ_ROUND
 }
 
-/// Size of the (FS-qi) block: `fs_final_blocks` rounds.
+/// Total (FS-qi) absorb-permute rounds: `fs_final_blocks` FULL-rate rounds plus ONE trailing PARTIAL
+/// round when `fs_final_partial > 0`. The LAST round (index `fq_total_rounds - 1`) is P0 — the permute
+/// whose output the query-index / PoW samples squeeze.
+fn fq_total_rounds(cfg: &RecursiveConfig) -> usize {
+    if cfg.fs_final_blocks == 0 {
+        0
+    } else {
+        cfg.fs_final_blocks + usize::from(cfg.fs_final_partial > 0)
+    }
+}
+
+/// Absorb lane count `n` of (FS-qi) round `r`: `RATE` for the full rounds, `fs_final_partial` for the
+/// trailing partial round.
+fn fq_round_n(cfg: &RecursiveConfig, r: usize) -> usize {
+    if cfg.fs_final_partial > 0 && r == cfg.fs_final_blocks {
+        cfg.fs_final_partial
+    } else {
+        RATE
+    }
+}
+
+/// Index of P0 — the LAST (FS-qi) round, whose perm output feeds the query-index / PoW squeeze.
+fn fq_p0_round(cfg: &RecursiveConfig) -> usize {
+    fq_total_rounds(cfg) - 1
+}
+
+/// Size of the (FS-qi) block: `fq_total_rounds` rounds.
 fn fq_size(cfg: &RecursiveConfig) -> usize {
     if cfg.fs_final_blocks > 0 {
-        cfg.fs_final_blocks * FQ_ROUND
+        fq_total_rounds(cfg) * FQ_ROUND
     } else {
         0
     }
@@ -1279,6 +1333,40 @@ pub fn fs_squeeze_query_index(
     // emptied the input buffer, so this sample performs NO duplexing — it is the top LIFO pop of the
     // last observe round's permute rate (sample_bits then masks it to the low index bits).
     (state[RATE - 1], state)
+}
+
+/// P0 — the permute output the query-index / PoW samples squeeze, for the REAL (non-RATE-aligned)
+/// post-beta stream. CONTINUING from `start_state` (post-last-beta), this absorbs the `full_blocks`
+/// FULL-rate observe rounds, then — when `partial_n > 0` — a TRAILING PARTIAL absorb of `partial_n`
+/// lanes of `partial_block` (the FRACTIONAL leftover `L mod RATE` of the stream). The partial absorb
+/// is exactly the native challenger's `duplexing()` triggered by the FIRST `sample()` after the
+/// stream (the PoW `sample_bits`, or the index draw with no PoW): the buffered `partial_n` elements
+/// are absorbed (rate `[0..n]` overwritten, `[n..RATE]` zeroed, capacity `+= n`) and permuted. Returns
+/// P0's full state; the caller reads `output[RATE-1-pop]` for pop ordinal `pop`. With NO partial
+/// (`partial_n == 0`) P0 is the last full round (the legacy RATE-aligned model).
+pub fn fs_squeeze_query_p0_state(
+    start_state: [Val; WIDTH],
+    full_blocks: &[[Val; RATE]],
+    partial_block: [Val; RATE],
+    partial_n: usize,
+) -> [Val; WIDTH] {
+    assert!(partial_n <= RATE, "partial_n must be <= RATE");
+    assert!(
+        !full_blocks.is_empty() || partial_n > 0,
+        "fs_squeeze_query_p0_state requires >= 1 observe round (full block or partial)"
+    );
+    let mut state = start_state;
+    for block in full_blocks {
+        state = prefix_round_state(state, *block);
+    }
+    if partial_n > 0 {
+        // TRAILING PARTIAL absorb (n < RATE): the sample-triggered duplexing of the buffered leftover.
+        let pre = absorb_state(state, partial_block, partial_n);
+        let consts = inlined_perm::Constants::pinned();
+        let cols = inlined_perm::generate_perm_cols(pre, &consts);
+        state = inlined_perm::perm_output(&cols);
+    }
+    state
 }
 
 // ----- (b-hash) leaf-row hashing block (PaddingFreeSponge MyHash) -----
@@ -1663,9 +1751,31 @@ fn fo_size(cfg: &RecursiveConfig) -> usize {
     }
 }
 
+// ----- (FS-qi-pow) query-PoW sample bit-decomposition block -----
+//
+// Appended AFTER the (FAN-OUT) block. When `query_pow_bits > 0`, carries the full canonical bit
+// decomposition (`FIELD_BITS` cells, LSB first) of the PoW sample = P0.output[RATE-1] (the pop-0 the
+// native `check_witness` `sample_bits` reads). The eval asserts booleanity + recomposition + that the
+// low `query_pow_bits` bits are ZERO (the grinding condition: the witness was ground so the low bits
+// of this squeeze vanish). Mirrors p3-fri verifier.rs:339 + grinding_challenger check_witness.
+
+/// Base of the (FS-qi-pow) PoW-bits block (after the FAN-OUT block).
+fn pow_bits_base(cfg: &RecursiveConfig) -> usize {
+    fo_base(cfg) + fo_size(cfg)
+}
+
+/// Size of the (FS-qi-pow) block: `FIELD_BITS` cells iff `query_pow_bits > 0`.
+fn pow_bits_size(cfg: &RecursiveConfig) -> usize {
+    if cfg.query_pow_bits > 0 {
+        FIELD_BITS
+    } else {
+        0
+    }
+}
+
 /// Total column count for a window with this config.
 pub fn n_cols(cfg: &RecursiveConfig) -> usize {
-    fo_base(cfg) + fo_size(cfg)
+    pow_bits_base(cfg) + pow_bits_size(cfg)
 }
 
 /// The `j`-th tower column (`sp[j]`).
@@ -1757,6 +1867,13 @@ pub struct WindowInputs<'a> {
     /// `fs_final_blocks > 0`. The honest builder DERIVES the query index `draw_out` from these by
     /// continuing the post-last-beta sponge state. Unused otherwise.
     pub fs_final_blocks: &'a [[Val; RATE]],
+    /// (FS-qi-partial) the TRAILING PARTIAL absorb block of the post-beta stream — only the first
+    /// `fs_final_partial` lanes are meaningful (the FRACTIONAL leftover of the non-RATE-aligned stream,
+    /// whose LAST meaningful lane carries the query-PoW witness when `query_pow_bits > 0`). Consumed
+    /// only when `fs_final_partial > 0`; the honest builder absorbs these `n` lanes (partial duplexing)
+    /// to form P0, the permute the query-index / PoW samples squeeze. Lanes `[n..RATE]` are ignored
+    /// (the partial absorb zero-fills them).
+    pub fs_final_partial_block: [Val; RATE],
     /// (a-root) the inner proof's MAIN-TRACE commitment (the first PCS round Merkle root) the FS-index-
     /// driven Merkle opening must authenticate to. Consumed only when `bind_root_to_main_commit`; the
     /// honest builder copies it into the `main_commit` column block and the eval constrains the
@@ -1850,7 +1967,7 @@ impl<'a> WindowInputs<'a> {
             absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -2058,15 +2175,24 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
             cfg.fs_final_blocks,
             "fs_final_blocks must have fs_final_blocks entries"
         );
-        // The post-final-observe permute output (P0, shared across fan-out queries). Query
-        // `query_ordinal`'s index is the r-th successive LIFO pop off the same post-grinding challenger
-        // (p3-fri samples the N indices as N successive sample()'s). While the output buffer is non-empty
-        // each pop performs NO re-permute; when it EMPTIES (every RATE pops) the next sample() triggers a
-        // SQUEEZE-ONLY refill permute. So pop r comes from bucket b = r/RATE (= squeeze-only-permute
-        // applied b times to P0's state), lane RATE-1-(r%RATE). Bucket 0 = P0 = the (FS-qi) output.
-        let (_, p0_state) = fs_squeeze_query_index(post_beta_state, inp.fs_final_blocks);
-        let bucket = query_ordinal / RATE;
-        let lane = RATE - 1 - (query_ordinal % RATE);
+        // The post-final-observe permute output (P0, shared across fan-out queries). P0 is the LAST
+        // (FS-qi) absorb-permute — the trailing PARTIAL absorb when `fs_final_partial > 0`, else the
+        // last full round. Query `query_ordinal`'s index is the `pop`-th successive LIFO pop off the
+        // same post-grinding challenger, where `pop = query_ordinal + pow_pop_shift`: a nonzero query
+        // PoW consumes pop 0 (the `check_witness` `sample_bits`), so the indices SHIFT by one. While
+        // the output buffer is non-empty each pop performs NO re-permute; when it EMPTIES (every RATE
+        // pops) the next sample() triggers a SQUEEZE-ONLY refill permute. So pop comes from bucket
+        // b = pop/RATE (squeeze-only-permute applied b times to P0), lane RATE-1-(pop%RATE).
+        let p0_state = fs_squeeze_query_p0_state(
+            post_beta_state,
+            inp.fs_final_blocks,
+            inp.fs_final_partial_block,
+            cfg.fs_final_partial,
+        );
+        let pow_pop_shift = usize::from(cfg.query_pow_bits > 0);
+        let pop = query_ordinal + pow_pop_shift;
+        let bucket = pop / RATE;
+        let lane = RATE - 1 - (pop % RATE);
         // P_bucket: squeeze-only-permute applied `bucket` times to P0's state.
         let mut bucket_state = p0_state;
         for _ in 0..bucket {
@@ -2456,22 +2582,39 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
         // `state` is now the post-last-beta state — the query-index continuation point.
 
         // (FS-qi) query-index draw block: observe the post-beta transcript (final_poly ‖ log_arities ‖
-        // query-PoW witness), RATE-chunked, continuing the post-last-beta state; the index draw_out
-        // (C_DRAW_OUT) is the top LIFO pop of the LAST observe round's permute rate.
+        // query-PoW witness), continuing the post-last-beta state. Rounds `0..fs_final_blocks` are
+        // FULL-rate absorbs; when `fs_final_partial > 0` ONE trailing PARTIAL absorb round (n < RATE)
+        // models the non-RATE-aligned leftover (sample-triggered duplexing). The index draw_out
+        // (C_DRAW_OUT) is the LIFO pop of P0's (the last round's) permute rate (shifted by the PoW).
         if cfg.fs_final_blocks > 0 {
-            for r in 0..cfg.fs_final_blocks {
-                let block = inp.fs_final_blocks[r];
-                let pre_in = absorb_state(state, block, RATE);
+            for r in 0..fq_total_rounds(cfg) {
+                let n = fq_round_n(cfg, r);
+                let block = if cfg.fs_final_partial > 0 && r == cfg.fs_final_blocks {
+                    inp.fs_final_partial_block
+                } else {
+                    inp.fs_final_blocks[r]
+                };
+                let pre_in = absorb_state(state, block, n);
                 let perm_cols = inlined_perm::generate_perm_cols(pre_in, &consts);
                 let rb = fq_round_base(cfg, r);
                 row[rb + FQ_BLOCK..rb + FQ_BLOCK + RATE].copy_from_slice(&block);
                 row[rb + FQ_PERM..rb + FQ_PERM + PERM_COLS].copy_from_slice(&perm_cols);
                 state = inlined_perm::perm_output(&perm_cols);
             }
+            // `state` is now P0. The query-PoW (when active) consumes pop 0; this row's index draw is
+            // pop `query_ordinal + pow_pop_shift` (no fan-out ⇒ query_ordinal 0). Validate against the
+            // P0 squeeze chain.
+            let pow_pop_shift = usize::from(cfg.query_pow_bits > 0);
+            let pop = query_ordinal + pow_pop_shift;
+            let bucket = pop / RATE;
+            let lane = RATE - 1 - (pop % RATE);
+            let mut bucket_state = state;
+            for _ in 0..bucket {
+                bucket_state = squeeze_permute_state(bucket_state);
+            }
             debug_assert_eq!(
-                draw_out,
-                state[RATE - 1],
-                "FS-qi draw_out != post-beta squeeze pop"
+                draw_out, bucket_state[lane],
+                "FS-qi draw_out != P0 squeeze pop (partial/PoW)"
             );
         }
     }
@@ -2791,8 +2934,14 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
                 "multi-refill fan-out (N > RATE) requires the (FS-qi) chain (fs_final_blocks > 0)"
             );
             let consts = inlined_perm::Constants::pinned();
-            // P0's state = the post-final-observe permute output (the (FS-qi) chain's last perm output).
-            let (_, mut state) = fs_squeeze_query_index(post_beta_state, inp.fs_final_blocks);
+            // P0's state = the post-final-observe permute output (the (FS-qi) chain's last perm output,
+            // the trailing PARTIAL absorb when `fs_final_partial > 0`).
+            let mut state = fs_squeeze_query_p0_state(
+                post_beta_state,
+                inp.fs_final_blocks,
+                inp.fs_final_partial_block,
+                cfg.fs_final_partial,
+            );
             for b in 0..refills {
                 // squeeze-only refill: input == P_b's state UNCHANGED (n == 0; no overwrite, no tag).
                 let pre_in = absorb_state(state, [Val::ZERO; RATE], 0);
@@ -2801,6 +2950,26 @@ pub fn pack_window_query(cfg: &RecursiveConfig, inp: &WindowInputs, query_ordina
                 row[rb..rb + PERM_COLS].copy_from_slice(&perm_cols);
                 state = inlined_perm::perm_output(&perm_cols); // P_{b+1}'s state.
             }
+        }
+    }
+
+    // (FS-qi-pow) bit-decompose the PoW sample (P0.output[RATE-1] = pop 0) into the PoW-bits block.
+    if cfg.query_pow_bits > 0 {
+        assert!(
+            cfg.fs_final_blocks > 0,
+            "query_pow_bits requires the (FS-qi) chain (fs_final_blocks > 0)"
+        );
+        let p0_state = fs_squeeze_query_p0_state(
+            post_beta_state,
+            inp.fs_final_blocks,
+            inp.fs_final_partial_block,
+            cfg.fs_final_partial,
+        );
+        let pow_sample = p0_state[RATE - 1];
+        let canon = pow_sample.as_canonical_u32();
+        let pb = pow_bits_base(cfg);
+        for i in 0..FIELD_BITS {
+            row[pb + i] = Val::from_u32((canon >> i) & 1);
         }
     }
 
@@ -4076,15 +4245,22 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                         l(pp + FQ_PERM + C_OUTPUT + i)
                     }
                 };
-                for r in 0..cfg.fs_final_blocks {
+                for r in 0..fq_total_rounds(&cfg) {
+                    let n = fq_round_n(&cfg, r);
                     let rb = fq_round_base(&cfg, r);
                     let inb = rb + FQ_PERM + inlined_perm::C_INPUTS;
-                    // observe(block_r): FULL-rate absorb — rate lanes [0..RATE] == block_r.
-                    for i in 0..RATE {
+                    // observe(block_r): absorb `n` lanes (full round n == RATE; trailing partial round
+                    // n < RATE). Rate lanes [0..n] == block_r; lanes [n..RATE] ZEROED (the partial
+                    // absorb zero-fills the unfilled rate lanes, per challenger::duplexing).
+                    for i in 0..n {
                         builder.assert_zero(l(inb + i) - l(rb + FQ_BLOCK + i));
                     }
-                    // capacity slot RATE == state_{r}[RATE] + RATE (length tag, n == RATE).
-                    builder.assert_zero(l(inb + RATE) - fq_state_prev(r, RATE) - rate_expr.clone());
+                    for i in n..RATE {
+                        builder.assert_zero(l(inb + i));
+                    }
+                    // capacity slot RATE == state_{r}[RATE] + n (length tag).
+                    let n_expr = AB::Expr::from(AB::F::from_u8(n as u8));
+                    builder.assert_zero(l(inb + RATE) - fq_state_prev(r, RATE) - n_expr);
                     // remaining capacity slots [RATE+1..WIDTH] carried from state_{r}.
                     for i in (RATE + 1)..WIDTH {
                         builder.assert_zero(l(inb + i) - fq_state_prev(r, i));
@@ -4092,14 +4268,14 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                     // full Poseidon2 permutation over this round's perm block.
                     eval_perm::<AB, _>(builder, &cells, rb + FQ_PERM, &consts);
                 }
-                // index draw_out == the `draw_offset`-th LIFO pop of the LAST observe round's perm
-                // output rate. (The last full-rate observe refilled the output buffer and emptied the
-                // input buffer, so the index sample()'s perform NO further permute while the buffer is
-                // non-empty — query r pops output[RATE-1-r].) In single-query mode (fan_out_queries==0)
-                // draw_offset is fixed 0 ⇒ output[RATE-1], the original binding. In fan-out mode the
-                // (FAN-OUT) block constrains draw_offset to the row ordinal, so EACH ROW binds its index
-                // to its OWN r-th FS draw — N independent, transcript-derived, distinct-per-row indices.
-                let last_fq = fq_round_base(&cfg, cfg.fs_final_blocks - 1);
+                // index draw_out == the `pop`-th LIFO pop of P0's (the LAST observe round's) perm
+                // output rate, where pop = draw_offset + pow_pop_shift. (The last observe refilled the
+                // output buffer and emptied the input buffer; the query sample()'s perform NO further
+                // permute while the buffer is non-empty — pop p reads output[RATE-1-p].) A nonzero
+                // query PoW consumes pop 0 (the check_witness sample_bits), shifting the indices by one.
+                // P0 is the LAST (FS-qi) round (the trailing partial absorb when fs_final_partial > 0).
+                let last_fq = fq_round_base(&cfg, fq_p0_round(&cfg));
+                let pow_pop_shift = usize::from(cfg.query_pow_bits > 0);
                 if cfg.fan_out_queries > 0 {
                     // ===== MULTI-REFILL squeeze chain: P0 → P1 → … → P_{k-1} =====
                     // P0 = the post-final-observe permute (this (FS-qi) chain's last round output). For
@@ -4150,15 +4326,44 @@ impl<AB: AirBuilder<F = Val>> Air<AB> for RecursiveAir {
                         }
                         let inv_den = den.inverse();
                         let sel = num * AB::Expr::from(inv_den);
-                        let bucket = r / RATE;
-                        let lane = RATE - 1 - (r % RATE);
+                        // query r pops pop = r + pow_pop_shift off the SHARED post-grinding challenger.
+                        let pop = r + pow_pop_shift;
+                        let bucket = pop / RATE;
+                        let lane = RATE - 1 - (pop % RATE);
                         selected += sel * p_out(bucket, lane);
                     }
                     builder.assert_zero(l(C_DRAW_OUT) - selected);
                 } else {
+                    // single-query: pop = pow_pop_shift (0 with no PoW). The PoW (if any) pops 0; the
+                    // index pops 1. pop <= 1 < RATE so it stays within P0's first refill (no extra perm).
                     builder.assert_zero(
-                        l(C_DRAW_OUT) - l(last_fq + FQ_PERM + C_OUTPUT + (RATE - 1)),
+                        l(C_DRAW_OUT) - l(last_fq + FQ_PERM + C_OUTPUT + (RATE - 1 - pow_pop_shift)),
                     );
+                }
+
+                // (FS-qi-pow) QUERY-PoW grinding check: the verifier's check_witness(bits, w) =
+                // observe(w); sample_bits(bits) == 0 (verifier.rs:339). The PoW witness w is the LAST
+                // observed element (already absorbed into P0 above), and the PoW sample is pop 0 of P0
+                // (output[RATE-1]) — its low `query_pow_bits` bits MUST be zero. We re-express that as:
+                // bind a per-bit decomposition of P0.output[RATE-1] and assert the low `bits` are zero.
+                if cfg.query_pow_bits > 0 {
+                    let pow_sample = l(last_fq + FQ_PERM + C_OUTPUT + (RATE - 1));
+                    // booleanity + recomposition of the PoW sample from FIELD_BITS bit cells.
+                    let pb = pow_bits_base(&cfg);
+                    let mut recomp = AB::Expr::ZERO;
+                    let mut pow2 = AB::Expr::ONE;
+                    let two = AB::Expr::from(AB::F::from_u8(2));
+                    for i in 0..FIELD_BITS {
+                        let bit = l(pb + i);
+                        builder.assert_zero(bit.clone() * (bit.clone() - AB::Expr::ONE));
+                        recomp += bit.clone() * pow2.clone();
+                        pow2 = pow2 * two.clone();
+                        // the low `query_pow_bits` bits MUST be zero (the grinding condition).
+                        if i < cfg.query_pow_bits {
+                            builder.assert_zero(bit);
+                        }
+                    }
+                    builder.assert_zero(pow_sample - recomp);
                 }
 
                 // (FS-qi) optionally bind each post-beta observe block to the PUBLIC transcript:
@@ -4536,7 +4741,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -4599,7 +4804,7 @@ mod tests {
             merkle_leaf: leaves[forged_index],
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -4625,7 +4830,7 @@ mod tests {
             descent: &[], merkle_leaf: leaves[honest_index],
             merkle_siblings: &tree.auth_path(honest_index),
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -4746,7 +4951,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
-            fs_final_blocks: &[],
+            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: main_commit,
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
@@ -4999,7 +5204,7 @@ mod tests {
                     prefix_blocks: &[],
                     public_io: &[],
                     fs_beta_blocks: &[],
-                    fs_final_blocks: &[],
+                    fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
                     inner_main_commit: commit,
                     layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
                     leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
@@ -5165,7 +5370,7 @@ mod tests {
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -5286,7 +5491,7 @@ mod tests {
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
             deep_zeta: zeta, deep_q: q, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -5414,7 +5619,7 @@ mod tests {
             merkle_leaf: leaves[index],
             merkle_siblings: &sibs,
             deep_zeta: ext_multi(55), deep_q: ext_multi(66), deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -5457,7 +5662,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -5688,7 +5893,7 @@ mod tests {
             absorbed,
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -5912,7 +6117,7 @@ mod tests {
             absorbed,
             prefix_blocks: blocks,
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -6191,7 +6396,7 @@ mod tests {
             merkle_leaf: leaf,
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -6244,7 +6449,7 @@ mod tests {
             draw_out: draw, e0: forged_e0, e1: ext_multi(2), beta: ext_multi(3),
             descent: &[], merkle_leaf: leaves[index], merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -6404,7 +6609,7 @@ mod tests {
                 prefix_blocks: &[],
                 public_io: &[],
                 fs_beta_blocks: &[],
-                fs_final_blocks: &[],
+                fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
                 inner_main_commit: root,
                 layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
                 leaf_row: &opened_row,
@@ -6465,7 +6670,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
-            fs_final_blocks: &[],
+            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: row,
@@ -6601,7 +6806,7 @@ mod tests {
                 prefix_blocks: &[],
                 public_io: &[],
                 fs_beta_blocks: &[],
-                fs_final_blocks: &[],
+                fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
                 inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
                 layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
                 leaf_row: &rows[index],
@@ -6676,7 +6881,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: stmt,
-            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -6783,7 +6988,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &stmt,
-            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -6833,7 +7038,7 @@ mod tests {
             deep_zeta: Challenge::ZERO, deep_q: q, deep_alpha: Challenge::ZERO,
             fs_blocks: blocks,
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
-            prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -7164,7 +7369,7 @@ mod tests {
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[], public_io: &[],
             fs_beta_blocks: beta_blocks,
-            fs_final_blocks: final_blocks,
+            fs_final_blocks: final_blocks, fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
@@ -7621,6 +7826,374 @@ mod tests {
         }
     }
 
+    // ---------------------------------------------------------------------------------
+    // (FS-qi-partial) NON-RATE-aligned trailing PARTIAL absorb + (FS-qi-pow) nonzero query PoW.
+    // The REAL post-beta observe stream length L is NOT a multiple of RATE, so the FRACTIONAL
+    // leftover (n = L mod RATE) is a PARTIAL duplexing absorbed by the FIRST sample() after the
+    // stream. A nonzero query PoW observes the grinding witness (the last stream element) then
+    // sample_bits(bits) == 0 (the grind check), consuming pop 0 and shifting the indices by one.
+    // ---------------------------------------------------------------------------------
+
+    use p3_challenger::GrindingChallenger;
+
+    /// FS config with the unified query index, a trailing PARTIAL absorb (`partial` lanes, `0..RATE`),
+    /// and a nonzero query PoW (`pow_bits`, `0` = none).
+    fn cfg_fbq_ext(
+        h: usize,
+        pre_rounds: usize,
+        beta_rounds: usize,
+        final_blocks: usize,
+        partial: usize,
+        pow_bits: usize,
+    ) -> RecursiveConfig {
+        RecursiveConfig {
+            num_rounds: beta_rounds,
+            deep_log_degree: Some(8),
+            fs_alpha_zeta: true,
+            fs_pre_alpha_rounds: pre_rounds,
+            fs_beta_rounds: beta_rounds,
+            fs_batch_combo_alpha: true,
+            fs_final_blocks: final_blocks,
+            fs_final_partial: partial,
+            query_pow_bits: pow_bits,
+            ..RecursiveConfig::single_window(h)
+        }
+    }
+
+    /// Build a full FS window honestly with a trailing partial absorb + (optionally) query PoW. The
+    /// `partial_block`'s first `cfg.fs_final_partial` lanes are the FRACTIONAL leftover; the rest are
+    /// ignored.
+    #[allow(clippy::too_many_arguments)]
+    fn fb_window_partial(
+        cfg: &RecursiveConfig,
+        fs_blocks: &[[Val; RATE]],
+        beta_blocks: &[[Val; RATE]],
+        final_blocks: &[[Val; RATE]],
+        partial_block: [Val; RATE],
+        q: Challenge,
+    ) -> Vec<Val> {
+        let descent: Vec<(Challenge, Challenge)> = (1..cfg.rounds())
+            .map(|r| (ext_multi(500 + r as u32), Challenge::ZERO))
+            .collect();
+        let inp = WindowInputs {
+            draw_out: Val::from_u32(0xABCDE),
+            e0: ext_multi(1), e1: ext_multi(2), beta: Challenge::ZERO,
+            descent: &descent,
+            merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
+            merkle_siblings: &[],
+            deep_zeta: Challenge::ZERO, deep_q: q, deep_alpha: Challenge::ZERO,
+            fs_blocks,
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
+            prefix_blocks: &[], public_io: &[],
+            fs_beta_blocks: beta_blocks,
+            fs_final_blocks: final_blocks, fs_final_partial_block: partial_block,
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+            leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+            quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+            quot_x: Val::ZERO, quot_siblings: &[],
+        };
+        pack_window(cfg, &inp)
+    }
+
+    /// Drive a native `DuplexChallenger` through the full ordered FS sequence with the post-beta
+    /// stream presented as a FLAT element list of arbitrary (non-RATE-aligned) length, then sample the
+    /// query index. Returns the native index. This is the GROUND TRUTH: the native challenger buffers
+    /// the leftover and the index draw triggers the partial duplexing — no RATE-chunking assumed.
+    fn native_index_flat_stream(
+        pre: &[[Val; RATE]],
+        quot: [Val; RATE],
+        comms: &[[Val; RATE]],
+        post_beta_stream: &[Val],
+        index_bits: usize,
+    ) -> usize {
+        let mut ch = Challenger::new(default_koalabear_poseidon2_16());
+        for block in pre {
+            for &x in block.iter() { ch.observe(x); }
+        }
+        let _alpha: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        for &x in quot.iter() { ch.observe(x); }
+        let _zeta: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        let _bca: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        for comm in comms {
+            for &x in comm.iter() { ch.observe(x); }
+            let _beta: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        }
+        // observe the post-beta stream element-by-element (NO RATE-chunking assumed by the caller).
+        for &x in post_beta_stream {
+            ch.observe(x);
+        }
+        ch.sample_bits(index_bits)
+    }
+
+    /// Chunk a flat stream into FULL RATE blocks + a trailing partial `(block, n)` where `n = L mod
+    /// RATE` (n == 0 ⇒ no partial; the in-AIR config sets fs_final_partial = 0).
+    fn chunk_stream(stream: &[Val]) -> (Vec<[Val; RATE]>, [Val; RATE], usize) {
+        let n_full = stream.len() / RATE;
+        let full: Vec<[Val; RATE]> = (0..n_full)
+            .map(|b| core::array::from_fn(|i| stream[b * RATE + i]))
+            .collect();
+        let rem = stream.len() % RATE;
+        let mut partial = [Val::ZERO; RATE];
+        for i in 0..rem {
+            partial[i] = stream[n_full * RATE + i];
+        }
+        (full, partial, rem)
+    }
+
+    /// FIDELITY-PIN: the NON-RATE-aligned partial absorb reproduces the native query index. For a
+    /// post-beta stream whose length L is NOT a multiple of RATE, the in-AIR P0 squeeze (full rounds +
+    /// trailing partial absorb) equals the native `DuplexChallenger`'s index draw — element-for-
+    /// element, NOT a constant. The trailing partial absorb (n = L mod RATE lanes, rate-overwrite +
+    /// length tag) is the soundness-critical detail this PIN guards.
+    #[test]
+    fn fs_partial_absorb_matches_native_duplex() {
+        let h = 12usize;
+        let pre: Vec<[Val; RATE]> = (0..2u32).map(|r| fs_block(10 + r)).collect();
+        let quot = fs_block(900);
+        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(200 + r)).collect();
+        // sweep stream lengths that are NOT multiples of RATE (and one that is, as control).
+        for stream_len in [1usize, 3, 7, 9, 13, 15, 16, 17, 23] {
+            let stream: Vec<Val> =
+                (0..stream_len as u32).map(|i| Val::from_u32(i.wrapping_mul(7919) + 13)).collect();
+            let index_native = native_index_flat_stream(&pre, quot, &comms, &stream, h);
+
+            // ours: chunk into full + partial, feed fs_squeeze_query_p0_state, pop 0.
+            let (full, partial, n) = chunk_stream(&stream);
+            let post_zeta = fs_post_zeta_state(&pre, quot);
+            let bca_state = fs_squeeze_batch_combo_alpha(post_zeta).1;
+            let (_, post_beta) = fs_squeeze_betas(bca_state, &comms);
+            let p0 = fs_squeeze_query_p0_state(post_beta, &full, partial, n);
+            let draw = p0[RATE - 1];
+            let index = (draw.as_canonical_u32() & ((1u32 << h) - 1)) as usize;
+            assert_eq!(
+                index, index_native,
+                "partial-absorb query index diverges from native (stream_len={stream_len}, n={n})"
+            );
+        }
+    }
+
+    /// GOLDEN (positive): an honest window with a TRAILING PARTIAL absorb (non-RATE-aligned stream)
+    /// ACCEPTS via the real `check_all_constraints`, across partial lane counts 1..RATE-1.
+    #[test]
+    fn air_accepts_fs_partial_absorb() {
+        for partial in 1..RATE {
+            let cfg = cfg_fbq_ext(12, 2, 2, 2, partial, 0);
+            let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
+            let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+            let finals: Vec<[Val; RATE]> = (0..2u32).map(|r| fq_block(70 + r)).collect();
+            let partial_block = fq_block(999);
+            let row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, ext_multi(66));
+            let m = RowMajorMatrix::new(row, n_cols(&cfg));
+            let report = check_all_constraints(&air(cfg), &m, &[], None);
+            assert!(report.is_ok(), "honest partial-absorb window rejected (partial={partial}): {} failures", report.failures.len());
+        }
+    }
+
+    /// TAMPER: a WRONG partial-absorb padding breaks the index PIN. The trailing partial round
+    /// zero-fills lanes [n..RATE]; forcing a NON-zero value into a padding lane (the wrong padding
+    /// convention) diverges from the native challenger ⇒ the absorb-input constraint rejects.
+    #[test]
+    fn air_rejects_fs_partial_absorb_wrong_padding() {
+        let partial = 3usize;
+        let cfg = cfg_fbq_ext(12, 2, 2, 2, partial, 0);
+        let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
+        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let finals: Vec<[Val; RATE]> = (0..2u32).map(|r| fq_block(70 + r)).collect();
+        let partial_block = fq_block(999);
+        let mut row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, ext_multi(66));
+        // partial round is round index fs_final_blocks (== 2); corrupt a PADDING rate lane (>= n) of
+        // its perm input — the partial absorb must zero lanes [n..RATE].
+        let rb = fq_round_base(&cfg, cfg.fs_final_blocks);
+        row[rb + FQ_PERM + inlined_perm::C_INPUTS + partial] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a partial absorb with a non-zero padding lane (wrong padding) was accepted"
+        );
+    }
+
+    /// TAMPER: a WRONG partial-absorb length tag breaks the draw. The capacity slot RATE of the
+    /// partial round must be state_prev[RATE] + n; forcing it to + RATE (the full-rate tag, the wrong
+    /// `n`) diverges from the native challenger ⇒ reject.
+    #[test]
+    fn air_rejects_fs_partial_absorb_wrong_length_tag() {
+        let partial = 5usize;
+        let cfg = cfg_fbq_ext(12, 2, 2, 2, partial, 0);
+        let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
+        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let finals: Vec<[Val; RATE]> = (0..2u32).map(|r| fq_block(70 + r)).collect();
+        let partial_block = fq_block(999);
+        let mut row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, ext_multi(66));
+        let rb = fq_round_base(&cfg, cfg.fs_final_blocks);
+        // bump the partial round's length tag (capacity slot RATE) — wrong n ⇒ wrong prefix-free tag.
+        row[rb + FQ_PERM + inlined_perm::C_INPUTS + RATE] += Val::ONE;
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a partial absorb with a wrong length tag was accepted"
+        );
+    }
+
+    /// FIDELITY-PIN: the nonzero-bit query PoW reproduces native grinding. A REAL `grind(bits)`
+    /// witness (the last observed element) makes the native `check_witness(bits, w)` pass (the low
+    /// `bits` of pop 0 are zero) AND the in-AIR PoW-check + index draw match the native flow. A
+    /// witness that fails the zero-bits check rejects (the next test). NOT a constant.
+    #[test]
+    fn fs_query_pow_matches_native_grind() {
+        let h = 12usize;
+        let pow_bits = 8usize;
+        let pre: Vec<[Val; RATE]> = (0..2u32).map(|r| fs_block(10 + r)).collect();
+        let quot = fs_block(900);
+        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(200 + r)).collect();
+        // post-beta stream WITHOUT the witness: final_poly ‖ log_arities (length not RATE-aligned).
+        let prefix: Vec<Val> = (0..10u32).map(|i| Val::from_u32(i.wrapping_mul(8161) + 3)).collect();
+
+        // native: drive the challenger to the PoW point, grind a real witness, then check + sample.
+        let mut ch = Challenger::new(default_koalabear_poseidon2_16());
+        for block in &pre { for &x in block.iter() { ch.observe(x); } }
+        let _a: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        for &x in quot.iter() { ch.observe(x); }
+        let _z: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        let _bca: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        for comm in &comms {
+            for &x in comm.iter() { ch.observe(x); }
+            let _b: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        }
+        for &x in &prefix { ch.observe(x); }
+        // grind() finds w s.t. observe(w); sample_bits(pow_bits) == 0, and ADVANCES the challenger
+        // through the check_witness (the observe(w) + the PoW sample_bits pop).
+        let witness = ch.grind(pow_bits);
+        let index_native = ch.sample_bits(h);
+
+        // the full post-beta stream = prefix ‖ witness (the witness is the LAST observed element).
+        let mut stream = prefix.clone();
+        stream.push(witness);
+        let (full, partial, n) = chunk_stream(&stream);
+        let post_zeta = fs_post_zeta_state(&pre, quot);
+        let bca_state = fs_squeeze_batch_combo_alpha(post_zeta).1;
+        let (_, post_beta) = fs_squeeze_betas(bca_state, &comms);
+        let p0 = fs_squeeze_query_p0_state(post_beta, &full, partial, n);
+        // PoW sample = pop 0 = output[RATE-1]: its low pow_bits MUST be zero (grind condition).
+        let pow_sample = p0[RATE - 1];
+        assert_eq!(
+            pow_sample.as_canonical_u32() & ((1u32 << pow_bits) - 1),
+            0,
+            "ground witness's PoW sample low bits are NOT zero"
+        );
+        // the index is pop 1 (the PoW consumed pop 0) — output[RATE-2].
+        let draw = p0[RATE - 2];
+        let index = (draw.as_canonical_u32() & ((1u32 << h) - 1)) as usize;
+        assert_eq!(index, index_native, "query index (post-PoW pop shift) diverges from native grind");
+    }
+
+    /// GOLDEN (positive): an honest window with a NONZERO query PoW (a real ground witness) ACCEPTS
+    /// via the real `check_all_constraints`. The post-beta stream is the prefix ‖ ground-witness; the
+    /// in-AIR PoW check (pop 0 low bits zero) + index draw (pop 1) match the native grind.
+    #[test]
+    fn air_accepts_query_pow() {
+        let h = 12usize;
+        let pow_bits = 8usize;
+        let cfg = cfg_fbq_ext(h, 2, 2, 1, 3, pow_bits);
+        let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
+        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let q = ext_multi(66);
+        // build the post-beta stream: one full block (8) + partial (3 lanes), the LAST lane = ground
+        // witness. Drive the betas reference to the PoW point, then grind.
+        let pre = &fs_blocks[..2];
+        let quot = fs_blocks[2];
+        let post_zeta = fs_post_zeta_state(pre, quot);
+        let bca_state = fs_squeeze_batch_combo_alpha(post_zeta).1;
+        let (_, post_beta) = fs_squeeze_betas(bca_state, &comms);
+        // the full block + first 2 partial lanes are arbitrary; the 3rd partial lane is the witness.
+        let finals: Vec<[Val; RATE]> = vec![fq_block(70)];
+        let mut partial_block = fq_block(999);
+        // grind a witness with the partial stream = finals[0] ‖ partial[0..2] ‖ witness.
+        let prefix: Vec<Val> = finals[0].iter().copied().chain(partial_block[..2].iter().copied()).collect();
+        // native challenger continued to the PoW point (same prefix observes as p0 chain).
+        let mut ch = Challenger::new(default_koalabear_poseidon2_16());
+        for block in pre { for &x in block.iter() { ch.observe(x); } }
+        let _a: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        for &x in quot.iter() { ch.observe(x); }
+        let _z: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        let _bca: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        for comm in &comms {
+            for &x in comm.iter() { ch.observe(x); }
+            let _b: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        }
+        for &x in &prefix { ch.observe(x); }
+        let witness = ch.grind(pow_bits);
+        partial_block[2] = witness;
+        let _ = post_beta; // (the betas reference is exercised by the builder)
+
+        let row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, q);
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        let report = check_all_constraints(&air(cfg), &m, &[], None);
+        assert!(report.is_ok(), "honest query-PoW window rejected: {} failures", report.failures.len());
+    }
+
+    /// TAMPER: a query-PoW witness that FAILS the zero-bits check rejects. We replace the ground
+    /// witness with a random one whose PoW sample low bits are non-zero ⇒ the PoW-check constraint
+    /// (low `pow_bits` bits of pop 0 must be zero) fires.
+    #[test]
+    fn air_rejects_query_pow_failing_witness() {
+        let h = 12usize;
+        let pow_bits = 8usize;
+        let cfg = cfg_fbq_ext(h, 2, 2, 1, 3, pow_bits);
+        let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
+        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let finals: Vec<[Val; RATE]> = vec![fq_block(70)];
+        // a NON-ground witness: the partial block's lanes are arbitrary (PoW sample low bits != 0 whp).
+        let partial_block = fq_block(12345);
+        let row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, ext_multi(66));
+        // sanity: confirm this witness actually fails the PoW (else the test is vacuous).
+        let pre = &fs_blocks[..2];
+        let quot = fs_blocks[2];
+        let post_zeta = fs_post_zeta_state(pre, quot);
+        let bca_state = fs_squeeze_batch_combo_alpha(post_zeta).1;
+        let (_, post_beta) = fs_squeeze_betas(bca_state, &comms);
+        let p0 = fs_squeeze_query_p0_state(post_beta, &finals, partial_block, 3);
+        assert_ne!(
+            p0[RATE - 1].as_canonical_u32() & ((1u32 << pow_bits) - 1),
+            0,
+            "test setup: the chosen witness accidentally PASSES the PoW — pick another seed"
+        );
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a query-PoW witness FAILING the zero-bits check was accepted"
+        );
+    }
+
+    /// TAMPER: forging the PoW-bits decomposition to fake the zero-bits check still rejects — the
+    /// bits must RECOMPOSE to the real PoW sample (P0.output[RATE-1]). Zeroing the low bits of the
+    /// decomposition (to pass the grind check) breaks the recomposition constraint.
+    #[test]
+    fn air_rejects_query_pow_forged_bits() {
+        let h = 12usize;
+        let pow_bits = 8usize;
+        let cfg = cfg_fbq_ext(h, 2, 2, 1, 3, pow_bits);
+        let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
+        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let finals: Vec<[Val; RATE]> = vec![fq_block(70)];
+        let partial_block = fq_block(12345); // a failing witness
+        let mut row = fb_window_partial(&cfg, &fs_blocks, &comms, &finals, partial_block, ext_multi(66));
+        // forge: zero the low pow_bits of the PoW-bits decomposition (to satisfy the grind asserts),
+        // leaving the high bits as-is. Recomposition now != the real pow_sample ⇒ reject.
+        let pb = pow_bits_base(&cfg);
+        for i in 0..pow_bits {
+            row[pb + i] = Val::ZERO;
+        }
+        let m = RowMajorMatrix::new(row, n_cols(&cfg));
+        assert!(
+            !check_all_constraints(&air(cfg), &m, &[], None).is_ok(),
+            "a forged PoW-bits decomposition (low bits zeroed, recomposition broken) was accepted"
+        );
+    }
+
     // =================================================================================
     // (FAN-OUT) multi-query: N INDEPENDENT FRI queries, one per ROW, all sharing the SAME
     // FS challenges + commitments + OOD. Each row's index is the r-th sample_bits draw off the
@@ -7654,7 +8227,7 @@ mod tests {
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[], public_io: &[],
             fs_beta_blocks: comms,
-            fs_final_blocks: finals,
+            fs_final_blocks: finals, fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
@@ -7713,6 +8286,90 @@ mod tests {
         }
         for block in finals { for &x in block.iter() { ch.observe(x); } }
         (0..n).map(|_| ch.sample_bits(h)).collect()
+    }
+
+    /// FAN-OUT + (FS-qi-partial) + (FS-qi-pow): an honest N-row fan-out matrix where the post-beta
+    /// stream is NON-RATE-aligned (a trailing partial absorb) AND a nonzero query PoW is active, with
+    /// each row's index PINNED against the native `DuplexChallenger`. This exercises the new lane-shift
+    /// (pop = ordinal + 1, PoW consumes pop 0) ACROSS the partial-absorb P0 and the squeeze-only
+    /// refill chain — the combined path the single-row tests do not cover.
+    #[test]
+    fn fan_out_partial_pow_indices_match_native() {
+        let h = 12usize;
+        let pow_bits = 8usize;
+        let partial = 5usize;
+        let n = 4usize; // within RATE after the +1 PoW shift (pops 1..5 fit one bucket).
+        let cfg = RecursiveConfig {
+            fan_out_queries: n,
+            ..cfg_fbq_ext(h, 2, 2, 1, partial, pow_bits)
+        };
+        let fs_blocks: Vec<[Val; RATE]> = (0..3u32).map(|r| fs_block(20 + r)).collect();
+        let comms: Vec<[Val; RATE]> = (0..2u32).map(|r| fb_block(300 + r)).collect();
+        let finals: Vec<[Val; RATE]> = vec![fq_block(70)];
+        let q = ext_multi(66);
+
+        // grind a real witness at the PoW point: stream = finals[0] ‖ partial[0..partial-1] ‖ witness.
+        let pre = &fs_blocks[..2];
+        let quot = fs_blocks[2];
+        let mut partial_block = fq_block(999);
+        let prefix: Vec<Val> = finals[0]
+            .iter()
+            .copied()
+            .chain(partial_block[..partial - 1].iter().copied())
+            .collect();
+        let mut ch = Challenger::new(default_koalabear_poseidon2_16());
+        for block in pre { for &x in block.iter() { ch.observe(x); } }
+        let _a: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        for &x in quot.iter() { ch.observe(x); }
+        let _z: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        let _bca: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        for comm in &comms {
+            for &x in comm.iter() { ch.observe(x); }
+            let _b: Challenge = Challenge::from_basis_coefficients_fn(|_| -> Val { ch.sample() });
+        }
+        for &x in &prefix { ch.observe(x); }
+        let witness = ch.grind(pow_bits);
+        partial_block[partial - 1] = witness;
+        // native indices: N successive sample_bits AFTER the grind (the PoW already consumed pop 0).
+        let native: Vec<usize> = (0..n).map(|_| ch.sample_bits(h)).collect();
+
+        // build the honest N-row matrix and PIN each row's index to the native draw.
+        let mut flat = Vec::with_capacity(n * n_cols(&cfg));
+        for r in 0..n {
+            let descent: Vec<(Challenge, Challenge)> = (1..cfg.rounds())
+                .map(|rr| (ext_multi(500 + rr as u32), Challenge::ZERO))
+                .collect();
+            let inp = WindowInputs {
+                draw_out: Val::from_u32(0xABCDE),
+                e0: ext_multi(1), e1: ext_multi(2), beta: Challenge::ZERO,
+                descent: &descent,
+                merkle_leaf: [Val::ZERO; DIGEST_ELEMS], merkle_siblings: &[],
+                deep_zeta: Challenge::ZERO, deep_q: q, deep_alpha: Challenge::ZERO,
+                fs_blocks: &fs_blocks,
+                sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
+                prefix_blocks: &[], public_io: &[],
+                fs_beta_blocks: &comms,
+                fs_final_blocks: &finals, fs_final_partial_block: partial_block,
+                inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+                layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+                leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
+                dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+                lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+                quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[],
+                quot_at_zeta: &[], quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS],
+                quot_x: Val::ZERO, quot_siblings: &[],
+            };
+            flat.extend_from_slice(&pack_window_query(&cfg, &inp, r));
+        }
+        let m = RowMajorMatrix::new(flat, n_cols(&cfg));
+        // honest accepts (full constraint check, including the PoW zero-bits + partial absorb).
+        let report = check_all_constraints(&air(cfg.clone()), &m, &[], None);
+        assert!(report.is_ok(), "honest fan-out partial+PoW matrix rejected: {} failures", report.failures.len());
+        // each row's index PINs to the native draw (post-PoW pop shift, across the partial-absorb P0).
+        for r in 0..n {
+            let row_index = m.values[r * n_cols(&cfg) + C_INDEX].as_canonical_u32() as usize;
+            assert_eq!(row_index, native[r], "fan-out partial+PoW row {r} index != native draw r");
+        }
     }
 
     /// GOLDEN (positive): an honest N-row fan-out matrix — N independent FRI queries, each at its own
@@ -8375,7 +9032,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
-            fs_final_blocks: &[],
+            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &layer_opens,
             final_poly_x: fp_x,
@@ -8500,7 +9157,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
-            fs_final_blocks: &[],
+            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &layer_opens,
             final_poly_x: Val::ZERO,
@@ -8823,7 +9480,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &comms,
-            fs_final_blocks: &[],
+            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &layer_opens,
             final_poly_x: Val::ZERO,
@@ -9155,7 +9812,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
-            fs_final_blocks: &[],
+            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: opened_row,
@@ -9516,7 +10173,7 @@ mod tests {
             deep_zeta: zeta, deep_q: ext_multi(5), deep_alpha: alpha,
             fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
             absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &rows[5], leaf_salt: salt,
             dr_value_at_zeta: &vz_f, dr_value_at_zeta_next: &[], dr_x: x,
@@ -9868,7 +10525,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
-            fs_final_blocks: &[],
+            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: trace_row,
@@ -10173,7 +10830,7 @@ mod tests {
                     deep_zeta: zeta, deep_q, deep_alpha: alpha,
                     fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
                     absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
-                    fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+                    fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
                     layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
                     leaf_row: &trows[index], leaf_salt: tsalt,
                     dr_value_at_zeta: &vz, dr_value_at_zeta_next: &[], dr_x: x,
@@ -10279,7 +10936,7 @@ mod tests {
                 deep_zeta: zeta, deep_q: dq, deep_alpha: alpha,
                 fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
                 absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
-                fs_beta_blocks: &[], fs_final_blocks: &[], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+                fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
                 layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
                 leaf_row: &trows[index], leaf_salt: tsalt,
                 dr_value_at_zeta: &vz, dr_value_at_zeta_next: &[], dr_x: x,
