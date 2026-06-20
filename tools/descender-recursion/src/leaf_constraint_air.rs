@@ -87,11 +87,25 @@
 //!     tampered C1/C6 output that breaks the role-root via the chaining
 //!     (`role_air_rejects_tampered_chained_c1_c6_output`).
 //!
+//!   * **C2 — mask-PRF sponge + WIDE-THEN-REDUCE + carrier** (air.rs:728-737, 856-906;
+//!     reduce_gadget.rs): the LARGEST mirrored sponge. RE-COMPUTED in-circuit via
+//!     [`crate::inlined_perm_octic`] over the 40 absorb lanes (pad_seed[32] REUSED from the C2
+//!     SeamPadSeed cells ‖ slot_id[8] NEW), ONE padding marker at stream pos n_input(=40) + zero-fill,
+//!     capacity-preserving across 6 absorb perms + 3 squeeze perms = 9 perms; the 30 squeezed lanes
+//!     are read from the squeeze-source perms' OUTPUT cells (NO public digest, so no squeeze-output
+//!     equality sub-class). Added as the `N_C2` residual class. The 30 squeezed lanes then feed the
+//!     genuinely-NEW WIDE-THEN-REDUCE gadget (mirror of `reduce_gadget::eval_reduce_gadget`: per-mask
+//!     base-2^16 limb/carry wrap-free Horner reduction `mask_j = (Σ_i lane_{j,i}·p^i) mod q`) + the
+//!     C4 carrier mod-q reduction (`masked_projection[j] == account_projection[j] + mask[j] mod q`),
+//!     added as the `N_REDUCE` residual class. Fidelity-PINned against the deployed reduce gadget
+//!     (`reduce_masks_match_leaf_reduce_and_carrier`, `c2_honest_sponge_all_residuals_zero`,
+//!     `reduce_honest_all_residuals_zero`) and tamper-rejected end-to-end through DEEP
+//!     (`leaf_wired_tampered_c2_reduce_cell_rejects_end_to_end`): forged squeezed lane / forged mask /
+//!     tampered limb-carry / forged masked_projection / tampered carrier mod-q witness all reject.
+//!     DEFERRED for C2 (same as C1/C6): the per-lane BYTE-RANGE decomposition of the 40 input lanes.
+//!
 //! ## DEFERRED (the rest of leaf `C(zeta)` — STILL committed-not-constrained)
 //!
-//!   * **C2 — mask PRF sponge** (air.rs:728-737): 40-lane absorb (pad_seed[32] ‖ slot_id[8]),
-//!     30 squeezed lanes, PLUS the WIDE-THEN-REDUCE `eval_reduce_gadget` (30 wide lanes → 6 masks)
-//!     and the carrier mod-q reduction. Largest remaining sponge.
 //!   * **batch digest chain** (air.rs:1112-1262): the per-row running Poseidon2 sponge over every
 //!     row's pubio (the CHAIN_PERMS_PER_ROW absorbs + the cross-row transition).
 //!   * the C2/C6 sponge-OUTPUT commitment equalities (`c*_out[j] == pubio[j]`) ride with their perms.
@@ -290,6 +304,79 @@ pub const N_ROLE_INPUT_BIND: usize = ROLE_N_PERMS * WIDTH;
 pub const N_ROLE_PERM: usize = ROLE_N_PERMS * inlined_perm_octic::PERM_RESIDUALS;
 pub const N_ROLE_OUT: usize = ROLE_N_OUT;
 pub const N_ROLE: usize = N_ROLE_INPUT_BIND + N_ROLE_PERM + N_ROLE_OUT;
+// ----- C2 sponge (mask-PRF squeeze) — the FOURTH mirrored leaf sponge, the LARGEST -----
+//
+// Mirrors `descender_account_stark::air::FullRelationAir::eval_sponge` for the C2 SpongePlan
+// (air.rs:728-737, plan built at air.rs:435 `c2_plan = SpongePlan::new(vec![true; C2_INPUT_LANES],
+// NUM_SQUEEZE)`). C2 has the SAME absorb/capacity/squeeze shape as C1/C6 (rate-8 absorb with the ONE
+// padding marker at stream position `n_input` + zero-fill, capacity-preserving across the absorb
+// perms + the squeeze perms), but it SQUEEZES 30 lanes (not 10) and its output feeds the
+// WIDE-THEN-REDUCE gadget + carrier (not a public commitment):
+//   * C2 input lanes: pad_seed[32] ‖ slot_id[8]  ⇒ C2_INPUT_LANES = 40. The 32 pad_seed lanes are
+//     the EXISTING `O_C2_PAD` cells (the SeamPadSeed C2 lanes, reused as absorb positions 0..32);
+//     the 8 slot_id lanes are NEW opened cells.
+//   * RATE-8 absorb, padding marker at pos n_input(=40), zero-fill ⇒ padded = ceil(41/8)·8 = 48
+//     ⇒ C2_N_ABSORB = 6.  n_out = 30 ⇒ ceil over RATE: outputs 0..8 from the LAST absorb perm
+//     (perm 5), 8..16 from squeeze perm 6, 16..24 from squeeze perm 7, 24..30 from squeeze perm 8
+//     ⇒ 3 squeeze perms ⇒ C2_N_PERMS = 9 (matches `SpongePlan::output_source` for n_out=30).
+// The 30 squeezed lanes are then reduced to 6 masks by the wide-then-reduce gadget (the
+// `N_REDUCE` class below); they are NOT a public digest, so the C2 sponge class has NO
+// squeeze-output equality sub-class (unlike C1/C6/role). Instead the reduce gadget reads the
+// squeezed OUTPUT cells directly (`c2_squeeze_output_cell`), and the squeeze soundness is enforced
+// by the per-perm round residuals binding those output cells to the recomputed permutation.
+
+/// C2 input lanes count: pad_seed[32] ‖ slot_id[8]. Mirrors air.rs `C2_INPUT_LANES`.
+pub const C2_PAD_LANES: usize = PAD_SEED_BYTES; // 32 (the SeamPadSeed C2 pad_seed cells, reused)
+pub const C2_SLOT_LANES: usize = 8; // slot_id[8] (NEW absorb cells)
+pub const C2_INPUT_LANES: usize = C2_PAD_LANES + C2_SLOT_LANES; // 40
+/// Sponge rate (shared with C1/C6/role). Mirrors air.rs `RATE`.
+pub const C2_RATE: usize = 8;
+/// Number of absorb permutations: `ceil((n_input + 1)/RATE)` = `ceil(41/8)` = 6.
+pub const C2_N_ABSORB: usize = 6;
+/// Squeezed output lanes. Mirrors `reduce_gadget::NUM_SQUEEZE`.
+pub const C2_N_OUT: usize = 30;
+/// Total C2 sponge permutations (absorb + squeeze). n_out=30 ⇒ 3 squeeze perms ⇒ 9.
+pub const C2_N_PERMS: usize = 9;
+/// Padded absorb-stream length (`C2_N_ABSORB · RATE`).
+pub const C2_PADDED_LEN: usize = C2_N_ABSORB * C2_RATE; // 48
+
+/// C2 sponge residual count: input/capacity bindings (WIDTH/perm) + per-perm Poseidon2 round
+/// residuals. NO squeeze-output equality sub-class (the squeezed lanes feed the reduce gadget, not a
+/// public digest; their soundness is the per-perm round residuals binding the OUTPUT cells).
+pub const N_C2_INPUT_BIND: usize = C2_N_PERMS * WIDTH;
+pub const N_C2_PERM: usize = C2_N_PERMS * inlined_perm_octic::PERM_RESIDUALS;
+pub const N_C2: usize = N_C2_INPUT_BIND + N_C2_PERM;
+
+// ----- WIDE-THEN-REDUCE + carrier gadget (the genuinely-NEW constraint shape) -----
+//
+// Mirrors `descender_account_stark::reduce_gadget::eval_reduce_gadget` EXACTLY (the 30 squeezed
+// lanes → 6 q12289 masks via a base-2^16 limb/carry wrap-free Horner reduction `mask_j =
+// (Σ_i lane_{j,i}·p^i) mod q`), PLUS the C4 carrier mod-q reduction (air.rs:856-906,
+// `masked_projection[j] == account_projection[j] + mask[j] mod q12289`). The reduce gadget is the
+// soundness gadget: a wrong limb/carry / mod-q reduction is a hole, so it is fidelity-PINned against
+// `reduce_gadget::fill_reduce_gadget`/`wide_reduce_masks` on a real honest row.
+//
+// All `reduce_gadget` shape constants are MIRRORED here (so this file is self-contained and the
+// layout is pinned by `reduce_shape_matches_leaf`):
+pub use crate::reduce_consts::*;
+
+/// C2 sponge cells: ONLY the 8 NEW slot_id input lanes (pad_seed reused from `O_C2_PAD`) + perm
+/// blocks. NO output digest cells (the 30 squeezed lanes are read from the perm OUTPUT cells).
+pub const C2_CELLS: usize = C2_SLOT_LANES + C2_N_PERMS * PERM_COLS;
+
+/// Reduce-gadget + carrier cells: the gadget's own witness columns (`REDUCE_CELLS`) + the 6
+/// masked_projection carrier values + the 6 carrier mod-q witness blocks (`MODQ_CELLS` each).
+/// account_projection (the carrier `acc`) is the EXISTING `O_ACC` carry_acc cells (reused).
+pub const CARRIER_CELLS: usize = N_LANES + N_LANES * MODQ_CELLS;
+pub const REDUCE_BLOCK_CELLS: usize = REDUCE_CELLS + CARRIER_CELLS;
+
+/// N_REDUCE residual count. Mirrors `eval_reduce_gadget` assertion count per mask + the carrier:
+///   per mask: 5 lane-bind + per step [11 value-recompose + 11·(bit-bool over their widths) +
+///   r_t-recompose + slack-recompose + (r+slack==q-1) + digit-split + 6 limb/carry eqs] ; then the
+///   carrier per lane [masked-recompose + slack-recompose + (m+slack==q-1) + wrap-bool + carrier eq].
+/// Encoded structurally in `reduce_residual` (we count it there); exposed as a const via the same
+/// arithmetic so `N_CONSTRAINTS` is a const.
+pub const N_REDUCE: usize = NUM_OUTPUTS * N_REDUCE_PER_MASK + N_LANES * N_CARRIER_PER_LANE;
 
 /// Total residuals batched into `C_partial`.
 pub const N_CONSTRAINTS: usize = C4_LANES * C4_N_PER_LANE
@@ -299,7 +386,9 @@ pub const N_CONSTRAINTS: usize = C4_LANES * C4_N_PER_LANE
     + N_RELATION_ID
     + N_C1
     + N_C6
-    + N_ROLE;
+    + N_ROLE
+    + N_C2
+    + N_REDUCE;
 
 // ===========================================================================
 // Column layout (one leaf-constraint-mirror check per row)
@@ -336,7 +425,9 @@ pub const N_OPENED_CELLS: usize = C4_LANES * C4_CELLS // C4 lanes
     + RELATION_ID_ELEMS // relation_id
     + C1_CELLS // C1 sponge (input lanes ‖ perm blocks ‖ pad_source_commitment)
     + C6_CELLS // C6 sponge (byte-lanes ‖ perm blocks ‖ opening_tuple_commitment)
-    + ROLE_CELLS; // role-root sponge (masked[6] ‖ perm blocks ‖ role_root[8]); inputs 0..20 CHAINED
+    + ROLE_CELLS // role-root sponge (masked[6] ‖ perm blocks ‖ role_root[8]); inputs 0..20 CHAINED
+    + C2_CELLS // C2 mask-PRF sponge (slot_id[8] ‖ perm blocks); pad_seed[32] reused from O_C2_PAD
+    + REDUCE_BLOCK_CELLS; // wide-then-reduce gadget cells + carrier (masked[6] ‖ mod-q blocks)
 
 // Cell-block offsets (in units of cells, each `D` limbs).
 const O_C4: usize = 0;
@@ -359,6 +450,17 @@ const O_C6_OUT: usize = O_C6_PERMS + C6_N_PERMS * PERM_COLS;
 const O_ROLE_MASKED: usize = O_C6_OUT + C6_N_OUT;
 const O_ROLE_PERMS: usize = O_ROLE_MASKED + ROLE_MASKED_LANES;
 const O_ROLE_OUT: usize = O_ROLE_PERMS + ROLE_N_PERMS * PERM_COLS;
+// C2 mask-PRF sponge block: slot_id[8] input lanes (pad_seed[32] reused from O_C2_PAD), then 9 perm
+// blocks. NO output digest cells — the 30 squeezed lanes are read from the perm OUTPUT cells of the
+// squeeze source perms (`c2_squeeze_output_cell`), and feed the reduce gadget.
+const O_C2_SLOT: usize = O_ROLE_OUT + ROLE_N_OUT;
+const O_C2_PERMS: usize = O_C2_SLOT + C2_SLOT_LANES;
+// Reduce-gadget block: REDUCE_CELLS gadget witness cells, then the carrier (6 masked_projection
+// values, then 6 mod-q witness blocks of MODQ_CELLS each). account_projection (carrier `acc`) is the
+// EXISTING O_ACC carry_acc cells (reused).
+const O_REDUCE: usize = O_C2_PERMS + C2_N_PERMS * PERM_COLS;
+const O_CARRIER_MASKED: usize = O_REDUCE + REDUCE_CELLS;
+const O_CARRIER_MODQ: usize = O_CARRIER_MASKED + N_LANES;
 
 /// First column: the opened OOD cells, each `D` limbs.
 pub const L_CELLS: usize = 0;
@@ -432,6 +534,62 @@ const fn role_perm_base(p: usize) -> usize {
 /// Role_root output lane `j` (`j < ROLE_N_OUT`) — the squeezed digest cell.
 const fn role_out_cell(j: usize) -> usize {
     O_ROLE_OUT + j
+}
+/// C2 slot_id input lane `i` (`i < C2_SLOT_LANES`) — absorb positions 32..40 (NEW cells).
+const fn c2_slot_cell(i: usize) -> usize {
+    O_C2_SLOT + i
+}
+/// First cell of C2 perm block `p` (`p < C2_N_PERMS`); the block spans `PERM_COLS` cells.
+const fn c2_perm_base(p: usize) -> usize {
+    O_C2_PERMS + p * PERM_COLS
+}
+/// The OOD cell holding squeezed C2 output lane `o` (`o < C2_N_OUT`): the OUTPUT (C_OUTPUT) cell of
+/// the squeeze source perm. Mirrors `SpongePlan::output_source` (n_out=30): the source perm's
+/// `pcols.post[lane]` cell. This is the value fed to the reduce gadget (`squeezed[o]`).
+const fn c2_squeeze_output_cell(o: usize) -> usize {
+    let (sp, lane) = c2_output_source(o);
+    c2_perm_base(sp) + C_OUTPUT + lane
+}
+/// Reduce-gadget witness cell `i` (`i < REDUCE_CELLS`), relative to the gadget base `O_REDUCE`.
+const fn reduce_cell(i: usize) -> usize {
+    O_REDUCE + i
+}
+/// Carrier masked_projection value cell `j` (`j < N_LANES`).
+const fn carrier_masked_cell(j: usize) -> usize {
+    O_CARRIER_MASKED + j
+}
+/// First cell of carrier mod-q witness block for lane `j`; the block spans `MODQ_CELLS` cells.
+const fn carrier_modq_base(j: usize) -> usize {
+    O_CARRIER_MODQ + j * MODQ_CELLS
+}
+
+/// The absorbed C2 stream element at position `pos` (`pos < C2_PADDED_LEN`), as a cell index OR a
+/// constant marker. Mirrors `absorb_elem_expr`: `pos < 32` → pad_seed cell (REUSED `O_C2_PAD`);
+/// `pos ∈ 32..40` → slot_id cell; `pos == n_input(=40)` → the ONE padding marker; else → ZERO.
+fn c2_absorb_source(pos: usize) -> C1Absorb {
+    if pos < C2_PAD_LANES {
+        C1Absorb::Cell(c2_pad_cell(pos))
+    } else if pos < C2_INPUT_LANES {
+        C1Absorb::Cell(c2_slot_cell(pos - C2_PAD_LANES))
+    } else if pos == C2_INPUT_LANES {
+        C1Absorb::One
+    } else {
+        C1Absorb::Zero
+    }
+}
+
+/// `(perm_index, lane)` the C2 squeeze reads output `o` from (`o < C2_N_OUT`). Mirrors
+/// `SpongePlan::output_source` for n_out=30: outputs 0..8 from the LAST absorb perm
+/// (`C2_N_ABSORB-1`), 8..16 from squeeze perm `C2_N_ABSORB`, 16..24 from `C2_N_ABSORB+1`, 24..30
+/// from `C2_N_ABSORB+2`.
+const fn c2_output_source(o: usize) -> (usize, usize) {
+    let blk = o / C2_RATE; // 0,1,2,3
+    let lane = o % C2_RATE;
+    if blk == 0 {
+        (C2_N_ABSORB - 1, lane)
+    } else {
+        (C2_N_ABSORB - 1 + blk, lane)
+    }
 }
 
 /// The absorbed role-root stream element at position `pos` (`pos < ROLE_PADDED_LEN`), as a cell
@@ -813,6 +971,282 @@ fn role_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
     cells[role_out_cell(j)] - perm_output(sp, lane)
 }
 
+/// The `k`-th NATIVE C2-sponge residual over the opened cells, `k ∈ [0, N_C2)`. STRUCTURALLY
+/// identical to [`c1_residual`] / [`c6_residual`] (the absorb/capacity/squeeze pattern is shared by
+/// `eval_sponge`), differing only in the C2 constants (`C2_*`), the absorb source (32 pad_seed lanes
+/// REUSED from `O_C2_PAD` ‖ 8 slot_id lanes), and the perm cells. The C2 sponge has NO squeeze-output
+/// equality sub-class: the 30 squeezed lanes are NOT a public digest; they feed the reduce gadget,
+/// which reads the perm OUTPUT cells directly, and their soundness is the per-perm round residuals.
+fn c2_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
+    let perm_input = |p: usize, i: usize| cells[c2_perm_base(p) + C_INPUTS + i];
+    let perm_output = |p: usize, i: usize| cells[c2_perm_base(p) + C_OUTPUT + i];
+    let absorb = |pos: usize| -> Challenge {
+        match c2_absorb_source(pos) {
+            C1Absorb::Cell(c) => cells[c],
+            C1Absorb::One => Challenge::ONE,
+            C1Absorb::Zero => Challenge::ZERO,
+        }
+    };
+
+    // (a) input/capacity bindings (WIDTH per perm).
+    if k < N_C2_INPUT_BIND {
+        let p = k / WIDTH;
+        let lane = k % WIDTH;
+        let is_absorb = p < C2_N_ABSORB;
+        if p == 0 {
+            if lane < C2_RATE {
+                return perm_input(0, lane) - absorb(lane);
+            }
+            return perm_input(0, lane);
+        }
+        let prev = perm_output(p - 1, lane);
+        if lane < C2_RATE {
+            if is_absorb {
+                let pos = p * C2_RATE + lane;
+                let elem = if pos < C2_PADDED_LEN { absorb(pos) } else { Challenge::ZERO };
+                return perm_input(p, lane) - (prev + elem);
+            }
+            return perm_input(p, lane) - prev;
+        }
+        return perm_input(p, lane) - prev;
+    }
+    let k = k - N_C2_INPUT_BIND;
+
+    // (b) per-perm Poseidon2 round residuals.
+    debug_assert!(k < N_C2_PERM);
+    let per = inlined_perm_octic::PERM_RESIDUALS;
+    let p = k / per;
+    let ri = k % per;
+    let inputs: [Challenge; WIDTH] = core::array::from_fn(|i| perm_input(p, i));
+    let committed: Vec<Challenge> = (0..per)
+        .map(|i| cells[c2_perm_base(p) + c1_post_cell_offset(i)])
+        .collect();
+    let res = inlined_perm_octic::native_perm_residuals(inputs, &committed);
+    res[ri]
+}
+
+/// Native recompose of `nbits` bit cells starting at cell `start` into `Σ bit_b · 2^b` (over
+/// `Challenge`). Mirrors `reduce_gadget::eval_reduce_gadget`'s `recompose` closure (the ACCUMULATION;
+/// the bit-boolean residuals are emitted separately by [`reduce_residual`]).
+fn native_recompose_n(cells: &[Challenge; N_OPENED_CELLS], start: usize, nbits: usize) -> Challenge {
+    let mut acc = Challenge::ZERO;
+    for b in 0..nbits {
+        acc += cells[start + b] * Challenge::from(Val::from_u64(1u64 << b));
+    }
+    acc
+}
+
+/// q12289 split base-2^16 constants over `Val` (KoalaBear), MIRRORING `reduce_gadget::p_lo_hi` +
+/// the carrier constants. `(p_lo, p_hi)` are the field modulus' base-2^16 limbs; `q` is q12289;
+/// `two16 = 2^16`.
+fn reduce_field_consts() -> (u64, u64, u64, u64) {
+    let p = <Val as p3_field::PrimeField64>::ORDER_U64;
+    let p_lo = p & ((1u64 << LIMB_BASE_BITS) - 1);
+    let p_hi = p >> LIMB_BASE_BITS;
+    (p_lo, p_hi, Q12289 as u64, 1u64 << LIMB_BASE_BITS)
+}
+
+/// The 6 reduced masks over `Challenge` from the opened reduce-gadget LANE cells, computed by the
+/// in-gadget Horner recurrence over the OPENED `r_t` cells (so it matches what the in-AIR mirror
+/// returns: `masks[j] = r_t` of the LAST Horner step, read from the opened cell). Reads the opened
+/// cells, NOT a recomputation — the per-step residuals bind those cells to the honest reduction.
+fn reduce_masks_from_cells(cells: &[Challenge; N_OPENED_CELLS]) -> [Challenge; NUM_OUTPUTS] {
+    core::array::from_fn(|j| {
+        let mask_base = j * PER_MASK_CELLS;
+        let step0 = mask_base + LANES_PER_MASK;
+        let last_sb = step0 + (HORNER_STEPS - 1) * STEP_CELLS;
+        cells[reduce_cell(last_sb + StepOff::R)]
+    })
+}
+
+/// The `k`-th NATIVE wide-then-reduce + carrier residual over the opened cells, `k ∈ [0, N_REDUCE)`.
+/// Mirrors `descender_account_stark::reduce_gadget::eval_reduce_gadget` (per-mask Horner steps) +
+/// the C4 carrier mod-q reduction (air.rs:856-906) EXACTLY, in the SAME assertion ORDER. Each leaf
+/// `assert_bool(b)` becomes `b·(b-1)`; each `assert_eq(a, c)` becomes `a - c`.
+///
+/// Per-mask order (`N_REDUCE_PER_MASK` each): 5 lane-bind eqs, then per Horner step
+/// (`N_STEP_RESIDUALS`): the 11 value-recompose blocks (each = its bit-bools then the value eq, in
+/// the StepOff order qt_lo, qt_hi, lane_lo, lane_hi, s0, s1, s2, c0, c1, d0, d1), then r_t (bits then
+/// eq), slack (bits then eq), (r_t+slack==q-1), (digit==lane_lo+lane_hi·2^16), and the 6 limb/carry
+/// eqs. Then the carrier (`N_CARRIER_PER_LANE` each): masked-recompose (bits then eq), slack-recompose
+/// (bits then eq), (masked+slack==q-1), wrap-bool, (acc+mask==masked+wrap·q).
+fn reduce_residual(cells: &[Challenge; N_OPENED_CELLS], k: usize) -> Challenge {
+    let (p_lo, p_hi, q, two16) = reduce_field_consts();
+    let one = Challenge::ONE;
+    let cv = |s: u64| Challenge::from(Val::from_u64(s));
+    // squeezed lane `s` (s < NUM_SQUEEZE) is the C2 squeeze OUTPUT cell.
+    let squeezed = |s: usize| cells[c2_squeeze_output_cell(s)];
+
+    let reduce_total = NUM_OUTPUTS * N_REDUCE_PER_MASK;
+    if k < reduce_total {
+        let j = k / N_REDUCE_PER_MASK;
+        let mut kk = k % N_REDUCE_PER_MASK;
+        let mask_base = j * PER_MASK_CELLS;
+        // (i) 5 lane-bind eqs: local[lane_i] - squeezed[j*5 + i].
+        if kk < LANES_PER_MASK {
+            let i = kk;
+            return cells[reduce_cell(mask_base + i)] - squeezed(j * LANES_PER_MASK + i);
+        }
+        kk -= LANES_PER_MASK;
+        // (ii) Horner steps.
+        let t = kk / N_STEP_RESIDUALS;
+        let mut si = kk % N_STEP_RESIDUALS;
+        let step0 = mask_base + LANES_PER_MASK;
+        let sb = step0 + t * STEP_CELLS; // reduce-relative step base (cell offset within gadget)
+        let lane_idx = LANES_PER_MASK - 1 - t;
+        let digit = squeezed(j * LANES_PER_MASK + lane_idx);
+
+        // Each value block: `nbits` bit-bools, then 1 value-recompose eq. Order matches StepOff.
+        // (val_cell_off, bits_off, nbits)
+        let blocks: [(usize, usize, usize); 11] = [
+            (StepOff::QT_LO, StepOff::QT_LO_BITS, LO_BITS),
+            (StepOff::QT_HI, StepOff::QT_HI_BITS, HI_BITS),
+            (StepOff::LANE_LO, StepOff::LANE_LO_BITS, LO_BITS),
+            (StepOff::LANE_HI, StepOff::LANE_HI_BITS, HI_BITS),
+            (StepOff::S0, StepOff::S0_BITS, S_LO_BITS),
+            (StepOff::S1, StepOff::S1_BITS, S_LO_BITS),
+            (StepOff::S2, StepOff::S2_BITS, S_TOP_BITS),
+            (StepOff::C0, StepOff::C0_BITS, S_TOP_BITS),
+            (StepOff::C1, StepOff::C1_BITS, S_TOP_BITS),
+            (StepOff::D0, StepOff::D0_BITS, S_TOP_BITS),
+            (StepOff::D1, StepOff::D1_BITS, S_TOP_BITS),
+        ];
+        for (val_off, bits_off, nbits) in blocks.iter().copied() {
+            // bit-bools for this block.
+            if si < nbits {
+                let bit = cells[reduce_cell(sb + bits_off + si)];
+                return bit * (bit - one);
+            }
+            si -= nbits;
+            // value-recompose eq.
+            if si == 0 {
+                let rc = native_recompose_n(cells, reduce_cell(sb + bits_off), nbits);
+                return cells[reduce_cell(sb + val_off)] - rc;
+            }
+            si -= 1;
+        }
+        // r_t block: bits then eq.
+        if si < MASK_BITS {
+            let bit = cells[reduce_cell(sb + StepOff::R_BITS + si)];
+            return bit * (bit - one);
+        }
+        si -= MASK_BITS;
+        if si == 0 {
+            let rc = native_recompose_n(cells, reduce_cell(sb + StepOff::R_BITS), MASK_BITS);
+            return cells[reduce_cell(sb + StepOff::R)] - rc;
+        }
+        si -= 1;
+        // slack block: bits then eq.
+        if si < MASK_BITS {
+            let bit = cells[reduce_cell(sb + StepOff::SLACK_BITS + si)];
+            return bit * (bit - one);
+        }
+        si -= MASK_BITS;
+        if si == 0 {
+            let rc = native_recompose_n(cells, reduce_cell(sb + StepOff::SLACK_BITS), MASK_BITS);
+            return cells[reduce_cell(sb + StepOff::SLACK)] - rc;
+        }
+        si -= 1;
+
+        // value handles (read the opened value cells, bound to their recompose by the eqs above).
+        let qt_lo = cells[reduce_cell(sb + StepOff::QT_LO)];
+        let qt_hi = cells[reduce_cell(sb + StepOff::QT_HI)];
+        let lane_lo = cells[reduce_cell(sb + StepOff::LANE_LO)];
+        let lane_hi = cells[reduce_cell(sb + StepOff::LANE_HI)];
+        let s0 = cells[reduce_cell(sb + StepOff::S0)];
+        let s1 = cells[reduce_cell(sb + StepOff::S1)];
+        let s2 = cells[reduce_cell(sb + StepOff::S2)];
+        let c0 = cells[reduce_cell(sb + StepOff::C0)];
+        let c1 = cells[reduce_cell(sb + StepOff::C1)];
+        let d0 = cells[reduce_cell(sb + StepOff::D0)];
+        let d1 = cells[reduce_cell(sb + StepOff::D1)];
+        let r_t = cells[reduce_cell(sb + StepOff::R)];
+        let slack = cells[reduce_cell(sb + StepOff::SLACK)];
+        // r_prev = previous step's r_t (step 0 ⇒ 0); the in-gadget recurrence.
+        let r_prev = if t == 0 {
+            Challenge::ZERO
+        } else {
+            let psb = step0 + (t - 1) * STEP_CELLS;
+            cells[reduce_cell(psb + StepOff::R)]
+        };
+
+        // 0 : r_t + slack == q-1.
+        if si == 0 {
+            return (r_t + slack) - cv(q - 1);
+        }
+        si -= 1;
+        // 1 : digit == lane_lo + lane_hi·2^16.
+        if si == 0 {
+            return digit - (lane_lo + lane_hi * cv(two16));
+        }
+        si -= 1;
+        // 2..8 : 6 limb/carry eqs.
+        let l0 = r_prev * cv(p_lo) + lane_lo;
+        let l1 = r_prev * cv(p_hi) + lane_hi;
+        let r0 = qt_lo * cv(q) + r_t;
+        let r1 = qt_hi * cv(q);
+        return match si {
+            0 => l0 - (s0 + c0 * cv(two16)),
+            1 => (l1 + c0) - (s1 + c1 * cv(two16)),
+            2 => c1 - s2,
+            3 => r0 - (s0 + d0 * cv(two16)),
+            4 => (r1 + d0) - (s1 + d1 * cv(two16)),
+            5 => d1 - s2,
+            _ => unreachable!("reduce step alg residual index out of range"),
+        };
+    }
+    // ---- carrier: masked_projection[j] == account_projection[j] + mask[j] mod q12289 ----
+    let mut kk = k - reduce_total;
+    let j = kk / N_CARRIER_PER_LANE;
+    kk %= N_CARRIER_PER_LANE;
+    let mb = carrier_modq_base(j);
+    let masked_bits_off = mb + 1;
+    let slack_off = mb + 1 + MODQ_BITS;
+    let slack_bits_off = slack_off + 1;
+    let wrap_off = slack_bits_off + MODQ_BITS;
+    let masked = cells[carrier_masked_cell(j)];
+    let acc = cells[acc_cell(j)]; // account_projection lane (carry_acc, reused)
+    let mask = reduce_masks_from_cells(cells)[j];
+
+    // masked-recompose: MASK_BITS bools then eq.
+    if kk < MODQ_BITS {
+        let bit = cells[masked_bits_off + kk];
+        return bit * (bit - one);
+    }
+    kk -= MODQ_BITS;
+    if kk == 0 {
+        let rc = native_recompose_n(cells, masked_bits_off, MODQ_BITS);
+        return masked - rc;
+    }
+    kk -= 1;
+    // slack-recompose: MASK_BITS bools then eq.
+    if kk < MODQ_BITS {
+        let bit = cells[slack_bits_off + kk];
+        return bit * (bit - one);
+    }
+    kk -= MODQ_BITS;
+    if kk == 0 {
+        let rc = native_recompose_n(cells, slack_bits_off, MODQ_BITS);
+        return cells[slack_off] - rc;
+    }
+    kk -= 1;
+    // masked + slack == q-1.
+    if kk == 0 {
+        return (masked + cells[slack_off]) - cv(q - 1);
+    }
+    kk -= 1;
+    // wrap-bool.
+    if kk == 0 {
+        let wrap = cells[wrap_off];
+        return wrap * (wrap - one);
+    }
+    kk -= 1;
+    // carrier: acc + mask == masked + wrap·q.
+    debug_assert_eq!(kk, 0);
+    let wrap = cells[wrap_off];
+    (acc + mask) - (masked + wrap * cv(q))
+}
+
 /// Map the `ri`-th committed post (in `inlined_perm_octic::perm_residuals` order: begin-full posts,
 /// then partial post_sbox, then end-full posts) to its CELL offset within a `PERM_COLS` block (the
 /// `inlined_perm` column layout). Used to read the OPENED committed-post cell for the C1 residual.
@@ -883,9 +1317,19 @@ pub fn constraint_residual(cells: &[Challenge; N_OPENED_CELLS], r: usize) -> Cha
         return c6_residual(cells, r);
     }
     r -= N_C6;
-    // role-root sponge residuals (CLASS A, CHAINED to C1/C6 outputs).
-    debug_assert!(r < N_ROLE);
-    role_residual(cells, r)
+    if r < N_ROLE {
+        // role-root sponge residuals (CLASS A, CHAINED to C1/C6 outputs).
+        return role_residual(cells, r);
+    }
+    r -= N_ROLE;
+    if r < N_C2 {
+        // C2 mask-PRF sponge residuals (the largest sponge; 30 squeezed lanes feed the reduce gadget).
+        return c2_residual(cells, r);
+    }
+    r -= N_C2;
+    // wide-then-reduce + carrier residuals (30 squeezed lanes -> 6 masks -> masked_projection mod q).
+    debug_assert!(r < N_REDUCE);
+    reduce_residual(cells, r)
 }
 
 /// Native alpha-batched leaf partial constraint eval over opened cells:
@@ -972,6 +1416,35 @@ pub fn role_perm_cell_idx(p: usize, within: usize) -> usize {
 #[cfg(test)]
 pub fn c1_out_chain_cell_idx(j: usize) -> usize {
     c1_out_cell(j)
+}
+/// TEST-ONLY: C2 sponge + reduce-gadget + carrier cell accessors for cross-module tamper tests.
+#[cfg(test)]
+pub fn c2_slot_cell_idx(i: usize) -> usize {
+    c2_slot_cell(i)
+}
+#[cfg(test)]
+pub fn c2_perm_cell_idx(p: usize, within: usize) -> usize {
+    c2_perm_base(p) + within
+}
+/// The OOD cell holding squeezed C2 output lane `o` (the reduce gadget's `squeezed[o]` source).
+#[cfg(test)]
+pub fn c2_squeeze_output_cell_idx(o: usize) -> usize {
+    c2_squeeze_output_cell(o)
+}
+/// A reduce-gadget witness cell `i` (`i < REDUCE_CELLS`).
+#[cfg(test)]
+pub fn reduce_cell_idx(i: usize) -> usize {
+    reduce_cell(i)
+}
+/// The carrier masked_projection value cell for lane `j`.
+#[cfg(test)]
+pub fn carrier_masked_cell_idx(j: usize) -> usize {
+    carrier_masked_cell(j)
+}
+/// The `within`-th cell of carrier mod-q block for lane `j` (`within < MODQ_CELLS`).
+#[cfg(test)]
+pub fn carrier_modq_cell_idx(j: usize, within: usize) -> usize {
+    carrier_modq_base(j) + within
 }
 
 /// Decode the committed `C_partial` cell of a packed row.
@@ -1318,6 +1791,243 @@ where
         }
     }
 
+    // (9) C2 mask-PRF sponge — the LARGEST mirrored leaf sponge. Order MUST match the native
+    // `c2_residual`: input/capacity bindings (WIDTH/perm), then per-perm Poseidon2 round residuals.
+    // NO squeeze-output equality sub-class (the 30 squeezed lanes feed the reduce gadget, read from
+    // the perm OUTPUT cells). Absorb source: pad_seed[32] REUSED from `O_C2_PAD` ‖ slot_id[8].
+    {
+        struct CellAdapter<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> {
+            cell: &'a FCell,
+            _ab: core::marker::PhantomData<AB>,
+        }
+        impl<'a, AB: AirBuilder<F = Val>, FCell: Fn(usize) -> [AB::Expr; D]> OcticPermCells<AB>
+            for CellAdapter<'a, AB, FCell>
+        {
+            fn at(&self, idx: usize) -> [AB::Expr; D] {
+                (self.cell)(idx)
+            }
+        }
+        let adapter = CellAdapter::<AB, FCell> { cell, _ab: core::marker::PhantomData };
+
+        let perm_input = |p: usize, i: usize| cell(c2_perm_base(p) + C_INPUTS + i);
+        let perm_output = |p: usize, i: usize| cell(c2_perm_base(p) + C_OUTPUT + i);
+        let absorb = |pos: usize| -> [AB::Expr; D] {
+            match c2_absorb_source(pos) {
+                C1Absorb::Cell(c) => cell(c),
+                C1Absorb::One => octic_scalar::<AB>(1),
+                C1Absorb::Zero => octic_scalar::<AB>(0),
+            }
+        };
+
+        // (a) input/capacity bindings.
+        for p in 0..C2_N_PERMS {
+            let is_absorb = p < C2_N_ABSORB;
+            for lane in 0..WIDTH {
+                let inp = perm_input(p, lane);
+                let expected = if p == 0 {
+                    if lane < C2_RATE {
+                        absorb(lane)
+                    } else {
+                        octic_scalar::<AB>(0)
+                    }
+                } else {
+                    let prev = perm_output(p - 1, lane);
+                    if lane < C2_RATE {
+                        if is_absorb {
+                            let pos = p * C2_RATE + lane;
+                            let elem = if pos < C2_PADDED_LEN {
+                                absorb(pos)
+                            } else {
+                                octic_scalar::<AB>(0)
+                            };
+                            octic_add::<AB>(&prev, &elem)
+                        } else {
+                            prev
+                        }
+                    } else {
+                        prev
+                    }
+                };
+                residuals.push(octic_sub::<AB>(&inp, &expected));
+            }
+        }
+
+        // (b) per-perm Poseidon2 round residuals.
+        for p in 0..C2_N_PERMS {
+            let mut pr = inlined_perm_octic::perm_residuals::<AB, _>(&adapter, c2_perm_base(p));
+            residuals.append(&mut pr);
+        }
+    }
+
+    // (10) WIDE-THEN-REDUCE + carrier — the genuinely-NEW constraint shape. Mirrors
+    // `reduce_gadget::eval_reduce_gadget` (per-mask Horner steps) + the C4 carrier mod-q reduction
+    // (air.rs:856-906) EXACTLY, in the SAME assertion order as the native `reduce_residual`.
+    {
+        let (p_lo, p_hi, q, two16) = reduce_field_consts();
+        let one = octic_scalar::<AB>(1);
+        // squeezed lane `s` is the C2 squeeze OUTPUT cell.
+        let squeezed = |s: usize| cell(c2_squeeze_output_cell(s));
+        let rcell = |i: usize| cell(reduce_cell(i));
+        // octic recompose of `nbits` bit cells (gadget-relative `start`) into Σ bit_b·2^b, pushing the
+        // per-bit boolean residuals in order, then returning the accumulated value.
+        let push_recompose =
+            |residuals: &mut Vec<[AB::Expr; D]>, start: usize, nbits: usize| -> [AB::Expr; D] {
+                let mut acc = octic_scalar::<AB>(0);
+                for b in 0..nbits {
+                    let bit = rcell(start + b);
+                    let bm1 = octic_sub::<AB>(&bit, &one);
+                    residuals.push(octic_mul::<AB>(&bit, &bm1));
+                    let scaled = scale::<AB>(&bit, 1u64 << b);
+                    acc = octic_add::<AB>(&acc, &scaled);
+                }
+                acc
+            };
+
+        for j in 0..NUM_OUTPUTS {
+            let mask_base = j * PER_MASK_CELLS;
+            // (i) lane-bind eqs.
+            for i in 0..LANES_PER_MASK {
+                let bound = octic_sub::<AB>(&rcell(mask_base + i), &squeezed(j * LANES_PER_MASK + i));
+                residuals.push(bound);
+            }
+            let step0 = mask_base + LANES_PER_MASK;
+            for t in 0..HORNER_STEPS {
+                let sb = step0 + t * STEP_CELLS;
+                let lane_idx = LANES_PER_MASK - 1 - t;
+                let digit = squeezed(j * LANES_PER_MASK + lane_idx);
+
+                // value blocks: bit-bools then value-recompose eq (StepOff order).
+                let blocks: [(usize, usize, usize); 11] = [
+                    (StepOff::QT_LO, StepOff::QT_LO_BITS, LO_BITS),
+                    (StepOff::QT_HI, StepOff::QT_HI_BITS, HI_BITS),
+                    (StepOff::LANE_LO, StepOff::LANE_LO_BITS, LO_BITS),
+                    (StepOff::LANE_HI, StepOff::LANE_HI_BITS, HI_BITS),
+                    (StepOff::S0, StepOff::S0_BITS, S_LO_BITS),
+                    (StepOff::S1, StepOff::S1_BITS, S_LO_BITS),
+                    (StepOff::S2, StepOff::S2_BITS, S_TOP_BITS),
+                    (StepOff::C0, StepOff::C0_BITS, S_TOP_BITS),
+                    (StepOff::C1, StepOff::C1_BITS, S_TOP_BITS),
+                    (StepOff::D0, StepOff::D0_BITS, S_TOP_BITS),
+                    (StepOff::D1, StepOff::D1_BITS, S_TOP_BITS),
+                ];
+                for (val_off, bits_off, nbits) in blocks.iter().copied() {
+                    let rc = push_recompose(&mut residuals, sb + bits_off, nbits);
+                    residuals.push(octic_sub::<AB>(&rcell(sb + val_off), &rc));
+                }
+                // r_t (bits then eq).
+                let r_rc = push_recompose(&mut residuals, sb + StepOff::R_BITS, MASK_BITS);
+                residuals.push(octic_sub::<AB>(&rcell(sb + StepOff::R), &r_rc));
+                // slack (bits then eq).
+                let slack_rc = push_recompose(&mut residuals, sb + StepOff::SLACK_BITS, MASK_BITS);
+                residuals.push(octic_sub::<AB>(&rcell(sb + StepOff::SLACK), &slack_rc));
+
+                // value handles.
+                let qt_lo = rcell(sb + StepOff::QT_LO);
+                let qt_hi = rcell(sb + StepOff::QT_HI);
+                let lane_lo = rcell(sb + StepOff::LANE_LO);
+                let lane_hi = rcell(sb + StepOff::LANE_HI);
+                let s0 = rcell(sb + StepOff::S0);
+                let s1 = rcell(sb + StepOff::S1);
+                let s2 = rcell(sb + StepOff::S2);
+                let c0 = rcell(sb + StepOff::C0);
+                let c1 = rcell(sb + StepOff::C1);
+                let d0 = rcell(sb + StepOff::D0);
+                let d1 = rcell(sb + StepOff::D1);
+                let r_t = rcell(sb + StepOff::R);
+                let slack = rcell(sb + StepOff::SLACK);
+                let r_prev = if t == 0 {
+                    octic_scalar::<AB>(0)
+                } else {
+                    rcell(step0 + (t - 1) * STEP_CELLS + StepOff::R)
+                };
+
+                // r_t + slack == q-1.
+                let r_plus_slack = octic_add::<AB>(&r_t, &slack);
+                residuals.push(octic_sub::<AB>(&r_plus_slack, &octic_scalar::<AB>(q - 1)));
+                // digit == lane_lo + lane_hi·2^16.
+                let lane_hi_sh = scale::<AB>(&lane_hi, two16);
+                let recomp_digit = octic_add::<AB>(&lane_lo, &lane_hi_sh);
+                residuals.push(octic_sub::<AB>(&digit, &recomp_digit));
+                // 6 limb/carry eqs.
+                let l0 = octic_add::<AB>(&scale::<AB>(&r_prev, p_lo), &lane_lo);
+                let l1 = octic_add::<AB>(&scale::<AB>(&r_prev, p_hi), &lane_hi);
+                let r0 = octic_add::<AB>(&scale::<AB>(&qt_lo, q), &r_t);
+                let r1 = scale::<AB>(&qt_hi, q);
+                // l0 == s0 + c0·2^16
+                let rhs = octic_add::<AB>(&s0, &scale::<AB>(&c0, two16));
+                residuals.push(octic_sub::<AB>(&l0, &rhs));
+                // l1 + c0 == s1 + c1·2^16
+                let lhs = octic_add::<AB>(&l1, &c0);
+                let rhs = octic_add::<AB>(&s1, &scale::<AB>(&c1, two16));
+                residuals.push(octic_sub::<AB>(&lhs, &rhs));
+                // c1 == s2
+                residuals.push(octic_sub::<AB>(&c1, &s2));
+                // r0 == s0 + d0·2^16
+                let rhs = octic_add::<AB>(&s0, &scale::<AB>(&d0, two16));
+                residuals.push(octic_sub::<AB>(&r0, &rhs));
+                // r1 + d0 == s1 + d1·2^16
+                let lhs = octic_add::<AB>(&r1, &d0);
+                let rhs = octic_add::<AB>(&s1, &scale::<AB>(&d1, two16));
+                residuals.push(octic_sub::<AB>(&lhs, &rhs));
+                // d1 == s2
+                residuals.push(octic_sub::<AB>(&d1, &s2));
+            }
+        }
+
+        // carrier: masked_projection[j] == account_projection[j] + mask[j] mod q12289.
+        for j in 0..N_LANES {
+            let mb = carrier_modq_base(j);
+            let masked_bits_off = mb + 1;
+            let slack_off = mb + 1 + MODQ_BITS;
+            let slack_bits_off = slack_off + 1;
+            let wrap_off = slack_bits_off + MODQ_BITS;
+            let masked = cell(carrier_masked_cell(j));
+            let acc = cell(acc_cell(j));
+            // mask[j] = r_t of the LAST Horner step (the opened cell the reduce binds).
+            let mask = {
+                let mask_base = j * PER_MASK_CELLS;
+                let step0 = mask_base + LANES_PER_MASK;
+                let last_sb = step0 + (HORNER_STEPS - 1) * STEP_CELLS;
+                cell(reduce_cell(last_sb + StepOff::R))
+            };
+            // masked-recompose (bits then eq).
+            let masked_rc = {
+                let mut acc = octic_scalar::<AB>(0);
+                for b in 0..MODQ_BITS {
+                    let bit = cell(masked_bits_off + b);
+                    let bm1 = octic_sub::<AB>(&bit, &one);
+                    residuals.push(octic_mul::<AB>(&bit, &bm1));
+                    acc = octic_add::<AB>(&acc, &scale::<AB>(&bit, 1u64 << b));
+                }
+                acc
+            };
+            residuals.push(octic_sub::<AB>(&masked, &masked_rc));
+            // slack-recompose (bits then eq).
+            let slack_rc = {
+                let mut acc = octic_scalar::<AB>(0);
+                for b in 0..MODQ_BITS {
+                    let bit = cell(slack_bits_off + b);
+                    let bm1 = octic_sub::<AB>(&bit, &one);
+                    residuals.push(octic_mul::<AB>(&bit, &bm1));
+                    acc = octic_add::<AB>(&acc, &scale::<AB>(&bit, 1u64 << b));
+                }
+                acc
+            };
+            residuals.push(octic_sub::<AB>(&cell(slack_off), &slack_rc));
+            // masked + slack == q-1.
+            let m_plus_s = octic_add::<AB>(&masked, &cell(slack_off));
+            residuals.push(octic_sub::<AB>(&m_plus_s, &octic_scalar::<AB>(q - 1)));
+            // wrap-bool.
+            let wrap = cell(wrap_off);
+            let wm1 = octic_sub::<AB>(&wrap, &one);
+            residuals.push(octic_mul::<AB>(&wrap, &wm1));
+            // acc + mask == masked + wrap·q.
+            let lhs = octic_add::<AB>(&acc, &mask);
+            let rhs = octic_add::<AB>(&masked, &scale::<AB>(&wrap, q));
+            residuals.push(octic_sub::<AB>(&lhs, &rhs));
+        }
+    }
+
     debug_assert_eq!(residuals.len(), N_CONSTRAINTS);
 
     // ----- alpha-batch: acc = Σ_r alpha^r · residual_r -----
@@ -1445,6 +2155,11 @@ mod tests {
         // role-root sponge: honest absorb/perm/squeeze over the CHAINED C1/C6 squeeze outputs (set
         // by the two fills above) ‖ 6 masked_projection lanes. MUST run after fill_honest_c1/c6.
         fill_honest_role(&mut cells, pad_seed_seed);
+        // C2 mask-PRF sponge: honest absorb/perm/squeeze over pad_seed[32] (the c2_pad cells set
+        // above) ‖ slot_id[8] (fresh byte-valued). Then the wide-then-reduce gadget over the 30
+        // squeezed lanes -> 6 masks, then the carrier masked = (acc + mask) mod q (acc = vals[..],
+        // in [0,q)). MUST run after the pad_seed cells (c2_pad) + acc cells are set.
+        fill_honest_c2_and_reduce(&mut cells, pad_seed_seed, vals);
         cells
     }
 
@@ -1674,6 +2389,121 @@ mod tests {
             let (sp, lane) = role_output_source(j);
             let out_cell = cells[role_perm_base(sp) + IP_OUTPUT + lane];
             cells[role_out_cell(j)] = out_cell;
+        }
+    }
+
+    /// Fill the C2 mask-PRF sponge cells (slot_id[8] ‖ 9 perm blocks) with an HONEST sponge over the
+    /// pad_seed[32] cells (the `c2_pad` cells, already set) ‖ 8 fresh byte-valued slot_id lanes, then
+    /// the WIDE-THEN-REDUCE gadget (the 30 squeezed lanes -> 6 masks via the leaf's `fill_reduce_gadget`)
+    /// + the carrier mod-q reduction (masked = (acc + mask) mod q12289). Runs the deployed Val
+    /// permutation for each absorb/squeeze perm, then lifts every cell into the extension. This is the
+    /// C2-sponge + reduce-gadget + carrier fidelity AUTHORITY. PRECONDITION: the `c2_pad` cells and the
+    /// `acc_cell` cells (= `vals[..]`, in [0,q)) must already be set; `honest_cells` sets them.
+    fn fill_honest_c2_and_reduce(
+        cells: &mut [Challenge; N_OPENED_CELLS],
+        seed: u32,
+        vals: [u32; C4_LANES],
+    ) {
+        use crate::inlined_perm::{self, generate_perm_cols, C_OUTPUT as IP_OUTPUT, PERM_COLS};
+        use descender_account_stark::reduce_gadget::{fill_reduce_gadget, NUM_SQUEEZE as RG_NSQ};
+        use p3_field::PrimeField32;
+        let consts = inlined_perm::Constants::pinned();
+
+        // input lanes (as Val): pad_seed[32] from the existing c2_pad cells, slot_id[8] fresh bytes.
+        let mut input_lane = [Val::ZERO; C2_INPUT_LANES];
+        for b in 0..C2_PAD_LANES {
+            input_lane[b] = Challenge::as_basis_coefficients_slice(&cells[c2_pad_cell(b)])[0];
+        }
+        for i in 0..C2_SLOT_LANES {
+            let v = (seed.wrapping_mul(71).wrapping_add(i as u32 + 1)) % 256;
+            input_lane[C2_PAD_LANES + i] = Val::from_u32(v);
+            cells[c2_slot_cell(i)] = Challenge::from(input_lane[C2_PAD_LANES + i]);
+        }
+
+        let absorb = |pos: usize| -> Val {
+            if pos < C2_INPUT_LANES {
+                input_lane[pos]
+            } else if pos == C2_INPUT_LANES {
+                Val::ONE
+            } else {
+                Val::ZERO
+            }
+        };
+
+        let mut prev_out: Option<[Val; WIDTH]> = None;
+        let mut perm_outs: Vec<[Val; WIDTH]> = Vec::new();
+        for p in 0..C2_N_PERMS {
+            let is_absorb = p < C2_N_ABSORB;
+            let mut perm_in = [Val::ZERO; WIDTH];
+            match prev_out {
+                None => {
+                    for r in 0..C2_RATE {
+                        perm_in[r] = absorb(r);
+                    }
+                }
+                Some(prev) => {
+                    for r in 0..C2_RATE {
+                        if is_absorb {
+                            let pos = p * C2_RATE + r;
+                            let elem = if pos < C2_PADDED_LEN { absorb(pos) } else { Val::ZERO };
+                            perm_in[r] = prev[r] + elem;
+                        } else {
+                            perm_in[r] = prev[r];
+                        }
+                    }
+                    for c in C2_RATE..WIDTH {
+                        perm_in[c] = prev[c];
+                    }
+                }
+            }
+            let block = generate_perm_cols(perm_in, &consts);
+            let base = c2_perm_base(p);
+            for c in 0..PERM_COLS {
+                cells[base + c] = Challenge::from(block[c]);
+            }
+            let mut out = [Val::ZERO; WIDTH];
+            out.copy_from_slice(&block[IP_OUTPUT..IP_OUTPUT + WIDTH]);
+            perm_outs.push(out);
+            prev_out = Some(out);
+        }
+
+        // 30 squeezed lanes (as Val) from the squeeze source perms (= what the reduce gadget reads).
+        let mut lanes = [0u32; RG_NSQ];
+        for o in 0..C2_N_OUT {
+            let (sp, lane) = c2_output_source(o);
+            lanes[o] = perm_outs[sp][lane].as_canonical_u32();
+        }
+
+        // run the LEAF's authoritative reduce-gadget fill into a scratch Val row, then lift the
+        // gadget columns into the opened reduce cells (same StepOff layout, gadget-relative).
+        let mut scratch = vec![Val::ZERO; REDUCE_CELLS];
+        let masks = fill_reduce_gadget::<Val>(&mut scratch, 0, &lanes);
+        for i in 0..REDUCE_CELLS {
+            cells[reduce_cell(i)] = Challenge::from(scratch[i]);
+        }
+
+        // carrier: masked = (acc + mask) mod q12289, with the mod-q witness block per lane.
+        let q = Q12289 as u64;
+        for j in 0..N_LANES {
+            let acc = vals[j] as u64;
+            let mask = masks[j] as u64;
+            let sum = acc + mask;
+            let wrap = if sum >= q { 1u64 } else { 0u64 };
+            let masked = sum - wrap * q;
+            let slack = (q - 1) - masked;
+
+            cells[carrier_masked_cell(j)] = Challenge::from(Val::from_u64(masked));
+            let mb = carrier_modq_base(j);
+            let masked_bits_off = mb + 1;
+            let slack_off = mb + 1 + MODQ_BITS;
+            let slack_bits_off = slack_off + 1;
+            let wrap_off = slack_bits_off + MODQ_BITS;
+            for b in 0..MODQ_BITS {
+                cells[masked_bits_off + b] = Challenge::from(Val::from_u64((masked >> b) & 1));
+                cells[slack_bits_off + b] = Challenge::from(Val::from_u64((slack >> b) & 1));
+            }
+            cells[slack_off] = Challenge::from(Val::from_u64(slack));
+            cells[wrap_off] = Challenge::from(Val::from_u64(wrap));
         }
     }
 
@@ -2424,5 +3254,248 @@ mod tests {
             any_role_nonzero,
             "role-root residual class is BLIND to a tampered chained C1 output — chaining underconstrained"
         );
+    }
+
+    // =======================================================================
+    // C2 MASK-PRF SPONGE (the LARGEST sponge) + WIDE-THEN-REDUCE + CARRIER.
+    // =======================================================================
+
+    /// Base residual index of the C2 sponge class within `constraint_residual`.
+    const C2_RESIDUAL_BASE: usize = C4_LANES * C4_N_PER_LANE
+        + N_C4_ACC
+        + N_SEAM_PAD
+        + N_SEAM_ACC
+        + N_RELATION_ID
+        + N_C1
+        + N_C6
+        + N_ROLE;
+    /// Base residual index of the reduce-gadget + carrier class.
+    const REDUCE_RESIDUAL_BASE: usize = C2_RESIDUAL_BASE + N_C2;
+
+    /// SHAPE SANITY — the residual counts agree with the structural constants (so the dispatcher and
+    /// the in-AIR loop cover EXACTLY the same residuals).
+    #[test]
+    fn c2_reduce_residual_counts_consistent() {
+        // C2 sponge: input-binds + perm residuals, NO output sub-class.
+        assert_eq!(N_C2, C2_N_PERMS * WIDTH + C2_N_PERMS * inlined_perm_octic::PERM_RESIDUALS);
+        // reduce + carrier total.
+        assert_eq!(N_REDUCE, NUM_OUTPUTS * N_REDUCE_PER_MASK + N_LANES * N_CARRIER_PER_LANE);
+        // total covers everything up to N_CONSTRAINTS.
+        assert_eq!(REDUCE_RESIDUAL_BASE + N_REDUCE, N_CONSTRAINTS);
+    }
+
+    /// FIDELITY PIN (C2) — an HONEST C2 sponge (built from the deployed byte-pinned Val permutation
+    /// via `fill_honest_c2_and_reduce`, over pad_seed[32] ‖ slot_id[8], lifted to the extension) makes
+    /// EVERY C2 residual zero: the absorb / capacity wiring across all 9 perm blocks. A wrong octic
+    /// perm / absorb wiring would make some honest residual nonzero — caught by attempted equality.
+    #[test]
+    fn c2_honest_sponge_all_residuals_zero() {
+        for seed in [1u32, 7, 42, 255] {
+            let cells = honest_cells([0, 1, 127, 128, 12288, 5000], seed);
+            for k in 0..N_C2 {
+                assert_eq!(
+                    constraint_residual(&cells, C2_RESIDUAL_BASE + k),
+                    Challenge::ZERO,
+                    "honest C2 residual {k} nonzero (seed={seed})"
+                );
+            }
+        }
+    }
+
+    /// FIDELITY PIN (reduce + carrier) — an HONEST reduce gadget + carrier makes EVERY reduce/carrier
+    /// residual zero: the 6 masks via the base-2^16 limb/carry Horner reduction, AND the carrier
+    /// masked = (acc + mask) mod q. A wrong limb/carry / mod-q reduction (a soundness hole) would make
+    /// some honest residual nonzero.
+    #[test]
+    fn reduce_honest_all_residuals_zero() {
+        for seed in [1u32, 7, 42, 255] {
+            let cells = honest_cells([0, 1, 127, 128, 12288, 5000], seed);
+            for k in 0..N_REDUCE {
+                assert_eq!(
+                    constraint_residual(&cells, REDUCE_RESIDUAL_BASE + k),
+                    Challenge::ZERO,
+                    "honest reduce/carrier residual {k} nonzero (seed={seed})"
+                );
+            }
+        }
+    }
+
+    /// FIDELITY PIN (reduce) — the 6 masks read from the opened reduce cells equal the LEAF's own
+    /// `wide_reduce_masks` reference over the SAME 30 squeezed lanes, AND the carrier masked equals
+    /// `(account_projection + mask) mod q12289`. This pins the WHOLE gadget against the deployed leaf
+    /// reduce gadget + carrier semantics on a real honest row — a wrong gadget is caught by equality.
+    #[test]
+    fn reduce_masks_match_leaf_reduce_and_carrier() {
+        use descender_account_stark::reduce_gadget::{wide_reduce_masks, NUM_SQUEEZE as RG_NSQ};
+        use p3_field::PrimeField32;
+        let vals = [7000u32, 0, 12288, 128, 5000, 96];
+        let cells = honest_cells(vals, 9);
+        // recover the 30 squeezed lanes from the opened C2 squeeze output cells.
+        let mut lanes = [0u32; RG_NSQ];
+        for o in 0..C2_N_OUT {
+            let limb0: Val =
+                Challenge::as_basis_coefficients_slice(&cells[c2_squeeze_output_cell(o)])[0];
+            lanes[o] = limb0.as_canonical_u32();
+        }
+        let leaf_masks = wide_reduce_masks::<Val>(&lanes);
+        let q = Q12289 as u64;
+        for j in 0..NUM_OUTPUTS {
+            // mask read from the opened gadget cells (last Horner step's r_t).
+            let mask = reduce_masks_from_cells(&cells)[j];
+            assert_eq!(
+                mask,
+                Challenge::from(Val::from_u32(leaf_masks[j])),
+                "reduce mask lane {j} != leaf wide_reduce_masks"
+            );
+            // carrier: masked == (acc + mask) mod q.
+            let masked_limb0: Val =
+                Challenge::as_basis_coefficients_slice(&cells[carrier_masked_cell(j)])[0];
+            let masked = masked_limb0.as_canonical_u32() as u64;
+            let expected = (vals[j] as u64 + leaf_masks[j] as u64) % q;
+            assert_eq!(masked, expected, "carrier masked_projection lane {j} != (acc+mask) mod q");
+        }
+    }
+
+    /// FORGERY (C2) — a tampered absorbed lane (a pad_seed byte, reused from C2_PAD, OR a slot_id
+    /// byte) propagates into the absorb-perm input bindings ⇒ rejected. NOTE: tampering a pad_seed
+    /// cell ALSO breaks SeamPadSeed and the C1 sponge — all soundness; here we use the slot_id lanes
+    /// (UNIQUE to C2) to isolate the C2 sponge binding, and one shared pad_seed lane for completeness.
+    #[test]
+    fn c2_air_rejects_tampered_absorbed_lane() {
+        let cells = honest_cells([10, 20, 30, 40, 50, 60], 3);
+        // slot_id lanes (unique to C2).
+        for i in 0..C2_SLOT_LANES {
+            let mut m = matrix(&cells, ext_multi(21));
+            m.values[cell_base(c2_slot_cell(i))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "tampered C2 slot_id lane {i} NOT rejected"
+            );
+        }
+    }
+
+    /// FORGERY (C2) — a tampered INTERIOR perm cell (a committed round post / a perm input / a
+    /// squeeze-source output lane) of some C2 perm block ⇒ the inlined octic Poseidon2 round
+    /// residuals reject. Confirms the 9 C2 perm sub-blocks are fully constrained.
+    #[test]
+    fn c2_air_rejects_tampered_interior_perm_cell() {
+        use crate::inlined_perm::{C_BEGIN_POST, C_INPUTS, C_PARTIAL_POST_SBOX};
+        let cells = honest_cells([100, 200, 300, 400, 500, 600], 5);
+        let targets = [
+            c2_perm_base(0) + C_INPUTS + 3,
+            c2_perm_base(3) + C_BEGIN_POST + 7,
+            c2_perm_base(5) + C_PARTIAL_POST_SBOX + 10,
+            c2_perm_base(C2_N_ABSORB - 1) + C_OUTPUT + 1, // last-absorb output (squeeze source, lane 1)
+            c2_perm_base(C2_N_PERMS - 1) + C_OUTPUT + 5,  // last squeeze perm output (lane 5)
+        ];
+        for &cell_idx in &targets {
+            let mut m = matrix(&cells, ext_multi(33));
+            m.values[cell_base(cell_idx)] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "tampered C2 interior perm cell {cell_idx} NOT rejected"
+            );
+        }
+    }
+
+    /// FORGERY (reduce) — a forged SQUEEZED lane (the C2 output the reduce gadget reads) shifts the
+    /// reduce gadget's lane-bind eq AND the C2 perm output residual ⇒ rejected. This is the link from
+    /// the C2 sponge into the reduce gadget: a forged squeezed value cannot pass.
+    #[test]
+    fn reduce_air_rejects_forged_squeezed_lane() {
+        let cells = honest_cells([1, 2, 3, 4, 5, 6], 11);
+        for &o in &[0usize, 7, 15, 29] {
+            let mut m = matrix(&cells, ext_multi(13));
+            m.values[cell_base(c2_squeeze_output_cell(o))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "forged C2 squeezed lane {o} NOT rejected at reduce mirror"
+            );
+        }
+    }
+
+    /// FORGERY (reduce) — a forged MASK (the last Horner step's r_t cell) shifts both the reduce
+    /// gadget's mod-q identities for that step AND the carrier `acc + mask == masked + wrap·q` ⇒
+    /// rejected. This pins the mask -> carrier soundness link.
+    #[test]
+    fn reduce_air_rejects_forged_mask() {
+        let cells = honest_cells([1, 2, 3, 4, 5, 6], 11);
+        let step0 = LANES_PER_MASK;
+        let last_sb = step0 + (HORNER_STEPS - 1) * STEP_CELLS;
+        for j in 0..NUM_OUTPUTS {
+            let mask_base = j * PER_MASK_CELLS;
+            let mut m = matrix(&cells, ext_multi(13));
+            // tamper the last step's r_t value cell (the mask) for lane j.
+            m.values[cell_base(reduce_cell(mask_base + last_sb + StepOff::R))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "forged reduce mask lane {j} NOT rejected"
+            );
+        }
+    }
+
+    /// FORGERY (carrier) — a forged masked_projection value (the carrier output, also the public
+    /// masked_projection) ⇒ the carrier mod-q identities reject (masked-recompose / masked+slack==q-1
+    /// / acc+mask==masked+wrap·q). This is the carrier soundness: a forged masked cannot pass.
+    #[test]
+    fn carrier_air_rejects_forged_masked_projection() {
+        let cells = honest_cells([1, 2, 3, 4, 5, 6], 11);
+        for j in 0..N_LANES {
+            let mut m = matrix(&cells, ext_multi(13));
+            m.values[cell_base(carrier_masked_cell(j))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "forged masked_projection lane {j} NOT rejected at carrier mirror"
+            );
+        }
+    }
+
+    /// FORGERY (reduce) — a tampered LIMB/CARRY cell (qt_lo, a carry c0, an s-limb, or a bit of one of
+    /// these) of some Horner step ⇒ the limb/carry mod-q identities reject. This is the core of the
+    /// reduce gadget's soundness (the wrap-free base-2^16 reduction); a tampered limb/carry is caught.
+    #[test]
+    fn reduce_air_rejects_tampered_limb_carry() {
+        let cells = honest_cells([1, 2, 3, 4, 5, 6], 11);
+        // representative limb/carry value + bit cells across masks/steps.
+        let targets: [(usize, usize, usize); 6] = [
+            (0, 0, StepOff::QT_LO),       // mask0 step0 qt_lo value
+            (1, 2, StepOff::C0),          // mask1 step2 c0 carry value
+            (2, 4, StepOff::S0),          // mask2 step4 s0 limb value
+            (3, 1, StepOff::D1),          // mask3 step1 d1 carry value
+            (4, 3, StepOff::C0_BITS),     // mask4 step3 c0 bit 0
+            (5, 0, StepOff::LANE_HI_BITS), // mask5 step0 lane_hi bit 0
+        ];
+        for &(j, t, off) in &targets {
+            let mask_base = j * PER_MASK_CELLS;
+            let step0 = mask_base + LANES_PER_MASK;
+            let sb = step0 + t * STEP_CELLS;
+            let mut m = matrix(&cells, ext_multi(33));
+            m.values[cell_base(reduce_cell(sb + off))] += Val::ONE;
+            assert!(
+                !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                "tampered reduce limb/carry (mask {j} step {t} off {off}) NOT rejected"
+            );
+        }
+    }
+
+    /// FORGERY (carrier) — a tampered wrap bit or a mod-q witness bit ⇒ the carrier / range identities
+    /// reject. Confirms the carrier mod-q witness block is fully constrained.
+    #[test]
+    fn carrier_air_rejects_tampered_modq_witness() {
+        let cells = honest_cells([1, 2, 3, 4, 5, 6], 11);
+        // mod-q block layout (cell offsets within the block, mirroring air.rs): cell 0 unused,
+        // [1..1+14] masked_bits, [1+14] slack value, [2+14..2+28] slack_bits, [last] wrap.
+        let slack_off = 1 + MODQ_BITS;
+        let wrap_off = slack_off + 1 + MODQ_BITS;
+        for j in 0..N_LANES {
+            for &within in &[1usize /*masked bit0*/, slack_off /*slack value*/, wrap_off /*wrap*/] {
+                let mut m = matrix(&cells, ext_multi(13));
+                m.values[cell_base(carrier_modq_base(j) + within)] += Val::ONE;
+                assert!(
+                    !check_all_constraints(&LeafConstraintMirrorAir, &m, &[], None).is_ok(),
+                    "tampered carrier mod-q cell (lane {j} within {within}) NOT rejected"
+                );
+            }
+        }
     }
 }

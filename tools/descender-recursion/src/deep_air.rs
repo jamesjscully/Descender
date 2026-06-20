@@ -616,6 +616,52 @@ mod tests {
         }
     }
 
+    /// END-TO-END FORGERY (C2 MASK-PRF SPONGE + WIDE-THEN-REDUCE + CARRIER) — with a leaf-WIRED DEEP
+    /// row built over an HONEST C2 sponge + reduce gadget + carrier (real byte-pinned Val permutation
+    /// + the leaf's `fill_reduce_gadget`, lifted to the extension), tampering a C2/reduce/carrier cell
+    /// — a tampered C2 absorbed slot_id lane, a tampered interior C2 perm post, a forged squeezed
+    /// lane, a forged mask (last Horner r_t), a tampered limb/carry, a forged masked_projection, or a
+    /// tampered carrier mod-q witness — shifts the in-AIR-recomputed `C_partial`, so the committed `C`
+    /// no longer equals `Z_H·Q` ⇒ REJECTED through the DEEP block. The FOURTH (largest) mirrored leaf
+    /// sponge AND the genuinely-new reduce/carrier gadget are now caught at the DEEP OOD check.
+    #[test]
+    fn leaf_wired_tampered_c2_reduce_cell_rejects_end_to_end() {
+        use crate::inlined_perm::{C_BEGIN_POST, C_OUTPUT as IP_OUTPUT};
+        let k = 9;
+        let cells = lc::honest_cells_for_test([0, 1, 127, 12288, 5000, 96], 17);
+        // honest leaf-wired row accepts.
+        let row_ok = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
+        let m_ok = RowMajorMatrix::new(row_ok, n_cols_cfg(k, true));
+        assert!(check_all_constraints(&leaf_air(k), &m_ok, &[], None).is_ok(), "honest C2/reduce row rejected");
+
+        // representative cells across the C2 sponge, reduce gadget, and carrier.
+        let last_step_r = {
+            // last Horner step's r_t value cell within a mask block.
+            let step0 = lc::LANES_PER_MASK;
+            step0 + (lc::HORNER_STEPS - 1) * lc::STEP_CELLS + lc::StepOff::R
+        };
+        let targets = [
+            lc::c2_slot_cell_idx(0),                       // tampered C2 absorbed slot_id lane
+            lc::c2_perm_cell_idx(0, C_BEGIN_POST),         // tampered interior C2 perm post (perm 0)
+            lc::c2_perm_cell_idx(5, IP_OUTPUT + 1),        // tampered last-absorb output (squeeze src)
+            lc::c2_squeeze_output_cell_idx(15),            // forged squeezed lane 15 (reduce input)
+            lc::reduce_cell_idx(2 * lc::PER_MASK_CELLS + last_step_r), // forged mask (lane 2)
+            lc::reduce_cell_idx(3 * lc::PER_MASK_CELLS + lc::LANES_PER_MASK + lc::StepOff::C0), // limb/carry
+            lc::carrier_masked_cell_idx(4),                // forged masked_projection lane 4
+            lc::carrier_modq_cell_idx(1, lc::MODQ_CELLS - 1), // tampered carrier wrap bit (lane 1)
+        ];
+        let lb = leaf_base(k);
+        for &cell_idx in &targets {
+            let row = pack_check_leaf(ext_multi(90), &cells, ext_multi(3), ext_multi(11), k);
+            let mut m = RowMajorMatrix::new(row, n_cols_cfg(k, true));
+            m.values[lb + lc::L_CELLS + cell_idx * D] += Val::ONE;
+            assert!(
+                !check_all_constraints(&leaf_air(k), &m, &[], None).is_ok(),
+                "tampering C2/reduce/carrier cell {cell_idx} was NOT rejected end-to-end"
+            );
+        }
+    }
+
     /// FORGERY — tampering `C_committed` (the deferred summand) with everything else honest breaks
     /// `C == C_partial + C_committed` ⇒ rejected. (A prover cannot smuggle a favorable deferred
     /// bulk value either; it is bound by the decomposition.)
