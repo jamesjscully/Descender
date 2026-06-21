@@ -1,5 +1,9 @@
 # Phase-1 Gadget 1 — In-AIR DuplexChallenger (Fiat–Shamir sponge)
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting recursion gadget spec note, not a normative spec. Current
+> normative authority starts at `../../spec/README.md`.
+
 Status: SPEC (analysis only — no code, no build).
 Scope: gadget 1 ONLY. Gadgets 2–5 are out of scope for this run.
 Single source of truth: `descender_account_stark::config` (re-exported by `descender-recursion/src/lib.rs`).

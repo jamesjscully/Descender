@@ -1,5 +1,10 @@
 # Path 2 Native Full Signature Obligation Burn-Down
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This is historical/technical proof-obligation evidence. Some obligations remain
+> relevant to Path 2, but current project status belongs in `../TRACKER.md` and
+> current product authority starts in `../spec/`.
+
 Date: 2026-06-02
 
 Scope: active deployment path named by Rust production preflight: Path 2 native

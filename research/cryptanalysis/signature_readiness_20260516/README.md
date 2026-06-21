@@ -1,5 +1,11 @@
 # Signature Readiness Cryptanalysis
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This package records the May 2026 signature-readiness campaign. It contains
+> useful attacks, negative controls, and historical evidence, but it is not the
+> current product target or top-level status source. Current authority starts at
+> `../../../spec/README.md` and `../../../TRACKER.md`.
+
 This pass tests whether the 172-byte coordinate-subview KEM/public-view
 candidate should immediately be used as a signature primitive.
 

@@ -1,5 +1,9 @@
 # Path 2 Concrete Trace Model — Status
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting Lean proof-status note, not the top-level project
+> tracker. Top-level status lives in `../../TRACKER.md`.
+
 File: `Descender/Path2TraceModel.lean` (sorry-free, axiom-clean: only
 `propext`, `Classical.choice`, `Quot.sound`).
 

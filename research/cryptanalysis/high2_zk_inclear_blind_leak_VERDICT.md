@@ -1,5 +1,9 @@
 # HIGH-2 In-Clear Blind Leak — transparent-descent opening protocol fixed
 
+> MIGRATION STATUS (2026-06-20): `NEGATIVE_CONTROL`.
+> This records a critical hiding failure and its regression closure. It is
+> retained as red-team evidence, not as an active product target.
+
 **Date opened:** 2026-06-11 · **Severity:** CRITICAL (hiding) ·
 **Current status:** FIX APPLIED in the Rust reference opening protocol; focused
 regression passes.

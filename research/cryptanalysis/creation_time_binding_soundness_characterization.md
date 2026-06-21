@@ -8,7 +8,7 @@ Role: characterize PRECISELY the assumption that closes the two-witnesses
 survivor at creation time, and state the exact residual gap.
 
 Scope of files read: `research/account_creation_proof_mechanism_decision.md`,
-`research/selected_hidden_source_path_decision.md`,
+`research/hidden_source_projection_design_fork.md`,
 `research/prevalidated_slot_leaf_v1_frame.md`,
 `research/account_creation_prevalidated_slot_proof_tracker.md`,
 `tools/production-reference/src/lib.rs:2205` (+ the `packed_witness_state18` /

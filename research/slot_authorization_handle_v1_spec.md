@@ -1,5 +1,9 @@
 # SlotAuthorizationHandleV1 Spec
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting interface spec note, not a normative spec. Current
+> normative authority starts at `../spec/README.md`.
+
 Status: proof-interface specification for spend-time Path 2 authorization.
 
 This document defines how spend-time verification validates a

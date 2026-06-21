@@ -16,6 +16,7 @@ TERMINAL_STATUSES = {
     "quality_blocked",
     "implementation_failed",
     "revision_failed",
+    "pivot_archived",
 }
 
 ACTIVE_STATUSES = {

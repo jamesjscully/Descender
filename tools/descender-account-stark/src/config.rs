@@ -1,6 +1,6 @@
-//! PINNED PRODUCTION configuration of the account-creation ZK-STARK.
+//! Pinned Path 2 configuration of the account-creation ZK-STARK.
 //!
-//! This is the deployable config lifted from the re-host benchmark's
+//! This is the active implementation config lifted from the re-host benchmark's
 //! `prod_bench.rs`:
 //!
 //!   * Poseidon2: the PINNED Plonky3 vetted instance
@@ -80,7 +80,7 @@ pub const PROD_COMMIT_POW_BITS: usize = 0;
 /// knowledge-soundness error also carries the FRI commit/fold + DEEP ADDITIVE term
 /// (~|L|/|F|), which is bounded by the CHALLENGE-FIELD size, not the query schedule.
 /// At the former degree-4 extension that additive term capped the composed figure at
-/// ~2^-104..-106 (production batches) — below this 128. The degree-8 `Challenge`
+/// ~2^-104..-106 (large batches) — below this 128. The degree-8 `Challenge`
 /// (see its doc) restores the composed figure to ~2^-228..-230. See
 /// research/cryptanalysis/fri_aok_extractor_instantiation.md.
 pub const PROD_SOUNDNESS_BITS: usize =
@@ -113,7 +113,7 @@ pub type Val = KoalaBear;
 /// Raised from degree-4 (~124 bits) on 2026-06-19 to clear the FIELD-BOUND FRI
 /// knowledge-soundness term: the FRI commit/fold + DEEP additive error scales as
 /// ~|L|/|F|, and at the deployed degree-4 extension the COMPOSED knowledge soundness
-/// was only ~2^-104..-106 at production batch sizes (worse, ~2^-92..-100, for very
+/// was only ~2^-104..-106 at large batch sizes (worse, ~2^-92..-100, for very
 /// large batches) — short of the 2^-128 target even though the query phase hits 128.
 /// A degree-5 BINOMIAL extension is impossible over KoalaBear (p-1 = 2^24*127,
 /// gcd(5,p-1)=1 => x^5-W always reducible); degree-8 is the next supported binomial

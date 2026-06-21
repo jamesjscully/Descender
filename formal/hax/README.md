@@ -1,16 +1,22 @@
 # hax — Rust Reference Bridge Layer
 
-**Owns (interim):** verifying that the *existing* Rust reference
-(`tools/parameter-search/src/production_reference.rs`) matches the spec, by
-extracting Rust → F*/Coq and proving correspondence there. Purpose: close seam 3
-properly and **retire the source-inspection "marker gates"** that gave
-green-while-broken results.
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This package contains hax bridge-spike evidence and implementation-proof
+> context. It is not product authority by itself; current authority starts in
+> `../../spec/README.md`, ADRs, and `../../TRACKER.md`.
 
-**Status:** not started — gated on the **HAX-SPIKE** (`../VERIFICATION_PLAN.md`).
+**Owns (interim):** evidence for verifying Rust reference code against the
+active spec spine by extracting Rust → F*/Coq and proving correspondence there.
+Purpose: close seam 3 properly and **retire the source-inspection "marker
+gates"** that gave green-while-broken results.
 
-**First deliverable (HAX-SPIKE):** run `hax` on one self-contained verifier
-function (e.g. the Fq12 sigma-equation check), extract to F*, and judge whether
-the obligation is tractable.
+**Status:** HAX-SPIKE returned **GO (conditional)** in `SPIKE_VERDICT.md`.
+Extraction of the self-contained verifier core is tractable, but the bridge
+still needs proof-library/toolchain cleanup and real F* lemmas before it can
+replace source-inspection gates.
+
+**Next deliverable:** isolate the active Rust verifier core, extract it cleanly,
+and prove the correspondence lemmas that matter for the current spec spine.
 
 - *Go:* clean extraction → adopt hax; delete the corresponding marker gate.
 - *No-go:* unsupported Rust constructs → fall back to Cryptol+SAW or a Lean

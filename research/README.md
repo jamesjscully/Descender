@@ -1,36 +1,63 @@
-# Descender Automated Research Loop
+# Descender Research Notes
+
+Status: ACTIVE_RESEARCH_ENTRYPOINT
+
+This directory contains active research notes, historical design records,
+negative controls, generated reports, and automation state. It is not the
+project's normative product specification.
+
+Current authority starts here:
+
+```text
+../spec/README.md
+../decisions/
+../TRACKER.md
+research/ARCHIVE_INDEX.md
+../scripts/research/README.md
+```
+
+Use `ARCHIVE_INDEX.md` before citing older research as current status. Files not
+listed as active support should be treated as evidence or history unless the
+current spec spine explicitly imports them.
+
+## Automated Research Loop
 
 This directory holds the user-space research workflow that Armature invokes.
 Armature only provides triggers, logs, events, and run inspection; these scripts
 own the Descender-specific policy.
 
-## Cryptanalysis-First Master Tracker
+The director now has a pivot guard: by default it dispatches only tasks that are
+explicitly aligned with the chain-native PQ authorization objective or whose
+prompt references active Path 2/spec/tracker work. Legacy KEM/formalization
+tasks and old projection-carrier deployment tasks can remain in state for
+history, archive cleanup, negative controls, or regression work, but they are
+not launched as current-product work unless `DESCENDER_ALLOW_LEGACY_TASKS=1` is
+set.
 
-The single instrument for measuring progress toward internal
-cryptanalysis-readiness (do all the cryptanalysis a third party would, before
-external submission) is:
+Script-level routing rules live in `../scripts/research/README.md`.
 
-```text
-research/cryptanalysis/cryptanalysis_first_master_tracker.md
-```
+## Cryptanalysis Routing
 
-It defines the recalibrated done-bar, the process change, the workstreams
-(assumption ledger → reduce-to-standard → verified estimator → empirical
-structural attacks → red-team dossier → aggregation decision → the real
-reduction), and a scorecard. The packages below are inputs it consolidates.
-
-## Review Readiness
-
-The current deployable-cryptography preparation package for the q12289
-implicit-commitment signature candidate is:
+Current cryptanalysis package routing lives in:
 
 ```text
-research/cryptanalysis/review_readiness_20260519/README.md
+research/cryptanalysis/README.md
 ```
 
-That package freezes the target byte layout, maps the Lean proof endpoints,
-records remaining assumptions, and lists the conformance, cryptanalysis, and
-implementation-hardening gates required before third-party review.
+Root-level cryptanalysis notes are evidence unless the current spec spine or an
+ADR imports a claim.
+
+The old internal cryptanalysis-readiness master tracker has been retired. Useful
+work is now either imported into `../TRACKER.md`, retained as specific
+cryptanalysis evidence notes, or covered by `research/ARCHIVE_INDEX.md`.
+
+## Historical Review Readiness
+
+The older q12289 review-readiness package has been retired from the worktree.
+Its binding decision content is superseded by the ADRs and current specs, and
+the one surviving byte-conformance fixture now lives at
+`../tools/parameter-search/testdata/q12289_conformance_vectors.json` for legacy
+verifier drift tests.
 
 ## State Discipline
 
@@ -81,7 +108,28 @@ Queue files live in `research/queue/*.json`. The director imports enabled tasks
 from these files into `research/state/tasks.json`.
 
 A task with `"enabled": false` is documented but not launched. Flip it to
-`true` when it should enter the automated loop.
+`true` when it should enter the automated loop. Enabled queue tasks still pass
+through the pivot guard before import; pre-pivot work is skipped unless
+`DESCENDER_ALLOW_LEGACY_TASKS=1` is set or the task is explicitly archive,
+negative-control, fail-closed regression, or migration work.
+
+Audit enabled queue files with:
+
+```sh
+python3 scripts/research/audit_task_pivot_alignment.py --strict-queue
+```
+
+Inspect local state backlog with:
+
+```sh
+python3 scripts/research/audit_task_pivot_alignment.py --include-state
+```
+
+Archive stale non-running local state tasks with:
+
+```sh
+python3 scripts/research/quarantine_non_pivot_state.py
+```
 
 ## Agent Configuration
 
@@ -102,6 +150,8 @@ DESCENDER_AGENT_WORKTREE   if 1, launch agents in Paseo worktrees
 DESCENDER_ALLOW_DIRTY_WORKTREE_BASE
                            if 1, allow worktree launch from dirty main checkout
 DESCENDER_AGENT_DRY_RUN    if 1, do not launch Paseo agents
+DESCENDER_ALLOW_LEGACY_TASKS
+                           if 1, allow pre-pivot legacy tasks to dispatch
 DESCENDER_MAX_PARALLEL_TASKS parallel research capacity, default 4
 DESCENDER_MAX_LAUNCHES     director launch limit per run, default max parallel
 DESCENDER_MAX_FOLLOWUPS    director follow-up import limit, default 8

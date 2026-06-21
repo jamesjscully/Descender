@@ -1,5 +1,10 @@
 # Lean 4 + Mathlib — Math + Reduction-Skeleton Layer
 
+Status: ACTIVE_SUPPORT
+
+This package supports current Path 2 proof closure work, but product authority
+starts in `../../spec/README.md`, ADRs, and `../../TRACKER.md`.
+
 The Lean development lives in `../../Descender/` (this is a pointer, not a copy).
 
 **Owns:** the supporting mathematics and the security-reduction skeleton —
@@ -15,8 +20,8 @@ field/lattice/real-analysis math the scheme leans on; reproving it elsewhere is
 pure cost.
 
 **Active work:** the concrete trace model `G` that feeds the closure skeleton +
-discharging the per-event bounds. If EC-SPIKE returns "go", the *reduction* may
-migrate to EasyCrypt while Lean retains the math; seam 1 then governs.
+discharging the per-event bounds. EC-SPIKE returned "go", so EasyCrypt may own
+game-hop bookkeeping while Lean retains the math; seam 1 then governs.
 
 **Guards in place:** `lake build`, `scripts/audit_theorems.lean` (axiom/sorry
 audit), and the param-sync check, all in CI (`.github/workflows/ci.yml`).

@@ -1,5 +1,9 @@
 # Step #5 — account-creation STARK verifier wiring (Option A) — STATUS
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting implementation-status note, not the top-level project
+> tracker. Top-level status lives in `../TRACKER.md`.
+
 Date: 2026-06-18. Branch: `deployed-mask-prf-swap`. Architecture chosen by James:
 **Option A (separate verifier crate) with re-export discipline.**
 

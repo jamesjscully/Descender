@@ -1,5 +1,10 @@
 # Descender Post-Quantum Signature — SECURITY DOSSIER (external-review package)
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This dossier is high-value cryptanalysis evidence and review packaging, but it
+> is not the current product security authority. Current security claims start in
+> `../../spec/security_model.md`, with project status in `../../TRACKER.md`.
+
 > ## SOUNDNESS-LEVEL FRAMING (2026-06-19, decided by James)
 > Two distinct properties at two distinct levels — NOT a single weakest-link:
 > - **SPEND signature SUF-CMA: ~2⁻¹²⁸.** Charged as SECOND-preimage (target fixed first by an
@@ -408,7 +413,7 @@ image of the Lean-derived coupling `success_implies_accepted_or_break_of_structu
   `deployment_preflight_fails_closed_until_selected_verifier_and_reviews_land` and
   `path2_masked_state18_path_does_not_flip_production_preflight` PASS. The old
   masked-state18 acceptor is also hard-gated at verifier level.
-- **D3 staging ladder** (`cryptanalysis_first_master_tracker.md:258`): (1) testnet
+- **D3 staging ladder** (retired cryptanalysis-readiness campaign): (1) testnet
   (valueless) → (2) value-capped mainnet (internal DoD complete **and** external
   review started) → (3) uncapped mainnet (real time-under-attack — **never
   reachable on self-review alone**). The flip from fail-closed to accepting is

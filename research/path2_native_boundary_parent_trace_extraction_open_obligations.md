@@ -1,5 +1,9 @@
 # Path 2 Native Boundary Parent Trace Extraction Open Obligations
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting proof-family blocker checklist, not the top-level
+> project tracker. Top-level status lives in `../TRACKER.md`.
+
 Status: active blocker checklist.
 
 Purpose: list exactly what remains before `ParentTraceExtractionSoundness` can

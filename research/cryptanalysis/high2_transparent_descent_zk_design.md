@@ -1,5 +1,10 @@
 # HIGH-2 — Transparent-Descent ZK Creation Proof: DESIGN SPEC
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This is a historical design spec for the transparent-descent ZK route. It is
+> retained as evidence and design history, not as a normative product spec.
+> Current normative specs start in `../../spec/README.md`.
+
 **Date:** 2026-06-10 · **n=32, q=12289, Fq12 = F_q[X]/(X¹²+X+25)** · 6 projection lanes
 **Status:** HISTORICAL DESIGN SPEC — prover/verifier now implemented in the Rust reference.
 This document records the route that resolved the rank blocker and pinned the proof

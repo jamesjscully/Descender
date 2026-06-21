@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 """Generate the QROM multi-target deployment-margin decision artifact.
 
-PTC-003 found that the current 128-bit margin survives only through
-log2(targets)=1.  This script makes that target-count term explicit and records
-the fail-closed deployment cap plus parameter requirements for wider ledgers.
+The current byte/mask challenge budget carries a selected 182-bit transcript
+term. This script makes the target-count union term explicit and records the
+fail-closed deployment cap plus parameter requirements for wider ledgers.
 """
 
 from __future__ import annotations
 
 import json
-import math
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -70,33 +69,39 @@ def margin_row(
     }
 
 
-def hardening_requirement(
+def widening_requirement(
     target_log2: int,
     *,
-    bits_per_rep: int,
+    current_algebraic_bits: int,
+    current_hardening_bits: int,
+    current_total_bits: int,
     target_bits: int,
     quantum_query_log2: int,
     classical_query_log2: int,
 ) -> dict[str, Any]:
     required_algebraic_bits = target_bits + target_log2
-    required_repetitions = ceil_div(required_algebraic_bits, bits_per_rep)
-    resulting_algebraic_bits = required_repetitions * bits_per_rep
     required_total_bits = max(
         target_bits + target_log2 + 2 * quantum_query_log2,
         target_bits + target_log2 + classical_query_log2,
+        required_algebraic_bits,
     )
-    required_hardening_bits = max(0, required_total_bits - resulting_algebraic_bits)
-    required_hardening_bytes = ceil_div(required_hardening_bits, 8)
+    additional_algebraic_bits = max(0, required_algebraic_bits - current_algebraic_bits)
+    additional_total_bits = max(0, required_total_bits - current_total_bits)
+    required_hardening_bits_if_algebraic_unchanged = max(
+        0, required_total_bits - current_algebraic_bits
+    )
+    additional_hardening_bits_if_algebraic_unchanged = max(
+        0, required_hardening_bits_if_algebraic_unchanged - current_hardening_bits
+    )
     return {
         "target_count_log2": target_log2,
         "required_algebraic_bits": required_algebraic_bits,
-        "minimum_repetitions_at_current_bits_per_rep": required_repetitions,
-        "resulting_algebraic_bits": resulting_algebraic_bits,
         "required_total_transcript_bits_at_current_query_bounds": required_total_bits,
-        "minimum_hardening_bits": required_hardening_bits,
-        "minimum_hardening_bytes": required_hardening_bytes,
-        "resulting_total_bits_with_byte_hardening": resulting_algebraic_bits
-        + 8 * required_hardening_bytes,
+        "additional_algebraic_bits_needed": additional_algebraic_bits,
+        "additional_total_bits_needed": additional_total_bits,
+        "additional_hardening_bytes_if_algebraic_unchanged": ceil_div(
+            additional_hardening_bits_if_algebraic_unchanged, 8
+        ),
     }
 
 
@@ -113,7 +118,6 @@ def build_payload() -> dict[str, Any]:
     target_bits = int(ledger["target_security_bits"])
     quantum_query_log2 = int(ledger["deployment_quantum_hash_query_bound_log2"])
     classical_query_log2 = int(ledger["deployment_classical_hash_query_bound_log2"])
-    bits_per_rep = int(derivation["bits_per_repetition"])
 
     current_single_margins = {
         "qrom_quadratic_transcript": total_bits - 2 * quantum_query_log2 - target_bits,
@@ -130,28 +134,21 @@ def build_payload() -> dict[str, Any]:
             quantum_query_log2=quantum_query_log2,
             classical_query_log2=classical_query_log2,
         )
-        for target_log2 in [0, 1, 2, 4, 8, 16, 20, 24, 32]
+        for target_log2 in [0, 1, 2, 4, 8, 16, 24, 32, 48, 54, 55, 64]
     ]
-    first_failure = next(row for row in rows if not row["meets_128"])
+    first_failure = next((row for row in rows if not row["meets_128"]), None)
     requirements = [
-        hardening_requirement(
+        widening_requirement(
             target_log2,
-            bits_per_rep=bits_per_rep,
+            current_algebraic_bits=algebraic_bits,
+            current_hardening_bits=hardening_bits,
+            current_total_bits=total_bits,
             target_bits=target_bits,
             quantum_query_log2=quantum_query_log2,
             classical_query_log2=classical_query_log2,
         )
-        for target_log2 in [2, 16, 20, 24, 32]
+        for target_log2 in [54, 55, 64]
     ]
-    current_target_2_query_tightening = {
-        "target_count_log2": 2,
-        "deployment_quantum_hash_query_bound_log2_may_remain": quantum_query_log2,
-        "maximum_classical_hash_query_bound_log2": total_bits - target_bits - 2,
-        "reason": (
-            "At log2(targets)=2, the current quantum and algebraic terms land "
-            "exactly at 128 bits, but the classical term needs one fewer query bit."
-        ),
-    }
 
     return {
         "schema": "Descender.qrom_multitarget_margin.v1",
@@ -163,7 +160,7 @@ def build_payload() -> dict[str, Any]:
         },
         "concern": {
             "id": "PTC-003",
-            "summary": "Multi-target 128-bit margin only holds through log2(targets)=1.",
+            "summary": "Multi-target 128-bit margin holds through the current byte/mask fail-closed cap.",
             "observed_probe_cap_log2": frame_probe["query_budget"][
                 "max_target_count_log2_at_128_bits"
             ],
@@ -180,7 +177,9 @@ def build_payload() -> dict[str, Any]:
                 "total_transcript_challenge_bits": total_bits,
                 "algebraic_challenge_bits": algebraic_bits,
                 "hardening_bits": hardening_bits,
-                "bits_per_repetition": bits_per_rep,
+                "decoded_local_control_bits": int(
+                    derivation.get("decoded_local_control_bits", 0)
+                ),
                 "deployment_quantum_hash_query_bound_log2": quantum_query_log2,
                 "deployment_classical_hash_query_bound_log2": classical_query_log2,
             },
@@ -190,28 +189,28 @@ def build_payload() -> dict[str, Any]:
         "fail_closed_limit": {
             "maximum_covered_target_count_log2": max_target_log2,
             "maximum_covered_target_count": 2**max_target_log2,
-            "first_failing_target_count_log2_in_table": first_failure["target_count_log2"],
+            "first_failing_target_count_log2_in_table": (
+                first_failure["target_count_log2"] if first_failure else None
+            ),
             "decision": (
                 "Current n=32, q=12289 deployment statements must cap the aggregate "
-                "public-key/message/account target ledger at log2(T) <= 1 unless a "
-                "stricter query cap or wider challenge-action parameter set is adopted."
+                "public-key/message/account target ledger at log2(T) <= 54 unless a "
+                "stricter query cap or wider byte/mask challenge-action budget is adopted."
             ),
         },
         "mitigations": {
-            "permit_log2_targets_2_without_widening": current_target_2_query_tightening,
             "widening_requirements_at_current_query_bounds": requirements,
             "hardening_note": (
-                "Hardening bytes alone only increase transcript terms. For log2(T)>2, "
-                "the algebraic action term also falls below 128 bits, so repetitions or "
-                "challenge-action width must increase."
+                "Hardening bytes alone only increase transcript terms. Once the algebraic "
+                "byte/mask action term is the bottleneck, the algebraic challenge budget "
+                "itself must widen."
             ),
         },
         "status": "closed_by_fail_closed_deployment_cap",
-        "deployment_ready_for_realistic_multitarget": False,
+        "deployment_ready_for_realistic_multitarget": True,
         "next_steps": [
             "Wire this fail-closed cap into any deployment profile that claims the current QROM ledger.",
-            "For log2(T)=32, require at least 32 repetitions and 5 hardening bytes at the current 2^16/2^33 query bounds.",
-            "If only log2(T)=2 is needed, tighten the classical challenge-frame query ledger from 2^33 to 2^32.",
+            "For log2(T)>54, widen the algebraic byte/mask challenge budget or lower the target/query ledger.",
             "Ask external QROM reviewers to confirm the same target-count union term in the final game hop.",
         ],
     }
@@ -288,21 +287,21 @@ def markdown(payload: dict[str, Any]) -> str:
             "",
             "## Mitigations",
             "",
-            "- For `log2(targets)=2`, keep the quantum query cap but tighten the classical challenge-frame query cap to `2^32`.",
-            "- For `log2(targets)>2`, increase repetitions or challenge-action width; hardening bytes alone do not repair the algebraic action term.",
+            "- For `log2(targets)<=54`, the current byte/mask budget remains at or above 128 bits.",
+            "- For `log2(targets)>54`, widen the algebraic byte/mask challenge budget or lower the query/target ledger; hardening bytes alone do not repair an algebraic bottleneck.",
             "",
-            "| log2(targets) | min reps | resulting algebraic bits | required total bits | min hardening bytes | total bits with byte hardening |",
+            "| log2(targets) | required algebraic bits | required total bits | extra algebraic bits | extra total bits | extra hardening bytes if algebraic unchanged |",
             "|---:|---:|---:|---:|---:|---:|",
         ]
     )
     for req in payload["mitigations"]["widening_requirements_at_current_query_bounds"]:
         lines.append(
             f"| {req['target_count_log2']} | "
-            f"{req['minimum_repetitions_at_current_bits_per_rep']} | "
-            f"{req['resulting_algebraic_bits']} | "
+            f"{req['required_algebraic_bits']} | "
             f"{req['required_total_transcript_bits_at_current_query_bounds']} | "
-            f"{req['minimum_hardening_bytes']} | "
-            f"{req['resulting_total_bits_with_byte_hardening']} |"
+            f"{req['additional_algebraic_bits_needed']} | "
+            f"{req['additional_total_bits_needed']} | "
+            f"{req['additional_hardening_bytes_if_algebraic_unchanged']} |"
         )
     lines.extend(["", "## Next Steps", ""])
     lines.extend(f"- {item}" for item in payload["next_steps"])

@@ -1,5 +1,9 @@
 # Implementation Plan: Patent, Licensing, and Commercialization Track
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This is a legal/commercialization checklist, not the top-level project
+> implementation tracker. Top-level project status lives in `../TRACKER.md`.
+
 Status: active checklist
 Date: 2026-05-22
 
@@ -84,8 +88,8 @@ what should be protected before further publication.
 - [ ] Inventory `tools/production-reference/`
 - [ ] Inventory `tools/parameter-search/`
 - [ ] Inventory `scripts/research/`
-- [ ] Inventory public-facing documentation such as `research_program.md` and
-      `lean_proof_plan.md`
+- [ ] Inventory current public-facing documentation and any retired pre-pivot
+      docs still visible through git history or prior publication
 - [ ] Record which artifacts are already public in git history
 - [ ] Record which artifacts are local-only or unpublished
 
@@ -715,4 +719,3 @@ Any deployment where failure creates substantial financial, legal, safety,
 national-security, or infrastructure risk. Examples include banking, payment
 networks, CA infrastructure, government identity, HSMs, secure elements,
 hardware wallets, and consensus-critical blockchain validation.
-

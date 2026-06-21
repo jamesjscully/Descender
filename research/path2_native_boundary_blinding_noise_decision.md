@@ -1,5 +1,9 @@
 # Path 2 Native Boundary Blinding/Noise Decision
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting blinding/noise decision note, not an ADR and not binding
+> project authority by itself. Binding decisions live in `../decisions/`.
+
 Status: blocker decision pinned.
 
 Purpose: decide whether a bounded public blinding/noise policy can rescue the

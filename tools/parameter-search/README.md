@@ -1,5 +1,11 @@
 # Descender Rust Parameter Search
 
+Status: ACTIVE_RESEARCH
+
+This package is a parameter-search and checked-core evidence engine. Generated
+rows and reports are research evidence until imported by `../../spec/README.md`,
+ADRs, or `../../TRACKER.md`.
+
 This is the high-throughput concrete-parameter search engine.  It implements
 the same coarse filters and output schema as the Python reference harness in
 `scripts/parameter_search`, but is intended to become the primary engine for
@@ -10,6 +16,14 @@ large grids and exact finite-field diagnostics.
 ```bash
 cargo build --release --manifest-path tools/parameter-search/Cargo.toml
 ```
+
+## Test Fixtures
+
+`testdata/q12289_conformance_vectors.json` is a retained legacy conformance
+fixture for the historical implicit-commitment verifier tests. It is not a
+current product target or review package; it exists so the legacy verifier can
+detect byte-level drift while the active authority remains in `../../spec/`,
+ADRs, and `../../TRACKER.md`.
 
 ## Run
 

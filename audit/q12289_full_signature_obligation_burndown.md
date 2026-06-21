@@ -1,5 +1,11 @@
 # q12289 Full Signature Obligation Burn-Down
 
+> MIGRATION STATUS: `ACTIVE_RESEARCH`.
+> This q12289 burn-down is retained research evidence and reference/fallback
+> proof structure, not the current deployable target or top-level tracker.
+> Current authority lives in
+> `spec/README.md`, ADRs, and `TRACKER.md`.
+
 Date: 2026-06-01
 
 Scope: non-active q12289 checked-systematic reference/fallback path after

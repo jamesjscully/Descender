@@ -1,5 +1,9 @@
 # Path 2 Native Projection Preimage Encoders V1
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting byte-encoder spec note, not a normative spec. Current
+> normative authority starts at `../spec/README.md`.
+
 Status: implementation-facing byte specification.
 
 Purpose: define the canonical public byte preimages for:

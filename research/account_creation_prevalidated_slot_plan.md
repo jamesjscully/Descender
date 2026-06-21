@@ -1,5 +1,10 @@
 # Account-Creation Prevalidated Slot Plan
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This remains supporting material for the Path 2 design, but the active product
+> authority is now `spec/README.md`, the append-only ADRs in `decisions/`, and
+> the consolidated `TRACKER.md`.
+
 Status: planning-stage selected path.
 
 ## Selected Direction
@@ -10,7 +15,7 @@ transaction then proves authorization to consume a live prevalidated slot plus
 checked-core message binding.
 
 This replaces the prior long-term goal of extracting a full hidden-source
-opening from each `308 B/Fq12` spend transcript. The 308-byte candidate remains
+opening from each legacy projection-carrier spend transcript. That candidate remains
 the executable baseline and negative-control source while the protocol moves
 toward a state-backed authorization model.
 

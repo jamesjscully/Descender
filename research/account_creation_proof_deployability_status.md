@@ -1,5 +1,12 @@
 # Account-Creation Proof — Deployability Status (2026-06-18)
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This is a historical red-team status note from the Plonky3 re-host phase. Some
+> findings remain important, while some measurements and tracker statements have
+> been superseded. This is not top-level status; use `spec/README.md`,
+> `spec/security_model.md`, and `TRACKER.md` for current status before citing
+> readiness, sizes, or security levels.
+
 Consolidated status of the account-creation hidden-source proof after the Plonky3
 re-host. Honest about what is done, what remains, and what is irreducibly
 external. Numbers are MEASURED unless marked.

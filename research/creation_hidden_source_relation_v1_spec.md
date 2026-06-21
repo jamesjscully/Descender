@@ -1,5 +1,9 @@
 # CreationHiddenSourceRelationV1 Spec
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting relation spec note, not a normative spec. Current
+> normative authority starts at `../spec/README.md`.
+
 Status: proof relation specification for Path 2 account creation.
 
 `CreationHiddenSourceRelationV1` is the relation checked by the selected

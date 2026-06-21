@@ -8883,7 +8883,7 @@ mod tests {
         );
         assert_eq!(
             report.fiat_shamir_frame_certificate.sample_challenge_hex,
-            "96c59f06d3e185e055df12c152791047fe0becf560c32f3849286d4544d4b1"
+            "61aacb5579ff82cfaaa66e0323e8c907333034122cb43397ae5a54c229979d"
         );
         assert!(
             report

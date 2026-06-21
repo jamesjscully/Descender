@@ -278,16 +278,16 @@ def assumption_rows() -> list[dict[str, Any]]:
                 "domain": (qrom_memo or {}).get("challenge_frame", {}).get("domain"),
                 "challenge_bytes": (qrom_memo or {})
                 .get("challenge_derivation", {})
-                .get("output_bytes_taken", 21),
+                .get("output_bytes_taken", 31),
                 "algebraic_challenge_bits": (qrom_memo or {})
                 .get("challenge_derivation", {})
-                .get("algebraic_challenge_bits", 130),
+                .get("algebraic_challenge_bits", 182),
                 "hardening_bits": (qrom_memo or {})
                 .get("challenge_derivation", {})
-                .get("hardening_bits", 32),
+                .get("hardening_bits", 64),
                 "total_challenge_bits": (qrom_memo or {})
                 .get("challenge_derivation", {})
-                .get("total_transcript_challenge_bits", 162),
+                .get("total_transcript_challenge_bits", 246),
                 "deployment_quantum_hash_query_bound_log2": (qrom_memo or {})
                 .get("query_budget", {})
                 .get("deployment_quantum_hash_query_bound_log2"),

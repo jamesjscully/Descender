@@ -3,7 +3,7 @@
 //! Proves N INDEPENDENT account-creation instances (N distinct random secret
 //! sets) in ONE Plonky3 proof, reusing `FullRelationAir` (one instance per trace
 //! row — the layout is single-row-per-instance, so N instances = N rows) under
-//! the SAME PRODUCTION config as `prod_bench.rs`: PINNED vetted KoalaBear
+//! the same historical benchmark config as `prod_bench.rs`: PINNED vetted KoalaBear
 //! Poseidon2 constants, ~128-bit FRI (log_blowup=2, 56 queries, 16-bit PoW), ZK
 //! ON (HidingFriPcs + salted Poseidon2-Merkle).
 //!
@@ -53,7 +53,7 @@
 //!   exposing the chained digest as the public value via two-row transition
 //!   constraints — uni-stark supports the window) is the next step if
 //!   per-row-position binding is required; it is noted, not implemented here, to
-//!   keep the measurement on the production single-row AIR. This is BATCHING
+//!   keep the measurement on the single-row benchmark AIR. This is BATCHING
 //!   (instances proven TOGETHER), not recursion of separately-made proofs.
 
 use std::time::Instant;
@@ -86,7 +86,7 @@ use crate::full_air::{
 
 const WIDTH: usize = 16;
 
-// ---- PINNED PRODUCTION FRI CONFIG (~128-bit conjectured), identical to prod_bench ----
+// ---- PINNED BENCHMARK FRI CONFIG (~128-bit conjectured), identical to prod_bench ----
 const PROD_LOG_BLOWUP: usize = 2;
 const PROD_NUM_QUERIES: usize = 56;
 const PROD_QUERY_POW_BITS: usize = 16;

@@ -3,7 +3,9 @@
 
 The probe is intentionally small and byte-level: it replays the recorded
 challenge-frame spec, mutates the frame ordering/labels/data, and expands the
-single-target query ledger into a multi-target ledger.
+single-target query ledger into a multi-target ledger. If the active challenge
+primitive is Poseidon2, the per-mutation challenge bytes below are SHA-256 shape
+canaries only; they are not active challenge values.
 """
 
 from __future__ import annotations
@@ -226,6 +228,12 @@ def build_payload() -> dict[str, Any]:
     memo = load_json(QROM_MEMO)
     review = load_json(QROM_REVIEW)
     source = PRODUCTION_REFERENCE_LIB.read_text()
+    active_challenge_hash = memo["challenge_derivation"].get("hash", "SHA-256")
+    challenge_value_model = (
+        "active_sha256_challenge"
+        if active_challenge_hash == "SHA-256"
+        else "sha256_frame_mutation_canary_not_active_challenge"
+    )
 
     required_labels = [field["label"] for field in memo["challenge_frame"]["fields"]]
     required_lengths: dict[str, int | None] = {
@@ -283,6 +291,7 @@ def build_payload() -> dict[str, Any]:
             {
                 "case": case["case"],
                 "description": case["description"],
+                "challenge_value_model": challenge_value_model,
                 "frame_bytes": len(case["frame"]),
                 "frame_sha256": frame_sha256,
                 "challenge_hex": challenge.hex(),
@@ -356,7 +365,7 @@ def build_payload() -> dict[str, Any]:
     target_bits = int(memo["query_budget"]["target_security_bits"])
     q_quantum_log2 = int(memo["query_budget"]["deployment_quantum_hash_query_bound_log2"])
     q_classical_log2 = int(memo["query_budget"]["deployment_classical_hash_query_bound_log2"])
-    target_exponents = [0, 1, 2, 4, 8, 16, 24, 32]
+    target_exponents = [0, 1, 2, 4, 8, 16, 24, 32, 48, 54, 55, 64]
     multi_target_terms = []
     for target_log2 in target_exponents:
         quantum_bits = total_bits - 2 * q_quantum_log2 - target_log2
@@ -404,6 +413,8 @@ def build_payload() -> dict[str, Any]:
         "frame_spec": {
             "encoding": memo["challenge_frame"]["encoding"],
             "required_labels_in_order": required_labels,
+            "active_challenge_hash": active_challenge_hash,
+            "challenge_value_model": challenge_value_model,
             "required_public_byte_fields": [
                 {
                     "label": field["label"],
@@ -423,6 +434,7 @@ def build_payload() -> dict[str, Any]:
         "canonical_probe": {
             "frame_bytes": len(canonical_frame),
             "frame_sha256": hashlib.sha256(canonical_frame).hexdigest(),
+            "challenge_value_model": challenge_value_model,
             "challenge_hex": canonical_challenge.hex(),
             "spec_accepts_frame_shape": canonical_ok,
             "spec_errors": canonical_errors,
@@ -439,9 +451,9 @@ def build_payload() -> dict[str, Any]:
                 item["target_count_log2"] for item in multi_target_terms if item["meets_128"]
             ),
             "interpretation": (
-                "The recorded deployment ledger has single-target margin. A union over more "
-                "than 2 transcript targets must be charged by another budget term or tighter "
-                "query bound before claiming 128-bit security."
+                "The table applies the recorded byte/mask transcript budget to a target-count "
+                "union. It is arithmetic support for review, not a proof of the active "
+                "Poseidon2 challenge sponge."
             ),
         },
         "status": status,
@@ -449,6 +461,7 @@ def build_payload() -> dict[str, Any]:
             "Confirm the production verifier never routes deployed proof signatures through the legacy no-proof-commitment frame.",
             "Decide how many concurrent public keys/messages/accounts are covered by the final theorem statement.",
             "Review whether the QROM measure-and-reprogram theorem charges the same multi-target term modeled here.",
+            "Replace the SHA-256 mutation canary with an executable Poseidon2 oracle if challenge-byte equality, rather than frame-shape drift, becomes part of this probe's claim.",
         ],
     }
 
@@ -474,6 +487,8 @@ def markdown(payload: dict[str, Any]) -> str:
             "## Required Frame",
             "",
             f"- encoding: `{frame['encoding']}`",
+            f"- active challenge hash: `{frame['active_challenge_hash']}`",
+            f"- challenge value model: `{frame['challenge_value_model']}`",
             f"- required order: `{' -> '.join(frame['required_labels_in_order'])}`",
             f"- proof commitment: `{frame['proof_commitment_binding']['field']}` "
             f"({frame['proof_commitment_binding']['bytes']} bytes)",
@@ -495,12 +510,13 @@ def markdown(payload: dict[str, Any]) -> str:
             "",
             f"- frame bytes: `{canonical['frame_bytes']}`",
             f"- frame sha256: `{canonical['frame_sha256']}`",
-            f"- challenge: `{canonical['challenge_hex']}`",
+            f"- probe challenge canary: `{canonical['challenge_hex']}`",
+            f"- challenge value model: `{canonical['challenge_value_model']}`",
             f"- shape accepted by recorded spec: `{canonical['spec_accepts_frame_shape']}`",
             "",
             "## Mutation Probe",
             "",
-            "| case | shape accepted? | same challenge? | result |",
+            "| case | shape accepted? | same probe challenge? | result |",
             "|---|:---:|:---:|---|",
         ]
     )

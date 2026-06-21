@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 WS3-c: guard against constant drift between the concrete-security estimator
-(scripts/research/cryptanalysis_concrete_security_estimate.py) and the deployed
+(scripts/research/cryptanalysis_concrete_security_estimate.py) and the current
 Rust reference (tools/parameter-search/src/production_reference.rs).
 
 This is the same bug class that broke the build at the start of the cryptanalysis
@@ -25,24 +25,26 @@ PAIRS = {
     "SIS_PUBLIC_ROWS": "SIS_FULL_RESPONSE_PUBLIC_ROWS",
     "RESPONSE_BOUND": "RESPONSE_BOUND",
     "REPS": "REPS",
+    "ALGEBRAIC_CHALLENGE_BYTES": "ALGEBRAIC_CHALLENGE_BYTES",
     "CHALLENGE_HARDENING_BYTES": "CHALLENGE_HARDENING_BYTES",
 }
 # estimator var name : rust const name, direct literal equality
 RUST_DIRECT = {
     "ACTION_RESIDUES": "REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS",
+    "ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK": "ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK",
 }
 
 def rust_const(name: str) -> int:
-    m = re.search(rf"pub const {name}\b[^=]*=\s*([0-9_]+)", RUST.read_text())
+    m = re.search(rf"pub const {name}\b[^=]*=\s*(0x[0-9a-fA-F_]+|[0-9_]+)", RUST.read_text())
     if not m:
         raise SystemExit(f"FAIL: rust const {name} not found in {RUST}")
-    return int(m.group(1).replace("_", ""))
+    return int(m.group(1).replace("_", ""), 0)
 
 def py_const(name: str) -> int:
-    m = re.search(rf"^{name}\s*=\s*([0-9_]+)", EST.read_text(), re.M)
+    m = re.search(rf"^{name}\s*=\s*(0x[0-9a-fA-F_]+|[0-9_]+)", EST.read_text(), re.M)
     if not m:
         raise SystemExit(f"FAIL: estimator const {name} not found in {EST}")
-    return int(m.group(1).replace("_", ""))
+    return int(m.group(1).replace("_", ""), 0)
 
 def main() -> int:
     ok = True
@@ -66,10 +68,27 @@ def main() -> int:
     if derived != rust_kernel_bound:
         ok = False
     print(f"[{status}] 2*RESPONSE_BOUND={derived}  vs rust RESPONSE_LINK_BOUNDED_KERNEL_BOUND={rust_kernel_bound}")
+    algebraic_bits = (py_const("ALGEBRAIC_CHALLENGE_BYTES") - 1) * 8 + py_const(
+        "ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK"
+    ).bit_count()
+    py_algebraic_bits = py_const("ALGEBRAIC_CHALLENGE_ENTROPY_BITS")
+    status = "OK " if algebraic_bits == py_algebraic_bits else "MISMATCH"
+    if algebraic_bits != py_algebraic_bits:
+        ok = False
+    print(
+        f"[{status}] algebraic challenge bits={py_algebraic_bits}  "
+        f"vs derived bytes/mask={algebraic_bits}"
+    )
+    total_bits = py_algebraic_bits + 8 * py_const("CHALLENGE_HARDENING_BYTES")
+    py_total_bits = py_const("CHALLENGE_ENTROPY_BITS")
+    status = "OK " if total_bits == py_total_bits else "MISMATCH"
+    if total_bits != py_total_bits:
+        ok = False
+    print(f"[{status}] challenge entropy bits={py_total_bits}  vs derived total={total_bits}")
     if not ok:
         print("FAIL: estimator constants drifted from production_reference.rs")
         return 1
-    print("OK: estimator constants match the deployed Rust reference.")
+    print("OK: estimator constants match the current Rust reference.")
     return 0
 
 if __name__ == "__main__":

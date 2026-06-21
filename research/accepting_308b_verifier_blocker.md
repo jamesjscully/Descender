@@ -1,12 +1,19 @@
-# Accepting 308 B Verifier Blocker
+# Legacy 308 B Verifier Blocker Negative Control
 
-This note records why the selected 308-byte verifier must remain fail-closed.
-It also records the current disposition of the formerly blocking inactive
-projection survivor.
+> MIGRATION STATUS (2026-06-20): `NEGATIVE_CONTROL`.
+> This file records why the old 308-byte projection-carrier verifier could not
+> become the product acceptance path. Keep it as attack/negative-control history;
+> current authority is `../spec/README.md`, `../decisions/ADR-0005-archive-legacy-projection-carrier-product-target.md`,
+> and `../TRACKER.md`.
 
-## Current State
+This note records why the historical 308-byte projection-carrier verifier had to
+remain fail-closed. It also records the disposition of the formerly blocking
+inactive projection survivor. It is retained as negative-control evidence, not as
+a live implementation plan or current product target.
 
-The selected target is the `308 B/Fq12` projection-carrier envelope:
+## Historical Verifier Shape
+
+The old reviewed verifier shape was the `308 B/Fq12` projection-carrier envelope:
 
 ```text
 reviewed_fq12_account_carried_signature[252]
@@ -23,8 +30,8 @@ The executable boundary has the main parser/exporter components:
 - account commitment split check or export;
 - pad PRF projection check or export.
 
-Those are necessary verifier/exporter controls, but they do not prove that the
-selected projection relation is strong enough to accept.
+Those were necessary verifier/exporter controls, but they did not prove that the
+historical projection relation was strong enough to accept.
 
 ## Historical Blocking Survivor
 
@@ -45,11 +52,16 @@ This means the old rows allow an inactive hidden-source projection coordinate to
 move without changing the checked-core response difference, serialized public
 carrier lanes, or check bytes.
 
-## Current Disposition
+## Current Disposition Of This Evidence
 
-The selected path is now the twelve-lane active relation exposed by the
-56-byte projection carrier, not the old 64-variable generalized projection
-relation. The active-subspace replay classifies the old survivor as
+The active product path is the Poseidon2/Plonky3 Path 2 authority chain in
+`../spec/README.md` and `../TRACKER.md`, not this projection-carrier envelope.
+This note remains only to explain the fail-closed negative control and the old
+survivor.
+
+In the old projection-carrier remediation line, the twelve-lane relation exposed
+by the 56-byte projection carrier replaced the old 64-variable generalized
+projection relation. The active-subspace replay classifies the old survivor as
 `invalid_for_active_subspace_relation`:
 
 ```text
@@ -59,26 +71,24 @@ active projection nullity: 0
 open replay rows: 0
 ```
 
-That removes this specific inactive-coordinate survivor from the selected
-active-lane relation. It does not by itself make the deployment verifier
+That removed this specific inactive-coordinate survivor from the active-lane
+relation in that historical line. It did not make the deployment verifier
 accepting.
 
 ## Consequence
 
-An accepting verifier built on the old 64-variable rows would be
+An accepting verifier built on the old 64-variable rows would have been
 underconstrained. The deployment verifier must not be changed from fail-closed
-to accepting until the active-lane relation is the only deployment-facing
-relation and the remaining account-witness opening, soundness, and
-zero-knowledge proof obligations close.
+to accepting unless the current spec spine and `TRACKER.md` record the active
+relation, account-witness opening, soundness, and zero-knowledge proof
+obligations as closed.
 
-## Immediate Work Item
+## Retained Evidence Role
 
-The next security-critical implementation task is not to flip the verifier to
-accept. It is to promote the active-lane relation through production preflight,
-the theorem surface, and Rust verifier naming, then continue with the remaining
-hidden-source semantic checks. The executable statement, pad-seed, and
-transcript-binding pieces are now credited in the partial acceptance contract;
-they are not enough to make the proof deployable.
+This file does not own live work. The retained value is the negative-control
+lesson: projection-carrier verifier code must remain fail-closed unless the
+current authority chain has a complete proof relation and regression evidence.
+The owning tracker rows are `PROC-ARCHIVE-007` and `PROC-LEGACY-GATE-001`.
 
 ## Source Artifacts
 

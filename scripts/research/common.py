@@ -12,6 +12,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
+from pivot_guard import task_pivot_alignment_reason
+
 
 ROOT = Path(os.environ.get("ARMATURE_WORKSPACE_ROOT", Path(__file__).resolve().parents[2]))
 RESEARCH = ROOT / "research"
@@ -110,6 +112,18 @@ def import_queue_files() -> list[str]:
                     continue
                 task_id = slug(item.get("id") or item.get("title") or path.stem)
                 if task_id in existing:
+                    continue
+                aligned, reason = task_pivot_alignment_reason(item)
+                if not aligned:
+                    append_jsonl(EVENTS_PATH, {
+                        "at": utc_now(),
+                        "event_type": "descender.queue.skipped",
+                        "payload": {
+                            "task_id": task_id,
+                            "queue_file": str(path.relative_to(ROOT)),
+                            "reason": reason,
+                        },
+                    })
                     continue
                 now = utc_now()
                 task = {

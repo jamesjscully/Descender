@@ -1,5 +1,10 @@
 # BUILD RESULT — Real Public Creation-Proof Verifier (GAP A / #22 / #4 prevalidationDataAvailability)
 
+> MIGRATION STATUS: `NEGATIVE_CONTROL`.
+> This is a historical build record for a public masked-state18 verifier that is
+> now hard-gated for leaking `pad_seed`. Keep it as fail-closed evidence, not as
+> a current deployable verifier claim.
+
 **Date:** 2026-06-10 · **n=32, q=12289, Fq12**
 **Status update (2026-06-11):** HISTORICAL / SUPERSEDED. The masked-state18 public verifier was
 hard-gated after HIGH-2 confirmed that `Path2MaskedState18CreationProofV1` serializes `pad_seed` in

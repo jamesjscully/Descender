@@ -1,6 +1,10 @@
 # Path 2 Native Solution Search Todo Tracker
 
-Status: active todo tracker.
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This remains a detailed research todo list for native Path 2 design search.
+> It is subordinate to the consolidated top-level tracker in `../TRACKER.md`.
+
+Detail status: supporting research todo list, subordinate to `../TRACKER.md`.
 
 Purpose: drive the search for a concrete native account-creation design using
 the high-level descent/geometric strategy. This tracker is for internal proof

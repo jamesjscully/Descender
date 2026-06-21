@@ -1,9 +1,14 @@
 # Authoritative Assumption Ledger (WS1)
 
-Created: 2026-06-09. Owner doc for WS1 of
-`cryptanalysis_first_master_tracker.md`. Built from **direct reading of the Lean
-source**, not from summaries. Supersedes the scattered ledgers listed in the
-master tracker §7 (those become historical inputs).
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This ledger is useful cryptanalysis history, but its "authoritative" role was
+> scoped to the WS1 campaign. Current assumptions and non-claims live in
+> `../../spec/security_model.md`; top-level work status lives in `../../TRACKER.md`.
+
+Created: 2026-06-09 as the WS1 assumption-ledger artifact for the retired
+cryptanalysis-readiness campaign. Built from **direct reading of the Lean
+source**, not from summaries. Current assumption authority lives in
+`../../spec/security_model.md`; current work ownership lives in `../../TRACKER.md`.
 
 Each entry: what it unfolds to (ground truth), exact location, concrete
 parameters, honest classification, and WS2 reduction status + next action.

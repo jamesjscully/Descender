@@ -1,7 +1,10 @@
-//! PRODUCTION (deployable) configuration of the FULL account-creation relation
-//! ZK-STARK.
+//! Historical `prod_bench` research benchmark for the full account-creation
+//! relation ZK-STARK.
 //!
-//! `zk_full_bench.rs` proved ZK works, but its numbers were NOT deployable for
+//! This file name is historical. It is benchmark evidence, not product
+//! authority; current authority starts in `spec/`, ADRs, and `TRACKER.md`.
+//!
+//! `zk_full_bench.rs` proved ZK works, but its numbers were not viable for
 //! two reasons that this module fixes:
 //!
 //!   1. RANDOM round constants per run (seeded `SmallRng`) — not a vetted hash.
@@ -77,7 +80,7 @@ use crate::full_air::{
 
 const WIDTH: usize = 16;
 
-// ---- PINNED PRODUCTION FRI CONFIG (~128-bit conjectured) ----
+// ---- PINNED BENCHMARK FRI CONFIG (~128-bit conjectured) ----
 // ZK requires log_blowup >= 2 (ethSTARK quotient randomizer / doubled domain).
 const PROD_LOG_BLOWUP: usize = 2;
 // Conjectured FRI soundness (list-decoding / proximity-gap regime):

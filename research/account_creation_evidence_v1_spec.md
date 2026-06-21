@@ -1,5 +1,9 @@
 # AccountCreationEvidenceV1 Spec
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting interface spec note, not a normative spec. Current
+> normative authority starts at `../spec/README.md`.
+
 Status: proof-interface specification for Path 2.
 
 This document defines the creation-time evidence object consumed by

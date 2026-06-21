@@ -1,12 +1,14 @@
 # HAX-SPIKE — target function + obligation (paper-spike)
 
-Per `../VERIFICATION_PLAN.md` Phase 1: run `hax` on ONE self-contained Rust
+> PACKAGE CONTEXT (2026-06-20): This is the historical spike input for
+> `SPIKE_VERDICT.md`. The extraction was later run on the isolated
+> `spike_core/` crate, so use `SPIKE_VERDICT.md` for measured status. Current
+> authority starts at `../../spec/README.md`, ADRs, and `../../TRACKER.md`.
+
+Run `hax` on ONE self-contained Rust
 verifier function, extract to F\*, judge whether the obligation is tractable.
-This file names the function and the exact obligation. **No extraction has been
-run** — `cargo hax` reports `no such command` on this box (hax is not installed;
-see `INSTALL.md`). Note: `fstar.exe` (F\* 2026.03.24) *is* present in
-`/home/jack/.nix-profile/bin`, so the spike is blocked only on the hax extractor,
-not on the F\* checker.
+This file names the function and the exact obligation. It is no longer the
+measured status log.
 
 ## The named target
 
@@ -106,5 +108,7 @@ Concretely the F\* proof must discharge:
 
 ## Status
 
-**PREPARED, BLOCKED ON TOOL INSTALL.** Target named, obligation written, callees
-mapped. `hax` is not installed (`INSTALL.md`); nothing extracted or checked.
+**COMPLETED AS A SPIKE INPUT.** Target named, obligation written, callees mapped.
+The later measured result is `SPIKE_VERDICT.md`: extraction succeeded on the
+isolated `spike_core/` crate and remains blocked only on proof-library/toolchain
+cleanup before real F\* lemmas can replace source-inspection gates.

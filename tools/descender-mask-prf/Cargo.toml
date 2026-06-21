@@ -2,11 +2,11 @@
 name = "descender-mask-prf"
 version = "0.1.0"
 edition = "2021"
-description = "Standalone (NO Plonky3) projection-mask PRF for the deployed signer: a from-scratch KoalaBear field + width-16 Poseidon2 permutation pinned BYTE-IDENTICAL to Plonky3's default_koalabear_poseidon2_16, plus the (pad_seed‖slot) sponge + wide-then-reduce q12289 mask derivation matching the account-creation STARK proof exactly. Proven equivalent to the in-proof derivation by a separate dev test (see ../descender-account-stark/tests/mask_prf_equivalence.rs). The signer can depend on THIS crate without pulling in Plonky3, and the equivalence KATs guarantee the deployed-signer PRF and the in-proof PRF can never drift."
+description = "Signer-side no-Plonky3 projection-mask PRF: a from-scratch KoalaBear field plus width-16 Poseidon2 permutation pinned byte-identical to Plonky3's default_koalabear_poseidon2_16, with the pad_seed/slot sponge and q12289 mask derivation matching the account-creation STARK proof. Equivalence KATs prevent signer-side and in-proof PRF drift."
 
 # ---------------------------------------------------------------------------
 # DELIBERATELY EMPTY: this crate has NO p3-* / Plonky3 dependency. That is the
-# whole point — the deployed signer (parameter-search) must stay Plonky3-free.
+# whole point: signer-side parameter-search builds must stay Plonky3-free.
 # ---------------------------------------------------------------------------
 [dependencies]
 

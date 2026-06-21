@@ -2,6 +2,7 @@
 name = "descender-production-reference"
 version = "0.1.0"
 edition = "2024"
+description = "Legacy fail-closed production-shaped regression baseline; not active product authority for the chain-native Path 2 protocol."
 
 [dependencies]
 descender-parameter-search = { path = "../parameter-search" }

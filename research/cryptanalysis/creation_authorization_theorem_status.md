@@ -1,5 +1,11 @@
 # Creation-Authorization Theorem Status
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This is an older theorem-status snapshot with useful evidence and explicit
+> supersession notes. It is not top-level status; current top-level status
+> belongs in `TRACKER.md` and the active security claim shape in
+> `spec/security_model.md`.
+
 > **SUPERSEDED (2026-06-10) — see `SECURITY_DOSSIER.md` for the authoritative state.**
 > Early-2026-06-10 snapshot. Since written: the 3 binding breaks were re-modeled from
 > free-birthday COLLISION-resistance to the tighter SECOND-PREIMAGE resistance (GAP C,

@@ -2205,7 +2205,7 @@ mod tests {
 
     fn bundle_path() -> PathBuf {
         Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("../../research/cryptanalysis/review_readiness_20260519/q12289_conformance_vectors.json")
+            .join("testdata/q12289_conformance_vectors.json")
     }
 
     #[test]

@@ -1,0 +1,10 @@
+# Descender ADR immutable-section hashes
+# Format: <sha256> <path>
+# Covers final ADR Context, Decision, and Consequences sections.
+ffbcbc5dfd0fb67f4b74d4d6414f91061bf78b38e57e30920c44068ce4b80f30 decisions/ADR-0001-pivot-to-chain-native-pq-authorization.md
+bef95271915f04134c82c9a45b17b9a5e74d27ce630e3011db96d28d3cebae40 decisions/ADR-0002-select-path2-prevalidated-slots.md
+8a3241b05016962376b83815eb95afa9277c500d1a17416935f97438a1d8483e decisions/ADR-0003-direct-mode-before-aggregation.md
+2e4e485fc6b949bb4eeabee87fa3ccd918ad7f7695c6f0a61d80f6fc8626b72d decisions/ADR-0004-poseidon2-plonky3-active-account-creation-path.md
+92f5df960b6a58f5e00b1df24e9845a8c5b5e4c3cb084a7cf9acc064f3690f8f decisions/ADR-0005-archive-legacy-projection-carrier-product-target.md
+b52ea2863c715c334a6f1db511b5f04d95d58bdbf21353400d55fe1f5ff0a61c decisions/ADR-0006-security-level-position.md
+2383cd56ac385da058696fd61ee72ed845faa2fb4d2f3caae5e3408b88420be9 decisions/ADR-0007-research-automation-follows-current-authority.md

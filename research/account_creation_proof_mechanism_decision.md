@@ -1,5 +1,9 @@
 # Account-Creation Proof Mechanism Decision
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting proof-mechanism decision note, not an ADR and not binding
+> project authority by itself. Binding decisions live in `../decisions/`.
+
 Status: selected proof mechanism for the first Path 2 theorem pass.
 
 ## Decision

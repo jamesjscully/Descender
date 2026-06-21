@@ -1,5 +1,11 @@
 # Descender External Cryptanalysis Export
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This package is external-tool export evidence. It is not the current product
+> target, a parameter decision, or a top-level security claim. Current authority
+> starts at `../../../spec/README.md`, `../../../decisions/`, and
+> `../../../TRACKER.md`.
+
 This report packages validator-passing Descender rows for external tools.
 It is not a cryptanalytic security estimate by itself.
 

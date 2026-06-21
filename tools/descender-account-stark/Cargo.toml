@@ -2,7 +2,7 @@
 name = "descender-account-stark"
 version = "0.1.0"
 edition = "2021"
-description = "Production account-creation ZK-STARK (C1∧C2∧C4∧C6 relation) on Plonky3/KoalaBear: pinned vetted Poseidon2 constants, 128-bit-conjectured ZK FRI config, single-instance + batch prove/verify with a clean library API. The Plonky3 dependency is ISOLATED to this crate."
+description = "Path 2 account-creation ZK-STARK relation on Plonky3/KoalaBear: pinned vetted Poseidon2 constants, 128-bit-conjectured ZK FRI config, single-instance and batch prove/verify with a clean library API. The Plonky3 dependency is isolated to this crate."
 
 # ---------------------------------------------------------------------------
 # Plonky3 0.6.1 (pinned). The whole Plonky3 dependency surface lives HERE and
@@ -28,7 +28,7 @@ serde = { version = "1", features = ["derive"] }
 
 [dev-dependencies]
 # Standalone (NO-Plonky3) projection-mask PRF. Used ONLY by the equivalence test
-# `tests/mask_prf_equivalence.rs` to prove the deployed-signer PRF and this proof's
+# `tests/mask_prf_equivalence.rs` to prove the signer-side PRF and this proof's
 # in-circuit PRF derive byte-identical masks (drift prevention).
 descender-mask-prf = { path = "../descender-mask-prf" }
 

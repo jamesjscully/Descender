@@ -376,6 +376,30 @@ pub struct RecursiveConfig {
     /// squeeze to the ACTUAL observed fold-round commitments. Off ⇒ blocks committed-but-unbound (the
     /// squeeze mechanics are still constrained).
     pub fs_betas_public: bool,
+    /// (FS-ood) Number of FULL-rate (RATE=8 elements) OOD opened-values OBSERVE rounds inserted
+    /// BETWEEN the zeta squeeze and the FRI batch-combination alpha squeeze. p3-uni-stark's pcs.verify
+    /// observes the ENTIRE opened-values (OOD) stream — trace OOD openings at zeta (+ g·zeta),
+    /// quotient-chunk OOD openings, and the ZK random-codeword openings — AFTER sampling zeta and
+    /// BEFORE verify_fri samples the batch-combination alpha (two_adic_pcs.rs:694 -> verify_fri:195).
+    /// When `> 0` (or `fs_ood_partial > 0`) the window carries (after the FS-αζ block, before the
+    /// FS-bca block) `fs_ood_observe_len` FULL-rate observe rounds (`block[RATE] ‖ perm[PERM_COLS]`)
+    /// plus, when `fs_ood_partial > 0`, ONE trailing PARTIAL round; the bca squeeze (and, with no bca,
+    /// the first beta round) then continues from the POST-OOD-observe state instead of the post-zeta
+    /// state. `0` (with `fs_ood_partial == 0`) ⇒ the legacy "no observe between zeta and bca" model
+    /// (which is WRONG for a real p3 proof — the OOD stream IS observed there). Requires
+    /// `fs_alpha_zeta`. Native-PINned by [`tests::fs_ood_observe_matches_native_duplex_challenger`].
+    pub fs_ood_observe_len: usize,
+    /// (FS-ood-partial) Number of rate lanes `n` (`0..RATE`) in the TRAILING PARTIAL absorb round of
+    /// the OOD opened-values observe stream. The real OOD stream length `L` is generally NOT a multiple
+    /// of RATE: the native challenger buffers the leftover `n = L mod RATE` observed elements and the
+    /// FRACTIONAL block is absorbed by the FIRST `sample()` after the stream (the FRI verifier's
+    /// batch-combination alpha draw) — a PARTIAL duplexing of `n` lanes (rate lanes `[0..n]`
+    /// overwritten, `[n..RATE]` zeroed, capacity slot `+= n`, per `challenger::duplexing`), NOT a
+    /// full-rate absorb. When `> 0` the window carries ONE extra (FS-ood) round whose absorb is
+    /// `n`-lane (not RATE), appended AFTER the `fs_ood_observe_len` full rounds; the bca / beta-chain
+    /// start state is THIS partial-absorb permute output. `0` ⇒ no trailing partial. Requires
+    /// `fs_alpha_zeta`.
+    pub fs_ood_partial: usize,
     /// (FS-bca) model the FRI BATCH-COMBINATION alpha (p3-fri-0.6.1 verifier.rs:195): the
     /// `sample_algebra_element()` taken AFTER zeta and BEFORE the first commit-phase observe, with NO
     /// observe in between. Because zeta drained the output buffer, this sample triggers a SQUEEZE-ONLY
@@ -629,6 +653,8 @@ impl RecursiveConfig {
             fs_blocks_public: false,
             fs_beta_rounds: 0,
             fs_betas_public: false,
+            fs_ood_observe_len: 0,
+            fs_ood_partial: 0,
             fs_batch_combo_alpha: false,
             fs_final_blocks: 0,
             fs_final_blocks_public: false,
@@ -917,20 +943,96 @@ fn fs_size(cfg: &RecursiveConfig) -> usize {
     }
 }
 
+// ----- (FS-ood) OOD opened-values OBSERVE block -----
+//
+// Appended AFTER the (FS-αζ) block, BEFORE the (FS-bca) block. p3-uni-stark verifier observes the
+// FULL opened-values (OOD) stream — trace OOD openings at zeta (+ g·zeta), quotient-chunk OOD
+// openings, and the ZK random-codeword openings — AFTER sampling zeta and BEFORE the PCS/FRI verify
+// samples the batch-combination alpha (two_adic_pcs.rs:694 -> verify_fri:195). So the duplex sponge
+// ABSORBS that entire stream between the zeta squeeze and the bca squeeze. Per OOD observe round
+// `r = 0..fq_ood_total_rounds`:
+//   block[RATE] ‖ perm[PERM_COLS]
+// `block` is a RATE-chunk of the OOD stream; rounds `0..fs_ood_observe_len` are FULL-rate absorbs
+// (`n == RATE`). When `fs_ood_partial > 0` ONE extra TRAILING round (index `fs_ood_observe_len`) is a
+// PARTIAL absorb of `fs_ood_partial` lanes (`n < RATE`): the FRACTIONAL leftover of the non-RATE-
+// aligned OOD stream, duplexed by the FRI verifier's first `sample()` (the bca draw). `perm`'s input
+// is absorb(state_r, block, n_r) where state_0 is the post-zeta state (the quotient-observe round's
+// perm output; sampling zeta is non-mutating) and state_{r+1} is round r's perm output. The post-OOD-
+// observe state (the LAST round's perm output) is the SQUEEZE source for the batch-combination alpha
+// (the FS-bca block continues from THIS state, not the post-zeta state). When `fs_ood_observe_len == 0`
+// AND `fs_ood_partial == 0` the block is absent and the bca/betas continue straight from post-zeta
+// (the legacy "no observe between zeta and bca" model).
+const FOOD_BLOCK: usize = 0;
+const FOOD_PERM: usize = FOOD_BLOCK + RATE;
+const FOOD_ROUND: usize = FOOD_PERM + PERM_COLS;
+
+/// Base of the (FS-ood) block (after the FS-αζ block).
+fn food_base(cfg: &RecursiveConfig) -> usize {
+    fs_base(cfg) + fs_size(cfg)
+}
+
+/// Sub-offset of (FS-ood) round `r` within the window.
+#[allow(dead_code)]
+fn food_round_base(cfg: &RecursiveConfig, r: usize) -> usize {
+    food_base(cfg) + r * FOOD_ROUND
+}
+
+/// Total (FS-ood) absorb-permute rounds: `fs_ood_observe_len` FULL-rate rounds plus ONE trailing
+/// PARTIAL round when `fs_ood_partial > 0`. The LAST round's perm output is the bca squeeze source.
+fn food_total_rounds(cfg: &RecursiveConfig) -> usize {
+    cfg.fs_ood_observe_len + usize::from(cfg.fs_ood_partial > 0)
+}
+
+/// Absorb lane count `n` of (FS-ood) round `r`: `RATE` for the full rounds, `fs_ood_partial` for the
+/// trailing partial round.
+#[allow(dead_code)]
+fn food_round_n(cfg: &RecursiveConfig, r: usize) -> usize {
+    if cfg.fs_ood_partial > 0 && r == cfg.fs_ood_observe_len {
+        cfg.fs_ood_partial
+    } else {
+        RATE
+    }
+}
+
+/// Whether the (FS-ood) OOD observe block is present (any full or partial round).
+#[allow(dead_code)]
+fn food_present(cfg: &RecursiveConfig) -> bool {
+    food_total_rounds(cfg) > 0
+}
+
+/// Size of the (FS-ood) block: `food_total_rounds` rounds.
+fn food_size(cfg: &RecursiveConfig) -> usize {
+    food_total_rounds(cfg) * FOOD_ROUND
+}
+
+/// Column base of the C_OUTPUT slot of the perm whose output is the SQUEEZE SOURCE for the FRI
+/// batch-combination alpha (and, when no bca, the first beta round's start state). This is the
+/// post-OOD-observe state when the (FS-ood) block is present (the LAST OOD round's perm output), else
+/// the post-zeta state (the quotient-observe round's perm output; sampling zeta is non-mutating).
+#[allow(dead_code)]
+fn pre_bca_state_out_base(cfg: &RecursiveConfig) -> usize {
+    if food_present(cfg) {
+        food_round_base(cfg, food_total_rounds(cfg) - 1) + FOOD_PERM + C_OUTPUT
+    } else {
+        fs_quot_round_base(cfg) + FS_PERM + C_OUTPUT
+    }
+}
+
 // ----- (FS-bca) FRI batch-combination alpha squeeze block -----
 //
-// Appended AFTER the (FS-αζ) block, BEFORE the (FS-β) block. A SINGLE squeeze-only permute (n == 0):
+// Appended AFTER the (FS-ood) block, BEFORE the (FS-β) block. A SINGLE squeeze-only permute (n == 0):
 //   perm[PERM_COLS] ‖ alpha[D]
-// `perm`'s input is the post-zeta state UNCHANGED (no rate overwrite, no length tag — a squeeze, not
-// an absorb); alpha is the LIFO squeeze of `perm`'s output rate. The (FS-β) beta chain's state_0 is
-// THIS perm output (not the post-zeta state) — the draw-count shift.
+// `perm`'s input is the post-OOD-observe state UNCHANGED (no rate overwrite, no length tag — a
+// squeeze, not an absorb); when no OOD observe is configured this is the post-zeta state. alpha is the
+// LIFO squeeze of `perm`'s output rate. The (FS-β) beta chain's state_0 is THIS perm output — the
+// draw-count shift.
 const BCA_PERM: usize = 0;
 const BCA_ALPHA: usize = BCA_PERM + PERM_COLS;
 const BCA_SIZE: usize = BCA_ALPHA + D;
 
-/// Base of the (FS-bca) block (after the FS-αζ block).
+/// Base of the (FS-bca) block (after the FS-αζ and FS-ood blocks).
 fn bca_base(cfg: &RecursiveConfig) -> usize {
-    fs_base(cfg) + fs_size(cfg)
+    food_base(cfg) + food_size(cfg)
 }
 
 /// Size of the (FS-bca) block.
@@ -1241,6 +1343,37 @@ pub fn fs_post_zeta_state(
     );
     let pre_state = prefix_chain_state(pre_alpha_blocks);
     prefix_round_state(pre_state, quot_block)
+}
+
+/// The post-OOD-OBSERVE sponge state — the bca / first-beta-round continuation point when the OOD
+/// opened-values stream is observed between the zeta squeeze and the FRI batch-combination alpha
+/// squeeze (the REAL p3 order). CONTINUING from `post_zeta_state` this absorbs the `full_blocks`
+/// FULL-rate observe rounds, then — when `partial_n > 0` — a TRAILING PARTIAL absorb of `partial_n`
+/// lanes of `partial_block` (the FRACTIONAL leftover `L mod RATE` of the OOD stream). The partial
+/// absorb is exactly the native challenger's `duplexing()` triggered by the FIRST `sample()` after the
+/// stream (the FRI batch-combination alpha draw): the buffered `partial_n` elements are absorbed (rate
+/// `[0..n]` overwritten, `[n..RATE]` zeroed, capacity `+= n`) and permuted. Returns the post-observe
+/// state. With NO rounds at all (`full_blocks` empty AND `partial_n == 0`) this is `post_zeta_state`
+/// unchanged (the legacy no-observe model).
+pub fn fs_ood_observe_state(
+    post_zeta_state: [Val; WIDTH],
+    full_blocks: &[[Val; RATE]],
+    partial_block: [Val; RATE],
+    partial_n: usize,
+) -> [Val; WIDTH] {
+    assert!(partial_n <= RATE, "partial_n must be <= RATE");
+    let mut state = post_zeta_state;
+    for block in full_blocks {
+        state = prefix_round_state(state, *block);
+    }
+    if partial_n > 0 {
+        // TRAILING PARTIAL absorb (n < RATE): the sample-triggered duplexing of the buffered leftover.
+        let pre = absorb_state(state, partial_block, partial_n);
+        let consts = inlined_perm::Constants::pinned();
+        let cols = inlined_perm::generate_perm_cols(pre, &consts);
+        state = inlined_perm::perm_output(&cols);
+    }
+    state
 }
 
 /// A SQUEEZE-ONLY duplexing permute (the native `duplexing()` with `num_absorbed == 0`): NO rate
@@ -1862,6 +1995,17 @@ pub struct WindowInputs<'a> {
     /// for rounds `0..fs_beta_rounds`) from these by continuing the post-zeta sponge state. Unused
     /// otherwise.
     pub fs_beta_blocks: &'a [[Val; RATE]],
+    /// (FS-ood) the OOD opened-values OBSERVE stream (trace OOD openings at zeta (+ g·zeta), quotient-
+    /// chunk OOD openings, ZK random-codeword openings) chunked into FULL-rate (RATE-element) observe
+    /// blocks. Length must equal `fs_ood_observe_len`. The honest builder absorbs these between the
+    /// zeta squeeze and the FRI batch-combination alpha squeeze (continuing the post-zeta sponge
+    /// state), so the bca/betas thread from the POST-OOD-observe state. Unused otherwise.
+    pub fs_ood_blocks: &'a [[Val; RATE]],
+    /// (FS-ood-partial) the TRAILING PARTIAL absorb block of the OOD observe stream — only the first
+    /// `fs_ood_partial` lanes are meaningful (the FRACTIONAL leftover of the non-RATE-aligned OOD
+    /// stream). Consumed only when `fs_ood_partial > 0`; the honest builder absorbs these `n` lanes
+    /// (partial duplexing) to form the bca squeeze source. Lanes `[n..RATE]` are ignored.
+    pub fs_ood_partial_block: [Val; RATE],
     /// (FS-qi) the post-beta transcript (final_poly ‖ log_arities ‖ query-PoW witness) chunked into
     /// FULL-rate (RATE-element) observe blocks. Length must equal `fs_final_blocks` when
     /// `fs_final_blocks > 0`. The honest builder DERIVES the query index `draw_out` from these by
@@ -1967,7 +2111,7 @@ impl<'a> WindowInputs<'a> {
             absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -4741,7 +4885,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -4804,7 +4948,7 @@ mod tests {
             merkle_leaf: leaves[forged_index],
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -4830,7 +4974,7 @@ mod tests {
             descent: &[], merkle_leaf: leaves[honest_index],
             merkle_siblings: &tree.auth_path(honest_index),
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -4951,6 +5095,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
+            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
             fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: main_commit,
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
@@ -5204,6 +5349,7 @@ mod tests {
                     prefix_blocks: &[],
                     public_io: &[],
                     fs_beta_blocks: &[],
+                    fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
                     fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
                     inner_main_commit: commit,
                     layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
@@ -5370,7 +5516,7 @@ mod tests {
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -5491,7 +5637,7 @@ mod tests {
             merkle_leaf: [Val::ZERO; DIGEST_ELEMS],
             merkle_siblings: &[],
             deep_zeta: zeta, deep_q: q, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -5619,7 +5765,7 @@ mod tests {
             merkle_leaf: leaves[index],
             merkle_siblings: &sibs,
             deep_zeta: ext_multi(55), deep_q: ext_multi(66), deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -5662,7 +5808,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -5893,7 +6039,7 @@ mod tests {
             absorbed,
             prefix_blocks: &[],
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -6117,7 +6263,7 @@ mod tests {
             absorbed,
             prefix_blocks: blocks,
             public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -6396,7 +6542,7 @@ mod tests {
             merkle_leaf: leaf,
             merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -6449,7 +6595,7 @@ mod tests {
             draw_out: draw, e0: forged_e0, e1: ext_multi(2), beta: ext_multi(3),
             descent: &[], merkle_leaf: leaves[index], merkle_siblings: &sibs,
             deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO, fs_blocks: &[],
-            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -6609,6 +6755,7 @@ mod tests {
                 prefix_blocks: &[],
                 public_io: &[],
                 fs_beta_blocks: &[],
+                fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
                 fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
                 inner_main_commit: root,
                 layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
@@ -6670,6 +6817,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
+            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
             fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
@@ -6806,6 +6954,7 @@ mod tests {
                 prefix_blocks: &[],
                 public_io: &[],
                 fs_beta_blocks: &[],
+                fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
                 fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
                 inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
                 layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
@@ -6881,7 +7030,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: stmt,
-            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -6988,7 +7137,7 @@ mod tests {
             prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[],
             public_io: &stmt,
-            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -7038,7 +7187,7 @@ mod tests {
             deep_zeta: Challenge::ZERO, deep_q: q, deep_alpha: Challenge::ZERO,
             fs_blocks: blocks,
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
-            prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            prefix_blocks: &[], public_io: &[], fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &[], leaf_salt: [Val::ZERO; SALT_ELEMS],
             dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
@@ -7369,6 +7518,7 @@ mod tests {
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[], public_io: &[],
             fs_beta_blocks: beta_blocks,
+            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
             fs_final_blocks: final_blocks, fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
@@ -7886,6 +8036,7 @@ mod tests {
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[], public_io: &[],
             fs_beta_blocks: beta_blocks,
+            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
             fs_final_blocks: final_blocks, fs_final_partial_block: partial_block,
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
@@ -8227,6 +8378,7 @@ mod tests {
             sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
             prefix_blocks: &[], public_io: &[],
             fs_beta_blocks: comms,
+            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
             fs_final_blocks: finals, fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
@@ -8349,6 +8501,7 @@ mod tests {
                 sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH], absorbed: [Val::ZERO; RATE],
                 prefix_blocks: &[], public_io: &[],
                 fs_beta_blocks: &comms,
+                fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
                 fs_final_blocks: &finals, fs_final_partial_block: partial_block,
                 inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
                 layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
@@ -8710,7 +8863,6 @@ mod tests {
         let fs_blocks: Vec<[Val; RATE]> =
             (0..(pre_rounds + 1) as u32).map(|r| fs_block(20 + r)).collect();
         let comms: Vec<[Val; RATE]> = (0..beta_rounds as u32).map(|r| fb_block(300 + r)).collect();
-        let finals = vec![fq_block(70)];
 
         // The betas WITH vs WITHOUT the batch-combo alpha differ (the shift moves every beta).
         let post_zeta = fs_post_zeta_state(&fs_blocks[..pre_rounds], fs_blocks[pre_rounds]);
@@ -9032,6 +9184,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
+            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
             fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &layer_opens,
@@ -9157,6 +9310,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
+            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
             fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &layer_opens,
@@ -9480,6 +9634,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &comms,
+            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
             fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &layer_opens,
@@ -9812,6 +9967,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
+            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
             fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
@@ -10173,7 +10329,7 @@ mod tests {
             deep_zeta: zeta, deep_q: ext_multi(5), deep_alpha: alpha,
             fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
             absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
-            fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
             leaf_row: &rows[5], leaf_salt: salt,
             dr_value_at_zeta: &vz_f, dr_value_at_zeta_next: &[], dr_x: x,
@@ -10525,6 +10681,7 @@ mod tests {
             prefix_blocks: &[],
             public_io: &[],
             fs_beta_blocks: &[],
+            fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
             fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
             inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
             layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
@@ -10830,7 +10987,7 @@ mod tests {
                     deep_zeta: zeta, deep_q, deep_alpha: alpha,
                     fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
                     absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
-                    fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+                    fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
                     layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
                     leaf_row: &trows[index], leaf_salt: tsalt,
                     dr_value_at_zeta: &vz, dr_value_at_zeta_next: &[], dr_x: x,
@@ -10936,7 +11093,7 @@ mod tests {
                 deep_zeta: zeta, deep_q: dq, deep_alpha: alpha,
                 fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
                 absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
-                fs_beta_blocks: &[], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
+                fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE], fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE], inner_main_commit: [Val::ZERO; DIGEST_ELEMS],
                 layer_opens: &[], final_poly_x: Val::ZERO, final_poly_coeffs: &[],
                 leaf_row: &trows[index], leaf_salt: tsalt,
                 dr_value_at_zeta: &vz, dr_value_at_zeta_next: &[], dr_x: x,

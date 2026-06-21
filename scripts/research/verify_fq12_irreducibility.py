@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-WS2-a / WS4 reproducible check: verify the deployed challenge-action extension
+WS2-a / WS4 reproducible check: verify the q12289 challenge-action extension
 polynomial X^12 + X + 25 is irreducible over F_12289 via Rabin's test.
 
 The Lean certificate (FullResponseChallengeActionCertificate) currently *assumes*

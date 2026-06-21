@@ -1,7 +1,7 @@
 //! DRIFT-PREVENTION EQUIVALENCE TEST.
 //!
 //! Proves the standalone, NO-Plonky3 `descender-mask-prf` crate (which the
-//! deployed signer will depend on) is BYTE-IDENTICAL to the Plonky3-based
+//! signer-side build can depend on) is BYTE-IDENTICAL to the Plonky3-based
 //! account-creation PROOF, at two levels:
 //!
 //!   1. PERMUTATION: the standalone width-16 Poseidon2
@@ -17,7 +17,7 @@
 //!
 //! If ANY constant or layout in the standalone crate diverges from Plonky3 /
 //! the proof, one of these assertions fails. There is therefore no way for the
-//! deployed-signer PRF and the in-proof PRF to silently drift apart.
+//! signer-side PRF and the in-proof PRF to silently drift apart.
 
 use p3_field::{PrimeCharacteristicRing, PrimeField32};
 use p3_koala_bear::{default_koalabear_poseidon2_16, KoalaBear};

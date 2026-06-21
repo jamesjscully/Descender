@@ -1,5 +1,10 @@
 # Account-Creation Prevalidated Slot Proof Tracker
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This remains a proof-detail checklist for Path 2. The top-level project status
+> source is now `TRACKER.md`; if the two conflict, update this file or append an
+> ADR rather than treating this tracker as independently authoritative.
+
 Scope: proof-side work needed to make Path 2 deployable. This tracker covers
 the formal and cryptographic obligations for account-creation / prevalidated-slot
 authorization. It intentionally excludes production engineering, constant-time
@@ -1147,7 +1152,7 @@ Named breaks:
 
 - `research/account_creation_prevalidated_slot_plan.md`
 - `research/account_creation_aggregation_readiness_contract.md`
-- `research/selected_hidden_source_path_decision.md`
+- `research/hidden_source_projection_design_fork.md`
 - `research/cryptanalysis/signature_readiness_20260516/hidden_source_slot_opening_authorization_reframe_n32_q12289.md`
 - `research/cryptanalysis/signature_readiness_20260516/hidden_source_state_assisted_hidden_relation_negative_controls_n32_q12289.md`
 - `research/cryptanalysis/signature_readiness_20260516/hidden_source_state_assisted_hidden_relation_extractor_theorem_n32_q12289.md`

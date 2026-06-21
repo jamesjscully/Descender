@@ -20,6 +20,12 @@ pub const PRODUCTION_REFERENCE_FACADE_PROOF_MODEL: &str =
     "production-shaped-account-carried-reference-facade";
 pub const PRODUCTION_SIGNER_CALLBACK_FAILURE_REASON: &str = "signer callback failed";
 pub const PRODUCTION_VERIFIER_CALLBACK_FAILURE_REASON: &str = "verifier callback failed";
+
+// MIGRATION NOTE: the PRODUCTION_DEPLOYMENT_* identifiers below are legacy
+// fail-closed preflight/evidence names for the archived projection-carrier
+// lineage. They are retained for regression compatibility and negative-control
+// evidence, and must not be read as current product authority. The current
+// chain-native authority starts at spec/README.md, decisions/, and TRACKER.md.
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_CALLBACK_BOUNDARIES: &str =
     "deployment callback boundary profile is not sanitized";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_SELECTED_VERIFIER: &str = "selected 318-byte/Fq12 active-lane projection-carrier deployment verifier is fail-closed until active-lane preflight promotion and hidden-source semantics are implemented";
@@ -42730,6 +42736,11 @@ pub fn verify_path2_direct_creation_masked_state18_proof_v1(
 /// harness-replay relation (`verify_path2_prevalidated_slot_creation_relation_replay`) would accept
 /// the same creation evidence. It is deliberately not the public verifier because the proof carries
 /// `pad_seed` in clear and is non-hiding.
+///
+/// Retained for masked-state18 negative-control regression tests; normal library
+/// builds keep the public verifier hard-disabled, so this debug relation is only
+/// called from test modules.
+#[allow(dead_code)]
 fn verify_path2_direct_creation_masked_state18_proof_debug_relation_v1(
     leaf: &Path2PrevalidatedSlotLeafV1,
     evidence: &Path2AccountCreationEvidenceV1,

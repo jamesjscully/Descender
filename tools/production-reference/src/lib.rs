@@ -3,10 +3,10 @@
 //! This crate intentionally exposes the production-reference surface without
 //! exposing the parameter-search binaries.  It is still a reference boundary,
 //! not a deployment-ready cryptographic implementation: the reviewed exact
-//! 256-byte account-carried codec is present, and the selected 314-byte
-//! `258 B/Fq12 + projection carrier` deployment-shaped verifier is present
-//! only as a fail-closed surface while the active-lane relation is promoted
-//! through preflight and the remaining pad-binding/hidden-source semantics land.
+//! 256-byte account-carried codec is present, and the legacy-selected 314-byte
+//! `258 B/Fq12 + projection carrier` deployment-shaped verifier is retained
+//! only as a fail-closed negative-control surface while the current
+//! chain-native authority lives in `spec/`, ADRs, and `TRACKER.md`.
 
 pub use descender_parameter_search::production_reference::{
     ACTIVE_RESPONSE_BYTES, ALGEBRAIC_CHALLENGE_BYTES, ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK,

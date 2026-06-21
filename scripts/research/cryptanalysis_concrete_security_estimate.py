@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
 """
 WS3 concrete-security estimate for the Descender Path 2 native / reviewed-Fq12
-route. Deliberately conservative and HONEST about scope:
+checked-core support surface. Deliberately conservative and HONEST about scope:
 
   * Numbers this script asserts (collision / Fiat-Shamir entropy / birthday) are
-    exact arithmetic over the deployed constants and are reliable.
+    exact arithmetic over the current reference constants and are reliable.
   * The lattice (SIS) core-SVP figure is a STANDARD-MODEL estimate of *known*
     attacks only; the exact SIS instance dimension is flagged where it affects
     the result. It bounds modeled attacks, never "no attack exists".
+  * The transaction Fiat-Shamir challenge bytes are Poseidon2-derived. The Fq12
+    action-map collision term below is a separate challenge-bytes -> F_q^12
+    SHA-256 uniform_mod_from_hash map; it is not the legacy transaction
+    Fiat-Shamir hash path.
 
-Deployed constants are mirrored from tools/parameter-search/src/production_reference.rs
+Current reference constants are mirrored from tools/parameter-search/src/production_reference.rs
 and src/bin/signature_q12289_local_delta_stateful.rs (kept in sync by CI param check).
 """
 from math import log2, sqrt, lgamma, pi, e
 
-# ---- deployed constants (mirror; WS3-c CI check should assert equality) ----
+# ---- current reference constants (mirror; WS3-c CI check should assert equality) ----
 Q = 12289
 FIELD_BITS = 14
 SIS_PUBLIC_ROWS = 12                 # SIS_FULL_RESPONSE_PUBLIC_ROWS / REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS
@@ -23,9 +27,12 @@ RESPONSE_DIFF_BOUND = 2 * RESPONSE_BOUND   # = 96 = RESPONSE_LINK_BOUNDED_KERNEL
 ACTION_RESIDUES = 12                 # Fq12: action -> F_q^12
 REPS = 26
 CHALLENGE_BITS_PER_REP = 5
-CHALLENGE_HARDENING_BYTES = 4
-ALGEBRAIC_CHALLENGE_ENTROPY_BITS = REPS * CHALLENGE_BITS_PER_REP        # 130
-CHALLENGE_ENTROPY_BITS = ALGEBRAIC_CHALLENGE_ENTROPY_BITS + 8 * CHALLENGE_HARDENING_BYTES  # 162
+ALGEBRAIC_CHALLENGE_BYTES = 23
+ALGEBRAIC_CHALLENGE_LAST_BYTE_MASK = 0x3F
+CHALLENGE_HARDENING_BYTES = 8
+ALGEBRAIC_CHALLENGE_ENTROPY_BITS = 182  # (23 - 1) * 8 + popcount(0x3F)
+CHALLENGE_ENTROPY_BITS = 246            # 182 + 8 * CHALLENGE_HARDENING_BYTES
+TRANSCRIPT_TERM_BITS_AFTER_QROM_LOSS = 182
 # response vector dimension (packed): 41 masked-witness bytes / 14 bits ~ 23 residues
 SIS_RESPONSE_COORDS = 23
 TARGET_BITS = 128
@@ -33,7 +40,7 @@ TARGET_BITS = 128
 def banner(s): print("\n" + "=" * 72 + f"\n{s}\n" + "=" * 72)
 
 # ---------------- C1: Fq12 action collision (RELIABLE) ----------------
-banner("C1  Fq12 action collision  (action = SHA256-derived hash -> F_q^12)")
+banner("C1  Fq12 action collision  (Poseidon2 challenge bytes -> SHA256 map -> F_q^12)")
 action_space_bits = ACTION_RESIDUES * log2(Q)
 classical_birthday = action_space_bits / 2
 print(f"action output space      : {Q}^{ACTION_RESIDUES} = 2^{action_space_bits:.2f}")
@@ -42,19 +49,24 @@ print(f"cost to FIND a collision : 2^{classical_birthday:.1f} classical birthday
       f"(~2^{action_space_bits/3:.0f} quantum BHT w/ qRAM; ~2^{classical_birthday:.0f} w/o)")
 print("HOW IT ENTERS SECURITY (corrected framing — supersedes an earlier over-")
 print("conservative T^2/2^163 estimate that was WRONG):")
+print("  The transaction Fiat-Shamir challenge bytes are derived by the active")
+print("  Poseidon2 sponge. This C1 action map is the separate")
+print("  reviewed_fq12_challenge_action_vector(challenge) map from those bytes to")
+print("  F_q^12 via SHA-256 uniform_mod_from_hash.")
 print("  A precomputed action collision gives the attacker NO forgery: the response")
 print("  z = r + action(c)*w still requires the witness w, and the FS challenge")
-print("  c = H(commitment,msg) cannot be cheaply steered onto a colliding value.")
+print("  c = Poseidon2(frame) cannot be cheaply steered onto a colliding action value.")
 print("  The action floor matters only for the SOUNDNESS EXTRACTOR: forking yields two")
 print("  transcripts at challenges c*, c** (c** fresh); extraction needs")
 print("  action(c*) != action(c**), which fails with prob ~2^-162 PER FORK.")
 print(f"  -> action-collision soundness term ~2^-{action_space_bits-1:.0f} (PER-FORK, negligible),")
 print("     NOT a multi-target T^2/2^163 term. The 163-bit floor is ADEQUATE for 128-bit.")
-print("  (The 182-bit transcript term / actionQuantumQueryBoundLog2For128=17 concern the")
-print("   FS challenge-guessing / multi-target surface, a DIFFERENT term.)")
+print("  (The 182-bit QROM-priced transcript term concerns the FS challenge-guessing")
+print("   / multi-target surface, a DIFFERENT term.)")
 print("VERDICT: action is a random-oracle hash-to-F_q^12; collision = generic hash")
 print("  collision, NOT an algebraic shortcut. Reduces to QROM collision-resistance of")
-print("  SHA256-derived uniform_mod_from_hash. Field structure (X^12+X+25, verified")
+print("  the SHA256-derived uniform_mod_from_hash action map, separate from the active")
+print("  Poseidon2 transaction challenge derivation. Field structure (X^12+X+25, verified")
 print("  irreducible) only provides invertibility for forking extraction.")
 print("  -> C1 reducible to STANDARD; the 163-bit floor carries the per-fork extractor")
 print("     term comfortably. No '2^-99 cap' obstruction (that earlier flag was a")
@@ -65,25 +77,25 @@ print("     parameter obstruction from C1.")
 banner("Fiat-Shamir challenge entropy / multi-target (RELIABLE)")
 print(f"challenge entropy        : {CHALLENGE_ENTROPY_BITS} bits "
       f"({ALGEBRAIC_CHALLENGE_ENTROPY_BITS} algebraic + {8*CHALLENGE_HARDENING_BYTES} hardening)")
-print(f"classical FS query margin: {CHALLENGE_ENTROPY_BITS - TARGET_BITS} bits over 2^{TARGET_BITS}")
-print(f"quantum FS query margin  : {(CHALLENGE_ENTROPY_BITS - TARGET_BITS)//2} bits "
-      f"(Grover sqrt) over 2^{TARGET_BITS}")
-print("NOTE: a *single-target* forgery via challenge guessing costs ~2^162 work;")
-print("      the AP2-004 widened transcript term (182 bits) covers multi-target/QROM.")
-print("CAVEAT: action collision space (163) > challenge entropy (162): finding an")
-print("        action collision among reachable challenges is birthday-bounded by")
-print("        the smaller of the two; flagged for WS3 multi-target accounting.")
+print(f"QROM-priced transcript   : {TRANSCRIPT_TERM_BITS_AFTER_QROM_LOSS} bits after selected deployment loss")
+print(f"classical full-challenge margin: {CHALLENGE_ENTROPY_BITS - TARGET_BITS} bits over 2^{TARGET_BITS}")
+print(f"priced transcript margin : {TRANSCRIPT_TERM_BITS_AFTER_QROM_LOSS - TARGET_BITS} bits over 2^{TARGET_BITS}")
+print("NOTE: a single-target challenge-guessing view sees the full 246-bit challenge;")
+print("      the deployment theorem prices the selected multi-target/QROM surface at")
+print("      the 182-bit transcript term.")
+print("CAVEAT: action collision space (163) is smaller than the full challenge space")
+print("        but is a separate per-fork extractor term, not the transcript budget.")
 
 # ---------------- SIS / lattice (STANDARD-MODEL, MODELED ATTACKS ONLY) ----------------
 banner("SIS short-vector hardness  (core-SVP, MODELED attacks only)")
-print(f"instance (deployed)      : ~{SIS_RESPONSE_COORDS} response coords, "
+print(f"reference instance       : ~{SIS_RESPONSE_COORDS} response coords, "
       f"{SIS_PUBLIC_ROWS} syndrome rows, q={Q}, centered |coord|<= {RESPONSE_BOUND}")
 print(f"response-difference box   : |coord| <= {RESPONSE_DIFF_BOUND} (bounded-kernel bound)")
 print("EMPIRICAL EXACT RESULT (already in-repo, Lean-certified):")
 print("  ResponseLinkExactCertificate.excludesBoundedNonzeroKernel proves")
 print("  responseDifferenceBound(96) < minimumCoverCoeffBound  -> NO nonzero kernel")
 print("  vector exists inside the response box (exact enumeration, ~1.12M nodes).")
-print("  This is a real, exhaustive short-vector exclusion for the DEPLOYED box.")
+print("  This is a real, exhaustive short-vector exclusion for the current reference box.")
 
 print("KEYGEN SIS IS INTENTIONALLY LLL-WEAK (by design):")
 print("  the bare quotient lattice (12x23 over q, dim 23, Gaussian-heuristic norm ~158)")
@@ -130,7 +142,7 @@ print("  figure matters for the larger keygen/public-view SIS, whose exact dimen
 print("  must be extracted before a bit-security number is asserted (WS3 remainder).")
 
 banner("B-layer L1/L-inf -> L2 metric mapping  (makes the SIS instance estimator-legible)")
-# deployed bare quotient SIS instance (from matrix_keygen_estimator_memo)
+# current reference bare quotient SIS instance (from matrix_keygen_estimator_memo)
 sis_dim = 23
 det_root = 136.04           # determinant^(1/dim)
 gh_norm_memo = 157.87       # Gaussian-heuristic norm (memo)
@@ -140,7 +152,7 @@ short_vec_coeff = 68        # max-abs coeff of that vector
 gh_computed = sqrt(sis_dim / (2 * pi * e)) * det_root
 # norm-bound mapping for a response in the box: |coord|<=48 over ~23 coords
 l2_from_linf = RESPONSE_BOUND * sqrt(SIS_RESPONSE_COORDS)
-print(f"deployed bare SIS lattice: dim {sis_dim}, det^(1/dim) {det_root:.1f}")
+print(f"reference bare SIS lattice: dim {sis_dim}, det^(1/dim) {det_root:.1f}")
 print(f"response box -> L2 ball   : |coord|<=48 over {SIS_RESPONSE_COORDS} coords => L2 <= {l2_from_linf:.0f}")
 print(f"Gaussian heuristic (GH)   : computed {gh_computed:.1f}  (memo {gh_norm_memo:.1f})")
 print(f"observed shortest vector  : L2 {short_vec_l2:.1f}, coeff {short_vec_coeff}")
@@ -155,10 +167,11 @@ print("  pointed at the RESPONSE-LINK-CODED problem, not the bare quotient latti
 
 banner("SUMMARY")
 print("RELIABLE: C1 action floor 2^163.0; action-collision soundness term ~2^-162 PER-FORK")
-print("          (adequate for 128-bit). Earlier 2^-99 multi-target flag was a mis-model.")
-print("RELIABLE: FS challenge entropy 162 bits (single-target forgery ~2^162); 182-bit")
-print("          multi-target transcript term (AP2-004).")
-print("RELIABLE: deployed response-box has NO short kernel vector (exact, Lean-certified,")
+print("          for the separate challenge-bytes -> F_q^12 action map (adequate for 128-bit).")
+print("          Earlier 2^-99 multi-target flag was a mis-model.")
+print("RELIABLE: FS challenge entropy 246 bits (182 algebraic + 64 hardening);")
+print("          selected deployment transcript term after QROM/multi-target pricing is 182 bits.")
+print("RELIABLE: current reference response-box has NO short kernel vector (exact, Lean-certified,")
 print("          96 < 114). Bare keygen SIS is intentionally LLL-weak, caught by the code.")
 print("RESOLVED vs earlier flags: (a) C1 imposes no 2^-128 obstruction; (b) keygen has no")
 print("          asymptotic margin to extract -- it is an exact-enumeration regime.")

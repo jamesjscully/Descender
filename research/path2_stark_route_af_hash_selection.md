@@ -1,5 +1,10 @@
 # Path 2 STARK Route — Arithmetization-Friendly Hash Selection (mask PRF + AIR hash)
 
+> MIGRATION STATUS: `ACTIVE_RESEARCH`. This note preserves useful Poseidon2/STARK
+> route history, but parts of it were superseded by the current
+> Poseidon2/Plonky3/KoalaBear path. Binding authority lives in `spec/` and
+> `decisions/`.
+
 Status: primitive SELECTED (Poseidon2 / x^5 over Fq=12289); parameterization is
 RESEARCH-GRADE with two named open items. 2026-06-17.
 

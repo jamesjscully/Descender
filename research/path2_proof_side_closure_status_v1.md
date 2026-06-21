@@ -1,5 +1,9 @@
 # Path 2 Proof-Side Closure Status V1
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting proof-status note, not the top-level project tracker.
+> Top-level status lives in `../TRACKER.md`.
+
 Status: proof-side closure assessment after native boundary refinement.
 
 Purpose: separate:

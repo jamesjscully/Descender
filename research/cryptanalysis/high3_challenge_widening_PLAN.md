@@ -1,5 +1,9 @@
 # HIGH-3 fix — challenge widening to ≥246 bits (implementation plan)
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This records an older hard-128 remediation plan for the q12289 byte-layout
+> lineage. Current security-level policy is ADR-0006 and `spec/security_model.md`.
+
 Status: **DESIGN CAPTURED, partial edits REVERTED to green** (a worker hit a session
 limit mid-cascade, leaving KAT red + fixtures/EC untouched — reverted to avoid a
 green-while-broken tree). This doc lets the next pass finish in one shot.

@@ -1,5 +1,10 @@
 # Descender Red-Team Report
 
+> MIGRATION STATUS (2026-06-20): `NEGATIVE_CONTROL`.
+> This records an internal break-and-fix campaign. It is retained as adversarial
+> evidence and regression seed material, not as current product authority. Current
+> status lives in `../../TRACKER.md`.
+
 **Scheme:** Descender post-quantum lattice signature. q=12289, n=32, Fq12 = F_q[X]/(X^12+X+25).
 **Engagement:** Authorized internal red-team of the maintainer's own scheme prior to external submission. Objective: BREAK it.
 **Date:** 2026-06-10.

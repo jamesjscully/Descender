@@ -113,6 +113,14 @@ Implementation output:
 
 Review requirements:
 - Verify the result against the task, not just whether the agent exited cleanly.
+- Check whether the result respects the current project authority chain:
+  `spec/README.md`, `decisions/`, `TRACKER.md`, `research/ARCHIVE_INDEX.md`,
+  and `scripts/research/README.md`.
+- Treat work that advances legacy KEM/formalization goals or old
+  308-byte/Fq12 projection-carrier deployment goals while ignoring the
+  chain-native PQ authorization pivot as not accepted unless the task explicitly
+  justified that legacy support path as archive, negative-control, fail-closed
+  regression, or migration work.
 - Treat missing tests, vague claims, or unreviewable output as not accepted.
 - Failed required checks block acceptance. Failed non-required checks are context;
   mention them when relevant, but do not reject solely because they failed.

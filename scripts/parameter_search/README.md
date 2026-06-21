@@ -1,5 +1,11 @@
 # Descender Parameter Search
 
+Status: ACTIVE_RESEARCH
+
+This package is a readable reference harness for parameter exploration, not a
+product parameter decision. Current parameter and security authority starts in
+`../../spec/README.md`, ADRs, and `../../TRACKER.md`.
+
 This directory is the first concrete-parameter research harness for Descender.
 It is intentionally separate from the Lean proof files and from the agent
 workflow scripts.

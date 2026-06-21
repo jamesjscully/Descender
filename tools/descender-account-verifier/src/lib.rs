@@ -1,11 +1,11 @@
-//! # Deployment-facing account-creation verifier (Option A: separate crate)
+//! # Path 2 account-creation verifier transport (Option A: separate crate)
 //!
 //! This crate is the SINGLE place where the Plonky3 STARK verifier enters the
-//! deployed account-admission path. The deployed signer crate
-//! (`descender-parameter-search`) depends on THIS crate behind an off-by-default
-//! feature, so a wallet/signer build that does not verify creation proofs links
-//! ZERO `p3-*` crates. A validator build enables the feature and pulls Plonky3
-//! transitively through here.
+//! account-admission verification path. Signer-side `descender-parameter-search`
+//! builds depend on THIS crate only behind an off-by-default feature, so a
+//! wallet/signer build that does not verify creation proofs links ZERO `p3-*`
+//! crates. A validator build enables the feature and pulls Plonky3 transitively
+//! through here.
 //!
 //! ## Re-export discipline (single source of truth)
 //!
@@ -306,4 +306,40 @@ pub fn verify_deployed_account_creation(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn role_root_export_digest_is_domain_separated_and_ordered() {
+        let role_root = [
+            Val::from_u32(1),
+            Val::from_u32(2),
+            Val::from_u32(3),
+            Val::from_u32(4),
+            Val::from_u32(5),
+            Val::from_u32(6),
+            Val::from_u32(7),
+            Val::from_u32(8),
+        ];
+        let digest = role_root_export_digest(&role_root);
+        assert_eq!(
+            digest,
+            [
+                117, 63, 7, 64, 6, 54, 9, 245, 118, 89, 164, 167, 41, 177, 117, 52, 216,
+                12, 230, 18, 58, 86, 144, 172, 42, 81, 203, 10, 213, 122, 128, 128,
+            ],
+            "role-root export digest drifted"
+        );
+
+        let mut reordered = role_root;
+        reordered.swap(0, 1);
+        assert_ne!(
+            digest,
+            role_root_export_digest(&reordered),
+            "role-root export bridge must be order-sensitive"
+        );
+    }
 }

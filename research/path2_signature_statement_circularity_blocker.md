@@ -1,5 +1,10 @@
 # Path 2 Signature-Dependent Statement Circularity Blocker
 
+> MIGRATION STATUS: `ACTIVE_RESEARCH`. This note records blocker history and the
+> split-statement rationale. It is useful evidence, but current proof status
+> lives in `TRACKER.md`, `spec/security_model.md`, and newer Path 2 theorem
+> support notes.
+
 Status: top proof blocker before an accepting Path 2 spend fixture.
 
 ## Finding

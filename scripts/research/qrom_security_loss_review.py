@@ -3,7 +3,7 @@
 
 This script consumes the QROM challenge-budget memo and turns its arithmetic
 claims into explicit inequalities.  It remains conditional on the reviewed QROM
-forking theorem and SHA-256-as-QRO assumption; the purpose here is to remove
+forking theorem and Poseidon2-as-QRO assumption; the purpose here is to remove
 wiggle room from the concrete query ledger and byte-frame accounting.
 """
 
@@ -50,13 +50,19 @@ def build_payload() -> dict[str, Any]:
     hardening_bits = int(derivation["hardening_bits"])
     q_quantum_log2 = int(budget["deployment_quantum_hash_query_bound_log2"])
     q_classical_log2 = int(budget["deployment_classical_hash_query_bound_log2"])
+    selected_multi_target_log2 = int(budget["selected_multi_target_horizon_log2"])
+    selected_transcript_term_bits = int(budget["transcript_term_bits_after_qrom_loss"])
+    minimum_deployment_margin_bits = int(budget["minimum_deployment_margin_bits"])
 
     quantum_transcript_term_bits = total_bits - 2 * q_quantum_log2
     classical_transcript_term_bits = total_bits - q_classical_log2
     single_term_quantum_log2 = (total_bits - target_bits) // 2
     single_term_classical_log2 = total_bits - target_bits
     deployment_min_term_bits = min(
-        quantum_transcript_term_bits, classical_transcript_term_bits, algebraic_bits
+        quantum_transcript_term_bits,
+        classical_transcript_term_bits,
+        algebraic_bits,
+        selected_transcript_term_bits,
     )
 
     frame_fields = frame["fields"]
@@ -139,6 +145,25 @@ def build_payload() -> dict[str, Any]:
                 "margin_bits": deployment_min_term_bits - target_bits,
             },
         ),
+        checked(
+            selected_transcript_term_bits == total_bits - 2 * q_quantum_log2 - selected_multi_target_log2,
+            "selected deployment transcript term matches QROM plus multi-target ledger",
+            {
+                "selected_transcript_term_bits": selected_transcript_term_bits,
+                "total_bits": total_bits,
+                "qrom_quadratic_loss_bits": 2 * q_quantum_log2,
+                "selected_multi_target_horizon_log2": selected_multi_target_log2,
+            },
+        ),
+        checked(
+            selected_transcript_term_bits >= target_bits + minimum_deployment_margin_bits,
+            "selected deployment transcript term carries the recorded minimum margin",
+            {
+                "selected_transcript_term_bits": selected_transcript_term_bits,
+                "target_bits": target_bits,
+                "minimum_deployment_margin_bits": minimum_deployment_margin_bits,
+            },
+        ),
     ]
     frame_checks = [
         checked(
@@ -179,12 +204,12 @@ def build_payload() -> dict[str, Any]:
                 "128 bits of margin under the stated QROM/classical loss model."
             ),
             "conditional_on": [
-                "SHA-256 modeled as the challenge-frame quantum random oracle",
+                "Poseidon2 modeled as the transaction challenge quantum random oracle",
                 "reviewed QROM fork/reprogramming theorem for the committed-sigma game",
-                "no collapse of the separate pad PRF or matrix sampler assumptions into this oracle",
+                "no collapse of the separate pad PRF, matrix sampler, or ordinary public-object digest assumptions into this oracle",
             ],
             "not_claimed": [
-                "proof of SHA-256",
+                "proof of Poseidon2",
                 "constant-time implementation security",
                 "external acceptance of q <= 2^16 quantum challenge-frame queries",
             ],
@@ -193,9 +218,11 @@ def build_payload() -> dict[str, Any]:
             "target_security_bits": target_bits,
             "deployment_quantum_hash_query_bound_log2": q_quantum_log2,
             "deployment_classical_hash_query_bound_log2": q_classical_log2,
+            "selected_multi_target_horizon_log2": selected_multi_target_log2,
             "qrom_quadratic_loss_model": "term_bits = total_transcript_challenge_bits - 2*log2(Q_H)",
             "classical_loss_model": "term_bits = total_transcript_challenge_bits - log2(Q_H)",
             "algebraic_collision_model": "term_bits = algebraic_challenge_bits",
+            "selected_deployment_model": "term_bits = total_transcript_challenge_bits - 2*log2(Q_H) - selected_multi_target_horizon_log2",
         },
         "derived_terms": {
             "total_transcript_challenge_bits": total_bits,
@@ -203,8 +230,10 @@ def build_payload() -> dict[str, Any]:
             "hardening_bits": hardening_bits,
             "quantum_transcript_term_bits": quantum_transcript_term_bits,
             "classical_transcript_term_bits": classical_transcript_term_bits,
+            "selected_transcript_term_bits": selected_transcript_term_bits,
             "deployment_min_term_bits": deployment_min_term_bits,
             "deployment_min_margin_bits": deployment_min_term_bits - target_bits,
+            "selected_transcript_margin_bits": selected_transcript_term_bits - target_bits,
             "single_term_quantum_query_bound_log2_for_128": single_term_quantum_log2,
             "single_term_classical_query_bound_log2_for_128": single_term_classical_log2,
         },
@@ -213,7 +242,7 @@ def build_payload() -> dict[str, Any]:
         "status": "checks_passed" if not failed_checks else "checks_failed",
         "external_review_needed": [
             "Review whether the QROM loss model matches the final game hop.",
-            "Review whether q <= 2^16 quantum challenge-frame queries is adequate for the target blockchain deployment.",
+            "Review whether q <= 2^16 quantum challenge-sponge queries and the selected multi-target horizon are adequate for the target blockchain deployment.",
             "Review that production verification rejects before acceptance if challenge-frame recomputation mismatches.",
         ],
     }
@@ -227,7 +256,7 @@ def markdown(payload: dict[str, Any]) -> str:
         "",
         "This generated review object turns the QROM challenge-budget memo into",
         "explicit arithmetic checks.  It remains conditional on the QROM model and",
-        "SHA-256 assumption; it does not prove either one.",
+        "Poseidon2 assumption; it does not prove either one.",
         "",
         "## Summary",
         "",
@@ -237,6 +266,8 @@ def markdown(payload: dict[str, Any]) -> str:
         f"- target security bits: `{ledger['target_security_bits']}`",
         f"- deployment quantum query bound: `2^{ledger['deployment_quantum_hash_query_bound_log2']}`",
         f"- deployment classical query bound: `2^{ledger['deployment_classical_hash_query_bound_log2']}`",
+        f"- selected multi-target horizon: `2^{ledger['selected_multi_target_horizon_log2']}`",
+        f"- selected transcript term: `{terms['selected_transcript_term_bits']}` bits",
         f"- minimum deployment term: `{terms['deployment_min_term_bits']}` bits",
         f"- minimum deployment margin: `{terms['deployment_min_margin_bits']}` bits",
         "",

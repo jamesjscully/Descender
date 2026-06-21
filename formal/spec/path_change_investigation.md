@@ -1,5 +1,11 @@
 # Signature-Path Change Investigation (READ-ONLY reconstruction)
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This investigation explains prior 260-byte and 314-byte paths. It is not the
+> active product direction after the Path 2 / prevalidated-slot pivot. Use
+> `spec/README.md`, `decisions/ADR-0002-select-path2-prevalidated-slots.md`, and
+> `TRACKER.md` for current authority.
+
 Status: investigation note, 2026-06-09. Reconstructs *why* the deployed/KAT path
 is the 260-byte "linear-sigma" representative signature while the canonical spec
 (`descender-signature-spec.md` §2) targets a 314-byte
@@ -29,7 +35,7 @@ All hashes from `git log` on `master`. Dates are author dates.
 |---|---|---|
 | (spec spine) | `b5a1d98` *feat(formal): multi-tool verification scaffold (spec spine + phased plan)* — Jun 9 22:57 | Introduced the canonical spec with the **314-B** `checked_core[258] ‖ projection_carrier[56]` layout as the normative target, and §6 already lists "Full witness opening vs projection-only" as an **open spec question**, citing regression `projection_carrier_tuple_does_not_prove_full_witness_opening`. So 314-B was authored *already knowing* the carrier proves a projection, not a full opening. |
 | Jun 2 20:13 | `137f412` *Track active path implementation source* | First and only commit to introduce **all** of `LINEAR_SIGMA_*`, `verify_public_quotient_proof_signature`, `checked_core`, `projection_carrier`, `conditioned_fiber`, `full_witness_opening` (via `git log -S`). This is the import of the active-path Rust reference + Lean Path2*.lean stack. Both the 260-B linear-sigma representative path and the 314-B Fq12 carrier path arrive together here. |
-| Jun 2 20:19–20:27 | `dac8f2a`, `dc09dcf` *Track research/audit notes* | Imported the decision notes that record the rationale: `deployable_signature_target.md`, `hidden_source_projection_design_fork.md`, `selected_hidden_source_path_decision.md`, `accepting_308b_verifier_blocker.md`, etc. |
+| Jun 2 20:19-20:27 | `dac8f2a`, `dc09dcf` *Track research/audit notes* | Imported the decision notes that record the old projection-carrier rationale, including `hidden_source_projection_design_fork.md`, `accepting_308b_verifier_blocker.md`, etc. The pre-ADR hidden-source decision note and old deployable-target note were later retired after ADR-0002 and ADR-0005 absorbed their binding decision content. |
 | Jun 9 22:56 | `82faa37` *fix(lean): repair AP2-004 byte-constant drift…* | The **AP2-004 challenge widening** (algebraic challenge 21→27 B, mask `0x03`→`0x3f`). This is the "widening that broke the build" referenced in the KAT README. It is what moved the pre-widening 252+56 = **308**-B figure to 258+56 = **314**-B for the spec target, and 187+73 = **260**-B for the linear-sigma path. |
 | Jun 9 22:56 | `2a18dca` *feat(kat): KAT v0 corpus from the reference…* | Froze KAT v0. Commit message is explicit: *"pins the current 260B linear-sigma path (wraps legacy proof) -- byte anchor, not a soundness claim; regenerate on path-hardening."* |
 
@@ -48,8 +54,8 @@ not format changes.
   const `REVIEWED_FQ12_ACCOUNT_CARRIED_WITH_FALLBACK_PROJECTION_BYTES`). This is the
   **spec target** path.
 - `308` = the *pre-AP2-004* value of the 314-B target (252+56). Several Rust strings
-  and the fixture name `selected_projection_valid_308_byte_fixture_accepts` are
-  flagged as **stale labels** in `research/deployable_signature_target.md:8–13`.
+  and the fixture name `selected_projection_valid_308_byte_fixture_accepts` were
+  stale pre-widening labels during this investigation.
 
 ---
 
@@ -148,8 +154,8 @@ documented gap — `projection_carrier_tuple_does_not_prove_full_witness_opening
 account-witness commitments (`witness_a` vs `witness_b`) that **both accept**
 against the same six-value projection-opening frame. That proves the carrier proves
 a *projection relation*, not a *full opening* of the account-witness commitment.
-This is also a **documented limitation** (spec §6, `deployable_signature_target.md:104–119`),
-not a bug. The 314-B path stays fail-closed precisely because of it.
+This is also a **documented limitation**, not a bug. The 314-B path stays
+fail-closed precisely because of it.
 
 ---
 
@@ -171,17 +177,17 @@ evidence shows a deliberate layering decision plus a strategic pivot:
    ship an all-rejecting verifier as the conformance reference, so the baseline
    wraps the legacy representative proof and is labeled non-normative.
 3. **A separate, earlier 260-B route was explicitly *rejected*.**
-   `deployable_signature_target.md:54–63` archives a *"`260 B` full-response public
-   quotient route: rejected as a deployable route because the public representative
-   relation admitted a public forgery class."* The current deployed 260-B
-   linear-sigma path is the **same representative family**, retained as a baseline
-   *with the forgery documented*, not promoted to deployable.
+   The archived target history records the `260 B` full-response public quotient
+   route as non-deployable because the public representative relation admitted a
+   public forgery class. The current deployed 260-B linear-sigma path is the
+   **same representative family**, retained as a baseline *with the forgery
+   documented*, not promoted to deployable.
 4. **The real direction has moved past both.** The current selected architecture is
    **account-creation / prevalidated-slot authorization** (Path 2 prevalidation):
    validate the hidden-source relation at slot creation, commit the result into
-   account state, and make spend a one-use authorization consume. Rationale
-   (`hidden_source_projection_design_fork.md:53–60`,
-   `selected_hidden_source_path_decision.md:32–62`): a rank probe showed extra
+  account state, and make spend a one-use authorization consume. Rationale
+  (`hidden_source_projection_design_fork.md`,
+   `account_creation_prevalidated_slot_plan.md`): a rank probe showed extra
    carrier lanes buy only one linear constraint each (no compression), and moving
    the proof to creation-time is **more aggregation-friendly** and avoids ~100
    transient proof bytes per spend. So neither 260-B nor 314-B is being hardened
@@ -214,10 +220,10 @@ account-witness opening proof closing
 witness-bound sigma commitment closing the §3 forgery.
 - **Pros:** matches the canonical spec §2 as written; gives a single
   full-strength spend proof; closes both documented gaps at the spend layer.
-- **Cost:** highest. Requires (per `deployable_signature_target.md:70–101`):
-  active-lane preflight promotion, a full account-witness opening proof, ZK/soundness
-  semantics, and Lean theorem integration. The §6 spec question ("add a full-opening
-  proof") is unresolved precisely because it's hard.
+- **Cost:** highest. Requires active-lane preflight promotion, a full
+  account-witness opening proof, ZK/soundness semantics, and Lean theorem
+  integration. The §6 spec question ("add a full-opening proof") is unresolved
+  precisely because it's hard.
 - **Risk:** the design notes argue this direction *does not compress* (extra lanes
   buy one constraint each) and adds ~100 bytes/spend. You'd be hardening a path the
   team has already, on paper, decided to step away from. **Question for maintainer:
@@ -241,8 +247,9 @@ a proved projection-only relation with stated ZK/soundness").
   projection-only soundness on the carrier does not by itself fix spend
   unforgeability. **Question for maintainer: does the prevalidation architecture
   intend to carry the spend-unforgeability burden at creation time, making
-  projection-only acceptable at spend? The notes (selected_hidden_source_path_decision.md:106–123)
-  say yes — but that theorem is not yet closed.**
+  projection-only acceptable at spend? `account_creation_prevalidated_slot_plan.md`
+  and `account_creation_prevalidated_slot_authorization_or_break.md` say yes,
+  but that theorem is not yet closed.**
 
 ### Headline recommendation (CORRECTED 2026-06-09 — supersedes the earlier projection-only lean)
 
@@ -260,10 +267,11 @@ BLOCKER_SELECTED_VERIFIER`) *by design* — stand up the parser/exporter/verifie
 structure rejecting everything, then discharge the internal obligations and only then
 flip to accepting. The hidden-source soundness burden is **relocated** to account
 creation by the Path-2 prevalidation pivot (for byte cost + aggregation), **not
-dropped**: `selected_hidden_source_path_decision.md:64–123` lists the creation-time
-proof obligations explicitly, and the selected theorem is *accepted-spend ⟹ the slot
-was creation-validated for the same identity/slot/opening/pad/version/root, or a
-named break*. Projection-only *at spend* is acceptable **only because** creation is
+dropped**: `account_creation_prevalidated_slot_plan.md` and
+`account_creation_prevalidated_slot_authorization_or_break.md` list the
+creation-time proof obligations explicitly, and the selected theorem is
+*accepted-spend ⟹ the slot was creation-validated for the same
+identity/slot/opening/pad/version/root, or a named break*. Projection-only *at spend* is acceptable **only because** creation is
 required to carry full validation — a theorem that is **not yet closed** and is the
 real Phase-2 target.
 
@@ -282,11 +290,10 @@ the account-state-layout choice; this investigation does not assert it.
    baseline," but a reviewer could reasonably read it as drift. *Question: should the
    spec explicitly mark §2's 314-B as "target, not yet conformance-anchored" and add
    the 260-B baseline as a labeled non-normative appendix?*
-2. **Stale "308" labels.** `research/deployable_signature_target.md:8–13` already
-   flags that Rust strings and the **source-gate-inspected** fixture name
-   `selected_projection_valid_308_byte_fixture_accepts` say 308 while the computed
-   size is 314. Because a source-gate inspects that name, a coordinated relabel is
-   needed and is non-trivial. *Question: schedule the 308→314 relabel?*
+2. **Stale "308" labels.** Some Rust strings and the source-gate-inspected
+   fixture name `selected_projection_valid_308_byte_fixture_accepts` said 308
+   while the computed size was 314. Because a source-gate inspected that name, a
+   coordinated relabel was needed and non-trivial.
 3. **`PRODUCTION_DEPLOYMENT_BLOCKER_SELECTED_VERIFIER` still says "308-byte"** while
    the computed target is 314-B — same stale-label class.
 

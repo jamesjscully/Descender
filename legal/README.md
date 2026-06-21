@@ -1,5 +1,11 @@
 # Legal and Commercialization Track
 
+Status: ACTIVE_LEGAL_ENTRYPOINT
+
+This directory is planning support, not technical product authority. Current
+technical claims and adoption readiness start in `../spec/README.md`,
+`../spec/blockchain_requirements.md`, ADRs, and `../TRACKER.md`.
+
 This directory holds the non-technical operating plan for Descender-related
 primitive commercialization: patent capture, licensing, standards adoption,
 certification, and go-to-market execution.
@@ -23,4 +29,3 @@ The default posture is:
 3. Release standards-conforming code/specs permissively.
 4. Reserve trademarks, certification, indemnity, proprietary variants, and
    high-liability deployment support for paid commercial channels.
-

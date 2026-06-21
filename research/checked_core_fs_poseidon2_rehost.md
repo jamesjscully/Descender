@@ -1,5 +1,9 @@
 # Checked-core Fiat–Shamir → Poseidon2 re-host (2026-06-18, approved)
 
+> Classification: `ACTIVE_SUPPORT`. This note supports ADR-0004 and
+> `spec/wire_formats.md`; it is not an ADR and does not supersede the spec
+> spine or `decisions/`.
+
 Approved by James to make the {creation + spend} recursion path arithmetization-
 friendly (the last expensive in-circuit SHA on the checked-core relation FS). Mirrors
 the mask-PRF swap pattern.

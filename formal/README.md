@@ -1,21 +1,29 @@
 # Descender Formal Verification Architecture
 
+Status: ACTIVE_FORMAL_ENTRYPOINT
+
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> The formal directory contains both active Path 2 formal work and legacy formal
+> scaffolding. Current product authority starts in `../spec/README.md`; legacy
+> files are retained for history, conformance, and negative controls.
+
 This directory is the spine of the multi-tool formal-verification effort for the
-Descender post-quantum signature. It exists because **no single tool covers all
-the proof obligations**, and because the project's worst failure mode to date was
-an ad-hoc correspondence layer (Rust source-text "marker gates") that read green
-while the tree was broken. This architecture replaces that with explicit,
-tool-appropriate layers joined by a single canonical spec and machine-checkable
-conformance vectors.
+Descender cryptography program. It exists because **no single tool covers all the
+proof obligations**, and because the project's worst failure mode to date was an
+ad-hoc correspondence layer (Rust source-text "marker gates") that read green
+while the tree was broken. The active direction uses explicit, tool-appropriate
+layers joined by current specs, ADRs, and machine-checkable conformance vectors.
 
-## Principle: the spec is the spine
+## Principle: the spec spine is the authority
 
-There is exactly one **canonical specification** (`spec/descender-signature-spec.md`):
-keygen, sign, verify, the SIS relation, the Fq12 action, parameters, byte
-layouts. Every tool attaches to *that* spec. Tools never attach to each other.
-The correspondence between a tool's model and the spec is established either
-by proof (where the tool can) or by a shared **KAT** (known-answer test) corpus
-(`kat/`) that every executable artifact must reproduce byte-for-byte.
+The current product spec spine is `../spec/README.md` and its sibling files. The
+old `formal/spec/descender-signature-spec.md` file is now legacy formal context
+for the projection-carrier lineage, not the product authority.
+
+Tools should attach to the active spec spine or to an explicitly cited active
+support document. The correspondence between a tool's model and the relevant spec
+is established either by proof, where the tool can, or by a versioned
+known-answer-test corpus.
 
 ## Layers and tool assignment
 
@@ -40,9 +48,10 @@ Cross-tool correspondence is **not** machine-checked end-to-end. The residual
 trust seams, and how each is managed:
 
 1. **Lean spec ≟ EasyCrypt spec.** Both model the same Σ-protocol/SIS relation.
-   Managed by: the canonical spec doc is normative; both formalizations cite the
-   exact spec section they implement; a reviewer checklist cross-reads them. (No
-   shared kernel — this is a genuine, named assumption, as it is in Formosa.)
+   Managed by: the active spec spine is normative; both formalizations cite the
+   exact spec section or ADR they implement; a reviewer checklist cross-reads
+   them. (No shared kernel — this is a genuine, named assumption, as it is in
+   Formosa.)
 2. **EasyCrypt spec ≟ Jasmin code.** Managed by **proof**: EasyCrypt proves the
    Jasmin implementation matches the EasyCrypt functional spec (this is what the
    Jasmin/EasyCrypt pipeline does natively). This seam is closed, not assumed.
@@ -59,8 +68,9 @@ stated up front so no layer's "verified" is mistaken for end-to-end security.
 
 ## Status
 
-Bootstrapping (2026-06-09). Lean math + reduction skeleton is live
+Bootstrapping notes from 2026-06-09 are now folded into the layer entrypoints.
+Lean math + Path 2 reduction skeletons are live
 (`Descender/Path2AcceptedSpendClosure.lean`, build + axiom audit green). The
-EasyCrypt/Jasmin/hax layers are scaffolded with concrete first tasks; none is
-started. See `VERIFICATION_PLAN.md` for the phased roadmap and decision gates,
-including the EasyCrypt spike that must precede any EasyCrypt commitment.
+EasyCrypt/Jasmin/hax layers are scaffolded with concrete first tasks and
+explicit package-level scope notes. Use `../TRACKER.md` for current project
+status.

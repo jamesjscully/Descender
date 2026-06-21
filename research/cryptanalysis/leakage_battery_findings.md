@@ -1,5 +1,10 @@
 # WS4 #11 — Empirical Leakage Battery over REAL Signatures (LEAK FOUND)
 
+> MIGRATION STATUS (2026-06-20): `NEGATIVE_CONTROL`.
+> This records leakage evidence against historical transcript paths. It is
+> retained as a regression and review seed, not as current deployable status.
+> Current signer and leakage requirements live in `../../spec/signer_profile.md`.
+
 Created 2026-06-10. RISK-FIRST: this is a **break / redesign signal**, reported
 loudly. The statistical witness-hiding of REAL `reference_sign_with_proof`
 transcripts does **not** hold against the deployed signer: the public signature

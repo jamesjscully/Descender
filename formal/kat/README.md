@@ -1,5 +1,12 @@
 # KAT — Known-Answer Test Corpus (cross-tool conformance anchor)
 
+> MIGRATION STATUS (2026-06-20): `LEGACY_FORMAL`.
+> KAT v0 remains a frozen byte-conformance corpus for the legacy linear-sigma
+> baseline. It is not the current product authorization format and is not a
+> soundness claim. Future active-path KATs should be introduced as new versioned
+> corpora rather than mutating this historical one. Current product authority
+> starts at `../../spec/README.md`.
+
 **Owns:** byte-for-byte agreement across every implementation (Rust reference,
 Jasmin core, any Lean/hax executable model). This is the *one* machine-checkable
 artifact that ties the tools together where proofs cannot span them (seams 1/3).
@@ -29,6 +36,6 @@ reference:
 - each entry: inputs (hex) + expected output (accept/reject + reason + byte
   outputs), with the producing-version digest pinned.
 
-Every implementation must reproduce KAT v0 exactly; CI runs it. When a parameter
-changes (cf. the AP2-004 widening that broke the build), the KAT regen is the
-forcing function that catches drift across *all* implementations at once.
+Every implementation that claims KAT v0 conformance must reproduce it exactly;
+CI still runs it for the legacy baseline. Future active-path corpora should get
+new KAT versions so the historical byte anchor remains reproducible.

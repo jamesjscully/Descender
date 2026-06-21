@@ -1,6 +1,6 @@
 //! # descender-mask-prf
 //!
-//! Standalone (NO Plonky3) projection-mask PRF for the DEPLOYED signer.
+//! Signer-side no-Plonky3 projection-mask PRF for Path 2.
 //!
 //! The account-creation ZK-STARK proof (`tools/descender-account-stark`, which
 //! depends on Plonky3) derives the per-account projection masks as:
@@ -8,8 +8,8 @@
 //!   `masks[6] = wide_then_reduce( Poseidon2-sponge( pad_seed[32] ‖ slot[8] ) )`
 //!
 //! using Plonky3's `default_koalabear_poseidon2_16` Poseidon2 over KoalaBear. The
-//! deployed signer (`tools/parameter-search`) must NOT depend on Plonky3, so this
-//! crate re-implements that derivation FROM SCRATCH with the SAME pinned
+//! signer-side `tools/parameter-search` default builds must NOT depend on
+//! Plonky3, so this crate re-implements that derivation FROM SCRATCH with the SAME pinned
 //! constants, and a separate dev test
 //! (`../descender-account-stark/tests/mask_prf_equivalence.rs`) proves the two are
 //! byte-identical for many random inputs — the drift-prevention guarantee.

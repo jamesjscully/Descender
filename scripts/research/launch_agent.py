@@ -71,7 +71,16 @@ Acceptance criteria:
 {acceptance or "- Produce a concrete, reviewable result."}
 
 Repository notes:
-- Read research_program.md and lean_proof_plan.md when relevant.
+- Current project authority starts at spec/README.md, decisions/, and TRACKER.md.
+- Use research/ARCHIVE_INDEX.md before treating older research notes as current.
+- Use scripts/research/README.md before treating older artifact generators as
+  current automation.
+- Pre-pivot KEM/formalization seed plans have been retired from the worktree.
+  Use current specs, ADRs, tracker rows, and classified research notes instead;
+  do not let old lineage override the chain-native PQ authorization objective.
+- Old 308-byte/Fq12 projection-carrier scripts and notes are archive,
+  negative-control, fail-closed regression, or migration inputs unless the task
+  explicitly justifies another use under current authority.
 - Keep edits tightly scoped to this task.
 - Work only in the checkout Paseo starts you in. Do not manually edit another checkout or worktree.
 - Do not mark the task complete in project state.

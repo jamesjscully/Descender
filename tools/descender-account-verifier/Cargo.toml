@@ -2,10 +2,10 @@
 name = "descender-account-verifier"
 version = "0.1.0"
 edition = "2021"
-description = "Deployment-facing verifier shim for the account-creation ZK-STARK. Owns the Plonky3 dependency (transitively, via descender-account-stark) so the deployed signer crate (descender-parameter-search) need NOT. Re-exports descender-account-stark's pinned config as the SINGLE source of truth (re-export discipline: this crate never re-declares FRI/soundness params). Provides the (AccountCreationPublic, Proof) transport bundle and binds the verified STARK statement to the deployed admission leaf's plain anchors + the named role-root / verifier-version export bridges."
+description = "Path 2 account-creation verifier transport shim. Owns the Plonky3 dependency transitively through descender-account-stark so signer-side builds need not. Re-exports descender-account-stark's pinned config as the single source of truth and binds the verified STARK statement to the admission leaf anchors plus role-root and verifier-version export bridges."
 
 [dependencies]
-# The Plonky3-bearing relation crate. ALL p3-* deps enter the deployed
+# The Plonky3-bearing relation crate. ALL p3-* deps enter the verifier
 # verification path THROUGH this single dependency edge.
 descender-account-stark = { path = "../descender-account-stark" }
 # Field-element canonicalization for the public-statement wire format.

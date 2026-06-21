@@ -1,5 +1,9 @@
 # Path 2 Native Boundary ZK Trace Checklist
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting proof-family checklist, not the top-level project
+> tracker. Top-level status lives in `../TRACKER.md`.
+
 Status: concrete proof-family checklist pinned.
 
 Purpose: instantiate the active `NativeBoundaryZkTraceBindingAndHiding`

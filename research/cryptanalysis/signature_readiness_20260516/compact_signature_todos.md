@@ -1,5 +1,9 @@
 # Compact Signature Target TODOs
 
+> PACKAGE CONTEXT (2026-06-20): This package-scoped historical note is covered
+> by `research/ARCHIVE_INDEX.md`. Current authority starts at `spec/README.md`,
+> ADRs in `decisions/`, and `TRACKER.md`.
+
 This file is a research checklist, not just an implementation backlog.  It now
 keeps the historical branches because they explain why the current design has
 the shape it has, but stale branches are marked explicitly.

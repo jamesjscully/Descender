@@ -1,5 +1,10 @@
 # Per-event ε budget closure — GAP C numeric-closure analysis
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This document records the historical free-birthday analysis and later
+> correction. Current security-level policy and claim wording live in
+> `../../spec/security_model.md` and ADR-0006.
+
 > ## ✅ RESOLVED (2026-06-10) — HIGH-3 multi-target widening
 > The historical analysis below is the **free-birthday** model that motivated the
 > GAP-C re-model; it is retained for the record. **Final state:** the binding

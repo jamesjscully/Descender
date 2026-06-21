@@ -9,6 +9,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from common import EVENTS_PATH, RUNS_PATH, TASKS_PATH, append_jsonl, emit, read_json, utc_now
+from pivot_guard import task_pivot_aligned
 
 
 ACTIVE_STATUSES = {
@@ -170,7 +171,7 @@ def check_once() -> dict:
     ]
     queued = [
         task for task in state.get("tasks", [])
-        if task.get("status") == "queued"
+        if task.get("status") == "queued" and task_pivot_aligned(task)
     ]
     threshold_minutes = int(os.environ.get("DESCENDER_WATCHDOG_IDLE_MINUTES", "15"))
     now = datetime.now(timezone.utc)

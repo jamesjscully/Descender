@@ -1,5 +1,13 @@
 # Descender Production Reference
 
+> MIGRATION STATUS (2026-06-20): `LEGACY_FORMAL`.
+> This crate and README describe the old account-carried / projection-carrier
+> production-shaped API boundary. It is retained for executable baselines and
+> negative controls, but it is not the active product specification. Current
+> authority starts at `spec/README.md` and the Poseidon2/Plonky3 account-creation
+> path recorded in
+> `decisions/ADR-0004-poseidon2-plonky3-active-account-creation-path.md`.
+
 This crate is the production-shaped API boundary for the account-carried
 Descender reference implementation.
 
@@ -22,7 +30,7 @@ This is an intermediate split, not a deployment claim:
 - the exact reviewed target transaction size is `256 B`;
 - the archived aggressive branch is the strict `290 B` envelope:
   `258 B/Fq12` transaction plus a `32 B` hidden-source proof handle;
-- the selected robust branch is the strict `314 B` projection-carrier envelope:
+- the legacy-selected robust branch is the strict `314 B` projection-carrier envelope:
   `258 B/Fq12` transaction plus a `56 B` hidden-source fallback projection
   carrier;
 - the selected account-state hidden-source commitment model is the

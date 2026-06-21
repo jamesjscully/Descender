@@ -1,5 +1,10 @@
 # Account-Creation Deployed-Integration Runbook (2026-06-18)
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This is an older ordered integration runbook with useful implementation
+> history. It is not the current top-level deployment plan; current status lives
+> in `../TRACKER.md` and current wire/security claims live in `../spec/`.
+
 Concrete, ordered plan for the GATED deployed-integration phase, written BEFORE
 executing it (no deployed changes made by this doc). Each step marked
 REVERSIBLE / IRREVERSIBLE. The final gate flip is EXTERNAL-REVIEW-GATED (do not

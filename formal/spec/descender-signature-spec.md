@@ -1,8 +1,16 @@
-# Descender Signature — Canonical Specification (v0, normative spine)
+# Descender Signature Legacy Formal Specification (v0)
 
-Status: v0 draft, normative for the formal stack. Every tool model (Lean,
-EasyCrypt, Jasmin, hax-extracted Rust) attaches to **this** document. Byte sizes
-are the deployed post-AP2-004 constants (cross-checked against
+> MIGRATION STATUS (2026-06-20): `LEGACY_FORMAL`.
+> This file is no longer the active product specification. It records the
+> legacy 314-byte projection-carrier formal target and remains useful as
+> historical formal context and as a negative-control source. Current product
+> authority starts at `spec/README.md`, then append-only ADRs in `decisions/`,
+> then the consolidated `TRACKER.md`.
+
+Legacy status: v0 draft, formerly normative for the formal stack. At that stage,
+each tool model (Lean, EasyCrypt, Jasmin, hax-extracted Rust) attached to
+**this** document. Byte sizes
+are the legacy/current-at-the-time post-AP2-004 constants (cross-checked against
 `tools/parameter-search/src/production_reference.rs` by
 `scripts/research/check_estimator_param_sync.py`). Section numbers are the
 citation anchors tool formalizations must reference.
@@ -26,7 +34,7 @@ citation anchors tool formalizations must reference.
 - **Public key — 172 B:** `seed[32] ‖ payload[140]` (systematic public view).
 - **Account slot (state) — 32 B:** witness-commitment digest, consume-once.
   Per-spend account-link binding = `witness_commit[32] ‖ randomizer_commit[32] ‖ response_link_code[4]` (68 B).
-- **Signature — 314 B (deployed target):**
+- **Signature — 314 B (legacy formal target, not active product):**
   `checked_core[258] ‖ projection_carrier[56]` where
   - `checked_core[258]` = `slot_id[4] ‖ challenge[27] ‖ active_response[52] ‖ local_openings[104] ‖ proof_commitment[32] ‖ masked_response[39]`
   - `projection_carrier[56]` = `projection_lanes[24] (12 × q-residue) ‖ check_bytes[3] ‖ transcript_binding[29]`
@@ -70,7 +78,7 @@ slots, each committing a hidden witness as a 32-B digest.
 5. consume-once successor transition; all rejection is public-data-dependent and
    fail-closed.
 
-## 5. Security target (what the proofs must establish)
+## 5. Legacy Security Target (what the v0 proofs needed to establish)
 
 - **Goal:** SUF-CMA in the **QROM** (conservative, per decision D2). Strong
   unforgeability (anti-malleability), quantum random oracle.
@@ -82,7 +90,10 @@ slots, each committing a hidden witness as a 32-B digest.
 - **Standing external assumption:** hardness of the response-link-coded SIS
   instance at these parameters (`open_external_estimator`). No tool closes this.
 
-## 6. Open spec questions (must be resolved as formalization proceeds)
+## 6. Legacy Open Spec Questions
+
+These were unresolved questions for the v0 projection-carrier lineage. They are
+not active product tasks unless re-imported by `spec/`, ADRs, or `TRACKER.md`.
 
 - **Full witness opening vs projection-only.** The 56-B carrier proves a
   projection *relation*, not a full opening of the account-witness commitment

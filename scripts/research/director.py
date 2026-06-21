@@ -13,6 +13,7 @@ from common import (
     append_jsonl,
     artifact_dir,
     emit,
+    EVENTS_PATH,
     git_status_short,
     import_queue_files,
     locked_state,
@@ -21,6 +22,7 @@ from common import (
     utc_now,
     write_text,
 )
+from pivot_guard import task_pivot_aligned, task_pivot_alignment_reason, text_fields
 
 
 ACTIVE_STATUSES = {
@@ -151,18 +153,6 @@ def task_brief(task: dict) -> dict:
     }
 
 
-def text_fields(task: dict) -> str:
-    parts = [
-        str(task.get("track", "")),
-        str(task.get("kind", "")),
-        str(task.get("title", "")),
-        str(task.get("summary", "")),
-        str(task.get("prompt", "")),
-    ]
-    parts.extend(str(item) for item in task.get("acceptance", []))
-    return "\n".join(parts).lower()
-
-
 def task_parallel_safe(task: dict) -> bool:
     if task.get("parallel_safe") is True:
         return True
@@ -216,6 +206,7 @@ def build_followup_prompt(state: dict, max_followups: int) -> str:
             "quality_blocked",
             "implementation_failed",
             "revision_failed",
+            "pivot_archived",
         }
     ]
     status_counts: dict[str, int] = {}
@@ -241,9 +232,11 @@ def build_followup_prompt(state: dict, max_followups: int) -> str:
 
     return f"""You are the autonomous research director for Descender.
 
-Your job is to keep the research program moving by proposing concrete follow-up
-tasks. You have freedom to propose proof, theory, implementation, experiment,
-review, and risk-analysis tasks that advance the Descender system.
+Your job is to keep the project moving under its current pivot: Descender is now
+organized as a chain-native post-quantum authorization stack. Future tasks must
+advance the active authority spine, Path 2 prevalidated slots, Poseidon2/Plonky3
+account creation, checked-core spend binding, policy/aggregation/rollup support,
+or the migration/process work needed to keep those claims coherent.
 
 Task status counts:
 ```json
@@ -276,8 +269,16 @@ Recent accepted outputs:
 ```
 
 Repository context:
-- `research_program.md` defines the mathematical and cryptographic target.
-- `lean_proof_plan.md` describes the Lean proof plan.
+- Current authority starts at `spec/README.md`, append-only ADRs in
+  `decisions/`, and `TRACKER.md`.
+- `research/ARCHIVE_INDEX.md` classifies old research, old trackers, negative
+  controls, and active support docs.
+- `scripts/research/README.md` classifies research automation. Legacy artifact
+  generators are only for archive, negative-control, regression, or migration
+  work unless `DESCENDER_ALLOW_LEGACY_TASKS=1` is set.
+- Pre-pivot KEM/formalization seed plans have been retired from the worktree.
+  Do not generate new work against that lineage unless the task explicitly
+  explains how it supports the current Path 2 chain-native authorization stack.
 - The workflow has a separate quality gate; make acceptance criteria concrete.
 - The scheduler may run clearly read-only/research/review tasks in parallel.
 - Source-editing Lean or implementation tasks are treated as exclusive unless a
@@ -285,11 +286,17 @@ Repository context:
 - Do not edit files. Only propose follow-up tasks.
 - Avoid duplicate tasks already present in current task state.
 - Prefer tasks that compound useful information or unblock implementation.
+- Every proposed task must include `"pivot_aligned": true` and should cite the
+  current spec, ADR, or tracker item it advances.
+- Do not propose work that treats the old 308-byte/Fq12 projection-carrier path
+  as the selected deployment path. Such work is valid only as archive cleanup,
+  negative-control preservation, fail-closed regression evidence, or migration
+  into the current authority chain.
 
 Return at most {max_followups} follow-up tasks as a JSON array between the
 markers `DESCENDER_FOLLOWUPS_JSON_START` and `DESCENDER_FOLLOWUPS_JSON_END`.
 Each task object must include `id`, `enabled`, `priority`, `track`, `kind`,
-`title`, `summary`, `prompt`, and `acceptance`.
+`title`, `summary`, `prompt`, `acceptance`, and `pivot_aligned`.
 """
 
 
@@ -317,7 +324,7 @@ def parse_followups(text: str, max_followups: int) -> list[dict]:
             continue
         if "Precise instructions for the implementation/research agent" in str(item.get("prompt")):
             continue
-        followups.append({
+        task = {
             **item,
             "id": task_id,
             "enabled": True,
@@ -329,7 +336,10 @@ def parse_followups(text: str, max_followups: int) -> list[dict]:
                 "event": "generated_by_director",
                 "details": {"source": "followup_director"},
             }],
-        })
+        }
+        if not task_pivot_aligned(task):
+            continue
+        followups.append(task)
     return followups
 
 
@@ -519,18 +529,46 @@ def request_queued_work(max_launches: int) -> int:
             if task.get("status") == "queued"
         ]
         queued.sort(key=lambda task: (task.get("priority", 100), task.get("created_at", "")))
+        skipped_for_pivot = []
 
         for task in queued:
             if launched >= available:
                 break
+            if not task_pivot_aligned(task):
+                _aligned, reason = task_pivot_alignment_reason(task)
+                skipped_for_pivot.append({
+                    "id": task.get("id"),
+                    "reason": reason,
+                })
+                append_jsonl(EVENTS_PATH, {
+                    "at": utc_now(),
+                    "event_type": "descender.task.skipped",
+                    "payload": {
+                        "task_id": task.get("id"),
+                        "reason": reason,
+                        "source": "director",
+                    },
+                })
+                continue
             if not task_parallel_safe(task) and capacity["active"]:
                 continue
-            set_status(task, "implementation_requested", {"source": "director"})
+            set_status(task, "implementation_requested", {
+                "source": "director",
+                "pivot_guard": "passed",
+            })
             launched += 1
             capacity["active"].append(task)
             if not task_parallel_safe(task):
                 capacity["unsafe_active"].append(task)
                 break
+
+        if skipped_for_pivot and launched == 0:
+            print(json.dumps({
+                "message": "queued work exists, but the pivot guard skipped legacy/non-aligned tasks",
+                "skipped_count": len(skipped_for_pivot),
+                "sample": skipped_for_pivot[:20],
+                "override": "set DESCENDER_ALLOW_LEGACY_TASKS=1 to dispatch legacy tasks",
+            }, indent=2, sort_keys=True))
 
     if launched:
         dispatch_requested(launched)

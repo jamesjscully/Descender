@@ -41,8 +41,8 @@ Status: `BLOCKED` = attack provably/empirically fails · `OPEN` = not yet run ·
 ## Sources consolidated
 
 - `audit/active_path_signature_independent_red_team_20260602.md`
-- `research/cryptanalysis/review_readiness_20260519/cryptanalysis_plan.md`,
-  `assumption_review.md`
+- `research/cryptanalysis/SECURITY_DOSSIER.md`
+- `research/cryptanalysis/assumption_ledger_authoritative.md`
 - `research/path2_core_algorithm_red_team_v1.md`
 - `research/cryptanalysis/signature_readiness_20260516/*`
 

@@ -1,6 +1,11 @@
 # EC-SPIKE — success criteria (written BEFORE the machine run)
 
-Per `../VERIFICATION_PLAN.md` Phase 1, the spike's job is a **go/no-go signal**
+> PACKAGE CONTEXT (2026-06-20): This is the historical pre-run success bar for
+> `SPIKE_VERDICT.md`. Use `SPIKE_VERDICT.md` and `break_reduction_status.md` for
+> measured EasyCrypt status. Current authority starts at `../../spec/README.md`,
+> ADRs, and `../../TRACKER.md`.
+
+The spike's job is a **go/no-go signal**
 on "EasyCrypt vs Lean for the reduction", from ONE game hop. This file fixes the
 bar *before* an installed EasyCrypt run, so the verdict is not post-hoc.
 
@@ -60,7 +65,6 @@ to close via z3 immediately (they are the EC image of the Lean
 
 ## Current honest status
 
-**PREPARED, BLOCKED ON TOOL INSTALL.** The `.ec` skeleton mirrors the Lean
-theorem structure line-for-line (table above), but EasyCrypt/opam are absent
-(`../easycrypt/INSTALL.md`), so **nothing here is machine-checked**. The go/no-go
-verdict cannot be issued until OB-1..OB-4 are attempted in an installed EC.
+**COMPLETED AS A PRE-RUN CRITERIA NOTE.** The measured verdict is
+`SPIKE_VERDICT.md`: EasyCrypt returned GO (qualified), and subsequent
+break-event work is tracked in `break_reduction_status.md`.

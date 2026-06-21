@@ -1,5 +1,10 @@
 # Pre-Signature Projection Leakage Audit
 
+> MIGRATION STATUS: `ACTIVE_RESEARCH`.
+> This is legacy projection-carrier leakage analysis. It may inform Path 2
+> leakage ledgers, but it is not a current product target or deployment claim.
+> Current authority lives in `spec/README.md`, ADRs, and `TRACKER.md`.
+
 Question: if the 32-byte Fq12 account witness commitment is redefined to pack
 the 12 checked-core syndrome residues plus the six selected account-witness
 projection coordinates, does revealing those six coordinates in account state

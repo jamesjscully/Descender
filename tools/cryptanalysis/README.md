@@ -1,5 +1,13 @@
 # Descender External Cryptanalysis Harness
 
+Status: ACTIVE_RESEARCH
+
+This package is an external-cryptanalysis handoff harness. It is research
+evidence only; current product authority starts in `../../spec/README.md`,
+current security claims start in `../../spec/security_model.md`, append-only
+decisions live in `../../decisions/`, and implementation/proof status lives in
+`../../TRACKER.md`.
+
 This directory is the bridge from Descender's internal parameter validator to
 standard external cryptanalysis tooling.
 

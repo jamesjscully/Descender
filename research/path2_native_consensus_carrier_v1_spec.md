@@ -1,5 +1,9 @@
 # Path 2 Native Consensus Carrier V1
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting carrier spec note, not a normative spec. Current
+> normative authority starts at `../spec/README.md`.
+
 Status: selected first consensus carrier for admitted native `q`.
 
 Purpose: define the byte object validators/store nodes receive for an admitted

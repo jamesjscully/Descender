@@ -2,15 +2,16 @@
 name = "descender-parameter-search"
 version = "0.1.0"
 edition = "2024"
+description = "Research parameter-search and checked-core evidence host for Descender Path 2; generated rows are not product decisions unless imported by spec, ADRs, or TRACKER."
 
 [dependencies]
 # Standalone (NO Plonky3) projection-mask PRF, shared with the account-creation
 # proof's in-circuit mask derivation (proven byte-identical). This crate has ZERO
-# dependencies, so depending on it does NOT pull Plonky3 (p3-*) into the deployed
-# signer. See tools/descender-mask-prf/Cargo.toml.
+# dependencies, so depending on it does NOT pull Plonky3 (p3-*) into signer-side
+# builds. See tools/descender-mask-prf/Cargo.toml.
 descender-mask-prf = { path = "../descender-mask-prf" }
 # OPTIONAL, OFF BY DEFAULT. The ONLY edge through which the Plonky3 STARK verifier
-# (transitively, p3-*) can enter this deployed crate. A default (wallet/signer)
+# (transitively, p3-*) can enter this crate. A default (wallet/signer)
 # build does NOT enable this feature and links ZERO p3-* crates; a validator build
 # enables `account-creation-stark-verifier`. See verify_path2_direct_creation_account_stark_payload_boundary.
 descender-account-verifier = { path = "../descender-account-verifier", optional = true }
@@ -23,6 +24,6 @@ sha2 = { version = "0.10", features = ["force-soft"] }
 [features]
 # Enables the sound Plonky3 account-creation STARK verifier in the admission path
 # (the replacement for the transparent-descent full-hidden-relation backend, i.e.
-# the HIGH-2 in-clear-blind path). OFF by default so the deployed signer stays
+# the HIGH-2 in-clear-blind path). OFF by default so signer-side builds stay
 # Plonky3-free; validator builds opt in.
 account-creation-stark-verifier = ["dep:descender-account-verifier"]

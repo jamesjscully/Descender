@@ -1,10 +1,17 @@
 # JASMIN-SCOPE — Smallest Deployable Verifier Core (scope + effort estimate)
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This scope note is retained as Jasmin verifier-core implementation research:
+> constant-time rules, proof obligations, and effort decomposition. It is not
+> product authority or a current byte-layout target. Current authority starts at
+> `../spec/README.md`, `../decisions/`, and `../TRACKER.md`.
+
 **Date:** 2026-06-09
-**Type:** SCOPING + EFFORT-ESTIMATE only. **No Jasmin spike code is in this
-deliverable** and none should be written yet (see §5 Sequencing).
+**Type:** SCOPING + EFFORT-ESTIMATE only. **No Jasmin implementation code is in
+this deliverable**; implementation remains gated on the current spec/EC/KAT
+targets (see §5 Sequencing).
 **Unblocked by:** EC-SPIKE → **GO (qualified)**
-(`formal/easycrypt/SPIKE_VERDICT.md`; `VERIFICATION_PLAN.md` Phase-1). EasyCrypt
+(`formal/easycrypt/SPIKE_VERDICT.md`). EasyCrypt
 is adopted for the reduction spine, and — decisively for this layer — Jasmin's
 correctness proof is realized through the Jasmin→EasyCrypt embedding (the
 Formosa / ML-KEM pipeline). That is why scoping Jasmin only becomes meaningful
@@ -16,9 +23,15 @@ proof, or any compiled artifact — those are Phase-2 work, gated per §5.
 
 ---
 
-## 0. Anchoring numbers (from the spec, do not drift)
+## 0. Historical Anchoring Numbers
 
-All from `formal/spec/descender-signature-spec.md` §1–§4 unless noted.
+The values in this table are inherited from
+`formal/spec/descender-signature-spec.md` §1–§4 unless noted. They describe the
+older projection-carrier verifier-core slice used for this scope estimate. The
+current byte-layout authority is `spec/wire_formats.md` plus
+`scripts/check_wire_format_authority.py`; a current Jasmin implementation
+must regenerate offsets, KATs, and equivalence targets from that active wire
+spine.
 
 | Quantity | Value | Anchor |
 |---|---|---|
@@ -36,30 +49,32 @@ All from `formal/spec/descender-signature-spec.md` §1–§4 unless noted.
 `formal/kat/kat_v0.json` declares `signature_bytes: 260` with layout
 `slot_id[4] ‖ challenge[27] ‖ response[52] ‖ openings[104] ‖ linear_sigma_proof[73]`
 — i.e. the **legacy linear-sigma path** that KAT v0 pins, *not* the 314-B
-`checked_core[258] ‖ projection_carrier[56]` spec target. `VERIFICATION_PLAN.md`
-Phase-0 already records this: KAT v0 "pins the CURRENT deployable linear-sigma
-path that still wraps the LEGACY proof … MUST be regenerated when that path is
-hardened." **The Jasmin core must target the 314-B spec layout, and KAT
-conformance is against a regenerated KAT (v1) for that layout — not byte-for-byte
-against today's 260-B `kat_v0.json`.** Conforming to the stale 260-B vectors
-would bake the legacy path into verified assembly. This dependency is called out
-in §4 and §5.
+`checked_core[258] ‖ projection_carrier[56]` historical target.
+`formal/kat/README.md` records the same caveat: KAT v0 pins the
+legacy-current-at-the-time linear-sigma path and must be regenerated when that
+path is hardened. **A current Jasmin core must target the active wire formats and
+a regenerated KAT for those formats, not byte-for-byte conformance against
+today's 260-B `kat_v0.json` and not the stale 314-B projection-carrier layout by
+default.** Conforming to stale vectors would bake the legacy path into verified
+assembly. This dependency is called out in §4 and §5.
 
 ---
 
-## 1. Smallest deployable verifier core (v0 of the Jasmin layer)
+## 1. Reusable Verifier-Core Research Slice
 
-The first thing to write in Jasmin is the **arithmetic checked-core of VERIFY**:
+The reusable first Jasmin slice is the **arithmetic checked-core of VERIFY**:
 the constant-time sigma-equation check plus the deserialize path that feeds it,
-reusing the exact decomposition the hax spike already validated
-(`formal/hax/extracted/Spike_core.fst`). This mirrors `spec` §4 Verify steps 1
-and 3 (parse canonically; sigma equation `z = a + action(c)·w` over Fq12).
+reusing the exact decomposition the hax spike validated
+(`formal/hax/extracted/Spike_core.fst`). For a current implementation, offsets
+and frames come from the active wire-format spec; the proof-engineering shape is
+the same: parse canonically and check the sigma equation
+`z = a + action(c)·w` over Fq12.
 
 ### In scope for Jasmin v0
 
 1. **Byte parse / deserialize with canonical-encoding checks.**
-   - Slice the 314-B signature into the §2 fields and the 172-B pk into
-     `seed[32] ‖ payload[140]`. Fixed offsets, no secret-dependent indexing.
+   - Slice the active signature and public-key frames using fixed offsets from
+     `spec/wire_formats.md`. Fixed offsets, no secret-dependent indexing.
    - **Syndrome lane unpack** (`unpack_…_syndrome_digest`, `Spike_core.fst:366`):
      for each of the 12 lanes, read 14 LE bits from a 32-B digest
      (`read_bits_le`), reject if any lane `≥ q`, and reject if any of the 88
@@ -194,11 +209,10 @@ extract-to-EC-and-prove pipeline used for Formosa / ML-KEM). Concretely:
    `challenge mismatch`, `local fiber-state mismatch`, `account randomizer
    commitment mismatch`, `slot already consumed`, `slot id out of range`,
    non-canonical digest). **Caveat (§0):** `kat_v0.json` pins the **260-B legacy
-   linear-sigma** layout, not the 314-B spec target. The conformance obligation
-   is against a **regenerated KAT (v1) for the 314-B `checked_core ‖
-   projection_carrier` layout**; this regeneration is a hard prerequisite
-   (`VERIFICATION_PLAN.md` Phase-0 already flags KAT v0 must be regenerated when
-   the path is hardened). KAT and EC-equivalence are complementary, not redundant
+   linear-sigma** layout, not the active wire-format target. The conformance
+   obligation is against a **regenerated KAT for the active wire-format layout**;
+   this regeneration is a hard prerequisite.
+   KAT and EC-equivalence are complementary, not redundant
    (HAX-SPIKE rec. #3): EC proves *Jasmin ≡ spec*; KAT proves *both ≡ the
    reference runtime*.
 
@@ -220,11 +234,11 @@ toolchain install and the `poly_mul_mod` correctness proof**, not the code volum
 | **2. Fq12 arithmetic** | **1.5–2 pw** | `add_mod`/`sub_mod` with **Barrett/Montgomery** for q=12289 (~0.5 pw, ML-KEM template); `poly_mul_mod` schoolbook + monic reduction as a **fixed-bound loop** (~1–1.5 pw, the genuine work). |
 | **3. CT proof** | **0.5–1 pw** | Run the Jasmin CT checker; close the "no secret-dependent branch/index/loop-bound" obligations. Cheap *because* most inputs are public (§2); cost is mostly making the reductions and compares branchless. |
 | **4. EC functional-equivalence proof** | **2–3 pw** | Prove the embedded Jasmin program equals the EC VERIFY model (steps 1 & 3). The `poly_mul_mod` loop-invariant + monic-reduction correctness is the bulk; everything else is `add_mod`/`sub_mod`/lane bound lemmas (HAX-SPIKE judged these "Z3-trivial"). Includes proving the Barrett/Montgomery form `≡ %! q`. |
-| **5. KAT conformance** | **0.5 pw** | **Plus** a prerequisite KAT-v1 regeneration for the 314-B layout (separate task, not Jasmin work; flagged §0/§3). Wiring the core to emit/accept KAT vectors and diffing is small. |
+| **5. KAT conformance** | **0.5 pw** | **Plus** a prerequisite KAT regeneration for the active wire layout (separate task, not Jasmin work; flagged §0/§3). Wiring the core to emit/accept KAT vectors and diffing is small. |
 
 **Headline estimate: ~6–8.5 person-weeks** for the v0 verifier core (parse +
 Fq12 sigma + CT + EC-equivalence + KAT), assuming the Phase-2 EC VERIFY model and
-the regenerated 314-B KAT already exist. Add **~0.5–1 pw** if toolchain
+the regenerated active-layout KAT already exist. Add **~0.5–1 pw** if toolchain
 bring-up hits friction (plausible given the hax-vs-dependency skew already seen
 in HAX-SPIKE). **Round figure to quote: 7 person-weeks.**
 
@@ -234,7 +248,7 @@ in HAX-SPIKE). **Round figure to quote: 7 person-weeks.**
    Without it, workstream 4 has nothing to prove against. **Hard blocker.**
 2. **Jasmin toolchain installed + EC-export wired** (workstream 0) — currently
    absent. Can proceed in parallel with #1.
-3. **Regenerated KAT v1 for the 314-B spec layout** — blocks workstream 5;
+3. **Regenerated KAT for the active wire layout** — blocks workstream 5;
    independent of #1/#2 and can start anytime.
 4. Then 1 → 2 → 3 → (4 needs #1) → 5. Parse (ws1) and arithmetic (ws2) can be
    written before the EC model lands, but cannot be *proven* (ws3/ws4) until it
@@ -242,32 +256,31 @@ in HAX-SPIKE). **Round figure to quote: 7 person-weeks.**
 
 ---
 
-## 5. Sequencing — start this AFTER the first real EC break-event reduction
+## 5. Sequencing — start implementation after current EC and KAT targets exist
 
 This layer is **gated behind the Phase-2 EC reduction model existing**, for a
 specific reason: the Jasmin correctness obligation (§3) is "equivalent to the
 EasyCrypt VERIFY model." Until that EC model is written, the *equivalence target
 is undefined* and the largest workstream (ws4, ~2–3 pw) cannot even begin.
 
-EC-SPIKE was a GO but **qualified**: its verdict explicitly defers committing all
-of Phase 2 until "a second narrow spike on the OB-1 coupling + **one real QROM
-break-event reduction**" runs (`VERIFICATION_PLAN.md` Phase-1; `formal/easycrypt/
-SPIKE_VERDICT.md`). That first *real* break-event reduction is what produces the
-concrete EC VERIFY predicate the Jasmin core attaches to.
+EC-SPIKE was a GO but **qualified** (`formal/easycrypt/SPIKE_VERDICT.md`), and
+subsequent EasyCrypt reductions are tracked in
+`formal/easycrypt/break_reduction_status.md`. The remaining implementation gate
+is not "has any EC reduction run"; it is whether the current EasyCrypt VERIFY
+predicate and current wire/KAT target are stable enough for the Jasmin proof to
+attach to them.
 
 **Recommendation:** do **not** start Jasmin implementation before that first real
 EC break-event reduction lands. Starting earlier risks building the verified core
-against a VERIFY model that the reduction work then reshapes — re-doing the
-expensive equivalence proof. The cheap, no-regret work that *can* start now is
-non-blocking: (a) install the Jasmin toolchain (ws0), and (b) regenerate KAT v1
-for the 314-B layout. Both are prerequisites with zero dependence on the EC model
-and remove two items from the critical path.
+against a VERIFY model or byte layout that the active spec work then reshapes —
+re-doing the expensive equivalence proof. The cheap, no-regret work that *can*
+start now is non-blocking: (a) install the Jasmin toolchain (ws0), and (b)
+regenerate KATs for the active wire layout. Both are prerequisites with zero
+dependence on the final EC model and remove two items from the critical path.
 
-Net: **Jasmin coding begins once (i) the first real EC break-event reduction
-defines the VERIFY model and (ii) the 314-B KAT v1 exists.** Until then this
-document is the deliverable, and per `VERIFICATION_PLAN.md` Phase-1 the
-JASMIN-SCOPE line can be marked done while the implementation line stays gated in
-Phase 2.
+Net: **Jasmin coding begins once (i) the current EC VERIFY model is defined and
+(ii) an active-layout KAT exists.** Until then this document remains research
+evidence, and the implementation line stays gated.
 
 ---
 

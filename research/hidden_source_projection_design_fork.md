@@ -1,7 +1,14 @@
 # Hidden-Source Projection Design Fork
 
-The selected 308-byte target exposes twelve q12289 projection lanes in the
-56-byte carrier. The historical generalized proof model used 64 hidden-source
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This file is supporting design history for why the project moved toward Path 2
+> prevalidated slots. It is not an ADR and does not supersede
+> `../decisions/ADR-0002-select-path2-prevalidated-slots.md`,
+> `../decisions/ADR-0005-archive-legacy-projection-carrier-product-target.md`, or
+> `../TRACKER.md`.
+
+The old 308-byte projection-carrier target exposed twelve q12289 projection
+lanes in the 56-byte carrier. The historical generalized proof model used 64 hidden-source
 projection variables. Exact replay found an inactive-coordinate survivor in that
 64-variable space.
 

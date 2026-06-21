@@ -1,5 +1,10 @@
 # WS4 #11 — Statistical Witness-Hiding of Real Transcripts: RISK-FIRST VERDICT
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This verdict is useful leakage evidence and negative-control history for the
+> old scaffold signer. It is not current deployable-product status. Current
+> security authority starts at `../../spec/security_model.md`.
+
 **Target:** Statistical witness-hiding of REAL signature transcripts emitted by the deployed
 signer (`reference_sign_with_proof`, `signature_q12289_local_delta_stateful.rs:4678`),
 measured against the existing zero-TV / `residual_hiding_meets_140` hiding certificate

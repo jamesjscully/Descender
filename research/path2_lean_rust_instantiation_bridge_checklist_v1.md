@@ -1,5 +1,9 @@
 # Path 2 Lean/Rust Instantiation Bridge Checklist V1
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting instantiation checklist, not the top-level project
+> tracker. Top-level status lives in `../TRACKER.md`.
+
 Status: active bridge checklist after core algorithm red-team patches.
 
 Purpose: make the abstract Lean hooks introduced by the core proof review

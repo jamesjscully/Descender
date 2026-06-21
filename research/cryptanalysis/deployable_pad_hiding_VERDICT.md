@@ -1,5 +1,10 @@
 # Task #24 — Does the DEPLOYABLE Fq12 design INHERIT the scaffold's pad-in-clear leak?
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This verdict is useful spend-path hiding evidence, but it has important
+> creation-proof caveats and is not current top-level product status. Current
+> security authority starts at `../../spec/security_model.md`.
+
 **RISK-FIRST verdict: CONDITIONAL-GAP-FIXABLE.** The deployable Fq12 / prevalidation design
 does **NOT** inherit the scaffold's key-free pad leak. The pad is hidden pre-spend by a
 **PRF-fresh, per-instance, domain-separated mask** (not the scaffold's constant `[12, Q-12]`),

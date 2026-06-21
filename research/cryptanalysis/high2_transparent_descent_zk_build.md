@@ -1,5 +1,10 @@
 # HIGH-2 — Transparent-Descent ZK Creation Proof: BUILD RESULT
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_RESEARCH`.
+> This is a historical build result for the transparent-descent ZK route. It is
+> useful evidence and negative-control context, but the current product path and
+> status live in `../../spec/`, `../../decisions/`, and `../../TRACKER.md`.
+
 **Date:** 2026-06-10 · **n=32, q=12289** · 6 projection lanes
 **Status:** PARTIAL BUILD, PUBLIC-DISABLED. The transparent-descent masked-share
 prover and incomplete debug core are implemented and tested, but the public

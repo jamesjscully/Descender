@@ -1,4 +1,4 @@
-//! Integration tests for the production account-creation ZK-STARK library.
+//! Integration tests for the Path 2 account-creation ZK-STARK library.
 //!
 //! Covered (all run in --release; the prover is too slow in debug):
 //!   * single-instance prove -> verify round-trip (completeness)

@@ -1,14 +1,14 @@
 //! # descender-account-stark
 //!
-//! Production account-creation ZK-STARK for the Descender scheme: the full
-//! `C1 ∧ C2 ∧ C4 ∧ C6` account-creation relation re-hosted on Plonky3 /
-//! KoalaBear with the PINNED vetted Poseidon2 instance and a ~128-bit-conjectured
-//! ZK FRI config. This crate is the deployable artifact extracted from the
-//! `stark-field-bench` exploration crate.
+//! Path 2 account-creation ZK-STARK implementation artifact for Descender: the
+//! full `C1 ∧ C2 ∧ C4 ∧ C6` account-creation relation re-hosted on Plonky3 /
+//! KoalaBear with the pinned vetted Poseidon2 instance and a ~128-bit-conjectured
+//! ZK FRI config. Product authority still starts in `spec/`, ADRs, and
+//! `TRACKER.md`; this crate is implementation evidence for that authority chain.
 //!
-//! The whole Plonky3 dependency surface is ISOLATED to this crate (the deployed
-//! `tools/parameter-search` signer/verifier does NOT depend on Plonky3); it
-//! interacts with account-creation proofs only through this library's API.
+//! The whole Plonky3 dependency surface is isolated to this crate. Signer-side
+//! `tools/parameter-search` default builds do not depend on Plonky3; they
+//! interact with account-creation proofs only through this library's API.
 //!
 //! ## What the relation proves (in zero knowledge)
 //!

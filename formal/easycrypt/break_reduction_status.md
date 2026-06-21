@@ -1,5 +1,9 @@
 # Break-event reduction status — first real Phase-2 EC increment
 
+> PACKAGE CONTEXT (2026-06-20): This package-scoped historical note is covered
+> by `research/ARCHIVE_INDEX.md`. Current authority starts at `spec/README.md`,
+> ADRs in `decisions/`, and `TRACKER.md`.
+
 **Date:** 2026-06-09
 **Tooling:** EasyCrypt 2026.05, Z3 4.16.0 (why3 auto-config).
 **Artifact:** `formal/easycrypt/break_slot_replay_or_rollback.ec` — `easycrypt` **exit 0**.

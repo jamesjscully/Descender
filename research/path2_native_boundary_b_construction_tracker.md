@@ -1,6 +1,11 @@
 # Path 2 Native Boundary `b` Construction Tracker
 
-Status: active proof-design tracker.
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This remains a proof-design detail tracker for the native-boundary research
+> line. It is not the top-level project tracker; top-level status lives in
+> `../TRACKER.md`.
+
+Detail status: supporting proof-design note, subordinate to `../TRACKER.md`.
 
 Purpose: find or construct the public boundary object `b` so account creation
 is a native descent/gluing admission problem instead of a collection of

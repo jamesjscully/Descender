@@ -7,21 +7,59 @@ on:
 
 jobs:
   lean:
-    name: Lean build + theorem audit
+    name: Lean build + theorem and docs audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build Descender (with mathlib cache)
+      - name: Documentation authority check
+        run: python3 scripts/check_doc_authority.py
+      - name: ADR immutable-section check
+        run: python3 scripts/check_adr_immutable_sections.py
+      - name: Process gate coverage check
+        run: python3 scripts/check_process_gate_coverage.py
+      - name: Documentation classification inventory
+        run: python3 scripts/list_doc_classification_candidates.py --strict --include-status-lines --include-path2-research --include-cryptanalysis-root --include-all-markdown
+      - name: Archive mixed-status audit
+        run: python3 scripts/check_archive_mixed_status.py --max-mixed 0
+      - name: Archive legacy-count audit
+        run: python3 scripts/check_archive_legacy_counts.py --max-non-active 10 --max ARCHIVED_TARGET=0 --max LEGACY_FORMAL=4 --max MIXED_STATUS=0 --max NEGATIVE_CONTROL=6 --max SUPERSEDED_DECISION=0 --max SUPERSEDED_TRACKER=0
+      - name: Cleanup queue check
+        run: python3 scripts/check_cleanup_queue.py
+      - name: Retired path absence check
+        run: python3 scripts/check_retired_path_absence.py
+      - name: Active support import audit
+        run: python3 scripts/check_active_support_imports.py --max-unanchored 0
+      - name: Active authority stale-term check
+        run: python3 scripts/check_active_authority_stale_terms.py
+      - name: Legacy code framing check
+        run: python3 scripts/check_legacy_code_framing.py
+      - name: Tool manifest framing check
+        run: python3 scripts/check_tool_manifest_framing.py
+      - name: Active source framing check
+        run: python3 scripts/check_active_source_framing.py
+      - name: CI/local gate parity check
+        run: python3 scripts/check_ci_local_gate_parity.py
+      - name: Tracker integrity check
+        run: python3 scripts/check_tracker_integrity.py
+      - name: Requirement traceability check
+        run: python3 scripts/check_requirement_traceability.py
+      - name: Wire-format authority check
+        run: python3 scripts/check_wire_format_authority.py
+      - name: Research automation routing check
+        run: python3 scripts/research/check_research_automation_routing.py
+      - name: Research queue pivot audit
+        run: python3 scripts/research/audit_task_pivot_alignment.py --strict-queue
+      - name: Lean build
         uses: leanprover/lean-action@v1
         with:
           use-mathlib-cache: true
-      - name: Semantic theorem audit (axioms, gate endpoints, statement dump)
+      - name: Semantic theorem audit
         run: lake env lean --run scripts/audit_theorems.lean
-      - name: Fail if the statement dump drifted without being committed
+      - name: Lean theorem statement drift check
         run: git diff --exit-code audit/lean_theorem_statements.txt
 
   rust:
-    name: Rust workspace check + retired-path tests
+    name: Rust workspace check + legacy negative controls
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -32,24 +70,56 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: tools/parameter-search
-      - name: Check every target (lib, bins, tests)
+      - name: Rust all-target check
         run: cargo check --all-targets
-      - name: Retired-path q12289 bin tests
+      - name: Legacy q12289 negative-control bin tests
         run: cargo test --bin signature_q12289_local_delta_stateful
-      - name: KAT v0 corpus reproduces byte-for-byte (cross-tool anchor)
+      - name: Legacy KAT v0 byte-conformance
         run: cargo run --bin signature_q12289_local_delta_stateful -- --kat-check
 
+  active-rust:
+    name: Active Path 2 Rust crate checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            tools/descender-mask-prf
+            tools/descender-account-stark
+            tools/descender-account-verifier
+            tools/descender-recursion
+      - name: Active Path 2 Rust crate checks
+        run: |
+          RUSTFLAGS="-D warnings" cargo check --manifest-path tools/descender-mask-prf/Cargo.toml --all-targets
+          RUSTFLAGS="-D warnings" cargo check --manifest-path tools/descender-account-stark/Cargo.toml --all-targets
+          RUSTFLAGS="-D warnings" cargo check --manifest-path tools/descender-account-verifier/Cargo.toml --all-targets
+          RUSTFLAGS="-D warnings" cargo check --manifest-path tools/descender-recursion/Cargo.toml --all-targets
+      - name: Active Path 2 fast Rust tests
+        run: bash scripts/check_active_rust_fast_tests.sh
+
   cryptanalysis:
-    name: Cryptanalysis artifacts (param sync + verified checks)
+    name: Cryptanalysis/reference artifacts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - name: Estimator constants match deployed Rust reference (WS3-c)
+      - name: Estimator/reference constant sync
         run: python3 scripts/research/check_estimator_param_sync.py
-      - name: Fq12 extension polynomial is irreducible (WS2-a/WS4)
+      - name: QROM budget artifact regeneration
+        run: |
+          python3 scripts/research/qrom_challenge_budget_memo.py
+          python3 scripts/research/qrom_security_loss_review.py
+          python3 scripts/research/pre_third_party_qrom_frame_probe.py
+          python3 scripts/research/qrom_multitarget_margin.py
+      - name: QROM budget/reference sync
+        run: python3 scripts/research/check_qrom_budget_sync.py
+      - name: QROM generated artifact drift check
+        run: python3 scripts/research/check_qrom_generated_artifact_drift.py
+      - name: Fq12 reference irreducibility check
         run: python3 scripts/research/verify_fq12_irreducibility.py
-      - name: Concrete-security estimate runs
+      - name: Checked-core concrete-security support smoke
         run: python3 scripts/research/cryptanalysis_concrete_security_estimate.py

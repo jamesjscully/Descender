@@ -1,8 +1,15 @@
 # KAT v0 — index (human-readable)
 
+> MIGRATION STATUS (2026-06-20): `LEGACY_FORMAL`.
+> This frozen corpus indexes the legacy linear-sigma byte anchor. It is not the
+> current product authorization format and is not a soundness claim. Do not use
+> this file as evidence for the Path 2 / prevalidated-slot product target.
+> Current product authority starts at `../../spec/README.md`.
+
 This is a generated index of [`kat_v0.json`](kat_v0.json), the frozen
-Known-Answer-Test corpus that every Descender implementation must reproduce
-byte-for-byte. **Do not hand-edit either file.** Regenerate both with:
+Known-Answer-Test corpus that every implementation claiming KAT v0 conformance
+must reproduce byte-for-byte. **Do not hand-edit either file.** Regenerate both
+with:
 
 ```
 cd tools/parameter-search
@@ -28,10 +35,10 @@ cargo run --bin signature_q12289_local_delta_stateful -- --kat-check
   signature. Any drift in the reference logic changes this digest.
 - **q = 12289**, public key = 172 bytes, transaction signature = **260 bytes**.
 
-> Note: this corpus pins the *current* deployable reference path (the
-> 260-byte linear-sigma target transaction signature, which still wraps the
-> legacy proof). It is the byte-for-byte anchor; it is not itself a soundness
-> claim about that path.
+> Note: this corpus pins the legacy deployable reference path as it existed when
+> KAT v0 was frozen: the 260-byte linear-sigma target transaction signature,
+> which still wraps the legacy proof. It is the byte-for-byte anchor; it is not
+> itself a soundness claim about that path.
 
 ## Signature byte layout (260 bytes)
 

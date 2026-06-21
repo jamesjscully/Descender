@@ -1,9 +1,13 @@
-# hax — install recipe (to run the HAX-SPIKE)
+# hax — historical install recipe for the HAX-SPIKE
 
-**Why this file exists:** `spike_target.md` names a real extraction target but no
-extraction has been run — `cargo hax` reports `no such command` here (hax is not
-installed). This is the concrete recipe to install hax and extract the target to
-F\*.
+> PACKAGE CONTEXT (2026-06-20): This is a package-scoped historical install
+> recipe, covered by `research/ARCHIVE_INDEX.md`. The measured spike result is
+> `SPIKE_VERDICT.md`. Current authority starts at `../../spec/README.md`, ADRs,
+> and `../../TRACKER.md`.
+
+**Why this file exists:** `spike_target.md` names a real extraction target. This
+file records the original local setup recipe for installing hax and extracting
+the target to F\*.
 
 ## Measured environment (2026-06-09)
 
@@ -14,8 +18,8 @@ F\*.
 | `fstar.exe`  | PRESENT — `/home/jack/.nix-profile/bin`, F\* 2026.03.24~dev |
 | `z3`         | PRESENT — `/home/jack/.local/bin/z3` v4.16.0 (F\*'s SMT backend) |
 
-So the spike is gated **only on the hax frontend**: the F\* checker and its SMT
-prover that would discharge obligations (1)–(4) are already here.
+At the time this recipe was written, the spike was gated **only on the hax
+frontend**: the F\* checker and its SMT prover were already present.
 
 ## Recipe A — nix (matches this box's existing nix usage)
 
@@ -70,9 +74,10 @@ fstar.exe --z3version 4.16.0 \
 # re-check; GO iff fstar.exe discharges them.
 ```
 
-## Honest expectations
+## Historical expectations
 
-- **Not executed here** (hax absent). This is a plan, not a log.
+- This is the original install plan, not the measured result. Use
+  `SPIKE_VERDICT.md` for the actual extraction evidence.
 - The risky constructs are `Result<_,String>` + `?`, `Vec<u16>` in
   `poly_mul_mod`, and `Sha256`/rejection-sampler in
   `reviewed_fq12_challenge_action_vector`. If hax rejects them, fall back to the

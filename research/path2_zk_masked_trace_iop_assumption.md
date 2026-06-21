@@ -1,5 +1,9 @@
 # Path 2 ZK Masked-Trace IOP Assumption
 
+> MIGRATION STATUS: `ACTIVE_RESEARCH`. This assumption note is superseded by the
+> native-boundary refinement. Use the active native-boundary assumption notes
+> and `spec/security_model.md` for current authority.
+
 Status: superseded by native-boundary refinement; not proved.
 
 Original assumption: `zkMaskedTraceIOPBindingAndHiding`

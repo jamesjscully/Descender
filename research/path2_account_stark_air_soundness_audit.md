@@ -1,5 +1,9 @@
 # descender-account-stark AIR — adversarial soundness audit (2026-06-18)
 
+> Classification: `ACTIVE_SUPPORT`. This audit supports the active
+> Poseidon2/Plonky3 account-creation path; it is evidence for the spec spine and
+> tracker, not normative authority by itself.
+
 Triggered after confirming the STARK as PRIMARY for the creation relation: before
 building the recursion layer on it, verify the leaf proof is actually sound. A
 harsh adversarial audit read the full AIR (`src/air.rs`), reduce gadget, public

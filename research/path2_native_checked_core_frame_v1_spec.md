@@ -1,5 +1,9 @@
 # Path 2 Native Checked-Core Frame V1 Spec
 
+> MIGRATION STATUS (2026-06-20): `ACTIVE_SUPPORT`.
+> This is a supporting byte-frame spec note, not a normative spec. Current
+> normative authority starts at `../spec/README.md` and `../spec/wire_formats.md`.
+
 Status: first concrete byte-frame specification.
 
 Purpose: define the exact native checked-core challenge frame required by:
