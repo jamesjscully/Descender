@@ -513,6 +513,13 @@ Evaluate and prioritize:
 
 Goal: package paid value in a way customers can understand and buy.
 
+Commercial packaging should follow the priority and product-line order in
+[`go_to_market_plan.md`](go_to_market_plan.md). The first commercial wedge is
+custody/exchange/institutional-wallet PQ migration, followed by Ethereum L2,
+bridge, protocol-admin, ERC-4337/EIP-7702, and conformance/certification
+offers. Bitcoin L1 work remains later-stage unless routed through a
+UTXO-native profile, custody, or L2 path.
+
 ### Offerings
 
 - [ ] Descender Community
@@ -541,16 +548,17 @@ Goal: package paid value in a way customers can understand and buy.
 
 Prioritize:
 
-- [ ] blockchain infrastructure
+- [ ] custody providers, exchanges, and institutional wallets
+- [ ] Ethereum L2s, bridges, and protocol-admin/governance key owners
+- [ ] ERC-4337 and EIP-7702 smart-account implementers
+- [ ] conformance/certification buyers: wallets, custody vendors, rollups, and
+      implementation teams
 - [ ] hardware wallet vendors
-- [ ] HSM vendors
-- [ ] identity providers
-- [ ] certificate authorities
-- [ ] banks and payment systems
-- [ ] defense/government integrators
-- [ ] cloud KMS vendors
-- [ ] secure messaging vendors
-- [ ] operating-system crypto libraries
+- [ ] HSM vendors and cloud KMS vendors
+- [ ] banks, payment systems, and defense/government integrators
+- [ ] Bitcoin custody, L2, and future UTXO-profile partners
+- [ ] identity providers, certificate authorities, secure messaging vendors,
+      and operating-system crypto libraries
 
 ### Sales Process
 

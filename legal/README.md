@@ -19,6 +19,7 @@ reviewed by qualified counsel before external use.
 
 - [Patent, Licensing, and Commercialization Strategy](patent_licensing_commercialization_strategy.md)
 - [Implementation Plan](implementation_plan.md)
+- [Go-To-Market Plan](go_to_market_plan.md)
 
 ## Operating Rule
 

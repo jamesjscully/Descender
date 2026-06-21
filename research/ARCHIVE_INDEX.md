@@ -49,6 +49,7 @@ kept now and what must be true before it can be removed or relocated.
 | `formal/kat/README.md` | `LEGACY_FORMAL` | KAT v0 package entrypoint for the frozen legacy byte-conformance corpus |
 | `formal/lean/README.md` | `ACTIVE_SUPPORT` | Lean math and reduction-skeleton layer entrypoint for current Path 2 closure work |
 | `legal/README.md` | `ACTIVE_RESEARCH` | legal/commercialization package entrypoint, not technical product authority |
+| `legal/go_to_market_plan.md` | `ACTIVE_RESEARCH` | legal/commercialization go-to-market plan, not technical product authority |
 | `papers/descent_based_cryptography.md` | `ACTIVE_RESEARCH` | theoretical descent-cryptography exposition, not a Descender algorithm specification |
 | `research/account_creation_proof_deployability_status.md` | `ACTIVE_RESEARCH` | historical red-team deployability status note retained as research evidence; current status belongs in `TRACKER.md` |
 | `research/path2_signature_statement_circularity_blocker.md` | `ACTIVE_RESEARCH` | split-statement blocker history retained as research evidence; current proof status lives in the current specs and tracker |

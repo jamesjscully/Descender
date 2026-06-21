@@ -180,3 +180,4 @@ Use only these status values:
 | ADOPT-HW-CT-001 | selected | Secret-side leakage test harness | add leakage/fixed-shape tests for keygen, sampler, witness handling, pad expansion, and signing |
 | ADOPT-HW-STATE-001 | implemented | Slot state rollback/fault model specified | `spec/signer_state_profile.md`; implement concrete persistent state schema, crash/restart tests, restore-anchor negative tests, host retry/timeout tests, finality/reorg tests, and recovery vectors before `verified` |
 | ADOPT-128-001 | proposed | Hard-128 profile decision | `ADR-0006`; choose only if adoption/review requires; future ADR required |
+| ADOPT-COMM-001 | implemented | Commercial wedge and go-to-market plan specified | `legal/go_to_market_plan.md`; implement one-page institutional pitch, customer-facing non-claims, ERC-4337/signer demo path, conformance package, certification/support packaging, counsel-reviewed disclosure policy, and pricing/support boundaries before `verified` |
