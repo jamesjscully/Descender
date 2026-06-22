@@ -25,6 +25,52 @@ or the adversary exports a named break.
 This is the product theorem. Partial statements such as "the core relation
 proves C1/C2/C4/C6" are supporting lemmas, not the deployable claim.
 
+## Direct Theorem Acceptance Boundary
+
+Tracker ownership: `DIR-SEC-001`, `DIR-CREATE-001`, `DIR-HANDLE-001`,
+`DIR-CC-001`, `DIR-LIFE-001`, `DIR-REJECT-001`, and `DIR-KAT-001`.
+
+The direct theorem statement is fixed around one accepted spend tuple. Research
+notes may refine supporting lemmas, but they must not change this tuple or its
+acceptance hypotheses without updating this file and the direct-mode gates.
+
+The accepted tuple contains:
+
+- public key or public-key identity;
+- message or message digest;
+- account id;
+- account state root before spend;
+- slot id;
+- checked-core signature body;
+- canonical `PrevalidatedSlotLeafV1`;
+- `AccountCreationEvidenceV1`;
+- selected account-creation proof payload;
+- direct admission namespace record;
+- consume-once state before and after spend.
+
+The proof may assume acceptance only if all checks below pass:
+
+1. the leaf is canonical and live;
+2. the evidence envelope duplicates and matches every leaf binding field;
+3. `slot_authorization_digest` equals
+   `SHA256(DESCENDER_SLOT_AUTHORIZATION_V1 || PrevalidatedSlotLeafV1_bytes)`;
+4. the selected account-creation verifier accepted the evidence payload before
+   the spend challenge was derived;
+5. the direct admission namespace contains the exact
+   `(account_id, account_state_root_before, slot_authorization_digest)` tuple;
+6. the checked-core challenge frame binds the accepted public key, message,
+   account id, state root, slot id, proof commitment, and
+   `slot_authorization_digest`;
+7. checked-core verification accepts under the active Poseidon2 challenge path
+   and separated Fq12 action-map term;
+8. the lifecycle transition consumes the exact authorization once in a valid
+   successor state;
+9. every rejection is deterministic, public, and state-preserving.
+
+If a proof step needs a stronger, weaker, or differently shaped hypothesis, the
+theorem statement is not yet closed for deployment. The proof must instead
+export one of the named breaks below or update this boundary by ADR/spec change.
+
 ## Named Break Classes
 
 Direct mode may name, but must not hide, these break classes:
@@ -40,6 +86,64 @@ Direct mode may name, but must not hide, these break classes:
 - `live_slot_leakage_or_keygen_break`;
 - proof-family soundness breaks for the selected account-creation payload proof;
 - external coded-SIS / lattice-core assumption breaks.
+
+## Account-Creation Proof Boundary Contract
+
+Tracker ownership: `DIR-CREATE-001`, `DIR-PROOF-001`, `DIR-PROOF-002`,
+`DIR-PAYLOAD-001`, `DIR-TRACE-001`, `DIR-NB-001`, `DIR-NB-002`,
+`DIR-NB-003`, `DIR-NB-004`, `DIR-AUTHCLASS-001`, `DIR-KAT-001`,
+`DIR-REJECT-001`, `DIR-CT-001`, `DIR-QROM-001`, and `DIR-REVIEW-001`.
+
+Direct account creation admits a leaf only if the public creation verifier
+accepts `AccountCreationEvidenceV1` and an available selected payload for that
+exact leaf. A digest, commitment root, transcript hash, or fail-closed
+placeholder is not proof semantics by itself.
+
+The selected account-creation boundary is:
+
+```text
+verify_prevalidated_slot_creation(
+  PrevalidatedSlotLeafV1,
+  AccountCreationEvidenceV1 {
+    evidence_kind = direct_replayable_relation_certificate,
+    evidence_payload_digest = digest(selected_payload)
+  },
+  selected_payload
+) -> accept/reject
+```
+
+For the current Path 2 route, `selected_payload` is the transparent masked
+two-view native-boundary proof payload over the creation relation. Admission
+acceptance requires all of:
+
+- canonical leaf and evidence framing;
+- evidence/leaf equality for account id, public-key identity, slot id,
+  verifier version, state root before admission, opening commitment,
+  pad-seed digest, hidden-source statement digest, lifecycle anchor, and
+  transcript digest;
+- payload availability and payload digest equality;
+- a public masked view authenticated under one `native_boundary_digest`;
+- a hidden extractor view for the same native boundary;
+- proof-family soundness extracting some `h in Fiber(B_c, b)` satisfying
+  `ExtractedRolesComplete`, `LocalValid_c`, `DescentConsistent_c`,
+  account-binding, and range predicates;
+- zero-knowledge/no-export semantics for pad-source, projection, opening-tuple,
+  range, witness, mask, and private trace material;
+- QROM/domain separation for the proof transcript and query schedule;
+- deterministic public rejection for malformed, unavailable, or
+  policy-incompatible payloads.
+
+The creation verifier must fail closed when any required payload bytes,
+availability records, query openings, proof-family parameters, or native-boundary
+projection checks are missing. It must not admit a leaf merely because
+`prevalidation_transcript_digest`, `evidence_payload_digest`, or a commitment
+root is well formed.
+
+The boundary is specified but not verified. Open closure items are the concrete
+masked two-view verifier, trace/relation encoding against the native-boundary
+manifest, simulator theorem, extractor/soundness theorem, concrete proof-system
+parameters, accepting honest-proof KATs, malformed-payload KATs, and external
+review of the proof family.
 
 ## Current Security-Level Position
 
