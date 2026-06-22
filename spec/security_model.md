@@ -186,6 +186,10 @@ to one row here. No deployment claim may rely on a support note that bypasses
 this matrix. The production deployment preflight must carry the open rows below
 as explicit account-STARK residual blockers until each row is discharged,
 accepted by a deployment-profile decision, or retired by ADR.
+`Path2AccountStarkResidualMatrixReportV1` is the executable report for this
+matrix; `Path2AccountCreationProofBoundaryReportV1` binds to its digest so the
+account-creation boundary cannot be treated as complete while these rows drift
+or remain open.
 
 | Residual item | Current evidence | Required closure before deployment | Named break |
 |---|---|---|---|

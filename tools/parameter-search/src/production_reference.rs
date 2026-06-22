@@ -303,6 +303,8 @@ pub const PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.DirectTheoremBoundaryReport.v1";
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountCreationProofBoundaryReport.v1";
+pub const PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN: &str =
+    "Descender.Path2.AccountStarkResidualMatrixReport.v1";
 pub const PATH2_REVIEWED_FQ12_HIDDEN_SOURCE_SEMANTICS_BRIDGE_AUDIT_DOMAIN: &str =
     "Descender.Path2.reviewed_fq12.hidden_source_semantics_bridge_audit.v1";
 pub const PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA: &str =
@@ -9253,10 +9255,36 @@ fn reviewed_fq12_deployment_verifier_productized_v1(
         && !still_fail_closed
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Path2AccountStarkResidualMatrixRowV1 {
+    pub residual_item: &'static str,
+    pub current_evidence: &'static str,
+    pub required_closure: &'static str,
+    pub named_break: &'static str,
+    pub blocker: &'static str,
+    pub open: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2AccountStarkResidualMatrixReportV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub domain: &'static str,
+    pub selected_proof_family: &'static str,
+    pub selected_payload_type: &'static str,
+    pub rows: &'static [Path2AccountStarkResidualMatrixRowV1],
+    pub blocker_count: usize,
+    pub every_row_has_named_break: bool,
+    pub every_row_has_blocker: bool,
+    pub production_gate_fail_closed: bool,
+    pub legacy_routes_non_authoritative: bool,
+    pub deployment_ready: bool,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub domain: &'static str,
+    pub account_stark_residual_matrix_report_digest: [u8; DIGEST_BYTES],
     pub selected_payload_type: &'static str,
     pub verifier_boundary_endpoint: &'static str,
     pub production_boundary_endpoint: &'static str,
@@ -9760,6 +9788,80 @@ pub const PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKERS:
     PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_LEGACY_ROUTE_ADR,
 ];
 
+pub const PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS: [Path2AccountStarkResidualMatrixRowV1;
+    PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKER_COUNT] = [
+    Path2AccountStarkResidualMatrixRowV1 {
+        residual_item: "Path2AccountStarkCreationPayloadV1 byte and replay binding",
+        current_evidence:
+            "wire-format digest frame, certificate/evidence binding, deployed anchor checks, and active mutation tests exist",
+        required_closure:
+            "frozen byte corpus, manifest regeneration, and public rejection-class mapping for every consensus-visible malformed payload",
+        named_break: "account_stark_payload_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS,
+        open: true,
+    },
+    Path2AccountStarkResidualMatrixRowV1 {
+        residual_item: "AIR relation soundness",
+        current_evidence:
+            "AIR relation classes are wired and prior MED findings are remediated",
+        required_closure:
+            "external proof-family review confirms the AIR constraints match the claimed creation relation",
+        named_break: "account_stark_air_soundness_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_AIR_REVIEW,
+        open: true,
+    },
+    Path2AccountStarkResidualMatrixRowV1 {
+        residual_item: "FRI argument-of-knowledge extractor",
+        current_evidence:
+            "AIR is constrained, but the selected Plonky3/q12289 FRI-IOP extractor theorem is open",
+        required_closure:
+            "concrete extractor theorem shows accepting proof implies extractable witness or named FRI/AoK break",
+        named_break: "account_stark_fri_aok_extractor_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_AOK_EXTRACTOR,
+        open: true,
+    },
+    Path2AccountStarkResidualMatrixRowV1 {
+        residual_item: "Zero-knowledge simulator and no-export statement",
+        current_evidence:
+            "boundary text forbids private material export and tests cover public payload mutations",
+        required_closure:
+            "simulator theorem proves accepted public bundle can be simulated from public anchors and allowed commitments",
+        named_break: "account_stark_simulator_or_no_export_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_SIMULATOR,
+        open: true,
+    },
+    Path2AccountStarkResidualMatrixRowV1 {
+        residual_item: "FRI soundness margin and recursion ledger",
+        current_evidence:
+            "PROD_SOUNDNESS_BITS=128 is a conservative-Johnson label over the active field/challenge configuration",
+        required_closure:
+            "residual-assumption ledger prices FRI queries, field size, Poseidon2 transcript, recursion, and multi-target/QROM terms",
+        named_break: "fri_soundness_margin_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_QROM_RESIDUAL,
+        open: true,
+    },
+    Path2AccountStarkResidualMatrixRowV1 {
+        residual_item: "Production admission gate and review disposition",
+        current_evidence:
+            "production account-STARK admission remains fail-closed and regression-tested",
+        required_closure:
+            "external review, tracker disposition, and explicit maintainer decision flip the production gate",
+        named_break: "account_stark_production_gate_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PRODUCTION_GATE,
+        open: true,
+    },
+    Path2AccountStarkResidualMatrixRowV1 {
+        residual_item: "Legacy proof-route disposition",
+        current_evidence:
+            "transparent descent and native-boundary routes are fail-closed support history",
+        required_closure:
+            "route change requires ADR updating this matrix, wire formats, KAT scope, and tracker ownership",
+        named_break: "proof_route_authority_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_LEGACY_ROUTE_ADR,
+        open: true,
+    },
+];
+
 pub const PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS: [&str; 11] = [
     "public_key_or_public_key_identity",
     "message_or_message_digest",
@@ -9846,11 +9948,64 @@ pub fn production_deployment_account_stark_residual_blockers() -> &'static [&'st
     &PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKERS
 }
 
+pub fn path2_account_stark_residual_matrix_report_v1()
+-> Path2AccountStarkResidualMatrixReportV1 {
+    let rows = &PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS;
+    let mut report = Path2AccountStarkResidualMatrixReportV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        domain: PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN,
+        selected_proof_family: "Plonky3/q12289 account-creation STARK",
+        selected_payload_type: "Path2AccountStarkCreationPayloadV1",
+        rows,
+        blocker_count: rows.len(),
+        every_row_has_named_break: rows.iter().all(|row| !row.named_break.is_empty()),
+        every_row_has_blocker: rows
+            .iter()
+            .zip(PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKERS.iter())
+            .all(|(row, blocker)| row.blocker == *blocker),
+        production_gate_fail_closed: rows.iter().any(|row| {
+            row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PRODUCTION_GATE
+                && row.open
+        }),
+        legacy_routes_non_authoritative: rows.iter().any(|row| {
+            row.named_break == "proof_route_authority_break"
+                && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_LEGACY_ROUTE_ADR
+                && row.open
+        }),
+        deployment_ready: rows.iter().all(|row| !row.open),
+    };
+    report.digest = path2_account_stark_residual_matrix_report_v1_digest(&report);
+    report
+}
+
+pub fn path2_account_stark_residual_matrix_report_v1_digest(
+    report: &Path2AccountStarkResidualMatrixReportV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_account_stark_residual_matrix_report_v1_frame(report)).into()
+}
+
+pub fn validate_path2_account_stark_residual_matrix_report_v1(
+    report: &Path2AccountStarkResidualMatrixReportV1,
+) -> Result<(), String> {
+    let expected = path2_account_stark_residual_matrix_report_v1();
+    if expected != *report {
+        return Err("Path 2 account-STARK residual matrix report mismatch".to_string());
+    }
+    if path2_account_stark_residual_matrix_report_v1_digest(report) != report.digest {
+        return Err("Path 2 account-STARK residual matrix report digest mismatch".to_string());
+    }
+    Ok(())
+}
+
 pub fn path2_account_creation_proof_boundary_report_v1()
 -> Path2AccountCreationProofBoundaryReportV1 {
+    let account_stark_residual_matrix_report =
+        path2_account_stark_residual_matrix_report_v1();
     let mut report = Path2AccountCreationProofBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN,
+        account_stark_residual_matrix_report_digest:
+            account_stark_residual_matrix_report.digest,
         selected_payload_type: "Path2AccountStarkCreationPayloadV1",
         verifier_boundary_endpoint: "verify_path2_direct_creation_account_stark_payload_boundary",
         production_boundary_endpoint:
@@ -61976,6 +62131,73 @@ fn reviewed_fq12_hidden_source_proof_readiness_verdict_frame(
     frame
 }
 
+fn path2_account_stark_residual_matrix_report_v1_frame(
+    report: &Path2AccountStarkResidualMatrixReportV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"domain", report.domain.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_u64(&mut frame, b"q", Q as u64);
+    append_u64(&mut frame, b"groups", GROUPS as u64);
+    append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
+    append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
+    append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(
+        &mut frame,
+        b"selected_proof_family",
+        report.selected_proof_family.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"selected_payload_type",
+        report.selected_payload_type.as_bytes(),
+    );
+    for (index, row) in report.rows.iter().enumerate() {
+        append_u64(&mut frame, b"residual_row_index", index as u64);
+        append_frame(&mut frame, b"residual_item", row.residual_item.as_bytes());
+        append_frame(
+            &mut frame,
+            b"current_evidence",
+            row.current_evidence.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"required_closure",
+            row.required_closure.as_bytes(),
+        );
+        append_frame(&mut frame, b"named_break", row.named_break.as_bytes());
+        append_frame(&mut frame, b"blocker", row.blocker.as_bytes());
+        append_u64(&mut frame, b"open", u64::from(row.open));
+    }
+    append_u64(&mut frame, b"blocker_count", report.blocker_count as u64);
+    append_u64(
+        &mut frame,
+        b"every_row_has_named_break",
+        u64::from(report.every_row_has_named_break),
+    );
+    append_u64(
+        &mut frame,
+        b"every_row_has_blocker",
+        u64::from(report.every_row_has_blocker),
+    );
+    append_u64(
+        &mut frame,
+        b"production_gate_fail_closed",
+        u64::from(report.production_gate_fail_closed),
+    );
+    append_u64(
+        &mut frame,
+        b"legacy_routes_non_authoritative",
+        u64::from(report.legacy_routes_non_authoritative),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_ready",
+        u64::from(report.deployment_ready),
+    );
+    frame
+}
+
 fn path2_account_creation_proof_boundary_report_v1_frame(
     report: &Path2AccountCreationProofBoundaryReportV1,
 ) -> Vec<u8> {
@@ -61987,6 +62209,11 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
     append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
     append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
     append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(
+        &mut frame,
+        b"account_stark_residual_matrix_report_digest",
+        &report.account_stark_residual_matrix_report_digest,
+    );
     append_frame(
         &mut frame,
         b"selected_payload_type",
@@ -102173,12 +102400,94 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     }
 
     #[test]
+    fn path2_account_stark_residual_matrix_report_pins_open_rows() {
+        let report = path2_account_stark_residual_matrix_report_v1();
+        assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(report.domain, PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN);
+        assert_eq!(
+            report.selected_proof_family,
+            "Plonky3/q12289 account-creation STARK"
+        );
+        assert_eq!(report.selected_payload_type, "Path2AccountStarkCreationPayloadV1");
+        assert_eq!(
+            report.rows,
+            PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS.as_ref()
+        );
+        assert_eq!(
+            report.blocker_count,
+            PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKER_COUNT
+        );
+        assert_eq!(report.rows.len(), 7);
+        assert!(report.every_row_has_named_break);
+        assert!(report.every_row_has_blocker);
+        assert!(report.production_gate_fail_closed);
+        assert!(report.legacy_routes_non_authoritative);
+        assert!(!report.deployment_ready);
+        assert_eq!(
+            report.rows[0].residual_item,
+            "Path2AccountStarkCreationPayloadV1 byte and replay binding"
+        );
+        assert_eq!(
+            report.rows[0].named_break,
+            "account_stark_payload_binding_break"
+        );
+        assert_eq!(
+            report.rows[0].blocker,
+            PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS
+        );
+        assert_eq!(
+            report.rows[2].named_break,
+            "account_stark_fri_aok_extractor_break"
+        );
+        assert_eq!(
+            report.rows[3].named_break,
+            "account_stark_simulator_or_no_export_break"
+        );
+        assert_eq!(
+            report.rows[5].blocker,
+            PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PRODUCTION_GATE
+        );
+        assert_eq!(
+            report.rows[6].named_break,
+            "proof_route_authority_break"
+        );
+        for (row, blocker) in report
+            .rows
+            .iter()
+            .zip(PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKERS.iter())
+        {
+            assert!(row.open);
+            assert_eq!(row.blocker, *blocker);
+            assert!(!row.required_closure.is_empty());
+            assert!(!row.current_evidence.is_empty());
+        }
+        assert_eq!(
+            path2_account_stark_residual_matrix_report_v1_digest(&report),
+            report.digest
+        );
+        validate_path2_account_stark_residual_matrix_report_v1(&report).unwrap();
+
+        let mut malformed = report.clone();
+        malformed.every_row_has_blocker = false;
+        malformed.digest = path2_account_stark_residual_matrix_report_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_account_stark_residual_matrix_report_v1(&malformed).unwrap_err(),
+            "Path 2 account-STARK residual matrix report mismatch"
+        );
+    }
+
+    #[test]
     fn path2_account_creation_proof_boundary_report_pins_selected_boundary() {
+        let residual_matrix_report = path2_account_stark_residual_matrix_report_v1();
         let report = path2_account_creation_proof_boundary_report_v1();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
         assert_eq!(
             report.domain,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN
+        );
+        assert_eq!(
+            report.account_stark_residual_matrix_report_digest,
+            residual_matrix_report.digest
         );
         assert_eq!(report.selected_payload_type, "Path2AccountStarkCreationPayloadV1");
         assert_eq!(

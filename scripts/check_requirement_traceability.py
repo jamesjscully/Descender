@@ -63,6 +63,7 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_PREFLIGHT_MARKERS = [
     "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY",
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN",
     "Path2AccountCreationProofBoundaryReportV1",
+    "account_stark_residual_matrix_report_digest",
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS",
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS",
     "path2_account_creation_proof_boundary_report_v1",
@@ -77,6 +78,12 @@ ACCOUNT_STARK_RESIDUAL_PREFLIGHT_MARKERS = [
     "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_QROM_RESIDUAL",
     "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PRODUCTION_GATE",
     "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_LEGACY_ROUTE_ADR",
+    "PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN",
+    "Path2AccountStarkResidualMatrixReportV1",
+    "Path2AccountStarkResidualMatrixRowV1",
+    "PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS",
+    "path2_account_stark_residual_matrix_report_v1",
+    "validate_path2_account_stark_residual_matrix_report_v1",
     "production_deployment_account_stark_residual_blockers",
 ]
 SPEC_OPEN_WORK_SECTIONS = {
@@ -1782,6 +1789,7 @@ def check_selected_account_stark_residual_matrix(errors: list[str]) -> None:
 
     required_markers = [
         "Path2AccountStarkCreationPayloadV1",
+        "Path2AccountStarkResidualMatrixReportV1",
         "account_stark_payload_binding_break",
         "AIR relation soundness",
         "account_stark_air_soundness_break",
