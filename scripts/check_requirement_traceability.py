@@ -59,6 +59,16 @@ DIRECT_THEOREM_PREFLIGHT_MARKERS = [
     "validate_path2_direct_theorem_boundary_report_v1",
     "production_deployment_direct_theorem_blockers",
 ]
+ACCOUNT_CREATION_PROOF_BOUNDARY_PREFLIGHT_MARKERS = [
+    "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY",
+    "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN",
+    "Path2AccountCreationProofBoundaryReportV1",
+    "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS",
+    "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS",
+    "path2_account_creation_proof_boundary_report_v1",
+    "validate_path2_account_creation_proof_boundary_report_v1",
+    "production_deployment_account_creation_proof_boundary_blockers",
+]
 ACCOUNT_STARK_RESIDUAL_PREFLIGHT_MARKERS = [
     "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS",
     "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_AIR_REVIEW",
@@ -1806,6 +1816,26 @@ def check_direct_theorem_preflight_markers(errors: list[str]) -> None:
         errors.append(f"{rel}: direct-theorem blockers are not wired into preflight")
 
 
+def check_account_creation_proof_boundary_preflight_markers(errors: list[str]) -> None:
+    rel = "tools/parameter-search/src/production_reference.rs"
+    if not RUST_PRODUCTION_REFERENCE.exists():
+        errors.append(f"{rel}: missing production reference source")
+        return
+
+    text = RUST_PRODUCTION_REFERENCE.read_text(encoding="utf-8")
+    for marker in ACCOUNT_CREATION_PROOF_BOUNDARY_PREFLIGHT_MARKERS:
+        if marker not in text:
+            errors.append(
+                f"{rel}: missing account-creation proof-boundary preflight marker {marker!r}"
+            )
+
+    if (
+        "blockers.extend_from_slice(production_deployment_account_creation_proof_boundary_blockers())"
+        not in text
+    ):
+        errors.append(f"{rel}: account-creation proof-boundary blockers are not wired into preflight")
+
+
 def check_account_stark_residual_preflight_markers(errors: list[str]) -> None:
     rel = "tools/parameter-search/src/production_reference.rs"
     if not RUST_PRODUCTION_REFERENCE.exists():
@@ -1955,6 +1985,7 @@ def main() -> int:
     check_spec_open_work_sections(tracker_rows, errors)
     check_selected_account_stark_residual_matrix(errors)
     check_direct_theorem_preflight_markers(errors)
+    check_account_creation_proof_boundary_preflight_markers(errors)
     check_account_stark_residual_preflight_markers(errors)
     check_ethereum_positioning_note(tracker_rows, errors)
 

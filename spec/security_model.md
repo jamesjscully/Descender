@@ -157,6 +157,13 @@ gate, or proof-family parameters are missing. It must not admit a leaf merely
 because `prevalidation_transcript_digest`, `evidence_payload_digest`, or a
 commitment root is well formed.
 
+The production reference emits `Path2AccountCreationProofBoundaryReportV1`,
+which pins the selected payload type, verifier endpoints, replay-payload digest
+function, acceptance requirements, deployed-anchor fields, and current
+proof-family closure blockers. The report is the executable boundary map for
+this section; it is not a simulator, extractor, FRI/QROM, KAT, or external-review
+substitute.
+
 The boundary is implemented but not verified. The active Rust test suite now has
 an initial `Path2AccountStarkCreationPayloadV1` malformed-payload mutation
 matrix, including empty-bundle, digest-bound, rebound-anchor, corrupted-bundle,
@@ -248,7 +255,7 @@ used as deployment evidence while a higher-ranked blocker remains open.
 | Rank | Blocker | Must close | Owning rows |
 |---|---|---|---|
 | 1 | Direct theorem closure | `Path2DirectTheoremBoundaryReportV1` pins the product theorem boundary, and the final product theorem covers admission, spend, consume-once lifecycle, exact public bindings, and every named break; supporting lemmas cannot stand in for the deployment theorem. | `DIR-RISK-001`, `DIR-SEC-001`, `DIR-CREATE-001`, `DIR-PROOF-002`, `DIR-AUTHCLASS-001` |
-| 2 | Account-creation proof boundary | Selected account-STARK payload has a concrete byte model, canonical replay-payload digest, deployed anchor binding, simulator theorem, extractor theorem, hidden-source payload statement, production gate, and rejection behavior. | `DIR-CREATE-001`, `DIR-PROOF-001`, `DIR-STARK-001`, `DIR-BIND-001`, `DIR-PAYLOAD-001`, `DIR-KAT-001`, `DIR-REJECT-001` |
+| 2 | Account-creation proof boundary | `Path2AccountCreationProofBoundaryReportV1` pins the selected account-STARK payload boundary, and the payload has a concrete byte model, canonical replay-payload digest, deployed anchor binding, simulator theorem, extractor theorem, hidden-source payload statement, production gate, and rejection behavior. | `DIR-CREATE-001`, `DIR-PROOF-001`, `DIR-STARK-001`, `DIR-BIND-001`, `DIR-PAYLOAD-001`, `DIR-KAT-001`, `DIR-REJECT-001` |
 | 3 | Authorization-class binding | Private authorization-local material cannot change public spend semantics, fork account state, or bypass the checked-core public binding. | `DIR-AUTHCLASS-001`, `DIR-SEC-001`, `DIR-CC-001` |
 | 4 | Consensus conformance | Canonical wire formats, public-field mutation vectors, end-to-end creation/spend/lifecycle vectors, and deterministic rejection behavior exist. | `DIR-KAT-001`, `SPEC-KAT-001`, `DIR-REJECT-001`, `DIR-CC-001`, `DIR-LEAF-001`, `DIR-EVID-001` |
 | 5 | Signer leakage and fault safety | Signer, keygen, sampler, rejection loops, fault handling, errors, zeroization, target/build profiles, and leakage evidence satisfy the signer profile without floating-point signing assumptions. | `DIR-CT-001`, `SPEC-SIGNER-001`, `SPEC-LEAKAGE-001`, `ADOPT-HW-001`, `ADOPT-HW-CT-001`, `ADOPT-HW-ENT-001`, `ADOPT-HW-STATE-001` |
