@@ -160,6 +160,28 @@ FRI/recursion residual-assumption ledger, complete frozen byte-format KATs,
 signer leakage evidence, external proof-family review, and the explicit
 production-gate decision.
 
+## Selected Account-STARK Residual Matrix
+
+Tracker ownership: `DIR-PROOF-001`, `DIR-PROOF-002`, `DIR-STARK-001`,
+`DIR-BIND-001`, `DIR-KAT-001`, `DIR-REJECT-001`, `DIR-QROM-001`, and
+`DIR-REVIEW-001`.
+
+This matrix is the normative residual-assumption ledger for the selected
+account-creation proof family. Older transparent, native-boundary, masked-trace,
+or descent/SIS proof notes are support history unless they are explicitly mapped
+to one row here. No deployment claim may rely on a support note that bypasses
+this matrix.
+
+| Residual item | Current evidence | Required closure before deployment | Named break |
+|---|---|---|---|
+| `Path2AccountStarkCreationPayloadV1` byte and replay binding | Wire-format digest frame, certificate/evidence binding, deployed anchor checks, and active mutation tests exist. | Frozen byte corpus, manifest regeneration, and public rejection-class mapping for every consensus-visible malformed payload. | `account_stark_payload_binding_break` |
+| AIR relation soundness | `research/path2_account_stark_air_soundness_audit.md` reports all relation classes wired and MED findings remediated. | External proof-family review confirms the AIR constraints match the claimed creation relation and no false statement accepts except with a named proof break. | `account_stark_air_soundness_break` |
+| FRI argument-of-knowledge extractor | The AIR is fully constrained, but the audit still names the `p2_sis_extractor`-style FRI-IOP extractor as open. | A concrete extractor theorem for the selected Plonky3/q12289 configuration shows accepting proof implies an extractable account-creation witness or exports a named FRI/AoK break. | `account_stark_fri_aok_extractor_break` |
+| Zero-knowledge simulator and no-export statement | Boundary text forbids export of pad source, projection, syndrome, opening tuple, witness, mask, and private trace material; current tests cover public payload mutations, not simulator semantics. | Simulator theorem for the selected payload proves the accepted public bundle can be simulated from public anchors and allowed commitments without revealing private creation material. | `account_stark_simulator_or_no_export_break` |
+| FRI soundness margin and recursion ledger | Current `PROD_SOUNDNESS_BITS=128` is a conservative-Johnson label over the active field/challenge configuration; the security model separately states the ~124-bit generic floor. | Residual-assumption ledger prices FRI queries, field size, Poseidon2 transcript, recursion if used, and multi-target/QROM terms against the selected deployment profile. | `fri_soundness_margin_break` |
+| Production admission gate and review disposition | `verify_path2_direct_creation_account_stark_payload_boundary_for_production` remains fail-closed and regression-tested. | External review, tracker disposition, and explicit maintainer decision flip the production gate; otherwise production admission must continue to reject. | `account_stark_production_gate_break` |
+| Legacy proof-route disposition | Transparent descent/native-boundary paths are fail-closed support and cannot be selected by implication. | Any route change requires an ADR that updates this matrix, wire formats, KAT scope, and tracker ownership before the route can become deployment authority. | `proof_route_authority_break` |
+
 ## Current Security-Level Position
 
 The active Poseidon2/Plonky3 path has a real generic floor around 124 bits from
@@ -248,6 +270,9 @@ The deployment claim requires all of:
 - signer/keygen/sampler evidence satisfying `spec/signer_profile.md`;
 - no secret-bearing errors, logs, or public views;
 - QROM/hash/domain budget ledger tied to the final theorem;
+- selected account-STARK residual-assumption matrix with every row either
+  discharged, externally reviewed, accepted by explicit deployment profile, or
+  retired by ADR;
 - external cryptanalysis of the coded-SIS/lattice core;
 - external review of the account-creation proof family and Poseidon2 usage;
 - external review package satisfying `spec/review_package.md`;

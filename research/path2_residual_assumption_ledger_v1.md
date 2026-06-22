@@ -1,17 +1,41 @@
 # Path 2 Residual Assumption Ledger V1
 
-Status: refreshed after active native proof-side closure assessment.
+Status: ACTIVE_SUPPORT; selected-route residual authority is now
+`../spec/security_model.md` section `Selected Account-STARK Residual Matrix`.
 
 Purpose: separate active native theorem obligations from ordinary hash/domain
 assumptions, checked-core downstream assumptions, implementation/KAT gates, and
 fallback proof-system assumptions.
 
 This ledger supersedes the earlier version that still treated full lift
-nonemptiness and hidden-witness extraction as the active blocker.
+nonemptiness and hidden-witness extraction as the active blocker. After the
+Poseidon2/Plonky3 account-STARK selection, the native material below is support
+history unless mapped into the selected account-STARK matrix in
+`spec/security_model.md` or re-selected by ADR.
+
+## Selected Account-STARK Residuals
+
+The active deployable account-creation proof family is
+`Path2AccountStarkCreationPayloadV1` plus
+`verify_path2_direct_creation_account_stark_payload_boundary`.
+
+Normative residual items live in `spec/security_model.md` and currently are:
+
+| residual item | deployment status |
+|---|---|
+| payload byte and replay binding | implemented with initial mutation tests; frozen corpus still open |
+| AIR relation soundness | internal audit says relation classes are wired; external proof-family review still open |
+| FRI argument-of-knowledge extractor | open |
+| zero-knowledge simulator and no-export statement | open |
+| FRI soundness margin and recursion ledger | open |
+| production admission gate and review disposition | fail-closed |
+| legacy proof-route disposition | transparent/native-boundary/descent routes are support only |
 
 ## Current Proof Shape
 
-The active theorem is:
+The historical native-boundary theorem shape below is support material, not the
+selected account-STARK deployment theorem. It remains useful for downstream
+checked-core, signer, and native carrier reasoning.
 
 ```text
 AcceptCreate(c,q)

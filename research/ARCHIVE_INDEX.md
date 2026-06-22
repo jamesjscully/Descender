@@ -318,7 +318,6 @@ kept now and what must be true before it can be removed or relocated.
 | `research/path2_recursion_circuit_concrete_design.md` | `ACTIVE_SUPPORT` | concrete as-built design note for account-creation plus spend recursion circuit planning |
 | `research/path2_native_boundary_b_construction_tracker.md` | `ACTIVE_SUPPORT` | detailed native-boundary proof-design tracker, subordinate to `TRACKER.md` |
 | `research/path2_native_solution_search_todo_tracker.md` | `ACTIVE_SUPPORT` | detailed native Path 2 search todo, subordinate to `TRACKER.md` |
-| `research/path2_proof_risk_burn_down_plan.md` | `ACTIVE_SUPPORT` | risk-first proof-order note for active Path 2 research |
 | `research/path2_mith_full_witness_probe.md` | `ACTIVE_RESEARCH` | fallback proof-family probe, not the active selected endpoint |
 | `legal/patent_licensing_commercialization_strategy.md` | `ACTIVE_RESEARCH` | legal/commercialization strategy, not cryptographic product authority |
 

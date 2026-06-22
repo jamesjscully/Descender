@@ -15,6 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / "spec/blockchain_requirements.md"
+SECURITY_MODEL = ROOT / "spec/security_model.md"
 TRACKER = ROOT / "TRACKER.md"
 ETHEREUM_POSITIONING = ROOT / "research/ethereum_account_abstraction_positioning.md"
 
@@ -179,6 +180,16 @@ SPEC_OPEN_WORK_SECTIONS = {
             "DIR-KAT-001",
             "DIR-REJECT-001",
             "DIR-CT-001",
+            "DIR-QROM-001",
+            "DIR-REVIEW-001",
+        },
+        "Selected Account-STARK Residual Matrix": {
+            "DIR-PROOF-001",
+            "DIR-PROOF-002",
+            "DIR-STARK-001",
+            "DIR-BIND-001",
+            "DIR-KAT-001",
+            "DIR-REJECT-001",
             "DIR-QROM-001",
             "DIR-REVIEW-001",
         },
@@ -1730,6 +1741,34 @@ def check_spec_open_work_sections(
                 )
 
 
+def check_selected_account_stark_residual_matrix(errors: list[str]) -> None:
+    rel = "spec/security_model.md"
+    text = SECURITY_MODEL.read_text(encoding="utf-8")
+    block = section_from_source(rel, text, "Selected Account-STARK Residual Matrix", errors)
+    if not block:
+        return
+
+    required_markers = [
+        "Path2AccountStarkCreationPayloadV1",
+        "account_stark_payload_binding_break",
+        "AIR relation soundness",
+        "account_stark_air_soundness_break",
+        "FRI argument-of-knowledge extractor",
+        "account_stark_fri_aok_extractor_break",
+        "Zero-knowledge simulator and no-export statement",
+        "account_stark_simulator_or_no_export_break",
+        "FRI soundness margin and recursion ledger",
+        "fri_soundness_margin_break",
+        "Production admission gate and review disposition",
+        "account_stark_production_gate_break",
+        "Legacy proof-route disposition",
+        "proof_route_authority_break",
+    ]
+    for marker in required_markers:
+        if marker not in block:
+            errors.append(f"{rel} ## Selected Account-STARK Residual Matrix: missing {marker!r}")
+
+
 def check_ethereum_positioning_note(
     tracker_rows: dict[str, str],
     errors: list[str],
@@ -1862,6 +1901,7 @@ def main() -> int:
     check_non_claims(text, errors)
     check_product_bar(text, errors)
     check_spec_open_work_sections(tracker_rows, errors)
+    check_selected_account_stark_residual_matrix(errors)
     check_ethereum_positioning_note(tracker_rows, errors)
 
     if errors:
