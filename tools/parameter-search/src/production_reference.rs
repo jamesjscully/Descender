@@ -38,6 +38,13 @@ pub const PRODUCTION_SELECTED_PROJECTION_INVALID_CARRIER_REASON: &str =
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_PAD_OPENING_BINDING: &str =
     "pad-opening witness binding is not implemented for the reviewed 262-byte/Fq12 path";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS: &str = "Path 2 account-creation prevalidation proof semantics are not complete; the reviewed 318-byte/Fq12 projection-carrier route remains a fail-closed baseline and negative-control source";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS: &str = "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_AIR_REVIEW: &str = "account-STARK residual matrix: AIR relation soundness still requires external proof-family review";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_AOK_EXTRACTOR: &str = "account-STARK residual matrix: selected Plonky3/q12289 FRI argument-of-knowledge extractor theorem is not instantiated";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_SIMULATOR: &str = "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_QROM_RESIDUAL: &str = "account-STARK residual matrix: FRI soundness margin, recursion, Poseidon2 transcript, and multi-target/QROM pricing are not closed";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PRODUCTION_GATE: &str = "account-STARK residual matrix: production admission gate remains closed pending external review and maintainer decision";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_LEGACY_ROUTE_ADR: &str = "account-STARK residual matrix: legacy transparent/native-boundary/descent proof routes require ADR selection before deployment authority";
 pub const PRODUCTION_HIDDEN_SOURCE_PROOF_FAILURE_REASON: &str =
     "hidden-source proof verifier rejected reviewed 262-byte/Fq12 statement";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_CONSTANT_TIME: &str =
@@ -45,6 +52,7 @@ pub const PRODUCTION_DEPLOYMENT_BLOCKER_CONSTANT_TIME: &str =
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_STORAGE: &str = "target-specific chain database binding, trusted restore-anchor placement review, and external storage review remain open";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW: &str =
     "external security review remains open";
+pub const PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKER_COUNT: usize = 7;
 pub const PATH2_NATIVE_DEPLOYMENT_PREFLIGHT_SCHEMA: &str =
     "Descender.Path2.NativeDeploymentPreflight.v1";
 pub const PATH2_NATIVE_VERIFIER_PIPELINE_VERDICT_SCHEMA: &str =
@@ -9682,6 +9690,24 @@ pub struct Path2ReviewedFq12NativeBoundaryPredicateModelEvidenceV1 {
     pub certified_semantics_source_package_target_present: bool,
 }
 
+pub type ProductionDeploymentAccountStarkResidualBlockers =
+    [&'static str; PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKER_COUNT];
+
+pub const PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKERS:
+    ProductionDeploymentAccountStarkResidualBlockers = [
+    PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS,
+    PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_AIR_REVIEW,
+    PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_AOK_EXTRACTOR,
+    PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_SIMULATOR,
+    PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_QROM_RESIDUAL,
+    PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PRODUCTION_GATE,
+    PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_LEGACY_ROUTE_ADR,
+];
+
+pub fn production_deployment_account_stark_residual_blockers() -> &'static [&'static str] {
+    &PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKERS
+}
+
 pub fn production_deployment_preflight() -> ProductionDeploymentPreflight {
     let callback_boundaries_ok = verify_default_deployment_callback_boundaries().is_ok();
     let reviewed_target_codec_present = REVIEWED_ACCOUNT_CARRIED_TRANSACTION_SIGNATURE_BYTES
@@ -9755,6 +9781,7 @@ pub fn production_deployment_preflight() -> ProductionDeploymentPreflight {
         blockers.push(PRODUCTION_DEPLOYMENT_BLOCKER_PAD_OPENING_BINDING);
     }
     blockers.push(PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS);
+    blockers.extend_from_slice(production_deployment_account_stark_residual_blockers());
     blockers.push(PRODUCTION_DEPLOYMENT_BLOCKER_CONSTANT_TIME);
     blockers.push(PRODUCTION_DEPLOYMENT_BLOCKER_STORAGE);
     blockers.push(PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW);
@@ -75423,6 +75450,15 @@ mod tests {
                 .blockers
                 .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS)
         );
+        let account_stark_residual_blockers =
+            production_deployment_account_stark_residual_blockers();
+        assert_eq!(
+            &preflight.blockers[1..1 + account_stark_residual_blockers.len()],
+            account_stark_residual_blockers
+        );
+        for &blocker in account_stark_residual_blockers {
+            assert!(preflight.blockers.contains(&blocker));
+        }
         assert!(
             preflight
                 .blockers
@@ -101807,6 +101843,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert_eq!(
             blockers[0].blocker,
             PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS
+        );
+        assert_eq!(
+            blockers[1].blocker,
+            PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS
+        );
+        assert_eq!(
+            blockers[6].blocker,
+            PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PRODUCTION_GATE
         );
         for (index, blocker) in blockers.iter().enumerate() {
             assert_ne!(blocker.digest, [0_u8; DIGEST_BYTES]);

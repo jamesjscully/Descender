@@ -170,7 +170,9 @@ This matrix is the normative residual-assumption ledger for the selected
 account-creation proof family. Older transparent, native-boundary, masked-trace,
 or descent/SIS proof notes are support history unless they are explicitly mapped
 to one row here. No deployment claim may rely on a support note that bypasses
-this matrix.
+this matrix. The production deployment preflight must carry the open rows below
+as explicit account-STARK residual blockers until each row is discharged,
+accepted by a deployment-profile decision, or retired by ADR.
 
 | Residual item | Current evidence | Required closure before deployment | Named break |
 |---|---|---|---|

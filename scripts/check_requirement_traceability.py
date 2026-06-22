@@ -16,6 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / "spec/blockchain_requirements.md"
 SECURITY_MODEL = ROOT / "spec/security_model.md"
+RUST_PRODUCTION_REFERENCE = ROOT / "tools/parameter-search/src/production_reference.rs"
 TRACKER = ROOT / "TRACKER.md"
 ETHEREUM_POSITIONING = ROOT / "research/ethereum_account_abstraction_positioning.md"
 
@@ -46,6 +47,16 @@ PRODUCT_BAR_LINES = [
     "+ optional proof aggregation",
     "+ conservative signer/verifier engineering",
     "+ explicit adoption evidence",
+]
+ACCOUNT_STARK_RESIDUAL_PREFLIGHT_MARKERS = [
+    "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS",
+    "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_AIR_REVIEW",
+    "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_AOK_EXTRACTOR",
+    "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_SIMULATOR",
+    "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_QROM_RESIDUAL",
+    "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PRODUCTION_GATE",
+    "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_LEGACY_ROUTE_ADR",
+    "production_deployment_account_stark_residual_blockers",
 ]
 SPEC_OPEN_WORK_SECTIONS = {
     "spec/conformance_kats.md": {
@@ -1769,6 +1780,21 @@ def check_selected_account_stark_residual_matrix(errors: list[str]) -> None:
             errors.append(f"{rel} ## Selected Account-STARK Residual Matrix: missing {marker!r}")
 
 
+def check_account_stark_residual_preflight_markers(errors: list[str]) -> None:
+    rel = "tools/parameter-search/src/production_reference.rs"
+    if not RUST_PRODUCTION_REFERENCE.exists():
+        errors.append(f"{rel}: missing production reference source")
+        return
+
+    text = RUST_PRODUCTION_REFERENCE.read_text(encoding="utf-8")
+    for marker in ACCOUNT_STARK_RESIDUAL_PREFLIGHT_MARKERS:
+        if marker not in text:
+            errors.append(f"{rel}: missing account-STARK residual preflight marker {marker!r}")
+
+    if "blockers.extend_from_slice(production_deployment_account_stark_residual_blockers())" not in text:
+        errors.append(f"{rel}: account-STARK residual blockers are not wired into preflight")
+
+
 def check_ethereum_positioning_note(
     tracker_rows: dict[str, str],
     errors: list[str],
@@ -1902,6 +1928,7 @@ def main() -> int:
     check_product_bar(text, errors)
     check_spec_open_work_sections(tracker_rows, errors)
     check_selected_account_stark_residual_matrix(errors)
+    check_account_stark_residual_preflight_markers(errors)
     check_ethereum_positioning_note(tracker_rows, errors)
 
     if errors:

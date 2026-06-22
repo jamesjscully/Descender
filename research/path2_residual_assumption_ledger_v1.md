@@ -31,6 +31,12 @@ Normative residual items live in `spec/security_model.md` and currently are:
 | production admission gate and review disposition | fail-closed |
 | legacy proof-route disposition | transparent/native-boundary/descent routes are support only |
 
+The current production deployment preflight in
+`tools/parameter-search/src/production_reference.rs` names the same open rows as
+explicit account-STARK residual blockers. A deployability claim is blocked until
+those blockers are discharged, accepted by a deployment-profile decision, or
+retired by ADR.
+
 ## Current Proof Shape
 
 The historical native-boundary theorem shape below is support material, not the
