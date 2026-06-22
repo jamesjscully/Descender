@@ -156,5 +156,7 @@ Current precursor coverage exists for the selected account-STARK creation
 payload boundary: `path2_account_stark_creation_roundtrip_and_binds` mutates the
 `Path2AccountStarkCreationPayloadV1` public fields, verifies deterministic
 rejection, checks empty-bundle rejection, and exercises rebound anchor failures.
-This test is regression evidence for the active implementation, but it is not a
-frozen corpus manifest and does not close `DIR-KAT-001`.
+`Path2AccountStarkPayloadKatBoundaryReportV1` pins those current mutation rows
+and their public rejection-class mapping. This is regression evidence for the
+active implementation, but it is not a frozen corpus manifest and does not close
+`DIR-KAT-001`.

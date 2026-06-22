@@ -82,6 +82,13 @@ ACCOUNT_STARK_RESIDUAL_PREFLIGHT_MARKERS = [
     "Path2AccountStarkResidualMatrixReportV1",
     "Path2AccountStarkResidualMatrixRowV1",
     "PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS",
+    "PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_REPORT_DOMAIN",
+    "Path2AccountStarkPayloadKatBoundaryReportV1",
+    "Path2AccountStarkPayloadKatBoundaryRowV1",
+    "PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS",
+    "path2_account_stark_payload_kat_boundary_report_v1",
+    "validate_path2_account_stark_payload_kat_boundary_report_v1",
+    "path2_account_stark_payload_public_rejection_class",
     "path2_account_stark_residual_matrix_report_v1",
     "validate_path2_account_stark_residual_matrix_report_v1",
     "production_deployment_account_stark_residual_blockers",
@@ -1789,6 +1796,7 @@ def check_selected_account_stark_residual_matrix(errors: list[str]) -> None:
 
     required_markers = [
         "Path2AccountStarkCreationPayloadV1",
+        "Path2AccountStarkPayloadKatBoundaryReportV1",
         "Path2AccountStarkResidualMatrixReportV1",
         "account_stark_payload_binding_break",
         "AIR relation soundness",

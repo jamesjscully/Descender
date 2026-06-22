@@ -305,6 +305,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountCreationProofBoundaryReport.v1";
 pub const PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountStarkResidualMatrixReport.v1";
+pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_REPORT_DOMAIN: &str =
+    "Descender.Path2.AccountStarkPayloadKatBoundaryReport.v1";
 pub const PATH2_REVIEWED_FQ12_HIDDEN_SOURCE_SEMANTICS_BRIDGE_AUDIT_DOMAIN: &str =
     "Descender.Path2.reviewed_fq12.hidden_source_semantics_bridge_audit.v1";
 pub const PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA: &str =
@@ -9269,6 +9271,7 @@ pub struct Path2AccountStarkResidualMatrixRowV1 {
 pub struct Path2AccountStarkResidualMatrixReportV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub domain: &'static str,
+    pub payload_kat_boundary_report_digest: [u8; DIGEST_BYTES],
     pub selected_proof_family: &'static str,
     pub selected_payload_type: &'static str,
     pub rows: &'static [Path2AccountStarkResidualMatrixRowV1],
@@ -9278,6 +9281,34 @@ pub struct Path2AccountStarkResidualMatrixReportV1 {
     pub production_gate_fail_closed: bool,
     pub legacy_routes_non_authoritative: bool,
     pub deployment_ready: bool,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Path2AccountStarkPayloadKatBoundaryRowV1 {
+    pub case_id: &'static str,
+    pub mutated_surface: &'static str,
+    pub internal_error_match: &'static str,
+    pub public_rejection_class: &'static str,
+    pub covered_by_roundtrip_test: bool,
+    pub frozen_vector_present: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2AccountStarkPayloadKatBoundaryReportV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub domain: &'static str,
+    pub selected_payload_type: &'static str,
+    pub payload_digest_function: &'static str,
+    pub verifier_boundary_endpoint: &'static str,
+    pub production_boundary_endpoint: &'static str,
+    pub rows: &'static [Path2AccountStarkPayloadKatBoundaryRowV1],
+    pub public_payload_field_mutation_count: usize,
+    pub current_boundary_mapping_complete: bool,
+    pub every_row_has_public_rejection_class: bool,
+    pub roundtrip_regression_present: bool,
+    pub frozen_corpus_complete: bool,
+    pub deployment_ready: bool,
+    pub blocker: &'static str,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -9788,6 +9819,121 @@ pub const PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKERS:
     PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_LEGACY_ROUTE_ADR,
 ];
 
+pub const PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT: &str =
+    "reject_malformed_public_input";
+pub const PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH: &str = "reject_binding_mismatch";
+pub const PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE: &str = "reject_creation_evidence";
+pub const PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED: &str = "internal_error_fail_closed";
+
+pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
+    [Path2AccountStarkPayloadKatBoundaryRowV1; 13] = [
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "payload_leaf_context_digest_mutation",
+        mutated_surface: "leaf_context_digest",
+        internal_error_match: "account-creation STARK: payload leaf context mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "creation_proof_binding_digest_mutation",
+        mutated_surface: "creation_proof_binding_digest",
+        internal_error_match: "account-creation STARK: creation proof binding digest mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "aggregation_context_digest_mutation",
+        mutated_surface: "aggregation_context_digest",
+        internal_error_match: "account-creation STARK: aggregation context mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "slot_id_mutation",
+        mutated_surface: "slot_id",
+        internal_error_match: "account-creation STARK: slot id mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "native_role_root_commitment_digest_mutation",
+        mutated_surface: "native_role_root_commitment",
+        internal_error_match: "account-creation STARK: payload digest mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "masked_projection_digest_mutation",
+        mutated_surface: "masked_projection",
+        internal_error_match: "account-creation STARK: payload digest mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "account_stark_bundle_digest_mutation",
+        mutated_surface: "account_stark_bundle",
+        internal_error_match: "account-creation STARK: payload digest mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "empty_account_stark_bundle",
+        mutated_surface: "account_stark_bundle",
+        internal_error_match: "account-creation STARK: payload bundle is empty",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "rebound_native_role_root_anchor",
+        mutated_surface: "native_role_root_commitment",
+        internal_error_match: "deployed anchor mismatch: native_role_root_commitment",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "rebound_masked_projection_anchor",
+        mutated_surface: "masked_projection",
+        internal_error_match: "deployed anchor mismatch: masked_projection",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "rebound_corrupted_account_stark_bundle",
+        mutated_surface: "account_stark_bundle",
+        internal_error_match: "account-creation STARK verify failed",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "wrong_replay_payload_digest",
+        mutated_surface: "public_replay_payload_digest",
+        internal_error_match: "account-creation STARK: payload digest mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountStarkPayloadKatBoundaryRowV1 {
+        case_id: "production_gate_closed",
+        mutated_surface: "production_admission_gate",
+        internal_error_match:
+            "account-creation STARK production verification is fail-closed (external-review-gated)",
+        public_rejection_class: PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED,
+        covered_by_roundtrip_test: true,
+        frozen_vector_present: false,
+    },
+];
+
 pub const PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS: [Path2AccountStarkResidualMatrixRowV1;
     PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKER_COUNT] = [
     Path2AccountStarkResidualMatrixRowV1 {
@@ -9948,12 +10094,96 @@ pub fn production_deployment_account_stark_residual_blockers() -> &'static [&'st
     &PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKERS
 }
 
+pub fn path2_account_stark_payload_public_rejection_class(error: &str) -> &'static str {
+    if error.contains("account-creation STARK: payload bundle is empty") {
+        return PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT;
+    }
+    if error.contains("account-creation STARK production verification is fail-closed") {
+        return PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED;
+    }
+    if error.contains("account-creation STARK verify failed")
+        || error.contains("deployed anchor mismatch")
+    {
+        return PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE;
+    }
+    if error.contains("account-creation STARK:") {
+        return PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH;
+    }
+    PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED
+}
+
+pub fn path2_account_stark_payload_kat_boundary_report_v1()
+-> Path2AccountStarkPayloadKatBoundaryReportV1 {
+    let rows = &PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS;
+    let mut report = Path2AccountStarkPayloadKatBoundaryReportV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        domain: PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_REPORT_DOMAIN,
+        selected_payload_type: "Path2AccountStarkCreationPayloadV1",
+        payload_digest_function: "path2_account_stark_creation_payload_v1_digest",
+        verifier_boundary_endpoint: "verify_path2_direct_creation_account_stark_payload_boundary",
+        production_boundary_endpoint:
+            "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
+        rows,
+        public_payload_field_mutation_count: rows
+            .iter()
+            .filter(|row| {
+                matches!(
+                    row.mutated_surface,
+                    "leaf_context_digest"
+                        | "creation_proof_binding_digest"
+                        | "aggregation_context_digest"
+                        | "slot_id"
+                        | "native_role_root_commitment"
+                        | "masked_projection"
+                        | "account_stark_bundle"
+                )
+            })
+            .count(),
+        current_boundary_mapping_complete: rows.iter().all(|row| {
+            path2_account_stark_payload_public_rejection_class(row.internal_error_match)
+                == row.public_rejection_class
+        }),
+        every_row_has_public_rejection_class: rows
+            .iter()
+            .all(|row| !row.public_rejection_class.is_empty()),
+        roundtrip_regression_present: rows
+            .iter()
+            .all(|row| row.covered_by_roundtrip_test),
+        frozen_corpus_complete: rows.iter().all(|row| row.frozen_vector_present),
+        deployment_ready: false,
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS,
+    };
+    report.digest = path2_account_stark_payload_kat_boundary_report_v1_digest(&report);
+    report
+}
+
+pub fn path2_account_stark_payload_kat_boundary_report_v1_digest(
+    report: &Path2AccountStarkPayloadKatBoundaryReportV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_account_stark_payload_kat_boundary_report_v1_frame(report)).into()
+}
+
+pub fn validate_path2_account_stark_payload_kat_boundary_report_v1(
+    report: &Path2AccountStarkPayloadKatBoundaryReportV1,
+) -> Result<(), String> {
+    let expected = path2_account_stark_payload_kat_boundary_report_v1();
+    if expected != *report {
+        return Err("Path 2 account-STARK payload KAT boundary report mismatch".to_string());
+    }
+    if path2_account_stark_payload_kat_boundary_report_v1_digest(report) != report.digest {
+        return Err("Path 2 account-STARK payload KAT boundary report digest mismatch".to_string());
+    }
+    Ok(())
+}
+
 pub fn path2_account_stark_residual_matrix_report_v1()
 -> Path2AccountStarkResidualMatrixReportV1 {
     let rows = &PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS;
+    let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
     let mut report = Path2AccountStarkResidualMatrixReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN,
+        payload_kat_boundary_report_digest: payload_kat_boundary_report.digest,
         selected_proof_family: "Plonky3/q12289 account-creation STARK",
         selected_payload_type: "Path2AccountStarkCreationPayloadV1",
         rows,
@@ -62131,6 +62361,100 @@ fn reviewed_fq12_hidden_source_proof_readiness_verdict_frame(
     frame
 }
 
+fn path2_account_stark_payload_kat_boundary_report_v1_frame(
+    report: &Path2AccountStarkPayloadKatBoundaryReportV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"domain", report.domain.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_u64(&mut frame, b"q", Q as u64);
+    append_u64(&mut frame, b"groups", GROUPS as u64);
+    append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
+    append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
+    append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(
+        &mut frame,
+        b"selected_payload_type",
+        report.selected_payload_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"payload_digest_function",
+        report.payload_digest_function.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"verifier_boundary_endpoint",
+        report.verifier_boundary_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"production_boundary_endpoint",
+        report.production_boundary_endpoint.as_bytes(),
+    );
+    for (index, row) in report.rows.iter().enumerate() {
+        append_u64(&mut frame, b"kat_boundary_row_index", index as u64);
+        append_frame(&mut frame, b"case_id", row.case_id.as_bytes());
+        append_frame(
+            &mut frame,
+            b"mutated_surface",
+            row.mutated_surface.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"internal_error_match",
+            row.internal_error_match.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"public_rejection_class",
+            row.public_rejection_class.as_bytes(),
+        );
+        append_u64(
+            &mut frame,
+            b"covered_by_roundtrip_test",
+            u64::from(row.covered_by_roundtrip_test),
+        );
+        append_u64(
+            &mut frame,
+            b"frozen_vector_present",
+            u64::from(row.frozen_vector_present),
+        );
+    }
+    append_u64(
+        &mut frame,
+        b"public_payload_field_mutation_count",
+        report.public_payload_field_mutation_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"current_boundary_mapping_complete",
+        u64::from(report.current_boundary_mapping_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"every_row_has_public_rejection_class",
+        u64::from(report.every_row_has_public_rejection_class),
+    );
+    append_u64(
+        &mut frame,
+        b"roundtrip_regression_present",
+        u64::from(report.roundtrip_regression_present),
+    );
+    append_u64(
+        &mut frame,
+        b"frozen_corpus_complete",
+        u64::from(report.frozen_corpus_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_ready",
+        u64::from(report.deployment_ready),
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    frame
+}
+
 fn path2_account_stark_residual_matrix_report_v1_frame(
     report: &Path2AccountStarkResidualMatrixReportV1,
 ) -> Vec<u8> {
@@ -62142,6 +62466,11 @@ fn path2_account_stark_residual_matrix_report_v1_frame(
     append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
     append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
     append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(
+        &mut frame,
+        b"payload_kat_boundary_report_digest",
+        &report.payload_kat_boundary_report_digest,
+    );
     append_frame(
         &mut frame,
         b"selected_proof_family",
@@ -102400,10 +102729,109 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     }
 
     #[test]
+    fn path2_account_stark_payload_kat_boundary_report_pins_public_rejections() {
+        let report = path2_account_stark_payload_kat_boundary_report_v1();
+        assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(
+            report.domain,
+            PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_REPORT_DOMAIN
+        );
+        assert_eq!(report.selected_payload_type, "Path2AccountStarkCreationPayloadV1");
+        assert_eq!(
+            report.payload_digest_function,
+            "path2_account_stark_creation_payload_v1_digest"
+        );
+        assert_eq!(
+            report.verifier_boundary_endpoint,
+            "verify_path2_direct_creation_account_stark_payload_boundary"
+        );
+        assert_eq!(
+            report.production_boundary_endpoint,
+            "verify_path2_direct_creation_account_stark_payload_boundary_for_production"
+        );
+        assert_eq!(
+            report.rows,
+            PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS.as_ref()
+        );
+        assert_eq!(report.rows.len(), 13);
+        assert_eq!(report.public_payload_field_mutation_count, 11);
+        assert!(report.current_boundary_mapping_complete);
+        assert!(report.every_row_has_public_rejection_class);
+        assert!(report.roundtrip_regression_present);
+        assert!(!report.frozen_corpus_complete);
+        assert!(!report.deployment_ready);
+        assert_eq!(
+            report.blocker,
+            PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS
+        );
+        assert!(report
+            .rows
+            .iter()
+            .any(|row| row.case_id == "empty_account_stark_bundle"
+                && row.public_rejection_class
+                    == PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT));
+        assert!(report
+            .rows
+            .iter()
+            .any(|row| row.case_id == "rebound_native_role_root_anchor"
+                && row.public_rejection_class == PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE));
+        assert!(report
+            .rows
+            .iter()
+            .any(|row| row.case_id == "production_gate_closed"
+                && row.public_rejection_class == PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED));
+        for row in report.rows {
+            assert!(row.covered_by_roundtrip_test);
+            assert!(!row.frozen_vector_present);
+            assert_eq!(
+                path2_account_stark_payload_public_rejection_class(row.internal_error_match),
+                row.public_rejection_class
+            );
+        }
+        assert_eq!(
+            path2_account_stark_payload_kat_boundary_report_v1_digest(&report),
+            report.digest
+        );
+        validate_path2_account_stark_payload_kat_boundary_report_v1(&report).unwrap();
+
+        assert_eq!(
+            path2_account_stark_payload_public_rejection_class(
+                "account-creation STARK: payload bundle is empty"
+            ),
+            PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT
+        );
+        assert_eq!(
+            path2_account_stark_payload_public_rejection_class(
+                "account-creation STARK verify failed: deployed anchor mismatch: masked_projection[0]"
+            ),
+            PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE
+        );
+        assert_eq!(
+            path2_account_stark_payload_public_rejection_class(
+                "account-creation STARK: payload digest mismatch"
+            ),
+            PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH
+        );
+
+        let mut malformed = report.clone();
+        malformed.frozen_corpus_complete = true;
+        malformed.digest = path2_account_stark_payload_kat_boundary_report_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_account_stark_payload_kat_boundary_report_v1(&malformed).unwrap_err(),
+            "Path 2 account-STARK payload KAT boundary report mismatch"
+        );
+    }
+
+    #[test]
     fn path2_account_stark_residual_matrix_report_pins_open_rows() {
+        let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
         let report = path2_account_stark_residual_matrix_report_v1();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
         assert_eq!(report.domain, PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN);
+        assert_eq!(
+            report.payload_kat_boundary_report_digest,
+            payload_kat_boundary_report.digest
+        );
         assert_eq!(
             report.selected_proof_family,
             "Plonky3/q12289 account-creation STARK"

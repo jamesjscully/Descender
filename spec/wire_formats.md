@@ -181,6 +181,8 @@ Current executable coverage for this boundary is the feature-gated Rust test
 payload field, checks empty-bundle rejection, and rebinds selected malformed
 payloads to exercise the deployed anchor boundary. This is precursor coverage for
 the final frozen KAT corpus, not a replacement for it.
+`Path2AccountStarkPayloadKatBoundaryReportV1` pins the current mutation case ids
+and public rejection-class mapping for this precursor coverage.
 
 ## Path2NativeCheckedCoreFrameV1
 
