@@ -176,6 +176,12 @@ The account-creation verifier must reject if:
   the STARK public statement; or
 - the opaque bundle fails STARK verification.
 
+Current executable coverage for this boundary is the feature-gated Rust test
+`path2_account_stark_creation_roundtrip_and_binds`, which mutates every public
+payload field, checks empty-bundle rejection, and rebinds selected malformed
+payloads to exercise the deployed anchor boundary. This is precursor coverage for
+the final frozen KAT corpus, not a replacement for it.
+
 ## Path2NativeCheckedCoreFrameV1
 
 The active checked-core frame is the Poseidon2-friendly challenge frame consumed

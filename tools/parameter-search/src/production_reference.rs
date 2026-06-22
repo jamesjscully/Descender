@@ -72504,16 +72504,37 @@ mod tests {
     }
 
     // ----------------------------------------------------------------------
-    // HIGH-2 transparent-descent ZK creation proof: round-trip, negatives, hiding.
+    // Account-creation STARK proof boundary: round-trip, negatives, production gate.
     // ----------------------------------------------------------------------
 
-    /// Build a complete, honest transparent-descent creation context bound to the
-    /// transparent ZK payload digest, by running the real prover over the
-    /// masked-state18 fixture's witness (pad_seed + leaf-fixed commitment).
+    #[cfg(feature = "account-creation-stark-verifier")]
+    fn rebind_account_stark_payload_context(
+        leaf: &Path2PrevalidatedSlotLeafV1,
+        evidence: &Path2AccountCreationEvidenceV1,
+        certificate: &Path2DirectReplayableRelationCertificateV1,
+        payload: &Path2AccountStarkCreationPayloadV1,
+    ) -> (
+        Path2PrevalidatedSlotLeafV1,
+        Path2AccountCreationEvidenceV1,
+        Path2DirectReplayableRelationCertificateV1,
+    ) {
+        let mut rebound_certificate = *certificate;
+        rebound_certificate.public_replay_payload_digest =
+            path2_account_stark_creation_payload_v1_digest(payload).unwrap();
+        let mut rebound_evidence = *evidence;
+        rebound_evidence.evidence_payload_digest =
+            path2_direct_replayable_relation_certificate_digest(&rebound_certificate);
+        let mut rebound_leaf = *leaf;
+        rebound_leaf.prevalidation_transcript_digest =
+            path2_account_creation_evidence_transcript_digest(&rebound_evidence).unwrap();
+        refresh_path2_leaf_digest_bindings(&rebound_leaf, &mut rebound_evidence);
+        (rebound_leaf, rebound_evidence, rebound_certificate)
+    }
+
     /// End-to-end: the SOUND account-creation STARK producer + verify boundary
     /// (the HIGH-2 replacement). Builds a consistent creation binding, runs the
     /// producer, and confirms the boundary accepts the honest payload and rejects
-    /// every tamper (masked projection, role-root export bridge, and a leaf swap).
+    /// every active payload-field mutation at the selected proof boundary.
     /// One real single-instance prove — memory-light.
     #[cfg(feature = "account-creation-stark-verifier")]
     #[test]
@@ -72597,73 +72618,156 @@ mod tests {
             "account-creation STARK production verification is fail-closed (external-review-gated)"
         );
 
-        // Tamper STARK bundle bytes -> reject before the expensive STARK verifier,
-        // because the certificate/evidence chain commits to the payload byte model.
-        let mut bad = payload.clone();
-        bad.account_stark_bundle[0] ^= 1;
-        assert_eq!(
-            verify_path2_direct_creation_account_stark_payload_boundary(
-                &leaf,
-                &evidence,
-                &certificate,
-                &binding,
-                &bad
-            )
-            .unwrap_err(),
-            "account-creation STARK: payload digest mismatch"
-        );
+        // Every public payload field has a named negative KAT-style mutation. These
+        // are still in-code tests, not the final frozen corpus, but they prevent the
+        // active Path2AccountStarkCreationPayloadV1 boundary from regressing into a
+        // digest-only placeholder.
+        let mut public_field_mutations: Vec<(&str, Path2AccountStarkCreationPayloadV1, &str)> =
+            Vec::new();
 
-        // Tamper masked projection -> reject.
         let mut bad = payload.clone();
-        bad.masked_projection[0] ^= 1;
-        assert_eq!(
-            verify_path2_direct_creation_account_stark_payload_boundary(
-                &leaf,
-                &evidence,
-                &certificate,
-                &binding,
-                &bad
-            )
-            .unwrap_err(),
-            "account-creation STARK: payload digest mismatch"
-        );
+        bad.leaf_context_digest[0] ^= 1;
+        public_field_mutations.push((
+            "leaf_context_digest",
+            bad,
+            "account-creation STARK: payload leaf context mismatch",
+        ));
 
-        // Tamper role-root export commitment -> reject.
+        let mut bad = payload.clone();
+        bad.creation_proof_binding_digest[0] ^= 1;
+        public_field_mutations.push((
+            "creation_proof_binding_digest",
+            bad,
+            "account-creation STARK: creation proof binding digest mismatch",
+        ));
+
+        let mut bad = payload.clone();
+        bad.aggregation_context_digest[0] ^= 1;
+        public_field_mutations.push((
+            "aggregation_context_digest",
+            bad,
+            "account-creation STARK: aggregation context mismatch",
+        ));
+
+        let mut bad = payload.clone();
+        bad.slot_id ^= 1;
+        public_field_mutations.push(("slot_id", bad, "account-creation STARK: slot id mismatch"));
+
         let mut bad = payload.clone();
         bad.native_role_root_commitment[0] ^= 1;
+        public_field_mutations.push((
+            "native_role_root_commitment",
+            bad,
+            "account-creation STARK: payload digest mismatch",
+        ));
+
+        let mut bad = payload.clone();
+        bad.masked_projection[0] ^= 1;
+        public_field_mutations.push((
+            "masked_projection",
+            bad,
+            "account-creation STARK: payload digest mismatch",
+        ));
+
+        let mut bad = payload.clone();
+        bad.account_stark_bundle[0] ^= 1;
+        public_field_mutations.push((
+            "account_stark_bundle",
+            bad,
+            "account-creation STARK: payload digest mismatch",
+        ));
+
+        for (field, bad_payload, expected_error) in public_field_mutations {
+            assert_ne!(
+                path2_account_stark_creation_payload_v1_digest(&bad_payload).unwrap(),
+                payload_digest,
+                "{field} mutation must change the canonical payload digest"
+            );
+            assert_eq!(
+                verify_path2_direct_creation_account_stark_payload_boundary(
+                    &leaf,
+                    &evidence,
+                    &certificate,
+                    &binding,
+                    &bad_payload,
+                )
+                .unwrap_err(),
+                expected_error,
+                "{field} mutation must reject deterministically",
+            );
+        }
+
+        let mut empty_bundle = payload.clone();
+        empty_bundle.account_stark_bundle.clear();
+        assert_eq!(
+            path2_account_stark_creation_payload_v1_digest(&empty_bundle).unwrap_err(),
+            "account-creation STARK: payload bundle is empty"
+        );
         assert_eq!(
             verify_path2_direct_creation_account_stark_payload_boundary(
                 &leaf,
                 &evidence,
                 &certificate,
                 &binding,
-                &bad
+                &empty_bundle,
             )
             .unwrap_err(),
-            "account-creation STARK: payload digest mismatch"
+            "account-creation STARK: payload bundle is empty"
         );
 
-        let mut rebound_certificate = certificate;
-        rebound_certificate.public_replay_payload_digest =
-            path2_account_stark_creation_payload_v1_digest(&bad).unwrap();
-        let mut rebound_evidence = evidence;
-        rebound_evidence.evidence_payload_digest =
-            path2_direct_replayable_relation_certificate_digest(&rebound_certificate);
-        let mut rebound_leaf = leaf;
-        rebound_leaf.prevalidation_transcript_digest =
-            path2_account_creation_evidence_transcript_digest(&rebound_evidence).unwrap();
-        refresh_path2_leaf_digest_bindings(&rebound_leaf, &mut rebound_evidence);
+        let mut bad_role_root = payload.clone();
+        bad_role_root.native_role_root_commitment[0] ^= 1;
+        let (rebound_leaf, rebound_evidence, rebound_certificate) =
+            rebind_account_stark_payload_context(&leaf, &evidence, &certificate, &bad_role_root);
         let rebound_error = verify_path2_direct_creation_account_stark_payload_boundary(
             &rebound_leaf,
             &rebound_evidence,
             &rebound_certificate,
             &binding,
-            &bad,
+            &bad_role_root,
         )
         .unwrap_err();
         assert!(
-            rebound_error
-                .contains("deployed anchor mismatch: native_role_root_commitment"),
+            rebound_error.contains("deployed anchor mismatch: native_role_root_commitment"),
+            "{rebound_error}"
+        );
+
+        let mut bad_masked_projection = payload.clone();
+        bad_masked_projection.masked_projection[0] ^= 1;
+        let (rebound_leaf, rebound_evidence, rebound_certificate) =
+            rebind_account_stark_payload_context(
+                &leaf,
+                &evidence,
+                &certificate,
+                &bad_masked_projection,
+            );
+        let rebound_error = verify_path2_direct_creation_account_stark_payload_boundary(
+            &rebound_leaf,
+            &rebound_evidence,
+            &rebound_certificate,
+            &binding,
+            &bad_masked_projection,
+        )
+        .unwrap_err();
+        assert!(
+            rebound_error.contains("deployed anchor mismatch: masked_projection[0]"),
+            "{rebound_error}"
+        );
+
+        let mut bad_bundle = payload.clone();
+        bad_bundle.account_stark_bundle[0] ^= 1;
+        let (rebound_leaf, rebound_evidence, rebound_certificate) =
+            rebind_account_stark_payload_context(&leaf, &evidence, &certificate, &bad_bundle);
+        let rebound_error = verify_path2_direct_creation_account_stark_payload_boundary(
+            &rebound_leaf,
+            &rebound_evidence,
+            &rebound_certificate,
+            &binding,
+            &bad_bundle,
+        )
+        .unwrap_err();
+        assert!(
+            rebound_error.contains("account-creation STARK verify failed"),
             "{rebound_error}"
         );
 

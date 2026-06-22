@@ -151,11 +151,14 @@ gate, or proof-family parameters are missing. It must not admit a leaf merely
 because `prevalidation_transcript_digest`, `evidence_payload_digest`, or a
 commitment root is well formed.
 
-The boundary is implemented but not verified. Open closure items are the final
-composition theorem, account STARK simulator theorem, extractor/soundness
-theorem, FRI/recursion residual-assumption ledger, complete byte-format KATs,
-malformed-payload KATs, signer leakage evidence, external proof-family review,
-and the explicit production-gate decision.
+The boundary is implemented but not verified. The active Rust test suite now has
+an initial `Path2AccountStarkCreationPayloadV1` malformed-payload mutation
+matrix, including empty-bundle, digest-bound, rebound-anchor, corrupted-bundle,
+and production-gate checks. Open closure items are the final composition
+theorem, account STARK simulator theorem, extractor/soundness theorem,
+FRI/recursion residual-assumption ledger, complete frozen byte-format KATs,
+signer leakage evidence, external proof-family review, and the explicit
+production-gate decision.
 
 ## Current Security-Level Position
 

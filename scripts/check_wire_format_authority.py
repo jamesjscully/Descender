@@ -262,9 +262,21 @@ def main() -> int:
     for marker in [
         "path2_account_stark_creation_payload_v1_digest",
         "path2_account_stark_creation_roundtrip_and_binds",
+        "rebind_account_stark_payload_context",
+        "public_field_mutations",
+        "leaf_context_digest",
+        "creation_proof_binding_digest",
+        "aggregation_context_digest",
+        "slot_id",
+        "native_role_root_commitment",
+        "masked_projection",
+        "account_stark_bundle",
+        "account-creation STARK: payload bundle is empty",
         "account-creation STARK: payload digest mismatch",
         "account-creation STARK production verification is fail-closed (external-review-gated)",
         "deployed anchor mismatch: native_role_root_commitment",
+        "deployed anchor mismatch: masked_projection[0]",
+        "account-creation STARK verify failed",
     ]:
         if marker not in source:
             errors.append(f"missing account-STARK payload boundary marker {marker}")
