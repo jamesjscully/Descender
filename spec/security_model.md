@@ -71,6 +71,12 @@ If a proof step needs a stronger, weaker, or differently shaped hypothesis, the
 theorem statement is not yet closed for deployment. The proof must instead
 export one of the named breaks below or update this boundary by ADR/spec change.
 
+The production reference emits `Path2DirectTheoremBoundaryReportV1`, which pins
+the accepted tuple, acceptance hypotheses, named break classes, and current
+open blocker for this theorem boundary. This report is not the proof; it is the
+mechanical guard that prevents deployment preflight from drifting away from the
+theorem shape while the composition theorem remains open.
+
 ## Named Break Classes
 
 Direct mode may name, but must not hide, these break classes:
@@ -241,7 +247,7 @@ used as deployment evidence while a higher-ranked blocker remains open.
 
 | Rank | Blocker | Must close | Owning rows |
 |---|---|---|---|
-| 1 | Direct theorem closure | Final product theorem covers admission, spend, consume-once lifecycle, exact public bindings, and every named break; supporting lemmas cannot stand in for the deployment theorem. | `DIR-RISK-001`, `DIR-SEC-001`, `DIR-CREATE-001`, `DIR-PROOF-002`, `DIR-AUTHCLASS-001` |
+| 1 | Direct theorem closure | `Path2DirectTheoremBoundaryReportV1` pins the product theorem boundary, and the final product theorem covers admission, spend, consume-once lifecycle, exact public bindings, and every named break; supporting lemmas cannot stand in for the deployment theorem. | `DIR-RISK-001`, `DIR-SEC-001`, `DIR-CREATE-001`, `DIR-PROOF-002`, `DIR-AUTHCLASS-001` |
 | 2 | Account-creation proof boundary | Selected account-STARK payload has a concrete byte model, canonical replay-payload digest, deployed anchor binding, simulator theorem, extractor theorem, hidden-source payload statement, production gate, and rejection behavior. | `DIR-CREATE-001`, `DIR-PROOF-001`, `DIR-STARK-001`, `DIR-BIND-001`, `DIR-PAYLOAD-001`, `DIR-KAT-001`, `DIR-REJECT-001` |
 | 3 | Authorization-class binding | Private authorization-local material cannot change public spend semantics, fork account state, or bypass the checked-core public binding. | `DIR-AUTHCLASS-001`, `DIR-SEC-001`, `DIR-CC-001` |
 | 4 | Consensus conformance | Canonical wire formats, public-field mutation vectors, end-to-end creation/spend/lifecycle vectors, and deterministic rejection behavior exist. | `DIR-KAT-001`, `SPEC-KAT-001`, `DIR-REJECT-001`, `DIR-CC-001`, `DIR-LEAF-001`, `DIR-EVID-001` |

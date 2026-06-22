@@ -123,7 +123,7 @@ artifact set.
 
 | Surface | Required class | Readiness | Required artifact | Tracker rows |
 |---|---|---|---|---|
-| Normative direct-mode spine | `direct` | `partial` | spec spine plus final direct-mode theorem and non-claims routed through current authority | `SPEC-DIR-001`, `DIR-RISK-001`, `DIR-SEC-001` |
+| Normative direct-mode spine | `direct` | `partial` | spec spine plus `Path2DirectTheoremBoundaryReportV1`, final direct-mode theorem, and non-claims routed through current authority | `SPEC-DIR-001`, `DIR-RISK-001`, `DIR-SEC-001` |
 | Risk-first deployment blocker ledger | `direct` | `partial` | ranked blocker order, no-claim rule, and tracker-owned burn-down sequence for core signature deployability | `DIR-RISK-001`, `DIR-SEC-001`, `DIR-PROOF-002` |
 | Slot leaf and creation evidence frames | `direct` | `partial` | canonical frame bytes, versioning, positive and negative KATs, and malformed-frame rejection | `DIR-LEAF-001`, `DIR-EVID-001`, `DIR-KAT-001`, `DIR-REJECT-001` |
 | Account-creation STARK API | `direct` | `partial` | account-creation prover/verifier API, canonical payload digest, targeted integration tests, and public-input contract | `DIR-STARK-001`, `DIR-BIND-001`, `DIR-KAT-001`, `DIR-REJECT-001` |

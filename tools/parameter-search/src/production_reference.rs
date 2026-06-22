@@ -38,6 +38,8 @@ pub const PRODUCTION_SELECTED_PROJECTION_INVALID_CARRIER_REASON: &str =
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_PAD_OPENING_BINDING: &str =
     "pad-opening witness binding is not implemented for the reviewed 262-byte/Fq12 path";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS: &str = "Path 2 account-creation prevalidation proof semantics are not complete; the reviewed 318-byte/Fq12 projection-carrier route remains a fail-closed baseline and negative-control source";
+pub const PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION: &str =
+    "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS: &str = "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_AIR_REVIEW: &str = "account-STARK residual matrix: AIR relation soundness still requires external proof-family review";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_AOK_EXTRACTOR: &str = "account-STARK residual matrix: selected Plonky3/q12289 FRI argument-of-knowledge extractor theorem is not instantiated";
@@ -52,6 +54,7 @@ pub const PRODUCTION_DEPLOYMENT_BLOCKER_CONSTANT_TIME: &str =
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_STORAGE: &str = "target-specific chain database binding, trusted restore-anchor placement review, and external storage review remain open";
 pub const PRODUCTION_DEPLOYMENT_BLOCKER_EXTERNAL_REVIEW: &str =
     "external security review remains open";
+pub const PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKER_COUNT: usize = 1;
 pub const PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKER_COUNT: usize = 7;
 pub const PATH2_NATIVE_DEPLOYMENT_PREFLIGHT_SCHEMA: &str =
     "Descender.Path2.NativeDeploymentPreflight.v1";
@@ -293,6 +296,8 @@ pub const PRODUCTION_DEPLOYMENT_PREFLIGHT_READY_ASSERTION_DOMAIN: &str =
     "Descender.Signature.q12289.local_delta.production_deployment_preflight_ready_assertion.v1";
 pub const PRODUCTION_DEPLOYMENT_PREFLIGHT_CERTIFICATE_DOMAIN: &str =
     "Descender.Signature.q12289.local_delta.production_deployment_preflight_certificate.v1";
+pub const PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN: &str =
+    "Descender.Path2.DirectTheoremBoundaryReport.v1";
 pub const PATH2_REVIEWED_FQ12_HIDDEN_SOURCE_SEMANTICS_BRIDGE_AUDIT_DOMAIN: &str =
     "Descender.Path2.reviewed_fq12.hidden_source_semantics_bridge_audit.v1";
 pub const PATH2_SELECTED_RUST_MODEL_CONCRETE_DEFINITION_CHECKLIST_SCHEMA: &str =
@@ -9244,6 +9249,25 @@ fn reviewed_fq12_deployment_verifier_productized_v1(
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2DirectTheoremBoundaryReportV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub domain: &'static str,
+    pub accepted_tuple_fields: &'static [&'static str],
+    pub acceptance_hypotheses: &'static [&'static str],
+    pub named_break_classes: &'static [&'static str],
+    pub theorem_statement_pinned: bool,
+    pub accepted_tuple_pinned: bool,
+    pub acceptance_hypotheses_pinned: bool,
+    pub named_break_classes_pinned: bool,
+    pub composition_theorem_instantiated: bool,
+    pub account_creation_proof_boundary_verified: bool,
+    pub lifecycle_transition_profile_verified: bool,
+    pub qrom_and_action_bounds_linked_to_theorem: bool,
+    pub deployment_ready: bool,
+    pub blocker: &'static str,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ProductionDeploymentPreflight {
     pub callback_boundaries_ok: bool,
     pub executable_signature_bytes: usize,
@@ -9704,8 +9728,98 @@ pub const PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKERS:
     PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_LEGACY_ROUTE_ADR,
 ];
 
+pub const PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS: [&str; 11] = [
+    "public_key_or_public_key_identity",
+    "message_or_message_digest",
+    "account_id",
+    "account_state_root_before_spend",
+    "slot_id",
+    "checked_core_signature_body",
+    "prevalidated_slot_leaf_v1",
+    "account_creation_evidence_v1",
+    "selected_account_creation_proof_payload",
+    "direct_admission_namespace_record",
+    "consume_once_state_before_and_after_spend",
+];
+
+pub const PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES: [&str; 9] = [
+    "leaf_is_canonical_and_live",
+    "evidence_envelope_matches_leaf_bindings",
+    "slot_authorization_digest_matches_canonical_leaf",
+    "selected_creation_verifier_accepted_before_spend_challenge",
+    "direct_admission_namespace_contains_exact_tuple",
+    "checked_core_challenge_binds_public_spend_context",
+    "checked_core_verification_accepts_poseidon2_and_fq12_action",
+    "lifecycle_transition_consumes_authorization_once",
+    "rejection_is_deterministic_public_and_state_preserving",
+];
+
+pub const PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES: [&str; 11] = [
+    "creation_time_hidden_source_soundness_break",
+    "prevalidation_leaf_binding_break",
+    "prevalidation_registry_binding_break",
+    "prevalidation_data_availability_break",
+    "postchallenge_slot_creation_or_rewrite_break",
+    "checked_core_message_binding_break",
+    "slot_replay_or_rollback_break",
+    "qrom_or_domain_separation_break",
+    "live_slot_leakage_or_keygen_break",
+    "selected_account_creation_payload_proof_family_break",
+    "external_coded_sis_or_lattice_core_assumption_break",
+];
+
+pub const PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKERS: [&str;
+    PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKER_COUNT] = [
+    PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+];
+
+pub fn production_deployment_direct_theorem_blockers() -> &'static [&'static str] {
+    &PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKERS
+}
+
 pub fn production_deployment_account_stark_residual_blockers() -> &'static [&'static str] {
     &PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKERS
+}
+
+pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryReportV1 {
+    let mut report = Path2DirectTheoremBoundaryReportV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        domain: PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN,
+        accepted_tuple_fields: &PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS,
+        acceptance_hypotheses: &PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES,
+        named_break_classes: &PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES,
+        theorem_statement_pinned: true,
+        accepted_tuple_pinned: true,
+        acceptance_hypotheses_pinned: true,
+        named_break_classes_pinned: true,
+        composition_theorem_instantiated: false,
+        account_creation_proof_boundary_verified: false,
+        lifecycle_transition_profile_verified: false,
+        qrom_and_action_bounds_linked_to_theorem: false,
+        deployment_ready: false,
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+    };
+    report.digest = path2_direct_theorem_boundary_report_v1_digest(&report);
+    report
+}
+
+pub fn path2_direct_theorem_boundary_report_v1_digest(
+    report: &Path2DirectTheoremBoundaryReportV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_direct_theorem_boundary_report_v1_frame(report)).into()
+}
+
+pub fn validate_path2_direct_theorem_boundary_report_v1(
+    report: &Path2DirectTheoremBoundaryReportV1,
+) -> Result<(), String> {
+    let expected = path2_direct_theorem_boundary_report_v1();
+    if expected != *report {
+        return Err("Path 2 direct theorem boundary report mismatch".to_string());
+    }
+    if path2_direct_theorem_boundary_report_v1_digest(report) != report.digest {
+        return Err("Path 2 direct theorem boundary report digest mismatch".to_string());
+    }
+    Ok(())
 }
 
 pub fn production_deployment_preflight() -> ProductionDeploymentPreflight {
@@ -9781,6 +9895,7 @@ pub fn production_deployment_preflight() -> ProductionDeploymentPreflight {
         blockers.push(PRODUCTION_DEPLOYMENT_BLOCKER_PAD_OPENING_BINDING);
     }
     blockers.push(PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS);
+    blockers.extend_from_slice(production_deployment_direct_theorem_blockers());
     blockers.extend_from_slice(production_deployment_account_stark_residual_blockers());
     blockers.push(PRODUCTION_DEPLOYMENT_BLOCKER_CONSTANT_TIME);
     blockers.push(PRODUCTION_DEPLOYMENT_BLOCKER_STORAGE);
@@ -61741,6 +61856,78 @@ fn reviewed_fq12_hidden_source_proof_readiness_verdict_frame(
     frame
 }
 
+fn path2_direct_theorem_boundary_report_v1_frame(
+    report: &Path2DirectTheoremBoundaryReportV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"domain", report.domain.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_u64(&mut frame, b"q", Q as u64);
+    append_u64(&mut frame, b"groups", GROUPS as u64);
+    append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
+    append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
+    append_u64(&mut frame, b"repetitions", REPS as u64);
+    for (index, field) in report.accepted_tuple_fields.iter().enumerate() {
+        append_u64(&mut frame, b"accepted_tuple_field_index", index as u64);
+        append_frame(&mut frame, b"accepted_tuple_field", field.as_bytes());
+    }
+    for (index, hypothesis) in report.acceptance_hypotheses.iter().enumerate() {
+        append_u64(&mut frame, b"acceptance_hypothesis_index", index as u64);
+        append_frame(&mut frame, b"acceptance_hypothesis", hypothesis.as_bytes());
+    }
+    for (index, break_class) in report.named_break_classes.iter().enumerate() {
+        append_u64(&mut frame, b"named_break_class_index", index as u64);
+        append_frame(&mut frame, b"named_break_class", break_class.as_bytes());
+    }
+    append_u64(
+        &mut frame,
+        b"theorem_statement_pinned",
+        u64::from(report.theorem_statement_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_tuple_pinned",
+        u64::from(report.accepted_tuple_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"acceptance_hypotheses_pinned",
+        u64::from(report.acceptance_hypotheses_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"named_break_classes_pinned",
+        u64::from(report.named_break_classes_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"composition_theorem_instantiated",
+        u64::from(report.composition_theorem_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"account_creation_proof_boundary_verified",
+        u64::from(report.account_creation_proof_boundary_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"lifecycle_transition_profile_verified",
+        u64::from(report.lifecycle_transition_profile_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_and_action_bounds_linked_to_theorem",
+        u64::from(report.qrom_and_action_bounds_linked_to_theorem),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_ready",
+        u64::from(report.deployment_ready),
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    frame
+}
+
 fn production_deployment_preflight_report_frame(
     report: &ProductionDeploymentPreflightReport,
 ) -> Vec<u8> {
@@ -75450,10 +75637,20 @@ mod tests {
                 .blockers
                 .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS)
         );
+        let direct_theorem_blockers = production_deployment_direct_theorem_blockers();
+        assert_eq!(
+            &preflight.blockers[1..1 + direct_theorem_blockers.len()],
+            direct_theorem_blockers
+        );
+        for &blocker in direct_theorem_blockers {
+            assert!(preflight.blockers.contains(&blocker));
+        }
         let account_stark_residual_blockers =
             production_deployment_account_stark_residual_blockers();
+        let account_stark_residual_start = 1 + direct_theorem_blockers.len();
         assert_eq!(
-            &preflight.blockers[1..1 + account_stark_residual_blockers.len()],
+            &preflight.blockers[account_stark_residual_start
+                ..account_stark_residual_start + account_stark_residual_blockers.len()],
             account_stark_residual_blockers
         );
         for &blocker in account_stark_residual_blockers {
@@ -101730,6 +101927,70 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     }
 
     #[test]
+    fn path2_direct_theorem_boundary_report_pins_shape_and_blocks_deployment() {
+        let report = path2_direct_theorem_boundary_report_v1();
+        assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(report.domain, PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN);
+        assert_eq!(
+            report.accepted_tuple_fields,
+            PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.as_ref()
+        );
+        assert_eq!(
+            report.acceptance_hypotheses,
+            PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.as_ref()
+        );
+        assert_eq!(
+            report.named_break_classes,
+            PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES.as_ref()
+        );
+        assert_eq!(report.accepted_tuple_fields.len(), 11);
+        assert_eq!(report.acceptance_hypotheses.len(), 9);
+        assert_eq!(report.named_break_classes.len(), 11);
+        assert!(report
+            .accepted_tuple_fields
+            .contains(&"direct_admission_namespace_record"));
+        assert!(report
+            .acceptance_hypotheses
+            .contains(&"selected_creation_verifier_accepted_before_spend_challenge"));
+        assert!(report
+            .named_break_classes
+            .contains(&"selected_account_creation_payload_proof_family_break"));
+        assert!(report.theorem_statement_pinned);
+        assert!(report.accepted_tuple_pinned);
+        assert!(report.acceptance_hypotheses_pinned);
+        assert!(report.named_break_classes_pinned);
+        assert!(!report.composition_theorem_instantiated);
+        assert!(!report.account_creation_proof_boundary_verified);
+        assert!(!report.lifecycle_transition_profile_verified);
+        assert!(!report.qrom_and_action_bounds_linked_to_theorem);
+        assert!(!report.deployment_ready);
+        assert_eq!(
+            report.blocker,
+            PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+        );
+        assert_eq!(
+            path2_direct_theorem_boundary_report_v1_digest(&report),
+            report.digest
+        );
+        validate_path2_direct_theorem_boundary_report_v1(&report).unwrap();
+
+        let mut malformed = report.clone();
+        malformed.composition_theorem_instantiated = true;
+        malformed.digest = path2_direct_theorem_boundary_report_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_direct_theorem_boundary_report_v1(&malformed).unwrap_err(),
+            "Path 2 direct theorem boundary report mismatch"
+        );
+
+        let mut malformed_digest = report.clone();
+        malformed_digest.digest = [0_u8; DIGEST_BYTES];
+        assert_eq!(
+            validate_path2_direct_theorem_boundary_report_v1(&malformed_digest).unwrap_err(),
+            "Path 2 direct theorem boundary report mismatch"
+        );
+    }
+
+    #[test]
     fn deployment_preflight_fails_closed_until_selected_verifier_and_reviews_land() {
         let preflight = production_deployment_preflight();
         assert!(preflight.callback_boundaries_ok);
@@ -101808,6 +102069,25 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
                 .blockers
                 .contains(&PRODUCTION_DEPLOYMENT_BLOCKER_HIDDEN_SOURCE_PROOF_SEMANTICS)
         );
+        let direct_theorem_blockers = production_deployment_direct_theorem_blockers();
+        assert_eq!(
+            &preflight.blockers[1..1 + direct_theorem_blockers.len()],
+            direct_theorem_blockers
+        );
+        for &blocker in direct_theorem_blockers {
+            assert!(preflight.blockers.contains(&blocker));
+        }
+        let account_stark_residual_blockers =
+            production_deployment_account_stark_residual_blockers();
+        let account_stark_residual_start = 1 + direct_theorem_blockers.len();
+        assert_eq!(
+            &preflight.blockers[account_stark_residual_start
+                ..account_stark_residual_start + account_stark_residual_blockers.len()],
+            account_stark_residual_blockers
+        );
+        for &blocker in account_stark_residual_blockers {
+            assert!(preflight.blockers.contains(&blocker));
+        }
         assert!(
             preflight
                 .blockers
@@ -101846,10 +102126,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         );
         assert_eq!(
             blockers[1].blocker,
+            PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+        );
+        assert_eq!(
+            blockers[2].blocker,
             PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS
         );
         assert_eq!(
-            blockers[6].blocker,
+            blockers[7].blocker,
             PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PRODUCTION_GATE
         );
         for (index, blocker) in blockers.iter().enumerate() {
