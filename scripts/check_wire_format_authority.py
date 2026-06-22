@@ -32,6 +32,20 @@ CHECKED_CORE_FIELDS = [
     "proof_commitment",
 ]
 
+ACCOUNT_STARK_PAYLOAD_DIGEST_FIELDS = [
+    "schema",
+    "payload_version",
+    "account_stark_verifier_version",
+    "leaf_context_digest",
+    "creation_proof_binding_digest",
+    "native_role_root_commitment",
+    "aggregation_context_digest",
+    "slot_id",
+    "masked_projection_lane_count",
+    "masked_projection_le",
+    "account_stark_bundle",
+]
+
 
 def rust_str(source: str, name: str) -> str:
     match = re.search(rf'pub const {name}:\s*&str\s*=\s*"([^"]+)";', source)
@@ -100,6 +114,42 @@ def checked_core_spec_fields(spec: str) -> list[str]:
     return fields
 
 
+def account_stark_payload_spec_fields(spec: str) -> list[str]:
+    payload = section(
+        spec,
+        "## Path2AccountStarkCreationPayloadV1",
+        "## Path2NativeCheckedCoreFrameV1",
+    )
+    blocks = re.findall(r"```text\n(.*?)\n```", payload, re.S)
+    block = next(
+        (
+            candidate
+            for candidate in blocks
+            if "path2_account_stark_creation_payload_v1_digest" in candidate
+        ),
+        None,
+    )
+    if block is None:
+        raise SystemExit("FAIL: account-STARK payload digest block not found")
+    fields: list[str] = []
+    for raw_line in block.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("path2_") or line.startswith("SHA256") or line == "))":
+            continue
+        if line.endswith(","):
+            fields.append(line[:-1])
+    return fields
+
+
+def account_stark_payload_digest_fields(source: str) -> list[str]:
+    start = source.find("pub fn path2_account_stark_creation_payload_v1_digest(")
+    end = source.find("\n}\n\n/// FEATURE-GATED", start)
+    if start < 0 or end < 0:
+        raise SystemExit("FAIL: account-STARK payload digest function not found")
+    body = source[start:end]
+    return re.findall(r'append_(?:frame|u64)\(\s*&mut frame,\s*b"([^"]+)"', body)
+
+
 def rust_struct_fields(source: str) -> list[str]:
     match = re.search(
         r"pub struct Path2NativeCheckedCoreFrameV1 \{(.*?)\n\}",
@@ -149,6 +199,7 @@ def main() -> int:
         "PATH2_SLOT_AUTHORIZATION_DOMAIN",
         "PATH2_SLOT_PREVALIDATE_SINGLE_DOMAIN",
         "PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN",
+        "PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_SCHEMA",
     ]:
         if const not in rows:
             errors.append(f"spec domain table missing {const}")
@@ -195,6 +246,30 @@ def main() -> int:
     check_equal(errors, "checked-core Rust struct field order", rust_struct_fields(source), CHECKED_CORE_FIELDS)
     check_equal(errors, "checked-core Rust encoder field order", rust_encoder_fields(source), CHECKED_CORE_FIELDS)
 
+    account_payload_spec_fields = account_stark_payload_spec_fields(spec)
+    check_equal(
+        errors,
+        "account-STARK payload digest spec field order",
+        account_payload_spec_fields,
+        ACCOUNT_STARK_PAYLOAD_DIGEST_FIELDS,
+    )
+    check_equal(
+        errors,
+        "account-STARK payload digest Rust field order",
+        account_stark_payload_digest_fields(source),
+        ACCOUNT_STARK_PAYLOAD_DIGEST_FIELDS,
+    )
+    for marker in [
+        "path2_account_stark_creation_payload_v1_digest",
+        "path2_account_stark_creation_roundtrip_and_binds",
+        "account-creation STARK: payload digest mismatch",
+        "deployed anchor mismatch: native_role_root_commitment",
+    ]:
+        if marker not in source:
+            errors.append(f"missing account-STARK payload boundary marker {marker}")
+        else:
+            print(f"[OK ] account-STARK payload marker present: {marker}")
+
     tests = checked_core_test_body(source)
     required_test_markers = [
         "path2_native_checked_core_frame_v1_golden_vector_and_roundtrip",
@@ -227,7 +302,7 @@ def main() -> int:
         for error in errors:
             print(f"  - {error}")
         return 1
-    print("OK: active wire-format spec matches the Rust checked-core reference.")
+    print("OK: active wire-format spec matches the Rust reference.")
     return 0
 
 

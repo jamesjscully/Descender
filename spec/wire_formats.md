@@ -16,6 +16,7 @@ supersede this file.
 | `AccountCreationEvidenceV1` | active creation evidence envelope | `research/account_creation_evidence_v1_spec.md` |
 | `SpendAuthorizationRelationV1` | active spend relation | `research/spend_authorization_relation_v1_spec.md` |
 | `Path2NativeCheckedCoreFrameV1` | active checked-core challenge frame | `tools/parameter-search/src/production_reference.rs` |
+| `Path2AccountStarkCreationPayloadV1` | active account-STARK creation payload | `tools/parameter-search/src/production_reference.rs` |
 | `AccountCreationPublic` | active Plonky3 public statement | `tools/descender-account-stark/src/lib.rs` |
 | `DeployedCreationAnchors` | active STARK-to-leaf anchor boundary | `tools/descender-account-verifier/src/lib.rs` |
 
@@ -27,6 +28,7 @@ supersede this file.
 | `PATH2_SLOT_AUTHORIZATION_DOMAIN` | `DESCENDER_SLOT_AUTHORIZATION_V1` | 31 | active direct-mode authorization digest |
 | `PATH2_SLOT_PREVALIDATE_SINGLE_DOMAIN` | `DESCENDER_SLOT_PREVALIDATE_SINGLE_V1` | 36 | active single-slot evidence domain |
 | `PATH2_NATIVE_CHECKED_CORE_FRAME_DOMAIN` | `Descender.Path2.NativeCheckedCoreFrame.v1` | 41 | active Poseidon2 checked-core challenge frame |
+| `PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_SCHEMA` | `DESCENDER_PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_V1` | 49 | active account-STARK creation payload digest schema |
 
 `PATH2_PREVALIDATED_SLOT_LEAF_V2_DOMAIN` and
 `PATH2_SLOT_AUTHORIZATION_V2_DOMAIN` exist in the implementation as an
@@ -114,6 +116,65 @@ verifier must bind before a leaf can be admitted.
 transcript fields, excluding `slot_leaf_digest` to avoid circularity. The
 creation verifier must reject if any duplicated evidence field disagrees with
 the leaf.
+
+## Path2AccountStarkCreationPayloadV1
+
+Tracker ownership: `DIR-STARK-001`, `DIR-BIND-001`, `DIR-KAT-001`, and
+`DIR-REJECT-001`.
+
+`Path2AccountStarkCreationPayloadV1` is the selected direct-mode account
+creation payload. It is a structured verifier input, not yet a compact
+consensus byte object. The verifier admits it only when the replay certificate's
+`public_replay_payload_digest` equals the canonical digest below, and the
+certificate digest is the evidence's `evidence_payload_digest`.
+
+The payload fields are:
+
+| Field | Type | Binding |
+|---|---|---|
+| `leaf_context_digest` | digest | equals `path2_prevalidated_slot_leaf_context_digest(leaf, evidence, certificate)` |
+| `creation_proof_binding_digest` | digest | equals `Path2CreationProofBindingV1.digest` |
+| `native_role_root_commitment` | digest | equals `role_root_export_digest(AccountCreationPublic.role_root)` through `DeployedCreationAnchors` |
+| `aggregation_context_digest` | digest | equals the creation-proof binding aggregation context |
+| `slot_id` | `u64` | equals the admitted leaf slot id |
+| `masked_projection` | six `u16` q-residue lanes | equals the proven STARK public masked projection and deployed opening |
+| `account_stark_bundle` | nonempty bytes | opaque packed `(AccountCreationPublic, Proof)` bundle verified by `descender-account-verifier` |
+
+The canonical replay-payload digest is:
+
+```text
+path2_account_stark_creation_payload_v1_digest =
+  SHA256(frame(
+    schema,
+    payload_version,
+    account_stark_verifier_version,
+    leaf_context_digest,
+    creation_proof_binding_digest,
+    native_role_root_commitment,
+    aggregation_context_digest,
+    slot_id,
+    masked_projection_lane_count,
+    masked_projection_le,
+    account_stark_bundle,
+  ))
+```
+
+`frame(label, data)` is the existing Rust `append_frame` format:
+`label_len:u16_le || label || data_len:u64_le || data`. `append_u64` stores the
+integer as little-endian data inside the same frame format.
+`masked_projection_le` is exactly six little-endian `u16` lanes and
+`masked_projection_lane_count` is `6`. `payload_version` is `1`.
+`account_stark_verifier_version` is the raw verifier version currently bound in
+the STARK public statement.
+
+The account-creation verifier must reject if:
+
+- `account_stark_bundle` is empty;
+- any field mutation changes the canonical payload digest without a matching
+  replay-certificate/evidence rebind;
+- a rebound payload digest verifies but `DeployedCreationAnchors` disagree with
+  the STARK public statement; or
+- the opaque bundle fails STARK verification.
 
 ## Path2NativeCheckedCoreFrameV1
 

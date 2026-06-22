@@ -144,6 +144,12 @@ SPEC_OPEN_WORK_SECTIONS = {
         },
     },
     "spec/wire_formats.md": {
+        "Path2AccountStarkCreationPayloadV1": {
+            "DIR-STARK-001",
+            "DIR-BIND-001",
+            "DIR-KAT-001",
+            "DIR-REJECT-001",
+        },
         "Rule For New Wire Formats": {
             "DIR-LEAF-001",
             "DIR-EVID-001",
