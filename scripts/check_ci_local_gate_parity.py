@@ -167,6 +167,17 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ("cargo check --all-targets",),
     ),
     (
+        "account STARK payload KAT boundary manifest check",
+        (
+            "path2_account_stark_payload_kat_manifest",
+            "path2_account_stark_payload_kat_boundary_v1.json",
+        ),
+        (
+            "path2_account_stark_payload_kat_manifest",
+            "path2_account_stark_payload_kat_boundary_v1.json",
+        ),
+    ),
+    (
         "legacy q12289 negative-control bin tests",
         (
             "cargo test --manifest-path tools/parameter-search/Cargo.toml --bin signature_q12289_local_delta_stateful",
@@ -253,6 +264,11 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
     "semantic theorem audit": ("PROC-FORMAL-001",),
     "Lean theorem statement drift check": ("PROC-FORMAL-001",),
     "Rust all-target check": ("PROC-CI-001",),
+    "account STARK payload KAT boundary manifest check": (
+        "DIR-KAT-001",
+        "DIR-STARK-001",
+        "DIR-REJECT-001",
+    ),
     "legacy q12289 negative-control bin tests": ("PROC-LEGACY-GATE-001",),
     "legacy KAT v0 byte-conformance": ("PROC-LEGACY-GATE-001",),
     "estimator/reference constant sync": ("DIR-QROM-001",),

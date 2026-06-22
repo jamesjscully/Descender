@@ -72,6 +72,10 @@ jobs:
           workspaces: tools/parameter-search
       - name: Rust all-target check
         run: cargo check --all-targets
+      - name: Account STARK payload KAT boundary manifest check
+        run: |
+          cargo run --quiet --bin path2_account_stark_payload_kat_manifest > /tmp/path2_account_stark_payload_kat_boundary_v1.json
+          diff -u ../../formal/kat/path2_account_stark_payload_kat_boundary_v1.json /tmp/path2_account_stark_payload_kat_boundary_v1.json
       - name: Legacy q12289 negative-control bin tests
         run: cargo test --bin signature_q12289_local_delta_stateful
       - name: Legacy KAT v0 byte-conformance

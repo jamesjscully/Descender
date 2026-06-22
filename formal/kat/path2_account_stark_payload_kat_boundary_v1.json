@@ -1,0 +1,143 @@
+{
+  "manifest": {
+    "authority_snapshot": {
+      "payload_digest_function": "path2_account_stark_creation_payload_v1_digest",
+      "payload_report_domain": "Descender.Path2.AccountStarkPayloadKatBoundaryReport.v1",
+      "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
+      "residual_matrix_report_domain": "Descender.Path2.AccountStarkResidualMatrixReport.v1",
+      "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
+      "verifier_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary"
+    },
+    "corpus_id": "Descender.Path2.AccountStarkPayloadKatBoundary.v1",
+    "corpus_version": 1,
+    "coverage": {
+      "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+      "current_boundary_mapping_complete": true,
+      "deployment_ready": false,
+      "every_row_has_public_rejection_class": true,
+      "frozen_corpus_complete": false,
+      "public_payload_field_mutation_count": 11,
+      "roundtrip_regression_present": true,
+      "row_count": 13
+    },
+    "digests": {
+      "payload_kat_boundary_report_digest": "5e16ce49d7eb8f23007c24531167928e24fb012bbe71eac1eeec4de5fe982236",
+      "payload_kat_boundary_report_recomputed_digest": "5e16ce49d7eb8f23007c24531167928e24fb012bbe71eac1eeec4de5fe982236",
+      "residual_matrix_report_digest": "ed38b16b3ad3fd2a6e651edd44e35a2f7c0b55314fe227e76f60d44b6074af18"
+    },
+    "frozen_status": "draft_boundary_manifest",
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_stark_payload_kat_manifest",
+      "source": "tools/parameter-search/src/bin/path2_account_stark_payload_kat_manifest.rs"
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "rows": [
+      {
+        "case_id": "payload_leaf_context_digest_mutation",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": false,
+        "internal_error_match": "account-creation STARK: payload leaf context mismatch",
+        "mutated_surface": "leaf_context_digest",
+        "public_rejection_class": "reject_binding_mismatch"
+      },
+      {
+        "case_id": "creation_proof_binding_digest_mutation",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": false,
+        "internal_error_match": "account-creation STARK: creation proof binding digest mismatch",
+        "mutated_surface": "creation_proof_binding_digest",
+        "public_rejection_class": "reject_binding_mismatch"
+      },
+      {
+        "case_id": "aggregation_context_digest_mutation",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": false,
+        "internal_error_match": "account-creation STARK: aggregation context mismatch",
+        "mutated_surface": "aggregation_context_digest",
+        "public_rejection_class": "reject_binding_mismatch"
+      },
+      {
+        "case_id": "slot_id_mutation",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": false,
+        "internal_error_match": "account-creation STARK: slot id mismatch",
+        "mutated_surface": "slot_id",
+        "public_rejection_class": "reject_binding_mismatch"
+      },
+      {
+        "case_id": "native_role_root_commitment_digest_mutation",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": false,
+        "internal_error_match": "account-creation STARK: payload digest mismatch",
+        "mutated_surface": "native_role_root_commitment",
+        "public_rejection_class": "reject_binding_mismatch"
+      },
+      {
+        "case_id": "masked_projection_digest_mutation",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": false,
+        "internal_error_match": "account-creation STARK: payload digest mismatch",
+        "mutated_surface": "masked_projection",
+        "public_rejection_class": "reject_binding_mismatch"
+      },
+      {
+        "case_id": "account_stark_bundle_digest_mutation",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": false,
+        "internal_error_match": "account-creation STARK: payload digest mismatch",
+        "mutated_surface": "account_stark_bundle",
+        "public_rejection_class": "reject_binding_mismatch"
+      },
+      {
+        "case_id": "empty_account_stark_bundle",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": false,
+        "internal_error_match": "account-creation STARK: payload bundle is empty",
+        "mutated_surface": "account_stark_bundle",
+        "public_rejection_class": "reject_malformed_public_input"
+      },
+      {
+        "case_id": "rebound_native_role_root_anchor",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": false,
+        "internal_error_match": "deployed anchor mismatch: native_role_root_commitment",
+        "mutated_surface": "native_role_root_commitment",
+        "public_rejection_class": "reject_creation_evidence"
+      },
+      {
+        "case_id": "rebound_masked_projection_anchor",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": false,
+        "internal_error_match": "deployed anchor mismatch: masked_projection",
+        "mutated_surface": "masked_projection",
+        "public_rejection_class": "reject_creation_evidence"
+      },
+      {
+        "case_id": "rebound_corrupted_account_stark_bundle",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": false,
+        "internal_error_match": "account-creation STARK verify failed",
+        "mutated_surface": "account_stark_bundle",
+        "public_rejection_class": "reject_creation_evidence"
+      },
+      {
+        "case_id": "wrong_replay_payload_digest",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": false,
+        "internal_error_match": "account-creation STARK: payload digest mismatch",
+        "mutated_surface": "public_replay_payload_digest",
+        "public_rejection_class": "reject_binding_mismatch"
+      },
+      {
+        "case_id": "production_gate_closed",
+        "covered_by_roundtrip_test": true,
+        "frozen_vector_present": false,
+        "internal_error_match": "account-creation STARK production verification is fail-closed (external-review-gated)",
+        "mutated_surface": "production_admission_gate",
+        "public_rejection_class": "internal_error_fail_closed"
+      }
+    ],
+    "schema": "Descender.Path2.AccountStarkPayloadKatBoundaryManifest.v1"
+  },
+  "manifest_digest": "a3287595d9ddce8afa0dde765d14cbfc4c95d5580bdfc4788540e416c6c0ea3c"
+}

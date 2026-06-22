@@ -93,6 +93,33 @@ ACCOUNT_STARK_RESIDUAL_PREFLIGHT_MARKERS = [
     "validate_path2_account_stark_residual_matrix_report_v1",
     "production_deployment_account_stark_residual_blockers",
 ]
+ACCOUNT_STARK_PAYLOAD_KAT_MANIFEST_MARKERS = {
+    "tools/parameter-search/src/bin/path2_account_stark_payload_kat_manifest.rs": [
+        "Descender.Path2.AccountStarkPayloadKatBoundaryManifest.v1",
+        "Descender.Path2.AccountStarkPayloadKatBoundary.v1",
+        "path2_account_stark_payload_kat_boundary_report_v1",
+        "path2_account_stark_residual_matrix_report_v1",
+        "payload_kat_boundary_report_digest",
+        "frozen_corpus_complete",
+        "public_rejection_class",
+    ],
+    "formal/kat/path2_account_stark_payload_kat_boundary_v1.json": [
+        "Descender.Path2.AccountStarkPayloadKatBoundaryManifest.v1",
+        "Descender.Path2.AccountStarkPayloadKatBoundary.v1",
+        "draft_boundary_manifest",
+        "payload_kat_boundary_report_digest",
+        '"frozen_corpus_complete": false',
+        "public_rejection_class",
+    ],
+    "scripts/check_build.sh": [
+        "path2_account_stark_payload_kat_manifest",
+        "path2_account_stark_payload_kat_boundary_v1.json",
+    ],
+    ".github/workflows/ci.yml": [
+        "path2_account_stark_payload_kat_manifest",
+        "path2_account_stark_payload_kat_boundary_v1.json",
+    ],
+}
 SPEC_OPEN_WORK_SECTIONS = {
     "spec/conformance_kats.md": {
         "Required Evidence": {
@@ -1867,6 +1894,21 @@ def check_account_stark_residual_preflight_markers(errors: list[str]) -> None:
         errors.append(f"{rel}: account-STARK residual blockers are not wired into preflight")
 
 
+def check_account_stark_payload_kat_manifest_markers(errors: list[str]) -> None:
+    for rel, markers in ACCOUNT_STARK_PAYLOAD_KAT_MANIFEST_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"{rel}: missing account-STARK payload KAT manifest artifact")
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing account-STARK payload KAT manifest marker {marker!r}"
+                )
+
+
 def check_ethereum_positioning_note(
     tracker_rows: dict[str, str],
     errors: list[str],
@@ -2003,6 +2045,7 @@ def main() -> int:
     check_direct_theorem_preflight_markers(errors)
     check_account_creation_proof_boundary_preflight_markers(errors)
     check_account_stark_residual_preflight_markers(errors)
+    check_account_stark_payload_kat_manifest_markers(errors)
     check_ethereum_positioning_note(tracker_rows, errors)
 
     if errors:

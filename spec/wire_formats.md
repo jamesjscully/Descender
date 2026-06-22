@@ -183,6 +183,10 @@ payloads to exercise the deployed anchor boundary. This is precursor coverage fo
 the final frozen KAT corpus, not a replacement for it.
 `Path2AccountStarkPayloadKatBoundaryReportV1` pins the current mutation case ids
 and public rejection-class mapping for this precursor coverage.
+`formal/kat/path2_account_stark_payload_kat_boundary_v1.json` is the draft
+boundary manifest for those rows and must regenerate byte-for-byte with
+`path2_account_stark_payload_kat_manifest`; the full frozen byte-vector corpus
+remains open.
 
 ## Path2NativeCheckedCoreFrameV1
 

@@ -9257,7 +9257,7 @@ fn reviewed_fq12_deployment_verifier_productized_v1(
         && !still_fail_closed
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2AccountStarkResidualMatrixRowV1 {
     pub residual_item: &'static str,
     pub current_evidence: &'static str,
@@ -9267,7 +9267,7 @@ pub struct Path2AccountStarkResidualMatrixRowV1 {
     pub open: bool,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2AccountStarkResidualMatrixReportV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub domain: &'static str,
@@ -9283,7 +9283,7 @@ pub struct Path2AccountStarkResidualMatrixReportV1 {
     pub deployment_ready: bool,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2AccountStarkPayloadKatBoundaryRowV1 {
     pub case_id: &'static str,
     pub mutated_surface: &'static str,
@@ -9293,7 +9293,7 @@ pub struct Path2AccountStarkPayloadKatBoundaryRowV1 {
     pub frozen_vector_present: bool,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2AccountStarkPayloadKatBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub domain: &'static str,
