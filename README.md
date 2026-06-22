@@ -40,6 +40,7 @@ Use these files as the current authority chain:
 | `spec/signer_state_profile.md` | signer local state, rollback, and fault model |
 | `spec/wire_formats.md` | active public object and legacy format map |
 | `spec/process.md` | documentation, ADR, tracker, archive, and automation discipline |
+| `AGENTS.md` | quick handoff note for coding and research agents |
 | `decisions/` | append-only architecture decision records |
 | `TRACKER.md` | consolidated implementation, proof, process, and adoption tracker |
 | `research/ARCHIVE_INDEX.md` | labels for historical and supporting research docs |

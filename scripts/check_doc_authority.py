@@ -49,6 +49,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 FIXED_REQUIRED_MARKERS = {
     "README.md": "Status: ACTIVE_REPO_ENTRYPOINT",
+    "AGENTS.md": "Status: ACTIVE_REPO_ENTRYPOINT",
     "decisions/README.md": "Status: ACTIVE_NORMATIVE_PROCESS",
     "TRACKER.md": "Status: ACTIVE_TRACKER",
     "research/README.md": "Status: ACTIVE_RESEARCH_ENTRYPOINT",
@@ -775,7 +776,12 @@ def check_repo_entrypoint_index(errors: list[str]) -> None:
         path.relative_to(ROOT).as_posix()
         for path in (ROOT / "spec").glob("*.md")
     )
-    expected = set(spec_files) | {"decisions/", "TRACKER.md", "research/ARCHIVE_INDEX.md"}
+    expected = set(spec_files) | {
+        "AGENTS.md",
+        "decisions/",
+        "TRACKER.md",
+        "research/ARCHIVE_INDEX.md",
+    }
 
     text = readme.read_text(encoding="utf-8")
     section = markdown_section(text, "## Start Here")

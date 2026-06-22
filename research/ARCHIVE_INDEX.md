@@ -48,6 +48,7 @@ kept now and what must be true before it can be removed or relocated.
 | `formal/jasmin/README.md` | `ACTIVE_RESEARCH` | Jasmin deployable-implementation layer entrypoint, not product authority by itself |
 | `formal/kat/README.md` | `LEGACY_FORMAL` | KAT v0 package entrypoint for the frozen legacy byte-conformance corpus |
 | `formal/lean/README.md` | `ACTIVE_SUPPORT` | Lean math and reduction-skeleton layer entrypoint for current Path 2 closure work |
+| `AGENTS.md` | `ACTIVE_SUPPORT` | repo handoff entrypoint for coding and research agents, subordinate to the current spec spine |
 | `legal/README.md` | `ACTIVE_RESEARCH` | legal/commercialization package entrypoint, not technical product authority |
 | `legal/go_to_market_plan.md` | `ACTIVE_RESEARCH` | legal/commercialization go-to-market plan, not technical product authority |
 | `papers/descent_based_cryptography.md` | `ACTIVE_RESEARCH` | theoretical descent-cryptography exposition, not a Descender algorithm specification |

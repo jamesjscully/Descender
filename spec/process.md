@@ -30,7 +30,7 @@ authority unless the spec spine or an ADR explicitly imports them.
   the active chain-native post-quantum authorization objective, the active
   product direction list, and the non-active product path list.
 - Keep the top-level `README.md` `## Start Here` table synchronized with every
-  `spec/*.md` file, `decisions/`, `TRACKER.md`, and
+  `spec/*.md` file, `AGENTS.md`, `decisions/`, `TRACKER.md`, and
   `research/ARCHIVE_INDEX.md`.
 - Keep the top-level `README.md` `## Supporting Entrypoints` table synchronized
   with routed non-authority entrypoints for research, audit, tools, formal,
