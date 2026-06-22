@@ -43132,6 +43132,8 @@ pub fn verify_path2_direct_creation_transparent_descent_payload_boundary_with_pr
 /// carries only `verifier_version_digest`, so this raw value is the canonical
 /// source on BOTH the producer and verify sides — keep them equal.
 pub const PATH2_ACCOUNT_STARK_VERIFIER_VERSION: u32 = 1;
+pub const PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_SCHEMA: &str =
+    "DESCENDER_PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_V1";
 
 /// Self-contained admission payload for the SOUND account-creation ZK-STARK path
 /// (the replacement for the transparent-descent / HIGH-2 in-clear-blind backend).
@@ -43151,6 +43153,68 @@ pub struct Path2AccountStarkCreationPayloadV1 {
     pub slot_id: u64,
     pub masked_projection: [u16; HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES],
     pub account_stark_bundle: Vec<u8>,
+}
+
+pub fn path2_account_stark_creation_payload_v1_digest(
+    payload: &Path2AccountStarkCreationPayloadV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    if payload.account_stark_bundle.is_empty() {
+        return Err("account-creation STARK: payload bundle is empty".to_string());
+    }
+    let mut masked_projection_bytes =
+        Vec::with_capacity(payload.masked_projection.len() * core::mem::size_of::<u16>());
+    for lane in payload.masked_projection {
+        masked_projection_bytes.extend_from_slice(&lane.to_le_bytes());
+    }
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"schema",
+        PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_SCHEMA.as_bytes(),
+    );
+    append_u64(&mut frame, b"payload_version", 1);
+    append_u64(
+        &mut frame,
+        b"account_stark_verifier_version",
+        PATH2_ACCOUNT_STARK_VERIFIER_VERSION as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"leaf_context_digest",
+        &payload.leaf_context_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"creation_proof_binding_digest",
+        &payload.creation_proof_binding_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"native_role_root_commitment",
+        &payload.native_role_root_commitment,
+    );
+    append_frame(
+        &mut frame,
+        b"aggregation_context_digest",
+        &payload.aggregation_context_digest,
+    );
+    append_u64(&mut frame, b"slot_id", payload.slot_id);
+    append_u64(
+        &mut frame,
+        b"masked_projection_lane_count",
+        payload.masked_projection.len() as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"masked_projection_le",
+        &masked_projection_bytes,
+    );
+    append_frame(
+        &mut frame,
+        b"account_stark_bundle",
+        &payload.account_stark_bundle,
+    );
+    Ok(Sha256::digest(frame).into())
 }
 
 /// FEATURE-GATED (`account-creation-stark-verifier`) PRODUCER — generates the
@@ -43223,7 +43287,9 @@ pub fn path2_account_stark_prove_creation_v1(
 
     Ok(Path2AccountStarkCreationPayloadV1 {
         leaf_context_digest: path2_prevalidated_slot_leaf_context_digest(
-            leaf, evidence, certificate,
+            leaf,
+            evidence,
+            certificate,
         )?,
         creation_proof_binding_digest: binding.digest,
         native_role_root_commitment,
@@ -43286,6 +43352,11 @@ pub fn verify_path2_direct_creation_account_stark_payload_boundary(
     if payload.slot_id != leaf.slot_id {
         return Err("account-creation STARK: slot id mismatch".to_string());
     }
+    if path2_account_stark_creation_payload_v1_digest(payload)?
+        != certificate.public_replay_payload_digest
+    {
+        return Err("account-creation STARK: payload digest mismatch".to_string());
+    }
     // --- plain anchors (NO Plonky3 types cross this boundary) ---
     let anchors = descender_account_verifier::DeployedCreationAnchors {
         account_id: leaf.account_id,
@@ -43329,7 +43400,11 @@ pub fn verify_path2_direct_creation_account_stark_payload_boundary_for_productio
     payload: &Path2AccountStarkCreationPayloadV1,
 ) -> Result<(), String> {
     verify_path2_direct_creation_account_stark_payload_boundary(
-        leaf, evidence, certificate, binding, payload,
+        leaf,
+        evidence,
+        certificate,
+        binding,
+        payload,
     )?;
     if !path2_account_stark_production_verification_enabled() {
         return Err(
@@ -72443,7 +72518,8 @@ mod tests {
     #[cfg(feature = "account-creation-stark-verifier")]
     #[test]
     fn path2_account_stark_creation_roundtrip_and_binds() {
-        let (fixture, leaf, evidence, certificate) = path2_creation_relation_replay_fixture();
+        let (fixture, mut leaf, mut evidence, mut certificate) =
+            path2_creation_relation_replay_fixture();
         let pad_seed = fixture.pad_seed;
         let slot_id = leaf.slot_id;
         let opening = reviewed_fq12_masked_state18_packed_witness_opening(
@@ -72483,6 +72559,19 @@ mod tests {
         )
         .expect("STARK producer");
 
+        let payload_digest =
+            path2_account_stark_creation_payload_v1_digest(&payload).expect("STARK payload digest");
+        certificate.public_replay_payload_digest = payload_digest;
+        evidence.evidence_payload_digest =
+            path2_direct_replayable_relation_certificate_digest(&certificate);
+        leaf.prevalidation_transcript_digest =
+            path2_account_creation_evidence_transcript_digest(&evidence).unwrap();
+        refresh_path2_leaf_digest_bindings(&leaf, &mut evidence);
+        assert_eq!(
+            payload.leaf_context_digest,
+            path2_prevalidated_slot_leaf_context_digest(&leaf, &evidence, &certificate).unwrap()
+        );
+
         // Honest payload verifies.
         verify_path2_direct_creation_account_stark_payload_boundary(
             &leaf,
@@ -72493,33 +72582,112 @@ mod tests {
         )
         .expect("honest STARK payload must verify");
 
+        // Tamper STARK bundle bytes -> reject before the expensive STARK verifier,
+        // because the certificate/evidence chain commits to the payload byte model.
+        let mut bad = payload.clone();
+        bad.account_stark_bundle[0] ^= 1;
+        assert_eq!(
+            verify_path2_direct_creation_account_stark_payload_boundary(
+                &leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &bad
+            )
+            .unwrap_err(),
+            "account-creation STARK: payload digest mismatch"
+        );
+
         // Tamper masked projection -> reject.
         let mut bad = payload.clone();
         bad.masked_projection[0] ^= 1;
-        assert!(verify_path2_direct_creation_account_stark_payload_boundary(
-            &leaf, &evidence, &certificate, &binding, &bad
-        )
-        .is_err());
+        assert_eq!(
+            verify_path2_direct_creation_account_stark_payload_boundary(
+                &leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &bad
+            )
+            .unwrap_err(),
+            "account-creation STARK: payload digest mismatch"
+        );
 
         // Tamper role-root export commitment -> reject.
         let mut bad = payload.clone();
         bad.native_role_root_commitment[0] ^= 1;
-        assert!(verify_path2_direct_creation_account_stark_payload_boundary(
-            &leaf, &evidence, &certificate, &binding, &bad
+        assert_eq!(
+            verify_path2_direct_creation_account_stark_payload_boundary(
+                &leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &bad
+            )
+            .unwrap_err(),
+            "account-creation STARK: payload digest mismatch"
+        );
+
+        let mut rebound_certificate = certificate;
+        rebound_certificate.public_replay_payload_digest =
+            path2_account_stark_creation_payload_v1_digest(&bad).unwrap();
+        let mut rebound_evidence = evidence;
+        rebound_evidence.evidence_payload_digest =
+            path2_direct_replayable_relation_certificate_digest(&rebound_certificate);
+        let mut rebound_leaf = leaf;
+        rebound_leaf.prevalidation_transcript_digest =
+            path2_account_creation_evidence_transcript_digest(&rebound_evidence).unwrap();
+        refresh_path2_leaf_digest_bindings(&rebound_leaf, &mut rebound_evidence);
+        let rebound_error = verify_path2_direct_creation_account_stark_payload_boundary(
+            &rebound_leaf,
+            &rebound_evidence,
+            &rebound_certificate,
+            &binding,
+            &bad,
         )
-        .is_err());
+        .unwrap_err();
+        assert!(
+            rebound_error
+                .contains("deployed anchor mismatch: native_role_root_commitment"),
+            "{rebound_error}"
+        );
+
+        // Rebind the certificate/evidence chain to any digest other than this
+        // payload's canonical digest -> reject at the selected-payload boundary.
+        let mut wrong_certificate = certificate;
+        wrong_certificate.public_replay_payload_digest[0] ^= 1;
+        let mut wrong_evidence = evidence;
+        wrong_evidence.evidence_payload_digest =
+            path2_direct_replayable_relation_certificate_digest(&wrong_certificate);
+        let mut wrong_leaf = leaf;
+        wrong_leaf.prevalidation_transcript_digest =
+            path2_account_creation_evidence_transcript_digest(&wrong_evidence).unwrap();
+        refresh_path2_leaf_digest_bindings(&wrong_leaf, &mut wrong_evidence);
+        assert_eq!(
+            verify_path2_direct_creation_account_stark_payload_boundary(
+                &wrong_leaf,
+                &wrong_evidence,
+                &wrong_certificate,
+                &binding,
+                &payload
+            )
+            .unwrap_err(),
+            "account-creation STARK: payload digest mismatch"
+        );
 
         // Verify against a DIFFERENT leaf (slot mismatch) -> reject.
         let mut other_leaf = leaf;
         other_leaf.slot_id ^= 1;
-        assert!(verify_path2_direct_creation_account_stark_payload_boundary(
-            &other_leaf,
-            &evidence,
-            &certificate,
-            &binding,
-            &payload
-        )
-        .is_err());
+        assert!(
+            verify_path2_direct_creation_account_stark_payload_boundary(
+                &other_leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &payload
+            )
+            .is_err()
+        );
     }
 
     fn path2_transparent_zk_creation_fixture() -> (

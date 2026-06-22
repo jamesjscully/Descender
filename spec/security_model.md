@@ -90,9 +90,9 @@ Direct mode may name, but must not hide, these break classes:
 ## Account-Creation Proof Boundary Contract
 
 Tracker ownership: `DIR-CREATE-001`, `DIR-PROOF-001`, `DIR-PROOF-002`,
-`DIR-PAYLOAD-001`, `DIR-TRACE-001`, `DIR-NB-001`, `DIR-NB-002`,
-`DIR-NB-003`, `DIR-NB-004`, `DIR-AUTHCLASS-001`, `DIR-KAT-001`,
-`DIR-REJECT-001`, `DIR-CT-001`, `DIR-QROM-001`, and `DIR-REVIEW-001`.
+`DIR-STARK-001`, `DIR-BIND-001`, `DIR-PAYLOAD-001`,
+`DIR-AUTHCLASS-001`, `DIR-KAT-001`, `DIR-REJECT-001`, `DIR-CT-001`,
+`DIR-QROM-001`, and `DIR-REVIEW-001`.
 
 Direct account creation admits a leaf only if the public creation verifier
 accepts `AccountCreationEvidenceV1` and an available selected payload for that
@@ -112,38 +112,50 @@ verify_prevalidated_slot_creation(
 ) -> accept/reject
 ```
 
-For the current Path 2 route, `selected_payload` is the transparent masked
-two-view native-boundary proof payload over the creation relation. Admission
-acceptance requires all of:
+For the current Path 2 route, `selected_payload` is
+`Path2AccountStarkCreationPayloadV1`: an opaque
+`descender-account-verifier` bundle carrying `(AccountCreationPublic, Proof)`
+plus plain consensus anchors. The accepting endpoint is
+`verify_path2_direct_creation_account_stark_payload_boundary`; the transparent
+descent/native-boundary paths are retained only as fail-closed research or
+fallback support unless a later ADR selects them.
+
+Admission acceptance requires all of:
 
 - canonical leaf and evidence framing;
 - evidence/leaf equality for account id, public-key identity, slot id,
   verifier version, state root before admission, opening commitment,
   pad-seed digest, hidden-source statement digest, lifecycle anchor, and
   transcript digest;
-- payload availability and payload digest equality;
-- a public masked view authenticated under one `native_boundary_digest`;
-- a hidden extractor view for the same native boundary;
-- proof-family soundness extracting some `h in Fiber(B_c, b)` satisfying
-  `ExtractedRolesComplete`, `LocalValid_c`, `DescentConsistent_c`,
-  account-binding, and range predicates;
-- zero-knowledge/no-export semantics for pad-source, projection, opening-tuple,
-  range, witness, mask, and private trace material;
-- QROM/domain separation for the proof transcript and query schedule;
+- certificate/evidence equality where `evidence_payload_digest` binds the
+  replay certificate and `public_replay_payload_digest` equals the canonical
+  `path2_account_stark_creation_payload_v1_digest(selected_payload)`;
+- payload availability, nonempty STARK bundle bytes, and canonical digest
+  equality for every plain payload field and the opaque proof bundle;
+- payload equality for leaf context, creation-proof binding digest,
+  aggregation context, and slot id;
+- successful verification of the packed account STARK bundle;
+- `DeployedCreationAnchors` equality for account id, slot id, state root,
+  lifecycle anchor, raw verifier version, masked projection,
+  packed-witness commitment, and the named role-root export bridge;
+- zero-knowledge/no-export semantics for pad source, projection, syndrome,
+  opening tuple, witness, mask, and private trace material;
+- QROM/domain separation for the account STARK transcript, Poseidon2/FRI
+  challenge flow, and deployed digest frames;
 - deterministic public rejection for malformed, unavailable, or
   policy-incompatible payloads.
 
 The creation verifier must fail closed when any required payload bytes,
-availability records, query openings, proof-family parameters, or native-boundary
-projection checks are missing. It must not admit a leaf merely because
-`prevalidation_transcript_digest`, `evidence_payload_digest`, or a commitment
-root is well formed.
+availability records, account STARK proof bytes, public anchors, production
+gate, or proof-family parameters are missing. It must not admit a leaf merely
+because `prevalidation_transcript_digest`, `evidence_payload_digest`, or a
+commitment root is well formed.
 
-The boundary is specified but not verified. Open closure items are the concrete
-masked two-view verifier, trace/relation encoding against the native-boundary
-manifest, simulator theorem, extractor/soundness theorem, concrete proof-system
-parameters, accepting honest-proof KATs, malformed-payload KATs, and external
-review of the proof family.
+The boundary is implemented but not verified. Open closure items are the final
+composition theorem, account STARK simulator theorem, extractor/soundness
+theorem, FRI/recursion residual-assumption ledger, complete byte-format KATs,
+malformed-payload KATs, signer leakage evidence, external proof-family review,
+and the explicit production-gate decision.
 
 ## Current Security-Level Position
 
@@ -188,10 +200,10 @@ algebraic byte/mask challenge budget or lower the query/target ledger.
 ## Risk-First Deployment Blocker Order
 
 Tracker ownership: `DIR-RISK-001`, `DIR-SEC-001`, `DIR-CREATE-001`,
-`DIR-PROOF-001`, `DIR-PROOF-002`, `DIR-PAYLOAD-001`, `DIR-TRACE-001`,
-`DIR-NB-001`, `DIR-NB-002`, `DIR-NB-003`, `DIR-NB-004`,
-`DIR-AUTHCLASS-001`, `DIR-KAT-001`, `SPEC-KAT-001`, `DIR-REJECT-001`,
-`DIR-CT-001`, `SPEC-SIGNER-001`, `SPEC-LEAKAGE-001`, `DIR-LIFE-001`,
+`DIR-PROOF-001`, `DIR-PROOF-002`, `DIR-STARK-001`, `DIR-BIND-001`,
+`DIR-PAYLOAD-001`, `DIR-AUTHCLASS-001`, `DIR-KAT-001`, `SPEC-KAT-001`,
+`DIR-REJECT-001`, `DIR-CT-001`, `SPEC-SIGNER-001`, `SPEC-LEAKAGE-001`,
+`DIR-LIFE-001`,
 `SPEC-LIFE-001`, `SPEC-DEPLOY-001`, `DIR-REVIEW-001`, `SPEC-REVIEW-001`,
 `DIR-QROM-001`, and `DIR-ACTION-001`.
 
@@ -203,7 +215,7 @@ used as deployment evidence while a higher-ranked blocker remains open.
 | Rank | Blocker | Must close | Owning rows |
 |---|---|---|---|
 | 1 | Direct theorem closure | Final product theorem covers admission, spend, consume-once lifecycle, exact public bindings, and every named break; supporting lemmas cannot stand in for the deployment theorem. | `DIR-RISK-001`, `DIR-SEC-001`, `DIR-CREATE-001`, `DIR-PROOF-002`, `DIR-AUTHCLASS-001` |
-| 2 | Account-creation proof boundary | Selected proof family has a concrete byte model, simulator theorem, extractor theorem, hidden-source payload statement, native-boundary semantics, and rejection behavior. | `DIR-CREATE-001`, `DIR-PROOF-001`, `DIR-PAYLOAD-001`, `DIR-TRACE-001`, `DIR-NB-001`, `DIR-NB-002`, `DIR-NB-003`, `DIR-NB-004` |
+| 2 | Account-creation proof boundary | Selected account-STARK payload has a concrete byte model, canonical replay-payload digest, deployed anchor binding, simulator theorem, extractor theorem, hidden-source payload statement, production gate, and rejection behavior. | `DIR-CREATE-001`, `DIR-PROOF-001`, `DIR-STARK-001`, `DIR-BIND-001`, `DIR-PAYLOAD-001`, `DIR-KAT-001`, `DIR-REJECT-001` |
 | 3 | Authorization-class binding | Private authorization-local material cannot change public spend semantics, fork account state, or bypass the checked-core public binding. | `DIR-AUTHCLASS-001`, `DIR-SEC-001`, `DIR-CC-001` |
 | 4 | Consensus conformance | Canonical wire formats, public-field mutation vectors, end-to-end creation/spend/lifecycle vectors, and deterministic rejection behavior exist. | `DIR-KAT-001`, `SPEC-KAT-001`, `DIR-REJECT-001`, `DIR-CC-001`, `DIR-LEAF-001`, `DIR-EVID-001` |
 | 5 | Signer leakage and fault safety | Signer, keygen, sampler, rejection loops, fault handling, errors, zeroization, target/build profiles, and leakage evidence satisfy the signer profile without floating-point signing assumptions. | `DIR-CT-001`, `SPEC-SIGNER-001`, `SPEC-LEAKAGE-001`, `ADOPT-HW-001`, `ADOPT-HW-CT-001`, `ADOPT-HW-ENT-001`, `ADOPT-HW-STATE-001` |
