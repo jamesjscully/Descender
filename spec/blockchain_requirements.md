@@ -68,7 +68,7 @@ implementation, proof, or KAT evidence is complete.
 
 | Surface | Required class | Readiness | Required artifact | Tracker rows |
 |---|---|---|---|---|
-| Normative spec spine | `direct` | `partial` | indexed current spec spine, ADR routing, selected-support anchors, and non-claim boundaries | `SPEC-DIR-001`, `DIR-SEC-001` |
+| Normative spec spine | `direct` | `partial` | indexed current spec spine, ADR routing, selected-support anchors, and non-claim boundaries | `SPEC-DIR-001`, `DIR-RISK-001`, `DIR-SEC-001` |
 | Blockchain requirements spine | `direct` | `partial` | capability matrix, adoption gates, surface tables, and tracker ownership for chain-native authorization work | `SPEC-REQ-001`, `DIR-KAT-001`, `DIR-REVIEW-001` |
 | Conformance and KAT corpus model | `direct` | `partial` | active Path 2 corpus identity, vector classes, result schema, reproducibility, and versioning rules | `SPEC-KAT-001`, `DIR-KAT-001`, `DIR-REJECT-001` |
 | Consensus verifier model | `direct` | `partial` | public verifier pipeline, deterministic rejection classes, state transition discipline, and consensus-client mapping | `SPEC-VERIFY-001`, `DIR-REJECT-001`, `DIR-KAT-001` |
@@ -104,7 +104,7 @@ Direct-mode gate traceability:
 
 | Gate | Readiness | Tracker rows |
 |---|---|---|
-| 1 | `partial` | `DIR-SEC-001`, `DIR-QROM-001`, `DIR-ACTION-001` |
+| 1 | `partial` | `DIR-RISK-001`, `DIR-SEC-001`, `DIR-QROM-001`, `DIR-ACTION-001` |
 | 2 | `partial` | `DIR-LEAF-001`, `DIR-EVID-001`, `DIR-CC-001` |
 | 3 | `not_ready` | `DIR-KAT-001`, `DIR-CC-001` |
 | 4 | `not_ready` | `DIR-KAT-001` |
@@ -123,7 +123,8 @@ artifact set.
 
 | Surface | Required class | Readiness | Required artifact | Tracker rows |
 |---|---|---|---|---|
-| Normative direct-mode spine | `direct` | `partial` | spec spine plus final direct-mode theorem and non-claims routed through current authority | `SPEC-DIR-001`, `DIR-SEC-001` |
+| Normative direct-mode spine | `direct` | `partial` | spec spine plus final direct-mode theorem and non-claims routed through current authority | `SPEC-DIR-001`, `DIR-RISK-001`, `DIR-SEC-001` |
+| Risk-first deployment blocker ledger | `direct` | `partial` | ranked blocker order, no-claim rule, and tracker-owned burn-down sequence for core signature deployability | `DIR-RISK-001`, `DIR-SEC-001`, `DIR-PROOF-002` |
 | Slot leaf and creation evidence frames | `direct` | `partial` | canonical frame bytes, versioning, positive and negative KATs, and malformed-frame rejection | `DIR-LEAF-001`, `DIR-EVID-001`, `DIR-KAT-001`, `DIR-REJECT-001` |
 | Account-creation STARK API | `direct` | `partial` | account-creation prover/verifier API with targeted integration tests and public-input contract | `DIR-STARK-001`, `DIR-BIND-001`, `DIR-KAT-001` |
 | Spend authorization relation | `direct` | `partial` | spend relation connected to Rust evidence, checked-core frame, lifecycle state, and KAT corpus | `DIR-SPEND-001`, `DIR-CC-001`, `DIR-LIFE-001`, `DIR-KAT-001` |

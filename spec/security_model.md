@@ -81,13 +81,44 @@ the aggregate public-key/message/account target ledger at `log2(T) <= 54`.
 Deployment profiles that need a larger target horizon must either widen the
 algebraic byte/mask challenge budget or lower the query/target ledger.
 
+## Risk-First Deployment Blocker Order
+
+Tracker ownership: `DIR-RISK-001`, `DIR-SEC-001`, `DIR-CREATE-001`,
+`DIR-PROOF-001`, `DIR-PROOF-002`, `DIR-PAYLOAD-001`, `DIR-TRACE-001`,
+`DIR-NB-001`, `DIR-NB-002`, `DIR-NB-003`, `DIR-NB-004`,
+`DIR-AUTHCLASS-001`, `DIR-KAT-001`, `SPEC-KAT-001`, `DIR-REJECT-001`,
+`DIR-CT-001`, `SPEC-SIGNER-001`, `SPEC-LEAKAGE-001`, `DIR-LIFE-001`,
+`SPEC-LIFE-001`, `SPEC-DEPLOY-001`, `DIR-REVIEW-001`, `SPEC-REVIEW-001`,
+`DIR-QROM-001`, and `DIR-ACTION-001`.
+
+Risk-first means direct-mode work must close deployment blockers in the order
+below unless an append-only ADR explicitly retires or re-ranks an item. Lower
+rows may receive scaffolding, probes, and KAT plumbing, but they must not be
+used as deployment evidence while a higher-ranked blocker remains open.
+
+| Rank | Blocker | Must close | Owning rows |
+|---|---|---|---|
+| 1 | Direct theorem closure | Final product theorem covers admission, spend, consume-once lifecycle, exact public bindings, and every named break; supporting lemmas cannot stand in for the deployment theorem. | `DIR-RISK-001`, `DIR-SEC-001`, `DIR-CREATE-001`, `DIR-PROOF-002`, `DIR-AUTHCLASS-001` |
+| 2 | Account-creation proof boundary | Selected proof family has a concrete byte model, simulator theorem, extractor theorem, hidden-source payload statement, native-boundary semantics, and rejection behavior. | `DIR-CREATE-001`, `DIR-PROOF-001`, `DIR-PAYLOAD-001`, `DIR-TRACE-001`, `DIR-NB-001`, `DIR-NB-002`, `DIR-NB-003`, `DIR-NB-004` |
+| 3 | Authorization-class binding | Private authorization-local material cannot change public spend semantics, fork account state, or bypass the checked-core public binding. | `DIR-AUTHCLASS-001`, `DIR-SEC-001`, `DIR-CC-001` |
+| 4 | Consensus conformance | Canonical wire formats, public-field mutation vectors, end-to-end creation/spend/lifecycle vectors, and deterministic rejection behavior exist. | `DIR-KAT-001`, `SPEC-KAT-001`, `DIR-REJECT-001`, `DIR-CC-001`, `DIR-LEAF-001`, `DIR-EVID-001` |
+| 5 | Signer leakage and fault safety | Signer, keygen, sampler, rejection loops, fault handling, errors, zeroization, target/build profiles, and leakage evidence satisfy the signer profile without floating-point signing assumptions. | `DIR-CT-001`, `SPEC-SIGNER-001`, `SPEC-LEAKAGE-001`, `ADOPT-HW-001`, `ADOPT-HW-CT-001`, `ADOPT-HW-ENT-001`, `ADOPT-HW-STATE-001` |
+| 6 | Lifecycle target profile | Admit, spend, replay, burn, recovery, restore, finality, and reorg semantics are instantiated for the target chain or deployment profile. | `DIR-LIFE-001`, `SPEC-LIFE-001`, `SPEC-STATE-001`, `SPEC-DEPLOY-001` |
+| 7 | External review and residual assumptions | Independent review covers the coded-SIS/lattice core, account-creation proof family, Poseidon2/FRI usage, QROM framing, signer/verifier engineering, lifecycle model, and residual-assumption dispositions. | `DIR-REVIEW-001`, `SPEC-REVIEW-001`, `DIR-QROM-001`, `DIR-ACTION-001`, `DIR-SEC-001` |
+
+A direct-mode deployment claim can be made only after every ranked blocker above
+is either `verified` in `TRACKER.md` or explicitly retired by an ADR that updates
+this section and the requirement gates. Mode B aggregation, policy features,
+Ethereum positioning, commercial demos, and wallet integrations must not be used
+to compensate for an open blocker in ranks 1 through 7.
+
 ## Required Evidence Before Deployment Claim
 
-Tracker ownership: `DIR-SEC-001`, `DIR-KAT-001`, `SPEC-KAT-001`,
-`DIR-REJECT-001`,
-`SPEC-SIGNER-001`, `SPEC-LEAKAGE-001`, `DIR-CT-001`, `DIR-QROM-001`,
-`DIR-REVIEW-001`, `DIR-LIFE-001`, `SPEC-DEPLOY-001`, and
-`SPEC-REVIEW-001`.
+Tracker ownership: `DIR-RISK-001`, `DIR-SEC-001`, `DIR-CREATE-001`,
+`DIR-PROOF-001`, `DIR-PROOF-002`, `DIR-AUTHCLASS-001`, `DIR-KAT-001`,
+`SPEC-KAT-001`, `DIR-REJECT-001`, `SPEC-SIGNER-001`,
+`SPEC-LEAKAGE-001`, `DIR-CT-001`, `DIR-QROM-001`, `DIR-REVIEW-001`,
+`DIR-LIFE-001`, `SPEC-DEPLOY-001`, and `SPEC-REVIEW-001`.
 
 The deployment claim requires all of:
 
