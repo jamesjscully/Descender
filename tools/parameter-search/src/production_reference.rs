@@ -72581,6 +72581,21 @@ mod tests {
             &payload,
         )
         .expect("honest STARK payload must verify");
+        assert!(
+            !path2_account_stark_production_verification_enabled(),
+            "account-STARK production gate must stay closed until external review"
+        );
+        assert_eq!(
+            verify_path2_direct_creation_account_stark_payload_boundary_for_production(
+                &leaf,
+                &evidence,
+                &certificate,
+                &binding,
+                &payload
+            )
+            .unwrap_err(),
+            "account-creation STARK production verification is fail-closed (external-review-gated)"
+        );
 
         // Tamper STARK bundle bytes -> reject before the expensive STARK verifier,
         // because the certificate/evidence chain commits to the payload byte model.

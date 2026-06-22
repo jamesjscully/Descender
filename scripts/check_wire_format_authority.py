@@ -263,6 +263,7 @@ def main() -> int:
         "path2_account_stark_creation_payload_v1_digest",
         "path2_account_stark_creation_roundtrip_and_binds",
         "account-creation STARK: payload digest mismatch",
+        "account-creation STARK production verification is fail-closed (external-review-gated)",
         "deployed anchor mismatch: native_role_root_commitment",
     ]:
         if marker not in source:
