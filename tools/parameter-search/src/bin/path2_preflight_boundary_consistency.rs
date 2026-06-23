@@ -506,6 +506,10 @@ fn main() -> Result<(), String> {
         "/direct_accepted_composition_evidence_artifact/audit_summary/deployment_ready",
         "/direct_obligation_vector_corpus_evidence/audit_summary/composition_theorem_instantiated",
         "/direct_obligation_vector_corpus_evidence/audit_summary/account_creation_proof_boundary_verified",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/proof_boundary_deployment_ready",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/qrom_theorem_imports_budget",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/qrom_external_review_complete",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/lifecycle_target_chain_finality_profile_instantiated",
         "/direct_obligation_vector_corpus_evidence/audit_summary/lifecycle_transition_profile_verified",
         "/direct_obligation_vector_corpus_evidence/audit_summary/qrom_and_action_bounds_linked_to_theorem",
         "/direct_obligation_vector_corpus_evidence/audit_summary/deployment_ready",
@@ -573,6 +577,7 @@ fn main() -> Result<(), String> {
         "/proof_obligation_vector_corpus_evidence/audit_summary/fri_aok_extractor_theorem_instantiated",
         "/proof_obligation_vector_corpus_evidence/audit_summary/fri_qrom_residual_priced",
         "/proof_obligation_vector_corpus_evidence/audit_summary/frozen_kat_corpus_complete",
+        "/proof_obligation_vector_corpus_evidence/audit_summary/external_review_complete",
         "/proof_obligation_vector_corpus_evidence/audit_summary/production_gate_open",
         "/proof_obligation_vector_corpus_evidence/audit_summary/deployment_ready",
     ] {

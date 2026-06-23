@@ -381,7 +381,11 @@ the shared proof-boundary evidence while preserving false theorem and deployment
 flags. The compact accepted-proof, accepted-tuple, and accepted-composition
 artifact summaries expose the accepted requirement, tuple-field, and hypothesis
 evidence counts plus their deferred rejection/QROM flags; both boundary and
-preflight consistency gates check those summaries before importing them.
+preflight consistency gates check those summaries before importing them. The
+compact proof-obligation and direct-obligation corpus summaries also retain the
+raw open external-review, QROM theorem/import, lifecycle-finality, and
+proof-boundary readiness flags so those blockers cannot disappear when a
+standalone corpus is imported by a boundary manifest.
 The reports and
 manifests are
 the executable boundary map for this section; they are not an honest-sampler

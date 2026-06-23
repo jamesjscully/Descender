@@ -68,7 +68,8 @@ direct-obligation corpus evidence against standalone corpus-evidence objects,
 while the preflight gate checks open-row blockers, fail-closed flags, the
 direct/proof/residual closure-dependency graph, including the proof-boundary
 and direct-theorem closure-dependency row tables plus their derived evidence
-rows, imported accepted-evidence summary counts, and the production preflight
+rows, imported accepted-evidence summary counts, obligation-corpus open review,
+QROM, lifecycle, and proof-boundary readiness flags, and the production preflight
 blocker/verdict/ready-assertion/certificate chain against the standalone KATs
 and deployment blocker set. The direct theorem report
 validator also explicitly rejects weakened obligation coverage, missing pinned

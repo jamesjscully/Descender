@@ -922,6 +922,7 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
         )?
         || bool_at(corpus, "/audit_summary/fri_qrom_residual_priced")?
         || bool_at(corpus, "/audit_summary/frozen_kat_corpus_complete")?
+        || bool_at(corpus, "/audit_summary/external_review_complete")?
         || bool_at(corpus, "/audit_summary/production_gate_open")?
         || bool_at(corpus, "/audit_summary/deployment_ready")?
     {
@@ -981,6 +982,10 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             "frozen_kat_corpus_complete": bool_at(
                 corpus,
                 "/audit_summary/frozen_kat_corpus_complete"
+            )?,
+            "external_review_complete": bool_at(
+                corpus,
+                "/audit_summary/external_review_complete"
             )?,
             "production_gate_open": bool_at(
                 corpus,
@@ -1108,6 +1113,13 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             corpus,
             "/audit_summary/account_creation_proof_boundary_verified",
         )?
+        || bool_at(corpus, "/audit_summary/proof_boundary_deployment_ready")?
+        || bool_at(corpus, "/audit_summary/qrom_theorem_imports_budget")?
+        || bool_at(corpus, "/audit_summary/qrom_external_review_complete")?
+        || bool_at(
+            corpus,
+            "/audit_summary/lifecycle_target_chain_finality_profile_instantiated",
+        )?
         || bool_at(
             corpus,
             "/audit_summary/lifecycle_transition_profile_verified",
@@ -1179,6 +1191,22 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             "account_creation_proof_boundary_verified": bool_at(
                 corpus,
                 "/audit_summary/account_creation_proof_boundary_verified"
+            )?,
+            "proof_boundary_deployment_ready": bool_at(
+                corpus,
+                "/audit_summary/proof_boundary_deployment_ready"
+            )?,
+            "qrom_theorem_imports_budget": bool_at(
+                corpus,
+                "/audit_summary/qrom_theorem_imports_budget"
+            )?,
+            "qrom_external_review_complete": bool_at(
+                corpus,
+                "/audit_summary/qrom_external_review_complete"
+            )?,
+            "lifecycle_target_chain_finality_profile_instantiated": bool_at(
+                corpus,
+                "/audit_summary/lifecycle_target_chain_finality_profile_instantiated"
             )?,
             "lifecycle_transition_profile_verified": bool_at(
                 corpus,

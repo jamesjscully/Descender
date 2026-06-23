@@ -748,6 +748,16 @@ fn check_consistency() -> Result<(), String> {
             "account_creation_proof_boundary",
             "proof_obligation_vector_corpus_evidence",
             "audit_summary",
+            "external_review_complete",
+        ],
+        false,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "proof_obligation_vector_corpus_evidence",
+            "audit_summary",
             "fri_aok_extractor_theorem_instantiated",
         ],
         false,
@@ -1042,6 +1052,46 @@ fn check_consistency() -> Result<(), String> {
             "direct_obligation_vector_corpus_evidence",
             "audit_summary",
             "composition_theorem_instantiated",
+        ],
+        false,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "proof_boundary_deployment_ready",
+        ],
+        false,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "qrom_theorem_imports_budget",
+        ],
+        false,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "qrom_external_review_complete",
+        ],
+        false,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "direct_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "lifecycle_target_chain_finality_profile_instantiated",
         ],
         false,
     )?;

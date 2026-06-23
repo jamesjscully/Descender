@@ -519,6 +519,7 @@
           "all_cases_open": true,
           "all_open_cases_block_deployment": true,
           "deployment_ready": false,
+          "external_review_complete": false,
           "fri_aok_extractor_theorem_instantiated": false,
           "fri_qrom_residual_priced": false,
           "frozen_kat_corpus_complete": false,
@@ -1270,5 +1271,5 @@
       ]
     }
   },
-  "manifest_digest": "e3f087ee703eef29baf8d925c4258ed74d5aceba71794ad21865ec2b0a8c62fb"
+  "manifest_digest": "6276fd4ff5257c0d6f4ded1647fc4e9db6bc2231931a291560d3a7fa5eafe36f"
 }

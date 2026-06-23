@@ -519,6 +519,7 @@
           "all_cases_open": true,
           "all_open_cases_block_deployment": true,
           "deployment_ready": false,
+          "external_review_complete": false,
           "fri_aok_extractor_theorem_instantiated": false,
           "fri_qrom_residual_priced": false,
           "frozen_kat_corpus_complete": false,
@@ -1572,8 +1573,12 @@
           "deployment_ready": false,
           "direct_obligation_audit_vector_case_count": 9,
           "direct_obligation_count": 9,
+          "lifecycle_target_chain_finality_profile_instantiated": false,
           "lifecycle_transition_profile_verified": false,
-          "qrom_and_action_bounds_linked_to_theorem": false
+          "proof_boundary_deployment_ready": false,
+          "qrom_and_action_bounds_linked_to_theorem": false,
+          "qrom_external_review_complete": false,
+          "qrom_theorem_imports_budget": false
         },
         "case_count": 9,
         "corpus_digest": "fddb51d2c9ef2e8ba5db688a325f2ed22bd318c34b3a8af1459fdfe8c4023855",
@@ -1882,5 +1887,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "f982710776b56836ce4b85c76b0a2a6f0c0c91e2e874ff983b68bfd7f4d1f892"
+  "manifest_digest": "09236f18082b9828afd41e5c78f421965d57ef1c986cd27688450ce3317d9d28"
 }
