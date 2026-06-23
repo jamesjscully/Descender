@@ -1,18 +1,14 @@
 use descender_parameter_search::production_reference::{
-    path2_account_creation_proof_boundary_report_v1,
+    PROFILE, path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_proof_boundary_report_v1_digest,
     path2_account_creation_sampler_timing_report_v1,
     path2_account_creation_sampler_timing_report_v1_digest,
-    path2_direct_lifecycle_boundary_report_v1,
-    path2_direct_lifecycle_boundary_report_v1_digest,
+    path2_direct_lifecycle_boundary_report_v1, path2_direct_lifecycle_boundary_report_v1_digest,
     path2_direct_qrom_action_boundary_report_v1,
-    path2_direct_qrom_action_boundary_report_v1_digest,
-    path2_direct_query_budget_v1,
-    path2_direct_theorem_boundary_report_v1,
-    path2_direct_theorem_boundary_report_v1_digest,
-    PROFILE,
+    path2_direct_qrom_action_boundary_report_v1_digest, path2_direct_query_budget_v1,
+    path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
 fn hex_encode(bytes: &[u8]) -> String {
@@ -293,6 +289,9 @@ fn manifest_body() -> Result<Value, String> {
             "coverage": {
                 "sampler_timing_report_digest": hex_encode(
                     &proof_boundary_report.sampler_timing_report_digest
+                ),
+                "no_export_boundary_report_digest": hex_encode(
+                    &proof_boundary_report.no_export_boundary_report_digest
                 ),
                 "accepting_requirement_count":
                     proof_boundary_report.accepting_requirements.len(),

@@ -1,0 +1,61 @@
+{
+  "manifest": {
+    "authority_snapshot": {
+      "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
+      "named_break": "account_stark_simulator_or_no_export_break",
+      "no_export_report_domain": "Descender.Path2.AccountCreationNoExportBoundaryReport.v1",
+      "no_export_requirement": "zero_knowledge_no_export_semantics",
+      "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
+      "proof_boundary_report_domain": "Descender.Path2.AccountCreationProofBoundaryReport.v1",
+      "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
+      "support_file": "research/path2_fiber_privacy_no_export_v1.md",
+      "verifier_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary"
+    },
+    "corpus_id": "Descender.Path2.AccountCreationNoExportBoundary.v1",
+    "corpus_version": 1,
+    "digests": {
+      "account_creation_no_export_boundary_report_digest": "849fe25eb5799f9d929f38f2ffc37e423aee4f2bb64ef01dc220fd57bdec33ef",
+      "account_creation_no_export_boundary_report_recomputed_digest": "849fe25eb5799f9d929f38f2ffc37e423aee4f2bb64ef01dc220fd57bdec33ef",
+      "account_creation_proof_boundary_report_digest": "c507c94b110f0e05ab544127750f10e12cdcc29e4d20d692c59ab68eff21de37",
+      "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
+      "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
+      "proof_boundary_report_no_export_digest": "849fe25eb5799f9d929f38f2ffc37e423aee4f2bb64ef01dc220fd57bdec33ef"
+    },
+    "frozen_status": "draft_no_export_boundary_manifest",
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_no_export_boundary_manifest",
+      "source": "tools/parameter-search/src/bin/path2_account_creation_no_export_boundary_manifest.rs"
+    },
+    "no_export_boundary": {
+      "coverage": {
+        "accepted_bundle_simulatable_from_public_anchors": false,
+        "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
+        "boundary_mapping_complete": true,
+        "byte_model_public_payload_only": true,
+        "deployment_ready": false,
+        "external_review_complete": false,
+        "frozen_no_export_vectors_complete": false,
+        "no_export_field_denylist_pinned": true,
+        "no_export_theorem_instantiated": false,
+        "payload_public_field_count": 11,
+        "production_gate_fail_closed": true,
+        "public_payload_exports_private_material": false,
+        "public_payload_field_mutation_count": 11,
+        "roundtrip_regression_present": true,
+        "simulator_theorem_instantiated": false
+      },
+      "no_export_private_material_fields": [
+        "pad_source",
+        "projection",
+        "syndrome",
+        "opening_tuple",
+        "witness",
+        "mask",
+        "private_trace_material"
+      ]
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "schema": "Descender.Path2.AccountCreationNoExportBoundaryManifest.v1"
+  },
+  "manifest_digest": "072f936f83886400b3beff16c3828389560a38ab9dc4026a5bda05736b681835"
+}

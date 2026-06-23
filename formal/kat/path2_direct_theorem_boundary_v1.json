@@ -52,6 +52,7 @@
         "fri_qrom_residual_priced": false,
         "frozen_kat_corpus_complete": false,
         "leaf_evidence_binding_field_count": 15,
+        "no_export_boundary_report_digest": "849fe25eb5799f9d929f38f2ffc37e423aee4f2bb64ef01dc220fd57bdec33ef",
         "no_export_private_material_field_count": 7,
         "payload_binding_field_count": 6,
         "production_gate_fail_closed": true,
@@ -130,16 +131,16 @@
     "corpus_id": "Descender.Path2.DirectTheoremBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "698b71f9c78e546a7a9bdcf1e7dafd948e591aba8b885a9701137ab3cf25ad60",
-      "account_creation_proof_boundary_report_recomputed_digest": "698b71f9c78e546a7a9bdcf1e7dafd948e591aba8b885a9701137ab3cf25ad60",
+      "account_creation_proof_boundary_report_digest": "c507c94b110f0e05ab544127750f10e12cdcc29e4d20d692c59ab68eff21de37",
+      "account_creation_proof_boundary_report_recomputed_digest": "c507c94b110f0e05ab544127750f10e12cdcc29e4d20d692c59ab68eff21de37",
       "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
-      "direct_theorem_boundary_report_digest": "b0756ad58e90e5b00e570ed3d9be4aba7fdcd88f0e7673da6ba81ee356fe6a49",
-      "direct_theorem_boundary_report_recomputed_digest": "b0756ad58e90e5b00e570ed3d9be4aba7fdcd88f0e7673da6ba81ee356fe6a49",
+      "direct_theorem_boundary_report_digest": "b009eaaca6c77adbe462513661b3f0eae5c26d6d77eaf20809403d179b10dc2a",
+      "direct_theorem_boundary_report_recomputed_digest": "b009eaaca6c77adbe462513661b3f0eae5c26d6d77eaf20809403d179b10dc2a",
       "direct_theorem_report_lifecycle_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_theorem_report_qrom_action_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
@@ -425,5 +426,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "a462de2d6bc0ae62695ff49296920500422d23c3e71e083a7ad8243f9100d62e"
+  "manifest_digest": "57432cde79fab1c1f24cca2e7ee2629c2242ccefb84a8c6f77e7d6ec69461e35"
 }

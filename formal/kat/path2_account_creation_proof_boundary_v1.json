@@ -52,6 +52,7 @@
         "fri_qrom_residual_priced": false,
         "frozen_kat_corpus_complete": false,
         "leaf_evidence_binding_field_count": 15,
+        "no_export_boundary_report_digest": "849fe25eb5799f9d929f38f2ffc37e423aee4f2bb64ef01dc220fd57bdec33ef",
         "no_export_private_material_field_count": 7,
         "payload_binding_field_count": 6,
         "production_gate_fail_closed": true,
@@ -108,6 +109,9 @@
     },
     "authority_snapshot": {
       "fri_qrom_residual_report_domain": "Descender.Path2.AccountStarkFriQromResidualReport.v1",
+      "no_export_boundary_report_domain": "Descender.Path2.AccountCreationNoExportBoundaryReport.v1",
+      "no_export_named_break": "account_stark_simulator_or_no_export_break",
+      "no_export_support_file": "research/path2_fiber_privacy_no_export_v1.md",
       "payload_kat_boundary_blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
       "payload_kat_boundary_report_domain": "Descender.Path2.AccountStarkPayloadKatBoundaryReport.v1",
       "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
@@ -127,8 +131,10 @@
     "corpus_id": "Descender.Path2.AccountCreationProofBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "698b71f9c78e546a7a9bdcf1e7dafd948e591aba8b885a9701137ab3cf25ad60",
-      "account_creation_proof_boundary_report_recomputed_digest": "698b71f9c78e546a7a9bdcf1e7dafd948e591aba8b885a9701137ab3cf25ad60",
+      "account_creation_no_export_boundary_report_digest": "849fe25eb5799f9d929f38f2ffc37e423aee4f2bb64ef01dc220fd57bdec33ef",
+      "account_creation_no_export_boundary_report_recomputed_digest": "849fe25eb5799f9d929f38f2ffc37e423aee4f2bb64ef01dc220fd57bdec33ef",
+      "account_creation_proof_boundary_report_digest": "c507c94b110f0e05ab544127750f10e12cdcc29e4d20d692c59ab68eff21de37",
+      "account_creation_proof_boundary_report_recomputed_digest": "c507c94b110f0e05ab544127750f10e12cdcc29e4d20d692c59ab68eff21de37",
       "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_stark_fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
@@ -137,6 +143,7 @@
       "account_stark_residual_matrix_report_recomputed_digest": "50a9c5a487d98dbe91eb1b5accc7d64eb4902d7bfa2b570e81f7dcf97ec4bc70",
       "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
       "payload_kat_boundary_report_recomputed_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
+      "proof_boundary_report_no_export_digest": "849fe25eb5799f9d929f38f2ffc37e423aee4f2bb64ef01dc220fd57bdec33ef",
       "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
     },
     "fri_qrom_residual_snapshot": {
@@ -189,6 +196,41 @@
     "generator": {
       "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_proof_boundary_manifest",
       "source": "tools/parameter-search/src/bin/path2_account_creation_proof_boundary_manifest.rs"
+    },
+    "no_export_boundary_snapshot": {
+      "coverage": {
+        "accepted_bundle_simulatable_from_public_anchors": false,
+        "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
+        "boundary_mapping_complete": true,
+        "byte_model_public_payload_only": true,
+        "deployment_ready": false,
+        "external_review_complete": false,
+        "frozen_no_export_vectors_complete": false,
+        "no_export_field_denylist_pinned": true,
+        "no_export_theorem_instantiated": false,
+        "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
+        "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
+        "payload_public_field_count": 11,
+        "production_gate_fail_closed": true,
+        "public_payload_exports_private_material": false,
+        "public_payload_field_mutation_count": 11,
+        "roundtrip_regression_present": true,
+        "simulator_theorem_instantiated": false
+      },
+      "named_break": "account_stark_simulator_or_no_export_break",
+      "no_export_private_material_fields": [
+        "pad_source",
+        "projection",
+        "syndrome",
+        "opening_tuple",
+        "witness",
+        "mask",
+        "private_trace_material"
+      ],
+      "no_export_requirement": "zero_knowledge_no_export_semantics",
+      "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
+      "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
+      "verifier_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary"
     },
     "payload_kat_boundary_snapshot": {
       "coverage": {
@@ -324,5 +366,5 @@
       ]
     }
   },
-  "manifest_digest": "5fa5ba1e5e9123dad6ecd3157f9ca6f320850dd4285ec376ec90c6a8c211f5ad"
+  "manifest_digest": "ad6f304d7fc4e82728b1e30ba278c6fc5e60e5409d8a935d44857df993c9bf51"
 }

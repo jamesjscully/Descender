@@ -86,11 +86,12 @@ payload_kat_manifest_tmp="$(mktemp)"
 payload_kat_vectors_tmp="$(mktemp)"
 fri_qrom_residual_manifest_tmp="$(mktemp)"
 sampler_timing_manifest_tmp="$(mktemp)"
+no_export_boundary_manifest_tmp="$(mktemp)"
 proof_boundary_manifest_tmp="$(mktemp)"
 direct_qrom_action_manifest_tmp="$(mktemp)"
 direct_lifecycle_manifest_tmp="$(mktemp)"
 direct_theorem_manifest_tmp="$(mktemp)"
-trap 'rm -f "$payload_byte_model_manifest_tmp" "$payload_kat_manifest_tmp" "$payload_kat_vectors_tmp" "$fri_qrom_residual_manifest_tmp" "$sampler_timing_manifest_tmp" "$proof_boundary_manifest_tmp" "$direct_qrom_action_manifest_tmp" "$direct_lifecycle_manifest_tmp" "$direct_theorem_manifest_tmp"' EXIT
+trap 'rm -f "$payload_byte_model_manifest_tmp" "$payload_kat_manifest_tmp" "$payload_kat_vectors_tmp" "$fri_qrom_residual_manifest_tmp" "$sampler_timing_manifest_tmp" "$no_export_boundary_manifest_tmp" "$proof_boundary_manifest_tmp" "$direct_qrom_action_manifest_tmp" "$direct_lifecycle_manifest_tmp" "$direct_theorem_manifest_tmp"' EXIT
 
 echo "== account STARK payload byte model manifest check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_stark_payload_byte_model_manifest > "$payload_byte_model_manifest_tmp"
@@ -113,6 +114,13 @@ diff -u formal/kat/path2_account_creation_sampler_timing_v1.json "$sampler_timin
 
 echo "== account-creation sampler timing consistency check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_sampler_timing_consistency
+
+echo "== account-creation no-export boundary manifest check =="
+cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_no_export_boundary_manifest > "$no_export_boundary_manifest_tmp"
+diff -u formal/kat/path2_account_creation_no_export_boundary_v1.json "$no_export_boundary_manifest_tmp"
+
+echo "== account-creation no-export boundary consistency check =="
+cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_no_export_boundary_consistency
 
 echo "== account-creation proof boundary manifest check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_proof_boundary_manifest > "$proof_boundary_manifest_tmp"

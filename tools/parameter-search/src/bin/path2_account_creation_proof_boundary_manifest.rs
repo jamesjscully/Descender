@@ -1,5 +1,7 @@
 use descender_parameter_search::production_reference::{
-    PROFILE, path2_account_creation_proof_boundary_report_v1,
+    PROFILE, path2_account_creation_no_export_boundary_report_v1,
+    path2_account_creation_no_export_boundary_report_v1_digest,
+    path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_proof_boundary_report_v1_digest,
     path2_account_creation_sampler_timing_report_v1,
     path2_account_creation_sampler_timing_report_v1_digest,
@@ -26,6 +28,7 @@ fn hex_encode(bytes: &[u8]) -> String {
 fn manifest_body() -> Result<Value, String> {
     let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
     let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
+    let no_export_report = path2_account_creation_no_export_boundary_report_v1();
     let residual_matrix_report = path2_account_stark_residual_matrix_report_v1();
     let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
     let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
@@ -39,6 +42,11 @@ fn manifest_body() -> Result<Value, String> {
         path2_account_creation_sampler_timing_report_v1_digest(&sampler_timing_report);
     if recomputed_sampler_timing_digest != sampler_timing_report.digest {
         return Err("account-creation sampler/timing report digest mismatch".to_string());
+    }
+    let recomputed_no_export_digest =
+        path2_account_creation_no_export_boundary_report_v1_digest(&no_export_report);
+    if recomputed_no_export_digest != no_export_report.digest {
+        return Err("account-creation no-export boundary report digest mismatch".to_string());
     }
     let recomputed_residual_matrix_digest =
         path2_account_stark_residual_matrix_report_v1_digest(&residual_matrix_report);
@@ -68,6 +76,11 @@ fn manifest_body() -> Result<Value, String> {
             "proof boundary report is not bound to the current sampler/timing report".to_string(),
         );
     }
+    if proof_boundary_report.no_export_boundary_report_digest != no_export_report.digest {
+        return Err(
+            "proof boundary report is not bound to the current no-export report".to_string(),
+        );
+    }
     if residual_matrix_report.fri_qrom_residual_report_digest != fri_qrom_residual_report.digest {
         return Err(
             "residual matrix report is not bound to the current FRI/QROM residual report"
@@ -95,11 +108,14 @@ fn manifest_body() -> Result<Value, String> {
         "authority_snapshot": {
             "proof_boundary_report_domain": proof_boundary_report.domain,
             "sampler_timing_report_domain": sampler_timing_report.domain,
+            "no_export_boundary_report_domain": no_export_report.domain,
             "residual_matrix_report_domain": residual_matrix_report.domain,
             "fri_qrom_residual_report_domain": fri_qrom_residual_report.domain,
             "payload_kat_boundary_report_domain": payload_kat_boundary_report.domain,
             "sampler_support_file": sampler_timing_report.sampler_support_file,
             "timing_support_file": sampler_timing_report.timing_support_file,
+            "no_export_support_file": no_export_report.support_file,
+            "no_export_named_break": no_export_report.named_break,
             "sampler_theorem_target": sampler_timing_report.sampler_theorem_target,
             "timing_break_class": sampler_timing_report.timing_break_class,
             "selected_proof_family": residual_matrix_report.selected_proof_family,
@@ -126,6 +142,15 @@ fn manifest_body() -> Result<Value, String> {
             "proof_boundary_report_sampler_timing_digest": hex_encode(
                 &proof_boundary_report.sampler_timing_report_digest
             ),
+            "account_creation_no_export_boundary_report_digest": hex_encode(
+                &no_export_report.digest
+            ),
+            "account_creation_no_export_boundary_report_recomputed_digest": hex_encode(
+                &recomputed_no_export_digest
+            ),
+            "proof_boundary_report_no_export_digest": hex_encode(
+                &proof_boundary_report.no_export_boundary_report_digest
+            ),
             "account_stark_residual_matrix_report_digest": hex_encode(
                 &residual_matrix_report.digest
             ),
@@ -149,6 +174,9 @@ fn manifest_body() -> Result<Value, String> {
             "coverage": {
                 "sampler_timing_report_digest": hex_encode(
                     &proof_boundary_report.sampler_timing_report_digest
+                ),
+                "no_export_boundary_report_digest": hex_encode(
+                    &proof_boundary_report.no_export_boundary_report_digest
                 ),
                 "accepting_requirement_count":
                     proof_boundary_report.accepting_requirements.len(),
@@ -199,6 +227,46 @@ fn manifest_body() -> Result<Value, String> {
             "deployed_anchor_fields": proof_boundary_report.deployed_anchor_fields,
             "no_export_private_material_fields":
                 proof_boundary_report.no_export_private_material_fields
+        },
+        "no_export_boundary_snapshot": {
+            "coverage": {
+                "payload_byte_model_report_digest": hex_encode(
+                    &no_export_report.payload_byte_model_report_digest
+                ),
+                "payload_kat_boundary_report_digest": hex_encode(
+                    &no_export_report.payload_kat_boundary_report_digest
+                ),
+                "payload_public_field_count": no_export_report.payload_public_field_count,
+                "public_payload_field_mutation_count":
+                    no_export_report.public_payload_field_mutation_count,
+                "public_payload_exports_private_material":
+                    no_export_report.public_payload_exports_private_material,
+                "no_export_field_denylist_pinned":
+                    no_export_report.no_export_field_denylist_pinned,
+                "byte_model_public_payload_only":
+                    no_export_report.byte_model_public_payload_only,
+                "boundary_mapping_complete": no_export_report.boundary_mapping_complete,
+                "roundtrip_regression_present": no_export_report.roundtrip_regression_present,
+                "production_gate_fail_closed": no_export_report.production_gate_fail_closed,
+                "simulator_theorem_instantiated":
+                    no_export_report.simulator_theorem_instantiated,
+                "no_export_theorem_instantiated":
+                    no_export_report.no_export_theorem_instantiated,
+                "accepted_bundle_simulatable_from_public_anchors":
+                    no_export_report.accepted_bundle_simulatable_from_public_anchors,
+                "frozen_no_export_vectors_complete":
+                    no_export_report.frozen_no_export_vectors_complete,
+                "external_review_complete": no_export_report.external_review_complete,
+                "deployment_ready": no_export_report.deployment_ready,
+                "blocker": no_export_report.blocker
+            },
+            "selected_payload_type": no_export_report.selected_payload_type,
+            "verifier_boundary_endpoint": no_export_report.verifier_boundary_endpoint,
+            "production_boundary_endpoint": no_export_report.production_boundary_endpoint,
+            "no_export_requirement": no_export_report.no_export_requirement,
+            "named_break": no_export_report.named_break,
+            "no_export_private_material_fields":
+                no_export_report.no_export_private_material_fields
         },
         "sampler_timing_snapshot": {
             "coverage": {

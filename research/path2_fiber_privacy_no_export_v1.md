@@ -224,6 +224,40 @@ seed material
 This applies equally to debugging helpers, tests, JSON serializers, and
 negative-control fixtures.
 
+## Account-Creation Boundary Report
+
+The active account-creation proof boundary imports this no-export target
+through:
+
+```text
+Path2AccountCreationNoExportBoundaryReportV1
+formal/kat/path2_account_creation_no_export_boundary_v1.json
+```
+
+The report pins `zero_knowledge_no_export_semantics` for
+`Path2AccountStarkCreationPayloadV1` and names
+`account_stark_simulator_or_no_export_break` if the selected payload simulator
+or no-export theorem fails.
+
+The current forbidden private-material field denylist is:
+
+```text
+pad_source
+projection
+syndrome
+opening_tuple
+witness
+mask
+private_trace_material
+```
+
+This report is a boundary and fail-closed regression anchor, not simulator
+closure. It records that the public payload byte model exports no private
+material and that current public mutation coverage is wired. The open blocker is
+simulator semantics, no-export theorem closure, frozen no-export vectors,
+external review, and deployment readiness. The denylist term
+`private_trace_material` covers private trace material.
+
 ## Helper API Rule
 
 Public helper APIs may expose only:

@@ -80,12 +80,16 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_PREFLIGHT_MARKERS = [
     "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY",
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN",
     "PATH2_ACCOUNT_CREATION_SAMPLER_TIMING_REPORT_DOMAIN",
+    "PATH2_ACCOUNT_CREATION_NO_EXPORT_BOUNDARY_REPORT_DOMAIN",
     "Path2AccountCreationProofBoundaryReportV1",
     "Path2AccountCreationSamplerTimingReportV1",
+    "Path2AccountCreationNoExportBoundaryReportV1",
     "sampler_timing_report_digest",
+    "no_export_boundary_report_digest",
     "account_stark_residual_matrix_report_digest",
     "PATH2_ACCOUNT_CREATION_SAMPLER_SUPPORT_FILE",
     "PATH2_ACCOUNT_CREATION_TIMING_SUPPORT_FILE",
+    "PATH2_ACCOUNT_CREATION_NO_EXPORT_SUPPORT_FILE",
     "PATH2_ACCOUNT_CREATION_SAMPLER_THEOREM_TARGET",
     "PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS",
     "PATH2_ACCOUNT_CREATION_TIMING_ORDER_STEPS",
@@ -98,6 +102,8 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_PREFLIGHT_MARKERS = [
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS",
     "path2_account_creation_sampler_timing_report_v1",
     "validate_path2_account_creation_sampler_timing_report_v1",
+    "path2_account_creation_no_export_boundary_report_v1",
+    "validate_path2_account_creation_no_export_boundary_report_v1",
     "path2_account_creation_proof_boundary_report_v1",
     "validate_path2_account_creation_proof_boundary_report_v1",
     "production_deployment_account_creation_proof_boundary_blockers",
@@ -318,22 +324,89 @@ ACCOUNT_CREATION_SAMPLER_TIMING_MARKERS = {
         "path2_account_creation_sampler_timing_consistency",
     ],
 }
+ACCOUNT_CREATION_NO_EXPORT_BOUNDARY_MARKERS = {
+    "tools/parameter-search/src/bin/path2_account_creation_no_export_boundary_manifest.rs": [
+        "Descender.Path2.AccountCreationNoExportBoundaryManifest.v1",
+        "Descender.Path2.AccountCreationNoExportBoundary.v1",
+        "path2_account_creation_no_export_boundary_report_v1",
+        "validate_path2_account_creation_no_export_boundary_report_v1",
+        "path2_account_creation_proof_boundary_report_v1",
+        "account_creation_no_export_boundary_report_digest",
+        "proof_boundary_report_no_export_digest",
+        "payload_byte_model_report_digest",
+        "payload_kat_boundary_report_digest",
+        "no_export_boundary",
+        "no_export_private_material_fields",
+    ],
+    "tools/parameter-search/src/bin/path2_account_creation_no_export_boundary_consistency.rs": [
+        "formal/kat/path2_account_creation_no_export_boundary_v1.json",
+        "path2_account_creation_no_export_boundary_report_v1",
+        "validate_path2_account_creation_no_export_boundary_report_v1",
+        "Path2AccountCreationNoExportBoundaryReportV1",
+        "zero_knowledge_no_export_semantics",
+        "account_stark_simulator_or_no_export_break",
+        "private_trace_material",
+        "Path 2 account-creation no-export boundary consistency check passed.",
+    ],
+    "formal/kat/path2_account_creation_no_export_boundary_v1.json": [
+        "Descender.Path2.AccountCreationNoExportBoundaryManifest.v1",
+        "Descender.Path2.AccountCreationNoExportBoundary.v1",
+        "draft_no_export_boundary_manifest",
+        "account_creation_no_export_boundary_report_digest",
+        "proof_boundary_report_no_export_digest",
+        "payload_byte_model_report_digest",
+        "payload_kat_boundary_report_digest",
+        "zero_knowledge_no_export_semantics",
+        "account_stark_simulator_or_no_export_break",
+        '"public_payload_exports_private_material": false',
+        '"simulator_theorem_instantiated": false',
+        '"no_export_theorem_instantiated": false',
+        '"deployment_ready": false',
+    ],
+    "research/path2_fiber_privacy_no_export_v1.md": [
+        "Path2AccountCreationNoExportBoundaryReportV1",
+        "formal/kat/path2_account_creation_no_export_boundary_v1.json",
+        "zero_knowledge_no_export_semantics",
+        "account_stark_simulator_or_no_export_break",
+        "pad_source",
+        "private_trace_material",
+        "simulator semantics, no-export theorem closure",
+    ],
+    "scripts/check_build.sh": [
+        "account-creation no-export boundary manifest check",
+        "path2_account_creation_no_export_boundary_manifest",
+        "path2_account_creation_no_export_boundary_v1.json",
+        "account-creation no-export boundary consistency check",
+        "path2_account_creation_no_export_boundary_consistency",
+    ],
+    ".github/workflows/ci.yml": [
+        "Account-creation no-export boundary manifest check",
+        "path2_account_creation_no_export_boundary_manifest",
+        "path2_account_creation_no_export_boundary_v1.json",
+        "Account-creation no-export boundary consistency check",
+        "path2_account_creation_no_export_boundary_consistency",
+    ],
+}
 ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS = {
     "tools/parameter-search/src/bin/path2_account_creation_proof_boundary_manifest.rs": [
         "Descender.Path2.AccountCreationProofBoundaryManifest.v1",
         "Descender.Path2.AccountCreationProofBoundary.v1",
         "path2_account_creation_proof_boundary_report_v1",
         "path2_account_creation_sampler_timing_report_v1",
+        "path2_account_creation_no_export_boundary_report_v1",
         "path2_account_stark_fri_qrom_residual_report_v1",
         "path2_account_stark_residual_matrix_report_v1",
         "path2_account_stark_payload_kat_boundary_report_v1",
         "account_creation_proof_boundary_report_digest",
         "account_creation_sampler_timing_report_digest",
         "proof_boundary_report_sampler_timing_digest",
+        "account_creation_no_export_boundary_report_digest",
+        "proof_boundary_report_no_export_digest",
         "account_stark_fri_qrom_residual_report_digest",
         "account_stark_residual_matrix_report_digest",
         "payload_kat_boundary_report_digest",
         "leaf_evidence_binding_fields",
+        "no_export_boundary_snapshot",
         "sampler_timing_snapshot",
         "selected_account_stark_residual_matrix",
         "fri_qrom_residual_snapshot",
@@ -345,12 +418,16 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS = {
         "account_creation_proof_boundary_report_digest",
         "account_creation_sampler_timing_report_digest",
         "proof_boundary_report_sampler_timing_digest",
+        "account_creation_no_export_boundary_report_digest",
+        "proof_boundary_report_no_export_digest",
         "account_stark_fri_qrom_residual_report_digest",
         "account_stark_residual_matrix_report_digest",
         "payload_kat_boundary_report_digest",
         "leaf_evidence_binding_fields",
+        "no_export_boundary_snapshot",
         "sampler_timing_snapshot",
         "postchallenge_slot_creation_or_rewrite_break",
+        "account_stark_simulator_or_no_export_break",
         "selected_account_stark_residual_matrix",
         "fri_qrom_residual_snapshot",
         "account_stark_fri_aok_extractor_break",
@@ -499,6 +576,7 @@ DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS = {
         "account_creation_proof_boundary_report_digest",
         "account_creation_sampler_timing_report_digest",
         "proof_boundary_report_sampler_timing_digest",
+        "no_export_boundary_report_digest",
         "direct_qrom_action_boundary",
         "direct_lifecycle_boundary",
         "obligation_rows",
@@ -517,6 +595,7 @@ DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS = {
         "account_creation_proof_boundary_report_digest",
         "account_creation_sampler_timing_report_digest",
         "proof_boundary_report_sampler_timing_digest",
+        "no_export_boundary_report_digest",
         "direct_qrom_action_boundary",
         "direct_lifecycle_boundary",
         "obligation_rows",
@@ -2481,6 +2560,23 @@ def check_account_creation_sampler_timing_markers(errors: list[str]) -> None:
                 )
 
 
+def check_account_creation_no_export_boundary_markers(errors: list[str]) -> None:
+    for rel, markers in ACCOUNT_CREATION_NO_EXPORT_BOUNDARY_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(
+                f"{rel}: missing account-creation no-export boundary artifact"
+            )
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing account-creation no-export boundary marker {marker!r}"
+                )
+
+
 def check_account_creation_proof_boundary_manifest_markers(errors: list[str]) -> None:
     for rel, markers in ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS.items():
         path = ROOT / rel
@@ -2745,6 +2841,7 @@ def main() -> int:
     check_account_stark_payload_kat_manifest_markers(errors)
     check_account_stark_fri_qrom_residual_markers(errors)
     check_account_creation_sampler_timing_markers(errors)
+    check_account_creation_no_export_boundary_markers(errors)
     check_account_creation_proof_boundary_manifest_markers(errors)
     check_direct_qrom_action_boundary_markers(errors)
     check_direct_lifecycle_boundary_markers(errors)

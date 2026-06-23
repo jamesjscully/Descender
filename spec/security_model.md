@@ -185,21 +185,32 @@ function, acceptance requirements, exact leaf/evidence binding fields,
 certificate/evidence binding fields, binding/leaf context fields,
 payload-binding fields, deployed-anchor fields, no-export private-material
 field classes, the `Path2AccountCreationSamplerTimingReportV1` digest, and
-current proof-family closure blockers. The sampler/timing report pins the
-honest-create sampler support file, no-postchallenge timing game, construction
-order, prechallenge fixed-through step, spend-challenge derivation step, and
-executable hooks showing that the creation hidden-source statement excludes the
-spend message/signature while the checked-core challenge binds message, state
-root, slot authorization digest, and proof commitment.
+the `Path2AccountCreationNoExportBoundaryReportV1` digest, and current
+proof-family closure blockers. The sampler/timing report pins the honest-create
+sampler support file, no-postchallenge timing game, construction order,
+prechallenge fixed-through step, spend-challenge derivation step, and executable
+hooks showing that the creation hidden-source statement excludes the spend
+message/signature while the checked-core challenge binds message, state root,
+slot authorization digest, and proof commitment. The no-export boundary report
+pins the support file, selected account-STARK payload endpoints, public
+payload byte-model digest, payload KAT-boundary digest, forbidden
+private-material field denylist, and named
+`account_stark_simulator_or_no_export_break`, while keeping simulator theorem,
+no-export theorem, frozen vectors, external review, and deployment readiness
+false.
 `formal/kat/path2_account_creation_proof_boundary_v1.json` is regenerated from
 that report, the selected `Path2AccountStarkResidualMatrixReportV1`, the current
-`Path2AccountStarkPayloadKatBoundaryReportV1`, and the current sampler/timing
-report by local and CI gates, so the proof-boundary digest chain, selected field
-groups, sampler/timing hooks, residual rows, and payload-KAT boundary blocker
-cannot drift silently. The reports and manifests are the executable boundary map
-for this section; they are not an honest-sampler theorem, authorization-class
-binding theorem, no-postchallenge timing theorem, simulator, extractor,
-FRI/QROM, KAT, or external-review substitute.
+`Path2AccountStarkPayloadKatBoundaryReportV1`, the current sampler/timing
+report, and the current no-export boundary report by local and CI gates, so the
+proof-boundary digest chain, selected field groups, sampler/timing hooks,
+no-export denylist, residual rows, and payload-KAT boundary blocker cannot drift
+silently. `formal/kat/path2_account_creation_no_export_boundary_v1.json` is
+also regenerated and checked before the proof-boundary manifest so the
+no-export boundary cannot remain prose-only. The reports and manifests are the
+executable boundary map for this section; they are not an honest-sampler
+theorem, authorization-class binding theorem, no-postchallenge timing theorem,
+simulator, no-export theorem, extractor, FRI/QROM, KAT, or external-review
+substitute.
 
 The boundary is implemented but not verified. The active Rust test suite now has
 an initial `Path2AccountStarkCreationPayloadV1` malformed-payload mutation
@@ -273,7 +284,7 @@ status are all false.
 | `Path2AccountStarkCreationPayloadV1` byte and replay binding | Wire-format digest frame, certificate/evidence binding, deployed anchor checks, active mutation tests, `Path2AccountStarkPayloadByteModelReportV1` frame/overhead/non-inlined-bundle manifest plus consistency gate, `Path2AccountStarkPayloadKatBoundaryReportV1` public rejection-class mapping, draft manifest regeneration, deterministic digest-pinned current-row boundary vectors, and manifest/vector consistency gates exist. | Full frozen byte corpus and public rejection-class mapping for every consensus-visible malformed payload. | `account_stark_payload_binding_break` |
 | AIR relation soundness | `research/path2_account_stark_air_soundness_audit.md` reports all relation classes wired and MED findings remediated. | External proof-family review confirms the AIR constraints match the claimed creation relation and no false statement accepts except with a named proof break. | `account_stark_air_soundness_break` |
 | FRI argument-of-knowledge extractor | The AIR is fully constrained, but the audit still names the `p2_sis_extractor`-style FRI-IOP extractor as open. | A concrete extractor theorem for the selected Plonky3/q12289 configuration shows accepting proof implies an extractable account-creation witness or exports a named FRI/AoK break. | `account_stark_fri_aok_extractor_break` |
-| Zero-knowledge simulator and no-export statement | Boundary text forbids export of pad source, projection, syndrome, opening tuple, witness, mask, and private trace material; current tests cover public payload mutations, not simulator semantics. | Simulator theorem for the selected payload proves the accepted public bundle can be simulated from public anchors and allowed commitments without revealing private creation material. | `account_stark_simulator_or_no_export_break` |
+| Zero-knowledge simulator and no-export statement | Boundary text forbids export of pad source, projection, syndrome, opening tuple, witness, mask, and private trace material; `Path2AccountCreationNoExportBoundaryReportV1` plus `formal/kat/path2_account_creation_no_export_boundary_v1.json` pin the support file, selected payload endpoints, payload byte-model/KAT-boundary digests, denylist, public-payload-only byte model, mutation coverage, and fail-closed production gate while leaving simulator and no-export theorem flags false. | Simulator theorem for the selected payload proves the accepted public bundle can be simulated from public anchors and allowed commitments without revealing private creation material. | `account_stark_simulator_or_no_export_break` |
 | FRI soundness margin and recursion ledger | `Path2AccountStarkFriQromResidualReportV1` pins `log_blowup = 4`, `num_queries = 56`, query PoW 16, conservative-Johnson FRI label 128 bits, degree-8 challenge field, ~124-bit Poseidon2 sponge floor, and checked-core QROM `log2(T) <= 54`; the consistency gate compares these to active config and generated QROM artifacts. | Residual-assumption ledger prices FRI queries, field size, the account-STARK Poseidon2/FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile, then obtains external FRI/QROM review. | `fri_soundness_margin_break` |
 | Production admission gate and review disposition | `verify_path2_direct_creation_account_stark_payload_boundary_for_production` remains fail-closed and regression-tested. | External review, tracker disposition, and explicit maintainer decision flip the production gate; otherwise production admission must continue to reject. | `account_stark_production_gate_break` |
 | Legacy proof-route disposition | Transparent descent/native-boundary paths are fail-closed support and cannot be selected by implication. | Any route change requires an ADR that updates this matrix, wire formats, KAT scope, and tracker ownership before the route can become deployment authority. | `proof_route_authority_break` |

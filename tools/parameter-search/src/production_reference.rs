@@ -307,6 +307,8 @@ pub const PATH2_DIRECT_LIFECYCLE_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.DirectLifecycleBoundaryReport.v1";
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountCreationProofBoundaryReport.v1";
+pub const PATH2_ACCOUNT_CREATION_NO_EXPORT_BOUNDARY_REPORT_DOMAIN: &str =
+    "Descender.Path2.AccountCreationNoExportBoundaryReport.v1";
 pub const PATH2_ACCOUNT_CREATION_SAMPLER_TIMING_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountCreationSamplerTimingReport.v1";
 pub const PATH2_ACCOUNT_STARK_FRI_QROM_RESIDUAL_REPORT_DOMAIN: &str =
@@ -9434,10 +9436,41 @@ pub struct Path2AccountCreationSamplerTimingReportV1 {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2AccountCreationNoExportBoundaryReportV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub domain: &'static str,
+    pub support_file: &'static str,
+    pub selected_payload_type: &'static str,
+    pub verifier_boundary_endpoint: &'static str,
+    pub production_boundary_endpoint: &'static str,
+    pub payload_byte_model_report_digest: [u8; DIGEST_BYTES],
+    pub payload_kat_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub no_export_requirement: &'static str,
+    pub named_break: &'static str,
+    pub no_export_private_material_fields: &'static [&'static str],
+    pub payload_public_field_count: usize,
+    pub public_payload_field_mutation_count: usize,
+    pub public_payload_exports_private_material: bool,
+    pub no_export_field_denylist_pinned: bool,
+    pub byte_model_public_payload_only: bool,
+    pub boundary_mapping_complete: bool,
+    pub roundtrip_regression_present: bool,
+    pub production_gate_fail_closed: bool,
+    pub simulator_theorem_instantiated: bool,
+    pub no_export_theorem_instantiated: bool,
+    pub accepted_bundle_simulatable_from_public_anchors: bool,
+    pub frozen_no_export_vectors_complete: bool,
+    pub external_review_complete: bool,
+    pub deployment_ready: bool,
+    pub blocker: &'static str,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub domain: &'static str,
     pub sampler_timing_report_digest: [u8; DIGEST_BYTES],
+    pub no_export_boundary_report_digest: [u8; DIGEST_BYTES],
     pub account_stark_residual_matrix_report_digest: [u8; DIGEST_BYTES],
     pub selected_payload_type: &'static str,
     pub verifier_boundary_endpoint: &'static str,
@@ -10373,6 +10406,8 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_SUPPORT_FILE: &str =
     "research/path2_honest_create_sampler_v1.md";
 pub const PATH2_ACCOUNT_CREATION_TIMING_SUPPORT_FILE: &str =
     "research/path2_no_postchallenge_creation_timing_game.md";
+pub const PATH2_ACCOUNT_CREATION_NO_EXPORT_SUPPORT_FILE: &str =
+    "research/path2_fiber_privacy_no_export_v1.md";
 pub const PATH2_ACCOUNT_CREATION_SAMPLER_THEOREM_TARGET: &str =
     "honest_create_sampler_sound_v1";
 pub const PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS: [&str; 8] = [
@@ -11039,14 +11074,111 @@ pub fn validate_path2_account_creation_sampler_timing_report_v1(
     Ok(())
 }
 
+pub fn path2_account_creation_no_export_boundary_report_v1(
+) -> Path2AccountCreationNoExportBoundaryReportV1 {
+    let payload_byte_model_report = path2_account_stark_payload_byte_model_report_v1();
+    let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
+    let mut report = Path2AccountCreationNoExportBoundaryReportV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        domain: PATH2_ACCOUNT_CREATION_NO_EXPORT_BOUNDARY_REPORT_DOMAIN,
+        support_file: PATH2_ACCOUNT_CREATION_NO_EXPORT_SUPPORT_FILE,
+        selected_payload_type: "Path2AccountStarkCreationPayloadV1",
+        verifier_boundary_endpoint: "verify_path2_direct_creation_account_stark_payload_boundary",
+        production_boundary_endpoint:
+            "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
+        payload_byte_model_report_digest: payload_byte_model_report.digest,
+        payload_kat_boundary_report_digest: payload_kat_boundary_report.digest,
+        no_export_requirement: "zero_knowledge_no_export_semantics",
+        named_break: "account_stark_simulator_or_no_export_break",
+        no_export_private_material_fields:
+            &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS,
+        payload_public_field_count: payload_byte_model_report
+            .field_order
+            .iter()
+            .filter(|field| field.public_payload_field)
+            .count(),
+        public_payload_field_mutation_count:
+            payload_kat_boundary_report.public_payload_field_mutation_count,
+        public_payload_exports_private_material:
+            payload_byte_model_report.public_payload_exports_private_material,
+        no_export_field_denylist_pinned: true,
+        byte_model_public_payload_only: !payload_byte_model_report.public_payload_exports_private_material,
+        boundary_mapping_complete: true,
+        roundtrip_regression_present: true,
+        production_gate_fail_closed: true,
+        simulator_theorem_instantiated: false,
+        no_export_theorem_instantiated: false,
+        accepted_bundle_simulatable_from_public_anchors: false,
+        frozen_no_export_vectors_complete: false,
+        external_review_complete: false,
+        deployment_ready: false,
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_SIMULATOR,
+    };
+    report.digest = path2_account_creation_no_export_boundary_report_v1_digest(&report);
+    report
+}
+
+pub fn path2_account_creation_no_export_boundary_report_v1_digest(
+    report: &Path2AccountCreationNoExportBoundaryReportV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_account_creation_no_export_boundary_report_v1_frame(report)).into()
+}
+
+pub fn validate_path2_account_creation_no_export_boundary_report_v1(
+    report: &Path2AccountCreationNoExportBoundaryReportV1,
+) -> Result<(), String> {
+    let expected = path2_account_creation_no_export_boundary_report_v1();
+    if expected != *report {
+        return Err("Path 2 account-creation no-export boundary report mismatch".to_string());
+    }
+    if path2_account_creation_no_export_boundary_report_v1_digest(report) != report.digest {
+        return Err(
+            "Path 2 account-creation no-export boundary report digest mismatch".to_string(),
+        );
+    }
+    let payload_byte_model_report = path2_account_stark_payload_byte_model_report_v1();
+    if report.payload_byte_model_report_digest != payload_byte_model_report.digest {
+        return Err(
+            "Path 2 account-creation no-export boundary byte-model digest mismatch".to_string(),
+        );
+    }
+    let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
+    if report.payload_kat_boundary_report_digest != payload_kat_boundary_report.digest {
+        return Err(
+            "Path 2 account-creation no-export boundary KAT-boundary digest mismatch".to_string(),
+        );
+    }
+    if !report.no_export_field_denylist_pinned
+        || !report.byte_model_public_payload_only
+        || !report.boundary_mapping_complete
+        || !report.roundtrip_regression_present
+        || !report.production_gate_fail_closed
+        || report.public_payload_exports_private_material
+        || report.simulator_theorem_instantiated
+        || report.no_export_theorem_instantiated
+        || report.accepted_bundle_simulatable_from_public_anchors
+        || report.frozen_no_export_vectors_complete
+        || report.external_review_complete
+        || report.deployment_ready
+    {
+        return Err(
+            "Path 2 account-creation no-export boundary unexpectedly changes closure status"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
 pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreationProofBoundaryReportV1 {
     let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
+    let no_export_boundary_report = path2_account_creation_no_export_boundary_report_v1();
     let account_stark_residual_matrix_report =
         path2_account_stark_residual_matrix_report_v1();
     let mut report = Path2AccountCreationProofBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN,
         sampler_timing_report_digest: sampler_timing_report.digest,
+        no_export_boundary_report_digest: no_export_boundary_report.digest,
         account_stark_residual_matrix_report_digest:
             account_stark_residual_matrix_report.digest,
         selected_payload_type: "Path2AccountStarkCreationPayloadV1",
@@ -11104,6 +11236,12 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
     if report.sampler_timing_report_digest != sampler_timing_report.digest {
         return Err(
             "Path 2 account-creation proof boundary sampler/timing digest mismatch".to_string(),
+        );
+    }
+    let no_export_boundary_report = path2_account_creation_no_export_boundary_report_v1();
+    if report.no_export_boundary_report_digest != no_export_boundary_report.digest {
+        return Err(
+            "Path 2 account-creation proof boundary no-export digest mismatch".to_string(),
         );
     }
     Ok(())
@@ -64247,6 +64385,11 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
     );
     append_frame(
         &mut frame,
+        b"no_export_boundary_report_digest",
+        &report.no_export_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
         b"account_stark_residual_matrix_report_digest",
         &report.account_stark_residual_matrix_report_digest,
     );
@@ -64401,6 +64544,139 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         &mut frame,
         b"production_gate_open",
         u64::from(report.production_gate_open),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_ready",
+        u64::from(report.deployment_ready),
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    frame
+}
+
+fn path2_account_creation_no_export_boundary_report_v1_frame(
+    report: &Path2AccountCreationNoExportBoundaryReportV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"domain", report.domain.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_u64(&mut frame, b"q", Q as u64);
+    append_u64(&mut frame, b"groups", GROUPS as u64);
+    append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
+    append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
+    append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(&mut frame, b"support_file", report.support_file.as_bytes());
+    append_frame(
+        &mut frame,
+        b"selected_payload_type",
+        report.selected_payload_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"verifier_boundary_endpoint",
+        report.verifier_boundary_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"production_boundary_endpoint",
+        report.production_boundary_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"payload_byte_model_report_digest",
+        &report.payload_byte_model_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"payload_kat_boundary_report_digest",
+        &report.payload_kat_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"no_export_requirement",
+        report.no_export_requirement.as_bytes(),
+    );
+    append_frame(&mut frame, b"named_break", report.named_break.as_bytes());
+    for (index, field) in report
+        .no_export_private_material_fields
+        .iter()
+        .enumerate()
+    {
+        append_u64(
+            &mut frame,
+            b"no_export_private_material_field_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"no_export_private_material_field",
+            field.as_bytes(),
+        );
+    }
+    append_u64(
+        &mut frame,
+        b"payload_public_field_count",
+        report.payload_public_field_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"public_payload_field_mutation_count",
+        report.public_payload_field_mutation_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"public_payload_exports_private_material",
+        u64::from(report.public_payload_exports_private_material),
+    );
+    append_u64(
+        &mut frame,
+        b"no_export_field_denylist_pinned",
+        u64::from(report.no_export_field_denylist_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"byte_model_public_payload_only",
+        u64::from(report.byte_model_public_payload_only),
+    );
+    append_u64(
+        &mut frame,
+        b"boundary_mapping_complete",
+        u64::from(report.boundary_mapping_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"roundtrip_regression_present",
+        u64::from(report.roundtrip_regression_present),
+    );
+    append_u64(
+        &mut frame,
+        b"production_gate_fail_closed",
+        u64::from(report.production_gate_fail_closed),
+    );
+    append_u64(
+        &mut frame,
+        b"simulator_theorem_instantiated",
+        u64::from(report.simulator_theorem_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"no_export_theorem_instantiated",
+        u64::from(report.no_export_theorem_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_bundle_simulatable_from_public_anchors",
+        u64::from(report.accepted_bundle_simulatable_from_public_anchors),
+    );
+    append_u64(
+        &mut frame,
+        b"frozen_no_export_vectors_complete",
+        u64::from(report.frozen_no_export_vectors_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"external_review_complete",
+        u64::from(report.external_review_complete),
     );
     append_u64(
         &mut frame,
@@ -105510,8 +105786,86 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     }
 
     #[test]
+    fn path2_account_creation_no_export_boundary_report_pins_public_payload_denylist() {
+        let payload_byte_model_report = path2_account_stark_payload_byte_model_report_v1();
+        let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
+        let report = path2_account_creation_no_export_boundary_report_v1();
+        assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(
+            report.domain,
+            PATH2_ACCOUNT_CREATION_NO_EXPORT_BOUNDARY_REPORT_DOMAIN
+        );
+        assert_eq!(
+            report.support_file,
+            PATH2_ACCOUNT_CREATION_NO_EXPORT_SUPPORT_FILE
+        );
+        assert_eq!(report.selected_payload_type, "Path2AccountStarkCreationPayloadV1");
+        assert_eq!(
+            report.verifier_boundary_endpoint,
+            "verify_path2_direct_creation_account_stark_payload_boundary"
+        );
+        assert_eq!(
+            report.production_boundary_endpoint,
+            "verify_path2_direct_creation_account_stark_payload_boundary_for_production"
+        );
+        assert_eq!(
+            report.payload_byte_model_report_digest,
+            payload_byte_model_report.digest
+        );
+        assert_eq!(
+            report.payload_kat_boundary_report_digest,
+            payload_kat_boundary_report.digest
+        );
+        assert_eq!(report.no_export_requirement, "zero_knowledge_no_export_semantics");
+        assert_eq!(
+            report.named_break,
+            "account_stark_simulator_or_no_export_break"
+        );
+        assert_eq!(
+            report.no_export_private_material_fields,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS.as_ref()
+        );
+        assert_eq!(report.no_export_private_material_fields.len(), 7);
+        assert!(report
+            .no_export_private_material_fields
+            .contains(&"private_trace_material"));
+        assert_eq!(report.payload_public_field_count, 11);
+        assert_eq!(report.public_payload_field_mutation_count, 11);
+        assert!(!report.public_payload_exports_private_material);
+        assert!(report.no_export_field_denylist_pinned);
+        assert!(report.byte_model_public_payload_only);
+        assert!(report.boundary_mapping_complete);
+        assert!(report.roundtrip_regression_present);
+        assert!(report.production_gate_fail_closed);
+        assert!(!report.simulator_theorem_instantiated);
+        assert!(!report.no_export_theorem_instantiated);
+        assert!(!report.accepted_bundle_simulatable_from_public_anchors);
+        assert!(!report.frozen_no_export_vectors_complete);
+        assert!(!report.external_review_complete);
+        assert!(!report.deployment_ready);
+        assert_eq!(
+            report.blocker,
+            PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_SIMULATOR
+        );
+        assert_eq!(
+            path2_account_creation_no_export_boundary_report_v1_digest(&report),
+            report.digest
+        );
+        validate_path2_account_creation_no_export_boundary_report_v1(&report).unwrap();
+
+        let mut malformed = report.clone();
+        malformed.no_export_theorem_instantiated = true;
+        malformed.digest = path2_account_creation_no_export_boundary_report_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_account_creation_no_export_boundary_report_v1(&malformed).unwrap_err(),
+            "Path 2 account-creation no-export boundary report mismatch"
+        );
+    }
+
+    #[test]
     fn path2_account_creation_proof_boundary_report_pins_selected_boundary() {
         let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
+        let no_export_boundary_report = path2_account_creation_no_export_boundary_report_v1();
         let residual_matrix_report = path2_account_stark_residual_matrix_report_v1();
         let report = path2_account_creation_proof_boundary_report_v1();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
@@ -105522,6 +105876,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert_eq!(
             report.sampler_timing_report_digest,
             sampler_timing_report.digest
+        );
+        assert_eq!(
+            report.no_export_boundary_report_digest,
+            no_export_boundary_report.digest
         );
         assert_eq!(
             report.account_stark_residual_matrix_report_digest,
