@@ -391,7 +391,9 @@ generated proof/direct boundary manifest copy of the accepted-composition
 artifact still matches the standalone compact artifact, and ties the selected
 payload digest back to the
 `path2_account_stark_payload_kat_vectors_v1.json` honest payload. It also
-checks the nine-row accepted-hypothesis evidence checklist, including the
+checks that the validator recomputes the direct admission namespace digest and
+rejects identical consume-once before/after state digests, plus the nine-row
+accepted-hypothesis evidence checklist, including the
 eight-positive/one-deferred split, and the boundary/preflight gates compare
 those standalone hypothesis rows back to the direct theorem acceptance
 hypotheses and obligation rows. This is

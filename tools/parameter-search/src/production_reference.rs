@@ -67436,6 +67436,16 @@ pub fn validate_path2_direct_accepted_composition_evidence_v1(
                 .to_string(),
         );
     }
+    if evidence.direct_admission_namespace_record_digest
+        != path2_direct_admission_namespace_record_digest(
+            &evidence.account_id,
+            &evidence.account_state_root_before,
+            &evidence.slot_authorization_digest,
+        )
+        || evidence.consume_once_state_before_digest == evidence.consume_once_state_after_digest
+    {
+        return Err("Path 2 direct accepted composition evidence binding mismatch".to_string());
+    }
     let expected_hypothesis_rows =
         path2_direct_accepted_composition_hypothesis_evidence_rows_v1(evidence, &direct_report);
     if evidence.accepted_hypothesis_evidence_rows != expected_hypothesis_rows
@@ -82800,6 +82810,25 @@ mod tests {
         assert_eq!(
             validate_path2_direct_accepted_composition_evidence_v1(&malformed).unwrap_err(),
             "Path 2 direct accepted composition evidence unexpectedly changes closure status"
+        );
+        let mut malformed_namespace = evidence.clone();
+        malformed_namespace.direct_admission_namespace_record_digest[0] ^= 1;
+        malformed_namespace.digest =
+            path2_direct_accepted_composition_evidence_v1_digest(&malformed_namespace);
+        assert_eq!(
+            validate_path2_direct_accepted_composition_evidence_v1(&malformed_namespace)
+                .unwrap_err(),
+            "Path 2 direct accepted composition evidence binding mismatch"
+        );
+        let mut malformed_consume_once = evidence.clone();
+        malformed_consume_once.consume_once_state_after_digest =
+            malformed_consume_once.consume_once_state_before_digest;
+        malformed_consume_once.digest =
+            path2_direct_accepted_composition_evidence_v1_digest(&malformed_consume_once);
+        assert_eq!(
+            validate_path2_direct_accepted_composition_evidence_v1(&malformed_consume_once)
+                .unwrap_err(),
+            "Path 2 direct accepted composition evidence binding mismatch"
         );
     }
 

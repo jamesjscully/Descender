@@ -49,6 +49,8 @@ The accepted proof-boundary, accepted spend tuple, accepted composition,
 proof-obligation, direct-obligation,
 and production preflight consistency gates now also recompute those generated
 manifests, call reusable accepted-evidence production-reference validators,
+with the accepted-composition validator recomputing the direct admission
+namespace digest and rejecting no-op consume-once transitions,
 check accepted-artifact equality, bind every generated proof/direct boundary
 copy of the accepted composition artifact plus requirement- and
 obligation-corpus evidence back to standalone compact artifacts, and keep both

@@ -146,7 +146,10 @@ account-STARK payload KAT vector corpus. The accepted proof-boundary, accepted
 spend tuple, and accepted-composition consistency gates also call
 production-reference validators that enforce digest/report binding, required
 accepted-path flags, namespace binding, replay/consume-once evidence, and
-fail-closed theorem/deployment flags. This is deterministic KAT evidence only;
+fail-closed theorem/deployment flags. The accepted-composition validator
+recomputes the direct admission namespace digest from the recorded account id,
+state root, and slot authorization digest, and rejects identical consume-once
+before/after state digests. This is deterministic KAT evidence only;
 deployment producers still use fresh proof randomness, and the artifacts do not
 close the composition theorem or account-creation proof family. The
 `path2_direct_single_slot_spend_tuple_evidence_pins_accepted_tuple` test is
