@@ -41,8 +41,9 @@ and production preflight consistency gates now also recompute those generated
 manifests, check accepted-artifact equality, bind every generated proof/direct
 boundary copy of the accepted composition artifact plus requirement- and
 obligation-corpus evidence back to standalone compact artifacts, and check
-open-row blockers and fail-closed flags against the standalone KATs and
-deployment blocker set.
+open-row blockers, fail-closed flags, and the production preflight
+blocker/verdict/ready-assertion/certificate chain against the standalone KATs
+and deployment blocker set.
 
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|

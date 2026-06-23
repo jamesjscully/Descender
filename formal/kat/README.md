@@ -411,7 +411,9 @@ remain named, pinned, and deployment-blocking while the boundary is open.
 The `path2_preflight_boundary_consistency` gate checks the same active boundary
 reports against the production deployment preflight. It fails if the preflight
 stops carrying the direct theorem, account-creation proof-boundary, or selected
-account-STARK residual blockers in the expected order while those reports remain
+account-STARK residual blockers in the expected order, or if the blocker rows,
+blocker report, verdict, ready assertion, and certificate stop digest-binding
+the current fail-closed primary blocker while those reports remain
 non-deployable.
 
 `path2_account_stark_payload_kat_vectors_v1.json` is the active-path

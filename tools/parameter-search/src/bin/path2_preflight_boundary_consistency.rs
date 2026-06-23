@@ -14,7 +14,14 @@ use descender_parameter_search::production_reference::{
     production_deployment_account_creation_proof_boundary_blockers,
     production_deployment_account_stark_residual_blockers,
     production_deployment_direct_theorem_blockers, production_deployment_preflight,
-    production_deployment_preflight_report, production_deployment_preflight_report_digest,
+    production_deployment_preflight_blocker_digest, production_deployment_preflight_blocker_report,
+    production_deployment_preflight_blocker_report_digest,
+    production_deployment_preflight_blockers, production_deployment_preflight_certificate,
+    production_deployment_preflight_certificate_digest,
+    production_deployment_preflight_ready_assertion,
+    production_deployment_preflight_ready_assertion_digest, production_deployment_preflight_report,
+    production_deployment_preflight_report_digest, production_deployment_preflight_verdict,
+    production_deployment_preflight_verdict_digest, require_production_deployment_preflight_ready,
     validate_path2_account_creation_proof_boundary_report_v1,
     validate_path2_account_stark_fri_aok_boundary_report_v1,
     validate_path2_account_stark_fri_qrom_residual_report_v1,
@@ -22,7 +29,12 @@ use descender_parameter_search::production_reference::{
     validate_path2_direct_lifecycle_boundary_report_v1,
     validate_path2_direct_qrom_action_boundary_report_v1,
     validate_path2_direct_theorem_boundary_report_v1,
+    validate_production_deployment_preflight_blocker,
+    validate_production_deployment_preflight_blocker_report,
+    validate_production_deployment_preflight_certificate,
+    validate_production_deployment_preflight_ready_assertion,
     validate_production_deployment_preflight_report,
+    validate_production_deployment_preflight_verdict,
 };
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -212,6 +224,91 @@ fn main() -> Result<(), String> {
     }
     if preflight.deployment_ready {
         return Err("production preflight unexpectedly reports deployment_ready=true".to_string());
+    }
+    let blocker_rows = production_deployment_preflight_blockers(&report)?;
+    if blocker_rows.len() != preflight.blockers.len() {
+        return Err("production preflight blocker row count mismatch".to_string());
+    }
+    for (index, blocker_row) in blocker_rows.iter().enumerate() {
+        validate_production_deployment_preflight_blocker(&report, blocker_row)?;
+        if production_deployment_preflight_blocker_digest(blocker_row) != blocker_row.digest {
+            return Err(format!(
+                "production preflight blocker row {index} digest mismatch"
+            ));
+        }
+        if blocker_row.digest == [0_u8; 32]
+            || blocker_row.preflight_report_digest != report.digest
+            || blocker_row.index != index
+            || blocker_row.blocker != preflight.blockers[index]
+        {
+            return Err(format!(
+                "production preflight blocker row {index} lost report/index/blocker binding"
+            ));
+        }
+    }
+    let blocker_report = production_deployment_preflight_blocker_report(&report)?;
+    validate_production_deployment_preflight_blocker_report(&report, &blocker_report)?;
+    if production_deployment_preflight_blocker_report_digest(&blocker_report)
+        != blocker_report.digest
+        || blocker_report.digest == [0_u8; 32]
+        || blocker_report.preflight_report_digest != report.digest
+        || blocker_report.blocker_count != blocker_rows.len()
+        || blocker_report.blocker_digests.len() != blocker_rows.len()
+    {
+        return Err("production preflight blocker report lost digest/count binding".to_string());
+    }
+    for (index, blocker_digest) in blocker_report.blocker_digests.iter().enumerate() {
+        if *blocker_digest != blocker_rows[index].digest {
+            return Err(format!(
+                "production preflight blocker report digest {index} drifted from row"
+            ));
+        }
+    }
+    let verdict = production_deployment_preflight_verdict(&report)?;
+    validate_production_deployment_preflight_verdict(&report, &verdict)?;
+    if production_deployment_preflight_verdict_digest(&verdict) != verdict.digest
+        || verdict.digest == [0_u8; 32]
+        || verdict.preflight_report_digest != report.digest
+        || verdict.blocker_report_digest != blocker_report.digest
+        || verdict.deployment_ready
+        || verdict.blocker_count != preflight.blockers.len()
+        || verdict.primary_blocker != preflight.blockers[0]
+    {
+        return Err("production preflight verdict lost fail-closed binding".to_string());
+    }
+    let ready_assertion = production_deployment_preflight_ready_assertion(&report, &verdict)?;
+    validate_production_deployment_preflight_ready_assertion(&report, &verdict, &ready_assertion)?;
+    if production_deployment_preflight_ready_assertion_digest(&ready_assertion)
+        != ready_assertion.digest
+        || ready_assertion.digest == [0_u8; 32]
+        || ready_assertion.preflight_report_digest != report.digest
+        || ready_assertion.blocker_report_digest != blocker_report.digest
+        || ready_assertion.verdict_digest != verdict.digest
+        || ready_assertion.assertion_passed
+        || ready_assertion.blocker != verdict.primary_blocker
+    {
+        return Err("production preflight ready assertion lost fail-closed binding".to_string());
+    }
+    let certificate = production_deployment_preflight_certificate(&report)?;
+    validate_production_deployment_preflight_certificate(&report, &certificate)?;
+    if production_deployment_preflight_certificate_digest(&certificate) != certificate.digest
+        || certificate.digest == [0_u8; 32]
+        || certificate.preflight_report_digest != report.digest
+        || certificate.blocker_report_digest != blocker_report.digest
+        || certificate.verdict_digest != verdict.digest
+        || certificate.ready_assertion_digest != ready_assertion.digest
+        || certificate.deployment_ready
+        || certificate.blocker_count != preflight.blockers.len()
+        || certificate.primary_blocker != ready_assertion.blocker
+    {
+        return Err("production preflight certificate lost fail-closed binding".to_string());
+    }
+    if require_production_deployment_preflight_ready(&report, &verdict).unwrap_err()
+        != ready_assertion.blocker
+    {
+        return Err(
+            "production preflight ready requirement did not return primary blocker".to_string(),
+        );
     }
 
     let root = repo_root();
