@@ -1,0 +1,219 @@
+{
+  "manifest": {
+    "account_creation_proof_boundary": {
+      "accepting_requirements": [
+        "canonical_leaf_and_evidence_framing",
+        "evidence_leaf_binding_equalities",
+        "certificate_evidence_payload_digest_binding",
+        "payload_availability_nonempty_bundle_and_digest_equality",
+        "payload_context_binding_leaf_proof_aggregation_slot",
+        "packed_account_stark_bundle_verifies",
+        "deployed_creation_anchors_match_stark_public_statement",
+        "zero_knowledge_no_export_semantics",
+        "account_stark_qrom_domain_separation",
+        "deterministic_public_rejection"
+      ],
+      "binding_leaf_context_fields": [
+        "binding_digest",
+        "account_id",
+        "public_key_identity",
+        "slot_id",
+        "verifier_version_digest",
+        "account_state_root_before",
+        "lifecycle_anchor",
+        "opening_tuple_commitment",
+        "creation_statement_digest"
+      ],
+      "certificate_evidence_binding_fields": [
+        "certificate_digest_to_evidence_payload_digest",
+        "account_id",
+        "public_key_identity",
+        "slot_id",
+        "verifier_version_digest",
+        "account_state_root_before",
+        "opening_commitment",
+        "pad_seed_digest",
+        "hidden_source_statement_digest",
+        "lifecycle_anchor",
+        "relation_transcript_digest"
+      ],
+      "coverage": {
+        "accepting_requirement_count": 10,
+        "active_payload_mutation_coverage_present": true,
+        "binding_leaf_context_field_count": 9,
+        "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+        "boundary_statement_pinned": true,
+        "certificate_evidence_binding_field_count": 11,
+        "deployed_anchor_field_count": 8,
+        "deployed_anchor_rebind_tests_present": true,
+        "deployment_ready": false,
+        "external_review_complete": false,
+        "fri_aok_extractor_theorem_instantiated": false,
+        "fri_qrom_residual_priced": false,
+        "frozen_kat_corpus_complete": false,
+        "leaf_evidence_binding_field_count": 15,
+        "no_export_private_material_field_count": 7,
+        "payload_binding_field_count": 6,
+        "production_gate_fail_closed": true,
+        "production_gate_open": false,
+        "replay_payload_digest_bound": true,
+        "selected_payload_pinned": true,
+        "simulator_theorem_instantiated": false
+      },
+      "deployed_anchor_fields": [
+        "account_id",
+        "slot_id",
+        "account_state_root",
+        "lifecycle_anchor",
+        "raw_verifier_version",
+        "masked_projection",
+        "packed_witness_commitment",
+        "role_root_export_bridge"
+      ],
+      "leaf_evidence_binding_fields": [
+        "evidence_domain",
+        "evidence_version",
+        "evidence_kind",
+        "slot_leaf_digest",
+        "slot_authorization_digest",
+        "creation_verifier_version_digest",
+        "hidden_source_statement_digest",
+        "opening_commitment",
+        "pad_seed_digest",
+        "account_identity_digest",
+        "public_key_identity",
+        "slot_id",
+        "state_root_before",
+        "lifecycle_anchor",
+        "prevalidation_transcript_digest"
+      ],
+      "no_export_private_material_fields": [
+        "pad_source",
+        "projection",
+        "syndrome",
+        "opening_tuple",
+        "witness",
+        "mask",
+        "private_trace_material"
+      ],
+      "payload_binding_fields": [
+        "leaf_context_digest",
+        "creation_proof_binding_digest",
+        "aggregation_context_digest",
+        "slot_id",
+        "public_replay_payload_digest",
+        "account_stark_bundle"
+      ]
+    },
+    "authority_snapshot": {
+      "payload_kat_boundary_blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+      "payload_kat_boundary_report_domain": "Descender.Path2.AccountStarkPayloadKatBoundaryReport.v1",
+      "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
+      "proof_boundary_blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+      "proof_boundary_report_domain": "Descender.Path2.AccountCreationProofBoundaryReport.v1",
+      "replay_payload_digest_function": "path2_account_stark_creation_payload_v1_digest",
+      "residual_matrix_report_domain": "Descender.Path2.AccountStarkResidualMatrixReport.v1",
+      "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
+      "selected_proof_family": "Plonky3/q12289 account-creation STARK",
+      "verifier_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary"
+    },
+    "corpus_id": "Descender.Path2.AccountCreationProofBoundary.v1",
+    "corpus_version": 1,
+    "digests": {
+      "account_creation_proof_boundary_report_digest": "ea5e125e2154295e2fef614b06583887e1cc9294101594828585ace5ad3ef45e",
+      "account_creation_proof_boundary_report_recomputed_digest": "ea5e125e2154295e2fef614b06583887e1cc9294101594828585ace5ad3ef45e",
+      "account_stark_residual_matrix_report_digest": "ed38b16b3ad3fd2a6e651edd44e35a2f7c0b55314fe227e76f60d44b6074af18",
+      "account_stark_residual_matrix_report_recomputed_digest": "ed38b16b3ad3fd2a6e651edd44e35a2f7c0b55314fe227e76f60d44b6074af18",
+      "payload_kat_boundary_report_digest": "5e16ce49d7eb8f23007c24531167928e24fb012bbe71eac1eeec4de5fe982236",
+      "payload_kat_boundary_report_recomputed_digest": "5e16ce49d7eb8f23007c24531167928e24fb012bbe71eac1eeec4de5fe982236"
+    },
+    "frozen_status": "draft_proof_boundary_manifest",
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_proof_boundary_manifest",
+      "source": "tools/parameter-search/src/bin/path2_account_creation_proof_boundary_manifest.rs"
+    },
+    "payload_kat_boundary_snapshot": {
+      "coverage": {
+        "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+        "current_boundary_mapping_complete": true,
+        "deployment_ready": false,
+        "every_row_has_public_rejection_class": true,
+        "frozen_corpus_complete": false,
+        "public_payload_field_mutation_count": 11,
+        "roundtrip_regression_present": true,
+        "row_count": 13
+      }
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "schema": "Descender.Path2.AccountCreationProofBoundaryManifest.v1",
+    "selected_account_stark_residual_matrix": {
+      "coverage": {
+        "blocker_count": 7,
+        "deployment_ready": false,
+        "every_row_has_blocker": true,
+        "every_row_has_named_break": true,
+        "legacy_routes_non_authoritative": true,
+        "production_gate_fail_closed": true
+      },
+      "rows": [
+        {
+          "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+          "current_evidence": "wire-format digest frame, certificate/evidence binding, deployed anchor checks, and active mutation tests exist",
+          "named_break": "account_stark_payload_binding_break",
+          "open": true,
+          "required_closure": "frozen byte corpus, manifest regeneration, and public rejection-class mapping for every consensus-visible malformed payload",
+          "residual_item": "Path2AccountStarkCreationPayloadV1 byte and replay binding"
+        },
+        {
+          "blocker": "account-STARK residual matrix: AIR relation soundness still requires external proof-family review",
+          "current_evidence": "AIR relation classes are wired and prior MED findings are remediated",
+          "named_break": "account_stark_air_soundness_break",
+          "open": true,
+          "required_closure": "external proof-family review confirms the AIR constraints match the claimed creation relation",
+          "residual_item": "AIR relation soundness"
+        },
+        {
+          "blocker": "account-STARK residual matrix: selected Plonky3/q12289 FRI argument-of-knowledge extractor theorem is not instantiated",
+          "current_evidence": "AIR is constrained, but the selected Plonky3/q12289 FRI-IOP extractor theorem is open",
+          "named_break": "account_stark_fri_aok_extractor_break",
+          "open": true,
+          "required_closure": "concrete extractor theorem shows accepting proof implies extractable witness or named FRI/AoK break",
+          "residual_item": "FRI argument-of-knowledge extractor"
+        },
+        {
+          "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
+          "current_evidence": "boundary text forbids private material export and tests cover public payload mutations",
+          "named_break": "account_stark_simulator_or_no_export_break",
+          "open": true,
+          "required_closure": "simulator theorem proves accepted public bundle can be simulated from public anchors and allowed commitments",
+          "residual_item": "Zero-knowledge simulator and no-export statement"
+        },
+        {
+          "blocker": "account-STARK residual matrix: FRI soundness margin, recursion, Poseidon2 transcript, and multi-target/QROM pricing are not closed",
+          "current_evidence": "PROD_SOUNDNESS_BITS=128 is a conservative-Johnson label over the active field/challenge configuration",
+          "named_break": "fri_soundness_margin_break",
+          "open": true,
+          "required_closure": "residual-assumption ledger prices FRI queries, field size, Poseidon2 transcript, recursion, and multi-target/QROM terms",
+          "residual_item": "FRI soundness margin and recursion ledger"
+        },
+        {
+          "blocker": "account-STARK residual matrix: production admission gate remains closed pending external review and maintainer decision",
+          "current_evidence": "production account-STARK admission remains fail-closed and regression-tested",
+          "named_break": "account_stark_production_gate_break",
+          "open": true,
+          "required_closure": "external review, tracker disposition, and explicit maintainer decision flip the production gate",
+          "residual_item": "Production admission gate and review disposition"
+        },
+        {
+          "blocker": "account-STARK residual matrix: legacy transparent/native-boundary/descent proof routes require ADR selection before deployment authority",
+          "current_evidence": "transparent descent and native-boundary routes are fail-closed support history",
+          "named_break": "proof_route_authority_break",
+          "open": true,
+          "required_closure": "route change requires ADR updating this matrix, wire formats, KAT scope, and tracker ownership",
+          "residual_item": "Legacy proof-route disposition"
+        }
+      ]
+    }
+  },
+  "manifest_digest": "41f9576771fe26454bc64e15662eb4e2c36998d076d577e794738a36ca4e5a42"
+}

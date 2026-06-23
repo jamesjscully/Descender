@@ -84,10 +84,15 @@ cargo check --manifest-path tools/parameter-search/Cargo.toml --all-targets
 echo "== account STARK payload KAT boundary manifest check =="
 payload_kat_manifest_tmp="$(mktemp)"
 payload_kat_vectors_tmp="$(mktemp)"
+proof_boundary_manifest_tmp="$(mktemp)"
 direct_theorem_manifest_tmp="$(mktemp)"
-trap 'rm -f "$payload_kat_manifest_tmp" "$payload_kat_vectors_tmp" "$direct_theorem_manifest_tmp"' EXIT
+trap 'rm -f "$payload_kat_manifest_tmp" "$payload_kat_vectors_tmp" "$proof_boundary_manifest_tmp" "$direct_theorem_manifest_tmp"' EXIT
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_stark_payload_kat_manifest > "$payload_kat_manifest_tmp"
 diff -u formal/kat/path2_account_stark_payload_kat_boundary_v1.json "$payload_kat_manifest_tmp"
+
+echo "== account-creation proof boundary manifest check =="
+cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_proof_boundary_manifest > "$proof_boundary_manifest_tmp"
+diff -u formal/kat/path2_account_creation_proof_boundary_v1.json "$proof_boundary_manifest_tmp"
 
 echo "== direct theorem boundary manifest check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_theorem_boundary_manifest > "$direct_theorem_manifest_tmp"

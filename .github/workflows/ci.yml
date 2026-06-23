@@ -76,6 +76,10 @@ jobs:
         run: |
           cargo run --quiet --bin path2_account_stark_payload_kat_manifest > /tmp/path2_account_stark_payload_kat_boundary_v1.json
           diff -u ../../formal/kat/path2_account_stark_payload_kat_boundary_v1.json /tmp/path2_account_stark_payload_kat_boundary_v1.json
+      - name: Account-creation proof boundary manifest check
+        run: |
+          cargo run --quiet --bin path2_account_creation_proof_boundary_manifest > /tmp/path2_account_creation_proof_boundary_v1.json
+          diff -u ../../formal/kat/path2_account_creation_proof_boundary_v1.json /tmp/path2_account_creation_proof_boundary_v1.json
       - name: Direct theorem boundary manifest check
         run: |
           cargo run --quiet --bin path2_direct_theorem_boundary_manifest > /tmp/path2_direct_theorem_boundary_v1.json

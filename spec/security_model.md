@@ -168,9 +168,14 @@ which pins the selected payload type, verifier endpoints, replay-payload digest
 function, acceptance requirements, exact leaf/evidence binding fields,
 certificate/evidence binding fields, binding/leaf context fields,
 payload-binding fields, deployed-anchor fields, no-export private-material
-field classes, and current proof-family closure blockers. The report is the
-executable boundary map for this section; it is not a simulator, extractor,
-FRI/QROM, KAT, or external-review substitute.
+field classes, and current proof-family closure blockers.
+`formal/kat/path2_account_creation_proof_boundary_v1.json` is regenerated from
+that report, the selected `Path2AccountStarkResidualMatrixReportV1`, and the
+current `Path2AccountStarkPayloadKatBoundaryReportV1` by local and CI gates, so
+the proof-boundary digest chain, selected field groups, residual rows, and
+payload-KAT boundary blocker cannot drift silently. The report and manifest are
+the executable boundary map for this section; they are not a simulator,
+extractor, FRI/QROM, KAT, or external-review substitute.
 
 The boundary is implemented but not verified. The active Rust test suite now has
 an initial `Path2AccountStarkCreationPayloadV1` malformed-payload mutation
@@ -197,7 +202,9 @@ accepted by a deployment-profile decision, or retired by ADR.
 `Path2AccountStarkResidualMatrixReportV1` is the executable report for this
 matrix; `Path2AccountCreationProofBoundaryReportV1` binds to its digest so the
 account-creation boundary cannot be treated as complete while these rows drift
-or remain open.
+or remain open. `formal/kat/path2_account_creation_proof_boundary_v1.json`
+regenerates and diffs the report chain, including the residual rows and
+payload-KAT boundary digest, before the direct theorem manifest is checked.
 `Path2AccountStarkPayloadKatBoundaryReportV1` pins the current
 `Path2AccountStarkCreationPayloadV1` mutation cases and maps their internal
 diagnostics to consensus-facing public rejection classes. It is still precursor

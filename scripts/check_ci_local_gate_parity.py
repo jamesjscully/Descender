@@ -178,6 +178,17 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ),
     ),
     (
+        "account-creation proof boundary manifest check",
+        (
+            "path2_account_creation_proof_boundary_manifest",
+            "path2_account_creation_proof_boundary_v1.json",
+        ),
+        (
+            "path2_account_creation_proof_boundary_manifest",
+            "path2_account_creation_proof_boundary_v1.json",
+        ),
+    ),
+    (
         "direct theorem boundary manifest check",
         (
             "path2_direct_theorem_boundary_manifest",
@@ -292,6 +303,11 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-KAT-001",
         "DIR-STARK-001",
         "DIR-REJECT-001",
+    ),
+    "account-creation proof boundary manifest check": (
+        "DIR-CREATE-001",
+        "DIR-PROOF-001",
+        "DIR-PROOF-002",
     ),
     "direct theorem boundary manifest check": (
         "DIR-SEC-001",
