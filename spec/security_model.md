@@ -206,6 +206,18 @@ requires each false direct/proof/residual closure flag to be backed by the
 expected still-open dependency, obligation, or residual row, so preflight cannot
 drift into a deployable posture while the closure graph is still open.
 
+Accepted-spend numeric evidence is also fail-closed at the report boundary.
+`SelectedRustAcceptedSpendNumericDigestSlotsCertificate` supplies the structural
+digest-slot certificate consumed by
+`selectedRustAcceptedSpendEvidenceReportVerifiedProof`: the selected report
+must carry the aggregate numeric-evidence verification bit and nonzero
+finite-trace, outcome-carrier, accepted-event, break-family, named-break,
+union-pricing, and priced-bound digest slots before any future pricing witness
+can route through the accepted-spend source certificate. This hardens the
+structural handoff only; it does not supply the concrete trace distribution,
+per-event cryptographic bounds, or priced accepted-spend theorem required for
+deployment.
+
 ## Named Break Classes
 
 Direct mode may name, but must not hide, these break classes:

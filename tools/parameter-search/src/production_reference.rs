@@ -51926,6 +51926,9 @@ fn path2_native_accepted_spend_numeric_bound_instantiation_candidate_source_v1(
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_schemaMatches",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified",
+        "SelectedRustAcceptedSpendNumericDigestSlotsCertificate",
+        "selectedRustAcceptedSpendNumericDigestSlotsCertificate",
+        "SelectedRustAcceptedSpendNumericDigestSlotsCertificate.toReportVerified",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_finiteTraceSupportDigest_nonzero",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_activeOutcomeCarrierDigest_nonzero",
         "SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_acceptedSpendEventSemanticsDigest_nonzero",
@@ -88064,6 +88067,10 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified
   let _acceptedSpendReportNumericDigestsProof :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified
+  let _acceptedSpendReportDigestSlotsCertificate :=
+    selectedRustAcceptedSpendNumericDigestSlotsCertificate
+  let _acceptedSpendReportDigestSlotsVerifiedFromCertificate :=
+    SelectedRustAcceptedSpendNumericDigestSlotsCertificate.toReportVerified
   let _acceptedSpendReportFiniteTraceDigestNonempty :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_finiteTraceSupportDigest_nonzero
   let _acceptedSpendReportOutcomeDigestNonempty :=

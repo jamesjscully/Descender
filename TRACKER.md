@@ -66,7 +66,14 @@ obligations/support surfaces, with both boundary reports now carrying derived
 closure-dependency evidence rows that separately pin each dependency to an open
 obligation, an open source support surface, and the deployment blocker; the
 boundary and preflight gates compare each closure-dependency evidence row
-field-for-field against its source row table. The
+field-for-field against its source row table. The accepted-spend numeric
+evidence report now routes its structural digest verification through
+`SelectedRustAcceptedSpendNumericDigestSlotsCertificate`, so the selected report
+proof must carry the aggregate numeric-evidence verification bit and every
+finite-trace, outcome-carrier, accepted-event, break-family, named-break,
+union-pricing, and priced-bound digest slot as a nonzero proof object before
+future accepted-spend pricing can consume it; pricing and per-event
+cryptographic bounds remain open. The
 accepted spend tuple artifact now carries an
 eleven-row accepted-tuple-field evidence checklist tying every direct theorem
 tuple field to its accepted-path check and still-open direct theorem obligation.

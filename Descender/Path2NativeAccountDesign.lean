@@ -1640,6 +1640,60 @@ def SelectedRustAcceptedSpendSoundnessEvidenceReport.ReportVerified
   E.acceptedSpendUnionBoundPricingDigest ≠ selectedRustZeroDigest32 ∧
   E.acceptedSpendPricedBoundDigest ≠ selectedRustZeroDigest32
 
+/--
+Proof object for the accepted-spend numeric evidence digest slots.
+
+This keeps the verified-report proof from treating
+`numericEvidenceDigestsVerified` as an opaque flag: every selected digest slot
+must be carried with its own nonzero proof before the report can be accepted.
+-/
+structure SelectedRustAcceptedSpendNumericDigestSlotsCertificate
+    (E : SelectedRustAcceptedSpendSoundnessEvidenceReport) where
+  numericEvidenceDigestsVerifiedProof :
+    E.numericEvidenceDigestsVerified = true
+  finiteTraceSupportDigestNonzero :
+    E.finiteTraceSupportDigest ≠ selectedRustZeroDigest32
+  activeOutcomeCarrierDigestNonzero :
+    E.activeOutcomeCarrierDigest ≠ selectedRustZeroDigest32
+  acceptedSpendEventSemanticsDigestNonzero :
+    E.acceptedSpendEventSemanticsDigest ≠ selectedRustZeroDigest32
+  activeBreakFamilyDigestNonzero :
+    E.activeBreakFamilyDigest ≠ selectedRustZeroDigest32
+  namedBreakEventsDigestNonzero :
+    E.namedBreakEventsDigest ≠ selectedRustZeroDigest32
+  acceptedSpendUnionBoundPricingDigestNonzero :
+    E.acceptedSpendUnionBoundPricingDigest ≠ selectedRustZeroDigest32
+  acceptedSpendPricedBoundDigestNonzero :
+    E.acceptedSpendPricedBoundDigest ≠ selectedRustZeroDigest32
+
+namespace SelectedRustAcceptedSpendNumericDigestSlotsCertificate
+
+/-- Convert the selected digest-slot certificate plus report pins into report verification. -/
+theorem toReportVerified
+    {E : SelectedRustAcceptedSpendSoundnessEvidenceReport}
+    (C : SelectedRustAcceptedSpendNumericDigestSlotsCertificate E)
+    (schemaMatchesProof : E.schemaMatches = true)
+    (reportDigestVerifiedProof : E.reportDigestVerified = true) :
+    E.ReportVerified :=
+  ⟨schemaMatchesProof, reportDigestVerifiedProof,
+    C.numericEvidenceDigestsVerifiedProof,
+    C.finiteTraceSupportDigestNonzero,
+    C.activeOutcomeCarrierDigestNonzero,
+    C.acceptedSpendEventSemanticsDigestNonzero,
+    C.activeBreakFamilyDigestNonzero,
+    C.namedBreakEventsDigestNonzero,
+    C.acceptedSpendUnionBoundPricingDigestNonzero,
+    C.acceptedSpendPricedBoundDigestNonzero⟩
+
+/-- The digest-slot certificate exposes the aggregate digest verification bit. -/
+theorem numericEvidenceDigestsVerified
+    {E : SelectedRustAcceptedSpendSoundnessEvidenceReport}
+    (C : SelectedRustAcceptedSpendNumericDigestSlotsCertificate E) :
+    E.numericEvidenceDigestsVerified = true :=
+  C.numericEvidenceDigestsVerifiedProof
+
+end SelectedRustAcceptedSpendNumericDigestSlotsCertificate
+
 /-- A verified accepted-spend report has the selected schema. -/
 theorem SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_schemaMatches
     (E : SelectedRustAcceptedSpendSoundnessEvidenceReport)
@@ -2149,12 +2203,25 @@ def selectedRustAcceptedSpendEvidenceDigest : ByteArray :=
     63, 3, 61, 199, 33, 146, 190, 107, 76, 67, 247, 175, 49, 179, 30, 29,
     29, 57, 224, 172]
 
+/-- Selected digest-slot certificate for the current accepted-spend numeric report. -/
+def selectedRustAcceptedSpendNumericDigestSlotsCertificate :
+    SelectedRustAcceptedSpendNumericDigestSlotsCertificate
+      selectedRustAcceptedSpendEvidenceReport where
+  numericEvidenceDigestsVerifiedProof := by native_decide
+  finiteTraceSupportDigestNonzero := by native_decide
+  activeOutcomeCarrierDigestNonzero := by native_decide
+  acceptedSpendEventSemanticsDigestNonzero := by native_decide
+  activeBreakFamilyDigestNonzero := by native_decide
+  namedBreakEventsDigestNonzero := by native_decide
+  acceptedSpendUnionBoundPricingDigestNonzero := by native_decide
+  acceptedSpendPricedBoundDigestNonzero := by native_decide
+
 /-- The selected accepted-spend report has verified public digest slots. -/
 theorem selectedRustAcceptedSpendEvidenceReportVerifiedProof :
-    selectedRustAcceptedSpendEvidenceReport.ReportVerified := by
-  simp [SelectedRustAcceptedSpendSoundnessEvidenceReport.ReportVerified,
-    selectedRustAcceptedSpendEvidenceReport, selectedRustZeroDigest32]
-  repeat constructor <;> native_decide
+    selectedRustAcceptedSpendEvidenceReport.ReportVerified :=
+  selectedRustAcceptedSpendNumericDigestSlotsCertificate.toReportVerified
+    (by native_decide)
+    (by native_decide)
 
 /-- The current selected accepted-spend report is intentionally not proof-complete. -/
 theorem selectedRustAcceptedSpendEvidenceReportFactsAllTrue_impossible :
