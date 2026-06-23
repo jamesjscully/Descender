@@ -73,6 +73,38 @@ fn field_values(value: &Value, path: &[&str], field: &str) -> Result<Value, Stri
     Ok(Value::Array(values))
 }
 
+fn get_array<'a>(value: &'a Value, path: &[&str]) -> Result<&'a Vec<Value>, String> {
+    get(value, path)?
+        .as_array()
+        .ok_or_else(|| format!("{} is not an array", path.join(".")))
+}
+
+fn get_str_field<'a>(value: &'a Value, field: &str, label: &str) -> Result<&'a str, String> {
+    get(value, &[field])?
+        .as_str()
+        .ok_or_else(|| format!("{label}.{field} is not a string"))
+}
+
+fn get_bool_field(value: &Value, field: &str, label: &str) -> Result<bool, String> {
+    get(value, &[field])?
+        .as_bool()
+        .ok_or_else(|| format!("{label}.{field} is not a boolean"))
+}
+
+fn find_row_by_str_field<'a>(
+    rows: &'a [Value],
+    field: &str,
+    expected: &str,
+    label: &str,
+) -> Result<&'a Value, String> {
+    for row in rows {
+        if get_str_field(row, field, label)? == expected {
+            return Ok(row);
+        }
+    }
+    Err(format!("{label} missing row with {field}={expected}"))
+}
+
 fn expect_field_values_match(
     value: &Value,
     row_path: &[&str],
@@ -184,6 +216,157 @@ fn expect_requirement_coverage_accepted_evidence_identity(
     Ok(())
 }
 
+fn expect_direct_accepted_tuple_field_evidence_identity(
+    boundary: &Value,
+    accepted_evidence: &Value,
+    label: &str,
+) -> Result<(), String> {
+    expect_eq(
+        get(accepted_evidence, &["accepted_tuple_fields"])?,
+        &format!("{label}.accepted_evidence.accepted_tuple_fields"),
+        get(boundary, &["accepted_tuple_fields"])?,
+        &format!("{label}.boundary.accepted_tuple_fields"),
+    )?;
+    let accepted_field_values = field_values(
+        accepted_evidence,
+        &["accepted_tuple_field_evidence_rows"],
+        "accepted_tuple_field",
+    )?;
+    expect_eq(
+        &accepted_field_values,
+        &format!(
+            "{label}.accepted_evidence.accepted_tuple_field_evidence_rows.accepted_tuple_field"
+        ),
+        get(boundary, &["accepted_tuple_fields"])?,
+        &format!("{label}.boundary.accepted_tuple_fields"),
+    )?;
+
+    let obligation_rows = get_array(boundary, &["obligation_rows"])?;
+    for (index, row) in get_array(accepted_evidence, &["accepted_tuple_field_evidence_rows"])?
+        .iter()
+        .enumerate()
+    {
+        let row_label =
+            format!("{label}.accepted_evidence.accepted_tuple_field_evidence_rows[{index}]");
+        let row_blocker = get_str_field(row, "blocker", &row_label)?;
+        let direct_obligation_ids = get_array(row, &["direct_obligation_ids"])?;
+        if direct_obligation_ids.is_empty() {
+            return Err(format!("{row_label}.direct_obligation_ids is empty"));
+        }
+        let mut all_referenced_open = true;
+        for obligation_id_value in direct_obligation_ids {
+            let obligation_id = obligation_id_value
+                .as_str()
+                .ok_or_else(|| format!("{row_label}.direct_obligation_ids is not a string"))?;
+            let source_row = find_row_by_str_field(
+                obligation_rows,
+                "obligation_id",
+                obligation_id,
+                &format!("{label}.boundary.obligation_rows"),
+            )?;
+            if get_str_field(
+                source_row,
+                "blocker",
+                &format!("{label}.boundary.obligation_rows"),
+            )? != row_blocker
+            {
+                return Err(format!(
+                    "{row_label} blocker does not match boundary obligation {obligation_id}"
+                ));
+            }
+            all_referenced_open &= get_bool_field(
+                source_row,
+                "open",
+                &format!("{label}.boundary.obligation_rows"),
+            )?;
+        }
+        if get_bool_field(
+            row,
+            "all_referenced_direct_obligations_still_open",
+            &row_label,
+        )? != all_referenced_open
+        {
+            return Err(format!(
+                "{row_label}.all_referenced_direct_obligations_still_open drifted from boundary obligation rows"
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn expect_direct_accepted_hypothesis_evidence_identity(
+    boundary: &Value,
+    accepted_evidence: &Value,
+    label: &str,
+) -> Result<(), String> {
+    let accepted_hypotheses = field_values(
+        accepted_evidence,
+        &["accepted_hypothesis_evidence_rows"],
+        "acceptance_hypothesis",
+    )?;
+    expect_eq(
+        &accepted_hypotheses,
+        &format!(
+            "{label}.accepted_evidence.accepted_hypothesis_evidence_rows.acceptance_hypothesis"
+        ),
+        get(boundary, &["acceptance_hypotheses"])?,
+        &format!("{label}.boundary.acceptance_hypotheses"),
+    )?;
+    let direct_obligation_ids = field_values(
+        accepted_evidence,
+        &["accepted_hypothesis_evidence_rows"],
+        "direct_obligation_id",
+    )?;
+    let boundary_obligation_ids = field_values(boundary, &["obligation_rows"], "obligation_id")?;
+    expect_eq(
+        &direct_obligation_ids,
+        &format!(
+            "{label}.accepted_evidence.accepted_hypothesis_evidence_rows.direct_obligation_id"
+        ),
+        &boundary_obligation_ids,
+        &format!("{label}.boundary.obligation_rows.obligation_id"),
+    )?;
+
+    let obligation_rows = get_array(boundary, &["obligation_rows"])?;
+    for (index, row) in get_array(accepted_evidence, &["accepted_hypothesis_evidence_rows"])?
+        .iter()
+        .enumerate()
+    {
+        let row_label =
+            format!("{label}.accepted_evidence.accepted_hypothesis_evidence_rows[{index}]");
+        let obligation_id = get_str_field(row, "direct_obligation_id", &row_label)?;
+        let source_row = find_row_by_str_field(
+            obligation_rows,
+            "obligation_id",
+            obligation_id,
+            &format!("{label}.boundary.obligation_rows"),
+        )?;
+        if get_str_field(row, "acceptance_hypothesis", &row_label)?
+            != get_str_field(
+                source_row,
+                "acceptance_hypothesis",
+                &format!("{label}.boundary.obligation_rows"),
+            )?
+        {
+            return Err(format!(
+                "{row_label}.acceptance_hypothesis drifted from boundary obligation {obligation_id}"
+            ));
+        }
+        if get_bool_field(row, "theorem_obligation_still_open", &row_label)?
+            != get_bool_field(
+                source_row,
+                "open",
+                &format!("{label}.boundary.obligation_rows"),
+            )?
+        {
+            return Err(format!(
+                "{row_label}.theorem_obligation_still_open drifted from boundary obligation {obligation_id}"
+            ));
+        }
+    }
+    Ok(())
+}
+
 fn check_consistency() -> Result<(), String> {
     let root = repo_root();
     let proof = read_json(
@@ -195,10 +378,21 @@ fn check_consistency() -> Result<(), String> {
         &root,
         "formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json",
     )?;
+    let accepted_direct_tuple = read_json(
+        &root,
+        "formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json",
+    )?;
+    let accepted_direct_composition = read_json(
+        &root,
+        "formal/kat/path2_direct_accepted_composition_evidence_v1.json",
+    )?;
     let proof_manifest = get(&proof, &["manifest"])?;
     let direct_manifest = get(&direct, &["manifest"])?;
     let accepted_proof_boundary_evidence =
         get(&accepted_proof_boundary, &["manifest", "evidence"])?;
+    let accepted_direct_tuple_evidence = get(&accepted_direct_tuple, &["manifest", "evidence"])?;
+    let accepted_direct_composition_evidence =
+        get(&accepted_direct_composition, &["manifest", "evidence"])?;
 
     expect_eq(
         get(proof_manifest, &["account_creation_proof_boundary"])?,
@@ -1548,6 +1742,11 @@ fn check_consistency() -> Result<(), String> {
         )?,
         "direct.manifest.direct_theorem_boundary.accepted_tuple_fields",
     )?;
+    expect_direct_accepted_tuple_field_evidence_identity(
+        get(direct_manifest, &["direct_theorem_boundary"])?,
+        accepted_direct_tuple_evidence,
+        "direct.manifest.direct_theorem_boundary",
+    )?;
     for flag in [
         "every_accepted_tuple_field_has_evidence",
         "every_accepted_tuple_field_has_open_direct_obligation",
@@ -1632,6 +1831,11 @@ fn check_consistency() -> Result<(), String> {
         "direct.manifest.direct_theorem_boundary.direct_accepted_composition_evidence_artifact.audit_summary.accepted_hypothesis_direct_obligation_ids",
         &direct_obligation_row_ids,
         "direct.manifest.direct_theorem_boundary.obligation_rows obligation ids",
+    )?;
+    expect_direct_accepted_hypothesis_evidence_identity(
+        get(direct_manifest, &["direct_theorem_boundary"])?,
+        accepted_direct_composition_evidence,
+        "direct.manifest.direct_theorem_boundary",
     )?;
     for flag in [
         "every_positive_acceptance_hypothesis_has_accepted_path_evidence",

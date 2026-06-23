@@ -65,7 +65,11 @@ The accepted-composition artifact now also
 carries a nine-row accepted-hypothesis evidence checklist: eight positive
 accepted-path hypotheses are checked by the deterministic composition KAT, and
 the public-rejection hypothesis remains explicitly deferred to the rejection
-KAT suite; compact accepted-evidence artifact summaries imported by the
+KAT suite. The boundary and preflight gates now also compare the standalone
+direct accepted tuple-field rows and accepted-hypothesis rows back to the
+direct theorem accepted tuple fields, acceptance hypotheses, open obligation
+ids, obligation open flags, and blocker rows. Compact accepted-evidence
+artifact summaries imported by the
 proof-boundary and direct-theorem manifests now expose and gate the accepted
 requirement, accepted tuple-field, and accepted hypothesis evidence counts,
 exact accepted row identity lists, accepted hypothesis-to-obligation bindings,

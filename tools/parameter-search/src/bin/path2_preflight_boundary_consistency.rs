@@ -146,6 +146,20 @@ fn require_array_field_values_match_between(
     Ok(())
 }
 
+fn find_array_row_by_str_field<'a>(
+    rows: &'a [Value],
+    field: &str,
+    expected: &str,
+    label: &str,
+) -> Result<&'a Value, String> {
+    for row in rows {
+        if str_at(row, &format!("/{field}"))? == expected {
+            return Ok(row);
+        }
+    }
+    Err(format!("{label} missing row with {field}={expected}"))
+}
+
 fn require_proof_closure_dependency_evidence_identity(
     value: &Value,
     label: &str,
@@ -230,6 +244,117 @@ fn require_requirement_coverage_accepted_evidence_identity(
             evidence_field,
             label,
         )?;
+    }
+    Ok(())
+}
+
+fn require_direct_accepted_tuple_field_evidence_identity(
+    boundary: &Value,
+    accepted_evidence: &Value,
+    label: &str,
+) -> Result<(), String> {
+    if at(accepted_evidence, "/accepted_tuple_fields")? != at(boundary, "/accepted_tuple_fields")? {
+        return Err(format!(
+            "{label} accepted spend tuple evidence lost accepted-tuple-field identity"
+        ));
+    }
+    let accepted_field_values = array_field_values_at(
+        accepted_evidence,
+        "/accepted_tuple_field_evidence_rows",
+        "accepted_tuple_field",
+    )?;
+    if accepted_field_values != *at(boundary, "/accepted_tuple_fields")? {
+        return Err(format!(
+            "{label} accepted spend tuple field evidence rows drifted from boundary accepted tuple fields"
+        ));
+    }
+    let obligation_rows = array_at(boundary, "/obligation_rows")?;
+    for (index, row) in array_at(accepted_evidence, "/accepted_tuple_field_evidence_rows")?
+        .iter()
+        .enumerate()
+    {
+        let row_label =
+            format!("{label}.accepted_evidence.accepted_tuple_field_evidence_rows[{index}]");
+        let row_blocker = str_at(row, "/blocker")?;
+        let direct_obligation_ids = array_at(row, "/direct_obligation_ids")?;
+        if direct_obligation_ids.is_empty() {
+            return Err(format!("{row_label}.direct_obligation_ids is empty"));
+        }
+        let mut all_referenced_open = true;
+        for obligation_id_value in direct_obligation_ids {
+            let obligation_id = obligation_id_value.as_str().ok_or_else(|| {
+                format!("{row_label}.direct_obligation_ids contains a non-string")
+            })?;
+            let source_row = find_array_row_by_str_field(
+                obligation_rows,
+                "obligation_id",
+                obligation_id,
+                &format!("{label}.boundary.obligation_rows"),
+            )?;
+            if str_at(source_row, "/blocker")? != row_blocker {
+                return Err(format!(
+                    "{row_label} blocker does not match boundary obligation {obligation_id}"
+                ));
+            }
+            all_referenced_open &= bool_at(source_row, "/open")?;
+        }
+        if bool_at(row, "/all_referenced_direct_obligations_still_open")? != all_referenced_open {
+            return Err(format!(
+                "{row_label}.all_referenced_direct_obligations_still_open drifted from boundary obligation rows"
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn require_direct_accepted_hypothesis_evidence_identity(
+    boundary: &Value,
+    accepted_evidence: &Value,
+    label: &str,
+) -> Result<(), String> {
+    let accepted_hypothesis_values = array_field_values_at(
+        accepted_evidence,
+        "/accepted_hypothesis_evidence_rows",
+        "acceptance_hypothesis",
+    )?;
+    if accepted_hypothesis_values != *at(boundary, "/acceptance_hypotheses")? {
+        return Err(format!(
+            "{label} accepted composition hypothesis evidence rows drifted from boundary acceptance hypotheses"
+        ));
+    }
+    require_array_field_values_match_between(
+        boundary,
+        "/obligation_rows",
+        "obligation_id",
+        accepted_evidence,
+        "/accepted_hypothesis_evidence_rows",
+        "direct_obligation_id",
+        label,
+    )?;
+    let obligation_rows = array_at(boundary, "/obligation_rows")?;
+    for (index, row) in array_at(accepted_evidence, "/accepted_hypothesis_evidence_rows")?
+        .iter()
+        .enumerate()
+    {
+        let row_label =
+            format!("{label}.accepted_evidence.accepted_hypothesis_evidence_rows[{index}]");
+        let obligation_id = str_at(row, "/direct_obligation_id")?;
+        let source_row = find_array_row_by_str_field(
+            obligation_rows,
+            "obligation_id",
+            obligation_id,
+            &format!("{label}.boundary.obligation_rows"),
+        )?;
+        if str_at(row, "/acceptance_hypothesis")? != str_at(source_row, "/acceptance_hypothesis")? {
+            return Err(format!(
+                "{row_label}.acceptance_hypothesis drifted from boundary obligation {obligation_id}"
+            ));
+        }
+        if bool_at(row, "/theorem_obligation_still_open")? != bool_at(source_row, "/open")? {
+            return Err(format!(
+                "{row_label}.theorem_obligation_still_open drifted from boundary obligation {obligation_id}"
+            ));
+        }
     }
     Ok(())
 }
@@ -541,6 +666,14 @@ fn main() -> Result<(), String> {
         &root,
         "formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json",
     )?;
+    let accepted_direct_tuple_file = load_json(
+        &root,
+        "formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json",
+    )?;
+    let accepted_direct_composition_file = load_json(
+        &root,
+        "formal/kat/path2_direct_accepted_composition_evidence_v1.json",
+    )?;
     let proof_manifest =
         require_manifest_digest(&proof_manifest_file, "account-creation proof boundary")?;
     let direct_manifest =
@@ -549,9 +682,20 @@ fn main() -> Result<(), String> {
         &accepted_proof_boundary_file,
         "accepted account-creation proof-boundary evidence",
     )?;
+    let accepted_direct_tuple_manifest = require_manifest_digest(
+        &accepted_direct_tuple_file,
+        "accepted direct spend tuple evidence",
+    )?;
+    let accepted_direct_composition_manifest = require_manifest_digest(
+        &accepted_direct_composition_file,
+        "accepted direct composition evidence",
+    )?;
     let proof_boundary = at(proof_manifest, "/account_creation_proof_boundary")?;
     let direct_boundary = at(direct_manifest, "/direct_theorem_boundary")?;
     let accepted_proof_boundary_evidence = at(accepted_proof_boundary_manifest, "/evidence")?;
+    let accepted_direct_tuple_evidence = at(accepted_direct_tuple_manifest, "/evidence")?;
+    let accepted_direct_composition_evidence =
+        at(accepted_direct_composition_manifest, "/evidence")?;
     if proof_boundary != at(direct_manifest, "/account_creation_proof_boundary")? {
         return Err(
             "production preflight manifest bind lost shared proof-boundary object".to_string(),
@@ -735,6 +879,16 @@ fn main() -> Result<(), String> {
         at(direct_manifest, "/account_creation_proof_boundary")?,
         accepted_proof_boundary_evidence,
         "production preflight direct-imported proof-boundary",
+    )?;
+    require_direct_accepted_tuple_field_evidence_identity(
+        direct_boundary,
+        accepted_direct_tuple_evidence,
+        "production preflight direct theorem boundary",
+    )?;
+    require_direct_accepted_hypothesis_evidence_identity(
+        direct_boundary,
+        accepted_direct_composition_evidence,
+        "production preflight direct theorem boundary",
     )?;
     for pointer in [
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/composition_theorem_instantiated",

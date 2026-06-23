@@ -392,7 +392,11 @@ accepted-tuple, and accepted-composition
 artifact summaries expose the accepted requirement, tuple-field, and hypothesis
 evidence counts, exact row identity lists, accepted hypothesis-to-obligation
 bindings, and their deferred rejection/QROM flags; both boundary and preflight
-consistency gates check those summaries before importing them. The
+consistency gates check those summaries before importing them. They also compare
+the standalone direct accepted tuple-field rows and accepted-hypothesis rows
+back to the direct theorem accepted tuple fields, acceptance hypotheses, open
+obligation ids, obligation open flags, and blocker rows, so the accepted direct
+KAT evidence cannot become a separate theorem shape. The
 compact proof-obligation and direct-obligation corpus summaries also retain the
 raw open external-review, QROM theorem/import, lifecycle-finality, and
 proof-boundary readiness flags, plus the proof-obligation corpus flags showing
