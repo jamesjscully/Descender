@@ -47259,7 +47259,8 @@ pub fn path2_account_creation_decoded_public_anchor_digest(
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-pub fn path2_account_creation_accepted_proof_boundary_evidence_v1(
+fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
+    fixture: &Path2AccountStarkPayloadKatFixtureV1,
 ) -> Result<Path2AccountCreationAcceptedProofBoundaryEvidenceV1, String> {
     let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
     validate_path2_account_creation_proof_boundary_report_v1(&proof_boundary_report)?;
@@ -47280,7 +47281,6 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_v1(
     let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
     validate_path2_account_stark_payload_kat_boundary_report_v1(&payload_kat_boundary_report)?;
 
-    let fixture = path2_account_stark_payload_kat_fixture_v1()?;
     verify_path2_direct_creation_account_stark_payload_boundary(
         &fixture.leaf,
         &fixture.evidence,
@@ -47479,6 +47479,13 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_v1(
     };
     evidence.digest = path2_account_creation_accepted_proof_boundary_evidence_v1_digest(&evidence);
     Ok(evidence)
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn path2_account_creation_accepted_proof_boundary_evidence_v1(
+) -> Result<Path2AccountCreationAcceptedProofBoundaryEvidenceV1, String> {
+    let fixture = path2_account_stark_payload_kat_fixture_v1()?;
+    path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(&fixture)
 }
 
 pub fn path2_transparent_descent_production_soundness_obligations_discharged_v1() -> bool {
@@ -65361,9 +65368,10 @@ pub fn path2_direct_accepted_composition_evidence_v1(
     validate_path2_direct_lifecycle_boundary_report_v1(&lifecycle_report)?;
     let proof_report = path2_account_creation_proof_boundary_report_v1();
     validate_path2_account_creation_proof_boundary_report_v1(&proof_report)?;
-    let creation_evidence = path2_account_creation_accepted_proof_boundary_evidence_v1()?;
     let (reviewed_fixture, stark_fixture) =
         path2_account_stark_payload_kat_fixture_with_reviewed_v1()?;
+    let creation_evidence =
+        path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(&stark_fixture)?;
 
     verify_path2_direct_creation_account_stark_payload_boundary(
         &stark_fixture.leaf,

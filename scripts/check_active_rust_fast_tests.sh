@@ -22,6 +22,12 @@ RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.
 echo "== active fast test: direct accepted tuple evidence =="
 RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_direct_single_slot_spend_tuple_evidence_pins_accepted_tuple
 
+echo "== active fast test: account-creation accepted proof-boundary evidence =="
+RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --features account-creation-stark-verifier --lib path2_account_creation_accepted_proof_boundary_evidence_pins_selected_payload
+
+echo "== active fast test: direct accepted composition evidence =="
+RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --features account-creation-stark-verifier --lib path2_direct_accepted_composition_evidence_binds_creation_and_spend
+
 echo "== active fast test: direct public result class enum =="
 RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_public_result_class_v1_names_match_consensus_spec
 
