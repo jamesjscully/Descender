@@ -8,9 +8,12 @@ fn main() -> Result<(), String> {
 
 #[cfg(feature = "account-creation-stark-verifier")]
 mod enabled {
-    use descender_parameter_search::production_reference::{
-        path2_account_creation_accepted_proof_boundary_evidence_v1,
-        path2_account_creation_accepted_proof_boundary_evidence_v1_digest,
+    use descender_parameter_search::{
+        manifest_vector_evidence::path2_account_creation_accepted_proof_boundary_evidence_artifact_v1,
+        production_reference::{
+            path2_account_creation_accepted_proof_boundary_evidence_v1,
+            path2_account_creation_accepted_proof_boundary_evidence_v1_digest,
+        },
     };
     use serde_json::Value;
     use sha2::{Digest, Sha256};
@@ -97,6 +100,21 @@ mod enabled {
             ));
         }
         Ok(())
+    }
+
+    fn body_digest(value: &Value, label: &str) -> Result<String, String> {
+        let json = serde_json::to_string_pretty(value)
+            .map_err(|err| format!("serialize {label}: {err}"))?;
+        Ok(hex_encode(&Sha256::digest(json.as_bytes())))
+    }
+
+    fn require_manifest_body<'a>(file: &'a Value, label: &str) -> Result<&'a Value, String> {
+        let body = at(file, "/manifest")?;
+        let recomputed = body_digest(body, label)?;
+        if str_at(file, "/manifest_digest")? != recomputed {
+            return Err(format!("{label} manifest digest mismatch"));
+        }
+        Ok(body)
     }
 
     pub fn run() -> Result<(), String> {
@@ -362,6 +380,119 @@ mod enabled {
             "/evidence/deployment_ready",
         ] {
             require_bool(body, pointer, false)?;
+        }
+
+        let accepted_artifact =
+            path2_account_creation_accepted_proof_boundary_evidence_artifact_v1()?;
+        let proof_manifest_file =
+            load_json("formal/kat/path2_account_creation_proof_boundary_v1.json")?;
+        let proof_manifest = require_manifest_body(
+            &proof_manifest_file,
+            "account-creation proof-boundary manifest",
+        )?;
+        let direct_manifest_file = load_json("formal/kat/path2_direct_theorem_boundary_v1.json")?;
+        let direct_manifest =
+            require_manifest_body(&direct_manifest_file, "direct theorem boundary manifest")?;
+        let proof_boundary = at(proof_manifest, "/account_creation_proof_boundary")?;
+        let direct_boundary = at(direct_manifest, "/direct_theorem_boundary")?;
+
+        if proof_boundary != at(direct_manifest, "/account_creation_proof_boundary")? {
+            return Err(
+                "accepted proof-boundary evidence lost shared proof-boundary manifest binding"
+                    .to_string(),
+            );
+        }
+        if at(proof_boundary, "/accepted_proof_boundary_evidence_artifact")? != &accepted_artifact
+            || at(
+                proof_boundary,
+                "/proof_obligation_vector_corpus_evidence/accepted_proof_boundary_evidence_artifact",
+            )? != &accepted_artifact
+            || at(
+                proof_boundary,
+                "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/account_creation_accepted_proof_boundary_evidence_artifact",
+            )? != &accepted_artifact
+            || at(
+                direct_boundary,
+                "/direct_accepted_composition_evidence_artifact/account_creation_accepted_proof_boundary_evidence_artifact",
+            )? != &accepted_artifact
+            || at(
+                direct_boundary,
+                "/direct_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/account_creation_accepted_proof_boundary_evidence_artifact",
+            )? != &accepted_artifact
+        {
+            return Err(
+                "accepted proof-boundary evidence artifact drifted across generated manifests"
+                    .to_string(),
+            );
+        }
+        require_str(
+            proof_manifest,
+            "/digests/account_creation_proof_boundary_report_digest",
+            str_at(
+                body,
+                "/evidence/account_creation_proof_boundary_report_digest",
+            )?,
+        )?;
+        require_str(
+            proof_manifest,
+            "/digests/account_creation_sampler_timing_report_digest",
+            str_at(body, "/evidence/sampler_timing_report_digest")?,
+        )?;
+        require_str(
+            proof_manifest,
+            "/digests/account_creation_no_export_boundary_report_digest",
+            str_at(body, "/evidence/no_export_boundary_report_digest")?,
+        )?;
+        require_str(
+            proof_manifest,
+            "/digests/account_stark_residual_matrix_report_digest",
+            str_at(
+                body,
+                "/evidence/account_stark_residual_matrix_report_digest",
+            )?,
+        )?;
+        require_str(
+            proof_manifest,
+            "/digests/account_creation_frame_kat_boundary_report_digest",
+            str_at(body, "/evidence/frame_kat_boundary_report_digest")?,
+        )?;
+        require_str(
+            proof_manifest,
+            "/digests/account_stark_fri_qrom_residual_report_digest",
+            str_at(body, "/evidence/fri_qrom_residual_report_digest")?,
+        )?;
+        require_str(
+            proof_manifest,
+            "/digests/account_stark_fri_aok_boundary_report_digest",
+            str_at(body, "/evidence/fri_aok_boundary_report_digest")?,
+        )?;
+        require_str(
+            proof_manifest,
+            "/digests/payload_kat_boundary_report_digest",
+            str_at(body, "/evidence/payload_kat_boundary_report_digest")?,
+        )?;
+        for pointer in [
+            "/accepted_proof_boundary_evidence_artifact/audit_summary/proof_family_obligations_still_open",
+            "/accepted_proof_boundary_evidence_artifact/audit_summary/production_gate_fail_closed",
+            "/proof_obligation_vector_corpus_evidence/audit_summary/all_cases_open",
+            "/proof_obligation_vector_corpus_evidence/audit_summary/all_cases_have_named_break",
+            "/proof_obligation_vector_corpus_evidence/audit_summary/all_open_cases_block_deployment",
+            "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/proof_family_obligations_still_open",
+        ] {
+            require_bool(proof_boundary, pointer, true)?;
+        }
+        for pointer in [
+            "/accepted_proof_boundary_evidence_artifact/audit_summary/deployment_ready",
+            "/proof_obligation_vector_corpus_evidence/audit_summary/simulator_theorem_instantiated",
+            "/proof_obligation_vector_corpus_evidence/audit_summary/fri_aok_extractor_theorem_instantiated",
+            "/proof_obligation_vector_corpus_evidence/audit_summary/fri_qrom_residual_priced",
+            "/proof_obligation_vector_corpus_evidence/audit_summary/frozen_kat_corpus_complete",
+            "/proof_obligation_vector_corpus_evidence/audit_summary/production_gate_open",
+            "/proof_obligation_vector_corpus_evidence/audit_summary/deployment_ready",
+            "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/account_creation_proof_boundary_verified",
+            "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/deployment_ready",
+        ] {
+            require_bool(proof_boundary, pointer, false)?;
         }
 
         let payload_vectors =
