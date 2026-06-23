@@ -301,6 +301,8 @@ pub const PRODUCTION_DEPLOYMENT_PREFLIGHT_CERTIFICATE_DOMAIN: &str =
     "Descender.Signature.q12289.local_delta.production_deployment_preflight_certificate.v1";
 pub const PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.DirectTheoremBoundaryReport.v1";
+pub const PATH2_DIRECT_LIFECYCLE_BOUNDARY_REPORT_DOMAIN: &str =
+    "Descender.Path2.DirectLifecycleBoundaryReport.v1";
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountCreationProofBoundaryReport.v1";
 pub const PATH2_ACCOUNT_CREATION_SAMPLER_TIMING_REPORT_DOMAIN: &str =
@@ -9475,9 +9477,40 @@ pub struct Path2DirectTheoremObligationRowV1 {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2DirectLifecycleBoundaryReportV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub domain: &'static str,
+    pub support_file: &'static str,
+    pub theorem_target: &'static str,
+    pub direct_obligation_id: &'static str,
+    pub acceptance_hypothesis: &'static str,
+    pub named_break: &'static str,
+    pub consume_once_validator: &'static str,
+    pub state_namespace_validator: &'static str,
+    pub direct_spend_endpoint: &'static str,
+    pub lifecycle_manager_endpoint: &'static str,
+    pub spent_slot_ledger_type: &'static str,
+    pub target_chain_adapter_type: &'static str,
+    pub chain_file_store_type: &'static str,
+    pub executable_tests: &'static [&'static str],
+    pub local_successor_state_model_pinned: bool,
+    pub consume_once_insert_after_public_checks: bool,
+    pub replay_rejected_by_consume_set: bool,
+    pub spent_slot_ledger_rejects_stale_wallet_replay: bool,
+    pub chain_state_persists_lifecycle_and_spent_record: bool,
+    pub reorg_burn_support_present: bool,
+    pub restore_anchor_support_present: bool,
+    pub target_chain_finality_profile_instantiated: bool,
+    pub lifecycle_transition_profile_verified: bool,
+    pub deployment_ready: bool,
+    pub blocker: &'static str,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2DirectTheoremBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub domain: &'static str,
+    pub direct_lifecycle_boundary_report_digest: [u8; DIGEST_BYTES],
     pub account_creation_proof_boundary_report_digest: [u8; DIGEST_BYTES],
     pub accepted_tuple_fields: &'static [&'static str],
     pub acceptance_hypotheses: &'static [&'static str],
@@ -10316,6 +10349,21 @@ pub const PATH2_ACCOUNT_CREATION_TIMING_ORDER_STEPS: [&str; 11] = [
     "exact slot authorization is consumed once",
 ];
 
+pub const PATH2_DIRECT_LIFECYCLE_SUPPORT_FILE: &str =
+    "research/path2_one_use_successor_state_theorem.md";
+pub const PATH2_DIRECT_LIFECYCLE_THEOREM_TARGET: &str =
+    "one_use_successor_state_theorem_v1";
+pub const PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS: [&str; 8] = [
+    "path2_prevalidated_slot_consume_once_rejects_reauthorization",
+    "path2_direct_single_slot_spend_composes_admission_signature_and_consume_once",
+    "path2_direct_single_slot_spend_rejects_leaf_slot_rebinding",
+    "lifecycle_manager_verify_and_consume_blocks_replay",
+    "spent_slot_ledger_blocks_stale_wallet_replay",
+    "spent_slot_ledger_records_reorg_burns",
+    "chain_state_file_stores_verify_record_and_persist_together",
+    "lifecycle_restore_anchor_rejects_old_backup_snapshots",
+];
+
 pub const PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES: [&str; 9] = [
     "leaf_is_canonical_and_live",
     "evidence_envelope_matches_leaf_bindings",
@@ -11009,13 +11057,82 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
     Ok(())
 }
 
+pub fn path2_direct_lifecycle_boundary_report_v1() -> Path2DirectLifecycleBoundaryReportV1 {
+    let mut report = Path2DirectLifecycleBoundaryReportV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        domain: PATH2_DIRECT_LIFECYCLE_BOUNDARY_REPORT_DOMAIN,
+        support_file: PATH2_DIRECT_LIFECYCLE_SUPPORT_FILE,
+        theorem_target: PATH2_DIRECT_LIFECYCLE_THEOREM_TARGET,
+        direct_obligation_id: "direct_obligation_consume_once",
+        acceptance_hypothesis: "lifecycle_transition_consumes_authorization_once",
+        named_break: "slot_replay_or_rollback_break",
+        consume_once_validator: "verify_path2_prevalidated_slot_consume_once",
+        state_namespace_validator: "validate_path2_direct_slot_authorization_state_namespace",
+        direct_spend_endpoint: "verify_path2_direct_single_slot_spend_authorization",
+        lifecycle_manager_endpoint: "ProductionAccountLifecycleManager::verify_and_consume",
+        spent_slot_ledger_type: "ProductionSpentSlotLedger",
+        target_chain_adapter_type: "ProductionSelectedProjectionTargetChainDbAdapter",
+        chain_file_store_type: "ProductionChainStateFileStores",
+        executable_tests: &PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS,
+        local_successor_state_model_pinned: true,
+        consume_once_insert_after_public_checks: true,
+        replay_rejected_by_consume_set: true,
+        spent_slot_ledger_rejects_stale_wallet_replay: true,
+        chain_state_persists_lifecycle_and_spent_record: true,
+        reorg_burn_support_present: true,
+        restore_anchor_support_present: true,
+        target_chain_finality_profile_instantiated: false,
+        lifecycle_transition_profile_verified: false,
+        deployment_ready: false,
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+    };
+    report.digest = path2_direct_lifecycle_boundary_report_v1_digest(&report);
+    report
+}
+
+pub fn path2_direct_lifecycle_boundary_report_v1_digest(
+    report: &Path2DirectLifecycleBoundaryReportV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_direct_lifecycle_boundary_report_v1_frame(report)).into()
+}
+
+pub fn validate_path2_direct_lifecycle_boundary_report_v1(
+    report: &Path2DirectLifecycleBoundaryReportV1,
+) -> Result<(), String> {
+    let expected = path2_direct_lifecycle_boundary_report_v1();
+    if expected != *report {
+        return Err("Path 2 direct lifecycle boundary report mismatch".to_string());
+    }
+    if path2_direct_lifecycle_boundary_report_v1_digest(report) != report.digest {
+        return Err("Path 2 direct lifecycle boundary report digest mismatch".to_string());
+    }
+    if !report.local_successor_state_model_pinned
+        || !report.consume_once_insert_after_public_checks
+        || !report.replay_rejected_by_consume_set
+        || !report.spent_slot_ledger_rejects_stale_wallet_replay
+        || !report.chain_state_persists_lifecycle_and_spent_record
+        || !report.reorg_burn_support_present
+        || !report.restore_anchor_support_present
+        || report.target_chain_finality_profile_instantiated
+        || report.lifecycle_transition_profile_verified
+        || report.deployment_ready
+    {
+        return Err(
+            "Path 2 direct lifecycle boundary unexpectedly changes closure status".to_string(),
+        );
+    }
+    Ok(())
+}
+
 pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryReportV1 {
+    let direct_lifecycle_boundary_report = path2_direct_lifecycle_boundary_report_v1();
     let account_creation_proof_boundary_report =
         path2_account_creation_proof_boundary_report_v1();
     let obligation_rows = &PATH2_DIRECT_THEOREM_OBLIGATION_ROWS;
     let mut report = Path2DirectTheoremBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN,
+        direct_lifecycle_boundary_report_digest: direct_lifecycle_boundary_report.digest,
         account_creation_proof_boundary_report_digest:
             account_creation_proof_boundary_report.digest,
         accepted_tuple_fields: &PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS,
@@ -11066,6 +11183,19 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
     }
     if path2_direct_theorem_boundary_report_v1_digest(report) != report.digest {
         return Err("Path 2 direct theorem boundary report digest mismatch".to_string());
+    }
+    let direct_lifecycle_boundary_report = path2_direct_lifecycle_boundary_report_v1();
+    if report.direct_lifecycle_boundary_report_digest != direct_lifecycle_boundary_report.digest {
+        return Err("Path 2 direct theorem boundary lifecycle digest mismatch".to_string());
+    }
+    let account_creation_proof_boundary_report =
+        path2_account_creation_proof_boundary_report_v1();
+    if report.account_creation_proof_boundary_report_digest
+        != account_creation_proof_boundary_report.digest
+    {
+        return Err(
+            "Path 2 direct theorem boundary proof-boundary digest mismatch".to_string(),
+        );
     }
     Ok(())
 }
@@ -64270,6 +64400,127 @@ fn path2_account_creation_sampler_timing_report_v1_frame(
     frame
 }
 
+fn path2_direct_lifecycle_boundary_report_v1_frame(
+    report: &Path2DirectLifecycleBoundaryReportV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"domain", report.domain.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_u64(&mut frame, b"q", Q as u64);
+    append_u64(&mut frame, b"groups", GROUPS as u64);
+    append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
+    append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
+    append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(&mut frame, b"support_file", report.support_file.as_bytes());
+    append_frame(
+        &mut frame,
+        b"theorem_target",
+        report.theorem_target.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"direct_obligation_id",
+        report.direct_obligation_id.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"acceptance_hypothesis",
+        report.acceptance_hypothesis.as_bytes(),
+    );
+    append_frame(&mut frame, b"named_break", report.named_break.as_bytes());
+    append_frame(
+        &mut frame,
+        b"consume_once_validator",
+        report.consume_once_validator.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"state_namespace_validator",
+        report.state_namespace_validator.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"direct_spend_endpoint",
+        report.direct_spend_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"lifecycle_manager_endpoint",
+        report.lifecycle_manager_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"spent_slot_ledger_type",
+        report.spent_slot_ledger_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"target_chain_adapter_type",
+        report.target_chain_adapter_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"chain_file_store_type",
+        report.chain_file_store_type.as_bytes(),
+    );
+    for (index, test_name) in report.executable_tests.iter().enumerate() {
+        append_u64(&mut frame, b"executable_test_index", index as u64);
+        append_frame(&mut frame, b"executable_test", test_name.as_bytes());
+    }
+    append_u64(
+        &mut frame,
+        b"local_successor_state_model_pinned",
+        u64::from(report.local_successor_state_model_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"consume_once_insert_after_public_checks",
+        u64::from(report.consume_once_insert_after_public_checks),
+    );
+    append_u64(
+        &mut frame,
+        b"replay_rejected_by_consume_set",
+        u64::from(report.replay_rejected_by_consume_set),
+    );
+    append_u64(
+        &mut frame,
+        b"spent_slot_ledger_rejects_stale_wallet_replay",
+        u64::from(report.spent_slot_ledger_rejects_stale_wallet_replay),
+    );
+    append_u64(
+        &mut frame,
+        b"chain_state_persists_lifecycle_and_spent_record",
+        u64::from(report.chain_state_persists_lifecycle_and_spent_record),
+    );
+    append_u64(
+        &mut frame,
+        b"reorg_burn_support_present",
+        u64::from(report.reorg_burn_support_present),
+    );
+    append_u64(
+        &mut frame,
+        b"restore_anchor_support_present",
+        u64::from(report.restore_anchor_support_present),
+    );
+    append_u64(
+        &mut frame,
+        b"target_chain_finality_profile_instantiated",
+        u64::from(report.target_chain_finality_profile_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"lifecycle_transition_profile_verified",
+        u64::from(report.lifecycle_transition_profile_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_ready",
+        u64::from(report.deployment_ready),
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    frame
+}
+
 fn path2_direct_theorem_boundary_report_v1_frame(
     report: &Path2DirectTheoremBoundaryReportV1,
 ) -> Vec<u8> {
@@ -64281,6 +64532,11 @@ fn path2_direct_theorem_boundary_report_v1_frame(
     append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
     append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
     append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(
+        &mut frame,
+        b"direct_lifecycle_boundary_report_digest",
+        &report.direct_lifecycle_boundary_report_digest,
+    );
     append_frame(
         &mut frame,
         b"account_creation_proof_boundary_report_digest",
@@ -104916,11 +105172,94 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     }
 
     #[test]
+    fn path2_direct_lifecycle_boundary_report_pins_local_successor_state_model() {
+        let report = path2_direct_lifecycle_boundary_report_v1();
+        assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(report.domain, PATH2_DIRECT_LIFECYCLE_BOUNDARY_REPORT_DOMAIN);
+        assert_eq!(report.support_file, PATH2_DIRECT_LIFECYCLE_SUPPORT_FILE);
+        assert_eq!(
+            report.theorem_target,
+            PATH2_DIRECT_LIFECYCLE_THEOREM_TARGET
+        );
+        assert_eq!(report.direct_obligation_id, "direct_obligation_consume_once");
+        assert_eq!(
+            report.acceptance_hypothesis,
+            "lifecycle_transition_consumes_authorization_once"
+        );
+        assert_eq!(report.named_break, "slot_replay_or_rollback_break");
+        assert_eq!(
+            report.consume_once_validator,
+            "verify_path2_prevalidated_slot_consume_once"
+        );
+        assert_eq!(
+            report.state_namespace_validator,
+            "validate_path2_direct_slot_authorization_state_namespace"
+        );
+        assert_eq!(
+            report.direct_spend_endpoint,
+            "verify_path2_direct_single_slot_spend_authorization"
+        );
+        assert_eq!(
+            report.lifecycle_manager_endpoint,
+            "ProductionAccountLifecycleManager::verify_and_consume"
+        );
+        assert_eq!(report.spent_slot_ledger_type, "ProductionSpentSlotLedger");
+        assert_eq!(
+            report.target_chain_adapter_type,
+            "ProductionSelectedProjectionTargetChainDbAdapter"
+        );
+        assert_eq!(report.chain_file_store_type, "ProductionChainStateFileStores");
+        assert_eq!(
+            report.executable_tests,
+            PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS.as_ref()
+        );
+        assert_eq!(report.executable_tests.len(), 8);
+        assert!(report
+            .executable_tests
+            .contains(&"path2_prevalidated_slot_consume_once_rejects_reauthorization"));
+        assert!(report
+            .executable_tests
+            .contains(&"chain_state_file_stores_verify_record_and_persist_together"));
+        assert!(report.local_successor_state_model_pinned);
+        assert!(report.consume_once_insert_after_public_checks);
+        assert!(report.replay_rejected_by_consume_set);
+        assert!(report.spent_slot_ledger_rejects_stale_wallet_replay);
+        assert!(report.chain_state_persists_lifecycle_and_spent_record);
+        assert!(report.reorg_burn_support_present);
+        assert!(report.restore_anchor_support_present);
+        assert!(!report.target_chain_finality_profile_instantiated);
+        assert!(!report.lifecycle_transition_profile_verified);
+        assert!(!report.deployment_ready);
+        assert_eq!(
+            report.blocker,
+            PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+        );
+        assert_eq!(
+            path2_direct_lifecycle_boundary_report_v1_digest(&report),
+            report.digest
+        );
+        validate_path2_direct_lifecycle_boundary_report_v1(&report).unwrap();
+
+        let mut malformed = report.clone();
+        malformed.lifecycle_transition_profile_verified = true;
+        malformed.digest = path2_direct_lifecycle_boundary_report_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_direct_lifecycle_boundary_report_v1(&malformed).unwrap_err(),
+            "Path 2 direct lifecycle boundary report mismatch"
+        );
+    }
+
+    #[test]
     fn path2_direct_theorem_boundary_report_pins_shape_and_blocks_deployment() {
+        let lifecycle_boundary_report = path2_direct_lifecycle_boundary_report_v1();
         let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
         let report = path2_direct_theorem_boundary_report_v1();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
         assert_eq!(report.domain, PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN);
+        assert_eq!(
+            report.direct_lifecycle_boundary_report_digest,
+            lifecycle_boundary_report.digest
+        );
         assert_eq!(
             report.account_creation_proof_boundary_report_digest,
             proof_boundary_report.digest

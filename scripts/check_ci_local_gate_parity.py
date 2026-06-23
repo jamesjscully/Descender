@@ -232,6 +232,22 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ),
     ),
     (
+        "direct lifecycle boundary manifest check",
+        (
+            "path2_direct_lifecycle_boundary_manifest",
+            "path2_direct_lifecycle_boundary_v1.json",
+        ),
+        (
+            "path2_direct_lifecycle_boundary_manifest",
+            "path2_direct_lifecycle_boundary_v1.json",
+        ),
+    ),
+    (
+        "direct lifecycle boundary consistency check",
+        ("path2_direct_lifecycle_boundary_consistency",),
+        ("path2_direct_lifecycle_boundary_consistency",),
+    ),
+    (
         "direct theorem boundary manifest check",
         (
             "path2_direct_theorem_boundary_manifest",
@@ -398,6 +414,16 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-CREATE-001",
         "DIR-PROOF-001",
         "DIR-PROOF-002",
+    ),
+    "direct lifecycle boundary manifest check": (
+        "DIR-SEC-001",
+        "DIR-LIFE-001",
+        "ADOPT-HW-STATE-001",
+    ),
+    "direct lifecycle boundary consistency check": (
+        "DIR-SEC-001",
+        "DIR-LIFE-001",
+        "ADOPT-HW-STATE-001",
     ),
     "direct theorem boundary manifest check": (
         "DIR-SEC-001",

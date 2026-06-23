@@ -110,6 +110,10 @@
       "account_creation_proof_boundary_blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
       "account_creation_proof_boundary_report_domain": "Descender.Path2.AccountCreationProofBoundaryReport.v1",
       "account_creation_sampler_timing_report_domain": "Descender.Path2.AccountCreationSamplerTimingReport.v1",
+      "direct_lifecycle_blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+      "direct_lifecycle_boundary_report_domain": "Descender.Path2.DirectLifecycleBoundaryReport.v1",
+      "direct_lifecycle_support_file": "research/path2_one_use_successor_state_theorem.md",
+      "direct_lifecycle_theorem_target": "one_use_successor_state_theorem_v1",
       "direct_report_domain": "Descender.Path2.DirectTheoremBoundaryReport.v1",
       "direct_theorem_blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
@@ -125,9 +129,47 @@
       "account_creation_proof_boundary_report_recomputed_digest": "698b71f9c78e546a7a9bdcf1e7dafd948e591aba8b885a9701137ab3cf25ad60",
       "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
-      "direct_theorem_boundary_report_digest": "d1daae13ed4167b2920cb450e2f299d158569e1207618d17ccb95a911a9c5a16",
-      "direct_theorem_boundary_report_recomputed_digest": "d1daae13ed4167b2920cb450e2f299d158569e1207618d17ccb95a911a9c5a16",
+      "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
+      "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
+      "direct_theorem_boundary_report_digest": "619f89810bb9702e117f429e544651db13a7395a867fa9942d9c877b76196059",
+      "direct_theorem_boundary_report_recomputed_digest": "619f89810bb9702e117f429e544651db13a7395a867fa9942d9c877b76196059",
+      "direct_theorem_report_lifecycle_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
+    },
+    "direct_lifecycle_boundary": {
+      "acceptance_hypothesis": "lifecycle_transition_consumes_authorization_once",
+      "chain_file_store_type": "ProductionChainStateFileStores",
+      "consume_once_validator": "verify_path2_prevalidated_slot_consume_once",
+      "coverage": {
+        "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+        "chain_state_persists_lifecycle_and_spent_record": true,
+        "consume_once_insert_after_public_checks": true,
+        "deployment_ready": false,
+        "lifecycle_transition_profile_verified": false,
+        "local_successor_state_model_pinned": true,
+        "reorg_burn_support_present": true,
+        "replay_rejected_by_consume_set": true,
+        "restore_anchor_support_present": true,
+        "spent_slot_ledger_rejects_stale_wallet_replay": true,
+        "target_chain_finality_profile_instantiated": false
+      },
+      "direct_obligation_id": "direct_obligation_consume_once",
+      "direct_spend_endpoint": "verify_path2_direct_single_slot_spend_authorization",
+      "executable_tests": [
+        "path2_prevalidated_slot_consume_once_rejects_reauthorization",
+        "path2_direct_single_slot_spend_composes_admission_signature_and_consume_once",
+        "path2_direct_single_slot_spend_rejects_leaf_slot_rebinding",
+        "lifecycle_manager_verify_and_consume_blocks_replay",
+        "spent_slot_ledger_blocks_stale_wallet_replay",
+        "spent_slot_ledger_records_reorg_burns",
+        "chain_state_file_stores_verify_record_and_persist_together",
+        "lifecycle_restore_anchor_rejects_old_backup_snapshots"
+      ],
+      "lifecycle_manager_endpoint": "ProductionAccountLifecycleManager::verify_and_consume",
+      "named_break": "slot_replay_or_rollback_break",
+      "spent_slot_ledger_type": "ProductionSpentSlotLedger",
+      "state_namespace_validator": "validate_path2_direct_slot_authorization_state_namespace",
+      "target_chain_adapter_type": "ProductionSelectedProjectionTargetChainDbAdapter"
     },
     "direct_theorem_boundary": {
       "acceptance_hypotheses": [
@@ -163,6 +205,7 @@
         "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
         "composition_theorem_instantiated": false,
         "deployment_ready": false,
+        "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
         "every_hypothesis_has_obligation": true,
         "every_obligation_has_named_break": true,
         "every_open_obligation_blocks_deployment": true,
@@ -288,5 +331,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "6574fee1c08dbaf128c9220ad9afe306ef3a6c03ff3ad58a93ca8a5be1a15fcd"
+  "manifest_digest": "09e3b41e9fd2b00f37d87ca73f1e12bdea2feeb6eda8803a224770aee3a5dd1f"
 }

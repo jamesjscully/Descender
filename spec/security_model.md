@@ -75,14 +75,19 @@ The production reference emits `Path2DirectTheoremBoundaryReportV1`, which pins
 the accepted tuple, acceptance hypotheses, per-hypothesis obligation matrix,
 named break classes, and current open blocker for this theorem boundary.
 `formal/kat/path2_direct_theorem_boundary_v1.json` is regenerated from that
-report and the current `Path2AccountCreationProofBoundaryReportV1` by a local
-and CI gate, so the direct theorem shape, the proof-boundary digest, and the
-selected proof-boundary field groups cannot drift silently. A separate boundary
-manifest consistency gate checks that the direct theorem manifest embeds the
-same proof-boundary digest and field-group object as the standalone
-proof-boundary manifest. This report and manifest are not the proof; they are
-mechanical guards that prevent deployment preflight from drifting away from the
-theorem shape while the composition theorem remains open. The
+report, the current `Path2DirectLifecycleBoundaryReportV1`, and the current
+`Path2AccountCreationProofBoundaryReportV1` by a local and CI gate, so the
+direct theorem shape, lifecycle digest, proof-boundary digest, and selected
+field groups cannot drift silently. The lifecycle report pins the local
+consume-once successor-state model, replay rejection, spent-slot ledger,
+reorg-burn support, restore-anchor support, and lifecycle/spent-record
+persistence evidence, while keeping target-chain finality/reorg profile
+instantiation false. A separate boundary manifest consistency gate checks that
+the direct theorem manifest embeds the same proof-boundary digest and
+field-group object as the standalone proof-boundary manifest. This report and
+manifest are not the proof; they are mechanical guards that prevent deployment
+preflight from drifting away from the theorem shape while the composition
+theorem and deployment lifecycle profile remain open. The
 `path2_preflight_boundary_consistency` gate separately checks that production
 preflight stays fail-closed on the direct theorem blocker, account-creation
 proof-boundary blocker, and selected account-STARK residual blockers.

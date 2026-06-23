@@ -4,7 +4,10 @@ use descender_parameter_search::production_reference::{
     path2_account_stark_fri_qrom_residual_report_v1,
     path2_account_stark_fri_qrom_residual_report_v1_digest,
     path2_account_stark_residual_matrix_report_v1,
-    path2_account_stark_residual_matrix_report_v1_digest, path2_direct_theorem_boundary_report_v1,
+    path2_account_stark_residual_matrix_report_v1_digest,
+    path2_direct_lifecycle_boundary_report_v1,
+    path2_direct_lifecycle_boundary_report_v1_digest,
+    path2_direct_theorem_boundary_report_v1,
     path2_direct_theorem_boundary_report_v1_digest,
     production_deployment_account_creation_proof_boundary_blockers,
     production_deployment_account_stark_residual_blockers,
@@ -13,6 +16,7 @@ use descender_parameter_search::production_reference::{
     validate_path2_account_creation_proof_boundary_report_v1,
     validate_path2_account_stark_fri_qrom_residual_report_v1,
     validate_path2_account_stark_residual_matrix_report_v1,
+    validate_path2_direct_lifecycle_boundary_report_v1,
     validate_path2_direct_theorem_boundary_report_v1,
     validate_production_deployment_preflight_report,
 };
@@ -50,15 +54,22 @@ fn require_subsequence_after(
 
 fn main() -> Result<(), String> {
     let direct_report = path2_direct_theorem_boundary_report_v1();
+    let lifecycle_report = path2_direct_lifecycle_boundary_report_v1();
     let proof_report = path2_account_creation_proof_boundary_report_v1();
     let fri_qrom_report = path2_account_stark_fri_qrom_residual_report_v1();
     let residual_report = path2_account_stark_residual_matrix_report_v1();
     validate_path2_direct_theorem_boundary_report_v1(&direct_report)?;
+    validate_path2_direct_lifecycle_boundary_report_v1(&lifecycle_report)?;
     validate_path2_account_creation_proof_boundary_report_v1(&proof_report)?;
     validate_path2_account_stark_fri_qrom_residual_report_v1(&fri_qrom_report)?;
     validate_path2_account_stark_residual_matrix_report_v1(&residual_report)?;
     if path2_direct_theorem_boundary_report_v1_digest(&direct_report) != direct_report.digest {
         return Err("direct theorem boundary digest mismatch".to_string());
+    }
+    if path2_direct_lifecycle_boundary_report_v1_digest(&lifecycle_report)
+        != lifecycle_report.digest
+    {
+        return Err("direct lifecycle boundary digest mismatch".to_string());
     }
     if path2_account_creation_proof_boundary_report_v1_digest(&proof_report) != proof_report.digest
     {
@@ -76,6 +87,9 @@ fn main() -> Result<(), String> {
     }
     if direct_report.account_creation_proof_boundary_report_digest != proof_report.digest {
         return Err("direct theorem report is not bound to the proof-boundary report".to_string());
+    }
+    if direct_report.direct_lifecycle_boundary_report_digest != lifecycle_report.digest {
+        return Err("direct theorem report is not bound to the lifecycle report".to_string());
     }
     if proof_report.account_stark_residual_matrix_report_digest != residual_report.digest {
         return Err("proof-boundary report is not bound to the residual matrix".to_string());
@@ -104,6 +118,24 @@ fn main() -> Result<(), String> {
         || direct_report.qrom_and_action_bounds_linked_to_theorem
     {
         return Err("direct theorem boundary unexpectedly reports closed obligations".to_string());
+    }
+    if lifecycle_report.deployment_ready
+        || lifecycle_report.target_chain_finality_profile_instantiated
+        || lifecycle_report.lifecycle_transition_profile_verified
+    {
+        return Err("direct lifecycle boundary unexpectedly reports closed obligations".to_string());
+    }
+    if !lifecycle_report.local_successor_state_model_pinned
+        || !lifecycle_report.consume_once_insert_after_public_checks
+        || !lifecycle_report.replay_rejected_by_consume_set
+        || !lifecycle_report.spent_slot_ledger_rejects_stale_wallet_replay
+        || !lifecycle_report.chain_state_persists_lifecycle_and_spent_record
+        || !lifecycle_report.reorg_burn_support_present
+        || !lifecycle_report.restore_anchor_support_present
+    {
+        return Err(
+            "direct lifecycle boundary is missing local successor-state evidence".to_string(),
+        );
     }
     if proof_report.deployment_ready
         || proof_report.simulator_theorem_instantiated

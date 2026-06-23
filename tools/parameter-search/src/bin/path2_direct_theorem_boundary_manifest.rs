@@ -3,6 +3,8 @@ use descender_parameter_search::production_reference::{
     path2_account_creation_proof_boundary_report_v1_digest,
     path2_account_creation_sampler_timing_report_v1,
     path2_account_creation_sampler_timing_report_v1_digest,
+    path2_direct_lifecycle_boundary_report_v1,
+    path2_direct_lifecycle_boundary_report_v1_digest,
     path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
     PROFILE,
 };
@@ -21,11 +23,17 @@ fn hex_encode(bytes: &[u8]) -> String {
 
 fn manifest_body() -> Result<Value, String> {
     let direct_report = path2_direct_theorem_boundary_report_v1();
+    let lifecycle_report = path2_direct_lifecycle_boundary_report_v1();
     let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
     let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
     let recomputed_direct_digest = path2_direct_theorem_boundary_report_v1_digest(&direct_report);
     if recomputed_direct_digest != direct_report.digest {
         return Err("direct theorem boundary report digest mismatch".to_string());
+    }
+    let recomputed_lifecycle_digest =
+        path2_direct_lifecycle_boundary_report_v1_digest(&lifecycle_report);
+    if recomputed_lifecycle_digest != lifecycle_report.digest {
+        return Err("direct lifecycle boundary report digest mismatch".to_string());
     }
     let recomputed_proof_boundary_digest =
         path2_account_creation_proof_boundary_report_v1_digest(&proof_boundary_report);
@@ -40,6 +48,11 @@ fn manifest_body() -> Result<Value, String> {
     if direct_report.account_creation_proof_boundary_report_digest != proof_boundary_report.digest {
         return Err(
             "direct theorem report is not bound to the current proof-boundary report".to_string(),
+        );
+    }
+    if direct_report.direct_lifecycle_boundary_report_digest != lifecycle_report.digest {
+        return Err(
+            "direct theorem report is not bound to the current lifecycle report".to_string(),
         );
     }
     if proof_boundary_report.sampler_timing_report_digest != sampler_timing_report.digest {
@@ -60,11 +73,15 @@ fn manifest_body() -> Result<Value, String> {
         },
         "authority_snapshot": {
             "direct_report_domain": direct_report.domain,
+            "direct_lifecycle_boundary_report_domain": lifecycle_report.domain,
             "account_creation_proof_boundary_report_domain": proof_boundary_report.domain,
             "account_creation_sampler_timing_report_domain": sampler_timing_report.domain,
             "direct_theorem_blocker": direct_report.blocker,
+            "direct_lifecycle_blocker": lifecycle_report.blocker,
             "account_creation_proof_boundary_blocker": proof_boundary_report.blocker,
             "sampler_timing_blocker": sampler_timing_report.blocker,
+            "direct_lifecycle_support_file": lifecycle_report.support_file,
+            "direct_lifecycle_theorem_target": lifecycle_report.theorem_target,
             "selected_payload_type": proof_boundary_report.selected_payload_type,
             "verifier_boundary_endpoint": proof_boundary_report.verifier_boundary_endpoint,
             "production_boundary_endpoint": proof_boundary_report.production_boundary_endpoint,
@@ -74,6 +91,15 @@ fn manifest_body() -> Result<Value, String> {
             "direct_theorem_boundary_report_digest": hex_encode(&direct_report.digest),
             "direct_theorem_boundary_report_recomputed_digest": hex_encode(
                 &recomputed_direct_digest
+            ),
+            "direct_lifecycle_boundary_report_digest": hex_encode(
+                &lifecycle_report.digest
+            ),
+            "direct_lifecycle_boundary_report_recomputed_digest": hex_encode(
+                &recomputed_lifecycle_digest
+            ),
+            "direct_theorem_report_lifecycle_digest": hex_encode(
+                &direct_report.direct_lifecycle_boundary_report_digest
             ),
             "account_creation_proof_boundary_report_digest": hex_encode(
                 &proof_boundary_report.digest
@@ -93,6 +119,9 @@ fn manifest_body() -> Result<Value, String> {
         },
         "direct_theorem_boundary": {
             "coverage": {
+                "direct_lifecycle_boundary_report_digest": hex_encode(
+                    &direct_report.direct_lifecycle_boundary_report_digest
+                ),
                 "accepted_tuple_field_count": direct_report.accepted_tuple_fields.len(),
                 "acceptance_hypothesis_count": direct_report.acceptance_hypotheses.len(),
                 "named_break_class_count": direct_report.named_break_classes.len(),
@@ -123,6 +152,39 @@ fn manifest_body() -> Result<Value, String> {
             "acceptance_hypotheses": direct_report.acceptance_hypotheses,
             "named_break_classes": direct_report.named_break_classes,
             "obligation_rows": direct_report.obligation_rows
+        },
+        "direct_lifecycle_boundary": {
+            "coverage": {
+                "local_successor_state_model_pinned":
+                    lifecycle_report.local_successor_state_model_pinned,
+                "consume_once_insert_after_public_checks":
+                    lifecycle_report.consume_once_insert_after_public_checks,
+                "replay_rejected_by_consume_set":
+                    lifecycle_report.replay_rejected_by_consume_set,
+                "spent_slot_ledger_rejects_stale_wallet_replay":
+                    lifecycle_report.spent_slot_ledger_rejects_stale_wallet_replay,
+                "chain_state_persists_lifecycle_and_spent_record":
+                    lifecycle_report.chain_state_persists_lifecycle_and_spent_record,
+                "reorg_burn_support_present": lifecycle_report.reorg_burn_support_present,
+                "restore_anchor_support_present": lifecycle_report.restore_anchor_support_present,
+                "target_chain_finality_profile_instantiated":
+                    lifecycle_report.target_chain_finality_profile_instantiated,
+                "lifecycle_transition_profile_verified":
+                    lifecycle_report.lifecycle_transition_profile_verified,
+                "deployment_ready": lifecycle_report.deployment_ready,
+                "blocker": lifecycle_report.blocker
+            },
+            "direct_obligation_id": lifecycle_report.direct_obligation_id,
+            "acceptance_hypothesis": lifecycle_report.acceptance_hypothesis,
+            "named_break": lifecycle_report.named_break,
+            "consume_once_validator": lifecycle_report.consume_once_validator,
+            "state_namespace_validator": lifecycle_report.state_namespace_validator,
+            "direct_spend_endpoint": lifecycle_report.direct_spend_endpoint,
+            "lifecycle_manager_endpoint": lifecycle_report.lifecycle_manager_endpoint,
+            "spent_slot_ledger_type": lifecycle_report.spent_slot_ledger_type,
+            "target_chain_adapter_type": lifecycle_report.target_chain_adapter_type,
+            "chain_file_store_type": lifecycle_report.chain_file_store_type,
+            "executable_tests": lifecycle_report.executable_tests
         },
         "account_creation_proof_boundary": {
             "coverage": {

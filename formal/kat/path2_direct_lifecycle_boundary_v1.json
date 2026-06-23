@@ -1,0 +1,69 @@
+{
+  "manifest": {
+    "authority_snapshot": {
+      "acceptance_hypothesis": "lifecycle_transition_consumes_authorization_once",
+      "chain_file_store_type": "ProductionChainStateFileStores",
+      "consume_once_validator": "verify_path2_prevalidated_slot_consume_once",
+      "direct_obligation_id": "direct_obligation_consume_once",
+      "direct_report_domain": "Descender.Path2.DirectTheoremBoundaryReport.v1",
+      "direct_spend_endpoint": "verify_path2_direct_single_slot_spend_authorization",
+      "direct_theorem_blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+      "lifecycle_manager_endpoint": "ProductionAccountLifecycleManager::verify_and_consume",
+      "lifecycle_report_domain": "Descender.Path2.DirectLifecycleBoundaryReport.v1",
+      "named_break": "slot_replay_or_rollback_break",
+      "spent_slot_ledger_type": "ProductionSpentSlotLedger",
+      "state_namespace_validator": "validate_path2_direct_slot_authorization_state_namespace",
+      "support_file": "research/path2_one_use_successor_state_theorem.md",
+      "target_chain_adapter_type": "ProductionSelectedProjectionTargetChainDbAdapter",
+      "theorem_target": "one_use_successor_state_theorem_v1"
+    },
+    "corpus_id": "Descender.Path2.DirectLifecycleBoundary.v1",
+    "corpus_version": 1,
+    "digests": {
+      "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
+      "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
+      "direct_theorem_boundary_report_digest": "619f89810bb9702e117f429e544651db13a7395a867fa9942d9c877b76196059",
+      "direct_theorem_boundary_report_recomputed_digest": "619f89810bb9702e117f429e544651db13a7395a867fa9942d9c877b76196059",
+      "direct_theorem_report_lifecycle_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb"
+    },
+    "frozen_status": "draft_lifecycle_boundary_manifest",
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_lifecycle_boundary_manifest",
+      "source": "tools/parameter-search/src/bin/path2_direct_lifecycle_boundary_manifest.rs"
+    },
+    "local_successor_state_boundary": {
+      "coverage": {
+        "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+        "chain_state_persists_lifecycle_and_spent_record": true,
+        "consume_once_insert_after_public_checks": true,
+        "deployment_ready": false,
+        "lifecycle_transition_profile_verified": false,
+        "local_successor_state_model_pinned": true,
+        "reorg_burn_support_present": true,
+        "replay_rejected_by_consume_set": true,
+        "restore_anchor_support_present": true,
+        "spent_slot_ledger_rejects_stale_wallet_replay": true,
+        "target_chain_finality_profile_instantiated": false
+      },
+      "executable_tests": [
+        "path2_prevalidated_slot_consume_once_rejects_reauthorization",
+        "path2_direct_single_slot_spend_composes_admission_signature_and_consume_once",
+        "path2_direct_single_slot_spend_rejects_leaf_slot_rebinding",
+        "lifecycle_manager_verify_and_consume_blocks_replay",
+        "spent_slot_ledger_blocks_stale_wallet_replay",
+        "spent_slot_ledger_records_reorg_burns",
+        "chain_state_file_stores_verify_record_and_persist_together",
+        "lifecycle_restore_anchor_rejects_old_backup_snapshots"
+      ]
+    },
+    "open_obligations": {
+      "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+      "deployment_ready": false,
+      "lifecycle_transition_profile_verified": false,
+      "target_chain_finality_profile_instantiated": false
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "schema": "Descender.Path2.DirectLifecycleBoundaryManifest.v1"
+  },
+  "manifest_digest": "86f5f1fc5b02bc65ad561735b3319ded118e70ce226e6f6592e26717159cafc1"
+}

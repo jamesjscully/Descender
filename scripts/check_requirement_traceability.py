@@ -51,13 +51,21 @@ PRODUCT_BAR_LINES = [
 DIRECT_THEOREM_PREFLIGHT_MARKERS = [
     "PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION",
     "PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN",
+    "PATH2_DIRECT_LIFECYCLE_BOUNDARY_REPORT_DOMAIN",
     "Path2DirectTheoremBoundaryReportV1",
+    "Path2DirectLifecycleBoundaryReportV1",
     "Path2DirectTheoremObligationRowV1",
+    "direct_lifecycle_boundary_report_digest",
+    "PATH2_DIRECT_LIFECYCLE_SUPPORT_FILE",
+    "PATH2_DIRECT_LIFECYCLE_THEOREM_TARGET",
+    "PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS",
     "PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS",
     "PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES",
     "PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES",
     "PATH2_DIRECT_THEOREM_OBLIGATION_ROWS",
     "consensus_rejection_or_state_mutation_break",
+    "path2_direct_lifecycle_boundary_report_v1",
+    "validate_path2_direct_lifecycle_boundary_report_v1",
     "path2_direct_theorem_boundary_report_v1",
     "validate_path2_direct_theorem_boundary_report_v1",
     "production_deployment_direct_theorem_blockers",
@@ -356,17 +364,75 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS = {
         "path2_account_creation_proof_boundary_v1.json",
     ],
 }
+DIRECT_LIFECYCLE_BOUNDARY_MARKERS = {
+    "tools/parameter-search/src/bin/path2_direct_lifecycle_boundary_manifest.rs": [
+        "Descender.Path2.DirectLifecycleBoundaryManifest.v1",
+        "Descender.Path2.DirectLifecycleBoundary.v1",
+        "path2_direct_lifecycle_boundary_report_v1",
+        "validate_path2_direct_lifecycle_boundary_report_v1",
+        "path2_direct_theorem_boundary_report_v1",
+        "direct_lifecycle_boundary_report_digest",
+        "direct_theorem_report_lifecycle_digest",
+        "local_successor_state_boundary",
+        "open_obligations",
+    ],
+    "tools/parameter-search/src/bin/path2_direct_lifecycle_boundary_consistency.rs": [
+        "formal/kat/path2_direct_lifecycle_boundary_v1.json",
+        "research/path2_one_use_successor_state_theorem.md",
+        "path2_direct_lifecycle_boundary_report_v1",
+        "validate_path2_direct_lifecycle_boundary_report_v1",
+        "verify_path2_prevalidated_slot_consume_once",
+        "verify_path2_direct_single_slot_spend_authorization",
+        "ProductionSpentSlotLedger",
+        "ProductionChainStateFileStores",
+        "Path 2 direct lifecycle boundary consistency check passed.",
+    ],
+    "formal/kat/path2_direct_lifecycle_boundary_v1.json": [
+        "Descender.Path2.DirectLifecycleBoundaryManifest.v1",
+        "Descender.Path2.DirectLifecycleBoundary.v1",
+        "draft_lifecycle_boundary_manifest",
+        "direct_lifecycle_boundary_report_digest",
+        "direct_theorem_report_lifecycle_digest",
+        "slot_replay_or_rollback_break",
+        "verify_path2_prevalidated_slot_consume_once",
+        "verify_path2_direct_single_slot_spend_authorization",
+        "ProductionSpentSlotLedger",
+        "ProductionChainStateFileStores",
+        '"local_successor_state_model_pinned": true',
+        '"target_chain_finality_profile_instantiated": false',
+        '"lifecycle_transition_profile_verified": false',
+        '"deployment_ready": false',
+    ],
+    "scripts/check_build.sh": [
+        "direct lifecycle boundary manifest check",
+        "path2_direct_lifecycle_boundary_manifest",
+        "path2_direct_lifecycle_boundary_v1.json",
+        "direct lifecycle boundary consistency check",
+        "path2_direct_lifecycle_boundary_consistency",
+    ],
+    ".github/workflows/ci.yml": [
+        "Direct lifecycle boundary manifest check",
+        "path2_direct_lifecycle_boundary_manifest",
+        "path2_direct_lifecycle_boundary_v1.json",
+        "Direct lifecycle boundary consistency check",
+        "path2_direct_lifecycle_boundary_consistency",
+    ],
+}
 DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS = {
     "tools/parameter-search/src/bin/path2_direct_theorem_boundary_manifest.rs": [
         "Descender.Path2.DirectTheoremBoundaryManifest.v1",
         "Descender.Path2.DirectTheoremBoundary.v1",
         "path2_direct_theorem_boundary_report_v1",
+        "path2_direct_lifecycle_boundary_report_v1",
         "path2_account_creation_proof_boundary_report_v1",
         "path2_account_creation_sampler_timing_report_v1",
         "direct_theorem_boundary_report_digest",
+        "direct_lifecycle_boundary_report_digest",
+        "direct_theorem_report_lifecycle_digest",
         "account_creation_proof_boundary_report_digest",
         "account_creation_sampler_timing_report_digest",
         "proof_boundary_report_sampler_timing_digest",
+        "direct_lifecycle_boundary",
         "obligation_rows",
         "every_hypothesis_has_obligation",
         "leaf_evidence_binding_fields",
@@ -376,11 +442,15 @@ DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS = {
         "Descender.Path2.DirectTheoremBoundary.v1",
         "draft_theorem_boundary_manifest",
         "direct_theorem_boundary_report_digest",
+        "direct_lifecycle_boundary_report_digest",
+        "direct_theorem_report_lifecycle_digest",
         "account_creation_proof_boundary_report_digest",
         "account_creation_sampler_timing_report_digest",
         "proof_boundary_report_sampler_timing_digest",
+        "direct_lifecycle_boundary",
         "obligation_rows",
         "consensus_rejection_or_state_mutation_break",
+        "slot_replay_or_rollback_break",
         "leaf_evidence_binding_fields",
         '"composition_theorem_instantiated": false',
         '"deployment_ready": false',
@@ -423,10 +493,15 @@ PREFLIGHT_BOUNDARY_CONSISTENCY_MARKERS = {
         "production_deployment_preflight_report_digest",
         "validate_production_deployment_preflight_report",
         "path2_direct_theorem_boundary_report_v1",
+        "path2_direct_lifecycle_boundary_report_v1",
+        "path2_direct_lifecycle_boundary_report_v1_digest",
+        "validate_path2_direct_lifecycle_boundary_report_v1",
         "path2_account_creation_proof_boundary_report_v1",
         "path2_account_stark_fri_qrom_residual_report_v1",
         "path2_account_stark_residual_matrix_report_v1",
         "validate_path2_account_stark_fri_qrom_residual_report_v1",
+        "local_successor_state_model_pinned",
+        "target_chain_finality_profile_instantiated",
         "production_deployment_direct_theorem_blockers",
         "production_deployment_account_creation_proof_boundary_blockers",
         "production_deployment_account_stark_residual_blockers",
@@ -2346,6 +2421,21 @@ def check_account_creation_proof_boundary_manifest_markers(errors: list[str]) ->
                 )
 
 
+def check_direct_lifecycle_boundary_markers(errors: list[str]) -> None:
+    for rel, markers in DIRECT_LIFECYCLE_BOUNDARY_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"{rel}: missing direct lifecycle boundary artifact")
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing direct lifecycle boundary marker {marker!r}"
+                )
+
+
 def check_direct_theorem_boundary_manifest_markers(errors: list[str]) -> None:
     for rel, markers in DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS.items():
         path = ROOT / rel
@@ -2564,6 +2654,7 @@ def main() -> int:
     check_account_stark_fri_qrom_residual_markers(errors)
     check_account_creation_sampler_timing_markers(errors)
     check_account_creation_proof_boundary_manifest_markers(errors)
+    check_direct_lifecycle_boundary_markers(errors)
     check_direct_theorem_boundary_manifest_markers(errors)
     check_boundary_manifest_consistency_markers(errors)
     check_preflight_boundary_consistency_markers(errors)
