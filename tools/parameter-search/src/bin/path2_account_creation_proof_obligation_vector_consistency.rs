@@ -1,18 +1,21 @@
-use descender_parameter_search::production_reference::{
-    path2_account_creation_no_export_boundary_report_v1,
-    path2_account_creation_no_export_boundary_report_v1_digest,
-    path2_account_creation_proof_boundary_report_v1,
-    path2_account_creation_proof_boundary_report_v1_digest,
-    path2_account_stark_fri_qrom_residual_report_v1,
-    path2_account_stark_fri_qrom_residual_report_v1_digest,
-    path2_account_stark_payload_kat_boundary_report_v1,
-    path2_account_stark_payload_kat_boundary_report_v1_digest,
-    path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
-    validate_path2_account_creation_no_export_boundary_report_v1,
-    validate_path2_account_creation_proof_boundary_report_v1,
-    validate_path2_account_stark_fri_qrom_residual_report_v1,
-    validate_path2_account_stark_payload_kat_boundary_report_v1,
-    validate_path2_direct_theorem_boundary_report_v1,
+use descender_parameter_search::{
+    manifest_vector_evidence::path2_direct_accepted_composition_evidence_artifact_v1,
+    production_reference::{
+        path2_account_creation_no_export_boundary_report_v1,
+        path2_account_creation_no_export_boundary_report_v1_digest,
+        path2_account_creation_proof_boundary_report_v1,
+        path2_account_creation_proof_boundary_report_v1_digest,
+        path2_account_stark_fri_qrom_residual_report_v1,
+        path2_account_stark_fri_qrom_residual_report_v1_digest,
+        path2_account_stark_payload_kat_boundary_report_v1,
+        path2_account_stark_payload_kat_boundary_report_v1_digest,
+        path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
+        validate_path2_account_creation_no_export_boundary_report_v1,
+        validate_path2_account_creation_proof_boundary_report_v1,
+        validate_path2_account_stark_fri_qrom_residual_report_v1,
+        validate_path2_account_stark_payload_kat_boundary_report_v1,
+        validate_path2_direct_theorem_boundary_report_v1,
+    },
 };
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -380,6 +383,53 @@ fn main() -> Result<(), String> {
         return Err(
             "proof-obligation corpus accepted proof-boundary artifact drifted from proof report"
                 .to_string(),
+        );
+    }
+
+    let accepted_composition_artifact = path2_direct_accepted_composition_evidence_artifact_v1()?;
+    let corpus_composition_artifact = at(corpus, "/direct_accepted_composition_evidence_artifact")?;
+    if corpus_composition_artifact != &accepted_composition_artifact {
+        return Err(
+            "proof-obligation corpus lost direct accepted-composition artifact binding".to_string(),
+        );
+    }
+    if str_at(corpus_composition_artifact, "/artifact_manifest_digest")?
+        != str_at(&accepted_composition_file, "/manifest_digest")?
+        || str_at(
+            corpus_composition_artifact,
+            "/artifact_manifest_recomputed_digest",
+        )? != accepted_composition_recomputed_digest
+        || str_at(corpus_composition_artifact, "/evidence_digest")?
+            != str_at(accepted_composition, "/evidence/digest")?
+        || str_at(corpus_composition_artifact, "/evidence_recomputed_digest")?
+            != str_at(accepted_composition, "/evidence/recomputed_digest")?
+        || str_at(
+            corpus_composition_artifact,
+            "/direct_theorem_boundary_report_digest",
+        )? != hex_encode(&direct_report.digest)
+        || str_at(
+            corpus_composition_artifact,
+            "/direct_theorem_boundary_report_recomputed_digest",
+        )? != hex_encode(&direct_digest)
+        || str_at(
+            corpus_composition_artifact,
+            "/account_creation_proof_boundary_report_digest",
+        )? != hex_encode(&proof_report.digest)
+        || str_at(
+            corpus_composition_artifact,
+            "/account_creation_proof_boundary_report_recomputed_digest",
+        )? != hex_encode(&proof_digest)
+        || str_at(
+            corpus_composition_artifact,
+            "/account_creation_accepted_proof_boundary_evidence_digest",
+        )? != str_at(accepted_boundary_artifact, "/evidence_digest")?
+        || at(
+            corpus_composition_artifact,
+            "/account_creation_accepted_proof_boundary_evidence_artifact",
+        )? != accepted_boundary_artifact
+    {
+        return Err(
+            "proof-obligation corpus direct accepted-composition artifact drifted".to_string(),
         );
     }
     require_str(

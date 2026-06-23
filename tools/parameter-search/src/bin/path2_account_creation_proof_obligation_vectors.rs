@@ -1,5 +1,8 @@
 use descender_parameter_search::{
-    manifest_vector_evidence::path2_account_creation_accepted_proof_boundary_evidence_artifact_v1,
+    manifest_vector_evidence::{
+        path2_account_creation_accepted_proof_boundary_evidence_artifact_v1,
+        path2_direct_accepted_composition_evidence_artifact_v1,
+    },
     production_reference::{
         path2_account_creation_no_export_boundary_report_v1,
         path2_account_creation_no_export_boundary_report_v1_digest,
@@ -92,6 +95,8 @@ fn manifest_body() -> Result<Value, String> {
     }
     let accepted_proof_boundary_artifact =
         path2_account_creation_accepted_proof_boundary_evidence_artifact_v1()?;
+    let direct_accepted_composition_artifact =
+        path2_direct_accepted_composition_evidence_artifact_v1()?;
 
     let no_export_report = path2_account_creation_no_export_boundary_report_v1();
     validate_path2_account_creation_no_export_boundary_report_v1(&no_export_report)?;
@@ -300,6 +305,8 @@ fn manifest_body() -> Result<Value, String> {
             "blocker": proof_report.blocker
         },
         "accepted_proof_boundary_evidence_artifact": accepted_proof_boundary_artifact,
+        "direct_accepted_composition_evidence_artifact":
+            direct_accepted_composition_artifact,
         "no_export_vector_evidence": {
             "corpus_path": "formal/kat/path2_account_creation_no_export_vectors_v1.json",
             "corpus_schema": str_at(no_export_vectors, "/schema")?,

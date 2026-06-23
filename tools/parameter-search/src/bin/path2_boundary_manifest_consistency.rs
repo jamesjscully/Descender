@@ -677,6 +677,45 @@ fn check_consistency() -> Result<(), String> {
         ],
         false,
     )?;
+    expect_eq(
+        get(
+            proof_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "accepted_proof_boundary_evidence_artifact",
+            ],
+        )?,
+        "proof.manifest.account_creation_proof_boundary.accepted_proof_boundary_evidence_artifact",
+        get(
+            proof_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "proof_obligation_vector_corpus_evidence",
+                "accepted_proof_boundary_evidence_artifact",
+            ],
+        )?,
+        "proof.manifest.account_creation_proof_boundary.proof_obligation_vector_corpus_evidence.accepted_proof_boundary_evidence_artifact",
+    )?;
+    expect_eq(
+        get(
+            proof_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "accepted_proof_boundary_evidence_artifact",
+            ],
+        )?,
+        "proof.manifest.account_creation_proof_boundary.accepted_proof_boundary_evidence_artifact",
+        get(
+            proof_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "proof_obligation_vector_corpus_evidence",
+                "direct_accepted_composition_evidence_artifact",
+                "account_creation_accepted_proof_boundary_evidence_artifact",
+            ],
+        )?,
+        "proof.manifest.account_creation_proof_boundary.proof_obligation_vector_corpus_evidence.direct_accepted_composition_evidence_artifact.account_creation_accepted_proof_boundary_evidence_artifact",
+    )?;
     expect_bool(
         direct_manifest,
         &[
@@ -833,6 +872,25 @@ fn check_consistency() -> Result<(), String> {
             ],
         )?,
         "direct.manifest.direct_theorem_boundary.direct_obligation_vector_corpus_evidence.direct_accepted_composition_evidence_artifact",
+    )?;
+    expect_eq(
+        get(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_accepted_composition_evidence_artifact",
+            ],
+        )?,
+        "direct.manifest.direct_theorem_boundary.direct_accepted_composition_evidence_artifact",
+        get(
+            direct_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "proof_obligation_vector_corpus_evidence",
+                "direct_accepted_composition_evidence_artifact",
+            ],
+        )?,
+        "direct.manifest.account_creation_proof_boundary.proof_obligation_vector_corpus_evidence.direct_accepted_composition_evidence_artifact",
     )?;
     for flag in [
         "state_namespace_record_present",

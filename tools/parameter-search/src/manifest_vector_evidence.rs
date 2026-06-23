@@ -709,6 +709,7 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
     }
     let accepted_proof_boundary_artifact =
         path2_account_creation_accepted_proof_boundary_evidence_artifact_v1()?;
+    let accepted_composition_artifact = path2_direct_accepted_composition_evidence_artifact_v1()?;
 
     let corpus_file =
         load_json("formal/kat/path2_account_creation_proof_obligation_vectors_v1.json")?;
@@ -716,6 +717,14 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
     let corpus_digest = body_digest(corpus, "account-creation proof-obligation vector corpus")?;
     if str_at(&corpus_file, "/corpus_digest")? != corpus_digest {
         return Err("proof-obligation vector corpus digest mismatch".to_string());
+    }
+    if at(corpus, "/direct_accepted_composition_evidence_artifact")?
+        != &accepted_composition_artifact
+    {
+        return Err(
+            "proof-obligation vector corpus lost direct accepted composition artifact binding"
+                .to_string(),
+        );
     }
     if str_at(corpus, "/schema")? != "Descender.Path2.AccountCreationProofObligationVectors.v1"
         || str_at(corpus, "/status")? != "digest_pinned_proof_obligation_audit_vectors"
@@ -739,6 +748,26 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             corpus,
             "/accepted_proof_boundary_evidence_artifact/deterministic_proof_byte_mode/accepted_boundary_endpoint",
         )? != proof_report.accepted_boundary_evidence_endpoint
+        || str_at(
+            corpus,
+            "/direct_accepted_composition_evidence_artifact/evidence_digest",
+        )? != str_at(&accepted_composition_artifact, "/evidence_digest")?
+        || str_at(
+            corpus,
+            "/direct_accepted_composition_evidence_artifact/direct_theorem_boundary_report_digest",
+        )? != hex_encode(&direct_report.digest)
+        || str_at(
+            corpus,
+            "/direct_accepted_composition_evidence_artifact/account_creation_proof_boundary_report_digest",
+        )? != hex_encode(&proof_report.digest)
+        || str_at(
+            corpus,
+            "/direct_accepted_composition_evidence_artifact/account_creation_accepted_proof_boundary_evidence_digest",
+        )? != str_at(&accepted_proof_boundary_artifact, "/evidence_digest")?
+        || str_at(
+            corpus,
+            "/direct_accepted_composition_evidence_artifact/account_creation_accepted_proof_boundary_evidence_artifact/evidence_digest",
+        )? != str_at(&accepted_proof_boundary_artifact, "/evidence_digest")?
         || u64_at(corpus, "/case_count")?
             != proof_report.proof_obligation_audit_vector_case_count as u64
         || u64_at(corpus, "/audit_summary/proof_obligation_count")?
@@ -780,6 +809,8 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
         "direct_theorem_report_recomputed_digest": hex_encode(&direct_digest),
         "accepted_proof_boundary_evidence_artifact":
             accepted_proof_boundary_artifact,
+        "direct_accepted_composition_evidence_artifact":
+            accepted_composition_artifact,
         "case_count": u64_at(corpus, "/case_count")?,
         "audit_summary": {
             "proof_obligation_count": u64_at(
