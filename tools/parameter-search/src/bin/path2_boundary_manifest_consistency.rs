@@ -183,6 +183,33 @@ fn check_consistency() -> Result<(), String> {
         &[
             "account_creation_proof_boundary",
             "coverage",
+            "every_proof_obligation_has_named_break",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "every_open_proof_obligation_blocks_deployment",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "proof_obligation_rows_pinned",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
             "deployment_ready",
         ],
         false,

@@ -48,6 +48,8 @@
         "deployed_anchor_field_count": 8,
         "deployed_anchor_rebind_tests_present": true,
         "deployment_ready": false,
+        "every_open_proof_obligation_blocks_deployment": true,
+        "every_proof_obligation_has_named_break": true,
         "external_review_complete": false,
         "fri_aok_extractor_theorem_instantiated": false,
         "fri_qrom_residual_priced": false,
@@ -58,6 +60,9 @@
         "payload_binding_field_count": 6,
         "production_gate_fail_closed": true,
         "production_gate_open": false,
+        "proof_obligation_count": 8,
+        "proof_obligation_named_break_class_count": 8,
+        "proof_obligation_rows_pinned": true,
         "replay_payload_digest_bound": true,
         "sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
         "selected_payload_pinned": true,
@@ -106,6 +111,98 @@
         "slot_id",
         "public_replay_payload_digest",
         "account_stark_bundle"
+      ],
+      "proof_obligation_named_break_classes": [
+        "creation_time_hidden_source_soundness_break",
+        "checked_core_message_binding_break",
+        "postchallenge_slot_creation_or_rewrite_break",
+        "account_stark_simulator_or_no_export_break",
+        "account_stark_fri_aok_extractor_break",
+        "fri_soundness_margin_break",
+        "account_stark_payload_binding_break",
+        "account_stark_production_gate_break"
+      ],
+      "proof_obligation_rows": [
+        {
+          "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+          "closure_target": "honest_create_sampler_sound_v1",
+          "current_evidence": "honest-create sampler support file, construction steps, and source hook labels are pinned",
+          "named_break": "creation_time_hidden_source_soundness_break",
+          "obligation_id": "creation_proof_obligation_honest_sampler",
+          "open": true,
+          "required_closure": "prove the honest-create sampler samples the selected creation relation without bias or hidden postchallenge input",
+          "supporting_surface": "Path2AccountCreationSamplerTimingReportV1"
+        },
+        {
+          "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+          "closure_target": "selected_account_creation_authorization_class_binding_v1",
+          "current_evidence": "checked-core challenge binds message, state root, slot authorization digest, and proof commitment",
+          "named_break": "checked_core_message_binding_break",
+          "obligation_id": "creation_proof_obligation_authorization_class_binding",
+          "open": true,
+          "required_closure": "prove private authorization-local material cannot change public spend semantics or bypass checked-core binding",
+          "supporting_surface": "Path2AccountCreationSamplerTimingReportV1 and checked-core frame binding"
+        },
+        {
+          "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+          "closure_target": "no_postchallenge_slot_creation_timing_v1",
+          "current_evidence": "creation statement excludes spend message/signature bytes and spend challenge is derived after the fixed creation statement",
+          "named_break": "postchallenge_slot_creation_or_rewrite_break",
+          "obligation_id": "creation_proof_obligation_no_postchallenge_timing",
+          "open": true,
+          "required_closure": "prove no accepted slot can be created, rewritten, or selectively opened after observing the spend challenge",
+          "supporting_surface": "Path2AccountCreationSamplerTimingReportV1"
+        },
+        {
+          "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+          "closure_target": "selected_account_stark_public_bundle_simulator_v1 + selected_account_stark_no_export_v1",
+          "current_evidence": "public-input allowlist and private-material denylist are pinned for the selected account-STARK payload",
+          "named_break": "account_stark_simulator_or_no_export_break",
+          "obligation_id": "creation_proof_obligation_simulator_no_export",
+          "open": true,
+          "required_closure": "prove accepted public bundles are simulatable from public anchors and allowed commitments without exporting private creation material",
+          "supporting_surface": "Path2AccountCreationNoExportBoundaryReportV1"
+        },
+        {
+          "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+          "closure_target": "selected_plonky3_q12289_fri_iop_aok_extractor",
+          "current_evidence": "AIR coverage, FRI schedule, challenge field, and extractor theorem target are pinned",
+          "named_break": "account_stark_fri_aok_extractor_break",
+          "obligation_id": "creation_proof_obligation_fri_aok_extractor",
+          "open": true,
+          "required_closure": "prove every accepting proof for the selected Plonky3/q12289 configuration implies an extractable account-creation witness or a named FRI/AoK break",
+          "supporting_surface": "Path2AccountStarkFriAokBoundaryReportV1"
+        },
+        {
+          "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+          "closure_target": "selected_account_stark_fri_poseidon2_qrom_residual_ledger_v1",
+          "current_evidence": "active FRI parameters, degree-8 challenge field, Poseidon2 sponge floor, and checked-core QROM artifacts are pinned",
+          "named_break": "fri_soundness_margin_break",
+          "obligation_id": "creation_proof_obligation_fri_qrom_residual_pricing",
+          "open": true,
+          "required_closure": "price the account-STARK FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile",
+          "supporting_surface": "Path2AccountStarkFriQromResidualReportV1"
+        },
+        {
+          "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+          "closure_target": "selected_account_stark_payload_frozen_kat_corpus_v1",
+          "current_evidence": "current mutation rows, public rejection classes, and deterministic digest-pinned boundary vectors exist",
+          "named_break": "account_stark_payload_binding_break",
+          "obligation_id": "creation_proof_obligation_frozen_payload_kats",
+          "open": true,
+          "required_closure": "freeze the full byte corpus and public rejection-class mapping for every consensus-visible malformed payload",
+          "supporting_surface": "Path2AccountStarkPayloadKatBoundaryReportV1"
+        },
+        {
+          "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+          "closure_target": "selected_account_stark_production_admission_gate_v1",
+          "current_evidence": "production verification remains fail-closed and external proof-family review is incomplete",
+          "named_break": "account_stark_production_gate_break",
+          "obligation_id": "creation_proof_obligation_production_gate_and_review",
+          "open": true,
+          "required_closure": "obtain external review, record tracker disposition, and make an explicit maintainer decision before production admission can open",
+          "supporting_surface": "production account-STARK payload boundary and external review lane"
+        }
       ]
     },
     "authority_snapshot": {
@@ -132,16 +229,16 @@
     "corpus_id": "Descender.Path2.DirectTheoremBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "0364799bdcbddc71aa2f4c3623433c69938f1336b11c97b929504ff160a56192",
-      "account_creation_proof_boundary_report_recomputed_digest": "0364799bdcbddc71aa2f4c3623433c69938f1336b11c97b929504ff160a56192",
+      "account_creation_proof_boundary_report_digest": "9a2a1fb9ce2857d5cc14fd24c76742d0bb5195b0ebeb6012274643e247a98563",
+      "account_creation_proof_boundary_report_recomputed_digest": "9a2a1fb9ce2857d5cc14fd24c76742d0bb5195b0ebeb6012274643e247a98563",
       "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
-      "direct_theorem_boundary_report_digest": "15dacb4b1767d60c3dbc9a88086a62718b64ef82936a39667671ef4597ddb55d",
-      "direct_theorem_boundary_report_recomputed_digest": "15dacb4b1767d60c3dbc9a88086a62718b64ef82936a39667671ef4597ddb55d",
+      "direct_theorem_boundary_report_digest": "9b49d604809c91cab30ba9aaf31710173777f6f27dcf7e2285ff8fdc4223bac2",
+      "direct_theorem_boundary_report_recomputed_digest": "9b49d604809c91cab30ba9aaf31710173777f6f27dcf7e2285ff8fdc4223bac2",
       "direct_theorem_report_lifecycle_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_theorem_report_qrom_action_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
@@ -427,5 +524,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "ee12fae0848b20cb0cfa84cf03892c5b755c601847cd7fd7ff2ed44a636ff34d"
+  "manifest_digest": "75abc460267341f924ecc2787ef5ebff42751935b859ef032b053378f2e3adac"
 }

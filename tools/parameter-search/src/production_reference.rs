@@ -9501,6 +9501,18 @@ pub struct Path2AccountCreationNoExportBoundaryReportV1 {
     pub blocker: &'static str,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AccountCreationProofBoundaryObligationRowV1 {
+    pub obligation_id: &'static str,
+    pub closure_target: &'static str,
+    pub supporting_surface: &'static str,
+    pub current_evidence: &'static str,
+    pub required_closure: &'static str,
+    pub named_break: &'static str,
+    pub blocker: &'static str,
+    pub open: bool,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
@@ -9519,11 +9531,17 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub payload_binding_fields: &'static [&'static str],
     pub deployed_anchor_fields: &'static [&'static str],
     pub no_export_private_material_fields: &'static [&'static str],
+    pub proof_obligation_named_break_classes: &'static [&'static str],
+    pub proof_obligation_rows: &'static [Path2AccountCreationProofBoundaryObligationRowV1],
+    pub proof_obligation_count: usize,
+    pub every_proof_obligation_has_named_break: bool,
+    pub every_open_proof_obligation_blocks_deployment: bool,
     pub boundary_statement_pinned: bool,
     pub selected_payload_pinned: bool,
     pub replay_payload_digest_bound: bool,
     pub active_payload_mutation_coverage_present: bool,
     pub deployed_anchor_rebind_tests_present: bool,
+    pub proof_obligation_rows_pinned: bool,
     pub production_gate_fail_closed: bool,
     pub simulator_theorem_instantiated: bool,
     pub fri_aok_extractor_theorem_instantiated: bool,
@@ -10735,6 +10753,117 @@ pub const PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS: [&str; 14] = [
     "public_rejection_code",
 ];
 
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NAMED_BREAK_CLASSES: [&str; 8] = [
+    "creation_time_hidden_source_soundness_break",
+    "checked_core_message_binding_break",
+    "postchallenge_slot_creation_or_rewrite_break",
+    "account_stark_simulator_or_no_export_break",
+    "account_stark_fri_aok_extractor_break",
+    "fri_soundness_margin_break",
+    "account_stark_payload_binding_break",
+    "account_stark_production_gate_break",
+];
+
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
+    [Path2AccountCreationProofBoundaryObligationRowV1; 8] = [
+    Path2AccountCreationProofBoundaryObligationRowV1 {
+        obligation_id: "creation_proof_obligation_honest_sampler",
+        closure_target: "honest_create_sampler_sound_v1",
+        supporting_surface: "Path2AccountCreationSamplerTimingReportV1",
+        current_evidence:
+            "honest-create sampler support file, construction steps, and source hook labels are pinned",
+        required_closure:
+            "prove the honest-create sampler samples the selected creation relation without bias or hidden postchallenge input",
+        named_break: "creation_time_hidden_source_soundness_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+    Path2AccountCreationProofBoundaryObligationRowV1 {
+        obligation_id: "creation_proof_obligation_authorization_class_binding",
+        closure_target: "selected_account_creation_authorization_class_binding_v1",
+        supporting_surface: "Path2AccountCreationSamplerTimingReportV1 and checked-core frame binding",
+        current_evidence:
+            "checked-core challenge binds message, state root, slot authorization digest, and proof commitment",
+        required_closure:
+            "prove private authorization-local material cannot change public spend semantics or bypass checked-core binding",
+        named_break: "checked_core_message_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+    Path2AccountCreationProofBoundaryObligationRowV1 {
+        obligation_id: "creation_proof_obligation_no_postchallenge_timing",
+        closure_target: "no_postchallenge_slot_creation_timing_v1",
+        supporting_surface: "Path2AccountCreationSamplerTimingReportV1",
+        current_evidence:
+            "creation statement excludes spend message/signature bytes and spend challenge is derived after the fixed creation statement",
+        required_closure:
+            "prove no accepted slot can be created, rewritten, or selectively opened after observing the spend challenge",
+        named_break: "postchallenge_slot_creation_or_rewrite_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+    Path2AccountCreationProofBoundaryObligationRowV1 {
+        obligation_id: "creation_proof_obligation_simulator_no_export",
+        closure_target: "selected_account_stark_public_bundle_simulator_v1 + selected_account_stark_no_export_v1",
+        supporting_surface: "Path2AccountCreationNoExportBoundaryReportV1",
+        current_evidence:
+            "public-input allowlist and private-material denylist are pinned for the selected account-STARK payload",
+        required_closure:
+            "prove accepted public bundles are simulatable from public anchors and allowed commitments without exporting private creation material",
+        named_break: "account_stark_simulator_or_no_export_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+    Path2AccountCreationProofBoundaryObligationRowV1 {
+        obligation_id: "creation_proof_obligation_fri_aok_extractor",
+        closure_target: "selected_plonky3_q12289_fri_iop_aok_extractor",
+        supporting_surface: "Path2AccountStarkFriAokBoundaryReportV1",
+        current_evidence:
+            "AIR coverage, FRI schedule, challenge field, and extractor theorem target are pinned",
+        required_closure:
+            "prove every accepting proof for the selected Plonky3/q12289 configuration implies an extractable account-creation witness or a named FRI/AoK break",
+        named_break: "account_stark_fri_aok_extractor_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+    Path2AccountCreationProofBoundaryObligationRowV1 {
+        obligation_id: "creation_proof_obligation_fri_qrom_residual_pricing",
+        closure_target: "selected_account_stark_fri_poseidon2_qrom_residual_ledger_v1",
+        supporting_surface: "Path2AccountStarkFriQromResidualReportV1",
+        current_evidence:
+            "active FRI parameters, degree-8 challenge field, Poseidon2 sponge floor, and checked-core QROM artifacts are pinned",
+        required_closure:
+            "price the account-STARK FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile",
+        named_break: "fri_soundness_margin_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+    Path2AccountCreationProofBoundaryObligationRowV1 {
+        obligation_id: "creation_proof_obligation_frozen_payload_kats",
+        closure_target: "selected_account_stark_payload_frozen_kat_corpus_v1",
+        supporting_surface: "Path2AccountStarkPayloadKatBoundaryReportV1",
+        current_evidence:
+            "current mutation rows, public rejection classes, and deterministic digest-pinned boundary vectors exist",
+        required_closure:
+            "freeze the full byte corpus and public rejection-class mapping for every consensus-visible malformed payload",
+        named_break: "account_stark_payload_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+    Path2AccountCreationProofBoundaryObligationRowV1 {
+        obligation_id: "creation_proof_obligation_production_gate_and_review",
+        closure_target: "selected_account_stark_production_admission_gate_v1",
+        supporting_surface: "production account-STARK payload boundary and external review lane",
+        current_evidence:
+            "production verification remains fail-closed and external proof-family review is incomplete",
+        required_closure:
+            "obtain external review, record tracker disposition, and make an explicit maintainer decision before production admission can open",
+        named_break: "account_stark_production_gate_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+];
+
 pub const PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKERS: [&str;
     PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKER_COUNT] = [
     PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
@@ -11318,6 +11447,7 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
     let no_export_boundary_report = path2_account_creation_no_export_boundary_report_v1();
     let account_stark_residual_matrix_report =
         path2_account_stark_residual_matrix_report_v1();
+    let proof_obligation_rows = &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS;
     let mut report = Path2AccountCreationProofBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN,
@@ -11341,11 +11471,25 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         deployed_anchor_fields: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS,
         no_export_private_material_fields:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS,
+        proof_obligation_named_break_classes:
+            &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NAMED_BREAK_CLASSES,
+        proof_obligation_rows,
+        proof_obligation_count: proof_obligation_rows.len(),
+        every_proof_obligation_has_named_break: proof_obligation_rows.iter().all(|row| {
+            !row.named_break.is_empty()
+                && PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NAMED_BREAK_CLASSES
+                    .contains(&row.named_break)
+        }),
+        every_open_proof_obligation_blocks_deployment: proof_obligation_rows.iter().all(|row| {
+            !row.open
+                || row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+        }),
         boundary_statement_pinned: true,
         selected_payload_pinned: true,
         replay_payload_digest_bound: true,
         active_payload_mutation_coverage_present: true,
         deployed_anchor_rebind_tests_present: true,
+        proof_obligation_rows_pinned: true,
         production_gate_fail_closed: true,
         simulator_theorem_instantiated: false,
         fri_aok_extractor_theorem_instantiated: false,
@@ -11386,6 +11530,44 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
     if report.no_export_boundary_report_digest != no_export_boundary_report.digest {
         return Err(
             "Path 2 account-creation proof boundary no-export digest mismatch".to_string(),
+        );
+    }
+    let account_stark_residual_matrix_report =
+        path2_account_stark_residual_matrix_report_v1();
+    if report.account_stark_residual_matrix_report_digest
+        != account_stark_residual_matrix_report.digest
+    {
+        return Err(
+            "Path 2 account-creation proof boundary residual-matrix digest mismatch".to_string(),
+        );
+    }
+    if report.proof_obligation_rows != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS.as_ref()
+        || report.proof_obligation_count != report.proof_obligation_rows.len()
+        || !report.every_proof_obligation_has_named_break
+        || !report.every_open_proof_obligation_blocks_deployment
+        || !report.proof_obligation_rows_pinned
+    {
+        return Err(
+            "Path 2 account-creation proof boundary lost obligation-row coverage".to_string(),
+        );
+    }
+    if !report.boundary_statement_pinned
+        || !report.selected_payload_pinned
+        || !report.replay_payload_digest_bound
+        || !report.active_payload_mutation_coverage_present
+        || !report.deployed_anchor_rebind_tests_present
+        || !report.production_gate_fail_closed
+        || report.simulator_theorem_instantiated
+        || report.fri_aok_extractor_theorem_instantiated
+        || report.fri_qrom_residual_priced
+        || report.frozen_kat_corpus_complete
+        || report.external_review_complete
+        || report.production_gate_open
+        || report.deployment_ready
+    {
+        return Err(
+            "Path 2 account-creation proof boundary unexpectedly changes closure status"
+                .to_string(),
         );
     }
     Ok(())
@@ -64738,6 +64920,80 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
             field.as_bytes(),
         );
     }
+    for (index, break_class) in report
+        .proof_obligation_named_break_classes
+        .iter()
+        .enumerate()
+    {
+        append_u64(
+            &mut frame,
+            b"proof_obligation_named_break_class_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"proof_obligation_named_break_class",
+            break_class.as_bytes(),
+        );
+    }
+    for (index, row) in report.proof_obligation_rows.iter().enumerate() {
+        append_u64(&mut frame, b"proof_obligation_row_index", index as u64);
+        append_frame(
+            &mut frame,
+            b"proof_obligation_id",
+            row.obligation_id.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"proof_obligation_closure_target",
+            row.closure_target.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"proof_obligation_supporting_surface",
+            row.supporting_surface.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"proof_obligation_current_evidence",
+            row.current_evidence.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"proof_obligation_required_closure",
+            row.required_closure.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"proof_obligation_named_break",
+            row.named_break.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"proof_obligation_blocker",
+            row.blocker.as_bytes(),
+        );
+        append_u64(
+            &mut frame,
+            b"proof_obligation_open",
+            u64::from(row.open),
+        );
+    }
+    append_u64(
+        &mut frame,
+        b"proof_obligation_count",
+        report.proof_obligation_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"every_proof_obligation_has_named_break",
+        u64::from(report.every_proof_obligation_has_named_break),
+    );
+    append_u64(
+        &mut frame,
+        b"every_open_proof_obligation_blocks_deployment",
+        u64::from(report.every_open_proof_obligation_blocks_deployment),
+    );
     append_u64(
         &mut frame,
         b"boundary_statement_pinned",
@@ -64762,6 +65018,11 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         &mut frame,
         b"deployed_anchor_rebind_tests_present",
         u64::from(report.deployed_anchor_rebind_tests_present),
+    );
+    append_u64(
+        &mut frame,
+        b"proof_obligation_rows_pinned",
+        u64::from(report.proof_obligation_rows_pinned),
     );
     append_u64(
         &mut frame,
@@ -106331,6 +106592,52 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report
             .no_export_private_material_fields
             .contains(&"private_trace_material"));
+        assert_eq!(
+            report.proof_obligation_named_break_classes,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NAMED_BREAK_CLASSES.as_ref()
+        );
+        assert_eq!(
+            report.proof_obligation_rows,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS.as_ref()
+        );
+        assert_eq!(report.proof_obligation_count, 8);
+        assert_eq!(report.proof_obligation_count, report.proof_obligation_rows.len());
+        assert!(report.every_proof_obligation_has_named_break);
+        assert!(report.every_open_proof_obligation_blocks_deployment);
+        assert!(report.proof_obligation_rows_pinned);
+        assert_eq!(
+            report.proof_obligation_rows[0].closure_target,
+            "honest_create_sampler_sound_v1"
+        );
+        assert_eq!(
+            report.proof_obligation_rows[3].closure_target,
+            "selected_account_stark_public_bundle_simulator_v1 + selected_account_stark_no_export_v1"
+        );
+        assert_eq!(
+            report.proof_obligation_rows[4].named_break,
+            "account_stark_fri_aok_extractor_break"
+        );
+        assert_eq!(
+            report.proof_obligation_rows[5].named_break,
+            "fri_soundness_margin_break"
+        );
+        assert_eq!(
+            report.proof_obligation_rows[6].named_break,
+            "account_stark_payload_binding_break"
+        );
+        assert_eq!(
+            report.proof_obligation_rows[7].named_break,
+            "account_stark_production_gate_break"
+        );
+        for row in report.proof_obligation_rows {
+            assert!(row.open);
+            assert_eq!(
+                row.blocker,
+                PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+            );
+            assert!(!row.required_closure.is_empty());
+            assert!(!row.current_evidence.is_empty());
+        }
         assert!(report.boundary_statement_pinned);
         assert!(report.selected_payload_pinned);
         assert!(report.replay_payload_digest_bound);

@@ -195,6 +195,15 @@ fn main() -> Result<(), String> {
             "account-creation proof boundary unexpectedly reports closed obligations".to_string(),
         );
     }
+    if !proof_report.proof_obligation_rows_pinned
+        || !proof_report.every_proof_obligation_has_named_break
+        || !proof_report.every_open_proof_obligation_blocks_deployment
+        || proof_report.proof_obligation_count != proof_report.proof_obligation_rows.len()
+    {
+        return Err(
+            "account-creation proof boundary lost proof-obligation blocker coverage".to_string(),
+        );
+    }
     if fri_qrom_report.deployment_ready
         || fri_qrom_report.residual_pricing_complete
         || fri_qrom_report.account_stark_transcript_qrom_theorem_instantiated

@@ -1,3 +1,5 @@
+#![recursion_limit = "256"]
+
 use descender_parameter_search::production_reference::{
     PROFILE, path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_proof_boundary_report_v1_digest,
@@ -310,6 +312,14 @@ fn manifest_body() -> Result<Value, String> {
                     proof_boundary_report.deployed_anchor_fields.len(),
                 "no_export_private_material_field_count":
                     proof_boundary_report.no_export_private_material_fields.len(),
+                "proof_obligation_named_break_class_count":
+                    proof_boundary_report.proof_obligation_named_break_classes.len(),
+                "proof_obligation_count":
+                    proof_boundary_report.proof_obligation_count,
+                "every_proof_obligation_has_named_break":
+                    proof_boundary_report.every_proof_obligation_has_named_break,
+                "every_open_proof_obligation_blocks_deployment":
+                    proof_boundary_report.every_open_proof_obligation_blocks_deployment,
                 "boundary_statement_pinned":
                     proof_boundary_report.boundary_statement_pinned,
                 "selected_payload_pinned": proof_boundary_report.selected_payload_pinned,
@@ -319,6 +329,8 @@ fn manifest_body() -> Result<Value, String> {
                     proof_boundary_report.active_payload_mutation_coverage_present,
                 "deployed_anchor_rebind_tests_present":
                     proof_boundary_report.deployed_anchor_rebind_tests_present,
+                "proof_obligation_rows_pinned":
+                    proof_boundary_report.proof_obligation_rows_pinned,
                 "production_gate_fail_closed":
                     proof_boundary_report.production_gate_fail_closed,
                 "simulator_theorem_instantiated":
@@ -344,7 +356,10 @@ fn manifest_body() -> Result<Value, String> {
             "payload_binding_fields": proof_boundary_report.payload_binding_fields,
             "deployed_anchor_fields": proof_boundary_report.deployed_anchor_fields,
             "no_export_private_material_fields":
-                proof_boundary_report.no_export_private_material_fields
+                proof_boundary_report.no_export_private_material_fields,
+            "proof_obligation_named_break_classes":
+                proof_boundary_report.proof_obligation_named_break_classes,
+            "proof_obligation_rows": proof_boundary_report.proof_obligation_rows
         }
     }))
 }
