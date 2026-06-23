@@ -201,6 +201,15 @@ fn check_consistency() -> Result<(), String> {
         ],
         false,
     )?;
+    expect_u64(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "coverage",
+            "obligation_audit_vector_case_count",
+        ],
+        9,
+    )?;
     expect_bool(
         direct_manifest,
         &[
@@ -338,11 +347,7 @@ fn check_consistency() -> Result<(), String> {
     )?;
     expect_bool(
         proof_manifest,
-        &[
-            "fri_aok_boundary_snapshot",
-            "coverage",
-            "deployment_ready",
-        ],
+        &["fri_aok_boundary_snapshot", "coverage", "deployment_ready"],
         false,
     )?;
     expect_bool(

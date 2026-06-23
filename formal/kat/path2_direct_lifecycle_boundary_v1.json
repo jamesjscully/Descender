@@ -22,8 +22,8 @@
     "digests": {
       "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
-      "direct_theorem_boundary_report_digest": "02e0e3b8d7d37c52851fdbc7c1884df246e3ded776a35a7e894893f023fba281",
-      "direct_theorem_boundary_report_recomputed_digest": "02e0e3b8d7d37c52851fdbc7c1884df246e3ded776a35a7e894893f023fba281",
+      "direct_theorem_boundary_report_digest": "5cead01ff9009753944f6a3b92dca10188c4d440342f5fb9442af8dbc0acc0e5",
+      "direct_theorem_boundary_report_recomputed_digest": "5cead01ff9009753944f6a3b92dca10188c4d440342f5fb9442af8dbc0acc0e5",
       "direct_theorem_report_lifecycle_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb"
     },
     "frozen_status": "draft_lifecycle_boundary_manifest",
@@ -65,5 +65,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectLifecycleBoundaryManifest.v1"
   },
-  "manifest_digest": "9e858cf68f7b587f75dc90a36233be7703d9ebd3516e0df68422dfbd0930fd45"
+  "manifest_digest": "6c20b6bf7bd10e5ac6788a8d17dfcdb4df1f88bc7d63ba277275dbab6cf56f64"
 }

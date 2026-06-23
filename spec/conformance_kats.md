@@ -194,6 +194,8 @@ account-creation acceptance requirements, including
 `path2_account_stark_fri_qrom_domain_vectors_v1.json` for the selected
 FRI/QROM domain boundary. It also binds
 `path2_account_creation_proof_obligation_vectors_v1.json` to the open
-proof-obligation row table for the direct-theorem shape. The full direct-mode
-vector corpus, full byte corpus,
+proof-obligation row table for the direct-theorem shape.
+`path2_direct_theorem_obligation_vectors_v1.json` separately pins the open
+direct-theorem obligation row table and imported-boundary digests. The full
+direct-mode vector corpus, full byte corpus,
 lifecycle/rejection coverage, and `DIR-KAT-001` closure remain open.

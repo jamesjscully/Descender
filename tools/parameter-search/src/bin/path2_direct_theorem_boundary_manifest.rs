@@ -162,6 +162,8 @@ fn manifest_body() -> Result<Value, String> {
                 "acceptance_hypothesis_count": direct_report.acceptance_hypotheses.len(),
                 "named_break_class_count": direct_report.named_break_classes.len(),
                 "obligation_count": direct_report.obligation_count,
+                "obligation_audit_vector_case_count":
+                    direct_report.obligation_audit_vector_case_count,
                 "every_hypothesis_has_obligation":
                     direct_report.every_hypothesis_has_obligation,
                 "every_obligation_has_named_break":
@@ -189,6 +191,8 @@ fn manifest_body() -> Result<Value, String> {
             "accepted_tuple_fields": direct_report.accepted_tuple_fields,
             "acceptance_hypotheses": direct_report.acceptance_hypotheses,
             "named_break_classes": direct_report.named_break_classes,
+            "obligation_audit_vector_case_ids":
+                direct_report.obligation_audit_vector_case_ids,
             "obligation_rows": direct_report.obligation_rows
         },
         "direct_qrom_action_boundary": {

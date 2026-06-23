@@ -9737,8 +9737,10 @@ pub struct Path2DirectTheoremBoundaryReportV1 {
     pub accepted_tuple_fields: &'static [&'static str],
     pub acceptance_hypotheses: &'static [&'static str],
     pub named_break_classes: &'static [&'static str],
+    pub obligation_audit_vector_case_ids: &'static [&'static str],
     pub obligation_rows: &'static [Path2DirectTheoremObligationRowV1],
     pub obligation_count: usize,
+    pub obligation_audit_vector_case_count: usize,
     pub every_hypothesis_has_obligation: bool,
     pub every_obligation_has_named_break: bool,
     pub every_open_obligation_blocks_deployment: bool,
@@ -10808,6 +10810,18 @@ pub const PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES: [&str; 12] = [
     "selected_account_creation_payload_proof_family_break",
     "consensus_rejection_or_state_mutation_break",
     "external_coded_sis_or_lattice_core_assumption_break",
+];
+
+pub const PATH2_DIRECT_THEOREM_OBLIGATION_AUDIT_CASES: [&str; 9] = [
+    "direct_obligation_leaf_canonical_live",
+    "direct_obligation_evidence_leaf_bindings",
+    "direct_obligation_slot_authorization_digest",
+    "direct_obligation_creation_before_challenge",
+    "direct_obligation_admission_namespace",
+    "direct_obligation_checked_core_frame_binding",
+    "direct_obligation_checked_core_acceptance",
+    "direct_obligation_consume_once",
+    "direct_obligation_public_rejection",
 ];
 
 pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRowV1; 9] = [
@@ -12458,8 +12472,10 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         accepted_tuple_fields: &PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS,
         acceptance_hypotheses: &PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES,
         named_break_classes: &PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES,
+        obligation_audit_vector_case_ids: &PATH2_DIRECT_THEOREM_OBLIGATION_AUDIT_CASES,
         obligation_rows,
         obligation_count: obligation_rows.len(),
+        obligation_audit_vector_case_count: PATH2_DIRECT_THEOREM_OBLIGATION_AUDIT_CASES.len(),
         every_hypothesis_has_obligation: PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.len()
             == obligation_rows.len()
             && PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES
@@ -12526,6 +12542,21 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         || report.theorem_conclusion != PATH2_DIRECT_THEOREM_CONCLUSION
     {
         return Err("Path 2 direct theorem boundary target mismatch".to_string());
+    }
+    if report.obligation_audit_vector_case_ids
+        != PATH2_DIRECT_THEOREM_OBLIGATION_AUDIT_CASES.as_ref()
+        || report.obligation_audit_vector_case_count
+            != report.obligation_audit_vector_case_ids.len()
+        || report.obligation_rows.len() != report.obligation_audit_vector_case_ids.len()
+        || !report
+            .obligation_rows
+            .iter()
+            .zip(report.obligation_audit_vector_case_ids.iter())
+            .all(|(row, expected)| row.obligation_id == *expected)
+    {
+        return Err(
+            "Path 2 direct theorem boundary obligation audit vector case mismatch".to_string(),
+        );
     }
     Ok(())
 }
@@ -66844,6 +66875,18 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         append_u64(&mut frame, b"named_break_class_index", index as u64);
         append_frame(&mut frame, b"named_break_class", break_class.as_bytes());
     }
+    for (index, case_id) in report.obligation_audit_vector_case_ids.iter().enumerate() {
+        append_u64(
+            &mut frame,
+            b"direct_obligation_audit_vector_case_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"direct_obligation_audit_vector_case_id",
+            case_id.as_bytes(),
+        );
+    }
     for (index, row) in report.obligation_rows.iter().enumerate() {
         append_u64(&mut frame, b"direct_theorem_obligation_index", index as u64);
         append_frame(&mut frame, b"obligation_id", row.obligation_id.as_bytes());
@@ -66872,6 +66915,11 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         append_u64(&mut frame, b"open", u64::from(row.open));
     }
     append_u64(&mut frame, b"obligation_count", report.obligation_count as u64);
+    append_u64(
+        &mut frame,
+        b"obligation_audit_vector_case_count",
+        report.obligation_audit_vector_case_count as u64,
+    );
     append_u64(
         &mut frame,
         b"every_hypothesis_has_obligation",
@@ -108137,6 +108185,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.named_break_classes,
             PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES.as_ref()
         );
+        assert_eq!(
+            report.obligation_audit_vector_case_ids,
+            PATH2_DIRECT_THEOREM_OBLIGATION_AUDIT_CASES.as_ref()
+        );
         assert_eq!(report.accepted_tuple_fields.len(), 11);
         assert_eq!(report.acceptance_hypotheses.len(), 9);
         assert_eq!(report.named_break_classes.len(), 12);
@@ -108145,6 +108197,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_DIRECT_THEOREM_OBLIGATION_ROWS.as_ref()
         );
         assert_eq!(report.obligation_count, 9);
+        assert_eq!(report.obligation_audit_vector_case_count, 9);
         assert!(report.every_hypothesis_has_obligation);
         assert!(report.every_obligation_has_named_break);
         assert!(report.every_open_obligation_blocks_deployment);
@@ -108176,12 +108229,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.obligation_rows[8].named_break,
             "consensus_rejection_or_state_mutation_break"
         );
-        for (hypothesis, row) in report
+        for ((hypothesis, row), expected_case_id) in report
             .acceptance_hypotheses
             .iter()
             .zip(report.obligation_rows.iter())
+            .zip(report.obligation_audit_vector_case_ids.iter())
         {
             assert_eq!(row.acceptance_hypothesis, *hypothesis);
+            assert_eq!(row.obligation_id, *expected_case_id);
             assert!(row.open);
             assert_eq!(
                 row.blocker,

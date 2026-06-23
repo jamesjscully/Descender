@@ -366,6 +366,22 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ),
     ),
     (
+        "direct theorem obligation vector corpus check",
+        (
+            "path2_direct_theorem_obligation_vectors",
+            "path2_direct_theorem_obligation_vectors_v1.json",
+        ),
+        (
+            "path2_direct_theorem_obligation_vectors",
+            "path2_direct_theorem_obligation_vectors_v1.json",
+        ),
+    ),
+    (
+        "direct theorem obligation vector consistency check",
+        ("path2_direct_theorem_obligation_vector_consistency",),
+        ("path2_direct_theorem_obligation_vector_consistency",),
+    ),
+    (
         "boundary manifest consistency check",
         ("path2_boundary_manifest_consistency",),
         ("path2_boundary_manifest_consistency",),
@@ -623,6 +639,20 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-SEC-001",
         "DIR-CREATE-001",
         "DIR-PROOF-001",
+    ),
+    "direct theorem obligation vector corpus check": (
+        "DIR-SEC-001",
+        "DIR-CREATE-001",
+        "DIR-PROOF-001",
+        "DIR-LIFE-001",
+        "DIR-QROM-001",
+    ),
+    "direct theorem obligation vector consistency check": (
+        "DIR-SEC-001",
+        "DIR-CREATE-001",
+        "DIR-PROOF-001",
+        "DIR-LIFE-001",
+        "DIR-QROM-001",
     ),
     "boundary manifest consistency check": (
         "DIR-SEC-001",
