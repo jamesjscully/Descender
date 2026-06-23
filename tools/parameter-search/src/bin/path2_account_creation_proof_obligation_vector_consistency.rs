@@ -144,6 +144,47 @@ fn main() -> Result<(), String> {
             "direct accepted composition manifest is not in one-thread KAT mode".to_string(),
         );
     }
+    let accepted_boundary_file = load_json(
+        &root,
+        "formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json",
+    )?;
+    let accepted_boundary = at(&accepted_boundary_file, "/manifest")?;
+    let accepted_boundary_json =
+        serde_json::to_string_pretty(accepted_boundary).map_err(|err| {
+            format!("serialize account-creation accepted proof-boundary manifest body: {err}")
+        })?;
+    let accepted_boundary_recomputed_digest =
+        hex_encode(&Sha256::digest(accepted_boundary_json.as_bytes()));
+    if str_at(&accepted_boundary_file, "/manifest_digest")? != accepted_boundary_recomputed_digest {
+        return Err(
+            "account-creation accepted proof-boundary manifest digest mismatch".to_string(),
+        );
+    }
+    require_str(
+        accepted_boundary,
+        "/schema",
+        "Descender.Path2.AccountCreationAcceptedProofBoundaryDeterministicKatEvidenceManifest.v1",
+    )?;
+    require_str(
+        accepted_boundary,
+        "/status",
+        "digest_pinned_deterministic_kat_accepted_account_creation_proof_boundary_evidence",
+    )?;
+    require_bool(
+        accepted_boundary,
+        "/deterministic_proof_byte_mode/evidence_digest_recomputed",
+        true,
+    )?;
+    if u64_at(
+        accepted_boundary,
+        "/deterministic_proof_byte_mode/rayon_threads",
+    )? != 1
+    {
+        return Err(
+            "account-creation accepted proof-boundary manifest is not in one-thread KAT mode"
+                .to_string(),
+        );
+    }
 
     let proof_report = path2_account_creation_proof_boundary_report_v1();
     validate_path2_account_creation_proof_boundary_report_v1(&proof_report)?;
@@ -234,6 +275,68 @@ fn main() -> Result<(), String> {
         return Err("direct theorem report lost proof-boundary binding".to_string());
     }
     require_str(
+        accepted_boundary,
+        "/deterministic_proof_byte_mode/accepted_boundary_endpoint",
+        proof_report.accepted_boundary_evidence_endpoint,
+    )?;
+    require_str(
+        accepted_boundary,
+        "/evidence/schema",
+        proof_report.accepted_boundary_evidence_schema,
+    )?;
+    require_str(
+        accepted_boundary,
+        "/evidence/proof_boundary_target",
+        proof_report.proof_boundary_target,
+    )?;
+    require_str(
+        accepted_boundary,
+        "/evidence/proof_boundary_conclusion",
+        proof_report.proof_boundary_conclusion,
+    )?;
+    require_hex(
+        accepted_boundary,
+        "/evidence/account_creation_proof_boundary_report_digest",
+        &proof_report.digest,
+    )?;
+    require_str(
+        accepted_composition,
+        "/evidence/account_creation_accepted_proof_boundary_evidence_digest",
+        str_at(accepted_boundary, "/evidence/digest")?,
+    )?;
+    for pointer in [
+        "/evidence/verifier_boundary_accepts",
+        "/evidence/production_gate_fail_closed",
+        "/evidence/proof_boundary_report_validated",
+        "/evidence/payload_digest_bound_to_certificate",
+        "/evidence/evidence_digest_bound_to_certificate",
+        "/evidence/leaf_transcript_bound_to_evidence",
+        "/evidence/leaf_digest_bound_to_evidence",
+        "/evidence/leaf_context_bound",
+        "/evidence/binding_digest_bound",
+        "/evidence/payload_binding_fields_match_report",
+        "/evidence/decoded_public_anchors_match_deployed_anchors",
+        "/evidence/deployed_anchor_account_id_bound",
+        "/evidence/deployed_anchor_slot_id_bound",
+        "/evidence/deployed_anchor_state_root_bound",
+        "/evidence/deployed_anchor_lifecycle_anchor_bound",
+        "/evidence/deployed_anchor_verifier_version_bound",
+        "/evidence/deployed_anchor_masked_projection_bound",
+        "/evidence/deployed_anchor_role_root_export_bridge_bound",
+        "/evidence/deployed_anchor_packed_witness_commitment_bound",
+        "/evidence/deployed_anchor_fields_match_report",
+        "/evidence/account_stark_bundle_nonempty",
+        "/evidence/proof_family_obligations_still_open",
+    ] {
+        require_bool(accepted_boundary, pointer, true)?;
+    }
+    for pointer in [
+        "/evidence/public_payload_exports_private_material",
+        "/evidence/deployment_ready",
+    ] {
+        require_bool(accepted_boundary, pointer, false)?;
+    }
+    require_str(
         accepted_composition,
         "/deterministic_proof_byte_mode/accepted_composition_endpoint",
         direct_report.accepted_composition_evidence_endpoint,
@@ -305,6 +408,11 @@ fn main() -> Result<(), String> {
     )?;
     require_str(
         accepted_composition,
+        "/evidence/selected_account_creation_payload_digest",
+        str_at(&payload_vectors, "/corpus/honest_payload/payload_digest")?,
+    )?;
+    require_str(
+        accepted_boundary,
         "/evidence/selected_account_creation_payload_digest",
         str_at(&payload_vectors, "/corpus/honest_payload/payload_digest")?,
     )?;

@@ -302,8 +302,11 @@ closed. The decoded-anchor comparison separately pins account id, slot id,
 state root, lifecycle anchor, raw verifier version, masked projection,
 role-root export bridge, and packed-witness commitment against the deployed
 leaf/binding anchors. This evidence pins the accepted creation boundary shape;
-it is not the simulator theorem, extractor theorem, account-STARK transcript
-QROM theorem, production-gate decision, or external review.
+`formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json`
+now digest-pins that evidence as a deterministic one-thread KAT artifact and
+checks it back to the account-STARK payload KAT corpus. It is not the simulator
+theorem, extractor theorem, account-STARK transcript QROM theorem,
+production-gate decision, or external review.
 `formal/kat/path2_account_creation_no_export_boundary_v1.json` is
 also regenerated and checked before the proof-boundary manifest so the
 no-export boundary cannot remain prose-only, and
@@ -313,9 +316,10 @@ absence, and opaque proof-bundle manifest policy.
 `formal/kat/path2_account_stark_fri_qrom_domain_vectors_v1.json` pins the
 current FRI/QROM domain audit cases before the proof-boundary manifest is
 checked. `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
-pins the open proof-obligation cases before the direct theorem manifest is
-checked, and `formal/kat/path2_direct_theorem_obligation_vectors_v1.json` pins
-the direct theorem's open per-hypothesis obligations after that manifest is
+pins the open proof-obligation cases and checks the standalone accepted
+proof-boundary evidence artifact before the direct theorem manifest is checked,
+and `formal/kat/path2_direct_theorem_obligation_vectors_v1.json` pins the
+direct theorem's open per-hypothesis obligations after that manifest is
 checked. The reports and manifests are
 the executable boundary map for this section; they are not an honest-sampler
 theorem, authorization-class binding theorem, no-postchallenge timing theorem,
