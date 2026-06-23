@@ -171,7 +171,10 @@ preflight from drifting away from the theorem shape while the composition
 theorem and deployment lifecycle profile remain open. The
 `path2_preflight_boundary_consistency` gate separately checks that production
 preflight stays fail-closed on the direct theorem blocker, account-creation
-proof-boundary blocker, and selected account-STARK residual blockers.
+proof-boundary blocker, and selected account-STARK residual blockers. It also
+requires each false direct/proof/residual closure flag to be backed by the
+expected still-open obligation or residual row, so preflight cannot drift into a
+deployable posture while the closure graph is still open.
 
 ## Named Break Classes
 

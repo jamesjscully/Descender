@@ -34,7 +34,8 @@ use descender_parameter_search::production_reference::{
     validate_production_deployment_preflight_certificate,
     validate_production_deployment_preflight_ready_assertion,
     validate_production_deployment_preflight_report,
-    validate_production_deployment_preflight_verdict,
+    validate_production_deployment_preflight_verdict, Path2AccountCreationProofBoundaryReportV1,
+    Path2AccountStarkResidualMatrixReportV1, Path2DirectTheoremBoundaryReportV1,
 };
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -115,6 +116,88 @@ fn require_manifest_digest<'a>(file: &'a Value, label: &str) -> Result<&'a Value
 
 fn contains(haystack: &[&str], needle: &str) -> bool {
     haystack.iter().any(|value| *value == needle)
+}
+
+fn require_open_direct_obligation(
+    report: &Path2DirectTheoremBoundaryReportV1,
+    blockers: &[&str],
+    flag_name: &str,
+    obligation_id: &str,
+    acceptance_hypothesis: &str,
+    supporting_surface_fragment: &str,
+    required_closure_fragment: &str,
+) -> Result<(), String> {
+    let row = report
+        .obligation_rows
+        .iter()
+        .find(|row| row.obligation_id == obligation_id)
+        .ok_or_else(|| {
+            format!("direct closure flag {flag_name} is missing obligation {obligation_id}")
+        })?;
+    if !row.open
+        || row.acceptance_hypothesis != acceptance_hypothesis
+        || row.blocker != report.blocker
+        || !contains(blockers, row.blocker)
+        || !row.supporting_surface.contains(supporting_surface_fragment)
+        || !row.required_closure.contains(required_closure_fragment)
+    {
+        return Err(format!(
+            "direct closure flag {flag_name} is not backed by the expected open obligation {obligation_id}"
+        ));
+    }
+    Ok(())
+}
+
+fn require_open_proof_obligation(
+    report: &Path2AccountCreationProofBoundaryReportV1,
+    blockers: &[&str],
+    flag_name: &str,
+    obligation_id: &str,
+    closure_target_fragment: &str,
+    supporting_surface_fragment: &str,
+    required_closure_fragment: &str,
+) -> Result<(), String> {
+    let row = report
+        .proof_obligation_rows
+        .iter()
+        .find(|row| row.obligation_id == obligation_id)
+        .ok_or_else(|| {
+            format!("proof-boundary flag {flag_name} is missing obligation {obligation_id}")
+        })?;
+    if !row.open
+        || row.blocker != report.blocker
+        || !contains(blockers, row.blocker)
+        || !row.closure_target.contains(closure_target_fragment)
+        || !row.supporting_surface.contains(supporting_surface_fragment)
+        || !row.required_closure.contains(required_closure_fragment)
+    {
+        return Err(format!(
+            "proof-boundary flag {flag_name} is not backed by the expected open obligation {obligation_id}"
+        ));
+    }
+    Ok(())
+}
+
+fn require_open_residual_item(
+    report: &Path2AccountStarkResidualMatrixReportV1,
+    blockers: &[&str],
+    residual_item: &str,
+    required_closure_fragment: &str,
+) -> Result<(), String> {
+    let row = report
+        .rows
+        .iter()
+        .find(|row| row.residual_item == residual_item)
+        .ok_or_else(|| format!("residual matrix is missing item {residual_item}"))?;
+    if !row.open
+        || !contains(blockers, row.blocker)
+        || !row.required_closure.contains(required_closure_fragment)
+    {
+        return Err(format!(
+            "residual matrix item {residual_item} is not backed by the expected open blocker"
+        ));
+    }
+    Ok(())
 }
 
 fn find_subsequence(haystack: &[&str], needle: &[&str]) -> Option<usize> {
@@ -214,6 +297,7 @@ fn main() -> Result<(), String> {
     }
 
     let preflight = production_deployment_preflight();
+    let blockers = preflight.blockers.as_slice();
     let report = production_deployment_preflight_report();
     validate_production_deployment_preflight_report(&report)?;
     if production_deployment_preflight_report_digest(&report) != report.digest {
@@ -558,7 +642,189 @@ fn main() -> Result<(), String> {
         );
     }
 
-    let blockers = preflight.blockers.as_slice();
+    if !direct_report.composition_theorem_instantiated
+        && !direct_report.obligation_rows.iter().all(|row| {
+            row.open && row.blocker == direct_report.blocker && contains(blockers, row.blocker)
+        })
+    {
+        return Err(
+            "direct composition theorem flag is not backed by all open direct obligations"
+                .to_string(),
+        );
+    }
+    if !direct_report.account_creation_proof_boundary_verified {
+        require_open_direct_obligation(
+            &direct_report,
+            blockers,
+            "account_creation_proof_boundary_verified",
+            "direct_obligation_creation_before_challenge",
+            "selected_creation_verifier_accepted_before_spend_challenge",
+            "Path2AccountCreationProofBoundaryReportV1",
+            "account-creation proof boundary is verified",
+        )?;
+        if proof_report.deployment_ready || proof_report.production_gate_open {
+            return Err(
+                "direct proof-boundary flag is open while proof-boundary report appears deployable"
+                    .to_string(),
+            );
+        }
+    }
+    if !direct_report.lifecycle_transition_profile_verified {
+        require_open_direct_obligation(
+            &direct_report,
+            blockers,
+            "lifecycle_transition_profile_verified",
+            "direct_obligation_consume_once",
+            "lifecycle_transition_consumes_authorization_once",
+            "consume-once lifecycle state transition",
+            "target-chain lifecycle profile",
+        )?;
+        if !contains(blockers, lifecycle_report.blocker) {
+            return Err(
+                "direct lifecycle closure flag is open but lifecycle blocker is absent".to_string(),
+            );
+        }
+    }
+    if !direct_report.qrom_and_action_bounds_linked_to_theorem {
+        require_open_direct_obligation(
+            &direct_report,
+            blockers,
+            "qrom_and_action_bounds_linked_to_theorem",
+            "direct_obligation_checked_core_acceptance",
+            "checked_core_verification_accepts_poseidon2_and_fq12_action",
+            "Fq12 action map",
+            "QROM/action-map numeric bounds",
+        )?;
+        if !contains(blockers, qrom_action_report.blocker) {
+            return Err(
+                "direct QROM/action closure flag is open but QROM/action blocker is absent"
+                    .to_string(),
+            );
+        }
+    }
+    if !direct_report.deployment_ready && preflight.deployment_ready {
+        return Err("direct theorem is open while production preflight is ready".to_string());
+    }
+
+    if !proof_report.simulator_theorem_instantiated {
+        require_open_proof_obligation(
+            &proof_report,
+            blockers,
+            "simulator_theorem_instantiated",
+            "creation_proof_obligation_simulator_no_export",
+            "selected_account_stark_public_bundle_simulator_v1",
+            "Path2AccountCreationNoExportBoundaryReportV1",
+            "accepted public bundles are simulatable",
+        )?;
+    }
+    if !proof_report.fri_aok_extractor_theorem_instantiated {
+        require_open_proof_obligation(
+            &proof_report,
+            blockers,
+            "fri_aok_extractor_theorem_instantiated",
+            "creation_proof_obligation_fri_aok_extractor",
+            "selected_plonky3_q12289_fri_iop_aok_extractor",
+            "Path2AccountStarkFriAokBoundaryReportV1",
+            "accepting proof",
+        )?;
+    }
+    if !proof_report.fri_qrom_residual_priced {
+        require_open_proof_obligation(
+            &proof_report,
+            blockers,
+            "fri_qrom_residual_priced",
+            "creation_proof_obligation_fri_qrom_residual_pricing",
+            "selected_account_stark_fri_poseidon2_qrom_residual_ledger_v1",
+            "Path2AccountStarkFriQromResidualReportV1",
+            "deployment profile",
+        )?;
+    }
+    if !proof_report.frozen_kat_corpus_complete {
+        require_open_proof_obligation(
+            &proof_report,
+            blockers,
+            "frozen_kat_corpus_complete",
+            "creation_proof_obligation_frozen_payload_kats",
+            "selected_account_stark_payload_frozen_kat_corpus_v1",
+            "Path2AccountStarkPayloadKatBoundaryReportV1",
+            "freeze the full byte corpus",
+        )?;
+    }
+    if !proof_report.production_gate_open || !proof_report.external_review_complete {
+        require_open_proof_obligation(
+            &proof_report,
+            blockers,
+            "production_gate_open_or_external_review_complete",
+            "creation_proof_obligation_production_gate_and_review",
+            "selected_account_stark_production_admission_gate_v1",
+            "external review lane",
+            "external review",
+        )?;
+    }
+    if !proof_report.deployment_ready
+        && !proof_report.proof_obligation_rows.iter().all(|row| {
+            row.open && row.blocker == proof_report.blocker && contains(blockers, row.blocker)
+        })
+    {
+        return Err(
+            "proof-boundary deployment flag is not backed by all open proof obligations"
+                .to_string(),
+        );
+    }
+
+    if !residual_report.deployment_ready
+        && !residual_report
+            .rows
+            .iter()
+            .all(|row| row.open && contains(blockers, row.blocker))
+    {
+        return Err(
+            "residual deployment flag is not backed by all open residual blockers".to_string(),
+        );
+    }
+    require_open_residual_item(
+        &residual_report,
+        blockers,
+        "Path2AccountStarkCreationPayloadV1 byte and replay binding",
+        "frozen byte corpus",
+    )?;
+    require_open_residual_item(
+        &residual_report,
+        blockers,
+        "AIR relation soundness",
+        "AIR constraints match",
+    )?;
+    require_open_residual_item(
+        &residual_report,
+        blockers,
+        "FRI argument-of-knowledge extractor",
+        "extractable witness",
+    )?;
+    require_open_residual_item(
+        &residual_report,
+        blockers,
+        "Zero-knowledge simulator and no-export statement",
+        "simulator theorem",
+    )?;
+    require_open_residual_item(
+        &residual_report,
+        blockers,
+        "FRI soundness margin and recursion ledger",
+        "residual-assumption ledger prices",
+    )?;
+    require_open_residual_item(
+        &residual_report,
+        blockers,
+        "Production admission gate and review disposition",
+        "external review",
+    )?;
+    require_open_residual_item(
+        &residual_report,
+        blockers,
+        "Legacy proof-route disposition",
+        "route change requires ADR",
+    )?;
+
     let direct_blockers = production_deployment_direct_theorem_blockers();
     let proof_blockers = production_deployment_account_creation_proof_boundary_blockers();
     let residual_blockers = production_deployment_account_stark_residual_blockers();
