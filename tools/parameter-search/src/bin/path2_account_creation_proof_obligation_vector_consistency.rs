@@ -1,5 +1,8 @@
 use descender_parameter_search::{
-    manifest_vector_evidence::path2_direct_accepted_composition_evidence_artifact_v1,
+    manifest_vector_evidence::{
+        path2_account_creation_proof_obligation_vector_corpus_evidence_v1,
+        path2_direct_accepted_composition_evidence_artifact_v1,
+    },
     production_reference::{
         path2_account_creation_no_export_boundary_report_v1,
         path2_account_creation_no_export_boundary_report_v1_digest,
@@ -105,6 +108,21 @@ fn require_bool(value: &Value, pointer: &str, expected: bool) -> Result<(), Stri
         ));
     }
     Ok(())
+}
+
+fn body_digest(value: &Value, label: &str) -> Result<String, String> {
+    let json =
+        serde_json::to_string_pretty(value).map_err(|err| format!("serialize {label}: {err}"))?;
+    Ok(hex_encode(&Sha256::digest(json.as_bytes())))
+}
+
+fn require_manifest_body<'a>(file: &'a Value, label: &str) -> Result<&'a Value, String> {
+    let body = at(file, "/manifest")?;
+    let recomputed = body_digest(body, label)?;
+    if str_at(file, "/manifest_digest")? != recomputed {
+        return Err(format!("{label} manifest digest mismatch"));
+    }
+    Ok(body)
 }
 
 fn main() -> Result<(), String> {
@@ -965,6 +983,62 @@ fn main() -> Result<(), String> {
             ));
         }
     }
+
+    let proof_obligation_corpus_evidence =
+        path2_account_creation_proof_obligation_vector_corpus_evidence_v1()?;
+    let proof_manifest_file = load_json(
+        &root,
+        "formal/kat/path2_account_creation_proof_boundary_v1.json",
+    )?;
+    let proof_manifest = require_manifest_body(
+        &proof_manifest_file,
+        "account-creation proof-boundary manifest",
+    )?;
+    let direct_manifest_file =
+        load_json(&root, "formal/kat/path2_direct_theorem_boundary_v1.json")?;
+    let direct_manifest =
+        require_manifest_body(&direct_manifest_file, "direct theorem boundary manifest")?;
+    let proof_boundary = at(proof_manifest, "/account_creation_proof_boundary")?;
+    if proof_boundary != at(direct_manifest, "/account_creation_proof_boundary")? {
+        return Err(
+            "proof-obligation corpus lost shared proof-boundary manifest binding".to_string(),
+        );
+    }
+    for (observed, label) in [
+        (
+            at(proof_boundary, "/proof_obligation_vector_corpus_evidence")?,
+            "proof manifest proof-obligation corpus evidence",
+        ),
+        (
+            at(
+                direct_manifest,
+                "/account_creation_proof_boundary/proof_obligation_vector_corpus_evidence",
+            )?,
+            "direct manifest proof-obligation corpus evidence",
+        ),
+    ] {
+        if observed != &proof_obligation_corpus_evidence {
+            return Err(format!(
+                "{label} drifted from standalone proof-obligation corpus evidence"
+            ));
+        }
+    }
+    require_str(
+        proof_manifest,
+        "/digests/account_creation_proof_boundary_report_digest",
+        str_at(
+            &proof_obligation_corpus_evidence,
+            "/proof_boundary_report_digest",
+        )?,
+    )?;
+    require_str(
+        direct_manifest,
+        "/digests/account_creation_proof_boundary_report_digest",
+        str_at(
+            &proof_obligation_corpus_evidence,
+            "/proof_boundary_report_digest",
+        )?,
+    )?;
 
     let cases = at(corpus, "/cases")?
         .as_array()

@@ -1,14 +1,18 @@
-use descender_parameter_search::production_reference::{
-    path2_account_creation_proof_boundary_report_v1,
-    path2_account_creation_proof_boundary_report_v1_digest,
-    path2_direct_lifecycle_boundary_report_v1, path2_direct_lifecycle_boundary_report_v1_digest,
-    path2_direct_qrom_action_boundary_report_v1,
-    path2_direct_qrom_action_boundary_report_v1_digest, path2_direct_theorem_boundary_report_v1,
-    path2_direct_theorem_boundary_report_v1_digest,
-    validate_path2_account_creation_proof_boundary_report_v1,
-    validate_path2_direct_lifecycle_boundary_report_v1,
-    validate_path2_direct_qrom_action_boundary_report_v1,
-    validate_path2_direct_theorem_boundary_report_v1,
+use descender_parameter_search::{
+    manifest_vector_evidence::path2_direct_theorem_obligation_vector_corpus_evidence_v1,
+    production_reference::{
+        path2_account_creation_proof_boundary_report_v1,
+        path2_account_creation_proof_boundary_report_v1_digest,
+        path2_direct_lifecycle_boundary_report_v1,
+        path2_direct_lifecycle_boundary_report_v1_digest,
+        path2_direct_qrom_action_boundary_report_v1,
+        path2_direct_qrom_action_boundary_report_v1_digest,
+        path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
+        validate_path2_account_creation_proof_boundary_report_v1,
+        validate_path2_direct_lifecycle_boundary_report_v1,
+        validate_path2_direct_qrom_action_boundary_report_v1,
+        validate_path2_direct_theorem_boundary_report_v1,
+    },
 };
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -98,6 +102,21 @@ fn require_bool(value: &Value, pointer: &str, expected: bool) -> Result<(), Stri
         ));
     }
     Ok(())
+}
+
+fn body_digest(value: &Value, label: &str) -> Result<String, String> {
+    let json =
+        serde_json::to_string_pretty(value).map_err(|err| format!("serialize {label}: {err}"))?;
+    Ok(hex_encode(&Sha256::digest(json.as_bytes())))
+}
+
+fn require_manifest_body<'a>(file: &'a Value, label: &str) -> Result<&'a Value, String> {
+    let body = at(file, "/manifest")?;
+    let recomputed = body_digest(body, label)?;
+    if str_at(file, "/manifest_digest")? != recomputed {
+        return Err(format!("{label} manifest digest mismatch"));
+    }
+    Ok(body)
 }
 
 fn main() -> Result<(), String> {
@@ -685,6 +704,54 @@ fn main() -> Result<(), String> {
     {
         return Err("direct imported boundary obligation ids drifted".to_string());
     }
+
+    let direct_obligation_corpus_evidence =
+        path2_direct_theorem_obligation_vector_corpus_evidence_v1()?;
+    let direct_manifest_file =
+        load_json(&root, "formal/kat/path2_direct_theorem_boundary_v1.json")?;
+    let direct_manifest =
+        require_manifest_body(&direct_manifest_file, "direct theorem boundary manifest")?;
+    let direct_boundary = at(direct_manifest, "/direct_theorem_boundary")?;
+    if at(direct_boundary, "/direct_obligation_vector_corpus_evidence")?
+        != &direct_obligation_corpus_evidence
+    {
+        return Err(
+            "direct theorem manifest obligation corpus evidence drifted from standalone direct obligation corpus evidence"
+                .to_string(),
+        );
+    }
+    require_str(
+        direct_manifest,
+        "/digests/direct_theorem_boundary_report_digest",
+        str_at(
+            &direct_obligation_corpus_evidence,
+            "/direct_theorem_report_digest",
+        )?,
+    )?;
+    require_str(
+        direct_manifest,
+        "/digests/direct_qrom_action_boundary_report_digest",
+        str_at(
+            &direct_obligation_corpus_evidence,
+            "/direct_qrom_action_boundary_report_digest",
+        )?,
+    )?;
+    require_str(
+        direct_manifest,
+        "/digests/direct_lifecycle_boundary_report_digest",
+        str_at(
+            &direct_obligation_corpus_evidence,
+            "/direct_lifecycle_boundary_report_digest",
+        )?,
+    )?;
+    require_str(
+        direct_manifest,
+        "/digests/account_creation_proof_boundary_report_digest",
+        str_at(
+            &direct_obligation_corpus_evidence,
+            "/account_creation_proof_boundary_report_digest",
+        )?,
+    )?;
 
     let cases = at(corpus, "/cases")?
         .as_array()
