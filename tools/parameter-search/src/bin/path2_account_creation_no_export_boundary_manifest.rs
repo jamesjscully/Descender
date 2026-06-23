@@ -69,6 +69,7 @@ fn manifest_body() -> Result<Value, String> {
                 "payload_public_field_count": report.payload_public_field_count,
                 "public_payload_field_mutation_count":
                     report.public_payload_field_mutation_count,
+                "no_export_vector_case_count": report.no_export_vector_case_count,
                 "public_payload_exports_private_material":
                     report.public_payload_exports_private_material,
                 "no_export_field_denylist_pinned": report.no_export_field_denylist_pinned,
@@ -78,6 +79,7 @@ fn manifest_body() -> Result<Value, String> {
                 "boundary_mapping_complete": report.boundary_mapping_complete,
                 "roundtrip_regression_present": report.roundtrip_regression_present,
                 "production_gate_fail_closed": report.production_gate_fail_closed,
+                "no_export_vectors_present": report.no_export_vectors_present,
                 "simulator_theorem_instantiated": report.simulator_theorem_instantiated,
                 "no_export_theorem_instantiated": report.no_export_theorem_instantiated,
                 "accepted_bundle_simulatable_from_public_anchors":
@@ -89,6 +91,7 @@ fn manifest_body() -> Result<Value, String> {
             },
             "simulator_theorem_target": report.simulator_theorem_target,
             "no_export_theorem_target": report.no_export_theorem_target,
+            "no_export_vector_case_ids": report.no_export_vector_case_ids,
             "simulator_public_input_fields": report.simulator_public_input_fields,
             "no_export_private_material_fields": report.no_export_private_material_fields
         }

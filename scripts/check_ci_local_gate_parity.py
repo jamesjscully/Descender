@@ -264,6 +264,22 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ("path2_account_creation_no_export_boundary_consistency",),
     ),
     (
+        "account-creation no-export vector corpus check",
+        (
+            "path2_account_creation_no_export_vectors",
+            "path2_account_creation_no_export_vectors_v1.json",
+        ),
+        (
+            "path2_account_creation_no_export_vectors",
+            "path2_account_creation_no_export_vectors_v1.json",
+        ),
+    ),
+    (
+        "account-creation no-export vector consistency check",
+        ("path2_account_creation_no_export_vector_consistency",),
+        ("path2_account_creation_no_export_vector_consistency",),
+    ),
+    (
         "account-creation proof boundary manifest check",
         (
             "path2_account_creation_proof_boundary_manifest",
@@ -509,6 +525,18 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-REJECT-001",
     ),
     "account-creation no-export boundary consistency check": (
+        "DIR-CREATE-001",
+        "DIR-PROOF-001",
+        "DIR-PAYLOAD-001",
+        "DIR-REJECT-001",
+    ),
+    "account-creation no-export vector corpus check": (
+        "DIR-CREATE-001",
+        "DIR-PROOF-001",
+        "DIR-PAYLOAD-001",
+        "DIR-REJECT-001",
+    ),
+    "account-creation no-export vector consistency check": (
         "DIR-CREATE-001",
         "DIR-PROOF-001",
         "DIR-PAYLOAD-001",

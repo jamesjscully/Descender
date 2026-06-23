@@ -1,0 +1,135 @@
+{
+  "corpus": {
+    "audit_summary": {
+      "all_private_material_absent": true,
+      "deployment_ready": false,
+      "deterministic_kat_digest_pins_bundle_bytes": true,
+      "full_proof_bytes_inlined_in_manifest": false,
+      "no_export_theorem_instantiated": false,
+      "payload_denylist_absent": true,
+      "payload_public_field_count": 11,
+      "private_material_denylist_count": 7,
+      "public_payload_exports_private_material": false,
+      "simulator_denylist_absent": true,
+      "simulator_public_input_field_count": 14,
+      "simulator_theorem_instantiated": false
+    },
+    "boundary_report": {
+      "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
+      "deployment_ready": false,
+      "digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
+      "domain": "Descender.Path2.AccountCreationNoExportBoundaryReport.v1",
+      "no_export_requirement": "zero_knowledge_no_export_semantics",
+      "no_export_theorem_instantiated": false,
+      "no_export_theorem_target": "selected_account_stark_no_export_v1",
+      "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
+      "simulator_theorem_instantiated": false,
+      "simulator_theorem_target": "selected_account_stark_public_bundle_simulator_v1"
+    },
+    "case_count": 4,
+    "cases": [
+      {
+        "all_private_material_absent": true,
+        "case_id": "no_export_public_payload_field_allowlist",
+        "kind": "audit",
+        "private_material_denylist": [
+          "pad_source",
+          "projection",
+          "syndrome",
+          "opening_tuple",
+          "witness",
+          "mask",
+          "private_trace_material"
+        ],
+        "public_payload_fields": [
+          "schema",
+          "payload_version",
+          "account_stark_verifier_version",
+          "leaf_context_digest",
+          "creation_proof_binding_digest",
+          "native_role_root_commitment",
+          "aggregation_context_digest",
+          "slot_id",
+          "masked_projection_lane_count",
+          "masked_projection_le",
+          "account_stark_bundle"
+        ],
+        "requirement": "zero_knowledge_no_export_semantics",
+        "surface": "Path2AccountStarkPayloadByteModelReportV1.field_order"
+      },
+      {
+        "all_private_material_absent": true,
+        "case_id": "no_export_simulator_public_input_allowlist",
+        "kind": "audit",
+        "private_material_denylist": [
+          "pad_source",
+          "projection",
+          "syndrome",
+          "opening_tuple",
+          "witness",
+          "mask",
+          "private_trace_material"
+        ],
+        "requirement": "zero_knowledge_no_export_semantics",
+        "simulator_public_input_fields": [
+          "leaf_context_digest",
+          "creation_proof_binding_digest",
+          "native_role_root_commitment",
+          "aggregation_context_digest",
+          "slot_id",
+          "masked_projection",
+          "account_stark_bundle_bytes_or_digest",
+          "public_replay_payload_digest",
+          "deployed_account_id",
+          "deployed_account_state_root",
+          "deployed_lifecycle_anchor",
+          "deployed_verifier_version",
+          "deployed_packed_witness_commitment",
+          "public_rejection_code"
+        ],
+        "surface": "Path2AccountCreationNoExportBoundaryReportV1.simulator_public_input_fields"
+      },
+      {
+        "all_private_material_absent": true,
+        "case_id": "no_export_private_material_denylist_absence",
+        "kind": "audit",
+        "private_material_denylist": [
+          "pad_source",
+          "projection",
+          "syndrome",
+          "opening_tuple",
+          "witness",
+          "mask",
+          "private_trace_material"
+        ],
+        "public_payload_exports_private_material": false,
+        "requirement": "zero_knowledge_no_export_semantics",
+        "surface": "combined public payload and simulator-input fields"
+      },
+      {
+        "account_stark_bundle_field_is_public_payload": true,
+        "all_private_material_absent": true,
+        "case_id": "no_export_opaque_bundle_not_manifest_inlined",
+        "deterministic_kat_digest_pins_bundle_bytes": true,
+        "full_proof_bytes_inlined_in_manifest": false,
+        "kind": "audit",
+        "requirement": "zero_knowledge_no_export_semantics",
+        "surface": "Path2AccountStarkCreationPayloadV1.account_stark_bundle"
+      }
+    ],
+    "corpus_id": "Descender.Path2.AccountCreationNoExportBoundaryVectors.v1",
+    "corpus_version": 1,
+    "digests": {
+      "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
+      "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d"
+    },
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_no_export_vectors",
+      "source": "tools/parameter-search/src/bin/path2_account_creation_no_export_vectors.rs"
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "schema": "Descender.Path2.AccountCreationNoExportVectors.v1",
+    "status": "digest_pinned_no_export_audit_vectors"
+  },
+  "corpus_digest": "96dc46d600adcd13b8890be4e30ad7cc772917ebf9de10776c968936d68ddd4e"
+}

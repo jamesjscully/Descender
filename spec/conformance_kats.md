@@ -18,6 +18,7 @@ The active conformance corpus covers:
 - checked-core spend authorization vectors;
 - lifecycle state-transition vectors;
 - deterministic public rejection classes;
+- no-export audit vectors for public-payload and simulator-input surfaces;
 - signer/wallet/HSM public API vectors for the command/result model in
   `spec/signer_api.md`;
 - entropy and domain-separation vectors for the stream model in
@@ -63,6 +64,7 @@ deployment readiness.
 | spend negative | wrong message, wrong account, wrong state root, wrong slot id, wrong lifecycle anchor, wrong proof commitment, and checked-core mutation |
 | lifecycle | admit, spend, replay, burn, recovery, rollback, restore, and recoverable-state cases |
 | rejection | every public rejection class in `spec/consensus_verifier.md` |
+| no-export audit | public payload allowlist, simulator public-input allowlist, private-material denylist absence, and opaque proof-bundle manifest policy |
 | signer public API | public slot records, fixed public errors, deterministic test-mode outputs, and diagnostic-build exclusion checks |
 | entropy streams | stream-domain KATs, deterministic test-mode vectors, wrong-profile/domain mutation vectors, and mask-PRF drift checks |
 | policy | M-of-N duplicate prevention, threshold/weight denial, recovery/rotation, timelock, burn, and adaptor-style condition vectors |

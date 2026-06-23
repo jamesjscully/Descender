@@ -9535,8 +9535,10 @@ pub struct Path2AccountCreationNoExportBoundaryReportV1 {
     pub named_break: &'static str,
     pub simulator_public_input_fields: &'static [&'static str],
     pub no_export_private_material_fields: &'static [&'static str],
+    pub no_export_vector_case_ids: &'static [&'static str],
     pub payload_public_field_count: usize,
     pub public_payload_field_mutation_count: usize,
+    pub no_export_vector_case_count: usize,
     pub public_payload_exports_private_material: bool,
     pub no_export_field_denylist_pinned: bool,
     pub simulator_input_allowlist_pinned: bool,
@@ -9544,6 +9546,7 @@ pub struct Path2AccountCreationNoExportBoundaryReportV1 {
     pub boundary_mapping_complete: bool,
     pub roundtrip_regression_present: bool,
     pub production_gate_fail_closed: bool,
+    pub no_export_vectors_present: bool,
     pub simulator_theorem_instantiated: bool,
     pub no_export_theorem_instantiated: bool,
     pub accepted_bundle_simulatable_from_public_anchors: bool,
@@ -9569,6 +9572,7 @@ pub struct Path2AccountCreationProofBoundaryObligationRowV1 {
 pub struct Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
     pub requirement: &'static str,
     pub coverage_surface: &'static str,
+    pub vector_evidence_kind: &'static str,
     pub current_vector_case_ids: &'static [&'static str],
     pub public_rejection_classes: &'static [&'static str],
     pub covered_by_current_vectors: bool,
@@ -10923,6 +10927,10 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_TARGET: &str =
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CONCLUSION: &str =
     "accepted_account_creation_payload_implies_bound_leaf_evidence_selected_account_stark_acceptance_no_export_or_named_break";
 
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_NONE: &str = "no_current_vectors";
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION: &str = "rejection_vectors";
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_AUDIT: &str = "audit_vectors";
+
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_VECTOR_CASES: [&str; 0] = [];
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_REJECTION_CLASSES: [&str; 0] = [];
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_MALFORMED_REJECTION_CLASSES: [&str; 1] =
@@ -10985,6 +10993,12 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHOR_CASES: [&str; 2]
     "rebound_native_role_root_anchor",
     "rebound_masked_projection_anchor",
 ];
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES: [&str; 4] = [
+    "no_export_public_payload_field_allowlist",
+    "no_export_simulator_public_input_allowlist",
+    "no_export_private_material_denylist_absence",
+    "no_export_opaque_bundle_not_manifest_inlined",
+];
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_ALL_CURRENT_PAYLOAD_KAT_CASES: [&str; 13] = [
     "payload_leaf_context_digest_mutation",
     "creation_proof_binding_digest_mutation",
@@ -11005,6 +11019,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
         requirement: "canonical_leaf_and_evidence_framing",
         coverage_surface: "Path2AccountCreationFrameKatBoundaryReportV1",
+        vector_evidence_kind: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION,
         current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_FRAME_CASES,
         public_rejection_classes:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_MALFORMED_REJECTION_CLASSES,
@@ -11015,6 +11030,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
         requirement: "evidence_leaf_binding_equalities",
         coverage_surface: "Path2AccountCreationFrameKatBoundaryReportV1",
+        vector_evidence_kind: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION,
         current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_EVIDENCE_BINDING_CASES,
         public_rejection_classes: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_BINDING_REJECTION_CLASSES,
         covered_by_current_vectors: true,
@@ -11024,6 +11040,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
         requirement: "certificate_evidence_payload_digest_binding",
         coverage_surface: "Path2AccountStarkPayloadKatBoundaryReportV1",
+        vector_evidence_kind: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION,
         current_vector_case_ids:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CERTIFICATE_PAYLOAD_DIGEST_CASES,
         public_rejection_classes: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_BINDING_REJECTION_CLASSES,
@@ -11034,6 +11051,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
         requirement: "payload_availability_nonempty_bundle_and_digest_equality",
         coverage_surface: "Path2AccountStarkPayloadKatBoundaryReportV1",
+        vector_evidence_kind: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION,
         current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_AVAILABILITY_CASES,
         public_rejection_classes:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_BINDING_OR_MALFORMED_CLASSES,
@@ -11044,6 +11062,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
         requirement: "payload_context_binding_leaf_proof_aggregation_slot",
         coverage_surface: "Path2AccountStarkPayloadKatBoundaryReportV1",
+        vector_evidence_kind: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION,
         current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_CONTEXT_CASES,
         public_rejection_classes: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_BINDING_REJECTION_CLASSES,
         covered_by_current_vectors: true,
@@ -11053,6 +11072,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
         requirement: "packed_account_stark_bundle_verifies",
         coverage_surface: "Path2AccountStarkPayloadKatBoundaryReportV1",
+        vector_evidence_kind: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION,
         current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PACKED_STARK_CASES,
         public_rejection_classes:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_BINDING_MALFORMED_OR_EVIDENCE_CLASSES,
@@ -11063,6 +11083,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
         requirement: "deployed_creation_anchors_match_stark_public_statement",
         coverage_surface: "Path2AccountStarkPayloadKatBoundaryReportV1",
+        vector_evidence_kind: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION,
         current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHOR_CASES,
         public_rejection_classes:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_EVIDENCE_REJECTION_CLASSES,
@@ -11072,17 +11093,19 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
     },
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
         requirement: "zero_knowledge_no_export_semantics",
-        coverage_surface: "Path2AccountCreationNoExportBoundaryReportV1",
-        current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_VECTOR_CASES,
+        coverage_surface: "Path2AccountCreationNoExportBoundaryReportV1 and vector corpus",
+        vector_evidence_kind: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_AUDIT,
+        current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES,
         public_rejection_classes:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_REJECTION_CLASSES,
-        covered_by_current_vectors: false,
-        closure_target: "simulator and no-export theorem plus frozen no-export vectors",
+        covered_by_current_vectors: true,
+        closure_target: "simulator and no-export theorem over the pinned no-export audit corpus",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
     },
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
         requirement: "account_stark_qrom_domain_separation",
         coverage_surface: "Path2AccountStarkFriQromResidualReportV1",
+        vector_evidence_kind: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_NONE,
         current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_VECTOR_CASES,
         public_rejection_classes:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_REJECTION_CLASSES,
@@ -11093,6 +11116,7 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
         requirement: "deterministic_public_rejection",
         coverage_surface: "Path2AccountStarkPayloadKatBoundaryReportV1 and vector corpus",
+        vector_evidence_kind: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION,
         current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_ALL_CURRENT_PAYLOAD_KAT_CASES,
         public_rejection_classes: &PATH2_ACCOUNT_STARK_PAYLOAD_PUBLIC_REJECTION_CLASSES,
         covered_by_current_vectors: true,
@@ -11893,6 +11917,7 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
             &PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS,
         no_export_private_material_fields:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS,
+        no_export_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES,
         payload_public_field_count: payload_byte_model_report
             .field_order
             .iter()
@@ -11900,6 +11925,7 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
             .count(),
         public_payload_field_mutation_count:
             payload_kat_boundary_report.public_payload_field_mutation_count,
+        no_export_vector_case_count: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES.len(),
         public_payload_exports_private_material:
             payload_byte_model_report.public_payload_exports_private_material,
         no_export_field_denylist_pinned: true,
@@ -11908,6 +11934,7 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
         boundary_mapping_complete: true,
         roundtrip_regression_present: true,
         production_gate_fail_closed: true,
+        no_export_vectors_present: true,
         simulator_theorem_instantiated: false,
         no_export_theorem_instantiated: false,
         accepted_bundle_simulatable_from_public_anchors: false,
@@ -11950,12 +11977,21 @@ pub fn validate_path2_account_creation_no_export_boundary_report_v1(
             "Path 2 account-creation no-export boundary KAT-boundary digest mismatch".to_string(),
         );
     }
+    if report.no_export_vector_case_ids
+        != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES.as_ref()
+        || report.no_export_vector_case_count != report.no_export_vector_case_ids.len()
+    {
+        return Err(
+            "Path 2 account-creation no-export boundary vector case drift".to_string(),
+        );
+    }
     if !report.no_export_field_denylist_pinned
         || !report.simulator_input_allowlist_pinned
         || !report.byte_model_public_payload_only
         || !report.boundary_mapping_complete
         || !report.roundtrip_regression_present
         || !report.production_gate_fail_closed
+        || !report.no_export_vectors_present
         || report.public_payload_exports_private_material
         || report.simulator_theorem_instantiated
         || report.no_export_theorem_instantiated
@@ -12026,7 +12062,12 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
                     .all(|(requirement, row)| row.requirement == *requirement),
         every_vector_covered_requirement_has_public_rejection_class: requirement_coverage_rows
             .iter()
-            .all(|row| !row.covered_by_current_vectors || !row.public_rejection_classes.is_empty()),
+            .all(|row| {
+                !row.covered_by_current_vectors
+                    || row.vector_evidence_kind
+                        != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION
+                    || !row.public_rejection_classes.is_empty()
+            }),
         every_current_vector_case_is_known_kat_row: requirement_coverage_rows.iter().all(|row| {
             row.current_vector_case_ids.iter().all(|case_id| {
                 PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS
@@ -12035,6 +12076,8 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
                     || PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS
                         .iter()
                         .any(|frame_row| frame_row.case_id == *case_id)
+                    || PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES
+                        .contains(case_id)
             })
         }),
         every_requirement_public_rejection_class_is_known: requirement_coverage_rows
@@ -12133,6 +12176,19 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
     {
         return Err(
             "Path 2 account-creation proof boundary lost requirement coverage".to_string(),
+        );
+    }
+    if !report.requirement_coverage_rows.iter().all(|row| {
+        matches!(
+            row.vector_evidence_kind,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_NONE
+                | PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION
+                | PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_AUDIT
+        )
+    }) {
+        return Err(
+            "Path 2 account-creation proof boundary has unknown vector evidence kind"
+                .to_string(),
         );
     }
     if report.proof_obligation_rows != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS.as_ref()
@@ -65771,6 +65827,11 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
             b"requirement_coverage_surface",
             row.coverage_surface.as_bytes(),
         );
+        append_frame(
+            &mut frame,
+            b"requirement_coverage_vector_evidence_kind",
+            row.vector_evidence_kind.as_bytes(),
+        );
         for (case_index, case_id) in row.current_vector_case_ids.iter().enumerate() {
             append_u64(
                 &mut frame,
@@ -66075,6 +66136,14 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
             field.as_bytes(),
         );
     }
+    for (index, case_id) in report.no_export_vector_case_ids.iter().enumerate() {
+        append_u64(&mut frame, b"no_export_vector_case_index", index as u64);
+        append_frame(
+            &mut frame,
+            b"no_export_vector_case_id",
+            case_id.as_bytes(),
+        );
+    }
     append_u64(
         &mut frame,
         b"payload_public_field_count",
@@ -66084,6 +66153,11 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
         &mut frame,
         b"public_payload_field_mutation_count",
         report.public_payload_field_mutation_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"no_export_vector_case_count",
+        report.no_export_vector_case_count as u64,
     );
     append_u64(
         &mut frame,
@@ -66119,6 +66193,11 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
         &mut frame,
         b"production_gate_fail_closed",
         u64::from(report.production_gate_fail_closed),
+    );
+    append_u64(
+        &mut frame,
+        b"no_export_vectors_present",
+        u64::from(report.no_export_vectors_present),
     );
     append_u64(
         &mut frame,
@@ -107519,7 +107598,12 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.no_export_private_material_fields,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS.as_ref()
         );
+        assert_eq!(
+            report.no_export_vector_case_ids,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES.as_ref()
+        );
         assert_eq!(report.no_export_private_material_fields.len(), 7);
+        assert_eq!(report.no_export_vector_case_count, 4);
         assert!(report
             .no_export_private_material_fields
             .contains(&"private_trace_material"));
@@ -107532,6 +107616,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.boundary_mapping_complete);
         assert!(report.roundtrip_regression_present);
         assert!(report.production_gate_fail_closed);
+        assert!(report.no_export_vectors_present);
         assert!(!report.simulator_theorem_instantiated);
         assert!(!report.no_export_theorem_instantiated);
         assert!(!report.accepted_bundle_simulatable_from_public_anchors);
@@ -107653,7 +107738,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.requirement_coverage_count,
             report.accepting_requirements.len()
         );
-        assert_eq!(report.current_vector_covered_requirement_count, 8);
+        assert_eq!(report.current_vector_covered_requirement_count, 9);
         assert!(report.every_accepting_requirement_has_coverage_row);
         assert!(report.every_vector_covered_requirement_has_public_rejection_class);
         assert!(report.every_current_vector_case_is_known_kat_row);
@@ -107694,6 +107779,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_FRAME_CASES.as_ref()
         );
         assert_eq!(
+            report.requirement_coverage_rows[0].vector_evidence_kind,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_REJECTION
+        );
+        assert_eq!(
             report.requirement_coverage_rows[1].current_vector_case_ids,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_EVIDENCE_BINDING_CASES.as_ref()
         );
@@ -107707,7 +107796,23 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.requirement_coverage_rows[7].requirement,
             "zero_knowledge_no_export_semantics"
         );
-        assert!(!report.requirement_coverage_rows[7].covered_by_current_vectors);
+        assert!(report.requirement_coverage_rows[7].covered_by_current_vectors);
+        assert_eq!(
+            report.requirement_coverage_rows[7].vector_evidence_kind,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_AUDIT
+        );
+        assert_eq!(
+            report.requirement_coverage_rows[7].current_vector_case_ids,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES.as_ref()
+        );
+        assert!(report.requirement_coverage_rows[7]
+            .public_rejection_classes
+            .is_empty());
+        assert_eq!(
+            report.requirement_coverage_rows[8].vector_evidence_kind,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_NONE
+        );
+        assert!(!report.requirement_coverage_rows[8].covered_by_current_vectors);
         assert_eq!(
             report.requirement_coverage_rows[9].current_vector_case_ids,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_ALL_CURRENT_PAYLOAD_KAT_CASES.as_ref()

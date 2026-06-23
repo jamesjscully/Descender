@@ -45,7 +45,19 @@
         "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
         "boundary_statement_pinned": true,
         "certificate_evidence_binding_field_count": 11,
-        "current_vector_covered_requirement_count": 8,
+        "current_vector_covered_requirement_count": 9,
+        "current_vector_evidence_kinds": [
+          "rejection_vectors",
+          "rejection_vectors",
+          "rejection_vectors",
+          "rejection_vectors",
+          "rejection_vectors",
+          "rejection_vectors",
+          "rejection_vectors",
+          "audit_vectors",
+          "no_current_vectors",
+          "rejection_vectors"
+        ],
         "deployed_anchor_field_count": 8,
         "deployed_anchor_rebind_tests_present": true,
         "deployment_ready": false,
@@ -61,7 +73,7 @@
         "fri_qrom_residual_priced": false,
         "frozen_kat_corpus_complete": false,
         "leaf_evidence_binding_field_count": 15,
-        "no_export_boundary_report_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338",
+        "no_export_boundary_report_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
         "no_export_private_material_field_count": 7,
         "payload_binding_field_count": 6,
         "production_gate_fail_closed": true,
@@ -230,7 +242,8 @@
           "public_rejection_classes": [
             "reject_malformed_public_input"
           ],
-          "requirement": "canonical_leaf_and_evidence_framing"
+          "requirement": "canonical_leaf_and_evidence_framing",
+          "vector_evidence_kind": "rejection_vectors"
         },
         {
           "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
@@ -254,7 +267,8 @@
           "public_rejection_classes": [
             "reject_binding_mismatch"
           ],
-          "requirement": "evidence_leaf_binding_equalities"
+          "requirement": "evidence_leaf_binding_equalities",
+          "vector_evidence_kind": "rejection_vectors"
         },
         {
           "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
@@ -267,7 +281,8 @@
           "public_rejection_classes": [
             "reject_binding_mismatch"
           ],
-          "requirement": "certificate_evidence_payload_digest_binding"
+          "requirement": "certificate_evidence_payload_digest_binding",
+          "vector_evidence_kind": "rejection_vectors"
         },
         {
           "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
@@ -285,7 +300,8 @@
             "reject_binding_mismatch",
             "reject_malformed_public_input"
           ],
-          "requirement": "payload_availability_nonempty_bundle_and_digest_equality"
+          "requirement": "payload_availability_nonempty_bundle_and_digest_equality",
+          "vector_evidence_kind": "rejection_vectors"
         },
         {
           "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
@@ -301,7 +317,8 @@
           "public_rejection_classes": [
             "reject_binding_mismatch"
           ],
-          "requirement": "payload_context_binding_leaf_proof_aggregation_slot"
+          "requirement": "payload_context_binding_leaf_proof_aggregation_slot",
+          "vector_evidence_kind": "rejection_vectors"
         },
         {
           "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
@@ -318,7 +335,8 @@
             "reject_malformed_public_input",
             "reject_creation_evidence"
           ],
-          "requirement": "packed_account_stark_bundle_verifies"
+          "requirement": "packed_account_stark_bundle_verifies",
+          "vector_evidence_kind": "rejection_vectors"
         },
         {
           "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
@@ -332,16 +350,23 @@
           "public_rejection_classes": [
             "reject_creation_evidence"
           ],
-          "requirement": "deployed_creation_anchors_match_stark_public_statement"
+          "requirement": "deployed_creation_anchors_match_stark_public_statement",
+          "vector_evidence_kind": "rejection_vectors"
         },
         {
           "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
-          "closure_target": "simulator and no-export theorem plus frozen no-export vectors",
-          "coverage_surface": "Path2AccountCreationNoExportBoundaryReportV1",
-          "covered_by_current_vectors": false,
-          "current_vector_case_ids": [],
+          "closure_target": "simulator and no-export theorem over the pinned no-export audit corpus",
+          "coverage_surface": "Path2AccountCreationNoExportBoundaryReportV1 and vector corpus",
+          "covered_by_current_vectors": true,
+          "current_vector_case_ids": [
+            "no_export_public_payload_field_allowlist",
+            "no_export_simulator_public_input_allowlist",
+            "no_export_private_material_denylist_absence",
+            "no_export_opaque_bundle_not_manifest_inlined"
+          ],
           "public_rejection_classes": [],
-          "requirement": "zero_knowledge_no_export_semantics"
+          "requirement": "zero_knowledge_no_export_semantics",
+          "vector_evidence_kind": "audit_vectors"
         },
         {
           "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
@@ -350,7 +375,8 @@
           "covered_by_current_vectors": false,
           "current_vector_case_ids": [],
           "public_rejection_classes": [],
-          "requirement": "account_stark_qrom_domain_separation"
+          "requirement": "account_stark_qrom_domain_separation",
+          "vector_evidence_kind": "no_current_vectors"
         },
         {
           "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
@@ -378,7 +404,8 @@
             "reject_creation_evidence",
             "internal_error_fail_closed"
           ],
-          "requirement": "deterministic_public_rejection"
+          "requirement": "deterministic_public_rejection",
+          "vector_evidence_kind": "rejection_vectors"
         }
       ]
     },
@@ -415,10 +442,10 @@
     "digests": {
       "account_creation_frame_kat_boundary_report_digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
       "account_creation_frame_kat_boundary_report_recomputed_digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
-      "account_creation_no_export_boundary_report_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338",
-      "account_creation_no_export_boundary_report_recomputed_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338",
-      "account_creation_proof_boundary_report_digest": "1c6c90e1b070cf0580fa68421e8c8306be7032b5ca4a179ae2fa67d9bde0aced",
-      "account_creation_proof_boundary_report_recomputed_digest": "1c6c90e1b070cf0580fa68421e8c8306be7032b5ca4a179ae2fa67d9bde0aced",
+      "account_creation_no_export_boundary_report_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
+      "account_creation_no_export_boundary_report_recomputed_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
+      "account_creation_proof_boundary_report_digest": "7ba404fd9aed87cf162a4bbe0cd701b3c7da0f31d1e9264455e31a78f394c09d",
+      "account_creation_proof_boundary_report_recomputed_digest": "7ba404fd9aed87cf162a4bbe0cd701b3c7da0f31d1e9264455e31a78f394c09d",
       "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_stark_fri_aok_boundary_report_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753",
@@ -431,7 +458,7 @@
       "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
       "payload_kat_boundary_report_recomputed_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
       "proof_boundary_report_frame_kat_digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
-      "proof_boundary_report_no_export_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338",
+      "proof_boundary_report_no_export_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
       "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "residual_matrix_report_fri_aok_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753"
     },
@@ -524,6 +551,8 @@
         "frozen_no_export_vectors_complete": false,
         "no_export_field_denylist_pinned": true,
         "no_export_theorem_instantiated": false,
+        "no_export_vector_case_count": 4,
+        "no_export_vectors_present": true,
         "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
         "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
         "payload_public_field_count": 11,
@@ -546,6 +575,12 @@
       ],
       "no_export_requirement": "zero_knowledge_no_export_semantics",
       "no_export_theorem_target": "selected_account_stark_no_export_v1",
+      "no_export_vector_case_ids": [
+        "no_export_public_payload_field_allowlist",
+        "no_export_simulator_public_input_allowlist",
+        "no_export_private_material_denylist_absence",
+        "no_export_opaque_bundle_not_manifest_inlined"
+      ],
       "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
       "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
       "simulator_public_input_fields": [
@@ -702,5 +737,5 @@
       ]
     }
   },
-  "manifest_digest": "f88636949a0731919cb3fb64533b08daa0b18f1bb95c85ad86b1dbefc371984e"
+  "manifest_digest": "4c4072385482261a48c8adde72ffd26832e4283d5ac2c4eeb23e0e207caf5dbe"
 }

@@ -195,11 +195,11 @@ no-postchallenge timing, simulator/no-export closure, FRI/AoK extraction,
 FRI/QROM residual pricing, frozen payload KATs, and production-gate review;
 each open row carries a named break and the fail-closed account-creation
 proof-boundary blocker. A separate requirement-coverage matrix maps every
-acceptance requirement to its current evidence surface, current vector case ids
-where they exist, public rejection classes, closure target, and blocker; it
-records that eight requirements have current frame-KAT or account-STARK payload
-vectors while no-export semantics and account-STARK QROM/domain separation
-remain uncovered by vectors. The
+acceptance requirement to its current evidence surface, vector evidence kind,
+current vector case ids where they exist, public rejection classes for rejection
+vectors, closure target, and blocker; it records that nine requirements have
+current frame-KAT, account-STARK payload, or no-export audit vectors while
+account-STARK QROM/domain separation remains uncovered by vectors. The
 sampler/timing report pins the honest-create
 sampler support file, no-postchallenge timing game, construction order,
 prechallenge fixed-through step, spend-challenge derivation step, and executable
@@ -209,10 +209,11 @@ slot authorization digest, and proof commitment. The no-export boundary report
 pins the support file, selected account-STARK payload endpoints, public
 payload byte-model digest, payload KAT-boundary digest, forbidden
 private-material field denylist, simulator theorem target,
-no-export theorem target, accepted-bundle simulator public-input allowlist, and named
+no-export theorem target, accepted-bundle simulator public-input allowlist,
+digest-pinned no-export audit vector case ids, and named
 `account_stark_simulator_or_no_export_break`, while keeping simulator theorem,
-no-export theorem, accepted-bundle simulability, frozen vectors, external
-review, and deployment readiness false.
+no-export theorem, accepted-bundle simulability, frozen theorem-level vectors,
+external review, and deployment readiness false.
 `formal/kat/path2_account_creation_proof_boundary_v1.json` is regenerated from
 that report, the selected `Path2AccountStarkResidualMatrixReportV1`, the current
 `Path2AccountStarkPayloadKatBoundaryReportV1`, the current sampler/timing
@@ -223,8 +224,11 @@ proof-obligation rows, residual rows, and payload-KAT boundary blocker cannot
 drift silently.
 `formal/kat/path2_account_creation_no_export_boundary_v1.json` is
 also regenerated and checked before the proof-boundary manifest so the
-no-export boundary cannot remain prose-only. The reports and manifests are the
-executable boundary map for this section; they are not an honest-sampler
+no-export boundary cannot remain prose-only, and
+`formal/kat/path2_account_creation_no_export_vectors_v1.json` pins the current
+public-payload allowlist, simulator-input allowlist, private-material denylist
+absence, and opaque proof-bundle manifest policy. The reports and manifests are
+the executable boundary map for this section; they are not an honest-sampler
 theorem, authorization-class binding theorem, no-postchallenge timing theorem,
 simulator, no-export theorem, extractor, FRI/QROM, KAT, or external-review
 substitute.

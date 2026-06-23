@@ -271,6 +271,11 @@ fn manifest_body() -> Result<Value, String> {
                     proof_boundary_report.proof_obligation_count,
                 "current_vector_covered_requirement_count":
                     proof_boundary_report.current_vector_covered_requirement_count,
+                "current_vector_evidence_kinds": proof_boundary_report
+                    .requirement_coverage_rows
+                    .iter()
+                    .map(|row| row.vector_evidence_kind)
+                    .collect::<Vec<_>>(),
                 "every_accepting_requirement_has_coverage_row":
                     proof_boundary_report.every_accepting_requirement_has_coverage_row,
                 "every_vector_covered_requirement_has_public_rejection_class":
@@ -342,6 +347,8 @@ fn manifest_body() -> Result<Value, String> {
                 "payload_public_field_count": no_export_report.payload_public_field_count,
                 "public_payload_field_mutation_count":
                     no_export_report.public_payload_field_mutation_count,
+                "no_export_vector_case_count":
+                    no_export_report.no_export_vector_case_count,
                 "public_payload_exports_private_material":
                     no_export_report.public_payload_exports_private_material,
                 "no_export_field_denylist_pinned":
@@ -353,6 +360,7 @@ fn manifest_body() -> Result<Value, String> {
                 "boundary_mapping_complete": no_export_report.boundary_mapping_complete,
                 "roundtrip_regression_present": no_export_report.roundtrip_regression_present,
                 "production_gate_fail_closed": no_export_report.production_gate_fail_closed,
+                "no_export_vectors_present": no_export_report.no_export_vectors_present,
                 "simulator_theorem_instantiated":
                     no_export_report.simulator_theorem_instantiated,
                 "no_export_theorem_instantiated":
@@ -374,6 +382,7 @@ fn manifest_body() -> Result<Value, String> {
             "named_break": no_export_report.named_break,
             "simulator_public_input_fields":
                 no_export_report.simulator_public_input_fields,
+            "no_export_vector_case_ids": no_export_report.no_export_vector_case_ids,
             "no_export_private_material_fields":
                 no_export_report.no_export_private_material_fields
         },

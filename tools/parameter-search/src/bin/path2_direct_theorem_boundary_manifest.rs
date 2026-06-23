@@ -330,6 +330,11 @@ fn manifest_body() -> Result<Value, String> {
                     proof_boundary_report.proof_obligation_count,
                 "current_vector_covered_requirement_count":
                     proof_boundary_report.current_vector_covered_requirement_count,
+                "current_vector_evidence_kinds": proof_boundary_report
+                    .requirement_coverage_rows
+                    .iter()
+                    .map(|row| row.vector_evidence_kind)
+                    .collect::<Vec<_>>(),
                 "every_accepting_requirement_has_coverage_row":
                     proof_boundary_report.every_accepting_requirement_has_coverage_row,
                 "every_vector_covered_requirement_has_public_rejection_class":

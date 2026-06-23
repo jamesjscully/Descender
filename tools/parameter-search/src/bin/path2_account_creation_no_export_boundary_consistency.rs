@@ -168,6 +168,10 @@ fn main() -> Result<(), String> {
             "/manifest/no_export_boundary/coverage/public_payload_field_mutation_count",
             report.public_payload_field_mutation_count,
         ),
+        (
+            "/manifest/no_export_boundary/coverage/no_export_vector_case_count",
+            report.no_export_vector_case_count,
+        ),
     ] {
         if u64_at(&manifest, pointer)? != expected as u64 {
             return Err(format!(
@@ -182,11 +186,33 @@ fn main() -> Result<(), String> {
         "/manifest/no_export_boundary/coverage/boundary_mapping_complete",
         "/manifest/no_export_boundary/coverage/roundtrip_regression_present",
         "/manifest/no_export_boundary/coverage/production_gate_fail_closed",
+        "/manifest/no_export_boundary/coverage/no_export_vectors_present",
     ] {
         if !bool_at(&manifest, pointer)? {
             return Err(format!(
                 "account-creation no-export manifest lost required flag {pointer}"
             ));
+        }
+    }
+
+    let vector_cases = at(
+        &manifest,
+        "/manifest/no_export_boundary/no_export_vector_case_ids",
+    )?
+    .as_array()
+    .ok_or_else(|| {
+        "no-export manifest vector case ids are not an array".to_string()
+    })?;
+    if vector_cases.len() != report.no_export_vector_case_ids.len() {
+        return Err("no-export manifest vector case count drifted".to_string());
+    }
+    for (index, expected) in report.no_export_vector_case_ids.iter().enumerate() {
+        if vector_cases[index]
+            .as_str()
+            .ok_or_else(|| format!("no-export vector case {index} is not a string"))?
+            != *expected
+        {
+            return Err(format!("no-export manifest vector case {index} drifted"));
         }
     }
     for pointer in [

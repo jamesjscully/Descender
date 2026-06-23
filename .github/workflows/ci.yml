@@ -108,6 +108,12 @@ jobs:
           diff -u ../../formal/kat/path2_account_creation_no_export_boundary_v1.json /tmp/path2_account_creation_no_export_boundary_v1.json
       - name: Account-creation no-export boundary consistency check
         run: cargo run --quiet --bin path2_account_creation_no_export_boundary_consistency
+      - name: Account-creation no-export vector corpus check
+        run: |
+          cargo run --quiet --bin path2_account_creation_no_export_vectors > /tmp/path2_account_creation_no_export_vectors_v1.json
+          diff -u ../../formal/kat/path2_account_creation_no_export_vectors_v1.json /tmp/path2_account_creation_no_export_vectors_v1.json
+      - name: Account-creation no-export vector consistency check
+        run: cargo run --quiet --bin path2_account_creation_no_export_vector_consistency
       - name: Account-creation proof boundary manifest check
         run: |
           cargo run --quiet --bin path2_account_creation_proof_boundary_manifest > /tmp/path2_account_creation_proof_boundary_v1.json

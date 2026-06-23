@@ -16,12 +16,12 @@
     "corpus_id": "Descender.Path2.AccountCreationNoExportBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_no_export_boundary_report_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338",
-      "account_creation_no_export_boundary_report_recomputed_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338",
-      "account_creation_proof_boundary_report_digest": "1c6c90e1b070cf0580fa68421e8c8306be7032b5ca4a179ae2fa67d9bde0aced",
+      "account_creation_no_export_boundary_report_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
+      "account_creation_no_export_boundary_report_recomputed_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
+      "account_creation_proof_boundary_report_digest": "7ba404fd9aed87cf162a4bbe0cd701b3c7da0f31d1e9264455e31a78f394c09d",
       "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
       "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
-      "proof_boundary_report_no_export_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338"
+      "proof_boundary_report_no_export_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b"
     },
     "frozen_status": "draft_no_export_boundary_manifest",
     "generator": {
@@ -39,6 +39,8 @@
         "frozen_no_export_vectors_complete": false,
         "no_export_field_denylist_pinned": true,
         "no_export_theorem_instantiated": false,
+        "no_export_vector_case_count": 4,
+        "no_export_vectors_present": true,
         "payload_public_field_count": 11,
         "production_gate_fail_closed": true,
         "public_payload_exports_private_material": false,
@@ -57,6 +59,12 @@
         "private_trace_material"
       ],
       "no_export_theorem_target": "selected_account_stark_no_export_v1",
+      "no_export_vector_case_ids": [
+        "no_export_public_payload_field_allowlist",
+        "no_export_simulator_public_input_allowlist",
+        "no_export_private_material_denylist_absence",
+        "no_export_opaque_bundle_not_manifest_inlined"
+      ],
       "simulator_public_input_fields": [
         "leaf_context_digest",
         "creation_proof_binding_digest",
@@ -78,5 +86,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountCreationNoExportBoundaryManifest.v1"
   },
-  "manifest_digest": "4106242a9453320d5d1d6f1f0341fe5fe442a23fa9e905e79d96646b7632bdc3"
+  "manifest_digest": "8e6431adbb39481508879aebe9fde05a23c7b45bf5e172041296254387395814"
 }
