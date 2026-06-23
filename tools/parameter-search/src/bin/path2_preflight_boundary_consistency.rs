@@ -116,8 +116,28 @@ fn require_array_field_values_match(
     evidence_field: &str,
     label: &str,
 ) -> Result<(), String> {
-    let row_values = array_field_values_at(value, row_pointer, row_field)?;
-    let evidence_values = array_field_values_at(value, evidence_pointer, evidence_field)?;
+    require_array_field_values_match_between(
+        value,
+        row_pointer,
+        row_field,
+        value,
+        evidence_pointer,
+        evidence_field,
+        label,
+    )
+}
+
+fn require_array_field_values_match_between(
+    row_value: &Value,
+    row_pointer: &str,
+    row_field: &str,
+    evidence_value: &Value,
+    evidence_pointer: &str,
+    evidence_field: &str,
+    label: &str,
+) -> Result<(), String> {
+    let row_values = array_field_values_at(row_value, row_pointer, row_field)?;
+    let evidence_values = array_field_values_at(evidence_value, evidence_pointer, evidence_field)?;
     if evidence_values != row_values {
         return Err(format!(
             "{label} evidence field {evidence_pointer}/{evidence_field} drifted from {row_pointer}/{row_field}",
@@ -172,6 +192,41 @@ fn require_direct_closure_dependency_evidence_identity(
             "/closure_dependency_rows",
             row_field,
             "/closure_dependency_evidence_rows",
+            evidence_field,
+            label,
+        )?;
+    }
+    Ok(())
+}
+
+fn require_requirement_coverage_accepted_evidence_identity(
+    boundary: &Value,
+    accepted_evidence: &Value,
+    label: &str,
+) -> Result<(), String> {
+    if at(accepted_evidence, "/accepting_requirements")? != at(boundary, "/accepting_requirements")?
+    {
+        return Err(format!(
+            "{label} accepted proof-boundary evidence lost accepting-requirement identity"
+        ));
+    }
+    for (row_field, evidence_field) in [
+        ("requirement", "requirement"),
+        ("coverage_surface", "coverage_surface"),
+        ("vector_evidence_kind", "vector_evidence_kind"),
+        ("current_vector_case_ids", "current_vector_case_ids"),
+        (
+            "covered_by_current_vectors",
+            "boundary_or_audit_evidence_present",
+        ),
+        ("blocker", "blocker"),
+    ] {
+        require_array_field_values_match_between(
+            boundary,
+            "/requirement_coverage_rows",
+            row_field,
+            accepted_evidence,
+            "/accepted_requirement_evidence_rows",
             evidence_field,
             label,
         )?;
@@ -482,12 +537,21 @@ fn main() -> Result<(), String> {
     )?;
     let direct_manifest_file =
         load_json(&root, "formal/kat/path2_direct_theorem_boundary_v1.json")?;
+    let accepted_proof_boundary_file = load_json(
+        &root,
+        "formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json",
+    )?;
     let proof_manifest =
         require_manifest_digest(&proof_manifest_file, "account-creation proof boundary")?;
     let direct_manifest =
         require_manifest_digest(&direct_manifest_file, "direct theorem boundary")?;
+    let accepted_proof_boundary_manifest = require_manifest_digest(
+        &accepted_proof_boundary_file,
+        "accepted account-creation proof-boundary evidence",
+    )?;
     let proof_boundary = at(proof_manifest, "/account_creation_proof_boundary")?;
     let direct_boundary = at(direct_manifest, "/direct_theorem_boundary")?;
+    let accepted_proof_boundary_evidence = at(accepted_proof_boundary_manifest, "/evidence")?;
     if proof_boundary != at(direct_manifest, "/account_creation_proof_boundary")? {
         return Err(
             "production preflight manifest bind lost shared proof-boundary object".to_string(),
@@ -662,6 +726,16 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
+    require_requirement_coverage_accepted_evidence_identity(
+        proof_boundary,
+        accepted_proof_boundary_evidence,
+        "production preflight proof-boundary",
+    )?;
+    require_requirement_coverage_accepted_evidence_identity(
+        at(direct_manifest, "/account_creation_proof_boundary")?,
+        accepted_proof_boundary_evidence,
+        "production preflight direct-imported proof-boundary",
+    )?;
     for pointer in [
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/composition_theorem_instantiated",
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/account_creation_proof_boundary_verified",

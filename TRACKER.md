@@ -41,6 +41,10 @@ happy-path-applicable accepting requirements are checked by the deterministic
 creation KAT, FRI/QROM domain separation is deferred to the residual theorem
 ledger, deterministic public rejection is deferred to rejection KATs, and every
 separate closure requirement remains tied to an open proof-boundary obligation.
+The boundary and preflight gates now compare the standalone accepted
+proof-boundary checklist fields back to the proof/direct proof-boundary
+requirement-coverage rows, including requirement identity, coverage surface,
+vector evidence kind, case-id list, evidence-present flag, and blocker.
 The accepted proof-boundary, accepted spend tuple, accepted composition,
 proof-obligation, direct-obligation,
 and production preflight consistency gates now also recompute those generated

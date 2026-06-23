@@ -144,6 +144,46 @@ fn expect_direct_closure_dependency_evidence_identity(
     Ok(())
 }
 
+fn expect_requirement_coverage_accepted_evidence_identity(
+    boundary: &Value,
+    accepted_evidence: &Value,
+    label: &str,
+) -> Result<(), String> {
+    expect_eq(
+        get(accepted_evidence, &["accepting_requirements"])?,
+        &format!("{label}.accepted_evidence.accepting_requirements"),
+        get(boundary, &["accepting_requirements"])?,
+        &format!("{label}.boundary.accepting_requirements"),
+    )?;
+    for (row_field, evidence_field) in [
+        ("requirement", "requirement"),
+        ("coverage_surface", "coverage_surface"),
+        ("vector_evidence_kind", "vector_evidence_kind"),
+        ("current_vector_case_ids", "current_vector_case_ids"),
+        (
+            "covered_by_current_vectors",
+            "boundary_or_audit_evidence_present",
+        ),
+        ("blocker", "blocker"),
+    ] {
+        let row_values = field_values(boundary, &["requirement_coverage_rows"], row_field)?;
+        let evidence_values = field_values(
+            accepted_evidence,
+            &["accepted_requirement_evidence_rows"],
+            evidence_field,
+        )?;
+        expect_eq(
+            &evidence_values,
+            &format!(
+                "{label}.accepted_evidence.accepted_requirement_evidence_rows.{evidence_field}"
+            ),
+            &row_values,
+            &format!("{label}.boundary.requirement_coverage_rows.{row_field}"),
+        )?;
+    }
+    Ok(())
+}
+
 fn check_consistency() -> Result<(), String> {
     let root = repo_root();
     let proof = read_json(
@@ -151,8 +191,14 @@ fn check_consistency() -> Result<(), String> {
         "formal/kat/path2_account_creation_proof_boundary_v1.json",
     )?;
     let direct = read_json(&root, "formal/kat/path2_direct_theorem_boundary_v1.json")?;
+    let accepted_proof_boundary = read_json(
+        &root,
+        "formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json",
+    )?;
     let proof_manifest = get(&proof, &["manifest"])?;
     let direct_manifest = get(&direct, &["manifest"])?;
+    let accepted_proof_boundary_evidence =
+        get(&accepted_proof_boundary, &["manifest", "evidence"])?;
 
     expect_eq(
         get(proof_manifest, &["account_creation_proof_boundary"])?,
@@ -1066,6 +1112,16 @@ fn check_consistency() -> Result<(), String> {
             &["account_creation_proof_boundary", "accepting_requirements"],
         )?,
         "proof.manifest.account_creation_proof_boundary.accepting_requirements",
+    )?;
+    expect_requirement_coverage_accepted_evidence_identity(
+        get(proof_manifest, &["account_creation_proof_boundary"])?,
+        accepted_proof_boundary_evidence,
+        "proof.manifest.account_creation_proof_boundary",
+    )?;
+    expect_requirement_coverage_accepted_evidence_identity(
+        get(direct_manifest, &["account_creation_proof_boundary"])?,
+        accepted_proof_boundary_evidence,
+        "direct.manifest.account_creation_proof_boundary",
     )?;
     for flag in [
         "every_applicable_accepting_requirement_has_accepted_path_evidence",

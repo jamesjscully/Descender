@@ -383,7 +383,12 @@ binds its own 9-case open direct-obligation audit-vector corpus plus accepted
 direct-composition KAT evidence artifact; `path2_boundary_manifest_consistency`
 requires the standalone proof-boundary and direct theorem manifests to agree on
 the shared proof-boundary evidence while preserving false theorem and deployment
-flags. The compact accepted-proof, accepted-tuple, and accepted-composition
+flags. The boundary and preflight gates also compare the standalone accepted
+proof-boundary requirement evidence rows back to the proof/direct
+proof-boundary requirement-coverage rows, field-for-field for requirement
+identity, coverage surface, vector evidence kind, current case ids,
+evidence-present status, and blocker. The compact accepted-proof,
+accepted-tuple, and accepted-composition
 artifact summaries expose the accepted requirement, tuple-field, and hypothesis
 evidence counts, exact row identity lists, accepted hypothesis-to-obligation
 bindings, and their deferred rejection/QROM flags; both boundary and preflight
