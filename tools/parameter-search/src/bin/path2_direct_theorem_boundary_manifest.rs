@@ -6,6 +6,7 @@ use descender_parameter_search::{
         path2_account_creation_proof_obligation_vector_corpus_evidence_v1,
         path2_account_creation_requirement_vector_corpus_evidence_v1,
         path2_direct_accepted_composition_evidence_artifact_v1,
+        path2_direct_accepted_spend_tuple_evidence_artifact_v1,
         path2_direct_theorem_obligation_vector_corpus_evidence_v1,
     },
     production_reference::{
@@ -49,6 +50,8 @@ fn manifest_body() -> Result<Value, String> {
         path2_account_creation_accepted_proof_boundary_evidence_artifact_v1()?;
     let direct_obligation_vector_corpus_evidence =
         path2_direct_theorem_obligation_vector_corpus_evidence_v1()?;
+    let direct_accepted_spend_tuple_evidence_artifact =
+        path2_direct_accepted_spend_tuple_evidence_artifact_v1()?;
     let direct_accepted_composition_evidence_artifact =
         path2_direct_accepted_composition_evidence_artifact_v1()?;
     let recomputed_direct_digest = path2_direct_theorem_boundary_report_v1_digest(&direct_report);
@@ -237,6 +240,8 @@ fn manifest_body() -> Result<Value, String> {
             "obligation_rows": direct_report.obligation_rows,
             "direct_obligation_vector_corpus_evidence":
                 direct_obligation_vector_corpus_evidence,
+            "direct_accepted_spend_tuple_evidence_artifact":
+                direct_accepted_spend_tuple_evidence_artifact,
             "direct_accepted_composition_evidence_artifact":
                 direct_accepted_composition_evidence_artifact
         },

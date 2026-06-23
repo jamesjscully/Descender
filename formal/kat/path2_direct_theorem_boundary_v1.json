@@ -823,6 +823,44 @@
           "evidence_digest_recomputed": true,
           "rayon_threads": 1
         },
+        "direct_accepted_spend_tuple_artifact": {
+          "account_creation_proof_boundary_report_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
+          "account_creation_proof_boundary_report_recomputed_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
+          "artifact_manifest_digest": "becc680b01b45f7a2eed1c02892a147fba0542d7e0914992c5c9253469dc9b38",
+          "artifact_manifest_recomputed_digest": "becc680b01b45f7a2eed1c02892a147fba0542d7e0914992c5c9253469dc9b38",
+          "artifact_path": "formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json",
+          "artifact_schema": "Descender.Path2.DirectAcceptedSpendTupleDeterministicKatEvidenceManifest.v1",
+          "artifact_status": "digest_pinned_deterministic_kat_accepted_direct_spend_tuple_evidence",
+          "audit_summary": {
+            "consume_once_inserted_exactly_one_authorization": true,
+            "consumed_authorization_absent_before": true,
+            "consumed_authorization_present_after": true,
+            "public_result_accepts_same_slot": true,
+            "replay_rejected_by_consume_once": true,
+            "state_namespace_record_present": true,
+            "tuple_fields_match_theorem_boundary": true
+          },
+          "deterministic_tuple_mode": {
+            "accepted_tuple_endpoint": "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1",
+            "evidence_digest_recomputed": true,
+            "rayon_threads": 1,
+            "replay_rejected_by_consume_once": true,
+            "source_fixture_endpoint": "path2_direct_accepted_spend_tuple_kat_evidence_v1"
+          },
+          "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
+          "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
+          "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
+          "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
+          "direct_theorem_boundary_report_digest": "fb5fc5d0eaa3e2afa3b39b0400aa112b09d97ae99b858026ecdc425efa07ba7a",
+          "direct_theorem_boundary_report_recomputed_digest": "fb5fc5d0eaa3e2afa3b39b0400aa112b09d97ae99b858026ecdc425efa07ba7a",
+          "evidence_digest": "b31270bcde0f7bbe5f5b0d1697950f66fcc037b6323459d791e85e048992752d",
+          "evidence_recomputed_digest": "b31270bcde0f7bbe5f5b0d1697950f66fcc037b6323459d791e85e048992752d",
+          "evidence_schema": "Descender.Path2.DirectAcceptedSpendTupleEvidence.v1",
+          "schema": "Descender.Path2.DirectAcceptedSpendTupleEvidenceArtifact.v1",
+          "status": "digest_pinned_accepted_direct_spend_tuple_evidence_artifact"
+        },
+        "direct_accepted_spend_tuple_artifact_manifest_digest": "becc680b01b45f7a2eed1c02892a147fba0542d7e0914992c5c9253469dc9b38",
+        "direct_accepted_spend_tuple_evidence_digest": "b31270bcde0f7bbe5f5b0d1697950f66fcc037b6323459d791e85e048992752d",
         "direct_theorem_boundary_report_digest": "fb5fc5d0eaa3e2afa3b39b0400aa112b09d97ae99b858026ecdc425efa07ba7a",
         "direct_theorem_boundary_report_recomputed_digest": "fb5fc5d0eaa3e2afa3b39b0400aa112b09d97ae99b858026ecdc425efa07ba7a",
         "evidence_digest": "d785b271d9a5184ab3d2bf120f77b589095b4da2fb77da6372805ba90166750a",
@@ -830,6 +868,42 @@
         "evidence_schema": "Descender.Path2.DirectAcceptedCompositionEvidence.v1",
         "schema": "Descender.Path2.DirectAcceptedCompositionEvidenceArtifact.v1",
         "status": "digest_pinned_accepted_direct_composition_evidence_artifact"
+      },
+      "direct_accepted_spend_tuple_evidence_artifact": {
+        "account_creation_proof_boundary_report_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
+        "account_creation_proof_boundary_report_recomputed_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
+        "artifact_manifest_digest": "becc680b01b45f7a2eed1c02892a147fba0542d7e0914992c5c9253469dc9b38",
+        "artifact_manifest_recomputed_digest": "becc680b01b45f7a2eed1c02892a147fba0542d7e0914992c5c9253469dc9b38",
+        "artifact_path": "formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json",
+        "artifact_schema": "Descender.Path2.DirectAcceptedSpendTupleDeterministicKatEvidenceManifest.v1",
+        "artifact_status": "digest_pinned_deterministic_kat_accepted_direct_spend_tuple_evidence",
+        "audit_summary": {
+          "consume_once_inserted_exactly_one_authorization": true,
+          "consumed_authorization_absent_before": true,
+          "consumed_authorization_present_after": true,
+          "public_result_accepts_same_slot": true,
+          "replay_rejected_by_consume_once": true,
+          "state_namespace_record_present": true,
+          "tuple_fields_match_theorem_boundary": true
+        },
+        "deterministic_tuple_mode": {
+          "accepted_tuple_endpoint": "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1",
+          "evidence_digest_recomputed": true,
+          "rayon_threads": 1,
+          "replay_rejected_by_consume_once": true,
+          "source_fixture_endpoint": "path2_direct_accepted_spend_tuple_kat_evidence_v1"
+        },
+        "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
+        "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
+        "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
+        "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
+        "direct_theorem_boundary_report_digest": "fb5fc5d0eaa3e2afa3b39b0400aa112b09d97ae99b858026ecdc425efa07ba7a",
+        "direct_theorem_boundary_report_recomputed_digest": "fb5fc5d0eaa3e2afa3b39b0400aa112b09d97ae99b858026ecdc425efa07ba7a",
+        "evidence_digest": "b31270bcde0f7bbe5f5b0d1697950f66fcc037b6323459d791e85e048992752d",
+        "evidence_recomputed_digest": "b31270bcde0f7bbe5f5b0d1697950f66fcc037b6323459d791e85e048992752d",
+        "evidence_schema": "Descender.Path2.DirectAcceptedSpendTupleEvidence.v1",
+        "schema": "Descender.Path2.DirectAcceptedSpendTupleEvidenceArtifact.v1",
+        "status": "digest_pinned_accepted_direct_spend_tuple_evidence_artifact"
       },
       "direct_obligation_vector_corpus_evidence": {
         "account_creation_proof_boundary_report_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
@@ -989,5 +1063,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "6f67df006662ed6e944ecd39bad1cf3a8a04865b5dc682d056548385896ed10c"
+  "manifest_digest": "3ee6d0cf2fa1ab7c9ecd00551f75517b8e4c8f6597e1673328d1ef834d728699"
 }

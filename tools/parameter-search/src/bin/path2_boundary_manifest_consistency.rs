@@ -777,6 +777,45 @@ fn check_consistency() -> Result<(), String> {
         ],
         false,
     )?;
+    expect_eq(
+        get(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_accepted_spend_tuple_evidence_artifact",
+            ],
+        )?,
+        "direct.manifest.direct_theorem_boundary.direct_accepted_spend_tuple_evidence_artifact",
+        get(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_accepted_composition_evidence_artifact",
+                "direct_accepted_spend_tuple_artifact",
+            ],
+        )?,
+        "direct.manifest.direct_theorem_boundary.direct_accepted_composition_evidence_artifact.direct_accepted_spend_tuple_artifact",
+    )?;
+    for flag in [
+        "state_namespace_record_present",
+        "consumed_authorization_absent_before",
+        "consumed_authorization_present_after",
+        "consume_once_inserted_exactly_one_authorization",
+        "public_result_accepts_same_slot",
+        "tuple_fields_match_theorem_boundary",
+        "replay_rejected_by_consume_once",
+    ] {
+        expect_bool(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_accepted_spend_tuple_evidence_artifact",
+                "audit_summary",
+                flag,
+            ],
+            true,
+        )?;
+    }
     for flag in [
         "creation_evidence_matches_direct_tuple",
         "proof_boundary_digest_matches_direct_theorem",

@@ -103,6 +103,11 @@ spend verifier together, binding the accepted creation proof-boundary evidence,
 accepted direct spend tuple, direct theorem boundary digest, QROM/action
 digest, lifecycle digest, proof-boundary digest, exact admission namespace, and
 consume-once before/after transition for one accepted slot.
+`formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json` now
+digest-pins that accepted direct spend tuple as a standalone deterministic KAT
+artifact, including checked-core signature/challenge/proof-commitment digests,
+the exact admission namespace, consume-once before/after state digests, public
+`accept_spend_slot`, and replay rejection against the consume-once set.
 `formal/kat/path2_direct_accepted_composition_evidence_v1.json` digest-pins
 that accepted composition evidence under deterministic KAT proof-byte mode:
 the generator and checker run inside a one-thread Rayon pool so the fixed
@@ -111,10 +116,11 @@ The artifact records the full accepted evidence digest chain, including the
 selected account-creation payload digest, proof-boundary evidence digest,
 direct spend tuple digest, leaf/evidence transcript digests, admission
 namespace, authorization digest, and consume-once before/after state digests.
-The consistency gate also checks the selected payload digest against the
+The consistency gate also checks the direct spend tuple digest against the
+standalone tuple artifact and the selected payload digest against the
 account-STARK payload KAT vector corpus. This is deterministic KAT evidence
-only; deployment producers still use fresh proof randomness, and the artifact
-does not close the composition theorem or account-creation proof family. The
+only; deployment producers still use fresh proof randomness, and the artifacts
+do not close the composition theorem or account-creation proof family. The
 `path2_direct_single_slot_spend_tuple_evidence_pins_accepted_tuple` test is
 accepted-path evidence for the theorem shape, but it is not the composition
 theorem and does not verify the account-creation proof family. The

@@ -246,6 +246,67 @@ mod enabled {
                 ));
             }
         }
+        let accepted_tuple =
+            load_json("formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json")?;
+        let accepted_tuple_body = at(&accepted_tuple, "/manifest")?;
+        if str_at(
+            body,
+            "/evidence/direct_accepted_spend_tuple_evidence_digest",
+        )? != str_at(accepted_tuple_body, "/evidence/digest")?
+            || str_at(body, "/evidence/public_key_identity")?
+                != str_at(accepted_tuple_body, "/evidence/public_key_identity")?
+            || str_at(body, "/evidence/message_digest")?
+                != str_at(accepted_tuple_body, "/evidence/message_digest")?
+            || str_at(body, "/evidence/account_id")?
+                != str_at(accepted_tuple_body, "/evidence/account_id")?
+            || str_at(body, "/evidence/account_state_root_before")?
+                != str_at(accepted_tuple_body, "/evidence/account_state_root_before")?
+            || u64_at(body, "/evidence/slot_id")?
+                != u64_at(accepted_tuple_body, "/evidence/slot_id")?
+            || str_at(body, "/evidence/prevalidated_slot_leaf_digest")?
+                != str_at(
+                    accepted_tuple_body,
+                    "/evidence/prevalidated_slot_leaf_digest",
+                )?
+            || str_at(
+                body,
+                "/evidence/account_creation_evidence_transcript_digest",
+            )? != str_at(
+                accepted_tuple_body,
+                "/evidence/account_creation_evidence_transcript_digest",
+            )?
+            || str_at(body, "/evidence/selected_account_creation_payload_digest")?
+                != str_at(
+                    accepted_tuple_body,
+                    "/evidence/selected_account_creation_payload_digest",
+                )?
+            || str_at(body, "/evidence/slot_authorization_digest")?
+                != str_at(accepted_tuple_body, "/evidence/slot_authorization_digest")?
+            || str_at(body, "/evidence/direct_admission_namespace_record_digest")?
+                != str_at(
+                    accepted_tuple_body,
+                    "/evidence/direct_admission_namespace_record_digest",
+                )?
+            || str_at(body, "/evidence/consume_once_state_before_digest")?
+                != str_at(
+                    accepted_tuple_body,
+                    "/evidence/consume_once_state_before_digest",
+                )?
+            || str_at(body, "/evidence/consume_once_state_after_digest")?
+                != str_at(
+                    accepted_tuple_body,
+                    "/evidence/consume_once_state_after_digest",
+                )?
+            || !bool_at(
+                accepted_tuple_body,
+                "/evidence/replay_rejected_by_consume_once",
+            )?
+        {
+            return Err(
+                "direct accepted composition manifest drifted from standalone accepted spend tuple artifact"
+                    .to_string(),
+            );
+        }
         let payload_vectors =
             load_json("formal/kat/path2_account_stark_payload_kat_vectors_v1.json")?;
         require_hex(

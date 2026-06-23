@@ -9765,6 +9765,15 @@ pub struct Path2DirectAcceptedSpendTupleEvidenceV1 {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[cfg(feature = "account-creation-stark-verifier")]
+pub struct Path2DirectAcceptedSpendTupleKatEvidenceV1 {
+    pub account_creation_fixture_id: &'static str,
+    pub proof_mask_seed: u64,
+    pub evidence: Path2DirectAcceptedSpendTupleEvidenceV1,
+    pub replay_rejected_by_consume_once: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2DirectAcceptedCompositionEvidenceV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub schema: &'static str,
@@ -65358,8 +65367,22 @@ pub fn verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-pub fn path2_direct_accepted_composition_evidence_v1(
-) -> Result<Path2DirectAcceptedCompositionEvidenceV1, String> {
+struct Path2DirectAcceptedSpendTupleKatContextV1 {
+    direct_report: Path2DirectTheoremBoundaryReportV1,
+    qrom_report: Path2DirectQromActionBoundaryReportV1,
+    lifecycle_report: Path2DirectLifecycleBoundaryReportV1,
+    proof_report: Path2AccountCreationProofBoundaryReportV1,
+    stark_fixture: Path2AccountStarkPayloadKatFixtureV1,
+    creation_evidence: Path2AccountCreationAcceptedProofBoundaryEvidenceV1,
+    authorization: [u8; DIGEST_BYTES],
+    consumed: BTreeSet<[u8; DIGEST_BYTES]>,
+    tuple_evidence: Path2DirectAcceptedSpendTupleEvidenceV1,
+    replay_rejected_by_consume_once: bool,
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+fn path2_direct_accepted_spend_tuple_kat_context_v1(
+) -> Result<Path2DirectAcceptedSpendTupleKatContextV1, String> {
     let direct_report = path2_direct_theorem_boundary_report_v1();
     validate_path2_direct_theorem_boundary_report_v1(&direct_report)?;
     let qrom_report = path2_direct_qrom_action_boundary_report_v1();
@@ -65417,6 +65440,83 @@ pub fn path2_direct_accepted_composition_evidence_v1(
             &mut consumed,
         )
         .map_err(|err| err.reason().to_string())?;
+    let tuple_digest = path2_direct_accepted_spend_tuple_evidence_v1_digest(&tuple_evidence);
+    if tuple_digest != tuple_evidence.digest {
+        return Err("Path 2 direct accepted spend tuple KAT digest mismatch".to_string());
+    }
+    if tuple_evidence.public_result_class_name != PATH2_PUBLIC_RESULT_ACCEPT_SPEND_SLOT
+        || !tuple_evidence.state_namespace_record_present
+        || !tuple_evidence.consumed_authorization_absent_before
+        || !tuple_evidence.consumed_authorization_present_after
+        || !tuple_evidence.consume_once_inserted_exactly_one_authorization
+        || !tuple_evidence.public_result_accepts_same_slot
+        || !tuple_evidence.tuple_fields_match_theorem_boundary
+    {
+        return Err("Path 2 direct accepted spend tuple KAT lost acceptance flags".to_string());
+    }
+    let replay_rejected_by_consume_once =
+        match verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1(
+            &stark_fixture.leaf,
+            &stark_fixture.evidence,
+            &stark_fixture.certificate,
+            &reviewed_fixture.public_key,
+            reviewed_fixture.message,
+            &reviewed_fixture.account,
+            &signature,
+            &admitted_state_authorizations,
+            &mut consumed,
+        ) {
+            Ok(_) => false,
+            Err(err) => err.reason() == "Path 2 slot authorization already consumed",
+        };
+    if !replay_rejected_by_consume_once {
+        return Err(
+            "Path 2 direct accepted spend tuple KAT replay was not consume-once rejected"
+                .to_string(),
+        );
+    }
+
+    Ok(Path2DirectAcceptedSpendTupleKatContextV1 {
+        direct_report,
+        qrom_report,
+        lifecycle_report,
+        proof_report,
+        stark_fixture,
+        creation_evidence,
+        authorization,
+        consumed,
+        tuple_evidence,
+        replay_rejected_by_consume_once,
+    })
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn path2_direct_accepted_spend_tuple_kat_evidence_v1(
+) -> Result<Path2DirectAcceptedSpendTupleKatEvidenceV1, String> {
+    let context = path2_direct_accepted_spend_tuple_kat_context_v1()?;
+    Ok(Path2DirectAcceptedSpendTupleKatEvidenceV1 {
+        account_creation_fixture_id: context.stark_fixture.fixture_id,
+        proof_mask_seed: context.stark_fixture.proof_mask_seed,
+        evidence: context.tuple_evidence,
+        replay_rejected_by_consume_once: context.replay_rejected_by_consume_once,
+    })
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn path2_direct_accepted_composition_evidence_v1(
+) -> Result<Path2DirectAcceptedCompositionEvidenceV1, String> {
+    let Path2DirectAcceptedSpendTupleKatContextV1 {
+        direct_report,
+        qrom_report,
+        lifecycle_report,
+        proof_report,
+        stark_fixture,
+        creation_evidence,
+        authorization,
+        consumed,
+        tuple_evidence,
+        ..
+    } = path2_direct_accepted_spend_tuple_kat_context_v1()?;
 
     let creation_evidence_matches_direct_tuple =
         creation_evidence.account_id == tuple_evidence.account_id
