@@ -159,10 +159,12 @@ commitment root is well formed.
 
 The production reference emits `Path2AccountCreationProofBoundaryReportV1`,
 which pins the selected payload type, verifier endpoints, replay-payload digest
-function, acceptance requirements, deployed-anchor fields, and current
-proof-family closure blockers. The report is the executable boundary map for
-this section; it is not a simulator, extractor, FRI/QROM, KAT, or external-review
-substitute.
+function, acceptance requirements, exact leaf/evidence binding fields,
+certificate/evidence binding fields, binding/leaf context fields,
+payload-binding fields, deployed-anchor fields, no-export private-material
+field classes, and current proof-family closure blockers. The report is the
+executable boundary map for this section; it is not a simulator, extractor,
+FRI/QROM, KAT, or external-review substitute.
 
 The boundary is implemented but not verified. The active Rust test suite now has
 an initial `Path2AccountStarkCreationPayloadV1` malformed-payload mutation

@@ -9321,7 +9321,12 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub production_boundary_endpoint: &'static str,
     pub replay_payload_digest_function: &'static str,
     pub accepting_requirements: &'static [&'static str],
+    pub leaf_evidence_binding_fields: &'static [&'static str],
+    pub certificate_evidence_binding_fields: &'static [&'static str],
+    pub binding_leaf_context_fields: &'static [&'static str],
+    pub payload_binding_fields: &'static [&'static str],
     pub deployed_anchor_fields: &'static [&'static str],
+    pub no_export_private_material_fields: &'static [&'static str],
     pub boundary_statement_pinned: bool,
     pub selected_payload_pinned: bool,
     pub replay_payload_digest_bound: bool,
@@ -10061,6 +10066,59 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS: [&str; 10] = [
     "deterministic_public_rejection",
 ];
 
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_EVIDENCE_BINDING_FIELDS: [&str; 15] = [
+    "evidence_domain",
+    "evidence_version",
+    "evidence_kind",
+    "slot_leaf_digest",
+    "slot_authorization_digest",
+    "creation_verifier_version_digest",
+    "hidden_source_statement_digest",
+    "opening_commitment",
+    "pad_seed_digest",
+    "account_identity_digest",
+    "public_key_identity",
+    "slot_id",
+    "state_root_before",
+    "lifecycle_anchor",
+    "prevalidation_transcript_digest",
+];
+
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CERTIFICATE_EVIDENCE_BINDING_FIELDS: [&str; 11] = [
+    "certificate_digest_to_evidence_payload_digest",
+    "account_id",
+    "public_key_identity",
+    "slot_id",
+    "verifier_version_digest",
+    "account_state_root_before",
+    "opening_commitment",
+    "pad_seed_digest",
+    "hidden_source_statement_digest",
+    "lifecycle_anchor",
+    "relation_transcript_digest",
+];
+
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_BINDING_LEAF_CONTEXT_FIELDS: [&str; 9] = [
+    "binding_digest",
+    "account_id",
+    "public_key_identity",
+    "slot_id",
+    "verifier_version_digest",
+    "account_state_root_before",
+    "lifecycle_anchor",
+    "opening_tuple_commitment",
+    "creation_statement_digest",
+];
+
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_BINDING_FIELDS: [&str; 6] = [
+    "leaf_context_digest",
+    "creation_proof_binding_digest",
+    "aggregation_context_digest",
+    "slot_id",
+    "public_replay_payload_digest",
+    "account_stark_bundle",
+];
+
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS: [&str; 8] = [
     "account_id",
     "slot_id",
@@ -10070,6 +10128,16 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS: [&str; 8] = [
     "masked_projection",
     "packed_witness_commitment",
     "role_root_export_bridge",
+];
+
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS: [&str; 7] = [
+    "pad_source",
+    "projection",
+    "syndrome",
+    "opening_tuple",
+    "witness",
+    "mask",
+    "private_trace_material",
 ];
 
 pub const PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKERS: [&str;
@@ -10242,7 +10310,16 @@ pub fn path2_account_creation_proof_boundary_report_v1()
             "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
         replay_payload_digest_function: "path2_account_stark_creation_payload_v1_digest",
         accepting_requirements: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS,
+        leaf_evidence_binding_fields:
+            &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_EVIDENCE_BINDING_FIELDS,
+        certificate_evidence_binding_fields:
+            &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CERTIFICATE_EVIDENCE_BINDING_FIELDS,
+        binding_leaf_context_fields:
+            &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_BINDING_LEAF_CONTEXT_FIELDS,
+        payload_binding_fields: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_BINDING_FIELDS,
         deployed_anchor_fields: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS,
+        no_export_private_material_fields:
+            &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS,
         boundary_statement_pinned: true,
         selected_payload_pinned: true,
         replay_payload_digest_bound: true,
@@ -62946,9 +63023,73 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         append_u64(&mut frame, b"accepting_requirement_index", index as u64);
         append_frame(&mut frame, b"accepting_requirement", requirement.as_bytes());
     }
+    for (index, field) in report.leaf_evidence_binding_fields.iter().enumerate() {
+        append_u64(
+            &mut frame,
+            b"leaf_evidence_binding_field_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"leaf_evidence_binding_field",
+            field.as_bytes(),
+        );
+    }
+    for (index, field) in report
+        .certificate_evidence_binding_fields
+        .iter()
+        .enumerate()
+    {
+        append_u64(
+            &mut frame,
+            b"certificate_evidence_binding_field_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"certificate_evidence_binding_field",
+            field.as_bytes(),
+        );
+    }
+    for (index, field) in report.binding_leaf_context_fields.iter().enumerate() {
+        append_u64(
+            &mut frame,
+            b"binding_leaf_context_field_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"binding_leaf_context_field",
+            field.as_bytes(),
+        );
+    }
+    for (index, field) in report.payload_binding_fields.iter().enumerate() {
+        append_u64(
+            &mut frame,
+            b"payload_binding_field_index",
+            index as u64,
+        );
+        append_frame(&mut frame, b"payload_binding_field", field.as_bytes());
+    }
     for (index, anchor) in report.deployed_anchor_fields.iter().enumerate() {
         append_u64(&mut frame, b"deployed_anchor_field_index", index as u64);
         append_frame(&mut frame, b"deployed_anchor_field", anchor.as_bytes());
+    }
+    for (index, field) in report
+        .no_export_private_material_fields
+        .iter()
+        .enumerate()
+    {
+        append_u64(
+            &mut frame,
+            b"no_export_private_material_field_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"no_export_private_material_field",
+            field.as_bytes(),
+        );
     }
     append_u64(
         &mut frame,
@@ -103286,11 +103427,36 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.as_ref()
         );
         assert_eq!(
+            report.leaf_evidence_binding_fields,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_EVIDENCE_BINDING_FIELDS.as_ref()
+        );
+        assert_eq!(
+            report.certificate_evidence_binding_fields,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CERTIFICATE_EVIDENCE_BINDING_FIELDS.as_ref()
+        );
+        assert_eq!(
+            report.binding_leaf_context_fields,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_BINDING_LEAF_CONTEXT_FIELDS.as_ref()
+        );
+        assert_eq!(
+            report.payload_binding_fields,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_BINDING_FIELDS.as_ref()
+        );
+        assert_eq!(
             report.deployed_anchor_fields,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS.as_ref()
         );
+        assert_eq!(
+            report.no_export_private_material_fields,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS.as_ref()
+        );
         assert_eq!(report.accepting_requirements.len(), 10);
+        assert_eq!(report.leaf_evidence_binding_fields.len(), 15);
+        assert_eq!(report.certificate_evidence_binding_fields.len(), 11);
+        assert_eq!(report.binding_leaf_context_fields.len(), 9);
+        assert_eq!(report.payload_binding_fields.len(), 6);
         assert_eq!(report.deployed_anchor_fields.len(), 8);
+        assert_eq!(report.no_export_private_material_fields.len(), 7);
         assert!(report
             .accepting_requirements
             .contains(&"packed_account_stark_bundle_verifies"));
@@ -103298,9 +103464,24 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             .accepting_requirements
             .contains(&"zero_knowledge_no_export_semantics"));
         assert!(report
+            .leaf_evidence_binding_fields
+            .contains(&"prevalidation_transcript_digest"));
+        assert!(report
+            .certificate_evidence_binding_fields
+            .contains(&"certificate_digest_to_evidence_payload_digest"));
+        assert!(report
+            .binding_leaf_context_fields
+            .contains(&"opening_tuple_commitment"));
+        assert!(report
+            .payload_binding_fields
+            .contains(&"public_replay_payload_digest"));
+        assert!(report
             .deployed_anchor_fields
             .contains(&"packed_witness_commitment"));
         assert!(report.deployed_anchor_fields.contains(&"role_root_export_bridge"));
+        assert!(report
+            .no_export_private_material_fields
+            .contains(&"private_trace_material"));
         assert!(report.boundary_statement_pinned);
         assert!(report.selected_payload_pinned);
         assert!(report.replay_payload_digest_bound);
