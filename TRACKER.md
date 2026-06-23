@@ -49,7 +49,10 @@ check accepted-artifact equality, bind every generated proof/direct boundary
 copy of the accepted composition artifact plus requirement- and
 obligation-corpus evidence back to standalone compact artifacts, and keep both
 proof-boundary and direct-theorem closure-dependency rows pinned to their open
-obligations/support surfaces. The accepted-composition artifact now also
+obligations/support surfaces. The accepted spend tuple artifact now carries an
+eleven-row accepted-tuple-field evidence checklist tying every direct theorem
+tuple field to its accepted-path check and still-open direct theorem obligation.
+The accepted-composition artifact now also
 carries a nine-row accepted-hypothesis evidence checklist: eight positive
 accepted-path hypotheses are checked by the deterministic composition KAT, and
 the public-rejection hypothesis remains explicitly deferred to the rejection

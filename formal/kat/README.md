@@ -337,7 +337,10 @@ public-key identity, message digest, account/state/slot identifiers,
 checked-core signature/challenge/proof-commitment digests, selected creation
 payload digest, exact admission namespace, slot authorization digest,
 consume-once before/after state digests, imported boundary-report digests, and
-the public `accept_spend_slot` result. The deterministic generator and
+the public `accept_spend_slot` result. It also carries an eleven-row
+accepted-tuple-field evidence checklist tying every direct theorem tuple field
+to the accepted-path check that pins it and to the still-open direct theorem
+obligation that owns final closure. The deterministic generator and
 consistency checker use a one-thread Rayon pool for the account-STARK fixture
 and also check replay rejection against the consume-once set. The
 `path2_direct_accepted_spend_tuple_evidence_consistency` gate additionally

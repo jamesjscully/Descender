@@ -9789,6 +9789,19 @@ pub struct Path2DirectTheoremObligationRowV1 {
     pub open: bool,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2DirectAcceptedTupleFieldEvidenceRowV1 {
+    pub accepted_tuple_field: &'static str,
+    pub direct_obligation_ids: &'static [&'static str],
+    pub accepted_path_evidence_source: &'static str,
+    pub accepted_path_check: &'static str,
+    pub accepted_path_evidence_present: bool,
+    pub imported_boundary_report: &'static str,
+    pub separate_closure_required: bool,
+    pub all_referenced_direct_obligations_still_open: bool,
+    pub blocker: &'static str,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2DirectAcceptedSpendTupleEvidenceV1 {
     pub digest: [u8; DIGEST_BYTES],
@@ -9797,6 +9810,13 @@ pub struct Path2DirectAcceptedSpendTupleEvidenceV1 {
     pub theorem_conclusion: &'static str,
     pub accepted_tuple_fields: &'static [&'static str],
     pub acceptance_hypotheses: &'static [&'static str],
+    pub accepted_tuple_field_evidence_rows:
+        Vec<Path2DirectAcceptedTupleFieldEvidenceRowV1>,
+    pub accepted_tuple_field_evidence_count: usize,
+    pub accepted_tuple_field_evidence_present_count: usize,
+    pub accepted_tuple_field_open_obligation_count: usize,
+    pub every_accepted_tuple_field_has_evidence: bool,
+    pub every_accepted_tuple_field_has_open_direct_obligation: bool,
     pub direct_qrom_action_boundary_report_digest: [u8; DIGEST_BYTES],
     pub direct_lifecycle_boundary_report_digest: [u8; DIGEST_BYTES],
     pub account_creation_proof_boundary_report_digest: [u8; DIGEST_BYTES],
@@ -11086,6 +11106,38 @@ pub const PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS: [&str; 11] = [
     "direct_admission_namespace_record",
     "consume_once_state_before_and_after_spend",
 ];
+pub const PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_PUBLIC_KEY: [&str; 2] = [
+    "direct_obligation_leaf_canonical_live",
+    "direct_obligation_checked_core_frame_binding",
+];
+pub const PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_MESSAGE: [&str; 1] =
+    ["direct_obligation_checked_core_frame_binding"];
+pub const PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_ACCOUNT_ID: [&str; 2] = [
+    "direct_obligation_leaf_canonical_live",
+    "direct_obligation_admission_namespace",
+];
+pub const PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_ACCOUNT_STATE: [&str; 2] = [
+    "direct_obligation_leaf_canonical_live",
+    "direct_obligation_admission_namespace",
+];
+pub const PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_SLOT_ID: [&str; 2] = [
+    "direct_obligation_slot_authorization_digest",
+    "direct_obligation_admission_namespace",
+];
+pub const PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_CHECKED_CORE: [&str; 2] = [
+    "direct_obligation_checked_core_frame_binding",
+    "direct_obligation_checked_core_acceptance",
+];
+pub const PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_LEAF: [&str; 1] =
+    ["direct_obligation_leaf_canonical_live"];
+pub const PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_EVIDENCE: [&str; 1] =
+    ["direct_obligation_evidence_leaf_bindings"];
+pub const PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_CREATION_PAYLOAD: [&str; 1] =
+    ["direct_obligation_creation_before_challenge"];
+pub const PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_ADMISSION_NAMESPACE: [&str; 1] =
+    ["direct_obligation_admission_namespace"];
+pub const PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_CONSUME_ONCE: [&str; 1] =
+    ["direct_obligation_consume_once"];
 pub const PATH2_DIRECT_THEOREM_TARGET: &str =
     "direct_mode_selected_tuple_authorization_theorem_v1";
 pub const PATH2_DIRECT_THEOREM_CONCLUSION: &str =
@@ -65958,6 +66010,147 @@ pub fn path2_direct_consume_once_authorization_set_digest(
     Sha256::digest(frame).into()
 }
 
+fn path2_direct_referenced_obligations_still_open_v1(obligation_ids: &[&str]) -> bool {
+    !obligation_ids.is_empty()
+        && obligation_ids.iter().all(|obligation_id| {
+            PATH2_DIRECT_THEOREM_OBLIGATION_ROWS.iter().any(|row| {
+                row.obligation_id == *obligation_id && row.open
+            })
+        })
+}
+
+fn path2_direct_accepted_tuple_field_evidence_rows_v1(
+    evidence: &Path2DirectAcceptedSpendTupleEvidenceV1,
+) -> Vec<Path2DirectAcceptedTupleFieldEvidenceRowV1> {
+    let nonzero = |digest: &[u8; DIGEST_BYTES]| *digest != [0_u8; DIGEST_BYTES];
+    let row =
+        |accepted_tuple_field: &'static str,
+         direct_obligation_ids: &'static [&'static str],
+         accepted_path_evidence_source: &'static str,
+         accepted_path_check: &'static str,
+         accepted_path_evidence_present: bool,
+         imported_boundary_report: &'static str| {
+            Path2DirectAcceptedTupleFieldEvidenceRowV1 {
+                accepted_tuple_field,
+                direct_obligation_ids,
+                accepted_path_evidence_source,
+                accepted_path_check,
+                accepted_path_evidence_present,
+                imported_boundary_report,
+                separate_closure_required: true,
+                all_referenced_direct_obligations_still_open:
+                    path2_direct_referenced_obligations_still_open_v1(direct_obligation_ids),
+                blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+            }
+        };
+
+    vec![
+        row(
+            "public_key_or_public_key_identity",
+            &PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_PUBLIC_KEY,
+            "accepted tuple public-key identity digest",
+            "public_key_identity digest present",
+            nonzero(&evidence.public_key_identity),
+            "",
+        ),
+        row(
+            "message_or_message_digest",
+            &PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_MESSAGE,
+            "accepted tuple message digest",
+            "message_digest present",
+            nonzero(&evidence.message_digest),
+            "",
+        ),
+        row(
+            "account_id",
+            &PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_ACCOUNT_ID,
+            "accepted tuple account id",
+            "account_id present",
+            nonzero(&evidence.account_id),
+            "",
+        ),
+        row(
+            "account_state_root_before_spend",
+            &PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_ACCOUNT_STATE,
+            "accepted tuple account state root before spend",
+            "account_state_root_before present",
+            nonzero(&evidence.account_state_root_before),
+            "",
+        ),
+        row(
+            "slot_id",
+            &PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_SLOT_ID,
+            "accepted tuple slot id and public result accepted slot id",
+            "slot_id == accepted_slot_id",
+            evidence.slot_id == u64::from(evidence.accepted_slot_id),
+            "",
+        ),
+        row(
+            "checked_core_signature_body",
+            &PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_CHECKED_CORE,
+            "checked-core signature, challenge, proof commitment, and QROM/action boundary digest",
+            "checked-core digests present && public_result_accepts_same_slot",
+            nonzero(&evidence.checked_core_signature_digest)
+                && nonzero(&evidence.checked_core_challenge_digest)
+                && nonzero(&evidence.checked_core_proof_commitment_digest)
+                && nonzero(&evidence.direct_qrom_action_boundary_report_digest)
+                && evidence.public_result_accepts_same_slot,
+            "Path2DirectQromActionBoundaryReportV1",
+        ),
+        row(
+            "prevalidated_slot_leaf_v1",
+            &PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_LEAF,
+            "accepted tuple prevalidated slot leaf digest",
+            "prevalidated_slot_leaf_digest present",
+            nonzero(&evidence.prevalidated_slot_leaf_digest),
+            "",
+        ),
+        row(
+            "account_creation_evidence_v1",
+            &PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_EVIDENCE,
+            "accepted tuple account-creation evidence transcript and proof-boundary digest",
+            "account_creation_evidence_transcript_digest present && account_creation_proof_boundary_report_digest present",
+            nonzero(&evidence.account_creation_evidence_transcript_digest)
+                && nonzero(&evidence.account_creation_proof_boundary_report_digest),
+            "Path2AccountCreationProofBoundaryReportV1",
+        ),
+        row(
+            "selected_account_creation_proof_payload",
+            &PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_CREATION_PAYLOAD,
+            "accepted tuple selected account-creation payload digest and proof-boundary digest",
+            "selected_account_creation_payload_digest present && account_creation_proof_boundary_report_digest present",
+            nonzero(&evidence.selected_account_creation_payload_digest)
+                && nonzero(&evidence.account_creation_proof_boundary_report_digest),
+            "Path2AccountCreationProofBoundaryReportV1",
+        ),
+        row(
+            "direct_admission_namespace_record",
+            &PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_ADMISSION_NAMESPACE,
+            "accepted tuple direct admission namespace record and membership flag",
+            "direct_admission_namespace_record_digest recomputes && state_namespace_record_present",
+            evidence.direct_admission_namespace_record_digest
+                == path2_direct_admission_namespace_record_digest(
+                    &evidence.account_id,
+                    &evidence.account_state_root_before,
+                    &evidence.slot_authorization_digest,
+                )
+                && evidence.state_namespace_record_present,
+            "",
+        ),
+        row(
+            "consume_once_state_before_and_after_spend",
+            &PATH2_DIRECT_TUPLE_FIELD_OBLIGATIONS_CONSUME_ONCE,
+            "accepted tuple consume-once before/after state digests and insertion flags",
+            "consume_once_state_before_digest != consume_once_state_after_digest && consumed flags",
+            evidence.consume_once_state_before_digest != evidence.consume_once_state_after_digest
+                && evidence.consumed_authorization_absent_before
+                && evidence.consumed_authorization_present_after
+                && evidence.consume_once_inserted_exactly_one_authorization,
+            "Path2DirectLifecycleBoundaryReportV1",
+        ),
+    ]
+}
+
 pub fn path2_direct_accepted_spend_tuple_evidence_v1(
     leaf: &Path2PrevalidatedSlotLeafV1,
     evidence: &Path2AccountCreationEvidenceV1,
@@ -66093,6 +66286,12 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1(
         theorem_conclusion: PATH2_DIRECT_THEOREM_CONCLUSION,
         accepted_tuple_fields: &PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS,
         acceptance_hypotheses: &PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES,
+        accepted_tuple_field_evidence_rows: Vec::new(),
+        accepted_tuple_field_evidence_count: 0,
+        accepted_tuple_field_evidence_present_count: 0,
+        accepted_tuple_field_open_obligation_count: 0,
+        every_accepted_tuple_field_has_evidence: false,
+        every_accepted_tuple_field_has_open_direct_obligation: false,
         direct_qrom_action_boundary_report_digest: direct_qrom_action_boundary_report.digest,
         direct_lifecycle_boundary_report_digest: direct_lifecycle_boundary_report.digest,
         account_creation_proof_boundary_report_digest:
@@ -66132,6 +66331,44 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1(
         public_result_accepts_same_slot,
         tuple_fields_match_theorem_boundary,
     };
+    tuple_evidence.accepted_tuple_field_evidence_rows =
+        path2_direct_accepted_tuple_field_evidence_rows_v1(&tuple_evidence);
+    tuple_evidence.accepted_tuple_field_evidence_count =
+        tuple_evidence.accepted_tuple_field_evidence_rows.len();
+    tuple_evidence.accepted_tuple_field_evidence_present_count = tuple_evidence
+        .accepted_tuple_field_evidence_rows
+        .iter()
+        .filter(|row| row.accepted_path_evidence_present)
+        .count();
+    tuple_evidence.accepted_tuple_field_open_obligation_count = tuple_evidence
+        .accepted_tuple_field_evidence_rows
+        .iter()
+        .filter(|row| row.all_referenced_direct_obligations_still_open)
+        .count();
+    tuple_evidence.every_accepted_tuple_field_has_evidence =
+        tuple_evidence.accepted_tuple_field_evidence_count
+            == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
+            && tuple_evidence.accepted_tuple_field_evidence_present_count
+                == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
+            && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS
+                .iter()
+                .zip(tuple_evidence.accepted_tuple_field_evidence_rows.iter())
+                .all(|(field, row)| {
+                    row.accepted_tuple_field == *field && row.accepted_path_evidence_present
+                });
+    tuple_evidence.every_accepted_tuple_field_has_open_direct_obligation =
+        tuple_evidence.accepted_tuple_field_evidence_count
+            == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
+            && tuple_evidence.accepted_tuple_field_open_obligation_count
+                == PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
+            && tuple_evidence
+                .accepted_tuple_field_evidence_rows
+                .iter()
+                .all(|row| {
+                    row.separate_closure_required
+                        && row.all_referenced_direct_obligations_still_open
+                        && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+                });
     tuple_evidence.digest =
         path2_direct_accepted_spend_tuple_evidence_v1_digest(&tuple_evidence);
     Ok(tuple_evidence)
@@ -66851,11 +67088,37 @@ pub fn validate_path2_direct_accepted_spend_tuple_evidence_v1(
             "tuple_fields_match_theorem_boundary",
             evidence.tuple_fields_match_theorem_boundary,
         ),
+        (
+            "every_accepted_tuple_field_has_evidence",
+            evidence.every_accepted_tuple_field_has_evidence,
+        ),
+        (
+            "every_accepted_tuple_field_has_open_direct_obligation",
+            evidence.every_accepted_tuple_field_has_open_direct_obligation,
+        ),
     ];
     if let Some((name, _)) = required_true.iter().find(|(_, value)| !*value) {
         return Err(format!(
             "Path 2 direct accepted spend tuple evidence lost required flag {name}"
         ));
+    }
+
+    let expected_field_rows = path2_direct_accepted_tuple_field_evidence_rows_v1(evidence);
+    if evidence.accepted_tuple_field_evidence_rows != expected_field_rows
+        || evidence.accepted_tuple_field_evidence_count
+            != PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
+        || evidence.accepted_tuple_field_evidence_count
+            != evidence.accepted_tuple_field_evidence_rows.len()
+        || evidence.accepted_tuple_field_evidence_present_count
+            != PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
+        || evidence.accepted_tuple_field_open_obligation_count
+            != PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len()
+        || !evidence.every_accepted_tuple_field_has_evidence
+        || !evidence.every_accepted_tuple_field_has_open_direct_obligation
+    {
+        return Err(
+            "Path 2 direct accepted spend tuple evidence lost field evidence rows".to_string(),
+        );
     }
     Ok(())
 }
@@ -70101,6 +70364,90 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1_frame(
         append_u64(&mut frame, b"acceptance_hypothesis_index", index as u64);
         append_frame(&mut frame, b"acceptance_hypothesis", hypothesis.as_bytes());
     }
+    for (index, row) in evidence
+        .accepted_tuple_field_evidence_rows
+        .iter()
+        .enumerate()
+    {
+        append_u64(
+            &mut frame,
+            b"accepted_tuple_field_evidence_row_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"accepted_tuple_field",
+            row.accepted_tuple_field.as_bytes(),
+        );
+        for (obligation_index, obligation_id) in row.direct_obligation_ids.iter().enumerate() {
+            append_u64(
+                &mut frame,
+                b"accepted_tuple_field_direct_obligation_index",
+                obligation_index as u64,
+            );
+            append_frame(
+                &mut frame,
+                b"accepted_tuple_field_direct_obligation_id",
+                obligation_id.as_bytes(),
+            );
+        }
+        append_frame(
+            &mut frame,
+            b"accepted_path_evidence_source",
+            row.accepted_path_evidence_source.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"accepted_path_check",
+            row.accepted_path_check.as_bytes(),
+        );
+        append_u64(
+            &mut frame,
+            b"accepted_path_evidence_present",
+            u64::from(row.accepted_path_evidence_present),
+        );
+        append_frame(
+            &mut frame,
+            b"imported_boundary_report",
+            row.imported_boundary_report.as_bytes(),
+        );
+        append_u64(
+            &mut frame,
+            b"separate_closure_required",
+            u64::from(row.separate_closure_required),
+        );
+        append_u64(
+            &mut frame,
+            b"all_referenced_direct_obligations_still_open",
+            u64::from(row.all_referenced_direct_obligations_still_open),
+        );
+        append_frame(&mut frame, b"blocker", row.blocker.as_bytes());
+    }
+    append_u64(
+        &mut frame,
+        b"accepted_tuple_field_evidence_count",
+        evidence.accepted_tuple_field_evidence_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_tuple_field_evidence_present_count",
+        evidence.accepted_tuple_field_evidence_present_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_tuple_field_open_obligation_count",
+        evidence.accepted_tuple_field_open_obligation_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"every_accepted_tuple_field_has_evidence",
+        u64::from(evidence.every_accepted_tuple_field_has_evidence),
+    );
+    append_u64(
+        &mut frame,
+        b"every_accepted_tuple_field_has_open_direct_obligation",
+        u64::from(evidence.every_accepted_tuple_field_has_open_direct_obligation),
+    );
     append_frame(
         &mut frame,
         b"direct_qrom_action_boundary_report_digest",

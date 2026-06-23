@@ -342,6 +342,16 @@ pub fn path2_direct_accepted_spend_tuple_evidence_artifact_v1() -> Result<Value,
             != &json!(direct_report.acceptance_hypotheses)
         || u64_at(artifact, "/evidence/accepted_tuple_field_count")?
             != direct_report.accepted_tuple_fields.len() as u64
+        || u64_at(artifact, "/evidence/accepted_tuple_field_evidence_count")?
+            != direct_report.accepted_tuple_fields.len() as u64
+        || u64_at(
+            artifact,
+            "/evidence/accepted_tuple_field_evidence_present_count",
+        )? != direct_report.accepted_tuple_fields.len() as u64
+        || u64_at(
+            artifact,
+            "/evidence/accepted_tuple_field_open_obligation_count",
+        )? != direct_report.accepted_tuple_fields.len() as u64
         || u64_at(artifact, "/evidence/acceptance_hypothesis_count")?
             != direct_report.acceptance_hypotheses.len() as u64
         || str_at(
@@ -367,6 +377,11 @@ pub fn path2_direct_accepted_spend_tuple_evidence_artifact_v1() -> Result<Value,
         )?
         || !bool_at(artifact, "/evidence/public_result_accepts_same_slot")?
         || !bool_at(artifact, "/evidence/tuple_fields_match_theorem_boundary")?
+        || !bool_at(artifact, "/evidence/every_accepted_tuple_field_has_evidence")?
+        || !bool_at(
+            artifact,
+            "/evidence/every_accepted_tuple_field_has_open_direct_obligation",
+        )?
         || !bool_at(artifact, "/evidence/replay_rejected_by_consume_once")?
     {
         return Err(
@@ -449,6 +464,26 @@ pub fn path2_direct_accepted_spend_tuple_evidence_artifact_v1() -> Result<Value,
             "tuple_fields_match_theorem_boundary": bool_at(
                 artifact,
                 "/evidence/tuple_fields_match_theorem_boundary"
+            )?,
+            "accepted_tuple_field_evidence_count": u64_at(
+                artifact,
+                "/evidence/accepted_tuple_field_evidence_count"
+            )?,
+            "accepted_tuple_field_evidence_present_count": u64_at(
+                artifact,
+                "/evidence/accepted_tuple_field_evidence_present_count"
+            )?,
+            "accepted_tuple_field_open_obligation_count": u64_at(
+                artifact,
+                "/evidence/accepted_tuple_field_open_obligation_count"
+            )?,
+            "every_accepted_tuple_field_has_evidence": bool_at(
+                artifact,
+                "/evidence/every_accepted_tuple_field_has_evidence"
+            )?,
+            "every_accepted_tuple_field_has_open_direct_obligation": bool_at(
+                artifact,
+                "/evidence/every_accepted_tuple_field_has_open_direct_obligation"
             )?,
             "replay_rejected_by_consume_once": bool_at(
                 artifact,

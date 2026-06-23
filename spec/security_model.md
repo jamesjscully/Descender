@@ -99,7 +99,10 @@ signature/challenge/proof-commitment digests, leaf digest, evidence transcript
 digest, selected creation-payload digest, exact admission namespace digest,
 slot authorization digest, consume-once before/after state digests, imported
 QROM/action, lifecycle, and proof-boundary report digests, and the public
-`accept_spend_slot` result. The
+`accept_spend_slot` result. It also carries an eleven-row
+accepted-tuple-field evidence checklist tying every direct theorem tuple field
+to its accepted-path evidence source, accepted-path check, imported boundary
+report when applicable, and still-open direct theorem obligation. The
 `verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1`
 hook runs the real direct verifier, snapshots the consume-once transition, and
 checks the public result wrapper independently accepts the same slot from the

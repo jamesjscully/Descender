@@ -16,7 +16,7 @@ mod enabled {
             validate_path2_direct_accepted_spend_tuple_kat_evidence_v1,
         },
     };
-    use serde_json::{json, Value};
+    use serde_json::{json, to_value, Value};
     use sha2::{Digest, Sha256};
     use std::{
         fs,
@@ -260,6 +260,30 @@ mod enabled {
             return Err("direct accepted spend tuple manifest scalar field mismatch".to_string());
         }
 
+        let expected_field_rows = to_value(&evidence.accepted_tuple_field_evidence_rows)
+            .map_err(|err| format!("serialize accepted tuple field evidence rows: {err}"))?;
+        if u64_at(body, "/evidence/accepted_tuple_field_evidence_count")?
+            != evidence.accepted_tuple_field_evidence_count as u64
+            || u64_at(
+                body,
+                "/evidence/accepted_tuple_field_evidence_present_count",
+            )? != evidence.accepted_tuple_field_evidence_present_count as u64
+            || u64_at(
+                body,
+                "/evidence/accepted_tuple_field_open_obligation_count",
+            )? != evidence.accepted_tuple_field_open_obligation_count as u64
+            || evidence.accepted_tuple_field_evidence_count != 11
+            || evidence.accepted_tuple_field_evidence_present_count != 11
+            || evidence.accepted_tuple_field_open_obligation_count != 11
+            || at(body, "/evidence/accepted_tuple_field_evidence_rows")?
+                != &expected_field_rows
+        {
+            return Err(
+                "direct accepted spend tuple manifest lost accepted-field evidence rows"
+                    .to_string(),
+            );
+        }
+
         for pointer in [
             "/deterministic_tuple_mode/replay_rejected_by_consume_once",
             "/evidence/state_namespace_record_present",
@@ -268,6 +292,8 @@ mod enabled {
             "/evidence/consume_once_inserted_exactly_one_authorization",
             "/evidence/public_result_accepts_same_slot",
             "/evidence/tuple_fields_match_theorem_boundary",
+            "/evidence/every_accepted_tuple_field_has_evidence",
+            "/evidence/every_accepted_tuple_field_has_open_direct_obligation",
             "/evidence/replay_rejected_by_consume_once",
         ] {
             if !bool_at(body, pointer)? {
