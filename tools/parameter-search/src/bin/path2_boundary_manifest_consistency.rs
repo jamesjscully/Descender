@@ -352,6 +352,42 @@ fn check_consistency() -> Result<(), String> {
         ],
         true,
     )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "every_closure_dependency_has_open_obligation",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "every_closure_dependency_has_open_support_surface",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "every_open_closure_dependency_blocks_deployment",
+        ],
+        true,
+    )?;
+    expect_u64(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "closure_dependency_count",
+        ],
+        8,
+    )?;
     expect_u64(
         proof_manifest,
         &[

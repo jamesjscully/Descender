@@ -9588,6 +9588,18 @@ pub struct Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
     pub blocker: &'static str,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
+    pub dependency_id: &'static str,
+    pub source_report: &'static str,
+    pub source_flag_group: &'static str,
+    pub proof_obligation_id: &'static str,
+    pub residual_item: &'static str,
+    pub named_break: &'static str,
+    pub blocker: &'static str,
+    pub open: bool,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
@@ -9616,8 +9628,11 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub proof_obligation_named_break_classes: &'static [&'static str],
     pub proof_obligation_audit_vector_case_ids: &'static [&'static str],
     pub proof_obligation_rows: &'static [Path2AccountCreationProofBoundaryObligationRowV1],
+    pub closure_dependency_rows:
+        &'static [Path2AccountCreationProofBoundaryClosureDependencyRowV1],
     pub requirement_coverage_count: usize,
     pub proof_obligation_count: usize,
+    pub closure_dependency_count: usize,
     pub proof_obligation_audit_vector_case_count: usize,
     pub current_vector_covered_requirement_count: usize,
     pub every_accepting_requirement_has_coverage_row: bool,
@@ -9626,6 +9641,9 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub every_requirement_public_rejection_class_is_known: bool,
     pub every_proof_obligation_has_named_break: bool,
     pub every_open_proof_obligation_blocks_deployment: bool,
+    pub every_closure_dependency_has_open_obligation: bool,
+    pub every_closure_dependency_has_open_support_surface: bool,
+    pub every_open_closure_dependency_blocks_deployment: bool,
     pub boundary_statement_pinned: bool,
     pub selected_payload_pinned: bool,
     pub accepted_boundary_evidence_present: bool,
@@ -11641,6 +11659,92 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     },
 ];
 
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS:
+    [Path2AccountCreationProofBoundaryClosureDependencyRowV1; 8] = [
+    Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
+        dependency_id: "closure_dependency_honest_sampler",
+        source_report: "Path2AccountCreationSamplerTimingReportV1",
+        source_flag_group: "honest_sampler_theorem_instantiated=false",
+        proof_obligation_id: "creation_proof_obligation_honest_sampler",
+        residual_item: "",
+        named_break: "creation_time_hidden_source_soundness_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+    Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
+        dependency_id: "closure_dependency_authorization_class_binding",
+        source_report: "Path2AccountCreationSamplerTimingReportV1",
+        source_flag_group: "authorization_class_binding_theorem_instantiated=false",
+        proof_obligation_id: "creation_proof_obligation_authorization_class_binding",
+        residual_item: "",
+        named_break: "checked_core_message_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+    Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
+        dependency_id: "closure_dependency_no_postchallenge_timing",
+        source_report: "Path2AccountCreationSamplerTimingReportV1",
+        source_flag_group: "no_postchallenge_timing_theorem_instantiated=false",
+        proof_obligation_id: "creation_proof_obligation_no_postchallenge_timing",
+        residual_item: "",
+        named_break: "postchallenge_slot_creation_or_rewrite_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+    Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
+        dependency_id: "closure_dependency_simulator_no_export",
+        source_report: "Path2AccountCreationNoExportBoundaryReportV1",
+        source_flag_group:
+            "simulator/no_export/accepted_bundle_simulatable flags remain false",
+        proof_obligation_id: "creation_proof_obligation_simulator_no_export",
+        residual_item: "Zero-knowledge simulator and no-export statement",
+        named_break: "account_stark_simulator_or_no_export_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+    Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
+        dependency_id: "closure_dependency_fri_aok_extractor",
+        source_report: "Path2AccountStarkFriAokBoundaryReportV1",
+        source_flag_group: "fri_aok_extractor/accepting_proof/external_review flags remain false",
+        proof_obligation_id: "creation_proof_obligation_fri_aok_extractor",
+        residual_item: "FRI argument-of-knowledge extractor",
+        named_break: "account_stark_fri_aok_extractor_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+    Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
+        dependency_id: "closure_dependency_fri_qrom_residual_pricing",
+        source_report: "Path2AccountStarkFriQromResidualReportV1",
+        source_flag_group:
+            "account_stark_transcript_qrom/recursion/residual/profile flags remain false",
+        proof_obligation_id: "creation_proof_obligation_fri_qrom_residual_pricing",
+        residual_item: "FRI soundness margin and recursion ledger",
+        named_break: "fri_soundness_margin_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+    Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
+        dependency_id: "closure_dependency_frozen_payload_kats",
+        source_report: "Path2AccountStarkPayloadKatBoundaryReportV1",
+        source_flag_group: "frozen_corpus_complete=false",
+        proof_obligation_id: "creation_proof_obligation_frozen_payload_kats",
+        residual_item: "Path2AccountStarkCreationPayloadV1 byte and replay binding",
+        named_break: "account_stark_payload_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+    Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
+        dependency_id: "closure_dependency_production_gate_and_review",
+        source_report: "Path2AccountStarkResidualMatrixReportV1",
+        source_flag_group: "production_gate_open/external_review/deployment_ready flags remain false",
+        proof_obligation_id: "creation_proof_obligation_production_gate_and_review",
+        residual_item: "Production admission gate and review disposition",
+        named_break: "account_stark_production_gate_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+        open: true,
+    },
+];
+
 pub const PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKERS: [&str;
     PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKER_COUNT] = [
     PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
@@ -12402,13 +12506,89 @@ pub fn validate_path2_account_creation_no_export_boundary_report_v1(
     Ok(())
 }
 
+fn path2_account_creation_closure_dependency_support_open_v1(
+    row: &Path2AccountCreationProofBoundaryClosureDependencyRowV1,
+    sampler_timing_report: &Path2AccountCreationSamplerTimingReportV1,
+    no_export_boundary_report: &Path2AccountCreationNoExportBoundaryReportV1,
+    residual_matrix_report: &Path2AccountStarkResidualMatrixReportV1,
+    fri_qrom_residual_report: &Path2AccountStarkFriQromResidualReportV1,
+    fri_aok_boundary_report: &Path2AccountStarkFriAokBoundaryReportV1,
+    payload_kat_boundary_report: &Path2AccountStarkPayloadKatBoundaryReportV1,
+) -> bool {
+    let residual_open = row.residual_item.is_empty()
+        || residual_matrix_report
+            .rows
+            .iter()
+            .any(|residual| residual.residual_item == row.residual_item && residual.open);
+    let source_open = match row.dependency_id {
+        "closure_dependency_honest_sampler" => {
+            !sampler_timing_report.honest_sampler_theorem_instantiated
+                && !sampler_timing_report.deployment_ready
+        }
+        "closure_dependency_authorization_class_binding" => {
+            !sampler_timing_report.authorization_class_binding_theorem_instantiated
+                && !sampler_timing_report.deployment_ready
+        }
+        "closure_dependency_no_postchallenge_timing" => {
+            !sampler_timing_report.no_postchallenge_timing_theorem_instantiated
+                && !sampler_timing_report.deployment_ready
+        }
+        "closure_dependency_simulator_no_export" => {
+            !no_export_boundary_report.simulator_theorem_instantiated
+                && !no_export_boundary_report.no_export_theorem_instantiated
+                && !no_export_boundary_report.accepted_bundle_simulatable_from_public_anchors
+                && !no_export_boundary_report.deployment_ready
+        }
+        "closure_dependency_fri_aok_extractor" => {
+            !fri_aok_boundary_report.fri_aok_extractor_theorem_instantiated
+                && !fri_aok_boundary_report.accepting_proof_implies_extractable_witness
+                && !fri_aok_boundary_report.external_extractor_review_complete
+                && !fri_aok_boundary_report.deployment_ready
+        }
+        "closure_dependency_fri_qrom_residual_pricing" => {
+            !fri_qrom_residual_report.account_stark_transcript_qrom_theorem_instantiated
+                && !fri_qrom_residual_report.recursion_pricing_complete
+                && !fri_qrom_residual_report.residual_pricing_complete
+                && !fri_qrom_residual_report.deployment_profile_accepted
+                && !fri_qrom_residual_report.deployment_ready
+        }
+        "closure_dependency_frozen_payload_kats" => {
+            !payload_kat_boundary_report.frozen_corpus_complete
+                && !payload_kat_boundary_report.deployment_ready
+        }
+        "closure_dependency_production_gate_and_review" => {
+            residual_matrix_report.production_gate_fail_closed
+                && !residual_matrix_report.deployment_ready
+        }
+        _ => false,
+    };
+    residual_open && source_open
+}
+
+fn path2_account_creation_closure_dependency_has_open_obligation_v1(
+    dependency: &Path2AccountCreationProofBoundaryClosureDependencyRowV1,
+    proof_obligation_rows: &[Path2AccountCreationProofBoundaryObligationRowV1],
+) -> bool {
+    proof_obligation_rows.iter().any(|obligation| {
+        obligation.obligation_id == dependency.proof_obligation_id
+            && obligation.named_break == dependency.named_break
+            && obligation.blocker == dependency.blocker
+            && obligation.open
+    })
+}
+
 pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreationProofBoundaryReportV1 {
     let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
     let no_export_boundary_report = path2_account_creation_no_export_boundary_report_v1();
     let account_stark_residual_matrix_report =
         path2_account_stark_residual_matrix_report_v1();
+    let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
+    let fri_aok_boundary_report = path2_account_stark_fri_aok_boundary_report_v1();
+    let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
     let frame_kat_boundary_report = path2_account_creation_frame_kat_boundary_report_v1();
     let proof_obligation_rows = &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS;
+    let closure_dependency_rows =
+        &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS;
     let requirement_coverage_rows =
         &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS;
     let mut report = Path2AccountCreationProofBoundaryReportV1 {
@@ -12447,8 +12627,10 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         proof_obligation_audit_vector_case_ids:
             &PATH2_ACCOUNT_CREATION_PROOF_OBLIGATION_AUDIT_CASES,
         proof_obligation_rows,
+        closure_dependency_rows,
         requirement_coverage_count: requirement_coverage_rows.len(),
         proof_obligation_count: proof_obligation_rows.len(),
+        closure_dependency_count: closure_dependency_rows.len(),
         proof_obligation_audit_vector_case_count:
             PATH2_ACCOUNT_CREATION_PROOF_OBLIGATION_AUDIT_CASES.len(),
         current_vector_covered_requirement_count: requirement_coverage_rows
@@ -12499,6 +12681,32 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
             !row.open
                 || row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
         }),
+        every_closure_dependency_has_open_obligation: closure_dependency_rows.iter().all(|row| {
+            path2_account_creation_closure_dependency_has_open_obligation_v1(
+                row,
+                proof_obligation_rows,
+            )
+        }),
+        every_closure_dependency_has_open_support_surface: closure_dependency_rows.iter().all(
+            |row| {
+                path2_account_creation_closure_dependency_support_open_v1(
+                    row,
+                    &sampler_timing_report,
+                    &no_export_boundary_report,
+                    &account_stark_residual_matrix_report,
+                    &fri_qrom_residual_report,
+                    &fri_aok_boundary_report,
+                    &payload_kat_boundary_report,
+                )
+            },
+        ),
+        every_open_closure_dependency_blocks_deployment: closure_dependency_rows.iter().all(
+            |row| {
+                !row.open
+                    || row.blocker
+                        == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+            },
+        ),
         boundary_statement_pinned: true,
         selected_payload_pinned: true,
         accepted_boundary_evidence_present: true,
@@ -12561,6 +12769,9 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
             "Path 2 account-creation proof boundary residual-matrix digest mismatch".to_string(),
         );
     }
+    let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
+    let fri_aok_boundary_report = path2_account_stark_fri_aok_boundary_report_v1();
+    let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
     let frame_kat_boundary_report = path2_account_creation_frame_kat_boundary_report_v1();
     if report.frame_kat_boundary_report_digest != frame_kat_boundary_report.digest {
         return Err(
@@ -12624,6 +12835,44 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
     {
         return Err(
             "Path 2 account-creation proof boundary lost obligation-row coverage".to_string(),
+        );
+    }
+    if report.closure_dependency_rows
+        != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS.as_ref()
+        || report.closure_dependency_count != report.closure_dependency_rows.len()
+        || report.closure_dependency_count != report.proof_obligation_rows.len()
+        || !report
+            .closure_dependency_rows
+            .iter()
+            .zip(report.proof_obligation_rows.iter())
+            .all(|(dependency, obligation)| {
+                dependency.proof_obligation_id == obligation.obligation_id
+                    && dependency.named_break == obligation.named_break
+            })
+        || !report.every_closure_dependency_has_open_obligation
+        || !report.every_closure_dependency_has_open_support_surface
+        || !report.every_open_closure_dependency_blocks_deployment
+        || !report.closure_dependency_rows.iter().all(|row| {
+            row.open
+                && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+                && path2_account_creation_closure_dependency_has_open_obligation_v1(
+                    row,
+                    report.proof_obligation_rows,
+                )
+                && path2_account_creation_closure_dependency_support_open_v1(
+                    row,
+                    &sampler_timing_report,
+                    &no_export_boundary_report,
+                    &account_stark_residual_matrix_report,
+                    &fri_qrom_residual_report,
+                    &fri_aok_boundary_report,
+                    &payload_kat_boundary_report,
+                )
+        })
+    {
+        return Err(
+            "Path 2 account-creation proof boundary lost closure-dependency coverage"
+                .to_string(),
         );
     }
     if !report.boundary_statement_pinned
@@ -67754,6 +68003,53 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
             u64::from(row.open),
         );
     }
+    for (index, row) in report.closure_dependency_rows.iter().enumerate() {
+        append_u64(
+            &mut frame,
+            b"closure_dependency_row_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"closure_dependency_id",
+            row.dependency_id.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"closure_dependency_source_report",
+            row.source_report.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"closure_dependency_source_flag_group",
+            row.source_flag_group.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"closure_dependency_proof_obligation_id",
+            row.proof_obligation_id.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"closure_dependency_residual_item",
+            row.residual_item.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"closure_dependency_named_break",
+            row.named_break.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"closure_dependency_blocker",
+            row.blocker.as_bytes(),
+        );
+        append_u64(
+            &mut frame,
+            b"closure_dependency_open",
+            u64::from(row.open),
+        );
+    }
     append_u64(
         &mut frame,
         b"requirement_coverage_count",
@@ -67763,6 +68059,11 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         &mut frame,
         b"proof_obligation_count",
         report.proof_obligation_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"closure_dependency_count",
+        report.closure_dependency_count as u64,
     );
     append_u64(
         &mut frame,
@@ -67803,6 +68104,21 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         &mut frame,
         b"every_open_proof_obligation_blocks_deployment",
         u64::from(report.every_open_proof_obligation_blocks_deployment),
+    );
+    append_u64(
+        &mut frame,
+        b"every_closure_dependency_has_open_obligation",
+        u64::from(report.every_closure_dependency_has_open_obligation),
+    );
+    append_u64(
+        &mut frame,
+        b"every_closure_dependency_has_open_support_surface",
+        u64::from(report.every_closure_dependency_has_open_support_surface),
+    );
+    append_u64(
+        &mut frame,
+        b"every_open_closure_dependency_blocks_deployment",
+        u64::from(report.every_open_closure_dependency_blocks_deployment),
     );
     append_u64(
         &mut frame,

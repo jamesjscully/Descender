@@ -22,7 +22,7 @@
         "deterministic_public_rejection"
       ],
       "account_creation_evidence_transcript_digest": "e5e241f722067a666024b1d66f39d191a6bb4e7a51cad41a96685c60f3c729e6",
-      "account_creation_proof_boundary_report_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
+      "account_creation_proof_boundary_report_digest": "0b4bed2c5db83357a0216d7b619b2a85e811a34c72b94a01dc2925ad4aabbec1",
       "account_id": "e7e9c407d51a153ae517b874c3da8d828943c0eb4ccc8800423bf164fc4d4baf",
       "account_stark_bundle_bytes": 4748253,
       "account_stark_bundle_digest": "84fa583af9cbcf05cfeb01efed3d7ff2e0fc004311e09510a43c813ae55b97ca",
@@ -45,7 +45,7 @@
       "deployed_anchor_state_root_bound": true,
       "deployed_anchor_verifier_version_bound": true,
       "deployment_ready": false,
-      "digest": "44345434f7f0b3ecd0efdfab2edbbba27ce82e48c013b2e1b874673cff54d7ef",
+      "digest": "7614252bec3b83c2fc0208e413cee44c7eac6949d50e8a55ca7dce334558419a",
       "direct_replayable_relation_certificate_digest": "8ab7ff01ed6f717f020d1fa60ab93ee2ed62e2361778d7f369893e07ef145c5b",
       "evidence_digest_bound_to_certificate": true,
       "fixture_id": "Path2AccountStarkPayloadKatFixture.v1",
@@ -75,7 +75,7 @@
       "proof_mask_seed": 4919429716798816596,
       "public_key_identity": "58f218aeb259309eeb545345a8f5c715987967b0ec724806d448394da578d0b0",
       "public_payload_exports_private_material": false,
-      "recomputed_digest": "44345434f7f0b3ecd0efdfab2edbbba27ce82e48c013b2e1b874673cff54d7ef",
+      "recomputed_digest": "7614252bec3b83c2fc0208e413cee44c7eac6949d50e8a55ca7dce334558419a",
       "replay_payload_digest_function": "path2_account_stark_creation_payload_v1_digest",
       "sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryEvidence.v1",
@@ -94,5 +94,5 @@
     "schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryDeterministicKatEvidenceManifest.v1",
     "status": "digest_pinned_deterministic_kat_accepted_account_creation_proof_boundary_evidence"
   },
-  "manifest_digest": "11aaa92a1f8506ff5f807efe78e85ec9b1ebb0ea6ce58dc60ed6f0f61b5d03ab"
+  "manifest_digest": "31bc3a45a5afbb860164135e19fdecb28e4729455c5cda6be123684d1fb9f2d0"
 }

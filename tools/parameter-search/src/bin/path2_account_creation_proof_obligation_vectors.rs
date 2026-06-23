@@ -301,6 +301,14 @@ fn manifest_body() -> Result<Value, String> {
                 proof_report.every_proof_obligation_has_named_break,
             "every_open_proof_obligation_blocks_deployment":
                 proof_report.every_open_proof_obligation_blocks_deployment,
+            "closure_dependency_count": proof_report.closure_dependency_count,
+            "closure_dependency_rows": proof_report.closure_dependency_rows,
+            "every_closure_dependency_has_open_obligation":
+                proof_report.every_closure_dependency_has_open_obligation,
+            "every_closure_dependency_has_open_support_surface":
+                proof_report.every_closure_dependency_has_open_support_surface,
+            "every_open_closure_dependency_blocks_deployment":
+                proof_report.every_open_closure_dependency_blocks_deployment,
             "deployment_ready": proof_report.deployment_ready,
             "blocker": proof_report.blocker
         },

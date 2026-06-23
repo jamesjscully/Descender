@@ -400,6 +400,34 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
+    let expected_closure_dependencies = serde_json::to_value(proof_report.closure_dependency_rows)
+        .map_err(|err| format!("serialize proof-boundary closure dependency rows: {err}"))?;
+    if u64_at(
+        corpus,
+        "/account_creation_proof_boundary_report/closure_dependency_count",
+    )? != proof_report.closure_dependency_count as u64
+        || at(
+            corpus,
+            "/account_creation_proof_boundary_report/closure_dependency_rows",
+        )? != &expected_closure_dependencies
+        || !bool_at(
+            corpus,
+            "/account_creation_proof_boundary_report/every_closure_dependency_has_open_obligation",
+        )?
+        || !bool_at(
+            corpus,
+            "/account_creation_proof_boundary_report/every_closure_dependency_has_open_support_surface",
+        )?
+        || !bool_at(
+            corpus,
+            "/account_creation_proof_boundary_report/every_open_closure_dependency_blocks_deployment",
+        )?
+    {
+        return Err(
+            "direct theorem obligation vector corpus lost proof-boundary closure dependency rows"
+                .to_string(),
+        );
+    }
     if direct_report.direct_qrom_action_boundary_report_digest != qrom_action_report.digest
         || direct_report.direct_lifecycle_boundary_report_digest != lifecycle_report.digest
         || direct_report.account_creation_proof_boundary_report_digest != proof_report.digest

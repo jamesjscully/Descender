@@ -93,6 +93,16 @@ mod enabled {
         Ok(())
     }
 
+    fn require_bool(manifest: &Value, pointer: &str, expected: bool) -> Result<(), String> {
+        let observed = bool_at(manifest, pointer)?;
+        if observed != expected {
+            return Err(format!(
+                "direct accepted composition manifest {pointer} mismatch: {observed} != {expected}"
+            ));
+        }
+        Ok(())
+    }
+
     fn body_digest(value: &Value, label: &str) -> Result<String, String> {
         let json = serde_json::to_string_pretty(value)
             .map_err(|err| format!("serialize {label}: {err}"))?;
@@ -566,6 +576,13 @@ mod enabled {
                 "direct accepted composition evidence lost shared proof-boundary manifest binding"
                     .to_string(),
             );
+        }
+        for pointer in [
+            "/coverage/every_closure_dependency_has_open_obligation",
+            "/coverage/every_closure_dependency_has_open_support_surface",
+            "/coverage/every_open_closure_dependency_blocks_deployment",
+        ] {
+            require_bool(proof_boundary, pointer, true)?;
         }
         for (observed, label) in [
             (

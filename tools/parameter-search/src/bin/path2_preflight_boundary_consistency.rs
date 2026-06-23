@@ -517,6 +517,9 @@ fn main() -> Result<(), String> {
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/proof_family_obligations_still_open",
         "/accepted_proof_boundary_evidence_artifact/audit_summary/production_gate_fail_closed",
         "/accepted_proof_boundary_evidence_artifact/audit_summary/proof_family_obligations_still_open",
+        "/coverage/every_closure_dependency_has_open_obligation",
+        "/coverage/every_closure_dependency_has_open_support_surface",
+        "/coverage/every_open_closure_dependency_blocks_deployment",
     ] {
         if !bool_at(proof_boundary, pointer)? {
             return Err(format!(
@@ -604,10 +607,15 @@ fn main() -> Result<(), String> {
     if !proof_report.proof_obligation_rows_pinned
         || !proof_report.every_proof_obligation_has_named_break
         || !proof_report.every_open_proof_obligation_blocks_deployment
+        || !proof_report.every_closure_dependency_has_open_obligation
+        || !proof_report.every_closure_dependency_has_open_support_surface
+        || !proof_report.every_open_closure_dependency_blocks_deployment
         || proof_report.proof_obligation_count != proof_report.proof_obligation_rows.len()
+        || proof_report.closure_dependency_count != proof_report.closure_dependency_rows.len()
+        || proof_report.closure_dependency_count != proof_report.proof_obligation_rows.len()
     {
         return Err(
-            "account-creation proof boundary lost proof-obligation blocker coverage".to_string(),
+            "account-creation proof boundary lost proof-obligation or closure-dependency blocker coverage".to_string(),
         );
     }
     if fri_qrom_report.deployment_ready
@@ -836,6 +844,8 @@ fn main() -> Result<(), String> {
         )? != direct_report.obligation_audit_vector_case_count as u64
         || u64_at(proof_boundary, "/coverage/proof_obligation_count")?
             != proof_report.proof_obligation_count as u64
+        || u64_at(proof_boundary, "/coverage/closure_dependency_count")?
+            != proof_report.closure_dependency_count as u64
         || u64_at(
             proof_boundary,
             "/proof_obligation_vector_corpus_evidence/case_count",

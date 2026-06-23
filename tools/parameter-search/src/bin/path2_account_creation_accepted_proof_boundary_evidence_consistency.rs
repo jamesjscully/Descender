@@ -480,6 +480,9 @@ mod enabled {
             "/proof_obligation_vector_corpus_evidence/audit_summary/all_cases_have_named_break",
             "/proof_obligation_vector_corpus_evidence/audit_summary/all_open_cases_block_deployment",
             "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/proof_family_obligations_still_open",
+            "/coverage/every_closure_dependency_has_open_obligation",
+            "/coverage/every_closure_dependency_has_open_support_surface",
+            "/coverage/every_open_closure_dependency_blocks_deployment",
         ] {
             require_bool(proof_boundary, pointer, true)?;
         }

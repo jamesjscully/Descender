@@ -416,7 +416,8 @@ theorem manifest. It fails if the shared digest, endpoint, blocker, or field
 groups diverge between the artifacts; if the embedded requirement,
 proof-obligation, or direct-obligation corpus evidence drifts from the
 standalone corpus-evidence objects; or if proof-obligation rows stop remaining
-named, pinned, and deployment-blocking while the boundary is open.
+named, pinned, deployment-blocking, and backed by the expected open
+proof-boundary closure-dependency rows while the boundary is open.
 
 The `path2_preflight_boundary_consistency` gate checks the same active boundary
 reports against the production deployment preflight. It fails if the preflight

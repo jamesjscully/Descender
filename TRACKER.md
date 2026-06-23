@@ -45,7 +45,8 @@ obligation-corpus evidence back to standalone compact artifacts. The shared
 boundary-manifest gate also checks embedded requirement, proof-obligation, and
 direct-obligation corpus evidence against standalone corpus-evidence objects,
 while the preflight gate checks open-row blockers, fail-closed flags, the
-direct/proof/residual closure-dependency graph, and the production preflight
+direct/proof/residual closure-dependency graph, including the proof-boundary
+closure-dependency row table, and the production preflight
 blocker/verdict/ready-assertion/certificate chain against the standalone KATs
 and deployment blocker set. The direct theorem report
 validator also explicitly rejects weakened obligation coverage, missing pinned

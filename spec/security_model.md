@@ -268,12 +268,18 @@ classes, the
 `Path2AccountCreationNoExportBoundaryReportV1` digest, and current proof-family
 closure blockers. It also pins accepted-path binding evidence flags for the
 replay-payload digest chain and deployed-anchor public statement comparison
-without treating those flags as a theorem closure. It also pins a structured open proof-obligation
-row list for honest sampler soundness, authorization-class binding,
+without treating those flags as a theorem closure. It also pins a structured
+open proof-obligation row list for honest sampler soundness, authorization-class binding,
 no-postchallenge timing, simulator/no-export closure, FRI/AoK extraction,
 FRI/QROM residual pricing, frozen payload KATs, and production-gate review;
 each open row carries a named break and the fail-closed account-creation
-proof-boundary blocker. `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
+proof-boundary blocker. A separate closure-dependency row table maps those
+eight open proof obligations to their source report flag groups and, where
+applicable, the selected account-STARK residual matrix row; the production
+validator rejects the proof-boundary report if a false sampler, no-export,
+FRI/AoK, FRI/QROM, payload-KAT, or production-gate flag is not backed by the
+expected open obligation and support surface.
+`formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 turns that row table into a digest-pinned audit corpus bound to both the
 proof-boundary and direct-theorem reports; it keeps every obligation open and
 fail-closed. A separate requirement-coverage matrix maps every
@@ -305,8 +311,8 @@ that report, the selected `Path2AccountStarkResidualMatrixReportV1`, the current
 report, and the current no-export boundary report by local and CI gates, so the
 proof-boundary target, conclusion, digest chain, selected field groups,
 sampler/timing hooks, no-export denylist, requirement-coverage rows,
-proof-obligation rows, residual rows, and payload-KAT boundary blocker cannot
-drift silently.
+proof-obligation rows, closure-dependency rows, residual rows, and payload-KAT
+boundary blocker cannot drift silently.
 `Path2AccountCreationAcceptedProofBoundaryEvidenceV1` is the accepted-path
 creation analogue of the direct spend tuple evidence. Under the real
 account-STARK verifier feature it constructs the deterministic current KAT
