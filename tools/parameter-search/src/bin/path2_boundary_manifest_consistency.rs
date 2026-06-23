@@ -112,6 +112,26 @@ fn check_consistency() -> Result<(), String> {
             &[
                 "account_creation_proof_boundary",
                 "coverage",
+                "frame_kat_boundary_report_digest",
+            ],
+        )?,
+        "proof.manifest.account_creation_proof_boundary.coverage.frame_kat_boundary_report_digest",
+        get(
+            direct_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "coverage",
+                "frame_kat_boundary_report_digest",
+            ],
+        )?,
+        "direct.manifest.account_creation_proof_boundary.coverage.frame_kat_boundary_report_digest",
+    )?;
+    expect_eq(
+        get(
+            proof_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "coverage",
                 "account_stark_residual_matrix_report_digest",
             ],
         )?,
@@ -213,7 +233,7 @@ fn check_consistency() -> Result<(), String> {
         &[
             "account_creation_proof_boundary",
             "coverage",
-            "every_current_vector_case_is_payload_kat_row",
+            "every_current_vector_case_is_known_kat_row",
         ],
         true,
     )?;
@@ -251,7 +271,7 @@ fn check_consistency() -> Result<(), String> {
             "coverage",
             "current_vector_covered_requirement_count",
         ],
-        6,
+        8,
     )?;
     expect_bool(
         proof_manifest,

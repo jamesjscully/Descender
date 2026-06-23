@@ -80,6 +80,10 @@ jobs:
         run: |
           cargo run --quiet --bin path2_account_stark_payload_kat_manifest > /tmp/path2_account_stark_payload_kat_boundary_v1.json
           diff -u ../../formal/kat/path2_account_stark_payload_kat_boundary_v1.json /tmp/path2_account_stark_payload_kat_boundary_v1.json
+      - name: Account-creation frame KAT boundary manifest check
+        run: |
+          cargo run --quiet --bin path2_account_creation_frame_kat_manifest > /tmp/path2_account_creation_frame_kat_boundary_v1.json
+          diff -u ../../formal/kat/path2_account_creation_frame_kat_boundary_v1.json /tmp/path2_account_creation_frame_kat_boundary_v1.json
       - name: Account STARK FRI/QROM residual manifest check
         run: |
           cargo run --quiet --bin path2_account_stark_fri_qrom_residual_manifest > /tmp/path2_account_stark_fri_qrom_residual_v1.json
@@ -134,6 +138,12 @@ jobs:
           diff -u ../../formal/kat/path2_account_stark_payload_kat_vectors_v1.json /tmp/path2_account_stark_payload_kat_vectors_v1.json
       - name: Account STARK payload KAT vector consistency check
         run: cargo run --quiet --bin path2_account_stark_payload_kat_vector_consistency
+      - name: Account-creation frame KAT vector corpus check
+        run: |
+          cargo run --quiet --bin path2_account_creation_frame_kat_vectors > /tmp/path2_account_creation_frame_kat_vectors_v1.json
+          diff -u ../../formal/kat/path2_account_creation_frame_kat_vectors_v1.json /tmp/path2_account_creation_frame_kat_vectors_v1.json
+      - name: Account-creation frame KAT consistency check
+        run: cargo run --quiet --bin path2_account_creation_frame_kat_consistency
       - name: Account STARK payload byte model consistency check
         run: cargo run --quiet --bin path2_account_stark_payload_byte_model_consistency
       - name: Legacy q12289 negative-control bin tests

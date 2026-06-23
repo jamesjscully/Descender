@@ -189,6 +189,17 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ),
     ),
     (
+        "account-creation frame KAT boundary manifest check",
+        (
+            "path2_account_creation_frame_kat_manifest",
+            "path2_account_creation_frame_kat_boundary_v1.json",
+        ),
+        (
+            "path2_account_creation_frame_kat_manifest",
+            "path2_account_creation_frame_kat_boundary_v1.json",
+        ),
+    ),
+    (
         "account STARK FRI/QROM residual manifest check",
         (
             "path2_account_stark_fri_qrom_residual_manifest",
@@ -335,6 +346,22 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ("path2_account_stark_payload_kat_vector_consistency",),
     ),
     (
+        "account-creation frame KAT vector corpus check",
+        (
+            "path2_account_creation_frame_kat_vectors",
+            "path2_account_creation_frame_kat_vectors_v1.json",
+        ),
+        (
+            "path2_account_creation_frame_kat_vectors",
+            "path2_account_creation_frame_kat_vectors_v1.json",
+        ),
+    ),
+    (
+        "account-creation frame KAT consistency check",
+        ("path2_account_creation_frame_kat_consistency",),
+        ("path2_account_creation_frame_kat_consistency",),
+    ),
+    (
         "account STARK payload byte model consistency check",
         ("path2_account_stark_payload_byte_model_consistency",),
         ("path2_account_stark_payload_byte_model_consistency",),
@@ -429,6 +456,11 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
     "account STARK payload KAT boundary manifest check": (
         "DIR-KAT-001",
         "DIR-STARK-001",
+        "DIR-REJECT-001",
+    ),
+    "account-creation frame KAT boundary manifest check": (
+        "DIR-CREATE-001",
+        "DIR-KAT-001",
         "DIR-REJECT-001",
     ),
     "account STARK payload byte model manifest check": (
@@ -532,6 +564,16 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
     "account STARK payload KAT vector consistency check": (
         "DIR-KAT-001",
         "DIR-STARK-001",
+        "DIR-REJECT-001",
+    ),
+    "account-creation frame KAT vector corpus check": (
+        "DIR-CREATE-001",
+        "DIR-KAT-001",
+        "DIR-REJECT-001",
+    ),
+    "account-creation frame KAT consistency check": (
+        "DIR-CREATE-001",
+        "DIR-KAT-001",
         "DIR-REJECT-001",
     ),
     "account STARK payload byte model consistency check": (

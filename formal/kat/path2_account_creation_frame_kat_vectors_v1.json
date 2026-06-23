@@ -1,0 +1,210 @@
+{
+  "corpus": {
+    "boundary_report": {
+      "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+      "deployment_ready": false,
+      "digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
+      "domain": "Descender.Path2.AccountCreationFrameKatBoundaryReport.v1",
+      "every_current_row_has_generated_vector": true,
+      "row_count": 17
+    },
+    "case_count": 18,
+    "cases": [
+      {
+        "case_id": "honest_frame_accepts",
+        "certificate_digest": "b8ab3af27997e1735e516dbd9a9490134ea31bd44f2ac66c616af7e8d8ad35e8",
+        "evidence_transcript_digest": "e61ea35797f3961ca3ceb843cee71f2ee32403203d4ecdd1261b87fe03f88ded",
+        "kind": "accept",
+        "leaf_digest": "13a15ffb73e92c36c4603670182f53509aa6df7579646f16d4564d0254c31ca6",
+        "slot_authorization_digest": "f6795dba30b654f8ea86c6d1448b99f4dd443ca6e19dbe8a5af3e8679140a893"
+      },
+      {
+        "case_id": "leaf_frame_version_mutation",
+        "internal_error_match": "Path 2 slot leaf frame version mismatch",
+        "kind": "reject",
+        "mutated_surface": "leaf.frame_version",
+        "observed_error": "Path 2 slot leaf frame version mismatch",
+        "public_rejection_class": "reject_malformed_public_input",
+        "requirement": "canonical_leaf_and_evidence_framing",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "leaf_live_status_marker_mutation",
+        "internal_error_match": "Path 2 slot leaf is not live",
+        "kind": "reject",
+        "mutated_surface": "leaf.live_status_marker",
+        "observed_error": "Path 2 slot leaf is not live",
+        "public_rejection_class": "reject_malformed_public_input",
+        "requirement": "canonical_leaf_and_evidence_framing",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "evidence_domain_mutation",
+        "internal_error_match": "Path 2 evidence domain mismatch",
+        "kind": "reject",
+        "mutated_surface": "evidence.evidence_domain",
+        "observed_error": "Path 2 evidence domain mismatch",
+        "public_rejection_class": "reject_malformed_public_input",
+        "requirement": "canonical_leaf_and_evidence_framing",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "evidence_version_mutation",
+        "internal_error_match": "Path 2 evidence version mismatch",
+        "kind": "reject",
+        "mutated_surface": "evidence.evidence_version",
+        "observed_error": "Path 2 evidence version mismatch",
+        "public_rejection_class": "reject_malformed_public_input",
+        "requirement": "canonical_leaf_and_evidence_framing",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "evidence_kind_mutation",
+        "internal_error_match": "Path 2 unsupported evidence kind",
+        "kind": "reject",
+        "mutated_surface": "evidence.evidence_kind",
+        "observed_error": "Path 2 unsupported evidence kind",
+        "public_rejection_class": "reject_malformed_public_input",
+        "requirement": "canonical_leaf_and_evidence_framing",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "slot_leaf_digest_mutation",
+        "internal_error_match": "Path 2 slot leaf digest mismatch",
+        "kind": "reject",
+        "mutated_surface": "evidence.slot_leaf_digest",
+        "observed_error": "Path 2 slot leaf digest mismatch",
+        "public_rejection_class": "reject_binding_mismatch",
+        "requirement": "evidence_leaf_binding_equalities",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "slot_authorization_digest_mutation",
+        "internal_error_match": "Path 2 slot authorization digest mismatch",
+        "kind": "reject",
+        "mutated_surface": "evidence.slot_authorization_digest",
+        "observed_error": "Path 2 slot authorization digest mismatch",
+        "public_rejection_class": "reject_binding_mismatch",
+        "requirement": "evidence_leaf_binding_equalities",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "creation_verifier_version_digest_mutation",
+        "internal_error_match": "Path 2 creation verifier version mismatch",
+        "kind": "reject",
+        "mutated_surface": "evidence.creation_verifier_version_digest",
+        "observed_error": "Path 2 creation verifier version mismatch",
+        "public_rejection_class": "reject_binding_mismatch",
+        "requirement": "evidence_leaf_binding_equalities",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "hidden_source_statement_digest_mutation",
+        "internal_error_match": "Path 2 hidden-source statement digest mismatch",
+        "kind": "reject",
+        "mutated_surface": "evidence.hidden_source_statement_digest",
+        "observed_error": "Path 2 hidden-source statement digest mismatch",
+        "public_rejection_class": "reject_binding_mismatch",
+        "requirement": "evidence_leaf_binding_equalities",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "opening_commitment_mutation",
+        "internal_error_match": "Path 2 opening commitment mismatch",
+        "kind": "reject",
+        "mutated_surface": "evidence.opening_commitment",
+        "observed_error": "Path 2 opening commitment mismatch",
+        "public_rejection_class": "reject_binding_mismatch",
+        "requirement": "evidence_leaf_binding_equalities",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "pad_seed_digest_mutation",
+        "internal_error_match": "Path 2 pad-seed digest mismatch",
+        "kind": "reject",
+        "mutated_surface": "evidence.pad_seed_digest",
+        "observed_error": "Path 2 pad-seed digest mismatch",
+        "public_rejection_class": "reject_binding_mismatch",
+        "requirement": "evidence_leaf_binding_equalities",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "account_identity_digest_mutation",
+        "internal_error_match": "Path 2 account id mismatch",
+        "kind": "reject",
+        "mutated_surface": "evidence.account_identity_digest",
+        "observed_error": "Path 2 account id mismatch",
+        "public_rejection_class": "reject_binding_mismatch",
+        "requirement": "evidence_leaf_binding_equalities",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "public_key_identity_mutation",
+        "internal_error_match": "Path 2 public-key identity mismatch",
+        "kind": "reject",
+        "mutated_surface": "evidence.public_key_identity",
+        "observed_error": "Path 2 public-key identity mismatch",
+        "public_rejection_class": "reject_binding_mismatch",
+        "requirement": "evidence_leaf_binding_equalities",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "slot_id_mutation",
+        "internal_error_match": "Path 2 slot id mismatch",
+        "kind": "reject",
+        "mutated_surface": "evidence.slot_id",
+        "observed_error": "Path 2 slot id mismatch",
+        "public_rejection_class": "reject_binding_mismatch",
+        "requirement": "evidence_leaf_binding_equalities",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "state_root_before_mutation",
+        "internal_error_match": "Path 2 account state root mismatch",
+        "kind": "reject",
+        "mutated_surface": "evidence.state_root_before",
+        "observed_error": "Path 2 account state root mismatch",
+        "public_rejection_class": "reject_binding_mismatch",
+        "requirement": "evidence_leaf_binding_equalities",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "lifecycle_anchor_mutation",
+        "internal_error_match": "Path 2 lifecycle anchor mismatch",
+        "kind": "reject",
+        "mutated_surface": "evidence.lifecycle_anchor",
+        "observed_error": "Path 2 lifecycle anchor mismatch",
+        "public_rejection_class": "reject_binding_mismatch",
+        "requirement": "evidence_leaf_binding_equalities",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      },
+      {
+        "case_id": "prevalidation_transcript_digest_mutation",
+        "internal_error_match": "Path 2 prevalidation transcript digest mismatch",
+        "kind": "reject",
+        "mutated_surface": "leaf.prevalidation_transcript_digest",
+        "observed_error": "Path 2 prevalidation transcript digest mismatch",
+        "public_rejection_class": "reject_binding_mismatch",
+        "requirement": "evidence_leaf_binding_equalities",
+        "verifier_endpoint": "verify_path2_prevalidated_slot_creation_frame_bindings"
+      }
+    ],
+    "corpus_id": "Descender.Path2.AccountCreationFrameKatBoundaryVectors.v1",
+    "corpus_version": 1,
+    "fixture": {
+      "fixture_id": "Path2AccountCreationFrameKatFixture.v1",
+      "selected_certificate_type": "Path2DirectReplayableRelationCertificateV1",
+      "selected_evidence_type": "Path2AccountCreationEvidenceV1",
+      "selected_leaf_type": "Path2PrevalidatedSlotLeafV1"
+    },
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_frame_kat_vectors",
+      "source": "tools/parameter-search/src/bin/path2_account_creation_frame_kat_vectors.rs"
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "rejection_case_count": 17,
+    "schema": "Descender.Path2.AccountCreationFrameKatVectors.v1",
+    "status": "digest_pinned_boundary_vectors"
+  },
+  "corpus_digest": "28d378c1676ddec9d3d9403d2bc5cf19ec9f4c0fb76ed2d5de1ea7b5220ec7d1"
+}

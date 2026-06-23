@@ -82,8 +82,10 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_PREFLIGHT_MARKERS = [
     "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY",
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN",
     "PATH2_ACCOUNT_CREATION_SAMPLER_TIMING_REPORT_DOMAIN",
+    "PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_REPORT_DOMAIN",
     "PATH2_ACCOUNT_CREATION_NO_EXPORT_BOUNDARY_REPORT_DOMAIN",
     "Path2AccountCreationProofBoundaryReportV1",
+    "Path2AccountCreationFrameKatBoundaryReportV1",
     "Path2AccountCreationProofBoundaryRequirementCoverageRowV1",
     "Path2AccountCreationSamplerTimingReportV1",
     "Path2AccountCreationNoExportBoundaryReportV1",
@@ -112,7 +114,7 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_PREFLIGHT_MARKERS = [
     "requirement_coverage_matrix_pinned",
     "every_accepting_requirement_has_coverage_row",
     "every_vector_covered_requirement_has_public_rejection_class",
-    "every_current_vector_case_is_payload_kat_row",
+    "every_current_vector_case_is_known_kat_row",
     "every_requirement_public_rejection_class_is_known",
     "proof_obligation_rows_pinned",
     "every_proof_obligation_has_named_break",
@@ -511,12 +513,13 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS = {
         "fri_aok_boundary_report_fri_qrom_digest",
         "residual_matrix_report_fri_aok_digest",
         "account_stark_residual_matrix_report_digest",
+        "frame_kat_boundary_report_digest",
         "payload_kat_boundary_report_digest",
         "leaf_evidence_binding_fields",
         "requirement_coverage_rows",
         "current_vector_covered_requirement_count",
         "every_accepting_requirement_has_coverage_row",
-        "every_current_vector_case_is_payload_kat_row",
+        "every_current_vector_case_is_known_kat_row",
         "proof_obligation_named_break_classes",
         "proof_obligation_rows",
         "proof_obligation_rows_pinned",
@@ -552,13 +555,14 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS = {
         "fri_aok_boundary_report_fri_qrom_digest",
         "residual_matrix_report_fri_aok_digest",
         "account_stark_residual_matrix_report_digest",
+        "frame_kat_boundary_report_digest",
         "payload_kat_boundary_report_digest",
         "leaf_evidence_binding_fields",
         "requirement_coverage_rows",
         '"requirement_coverage_count": 10',
-        '"current_vector_covered_requirement_count": 6',
+        '"current_vector_covered_requirement_count": 8',
         '"every_accepting_requirement_has_coverage_row": true',
-        '"every_current_vector_case_is_payload_kat_row": true',
+        '"every_current_vector_case_is_known_kat_row": true',
         '"requirement_coverage_matrix_pinned": true',
         "canonical_leaf_and_evidence_framing",
         "payload_context_binding_leaf_proof_aggregation_slot",
@@ -739,9 +743,10 @@ DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS = {
         "proof_obligation_rows",
         "proof_obligation_rows_pinned",
         "requirement_coverage_rows",
+        "frame_kat_boundary_report_digest",
         "current_vector_covered_requirement_count",
         "every_accepting_requirement_has_coverage_row",
-        "every_current_vector_case_is_payload_kat_row",
+        "every_current_vector_case_is_known_kat_row",
         "every_proof_obligation_has_named_break",
         "every_open_proof_obligation_blocks_deployment",
         "every_hypothesis_has_obligation",
@@ -769,9 +774,10 @@ DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS = {
         "obligation_rows",
         "proof_obligation_rows",
         "requirement_coverage_rows",
-        '"current_vector_covered_requirement_count": 6',
+        "frame_kat_boundary_report_digest",
+        '"current_vector_covered_requirement_count": 8',
         '"every_accepting_requirement_has_coverage_row": true',
-        '"every_current_vector_case_is_payload_kat_row": true',
+        '"every_current_vector_case_is_known_kat_row": true',
         '"requirement_coverage_matrix_pinned": true',
         '"proof_obligation_rows_pinned": true',
         "selected_account_creation_proof_boundary_v1",
@@ -911,6 +917,74 @@ ACCOUNT_STARK_PAYLOAD_KAT_VECTOR_CONSISTENCY_MARKERS = {
     ".github/workflows/ci.yml": [
         "Account STARK payload KAT vector consistency check",
         "path2_account_stark_payload_kat_vector_consistency",
+    ],
+}
+ACCOUNT_CREATION_FRAME_KAT_VECTOR_MARKERS = {
+    "tools/parameter-search/src/bin/path2_account_creation_frame_kat_manifest.rs": [
+        "Descender.Path2.AccountCreationFrameKatBoundaryManifest.v1",
+        "path2_account_creation_frame_kat_boundary_report_v1",
+        "frame_requirement_case_count",
+        "binding_requirement_case_count",
+        "frozen_corpus_complete",
+        "deployment_ready",
+    ],
+    "tools/parameter-search/src/bin/path2_account_creation_frame_kat_vectors.rs": [
+        "Descender.Path2.AccountCreationFrameKatVectors.v1",
+        "path2_account_creation_frame_kat_fixture_v1",
+        "verify_path2_prevalidated_slot_creation_frame_bindings",
+        "honest_frame_accepts",
+        "every_current_row_has_generated_vector",
+    ],
+    "formal/kat/path2_account_creation_frame_kat_boundary_v1.json": [
+        "Descender.Path2.AccountCreationFrameKatBoundaryManifest.v1",
+        "leaf_frame_version_mutation",
+        "evidence_kind_mutation",
+        "prevalidation_transcript_digest_mutation",
+        '"row_count": 17',
+        '"deployment_ready": false',
+    ],
+    "formal/kat/path2_account_creation_frame_kat_vectors_v1.json": [
+        "Descender.Path2.AccountCreationFrameKatVectors.v1",
+        "digest_pinned_boundary_vectors",
+        "honest_frame_accepts",
+        "leaf_frame_version_mutation",
+        "slot_leaf_digest_mutation",
+        "prevalidation_transcript_digest_mutation",
+    ],
+    "scripts/check_build.sh": [
+        "account-creation frame KAT boundary manifest check",
+        "path2_account_creation_frame_kat_manifest",
+        "path2_account_creation_frame_kat_boundary_v1.json",
+        "account-creation frame KAT vector corpus check",
+        "path2_account_creation_frame_kat_vectors",
+        "path2_account_creation_frame_kat_vectors_v1.json",
+    ],
+    ".github/workflows/ci.yml": [
+        "Account-creation frame KAT boundary manifest check",
+        "path2_account_creation_frame_kat_manifest",
+        "path2_account_creation_frame_kat_boundary_v1.json",
+        "Account-creation frame KAT vector corpus check",
+        "path2_account_creation_frame_kat_vectors",
+        "path2_account_creation_frame_kat_vectors_v1.json",
+    ],
+}
+ACCOUNT_CREATION_FRAME_KAT_CONSISTENCY_MARKERS = {
+    "tools/parameter-search/src/bin/path2_account_creation_frame_kat_consistency.rs": [
+        "formal/kat/path2_account_creation_frame_kat_boundary_v1.json",
+        "formal/kat/path2_account_creation_frame_kat_vectors_v1.json",
+        "frame_kat_boundary_report_digest",
+        "every_current_row_has_generated_vector",
+        "frozen_corpus_complete",
+        "deployment_ready",
+        "Path 2 account-creation frame KAT consistency check passed.",
+    ],
+    "scripts/check_build.sh": [
+        "account-creation frame KAT consistency check",
+        "path2_account_creation_frame_kat_consistency",
+    ],
+    ".github/workflows/ci.yml": [
+        "Account-creation frame KAT consistency check",
+        "path2_account_creation_frame_kat_consistency",
     ],
 }
 SPEC_OPEN_WORK_SECTIONS = {
@@ -2905,6 +2979,38 @@ def check_account_stark_payload_kat_vector_consistency_markers(errors: list[str]
                 )
 
 
+def check_account_creation_frame_kat_vector_markers(errors: list[str]) -> None:
+    for rel, markers in ACCOUNT_CREATION_FRAME_KAT_VECTOR_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"{rel}: missing account-creation frame KAT vector artifact")
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing account-creation frame KAT vector marker {marker!r}"
+                )
+
+
+def check_account_creation_frame_kat_consistency_markers(errors: list[str]) -> None:
+    for rel, markers in ACCOUNT_CREATION_FRAME_KAT_CONSISTENCY_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(
+                f"{rel}: missing account-creation frame KAT consistency artifact"
+            )
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing account-creation frame KAT consistency marker {marker!r}"
+                )
+
+
 def check_ethereum_positioning_note(
     tracker_rows: dict[str, str],
     errors: list[str],
@@ -3055,6 +3161,8 @@ def main() -> int:
     check_preflight_boundary_consistency_markers(errors)
     check_account_stark_payload_kat_vector_markers(errors)
     check_account_stark_payload_kat_vector_consistency_markers(errors)
+    check_account_creation_frame_kat_vector_markers(errors)
+    check_account_creation_frame_kat_consistency_markers(errors)
     check_ethereum_positioning_note(tracker_rows, errors)
 
     if errors:

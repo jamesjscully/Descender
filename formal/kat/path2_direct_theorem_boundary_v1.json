@@ -45,17 +45,18 @@
         "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
         "boundary_statement_pinned": true,
         "certificate_evidence_binding_field_count": 11,
-        "current_vector_covered_requirement_count": 6,
+        "current_vector_covered_requirement_count": 8,
         "deployed_anchor_field_count": 8,
         "deployed_anchor_rebind_tests_present": true,
         "deployment_ready": false,
         "every_accepting_requirement_has_coverage_row": true,
-        "every_current_vector_case_is_payload_kat_row": true,
+        "every_current_vector_case_is_known_kat_row": true,
         "every_open_proof_obligation_blocks_deployment": true,
         "every_proof_obligation_has_named_break": true,
         "every_requirement_public_rejection_class_is_known": true,
         "every_vector_covered_requirement_has_public_rejection_class": true,
         "external_review_complete": false,
+        "frame_kat_boundary_report_digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
         "fri_aok_extractor_theorem_instantiated": false,
         "fri_qrom_residual_priced": false,
         "frozen_kat_corpus_complete": false,
@@ -216,20 +217,43 @@
       "requirement_coverage_rows": [
         {
           "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
-          "closure_target": "frozen leaf/evidence malformed-frame KATs",
-          "coverage_surface": "wire-format authority and creation-frame helpers",
-          "covered_by_current_vectors": false,
-          "current_vector_case_ids": [],
-          "public_rejection_classes": [],
+          "closure_target": "freeze leaf/evidence malformed-frame vector corpus",
+          "coverage_surface": "Path2AccountCreationFrameKatBoundaryReportV1",
+          "covered_by_current_vectors": true,
+          "current_vector_case_ids": [
+            "leaf_frame_version_mutation",
+            "leaf_live_status_marker_mutation",
+            "evidence_domain_mutation",
+            "evidence_version_mutation",
+            "evidence_kind_mutation"
+          ],
+          "public_rejection_classes": [
+            "reject_malformed_public_input"
+          ],
           "requirement": "canonical_leaf_and_evidence_framing"
         },
         {
           "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
-          "closure_target": "frozen evidence/leaf binding mutation KATs",
-          "coverage_surface": "shared leaf/evidence verifier and binding-field manifest",
-          "covered_by_current_vectors": false,
-          "current_vector_case_ids": [],
-          "public_rejection_classes": [],
+          "closure_target": "freeze evidence/leaf binding mutation vector corpus",
+          "coverage_surface": "Path2AccountCreationFrameKatBoundaryReportV1",
+          "covered_by_current_vectors": true,
+          "current_vector_case_ids": [
+            "slot_leaf_digest_mutation",
+            "slot_authorization_digest_mutation",
+            "creation_verifier_version_digest_mutation",
+            "hidden_source_statement_digest_mutation",
+            "opening_commitment_mutation",
+            "pad_seed_digest_mutation",
+            "account_identity_digest_mutation",
+            "public_key_identity_mutation",
+            "slot_id_mutation",
+            "state_root_before_mutation",
+            "lifecycle_anchor_mutation",
+            "prevalidation_transcript_digest_mutation"
+          ],
+          "public_rejection_classes": [
+            "reject_binding_mismatch"
+          ],
           "requirement": "evidence_leaf_binding_equalities"
         },
         {
@@ -386,16 +410,16 @@
     "corpus_id": "Descender.Path2.DirectTheoremBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "a2f295f497252228385687255c586dbfaf5fa258ec5273f284f8788fc027bffa",
-      "account_creation_proof_boundary_report_recomputed_digest": "a2f295f497252228385687255c586dbfaf5fa258ec5273f284f8788fc027bffa",
+      "account_creation_proof_boundary_report_digest": "1c6c90e1b070cf0580fa68421e8c8306be7032b5ca4a179ae2fa67d9bde0aced",
+      "account_creation_proof_boundary_report_recomputed_digest": "1c6c90e1b070cf0580fa68421e8c8306be7032b5ca4a179ae2fa67d9bde0aced",
       "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
-      "direct_theorem_boundary_report_digest": "4fd9ccb6e0434312bdfd152669d87675fff3b679d527813d15ddfec96930cce0",
-      "direct_theorem_boundary_report_recomputed_digest": "4fd9ccb6e0434312bdfd152669d87675fff3b679d527813d15ddfec96930cce0",
+      "direct_theorem_boundary_report_digest": "78592e682b9f5d5ea3154d57734d6706f0edad4a68065c0d9bbfdaa87ef2f9c5",
+      "direct_theorem_boundary_report_recomputed_digest": "78592e682b9f5d5ea3154d57734d6706f0edad4a68065c0d9bbfdaa87ef2f9c5",
       "direct_theorem_report_lifecycle_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_theorem_report_qrom_action_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
@@ -683,5 +707,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "520190347e4d39f67d91404659d114d60031c0f57d13655544dc8ccfcb487092"
+  "manifest_digest": "5d1f100d0ba880ecc5356ddf9ecab156089628d8000c9dd7ffdffd7f81a4bae3"
 }

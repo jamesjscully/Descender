@@ -3,6 +3,8 @@
 use descender_parameter_search::production_reference::{
     PROFILE, path2_account_creation_no_export_boundary_report_v1,
     path2_account_creation_no_export_boundary_report_v1_digest,
+    path2_account_creation_frame_kat_boundary_report_v1,
+    path2_account_creation_frame_kat_boundary_report_v1_digest,
     path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_proof_boundary_report_v1_digest,
     path2_account_creation_sampler_timing_report_v1,
@@ -33,6 +35,7 @@ fn manifest_body() -> Result<Value, String> {
     let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
     let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
     let no_export_report = path2_account_creation_no_export_boundary_report_v1();
+    let frame_kat_report = path2_account_creation_frame_kat_boundary_report_v1();
     let residual_matrix_report = path2_account_stark_residual_matrix_report_v1();
     let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
     let fri_aok_boundary_report = path2_account_stark_fri_aok_boundary_report_v1();
@@ -52,6 +55,11 @@ fn manifest_body() -> Result<Value, String> {
         path2_account_creation_no_export_boundary_report_v1_digest(&no_export_report);
     if recomputed_no_export_digest != no_export_report.digest {
         return Err("account-creation no-export boundary report digest mismatch".to_string());
+    }
+    let recomputed_frame_kat_digest =
+        path2_account_creation_frame_kat_boundary_report_v1_digest(&frame_kat_report);
+    if recomputed_frame_kat_digest != frame_kat_report.digest {
+        return Err("account-creation frame KAT boundary report digest mismatch".to_string());
     }
     let recomputed_residual_matrix_digest =
         path2_account_stark_residual_matrix_report_v1_digest(&residual_matrix_report);
@@ -89,6 +97,11 @@ fn manifest_body() -> Result<Value, String> {
     if proof_boundary_report.no_export_boundary_report_digest != no_export_report.digest {
         return Err(
             "proof boundary report is not bound to the current no-export report".to_string(),
+        );
+    }
+    if proof_boundary_report.frame_kat_boundary_report_digest != frame_kat_report.digest {
+        return Err(
+            "proof boundary report is not bound to the current frame KAT boundary".to_string(),
         );
     }
     if residual_matrix_report.fri_qrom_residual_report_digest != fri_qrom_residual_report.digest {
@@ -131,6 +144,7 @@ fn manifest_body() -> Result<Value, String> {
             "proof_boundary_report_domain": proof_boundary_report.domain,
             "sampler_timing_report_domain": sampler_timing_report.domain,
             "no_export_boundary_report_domain": no_export_report.domain,
+            "frame_kat_boundary_report_domain": frame_kat_report.domain,
             "residual_matrix_report_domain": residual_matrix_report.domain,
             "fri_qrom_residual_report_domain": fri_qrom_residual_report.domain,
             "fri_aok_boundary_report_domain": fri_aok_boundary_report.domain,
@@ -181,6 +195,15 @@ fn manifest_body() -> Result<Value, String> {
             "proof_boundary_report_no_export_digest": hex_encode(
                 &proof_boundary_report.no_export_boundary_report_digest
             ),
+            "account_creation_frame_kat_boundary_report_digest": hex_encode(
+                &frame_kat_report.digest
+            ),
+            "account_creation_frame_kat_boundary_report_recomputed_digest": hex_encode(
+                &recomputed_frame_kat_digest
+            ),
+            "proof_boundary_report_frame_kat_digest": hex_encode(
+                &proof_boundary_report.frame_kat_boundary_report_digest
+            ),
             "account_stark_residual_matrix_report_digest": hex_encode(
                 &residual_matrix_report.digest
             ),
@@ -223,6 +246,9 @@ fn manifest_body() -> Result<Value, String> {
                 "account_stark_residual_matrix_report_digest": hex_encode(
                     &proof_boundary_report.account_stark_residual_matrix_report_digest
                 ),
+                "frame_kat_boundary_report_digest": hex_encode(
+                    &proof_boundary_report.frame_kat_boundary_report_digest
+                ),
                 "accepting_requirement_count":
                     proof_boundary_report.accepting_requirements.len(),
                 "leaf_evidence_binding_field_count":
@@ -250,8 +276,8 @@ fn manifest_body() -> Result<Value, String> {
                 "every_vector_covered_requirement_has_public_rejection_class":
                     proof_boundary_report
                         .every_vector_covered_requirement_has_public_rejection_class,
-                "every_current_vector_case_is_payload_kat_row":
-                    proof_boundary_report.every_current_vector_case_is_payload_kat_row,
+                "every_current_vector_case_is_known_kat_row":
+                    proof_boundary_report.every_current_vector_case_is_known_kat_row,
                 "every_requirement_public_rejection_class_is_known":
                     proof_boundary_report.every_requirement_public_rejection_class_is_known,
                 "every_proof_obligation_has_named_break":

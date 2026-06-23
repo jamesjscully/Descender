@@ -197,9 +197,9 @@ each open row carries a named break and the fail-closed account-creation
 proof-boundary blocker. A separate requirement-coverage matrix maps every
 acceptance requirement to its current evidence surface, current vector case ids
 where they exist, public rejection classes, closure target, and blocker; it
-records that six requirements have current account-STARK payload vectors while
-leaf/evidence framing, leaf/evidence binding, no-export semantics, and
-account-STARK QROM/domain separation remain uncovered by vectors. The
+records that eight requirements have current frame-KAT or account-STARK payload
+vectors while no-export semantics and account-STARK QROM/domain separation
+remain uncovered by vectors. The
 sampler/timing report pins the honest-create
 sampler support file, no-postchallenge timing game, construction order,
 prechallenge fixed-through step, spend-challenge derivation step, and executable

@@ -45,17 +45,18 @@
         "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
         "boundary_statement_pinned": true,
         "certificate_evidence_binding_field_count": 11,
-        "current_vector_covered_requirement_count": 6,
+        "current_vector_covered_requirement_count": 8,
         "deployed_anchor_field_count": 8,
         "deployed_anchor_rebind_tests_present": true,
         "deployment_ready": false,
         "every_accepting_requirement_has_coverage_row": true,
-        "every_current_vector_case_is_payload_kat_row": true,
+        "every_current_vector_case_is_known_kat_row": true,
         "every_open_proof_obligation_blocks_deployment": true,
         "every_proof_obligation_has_named_break": true,
         "every_requirement_public_rejection_class_is_known": true,
         "every_vector_covered_requirement_has_public_rejection_class": true,
         "external_review_complete": false,
+        "frame_kat_boundary_report_digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
         "fri_aok_extractor_theorem_instantiated": false,
         "fri_qrom_residual_priced": false,
         "frozen_kat_corpus_complete": false,
@@ -216,20 +217,43 @@
       "requirement_coverage_rows": [
         {
           "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
-          "closure_target": "frozen leaf/evidence malformed-frame KATs",
-          "coverage_surface": "wire-format authority and creation-frame helpers",
-          "covered_by_current_vectors": false,
-          "current_vector_case_ids": [],
-          "public_rejection_classes": [],
+          "closure_target": "freeze leaf/evidence malformed-frame vector corpus",
+          "coverage_surface": "Path2AccountCreationFrameKatBoundaryReportV1",
+          "covered_by_current_vectors": true,
+          "current_vector_case_ids": [
+            "leaf_frame_version_mutation",
+            "leaf_live_status_marker_mutation",
+            "evidence_domain_mutation",
+            "evidence_version_mutation",
+            "evidence_kind_mutation"
+          ],
+          "public_rejection_classes": [
+            "reject_malformed_public_input"
+          ],
           "requirement": "canonical_leaf_and_evidence_framing"
         },
         {
           "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
-          "closure_target": "frozen evidence/leaf binding mutation KATs",
-          "coverage_surface": "shared leaf/evidence verifier and binding-field manifest",
-          "covered_by_current_vectors": false,
-          "current_vector_case_ids": [],
-          "public_rejection_classes": [],
+          "closure_target": "freeze evidence/leaf binding mutation vector corpus",
+          "coverage_surface": "Path2AccountCreationFrameKatBoundaryReportV1",
+          "covered_by_current_vectors": true,
+          "current_vector_case_ids": [
+            "slot_leaf_digest_mutation",
+            "slot_authorization_digest_mutation",
+            "creation_verifier_version_digest_mutation",
+            "hidden_source_statement_digest_mutation",
+            "opening_commitment_mutation",
+            "pad_seed_digest_mutation",
+            "account_identity_digest_mutation",
+            "public_key_identity_mutation",
+            "slot_id_mutation",
+            "state_root_before_mutation",
+            "lifecycle_anchor_mutation",
+            "prevalidation_transcript_digest_mutation"
+          ],
+          "public_rejection_classes": [
+            "reject_binding_mismatch"
+          ],
           "requirement": "evidence_leaf_binding_equalities"
         },
         {
@@ -359,6 +383,7 @@
       ]
     },
     "authority_snapshot": {
+      "frame_kat_boundary_report_domain": "Descender.Path2.AccountCreationFrameKatBoundaryReport.v1",
       "fri_aok_boundary_report_domain": "Descender.Path2.AccountStarkFriAokBoundaryReport.v1",
       "fri_aok_extractor_theorem_target": "selected_plonky3_q12289_fri_iop_aok_extractor",
       "fri_aok_named_break": "account_stark_fri_aok_extractor_break",
@@ -388,10 +413,12 @@
     "corpus_id": "Descender.Path2.AccountCreationProofBoundary.v1",
     "corpus_version": 1,
     "digests": {
+      "account_creation_frame_kat_boundary_report_digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
+      "account_creation_frame_kat_boundary_report_recomputed_digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
       "account_creation_no_export_boundary_report_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338",
       "account_creation_no_export_boundary_report_recomputed_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338",
-      "account_creation_proof_boundary_report_digest": "a2f295f497252228385687255c586dbfaf5fa258ec5273f284f8788fc027bffa",
-      "account_creation_proof_boundary_report_recomputed_digest": "a2f295f497252228385687255c586dbfaf5fa258ec5273f284f8788fc027bffa",
+      "account_creation_proof_boundary_report_digest": "1c6c90e1b070cf0580fa68421e8c8306be7032b5ca4a179ae2fa67d9bde0aced",
+      "account_creation_proof_boundary_report_recomputed_digest": "1c6c90e1b070cf0580fa68421e8c8306be7032b5ca4a179ae2fa67d9bde0aced",
       "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_stark_fri_aok_boundary_report_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753",
@@ -403,6 +430,7 @@
       "fri_aok_boundary_report_fri_qrom_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
       "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
       "payload_kat_boundary_report_recomputed_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
+      "proof_boundary_report_frame_kat_digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
       "proof_boundary_report_no_export_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338",
       "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "residual_matrix_report_fri_aok_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753"
@@ -674,5 +702,5 @@
       ]
     }
   },
-  "manifest_digest": "590d4357f7cb96d7d3becd849a8b224e0677295e8e857a27c58ac5d598e164ab"
+  "manifest_digest": "f88636949a0731919cb3fb64533b08daa0b18f1bb95c85ad86b1dbefc371984e"
 }

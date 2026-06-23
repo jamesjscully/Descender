@@ -178,8 +178,10 @@ deterministic proof-digest gap. The
 checked-in boundary manifest and vector corpus agree on the pinned
 boundary-report digest, row count, generated-vector coverage flag, rejection
 case ids, public rejection classes, observed-error markers, and non-deployable
-status. `Path2AccountCreationProofBoundaryReportV1` imports that precursor
-surface through a requirement-coverage matrix, which records which
-account-creation acceptance requirements currently have vector case ids and
-which remain proof-only or KAT-open. The full direct-mode vector corpus, full byte corpus,
+status. `path2_account_creation_frame_kat_vectors_v1.json` similarly pins the
+current leaf/evidence frame-binding rejection vectors for canonical framing and
+duplicated binding equalities. `Path2AccountCreationProofBoundaryReportV1`
+imports those precursor surfaces through a requirement-coverage matrix, which
+records which account-creation acceptance requirements currently have vector
+case ids and which remain proof-only or KAT-open. The full direct-mode vector corpus, full byte corpus,
 lifecycle/rejection coverage, and `DIR-KAT-001` closure remain open.

@@ -305,6 +305,9 @@ fn manifest_body() -> Result<Value, String> {
                 "account_stark_residual_matrix_report_digest": hex_encode(
                     &proof_boundary_report.account_stark_residual_matrix_report_digest
                 ),
+                "frame_kat_boundary_report_digest": hex_encode(
+                    &proof_boundary_report.frame_kat_boundary_report_digest
+                ),
                 "accepting_requirement_count":
                     proof_boundary_report.accepting_requirements.len(),
                 "leaf_evidence_binding_field_count":
@@ -332,8 +335,8 @@ fn manifest_body() -> Result<Value, String> {
                 "every_vector_covered_requirement_has_public_rejection_class":
                     proof_boundary_report
                         .every_vector_covered_requirement_has_public_rejection_class,
-                "every_current_vector_case_is_payload_kat_row":
-                    proof_boundary_report.every_current_vector_case_is_payload_kat_row,
+                "every_current_vector_case_is_known_kat_row":
+                    proof_boundary_report.every_current_vector_case_is_known_kat_row,
                 "every_requirement_public_rejection_class_is_known":
                     proof_boundary_report.every_requirement_public_rejection_class_is_known,
                 "every_proof_obligation_has_named_break":

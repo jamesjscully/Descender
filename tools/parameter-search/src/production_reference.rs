@@ -307,6 +307,8 @@ pub const PATH2_DIRECT_LIFECYCLE_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.DirectLifecycleBoundaryReport.v1";
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountCreationProofBoundaryReport.v1";
+pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_REPORT_DOMAIN: &str =
+    "Descender.Path2.AccountCreationFrameKatBoundaryReport.v1";
 pub const PATH2_ACCOUNT_CREATION_NO_EXPORT_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountCreationNoExportBoundaryReport.v1";
 pub const PATH2_ACCOUNT_CREATION_SAMPLER_TIMING_REPORT_DOMAIN: &str =
@@ -9432,6 +9434,56 @@ pub struct Path2AccountStarkPayloadKatBoundaryReportV1 {
     pub blocker: &'static str,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AccountCreationFrameKatBoundaryRowV1 {
+    pub case_id: &'static str,
+    pub requirement: &'static str,
+    pub verifier_endpoint: &'static str,
+    pub mutated_surface: &'static str,
+    pub internal_error_match: &'static str,
+    pub public_rejection_class: &'static str,
+    pub covered_by_unit_test: bool,
+    pub frozen_vector_present: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AccountCreationFrameKatBoundaryReportV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub domain: &'static str,
+    pub selected_leaf_type: &'static str,
+    pub selected_evidence_type: &'static str,
+    pub selected_certificate_type: &'static str,
+    pub leaf_frame_function: &'static str,
+    pub leaf_digest_function: &'static str,
+    pub evidence_transcript_digest_function: &'static str,
+    pub frame_binding_endpoint: &'static str,
+    pub payload_binding_endpoint: &'static str,
+    pub rows: &'static [Path2AccountCreationFrameKatBoundaryRowV1],
+    pub row_count: usize,
+    pub canonical_frame_regression_present: bool,
+    pub leaf_evidence_binding_field_count: usize,
+    pub frame_requirement_case_count: usize,
+    pub binding_requirement_case_count: usize,
+    pub current_boundary_mapping_complete: bool,
+    pub every_row_has_public_rejection_class: bool,
+    pub unit_test_coverage_present: bool,
+    pub frozen_corpus_complete: bool,
+    pub deployment_ready: bool,
+    pub blocker: &'static str,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AccountCreationFrameKatFixtureV1 {
+    pub fixture_id: &'static str,
+    pub leaf: Path2PrevalidatedSlotLeafV1,
+    pub evidence: Path2AccountCreationEvidenceV1,
+    pub certificate: Path2DirectReplayableRelationCertificateV1,
+    pub leaf_digest: [u8; DIGEST_BYTES],
+    pub slot_authorization_digest: [u8; DIGEST_BYTES],
+    pub evidence_transcript_digest: [u8; DIGEST_BYTES],
+    pub certificate_digest: [u8; DIGEST_BYTES],
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2AccountCreationSamplerTimingReportV1 {
     pub digest: [u8; DIGEST_BYTES],
@@ -9531,6 +9583,7 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub sampler_timing_report_digest: [u8; DIGEST_BYTES],
     pub no_export_boundary_report_digest: [u8; DIGEST_BYTES],
     pub account_stark_residual_matrix_report_digest: [u8; DIGEST_BYTES],
+    pub frame_kat_boundary_report_digest: [u8; DIGEST_BYTES],
     pub proof_boundary_target: &'static str,
     pub proof_boundary_conclusion: &'static str,
     pub selected_payload_type: &'static str,
@@ -9553,7 +9606,7 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub current_vector_covered_requirement_count: usize,
     pub every_accepting_requirement_has_coverage_row: bool,
     pub every_vector_covered_requirement_has_public_rejection_class: bool,
-    pub every_current_vector_case_is_payload_kat_row: bool,
+    pub every_current_vector_case_is_known_kat_row: bool,
     pub every_requirement_public_rejection_class_is_known: bool,
     pub every_proof_obligation_has_named_break: bool,
     pub every_open_proof_obligation_blocks_deployment: bool,
@@ -10398,6 +10451,180 @@ pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
     },
 ];
 
+pub const PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS:
+    [Path2AccountCreationFrameKatBoundaryRowV1; 17] = [
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "leaf_frame_version_mutation",
+        requirement: "canonical_leaf_and_evidence_framing",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "leaf.frame_version",
+        internal_error_match: "Path 2 slot leaf frame version mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "leaf_live_status_marker_mutation",
+        requirement: "canonical_leaf_and_evidence_framing",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "leaf.live_status_marker",
+        internal_error_match: "Path 2 slot leaf is not live",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "evidence_domain_mutation",
+        requirement: "canonical_leaf_and_evidence_framing",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "evidence.evidence_domain",
+        internal_error_match: "Path 2 evidence domain mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "evidence_version_mutation",
+        requirement: "canonical_leaf_and_evidence_framing",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "evidence.evidence_version",
+        internal_error_match: "Path 2 evidence version mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "evidence_kind_mutation",
+        requirement: "canonical_leaf_and_evidence_framing",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "evidence.evidence_kind",
+        internal_error_match: "Path 2 unsupported evidence kind",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "slot_leaf_digest_mutation",
+        requirement: "evidence_leaf_binding_equalities",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "evidence.slot_leaf_digest",
+        internal_error_match: "Path 2 slot leaf digest mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "slot_authorization_digest_mutation",
+        requirement: "evidence_leaf_binding_equalities",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "evidence.slot_authorization_digest",
+        internal_error_match: "Path 2 slot authorization digest mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "creation_verifier_version_digest_mutation",
+        requirement: "evidence_leaf_binding_equalities",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "evidence.creation_verifier_version_digest",
+        internal_error_match: "Path 2 creation verifier version mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "hidden_source_statement_digest_mutation",
+        requirement: "evidence_leaf_binding_equalities",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "evidence.hidden_source_statement_digest",
+        internal_error_match: "Path 2 hidden-source statement digest mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "opening_commitment_mutation",
+        requirement: "evidence_leaf_binding_equalities",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "evidence.opening_commitment",
+        internal_error_match: "Path 2 opening commitment mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "pad_seed_digest_mutation",
+        requirement: "evidence_leaf_binding_equalities",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "evidence.pad_seed_digest",
+        internal_error_match: "Path 2 pad-seed digest mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "account_identity_digest_mutation",
+        requirement: "evidence_leaf_binding_equalities",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "evidence.account_identity_digest",
+        internal_error_match: "Path 2 account id mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "public_key_identity_mutation",
+        requirement: "evidence_leaf_binding_equalities",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "evidence.public_key_identity",
+        internal_error_match: "Path 2 public-key identity mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "slot_id_mutation",
+        requirement: "evidence_leaf_binding_equalities",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "evidence.slot_id",
+        internal_error_match: "Path 2 slot id mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "state_root_before_mutation",
+        requirement: "evidence_leaf_binding_equalities",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "evidence.state_root_before",
+        internal_error_match: "Path 2 account state root mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "lifecycle_anchor_mutation",
+        requirement: "evidence_leaf_binding_equalities",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "evidence.lifecycle_anchor",
+        internal_error_match: "Path 2 lifecycle anchor mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+    Path2AccountCreationFrameKatBoundaryRowV1 {
+        case_id: "prevalidation_transcript_digest_mutation",
+        requirement: "evidence_leaf_binding_equalities",
+        verifier_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        mutated_surface: "leaf.prevalidation_transcript_digest",
+        internal_error_match: "Path 2 prevalidation transcript digest mismatch",
+        public_rejection_class: PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+        covered_by_unit_test: true,
+        frozen_vector_present: false,
+    },
+];
+
 pub const PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS: [Path2AccountStarkResidualMatrixRowV1;
     PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKER_COUNT] = [
     Path2AccountStarkResidualMatrixRowV1 {
@@ -10698,6 +10925,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CONCLUSION: &str =
 
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_VECTOR_CASES: [&str; 0] = [];
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_REJECTION_CLASSES: [&str; 0] = [];
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_MALFORMED_REJECTION_CLASSES: [&str; 1] =
+    [PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT];
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_BINDING_REJECTION_CLASSES: [&str; 1] =
     [PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH];
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_BINDING_OR_MALFORMED_CLASSES: [&str; 2] = [
@@ -10711,6 +10940,27 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_BINDING_MALFORMED_OR_EVIDENCE_CL
 ];
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_EVIDENCE_REJECTION_CLASSES: [&str; 1] =
     [PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE];
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_FRAME_CASES: [&str; 5] = [
+    "leaf_frame_version_mutation",
+    "leaf_live_status_marker_mutation",
+    "evidence_domain_mutation",
+    "evidence_version_mutation",
+    "evidence_kind_mutation",
+];
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_EVIDENCE_BINDING_CASES: [&str; 12] = [
+    "slot_leaf_digest_mutation",
+    "slot_authorization_digest_mutation",
+    "creation_verifier_version_digest_mutation",
+    "hidden_source_statement_digest_mutation",
+    "opening_commitment_mutation",
+    "pad_seed_digest_mutation",
+    "account_identity_digest_mutation",
+    "public_key_identity_mutation",
+    "slot_id_mutation",
+    "state_root_before_mutation",
+    "lifecycle_anchor_mutation",
+    "prevalidation_transcript_digest_mutation",
+];
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CERTIFICATE_PAYLOAD_DIGEST_CASES: [&str; 1] =
     ["wrong_replay_payload_digest"];
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_AVAILABILITY_CASES: [&str; 5] = [
@@ -10754,22 +11004,21 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
     [Path2AccountCreationProofBoundaryRequirementCoverageRowV1; 10] = [
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
         requirement: "canonical_leaf_and_evidence_framing",
-        coverage_surface: "wire-format authority and creation-frame helpers",
-        current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_VECTOR_CASES,
+        coverage_surface: "Path2AccountCreationFrameKatBoundaryReportV1",
+        current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_FRAME_CASES,
         public_rejection_classes:
-            &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_REJECTION_CLASSES,
-        covered_by_current_vectors: false,
-        closure_target: "frozen leaf/evidence malformed-frame KATs",
+            &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_MALFORMED_REJECTION_CLASSES,
+        covered_by_current_vectors: true,
+        closure_target: "freeze leaf/evidence malformed-frame vector corpus",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS,
     },
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
         requirement: "evidence_leaf_binding_equalities",
-        coverage_surface: "shared leaf/evidence verifier and binding-field manifest",
-        current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_VECTOR_CASES,
-        public_rejection_classes:
-            &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_REJECTION_CLASSES,
-        covered_by_current_vectors: false,
-        closure_target: "frozen evidence/leaf binding mutation KATs",
+        coverage_surface: "Path2AccountCreationFrameKatBoundaryReportV1",
+        current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_EVIDENCE_BINDING_CASES,
+        public_rejection_classes: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_BINDING_REJECTION_CLASSES,
+        covered_by_current_vectors: true,
+        closure_target: "freeze evidence/leaf binding mutation vector corpus",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS,
     },
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
@@ -11098,6 +11347,21 @@ pub fn path2_account_stark_payload_public_rejection_class(error: &str) -> &'stat
     PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED
 }
 
+pub fn path2_account_creation_frame_public_rejection_class(error: &str) -> &'static str {
+    if error.contains("frame version mismatch")
+        || error.contains("not live")
+        || error.contains("evidence domain mismatch")
+        || error.contains("evidence version mismatch")
+        || error.contains("unsupported evidence kind")
+    {
+        return PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT;
+    }
+    if error.contains("mismatch") {
+        return PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH;
+    }
+    PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED
+}
+
 pub fn path2_account_stark_payload_byte_model_report_v1()
 -> Path2AccountStarkPayloadByteModelReportV1 {
     let field_order = &PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_FIELDS;
@@ -11158,6 +11422,78 @@ pub fn validate_path2_account_stark_payload_byte_model_report_v1(
     {
         return Err(
             "Path 2 account-STARK payload byte model unexpectedly changes deployment policy"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
+pub fn path2_account_creation_frame_kat_boundary_report_v1()
+-> Path2AccountCreationFrameKatBoundaryReportV1 {
+    let rows = &PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS;
+    let mut report = Path2AccountCreationFrameKatBoundaryReportV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        domain: PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_REPORT_DOMAIN,
+        selected_leaf_type: "Path2PrevalidatedSlotLeafV1",
+        selected_evidence_type: "Path2AccountCreationEvidenceV1",
+        selected_certificate_type: "Path2DirectReplayableRelationCertificateV1",
+        leaf_frame_function: "path2_prevalidated_slot_leaf_v1_bytes",
+        leaf_digest_function: "path2_prevalidated_slot_leaf_digest",
+        evidence_transcript_digest_function: "path2_account_creation_evidence_transcript_digest",
+        frame_binding_endpoint: "verify_path2_prevalidated_slot_creation_frame_bindings",
+        payload_binding_endpoint: "verify_path2_prevalidated_slot_creation_payload_bindings",
+        rows,
+        row_count: rows.len(),
+        canonical_frame_regression_present: true,
+        leaf_evidence_binding_field_count:
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_EVIDENCE_BINDING_FIELDS.len(),
+        frame_requirement_case_count: rows
+            .iter()
+            .filter(|row| row.requirement == "canonical_leaf_and_evidence_framing")
+            .count(),
+        binding_requirement_case_count: rows
+            .iter()
+            .filter(|row| row.requirement == "evidence_leaf_binding_equalities")
+            .count(),
+        current_boundary_mapping_complete: rows.iter().all(|row| {
+            path2_account_creation_frame_public_rejection_class(row.internal_error_match)
+                == row.public_rejection_class
+        }),
+        every_row_has_public_rejection_class: rows
+            .iter()
+            .all(|row| !row.public_rejection_class.is_empty()),
+        unit_test_coverage_present: rows.iter().all(|row| row.covered_by_unit_test),
+        frozen_corpus_complete: rows.iter().all(|row| row.frozen_vector_present),
+        deployment_ready: false,
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS,
+    };
+    report.digest = path2_account_creation_frame_kat_boundary_report_v1_digest(&report);
+    report
+}
+
+pub fn path2_account_creation_frame_kat_boundary_report_v1_digest(
+    report: &Path2AccountCreationFrameKatBoundaryReportV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_account_creation_frame_kat_boundary_report_v1_frame(report)).into()
+}
+
+pub fn validate_path2_account_creation_frame_kat_boundary_report_v1(
+    report: &Path2AccountCreationFrameKatBoundaryReportV1,
+) -> Result<(), String> {
+    let expected = path2_account_creation_frame_kat_boundary_report_v1();
+    if expected != *report {
+        return Err(
+            "Path 2 account-creation frame KAT boundary report mismatch".to_string(),
+        );
+    }
+    if path2_account_creation_frame_kat_boundary_report_v1_digest(report) != report.digest {
+        return Err(
+            "Path 2 account-creation frame KAT boundary report digest mismatch".to_string(),
+        );
+    }
+    if report.deployment_ready || report.frozen_corpus_complete {
+        return Err(
+            "Path 2 account-creation frame KAT boundary unexpectedly claims readiness"
                 .to_string(),
         );
     }
@@ -11641,6 +11977,7 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
     let no_export_boundary_report = path2_account_creation_no_export_boundary_report_v1();
     let account_stark_residual_matrix_report =
         path2_account_stark_residual_matrix_report_v1();
+    let frame_kat_boundary_report = path2_account_creation_frame_kat_boundary_report_v1();
     let proof_obligation_rows = &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS;
     let requirement_coverage_rows =
         &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS;
@@ -11651,6 +11988,7 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         no_export_boundary_report_digest: no_export_boundary_report.digest,
         account_stark_residual_matrix_report_digest:
             account_stark_residual_matrix_report.digest,
+        frame_kat_boundary_report_digest: frame_kat_boundary_report.digest,
         proof_boundary_target: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_TARGET,
         proof_boundary_conclusion: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CONCLUSION,
         selected_payload_type: "Path2AccountStarkCreationPayloadV1",
@@ -11689,11 +12027,14 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         every_vector_covered_requirement_has_public_rejection_class: requirement_coverage_rows
             .iter()
             .all(|row| !row.covered_by_current_vectors || !row.public_rejection_classes.is_empty()),
-        every_current_vector_case_is_payload_kat_row: requirement_coverage_rows.iter().all(|row| {
+        every_current_vector_case_is_known_kat_row: requirement_coverage_rows.iter().all(|row| {
             row.current_vector_case_ids.iter().all(|case_id| {
                 PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS
                     .iter()
                     .any(|payload_row| payload_row.case_id == *case_id)
+                    || PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS
+                        .iter()
+                        .any(|frame_row| frame_row.case_id == *case_id)
             })
         }),
         every_requirement_public_rejection_class_is_known: requirement_coverage_rows
@@ -11770,6 +12111,12 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
             "Path 2 account-creation proof boundary residual-matrix digest mismatch".to_string(),
         );
     }
+    let frame_kat_boundary_report = path2_account_creation_frame_kat_boundary_report_v1();
+    if report.frame_kat_boundary_report_digest != frame_kat_boundary_report.digest {
+        return Err(
+            "Path 2 account-creation proof boundary frame-KAT digest mismatch".to_string(),
+        );
+    }
     if report.proof_boundary_target != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_TARGET
         || report.proof_boundary_conclusion != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CONCLUSION
     {
@@ -11780,7 +12127,7 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
         || report.requirement_coverage_count != report.requirement_coverage_rows.len()
         || !report.every_accepting_requirement_has_coverage_row
         || !report.every_vector_covered_requirement_has_public_rejection_class
-        || !report.every_current_vector_case_is_payload_kat_row
+        || !report.every_current_vector_case_is_known_kat_row
         || !report.every_requirement_public_rejection_class_is_known
         || !report.requirement_coverage_matrix_pinned
     {
@@ -44909,6 +45256,89 @@ pub fn verify_path2_prevalidated_slot_creation_payload_bindings(
     Ok(())
 }
 
+fn path2_account_creation_frame_kat_digest(label: &str) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(format!("Descender.Path2.AccountCreationFrameKat.v1:{label}:0").as_bytes())
+        .into()
+}
+
+pub fn path2_account_creation_frame_kat_fixture_v1()
+-> Result<Path2AccountCreationFrameKatFixtureV1, String> {
+    let mut leaf = Path2PrevalidatedSlotLeafV1 {
+        frame_version: PATH2_PREVALIDATED_SLOT_LEAF_FRAME_VERSION,
+        profile_version_digest: path2_account_creation_frame_kat_digest("profile"),
+        account_id: path2_account_creation_frame_kat_digest("account"),
+        public_key_identity: path2_account_creation_frame_kat_digest("public-key"),
+        slot_id: 7,
+        verifier_version_digest: path2_account_creation_frame_kat_digest("verifier"),
+        account_state_root_before: path2_account_creation_frame_kat_digest("state-root-before"),
+        opening_commitment: path2_account_creation_frame_kat_digest("opening-commitment"),
+        pad_seed_digest: path2_account_creation_frame_kat_digest("pad-seed-digest"),
+        hidden_source_statement_digest: path2_account_creation_frame_kat_digest(
+            "hidden-source-statement",
+        ),
+        prevalidation_transcript_digest: [0_u8; DIGEST_BYTES],
+        lifecycle_anchor: path2_account_creation_frame_kat_digest("lifecycle-anchor"),
+        live_status_marker: PATH2_PREVALIDATED_SLOT_LIVE_STATUS_MARKER,
+    };
+    let certificate = Path2DirectReplayableRelationCertificateV1 {
+        account_id: leaf.account_id,
+        public_key_identity: leaf.public_key_identity,
+        slot_id: leaf.slot_id,
+        verifier_version_digest: leaf.verifier_version_digest,
+        account_state_root_before: leaf.account_state_root_before,
+        opening_commitment: leaf.opening_commitment,
+        pad_seed_digest: leaf.pad_seed_digest,
+        hidden_source_statement_digest: leaf.hidden_source_statement_digest,
+        reviewed_active_lane_statement_digest: path2_account_creation_frame_kat_digest(
+            "reviewed-active-lane-statement",
+        ),
+        lifecycle_anchor: leaf.lifecycle_anchor,
+        relation_transcript_digest: path2_account_creation_frame_kat_digest(
+            "relation-transcript",
+        ),
+        public_replay_payload_digest: path2_account_creation_frame_kat_digest(
+            "public-replay-payload",
+        ),
+    };
+    let mut evidence = Path2AccountCreationEvidenceV1 {
+        evidence_domain: PATH2_SLOT_PREVALIDATE_SINGLE_DOMAIN,
+        evidence_version: 1,
+        evidence_kind: PATH2_EVIDENCE_KIND_DIRECT_REPLAYABLE_RELATION_CERTIFICATE,
+        slot_leaf_digest: [0_u8; DIGEST_BYTES],
+        slot_authorization_digest: [0_u8; DIGEST_BYTES],
+        creation_verifier_version_digest: leaf.verifier_version_digest,
+        hidden_source_statement_digest: leaf.hidden_source_statement_digest,
+        opening_commitment: leaf.opening_commitment,
+        pad_seed_digest: leaf.pad_seed_digest,
+        account_identity_digest: leaf.account_id,
+        public_key_identity: leaf.public_key_identity,
+        slot_id: leaf.slot_id,
+        state_root_before: leaf.account_state_root_before,
+        lifecycle_anchor: leaf.lifecycle_anchor,
+        relation_transcript_digest: certificate.relation_transcript_digest,
+        evidence_payload_digest: path2_direct_replayable_relation_certificate_digest(&certificate),
+    };
+    leaf.prevalidation_transcript_digest =
+        path2_account_creation_evidence_transcript_digest(&evidence)?;
+    evidence.slot_leaf_digest = path2_prevalidated_slot_leaf_digest(&leaf)?;
+    evidence.slot_authorization_digest = path2_slot_authorization_digest(&leaf)?;
+    let leaf_digest = evidence.slot_leaf_digest;
+    let slot_authorization_digest = evidence.slot_authorization_digest;
+    let evidence_transcript_digest = leaf.prevalidation_transcript_digest;
+    let certificate_digest = evidence.evidence_payload_digest;
+    verify_path2_prevalidated_slot_creation_payload_bindings(&leaf, &evidence, Some(&certificate))?;
+    Ok(Path2AccountCreationFrameKatFixtureV1 {
+        fixture_id: "Path2AccountCreationFrameKatFixture.v1",
+        leaf,
+        evidence,
+        certificate,
+        leaf_digest,
+        slot_authorization_digest,
+        evidence_transcript_digest,
+        certificate_digest,
+    })
+}
+
 pub fn verify_path2_prevalidated_slot_admission_namespace(
     leaves: &[Path2PrevalidatedSlotLeafV1],
 ) -> Result<(), String> {
@@ -64790,6 +65220,142 @@ fn path2_account_stark_residual_matrix_report_v1_frame(
     frame
 }
 
+fn path2_account_creation_frame_kat_boundary_report_v1_frame(
+    report: &Path2AccountCreationFrameKatBoundaryReportV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"domain", report.domain.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_u64(&mut frame, b"q", Q as u64);
+    append_u64(&mut frame, b"groups", GROUPS as u64);
+    append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
+    append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
+    append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(
+        &mut frame,
+        b"selected_leaf_type",
+        report.selected_leaf_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"selected_evidence_type",
+        report.selected_evidence_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"selected_certificate_type",
+        report.selected_certificate_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"leaf_frame_function",
+        report.leaf_frame_function.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"leaf_digest_function",
+        report.leaf_digest_function.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"evidence_transcript_digest_function",
+        report.evidence_transcript_digest_function.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"frame_binding_endpoint",
+        report.frame_binding_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"payload_binding_endpoint",
+        report.payload_binding_endpoint.as_bytes(),
+    );
+    for (index, row) in report.rows.iter().enumerate() {
+        append_u64(&mut frame, b"frame_kat_boundary_row_index", index as u64);
+        append_frame(&mut frame, b"case_id", row.case_id.as_bytes());
+        append_frame(&mut frame, b"requirement", row.requirement.as_bytes());
+        append_frame(
+            &mut frame,
+            b"verifier_endpoint",
+            row.verifier_endpoint.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"mutated_surface",
+            row.mutated_surface.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"internal_error_match",
+            row.internal_error_match.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"public_rejection_class",
+            row.public_rejection_class.as_bytes(),
+        );
+        append_u64(
+            &mut frame,
+            b"covered_by_unit_test",
+            u64::from(row.covered_by_unit_test),
+        );
+        append_u64(
+            &mut frame,
+            b"frozen_vector_present",
+            u64::from(row.frozen_vector_present),
+        );
+    }
+    append_u64(&mut frame, b"row_count", report.row_count as u64);
+    append_u64(
+        &mut frame,
+        b"canonical_frame_regression_present",
+        u64::from(report.canonical_frame_regression_present),
+    );
+    append_u64(
+        &mut frame,
+        b"leaf_evidence_binding_field_count",
+        report.leaf_evidence_binding_field_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"frame_requirement_case_count",
+        report.frame_requirement_case_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"binding_requirement_case_count",
+        report.binding_requirement_case_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"current_boundary_mapping_complete",
+        u64::from(report.current_boundary_mapping_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"every_row_has_public_rejection_class",
+        u64::from(report.every_row_has_public_rejection_class),
+    );
+    append_u64(
+        &mut frame,
+        b"unit_test_coverage_present",
+        u64::from(report.unit_test_coverage_present),
+    );
+    append_u64(
+        &mut frame,
+        b"frozen_corpus_complete",
+        u64::from(report.frozen_corpus_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_ready",
+        u64::from(report.deployment_ready),
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    frame
+}
+
 fn path2_account_stark_fri_qrom_residual_report_v1_frame(
     report: &Path2AccountStarkFriQromResidualReportV1,
 ) -> Vec<u8> {
@@ -65084,6 +65650,11 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
     );
     append_frame(
         &mut frame,
+        b"frame_kat_boundary_report_digest",
+        &report.frame_kat_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
         b"proof_boundary_target",
         report.proof_boundary_target.as_bytes(),
     );
@@ -65326,8 +65897,8 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
     );
     append_u64(
         &mut frame,
-        b"every_current_vector_case_is_payload_kat_row",
-        u64::from(report.every_current_vector_case_is_payload_kat_row),
+        b"every_current_vector_case_is_known_kat_row",
+        u64::from(report.every_current_vector_case_is_known_kat_row),
     );
     append_u64(
         &mut frame,
@@ -74167,6 +74738,38 @@ mod tests {
         );
 
         let mut bad_evidence = evidence;
+        bad_evidence.hidden_source_statement_digest[0] ^= 1;
+        assert_eq!(
+            verify_path2_prevalidated_slot_creation_frame_bindings(&leaf, &bad_evidence)
+                .unwrap_err(),
+            "Path 2 hidden-source statement digest mismatch"
+        );
+
+        let mut bad_evidence = evidence;
+        bad_evidence.opening_commitment[0] ^= 1;
+        assert_eq!(
+            verify_path2_prevalidated_slot_creation_frame_bindings(&leaf, &bad_evidence)
+                .unwrap_err(),
+            "Path 2 opening commitment mismatch"
+        );
+
+        let mut bad_evidence = evidence;
+        bad_evidence.pad_seed_digest[0] ^= 1;
+        assert_eq!(
+            verify_path2_prevalidated_slot_creation_frame_bindings(&leaf, &bad_evidence)
+                .unwrap_err(),
+            "Path 2 pad-seed digest mismatch"
+        );
+
+        let mut bad_evidence = evidence;
+        bad_evidence.lifecycle_anchor[0] ^= 1;
+        assert_eq!(
+            verify_path2_prevalidated_slot_creation_frame_bindings(&leaf, &bad_evidence)
+                .unwrap_err(),
+            "Path 2 lifecycle anchor mismatch"
+        );
+
+        let mut bad_evidence = evidence;
         bad_evidence.evidence_payload_digest[0] ^= 1;
         assert_eq!(
             verify_path2_prevalidated_slot_creation_frame_bindings(&leaf, &bad_evidence)
@@ -74198,6 +74801,22 @@ mod tests {
             verify_path2_prevalidated_slot_creation_frame_bindings(&leaf, &batch_domain_evidence)
                 .unwrap_err(),
             "Path 2 evidence domain mismatch"
+        );
+
+        let mut bad_evidence = evidence;
+        bad_evidence.evidence_version += 1;
+        assert_eq!(
+            verify_path2_prevalidated_slot_creation_frame_bindings(&leaf, &bad_evidence)
+                .unwrap_err(),
+            "Path 2 evidence version mismatch"
+        );
+
+        let mut bad_evidence = evidence;
+        bad_evidence.evidence_kind += 1;
+        assert_eq!(
+            verify_path2_prevalidated_slot_creation_frame_bindings(&leaf, &bad_evidence)
+                .unwrap_err(),
+            "Path 2 unsupported evidence kind"
         );
     }
 
@@ -106354,6 +106973,83 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     }
 
     #[test]
+    fn path2_account_creation_frame_kat_boundary_report_pins_public_rejections() {
+        let report = path2_account_creation_frame_kat_boundary_report_v1();
+        assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(
+            report.domain,
+            PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_REPORT_DOMAIN
+        );
+        assert_eq!(report.selected_leaf_type, "Path2PrevalidatedSlotLeafV1");
+        assert_eq!(
+            report.selected_evidence_type,
+            "Path2AccountCreationEvidenceV1"
+        );
+        assert_eq!(
+            report.selected_certificate_type,
+            "Path2DirectReplayableRelationCertificateV1"
+        );
+        assert_eq!(
+            report.rows,
+            PATH2_ACCOUNT_CREATION_FRAME_KAT_BOUNDARY_ROWS.as_ref()
+        );
+        assert_eq!(report.row_count, 17);
+        assert_eq!(report.frame_requirement_case_count, 5);
+        assert_eq!(report.binding_requirement_case_count, 12);
+        assert_eq!(report.leaf_evidence_binding_field_count, 15);
+        assert!(report.canonical_frame_regression_present);
+        assert!(report.current_boundary_mapping_complete);
+        assert!(report.every_row_has_public_rejection_class);
+        assert!(report.unit_test_coverage_present);
+        assert!(!report.frozen_corpus_complete);
+        assert!(!report.deployment_ready);
+        assert_eq!(
+            report.blocker,
+            PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PAYLOAD_KATS
+        );
+        assert!(report
+            .rows
+            .iter()
+            .any(|row| row.case_id == "leaf_frame_version_mutation"
+                && row.public_rejection_class
+                    == PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT));
+        assert!(report
+            .rows
+            .iter()
+            .any(|row| row.case_id == "slot_leaf_digest_mutation"
+                && row.public_rejection_class == PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH));
+        for row in report.rows {
+            assert!(row.covered_by_unit_test);
+            assert!(!row.frozen_vector_present);
+            assert_eq!(
+                path2_account_creation_frame_public_rejection_class(row.internal_error_match),
+                row.public_rejection_class
+            );
+        }
+        assert_eq!(
+            path2_account_creation_frame_kat_boundary_report_v1_digest(&report),
+            report.digest
+        );
+        validate_path2_account_creation_frame_kat_boundary_report_v1(&report).unwrap();
+
+        let fixture = path2_account_creation_frame_kat_fixture_v1().unwrap();
+        verify_path2_prevalidated_slot_creation_payload_bindings(
+            &fixture.leaf,
+            &fixture.evidence,
+            Some(&fixture.certificate),
+        )
+        .unwrap();
+
+        let mut malformed = report.clone();
+        malformed.frozen_corpus_complete = true;
+        malformed.digest = path2_account_creation_frame_kat_boundary_report_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_account_creation_frame_kat_boundary_report_v1(&malformed).unwrap_err(),
+            "Path 2 account-creation frame KAT boundary report mismatch"
+        );
+    }
+
+    #[test]
     fn path2_account_stark_fri_qrom_residual_report_pins_open_pricing_boundary() {
         let report = path2_account_stark_fri_qrom_residual_report_v1();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
@@ -106866,6 +107562,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
         let no_export_boundary_report = path2_account_creation_no_export_boundary_report_v1();
         let residual_matrix_report = path2_account_stark_residual_matrix_report_v1();
+        let frame_kat_boundary_report = path2_account_creation_frame_kat_boundary_report_v1();
         let report = path2_account_creation_proof_boundary_report_v1();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
         assert_eq!(
@@ -106883,6 +107580,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert_eq!(
             report.account_stark_residual_matrix_report_digest,
             residual_matrix_report.digest
+        );
+        assert_eq!(
+            report.frame_kat_boundary_report_digest,
+            frame_kat_boundary_report.digest
         );
         assert_eq!(
             report.proof_boundary_target,
@@ -106952,10 +107653,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.requirement_coverage_count,
             report.accepting_requirements.len()
         );
-        assert_eq!(report.current_vector_covered_requirement_count, 6);
+        assert_eq!(report.current_vector_covered_requirement_count, 8);
         assert!(report.every_accepting_requirement_has_coverage_row);
         assert!(report.every_vector_covered_requirement_has_public_rejection_class);
-        assert!(report.every_current_vector_case_is_payload_kat_row);
+        assert!(report.every_current_vector_case_is_known_kat_row);
         assert!(report.every_requirement_public_rejection_class_is_known);
         assert!(report.requirement_coverage_matrix_pinned);
         assert!(report
@@ -106987,7 +107688,16 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.requirement_coverage_rows[0].requirement,
             "canonical_leaf_and_evidence_framing"
         );
-        assert!(!report.requirement_coverage_rows[0].covered_by_current_vectors);
+        assert!(report.requirement_coverage_rows[0].covered_by_current_vectors);
+        assert_eq!(
+            report.requirement_coverage_rows[0].current_vector_case_ids,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_FRAME_CASES.as_ref()
+        );
+        assert_eq!(
+            report.requirement_coverage_rows[1].current_vector_case_ids,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_EVIDENCE_BINDING_CASES.as_ref()
+        );
+        assert!(report.requirement_coverage_rows[1].covered_by_current_vectors);
         assert_eq!(
             report.requirement_coverage_rows[2].current_vector_case_ids,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CERTIFICATE_PAYLOAD_DIGEST_CASES.as_ref()
@@ -107093,7 +107803,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         );
 
         let mut malformed_coverage = report.clone();
-        malformed_coverage.every_current_vector_case_is_payload_kat_row = false;
+        malformed_coverage.every_current_vector_case_is_known_kat_row = false;
         malformed_coverage.digest =
             path2_account_creation_proof_boundary_report_v1_digest(&malformed_coverage);
         assert_eq!(
