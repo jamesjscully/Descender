@@ -108,6 +108,77 @@ fn array_field_values_at(value: &Value, pointer: &str, field: &str) -> Result<Va
     Ok(Value::Array(values))
 }
 
+fn require_array_field_values_match(
+    value: &Value,
+    row_pointer: &str,
+    row_field: &str,
+    evidence_pointer: &str,
+    evidence_field: &str,
+    label: &str,
+) -> Result<(), String> {
+    let row_values = array_field_values_at(value, row_pointer, row_field)?;
+    let evidence_values = array_field_values_at(value, evidence_pointer, evidence_field)?;
+    if evidence_values != row_values {
+        return Err(format!(
+            "{label} evidence field {evidence_pointer}/{evidence_field} drifted from {row_pointer}/{row_field}",
+        ));
+    }
+    Ok(())
+}
+
+fn require_proof_closure_dependency_evidence_identity(
+    value: &Value,
+    label: &str,
+) -> Result<(), String> {
+    for (row_field, evidence_field) in [
+        ("dependency_id", "dependency_id"),
+        ("source_report", "source_report"),
+        ("source_flag_group", "source_flag_group"),
+        ("proof_obligation_id", "proof_obligation_id"),
+        ("residual_item", "residual_item"),
+        ("named_break", "named_break"),
+        ("blocker", "blocker"),
+        ("open", "closure_dependency_open"),
+    ] {
+        require_array_field_values_match(
+            value,
+            "/closure_dependency_rows",
+            row_field,
+            "/closure_dependency_evidence_rows",
+            evidence_field,
+            label,
+        )?;
+    }
+    Ok(())
+}
+
+fn require_direct_closure_dependency_evidence_identity(
+    value: &Value,
+    label: &str,
+) -> Result<(), String> {
+    for (row_field, evidence_field) in [
+        ("dependency_id", "dependency_id"),
+        ("source_report", "source_report"),
+        ("source_flag_group", "source_flag_group"),
+        ("direct_obligation_id", "direct_obligation_id"),
+        ("acceptance_hypothesis", "acceptance_hypothesis"),
+        ("support_surface", "support_surface"),
+        ("named_break", "named_break"),
+        ("blocker", "blocker"),
+        ("open", "closure_dependency_open"),
+    ] {
+        require_array_field_values_match(
+            value,
+            "/closure_dependency_rows",
+            row_field,
+            "/closure_dependency_evidence_rows",
+            evidence_field,
+            label,
+        )?;
+    }
+    Ok(())
+}
+
 fn body_digest(value: &Value, label: &str) -> Result<String, String> {
     let json =
         serde_json::to_string_pretty(value).map_err(|err| format!("serialize {label}: {err}"))?;
@@ -710,6 +781,10 @@ fn main() -> Result<(), String> {
             "account-creation proof boundary lost proof-obligation or closure-dependency blocker coverage".to_string(),
         );
     }
+    require_proof_closure_dependency_evidence_identity(
+        proof_boundary,
+        "production preflight proof-boundary manifest",
+    )?;
     if fri_qrom_report.deployment_ready
         || fri_qrom_report.residual_pricing_complete
         || fri_qrom_report.account_stark_transcript_qrom_theorem_instantiated
@@ -859,6 +934,10 @@ fn main() -> Result<(), String> {
             "direct theorem boundary lost closure-dependency blocker coverage".to_string(),
         );
     }
+    require_direct_closure_dependency_evidence_identity(
+        direct_boundary,
+        "production preflight direct theorem manifest",
+    )?;
     if !direct_report.account_creation_proof_boundary_verified {
         require_open_direct_obligation(
             &direct_report,

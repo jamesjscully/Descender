@@ -73,6 +73,77 @@ fn field_values(value: &Value, path: &[&str], field: &str) -> Result<Value, Stri
     Ok(Value::Array(values))
 }
 
+fn expect_field_values_match(
+    value: &Value,
+    row_path: &[&str],
+    row_field: &str,
+    evidence_path: &[&str],
+    evidence_field: &str,
+    label: &str,
+) -> Result<(), String> {
+    let row_values = field_values(value, row_path, row_field)?;
+    let evidence_values = field_values(value, evidence_path, evidence_field)?;
+    expect_eq(
+        &evidence_values,
+        &format!("{label}.{}.{}", evidence_path.join("."), evidence_field),
+        &row_values,
+        &format!("{label}.{}.{}", row_path.join("."), row_field),
+    )
+}
+
+fn expect_proof_closure_dependency_evidence_identity(
+    value: &Value,
+    label: &str,
+) -> Result<(), String> {
+    for (row_field, evidence_field) in [
+        ("dependency_id", "dependency_id"),
+        ("source_report", "source_report"),
+        ("source_flag_group", "source_flag_group"),
+        ("proof_obligation_id", "proof_obligation_id"),
+        ("residual_item", "residual_item"),
+        ("named_break", "named_break"),
+        ("blocker", "blocker"),
+        ("open", "closure_dependency_open"),
+    ] {
+        expect_field_values_match(
+            value,
+            &["closure_dependency_rows"],
+            row_field,
+            &["closure_dependency_evidence_rows"],
+            evidence_field,
+            label,
+        )?;
+    }
+    Ok(())
+}
+
+fn expect_direct_closure_dependency_evidence_identity(
+    value: &Value,
+    label: &str,
+) -> Result<(), String> {
+    for (row_field, evidence_field) in [
+        ("dependency_id", "dependency_id"),
+        ("source_report", "source_report"),
+        ("source_flag_group", "source_flag_group"),
+        ("direct_obligation_id", "direct_obligation_id"),
+        ("acceptance_hypothesis", "acceptance_hypothesis"),
+        ("support_surface", "support_surface"),
+        ("named_break", "named_break"),
+        ("blocker", "blocker"),
+        ("open", "closure_dependency_open"),
+    ] {
+        expect_field_values_match(
+            value,
+            &["closure_dependency_rows"],
+            row_field,
+            &["closure_dependency_evidence_rows"],
+            evidence_field,
+            label,
+        )?;
+    }
+    Ok(())
+}
+
 fn check_consistency() -> Result<(), String> {
     let root = repo_root();
     let proof = read_json(
@@ -273,6 +344,10 @@ fn check_consistency() -> Result<(), String> {
         ],
         true,
     )?;
+    expect_direct_closure_dependency_evidence_identity(
+        get(direct_manifest, &["direct_theorem_boundary"])?,
+        "direct.manifest.direct_theorem_boundary",
+    )?;
     expect_bool(
         direct_manifest,
         &[
@@ -389,6 +464,14 @@ fn check_consistency() -> Result<(), String> {
             "requirement_coverage_matrix_pinned",
         ],
         true,
+    )?;
+    expect_proof_closure_dependency_evidence_identity(
+        get(proof_manifest, &["account_creation_proof_boundary"])?,
+        "proof.manifest.account_creation_proof_boundary",
+    )?;
+    expect_proof_closure_dependency_evidence_identity(
+        get(direct_manifest, &["account_creation_proof_boundary"])?,
+        "direct.manifest.account_creation_proof_boundary",
     )?;
     expect_u64(
         proof_manifest,

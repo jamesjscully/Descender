@@ -434,7 +434,9 @@ named, pinned, deployment-blocking, and backed by the expected open
 proof-boundary closure-dependency rows while the boundary is open. The
 manifests also carry derived closure-dependency evidence rows, and the gate
 checks that each row still points to an open obligation, an open source support
-surface, and the deployment blocker. It also checks that the direct theorem
+surface, and the deployment blocker. It now compares each closure-dependency
+evidence row field-for-field against the source closure-dependency row before
+the manifest or preflight can import it. It also checks that the direct theorem
 boundary keeps its own nine closure-dependency rows pinned, open, evidenced,
 and deployment-blocking while the accepted-tuple theorem is not instantiated.
 The compact accepted-evidence artifacts embedded by these manifests expose

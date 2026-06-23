@@ -87,7 +87,9 @@ production report validator separately rejects weakened
 acceptance-hypothesis/obligation-row coverage, missing pinned accepted-evidence
 hooks, missing direct closure-dependency rows, unexpectedly closed theorem
 flags, missing per-row closure-dependency evidence, deployment-ready flags, or
-direct theorem blocker drift. The
+direct theorem blocker drift. The boundary and preflight consistency gates also
+compare each direct closure-dependency evidence row field-for-field against its
+source closure-dependency row. The
 `formal/kat/path2_direct_theorem_obligation_vectors_v1.json` corpus records one
 digest-pinned audit case for each open direct-theorem obligation and binds that
 row list to the current QROM/action, lifecycle, and account-creation
@@ -298,7 +300,9 @@ closure-dependency evidence rows pin each dependency to the open proof
 obligation, open source support surface, named break, and blocker; the production
 validator rejects the proof-boundary report if a false sampler, no-export,
 FRI/AoK, FRI/QROM, payload-KAT, or production-gate flag is not backed by the
-expected open obligation and support surface.
+expected open obligation and support surface. The boundary and preflight gates
+also compare each proof-boundary closure-dependency evidence row field-for-field
+against its source closure-dependency row.
 `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 turns that row table into a digest-pinned audit corpus bound to both the
 proof-boundary and direct-theorem reports; it keeps every obligation open and
