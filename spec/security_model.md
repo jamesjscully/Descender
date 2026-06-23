@@ -102,7 +102,13 @@ uses the selected account-STARK creation fixture and the checked-core direct
 spend verifier together, binding the accepted creation proof-boundary evidence,
 accepted direct spend tuple, direct theorem boundary digest, QROM/action
 digest, lifecycle digest, proof-boundary digest, exact admission namespace, and
-consume-once before/after transition for one accepted slot. The
+consume-once before/after transition for one accepted slot.
+`formal/kat/path2_direct_accepted_composition_evidence_v1.json` pins the stable
+public composition surface and fail-closed closure flags, while explicitly
+leaving proof-bundle-dependent accepted-path digests as non-frozen current-run
+evidence until the account-STARK proof-byte corpus is frozen; it is
+regenerated/diffed under the account-STARK verifier feature by the full
+local/CI gate. The
 `path2_direct_single_slot_spend_tuple_evidence_pins_accepted_tuple` test is
 accepted-path evidence for the theorem shape, but it is not the composition
 theorem and does not verify the account-creation proof family. The

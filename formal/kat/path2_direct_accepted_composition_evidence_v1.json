@@ -1,0 +1,62 @@
+{
+  "manifest": {
+    "corpus_id": "Descender.Path2.DirectAcceptedCompositionStableSurface.v1",
+    "corpus_version": 1,
+    "current_run_checks": {
+      "accepted_composition_endpoint": "path2_direct_accepted_composition_evidence_v1",
+      "evidence_digest_policy": "current-run sanity check only; not frozen in this manifest while account-STARK proof-bundle bytes are not a stable checked-in KAT",
+      "evidence_digest_recomputed_before_surface_projection": true
+    },
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --features account-creation-stark-verifier --bin path2_direct_accepted_composition_evidence_manifest",
+      "source": "tools/parameter-search/src/bin/path2_direct_accepted_composition_evidence_manifest.rs"
+    },
+    "non_frozen_current_run_fields": [
+      "Path2DirectAcceptedCompositionEvidenceV1.digest",
+      "Path2DirectAcceptedCompositionEvidenceV1.direct_accepted_spend_tuple_evidence_digest",
+      "Path2DirectAcceptedCompositionEvidenceV1.account_creation_accepted_proof_boundary_evidence_digest",
+      "Path2DirectAcceptedCompositionEvidenceV1.prevalidated_slot_leaf_digest",
+      "Path2DirectAcceptedCompositionEvidenceV1.account_creation_evidence_transcript_digest",
+      "Path2DirectAcceptedCompositionEvidenceV1.selected_account_creation_payload_digest",
+      "Path2DirectAcceptedCompositionEvidenceV1.slot_authorization_digest",
+      "Path2DirectAcceptedCompositionEvidenceV1.direct_admission_namespace_record_digest",
+      "Path2DirectAcceptedCompositionEvidenceV1.consume_once_state_before_digest",
+      "Path2DirectAcceptedCompositionEvidenceV1.consume_once_state_after_digest"
+    ],
+    "non_frozen_policy": "These fields are accepted-path current-run evidence while the account-STARK proof bundle is not a frozen deterministic byte corpus; this manifest pins only the stable public composition surface and fail-closed closure flags.",
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "schema": "Descender.Path2.DirectAcceptedCompositionStableSurfaceManifest.v1",
+    "stable_surface": {
+      "account_creation_fixture_id": "Path2AccountStarkPayloadKatFixture.v1",
+      "account_creation_proof_boundary_report_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
+      "account_creation_proof_boundary_verified": false,
+      "account_id": "e7e9c407d51a153ae517b874c3da8d828943c0eb4ccc8800423bf164fc4d4baf",
+      "account_state_root_before": "d15959f0cfd036bbe2fced0c9cdc1b7d00476db3a17e4083b37913b878344fa6",
+      "composition_theorem_instantiated": false,
+      "consume_once_transition_matches_tuple": true,
+      "creation_evidence_matches_direct_tuple": true,
+      "deployment_ready": false,
+      "direct_admission_namespace_matches_authorization": true,
+      "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
+      "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
+      "direct_spend_tuple_accepts": true,
+      "direct_theorem_boundary_report_digest": "fb5fc5d0eaa3e2afa3b39b0400aa112b09d97ae99b858026ecdc425efa07ba7a",
+      "direct_theorem_obligations_still_open": true,
+      "evidence_schema": "Descender.Path2.DirectAcceptedCompositionEvidence.v1",
+      "lifecycle_digest_matches_direct_theorem": true,
+      "message_digest": "ddbdd953151ae02b16ecb7eb2bc50c6b34555e20e52c158b50b01402bb5c3481",
+      "proof_boundary_digest_matches_direct_theorem": true,
+      "proof_family_obligations_still_open": true,
+      "proof_mask_seed": 4919429716798816596,
+      "public_key_identity": "58f218aeb259309eeb545345a8f5c715987967b0ec724806d448394da578d0b0",
+      "public_result_accepts_same_slot": true,
+      "qrom_action_digest_matches_direct_theorem": true,
+      "slot_id": 0,
+      "theorem_conclusion": "accepted_direct_mode_spend_implies_prior_admission_checked_core_acceptance_consume_once_or_named_break",
+      "theorem_target": "direct_mode_selected_tuple_authorization_theorem_v1",
+      "verifier_boundary_accepts_creation": true
+    },
+    "status": "stable_public_surface_pinned_accepted_direct_composition_evidence"
+  },
+  "manifest_digest": "e2932ecf63b662f3b5b04dadeb26a4f2a5236bd8987d0b005f25a37f69843cb2"
+}
