@@ -1,0 +1,67 @@
+{
+  "manifest": {
+    "authority_snapshot": {
+      "blocker": "account-STARK residual matrix: FRI soundness margin, recursion, Poseidon2 transcript, and multi-target/QROM pricing are not closed",
+      "fri_qrom_residual_report_domain": "Descender.Path2.AccountStarkFriQromResidualReport.v1",
+      "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
+      "selected_proof_family": "Plonky3/q12289 account-creation STARK"
+    },
+    "checked_core_qrom_budget": {
+      "algebraic_challenge_bits": 182,
+      "classical_hash_query_bound_log2": 33,
+      "hardening_bits": 64,
+      "max_target_count_log2_at_128_bits": 54,
+      "quantum_hash_query_bound_log2": 16,
+      "scope_note": "checked-core spend transcript ledger; not a substitute for the open account-STARK FRI transcript QROM theorem",
+      "selected_multi_target_horizon_log2": 32,
+      "selected_transcript_term_bits": 182,
+      "source_artifacts": [
+        "research/cryptanalysis/signature_readiness_20260516/qrom_challenge_budget_memo_n32_q12289.json",
+        "research/cryptanalysis/signature_readiness_20260516/qrom_security_loss_review_n32_q12289.json",
+        "research/cryptanalysis/signature_readiness_20260516/pre_third_party_qrom_frame_probe_n32_q12289.json",
+        "research/cryptanalysis/signature_readiness_20260516/qrom_multitarget_margin_n32_q12289.json"
+      ],
+      "total_transcript_bits": 246
+    },
+    "corpus_id": "Descender.Path2.AccountStarkFriQromResidual.v1",
+    "corpus_version": 1,
+    "digests": {
+      "account_stark_fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
+      "account_stark_fri_qrom_residual_report_recomputed_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32"
+    },
+    "fri_schedule": {
+      "challenge_extension_degree": 8,
+      "challenge_field_bits_floor": 247,
+      "commit_pow_bits": 0,
+      "config_source": "tools/descender-account-stark/src/config.rs",
+      "conservative_johnson_bits": 128,
+      "log_blowup": 4,
+      "num_queries": 56,
+      "optimistic_capacity_bits": 240,
+      "poseidon2_sponge_floor_bits": 124,
+      "poseidon2_width": 16,
+      "proof_system": "Plonky3 HidingFriPcs over KoalaBear with Poseidon2-Merkle and DuplexChallenger",
+      "query_pow_bits": 16
+    },
+    "frozen_status": "draft_residual_pricing_manifest",
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_stark_fri_qrom_residual_manifest",
+      "source": "tools/parameter-search/src/bin/path2_account_stark_fri_qrom_residual_manifest.rs"
+    },
+    "open_obligations": {
+      "account_stark_transcript_qrom_theorem_instantiated": false,
+      "challenge_field_pinned": true,
+      "checked_core_qrom_budget_pinned": true,
+      "deployment_profile_accepted": false,
+      "deployment_ready": false,
+      "external_fri_review_complete": false,
+      "external_qrom_review_complete": false,
+      "fri_schedule_pinned": true,
+      "recursion_pricing_complete": false,
+      "residual_pricing_complete": false
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "schema": "Descender.Path2.AccountStarkFriQromResidualManifest.v1"
+  },
+  "manifest_digest": "006d36d2aa2b0d73b659861617197be17744776a94caf73bb60c4eaafa463a20"
+}

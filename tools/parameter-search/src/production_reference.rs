@@ -303,6 +303,8 @@ pub const PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.DirectTheoremBoundaryReport.v1";
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountCreationProofBoundaryReport.v1";
+pub const PATH2_ACCOUNT_STARK_FRI_QROM_RESIDUAL_REPORT_DOMAIN: &str =
+    "Descender.Path2.AccountStarkFriQromResidualReport.v1";
 pub const PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountStarkResidualMatrixReport.v1";
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_REPORT_DOMAIN: &str =
@@ -9272,6 +9274,7 @@ pub struct Path2AccountStarkResidualMatrixReportV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub domain: &'static str,
     pub payload_kat_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub fri_qrom_residual_report_digest: [u8; DIGEST_BYTES],
     pub selected_proof_family: &'static str,
     pub selected_payload_type: &'static str,
     pub rows: &'static [Path2AccountStarkResidualMatrixRowV1],
@@ -9281,6 +9284,46 @@ pub struct Path2AccountStarkResidualMatrixReportV1 {
     pub production_gate_fail_closed: bool,
     pub legacy_routes_non_authoritative: bool,
     pub deployment_ready: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AccountStarkFriQromResidualReportV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub domain: &'static str,
+    pub selected_proof_family: &'static str,
+    pub selected_payload_type: &'static str,
+    pub account_stark_config_source: &'static str,
+    pub proof_system: &'static str,
+    pub poseidon2_width: usize,
+    pub fri_log_blowup: usize,
+    pub fri_num_queries: usize,
+    pub fri_query_pow_bits: usize,
+    pub fri_commit_pow_bits: usize,
+    pub fri_conservative_johnson_bits: usize,
+    pub fri_optimistic_capacity_bits: usize,
+    pub challenge_extension_degree: usize,
+    pub challenge_field_bits_floor: usize,
+    pub poseidon2_sponge_floor_bits: usize,
+    pub checked_core_qrom_artifacts: &'static [&'static str],
+    pub checked_core_qrom_algebraic_challenge_bits: usize,
+    pub checked_core_qrom_hardening_bits: usize,
+    pub checked_core_qrom_total_transcript_bits: usize,
+    pub checked_core_qrom_quantum_hash_query_bound_log2: usize,
+    pub checked_core_qrom_classical_hash_query_bound_log2: usize,
+    pub checked_core_qrom_selected_multi_target_horizon_log2: usize,
+    pub checked_core_qrom_selected_transcript_term_bits: usize,
+    pub checked_core_qrom_max_target_count_log2_at_128_bits: usize,
+    pub fri_schedule_pinned: bool,
+    pub challenge_field_pinned: bool,
+    pub checked_core_qrom_budget_pinned: bool,
+    pub account_stark_transcript_qrom_theorem_instantiated: bool,
+    pub recursion_pricing_complete: bool,
+    pub external_fri_review_complete: bool,
+    pub external_qrom_review_complete: bool,
+    pub deployment_profile_accepted: bool,
+    pub residual_pricing_complete: bool,
+    pub deployment_ready: bool,
+    pub blocker: &'static str,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -9847,6 +9890,38 @@ pub const PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH: &str = "reject_binding_mi
 pub const PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE: &str = "reject_creation_evidence";
 pub const PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED: &str = "internal_error_fail_closed";
 
+pub const PATH2_ACCOUNT_STARK_CONFIG_SOURCE: &str = "tools/descender-account-stark/src/config.rs";
+pub const PATH2_ACCOUNT_STARK_PROOF_SYSTEM: &str =
+    "Plonky3 HidingFriPcs over KoalaBear with Poseidon2-Merkle and DuplexChallenger";
+pub const PATH2_ACCOUNT_STARK_POSEIDON2_WIDTH: usize = 16;
+pub const PATH2_ACCOUNT_STARK_FRI_LOG_BLOWUP: usize = 4;
+pub const PATH2_ACCOUNT_STARK_FRI_NUM_QUERIES: usize = 56;
+pub const PATH2_ACCOUNT_STARK_FRI_QUERY_POW_BITS: usize = 16;
+pub const PATH2_ACCOUNT_STARK_FRI_COMMIT_POW_BITS: usize = 0;
+pub const PATH2_ACCOUNT_STARK_FRI_CONSERVATIVE_JOHNSON_BITS: usize =
+    PATH2_ACCOUNT_STARK_FRI_NUM_QUERIES * (PATH2_ACCOUNT_STARK_FRI_LOG_BLOWUP / 2)
+        + PATH2_ACCOUNT_STARK_FRI_QUERY_POW_BITS;
+pub const PATH2_ACCOUNT_STARK_FRI_OPTIMISTIC_CAPACITY_BITS: usize =
+    PATH2_ACCOUNT_STARK_FRI_NUM_QUERIES * PATH2_ACCOUNT_STARK_FRI_LOG_BLOWUP
+        + PATH2_ACCOUNT_STARK_FRI_QUERY_POW_BITS;
+pub const PATH2_ACCOUNT_STARK_CHALLENGE_EXTENSION_DEGREE: usize = 8;
+pub const PATH2_ACCOUNT_STARK_CHALLENGE_FIELD_BITS_FLOOR: usize = 247;
+pub const PATH2_ACCOUNT_STARK_POSEIDON2_SPONGE_FLOOR_BITS: usize = 124;
+pub const PATH2_CHECKED_CORE_QROM_ALGEBRAIC_CHALLENGE_BITS: usize = 182;
+pub const PATH2_CHECKED_CORE_QROM_HARDENING_BITS: usize = 64;
+pub const PATH2_CHECKED_CORE_QROM_TOTAL_TRANSCRIPT_BITS: usize = 246;
+pub const PATH2_CHECKED_CORE_QROM_QUANTUM_HASH_QUERY_BOUND_LOG2: usize = 16;
+pub const PATH2_CHECKED_CORE_QROM_CLASSICAL_HASH_QUERY_BOUND_LOG2: usize = 33;
+pub const PATH2_CHECKED_CORE_QROM_SELECTED_MULTI_TARGET_HORIZON_LOG2: usize = 32;
+pub const PATH2_CHECKED_CORE_QROM_SELECTED_TRANSCRIPT_TERM_BITS: usize = 182;
+pub const PATH2_CHECKED_CORE_QROM_MAX_TARGET_COUNT_LOG2_AT_128_BITS: usize = 54;
+pub const PATH2_CHECKED_CORE_QROM_ARTIFACTS: [&str; 4] = [
+    "research/cryptanalysis/signature_readiness_20260516/qrom_challenge_budget_memo_n32_q12289.json",
+    "research/cryptanalysis/signature_readiness_20260516/qrom_security_loss_review_n32_q12289.json",
+    "research/cryptanalysis/signature_readiness_20260516/pre_third_party_qrom_frame_probe_n32_q12289.json",
+    "research/cryptanalysis/signature_readiness_20260516/qrom_multitarget_margin_n32_q12289.json",
+];
+
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
     [Path2AccountStarkPayloadKatBoundaryRowV1; 13] = [
     Path2AccountStarkPayloadKatBoundaryRowV1 {
@@ -10001,9 +10076,9 @@ pub const PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS: [Path2AccountStarkResidualMa
     Path2AccountStarkResidualMatrixRowV1 {
         residual_item: "FRI soundness margin and recursion ledger",
         current_evidence:
-            "PROD_SOUNDNESS_BITS=128 is a conservative-Johnson label over the active field/challenge configuration",
+            "Path2AccountStarkFriQromResidualReportV1 pins the active FRI schedule, degree-8 challenge field, Poseidon2 sponge floor, and checked-core QROM target cap; account-STARK transcript theorem, recursion pricing, and review remain open",
         required_closure:
-            "residual-assumption ledger prices FRI queries, field size, Poseidon2 transcript, recursion, and multi-target/QROM terms",
+            "residual-assumption ledger prices FRI queries, field size, account-STARK Poseidon2 transcript, recursion if used, and multi-target/QROM terms against the selected deployment profile",
         named_break: "fri_soundness_margin_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_QROM_RESIDUAL,
         open: true,
@@ -10373,14 +10448,99 @@ pub fn validate_path2_account_stark_payload_kat_boundary_report_v1(
     Ok(())
 }
 
+pub fn path2_account_stark_fri_qrom_residual_report_v1()
+-> Path2AccountStarkFriQromResidualReportV1 {
+    let mut report = Path2AccountStarkFriQromResidualReportV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        domain: PATH2_ACCOUNT_STARK_FRI_QROM_RESIDUAL_REPORT_DOMAIN,
+        selected_proof_family: "Plonky3/q12289 account-creation STARK",
+        selected_payload_type: "Path2AccountStarkCreationPayloadV1",
+        account_stark_config_source: PATH2_ACCOUNT_STARK_CONFIG_SOURCE,
+        proof_system: PATH2_ACCOUNT_STARK_PROOF_SYSTEM,
+        poseidon2_width: PATH2_ACCOUNT_STARK_POSEIDON2_WIDTH,
+        fri_log_blowup: PATH2_ACCOUNT_STARK_FRI_LOG_BLOWUP,
+        fri_num_queries: PATH2_ACCOUNT_STARK_FRI_NUM_QUERIES,
+        fri_query_pow_bits: PATH2_ACCOUNT_STARK_FRI_QUERY_POW_BITS,
+        fri_commit_pow_bits: PATH2_ACCOUNT_STARK_FRI_COMMIT_POW_BITS,
+        fri_conservative_johnson_bits: PATH2_ACCOUNT_STARK_FRI_CONSERVATIVE_JOHNSON_BITS,
+        fri_optimistic_capacity_bits: PATH2_ACCOUNT_STARK_FRI_OPTIMISTIC_CAPACITY_BITS,
+        challenge_extension_degree: PATH2_ACCOUNT_STARK_CHALLENGE_EXTENSION_DEGREE,
+        challenge_field_bits_floor: PATH2_ACCOUNT_STARK_CHALLENGE_FIELD_BITS_FLOOR,
+        poseidon2_sponge_floor_bits: PATH2_ACCOUNT_STARK_POSEIDON2_SPONGE_FLOOR_BITS,
+        checked_core_qrom_artifacts: &PATH2_CHECKED_CORE_QROM_ARTIFACTS,
+        checked_core_qrom_algebraic_challenge_bits:
+            PATH2_CHECKED_CORE_QROM_ALGEBRAIC_CHALLENGE_BITS,
+        checked_core_qrom_hardening_bits: PATH2_CHECKED_CORE_QROM_HARDENING_BITS,
+        checked_core_qrom_total_transcript_bits:
+            PATH2_CHECKED_CORE_QROM_TOTAL_TRANSCRIPT_BITS,
+        checked_core_qrom_quantum_hash_query_bound_log2:
+            PATH2_CHECKED_CORE_QROM_QUANTUM_HASH_QUERY_BOUND_LOG2,
+        checked_core_qrom_classical_hash_query_bound_log2:
+            PATH2_CHECKED_CORE_QROM_CLASSICAL_HASH_QUERY_BOUND_LOG2,
+        checked_core_qrom_selected_multi_target_horizon_log2:
+            PATH2_CHECKED_CORE_QROM_SELECTED_MULTI_TARGET_HORIZON_LOG2,
+        checked_core_qrom_selected_transcript_term_bits:
+            PATH2_CHECKED_CORE_QROM_SELECTED_TRANSCRIPT_TERM_BITS,
+        checked_core_qrom_max_target_count_log2_at_128_bits:
+            PATH2_CHECKED_CORE_QROM_MAX_TARGET_COUNT_LOG2_AT_128_BITS,
+        fri_schedule_pinned: true,
+        challenge_field_pinned: true,
+        checked_core_qrom_budget_pinned: true,
+        account_stark_transcript_qrom_theorem_instantiated: false,
+        recursion_pricing_complete: false,
+        external_fri_review_complete: false,
+        external_qrom_review_complete: false,
+        deployment_profile_accepted: false,
+        residual_pricing_complete: false,
+        deployment_ready: false,
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_QROM_RESIDUAL,
+    };
+    report.digest = path2_account_stark_fri_qrom_residual_report_v1_digest(&report);
+    report
+}
+
+pub fn path2_account_stark_fri_qrom_residual_report_v1_digest(
+    report: &Path2AccountStarkFriQromResidualReportV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_account_stark_fri_qrom_residual_report_v1_frame(report)).into()
+}
+
+pub fn validate_path2_account_stark_fri_qrom_residual_report_v1(
+    report: &Path2AccountStarkFriQromResidualReportV1,
+) -> Result<(), String> {
+    let expected = path2_account_stark_fri_qrom_residual_report_v1();
+    if expected != *report {
+        return Err("Path 2 account-STARK FRI/QROM residual report mismatch".to_string());
+    }
+    if path2_account_stark_fri_qrom_residual_report_v1_digest(report) != report.digest {
+        return Err("Path 2 account-STARK FRI/QROM residual report digest mismatch".to_string());
+    }
+    if report.residual_pricing_complete
+        || report.deployment_ready
+        || report.account_stark_transcript_qrom_theorem_instantiated
+        || report.recursion_pricing_complete
+        || report.external_fri_review_complete
+        || report.external_qrom_review_complete
+        || report.deployment_profile_accepted
+    {
+        return Err(
+            "Path 2 account-STARK FRI/QROM residual report unexpectedly closes open obligations"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
 pub fn path2_account_stark_residual_matrix_report_v1()
 -> Path2AccountStarkResidualMatrixReportV1 {
     let rows = &PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS;
     let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
+    let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
     let mut report = Path2AccountStarkResidualMatrixReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN,
         payload_kat_boundary_report_digest: payload_kat_boundary_report.digest,
+        fri_qrom_residual_report_digest: fri_qrom_residual_report.digest,
         selected_proof_family: "Plonky3/q12289 account-creation STARK",
         selected_payload_type: "Path2AccountStarkCreationPayloadV1",
         rows,
@@ -63074,6 +63234,11 @@ fn path2_account_stark_residual_matrix_report_v1_frame(
     );
     append_frame(
         &mut frame,
+        b"fri_qrom_residual_report_digest",
+        &report.fri_qrom_residual_report_digest,
+    );
+    append_frame(
+        &mut frame,
         b"selected_proof_family",
         report.selected_proof_family.as_bytes(),
     );
@@ -63125,6 +63290,168 @@ fn path2_account_stark_residual_matrix_report_v1_frame(
         b"deployment_ready",
         u64::from(report.deployment_ready),
     );
+    frame
+}
+
+fn path2_account_stark_fri_qrom_residual_report_v1_frame(
+    report: &Path2AccountStarkFriQromResidualReportV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"domain", report.domain.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_frame(
+        &mut frame,
+        b"selected_proof_family",
+        report.selected_proof_family.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"selected_payload_type",
+        report.selected_payload_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"account_stark_config_source",
+        report.account_stark_config_source.as_bytes(),
+    );
+    append_frame(&mut frame, b"proof_system", report.proof_system.as_bytes());
+    append_u64(&mut frame, b"poseidon2_width", report.poseidon2_width as u64);
+    append_u64(&mut frame, b"fri_log_blowup", report.fri_log_blowup as u64);
+    append_u64(&mut frame, b"fri_num_queries", report.fri_num_queries as u64);
+    append_u64(
+        &mut frame,
+        b"fri_query_pow_bits",
+        report.fri_query_pow_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"fri_commit_pow_bits",
+        report.fri_commit_pow_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"fri_conservative_johnson_bits",
+        report.fri_conservative_johnson_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"fri_optimistic_capacity_bits",
+        report.fri_optimistic_capacity_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"challenge_extension_degree",
+        report.challenge_extension_degree as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"challenge_field_bits_floor",
+        report.challenge_field_bits_floor as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"poseidon2_sponge_floor_bits",
+        report.poseidon2_sponge_floor_bits as u64,
+    );
+    for (index, artifact) in report.checked_core_qrom_artifacts.iter().enumerate() {
+        append_u64(&mut frame, b"checked_core_qrom_artifact_index", index as u64);
+        append_frame(
+            &mut frame,
+            b"checked_core_qrom_artifact",
+            artifact.as_bytes(),
+        );
+    }
+    append_u64(
+        &mut frame,
+        b"checked_core_qrom_algebraic_challenge_bits",
+        report.checked_core_qrom_algebraic_challenge_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_qrom_hardening_bits",
+        report.checked_core_qrom_hardening_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_qrom_total_transcript_bits",
+        report.checked_core_qrom_total_transcript_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_qrom_quantum_hash_query_bound_log2",
+        report.checked_core_qrom_quantum_hash_query_bound_log2 as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_qrom_classical_hash_query_bound_log2",
+        report.checked_core_qrom_classical_hash_query_bound_log2 as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_qrom_selected_multi_target_horizon_log2",
+        report.checked_core_qrom_selected_multi_target_horizon_log2 as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_qrom_selected_transcript_term_bits",
+        report.checked_core_qrom_selected_transcript_term_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_qrom_max_target_count_log2_at_128_bits",
+        report.checked_core_qrom_max_target_count_log2_at_128_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"fri_schedule_pinned",
+        u64::from(report.fri_schedule_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"challenge_field_pinned",
+        u64::from(report.challenge_field_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_qrom_budget_pinned",
+        u64::from(report.checked_core_qrom_budget_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"account_stark_transcript_qrom_theorem_instantiated",
+        u64::from(report.account_stark_transcript_qrom_theorem_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"recursion_pricing_complete",
+        u64::from(report.recursion_pricing_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"external_fri_review_complete",
+        u64::from(report.external_fri_review_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"external_qrom_review_complete",
+        u64::from(report.external_qrom_review_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_profile_accepted",
+        u64::from(report.deployment_profile_accepted),
+    );
+    append_u64(
+        &mut frame,
+        b"residual_pricing_complete",
+        u64::from(report.residual_pricing_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_ready",
+        u64::from(report.deployment_ready),
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
     frame
 }
 
@@ -103503,14 +103830,88 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     }
 
     #[test]
+    fn path2_account_stark_fri_qrom_residual_report_pins_open_pricing_boundary() {
+        let report = path2_account_stark_fri_qrom_residual_report_v1();
+        assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(
+            report.domain,
+            PATH2_ACCOUNT_STARK_FRI_QROM_RESIDUAL_REPORT_DOMAIN
+        );
+        assert_eq!(
+            report.selected_proof_family,
+            "Plonky3/q12289 account-creation STARK"
+        );
+        assert_eq!(report.selected_payload_type, "Path2AccountStarkCreationPayloadV1");
+        assert_eq!(report.account_stark_config_source, PATH2_ACCOUNT_STARK_CONFIG_SOURCE);
+        assert_eq!(report.proof_system, PATH2_ACCOUNT_STARK_PROOF_SYSTEM);
+        assert_eq!(report.poseidon2_width, 16);
+        assert_eq!(report.fri_log_blowup, 4);
+        assert_eq!(report.fri_num_queries, 56);
+        assert_eq!(report.fri_query_pow_bits, 16);
+        assert_eq!(report.fri_commit_pow_bits, 0);
+        assert_eq!(report.fri_conservative_johnson_bits, 128);
+        assert_eq!(report.fri_optimistic_capacity_bits, 240);
+        assert_eq!(report.challenge_extension_degree, 8);
+        assert_eq!(report.challenge_field_bits_floor, 247);
+        assert_eq!(report.poseidon2_sponge_floor_bits, 124);
+        assert_eq!(report.checked_core_qrom_artifacts, PATH2_CHECKED_CORE_QROM_ARTIFACTS.as_ref());
+        assert_eq!(report.checked_core_qrom_algebraic_challenge_bits, 182);
+        assert_eq!(report.checked_core_qrom_hardening_bits, 64);
+        assert_eq!(report.checked_core_qrom_total_transcript_bits, 246);
+        assert_eq!(report.checked_core_qrom_quantum_hash_query_bound_log2, 16);
+        assert_eq!(report.checked_core_qrom_classical_hash_query_bound_log2, 33);
+        assert_eq!(
+            report.checked_core_qrom_selected_multi_target_horizon_log2,
+            32
+        );
+        assert_eq!(report.checked_core_qrom_selected_transcript_term_bits, 182);
+        assert_eq!(
+            report.checked_core_qrom_max_target_count_log2_at_128_bits,
+            54
+        );
+        assert!(report.fri_schedule_pinned);
+        assert!(report.challenge_field_pinned);
+        assert!(report.checked_core_qrom_budget_pinned);
+        assert!(!report.account_stark_transcript_qrom_theorem_instantiated);
+        assert!(!report.recursion_pricing_complete);
+        assert!(!report.external_fri_review_complete);
+        assert!(!report.external_qrom_review_complete);
+        assert!(!report.deployment_profile_accepted);
+        assert!(!report.residual_pricing_complete);
+        assert!(!report.deployment_ready);
+        assert_eq!(
+            report.blocker,
+            PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_QROM_RESIDUAL
+        );
+        assert_eq!(
+            path2_account_stark_fri_qrom_residual_report_v1_digest(&report),
+            report.digest
+        );
+        validate_path2_account_stark_fri_qrom_residual_report_v1(&report).unwrap();
+
+        let mut malformed = report.clone();
+        malformed.residual_pricing_complete = true;
+        malformed.digest = path2_account_stark_fri_qrom_residual_report_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_account_stark_fri_qrom_residual_report_v1(&malformed).unwrap_err(),
+            "Path 2 account-STARK FRI/QROM residual report mismatch"
+        );
+    }
+
+    #[test]
     fn path2_account_stark_residual_matrix_report_pins_open_rows() {
         let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
+        let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
         let report = path2_account_stark_residual_matrix_report_v1();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
         assert_eq!(report.domain, PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN);
         assert_eq!(
             report.payload_kat_boundary_report_digest,
             payload_kat_boundary_report.digest
+        );
+        assert_eq!(
+            report.fri_qrom_residual_report_digest,
+            fri_qrom_residual_report.digest
         );
         assert_eq!(
             report.selected_proof_family,

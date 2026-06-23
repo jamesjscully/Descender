@@ -1,12 +1,14 @@
 use descender_parameter_search::production_reference::{
-    path2_account_creation_proof_boundary_report_v1,
+    PROFILE, path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_proof_boundary_report_v1_digest,
+    path2_account_stark_fri_qrom_residual_report_v1,
+    path2_account_stark_fri_qrom_residual_report_v1_digest,
     path2_account_stark_payload_kat_boundary_report_v1,
     path2_account_stark_payload_kat_boundary_report_v1_digest,
     path2_account_stark_residual_matrix_report_v1,
-    path2_account_stark_residual_matrix_report_v1_digest, PROFILE,
+    path2_account_stark_residual_matrix_report_v1_digest,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
 fn hex_encode(bytes: &[u8]) -> String {
@@ -22,6 +24,7 @@ fn hex_encode(bytes: &[u8]) -> String {
 fn manifest_body() -> Result<Value, String> {
     let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
     let residual_matrix_report = path2_account_stark_residual_matrix_report_v1();
+    let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
     let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
 
     let recomputed_proof_boundary_digest =
@@ -34,6 +37,11 @@ fn manifest_body() -> Result<Value, String> {
     if recomputed_residual_matrix_digest != residual_matrix_report.digest {
         return Err("account-STARK residual matrix report digest mismatch".to_string());
     }
+    let recomputed_fri_qrom_residual_digest =
+        path2_account_stark_fri_qrom_residual_report_v1_digest(&fri_qrom_residual_report);
+    if recomputed_fri_qrom_residual_digest != fri_qrom_residual_report.digest {
+        return Err("account-STARK FRI/QROM residual report digest mismatch".to_string());
+    }
     let recomputed_payload_kat_boundary_digest =
         path2_account_stark_payload_kat_boundary_report_v1_digest(&payload_kat_boundary_report);
     if recomputed_payload_kat_boundary_digest != payload_kat_boundary_report.digest {
@@ -44,6 +52,12 @@ fn manifest_body() -> Result<Value, String> {
     {
         return Err(
             "proof boundary report is not bound to the current account-STARK residual matrix"
+                .to_string(),
+        );
+    }
+    if residual_matrix_report.fri_qrom_residual_report_digest != fri_qrom_residual_report.digest {
+        return Err(
+            "residual matrix report is not bound to the current FRI/QROM residual report"
                 .to_string(),
         );
     }
@@ -68,6 +82,7 @@ fn manifest_body() -> Result<Value, String> {
         "authority_snapshot": {
             "proof_boundary_report_domain": proof_boundary_report.domain,
             "residual_matrix_report_domain": residual_matrix_report.domain,
+            "fri_qrom_residual_report_domain": fri_qrom_residual_report.domain,
             "payload_kat_boundary_report_domain": payload_kat_boundary_report.domain,
             "selected_proof_family": residual_matrix_report.selected_proof_family,
             "selected_payload_type": proof_boundary_report.selected_payload_type,
@@ -89,6 +104,12 @@ fn manifest_body() -> Result<Value, String> {
             ),
             "account_stark_residual_matrix_report_recomputed_digest": hex_encode(
                 &recomputed_residual_matrix_digest
+            ),
+            "account_stark_fri_qrom_residual_report_digest": hex_encode(
+                &fri_qrom_residual_report.digest
+            ),
+            "account_stark_fri_qrom_residual_report_recomputed_digest": hex_encode(
+                &recomputed_fri_qrom_residual_digest
             ),
             "payload_kat_boundary_report_digest": hex_encode(
                 &payload_kat_boundary_report.digest
@@ -152,6 +173,9 @@ fn manifest_body() -> Result<Value, String> {
         "selected_account_stark_residual_matrix": {
             "coverage": {
                 "blocker_count": residual_matrix_report.blocker_count,
+                "fri_qrom_residual_report_digest": hex_encode(
+                    &residual_matrix_report.fri_qrom_residual_report_digest
+                ),
                 "every_row_has_named_break":
                     residual_matrix_report.every_row_has_named_break,
                 "every_row_has_blocker": residual_matrix_report.every_row_has_blocker,
@@ -162,6 +186,74 @@ fn manifest_body() -> Result<Value, String> {
                 "deployment_ready": residual_matrix_report.deployment_ready
             },
             "rows": residual_matrix_report.rows
+        },
+        "fri_qrom_residual_snapshot": {
+            "coverage": {
+                "fri_schedule_pinned": fri_qrom_residual_report.fri_schedule_pinned,
+                "challenge_field_pinned": fri_qrom_residual_report.challenge_field_pinned,
+                "checked_core_qrom_budget_pinned":
+                    fri_qrom_residual_report.checked_core_qrom_budget_pinned,
+                "account_stark_transcript_qrom_theorem_instantiated":
+                    fri_qrom_residual_report
+                        .account_stark_transcript_qrom_theorem_instantiated,
+                "recursion_pricing_complete":
+                    fri_qrom_residual_report.recursion_pricing_complete,
+                "external_fri_review_complete":
+                    fri_qrom_residual_report.external_fri_review_complete,
+                "external_qrom_review_complete":
+                    fri_qrom_residual_report.external_qrom_review_complete,
+                "deployment_profile_accepted":
+                    fri_qrom_residual_report.deployment_profile_accepted,
+                "residual_pricing_complete":
+                    fri_qrom_residual_report.residual_pricing_complete,
+                "deployment_ready": fri_qrom_residual_report.deployment_ready,
+                "blocker": fri_qrom_residual_report.blocker
+            },
+            "fri_schedule": {
+                "config_source": fri_qrom_residual_report.account_stark_config_source,
+                "proof_system": fri_qrom_residual_report.proof_system,
+                "poseidon2_width": fri_qrom_residual_report.poseidon2_width,
+                "log_blowup": fri_qrom_residual_report.fri_log_blowup,
+                "num_queries": fri_qrom_residual_report.fri_num_queries,
+                "query_pow_bits": fri_qrom_residual_report.fri_query_pow_bits,
+                "commit_pow_bits": fri_qrom_residual_report.fri_commit_pow_bits,
+                "conservative_johnson_bits":
+                    fri_qrom_residual_report.fri_conservative_johnson_bits,
+                "optimistic_capacity_bits":
+                    fri_qrom_residual_report.fri_optimistic_capacity_bits,
+                "challenge_extension_degree":
+                    fri_qrom_residual_report.challenge_extension_degree,
+                "challenge_field_bits_floor":
+                    fri_qrom_residual_report.challenge_field_bits_floor,
+                "poseidon2_sponge_floor_bits":
+                    fri_qrom_residual_report.poseidon2_sponge_floor_bits
+            },
+            "checked_core_qrom_budget": {
+                "source_artifacts": fri_qrom_residual_report.checked_core_qrom_artifacts,
+                "algebraic_challenge_bits":
+                    fri_qrom_residual_report.checked_core_qrom_algebraic_challenge_bits,
+                "hardening_bits":
+                    fri_qrom_residual_report.checked_core_qrom_hardening_bits,
+                "total_transcript_bits":
+                    fri_qrom_residual_report.checked_core_qrom_total_transcript_bits,
+                "quantum_hash_query_bound_log2":
+                    fri_qrom_residual_report
+                        .checked_core_qrom_quantum_hash_query_bound_log2,
+                "classical_hash_query_bound_log2":
+                    fri_qrom_residual_report
+                        .checked_core_qrom_classical_hash_query_bound_log2,
+                "selected_multi_target_horizon_log2":
+                    fri_qrom_residual_report
+                        .checked_core_qrom_selected_multi_target_horizon_log2,
+                "selected_transcript_term_bits":
+                    fri_qrom_residual_report
+                        .checked_core_qrom_selected_transcript_term_bits,
+                "max_target_count_log2_at_128_bits":
+                    fri_qrom_residual_report
+                        .checked_core_qrom_max_target_count_log2_at_128_bits,
+                "scope_note":
+                    "checked-core spend transcript ledger; not a substitute for the open account-STARK FRI transcript QROM theorem"
+            }
         },
         "payload_kat_boundary_snapshot": {
             "coverage": {

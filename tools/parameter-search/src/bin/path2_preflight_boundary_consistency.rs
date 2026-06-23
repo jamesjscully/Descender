@@ -1,6 +1,8 @@
 use descender_parameter_search::production_reference::{
     path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_proof_boundary_report_v1_digest,
+    path2_account_stark_fri_qrom_residual_report_v1,
+    path2_account_stark_fri_qrom_residual_report_v1_digest,
     path2_account_stark_residual_matrix_report_v1,
     path2_account_stark_residual_matrix_report_v1_digest, path2_direct_theorem_boundary_report_v1,
     path2_direct_theorem_boundary_report_v1_digest,
@@ -9,6 +11,7 @@ use descender_parameter_search::production_reference::{
     production_deployment_direct_theorem_blockers, production_deployment_preflight,
     production_deployment_preflight_report, production_deployment_preflight_report_digest,
     validate_path2_account_creation_proof_boundary_report_v1,
+    validate_path2_account_stark_fri_qrom_residual_report_v1,
     validate_path2_account_stark_residual_matrix_report_v1,
     validate_path2_direct_theorem_boundary_report_v1,
     validate_production_deployment_preflight_report,
@@ -48,9 +51,11 @@ fn require_subsequence_after(
 fn main() -> Result<(), String> {
     let direct_report = path2_direct_theorem_boundary_report_v1();
     let proof_report = path2_account_creation_proof_boundary_report_v1();
+    let fri_qrom_report = path2_account_stark_fri_qrom_residual_report_v1();
     let residual_report = path2_account_stark_residual_matrix_report_v1();
     validate_path2_direct_theorem_boundary_report_v1(&direct_report)?;
     validate_path2_account_creation_proof_boundary_report_v1(&proof_report)?;
+    validate_path2_account_stark_fri_qrom_residual_report_v1(&fri_qrom_report)?;
     validate_path2_account_stark_residual_matrix_report_v1(&residual_report)?;
     if path2_direct_theorem_boundary_report_v1_digest(&direct_report) != direct_report.digest {
         return Err("direct theorem boundary digest mismatch".to_string());
@@ -58,6 +63,11 @@ fn main() -> Result<(), String> {
     if path2_account_creation_proof_boundary_report_v1_digest(&proof_report) != proof_report.digest
     {
         return Err("account-creation proof boundary digest mismatch".to_string());
+    }
+    if path2_account_stark_fri_qrom_residual_report_v1_digest(&fri_qrom_report)
+        != fri_qrom_report.digest
+    {
+        return Err("account-STARK FRI/QROM residual digest mismatch".to_string());
     }
     if path2_account_stark_residual_matrix_report_v1_digest(&residual_report)
         != residual_report.digest
@@ -69,6 +79,9 @@ fn main() -> Result<(), String> {
     }
     if proof_report.account_stark_residual_matrix_report_digest != residual_report.digest {
         return Err("proof-boundary report is not bound to the residual matrix".to_string());
+    }
+    if residual_report.fri_qrom_residual_report_digest != fri_qrom_report.digest {
+        return Err("residual matrix is not bound to the FRI/QROM residual report".to_string());
     }
 
     let preflight = production_deployment_preflight();
@@ -102,6 +115,18 @@ fn main() -> Result<(), String> {
     {
         return Err(
             "account-creation proof boundary unexpectedly reports closed obligations".to_string(),
+        );
+    }
+    if fri_qrom_report.deployment_ready
+        || fri_qrom_report.residual_pricing_complete
+        || fri_qrom_report.account_stark_transcript_qrom_theorem_instantiated
+        || fri_qrom_report.recursion_pricing_complete
+        || fri_qrom_report.external_fri_review_complete
+        || fri_qrom_report.external_qrom_review_complete
+        || fri_qrom_report.deployment_profile_accepted
+    {
+        return Err(
+            "account-STARK FRI/QROM residual unexpectedly reports closed obligations".to_string(),
         );
     }
     if residual_report.deployment_ready {

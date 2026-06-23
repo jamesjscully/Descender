@@ -106,6 +106,7 @@
       ]
     },
     "authority_snapshot": {
+      "fri_qrom_residual_report_domain": "Descender.Path2.AccountStarkFriQromResidualReport.v1",
       "payload_kat_boundary_blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
       "payload_kat_boundary_report_domain": "Descender.Path2.AccountStarkPayloadKatBoundaryReport.v1",
       "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
@@ -120,12 +121,60 @@
     "corpus_id": "Descender.Path2.AccountCreationProofBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "ea5e125e2154295e2fef614b06583887e1cc9294101594828585ace5ad3ef45e",
-      "account_creation_proof_boundary_report_recomputed_digest": "ea5e125e2154295e2fef614b06583887e1cc9294101594828585ace5ad3ef45e",
-      "account_stark_residual_matrix_report_digest": "ed38b16b3ad3fd2a6e651edd44e35a2f7c0b55314fe227e76f60d44b6074af18",
-      "account_stark_residual_matrix_report_recomputed_digest": "ed38b16b3ad3fd2a6e651edd44e35a2f7c0b55314fe227e76f60d44b6074af18",
+      "account_creation_proof_boundary_report_digest": "56327dabed58d2ffc4cec94e0d38285c5d0c19246a92d226e110398902444452",
+      "account_creation_proof_boundary_report_recomputed_digest": "56327dabed58d2ffc4cec94e0d38285c5d0c19246a92d226e110398902444452",
+      "account_stark_fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
+      "account_stark_fri_qrom_residual_report_recomputed_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
+      "account_stark_residual_matrix_report_digest": "3363164f0ffcf7b106800b4392c1ea6ab76789895bd59b4ca91791e6d960cb30",
+      "account_stark_residual_matrix_report_recomputed_digest": "3363164f0ffcf7b106800b4392c1ea6ab76789895bd59b4ca91791e6d960cb30",
       "payload_kat_boundary_report_digest": "5e16ce49d7eb8f23007c24531167928e24fb012bbe71eac1eeec4de5fe982236",
       "payload_kat_boundary_report_recomputed_digest": "5e16ce49d7eb8f23007c24531167928e24fb012bbe71eac1eeec4de5fe982236"
+    },
+    "fri_qrom_residual_snapshot": {
+      "checked_core_qrom_budget": {
+        "algebraic_challenge_bits": 182,
+        "classical_hash_query_bound_log2": 33,
+        "hardening_bits": 64,
+        "max_target_count_log2_at_128_bits": 54,
+        "quantum_hash_query_bound_log2": 16,
+        "scope_note": "checked-core spend transcript ledger; not a substitute for the open account-STARK FRI transcript QROM theorem",
+        "selected_multi_target_horizon_log2": 32,
+        "selected_transcript_term_bits": 182,
+        "source_artifacts": [
+          "research/cryptanalysis/signature_readiness_20260516/qrom_challenge_budget_memo_n32_q12289.json",
+          "research/cryptanalysis/signature_readiness_20260516/qrom_security_loss_review_n32_q12289.json",
+          "research/cryptanalysis/signature_readiness_20260516/pre_third_party_qrom_frame_probe_n32_q12289.json",
+          "research/cryptanalysis/signature_readiness_20260516/qrom_multitarget_margin_n32_q12289.json"
+        ],
+        "total_transcript_bits": 246
+      },
+      "coverage": {
+        "account_stark_transcript_qrom_theorem_instantiated": false,
+        "blocker": "account-STARK residual matrix: FRI soundness margin, recursion, Poseidon2 transcript, and multi-target/QROM pricing are not closed",
+        "challenge_field_pinned": true,
+        "checked_core_qrom_budget_pinned": true,
+        "deployment_profile_accepted": false,
+        "deployment_ready": false,
+        "external_fri_review_complete": false,
+        "external_qrom_review_complete": false,
+        "fri_schedule_pinned": true,
+        "recursion_pricing_complete": false,
+        "residual_pricing_complete": false
+      },
+      "fri_schedule": {
+        "challenge_extension_degree": 8,
+        "challenge_field_bits_floor": 247,
+        "commit_pow_bits": 0,
+        "config_source": "tools/descender-account-stark/src/config.rs",
+        "conservative_johnson_bits": 128,
+        "log_blowup": 4,
+        "num_queries": 56,
+        "optimistic_capacity_bits": 240,
+        "poseidon2_sponge_floor_bits": 124,
+        "poseidon2_width": 16,
+        "proof_system": "Plonky3 HidingFriPcs over KoalaBear with Poseidon2-Merkle and DuplexChallenger",
+        "query_pow_bits": 16
+      }
     },
     "frozen_status": "draft_proof_boundary_manifest",
     "generator": {
@@ -152,6 +201,7 @@
         "deployment_ready": false,
         "every_row_has_blocker": true,
         "every_row_has_named_break": true,
+        "fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
         "legacy_routes_non_authoritative": true,
         "production_gate_fail_closed": true
       },
@@ -190,10 +240,10 @@
         },
         {
           "blocker": "account-STARK residual matrix: FRI soundness margin, recursion, Poseidon2 transcript, and multi-target/QROM pricing are not closed",
-          "current_evidence": "PROD_SOUNDNESS_BITS=128 is a conservative-Johnson label over the active field/challenge configuration",
+          "current_evidence": "Path2AccountStarkFriQromResidualReportV1 pins the active FRI schedule, degree-8 challenge field, Poseidon2 sponge floor, and checked-core QROM target cap; account-STARK transcript theorem, recursion pricing, and review remain open",
           "named_break": "fri_soundness_margin_break",
           "open": true,
-          "required_closure": "residual-assumption ledger prices FRI queries, field size, Poseidon2 transcript, recursion, and multi-target/QROM terms",
+          "required_closure": "residual-assumption ledger prices FRI queries, field size, account-STARK Poseidon2 transcript, recursion if used, and multi-target/QROM terms against the selected deployment profile",
           "residual_item": "FRI soundness margin and recursion ledger"
         },
         {
@@ -215,5 +265,5 @@
       ]
     }
   },
-  "manifest_digest": "41f9576771fe26454bc64e15662eb4e2c36998d076d577e794738a36ca4e5a42"
+  "manifest_digest": "d3a3bd46cc24c008b86a3b263f5dc80d312d007bd2d31a43ffdc4f2ef335f6c4"
 }

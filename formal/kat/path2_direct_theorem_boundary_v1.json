@@ -118,10 +118,10 @@
     "corpus_id": "Descender.Path2.DirectTheoremBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "ea5e125e2154295e2fef614b06583887e1cc9294101594828585ace5ad3ef45e",
-      "account_creation_proof_boundary_report_recomputed_digest": "ea5e125e2154295e2fef614b06583887e1cc9294101594828585ace5ad3ef45e",
-      "direct_theorem_boundary_report_digest": "1dab0b291a04ab531591adea220036f1addf012b03f888a520c17f8375216e93",
-      "direct_theorem_boundary_report_recomputed_digest": "1dab0b291a04ab531591adea220036f1addf012b03f888a520c17f8375216e93"
+      "account_creation_proof_boundary_report_digest": "56327dabed58d2ffc4cec94e0d38285c5d0c19246a92d226e110398902444452",
+      "account_creation_proof_boundary_report_recomputed_digest": "56327dabed58d2ffc4cec94e0d38285c5d0c19246a92d226e110398902444452",
+      "direct_theorem_boundary_report_digest": "4cbe8d34f7670a7bfc16c4fcd1b7e818dbbcac3c215acdcc088d3d2d4a26e121",
+      "direct_theorem_boundary_report_recomputed_digest": "4cbe8d34f7670a7bfc16c4fcd1b7e818dbbcac3c215acdcc088d3d2d4a26e121"
     },
     "direct_theorem_boundary": {
       "acceptance_hypotheses": [
@@ -282,5 +282,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "370b9379a71b8f5fb01c27d6021c73bd416881e551ac3c21a941bbcf44ee710b"
+  "manifest_digest": "d9cab22b8702e65c0dbfab3694b63a10599eac48491c47f01d40491ed71ab3fa"
 }

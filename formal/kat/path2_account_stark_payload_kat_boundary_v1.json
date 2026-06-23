@@ -23,7 +23,7 @@
     "digests": {
       "payload_kat_boundary_report_digest": "5e16ce49d7eb8f23007c24531167928e24fb012bbe71eac1eeec4de5fe982236",
       "payload_kat_boundary_report_recomputed_digest": "5e16ce49d7eb8f23007c24531167928e24fb012bbe71eac1eeec4de5fe982236",
-      "residual_matrix_report_digest": "ed38b16b3ad3fd2a6e651edd44e35a2f7c0b55314fe227e76f60d44b6074af18"
+      "residual_matrix_report_digest": "3363164f0ffcf7b106800b4392c1ea6ab76789895bd59b4ca91791e6d960cb30"
     },
     "frozen_status": "draft_boundary_manifest",
     "generator": {
@@ -139,5 +139,5 @@
     ],
     "schema": "Descender.Path2.AccountStarkPayloadKatBoundaryManifest.v1"
   },
-  "manifest_digest": "a3287595d9ddce8afa0dde765d14cbfc4c95d5580bdfc4788540e416c6c0ea3c"
+  "manifest_digest": "6b55663833478985af04b2ffe8a1a60acc386d240bae3f8c43385ece8cada911"
 }

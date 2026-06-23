@@ -86,6 +86,10 @@ ACCOUNT_STARK_RESIDUAL_PREFLIGHT_MARKERS = [
     "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_QROM_RESIDUAL",
     "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_PRODUCTION_GATE",
     "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_LEGACY_ROUTE_ADR",
+    "PATH2_ACCOUNT_STARK_FRI_QROM_RESIDUAL_REPORT_DOMAIN",
+    "Path2AccountStarkFriQromResidualReportV1",
+    "path2_account_stark_fri_qrom_residual_report_v1",
+    "validate_path2_account_stark_fri_qrom_residual_report_v1",
     "PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN",
     "Path2AccountStarkResidualMatrixReportV1",
     "Path2AccountStarkResidualMatrixRowV1",
@@ -128,30 +132,80 @@ ACCOUNT_STARK_PAYLOAD_KAT_MANIFEST_MARKERS = {
         "path2_account_stark_payload_kat_boundary_v1.json",
     ],
 }
+ACCOUNT_STARK_FRI_QROM_RESIDUAL_MARKERS = {
+    "tools/parameter-search/src/bin/path2_account_stark_fri_qrom_residual_manifest.rs": [
+        "Descender.Path2.AccountStarkFriQromResidualManifest.v1",
+        "Descender.Path2.AccountStarkFriQromResidual.v1",
+        "path2_account_stark_fri_qrom_residual_report_v1",
+        "account_stark_fri_qrom_residual_report_digest",
+        "checked_core_qrom_budget",
+        "account_stark_transcript_qrom_theorem_instantiated",
+        "residual_pricing_complete",
+    ],
+    "tools/parameter-search/src/bin/path2_account_stark_fri_qrom_residual_consistency.rs": [
+        "path2_account_stark_fri_qrom_residual_report_v1",
+        "validate_path2_account_stark_fri_qrom_residual_report_v1",
+        "PROD_LOG_BLOWUP",
+        "PROD_NUM_QUERIES",
+        "checked_core_qrom_artifacts",
+        "Path 2 account-STARK FRI/QROM residual consistency check passed.",
+    ],
+    "formal/kat/path2_account_stark_fri_qrom_residual_v1.json": [
+        "Descender.Path2.AccountStarkFriQromResidualManifest.v1",
+        "draft_residual_pricing_manifest",
+        "account_stark_fri_qrom_residual_report_digest",
+        "checked-core spend transcript ledger; not a substitute",
+        '"conservative_johnson_bits": 128',
+        '"poseidon2_sponge_floor_bits": 124',
+        '"account_stark_transcript_qrom_theorem_instantiated": false',
+        '"residual_pricing_complete": false',
+        '"deployment_ready": false',
+    ],
+    "scripts/check_build.sh": [
+        "account STARK FRI/QROM residual manifest check",
+        "path2_account_stark_fri_qrom_residual_manifest",
+        "path2_account_stark_fri_qrom_residual_v1.json",
+        "account STARK FRI/QROM residual consistency check",
+        "path2_account_stark_fri_qrom_residual_consistency",
+    ],
+    ".github/workflows/ci.yml": [
+        "Account STARK FRI/QROM residual manifest check",
+        "path2_account_stark_fri_qrom_residual_manifest",
+        "path2_account_stark_fri_qrom_residual_v1.json",
+        "Account STARK FRI/QROM residual consistency check",
+        "path2_account_stark_fri_qrom_residual_consistency",
+    ],
+}
 ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS = {
     "tools/parameter-search/src/bin/path2_account_creation_proof_boundary_manifest.rs": [
         "Descender.Path2.AccountCreationProofBoundaryManifest.v1",
         "Descender.Path2.AccountCreationProofBoundary.v1",
         "path2_account_creation_proof_boundary_report_v1",
+        "path2_account_stark_fri_qrom_residual_report_v1",
         "path2_account_stark_residual_matrix_report_v1",
         "path2_account_stark_payload_kat_boundary_report_v1",
         "account_creation_proof_boundary_report_digest",
+        "account_stark_fri_qrom_residual_report_digest",
         "account_stark_residual_matrix_report_digest",
         "payload_kat_boundary_report_digest",
         "leaf_evidence_binding_fields",
         "selected_account_stark_residual_matrix",
+        "fri_qrom_residual_snapshot",
     ],
     "formal/kat/path2_account_creation_proof_boundary_v1.json": [
         "Descender.Path2.AccountCreationProofBoundaryManifest.v1",
         "Descender.Path2.AccountCreationProofBoundary.v1",
         "draft_proof_boundary_manifest",
         "account_creation_proof_boundary_report_digest",
+        "account_stark_fri_qrom_residual_report_digest",
         "account_stark_residual_matrix_report_digest",
         "payload_kat_boundary_report_digest",
         "leaf_evidence_binding_fields",
         "selected_account_stark_residual_matrix",
+        "fri_qrom_residual_snapshot",
         "account_stark_fri_aok_extractor_break",
         "proof_route_authority_break",
+        '"residual_pricing_complete": false',
         '"production_gate_fail_closed": true',
         '"deployment_ready": false',
     ],
@@ -228,7 +282,9 @@ PREFLIGHT_BOUNDARY_CONSISTENCY_MARKERS = {
         "validate_production_deployment_preflight_report",
         "path2_direct_theorem_boundary_report_v1",
         "path2_account_creation_proof_boundary_report_v1",
+        "path2_account_stark_fri_qrom_residual_report_v1",
         "path2_account_stark_residual_matrix_report_v1",
+        "validate_path2_account_stark_fri_qrom_residual_report_v1",
         "production_deployment_direct_theorem_blockers",
         "production_deployment_account_creation_proof_boundary_blockers",
         "production_deployment_account_stark_residual_blockers",
@@ -1999,6 +2055,7 @@ def check_selected_account_stark_residual_matrix(errors: list[str]) -> None:
     required_markers = [
         "Path2AccountStarkCreationPayloadV1",
         "Path2AccountStarkPayloadKatBoundaryReportV1",
+        "Path2AccountStarkFriQromResidualReportV1",
         "Path2AccountStarkResidualMatrixReportV1",
         "account_stark_payload_binding_break",
         "AIR relation soundness",
@@ -2009,6 +2066,7 @@ def check_selected_account_stark_residual_matrix(errors: list[str]) -> None:
         "account_stark_simulator_or_no_export_break",
         "FRI soundness margin and recursion ledger",
         "fri_soundness_margin_break",
+        "account-STARK FRI transcript QROM theorem",
         "Production admission gate and review disposition",
         "account_stark_production_gate_break",
         "Legacy proof-route disposition",
@@ -2081,6 +2139,21 @@ def check_account_stark_payload_kat_manifest_markers(errors: list[str]) -> None:
             if marker not in text:
                 errors.append(
                     f"{rel}: missing account-STARK payload KAT manifest marker {marker!r}"
+                )
+
+
+def check_account_stark_fri_qrom_residual_markers(errors: list[str]) -> None:
+    for rel, markers in ACCOUNT_STARK_FRI_QROM_RESIDUAL_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"{rel}: missing account-STARK FRI/QROM residual artifact")
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing account-STARK FRI/QROM residual marker {marker!r}"
                 )
 
 
@@ -2315,6 +2388,7 @@ def main() -> int:
     check_account_creation_proof_boundary_preflight_markers(errors)
     check_account_stark_residual_preflight_markers(errors)
     check_account_stark_payload_kat_manifest_markers(errors)
+    check_account_stark_fri_qrom_residual_markers(errors)
     check_account_creation_proof_boundary_manifest_markers(errors)
     check_direct_theorem_boundary_manifest_markers(errors)
     check_boundary_manifest_consistency_markers(errors)
