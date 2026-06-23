@@ -187,6 +187,11 @@ and public rejection-class mapping for this precursor coverage.
 boundary manifest for those rows and must regenerate byte-for-byte with
 `path2_account_stark_payload_kat_manifest`; the full frozen byte-vector corpus
 remains open.
+`formal/kat/path2_account_stark_payload_kat_vectors_v1.json` is the
+feature-gated digest-pinned corpus for the current account-STARK boundary rows.
+It pins stable public fields, payload/bundle lengths, mutation recipes, observed
+errors, and public rejection classes, while explicitly excluding randomized
+Plonky3 proof-byte digests until deterministic proof-byte KAT mode exists.
 
 ## Path2NativeCheckedCoreFrameV1
 

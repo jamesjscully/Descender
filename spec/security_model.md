@@ -195,11 +195,14 @@ or remain open.
 diagnostics to consensus-facing public rejection classes. It is still precursor
 coverage: `formal/kat/path2_account_stark_payload_kat_boundary_v1.json`
 regenerates and diffs the draft boundary manifest, but full frozen vector files
-remain open.
+remain open. `formal/kat/path2_account_stark_payload_kat_vectors_v1.json`
+regenerates the current-row digest-pinned boundary vectors under the real
+account-STARK verifier feature and records that randomized proof-byte digests are
+not pinned until deterministic proof-byte KAT mode exists.
 
 | Residual item | Current evidence | Required closure before deployment | Named break |
 |---|---|---|---|
-| `Path2AccountStarkCreationPayloadV1` byte and replay binding | Wire-format digest frame, certificate/evidence binding, deployed anchor checks, active mutation tests, `Path2AccountStarkPayloadKatBoundaryReportV1` public rejection-class mapping, and a draft boundary manifest regeneration gate exist. | Frozen byte corpus and public rejection-class mapping for every consensus-visible malformed payload. | `account_stark_payload_binding_break` |
+| `Path2AccountStarkCreationPayloadV1` byte and replay binding | Wire-format digest frame, certificate/evidence binding, deployed anchor checks, active mutation tests, `Path2AccountStarkPayloadKatBoundaryReportV1` public rejection-class mapping, draft manifest regeneration, and digest-pinned current-row boundary vectors exist. | Deterministic proof-byte KAT mode, full frozen byte corpus, and public rejection-class mapping for every consensus-visible malformed payload. | `account_stark_payload_binding_break` |
 | AIR relation soundness | `research/path2_account_stark_air_soundness_audit.md` reports all relation classes wired and MED findings remediated. | External proof-family review confirms the AIR constraints match the claimed creation relation and no false statement accepts except with a named proof break. | `account_stark_air_soundness_break` |
 | FRI argument-of-knowledge extractor | The AIR is fully constrained, but the audit still names the `p2_sis_extractor`-style FRI-IOP extractor as open. | A concrete extractor theorem for the selected Plonky3/q12289 configuration shows accepting proof implies an extractable account-creation witness or exports a named FRI/AoK break. | `account_stark_fri_aok_extractor_break` |
 | Zero-knowledge simulator and no-export statement | Boundary text forbids export of pad source, projection, syndrome, opening tuple, witness, mask, and private trace material; current tests cover public payload mutations, not simulator semantics. | Simulator theorem for the selected payload proves the accepted public bundle can be simulated from public anchors and allowed commitments without revealing private creation material. | `account_stark_simulator_or_no_export_break` |

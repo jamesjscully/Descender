@@ -120,6 +120,34 @@ ACCOUNT_STARK_PAYLOAD_KAT_MANIFEST_MARKERS = {
         "path2_account_stark_payload_kat_boundary_v1.json",
     ],
 }
+ACCOUNT_STARK_PAYLOAD_KAT_VECTOR_MARKERS = {
+    "tools/parameter-search/src/bin/path2_account_stark_payload_kat_vectors.rs": [
+        "Descender.Path2.AccountStarkPayloadKatVectors.v1",
+        "path2_account_stark_payload_kat_fixture_v1",
+        "verify_path2_direct_creation_account_stark_payload_boundary",
+        "every_current_row_has_generated_vector",
+        "randomized proof bytes",
+    ],
+    "formal/kat/path2_account_stark_payload_kat_vectors_v1.json": [
+        "Descender.Path2.AccountStarkPayloadKatVectors.v1",
+        "digest_pinned_boundary_vectors",
+        "honest_payload_accepts",
+        "every_current_row_has_generated_vector",
+        "randomized proof bytes",
+    ],
+    "scripts/check_build.sh": [
+        "account STARK payload KAT vector corpus check",
+        "path2_account_stark_payload_kat_vectors",
+        "path2_account_stark_payload_kat_vectors_v1.json",
+        "account-creation-stark-verifier",
+    ],
+    ".github/workflows/ci.yml": [
+        "Account STARK payload KAT vector corpus check",
+        "path2_account_stark_payload_kat_vectors",
+        "path2_account_stark_payload_kat_vectors_v1.json",
+        "account-creation-stark-verifier",
+    ],
+}
 SPEC_OPEN_WORK_SECTIONS = {
     "spec/conformance_kats.md": {
         "Required Evidence": {
@@ -1909,6 +1937,21 @@ def check_account_stark_payload_kat_manifest_markers(errors: list[str]) -> None:
                 )
 
 
+def check_account_stark_payload_kat_vector_markers(errors: list[str]) -> None:
+    for rel, markers in ACCOUNT_STARK_PAYLOAD_KAT_VECTOR_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"{rel}: missing account-STARK payload KAT vector artifact")
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing account-STARK payload KAT vector marker {marker!r}"
+                )
+
+
 def check_ethereum_positioning_note(
     tracker_rows: dict[str, str],
     errors: list[str],
@@ -2046,6 +2089,7 @@ def main() -> int:
     check_account_creation_proof_boundary_preflight_markers(errors)
     check_account_stark_residual_preflight_markers(errors)
     check_account_stark_payload_kat_manifest_markers(errors)
+    check_account_stark_payload_kat_vector_markers(errors)
     check_ethereum_positioning_note(tracker_rows, errors)
 
     if errors:

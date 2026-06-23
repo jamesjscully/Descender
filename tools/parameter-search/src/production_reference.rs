@@ -43802,9 +43802,9 @@ pub struct Path2AccountStarkCreationPayloadV1 {
     pub account_stark_bundle: Vec<u8>,
 }
 
-pub fn path2_account_stark_creation_payload_v1_digest(
+pub fn path2_account_stark_creation_payload_v1_frame(
     payload: &Path2AccountStarkCreationPayloadV1,
-) -> Result<[u8; DIGEST_BYTES], String> {
+) -> Result<Vec<u8>, String> {
     if payload.account_stark_bundle.is_empty() {
         return Err("account-creation STARK: payload bundle is empty".to_string());
     }
@@ -43861,7 +43861,13 @@ pub fn path2_account_stark_creation_payload_v1_digest(
         b"account_stark_bundle",
         &payload.account_stark_bundle,
     );
-    Ok(Sha256::digest(frame).into())
+    Ok(frame)
+}
+
+pub fn path2_account_stark_creation_payload_v1_digest(
+    payload: &Path2AccountStarkCreationPayloadV1,
+) -> Result<[u8; DIGEST_BYTES], String> {
+    Ok(Sha256::digest(path2_account_stark_creation_payload_v1_frame(payload)?).into())
 }
 
 /// FEATURE-GATED (`account-creation-stark-verifier`) PRODUCER — generates the
@@ -44060,6 +44066,319 @@ pub fn verify_path2_direct_creation_account_stark_payload_boundary_for_productio
         );
     }
     Ok(())
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AccountStarkPayloadKatFixtureV1 {
+    pub fixture_id: &'static str,
+    pub leaf: Path2PrevalidatedSlotLeafV1,
+    pub evidence: Path2AccountCreationEvidenceV1,
+    pub certificate: Path2DirectReplayableRelationCertificateV1,
+    pub binding: Path2CreationProofBindingV1,
+    pub payload: Path2AccountStarkCreationPayloadV1,
+    pub payload_digest: [u8; DIGEST_BYTES],
+    pub payload_frame_digest: [u8; DIGEST_BYTES],
+    pub payload_frame_bytes: usize,
+    pub account_stark_bundle_bytes: usize,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[cfg(feature = "account-creation-stark-verifier")]
+struct Path2ReviewedFq12PackedWitnessKatFixtureV1 {
+    public_key: ProductionPublicKey,
+    account: ProductionReviewedFq12StateAssistedAccountState,
+    statement: ProductionReviewedFq12HiddenSourceStatement,
+    pad_seed: [u8; REVIEWED_FQ12_PAD_SEED_BYTES],
+    signature_with_carrier: ProductionSignature,
+    witness_commitment: [u8; DIGEST_BYTES],
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+fn path2_account_stark_payload_kat_digest(label: &str) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(format!("Descender.test_vector.v1:{label}:0").as_bytes()).into()
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+fn path2_account_stark_refresh_leaf_digest_bindings(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &mut Path2AccountCreationEvidenceV1,
+) -> Result<(), String> {
+    evidence.slot_leaf_digest = path2_prevalidated_slot_leaf_digest(leaf)?;
+    evidence.slot_authorization_digest = path2_slot_authorization_digest(leaf)?;
+    Ok(())
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+fn path2_reviewed_fq12_packed_witness_kat_fixture_v1()
+-> Result<Path2ReviewedFq12PackedWitnessKatFixtureV1, String> {
+    let public_key = ProductionPublicKey::new(vec![0_u8; PK_BYTES])?;
+    let message = b"reviewed Fq12 packed witness reject fixture";
+    let slot_id = 0_u32;
+    let pad_seed = [0x42_u8; REVIEWED_FQ12_PAD_SEED_BYTES];
+    let witness_syndrome = [0_u16; REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS];
+    let account_projection = [1_u16, 2, 3, 4, 5, 6];
+    let witness_commitment = reviewed_fq12_pack_masked_witness_state18_from_parts(
+        &witness_syndrome,
+        &account_projection,
+        &pad_seed,
+        slot_id as u64,
+    )?;
+    let randomizer_commitment = pack_reviewed_fq12_account_carried_syndrome_digest(
+        &[0_u16; REVIEWED_FQ12_ACCOUNT_CARRIED_PUBLIC_ROWS],
+    )?;
+    let challenge = challenge_bytes(
+        public_key.as_bytes(),
+        message,
+        slot_id,
+        &witness_commitment,
+        &randomizer_commitment,
+    );
+    let decoded_challenge = decode_challenge(&challenge)?;
+    let mut openings = ProductionLocalOpenings {
+        active_free: [[0_u16; LOCAL_FREE]; REPS],
+    };
+    for rep in 0..REPS {
+        openings.active_free[rep] = reviewed_fq12_pad_residues_from_seed(
+            &pad_seed,
+            decoded_challenge.active_block[rep],
+        );
+    }
+    let proof = ProductionReviewedFq12AccountCarriedProof {
+        proof_commitment: randomizer_commitment,
+        masked_quotient_response: encode_reviewed_fq12_account_carried_masked_response(
+            &[0_u16; REVIEWED_FQ12_ACCOUNT_CARRIED_RESPONSE_RESIDUES],
+        )?,
+    };
+    let signature = encode_reviewed_fq12_account_carried_signature(
+        slot_id,
+        &challenge,
+        &ProductionCompactResponses {
+            active_free: [[0_i16; LOCAL_FREE]; REPS],
+        },
+        &openings,
+        &proof,
+    )?;
+    let account_witness_opening = HiddenSourceFallbackProjectionAccountWitnessOpening {
+        selected_source_values: account_projection,
+    };
+    let account_witness_opening_frame =
+        encode_hidden_source_fallback_account_witness_opening_frame(&account_witness_opening)?;
+    let witness_opening_digest =
+        reviewed_fq12_account_witness_projection_opening_digest(&account_witness_opening_frame)?;
+    let pad_seed_digest = reviewed_fq12_pad_seed_opening_digest(&pad_seed);
+    let mut opening = ProductionReviewedFq12StateAssistedOpening {
+        slot_id: slot_id as u64,
+        account_witness_commitment: witness_commitment,
+        account_randomizer_commitment: randomizer_commitment,
+        restore_anchor_digest: [0x33_u8; DIGEST_BYTES],
+        witness_opening_digest,
+        pad_seed_digest,
+        carrier_handle_secret_digest: [0x44_u8; DIGEST_BYTES],
+    };
+    let opening_commitment = reviewed_fq12_state_assisted_opening_commitment_digest(&opening);
+    let slot = ProductionReviewedFq12StateAssistedAccountSlot::new(
+        slot_id,
+        ProductionAccountCommitment::new(witness_commitment, randomizer_commitment),
+        opening_commitment,
+        opening.restore_anchor_digest,
+        pad_seed_digest,
+    );
+    let account = ProductionReviewedFq12StateAssistedAccountState::new(vec![slot])?;
+    let statement = reviewed_fq12_state_assisted_hidden_source_statement(
+        &public_key,
+        message,
+        &account,
+        &signature,
+    )
+    .map_err(ProductionAccountBindingError::into_reason)?;
+    opening.account_witness_commitment = statement.witness_commitment;
+
+    let projection_lanes =
+        hidden_source_fallback_projection_values_from_hidden_material(
+            &account_witness_opening,
+            &pad_seed,
+        )?;
+    let (check_bytes, transcript_binding) =
+        reviewed_fq12_state_assisted_projection_carrier_binding(
+            &opening_commitment,
+            &opening,
+            &statement,
+            &projection_lanes,
+        )?;
+    let mut carrier_bytes = [0_u8; HIDDEN_SOURCE_FALLBACK_PROJECTION_CARRIER_BYTES];
+    for (lane, value) in projection_lanes.iter().enumerate() {
+        carrier_bytes[lane * 2..lane * 2 + 2].copy_from_slice(&value.to_le_bytes());
+    }
+    carrier_bytes[24..27].copy_from_slice(&check_bytes);
+    carrier_bytes[27..56].copy_from_slice(&transcript_binding);
+    let carrier = HiddenSourceFallbackProjectionCarrier::from_bytes(&carrier_bytes)?;
+    let signature_with_carrier =
+        encode_reviewed_fq12_account_carried_with_fallback_projection(&signature, &carrier)?;
+
+    Ok(Path2ReviewedFq12PackedWitnessKatFixtureV1 {
+        public_key,
+        account,
+        statement,
+        pad_seed,
+        signature_with_carrier,
+        witness_commitment,
+    })
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+fn path2_account_stark_creation_relation_replay_kat_fixture_v1() -> Result<
+    (
+        Path2ReviewedFq12PackedWitnessKatFixtureV1,
+        Path2PrevalidatedSlotLeafV1,
+        Path2AccountCreationEvidenceV1,
+        Path2DirectReplayableRelationCertificateV1,
+    ),
+    String,
+> {
+    let fixture = path2_reviewed_fq12_packed_witness_kat_fixture_v1()?;
+    let slot = fixture
+        .account
+        .get_slot(0)
+        .ok_or_else(|| "Path 2 account-STARK KAT fixture missing slot 0".to_string())?;
+    let mut leaf = Path2PrevalidatedSlotLeafV1 {
+        frame_version: PATH2_PREVALIDATED_SLOT_LEAF_FRAME_VERSION,
+        profile_version_digest: path2_account_stark_payload_kat_digest("path2-profile"),
+        account_id: path2_account_stark_payload_kat_digest("path2-account"),
+        public_key_identity: Sha256::digest(fixture.public_key.as_bytes()).into(),
+        slot_id: slot.slot_id() as u64,
+        verifier_version_digest: path2_account_stark_payload_kat_digest("path2-verifier"),
+        account_state_root_before: path2_account_stark_payload_kat_digest(
+            "path2-state-root-before",
+        ),
+        opening_commitment: slot.hidden_source_opening_commitment(),
+        pad_seed_digest: slot.pad_seed_digest(),
+        hidden_source_statement_digest: fixture.statement.digest,
+        prevalidation_transcript_digest: [0_u8; DIGEST_BYTES],
+        lifecycle_anchor: slot.restore_anchor_digest(),
+        live_status_marker: PATH2_PREVALIDATED_SLOT_LIVE_STATUS_MARKER,
+    };
+    let creation_statement =
+        path2_creation_hidden_source_statement_v1_from_reviewed(&leaf, &fixture.statement);
+    leaf.hidden_source_statement_digest = creation_statement.digest;
+    let mut certificate = Path2DirectReplayableRelationCertificateV1 {
+        account_id: leaf.account_id,
+        public_key_identity: leaf.public_key_identity,
+        slot_id: leaf.slot_id,
+        verifier_version_digest: leaf.verifier_version_digest,
+        account_state_root_before: leaf.account_state_root_before,
+        opening_commitment: leaf.opening_commitment,
+        pad_seed_digest: leaf.pad_seed_digest,
+        hidden_source_statement_digest: leaf.hidden_source_statement_digest,
+        reviewed_active_lane_statement_digest: fixture.statement.digest,
+        lifecycle_anchor: leaf.lifecycle_anchor,
+        relation_transcript_digest: path2_account_stark_payload_kat_digest(
+            "path2-relation-transcript",
+        ),
+        public_replay_payload_digest: Sha256::digest(fixture.signature_with_carrier.as_bytes())
+            .into(),
+    };
+    let mut evidence = Path2AccountCreationEvidenceV1 {
+        evidence_domain: PATH2_SLOT_PREVALIDATE_SINGLE_DOMAIN,
+        evidence_version: 1,
+        evidence_kind: PATH2_EVIDENCE_KIND_DIRECT_REPLAYABLE_RELATION_CERTIFICATE,
+        slot_leaf_digest: [0_u8; DIGEST_BYTES],
+        slot_authorization_digest: [0_u8; DIGEST_BYTES],
+        creation_verifier_version_digest: leaf.verifier_version_digest,
+        hidden_source_statement_digest: leaf.hidden_source_statement_digest,
+        opening_commitment: leaf.opening_commitment,
+        pad_seed_digest: leaf.pad_seed_digest,
+        account_identity_digest: leaf.account_id,
+        public_key_identity: leaf.public_key_identity,
+        slot_id: leaf.slot_id,
+        state_root_before: leaf.account_state_root_before,
+        lifecycle_anchor: leaf.lifecycle_anchor,
+        relation_transcript_digest: certificate.relation_transcript_digest,
+        evidence_payload_digest: path2_direct_replayable_relation_certificate_digest(
+            &certificate,
+        ),
+    };
+    leaf.prevalidation_transcript_digest = path2_account_creation_evidence_transcript_digest(
+        &evidence,
+    )?;
+    path2_account_stark_refresh_leaf_digest_bindings(&leaf, &mut evidence)?;
+    certificate.hidden_source_statement_digest = leaf.hidden_source_statement_digest;
+    certificate.reviewed_active_lane_statement_digest = fixture.statement.digest;
+    Ok((fixture, leaf, evidence, certificate))
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn path2_account_stark_payload_kat_fixture_v1()
+-> Result<Path2AccountStarkPayloadKatFixtureV1, String> {
+    let (fixture, mut leaf, mut evidence, mut certificate) =
+        path2_account_stark_creation_relation_replay_kat_fixture_v1()?;
+    let pad_seed = fixture.pad_seed;
+    let slot_id = leaf.slot_id;
+    let opening = reviewed_fq12_masked_state18_packed_witness_opening(
+        &fixture.witness_commitment,
+        &pad_seed,
+        slot_id,
+    )?;
+    let pad_source_commitment = path2_masked_state18_commitment_bytes(
+        PATH2_MASKED_STATE18_COMMITMENT_ROLE_PAD_SOURCE,
+        &opening.masked_projection,
+    )?;
+    let projection_relation_commitment = path2_masked_state18_commitment_bytes(
+        PATH2_MASKED_STATE18_COMMITMENT_ROLE_PROJECTION_RELATION,
+        &opening.account_projection,
+    )?;
+    let binding = path2_creation_proof_binding_v1(
+        &leaf,
+        fixture.witness_commitment,
+        path2_account_stark_payload_kat_digest("path2-account-stark-randomizer"),
+        pad_source_commitment,
+        projection_relation_commitment,
+        path2_account_stark_payload_kat_digest("path2-account-stark-gauge"),
+        path2_account_stark_payload_kat_digest("path2-account-stark-aggregation"),
+    );
+    let blinding_seed =
+        path2_account_stark_payload_kat_digest("path2-account-stark-blinding-seed");
+
+    let payload = path2_account_stark_prove_creation_v1(
+        &leaf,
+        &evidence,
+        &certificate,
+        &binding,
+        &pad_seed,
+        &blinding_seed,
+    )?;
+
+    let payload_digest = path2_account_stark_creation_payload_v1_digest(&payload)?;
+    certificate.public_replay_payload_digest = payload_digest;
+    evidence.evidence_payload_digest =
+        path2_direct_replayable_relation_certificate_digest(&certificate);
+    leaf.prevalidation_transcript_digest =
+        path2_account_creation_evidence_transcript_digest(&evidence)?;
+    path2_account_stark_refresh_leaf_digest_bindings(&leaf, &mut evidence)?;
+    if payload.leaf_context_digest
+        != path2_prevalidated_slot_leaf_context_digest(&leaf, &evidence, &certificate)?
+    {
+        return Err("Path 2 account-STARK KAT fixture leaf context mismatch".to_string());
+    }
+    verify_path2_direct_creation_account_stark_payload_boundary(
+        &leaf,
+        &evidence,
+        &certificate,
+        &binding,
+        &payload,
+    )?;
+    let payload_frame = path2_account_stark_creation_payload_v1_frame(&payload)?;
+    Ok(Path2AccountStarkPayloadKatFixtureV1 {
+        fixture_id: "Path2AccountStarkPayloadKatFixture.v1",
+        leaf,
+        evidence,
+        certificate,
+        binding,
+        payload_frame_digest: Sha256::digest(&payload_frame).into(),
+        payload_frame_bytes: payload_frame.len(),
+        account_stark_bundle_bytes: payload.account_stark_bundle.len(),
+        payload,
+        payload_digest,
+    })
 }
 
 pub fn path2_transparent_descent_production_soundness_obligations_discharged_v1() -> bool {
@@ -73542,55 +73861,27 @@ mod tests {
     #[cfg(feature = "account-creation-stark-verifier")]
     #[test]
     fn path2_account_stark_creation_roundtrip_and_binds() {
-        let (fixture, mut leaf, mut evidence, mut certificate) =
-            path2_creation_relation_replay_fixture();
-        let pad_seed = fixture.pad_seed;
-        let slot_id = leaf.slot_id;
-        let opening = reviewed_fq12_masked_state18_packed_witness_opening(
-            &fixture.witness_commitment,
-            &pad_seed,
-            slot_id,
-        )
-        .unwrap();
-        let pad_source_commitment = path2_masked_state18_commitment_bytes(
-            PATH2_MASKED_STATE18_COMMITMENT_ROLE_PAD_SOURCE,
-            &opening.masked_projection,
-        )
-        .unwrap();
-        let projection_relation_commitment = path2_masked_state18_commitment_bytes(
-            PATH2_MASKED_STATE18_COMMITMENT_ROLE_PROJECTION_RELATION,
-            &opening.account_projection,
-        )
-        .unwrap();
-        let binding = path2_creation_proof_binding_v1(
-            &leaf,
-            fixture.witness_commitment,
-            test_digest("path2-account-stark-randomizer"),
-            pad_source_commitment,
-            projection_relation_commitment,
-            test_digest("path2-account-stark-gauge"),
-            test_digest("path2-account-stark-aggregation"),
+        let Path2AccountStarkPayloadKatFixtureV1 {
+            leaf,
+            evidence,
+            certificate,
+            binding,
+            payload,
+            payload_digest,
+            payload_frame_digest,
+            payload_frame_bytes,
+            account_stark_bundle_bytes,
+            ..
+        } = path2_account_stark_payload_kat_fixture_v1().expect("STARK payload KAT fixture");
+        let recomputed_payload_frame_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(path2_account_stark_creation_payload_v1_frame(&payload).unwrap())
+                .into();
+        assert_eq!(
+            payload_frame_digest,
+            recomputed_payload_frame_digest
         );
-        let blinding_seed = test_digest("path2-account-stark-blinding-seed");
-
-        let payload = path2_account_stark_prove_creation_v1(
-            &leaf,
-            &evidence,
-            &certificate,
-            &binding,
-            &pad_seed,
-            &blinding_seed,
-        )
-        .expect("STARK producer");
-
-        let payload_digest =
-            path2_account_stark_creation_payload_v1_digest(&payload).expect("STARK payload digest");
-        certificate.public_replay_payload_digest = payload_digest;
-        evidence.evidence_payload_digest =
-            path2_direct_replayable_relation_certificate_digest(&certificate);
-        leaf.prevalidation_transcript_digest =
-            path2_account_creation_evidence_transcript_digest(&evidence).unwrap();
-        refresh_path2_leaf_digest_bindings(&leaf, &mut evidence);
+        assert!(payload_frame_bytes > payload.account_stark_bundle.len());
+        assert_eq!(account_stark_bundle_bytes, payload.account_stark_bundle.len());
         assert_eq!(
             payload.leaf_context_digest,
             path2_prevalidated_slot_leaf_context_digest(&leaf, &evidence, &certificate).unwrap()

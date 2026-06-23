@@ -178,6 +178,19 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ),
     ),
     (
+        "account STARK payload KAT vector corpus check",
+        (
+            "path2_account_stark_payload_kat_vectors",
+            "path2_account_stark_payload_kat_vectors_v1.json",
+            "account-creation-stark-verifier",
+        ),
+        (
+            "path2_account_stark_payload_kat_vectors",
+            "path2_account_stark_payload_kat_vectors_v1.json",
+            "account-creation-stark-verifier",
+        ),
+    ),
+    (
         "legacy q12289 negative-control bin tests",
         (
             "cargo test --manifest-path tools/parameter-search/Cargo.toml --bin signature_q12289_local_delta_stateful",
@@ -265,6 +278,11 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
     "Lean theorem statement drift check": ("PROC-FORMAL-001",),
     "Rust all-target check": ("PROC-CI-001",),
     "account STARK payload KAT boundary manifest check": (
+        "DIR-KAT-001",
+        "DIR-STARK-001",
+        "DIR-REJECT-001",
+    ),
+    "account STARK payload KAT vector corpus check": (
         "DIR-KAT-001",
         "DIR-STARK-001",
         "DIR-REJECT-001",

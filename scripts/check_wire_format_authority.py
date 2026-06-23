@@ -142,10 +142,10 @@ def account_stark_payload_spec_fields(spec: str) -> list[str]:
 
 
 def account_stark_payload_digest_fields(source: str) -> list[str]:
-    start = source.find("pub fn path2_account_stark_creation_payload_v1_digest(")
+    start = source.find("pub fn path2_account_stark_creation_payload_v1_frame(")
     end = source.find("\n}\n\n/// FEATURE-GATED", start)
     if start < 0 or end < 0:
-        raise SystemExit("FAIL: account-STARK payload digest function not found")
+        raise SystemExit("FAIL: account-STARK payload frame function not found")
     body = source[start:end]
     return re.findall(r'append_(?:frame|u64)\(\s*&mut frame,\s*b"([^"]+)"', body)
 
@@ -260,6 +260,7 @@ def main() -> int:
         ACCOUNT_STARK_PAYLOAD_DIGEST_FIELDS,
     )
     for marker in [
+        "path2_account_stark_creation_payload_v1_frame",
         "path2_account_stark_creation_payload_v1_digest",
         "path2_account_stark_creation_roundtrip_and_binds",
         "rebind_account_stark_payload_context",
