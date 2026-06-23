@@ -97,9 +97,19 @@ QROM/action, lifecycle, and proof-boundary report digests, and the public
 hook runs the real direct verifier, snapshots the consume-once transition, and
 checks the public result wrapper independently accepts the same slot from the
 same before-state. The
+`Path2DirectAcceptedCompositionEvidenceV1` feature-gated evidence path now
+uses the selected account-STARK creation fixture and the checked-core direct
+spend verifier together, binding the accepted creation proof-boundary evidence,
+accepted direct spend tuple, direct theorem boundary digest, QROM/action
+digest, lifecycle digest, proof-boundary digest, exact admission namespace, and
+consume-once before/after transition for one accepted slot. The
 `path2_direct_single_slot_spend_tuple_evidence_pins_accepted_tuple` test is
 accepted-path evidence for the theorem shape, but it is not the composition
 theorem and does not verify the account-creation proof family. The
+feature-gated `path2_direct_accepted_composition_evidence_binds_creation_and_spend`
+test gates the current accepted creation-to-spend composition evidence while
+keeping composition, proof-boundary verification, and deployment flags false.
+The
 public-rejection obligation row now records
 `Path2PublicResultClassV1`, `Path2DirectSpendPublicResultV1`, the direct spend
 public-classifier helper, and the

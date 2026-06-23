@@ -154,6 +154,9 @@
     "corpus_version": 1,
     "direct_theorem_report": {
       "acceptance_hypotheses_pinned": true,
+      "accepted_composition_evidence_endpoint": "path2_direct_accepted_composition_evidence_v1",
+      "accepted_composition_evidence_present": true,
+      "accepted_composition_evidence_schema": "Descender.Path2.DirectAcceptedCompositionEvidence.v1",
       "accepted_tuple_evidence_endpoint": "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1",
       "accepted_tuple_evidence_present": true,
       "accepted_tuple_evidence_schema": "Descender.Path2.DirectAcceptedSpendTupleEvidence.v1",
@@ -162,7 +165,7 @@
       "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "composition_theorem_instantiated": false,
       "deployment_ready": false,
-      "digest": "25aa2e6023ef7e3f4d474dc6f556fe0512225b221d880e1f99e509dbdc84b53a",
+      "digest": "fb5fc5d0eaa3e2afa3b39b0400aa112b09d97ae99b858026ecdc425efa07ba7a",
       "domain": "Descender.Path2.DirectTheoremBoundaryReport.v1",
       "every_hypothesis_has_obligation": true,
       "every_obligation_has_named_break": true,
@@ -172,7 +175,7 @@
       "obligation_audit_vector_case_count": 9,
       "obligation_count": 9,
       "qrom_and_action_bounds_linked_to_theorem": false,
-      "recomputed_digest": "25aa2e6023ef7e3f4d474dc6f556fe0512225b221d880e1f99e509dbdc84b53a",
+      "recomputed_digest": "fb5fc5d0eaa3e2afa3b39b0400aa112b09d97ae99b858026ecdc425efa07ba7a",
       "theorem_conclusion": "accepted_direct_mode_spend_implies_prior_admission_checked_core_acceptance_consume_once_or_named_break",
       "theorem_target": "direct_mode_selected_tuple_authorization_theorem_v1"
     },
@@ -209,5 +212,5 @@
     "schema": "Descender.Path2.DirectTheoremObligationVectors.v1",
     "status": "digest_pinned_direct_theorem_obligation_audit_vectors"
   },
-  "corpus_digest": "6fb79048ea1ee20753be2669fc7f8217db567a4832a6d3ee31240cf0e76f0da9"
+  "corpus_digest": "37a1e05b3e4e4ef3b745b6dff07287c53fbafbee5078158476c004c37ef20c4c"
 }

@@ -111,6 +111,10 @@ fn manifest_body() -> Result<Value, String> {
                 proof_boundary_report.accepted_boundary_evidence_schema,
             "accepted_boundary_evidence_endpoint":
                 proof_boundary_report.accepted_boundary_evidence_endpoint,
+            "accepted_composition_evidence_schema":
+                direct_report.accepted_composition_evidence_schema,
+            "accepted_composition_evidence_endpoint":
+                direct_report.accepted_composition_evidence_endpoint,
             "proof_boundary_target": proof_boundary_report.proof_boundary_target,
             "proof_boundary_conclusion":
                 proof_boundary_report.proof_boundary_conclusion
@@ -178,6 +182,8 @@ fn manifest_body() -> Result<Value, String> {
                 "accepted_tuple_pinned": direct_report.accepted_tuple_pinned,
                 "accepted_tuple_evidence_present":
                     direct_report.accepted_tuple_evidence_present,
+                "accepted_composition_evidence_present":
+                    direct_report.accepted_composition_evidence_present,
                 "acceptance_hypotheses_pinned":
                     direct_report.acceptance_hypotheses_pinned,
                 "named_break_classes_pinned": direct_report.named_break_classes_pinned,
@@ -199,6 +205,10 @@ fn manifest_body() -> Result<Value, String> {
                 direct_report.accepted_tuple_evidence_schema,
             "accepted_tuple_evidence_endpoint":
                 direct_report.accepted_tuple_evidence_endpoint,
+            "accepted_composition_evidence_schema":
+                direct_report.accepted_composition_evidence_schema,
+            "accepted_composition_evidence_endpoint":
+                direct_report.accepted_composition_evidence_endpoint,
             "acceptance_hypotheses": direct_report.acceptance_hypotheses,
             "named_break_classes": direct_report.named_break_classes,
             "obligation_audit_vector_case_ids":

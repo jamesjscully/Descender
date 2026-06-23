@@ -116,6 +116,12 @@ fn manifest_body() -> Result<Value, String> {
                 direct_report.accepted_tuple_evidence_endpoint,
             "accepted_tuple_evidence_present":
                 direct_report.accepted_tuple_evidence_present,
+            "accepted_composition_evidence_schema":
+                direct_report.accepted_composition_evidence_schema,
+            "accepted_composition_evidence_endpoint":
+                direct_report.accepted_composition_evidence_endpoint,
+            "accepted_composition_evidence_present":
+                direct_report.accepted_composition_evidence_present,
             "composition_theorem_instantiated":
                 direct_report.composition_theorem_instantiated,
             "account_creation_proof_boundary_verified":

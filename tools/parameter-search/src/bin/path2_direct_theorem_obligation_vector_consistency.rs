@@ -120,9 +120,21 @@ fn main() -> Result<(), String> {
             corpus,
             "/direct_theorem_report/accepted_tuple_evidence_present",
         )? != direct_report.accepted_tuple_evidence_present
+        || str_at(
+            corpus,
+            "/direct_theorem_report/accepted_composition_evidence_schema",
+        )? != direct_report.accepted_composition_evidence_schema
+        || str_at(
+            corpus,
+            "/direct_theorem_report/accepted_composition_evidence_endpoint",
+        )? != direct_report.accepted_composition_evidence_endpoint
+        || bool_at(
+            corpus,
+            "/direct_theorem_report/accepted_composition_evidence_present",
+        )? != direct_report.accepted_composition_evidence_present
     {
         return Err(
-            "direct theorem obligation vector corpus lost accepted-tuple evidence hook".to_string(),
+            "direct theorem obligation vector corpus lost accepted evidence hooks".to_string(),
         );
     }
     if str_at(corpus, "/qrom_action_boundary_report/digest")?

@@ -301,6 +301,8 @@ pub const PRODUCTION_DEPLOYMENT_PREFLIGHT_CERTIFICATE_DOMAIN: &str =
     "Descender.Signature.q12289.local_delta.production_deployment_preflight_certificate.v1";
 pub const PATH2_DIRECT_ACCEPTED_SPEND_TUPLE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.DirectAcceptedSpendTupleEvidence.v1";
+pub const PATH2_DIRECT_ACCEPTED_COMPOSITION_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.DirectAcceptedCompositionEvidence.v1";
 pub const PATH2_ACCOUNT_CREATION_ACCEPTED_PROOF_BOUNDARY_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.AccountCreationAcceptedProofBoundaryEvidence.v1";
 pub const PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN: &str =
@@ -9762,6 +9764,48 @@ pub struct Path2DirectAcceptedSpendTupleEvidenceV1 {
     pub tuple_fields_match_theorem_boundary: bool,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2DirectAcceptedCompositionEvidenceV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub schema: &'static str,
+    pub theorem_target: &'static str,
+    pub theorem_conclusion: &'static str,
+    pub direct_theorem_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub direct_accepted_spend_tuple_evidence_digest: [u8; DIGEST_BYTES],
+    pub account_creation_accepted_proof_boundary_evidence_digest: [u8; DIGEST_BYTES],
+    pub direct_qrom_action_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub direct_lifecycle_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub account_creation_proof_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub account_creation_fixture_id: &'static str,
+    pub proof_mask_seed: u64,
+    pub public_key_identity: [u8; DIGEST_BYTES],
+    pub message_digest: [u8; DIGEST_BYTES],
+    pub account_id: [u8; DIGEST_BYTES],
+    pub account_state_root_before: [u8; DIGEST_BYTES],
+    pub slot_id: u64,
+    pub prevalidated_slot_leaf_digest: [u8; DIGEST_BYTES],
+    pub account_creation_evidence_transcript_digest: [u8; DIGEST_BYTES],
+    pub selected_account_creation_payload_digest: [u8; DIGEST_BYTES],
+    pub slot_authorization_digest: [u8; DIGEST_BYTES],
+    pub direct_admission_namespace_record_digest: [u8; DIGEST_BYTES],
+    pub consume_once_state_before_digest: [u8; DIGEST_BYTES],
+    pub consume_once_state_after_digest: [u8; DIGEST_BYTES],
+    pub creation_evidence_matches_direct_tuple: bool,
+    pub proof_boundary_digest_matches_direct_theorem: bool,
+    pub qrom_action_digest_matches_direct_theorem: bool,
+    pub lifecycle_digest_matches_direct_theorem: bool,
+    pub direct_admission_namespace_matches_authorization: bool,
+    pub consume_once_transition_matches_tuple: bool,
+    pub verifier_boundary_accepts_creation: bool,
+    pub direct_spend_tuple_accepts: bool,
+    pub public_result_accepts_same_slot: bool,
+    pub direct_theorem_obligations_still_open: bool,
+    pub proof_family_obligations_still_open: bool,
+    pub composition_theorem_instantiated: bool,
+    pub account_creation_proof_boundary_verified: bool,
+    pub deployment_ready: bool,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2DirectQromActionBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
@@ -9851,6 +9895,8 @@ pub struct Path2DirectTheoremBoundaryReportV1 {
     pub accepted_tuple_fields: &'static [&'static str],
     pub accepted_tuple_evidence_schema: &'static str,
     pub accepted_tuple_evidence_endpoint: &'static str,
+    pub accepted_composition_evidence_schema: &'static str,
+    pub accepted_composition_evidence_endpoint: &'static str,
     pub acceptance_hypotheses: &'static [&'static str],
     pub named_break_classes: &'static [&'static str],
     pub obligation_audit_vector_case_ids: &'static [&'static str],
@@ -9863,6 +9909,7 @@ pub struct Path2DirectTheoremBoundaryReportV1 {
     pub theorem_statement_pinned: bool,
     pub accepted_tuple_pinned: bool,
     pub accepted_tuple_evidence_present: bool,
+    pub accepted_composition_evidence_present: bool,
     pub acceptance_hypotheses_pinned: bool,
     pub named_break_classes_pinned: bool,
     pub composition_theorem_instantiated: bool,
@@ -12787,6 +12834,8 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         accepted_tuple_evidence_schema: PATH2_DIRECT_ACCEPTED_SPEND_TUPLE_EVIDENCE_SCHEMA,
         accepted_tuple_evidence_endpoint:
             "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1",
+        accepted_composition_evidence_schema: PATH2_DIRECT_ACCEPTED_COMPOSITION_EVIDENCE_SCHEMA,
+        accepted_composition_evidence_endpoint: "path2_direct_accepted_composition_evidence_v1",
         acceptance_hypotheses: &PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES,
         named_break_classes: &PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES,
         obligation_audit_vector_case_ids: &PATH2_DIRECT_THEOREM_OBLIGATION_AUDIT_CASES,
@@ -12809,6 +12858,7 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         theorem_statement_pinned: true,
         accepted_tuple_pinned: true,
         accepted_tuple_evidence_present: true,
+        accepted_composition_evidence_present: true,
         acceptance_hypotheses_pinned: true,
         named_break_classes_pinned: true,
         composition_theorem_instantiated: false,
@@ -12860,6 +12910,17 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         || report.theorem_conclusion != PATH2_DIRECT_THEOREM_CONCLUSION
     {
         return Err("Path 2 direct theorem boundary target mismatch".to_string());
+    }
+    if report.accepted_tuple_evidence_schema
+        != PATH2_DIRECT_ACCEPTED_SPEND_TUPLE_EVIDENCE_SCHEMA
+        || report.accepted_tuple_evidence_endpoint
+            != "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1"
+        || report.accepted_composition_evidence_schema
+            != PATH2_DIRECT_ACCEPTED_COMPOSITION_EVIDENCE_SCHEMA
+        || report.accepted_composition_evidence_endpoint
+            != "path2_direct_accepted_composition_evidence_v1"
+    {
+        return Err("Path 2 direct theorem boundary evidence endpoint mismatch".to_string());
     }
     if report.obligation_audit_vector_case_ids
         != PATH2_DIRECT_THEOREM_OBLIGATION_AUDIT_CASES.as_ref()
@@ -46780,6 +46841,7 @@ pub struct Path2AccountStarkPayloadKatFixtureV1 {
 #[cfg(feature = "account-creation-stark-verifier")]
 struct Path2ReviewedFq12PackedWitnessKatFixtureV1 {
     public_key: ProductionPublicKey,
+    message: &'static [u8],
     account: ProductionReviewedFq12StateAssistedAccountState,
     statement: ProductionReviewedFq12HiddenSourceStatement,
     pad_seed: [u8; REVIEWED_FQ12_PAD_SEED_BYTES],
@@ -46911,6 +46973,7 @@ fn path2_reviewed_fq12_packed_witness_kat_fixture_v1()
 
     Ok(Path2ReviewedFq12PackedWitnessKatFixtureV1 {
         public_key,
+        message,
         account,
         statement,
         pad_seed,
@@ -47001,8 +47064,13 @@ fn path2_account_stark_creation_relation_replay_kat_fixture_v1() -> Result<
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-pub fn path2_account_stark_payload_kat_fixture_v1()
--> Result<Path2AccountStarkPayloadKatFixtureV1, String> {
+fn path2_account_stark_payload_kat_fixture_with_reviewed_v1() -> Result<
+    (
+        Path2ReviewedFq12PackedWitnessKatFixtureV1,
+        Path2AccountStarkPayloadKatFixtureV1,
+    ),
+    String,
+> {
     let (fixture, mut leaf, mut evidence, mut certificate) =
         path2_account_stark_creation_relation_replay_kat_fixture_v1()?;
     let pad_seed = fixture.pad_seed;
@@ -47062,19 +47130,28 @@ pub fn path2_account_stark_payload_kat_fixture_v1()
         &payload,
     )?;
     let payload_frame = path2_account_stark_creation_payload_v1_frame(&payload)?;
-    Ok(Path2AccountStarkPayloadKatFixtureV1 {
-        fixture_id: "Path2AccountStarkPayloadKatFixture.v1",
-        proof_mask_seed: PATH2_ACCOUNT_STARK_PAYLOAD_KAT_MASK_SEED_V1,
-        leaf,
-        evidence,
-        certificate,
-        binding,
-        payload_frame_digest: Sha256::digest(&payload_frame).into(),
-        payload_frame_bytes: payload_frame.len(),
-        account_stark_bundle_bytes: payload.account_stark_bundle.len(),
-        payload,
-        payload_digest,
-    })
+    Ok((
+        fixture,
+        Path2AccountStarkPayloadKatFixtureV1 {
+            fixture_id: "Path2AccountStarkPayloadKatFixture.v1",
+            proof_mask_seed: PATH2_ACCOUNT_STARK_PAYLOAD_KAT_MASK_SEED_V1,
+            leaf,
+            evidence,
+            certificate,
+            binding,
+            payload_frame_digest: Sha256::digest(&payload_frame).into(),
+            payload_frame_bytes: payload_frame.len(),
+            account_stark_bundle_bytes: payload.account_stark_bundle.len(),
+            payload,
+            payload_digest,
+        },
+    ))
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn path2_account_stark_payload_kat_fixture_v1()
+-> Result<Path2AccountStarkPayloadKatFixtureV1, String> {
+    Ok(path2_account_stark_payload_kat_fixture_with_reviewed_v1()?.1)
 }
 
 pub fn path2_account_creation_masked_projection_digest(
@@ -65273,6 +65350,176 @@ pub fn verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v
     )
 }
 
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn path2_direct_accepted_composition_evidence_v1(
+) -> Result<Path2DirectAcceptedCompositionEvidenceV1, String> {
+    let direct_report = path2_direct_theorem_boundary_report_v1();
+    validate_path2_direct_theorem_boundary_report_v1(&direct_report)?;
+    let qrom_report = path2_direct_qrom_action_boundary_report_v1();
+    validate_path2_direct_qrom_action_boundary_report_v1(&qrom_report)?;
+    let lifecycle_report = path2_direct_lifecycle_boundary_report_v1();
+    validate_path2_direct_lifecycle_boundary_report_v1(&lifecycle_report)?;
+    let proof_report = path2_account_creation_proof_boundary_report_v1();
+    validate_path2_account_creation_proof_boundary_report_v1(&proof_report)?;
+    let creation_evidence = path2_account_creation_accepted_proof_boundary_evidence_v1()?;
+    let (reviewed_fixture, stark_fixture) =
+        path2_account_stark_payload_kat_fixture_with_reviewed_v1()?;
+
+    verify_path2_direct_creation_account_stark_payload_boundary(
+        &stark_fixture.leaf,
+        &stark_fixture.evidence,
+        &stark_fixture.certificate,
+        &stark_fixture.binding,
+        &stark_fixture.payload,
+    )?;
+
+    let authorization = path2_slot_authorization_digest(&stark_fixture.leaf)?;
+    let mut admitted_state_authorizations = BTreeSet::new();
+    admitted_state_authorizations.insert((
+        stark_fixture.leaf.account_id,
+        stark_fixture.leaf.account_state_root_before,
+        authorization,
+    ));
+    let responses = ProductionCompactResponses {
+        active_free: [[0_i16; LOCAL_FREE]; REPS],
+    };
+    let signature = sign_path2_reviewed_fq12_authorization_checked_core(
+        &reviewed_fixture.public_key,
+        reviewed_fixture.message,
+        &reviewed_fixture.account,
+        &stark_fixture.leaf.account_id,
+        &stark_fixture.leaf.account_state_root_before,
+        &authorization,
+        stark_fixture.leaf.slot_id as u32,
+        &reviewed_fixture.pad_seed,
+        &responses,
+    )
+    .map_err(|err| err.reason().to_string())?;
+    let mut consumed = BTreeSet::new();
+    let tuple_evidence =
+        verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1(
+            &stark_fixture.leaf,
+            &stark_fixture.evidence,
+            &stark_fixture.certificate,
+            &reviewed_fixture.public_key,
+            reviewed_fixture.message,
+            &reviewed_fixture.account,
+            &signature,
+            &admitted_state_authorizations,
+            &mut consumed,
+        )
+        .map_err(|err| err.reason().to_string())?;
+
+    let creation_evidence_matches_direct_tuple =
+        creation_evidence.account_id == tuple_evidence.account_id
+            && creation_evidence.public_key_identity == tuple_evidence.public_key_identity
+            && creation_evidence.account_state_root_before
+                == tuple_evidence.account_state_root_before
+            && creation_evidence.slot_id == tuple_evidence.slot_id
+            && creation_evidence.prevalidated_slot_leaf_digest
+                == tuple_evidence.prevalidated_slot_leaf_digest
+            && creation_evidence.account_creation_evidence_transcript_digest
+                == tuple_evidence.account_creation_evidence_transcript_digest
+            && creation_evidence.selected_account_creation_payload_digest
+                == tuple_evidence.selected_account_creation_payload_digest
+            && creation_evidence.slot_authorization_digest
+                == tuple_evidence.slot_authorization_digest;
+    let proof_boundary_digest_matches_direct_theorem =
+        direct_report.account_creation_proof_boundary_report_digest == proof_report.digest
+            && tuple_evidence.account_creation_proof_boundary_report_digest
+                == proof_report.digest
+            && creation_evidence.account_creation_proof_boundary_report_digest
+                == proof_report.digest;
+    let qrom_action_digest_matches_direct_theorem =
+        direct_report.direct_qrom_action_boundary_report_digest == qrom_report.digest
+            && tuple_evidence.direct_qrom_action_boundary_report_digest == qrom_report.digest;
+    let lifecycle_digest_matches_direct_theorem =
+        direct_report.direct_lifecycle_boundary_report_digest == lifecycle_report.digest
+            && tuple_evidence.direct_lifecycle_boundary_report_digest == lifecycle_report.digest;
+    let direct_admission_namespace_matches_authorization =
+        tuple_evidence.direct_admission_namespace_record_digest
+            == path2_direct_admission_namespace_record_digest(
+                &stark_fixture.leaf.account_id,
+                &stark_fixture.leaf.account_state_root_before,
+                &authorization,
+            );
+    let consume_once_transition_matches_tuple =
+        tuple_evidence.consume_once_state_after_digest
+            == path2_direct_consume_once_authorization_set_digest(&consumed)
+            && tuple_evidence.consumed_authorization_absent_before
+            && tuple_evidence.consumed_authorization_present_after
+            && tuple_evidence.consume_once_inserted_exactly_one_authorization;
+    let direct_spend_tuple_accepts =
+        tuple_evidence.public_result_class_name == PATH2_PUBLIC_RESULT_ACCEPT_SPEND_SLOT;
+    let public_result_accepts_same_slot = tuple_evidence.public_result_accepts_same_slot;
+    let direct_theorem_obligations_still_open =
+        direct_report.obligation_rows.iter().all(|row| row.open);
+
+    if !creation_evidence_matches_direct_tuple
+        || !proof_boundary_digest_matches_direct_theorem
+        || !qrom_action_digest_matches_direct_theorem
+        || !lifecycle_digest_matches_direct_theorem
+        || !direct_admission_namespace_matches_authorization
+        || !consume_once_transition_matches_tuple
+        || !creation_evidence.verifier_boundary_accepts
+        || !direct_spend_tuple_accepts
+        || !public_result_accepts_same_slot
+        || !direct_theorem_obligations_still_open
+        || !creation_evidence.proof_family_obligations_still_open
+    {
+        return Err(
+            "Path 2 direct accepted composition evidence boundary mismatch".to_string(),
+        );
+    }
+
+    let mut evidence = Path2DirectAcceptedCompositionEvidenceV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        schema: PATH2_DIRECT_ACCEPTED_COMPOSITION_EVIDENCE_SCHEMA,
+        theorem_target: PATH2_DIRECT_THEOREM_TARGET,
+        theorem_conclusion: PATH2_DIRECT_THEOREM_CONCLUSION,
+        direct_theorem_boundary_report_digest: direct_report.digest,
+        direct_accepted_spend_tuple_evidence_digest: tuple_evidence.digest,
+        account_creation_accepted_proof_boundary_evidence_digest: creation_evidence.digest,
+        direct_qrom_action_boundary_report_digest: qrom_report.digest,
+        direct_lifecycle_boundary_report_digest: lifecycle_report.digest,
+        account_creation_proof_boundary_report_digest: proof_report.digest,
+        account_creation_fixture_id: stark_fixture.fixture_id,
+        proof_mask_seed: stark_fixture.proof_mask_seed,
+        public_key_identity: tuple_evidence.public_key_identity,
+        message_digest: tuple_evidence.message_digest,
+        account_id: tuple_evidence.account_id,
+        account_state_root_before: tuple_evidence.account_state_root_before,
+        slot_id: tuple_evidence.slot_id,
+        prevalidated_slot_leaf_digest: tuple_evidence.prevalidated_slot_leaf_digest,
+        account_creation_evidence_transcript_digest:
+            tuple_evidence.account_creation_evidence_transcript_digest,
+        selected_account_creation_payload_digest:
+            tuple_evidence.selected_account_creation_payload_digest,
+        slot_authorization_digest: tuple_evidence.slot_authorization_digest,
+        direct_admission_namespace_record_digest:
+            tuple_evidence.direct_admission_namespace_record_digest,
+        consume_once_state_before_digest: tuple_evidence.consume_once_state_before_digest,
+        consume_once_state_after_digest: tuple_evidence.consume_once_state_after_digest,
+        creation_evidence_matches_direct_tuple,
+        proof_boundary_digest_matches_direct_theorem,
+        qrom_action_digest_matches_direct_theorem,
+        lifecycle_digest_matches_direct_theorem,
+        direct_admission_namespace_matches_authorization,
+        consume_once_transition_matches_tuple,
+        verifier_boundary_accepts_creation: creation_evidence.verifier_boundary_accepts,
+        direct_spend_tuple_accepts,
+        public_result_accepts_same_slot,
+        direct_theorem_obligations_still_open,
+        proof_family_obligations_still_open: creation_evidence
+            .proof_family_obligations_still_open,
+        composition_theorem_instantiated: false,
+        account_creation_proof_boundary_verified: false,
+        deployment_ready: false,
+    };
+    evidence.digest = path2_direct_accepted_composition_evidence_v1_digest(&evidence);
+    Ok(evidence)
+}
+
 pub fn sign_path2_reviewed_fq12_authorization_checked_core(
     public_key: &ProductionPublicKey,
     message: &[u8],
@@ -68287,6 +68534,190 @@ pub fn path2_direct_accepted_spend_tuple_evidence_v1_digest(
     Sha256::digest(path2_direct_accepted_spend_tuple_evidence_v1_frame(evidence)).into()
 }
 
+pub fn path2_direct_accepted_composition_evidence_v1_frame(
+    evidence: &Path2DirectAcceptedCompositionEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_u64(&mut frame, b"q", Q as u64);
+    append_u64(&mut frame, b"groups", GROUPS as u64);
+    append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
+    append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
+    append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(
+        &mut frame,
+        b"theorem_target",
+        evidence.theorem_target.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"theorem_conclusion",
+        evidence.theorem_conclusion.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"direct_theorem_boundary_report_digest",
+        &evidence.direct_theorem_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"direct_accepted_spend_tuple_evidence_digest",
+        &evidence.direct_accepted_spend_tuple_evidence_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"account_creation_accepted_proof_boundary_evidence_digest",
+        &evidence.account_creation_accepted_proof_boundary_evidence_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"direct_qrom_action_boundary_report_digest",
+        &evidence.direct_qrom_action_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"direct_lifecycle_boundary_report_digest",
+        &evidence.direct_lifecycle_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"account_creation_proof_boundary_report_digest",
+        &evidence.account_creation_proof_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"account_creation_fixture_id",
+        evidence.account_creation_fixture_id.as_bytes(),
+    );
+    append_u64(&mut frame, b"proof_mask_seed", evidence.proof_mask_seed);
+    append_frame(
+        &mut frame,
+        b"public_key_identity",
+        &evidence.public_key_identity,
+    );
+    append_frame(&mut frame, b"message_digest", &evidence.message_digest);
+    append_frame(&mut frame, b"account_id", &evidence.account_id);
+    append_frame(
+        &mut frame,
+        b"account_state_root_before",
+        &evidence.account_state_root_before,
+    );
+    append_u64(&mut frame, b"slot_id", evidence.slot_id);
+    append_frame(
+        &mut frame,
+        b"prevalidated_slot_leaf_digest",
+        &evidence.prevalidated_slot_leaf_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"account_creation_evidence_transcript_digest",
+        &evidence.account_creation_evidence_transcript_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"selected_account_creation_payload_digest",
+        &evidence.selected_account_creation_payload_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"slot_authorization_digest",
+        &evidence.slot_authorization_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"direct_admission_namespace_record_digest",
+        &evidence.direct_admission_namespace_record_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"consume_once_state_before_digest",
+        &evidence.consume_once_state_before_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"consume_once_state_after_digest",
+        &evidence.consume_once_state_after_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"creation_evidence_matches_direct_tuple",
+        u64::from(evidence.creation_evidence_matches_direct_tuple),
+    );
+    append_u64(
+        &mut frame,
+        b"proof_boundary_digest_matches_direct_theorem",
+        u64::from(evidence.proof_boundary_digest_matches_direct_theorem),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_action_digest_matches_direct_theorem",
+        u64::from(evidence.qrom_action_digest_matches_direct_theorem),
+    );
+    append_u64(
+        &mut frame,
+        b"lifecycle_digest_matches_direct_theorem",
+        u64::from(evidence.lifecycle_digest_matches_direct_theorem),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_admission_namespace_matches_authorization",
+        u64::from(evidence.direct_admission_namespace_matches_authorization),
+    );
+    append_u64(
+        &mut frame,
+        b"consume_once_transition_matches_tuple",
+        u64::from(evidence.consume_once_transition_matches_tuple),
+    );
+    append_u64(
+        &mut frame,
+        b"verifier_boundary_accepts_creation",
+        u64::from(evidence.verifier_boundary_accepts_creation),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_spend_tuple_accepts",
+        u64::from(evidence.direct_spend_tuple_accepts),
+    );
+    append_u64(
+        &mut frame,
+        b"public_result_accepts_same_slot",
+        u64::from(evidence.public_result_accepts_same_slot),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_theorem_obligations_still_open",
+        u64::from(evidence.direct_theorem_obligations_still_open),
+    );
+    append_u64(
+        &mut frame,
+        b"proof_family_obligations_still_open",
+        u64::from(evidence.proof_family_obligations_still_open),
+    );
+    append_u64(
+        &mut frame,
+        b"composition_theorem_instantiated",
+        u64::from(evidence.composition_theorem_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"account_creation_proof_boundary_verified",
+        u64::from(evidence.account_creation_proof_boundary_verified),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_ready",
+        u64::from(evidence.deployment_ready),
+    );
+    frame
+}
+
+pub fn path2_direct_accepted_composition_evidence_v1_digest(
+    evidence: &Path2DirectAcceptedCompositionEvidenceV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_direct_accepted_composition_evidence_v1_frame(evidence)).into()
+}
+
 fn path2_direct_theorem_boundary_report_v1_frame(
     report: &Path2DirectTheoremBoundaryReportV1,
 ) -> Vec<u8> {
@@ -68336,6 +68767,16 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         &mut frame,
         b"accepted_tuple_evidence_endpoint",
         report.accepted_tuple_evidence_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"accepted_composition_evidence_schema",
+        report.accepted_composition_evidence_schema.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"accepted_composition_evidence_endpoint",
+        report.accepted_composition_evidence_endpoint.as_bytes(),
     );
     for (index, hypothesis) in report.acceptance_hypotheses.iter().enumerate() {
         append_u64(&mut frame, b"acceptance_hypothesis_index", index as u64);
@@ -68419,6 +68860,11 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         &mut frame,
         b"accepted_tuple_evidence_present",
         u64::from(report.accepted_tuple_evidence_present),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_composition_evidence_present",
+        u64::from(report.accepted_composition_evidence_present),
     );
     append_u64(
         &mut frame,
@@ -79651,6 +80097,78 @@ mod tests {
         assert!(!evidence.deployment_ready);
         assert_eq!(
             path2_account_creation_accepted_proof_boundary_evidence_v1_digest(&evidence),
+            evidence.digest
+        );
+    }
+
+    #[cfg(feature = "account-creation-stark-verifier")]
+    #[test]
+    fn path2_direct_accepted_composition_evidence_binds_creation_and_spend() {
+        let direct_report = path2_direct_theorem_boundary_report_v1();
+        let qrom_report = path2_direct_qrom_action_boundary_report_v1();
+        let lifecycle_report = path2_direct_lifecycle_boundary_report_v1();
+        let proof_report = path2_account_creation_proof_boundary_report_v1();
+        let evidence = path2_direct_accepted_composition_evidence_v1()
+            .expect("accepted direct composition evidence");
+
+        assert_ne!(evidence.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(
+            evidence.schema,
+            PATH2_DIRECT_ACCEPTED_COMPOSITION_EVIDENCE_SCHEMA
+        );
+        assert_eq!(evidence.theorem_target, PATH2_DIRECT_THEOREM_TARGET);
+        assert_eq!(
+            evidence.theorem_conclusion,
+            PATH2_DIRECT_THEOREM_CONCLUSION
+        );
+        assert_eq!(
+            evidence.direct_theorem_boundary_report_digest,
+            direct_report.digest
+        );
+        assert_ne!(
+            evidence.direct_accepted_spend_tuple_evidence_digest,
+            [0_u8; DIGEST_BYTES]
+        );
+        assert_ne!(
+            evidence.account_creation_accepted_proof_boundary_evidence_digest,
+            [0_u8; DIGEST_BYTES]
+        );
+        assert_eq!(
+            evidence.direct_qrom_action_boundary_report_digest,
+            qrom_report.digest
+        );
+        assert_eq!(
+            evidence.direct_lifecycle_boundary_report_digest,
+            lifecycle_report.digest
+        );
+        assert_eq!(
+            evidence.account_creation_proof_boundary_report_digest,
+            proof_report.digest
+        );
+        assert_eq!(
+            evidence.account_creation_fixture_id,
+            "Path2AccountStarkPayloadKatFixture.v1"
+        );
+        assert_eq!(
+            evidence.proof_mask_seed,
+            PATH2_ACCOUNT_STARK_PAYLOAD_KAT_MASK_SEED_V1
+        );
+        assert!(evidence.creation_evidence_matches_direct_tuple);
+        assert!(evidence.proof_boundary_digest_matches_direct_theorem);
+        assert!(evidence.qrom_action_digest_matches_direct_theorem);
+        assert!(evidence.lifecycle_digest_matches_direct_theorem);
+        assert!(evidence.direct_admission_namespace_matches_authorization);
+        assert!(evidence.consume_once_transition_matches_tuple);
+        assert!(evidence.verifier_boundary_accepts_creation);
+        assert!(evidence.direct_spend_tuple_accepts);
+        assert!(evidence.public_result_accepts_same_slot);
+        assert!(evidence.direct_theorem_obligations_still_open);
+        assert!(evidence.proof_family_obligations_still_open);
+        assert!(!evidence.composition_theorem_instantiated);
+        assert!(!evidence.account_creation_proof_boundary_verified);
+        assert!(!evidence.deployment_ready);
+        assert_eq!(
+            path2_direct_accepted_composition_evidence_v1_digest(&evidence),
             evidence.digest
         );
     }
@@ -110591,6 +111109,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1"
         );
         assert_eq!(
+            report.accepted_composition_evidence_schema,
+            PATH2_DIRECT_ACCEPTED_COMPOSITION_EVIDENCE_SCHEMA
+        );
+        assert_eq!(
+            report.accepted_composition_evidence_endpoint,
+            "path2_direct_accepted_composition_evidence_v1"
+        );
+        assert_eq!(
             report.acceptance_hypotheses,
             PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.as_ref()
         );
@@ -110662,6 +111188,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.theorem_statement_pinned);
         assert!(report.accepted_tuple_pinned);
         assert!(report.accepted_tuple_evidence_present);
+        assert!(report.accepted_composition_evidence_present);
         assert!(report.acceptance_hypotheses_pinned);
         assert!(report.named_break_classes_pinned);
         assert!(!report.composition_theorem_instantiated);
