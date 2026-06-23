@@ -69,6 +69,37 @@ fn u64_at(value: &Value, pointer: &str) -> Result<u64, String> {
         .ok_or_else(|| format!("JSON pointer {pointer} is not an unsigned integer"))
 }
 
+fn require_str(value: &Value, pointer: &str, expected: &str) -> Result<(), String> {
+    let observed = str_at(value, pointer)?;
+    if observed != expected {
+        return Err(format!(
+            "direct theorem obligation consistency {pointer} mismatch: {observed:?} != {expected:?}"
+        ));
+    }
+    Ok(())
+}
+
+fn require_hex(value: &Value, pointer: &str, expected: &[u8]) -> Result<(), String> {
+    let observed = str_at(value, pointer)?;
+    let expected_hex = hex_encode(expected);
+    if observed != expected_hex {
+        return Err(format!(
+            "direct theorem obligation consistency {pointer} mismatch: {observed} != {expected_hex}"
+        ));
+    }
+    Ok(())
+}
+
+fn require_bool(value: &Value, pointer: &str, expected: bool) -> Result<(), String> {
+    let observed = bool_at(value, pointer)?;
+    if observed != expected {
+        return Err(format!(
+            "direct theorem obligation consistency {pointer} mismatch: {observed} != {expected}"
+        ));
+    }
+    Ok(())
+}
+
 fn main() -> Result<(), String> {
     let root = repo_root();
     let corpus_path = "formal/kat/path2_direct_theorem_obligation_vectors_v1.json";
@@ -79,6 +110,42 @@ fn main() -> Result<(), String> {
     let recomputed_digest = hex_encode(&Sha256::digest(corpus_json.as_bytes()));
     if str_at(&corpus_file, "/corpus_digest")? != recomputed_digest {
         return Err("direct theorem obligation vector corpus digest mismatch".to_string());
+    }
+    let accepted_composition_path = "formal/kat/path2_direct_accepted_composition_evidence_v1.json";
+    let accepted_composition_file = load_json(&root, accepted_composition_path)?;
+    let accepted_composition = at(&accepted_composition_file, "/manifest")?;
+    let accepted_composition_json = serde_json::to_string_pretty(accepted_composition)
+        .map_err(|err| format!("serialize direct accepted composition manifest body: {err}"))?;
+    let accepted_composition_recomputed_digest =
+        hex_encode(&Sha256::digest(accepted_composition_json.as_bytes()));
+    if str_at(&accepted_composition_file, "/manifest_digest")?
+        != accepted_composition_recomputed_digest
+    {
+        return Err("direct accepted composition manifest digest mismatch".to_string());
+    }
+    require_str(
+        accepted_composition,
+        "/schema",
+        "Descender.Path2.DirectAcceptedCompositionDeterministicKatEvidenceManifest.v1",
+    )?;
+    require_str(
+        accepted_composition,
+        "/status",
+        "digest_pinned_deterministic_kat_accepted_direct_composition_evidence",
+    )?;
+    require_bool(
+        accepted_composition,
+        "/deterministic_proof_byte_mode/evidence_digest_recomputed",
+        true,
+    )?;
+    if u64_at(
+        accepted_composition,
+        "/deterministic_proof_byte_mode/rayon_threads",
+    )? != 1
+    {
+        return Err(
+            "direct accepted composition manifest is not in one-thread KAT mode".to_string(),
+        );
     }
 
     let direct_report = path2_direct_theorem_boundary_report_v1();
@@ -137,6 +204,46 @@ fn main() -> Result<(), String> {
             "direct theorem obligation vector corpus lost accepted evidence hooks".to_string(),
         );
     }
+    require_str(
+        accepted_composition,
+        "/deterministic_proof_byte_mode/accepted_composition_endpoint",
+        direct_report.accepted_composition_evidence_endpoint,
+    )?;
+    require_str(
+        accepted_composition,
+        "/evidence/schema",
+        direct_report.accepted_composition_evidence_schema,
+    )?;
+    require_str(
+        accepted_composition,
+        "/evidence/theorem_target",
+        direct_report.theorem_target,
+    )?;
+    require_str(
+        accepted_composition,
+        "/evidence/theorem_conclusion",
+        direct_report.theorem_conclusion,
+    )?;
+    require_hex(
+        accepted_composition,
+        "/evidence/direct_theorem_boundary_report_digest",
+        &direct_report.digest,
+    )?;
+    require_hex(
+        accepted_composition,
+        "/evidence/direct_qrom_action_boundary_report_digest",
+        &direct_report.direct_qrom_action_boundary_report_digest,
+    )?;
+    require_hex(
+        accepted_composition,
+        "/evidence/direct_lifecycle_boundary_report_digest",
+        &direct_report.direct_lifecycle_boundary_report_digest,
+    )?;
+    require_hex(
+        accepted_composition,
+        "/evidence/account_creation_proof_boundary_report_digest",
+        &direct_report.account_creation_proof_boundary_report_digest,
+    )?;
     if str_at(corpus, "/qrom_action_boundary_report/digest")?
         != hex_encode(&qrom_action_report.digest)
         || str_at(corpus, "/qrom_action_boundary_report/recomputed_digest")?
@@ -197,6 +304,11 @@ fn main() -> Result<(), String> {
     {
         return Err("direct theorem report lost imported boundary digest binding".to_string());
     }
+    require_hex(
+        accepted_composition,
+        "/evidence/account_creation_proof_boundary_report_digest",
+        &proof_report.digest,
+    )?;
 
     if u64_at(corpus, "/case_count")? != direct_report.obligation_count as u64
         || u64_at(corpus, "/audit_summary/direct_obligation_count")?
@@ -259,6 +371,37 @@ fn main() -> Result<(), String> {
             ));
         }
     }
+    for pointer in [
+        "/evidence/creation_evidence_matches_direct_tuple",
+        "/evidence/proof_boundary_digest_matches_direct_theorem",
+        "/evidence/qrom_action_digest_matches_direct_theorem",
+        "/evidence/lifecycle_digest_matches_direct_theorem",
+        "/evidence/direct_admission_namespace_matches_authorization",
+        "/evidence/consume_once_transition_matches_tuple",
+        "/evidence/verifier_boundary_accepts_creation",
+        "/evidence/direct_spend_tuple_accepts",
+        "/evidence/public_result_accepts_same_slot",
+        "/evidence/direct_theorem_obligations_still_open",
+        "/evidence/proof_family_obligations_still_open",
+    ] {
+        require_bool(accepted_composition, pointer, true)?;
+    }
+    for pointer in [
+        "/evidence/composition_theorem_instantiated",
+        "/evidence/account_creation_proof_boundary_verified",
+        "/evidence/deployment_ready",
+    ] {
+        require_bool(accepted_composition, pointer, false)?;
+    }
+    let payload_vectors = load_json(
+        &root,
+        "formal/kat/path2_account_stark_payload_kat_vectors_v1.json",
+    )?;
+    require_str(
+        accepted_composition,
+        "/evidence/selected_account_creation_payload_digest",
+        str_at(&payload_vectors, "/corpus/honest_payload/payload_digest")?,
+    )?;
 
     if str_at(corpus, "/qrom_action_boundary_report/direct_obligation_id")?
         != qrom_action_report.direct_obligation_id
