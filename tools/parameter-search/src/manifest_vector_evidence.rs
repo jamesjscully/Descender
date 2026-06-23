@@ -915,6 +915,18 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
         || !bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
+        || !bool_at(
+            corpus,
+            "/audit_summary/current_no_export_vectors_cover_boundary_cases",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/current_fri_qrom_domain_vectors_cover_boundary_cases",
+        )?
+        || !bool_at(
+            corpus,
+            "/audit_summary/current_payload_kat_vectors_cover_every_boundary_row",
+        )?
         || bool_at(corpus, "/audit_summary/simulator_theorem_instantiated")?
         || bool_at(
             corpus,
@@ -966,6 +978,18 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             "all_open_cases_block_deployment": bool_at(
                 corpus,
                 "/audit_summary/all_open_cases_block_deployment"
+            )?,
+            "current_no_export_vectors_cover_boundary_cases": bool_at(
+                corpus,
+                "/audit_summary/current_no_export_vectors_cover_boundary_cases"
+            )?,
+            "current_fri_qrom_domain_vectors_cover_boundary_cases": bool_at(
+                corpus,
+                "/audit_summary/current_fri_qrom_domain_vectors_cover_boundary_cases"
+            )?,
+            "current_payload_kat_vectors_cover_every_boundary_row": bool_at(
+                corpus,
+                "/audit_summary/current_payload_kat_vectors_cover_every_boundary_row"
             )?,
             "simulator_theorem_instantiated": bool_at(
                 corpus,

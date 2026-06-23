@@ -518,6 +518,9 @@
           "all_cases_have_named_break": true,
           "all_cases_open": true,
           "all_open_cases_block_deployment": true,
+          "current_fri_qrom_domain_vectors_cover_boundary_cases": true,
+          "current_no_export_vectors_cover_boundary_cases": true,
+          "current_payload_kat_vectors_cover_every_boundary_row": true,
           "deployment_ready": false,
           "external_review_complete": false,
           "fri_aok_extractor_theorem_instantiated": false,
@@ -1887,5 +1890,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "09236f18082b9828afd41e5c78f421965d57ef1c986cd27688450ce3317d9d28"
+  "manifest_digest": "22a5606e79e3406608c2c767d4f4ef233c2241720c265a5d2e79a219a34ff347"
 }

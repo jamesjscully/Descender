@@ -384,8 +384,10 @@ evidence counts plus their deferred rejection/QROM flags; both boundary and
 preflight consistency gates check those summaries before importing them. The
 compact proof-obligation and direct-obligation corpus summaries also retain the
 raw open external-review, QROM theorem/import, lifecycle-finality, and
-proof-boundary readiness flags so those blockers cannot disappear when a
-standalone corpus is imported by a boundary manifest.
+proof-boundary readiness flags, plus the proof-obligation corpus flags showing
+that the no-export, FRI/QROM-domain, and payload-KAT vector corpora still cover
+the current boundary cases, so those blockers cannot disappear when a
+standalone corpus is imported by a boundary or preflight manifest.
 The reports and
 manifests are
 the executable boundary map for this section; they are not an honest-sampler

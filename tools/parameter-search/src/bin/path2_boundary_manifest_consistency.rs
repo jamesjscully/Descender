@@ -712,6 +712,36 @@ fn check_consistency() -> Result<(), String> {
         ],
         true,
     )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "proof_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "current_no_export_vectors_cover_boundary_cases",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "proof_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "current_fri_qrom_domain_vectors_cover_boundary_cases",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "proof_obligation_vector_corpus_evidence",
+            "audit_summary",
+            "current_payload_kat_vectors_cover_every_boundary_row",
+        ],
+        true,
+    )?;
     expect_u64(
         proof_manifest,
         &[

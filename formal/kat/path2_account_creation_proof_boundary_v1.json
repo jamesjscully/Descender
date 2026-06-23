@@ -518,6 +518,9 @@
           "all_cases_have_named_break": true,
           "all_cases_open": true,
           "all_open_cases_block_deployment": true,
+          "current_fri_qrom_domain_vectors_cover_boundary_cases": true,
+          "current_no_export_vectors_cover_boundary_cases": true,
+          "current_payload_kat_vectors_cover_every_boundary_row": true,
           "deployment_ready": false,
           "external_review_complete": false,
           "fri_aok_extractor_theorem_instantiated": false,
@@ -1271,5 +1274,5 @@
       ]
     }
   },
-  "manifest_digest": "6276fd4ff5257c0d6f4ded1647fc4e9db6bc2231931a291560d3a7fa5eafe36f"
+  "manifest_digest": "60bdad3c08d2e2a994e7edb1adaeed8b68b649671e3c58b7deeb53c08da4e721"
 }
