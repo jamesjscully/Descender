@@ -111,6 +111,41 @@ fn main() -> Result<(), String> {
     if str_at(&corpus_file, "/corpus_digest")? != recomputed_digest {
         return Err("direct theorem obligation vector corpus digest mismatch".to_string());
     }
+    let accepted_tuple_path = "formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json";
+    let accepted_tuple_file = load_json(&root, accepted_tuple_path)?;
+    let accepted_tuple = at(&accepted_tuple_file, "/manifest")?;
+    let accepted_tuple_json = serde_json::to_string_pretty(accepted_tuple)
+        .map_err(|err| format!("serialize direct accepted spend tuple manifest body: {err}"))?;
+    let accepted_tuple_recomputed_digest =
+        hex_encode(&Sha256::digest(accepted_tuple_json.as_bytes()));
+    if str_at(&accepted_tuple_file, "/manifest_digest")? != accepted_tuple_recomputed_digest {
+        return Err("direct accepted spend tuple manifest digest mismatch".to_string());
+    }
+    require_str(
+        accepted_tuple,
+        "/schema",
+        "Descender.Path2.DirectAcceptedSpendTupleDeterministicKatEvidenceManifest.v1",
+    )?;
+    require_str(
+        accepted_tuple,
+        "/status",
+        "digest_pinned_deterministic_kat_accepted_direct_spend_tuple_evidence",
+    )?;
+    require_bool(
+        accepted_tuple,
+        "/deterministic_tuple_mode/evidence_digest_recomputed",
+        true,
+    )?;
+    require_bool(
+        accepted_tuple,
+        "/deterministic_tuple_mode/replay_rejected_by_consume_once",
+        true,
+    )?;
+    if u64_at(accepted_tuple, "/deterministic_tuple_mode/rayon_threads")? != 1 {
+        return Err(
+            "direct accepted spend tuple manifest is not in one-thread KAT mode".to_string(),
+        );
+    }
     let accepted_composition_path = "formal/kat/path2_direct_accepted_composition_evidence_v1.json";
     let accepted_composition_file = load_json(&root, accepted_composition_path)?;
     let accepted_composition = at(&accepted_composition_file, "/manifest")?;
@@ -204,6 +239,41 @@ fn main() -> Result<(), String> {
             "direct theorem obligation vector corpus lost accepted evidence hooks".to_string(),
         );
     }
+    require_str(
+        accepted_tuple,
+        "/deterministic_tuple_mode/accepted_tuple_endpoint",
+        direct_report.accepted_tuple_evidence_endpoint,
+    )?;
+    require_str(
+        accepted_tuple,
+        "/evidence/schema",
+        direct_report.accepted_tuple_evidence_schema,
+    )?;
+    require_str(
+        accepted_tuple,
+        "/evidence/theorem_target",
+        direct_report.theorem_target,
+    )?;
+    require_str(
+        accepted_tuple,
+        "/evidence/theorem_conclusion",
+        direct_report.theorem_conclusion,
+    )?;
+    require_hex(
+        accepted_tuple,
+        "/evidence/direct_qrom_action_boundary_report_digest",
+        &direct_report.direct_qrom_action_boundary_report_digest,
+    )?;
+    require_hex(
+        accepted_tuple,
+        "/evidence/direct_lifecycle_boundary_report_digest",
+        &direct_report.direct_lifecycle_boundary_report_digest,
+    )?;
+    require_hex(
+        accepted_tuple,
+        "/evidence/account_creation_proof_boundary_report_digest",
+        &direct_report.account_creation_proof_boundary_report_digest,
+    )?;
     require_str(
         accepted_composition,
         "/deterministic_proof_byte_mode/accepted_composition_endpoint",
@@ -309,6 +379,31 @@ fn main() -> Result<(), String> {
         "/evidence/account_creation_proof_boundary_report_digest",
         &proof_report.digest,
     )?;
+    let tuple_artifact = at(corpus, "/direct_accepted_spend_tuple_evidence_artifact")?;
+    if str_at(tuple_artifact, "/artifact_manifest_digest")?
+        != str_at(&accepted_tuple_file, "/manifest_digest")?
+        || str_at(tuple_artifact, "/artifact_manifest_recomputed_digest")?
+            != accepted_tuple_recomputed_digest
+        || str_at(tuple_artifact, "/evidence_digest")?
+            != str_at(accepted_tuple, "/evidence/digest")?
+        || str_at(tuple_artifact, "/evidence_recomputed_digest")?
+            != str_at(accepted_tuple, "/evidence/recomputed_digest")?
+        || str_at(tuple_artifact, "/direct_theorem_boundary_report_digest")?
+            != hex_encode(&direct_report.digest)
+        || str_at(tuple_artifact, "/direct_qrom_action_boundary_report_digest")?
+            != hex_encode(&qrom_action_report.digest)
+        || str_at(tuple_artifact, "/direct_lifecycle_boundary_report_digest")?
+            != hex_encode(&lifecycle_report.digest)
+        || str_at(
+            tuple_artifact,
+            "/account_creation_proof_boundary_report_digest",
+        )? != hex_encode(&proof_report.digest)
+    {
+        return Err(
+            "direct theorem obligation vector corpus lost accepted tuple artifact binding"
+                .to_string(),
+        );
+    }
 
     if u64_at(corpus, "/case_count")? != direct_report.obligation_count as u64
         || u64_at(corpus, "/audit_summary/direct_obligation_count")?
@@ -372,6 +467,17 @@ fn main() -> Result<(), String> {
         }
     }
     for pointer in [
+        "/evidence/state_namespace_record_present",
+        "/evidence/consumed_authorization_absent_before",
+        "/evidence/consumed_authorization_present_after",
+        "/evidence/consume_once_inserted_exactly_one_authorization",
+        "/evidence/public_result_accepts_same_slot",
+        "/evidence/tuple_fields_match_theorem_boundary",
+        "/evidence/replay_rejected_by_consume_once",
+    ] {
+        require_bool(accepted_tuple, pointer, true)?;
+    }
+    for pointer in [
         "/evidence/creation_evidence_matches_direct_tuple",
         "/evidence/proof_boundary_digest_matches_direct_theorem",
         "/evidence/qrom_action_digest_matches_direct_theorem",
@@ -393,9 +499,69 @@ fn main() -> Result<(), String> {
     ] {
         require_bool(accepted_composition, pointer, false)?;
     }
+    if str_at(
+        accepted_composition,
+        "/evidence/direct_accepted_spend_tuple_evidence_digest",
+    )? != str_at(accepted_tuple, "/evidence/digest")?
+        || str_at(accepted_composition, "/evidence/public_key_identity")?
+            != str_at(accepted_tuple, "/evidence/public_key_identity")?
+        || str_at(accepted_composition, "/evidence/message_digest")?
+            != str_at(accepted_tuple, "/evidence/message_digest")?
+        || str_at(accepted_composition, "/evidence/account_id")?
+            != str_at(accepted_tuple, "/evidence/account_id")?
+        || str_at(accepted_composition, "/evidence/account_state_root_before")?
+            != str_at(accepted_tuple, "/evidence/account_state_root_before")?
+        || u64_at(accepted_composition, "/evidence/slot_id")?
+            != u64_at(accepted_tuple, "/evidence/slot_id")?
+        || str_at(
+            accepted_composition,
+            "/evidence/prevalidated_slot_leaf_digest",
+        )? != str_at(accepted_tuple, "/evidence/prevalidated_slot_leaf_digest")?
+        || str_at(
+            accepted_composition,
+            "/evidence/account_creation_evidence_transcript_digest",
+        )? != str_at(
+            accepted_tuple,
+            "/evidence/account_creation_evidence_transcript_digest",
+        )?
+        || str_at(
+            accepted_composition,
+            "/evidence/selected_account_creation_payload_digest",
+        )? != str_at(
+            accepted_tuple,
+            "/evidence/selected_account_creation_payload_digest",
+        )?
+        || str_at(accepted_composition, "/evidence/slot_authorization_digest")?
+            != str_at(accepted_tuple, "/evidence/slot_authorization_digest")?
+        || str_at(
+            accepted_composition,
+            "/evidence/direct_admission_namespace_record_digest",
+        )? != str_at(
+            accepted_tuple,
+            "/evidence/direct_admission_namespace_record_digest",
+        )?
+        || str_at(
+            accepted_composition,
+            "/evidence/consume_once_state_before_digest",
+        )? != str_at(accepted_tuple, "/evidence/consume_once_state_before_digest")?
+        || str_at(
+            accepted_composition,
+            "/evidence/consume_once_state_after_digest",
+        )? != str_at(accepted_tuple, "/evidence/consume_once_state_after_digest")?
+    {
+        return Err(
+            "direct theorem obligation vector corpus accepted composition tuple fields drifted"
+                .to_string(),
+        );
+    }
     let payload_vectors = load_json(
         &root,
         "formal/kat/path2_account_stark_payload_kat_vectors_v1.json",
+    )?;
+    require_str(
+        accepted_tuple,
+        "/evidence/selected_account_creation_payload_digest",
+        str_at(&payload_vectors, "/corpus/honest_payload/payload_digest")?,
     )?;
     require_str(
         accepted_composition,

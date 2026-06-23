@@ -1,16 +1,20 @@
-use descender_parameter_search::production_reference::{
-    PROFILE, path2_account_creation_proof_boundary_report_v1,
-    path2_account_creation_proof_boundary_report_v1_digest,
-    path2_direct_lifecycle_boundary_report_v1, path2_direct_lifecycle_boundary_report_v1_digest,
-    path2_direct_qrom_action_boundary_report_v1,
-    path2_direct_qrom_action_boundary_report_v1_digest, path2_direct_theorem_boundary_report_v1,
-    path2_direct_theorem_boundary_report_v1_digest,
-    validate_path2_account_creation_proof_boundary_report_v1,
-    validate_path2_direct_lifecycle_boundary_report_v1,
-    validate_path2_direct_qrom_action_boundary_report_v1,
-    validate_path2_direct_theorem_boundary_report_v1,
+use descender_parameter_search::{
+    manifest_vector_evidence::path2_direct_accepted_spend_tuple_evidence_artifact_v1,
+    production_reference::{
+        path2_account_creation_proof_boundary_report_v1,
+        path2_account_creation_proof_boundary_report_v1_digest,
+        path2_direct_lifecycle_boundary_report_v1,
+        path2_direct_lifecycle_boundary_report_v1_digest,
+        path2_direct_qrom_action_boundary_report_v1,
+        path2_direct_qrom_action_boundary_report_v1_digest,
+        path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
+        validate_path2_account_creation_proof_boundary_report_v1,
+        validate_path2_direct_lifecycle_boundary_report_v1,
+        validate_path2_direct_qrom_action_boundary_report_v1,
+        validate_path2_direct_theorem_boundary_report_v1, PROFILE,
+    },
 };
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 
 fn hex_encode(bytes: &[u8]) -> String {
@@ -61,6 +65,7 @@ fn manifest_body() -> Result<Value, String> {
     if direct_report.account_creation_proof_boundary_report_digest != proof_report.digest {
         return Err("direct theorem report lost proof-boundary digest binding".to_string());
     }
+    let accepted_spend_tuple_artifact = path2_direct_accepted_spend_tuple_evidence_artifact_v1()?;
 
     let cases: Vec<Value> = direct_report
         .obligation_rows
@@ -200,6 +205,7 @@ fn manifest_body() -> Result<Value, String> {
             "deployment_ready": proof_report.deployment_ready,
             "blocker": proof_report.blocker
         },
+        "direct_accepted_spend_tuple_evidence_artifact": accepted_spend_tuple_artifact,
         "audit_summary": {
             "direct_obligation_count": direct_report.obligation_count,
             "direct_obligation_audit_vector_case_count":

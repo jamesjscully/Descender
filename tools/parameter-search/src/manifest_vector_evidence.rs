@@ -809,6 +809,7 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
     {
         return Err("direct theorem report lost imported boundary digest binding".to_string());
     }
+    let accepted_tuple_artifact = path2_direct_accepted_spend_tuple_evidence_artifact_v1()?;
 
     let corpus_file = load_json("formal/kat/path2_direct_theorem_obligation_vectors_v1.json")?;
     let corpus = at(&corpus_file, "/corpus")?;
@@ -834,6 +835,26 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             corpus,
             "/account_creation_proof_boundary_report/recomputed_digest",
         )? != hex_encode(&proof_digest)
+        || str_at(
+            corpus,
+            "/direct_accepted_spend_tuple_evidence_artifact/evidence_digest",
+        )? != str_at(&accepted_tuple_artifact, "/evidence_digest")?
+        || str_at(
+            corpus,
+            "/direct_accepted_spend_tuple_evidence_artifact/direct_theorem_boundary_report_digest",
+        )? != hex_encode(&direct_report.digest)
+        || str_at(
+            corpus,
+            "/direct_accepted_spend_tuple_evidence_artifact/direct_qrom_action_boundary_report_digest",
+        )? != hex_encode(&qrom_action_report.digest)
+        || str_at(
+            corpus,
+            "/direct_accepted_spend_tuple_evidence_artifact/direct_lifecycle_boundary_report_digest",
+        )? != hex_encode(&lifecycle_report.digest)
+        || str_at(
+            corpus,
+            "/direct_accepted_spend_tuple_evidence_artifact/account_creation_proof_boundary_report_digest",
+        )? != hex_encode(&proof_report.digest)
         || u64_at(corpus, "/case_count")? != direct_report.obligation_count as u64
         || u64_at(corpus, "/audit_summary/direct_obligation_count")?
             != direct_report.obligation_count as u64
@@ -890,6 +911,8 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             "/account_creation_proof_boundary_report/digest"
         )?,
         "account_creation_proof_boundary_report_recomputed_digest": hex_encode(&proof_digest),
+        "direct_accepted_spend_tuple_evidence_artifact":
+            accepted_tuple_artifact,
         "case_count": u64_at(corpus, "/case_count")?,
         "audit_summary": {
             "direct_obligation_count": u64_at(
