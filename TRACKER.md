@@ -35,8 +35,14 @@ the direct-theorem boundary also embeds the 9-case open direct-obligation audit
 corpus and accepted direct-composition KAT artifact, with that standalone
 accepted-composition KAT and the direct-obligation corpus both carrying nested
 accepted proof-boundary and accepted direct-spend tuple artifacts, while
-keeping theorem and deployment flags false. The accepted proof-boundary,
-accepted spend tuple, accepted composition, proof-obligation, direct-obligation,
+keeping theorem and deployment flags false. The accepted proof-boundary artifact
+now also carries a ten-row accepted-requirement evidence checklist: eight
+happy-path-applicable accepting requirements are checked by the deterministic
+creation KAT, FRI/QROM domain separation is deferred to the residual theorem
+ledger, deterministic public rejection is deferred to rejection KATs, and every
+separate closure requirement remains tied to an open proof-boundary obligation.
+The accepted proof-boundary, accepted spend tuple, accepted composition,
+proof-obligation, direct-obligation,
 and production preflight consistency gates now also recompute those generated
 manifests, call reusable accepted-evidence production-reference validators,
 check accepted-artifact equality, bind every generated proof/direct boundary

@@ -52,6 +52,16 @@ mod enabled {
             || !evidence.deployed_anchor_fields_match_report
             || !evidence.account_stark_bundle_nonempty
             || !evidence.proof_family_obligations_still_open
+            || evidence.accepted_requirement_evidence_count != 10
+            || evidence.accepted_path_applicable_requirement_count != 8
+            || evidence.accepted_path_requirement_evidence_count != 8
+            || evidence.boundary_or_audit_requirement_evidence_count != 10
+            || evidence.separate_closure_required_count != 10
+            || !evidence.every_applicable_accepting_requirement_has_accepted_path_evidence
+            || !evidence.every_accepting_requirement_has_boundary_or_audit_evidence
+            || !evidence.every_separate_closure_requirement_has_open_obligation
+            || !evidence.deterministic_rejection_requirement_deferred_to_rejection_kats
+            || !evidence.qrom_requirement_deferred_to_residual_theorem
         {
             return Err(
                 "account-creation accepted proof-boundary evidence lost fail-closed invariants"
@@ -90,6 +100,29 @@ mod enabled {
                 "production_boundary_endpoint": evidence.production_boundary_endpoint,
                 "replay_payload_digest_function": evidence.replay_payload_digest_function,
                 "accepting_requirements": evidence.accepting_requirements,
+                "accepted_requirement_evidence_rows":
+                    evidence.accepted_requirement_evidence_rows,
+                "accepted_requirement_evidence_count":
+                    evidence.accepted_requirement_evidence_count,
+                "accepted_path_applicable_requirement_count":
+                    evidence.accepted_path_applicable_requirement_count,
+                "accepted_path_requirement_evidence_count":
+                    evidence.accepted_path_requirement_evidence_count,
+                "boundary_or_audit_requirement_evidence_count":
+                    evidence.boundary_or_audit_requirement_evidence_count,
+                "separate_closure_required_count":
+                    evidence.separate_closure_required_count,
+                "every_applicable_accepting_requirement_has_accepted_path_evidence":
+                    evidence
+                        .every_applicable_accepting_requirement_has_accepted_path_evidence,
+                "every_accepting_requirement_has_boundary_or_audit_evidence":
+                    evidence.every_accepting_requirement_has_boundary_or_audit_evidence,
+                "every_separate_closure_requirement_has_open_obligation":
+                    evidence.every_separate_closure_requirement_has_open_obligation,
+                "deterministic_rejection_requirement_deferred_to_rejection_kats":
+                    evidence.deterministic_rejection_requirement_deferred_to_rejection_kats,
+                "qrom_requirement_deferred_to_residual_theorem":
+                    evidence.qrom_requirement_deferred_to_residual_theorem,
                 "account_creation_proof_boundary_report_digest": hex_encode(
                     &evidence.account_creation_proof_boundary_report_digest
                 ),

@@ -124,7 +124,12 @@ one-thread Rayon proof-byte mode, then digest-pins the public accepted evidence
 chain: proof-boundary report digest, imported sampler/no-export/residual/payload
 boundary report digests, leaf/evidence/certificate/payload digests, payload
 frame and bundle digests, deployed and decoded public-anchor digests, public
-binding flags, fail-closed production gate, and open proof-family flags. The
+binding flags, fail-closed production gate, open proof-family flags, and a
+ten-row accepted-requirement evidence checklist. That checklist records eight
+happy-path-applicable accepted checks, defers FRI/QROM domain separation to the
+residual theorem ledger, defers deterministic public rejection to rejection
+KATs, and keeps every separate closure requirement tied to an open proof
+obligation. The
 `path2_account_creation_accepted_proof_boundary_evidence_consistency` gate
 recomputes that evidence in the same deterministic KAT mode and ties the
 selected payload digest back to

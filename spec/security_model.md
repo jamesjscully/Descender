@@ -331,7 +331,13 @@ accepted verifier result, and confirms the production entrypoint still fails
 closed. The decoded-anchor comparison separately pins account id, slot id,
 state root, lifecycle anchor, raw verifier version, masked projection,
 role-root export bridge, and packed-witness commitment against the deployed
-leaf/binding anchors. This evidence pins the accepted creation boundary shape;
+leaf/binding anchors. The artifact also carries a ten-row
+accepted-requirement evidence checklist: eight requirements are
+happy-path-applicable accepted checks, `account_stark_qrom_domain_separation`
+is deferred to the residual theorem ledger, `deterministic_public_rejection`
+is deferred to rejection KATs, and every separate closure requirement remains
+tied to an open proof-boundary obligation. This evidence pins the accepted
+creation boundary shape;
 `formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json`
 now digest-pins that evidence as a deterministic one-thread KAT artifact and
 checks it back to the account-STARK payload KAT corpus. It is not the simulator

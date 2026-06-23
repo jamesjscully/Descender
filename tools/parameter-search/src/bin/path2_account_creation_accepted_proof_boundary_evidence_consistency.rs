@@ -16,7 +16,7 @@ mod enabled {
             validate_path2_account_creation_accepted_proof_boundary_evidence_v1,
         },
     };
-    use serde_json::Value;
+    use serde_json::{to_value, Value};
     use sha2::{Digest, Sha256};
     use std::{
         fs,
@@ -223,6 +223,35 @@ mod enabled {
                 ));
             }
         }
+        let expected_requirement_rows = to_value(&evidence.accepted_requirement_evidence_rows)
+            .map_err(|err| format!("serialize accepted requirement evidence rows: {err}"))?;
+        if u64_at(body, "/evidence/accepted_requirement_evidence_count")?
+            != evidence.accepted_requirement_evidence_count as u64
+            || u64_at(
+                body,
+                "/evidence/accepted_path_applicable_requirement_count",
+            )? != evidence.accepted_path_applicable_requirement_count as u64
+            || u64_at(body, "/evidence/accepted_path_requirement_evidence_count")?
+                != evidence.accepted_path_requirement_evidence_count as u64
+            || u64_at(
+                body,
+                "/evidence/boundary_or_audit_requirement_evidence_count",
+            )? != evidence.boundary_or_audit_requirement_evidence_count as u64
+            || u64_at(body, "/evidence/separate_closure_required_count")?
+                != evidence.separate_closure_required_count as u64
+            || evidence.accepted_requirement_evidence_count != 10
+            || evidence.accepted_path_applicable_requirement_count != 8
+            || evidence.accepted_path_requirement_evidence_count != 8
+            || evidence.boundary_or_audit_requirement_evidence_count != 10
+            || evidence.separate_closure_required_count != 10
+            || at(body, "/evidence/accepted_requirement_evidence_rows")?
+                != &expected_requirement_rows
+        {
+            return Err(
+                "account-creation accepted proof-boundary manifest lost accepted-requirement evidence rows"
+                    .to_string(),
+            );
+        }
 
         require_hex(
             body,
@@ -374,6 +403,11 @@ mod enabled {
             "/evidence/deployed_anchor_fields_match_report",
             "/evidence/account_stark_bundle_nonempty",
             "/evidence/proof_family_obligations_still_open",
+            "/evidence/every_applicable_accepting_requirement_has_accepted_path_evidence",
+            "/evidence/every_accepting_requirement_has_boundary_or_audit_evidence",
+            "/evidence/every_separate_closure_requirement_has_open_obligation",
+            "/evidence/deterministic_rejection_requirement_deferred_to_rejection_kats",
+            "/evidence/qrom_requirement_deferred_to_residual_theorem",
         ] {
             require_bool(body, pointer, true)?;
         }

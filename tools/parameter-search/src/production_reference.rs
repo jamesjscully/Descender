@@ -9589,6 +9589,24 @@ pub struct Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AccountCreationAcceptedRequirementEvidenceRowV1 {
+    pub requirement: &'static str,
+    pub coverage_surface: &'static str,
+    pub vector_evidence_kind: &'static str,
+    pub current_vector_case_ids: &'static [&'static str],
+    pub closure_obligation_ids: &'static [&'static str],
+    pub accepted_path_applicable: bool,
+    pub accepted_path_evidence_source: &'static str,
+    pub accepted_path_check: &'static str,
+    pub accepted_path_evidence_present: bool,
+    pub boundary_or_audit_evidence_present: bool,
+    pub separate_rejection_evidence_required: bool,
+    pub separate_closure_required: bool,
+    pub all_referenced_closure_obligations_still_open: bool,
+    pub blocker: &'static str,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
     pub dependency_id: &'static str,
     pub source_report: &'static str,
@@ -9690,6 +9708,18 @@ pub struct Path2AccountCreationAcceptedProofBoundaryEvidenceV1 {
     pub production_boundary_endpoint: &'static str,
     pub replay_payload_digest_function: &'static str,
     pub accepting_requirements: &'static [&'static str],
+    pub accepted_requirement_evidence_rows:
+        Vec<Path2AccountCreationAcceptedRequirementEvidenceRowV1>,
+    pub accepted_requirement_evidence_count: usize,
+    pub accepted_path_applicable_requirement_count: usize,
+    pub accepted_path_requirement_evidence_count: usize,
+    pub boundary_or_audit_requirement_evidence_count: usize,
+    pub separate_closure_required_count: usize,
+    pub every_applicable_accepting_requirement_has_accepted_path_evidence: bool,
+    pub every_accepting_requirement_has_boundary_or_audit_evidence: bool,
+    pub every_separate_closure_requirement_has_open_obligation: bool,
+    pub deterministic_rejection_requirement_deferred_to_rejection_kats: bool,
+    pub qrom_requirement_deferred_to_residual_theorem: bool,
     pub account_creation_proof_boundary_report_digest: [u8; DIGEST_BYTES],
     pub sampler_timing_report_digest: [u8; DIGEST_BYTES],
     pub no_export_boundary_report_digest: [u8; DIGEST_BYTES],
@@ -11472,6 +11502,17 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_ALL_CURRENT_PAYLOAD_KAT_CASES: [
     "wrong_replay_payload_digest",
     "production_gate_closed",
 ];
+pub const PATH2_ACCOUNT_CREATION_REQUIREMENT_OBLIGATIONS_FROZEN_KATS: [&str; 1] =
+    ["creation_proof_obligation_frozen_payload_kats"];
+pub const PATH2_ACCOUNT_CREATION_REQUIREMENT_OBLIGATIONS_PACKED_STARK: [&str; 2] = [
+    "creation_proof_obligation_fri_aok_extractor",
+    "creation_proof_obligation_frozen_payload_kats",
+];
+pub const PATH2_ACCOUNT_CREATION_REQUIREMENT_OBLIGATIONS_NO_EXPORT: [&str; 1] =
+    ["creation_proof_obligation_simulator_no_export"];
+pub const PATH2_ACCOUNT_CREATION_REQUIREMENT_OBLIGATIONS_FRI_QROM: [&str; 1] =
+    ["creation_proof_obligation_fri_qrom_residual_pricing"];
+
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
     [Path2AccountCreationProofBoundaryRequirementCoverageRowV1; 10] = [
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
@@ -47803,6 +47844,158 @@ pub fn path2_account_creation_decoded_public_anchor_digest(
     Sha256::digest(frame).into()
 }
 
+fn path2_account_creation_referenced_obligations_still_open_v1(
+    proof_report: &Path2AccountCreationProofBoundaryReportV1,
+    obligation_ids: &[&str],
+) -> bool {
+    !obligation_ids.is_empty()
+        && obligation_ids.iter().all(|obligation_id| {
+            proof_report.proof_obligation_rows.iter().any(|row| {
+                row.obligation_id == *obligation_id && row.open
+            })
+        })
+}
+
+fn path2_account_creation_accepted_requirement_evidence_rows_v1(
+    evidence: &Path2AccountCreationAcceptedProofBoundaryEvidenceV1,
+    proof_report: &Path2AccountCreationProofBoundaryReportV1,
+) -> Vec<Path2AccountCreationAcceptedRequirementEvidenceRowV1> {
+    let row =
+        |requirement: &'static str,
+         closure_obligation_ids: &'static [&'static str],
+         accepted_path_applicable: bool,
+         accepted_path_evidence_source: &'static str,
+         accepted_path_check: &'static str,
+         accepted_path_evidence_present: bool,
+         separate_rejection_evidence_required: bool| {
+            let coverage = proof_report
+                .requirement_coverage_rows
+                .iter()
+                .find(|row| row.requirement == requirement)
+                .expect("accepted proof-boundary requirement coverage row exists");
+            Path2AccountCreationAcceptedRequirementEvidenceRowV1 {
+                requirement,
+                coverage_surface: coverage.coverage_surface,
+                vector_evidence_kind: coverage.vector_evidence_kind,
+                current_vector_case_ids: coverage.current_vector_case_ids,
+                closure_obligation_ids,
+                accepted_path_applicable,
+                accepted_path_evidence_source,
+                accepted_path_check,
+                accepted_path_evidence_present,
+                boundary_or_audit_evidence_present: coverage.covered_by_current_vectors,
+                separate_rejection_evidence_required,
+                separate_closure_required: !closure_obligation_ids.is_empty(),
+                all_referenced_closure_obligations_still_open:
+                    path2_account_creation_referenced_obligations_still_open_v1(
+                        proof_report,
+                        closure_obligation_ids,
+                    ),
+                blocker: coverage.blocker,
+            }
+        };
+
+    vec![
+        row(
+            "canonical_leaf_and_evidence_framing",
+            &PATH2_ACCOUNT_CREATION_REQUIREMENT_OBLIGATIONS_FROZEN_KATS,
+            true,
+            "accepted account-creation verifier boundary and proof-boundary report",
+            "verifier_boundary_accepts && proof_boundary_report_validated",
+            evidence.verifier_boundary_accepts && evidence.proof_boundary_report_validated,
+            false,
+        ),
+        row(
+            "evidence_leaf_binding_equalities",
+            &PATH2_ACCOUNT_CREATION_REQUIREMENT_OBLIGATIONS_FROZEN_KATS,
+            true,
+            "accepted leaf digest and evidence transcript binding",
+            "leaf_transcript_bound_to_evidence && leaf_digest_bound_to_evidence",
+            evidence.leaf_transcript_bound_to_evidence
+                && evidence.leaf_digest_bound_to_evidence,
+            false,
+        ),
+        row(
+            "certificate_evidence_payload_digest_binding",
+            &PATH2_ACCOUNT_CREATION_REQUIREMENT_OBLIGATIONS_FROZEN_KATS,
+            true,
+            "accepted replay certificate, evidence envelope, and selected payload digest",
+            "payload_digest_bound_to_certificate && evidence_digest_bound_to_certificate",
+            evidence.payload_digest_bound_to_certificate
+                && evidence.evidence_digest_bound_to_certificate,
+            false,
+        ),
+        row(
+            "payload_availability_nonempty_bundle_and_digest_equality",
+            &PATH2_ACCOUNT_CREATION_REQUIREMENT_OBLIGATIONS_FROZEN_KATS,
+            true,
+            "accepted account-STARK payload frame and non-empty proof bundle",
+            "account_stark_bundle_nonempty && payload_digest_bound_to_certificate",
+            evidence.account_stark_bundle_nonempty
+                && evidence.payload_digest_bound_to_certificate,
+            false,
+        ),
+        row(
+            "payload_context_binding_leaf_proof_aggregation_slot",
+            &PATH2_ACCOUNT_CREATION_REQUIREMENT_OBLIGATIONS_FROZEN_KATS,
+            true,
+            "accepted payload context, creation binding, aggregation context, and slot id",
+            "leaf_context_bound && binding_digest_bound && payload_binding_fields_match_report",
+            evidence.leaf_context_bound
+                && evidence.binding_digest_bound
+                && evidence.payload_binding_fields_match_report,
+            false,
+        ),
+        row(
+            "packed_account_stark_bundle_verifies",
+            &PATH2_ACCOUNT_CREATION_REQUIREMENT_OBLIGATIONS_PACKED_STARK,
+            true,
+            "accepted account-STARK boundary verification result",
+            "verifier_boundary_accepts && account_stark_bundle_nonempty",
+            evidence.verifier_boundary_accepts && evidence.account_stark_bundle_nonempty,
+            false,
+        ),
+        row(
+            "deployed_creation_anchors_match_stark_public_statement",
+            &PATH2_ACCOUNT_CREATION_REQUIREMENT_OBLIGATIONS_PACKED_STARK,
+            true,
+            "decoded deployed public anchors and payload boundary report",
+            "decoded_public_anchors_match_deployed_anchors && deployed_anchor_fields_match_report",
+            evidence.decoded_public_anchors_match_deployed_anchors
+                && evidence.deployed_anchor_fields_match_report,
+            false,
+        ),
+        row(
+            "zero_knowledge_no_export_semantics",
+            &PATH2_ACCOUNT_CREATION_REQUIREMENT_OBLIGATIONS_NO_EXPORT,
+            true,
+            "accepted public payload no-export audit boundary",
+            "!public_payload_exports_private_material && proof_boundary_report_validated",
+            !evidence.public_payload_exports_private_material
+                && evidence.proof_boundary_report_validated,
+            false,
+        ),
+        row(
+            "account_stark_qrom_domain_separation",
+            &PATH2_ACCOUNT_CREATION_REQUIREMENT_OBLIGATIONS_FRI_QROM,
+            false,
+            "FRI/QROM domain audit corpus and residual theorem ledger",
+            "not a happy-path acceptance property; covered by domain audit vectors and residual theorem closure",
+            false,
+            false,
+        ),
+        row(
+            "deterministic_public_rejection",
+            &PATH2_ACCOUNT_CREATION_REQUIREMENT_OBLIGATIONS_FROZEN_KATS,
+            false,
+            "account-creation public rejection KAT suite",
+            "not a happy-path acceptance property; covered by malformed/rebind rejection KAT gates",
+            false,
+            true,
+        ),
+    ]
+}
+
 #[cfg(feature = "account-creation-stark-verifier")]
 fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
     fixture: &Path2AccountStarkPayloadKatFixtureV1,
@@ -47960,6 +48153,17 @@ fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
         production_boundary_endpoint: proof_boundary_report.production_boundary_endpoint,
         replay_payload_digest_function: proof_boundary_report.replay_payload_digest_function,
         accepting_requirements: proof_boundary_report.accepting_requirements,
+        accepted_requirement_evidence_rows: Vec::new(),
+        accepted_requirement_evidence_count: 0,
+        accepted_path_applicable_requirement_count: 0,
+        accepted_path_requirement_evidence_count: 0,
+        boundary_or_audit_requirement_evidence_count: 0,
+        separate_closure_required_count: 0,
+        every_applicable_accepting_requirement_has_accepted_path_evidence: false,
+        every_accepting_requirement_has_boundary_or_audit_evidence: false,
+        every_separate_closure_requirement_has_open_obligation: false,
+        deterministic_rejection_requirement_deferred_to_rejection_kats: false,
+        qrom_requirement_deferred_to_residual_theorem: false,
         account_creation_proof_boundary_report_digest: proof_boundary_report.digest,
         sampler_timing_report_digest: sampler_timing_report.digest,
         no_export_boundary_report_digest: no_export_boundary_report.digest,
@@ -48022,6 +48226,80 @@ fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
             .all(|row| row.open),
         deployment_ready: false,
     };
+    evidence.accepted_requirement_evidence_rows =
+        path2_account_creation_accepted_requirement_evidence_rows_v1(
+            &evidence,
+            &proof_boundary_report,
+        );
+    evidence.accepted_requirement_evidence_count =
+        evidence.accepted_requirement_evidence_rows.len();
+    evidence.accepted_path_applicable_requirement_count = evidence
+        .accepted_requirement_evidence_rows
+        .iter()
+        .filter(|row| row.accepted_path_applicable)
+        .count();
+    evidence.accepted_path_requirement_evidence_count = evidence
+        .accepted_requirement_evidence_rows
+        .iter()
+        .filter(|row| row.accepted_path_applicable && row.accepted_path_evidence_present)
+        .count();
+    evidence.boundary_or_audit_requirement_evidence_count = evidence
+        .accepted_requirement_evidence_rows
+        .iter()
+        .filter(|row| row.boundary_or_audit_evidence_present)
+        .count();
+    evidence.separate_closure_required_count = evidence
+        .accepted_requirement_evidence_rows
+        .iter()
+        .filter(|row| row.separate_closure_required)
+        .count();
+    evidence.every_applicable_accepting_requirement_has_accepted_path_evidence =
+        evidence.accepted_requirement_evidence_count
+            == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
+            && evidence.accepted_path_applicable_requirement_count == 8
+            && evidence.accepted_path_requirement_evidence_count == 8
+            && evidence
+                .accepted_requirement_evidence_rows
+                .iter()
+                .filter(|row| row.accepted_path_applicable)
+                .all(|row| row.accepted_path_evidence_present);
+    evidence.every_accepting_requirement_has_boundary_or_audit_evidence =
+        evidence.accepted_requirement_evidence_count
+            == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
+            && evidence.boundary_or_audit_requirement_evidence_count
+                == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len();
+    evidence.every_separate_closure_requirement_has_open_obligation =
+        evidence.accepted_requirement_evidence_count
+            == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
+            && evidence.separate_closure_required_count
+                == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
+            && evidence
+                .accepted_requirement_evidence_rows
+                .iter()
+                .filter(|row| row.separate_closure_required)
+                .all(|row| row.all_referenced_closure_obligations_still_open);
+    evidence.deterministic_rejection_requirement_deferred_to_rejection_kats = evidence
+        .accepted_requirement_evidence_rows
+        .iter()
+        .any(|row| {
+            row.requirement == "deterministic_public_rejection"
+                && !row.accepted_path_applicable
+                && !row.accepted_path_evidence_present
+                && row.boundary_or_audit_evidence_present
+                && row.separate_rejection_evidence_required
+                && row.all_referenced_closure_obligations_still_open
+        });
+    evidence.qrom_requirement_deferred_to_residual_theorem = evidence
+        .accepted_requirement_evidence_rows
+        .iter()
+        .any(|row| {
+            row.requirement == "account_stark_qrom_domain_separation"
+                && !row.accepted_path_applicable
+                && !row.accepted_path_evidence_present
+                && row.boundary_or_audit_evidence_present
+                && !row.separate_rejection_evidence_required
+                && row.all_referenced_closure_obligations_still_open
+        });
     evidence.digest = path2_account_creation_accepted_proof_boundary_evidence_v1_digest(&evidence);
     Ok(evidence)
 }
@@ -66383,6 +66661,34 @@ pub fn validate_path2_account_creation_accepted_proof_boundary_evidence_v1(
         );
     }
 
+    let expected_requirement_rows =
+        path2_account_creation_accepted_requirement_evidence_rows_v1(
+            evidence,
+            &proof_boundary_report,
+        );
+    if evidence.accepted_requirement_evidence_rows != expected_requirement_rows
+        || evidence.accepted_requirement_evidence_count
+            != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
+        || evidence.accepted_requirement_evidence_count
+            != evidence.accepted_requirement_evidence_rows.len()
+        || evidence.accepted_path_applicable_requirement_count != 8
+        || evidence.accepted_path_requirement_evidence_count != 8
+        || evidence.boundary_or_audit_requirement_evidence_count
+            != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
+        || evidence.separate_closure_required_count
+            != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.len()
+        || !evidence.every_applicable_accepting_requirement_has_accepted_path_evidence
+        || !evidence.every_accepting_requirement_has_boundary_or_audit_evidence
+        || !evidence.every_separate_closure_requirement_has_open_obligation
+        || !evidence.deterministic_rejection_requirement_deferred_to_rejection_kats
+        || !evidence.qrom_requirement_deferred_to_residual_theorem
+    {
+        return Err(
+            "Path 2 account-creation accepted proof-boundary evidence lost requirement evidence rows"
+                .to_string(),
+        );
+    }
+
     let required_true = [
         (
             "verifier_boundary_accepts",
@@ -69354,6 +69660,147 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_v1_frame(
         append_u64(&mut frame, b"accepting_requirement_index", index as u64);
         append_frame(&mut frame, b"accepting_requirement", requirement.as_bytes());
     }
+    for (index, row) in evidence
+        .accepted_requirement_evidence_rows
+        .iter()
+        .enumerate()
+    {
+        append_u64(
+            &mut frame,
+            b"accepted_requirement_evidence_row_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"accepted_requirement",
+            row.requirement.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"coverage_surface",
+            row.coverage_surface.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"vector_evidence_kind",
+            row.vector_evidence_kind.as_bytes(),
+        );
+        for (case_index, case_id) in row.current_vector_case_ids.iter().enumerate() {
+            append_u64(
+                &mut frame,
+                b"accepted_requirement_vector_case_index",
+                case_index as u64,
+            );
+            append_frame(
+                &mut frame,
+                b"accepted_requirement_vector_case_id",
+                case_id.as_bytes(),
+            );
+        }
+        for (obligation_index, obligation_id) in row.closure_obligation_ids.iter().enumerate() {
+            append_u64(
+                &mut frame,
+                b"accepted_requirement_closure_obligation_index",
+                obligation_index as u64,
+            );
+            append_frame(
+                &mut frame,
+                b"accepted_requirement_closure_obligation_id",
+                obligation_id.as_bytes(),
+            );
+        }
+        append_u64(
+            &mut frame,
+            b"accepted_path_applicable",
+            u64::from(row.accepted_path_applicable),
+        );
+        append_frame(
+            &mut frame,
+            b"accepted_path_evidence_source",
+            row.accepted_path_evidence_source.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"accepted_path_check",
+            row.accepted_path_check.as_bytes(),
+        );
+        append_u64(
+            &mut frame,
+            b"accepted_path_evidence_present",
+            u64::from(row.accepted_path_evidence_present),
+        );
+        append_u64(
+            &mut frame,
+            b"boundary_or_audit_evidence_present",
+            u64::from(row.boundary_or_audit_evidence_present),
+        );
+        append_u64(
+            &mut frame,
+            b"separate_rejection_evidence_required",
+            u64::from(row.separate_rejection_evidence_required),
+        );
+        append_u64(
+            &mut frame,
+            b"separate_closure_required",
+            u64::from(row.separate_closure_required),
+        );
+        append_u64(
+            &mut frame,
+            b"all_referenced_closure_obligations_still_open",
+            u64::from(row.all_referenced_closure_obligations_still_open),
+        );
+        append_frame(&mut frame, b"blocker", row.blocker.as_bytes());
+    }
+    append_u64(
+        &mut frame,
+        b"accepted_requirement_evidence_count",
+        evidence.accepted_requirement_evidence_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_path_applicable_requirement_count",
+        evidence.accepted_path_applicable_requirement_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_path_requirement_evidence_count",
+        evidence.accepted_path_requirement_evidence_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"boundary_or_audit_requirement_evidence_count",
+        evidence.boundary_or_audit_requirement_evidence_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"separate_closure_required_count",
+        evidence.separate_closure_required_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"every_applicable_accepting_requirement_has_accepted_path_evidence",
+        u64::from(evidence.every_applicable_accepting_requirement_has_accepted_path_evidence),
+    );
+    append_u64(
+        &mut frame,
+        b"every_accepting_requirement_has_boundary_or_audit_evidence",
+        u64::from(evidence.every_accepting_requirement_has_boundary_or_audit_evidence),
+    );
+    append_u64(
+        &mut frame,
+        b"every_separate_closure_requirement_has_open_obligation",
+        u64::from(evidence.every_separate_closure_requirement_has_open_obligation),
+    );
+    append_u64(
+        &mut frame,
+        b"deterministic_rejection_requirement_deferred_to_rejection_kats",
+        u64::from(evidence.deterministic_rejection_requirement_deferred_to_rejection_kats),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_requirement_deferred_to_residual_theorem",
+        u64::from(evidence.qrom_requirement_deferred_to_residual_theorem),
+    );
     append_frame(
         &mut frame,
         b"account_creation_proof_boundary_report_digest",

@@ -141,6 +141,37 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_artifact_v1() -> 
         || !bool_at(artifact, "/evidence/production_gate_fail_closed")?
         || !bool_at(artifact, "/evidence/proof_boundary_report_validated")?
         || !bool_at(artifact, "/evidence/proof_family_obligations_still_open")?
+        || u64_at(artifact, "/evidence/accepted_requirement_evidence_count")? != 10
+        || u64_at(
+            artifact,
+            "/evidence/accepted_path_applicable_requirement_count",
+        )? != 8
+        || u64_at(artifact, "/evidence/accepted_path_requirement_evidence_count")? != 8
+        || u64_at(
+            artifact,
+            "/evidence/boundary_or_audit_requirement_evidence_count",
+        )? != 10
+        || u64_at(artifact, "/evidence/separate_closure_required_count")? != 10
+        || !bool_at(
+            artifact,
+            "/evidence/every_applicable_accepting_requirement_has_accepted_path_evidence",
+        )?
+        || !bool_at(
+            artifact,
+            "/evidence/every_accepting_requirement_has_boundary_or_audit_evidence",
+        )?
+        || !bool_at(
+            artifact,
+            "/evidence/every_separate_closure_requirement_has_open_obligation",
+        )?
+        || !bool_at(
+            artifact,
+            "/evidence/deterministic_rejection_requirement_deferred_to_rejection_kats",
+        )?
+        || !bool_at(
+            artifact,
+            "/evidence/qrom_requirement_deferred_to_residual_theorem",
+        )?
         || bool_at(
             artifact,
             "/evidence/public_payload_exports_private_material",
@@ -200,6 +231,46 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_artifact_v1() -> 
             "proof_family_obligations_still_open": bool_at(
                 artifact,
                 "/evidence/proof_family_obligations_still_open"
+            )?,
+            "accepted_requirement_evidence_count": u64_at(
+                artifact,
+                "/evidence/accepted_requirement_evidence_count"
+            )?,
+            "accepted_path_applicable_requirement_count": u64_at(
+                artifact,
+                "/evidence/accepted_path_applicable_requirement_count"
+            )?,
+            "accepted_path_requirement_evidence_count": u64_at(
+                artifact,
+                "/evidence/accepted_path_requirement_evidence_count"
+            )?,
+            "boundary_or_audit_requirement_evidence_count": u64_at(
+                artifact,
+                "/evidence/boundary_or_audit_requirement_evidence_count"
+            )?,
+            "separate_closure_required_count": u64_at(
+                artifact,
+                "/evidence/separate_closure_required_count"
+            )?,
+            "every_applicable_accepting_requirement_has_accepted_path_evidence": bool_at(
+                artifact,
+                "/evidence/every_applicable_accepting_requirement_has_accepted_path_evidence"
+            )?,
+            "every_accepting_requirement_has_boundary_or_audit_evidence": bool_at(
+                artifact,
+                "/evidence/every_accepting_requirement_has_boundary_or_audit_evidence"
+            )?,
+            "every_separate_closure_requirement_has_open_obligation": bool_at(
+                artifact,
+                "/evidence/every_separate_closure_requirement_has_open_obligation"
+            )?,
+            "deterministic_rejection_requirement_deferred_to_rejection_kats": bool_at(
+                artifact,
+                "/evidence/deterministic_rejection_requirement_deferred_to_rejection_kats"
+            )?,
+            "qrom_requirement_deferred_to_residual_theorem": bool_at(
+                artifact,
+                "/evidence/qrom_requirement_deferred_to_residual_theorem"
             )?,
             "public_payload_exports_private_material": bool_at(
                 artifact,

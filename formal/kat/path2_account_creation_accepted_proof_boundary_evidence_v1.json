@@ -9,6 +9,257 @@
       "rayon_threads": 1
     },
     "evidence": {
+      "accepted_path_applicable_requirement_count": 8,
+      "accepted_path_requirement_evidence_count": 8,
+      "accepted_requirement_evidence_count": 10,
+      "accepted_requirement_evidence_rows": [
+        {
+          "accepted_path_applicable": true,
+          "accepted_path_check": "verifier_boundary_accepts && proof_boundary_report_validated",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "accepted account-creation verifier boundary and proof-boundary report",
+          "all_referenced_closure_obligations_still_open": true,
+          "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+          "boundary_or_audit_evidence_present": true,
+          "closure_obligation_ids": [
+            "creation_proof_obligation_frozen_payload_kats"
+          ],
+          "coverage_surface": "Path2AccountCreationFrameKatBoundaryReportV1",
+          "current_vector_case_ids": [
+            "leaf_frame_version_mutation",
+            "leaf_live_status_marker_mutation",
+            "evidence_domain_mutation",
+            "evidence_version_mutation",
+            "evidence_kind_mutation"
+          ],
+          "requirement": "canonical_leaf_and_evidence_framing",
+          "separate_closure_required": true,
+          "separate_rejection_evidence_required": false,
+          "vector_evidence_kind": "rejection_vectors"
+        },
+        {
+          "accepted_path_applicable": true,
+          "accepted_path_check": "leaf_transcript_bound_to_evidence && leaf_digest_bound_to_evidence",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "accepted leaf digest and evidence transcript binding",
+          "all_referenced_closure_obligations_still_open": true,
+          "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+          "boundary_or_audit_evidence_present": true,
+          "closure_obligation_ids": [
+            "creation_proof_obligation_frozen_payload_kats"
+          ],
+          "coverage_surface": "Path2AccountCreationFrameKatBoundaryReportV1",
+          "current_vector_case_ids": [
+            "slot_leaf_digest_mutation",
+            "slot_authorization_digest_mutation",
+            "creation_verifier_version_digest_mutation",
+            "hidden_source_statement_digest_mutation",
+            "opening_commitment_mutation",
+            "pad_seed_digest_mutation",
+            "account_identity_digest_mutation",
+            "public_key_identity_mutation",
+            "slot_id_mutation",
+            "state_root_before_mutation",
+            "lifecycle_anchor_mutation",
+            "prevalidation_transcript_digest_mutation"
+          ],
+          "requirement": "evidence_leaf_binding_equalities",
+          "separate_closure_required": true,
+          "separate_rejection_evidence_required": false,
+          "vector_evidence_kind": "rejection_vectors"
+        },
+        {
+          "accepted_path_applicable": true,
+          "accepted_path_check": "payload_digest_bound_to_certificate && evidence_digest_bound_to_certificate",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "accepted replay certificate, evidence envelope, and selected payload digest",
+          "all_referenced_closure_obligations_still_open": true,
+          "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+          "boundary_or_audit_evidence_present": true,
+          "closure_obligation_ids": [
+            "creation_proof_obligation_frozen_payload_kats"
+          ],
+          "coverage_surface": "Path2AccountStarkPayloadKatBoundaryReportV1",
+          "current_vector_case_ids": [
+            "wrong_replay_payload_digest"
+          ],
+          "requirement": "certificate_evidence_payload_digest_binding",
+          "separate_closure_required": true,
+          "separate_rejection_evidence_required": false,
+          "vector_evidence_kind": "rejection_vectors"
+        },
+        {
+          "accepted_path_applicable": true,
+          "accepted_path_check": "account_stark_bundle_nonempty && payload_digest_bound_to_certificate",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "accepted account-STARK payload frame and non-empty proof bundle",
+          "all_referenced_closure_obligations_still_open": true,
+          "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+          "boundary_or_audit_evidence_present": true,
+          "closure_obligation_ids": [
+            "creation_proof_obligation_frozen_payload_kats"
+          ],
+          "coverage_surface": "Path2AccountStarkPayloadKatBoundaryReportV1",
+          "current_vector_case_ids": [
+            "native_role_root_commitment_digest_mutation",
+            "masked_projection_digest_mutation",
+            "account_stark_bundle_digest_mutation",
+            "empty_account_stark_bundle",
+            "wrong_replay_payload_digest"
+          ],
+          "requirement": "payload_availability_nonempty_bundle_and_digest_equality",
+          "separate_closure_required": true,
+          "separate_rejection_evidence_required": false,
+          "vector_evidence_kind": "rejection_vectors"
+        },
+        {
+          "accepted_path_applicable": true,
+          "accepted_path_check": "leaf_context_bound && binding_digest_bound && payload_binding_fields_match_report",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "accepted payload context, creation binding, aggregation context, and slot id",
+          "all_referenced_closure_obligations_still_open": true,
+          "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+          "boundary_or_audit_evidence_present": true,
+          "closure_obligation_ids": [
+            "creation_proof_obligation_frozen_payload_kats"
+          ],
+          "coverage_surface": "Path2AccountStarkPayloadKatBoundaryReportV1",
+          "current_vector_case_ids": [
+            "payload_leaf_context_digest_mutation",
+            "creation_proof_binding_digest_mutation",
+            "aggregation_context_digest_mutation",
+            "slot_id_mutation"
+          ],
+          "requirement": "payload_context_binding_leaf_proof_aggregation_slot",
+          "separate_closure_required": true,
+          "separate_rejection_evidence_required": false,
+          "vector_evidence_kind": "rejection_vectors"
+        },
+        {
+          "accepted_path_applicable": true,
+          "accepted_path_check": "verifier_boundary_accepts && account_stark_bundle_nonempty",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "accepted account-STARK boundary verification result",
+          "all_referenced_closure_obligations_still_open": true,
+          "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+          "boundary_or_audit_evidence_present": true,
+          "closure_obligation_ids": [
+            "creation_proof_obligation_fri_aok_extractor",
+            "creation_proof_obligation_frozen_payload_kats"
+          ],
+          "coverage_surface": "Path2AccountStarkPayloadKatBoundaryReportV1",
+          "current_vector_case_ids": [
+            "empty_account_stark_bundle",
+            "account_stark_bundle_digest_mutation",
+            "rebound_corrupted_account_stark_bundle"
+          ],
+          "requirement": "packed_account_stark_bundle_verifies",
+          "separate_closure_required": true,
+          "separate_rejection_evidence_required": false,
+          "vector_evidence_kind": "rejection_vectors"
+        },
+        {
+          "accepted_path_applicable": true,
+          "accepted_path_check": "decoded_public_anchors_match_deployed_anchors && deployed_anchor_fields_match_report",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "decoded deployed public anchors and payload boundary report",
+          "all_referenced_closure_obligations_still_open": true,
+          "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+          "boundary_or_audit_evidence_present": true,
+          "closure_obligation_ids": [
+            "creation_proof_obligation_fri_aok_extractor",
+            "creation_proof_obligation_frozen_payload_kats"
+          ],
+          "coverage_surface": "Path2AccountStarkPayloadKatBoundaryReportV1",
+          "current_vector_case_ids": [
+            "rebound_native_role_root_anchor",
+            "rebound_masked_projection_anchor"
+          ],
+          "requirement": "deployed_creation_anchors_match_stark_public_statement",
+          "separate_closure_required": true,
+          "separate_rejection_evidence_required": false,
+          "vector_evidence_kind": "rejection_vectors"
+        },
+        {
+          "accepted_path_applicable": true,
+          "accepted_path_check": "!public_payload_exports_private_material && proof_boundary_report_validated",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "accepted public payload no-export audit boundary",
+          "all_referenced_closure_obligations_still_open": true,
+          "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+          "boundary_or_audit_evidence_present": true,
+          "closure_obligation_ids": [
+            "creation_proof_obligation_simulator_no_export"
+          ],
+          "coverage_surface": "Path2AccountCreationNoExportBoundaryReportV1 and vector corpus",
+          "current_vector_case_ids": [
+            "no_export_public_payload_field_allowlist",
+            "no_export_simulator_public_input_allowlist",
+            "no_export_private_material_denylist_absence",
+            "no_export_opaque_bundle_not_manifest_inlined"
+          ],
+          "requirement": "zero_knowledge_no_export_semantics",
+          "separate_closure_required": true,
+          "separate_rejection_evidence_required": false,
+          "vector_evidence_kind": "audit_vectors"
+        },
+        {
+          "accepted_path_applicable": false,
+          "accepted_path_check": "not a happy-path acceptance property; covered by domain audit vectors and residual theorem closure",
+          "accepted_path_evidence_present": false,
+          "accepted_path_evidence_source": "FRI/QROM domain audit corpus and residual theorem ledger",
+          "all_referenced_closure_obligations_still_open": true,
+          "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+          "boundary_or_audit_evidence_present": true,
+          "closure_obligation_ids": [
+            "creation_proof_obligation_fri_qrom_residual_pricing"
+          ],
+          "coverage_surface": "Path2AccountStarkFriQromResidualReportV1 and vector corpus",
+          "current_vector_case_ids": [
+            "fri_qrom_selected_proof_family_domain",
+            "fri_qrom_poseidon2_width_and_sponge_floor",
+            "fri_qrom_challenge_field_and_schedule",
+            "fri_qrom_checked_core_budget_import",
+            "fri_qrom_open_theorem_flags_fail_closed"
+          ],
+          "requirement": "account_stark_qrom_domain_separation",
+          "separate_closure_required": true,
+          "separate_rejection_evidence_required": false,
+          "vector_evidence_kind": "audit_vectors"
+        },
+        {
+          "accepted_path_applicable": false,
+          "accepted_path_check": "not a happy-path acceptance property; covered by malformed/rebind rejection KAT gates",
+          "accepted_path_evidence_present": false,
+          "accepted_path_evidence_source": "account-creation public rejection KAT suite",
+          "all_referenced_closure_obligations_still_open": true,
+          "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+          "boundary_or_audit_evidence_present": true,
+          "closure_obligation_ids": [
+            "creation_proof_obligation_frozen_payload_kats"
+          ],
+          "coverage_surface": "Path2AccountStarkPayloadKatBoundaryReportV1 and vector corpus",
+          "current_vector_case_ids": [
+            "payload_leaf_context_digest_mutation",
+            "creation_proof_binding_digest_mutation",
+            "aggregation_context_digest_mutation",
+            "slot_id_mutation",
+            "native_role_root_commitment_digest_mutation",
+            "masked_projection_digest_mutation",
+            "account_stark_bundle_digest_mutation",
+            "empty_account_stark_bundle",
+            "rebound_native_role_root_anchor",
+            "rebound_masked_projection_anchor",
+            "rebound_corrupted_account_stark_bundle",
+            "wrong_replay_payload_digest",
+            "production_gate_closed"
+          ],
+          "requirement": "deterministic_public_rejection",
+          "separate_closure_required": true,
+          "separate_rejection_evidence_required": true,
+          "vector_evidence_kind": "rejection_vectors"
+        }
+      ],
       "accepting_requirements": [
         "canonical_leaf_and_evidence_framing",
         "evidence_leaf_binding_equalities",
@@ -31,6 +282,7 @@
       "account_state_root_before": "d15959f0cfd036bbe2fced0c9cdc1b7d00476db3a17e4083b37913b878344fa6",
       "aggregation_context_digest": "23fef5c331e905b8cded30472b6c6161033ce70dfb1dbea59332e6b3415674ec",
       "binding_digest_bound": true,
+      "boundary_or_audit_requirement_evidence_count": 10,
       "creation_proof_binding_digest": "c3916d4b933ee4572858a691368d3c7efa534b884be4346697014f4dd18423e3",
       "decoded_public_anchor_digest": "24d7a7b0b2ca318664829f19470448cbc42cdba21c4f5ae76fbe63933f348289",
       "decoded_public_anchors_match_deployed_anchors": true,
@@ -45,8 +297,12 @@
       "deployed_anchor_state_root_bound": true,
       "deployed_anchor_verifier_version_bound": true,
       "deployment_ready": false,
-      "digest": "7614252bec3b83c2fc0208e413cee44c7eac6949d50e8a55ca7dce334558419a",
+      "deterministic_rejection_requirement_deferred_to_rejection_kats": true,
+      "digest": "c71dd5b3047370bfc919505553ce26fdae9025ec8fd2ee99ad79a9d10226c6df",
       "direct_replayable_relation_certificate_digest": "8ab7ff01ed6f717f020d1fa60ab93ee2ed62e2361778d7f369893e07ef145c5b",
+      "every_accepting_requirement_has_boundary_or_audit_evidence": true,
+      "every_applicable_accepting_requirement_has_accepted_path_evidence": true,
+      "every_separate_closure_requirement_has_open_obligation": true,
       "evidence_digest_bound_to_certificate": true,
       "fixture_id": "Path2AccountStarkPayloadKatFixture.v1",
       "frame_kat_boundary_report_digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
@@ -75,12 +331,14 @@
       "proof_mask_seed": 4919429716798816596,
       "public_key_identity": "58f218aeb259309eeb545345a8f5c715987967b0ec724806d448394da578d0b0",
       "public_payload_exports_private_material": false,
-      "recomputed_digest": "7614252bec3b83c2fc0208e413cee44c7eac6949d50e8a55ca7dce334558419a",
+      "qrom_requirement_deferred_to_residual_theorem": true,
+      "recomputed_digest": "c71dd5b3047370bfc919505553ce26fdae9025ec8fd2ee99ad79a9d10226c6df",
       "replay_payload_digest_function": "path2_account_stark_creation_payload_v1_digest",
       "sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryEvidence.v1",
       "selected_account_creation_payload_digest": "991dd49c61805a04828c86ab0887def07ddb0e40dbc35f8721138fd37ee70f0b",
       "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
+      "separate_closure_required_count": 10,
       "slot_authorization_digest": "9137988bcba231070b5d429a0ddfe2564c9ceacd73c20e4695dd9ca6e19ab901",
       "slot_id": 0,
       "verifier_boundary_accepts": true,
@@ -94,5 +352,5 @@
     "schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryDeterministicKatEvidenceManifest.v1",
     "status": "digest_pinned_deterministic_kat_accepted_account_creation_proof_boundary_evidence"
   },
-  "manifest_digest": "31bc3a45a5afbb860164135e19fdecb28e4729455c5cda6be123684d1fb9f2d0"
+  "manifest_digest": "820f2977b979d968e9c077c6c9f97d94d270c8c2aa27ddb73043156607bb99f7"
 }
