@@ -96,6 +96,8 @@ fn manifest_body() -> Result<Value, String> {
             "direct_lifecycle_blocker": lifecycle_report.blocker,
             "account_creation_proof_boundary_blocker": proof_boundary_report.blocker,
             "sampler_timing_blocker": sampler_timing_report.blocker,
+            "direct_theorem_target": direct_report.theorem_target,
+            "direct_theorem_conclusion": direct_report.theorem_conclusion,
             "direct_qrom_action_support_file": qrom_action_report.support_file,
             "direct_qrom_action_named_break": qrom_action_report.named_break,
             "direct_qrom_action_obligation_id": qrom_action_report.direct_obligation_id,
@@ -179,6 +181,8 @@ fn manifest_body() -> Result<Value, String> {
                 "deployment_ready": direct_report.deployment_ready,
                 "blocker": direct_report.blocker
             },
+            "theorem_target": direct_report.theorem_target,
+            "theorem_conclusion": direct_report.theorem_conclusion,
             "accepted_tuple_fields": direct_report.accepted_tuple_fields,
             "acceptance_hypotheses": direct_report.acceptance_hypotheses,
             "named_break_classes": direct_report.named_break_classes,

@@ -72,15 +72,17 @@ theorem statement is not yet closed for deployment. The proof must instead
 export one of the named breaks below or update this boundary by ADR/spec change.
 
 The production reference emits `Path2DirectTheoremBoundaryReportV1`, which pins
-the accepted tuple, acceptance hypotheses, per-hypothesis obligation matrix,
-named break classes, and current open blocker for this theorem boundary.
+the theorem target, conclusion label, accepted tuple, acceptance hypotheses,
+per-hypothesis obligation matrix, named break classes, and current open blocker
+for this theorem boundary.
 `formal/kat/path2_direct_theorem_boundary_v1.json` is regenerated from that
 report, the current `Path2DirectQromActionBoundaryReportV1`, the current
 `Path2DirectLifecycleBoundaryReportV1`, and the current
 `Path2AccountCreationProofBoundaryReportV1` by a local and CI gate, so the
-direct theorem shape, QROM/action digest, lifecycle digest, proof-boundary
-digest, and selected field groups cannot drift silently. The QROM/action report
-pins the checked-core direct query budget, 182-bit priced transcript term,
+direct theorem target, conclusion, QROM/action digest, lifecycle digest,
+proof-boundary digest, and selected field groups cannot drift silently. The
+QROM/action report pins the checked-core direct query budget, 182-bit priced
+transcript term,
 246-bit full challenge term, 163-bit Fq12 action floor, direct-mode `q_chal`
 and inactive `q_batch` status, and generated QROM artifacts, while keeping
 theorem import, external review, theorem-linked QROM/action closure, and

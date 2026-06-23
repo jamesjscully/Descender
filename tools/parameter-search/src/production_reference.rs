@@ -9649,6 +9649,8 @@ pub struct Path2DirectTheoremBoundaryReportV1 {
     pub direct_qrom_action_boundary_report_digest: [u8; DIGEST_BYTES],
     pub direct_lifecycle_boundary_report_digest: [u8; DIGEST_BYTES],
     pub account_creation_proof_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub theorem_target: &'static str,
+    pub theorem_conclusion: &'static str,
     pub accepted_tuple_fields: &'static [&'static str],
     pub acceptance_hypotheses: &'static [&'static str],
     pub named_break_classes: &'static [&'static str],
@@ -10455,6 +10457,10 @@ pub const PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS: [&str; 11] = [
     "direct_admission_namespace_record",
     "consume_once_state_before_and_after_spend",
 ];
+pub const PATH2_DIRECT_THEOREM_TARGET: &str =
+    "direct_mode_selected_tuple_authorization_theorem_v1";
+pub const PATH2_DIRECT_THEOREM_CONCLUSION: &str =
+    "accepted_direct_mode_spend_implies_prior_admission_checked_core_acceptance_consume_once_or_named_break";
 
 pub const PATH2_ACCOUNT_CREATION_SAMPLER_SUPPORT_FILE: &str =
     "research/path2_honest_create_sampler_v1.md";
@@ -11758,6 +11764,8 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         direct_lifecycle_boundary_report_digest: direct_lifecycle_boundary_report.digest,
         account_creation_proof_boundary_report_digest:
             account_creation_proof_boundary_report.digest,
+        theorem_target: PATH2_DIRECT_THEOREM_TARGET,
+        theorem_conclusion: PATH2_DIRECT_THEOREM_CONCLUSION,
         accepted_tuple_fields: &PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS,
         acceptance_hypotheses: &PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES,
         named_break_classes: &PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES,
@@ -11824,6 +11832,11 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         return Err(
             "Path 2 direct theorem boundary proof-boundary digest mismatch".to_string(),
         );
+    }
+    if report.theorem_target != PATH2_DIRECT_THEOREM_TARGET
+        || report.theorem_conclusion != PATH2_DIRECT_THEOREM_CONCLUSION
+    {
+        return Err("Path 2 direct theorem boundary target mismatch".to_string());
     }
     Ok(())
 }
@@ -65738,6 +65751,16 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         b"account_creation_proof_boundary_report_digest",
         &report.account_creation_proof_boundary_report_digest,
     );
+    append_frame(
+        &mut frame,
+        b"theorem_target",
+        report.theorem_target.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"theorem_conclusion",
+        report.theorem_conclusion.as_bytes(),
+    );
     for (index, field) in report.accepted_tuple_fields.iter().enumerate() {
         append_u64(&mut frame, b"accepted_tuple_field_index", index as u64);
         append_frame(&mut frame, b"accepted_tuple_field", field.as_bytes());
@@ -106768,6 +106791,13 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.account_creation_proof_boundary_report_digest,
             proof_boundary_report.digest
         );
+        assert_eq!(report.theorem_target, PATH2_DIRECT_THEOREM_TARGET);
+        assert_eq!(
+            report.theorem_conclusion,
+            PATH2_DIRECT_THEOREM_CONCLUSION
+        );
+        assert!(report.theorem_conclusion.contains("consume_once"));
+        assert!(report.theorem_conclusion.contains("named_break"));
         assert_eq!(
             report.accepted_tuple_fields,
             PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.as_ref()
@@ -106867,6 +106897,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             path2_direct_theorem_boundary_report_v1_digest(&malformed_obligation);
         assert_eq!(
             validate_path2_direct_theorem_boundary_report_v1(&malformed_obligation).unwrap_err(),
+            "Path 2 direct theorem boundary report mismatch"
+        );
+
+        let mut malformed_target = report.clone();
+        malformed_target.theorem_target = "retargeted_direct_theorem_v1";
+        malformed_target.digest = path2_direct_theorem_boundary_report_v1_digest(&malformed_target);
+        assert_eq!(
+            validate_path2_direct_theorem_boundary_report_v1(&malformed_target).unwrap_err(),
             "Path 2 direct theorem boundary report mismatch"
         );
 
