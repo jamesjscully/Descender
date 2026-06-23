@@ -174,6 +174,11 @@ Current active evidence is partial:
   mask-PRF drift evidence;
 - active Rust gates compile the signer-side mask-PRF crate and run mask-PRF
   equivalence tests.
+- `scripts/check_active_secret_float_surface.py` is wired into local and CI
+  gates to reject floating-point types, casts, literals, and math calls in
+  first-party active signer, prover, verifier, and recursion source outside
+  test-only code and explicit non-deployment estimator support. The same gate
+  requires the account-STARK byte counter to reject serde float serialization.
 
 This is not enough for a CT/leakage deployment claim. The missing pieces are the
 static secret-flow audit, target/build profiles, leakage harness or reviewed

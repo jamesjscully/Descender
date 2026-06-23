@@ -104,6 +104,7 @@ python3 scripts/check_active_authority_stale_terms.py
 python3 scripts/check_legacy_code_framing.py
 python3 scripts/check_tool_manifest_framing.py
 python3 scripts/check_active_source_framing.py
+python3 scripts/check_active_secret_float_surface.py
 python3 scripts/research/check_research_automation_routing.py
 python3 scripts/research/audit_task_pivot_alignment.py --strict-queue
 python3 scripts/check_ci_local_gate_parity.py

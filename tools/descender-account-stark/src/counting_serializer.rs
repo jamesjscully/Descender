@@ -92,12 +92,10 @@ impl<'a> Serializer for &'a mut ByteCounter {
         Ok(())
     }
     fn serialize_f32(self, _: f32) -> Result<(), CountErr> {
-        self.add(4);
-        Ok(())
+        Err(CountErr)
     }
     fn serialize_f64(self, _: f64) -> Result<(), CountErr> {
-        self.add(8);
-        Ok(())
+        Err(CountErr)
     }
     fn serialize_char(self, _: char) -> Result<(), CountErr> {
         self.add(4);

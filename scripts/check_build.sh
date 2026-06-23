@@ -45,6 +45,9 @@ python3 scripts/check_tool_manifest_framing.py
 echo "== active source framing check =="
 python3 scripts/check_active_source_framing.py
 
+echo "== active secret float surface check =="
+python3 scripts/check_active_secret_float_surface.py
+
 echo "== CI/local gate parity check =="
 python3 scripts/check_ci_local_gate_parity.py
 

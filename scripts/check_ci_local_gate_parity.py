@@ -102,6 +102,11 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ("python3 scripts/check_active_source_framing.py",),
     ),
     (
+        "active secret float surface check",
+        ("python3 scripts/check_active_secret_float_surface.py",),
+        ("python3 scripts/check_active_secret_float_surface.py",),
+    ),
+    (
         "CI/local gate parity check",
         ("python3 scripts/check_ci_local_gate_parity.py",),
         ("python3 scripts/check_ci_local_gate_parity.py",),
@@ -501,6 +506,11 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
     "legacy code framing check": ("PROC-STALE-002",),
     "tool manifest framing check": ("PROC-MANIFEST-001",),
     "active source framing check": ("PROC-SOURCE-001",),
+    "active secret float surface check": (
+        "DIR-CT-001",
+        "SPEC-LEAKAGE-001",
+        "ADOPT-HW-CT-001",
+    ),
     "CI/local gate parity check": ("PROC-CI-001",),
     "tracker integrity check": ("PROC-TRACKER-002",),
     "requirement traceability check": ("PROC-REQ-001",),

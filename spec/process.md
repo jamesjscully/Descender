@@ -357,7 +357,7 @@ area must name local/CI gates and the active `TRACKER.md` rows that own them.
 | Tracker consolidation | `python3 scripts/check_tracker_integrity.py`, `python3 scripts/check_active_support_imports.py --max-unanchored 0`, `python3 scripts/check_requirement_traceability.py` | `PROC-TRACKER-001`, `PROC-TRACKER-002`, `PROC-TRACKER-003`, `PROC-TRACKER-004`, `PROC-TRACKER-005`, `PROC-SUPPORT-001` |
 | Archive and classification | `python3 scripts/check_doc_authority.py`, `python3 scripts/list_doc_classification_candidates.py --strict --include-status-lines --include-path2-research --include-cryptanalysis-root --include-all-markdown`, `python3 scripts/check_archive_mixed_status.py --max-mixed 0`, `python3 scripts/check_archive_legacy_counts.py --max-non-active 10 --max ARCHIVED_TARGET=0 --max LEGACY_FORMAL=4 --max MIXED_STATUS=0 --max NEGATIVE_CONTROL=6 --max SUPERSEDED_DECISION=0 --max SUPERSEDED_TRACKER=0`, `python3 scripts/check_cleanup_queue.py`, `python3 scripts/check_retired_path_absence.py` | `PROC-ARCHIVE-001`, `PROC-ARCHIVE-002`, `PROC-ARCHIVE-003`, `PROC-ARCHIVE-004`, `PROC-ARCHIVE-005`, `PROC-ARCHIVE-006`, `PROC-ARCHIVE-007`, `PROC-ARCHIVE-008`, `PROC-CLASSIFY-010` |
 | Stale-path framing | `python3 scripts/check_active_authority_stale_terms.py`, `python3 scripts/check_legacy_code_framing.py` | `PROC-STALE-001`, `PROC-STALE-002`, `PROC-LEGACY-GATE-001` |
-| Tool and source framing | `python3 scripts/check_tool_manifest_framing.py`, `python3 scripts/check_active_source_framing.py` | `PROC-MANIFEST-001`, `PROC-SOURCE-001`, `PROC-TOOLS-001` |
+| Tool and source framing | `python3 scripts/check_tool_manifest_framing.py`, `python3 scripts/check_active_source_framing.py`, `python3 scripts/check_active_secret_float_surface.py` | `PROC-MANIFEST-001`, `PROC-SOURCE-001`, `PROC-TOOLS-001`, `DIR-CT-001`, `SPEC-LEAKAGE-001`, `ADOPT-HW-CT-001` |
 | Research automation | `python3 scripts/research/check_research_automation_routing.py`, `python3 scripts/research/audit_task_pivot_alignment.py --strict-queue` | `PROC-AUTO-001`, `PROC-AUTO-002`, `PROC-AUTO-003`, `PROC-SCRIPT-001` |
 | Wire and requirement authority | `python3 scripts/check_requirement_traceability.py`, `python3 scripts/check_wire_format_authority.py` | `PROC-REQ-001`, `DIR-CC-001` |
 | CI and gate ownership | `python3 scripts/check_ci_local_gate_parity.py` | `PROC-CI-001`, `PROC-CI-002` |
@@ -556,6 +556,16 @@ research evidence, not product authority:
 
 ```sh
 python3 scripts/check_active_source_framing.py
+```
+
+The active secret float surface check scans first-party active signer, prover,
+verifier, and recursion source for floating-point types, casts, literals, and
+math calls outside test-only code and explicit non-deployment estimator support.
+It also requires the account-STARK byte counter to reject serde float
+serialization instead of silently counting it:
+
+```sh
+python3 scripts/check_active_secret_float_surface.py
 ```
 
 The local gate and CI must stay in sync. The parity checker verifies that
