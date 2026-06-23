@@ -39,9 +39,10 @@ keeping theorem and deployment flags false. The accepted proof-boundary,
 accepted spend tuple, accepted composition, proof-obligation, direct-obligation,
 and production preflight consistency gates now also recompute those generated
 manifests, check accepted-artifact equality, bind every generated proof/direct
-boundary copy of the accepted composition artifact and obligation-corpus evidence
-back to standalone compact artifacts, and check open-row blockers and
-fail-closed flags against the standalone KATs and deployment blocker set.
+boundary copy of the accepted composition artifact plus requirement- and
+obligation-corpus evidence back to standalone compact artifacts, and check
+open-row blockers and fail-closed flags against the standalone KATs and
+deployment blocker set.
 
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|

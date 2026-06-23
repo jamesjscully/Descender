@@ -101,8 +101,9 @@ proof-boundary obligations and the accepted proof-boundary KAT evidence
 artifact; the direct theorem manifest embeds the same object and additionally
 binds its 9-case open direct-obligation audit-vector corpus and accepted
 direct-composition KAT evidence artifact. `path2_boundary_manifest_consistency`
-checks these bindings and the fail-closed flags. It is not a proof and not
-deployment evidence by itself: the
+checks these bindings, including the generated proof/direct manifest copies of
+the compact requirement-vector corpus evidence, and the fail-closed flags. It is
+not a proof and not deployment evidence by itself: the
 manifest deliberately records the open simulator, extractor, FRI/QROM,
 frozen-KAT, external-review, sampler, timing, no-export, and production-gate
 blockers. The local and CI build
