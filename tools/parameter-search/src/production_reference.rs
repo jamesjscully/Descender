@@ -66947,7 +66947,7 @@ fn path2_direct_accepted_composition_hypothesis_evidence_rows_v1(
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-pub fn path2_direct_accepted_composition_evidence_v1(
+fn path2_direct_accepted_composition_evidence_unpooled_v1(
 ) -> Result<Path2DirectAcceptedCompositionEvidenceV1, String> {
     let Path2DirectAcceptedSpendTupleKatContextV1 {
         direct_report,
@@ -67104,6 +67104,16 @@ pub fn path2_direct_accepted_composition_evidence_v1(
         });
     evidence.digest = path2_direct_accepted_composition_evidence_v1_digest(&evidence);
     Ok(evidence)
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn path2_direct_accepted_composition_evidence_v1(
+) -> Result<Path2DirectAcceptedCompositionEvidenceV1, String> {
+    let pool = rayon::ThreadPoolBuilder::new()
+        .num_threads(1)
+        .build()
+        .map_err(|err| format!("failed to build deterministic single-thread KAT pool: {err}"))?;
+    pool.install(path2_direct_accepted_composition_evidence_unpooled_v1)
 }
 
 pub fn validate_path2_account_creation_accepted_proof_boundary_evidence_v1(
@@ -67620,6 +67630,15 @@ pub fn validate_path2_direct_accepted_composition_evidence_v1(
             "Path 2 direct accepted composition evidence unexpectedly changes closure status"
                 .to_string(),
         );
+    }
+    #[cfg(feature = "account-creation-stark-verifier")]
+    {
+        if evidence != &path2_direct_accepted_composition_evidence_v1()? {
+            return Err(
+                "Path 2 direct accepted composition evidence fixture binding mismatch"
+                    .to_string(),
+            );
+        }
     }
     Ok(())
 }
@@ -82956,6 +82975,15 @@ mod tests {
             validate_path2_direct_accepted_composition_evidence_v1(&malformed_consume_once)
                 .unwrap_err(),
             "Path 2 direct accepted composition evidence binding mismatch"
+        );
+        let mut malformed_message = evidence.clone();
+        malformed_message.message_digest[0] ^= 1;
+        malformed_message.digest =
+            path2_direct_accepted_composition_evidence_v1_digest(&malformed_message);
+        assert_eq!(
+            validate_path2_direct_accepted_composition_evidence_v1(&malformed_message)
+                .unwrap_err(),
+            "Path 2 direct accepted composition evidence fixture binding mismatch"
         );
     }
 

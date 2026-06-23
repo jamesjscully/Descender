@@ -134,6 +134,10 @@ The artifact records the full accepted evidence digest chain, including the
 selected account-creation payload digest, proof-boundary evidence digest,
 direct spend tuple digest, leaf/evidence transcript digests, admission
 namespace, authorization digest, and consume-once before/after state digests.
+The accepted-composition validator replays the canonical deterministic
+composition artifact before accepting serialized evidence, so a digest-updated
+but noncanonical composition field cannot satisfy the direct composition KAT
+boundary.
 It also records a nine-row accepted-hypothesis evidence checklist: the eight
 positive accepted-path hypotheses must have concrete accepted-path evidence,
 while the public rejection/state-preservation hypothesis is explicitly marked
