@@ -135,6 +135,8 @@ fn manifest_body() -> Result<Value, String> {
             "acceptance_hypotheses_pinned": direct_report.acceptance_hypotheses_pinned,
             "named_break_classes_pinned": direct_report.named_break_classes_pinned,
             "obligation_count": direct_report.obligation_count,
+            "closure_dependency_count": direct_report.closure_dependency_count,
+            "closure_dependency_rows": direct_report.closure_dependency_rows,
             "obligation_audit_vector_case_count":
                 direct_report.obligation_audit_vector_case_count,
             "every_hypothesis_has_obligation":
@@ -143,6 +145,12 @@ fn manifest_body() -> Result<Value, String> {
                 direct_report.every_obligation_has_named_break,
             "every_open_obligation_blocks_deployment":
                 direct_report.every_open_obligation_blocks_deployment,
+            "every_closure_dependency_has_open_obligation":
+                direct_report.every_closure_dependency_has_open_obligation,
+            "every_closure_dependency_has_open_support_surface":
+                direct_report.every_closure_dependency_has_open_support_surface,
+            "every_open_closure_dependency_blocks_deployment":
+                direct_report.every_open_closure_dependency_blocks_deployment,
             "composition_theorem_instantiated":
                 direct_report.composition_theorem_instantiated,
             "account_creation_proof_boundary_verified":

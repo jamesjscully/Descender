@@ -217,6 +217,42 @@ fn check_consistency() -> Result<(), String> {
         ],
         9,
     )?;
+    expect_u64(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "coverage",
+            "closure_dependency_count",
+        ],
+        9,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "coverage",
+            "every_closure_dependency_has_open_obligation",
+        ],
+        true,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "coverage",
+            "every_closure_dependency_has_open_support_surface",
+        ],
+        true,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "coverage",
+            "every_open_closure_dependency_blocks_deployment",
+        ],
+        true,
+    )?;
     expect_bool(
         direct_manifest,
         &[

@@ -9600,6 +9600,19 @@ pub struct Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
     pub open: bool,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2DirectTheoremClosureDependencyRowV1 {
+    pub dependency_id: &'static str,
+    pub source_report: &'static str,
+    pub source_flag_group: &'static str,
+    pub direct_obligation_id: &'static str,
+    pub acceptance_hypothesis: &'static str,
+    pub support_surface: &'static str,
+    pub named_break: &'static str,
+    pub blocker: &'static str,
+    pub open: bool,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
@@ -9928,11 +9941,16 @@ pub struct Path2DirectTheoremBoundaryReportV1 {
     pub named_break_classes: &'static [&'static str],
     pub obligation_audit_vector_case_ids: &'static [&'static str],
     pub obligation_rows: &'static [Path2DirectTheoremObligationRowV1],
+    pub closure_dependency_rows: &'static [Path2DirectTheoremClosureDependencyRowV1],
     pub obligation_count: usize,
+    pub closure_dependency_count: usize,
     pub obligation_audit_vector_case_count: usize,
     pub every_hypothesis_has_obligation: bool,
     pub every_obligation_has_named_break: bool,
     pub every_open_obligation_blocks_deployment: bool,
+    pub every_closure_dependency_has_open_obligation: bool,
+    pub every_closure_dependency_has_open_support_surface: bool,
+    pub every_open_closure_dependency_blocks_deployment: bool,
     pub theorem_statement_pinned: bool,
     pub accepted_tuple_pinned: bool,
     pub accepted_tuple_evidence_present: bool,
@@ -11221,6 +11239,112 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
             "Path2PublicResultClassV1 pins the consensus result-class names; Path2DirectSpendPublicResultV1 wraps direct spend results without internal diagnostics; account-STARK payload boundary maps current internal errors to public rejection classes; direct spend classifier, no-mutation test, malformed signature panic-free KATs, public leaf/evidence/certificate rejection KATs, and public-result wrapper test cover selected pre-consume failure classes; full consensus rejection KATs remain open",
         required_closure:
             "public rejection enum, panic-free malformed-input KATs, and state-no-mutation tests cover every direct-mode rejection",
+        named_break: "consensus_rejection_or_state_mutation_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+];
+
+pub const PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS:
+    [Path2DirectTheoremClosureDependencyRowV1; 9] = [
+    Path2DirectTheoremClosureDependencyRowV1 {
+        dependency_id: "direct_dependency_leaf_canonical_live",
+        source_report: "Path2DirectTheoremBoundaryReportV1",
+        source_flag_group: "composition_theorem_instantiated",
+        direct_obligation_id: "direct_obligation_leaf_canonical_live",
+        acceptance_hypothesis: "leaf_is_canonical_and_live",
+        support_surface: "PrevalidatedSlotLeafV1 bytes and lifecycle live marker",
+        named_break: "prevalidation_leaf_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremClosureDependencyRowV1 {
+        dependency_id: "direct_dependency_evidence_leaf_bindings",
+        source_report: "Path2AccountCreationProofBoundaryReportV1",
+        source_flag_group:
+            "account_creation_proof_boundary_verified/frozen_kat_corpus_complete",
+        direct_obligation_id: "direct_obligation_evidence_leaf_bindings",
+        acceptance_hypothesis: "evidence_envelope_matches_leaf_bindings",
+        support_surface: "AccountCreationEvidenceV1 duplicated binding fields",
+        named_break: "prevalidation_leaf_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremClosureDependencyRowV1 {
+        dependency_id: "direct_dependency_slot_authorization_digest",
+        source_report: "Path2DirectTheoremBoundaryReportV1",
+        source_flag_group: "composition_theorem_instantiated",
+        direct_obligation_id: "direct_obligation_slot_authorization_digest",
+        acceptance_hypothesis: "slot_authorization_digest_matches_canonical_leaf",
+        support_surface: "slot_authorization_digest domain and leaf-byte frame",
+        named_break: "prevalidation_leaf_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremClosureDependencyRowV1 {
+        dependency_id: "direct_dependency_creation_before_challenge",
+        source_report: "Path2AccountCreationProofBoundaryReportV1",
+        source_flag_group: "account_creation_proof_boundary_verified",
+        direct_obligation_id: "direct_obligation_creation_before_challenge",
+        acceptance_hypothesis: "selected_creation_verifier_accepted_before_spend_challenge",
+        support_surface: "Path2AccountCreationProofBoundaryReportV1 and admission ordering",
+        named_break: "selected_account_creation_payload_proof_family_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremClosureDependencyRowV1 {
+        dependency_id: "direct_dependency_admission_namespace",
+        source_report: "Path2DirectTheoremBoundaryReportV1",
+        source_flag_group: "composition_theorem_instantiated/target_chain_data_availability",
+        direct_obligation_id: "direct_obligation_admission_namespace",
+        acceptance_hypothesis: "direct_admission_namespace_contains_exact_tuple",
+        support_surface: "direct admission namespace record",
+        named_break: "prevalidation_registry_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremClosureDependencyRowV1 {
+        dependency_id: "direct_dependency_checked_core_frame_binding",
+        source_report: "Path2DirectTheoremBoundaryReportV1",
+        source_flag_group: "composition_theorem_instantiated",
+        direct_obligation_id: "direct_obligation_checked_core_frame_binding",
+        acceptance_hypothesis: "checked_core_challenge_binds_public_spend_context",
+        support_surface: "Path2NativeCheckedCoreFrameV1",
+        named_break: "checked_core_message_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremClosureDependencyRowV1 {
+        dependency_id: "direct_dependency_checked_core_acceptance",
+        source_report: "Path2DirectQromActionBoundaryReportV1",
+        source_flag_group:
+            "qrom_and_action_bounds_linked_to_theorem/theorem_imports_budget/external_qrom_review_complete",
+        direct_obligation_id: "direct_obligation_checked_core_acceptance",
+        acceptance_hypothesis: "checked_core_verification_accepts_poseidon2_and_fq12_action",
+        support_surface: "checked-core verifier, Poseidon2 Fiat-Shamir, and Fq12 action map",
+        named_break: "qrom_or_domain_separation_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremClosureDependencyRowV1 {
+        dependency_id: "direct_dependency_consume_once",
+        source_report: "Path2DirectLifecycleBoundaryReportV1",
+        source_flag_group:
+            "lifecycle_transition_profile_verified/target_chain_finality_profile_instantiated",
+        direct_obligation_id: "direct_obligation_consume_once",
+        acceptance_hypothesis: "lifecycle_transition_consumes_authorization_once",
+        support_surface: "consume-once lifecycle state transition",
+        named_break: "slot_replay_or_rollback_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremClosureDependencyRowV1 {
+        dependency_id: "direct_dependency_public_rejection",
+        source_report: "Path2DirectTheoremBoundaryReportV1",
+        source_flag_group: "composition_theorem_instantiated/full_consensus_rejection_kats",
+        direct_obligation_id: "direct_obligation_public_rejection",
+        acceptance_hypothesis: "rejection_is_deterministic_public_and_state_preserving",
+        support_surface: "consensus-safe rejection and state-preserving failure mapping",
         named_break: "consensus_rejection_or_state_mutation_break",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
         open: true,
@@ -13073,12 +13197,69 @@ pub fn validate_path2_direct_lifecycle_boundary_report_v1(
     Ok(())
 }
 
+fn path2_direct_theorem_closure_dependency_has_open_obligation_v1(
+    row: &Path2DirectTheoremClosureDependencyRowV1,
+    obligations: &[Path2DirectTheoremObligationRowV1],
+) -> bool {
+    obligations.iter().any(|obligation| {
+        obligation.obligation_id == row.direct_obligation_id
+            && obligation.acceptance_hypothesis == row.acceptance_hypothesis
+            && obligation.supporting_surface == row.support_surface
+            && obligation.named_break == row.named_break
+            && obligation.open
+    })
+}
+
+fn path2_direct_theorem_closure_dependency_support_open_v1(
+    row: &Path2DirectTheoremClosureDependencyRowV1,
+    direct_report: &Path2DirectTheoremBoundaryReportV1,
+    qrom_action_report: &Path2DirectQromActionBoundaryReportV1,
+    lifecycle_report: &Path2DirectLifecycleBoundaryReportV1,
+    proof_boundary_report: &Path2AccountCreationProofBoundaryReportV1,
+) -> bool {
+    match row.dependency_id {
+        "direct_dependency_leaf_canonical_live"
+        | "direct_dependency_slot_authorization_digest"
+        | "direct_dependency_admission_namespace"
+        | "direct_dependency_checked_core_frame_binding"
+        | "direct_dependency_public_rejection" => {
+            !direct_report.composition_theorem_instantiated && !direct_report.deployment_ready
+        }
+        "direct_dependency_evidence_leaf_bindings" => {
+            !direct_report.composition_theorem_instantiated
+                && !direct_report.account_creation_proof_boundary_verified
+                && !proof_boundary_report.frozen_kat_corpus_complete
+                && !proof_boundary_report.deployment_ready
+        }
+        "direct_dependency_creation_before_challenge" => {
+            !direct_report.account_creation_proof_boundary_verified
+                && !proof_boundary_report.deployment_ready
+                && !proof_boundary_report.production_gate_open
+        }
+        "direct_dependency_checked_core_acceptance" => {
+            !direct_report.qrom_and_action_bounds_linked_to_theorem
+                && !qrom_action_report.theorem_imports_budget
+                && !qrom_action_report.external_qrom_review_complete
+                && !qrom_action_report.qrom_and_action_bounds_linked_to_theorem
+                && !qrom_action_report.deployment_ready
+        }
+        "direct_dependency_consume_once" => {
+            !direct_report.lifecycle_transition_profile_verified
+                && !lifecycle_report.target_chain_finality_profile_instantiated
+                && !lifecycle_report.lifecycle_transition_profile_verified
+                && !lifecycle_report.deployment_ready
+        }
+        _ => false,
+    }
+}
+
 pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryReportV1 {
     let direct_qrom_action_boundary_report = path2_direct_qrom_action_boundary_report_v1();
     let direct_lifecycle_boundary_report = path2_direct_lifecycle_boundary_report_v1();
     let account_creation_proof_boundary_report =
         path2_account_creation_proof_boundary_report_v1();
     let obligation_rows = &PATH2_DIRECT_THEOREM_OBLIGATION_ROWS;
+    let closure_dependency_rows = &PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS;
     let mut report = Path2DirectTheoremBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN,
@@ -13098,7 +13279,9 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         named_break_classes: &PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES,
         obligation_audit_vector_case_ids: &PATH2_DIRECT_THEOREM_OBLIGATION_AUDIT_CASES,
         obligation_rows,
+        closure_dependency_rows,
         obligation_count: obligation_rows.len(),
+        closure_dependency_count: closure_dependency_rows.len(),
         obligation_audit_vector_case_count: PATH2_DIRECT_THEOREM_OBLIGATION_AUDIT_CASES.len(),
         every_hypothesis_has_obligation: PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.len()
             == obligation_rows.len()
@@ -13113,6 +13296,9 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         every_open_obligation_blocks_deployment: obligation_rows.iter().all(|row| {
             !row.open || row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
         }),
+        every_closure_dependency_has_open_obligation: false,
+        every_closure_dependency_has_open_support_surface: false,
+        every_open_closure_dependency_blocks_deployment: false,
         theorem_statement_pinned: true,
         accepted_tuple_pinned: true,
         accepted_tuple_evidence_present: true,
@@ -13126,6 +13312,24 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         deployment_ready: false,
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
     };
+    report.every_closure_dependency_has_open_obligation =
+        closure_dependency_rows.iter().all(|row| {
+            path2_direct_theorem_closure_dependency_has_open_obligation_v1(row, obligation_rows)
+        });
+    report.every_closure_dependency_has_open_support_surface =
+        closure_dependency_rows.iter().all(|row| {
+            path2_direct_theorem_closure_dependency_support_open_v1(
+                row,
+                &report,
+                &direct_qrom_action_boundary_report,
+                &direct_lifecycle_boundary_report,
+                &account_creation_proof_boundary_report,
+            )
+        });
+    report.every_open_closure_dependency_blocks_deployment =
+        closure_dependency_rows.iter().all(|row| {
+            !row.open || row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+        });
     report.digest = path2_direct_theorem_boundary_report_v1_digest(&report);
     report
 }
@@ -13187,8 +13391,20 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         || report.acceptance_hypotheses != PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.as_ref()
         || report.named_break_classes != PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES.as_ref()
         || report.obligation_rows != PATH2_DIRECT_THEOREM_OBLIGATION_ROWS.as_ref()
+        || report.closure_dependency_rows
+            != PATH2_DIRECT_THEOREM_CLOSURE_DEPENDENCY_ROWS.as_ref()
         || report.obligation_count != report.obligation_rows.len()
+        || report.closure_dependency_count != report.closure_dependency_rows.len()
+        || report.closure_dependency_count != report.obligation_rows.len()
         || report.obligation_rows.len() != report.obligation_audit_vector_case_ids.len()
+        || !report
+            .closure_dependency_rows
+            .iter()
+            .zip(report.obligation_rows.iter())
+            .all(|(dependency, obligation)| {
+                dependency.direct_obligation_id == obligation.obligation_id
+                    && dependency.acceptance_hypothesis == obligation.acceptance_hypothesis
+            })
         || !report
             .obligation_rows
             .iter()
@@ -13197,6 +13413,9 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         || !report.every_hypothesis_has_obligation
         || !report.every_obligation_has_named_break
         || !report.every_open_obligation_blocks_deployment
+        || !report.every_closure_dependency_has_open_obligation
+        || !report.every_closure_dependency_has_open_support_surface
+        || !report.every_open_closure_dependency_blocks_deployment
         || !report
             .obligation_rows
             .iter()
@@ -13208,9 +13427,25 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
                 && (!row.open
                     || row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION)
         })
+        || !report.closure_dependency_rows.iter().all(|row| {
+            row.open
+                && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+                && path2_direct_theorem_closure_dependency_has_open_obligation_v1(
+                    row,
+                    report.obligation_rows,
+                )
+                && path2_direct_theorem_closure_dependency_support_open_v1(
+                    row,
+                    report,
+                    &direct_qrom_action_boundary_report,
+                    &direct_lifecycle_boundary_report,
+                    &account_creation_proof_boundary_report,
+                )
+        })
     {
         return Err(
-            "Path 2 direct theorem boundary obligation audit vector case mismatch".to_string(),
+            "Path 2 direct theorem boundary obligation or closure-dependency mismatch"
+                .to_string(),
         );
     }
     if !report.theorem_statement_pinned
@@ -69644,7 +69879,64 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         append_frame(&mut frame, b"blocker", row.blocker.as_bytes());
         append_u64(&mut frame, b"open", u64::from(row.open));
     }
+    for (index, row) in report.closure_dependency_rows.iter().enumerate() {
+        append_u64(
+            &mut frame,
+            b"direct_closure_dependency_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_id",
+            row.dependency_id.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_source_report",
+            row.source_report.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_source_flag_group",
+            row.source_flag_group.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_obligation_id",
+            row.direct_obligation_id.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_acceptance_hypothesis",
+            row.acceptance_hypothesis.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_support_surface",
+            row.support_surface.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_named_break",
+            row.named_break.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_blocker",
+            row.blocker.as_bytes(),
+        );
+        append_u64(
+            &mut frame,
+            b"direct_closure_dependency_open",
+            u64::from(row.open),
+        );
+    }
     append_u64(&mut frame, b"obligation_count", report.obligation_count as u64);
+    append_u64(
+        &mut frame,
+        b"closure_dependency_count",
+        report.closure_dependency_count as u64,
+    );
     append_u64(
         &mut frame,
         b"obligation_audit_vector_case_count",
@@ -69664,6 +69956,21 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         &mut frame,
         b"every_open_obligation_blocks_deployment",
         u64::from(report.every_open_obligation_blocks_deployment),
+    );
+    append_u64(
+        &mut frame,
+        b"every_closure_dependency_has_open_obligation",
+        u64::from(report.every_closure_dependency_has_open_obligation),
+    );
+    append_u64(
+        &mut frame,
+        b"every_closure_dependency_has_open_support_surface",
+        u64::from(report.every_closure_dependency_has_open_support_surface),
+    );
+    append_u64(
+        &mut frame,
+        b"every_open_closure_dependency_blocks_deployment",
+        u64::from(report.every_open_closure_dependency_blocks_deployment),
     );
     append_u64(
         &mut frame,

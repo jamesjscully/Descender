@@ -74,7 +74,8 @@ export one of the named breaks below or update this boundary by ADR/spec change.
 The production reference emits `Path2DirectTheoremBoundaryReportV1`, which pins
 the theorem target, conclusion label, accepted tuple, acceptance hypotheses,
 per-hypothesis obligation matrix, direct obligation audit-vector case list,
-named break classes, and current open blocker for this theorem boundary.
+named break classes, the direct closure-dependency row table, and current open
+blocker for this theorem boundary.
 `formal/kat/path2_direct_theorem_boundary_v1.json` is regenerated from that
 report, the current `Path2DirectQromActionBoundaryReportV1`, the current
 `Path2DirectLifecycleBoundaryReportV1`, and the current
@@ -83,12 +84,14 @@ direct theorem target, conclusion, QROM/action digest, lifecycle digest,
 proof-boundary digest, and selected field groups cannot drift silently. The
 production report validator separately rejects weakened
 acceptance-hypothesis/obligation-row coverage, missing pinned accepted-evidence
-hooks, unexpectedly closed theorem flags, deployment-ready flags, or direct
-theorem blocker drift. The
+hooks, missing direct closure-dependency rows, unexpectedly closed theorem
+flags, deployment-ready flags, or direct theorem blocker drift. The
 `formal/kat/path2_direct_theorem_obligation_vectors_v1.json` corpus records one
 digest-pinned audit case for each open direct-theorem obligation and binds that
 row list to the current QROM/action, lifecycle, and account-creation
-proof-boundary reports while keeping composition, imported-boundary verification,
+proof-boundary reports while also carrying the direct closure-dependency rows
+that tie the nine accepted-tuple hypotheses to their still-open source
+reports/support surfaces. It keeps composition, imported-boundary verification,
 and deployment flags false. `Path2DirectAcceptedSpendTupleEvidenceV1` records
 an accepted-path tuple digest for the current direct spend endpoint: public-key
 identity, message digest, account id, state root, slot id, checked-core
@@ -173,8 +176,8 @@ theorem and deployment lifecycle profile remain open. The
 preflight stays fail-closed on the direct theorem blocker, account-creation
 proof-boundary blocker, and selected account-STARK residual blockers. It also
 requires each false direct/proof/residual closure flag to be backed by the
-expected still-open obligation or residual row, so preflight cannot drift into a
-deployable posture while the closure graph is still open.
+expected still-open dependency, obligation, or residual row, so preflight cannot
+drift into a deployable posture while the closure graph is still open.
 
 ## Named Break Classes
 

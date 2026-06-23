@@ -41,17 +41,20 @@ and production preflight consistency gates now also recompute those generated
 manifests, call reusable accepted-evidence production-reference validators,
 check accepted-artifact equality, bind every generated proof/direct boundary
 copy of the accepted composition artifact plus requirement- and
-obligation-corpus evidence back to standalone compact artifacts. The shared
+obligation-corpus evidence back to standalone compact artifacts, and keep both
+proof-boundary and direct-theorem closure-dependency rows pinned to their open
+obligations/support surfaces. The shared
 boundary-manifest gate also checks embedded requirement, proof-obligation, and
 direct-obligation corpus evidence against standalone corpus-evidence objects,
 while the preflight gate checks open-row blockers, fail-closed flags, the
 direct/proof/residual closure-dependency graph, including the proof-boundary
-closure-dependency row table, and the production preflight
+and direct-theorem closure-dependency row tables, and the production preflight
 blocker/verdict/ready-assertion/certificate chain against the standalone KATs
 and deployment blocker set. The direct theorem report
 validator also explicitly rejects weakened obligation coverage, missing pinned
-evidence hooks, unexpectedly closed theorem/deployment flags, or blocker drift
-at the production-reference boundary.
+evidence hooks, missing direct closure-dependency rows, unexpectedly closed
+theorem/deployment flags, or blocker drift at the production-reference
+boundary.
 
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|

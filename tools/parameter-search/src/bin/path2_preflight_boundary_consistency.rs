@@ -660,6 +660,16 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
+    if !direct_report.every_closure_dependency_has_open_obligation
+        || !direct_report.every_closure_dependency_has_open_support_surface
+        || !direct_report.every_open_closure_dependency_blocks_deployment
+        || direct_report.closure_dependency_count != direct_report.closure_dependency_rows.len()
+        || direct_report.closure_dependency_count != direct_report.obligation_rows.len()
+    {
+        return Err(
+            "direct theorem boundary lost closure-dependency blocker coverage".to_string(),
+        );
+    }
     if !direct_report.account_creation_proof_boundary_verified {
         require_open_direct_obligation(
             &direct_report,
@@ -838,6 +848,8 @@ fn main() -> Result<(), String> {
     let residual_blockers = production_deployment_account_stark_residual_blockers();
     if u64_at(direct_boundary, "/coverage/obligation_count")?
         != direct_report.obligation_count as u64
+        || u64_at(direct_boundary, "/coverage/closure_dependency_count")?
+            != direct_report.closure_dependency_count as u64
         || u64_at(
             direct_boundary,
             "/direct_obligation_vector_corpus_evidence/case_count",

@@ -577,6 +577,27 @@ mod enabled {
                     .to_string(),
             );
         }
+        require_bool(
+            direct_boundary,
+            "/coverage/every_closure_dependency_has_open_obligation",
+            true,
+        )?;
+        require_bool(
+            direct_boundary,
+            "/coverage/every_closure_dependency_has_open_support_surface",
+            true,
+        )?;
+        require_bool(
+            direct_boundary,
+            "/coverage/every_open_closure_dependency_blocks_deployment",
+            true,
+        )?;
+        if u64_at(direct_boundary, "/coverage/closure_dependency_count")? != 9 {
+            return Err(
+                "direct accepted composition evidence lost direct closure dependency count"
+                    .to_string(),
+            );
+        }
         for pointer in [
             "/coverage/every_closure_dependency_has_open_obligation",
             "/coverage/every_closure_dependency_has_open_support_surface",

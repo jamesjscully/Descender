@@ -242,6 +242,32 @@ fn main() -> Result<(), String> {
             "direct theorem obligation vector corpus is not bound to direct report".to_string(),
         );
     }
+    let expected_direct_closure_dependencies =
+        serde_json::to_value(direct_report.closure_dependency_rows).map_err(|err| {
+            format!("serialize direct theorem closure dependency rows: {err}")
+        })?;
+    if u64_at(corpus, "/direct_theorem_report/closure_dependency_count")?
+        != direct_report.closure_dependency_count as u64
+        || at(corpus, "/direct_theorem_report/closure_dependency_rows")?
+            != &expected_direct_closure_dependencies
+        || !bool_at(
+            corpus,
+            "/direct_theorem_report/every_closure_dependency_has_open_obligation",
+        )?
+        || !bool_at(
+            corpus,
+            "/direct_theorem_report/every_closure_dependency_has_open_support_surface",
+        )?
+        || !bool_at(
+            corpus,
+            "/direct_theorem_report/every_open_closure_dependency_blocks_deployment",
+        )?
+    {
+        return Err(
+            "direct theorem obligation vector corpus lost direct closure dependency rows"
+                .to_string(),
+        );
+    }
     if str_at(
         corpus,
         "/direct_theorem_report/accepted_tuple_evidence_schema",

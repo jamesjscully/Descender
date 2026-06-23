@@ -194,6 +194,7 @@ fn manifest_body() -> Result<Value, String> {
                 "acceptance_hypothesis_count": direct_report.acceptance_hypotheses.len(),
                 "named_break_class_count": direct_report.named_break_classes.len(),
                 "obligation_count": direct_report.obligation_count,
+                "closure_dependency_count": direct_report.closure_dependency_count,
                 "obligation_audit_vector_case_count":
                     direct_report.obligation_audit_vector_case_count,
                 "every_hypothesis_has_obligation":
@@ -202,6 +203,12 @@ fn manifest_body() -> Result<Value, String> {
                     direct_report.every_obligation_has_named_break,
                 "every_open_obligation_blocks_deployment":
                     direct_report.every_open_obligation_blocks_deployment,
+                "every_closure_dependency_has_open_obligation":
+                    direct_report.every_closure_dependency_has_open_obligation,
+                "every_closure_dependency_has_open_support_surface":
+                    direct_report.every_closure_dependency_has_open_support_surface,
+                "every_open_closure_dependency_blocks_deployment":
+                    direct_report.every_open_closure_dependency_blocks_deployment,
                 "theorem_statement_pinned": direct_report.theorem_statement_pinned,
                 "accepted_tuple_pinned": direct_report.accepted_tuple_pinned,
                 "accepted_tuple_evidence_present":
@@ -238,6 +245,7 @@ fn manifest_body() -> Result<Value, String> {
             "obligation_audit_vector_case_ids":
                 direct_report.obligation_audit_vector_case_ids,
             "obligation_rows": direct_report.obligation_rows,
+            "closure_dependency_rows": direct_report.closure_dependency_rows,
             "direct_obligation_vector_corpus_evidence":
                 direct_obligation_vector_corpus_evidence,
             "direct_accepted_spend_tuple_evidence_artifact":
