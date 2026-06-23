@@ -81,6 +81,10 @@ report, the current `Path2DirectQromActionBoundaryReportV1`, the current
 `Path2AccountCreationProofBoundaryReportV1` by a local and CI gate, so the
 direct theorem target, conclusion, QROM/action digest, lifecycle digest,
 proof-boundary digest, and selected field groups cannot drift silently. The
+production report validator separately rejects weakened
+acceptance-hypothesis/obligation-row coverage, missing pinned accepted-evidence
+hooks, unexpectedly closed theorem flags, deployment-ready flags, or direct
+theorem blocker drift. The
 `formal/kat/path2_direct_theorem_obligation_vectors_v1.json` corpus records one
 digest-pinned audit case for each open direct-theorem obligation and binds that
 row list to the current QROM/action, lifecycle, and account-creation

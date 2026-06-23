@@ -12935,15 +12935,50 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         != PATH2_DIRECT_THEOREM_OBLIGATION_AUDIT_CASES.as_ref()
         || report.obligation_audit_vector_case_count
             != report.obligation_audit_vector_case_ids.len()
+        || report.acceptance_hypotheses != PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.as_ref()
+        || report.named_break_classes != PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES.as_ref()
+        || report.obligation_rows != PATH2_DIRECT_THEOREM_OBLIGATION_ROWS.as_ref()
+        || report.obligation_count != report.obligation_rows.len()
         || report.obligation_rows.len() != report.obligation_audit_vector_case_ids.len()
         || !report
             .obligation_rows
             .iter()
             .zip(report.obligation_audit_vector_case_ids.iter())
             .all(|(row, expected)| row.obligation_id == *expected)
+        || !report.every_hypothesis_has_obligation
+        || !report.every_obligation_has_named_break
+        || !report.every_open_obligation_blocks_deployment
+        || !report
+            .obligation_rows
+            .iter()
+            .zip(report.acceptance_hypotheses.iter())
+            .all(|(row, hypothesis)| row.acceptance_hypothesis == *hypothesis)
+        || !report.obligation_rows.iter().all(|row| {
+            !row.named_break.is_empty()
+                && report.named_break_classes.contains(&row.named_break)
+                && (!row.open
+                    || row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION)
+        })
     {
         return Err(
             "Path 2 direct theorem boundary obligation audit vector case mismatch".to_string(),
+        );
+    }
+    if !report.theorem_statement_pinned
+        || !report.accepted_tuple_pinned
+        || !report.accepted_tuple_evidence_present
+        || !report.accepted_composition_evidence_present
+        || !report.acceptance_hypotheses_pinned
+        || !report.named_break_classes_pinned
+        || report.composition_theorem_instantiated
+        || report.account_creation_proof_boundary_verified
+        || report.lifecycle_transition_profile_verified
+        || report.qrom_and_action_bounds_linked_to_theorem
+        || report.deployment_ready
+        || report.blocker != PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+    {
+        return Err(
+            "Path 2 direct theorem boundary unexpectedly changes closure status".to_string(),
         );
     }
     Ok(())

@@ -45,7 +45,10 @@ boundary-manifest gate also checks embedded requirement, proof-obligation, and
 direct-obligation corpus evidence against standalone corpus-evidence objects,
 while the preflight gate checks open-row blockers, fail-closed flags, and the
 production preflight blocker/verdict/ready-assertion/certificate chain against
-the standalone KATs and deployment blocker set.
+the standalone KATs and deployment blocker set. The direct theorem report
+validator also explicitly rejects weakened obligation coverage, missing pinned
+evidence hooks, unexpectedly closed theorem/deployment flags, or blocker drift
+at the production-reference boundary.
 
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|
