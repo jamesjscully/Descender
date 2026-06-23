@@ -10,9 +10,15 @@ fn main() -> Result<(), String> {
 
 #[cfg(feature = "account-creation-stark-verifier")]
 mod enabled {
-    use descender_parameter_search::production_reference::{
-        path2_direct_accepted_composition_evidence_v1,
-        path2_direct_accepted_composition_evidence_v1_digest, PROFILE,
+    use descender_parameter_search::{
+        manifest_vector_evidence::{
+            path2_account_creation_accepted_proof_boundary_evidence_artifact_v1,
+            path2_direct_accepted_spend_tuple_evidence_artifact_v1,
+        },
+        production_reference::{
+            path2_direct_accepted_composition_evidence_v1,
+            path2_direct_accepted_composition_evidence_v1_digest, PROFILE,
+        },
     };
     use serde_json::{json, Value};
     use sha2::{Digest, Sha256};
@@ -41,6 +47,28 @@ mod enabled {
                 "direct accepted composition evidence unexpectedly claims closure".to_string(),
             );
         }
+        let accepted_proof_boundary_artifact =
+            path2_account_creation_accepted_proof_boundary_evidence_artifact_v1()?;
+        let accepted_spend_tuple_artifact =
+            path2_direct_accepted_spend_tuple_evidence_artifact_v1()?;
+        let expected_proof_boundary_digest =
+            hex_encode(&evidence.account_creation_accepted_proof_boundary_evidence_digest);
+        let expected_spend_tuple_digest =
+            hex_encode(&evidence.direct_accepted_spend_tuple_evidence_digest);
+        if accepted_proof_boundary_artifact
+            .get("evidence_digest")
+            .and_then(Value::as_str)
+            != Some(expected_proof_boundary_digest.as_str())
+            || accepted_spend_tuple_artifact
+                .get("evidence_digest")
+                .and_then(Value::as_str)
+                != Some(expected_spend_tuple_digest.as_str())
+        {
+            return Err(
+                "direct accepted composition manifest lost accepted input artifact binding"
+                    .to_string(),
+            );
+        }
 
         Ok(json!({
             "schema": "Descender.Path2.DirectAcceptedCompositionDeterministicKatEvidenceManifest.v1",
@@ -57,6 +85,12 @@ mod enabled {
                 "proof_byte_policy": "deterministic KAT evidence only: the generator runs inside a one-thread Rayon pool so the fixed proof-randomness seed also fixes Plonky3 proof-of-work witness selection; deployment producers still use fresh proof randomness",
                 "rayon_threads": 1,
                 "evidence_digest_recomputed": true
+            },
+            "accepted_input_artifacts": {
+                "account_creation_accepted_proof_boundary_evidence_artifact":
+                    accepted_proof_boundary_artifact,
+                "direct_accepted_spend_tuple_evidence_artifact":
+                    accepted_spend_tuple_artifact
             },
             "evidence": {
                 "schema": evidence.schema,

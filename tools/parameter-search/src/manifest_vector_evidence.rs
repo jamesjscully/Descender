@@ -561,6 +561,20 @@ pub fn path2_direct_accepted_composition_evidence_artifact_v1() -> Result<Value,
                 .to_string(),
         );
     }
+    if at(
+        artifact,
+        "/accepted_input_artifacts/account_creation_accepted_proof_boundary_evidence_artifact",
+    )? != &accepted_boundary_artifact
+        || at(
+            artifact,
+            "/accepted_input_artifacts/direct_accepted_spend_tuple_evidence_artifact",
+        )? != &accepted_tuple_artifact
+    {
+        return Err(
+            "direct accepted composition artifact lost embedded accepted input artifacts"
+                .to_string(),
+        );
+    }
 
     Ok(json!({
         "schema": "Descender.Path2.DirectAcceptedCompositionEvidenceArtifact.v1",

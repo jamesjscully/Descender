@@ -32,10 +32,10 @@ requirement-vector-corpus evidence for the frame KAT, no-export, FRI/QROM
 domain, and payload KAT corpora plus the 8-case open proof-obligation audit
 corpus, with that corpus now binding the accepted proof-boundary KAT artifact;
 the direct-theorem boundary also embeds the 9-case open direct-obligation audit
-corpus and accepted direct-composition KAT artifact, with the direct-obligation
-corpus now embedding that accepted composition artifact plus its nested
-accepted proof-boundary artifact and standalone accepted direct-spend tuple
-artifact, while keeping theorem and deployment flags false.
+corpus and accepted direct-composition KAT artifact, with that standalone
+accepted-composition KAT and the direct-obligation corpus both carrying nested
+accepted proof-boundary and accepted direct-spend tuple artifacts, while
+keeping theorem and deployment flags false.
 
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|

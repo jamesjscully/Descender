@@ -331,18 +331,19 @@ cargo run --manifest-path tools/parameter-search/Cargo.toml --features account-c
 ```
 
 It runs the feature-gated accepted account-STARK creation boundary and direct
-spend tuple together, then digest-pins the full accepted evidence chain:
-accepted proof-boundary evidence digest, accepted spend tuple digest, selected
-payload digest, leaf/evidence transcript digests, admission namespace,
-authorization digest, consume-once before/after state digests, and fail-closed
-deployment flags. The generator and consistency checker install a one-thread
+spend tuple together, embeds the accepted proof-boundary and direct-spend tuple
+artifacts, then digest-pins the full accepted evidence chain: accepted
+proof-boundary evidence digest, accepted spend tuple digest, selected payload
+digest, leaf/evidence transcript digests, admission namespace, authorization
+digest, consume-once before/after state digests, and fail-closed deployment
+flags. The generator and consistency checker install a one-thread
 Rayon pool so the fixed account-STARK proof seed also fixes Plonky3
 proof-of-work witness selection. The
 `path2_direct_accepted_composition_evidence_consistency` gate checks the
 manifest digest, recomputes the evidence in the same deterministic KAT mode,
-cross-checks the recorded accepted proof-boundary evidence against
+cross-checks the embedded accepted proof-boundary artifact against
 `path2_account_creation_accepted_proof_boundary_evidence_v1.json`, checks the
-recorded accepted spend tuple against
+embedded accepted spend tuple artifact against
 `path2_direct_accepted_spend_tuple_evidence_v1.json`, and ties the selected
 payload digest back to the
 `path2_account_stark_payload_kat_vectors_v1.json` honest payload. This is

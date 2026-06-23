@@ -321,6 +321,58 @@ mod enabled {
                 "accepted proof-boundary manifest lost fail-closed/no-export evidence".to_string(),
             );
         }
+        let embedded_boundary_artifact = at(
+            body,
+            "/accepted_input_artifacts/account_creation_accepted_proof_boundary_evidence_artifact",
+        )?;
+        if str_at(embedded_boundary_artifact, "/artifact_manifest_digest")?
+            != str_at(&accepted_boundary, "/manifest_digest")?
+            || str_at(
+                embedded_boundary_artifact,
+                "/artifact_manifest_recomputed_digest",
+            )? != accepted_boundary_recomputed_digest
+            || str_at(embedded_boundary_artifact, "/evidence_digest")?
+                != str_at(accepted_boundary_body, "/evidence/digest")?
+            || str_at(embedded_boundary_artifact, "/evidence_recomputed_digest")?
+                != str_at(accepted_boundary_body, "/evidence/recomputed_digest")?
+            || str_at(
+                embedded_boundary_artifact,
+                "/account_creation_proof_boundary_report_digest",
+            )? != str_at(
+                accepted_boundary_body,
+                "/evidence/account_creation_proof_boundary_report_digest",
+            )?
+            || bool_at(
+                embedded_boundary_artifact,
+                "/audit_summary/verifier_boundary_accepts",
+            )? != bool_at(
+                accepted_boundary_body,
+                "/evidence/verifier_boundary_accepts",
+            )?
+            || bool_at(
+                embedded_boundary_artifact,
+                "/audit_summary/proof_family_obligations_still_open",
+            )? != bool_at(
+                accepted_boundary_body,
+                "/evidence/proof_family_obligations_still_open",
+            )?
+            || bool_at(
+                embedded_boundary_artifact,
+                "/audit_summary/public_payload_exports_private_material",
+            )? != bool_at(
+                accepted_boundary_body,
+                "/evidence/public_payload_exports_private_material",
+            )?
+            || bool_at(
+                embedded_boundary_artifact,
+                "/audit_summary/deployment_ready",
+            )? != bool_at(accepted_boundary_body, "/evidence/deployment_ready")?
+        {
+            return Err(
+                "direct accepted composition manifest embedded proof-boundary artifact drifted"
+                    .to_string(),
+            );
+        }
 
         for pointer in [
             "/evidence/creation_evidence_matches_direct_tuple",
@@ -355,6 +407,13 @@ mod enabled {
         let accepted_tuple =
             load_json("formal/kat/path2_direct_accepted_spend_tuple_evidence_v1.json")?;
         let accepted_tuple_body = at(&accepted_tuple, "/manifest")?;
+        let accepted_tuple_json = serde_json::to_string_pretty(accepted_tuple_body)
+            .map_err(|err| format!("serialize accepted tuple manifest body: {err}"))?;
+        let accepted_tuple_recomputed_digest =
+            hex_encode(&Sha256::digest(accepted_tuple_json.as_bytes()));
+        if str_at(&accepted_tuple, "/manifest_digest")? != accepted_tuple_recomputed_digest {
+            return Err("direct accepted spend tuple manifest digest mismatch".to_string());
+        }
         if str_at(
             body,
             "/evidence/direct_accepted_spend_tuple_evidence_digest",
@@ -410,6 +469,51 @@ mod enabled {
         {
             return Err(
                 "direct accepted composition manifest drifted from standalone accepted spend tuple artifact"
+                    .to_string(),
+            );
+        }
+        let embedded_tuple_artifact = at(
+            body,
+            "/accepted_input_artifacts/direct_accepted_spend_tuple_evidence_artifact",
+        )?;
+        if str_at(embedded_tuple_artifact, "/artifact_manifest_digest")?
+            != str_at(&accepted_tuple, "/manifest_digest")?
+            || str_at(
+                embedded_tuple_artifact,
+                "/artifact_manifest_recomputed_digest",
+            )? != accepted_tuple_recomputed_digest
+            || str_at(embedded_tuple_artifact, "/evidence_digest")?
+                != str_at(accepted_tuple_body, "/evidence/digest")?
+            || str_at(embedded_tuple_artifact, "/evidence_recomputed_digest")?
+                != str_at(accepted_tuple_body, "/evidence/recomputed_digest")?
+            || str_at(
+                embedded_tuple_artifact,
+                "/direct_theorem_boundary_report_digest",
+            )? != str_at(body, "/evidence/direct_theorem_boundary_report_digest")?
+            || str_at(
+                embedded_tuple_artifact,
+                "/account_creation_proof_boundary_report_digest",
+            )? != str_at(
+                body,
+                "/evidence/account_creation_proof_boundary_report_digest",
+            )?
+            || bool_at(
+                embedded_tuple_artifact,
+                "/audit_summary/replay_rejected_by_consume_once",
+            )? != bool_at(
+                accepted_tuple_body,
+                "/evidence/replay_rejected_by_consume_once",
+            )?
+            || bool_at(
+                embedded_tuple_artifact,
+                "/audit_summary/tuple_fields_match_theorem_boundary",
+            )? != bool_at(
+                accepted_tuple_body,
+                "/evidence/tuple_fields_match_theorem_boundary",
+            )?
+        {
+            return Err(
+                "direct accepted composition manifest embedded spend tuple artifact drifted"
                     .to_string(),
             );
         }

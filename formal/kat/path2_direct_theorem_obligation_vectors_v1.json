@@ -184,8 +184,8 @@
       "account_creation_accepted_proof_boundary_evidence_digest": "44345434f7f0b3ecd0efdfab2edbbba27ce82e48c013b2e1b874673cff54d7ef",
       "account_creation_proof_boundary_report_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
       "account_creation_proof_boundary_report_recomputed_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
-      "artifact_manifest_digest": "f7e98d3ebeda36297efb9d39b1bdf0304956c3fe700c3f85b241ca511520e481",
-      "artifact_manifest_recomputed_digest": "f7e98d3ebeda36297efb9d39b1bdf0304956c3fe700c3f85b241ca511520e481",
+      "artifact_manifest_digest": "40be3589419423c80a2cc457458e7f474bd1c6689549c1e09e9d8caa01e9b9d2",
+      "artifact_manifest_recomputed_digest": "40be3589419423c80a2cc457458e7f474bd1c6689549c1e09e9d8caa01e9b9d2",
       "artifact_path": "formal/kat/path2_direct_accepted_composition_evidence_v1.json",
       "artifact_schema": "Descender.Path2.DirectAcceptedCompositionDeterministicKatEvidenceManifest.v1",
       "artifact_status": "digest_pinned_deterministic_kat_accepted_direct_composition_evidence",
@@ -352,5 +352,5 @@
     "schema": "Descender.Path2.DirectTheoremObligationVectors.v1",
     "status": "digest_pinned_direct_theorem_obligation_audit_vectors"
   },
-  "corpus_digest": "d8b4b71207426524a5944084ae6e46adc590132e87caee4290a688823344aaa5"
+  "corpus_digest": "527e4e37c826c777175f65382d686b4a84c2d8c9b83cacc6a520ba136e8ee053"
 }
