@@ -1,0 +1,113 @@
+{
+  "manifest": {
+    "authority_snapshot": {
+      "acceptance_hypothesis": "checked_core_verification_accepts_poseidon2_and_fq12_action",
+      "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+      "checked_core_challenge_frame": "path2_checked_core_authorization_challenge_frame",
+      "direct_obligation_id": "direct_obligation_checked_core_acceptance",
+      "direct_report_domain": "Descender.Path2.DirectTheoremBoundaryReport.v1",
+      "fq12_action_domain": "Descender.Signature.q12289.local_delta.challenge_action.fq12.v1",
+      "named_break": "qrom_or_domain_separation_break",
+      "qrom_action_report_domain": "Descender.Path2.DirectQromActionBoundaryReport.v1",
+      "query_budget_mode": "direct_single_slot",
+      "query_budget_schema": "DESCENDER_PATH2_DIRECT_QUERY_BUDGET_V1",
+      "support_file": "research/path2_hash_qrom_assumption_ledger.md"
+    },
+    "corpus_id": "Descender.Path2.DirectQromActionBoundary.v1",
+    "corpus_version": 1,
+    "coverage": {
+      "action_map_budget_pinned": true,
+      "checked_core_qrom_artifacts": [
+        "research/cryptanalysis/signature_readiness_20260516/qrom_challenge_budget_memo_n32_q12289.json",
+        "research/cryptanalysis/signature_readiness_20260516/qrom_security_loss_review_n32_q12289.json",
+        "research/cryptanalysis/signature_readiness_20260516/pre_third_party_qrom_frame_probe_n32_q12289.json",
+        "research/cryptanalysis/signature_readiness_20260516/qrom_multitarget_margin_n32_q12289.json"
+      ],
+      "checked_core_qrom_budget_pinned": true,
+      "direct_mode_q_batch_inactive": true,
+      "direct_mode_q_chal_active": true,
+      "negative_control_exceeds_margin": true,
+      "optional_aggregation_terms_q_batch_only": true,
+      "selected_horizon_within_margin": true
+    },
+    "digests": {
+      "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
+      "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
+      "direct_theorem_boundary_report_digest": "b0756ad58e90e5b00e570ed3d9be4aba7fdcd88f0e7673da6ba81ee356fe6a49",
+      "direct_theorem_report_qrom_action_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b"
+    },
+    "frozen_status": "draft_qrom_action_boundary_manifest",
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_qrom_action_boundary_manifest",
+      "source": "tools/parameter-search/src/bin/path2_direct_qrom_action_boundary_manifest.rs"
+    },
+    "numeric_budget": {
+      "action_collision_classical_bits_at_union_bound": 130,
+      "action_collision_floor_bits": 163,
+      "action_collision_quantum_bits_at_union_bound": 131,
+      "algebraic_challenge_bits_after_mask": 182,
+      "algebraic_challenge_bytes": 23,
+      "algebraic_challenge_last_byte_mask": 63,
+      "challenge_hardening_bytes": 8,
+      "deployment_classical_hash_query_bound_log2": 33,
+      "deployment_quantum_hash_query_bound_log2": 16,
+      "minimum_deployment_margin_bits": 53,
+      "negative_control_horizon_log2": 54,
+      "qrom_quadratic_loss_bits_at_deployment_bound": 32,
+      "selected_multi_target_horizon_log2": 32,
+      "target_security_bits": 128,
+      "total_challenge_bits_after_mask": 246,
+      "transcript_term_bits_after_qrom_loss": 182
+    },
+    "open_obligations": {
+      "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+      "deployment_ready": false,
+      "external_qrom_review_complete": false,
+      "qrom_and_action_bounds_linked_to_theorem": false,
+      "theorem_imports_budget": false
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "query_shape": {
+      "active_query_symbol_count": 15,
+      "active_query_symbols": [
+        "q_leaf",
+        "q_auth",
+        "q_evidence",
+        "q_stmt",
+        "q_pad",
+        "q_mask",
+        "q_chal",
+        "q_life",
+        "q_transparent_trace_commit",
+        "q_transparent_query_index",
+        "q_transparent_query_row",
+        "q_transparent_merkle_open",
+        "q_transparent_consistency",
+        "q_transparent_extractor",
+        "q_transparent_simulator"
+      ],
+      "direct_advantage_term_count": 7,
+      "direct_advantage_terms": [
+        "Adv_creation_hidden_source_soundness",
+        "Adv_prevalidation_leaf_binding(q_leaf,q_auth,q_evidence,q_stmt)",
+        "Adv_prevalidation_registry_binding(q_life,q_leaf)",
+        "Adv_checked_core_message_binding(q_chal,q_auth)",
+        "Adv_lifecycle_consume_once(q_life)",
+        "Adv_live_slot_leakage(q_pad,q_mask,q_leaf)",
+        "Adv_qrom_domain_separation(q_leaf,q_auth,q_evidence,q_chal,q_pad,q_mask,q_transparent_trace_commit,q_transparent_query_index,q_transparent_query_row,q_transparent_merkle_open,q_transparent_consistency)"
+      ],
+      "inactive_query_symbol_count": 1,
+      "inactive_query_symbols": [
+        "q_batch"
+      ],
+      "optional_aggregation_term_count": 3,
+      "optional_aggregation_terms": [
+        "Adv_optional_aggregation_soundness(q_batch)",
+        "Adv_accumulator_or_root_binding(q_batch,q_leaf)",
+        "Adv_batch_data_availability(q_batch)"
+      ]
+    },
+    "schema": "Descender.Path2.DirectQromActionBoundaryManifest.v1"
+  },
+  "manifest_digest": "4f67ee56640c97a664fa312666a7acfcf63650419aef0587be7e5ece3fcfab16"
+}

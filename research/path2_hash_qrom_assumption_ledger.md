@@ -130,9 +130,11 @@ budget memo:
 | target security | 128 bits |
 | deployment quantum hash-query cap | `2^16` |
 | deployment classical hash-query cap | `2^33` |
-| QROM quadratic loss at deployment cap | 32 bits |
-| transcript term after QROM loss | 130 bits |
-| minimum deployment margin | 1 bit |
+| QROM quadratic loss at deployment cap | `32` bits |
+| transcript term after QROM loss | `182` bits |
+| full challenge term after mask | `246` bits |
+| Fq12 action collision floor | `163` bits |
+| minimum deployment margin | `53` bits |
 
 For direct single-slot mode it marks these symbols active:
 
@@ -141,12 +143,6 @@ q_leaf, q_auth, q_evidence, q_stmt, q_pad, q_mask, q_chal, q_life
 q_transparent_trace_commit, q_transparent_query_index, q_transparent_query_row
 q_transparent_merkle_open, q_transparent_consistency
 q_transparent_extractor, q_transparent_simulator
-q_trace_commitment_binding, q_trace_double_binding
-q_trace_masked_opening_consistency, q_trace_relation_knowledge
-q_trace_proximity_bridge, q_trace_extractor_rewind
-q_native_boundary, q_native_role_handle, q_native_role_auth_mode
-q_native_mask_domain, q_native_no_export_policy
-q_native_norm_range_policy, q_native_blinding_policy
 ```
 
 and marks this symbol inactive:
@@ -158,16 +154,7 @@ q_batch
 The executable direct advantage terms are:
 
 ```text
-Adv_native_boundary_zk_trace_binding_hiding(
-  q_transparent_trace_commit,q_transparent_query_index,q_transparent_query_row,
-  q_transparent_merkle_open,q_transparent_consistency,
-  q_transparent_extractor,q_transparent_simulator,
-  q_trace_commitment_binding,q_trace_double_binding,
-  q_trace_masked_opening_consistency,q_trace_relation_knowledge,
-  q_trace_proximity_bridge,q_trace_extractor_rewind,
-  q_native_boundary,q_native_role_handle,q_native_role_auth_mode,
-  q_native_mask_domain,q_native_no_export_policy,
-  q_native_norm_range_policy,q_native_blinding_policy)
+Adv_creation_hidden_source_soundness
 Adv_prevalidation_leaf_binding(q_leaf,q_auth,q_evidence,q_stmt)
 Adv_prevalidation_registry_binding(q_life,q_leaf)
 Adv_checked_core_message_binding(q_chal,q_auth)
@@ -175,13 +162,7 @@ Adv_lifecycle_consume_once(q_life)
 Adv_live_slot_leakage(q_pad,q_mask,q_leaf)
 Adv_qrom_domain_separation(q_leaf,q_auth,q_evidence,q_chal,q_pad,q_mask,
   q_transparent_trace_commit,q_transparent_query_index,q_transparent_query_row,
-  q_transparent_merkle_open,q_transparent_consistency,
-  q_trace_commitment_binding,q_trace_double_binding,
-  q_trace_masked_opening_consistency,q_trace_relation_knowledge,
-  q_trace_proximity_bridge,q_trace_extractor_rewind,
-  q_native_boundary,q_native_role_handle,q_native_role_auth_mode,
-  q_native_mask_domain,q_native_no_export_policy,
-  q_native_norm_range_policy,q_native_blinding_policy)
+  q_transparent_merkle_open,q_transparent_consistency)
 ```
 
 Optional aggregation terms remain recorded in the object but all contain
@@ -194,6 +175,21 @@ KAT `path2_domain_constants_are_disjoint_and_mode_separated` pins the current
 Path 2 domain/schema constants as duplicate-free, prefix-disjoint, and
 direct/batch/consume separated, including the public admission-view schema and
 direct query-budget schema plus selected transparent proof domains/schemas.
+
+The direct theorem boundary imports this as a side report rather than a
+deployment claim:
+
+```text
+Path2DirectQromActionBoundaryReportV1
+formal/kat/path2_direct_qrom_action_boundary_v1.json
+```
+
+That report pins the current checked-core QROM budget, Fq12 action-map collision
+floor, direct-mode `q_chal` and inactive `q_batch` status, and generated QROM
+artifact paths. It deliberately keeps `qrom_and_action_bounds_linked_to_theorem`,
+`external_qrom_review_complete`, and `deployment_ready` false until the final
+composition theorem imports the budget and external review accepts the framing.
+The named break for this boundary remains `qrom_or_domain_separation_break`.
 
 ## Active Native Hash/QROM Review
 
@@ -215,9 +211,9 @@ and pins:
 | target security | 128 bits |
 | deployment quantum hash-query cap | `2^16` |
 | deployment classical hash-query cap | `2^33` |
-| QROM quadratic loss at deployment cap | 32 bits |
-| transcript term after QROM loss | 130 bits |
-| minimum deployment margin | 1 bit |
+| QROM quadratic loss at deployment cap | `32` bits |
+| transcript term after QROM loss | `182` bits |
+| minimum deployment margin | `53` bits |
 | admitted consensus carrier size | 330-byte body, domain-prefixed canonical bytes |
 
 The active native query symbols are:

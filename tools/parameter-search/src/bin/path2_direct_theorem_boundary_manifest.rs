@@ -5,7 +5,11 @@ use descender_parameter_search::production_reference::{
     path2_account_creation_sampler_timing_report_v1_digest,
     path2_direct_lifecycle_boundary_report_v1,
     path2_direct_lifecycle_boundary_report_v1_digest,
-    path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
+    path2_direct_qrom_action_boundary_report_v1,
+    path2_direct_qrom_action_boundary_report_v1_digest,
+    path2_direct_query_budget_v1,
+    path2_direct_theorem_boundary_report_v1,
+    path2_direct_theorem_boundary_report_v1_digest,
     PROFILE,
 };
 use serde_json::{json, Value};
@@ -23,12 +27,19 @@ fn hex_encode(bytes: &[u8]) -> String {
 
 fn manifest_body() -> Result<Value, String> {
     let direct_report = path2_direct_theorem_boundary_report_v1();
+    let qrom_action_report = path2_direct_qrom_action_boundary_report_v1();
     let lifecycle_report = path2_direct_lifecycle_boundary_report_v1();
+    let query_budget = path2_direct_query_budget_v1();
     let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
     let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
     let recomputed_direct_digest = path2_direct_theorem_boundary_report_v1_digest(&direct_report);
     if recomputed_direct_digest != direct_report.digest {
         return Err("direct theorem boundary report digest mismatch".to_string());
+    }
+    let recomputed_qrom_action_digest =
+        path2_direct_qrom_action_boundary_report_v1_digest(&qrom_action_report);
+    if recomputed_qrom_action_digest != qrom_action_report.digest {
+        return Err("direct QROM/action boundary report digest mismatch".to_string());
     }
     let recomputed_lifecycle_digest =
         path2_direct_lifecycle_boundary_report_v1_digest(&lifecycle_report);
@@ -48,6 +59,11 @@ fn manifest_body() -> Result<Value, String> {
     if direct_report.account_creation_proof_boundary_report_digest != proof_boundary_report.digest {
         return Err(
             "direct theorem report is not bound to the current proof-boundary report".to_string(),
+        );
+    }
+    if direct_report.direct_qrom_action_boundary_report_digest != qrom_action_report.digest {
+        return Err(
+            "direct theorem report is not bound to the current QROM/action report".to_string(),
         );
     }
     if direct_report.direct_lifecycle_boundary_report_digest != lifecycle_report.digest {
@@ -73,13 +89,18 @@ fn manifest_body() -> Result<Value, String> {
         },
         "authority_snapshot": {
             "direct_report_domain": direct_report.domain,
+            "direct_qrom_action_boundary_report_domain": qrom_action_report.domain,
             "direct_lifecycle_boundary_report_domain": lifecycle_report.domain,
             "account_creation_proof_boundary_report_domain": proof_boundary_report.domain,
             "account_creation_sampler_timing_report_domain": sampler_timing_report.domain,
             "direct_theorem_blocker": direct_report.blocker,
+            "direct_qrom_action_blocker": qrom_action_report.blocker,
             "direct_lifecycle_blocker": lifecycle_report.blocker,
             "account_creation_proof_boundary_blocker": proof_boundary_report.blocker,
             "sampler_timing_blocker": sampler_timing_report.blocker,
+            "direct_qrom_action_support_file": qrom_action_report.support_file,
+            "direct_qrom_action_named_break": qrom_action_report.named_break,
+            "direct_qrom_action_obligation_id": qrom_action_report.direct_obligation_id,
             "direct_lifecycle_support_file": lifecycle_report.support_file,
             "direct_lifecycle_theorem_target": lifecycle_report.theorem_target,
             "selected_payload_type": proof_boundary_report.selected_payload_type,
@@ -91,6 +112,15 @@ fn manifest_body() -> Result<Value, String> {
             "direct_theorem_boundary_report_digest": hex_encode(&direct_report.digest),
             "direct_theorem_boundary_report_recomputed_digest": hex_encode(
                 &recomputed_direct_digest
+            ),
+            "direct_qrom_action_boundary_report_digest": hex_encode(
+                &qrom_action_report.digest
+            ),
+            "direct_qrom_action_boundary_report_recomputed_digest": hex_encode(
+                &recomputed_qrom_action_digest
+            ),
+            "direct_theorem_report_qrom_action_digest": hex_encode(
+                &direct_report.direct_qrom_action_boundary_report_digest
             ),
             "direct_lifecycle_boundary_report_digest": hex_encode(
                 &lifecycle_report.digest
@@ -119,6 +149,9 @@ fn manifest_body() -> Result<Value, String> {
         },
         "direct_theorem_boundary": {
             "coverage": {
+                "direct_qrom_action_boundary_report_digest": hex_encode(
+                    &direct_report.direct_qrom_action_boundary_report_digest
+                ),
                 "direct_lifecycle_boundary_report_digest": hex_encode(
                     &direct_report.direct_lifecycle_boundary_report_digest
                 ),
@@ -152,6 +185,76 @@ fn manifest_body() -> Result<Value, String> {
             "acceptance_hypotheses": direct_report.acceptance_hypotheses,
             "named_break_classes": direct_report.named_break_classes,
             "obligation_rows": direct_report.obligation_rows
+        },
+        "direct_qrom_action_boundary": {
+            "coverage": {
+                "checked_core_qrom_budget_pinned":
+                    qrom_action_report.checked_core_qrom_budget_pinned,
+                "action_map_budget_pinned": qrom_action_report.action_map_budget_pinned,
+                "direct_mode_q_chal_active": qrom_action_report.direct_mode_q_chal_active,
+                "direct_mode_q_batch_inactive":
+                    qrom_action_report.direct_mode_q_batch_inactive,
+                "optional_aggregation_terms_q_batch_only":
+                    qrom_action_report.optional_aggregation_terms_q_batch_only,
+                "selected_horizon_within_margin":
+                    qrom_action_report.selected_horizon_within_margin,
+                "negative_control_exceeds_margin":
+                    qrom_action_report.negative_control_exceeds_margin,
+                "theorem_imports_budget": qrom_action_report.theorem_imports_budget,
+                "external_qrom_review_complete":
+                    qrom_action_report.external_qrom_review_complete,
+                "qrom_and_action_bounds_linked_to_theorem":
+                    qrom_action_report.qrom_and_action_bounds_linked_to_theorem,
+                "deployment_ready": qrom_action_report.deployment_ready,
+                "blocker": qrom_action_report.blocker
+            },
+            "direct_obligation_id": qrom_action_report.direct_obligation_id,
+            "acceptance_hypothesis": qrom_action_report.acceptance_hypothesis,
+            "named_break": qrom_action_report.named_break,
+            "query_budget_schema": qrom_action_report.query_budget_schema,
+            "query_budget_mode": qrom_action_report.query_budget_mode,
+            "checked_core_challenge_frame": qrom_action_report.checked_core_challenge_frame,
+            "fq12_action_domain": qrom_action_report.fq12_action_domain,
+            "checked_core_qrom_artifacts": qrom_action_report.checked_core_qrom_artifacts,
+            "numeric_budget": {
+                "target_security_bits": qrom_action_report.target_security_bits,
+                "deployment_quantum_hash_query_bound_log2":
+                    qrom_action_report.deployment_quantum_hash_query_bound_log2,
+                "deployment_classical_hash_query_bound_log2":
+                    qrom_action_report.deployment_classical_hash_query_bound_log2,
+                "qrom_quadratic_loss_bits_at_deployment_bound":
+                    qrom_action_report.qrom_quadratic_loss_bits_at_deployment_bound,
+                "transcript_term_bits_after_qrom_loss":
+                    qrom_action_report.transcript_term_bits_after_qrom_loss,
+                "algebraic_challenge_bytes": qrom_action_report.algebraic_challenge_bytes,
+                "challenge_hardening_bytes": qrom_action_report.challenge_hardening_bytes,
+                "algebraic_challenge_last_byte_mask":
+                    qrom_action_report.algebraic_challenge_last_byte_mask,
+                "algebraic_challenge_bits_after_mask":
+                    qrom_action_report.algebraic_challenge_bits_after_mask,
+                "total_challenge_bits_after_mask":
+                    qrom_action_report.total_challenge_bits_after_mask,
+                "action_collision_floor_bits":
+                    qrom_action_report.action_collision_floor_bits,
+                "action_collision_quantum_bits_at_union_bound":
+                    qrom_action_report.action_collision_quantum_bits_at_union_bound,
+                "action_collision_classical_bits_at_union_bound":
+                    qrom_action_report.action_collision_classical_bits_at_union_bound,
+                "selected_multi_target_horizon_log2":
+                    qrom_action_report.selected_multi_target_horizon_log2,
+                "negative_control_horizon_log2":
+                    qrom_action_report.negative_control_horizon_log2,
+                "minimum_deployment_margin_bits":
+                    qrom_action_report.minimum_deployment_margin_bits
+            },
+            "query_symbols": {
+                "active": query_budget.active_query_symbols,
+                "inactive": query_budget.inactive_query_symbols
+            },
+            "advantage_terms": {
+                "direct": query_budget.direct_advantage_terms,
+                "optional_aggregation": query_budget.optional_aggregation_terms
+            }
         },
         "direct_lifecycle_boundary": {
             "coverage": {

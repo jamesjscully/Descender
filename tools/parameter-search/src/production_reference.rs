@@ -301,6 +301,8 @@ pub const PRODUCTION_DEPLOYMENT_PREFLIGHT_CERTIFICATE_DOMAIN: &str =
     "Descender.Signature.q12289.local_delta.production_deployment_preflight_certificate.v1";
 pub const PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.DirectTheoremBoundaryReport.v1";
+pub const PATH2_DIRECT_QROM_ACTION_BOUNDARY_REPORT_DOMAIN: &str =
+    "Descender.Path2.DirectQromActionBoundaryReport.v1";
 pub const PATH2_DIRECT_LIFECYCLE_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.DirectLifecycleBoundaryReport.v1";
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN: &str =
@@ -9477,6 +9479,53 @@ pub struct Path2DirectTheoremObligationRowV1 {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2DirectQromActionBoundaryReportV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub domain: &'static str,
+    pub support_file: &'static str,
+    pub direct_obligation_id: &'static str,
+    pub acceptance_hypothesis: &'static str,
+    pub named_break: &'static str,
+    pub query_budget_schema: &'static str,
+    pub query_budget_mode: &'static str,
+    pub checked_core_challenge_frame: &'static str,
+    pub fq12_action_domain: &'static str,
+    pub checked_core_qrom_artifacts: &'static [&'static str],
+    pub target_security_bits: u16,
+    pub deployment_quantum_hash_query_bound_log2: u16,
+    pub deployment_classical_hash_query_bound_log2: u16,
+    pub qrom_quadratic_loss_bits_at_deployment_bound: u16,
+    pub transcript_term_bits_after_qrom_loss: u16,
+    pub algebraic_challenge_bytes: u16,
+    pub challenge_hardening_bytes: u16,
+    pub algebraic_challenge_last_byte_mask: u8,
+    pub algebraic_challenge_bits_after_mask: u16,
+    pub total_challenge_bits_after_mask: u16,
+    pub action_collision_floor_bits: u16,
+    pub action_collision_quantum_bits_at_union_bound: u16,
+    pub action_collision_classical_bits_at_union_bound: u16,
+    pub selected_multi_target_horizon_log2: u16,
+    pub negative_control_horizon_log2: u16,
+    pub minimum_deployment_margin_bits: u16,
+    pub active_query_symbol_count: usize,
+    pub inactive_query_symbol_count: usize,
+    pub direct_advantage_term_count: usize,
+    pub optional_aggregation_term_count: usize,
+    pub checked_core_qrom_budget_pinned: bool,
+    pub action_map_budget_pinned: bool,
+    pub direct_mode_q_chal_active: bool,
+    pub direct_mode_q_batch_inactive: bool,
+    pub optional_aggregation_terms_q_batch_only: bool,
+    pub selected_horizon_within_margin: bool,
+    pub negative_control_exceeds_margin: bool,
+    pub theorem_imports_budget: bool,
+    pub external_qrom_review_complete: bool,
+    pub qrom_and_action_bounds_linked_to_theorem: bool,
+    pub deployment_ready: bool,
+    pub blocker: &'static str,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2DirectLifecycleBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub domain: &'static str,
@@ -9510,6 +9559,7 @@ pub struct Path2DirectLifecycleBoundaryReportV1 {
 pub struct Path2DirectTheoremBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub domain: &'static str,
+    pub direct_qrom_action_boundary_report_digest: [u8; DIGEST_BYTES],
     pub direct_lifecycle_boundary_report_digest: [u8; DIGEST_BYTES],
     pub account_creation_proof_boundary_report_digest: [u8; DIGEST_BYTES],
     pub accepted_tuple_fields: &'static [&'static str],
@@ -10349,6 +10399,8 @@ pub const PATH2_ACCOUNT_CREATION_TIMING_ORDER_STEPS: [&str; 11] = [
     "exact slot authorization is consumed once",
 ];
 
+pub const PATH2_DIRECT_QROM_ACTION_SUPPORT_FILE: &str =
+    "research/path2_hash_qrom_assumption_ledger.md";
 pub const PATH2_DIRECT_LIFECYCLE_SUPPORT_FILE: &str =
     "research/path2_one_use_successor_state_theorem.md";
 pub const PATH2_DIRECT_LIFECYCLE_THEOREM_TARGET: &str =
@@ -11057,6 +11109,111 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
     Ok(())
 }
 
+pub fn path2_direct_qrom_action_boundary_report_v1() -> Path2DirectQromActionBoundaryReportV1 {
+    let budget = path2_direct_query_budget_v1();
+    let mut report = Path2DirectQromActionBoundaryReportV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        domain: PATH2_DIRECT_QROM_ACTION_BOUNDARY_REPORT_DOMAIN,
+        support_file: PATH2_DIRECT_QROM_ACTION_SUPPORT_FILE,
+        direct_obligation_id: "direct_obligation_checked_core_acceptance",
+        acceptance_hypothesis: "checked_core_verification_accepts_poseidon2_and_fq12_action",
+        named_break: "qrom_or_domain_separation_break",
+        query_budget_schema: budget.schema,
+        query_budget_mode: budget.mode,
+        checked_core_challenge_frame: "path2_checked_core_authorization_challenge_frame",
+        fq12_action_domain: REVIEWED_FQ12_ACCOUNT_CARRIED_CHALLENGE_ACTION_DOMAIN,
+        checked_core_qrom_artifacts: &PATH2_CHECKED_CORE_QROM_ARTIFACTS,
+        target_security_bits: budget.target_security_bits,
+        deployment_quantum_hash_query_bound_log2: budget
+            .deployment_quantum_hash_query_bound_log2,
+        deployment_classical_hash_query_bound_log2: budget
+            .deployment_classical_hash_query_bound_log2,
+        qrom_quadratic_loss_bits_at_deployment_bound: budget
+            .qrom_quadratic_loss_bits_at_deployment_bound,
+        transcript_term_bits_after_qrom_loss: budget.transcript_term_bits_after_qrom_loss,
+        algebraic_challenge_bytes: budget.algebraic_challenge_bytes,
+        challenge_hardening_bytes: budget.challenge_hardening_bytes,
+        algebraic_challenge_last_byte_mask: budget.algebraic_challenge_last_byte_mask,
+        algebraic_challenge_bits_after_mask: budget.algebraic_challenge_bits_after_mask,
+        total_challenge_bits_after_mask: budget.total_challenge_bits_after_mask,
+        action_collision_floor_bits: budget.action_collision_floor_bits,
+        action_collision_quantum_bits_at_union_bound: budget
+            .action_collision_quantum_bits_at_union_bound,
+        action_collision_classical_bits_at_union_bound: budget
+            .action_collision_classical_bits_at_union_bound,
+        selected_multi_target_horizon_log2: budget.selected_multi_target_horizon_log2,
+        negative_control_horizon_log2: budget.negative_control_horizon_log2,
+        minimum_deployment_margin_bits: budget.minimum_deployment_margin_bits,
+        active_query_symbol_count: budget.active_query_symbols.len(),
+        inactive_query_symbol_count: budget.inactive_query_symbols.len(),
+        direct_advantage_term_count: budget.direct_advantage_terms.len(),
+        optional_aggregation_term_count: budget.optional_aggregation_terms.len(),
+        checked_core_qrom_budget_pinned: true,
+        action_map_budget_pinned: true,
+        direct_mode_q_chal_active: budget.active_query_symbols.contains(&"q_chal"),
+        direct_mode_q_batch_inactive: budget.inactive_query_symbols == ["q_batch"],
+        optional_aggregation_terms_q_batch_only: budget
+            .optional_aggregation_terms
+            .iter()
+            .all(|term| term.contains("q_batch")),
+        selected_horizon_within_margin: budget.selected_multi_target_horizon_log2
+            <= budget.minimum_deployment_margin_bits,
+        negative_control_exceeds_margin: budget.negative_control_horizon_log2
+            > budget.minimum_deployment_margin_bits,
+        theorem_imports_budget: false,
+        external_qrom_review_complete: false,
+        qrom_and_action_bounds_linked_to_theorem: false,
+        deployment_ready: false,
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+    };
+    report.digest = path2_direct_qrom_action_boundary_report_v1_digest(&report);
+    report
+}
+
+pub fn path2_direct_qrom_action_boundary_report_v1_digest(
+    report: &Path2DirectQromActionBoundaryReportV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_direct_qrom_action_boundary_report_v1_frame(report)).into()
+}
+
+pub fn validate_path2_direct_qrom_action_boundary_report_v1(
+    report: &Path2DirectQromActionBoundaryReportV1,
+) -> Result<(), String> {
+    let expected = path2_direct_qrom_action_boundary_report_v1();
+    if expected != *report {
+        return Err("Path 2 direct QROM/action boundary report mismatch".to_string());
+    }
+    if path2_direct_qrom_action_boundary_report_v1_digest(report) != report.digest {
+        return Err("Path 2 direct QROM/action boundary report digest mismatch".to_string());
+    }
+    if !report.checked_core_qrom_budget_pinned
+        || !report.action_map_budget_pinned
+        || !report.direct_mode_q_chal_active
+        || !report.direct_mode_q_batch_inactive
+        || !report.optional_aggregation_terms_q_batch_only
+        || !report.selected_horizon_within_margin
+        || !report.negative_control_exceeds_margin
+    {
+        return Err("Path 2 direct QROM/action boundary lost pinned budget evidence".to_string());
+    }
+    if report.transcript_term_bits_after_qrom_loss < report.target_security_bits
+            + report.minimum_deployment_margin_bits
+        || report.action_collision_floor_bits < report.target_security_bits
+        || report.action_collision_quantum_bits_at_union_bound < report.target_security_bits
+        || report.action_collision_classical_bits_at_union_bound < report.target_security_bits
+    {
+        return Err("Path 2 direct QROM/action numeric margins are below target".to_string());
+    }
+    if report.theorem_imports_budget
+        || report.external_qrom_review_complete
+        || report.qrom_and_action_bounds_linked_to_theorem
+        || report.deployment_ready
+    {
+        return Err("Path 2 direct QROM/action boundary unexpectedly closes open obligations".to_string());
+    }
+    Ok(())
+}
+
 pub fn path2_direct_lifecycle_boundary_report_v1() -> Path2DirectLifecycleBoundaryReportV1 {
     let mut report = Path2DirectLifecycleBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
@@ -11125,6 +11282,7 @@ pub fn validate_path2_direct_lifecycle_boundary_report_v1(
 }
 
 pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryReportV1 {
+    let direct_qrom_action_boundary_report = path2_direct_qrom_action_boundary_report_v1();
     let direct_lifecycle_boundary_report = path2_direct_lifecycle_boundary_report_v1();
     let account_creation_proof_boundary_report =
         path2_account_creation_proof_boundary_report_v1();
@@ -11132,6 +11290,7 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
     let mut report = Path2DirectTheoremBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN,
+        direct_qrom_action_boundary_report_digest: direct_qrom_action_boundary_report.digest,
         direct_lifecycle_boundary_report_digest: direct_lifecycle_boundary_report.digest,
         account_creation_proof_boundary_report_digest:
             account_creation_proof_boundary_report.digest,
@@ -11183,6 +11342,11 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
     }
     if path2_direct_theorem_boundary_report_v1_digest(report) != report.digest {
         return Err("Path 2 direct theorem boundary report digest mismatch".to_string());
+    }
+    let direct_qrom_action_boundary_report = path2_direct_qrom_action_boundary_report_v1();
+    if report.direct_qrom_action_boundary_report_digest != direct_qrom_action_boundary_report.digest
+    {
+        return Err("Path 2 direct theorem boundary QROM/action digest mismatch".to_string());
     }
     let direct_lifecycle_boundary_report = path2_direct_lifecycle_boundary_report_v1();
     if report.direct_lifecycle_boundary_report_digest != direct_lifecycle_boundary_report.digest {
@@ -64400,6 +64564,216 @@ fn path2_account_creation_sampler_timing_report_v1_frame(
     frame
 }
 
+fn path2_direct_qrom_action_boundary_report_v1_frame(
+    report: &Path2DirectQromActionBoundaryReportV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"domain", report.domain.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_u64(&mut frame, b"q", Q as u64);
+    append_u64(&mut frame, b"groups", GROUPS as u64);
+    append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
+    append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
+    append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(&mut frame, b"support_file", report.support_file.as_bytes());
+    append_frame(
+        &mut frame,
+        b"direct_obligation_id",
+        report.direct_obligation_id.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"acceptance_hypothesis",
+        report.acceptance_hypothesis.as_bytes(),
+    );
+    append_frame(&mut frame, b"named_break", report.named_break.as_bytes());
+    append_frame(
+        &mut frame,
+        b"query_budget_schema",
+        report.query_budget_schema.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"query_budget_mode",
+        report.query_budget_mode.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"checked_core_challenge_frame",
+        report.checked_core_challenge_frame.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"fq12_action_domain",
+        report.fq12_action_domain.as_bytes(),
+    );
+    for (index, artifact) in report.checked_core_qrom_artifacts.iter().enumerate() {
+        append_u64(&mut frame, b"checked_core_qrom_artifact_index", index as u64);
+        append_frame(
+            &mut frame,
+            b"checked_core_qrom_artifact",
+            artifact.as_bytes(),
+        );
+    }
+    append_u64(
+        &mut frame,
+        b"target_security_bits",
+        report.target_security_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_quantum_hash_query_bound_log2",
+        report.deployment_quantum_hash_query_bound_log2 as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_classical_hash_query_bound_log2",
+        report.deployment_classical_hash_query_bound_log2 as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_quadratic_loss_bits_at_deployment_bound",
+        report.qrom_quadratic_loss_bits_at_deployment_bound as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"transcript_term_bits_after_qrom_loss",
+        report.transcript_term_bits_after_qrom_loss as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"algebraic_challenge_bytes",
+        report.algebraic_challenge_bytes as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"challenge_hardening_bytes",
+        report.challenge_hardening_bytes as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"algebraic_challenge_last_byte_mask",
+        report.algebraic_challenge_last_byte_mask as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"algebraic_challenge_bits_after_mask",
+        report.algebraic_challenge_bits_after_mask as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"total_challenge_bits_after_mask",
+        report.total_challenge_bits_after_mask as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"action_collision_floor_bits",
+        report.action_collision_floor_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"action_collision_quantum_bits_at_union_bound",
+        report.action_collision_quantum_bits_at_union_bound as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"action_collision_classical_bits_at_union_bound",
+        report.action_collision_classical_bits_at_union_bound as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"selected_multi_target_horizon_log2",
+        report.selected_multi_target_horizon_log2 as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"negative_control_horizon_log2",
+        report.negative_control_horizon_log2 as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"minimum_deployment_margin_bits",
+        report.minimum_deployment_margin_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"active_query_symbol_count",
+        report.active_query_symbol_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"inactive_query_symbol_count",
+        report.inactive_query_symbol_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"direct_advantage_term_count",
+        report.direct_advantage_term_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"optional_aggregation_term_count",
+        report.optional_aggregation_term_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_qrom_budget_pinned",
+        u64::from(report.checked_core_qrom_budget_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"action_map_budget_pinned",
+        u64::from(report.action_map_budget_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_mode_q_chal_active",
+        u64::from(report.direct_mode_q_chal_active),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_mode_q_batch_inactive",
+        u64::from(report.direct_mode_q_batch_inactive),
+    );
+    append_u64(
+        &mut frame,
+        b"optional_aggregation_terms_q_batch_only",
+        u64::from(report.optional_aggregation_terms_q_batch_only),
+    );
+    append_u64(
+        &mut frame,
+        b"selected_horizon_within_margin",
+        u64::from(report.selected_horizon_within_margin),
+    );
+    append_u64(
+        &mut frame,
+        b"negative_control_exceeds_margin",
+        u64::from(report.negative_control_exceeds_margin),
+    );
+    append_u64(
+        &mut frame,
+        b"theorem_imports_budget",
+        u64::from(report.theorem_imports_budget),
+    );
+    append_u64(
+        &mut frame,
+        b"external_qrom_review_complete",
+        u64::from(report.external_qrom_review_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_and_action_bounds_linked_to_theorem",
+        u64::from(report.qrom_and_action_bounds_linked_to_theorem),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_ready",
+        u64::from(report.deployment_ready),
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    frame
+}
+
 fn path2_direct_lifecycle_boundary_report_v1_frame(
     report: &Path2DirectLifecycleBoundaryReportV1,
 ) -> Vec<u8> {
@@ -64532,6 +64906,11 @@ fn path2_direct_theorem_boundary_report_v1_frame(
     append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
     append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
     append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(
+        &mut frame,
+        b"direct_qrom_action_boundary_report_digest",
+        &report.direct_qrom_action_boundary_report_digest,
+    );
     append_frame(
         &mut frame,
         b"direct_lifecycle_boundary_report_digest",
@@ -104862,6 +105241,88 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     }
 
     #[test]
+    fn path2_direct_qrom_action_boundary_report_pins_checked_core_budget() {
+        let report = path2_direct_qrom_action_boundary_report_v1();
+        assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(
+            report.domain,
+            PATH2_DIRECT_QROM_ACTION_BOUNDARY_REPORT_DOMAIN
+        );
+        assert_eq!(report.support_file, PATH2_DIRECT_QROM_ACTION_SUPPORT_FILE);
+        assert_eq!(
+            report.direct_obligation_id,
+            "direct_obligation_checked_core_acceptance"
+        );
+        assert_eq!(
+            report.acceptance_hypothesis,
+            "checked_core_verification_accepts_poseidon2_and_fq12_action"
+        );
+        assert_eq!(report.named_break, "qrom_or_domain_separation_break");
+        assert_eq!(report.query_budget_schema, PATH2_DIRECT_QUERY_BUDGET_SCHEMA);
+        assert_eq!(report.query_budget_mode, "direct_single_slot");
+        assert_eq!(
+            report.checked_core_challenge_frame,
+            "path2_checked_core_authorization_challenge_frame"
+        );
+        assert_eq!(
+            report.fq12_action_domain,
+            REVIEWED_FQ12_ACCOUNT_CARRIED_CHALLENGE_ACTION_DOMAIN
+        );
+        assert_eq!(
+            report.checked_core_qrom_artifacts,
+            PATH2_CHECKED_CORE_QROM_ARTIFACTS.as_ref()
+        );
+        assert_eq!(report.target_security_bits, 128);
+        assert_eq!(report.deployment_quantum_hash_query_bound_log2, 16);
+        assert_eq!(report.deployment_classical_hash_query_bound_log2, 33);
+        assert_eq!(report.qrom_quadratic_loss_bits_at_deployment_bound, 32);
+        assert_eq!(report.transcript_term_bits_after_qrom_loss, 182);
+        assert_eq!(report.algebraic_challenge_bytes, 23);
+        assert_eq!(report.challenge_hardening_bytes, 8);
+        assert_eq!(report.algebraic_challenge_last_byte_mask, 0x3f);
+        assert_eq!(report.algebraic_challenge_bits_after_mask, 182);
+        assert_eq!(report.total_challenge_bits_after_mask, 246);
+        assert_eq!(report.action_collision_floor_bits, 163);
+        assert_eq!(report.action_collision_quantum_bits_at_union_bound, 131);
+        assert_eq!(report.action_collision_classical_bits_at_union_bound, 130);
+        assert_eq!(report.selected_multi_target_horizon_log2, 32);
+        assert_eq!(report.negative_control_horizon_log2, 54);
+        assert_eq!(report.minimum_deployment_margin_bits, 53);
+        assert_eq!(report.active_query_symbol_count, 15);
+        assert_eq!(report.inactive_query_symbol_count, 1);
+        assert_eq!(report.direct_advantage_term_count, 7);
+        assert_eq!(report.optional_aggregation_term_count, 3);
+        assert!(report.checked_core_qrom_budget_pinned);
+        assert!(report.action_map_budget_pinned);
+        assert!(report.direct_mode_q_chal_active);
+        assert!(report.direct_mode_q_batch_inactive);
+        assert!(report.optional_aggregation_terms_q_batch_only);
+        assert!(report.selected_horizon_within_margin);
+        assert!(report.negative_control_exceeds_margin);
+        assert!(!report.theorem_imports_budget);
+        assert!(!report.external_qrom_review_complete);
+        assert!(!report.qrom_and_action_bounds_linked_to_theorem);
+        assert!(!report.deployment_ready);
+        assert_eq!(
+            report.blocker,
+            PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+        );
+        assert_eq!(
+            path2_direct_qrom_action_boundary_report_v1_digest(&report),
+            report.digest
+        );
+        validate_path2_direct_qrom_action_boundary_report_v1(&report).unwrap();
+
+        let mut malformed = report.clone();
+        malformed.qrom_and_action_bounds_linked_to_theorem = true;
+        malformed.digest = path2_direct_qrom_action_boundary_report_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_direct_qrom_action_boundary_report_v1(&malformed).unwrap_err(),
+            "Path 2 direct QROM/action boundary report mismatch"
+        );
+    }
+
+    #[test]
     fn path2_account_stark_residual_matrix_report_pins_open_rows() {
         let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
         let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
@@ -105251,11 +105712,16 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
 
     #[test]
     fn path2_direct_theorem_boundary_report_pins_shape_and_blocks_deployment() {
+        let qrom_action_boundary_report = path2_direct_qrom_action_boundary_report_v1();
         let lifecycle_boundary_report = path2_direct_lifecycle_boundary_report_v1();
         let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
         let report = path2_direct_theorem_boundary_report_v1();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
         assert_eq!(report.domain, PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN);
+        assert_eq!(
+            report.direct_qrom_action_boundary_report_digest,
+            qrom_action_boundary_report.digest
+        );
         assert_eq!(
             report.direct_lifecycle_boundary_report_digest,
             lifecycle_boundary_report.digest

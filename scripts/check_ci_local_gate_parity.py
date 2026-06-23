@@ -232,6 +232,22 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ),
     ),
     (
+        "direct QROM/action boundary manifest check",
+        (
+            "path2_direct_qrom_action_boundary_manifest",
+            "path2_direct_qrom_action_boundary_v1.json",
+        ),
+        (
+            "path2_direct_qrom_action_boundary_manifest",
+            "path2_direct_qrom_action_boundary_v1.json",
+        ),
+    ),
+    (
+        "direct QROM/action boundary consistency check",
+        ("path2_direct_qrom_action_boundary_consistency",),
+        ("path2_direct_qrom_action_boundary_consistency",),
+    ),
+    (
         "direct lifecycle boundary manifest check",
         (
             "path2_direct_lifecycle_boundary_manifest",
@@ -414,6 +430,16 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-CREATE-001",
         "DIR-PROOF-001",
         "DIR-PROOF-002",
+    ),
+    "direct QROM/action boundary manifest check": (
+        "DIR-SEC-001",
+        "DIR-QROM-001",
+        "DIR-ACTION-001",
+    ),
+    "direct QROM/action boundary consistency check": (
+        "DIR-SEC-001",
+        "DIR-QROM-001",
+        "DIR-ACTION-001",
     ),
     "direct lifecycle boundary manifest check": (
         "DIR-SEC-001",

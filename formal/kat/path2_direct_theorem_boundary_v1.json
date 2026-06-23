@@ -114,6 +114,11 @@
       "direct_lifecycle_boundary_report_domain": "Descender.Path2.DirectLifecycleBoundaryReport.v1",
       "direct_lifecycle_support_file": "research/path2_one_use_successor_state_theorem.md",
       "direct_lifecycle_theorem_target": "one_use_successor_state_theorem_v1",
+      "direct_qrom_action_blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+      "direct_qrom_action_boundary_report_domain": "Descender.Path2.DirectQromActionBoundaryReport.v1",
+      "direct_qrom_action_named_break": "qrom_or_domain_separation_break",
+      "direct_qrom_action_obligation_id": "direct_obligation_checked_core_acceptance",
+      "direct_qrom_action_support_file": "research/path2_hash_qrom_assumption_ledger.md",
       "direct_report_domain": "Descender.Path2.DirectTheoremBoundaryReport.v1",
       "direct_theorem_blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
@@ -131,9 +136,12 @@
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
-      "direct_theorem_boundary_report_digest": "619f89810bb9702e117f429e544651db13a7395a867fa9942d9c877b76196059",
-      "direct_theorem_boundary_report_recomputed_digest": "619f89810bb9702e117f429e544651db13a7395a867fa9942d9c877b76196059",
+      "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
+      "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
+      "direct_theorem_boundary_report_digest": "b0756ad58e90e5b00e570ed3d9be4aba7fdcd88f0e7673da6ba81ee356fe6a49",
+      "direct_theorem_boundary_report_recomputed_digest": "b0756ad58e90e5b00e570ed3d9be4aba7fdcd88f0e7673da6ba81ee356fe6a49",
       "direct_theorem_report_lifecycle_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
+      "direct_theorem_report_qrom_action_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
     },
     "direct_lifecycle_boundary": {
@@ -171,6 +179,91 @@
       "state_namespace_validator": "validate_path2_direct_slot_authorization_state_namespace",
       "target_chain_adapter_type": "ProductionSelectedProjectionTargetChainDbAdapter"
     },
+    "direct_qrom_action_boundary": {
+      "acceptance_hypothesis": "checked_core_verification_accepts_poseidon2_and_fq12_action",
+      "advantage_terms": {
+        "direct": [
+          "Adv_creation_hidden_source_soundness",
+          "Adv_prevalidation_leaf_binding(q_leaf,q_auth,q_evidence,q_stmt)",
+          "Adv_prevalidation_registry_binding(q_life,q_leaf)",
+          "Adv_checked_core_message_binding(q_chal,q_auth)",
+          "Adv_lifecycle_consume_once(q_life)",
+          "Adv_live_slot_leakage(q_pad,q_mask,q_leaf)",
+          "Adv_qrom_domain_separation(q_leaf,q_auth,q_evidence,q_chal,q_pad,q_mask,q_transparent_trace_commit,q_transparent_query_index,q_transparent_query_row,q_transparent_merkle_open,q_transparent_consistency)"
+        ],
+        "optional_aggregation": [
+          "Adv_optional_aggregation_soundness(q_batch)",
+          "Adv_accumulator_or_root_binding(q_batch,q_leaf)",
+          "Adv_batch_data_availability(q_batch)"
+        ]
+      },
+      "checked_core_challenge_frame": "path2_checked_core_authorization_challenge_frame",
+      "checked_core_qrom_artifacts": [
+        "research/cryptanalysis/signature_readiness_20260516/qrom_challenge_budget_memo_n32_q12289.json",
+        "research/cryptanalysis/signature_readiness_20260516/qrom_security_loss_review_n32_q12289.json",
+        "research/cryptanalysis/signature_readiness_20260516/pre_third_party_qrom_frame_probe_n32_q12289.json",
+        "research/cryptanalysis/signature_readiness_20260516/qrom_multitarget_margin_n32_q12289.json"
+      ],
+      "coverage": {
+        "action_map_budget_pinned": true,
+        "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+        "checked_core_qrom_budget_pinned": true,
+        "deployment_ready": false,
+        "direct_mode_q_batch_inactive": true,
+        "direct_mode_q_chal_active": true,
+        "external_qrom_review_complete": false,
+        "negative_control_exceeds_margin": true,
+        "optional_aggregation_terms_q_batch_only": true,
+        "qrom_and_action_bounds_linked_to_theorem": false,
+        "selected_horizon_within_margin": true,
+        "theorem_imports_budget": false
+      },
+      "direct_obligation_id": "direct_obligation_checked_core_acceptance",
+      "fq12_action_domain": "Descender.Signature.q12289.local_delta.challenge_action.fq12.v1",
+      "named_break": "qrom_or_domain_separation_break",
+      "numeric_budget": {
+        "action_collision_classical_bits_at_union_bound": 130,
+        "action_collision_floor_bits": 163,
+        "action_collision_quantum_bits_at_union_bound": 131,
+        "algebraic_challenge_bits_after_mask": 182,
+        "algebraic_challenge_bytes": 23,
+        "algebraic_challenge_last_byte_mask": 63,
+        "challenge_hardening_bytes": 8,
+        "deployment_classical_hash_query_bound_log2": 33,
+        "deployment_quantum_hash_query_bound_log2": 16,
+        "minimum_deployment_margin_bits": 53,
+        "negative_control_horizon_log2": 54,
+        "qrom_quadratic_loss_bits_at_deployment_bound": 32,
+        "selected_multi_target_horizon_log2": 32,
+        "target_security_bits": 128,
+        "total_challenge_bits_after_mask": 246,
+        "transcript_term_bits_after_qrom_loss": 182
+      },
+      "query_budget_mode": "direct_single_slot",
+      "query_budget_schema": "DESCENDER_PATH2_DIRECT_QUERY_BUDGET_V1",
+      "query_symbols": {
+        "active": [
+          "q_leaf",
+          "q_auth",
+          "q_evidence",
+          "q_stmt",
+          "q_pad",
+          "q_mask",
+          "q_chal",
+          "q_life",
+          "q_transparent_trace_commit",
+          "q_transparent_query_index",
+          "q_transparent_query_row",
+          "q_transparent_merkle_open",
+          "q_transparent_consistency",
+          "q_transparent_extractor",
+          "q_transparent_simulator"
+        ],
+        "inactive": [
+          "q_batch"
+        ]
+      }
+    },
     "direct_theorem_boundary": {
       "acceptance_hypotheses": [
         "leaf_is_canonical_and_live",
@@ -206,6 +299,7 @@
         "composition_theorem_instantiated": false,
         "deployment_ready": false,
         "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
+        "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
         "every_hypothesis_has_obligation": true,
         "every_obligation_has_named_break": true,
         "every_open_obligation_blocks_deployment": true,
@@ -331,5 +425,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "09e3b41e9fd2b00f37d87ca73f1e12bdea2feeb6eda8803a224770aee3a5dd1f"
+  "manifest_digest": "a462de2d6bc0ae62695ff49296920500422d23c3e71e083a7ad8243f9100d62e"
 }

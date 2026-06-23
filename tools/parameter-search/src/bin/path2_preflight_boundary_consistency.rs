@@ -7,6 +7,8 @@ use descender_parameter_search::production_reference::{
     path2_account_stark_residual_matrix_report_v1_digest,
     path2_direct_lifecycle_boundary_report_v1,
     path2_direct_lifecycle_boundary_report_v1_digest,
+    path2_direct_qrom_action_boundary_report_v1,
+    path2_direct_qrom_action_boundary_report_v1_digest,
     path2_direct_theorem_boundary_report_v1,
     path2_direct_theorem_boundary_report_v1_digest,
     production_deployment_account_creation_proof_boundary_blockers,
@@ -17,6 +19,7 @@ use descender_parameter_search::production_reference::{
     validate_path2_account_stark_fri_qrom_residual_report_v1,
     validate_path2_account_stark_residual_matrix_report_v1,
     validate_path2_direct_lifecycle_boundary_report_v1,
+    validate_path2_direct_qrom_action_boundary_report_v1,
     validate_path2_direct_theorem_boundary_report_v1,
     validate_production_deployment_preflight_report,
 };
@@ -54,17 +57,24 @@ fn require_subsequence_after(
 
 fn main() -> Result<(), String> {
     let direct_report = path2_direct_theorem_boundary_report_v1();
+    let qrom_action_report = path2_direct_qrom_action_boundary_report_v1();
     let lifecycle_report = path2_direct_lifecycle_boundary_report_v1();
     let proof_report = path2_account_creation_proof_boundary_report_v1();
     let fri_qrom_report = path2_account_stark_fri_qrom_residual_report_v1();
     let residual_report = path2_account_stark_residual_matrix_report_v1();
     validate_path2_direct_theorem_boundary_report_v1(&direct_report)?;
+    validate_path2_direct_qrom_action_boundary_report_v1(&qrom_action_report)?;
     validate_path2_direct_lifecycle_boundary_report_v1(&lifecycle_report)?;
     validate_path2_account_creation_proof_boundary_report_v1(&proof_report)?;
     validate_path2_account_stark_fri_qrom_residual_report_v1(&fri_qrom_report)?;
     validate_path2_account_stark_residual_matrix_report_v1(&residual_report)?;
     if path2_direct_theorem_boundary_report_v1_digest(&direct_report) != direct_report.digest {
         return Err("direct theorem boundary digest mismatch".to_string());
+    }
+    if path2_direct_qrom_action_boundary_report_v1_digest(&qrom_action_report)
+        != qrom_action_report.digest
+    {
+        return Err("direct QROM/action boundary digest mismatch".to_string());
     }
     if path2_direct_lifecycle_boundary_report_v1_digest(&lifecycle_report)
         != lifecycle_report.digest
@@ -87,6 +97,9 @@ fn main() -> Result<(), String> {
     }
     if direct_report.account_creation_proof_boundary_report_digest != proof_report.digest {
         return Err("direct theorem report is not bound to the proof-boundary report".to_string());
+    }
+    if direct_report.direct_qrom_action_boundary_report_digest != qrom_action_report.digest {
+        return Err("direct theorem report is not bound to the QROM/action report".to_string());
     }
     if direct_report.direct_lifecycle_boundary_report_digest != lifecycle_report.digest {
         return Err("direct theorem report is not bound to the lifecycle report".to_string());
@@ -118,6 +131,23 @@ fn main() -> Result<(), String> {
         || direct_report.qrom_and_action_bounds_linked_to_theorem
     {
         return Err("direct theorem boundary unexpectedly reports closed obligations".to_string());
+    }
+    if qrom_action_report.deployment_ready
+        || qrom_action_report.theorem_imports_budget
+        || qrom_action_report.external_qrom_review_complete
+        || qrom_action_report.qrom_and_action_bounds_linked_to_theorem
+    {
+        return Err("direct QROM/action boundary unexpectedly reports closed obligations".to_string());
+    }
+    if !qrom_action_report.checked_core_qrom_budget_pinned
+        || !qrom_action_report.action_map_budget_pinned
+        || !qrom_action_report.direct_mode_q_chal_active
+        || !qrom_action_report.direct_mode_q_batch_inactive
+        || !qrom_action_report.optional_aggregation_terms_q_batch_only
+        || !qrom_action_report.selected_horizon_within_margin
+        || !qrom_action_report.negative_control_exceeds_margin
+    {
+        return Err("direct QROM/action boundary is missing budget evidence".to_string());
     }
     if lifecycle_report.deployment_ready
         || lifecycle_report.target_chain_finality_profile_instantiated

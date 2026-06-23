@@ -51,11 +51,15 @@ PRODUCT_BAR_LINES = [
 DIRECT_THEOREM_PREFLIGHT_MARKERS = [
     "PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION",
     "PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN",
+    "PATH2_DIRECT_QROM_ACTION_BOUNDARY_REPORT_DOMAIN",
     "PATH2_DIRECT_LIFECYCLE_BOUNDARY_REPORT_DOMAIN",
     "Path2DirectTheoremBoundaryReportV1",
+    "Path2DirectQromActionBoundaryReportV1",
     "Path2DirectLifecycleBoundaryReportV1",
     "Path2DirectTheoremObligationRowV1",
+    "direct_qrom_action_boundary_report_digest",
     "direct_lifecycle_boundary_report_digest",
+    "PATH2_DIRECT_QROM_ACTION_SUPPORT_FILE",
     "PATH2_DIRECT_LIFECYCLE_SUPPORT_FILE",
     "PATH2_DIRECT_LIFECYCLE_THEOREM_TARGET",
     "PATH2_DIRECT_LIFECYCLE_EXECUTABLE_TESTS",
@@ -64,6 +68,8 @@ DIRECT_THEOREM_PREFLIGHT_MARKERS = [
     "PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES",
     "PATH2_DIRECT_THEOREM_OBLIGATION_ROWS",
     "consensus_rejection_or_state_mutation_break",
+    "path2_direct_qrom_action_boundary_report_v1",
+    "validate_path2_direct_qrom_action_boundary_report_v1",
     "path2_direct_lifecycle_boundary_report_v1",
     "validate_path2_direct_lifecycle_boundary_report_v1",
     "path2_direct_theorem_boundary_report_v1",
@@ -364,6 +370,64 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS = {
         "path2_account_creation_proof_boundary_v1.json",
     ],
 }
+DIRECT_QROM_ACTION_BOUNDARY_MARKERS = {
+    "tools/parameter-search/src/bin/path2_direct_qrom_action_boundary_manifest.rs": [
+        "Descender.Path2.DirectQromActionBoundaryManifest.v1",
+        "Descender.Path2.DirectQromActionBoundary.v1",
+        "path2_direct_qrom_action_boundary_report_v1",
+        "validate_path2_direct_qrom_action_boundary_report_v1",
+        "path2_direct_theorem_boundary_report_v1",
+        "direct_qrom_action_boundary_report_digest",
+        "direct_theorem_report_qrom_action_digest",
+        "numeric_budget",
+        "open_obligations",
+    ],
+    "tools/parameter-search/src/bin/path2_direct_qrom_action_boundary_consistency.rs": [
+        "formal/kat/path2_direct_qrom_action_boundary_v1.json",
+        "path2_direct_qrom_action_boundary_report_v1",
+        "validate_path2_direct_qrom_action_boundary_report_v1",
+        "transcript term after QROM loss | `182` bits",
+        "minimum deployment margin | `53` bits",
+        "PATH2_FQ12_ACTION_COLLISION_FLOOR_BITS",
+        "Path 2 direct QROM/action boundary consistency check passed.",
+    ],
+    "formal/kat/path2_direct_qrom_action_boundary_v1.json": [
+        "Descender.Path2.DirectQromActionBoundaryManifest.v1",
+        "Descender.Path2.DirectQromActionBoundary.v1",
+        "draft_qrom_action_boundary_manifest",
+        "direct_qrom_action_boundary_report_digest",
+        "direct_theorem_report_qrom_action_digest",
+        "qrom_or_domain_separation_break",
+        "DESCENDER_PATH2_DIRECT_QUERY_BUDGET_V1",
+        '"transcript_term_bits_after_qrom_loss": 182',
+        '"minimum_deployment_margin_bits": 53',
+        '"action_collision_floor_bits": 163',
+        '"direct_mode_q_batch_inactive": true',
+        '"qrom_and_action_bounds_linked_to_theorem": false',
+        '"deployment_ready": false',
+    ],
+    "research/path2_hash_qrom_assumption_ledger.md": [
+        "Path2DirectQromActionBoundaryReportV1",
+        "formal/kat/path2_direct_qrom_action_boundary_v1.json",
+        "transcript term after QROM loss | `182` bits",
+        "minimum deployment margin | `53` bits",
+        "qrom_or_domain_separation_break",
+    ],
+    "scripts/check_build.sh": [
+        "direct QROM/action boundary manifest check",
+        "path2_direct_qrom_action_boundary_manifest",
+        "path2_direct_qrom_action_boundary_v1.json",
+        "direct QROM/action boundary consistency check",
+        "path2_direct_qrom_action_boundary_consistency",
+    ],
+    ".github/workflows/ci.yml": [
+        "Direct QROM/action boundary manifest check",
+        "path2_direct_qrom_action_boundary_manifest",
+        "path2_direct_qrom_action_boundary_v1.json",
+        "Direct QROM/action boundary consistency check",
+        "path2_direct_qrom_action_boundary_consistency",
+    ],
+}
 DIRECT_LIFECYCLE_BOUNDARY_MARKERS = {
     "tools/parameter-search/src/bin/path2_direct_lifecycle_boundary_manifest.rs": [
         "Descender.Path2.DirectLifecycleBoundaryManifest.v1",
@@ -423,15 +487,19 @@ DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS = {
         "Descender.Path2.DirectTheoremBoundaryManifest.v1",
         "Descender.Path2.DirectTheoremBoundary.v1",
         "path2_direct_theorem_boundary_report_v1",
+        "path2_direct_qrom_action_boundary_report_v1",
         "path2_direct_lifecycle_boundary_report_v1",
         "path2_account_creation_proof_boundary_report_v1",
         "path2_account_creation_sampler_timing_report_v1",
         "direct_theorem_boundary_report_digest",
+        "direct_qrom_action_boundary_report_digest",
+        "direct_theorem_report_qrom_action_digest",
         "direct_lifecycle_boundary_report_digest",
         "direct_theorem_report_lifecycle_digest",
         "account_creation_proof_boundary_report_digest",
         "account_creation_sampler_timing_report_digest",
         "proof_boundary_report_sampler_timing_digest",
+        "direct_qrom_action_boundary",
         "direct_lifecycle_boundary",
         "obligation_rows",
         "every_hypothesis_has_obligation",
@@ -442,14 +510,18 @@ DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS = {
         "Descender.Path2.DirectTheoremBoundary.v1",
         "draft_theorem_boundary_manifest",
         "direct_theorem_boundary_report_digest",
+        "direct_qrom_action_boundary_report_digest",
+        "direct_theorem_report_qrom_action_digest",
         "direct_lifecycle_boundary_report_digest",
         "direct_theorem_report_lifecycle_digest",
         "account_creation_proof_boundary_report_digest",
         "account_creation_sampler_timing_report_digest",
         "proof_boundary_report_sampler_timing_digest",
+        "direct_qrom_action_boundary",
         "direct_lifecycle_boundary",
         "obligation_rows",
         "consensus_rejection_or_state_mutation_break",
+        "qrom_or_domain_separation_break",
         "slot_replay_or_rollback_break",
         "leaf_evidence_binding_fields",
         '"composition_theorem_instantiated": false',
@@ -493,6 +565,9 @@ PREFLIGHT_BOUNDARY_CONSISTENCY_MARKERS = {
         "production_deployment_preflight_report_digest",
         "validate_production_deployment_preflight_report",
         "path2_direct_theorem_boundary_report_v1",
+        "path2_direct_qrom_action_boundary_report_v1",
+        "path2_direct_qrom_action_boundary_report_v1_digest",
+        "validate_path2_direct_qrom_action_boundary_report_v1",
         "path2_direct_lifecycle_boundary_report_v1",
         "path2_direct_lifecycle_boundary_report_v1_digest",
         "validate_path2_direct_lifecycle_boundary_report_v1",
@@ -500,6 +575,8 @@ PREFLIGHT_BOUNDARY_CONSISTENCY_MARKERS = {
         "path2_account_stark_fri_qrom_residual_report_v1",
         "path2_account_stark_residual_matrix_report_v1",
         "validate_path2_account_stark_fri_qrom_residual_report_v1",
+        "checked_core_qrom_budget_pinned",
+        "qrom_and_action_bounds_linked_to_theorem",
         "local_successor_state_model_pinned",
         "target_chain_finality_profile_instantiated",
         "production_deployment_direct_theorem_blockers",
@@ -2436,6 +2513,21 @@ def check_direct_lifecycle_boundary_markers(errors: list[str]) -> None:
                 )
 
 
+def check_direct_qrom_action_boundary_markers(errors: list[str]) -> None:
+    for rel, markers in DIRECT_QROM_ACTION_BOUNDARY_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"{rel}: missing direct QROM/action boundary artifact")
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing direct QROM/action boundary marker {marker!r}"
+                )
+
+
 def check_direct_theorem_boundary_manifest_markers(errors: list[str]) -> None:
     for rel, markers in DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS.items():
         path = ROOT / rel
@@ -2654,6 +2746,7 @@ def main() -> int:
     check_account_stark_fri_qrom_residual_markers(errors)
     check_account_creation_sampler_timing_markers(errors)
     check_account_creation_proof_boundary_manifest_markers(errors)
+    check_direct_qrom_action_boundary_markers(errors)
     check_direct_lifecycle_boundary_markers(errors)
     check_direct_theorem_boundary_manifest_markers(errors)
     check_boundary_manifest_consistency_markers(errors)
