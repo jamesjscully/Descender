@@ -19,5 +19,8 @@ RUSTFLAGS="-D warnings" cargo test --manifest-path tools/descender-account-verif
 echo "== active fast test: direct spend rejection state no-mutation =="
 RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_direct_single_slot_spend_rejections_preserve_consume_once_state
 
+echo "== active fast test: direct public result class enum =="
+RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_public_result_class_v1_names_match_consensus_spec
+
 echo "== active fast test: recursion config scaffold smoke =="
 RUSTFLAGS="-D warnings" cargo test --manifest-path tools/descender-recursion/Cargo.toml phase1_scaffold_wired_to_leaf_config

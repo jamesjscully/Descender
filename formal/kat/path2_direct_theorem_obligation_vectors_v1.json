@@ -136,7 +136,7 @@
         "acceptance_hypothesis": "rejection_is_deterministic_public_and_state_preserving",
         "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
         "case_id": "direct_obligation_public_rejection",
-        "current_evidence": "account-STARK payload boundary maps current internal errors to public rejection classes; direct spend rejection no-mutation test covers selected pre-consume failure classes; full consensus rejection KATs remain open",
+        "current_evidence": "Path2PublicResultClassV1 pins the consensus result-class names; account-STARK payload boundary maps current internal errors to public rejection classes; direct spend classifier and no-mutation test cover selected pre-consume failure classes; full consensus rejection KATs remain open",
         "kind": "audit",
         "named_break": "consensus_rejection_or_state_mutation_break",
         "open": true,
@@ -153,7 +153,7 @@
       "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "composition_theorem_instantiated": false,
       "deployment_ready": false,
-      "digest": "9590d661701d52edfb8907e48625b25bbede9b9d9cf0fb08a9550037cf1847ed",
+      "digest": "5974c65fbd8b5085b426d1609adffee2df1cfc9f106007a9ba5d8df472744276",
       "domain": "Descender.Path2.DirectTheoremBoundaryReport.v1",
       "every_hypothesis_has_obligation": true,
       "every_obligation_has_named_break": true,
@@ -163,7 +163,7 @@
       "obligation_audit_vector_case_count": 9,
       "obligation_count": 9,
       "qrom_and_action_bounds_linked_to_theorem": false,
-      "recomputed_digest": "9590d661701d52edfb8907e48625b25bbede9b9d9cf0fb08a9550037cf1847ed",
+      "recomputed_digest": "5974c65fbd8b5085b426d1609adffee2df1cfc9f106007a9ba5d8df472744276",
       "theorem_conclusion": "accepted_direct_mode_spend_implies_prior_admission_checked_core_acceptance_consume_once_or_named_break",
       "theorem_target": "direct_mode_selected_tuple_authorization_theorem_v1"
     },
@@ -200,5 +200,5 @@
     "schema": "Descender.Path2.DirectTheoremObligationVectors.v1",
     "status": "digest_pinned_direct_theorem_obligation_audit_vectors"
   },
-  "corpus_digest": "937ec0e11f9a01ac8b1349ebcc078118019a80aa6be6cfa9358c56455bd749a3"
+  "corpus_digest": "81866b1a0184dda6c89e4ae8becfdfda06cfc3442d2be8b76ce9b859054c59bd"
 }

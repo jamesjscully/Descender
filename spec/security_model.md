@@ -85,11 +85,13 @@ proof-boundary digest, and selected field groups cannot drift silently. The
 digest-pinned audit case for each open direct-theorem obligation and binds that
 row list to the current QROM/action, lifecycle, and account-creation
 proof-boundary reports while keeping composition, imported-boundary verification,
-and deployment flags false. The public-rejection obligation row now records the
+and deployment flags false. The public-rejection obligation row now records
+`Path2PublicResultClassV1`, the direct spend public-classifier helper, and the
 `path2_direct_single_slot_spend_rejections_preserve_consume_once_state` test,
 which checks selected direct spend rejections preserve consume-once state before
-the mutation point; it does not replace the public rejection enum, malformed
-input KATs, or full consensus-client mapping still required for closure. The
+the mutation point. This does not replace panic-free malformed-input KATs,
+state-no-mutation coverage for every direct-mode rejection, or full
+consensus-client mapping still required for closure. The
 QROM/action report pins the checked-core direct query budget, 182-bit priced
 transcript term,
 246-bit full challenge term, 163-bit Fq12 action floor, direct-mode `q_chal`

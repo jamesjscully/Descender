@@ -10217,17 +10217,93 @@ pub const PRODUCTION_DEPLOYMENT_ACCOUNT_STARK_RESIDUAL_BLOCKERS:
     PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_LEGACY_ROUTE_ADR,
 ];
 
+pub const PATH2_PUBLIC_RESULT_ACCEPT_ADMIT_SLOT: &str = "accept_admit_slot";
+pub const PATH2_PUBLIC_RESULT_ACCEPT_SPEND_SLOT: &str = "accept_spend_slot";
 pub const PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT: &str =
     "reject_malformed_public_input";
+pub const PATH2_PUBLIC_RESULT_REJECT_UNSUPPORTED_VERSION: &str = "reject_unsupported_version";
 pub const PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH: &str = "reject_binding_mismatch";
 pub const PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE: &str = "reject_creation_evidence";
+pub const PATH2_PUBLIC_RESULT_REJECT_CHECKED_CORE: &str = "reject_checked_core";
+pub const PATH2_PUBLIC_RESULT_REJECT_LIFECYCLE_STATE: &str = "reject_lifecycle_state";
+pub const PATH2_PUBLIC_RESULT_REJECT_POLICY: &str = "reject_policy";
+pub const PATH2_PUBLIC_RESULT_REJECT_RESOURCE_LIMIT: &str = "reject_resource_limit";
 pub const PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED: &str = "internal_error_fail_closed";
+pub const PATH2_PUBLIC_RESULT_CLASSES_V1: [Path2PublicResultClassV1; 11] = [
+    Path2PublicResultClassV1::AcceptAdmitSlot,
+    Path2PublicResultClassV1::AcceptSpendSlot,
+    Path2PublicResultClassV1::RejectMalformedPublicInput,
+    Path2PublicResultClassV1::RejectUnsupportedVersion,
+    Path2PublicResultClassV1::RejectBindingMismatch,
+    Path2PublicResultClassV1::RejectCreationEvidence,
+    Path2PublicResultClassV1::RejectCheckedCore,
+    Path2PublicResultClassV1::RejectLifecycleState,
+    Path2PublicResultClassV1::RejectPolicy,
+    Path2PublicResultClassV1::RejectResourceLimit,
+    Path2PublicResultClassV1::InternalErrorFailClosed,
+];
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_PUBLIC_REJECTION_CLASSES: [&str; 4] = [
     PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
     PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
     PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE,
     PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED,
 ];
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Path2PublicResultClassV1 {
+    AcceptAdmitSlot,
+    AcceptSpendSlot,
+    RejectMalformedPublicInput,
+    RejectUnsupportedVersion,
+    RejectBindingMismatch,
+    RejectCreationEvidence,
+    RejectCheckedCore,
+    RejectLifecycleState,
+    RejectPolicy,
+    RejectResourceLimit,
+    InternalErrorFailClosed,
+}
+
+impl Path2PublicResultClassV1 {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::AcceptAdmitSlot => PATH2_PUBLIC_RESULT_ACCEPT_ADMIT_SLOT,
+            Self::AcceptSpendSlot => PATH2_PUBLIC_RESULT_ACCEPT_SPEND_SLOT,
+            Self::RejectMalformedPublicInput => PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT,
+            Self::RejectUnsupportedVersion => PATH2_PUBLIC_RESULT_REJECT_UNSUPPORTED_VERSION,
+            Self::RejectBindingMismatch => PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH,
+            Self::RejectCreationEvidence => PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE,
+            Self::RejectCheckedCore => PATH2_PUBLIC_RESULT_REJECT_CHECKED_CORE,
+            Self::RejectLifecycleState => PATH2_PUBLIC_RESULT_REJECT_LIFECYCLE_STATE,
+            Self::RejectPolicy => PATH2_PUBLIC_RESULT_REJECT_POLICY,
+            Self::RejectResourceLimit => PATH2_PUBLIC_RESULT_REJECT_RESOURCE_LIMIT,
+            Self::InternalErrorFailClosed => PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED,
+        }
+    }
+
+    pub fn from_str(value: &str) -> Option<Self> {
+        match value {
+            PATH2_PUBLIC_RESULT_ACCEPT_ADMIT_SLOT => Some(Self::AcceptAdmitSlot),
+            PATH2_PUBLIC_RESULT_ACCEPT_SPEND_SLOT => Some(Self::AcceptSpendSlot),
+            PATH2_PUBLIC_RESULT_REJECT_MALFORMED_PUBLIC_INPUT => {
+                Some(Self::RejectMalformedPublicInput)
+            }
+            PATH2_PUBLIC_RESULT_REJECT_UNSUPPORTED_VERSION => Some(Self::RejectUnsupportedVersion),
+            PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH => Some(Self::RejectBindingMismatch),
+            PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE => Some(Self::RejectCreationEvidence),
+            PATH2_PUBLIC_RESULT_REJECT_CHECKED_CORE => Some(Self::RejectCheckedCore),
+            PATH2_PUBLIC_RESULT_REJECT_LIFECYCLE_STATE => Some(Self::RejectLifecycleState),
+            PATH2_PUBLIC_RESULT_REJECT_POLICY => Some(Self::RejectPolicy),
+            PATH2_PUBLIC_RESULT_REJECT_RESOURCE_LIMIT => Some(Self::RejectResourceLimit),
+            PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED => Some(Self::InternalErrorFailClosed),
+            _ => None,
+        }
+    }
+
+    pub fn all() -> &'static [Self] {
+        &PATH2_PUBLIC_RESULT_CLASSES_V1
+    }
+}
 
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_FRAME_FIXED_OVERHEAD_EXCLUDING_BUNDLE: usize = 558;
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_FIXED_DATA_BYTES_EXCLUDING_BUNDLE: usize =
@@ -10926,7 +11002,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "rejection_is_deterministic_public_and_state_preserving",
         supporting_surface: "consensus-safe rejection and state-preserving failure mapping",
         current_evidence:
-            "account-STARK payload boundary maps current internal errors to public rejection classes; direct spend rejection no-mutation test covers selected pre-consume failure classes; full consensus rejection KATs remain open",
+            "Path2PublicResultClassV1 pins the consensus result-class names; account-STARK payload boundary maps current internal errors to public rejection classes; direct spend classifier and no-mutation test cover selected pre-consume failure classes; full consensus rejection KATs remain open",
         required_closure:
             "public rejection enum, panic-free malformed-input KATs, and state-no-mutation tests cover every direct-mode rejection",
         named_break: "consensus_rejection_or_state_mutation_break",
@@ -11420,6 +11496,80 @@ pub fn path2_account_creation_frame_public_rejection_class(error: &str) -> &'sta
         return PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH;
     }
     PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED
+}
+
+pub fn path2_direct_account_binding_public_result_class(
+    error: &ProductionAccountBindingError,
+) -> Path2PublicResultClassV1 {
+    path2_direct_account_binding_public_result_class_for_reason(error.reason())
+}
+
+pub fn path2_direct_account_binding_public_result_class_for_reason(
+    reason: &str,
+) -> Path2PublicResultClassV1 {
+    if reason.contains("resource limit") || reason.contains("oversized public input") {
+        return Path2PublicResultClassV1::RejectResourceLimit;
+    }
+    if reason.contains("unsupported version") || reason.contains("unsupported mode") {
+        return Path2PublicResultClassV1::RejectUnsupportedVersion;
+    }
+    if reason.contains("has ") && reason.contains("bytes, expected")
+        || reason.contains("not canonical")
+        || reason.contains("malformed")
+        || reason.contains("frame version mismatch")
+        || reason.contains("evidence domain mismatch")
+        || reason.contains("evidence version mismatch")
+        || reason.contains("unsupported evidence kind")
+    {
+        return Path2PublicResultClassV1::RejectMalformedPublicInput;
+    }
+    if reason.contains("production verification is fail-closed")
+        || reason.contains("callback failed")
+        || reason.contains("internal")
+    {
+        return Path2PublicResultClassV1::InternalErrorFailClosed;
+    }
+    if reason.contains("not admitted in state namespace")
+        || reason.contains("account-creation STARK verify failed")
+        || reason.contains("deployed anchor mismatch")
+        || reason.contains("hidden-source proof")
+    {
+        return Path2PublicResultClassV1::RejectCreationEvidence;
+    }
+    if reason.contains("already consumed")
+        || reason.contains("already in spent ledger")
+        || reason.contains("slot id is out of range")
+        || reason.contains("slot reservation is not active")
+        || reason.contains("not live")
+        || reason.contains("stale")
+        || reason.contains("burned")
+        || reason.contains("duplicate")
+    {
+        return Path2PublicResultClassV1::RejectLifecycleState;
+    }
+    if reason.contains("does not match prevalidated leaf")
+        || reason.contains("public-key identity mismatch")
+        || reason.contains("consumed authorization mismatch")
+        || reason.contains("creation statement digest mismatch")
+    {
+        return Path2PublicResultClassV1::RejectBindingMismatch;
+    }
+    if reason.contains("Path 2 checked-core")
+        || reason.contains("account randomizer commitment mismatch")
+        || reason.contains("sigma equation mismatch")
+        || reason.contains("public local fiber-state mismatch")
+        || reason.contains("public pad-opening mismatch")
+        || reason.contains("challenge mismatch")
+    {
+        return Path2PublicResultClassV1::RejectCheckedCore;
+    }
+    if reason.contains("policy") {
+        return Path2PublicResultClassV1::RejectPolicy;
+    }
+    if reason.contains("mismatch") || reason.contains("binding") {
+        return Path2PublicResultClassV1::RejectBindingMismatch;
+    }
+    Path2PublicResultClassV1::InternalErrorFailClosed
 }
 
 pub fn path2_account_stark_payload_byte_model_report_v1()
@@ -97776,6 +97926,7 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
                 [u8; DIGEST_BYTES],
             )>,
             expected: &str,
+            expected_class: Path2PublicResultClassV1,
         | {
             let mut consumed = BTreeSet::new();
             let err = verify_path2_direct_single_slot_spend_authorization(
@@ -97791,6 +97942,11 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             )
             .unwrap_err();
             assert_eq!(err.reason(), expected, "{label}");
+            assert_eq!(
+                path2_direct_account_binding_public_result_class(&err),
+                expected_class,
+                "{label}"
+            );
             assert!(
                 consumed.is_empty(),
                 "direct rejection {label} mutated consume-once state"
@@ -97808,6 +97964,7 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             &signature,
             &admitted_state_authorizations,
             "Path 2 public-key identity mismatch",
+            Path2PublicResultClassV1::RejectBindingMismatch,
         );
 
         assert_rejects_without_consuming(
@@ -97819,6 +97976,7 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             &signature,
             &BTreeSet::new(),
             "Path 2 slot authorization was not admitted in state namespace",
+            Path2PublicResultClassV1::RejectCreationEvidence,
         );
 
         assert_rejects_without_consuming(
@@ -97830,6 +97988,7 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             &ProductionSignature::new(vec![0_u8; 7]),
             &admitted_state_authorizations,
             "reviewed Fq12 account-carried signature has 7 bytes, expected 262",
+            Path2PublicResultClassV1::RejectMalformedPublicInput,
         );
 
         assert_rejects_without_consuming(
@@ -97841,6 +98000,7 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             &signature,
             &admitted_state_authorizations,
             "Path 2 checked-core authorization challenge mismatch",
+            Path2PublicResultClassV1::RejectCheckedCore,
         );
 
         let (mut rebound_leaf, mut rebound_evidence, mut rebound_certificate) =
@@ -97881,6 +98041,7 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             &rebound_signature,
             &rebound_admitted_state_authorizations,
             "Path 2 checked-core slot id does not match prevalidated leaf",
+            Path2PublicResultClassV1::RejectBindingMismatch,
         );
 
         let mut consumed = BTreeSet::new();
@@ -97900,9 +98061,66 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         .unwrap_err();
         assert_eq!(err.reason(), "Path 2 slot authorization already consumed");
         assert_eq!(
+            path2_direct_account_binding_public_result_class(&err),
+            Path2PublicResultClassV1::RejectLifecycleState
+        );
+        assert_eq!(
             consumed, before,
             "already-consumed rejection changed consume-once state"
         );
+    }
+
+    #[test]
+    fn path2_public_result_class_v1_names_match_consensus_spec() {
+        let expected = [
+            (
+                Path2PublicResultClassV1::AcceptAdmitSlot,
+                "accept_admit_slot",
+            ),
+            (
+                Path2PublicResultClassV1::AcceptSpendSlot,
+                "accept_spend_slot",
+            ),
+            (
+                Path2PublicResultClassV1::RejectMalformedPublicInput,
+                "reject_malformed_public_input",
+            ),
+            (
+                Path2PublicResultClassV1::RejectUnsupportedVersion,
+                "reject_unsupported_version",
+            ),
+            (
+                Path2PublicResultClassV1::RejectBindingMismatch,
+                "reject_binding_mismatch",
+            ),
+            (
+                Path2PublicResultClassV1::RejectCreationEvidence,
+                "reject_creation_evidence",
+            ),
+            (
+                Path2PublicResultClassV1::RejectCheckedCore,
+                "reject_checked_core",
+            ),
+            (
+                Path2PublicResultClassV1::RejectLifecycleState,
+                "reject_lifecycle_state",
+            ),
+            (Path2PublicResultClassV1::RejectPolicy, "reject_policy"),
+            (
+                Path2PublicResultClassV1::RejectResourceLimit,
+                "reject_resource_limit",
+            ),
+            (
+                Path2PublicResultClassV1::InternalErrorFailClosed,
+                "internal_error_fail_closed",
+            ),
+        ];
+        assert_eq!(Path2PublicResultClassV1::all(), expected.map(|(class, _)| class));
+        for (class, name) in expected {
+            assert_eq!(class.as_str(), name);
+            assert_eq!(Path2PublicResultClassV1::from_str(name), Some(class));
+        }
+        assert_eq!(Path2PublicResultClassV1::from_str("reject_private_detail"), None);
     }
 
     #[test]

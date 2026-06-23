@@ -150,15 +150,18 @@ Tracker ownership: `SPEC-VERIFY-001`, `DIR-REJECT-001`, `DIR-KAT-001`,
 `DIR-CC-001`, `DIR-LIFE-001`, `POL-REQ-001`, `ADOPT-ETH-AA-001`,
 `ADOPT-ETH-7932-001`, `ADOPT-ETH-8141-001`, and `ADOPT-HW-API-001`.
 
-Current executable precursor coverage includes
-`path2_direct_single_slot_spend_rejections_preserve_consume_once_state`, which
+Current executable precursor coverage includes `Path2PublicResultClassV1`,
+which pins the consensus-visible result-class names from this table, plus
+`path2_direct_account_binding_public_result_class`, which classifies selected
+direct spend/account-binding failures. The
+`path2_direct_single_slot_spend_rejections_preserve_consume_once_state` test
 checks that selected direct spend rejections leave consume-once state unchanged
-before the accepted spend transition. This is rejection-state evidence, not a
-complete public result enum, malformed-input corpus, or client-mapping package.
+before the accepted spend transition and map to the expected public classes.
+This is rejection-state evidence, not a complete malformed-input corpus,
+every-reject-class no-mutation suite, or client-mapping package.
 
 Before the consensus verifier surface can be marked `verified`, the repo needs:
 
-- a public error/result enum in the active verifier API;
 - malformed-frame, mutation, replay, lifecycle, and policy negative KATs;
 - byte-for-byte positive KATs for admission and spend;
 - panic-free parse/reject tests over malformed public byte strings;

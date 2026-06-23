@@ -123,9 +123,9 @@
       "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "composition_theorem_instantiated": false,
       "deployment_ready": false,
-      "digest": "9590d661701d52edfb8907e48625b25bbede9b9d9cf0fb08a9550037cf1847ed",
+      "digest": "5974c65fbd8b5085b426d1609adffee2df1cfc9f106007a9ba5d8df472744276",
       "domain": "Descender.Path2.DirectTheoremBoundaryReport.v1",
-      "recomputed_digest": "9590d661701d52edfb8907e48625b25bbede9b9d9cf0fb08a9550037cf1847ed"
+      "recomputed_digest": "5974c65fbd8b5085b426d1609adffee2df1cfc9f106007a9ba5d8df472744276"
     },
     "generator": {
       "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_proof_obligation_vectors",
@@ -147,5 +147,5 @@
     "schema": "Descender.Path2.AccountCreationProofObligationVectors.v1",
     "status": "digest_pinned_proof_obligation_audit_vectors"
   },
-  "corpus_digest": "0f71f7045200634360121f2d038b5894cba3a3ed0f2f7d838f16b14b7cc29411"
+  "corpus_digest": "64dcb4bec6f5b382e5b6f5dc5141f310949efd9d2d333e48aaa52302b71074d3"
 }

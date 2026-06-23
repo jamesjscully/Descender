@@ -197,8 +197,9 @@ FRI/QROM domain boundary. It also binds
 proof-obligation row table for the direct-theorem shape.
 `path2_direct_theorem_obligation_vectors_v1.json` separately pins the open
 direct-theorem obligation row table and imported-boundary digests.
-`path2_direct_single_slot_spend_rejections_preserve_consume_once_state` is an
-active fast-gate precursor for direct spend rejection state-no-mutation; it is
-not yet the full public rejection vector corpus. The full direct-mode vector
-corpus, full byte corpus,
+`Path2PublicResultClassV1` and
+`path2_direct_single_slot_spend_rejections_preserve_consume_once_state` are
+active fast-gate precursors for direct spend public result-class naming and
+rejection state-no-mutation; they are not yet the full public rejection vector
+corpus. The full direct-mode vector corpus, full byte corpus,
 lifecycle/rejection coverage, and `DIR-KAT-001` closure remain open.
