@@ -673,6 +673,8 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
     if direct_report.account_creation_proof_boundary_report_digest != proof_report.digest {
         return Err("direct theorem report lost proof-boundary digest binding".to_string());
     }
+    let accepted_proof_boundary_artifact =
+        path2_account_creation_accepted_proof_boundary_evidence_artifact_v1()?;
 
     let corpus_file =
         load_json("formal/kat/path2_account_creation_proof_obligation_vectors_v1.json")?;
@@ -691,6 +693,18 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             corpus,
             "/direct_theorem_report/account_creation_proof_boundary_report_digest",
         )? != hex_encode(&proof_report.digest)
+        || str_at(
+            corpus,
+            "/accepted_proof_boundary_evidence_artifact/evidence_digest",
+        )? != str_at(&accepted_proof_boundary_artifact, "/evidence_digest")?
+        || str_at(
+            corpus,
+            "/accepted_proof_boundary_evidence_artifact/account_creation_proof_boundary_report_digest",
+        )? != hex_encode(&proof_report.digest)
+        || str_at(
+            corpus,
+            "/accepted_proof_boundary_evidence_artifact/deterministic_proof_byte_mode/accepted_boundary_endpoint",
+        )? != proof_report.accepted_boundary_evidence_endpoint
         || u64_at(corpus, "/case_count")?
             != proof_report.proof_obligation_audit_vector_case_count as u64
         || u64_at(corpus, "/audit_summary/proof_obligation_count")?
@@ -730,6 +744,8 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
         "proof_boundary_report_recomputed_digest": hex_encode(&proof_digest),
         "direct_theorem_report_digest": str_at(corpus, "/direct_theorem_report/digest")?,
         "direct_theorem_report_recomputed_digest": hex_encode(&direct_digest),
+        "accepted_proof_boundary_evidence_artifact":
+            accepted_proof_boundary_artifact,
         "case_count": u64_at(corpus, "/case_count")?,
         "audit_summary": {
             "proof_obligation_count": u64_at(

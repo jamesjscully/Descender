@@ -30,7 +30,8 @@ Current evidence note: the shared account-creation proof-boundary object in
 `formal/kat/path2_direct_theorem_boundary_v1.json` now embeds digest-pinned
 requirement-vector-corpus evidence for the frame KAT, no-export, FRI/QROM
 domain, and payload KAT corpora plus the 8-case open proof-obligation audit
-corpus and accepted proof-boundary KAT artifact; the direct-theorem boundary
+corpus, with that corpus now binding the accepted proof-boundary KAT artifact;
+the direct-theorem boundary
 also embeds the 9-case open direct-obligation audit corpus and accepted
 direct-composition KAT artifact, with the direct-obligation corpus also binding
 the standalone accepted direct-spend tuple artifact, while keeping theorem and

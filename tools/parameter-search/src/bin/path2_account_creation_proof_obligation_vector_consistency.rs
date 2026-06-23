@@ -194,6 +194,23 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
+    let accepted_boundary_artifact = at(corpus, "/accepted_proof_boundary_evidence_artifact")?;
+    if str_at(accepted_boundary_artifact, "/artifact_manifest_digest")?
+        != str_at(&accepted_boundary_file, "/manifest_digest")?
+        || str_at(
+            accepted_boundary_artifact,
+            "/artifact_manifest_recomputed_digest",
+        )? != accepted_boundary_recomputed_digest
+        || str_at(accepted_boundary_artifact, "/evidence_digest")?
+            != str_at(accepted_boundary, "/evidence/digest")?
+        || str_at(accepted_boundary_artifact, "/evidence_recomputed_digest")?
+            != str_at(accepted_boundary, "/evidence/recomputed_digest")?
+    {
+        return Err(
+            "proof-obligation corpus lost accepted proof-boundary artifact manifest binding"
+                .to_string(),
+        );
+    }
 
     let proof_report = path2_account_creation_proof_boundary_report_v1();
     validate_path2_account_creation_proof_boundary_report_v1(&proof_report)?;
@@ -335,6 +352,34 @@ fn main() -> Result<(), String> {
     {
         return Err(
             "proof-obligation vector corpus lost accepted proof-boundary evidence hook".to_string(),
+        );
+    }
+    if str_at(
+        accepted_boundary_artifact,
+        "/account_creation_proof_boundary_report_digest",
+    )? != hex_encode(&proof_report.digest)
+        || str_at(
+            accepted_boundary_artifact,
+            "/account_creation_proof_boundary_report_recomputed_digest",
+        )? != hex_encode(&proof_digest)
+        || str_at(
+            accepted_boundary_artifact,
+            "/deterministic_proof_byte_mode/accepted_boundary_endpoint",
+        )? != proof_report.accepted_boundary_evidence_endpoint
+        || str_at(accepted_boundary_artifact, "/evidence_schema")?
+            != proof_report.accepted_boundary_evidence_schema
+        || !bool_at(
+            accepted_boundary_artifact,
+            "/deterministic_proof_byte_mode/evidence_digest_recomputed",
+        )?
+        || u64_at(
+            accepted_boundary_artifact,
+            "/deterministic_proof_byte_mode/rayon_threads",
+        )? != 1
+    {
+        return Err(
+            "proof-obligation corpus accepted proof-boundary artifact drifted from proof report"
+                .to_string(),
         );
     }
     require_str(
@@ -693,6 +738,16 @@ fn main() -> Result<(), String> {
         "/evidence/account_creation_accepted_proof_boundary_evidence_digest",
         str_at(accepted_boundary, "/evidence/digest")?,
     )?;
+    if str_at(
+        accepted_composition,
+        "/evidence/account_creation_accepted_proof_boundary_evidence_digest",
+    )? != str_at(accepted_boundary_artifact, "/evidence_digest")?
+    {
+        return Err(
+            "proof-obligation corpus accepted composition drifted from accepted proof-boundary artifact"
+                .to_string(),
+        );
+    }
     for pointer in [
         "/evidence/verifier_boundary_accepts",
         "/evidence/production_gate_fail_closed",
@@ -724,6 +779,20 @@ fn main() -> Result<(), String> {
         "/evidence/deployment_ready",
     ] {
         require_bool(accepted_boundary, pointer, false)?;
+    }
+    for pointer in [
+        "/audit_summary/verifier_boundary_accepts",
+        "/audit_summary/production_gate_fail_closed",
+        "/audit_summary/proof_boundary_report_validated",
+        "/audit_summary/proof_family_obligations_still_open",
+    ] {
+        require_bool(accepted_boundary_artifact, pointer, true)?;
+    }
+    for pointer in [
+        "/audit_summary/public_payload_exports_private_material",
+        "/audit_summary/deployment_ready",
+    ] {
+        require_bool(accepted_boundary_artifact, pointer, false)?;
     }
     require_str(
         accepted_composition,

@@ -1,18 +1,21 @@
-use descender_parameter_search::production_reference::{
-    path2_account_creation_no_export_boundary_report_v1,
-    path2_account_creation_no_export_boundary_report_v1_digest,
-    path2_account_creation_proof_boundary_report_v1,
-    path2_account_creation_proof_boundary_report_v1_digest,
-    path2_account_stark_fri_qrom_residual_report_v1,
-    path2_account_stark_fri_qrom_residual_report_v1_digest,
-    path2_account_stark_payload_kat_boundary_report_v1,
-    path2_account_stark_payload_kat_boundary_report_v1_digest,
-    path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
-    validate_path2_account_creation_no_export_boundary_report_v1,
-    validate_path2_account_creation_proof_boundary_report_v1,
-    validate_path2_account_stark_fri_qrom_residual_report_v1,
-    validate_path2_account_stark_payload_kat_boundary_report_v1,
-    validate_path2_direct_theorem_boundary_report_v1, PROFILE,
+use descender_parameter_search::{
+    manifest_vector_evidence::path2_account_creation_accepted_proof_boundary_evidence_artifact_v1,
+    production_reference::{
+        path2_account_creation_no_export_boundary_report_v1,
+        path2_account_creation_no_export_boundary_report_v1_digest,
+        path2_account_creation_proof_boundary_report_v1,
+        path2_account_creation_proof_boundary_report_v1_digest,
+        path2_account_stark_fri_qrom_residual_report_v1,
+        path2_account_stark_fri_qrom_residual_report_v1_digest,
+        path2_account_stark_payload_kat_boundary_report_v1,
+        path2_account_stark_payload_kat_boundary_report_v1_digest,
+        path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
+        validate_path2_account_creation_no_export_boundary_report_v1,
+        validate_path2_account_creation_proof_boundary_report_v1,
+        validate_path2_account_stark_fri_qrom_residual_report_v1,
+        validate_path2_account_stark_payload_kat_boundary_report_v1,
+        validate_path2_direct_theorem_boundary_report_v1, PROFILE,
+    },
 };
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
@@ -87,6 +90,8 @@ fn manifest_body() -> Result<Value, String> {
     if direct_report.account_creation_proof_boundary_report_digest != proof_report.digest {
         return Err("direct theorem report is not bound to proof-boundary report".to_string());
     }
+    let accepted_proof_boundary_artifact =
+        path2_account_creation_accepted_proof_boundary_evidence_artifact_v1()?;
 
     let no_export_report = path2_account_creation_no_export_boundary_report_v1();
     validate_path2_account_creation_no_export_boundary_report_v1(&no_export_report)?;
@@ -294,6 +299,7 @@ fn manifest_body() -> Result<Value, String> {
             "deployment_ready": proof_report.deployment_ready,
             "blocker": proof_report.blocker
         },
+        "accepted_proof_boundary_evidence_artifact": accepted_proof_boundary_artifact,
         "no_export_vector_evidence": {
             "corpus_path": "formal/kat/path2_account_creation_no_export_vectors_v1.json",
             "corpus_schema": str_at(no_export_vectors, "/schema")?,
