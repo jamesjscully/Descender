@@ -404,6 +404,54 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
+    let composition_artifact = at(corpus, "/direct_accepted_composition_evidence_artifact")?;
+    if str_at(composition_artifact, "/artifact_manifest_digest")?
+        != str_at(&accepted_composition_file, "/manifest_digest")?
+        || str_at(composition_artifact, "/artifact_manifest_recomputed_digest")?
+            != accepted_composition_recomputed_digest
+        || str_at(composition_artifact, "/evidence_digest")?
+            != str_at(accepted_composition, "/evidence/digest")?
+        || str_at(composition_artifact, "/evidence_recomputed_digest")?
+            != str_at(accepted_composition, "/evidence/recomputed_digest")?
+        || str_at(
+            composition_artifact,
+            "/direct_theorem_boundary_report_digest",
+        )? != hex_encode(&direct_report.digest)
+        || str_at(
+            composition_artifact,
+            "/account_creation_proof_boundary_report_digest",
+        )? != hex_encode(&proof_report.digest)
+        || str_at(
+            composition_artifact,
+            "/account_creation_accepted_proof_boundary_evidence_digest",
+        )? != str_at(
+            accepted_composition,
+            "/evidence/account_creation_accepted_proof_boundary_evidence_digest",
+        )?
+        || str_at(
+            composition_artifact,
+            "/direct_accepted_spend_tuple_evidence_digest",
+        )? != str_at(accepted_tuple, "/evidence/digest")?
+        || str_at(
+            composition_artifact,
+            "/direct_accepted_spend_tuple_artifact_manifest_digest",
+        )? != str_at(&accepted_tuple_file, "/manifest_digest")?
+    {
+        return Err(
+            "direct theorem obligation vector corpus lost accepted composition artifact binding"
+                .to_string(),
+        );
+    }
+    if at(
+        composition_artifact,
+        "/direct_accepted_spend_tuple_artifact",
+    )? != tuple_artifact
+    {
+        return Err(
+            "direct theorem obligation accepted composition artifact lost nested tuple binding"
+                .to_string(),
+        );
+    }
 
     if u64_at(corpus, "/case_count")? != direct_report.obligation_count as u64
         || u64_at(corpus, "/audit_summary/direct_obligation_count")?
@@ -493,11 +541,33 @@ fn main() -> Result<(), String> {
         require_bool(accepted_composition, pointer, true)?;
     }
     for pointer in [
+        "/audit_summary/creation_evidence_matches_direct_tuple",
+        "/audit_summary/proof_boundary_digest_matches_direct_theorem",
+        "/audit_summary/qrom_action_digest_matches_direct_theorem",
+        "/audit_summary/lifecycle_digest_matches_direct_theorem",
+        "/audit_summary/direct_admission_namespace_matches_authorization",
+        "/audit_summary/consume_once_transition_matches_tuple",
+        "/audit_summary/verifier_boundary_accepts_creation",
+        "/audit_summary/direct_spend_tuple_accepts",
+        "/audit_summary/public_result_accepts_same_slot",
+        "/audit_summary/direct_theorem_obligations_still_open",
+        "/audit_summary/proof_family_obligations_still_open",
+    ] {
+        require_bool(composition_artifact, pointer, true)?;
+    }
+    for pointer in [
         "/evidence/composition_theorem_instantiated",
         "/evidence/account_creation_proof_boundary_verified",
         "/evidence/deployment_ready",
     ] {
         require_bool(accepted_composition, pointer, false)?;
+    }
+    for pointer in [
+        "/audit_summary/composition_theorem_instantiated",
+        "/audit_summary/account_creation_proof_boundary_verified",
+        "/audit_summary/deployment_ready",
+    ] {
+        require_bool(composition_artifact, pointer, false)?;
     }
     if str_at(
         accepted_composition,

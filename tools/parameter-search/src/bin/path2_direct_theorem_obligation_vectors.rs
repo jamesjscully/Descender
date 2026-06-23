@@ -1,5 +1,8 @@
 use descender_parameter_search::{
-    manifest_vector_evidence::path2_direct_accepted_spend_tuple_evidence_artifact_v1,
+    manifest_vector_evidence::{
+        path2_direct_accepted_composition_evidence_artifact_v1,
+        path2_direct_accepted_spend_tuple_evidence_artifact_v1,
+    },
     production_reference::{
         path2_account_creation_proof_boundary_report_v1,
         path2_account_creation_proof_boundary_report_v1_digest,
@@ -66,6 +69,7 @@ fn manifest_body() -> Result<Value, String> {
         return Err("direct theorem report lost proof-boundary digest binding".to_string());
     }
     let accepted_spend_tuple_artifact = path2_direct_accepted_spend_tuple_evidence_artifact_v1()?;
+    let accepted_composition_artifact = path2_direct_accepted_composition_evidence_artifact_v1()?;
 
     let cases: Vec<Value> = direct_report
         .obligation_rows
@@ -206,6 +210,7 @@ fn manifest_body() -> Result<Value, String> {
             "blocker": proof_report.blocker
         },
         "direct_accepted_spend_tuple_evidence_artifact": accepted_spend_tuple_artifact,
+        "direct_accepted_composition_evidence_artifact": accepted_composition_artifact,
         "audit_summary": {
             "direct_obligation_count": direct_report.obligation_count,
             "direct_obligation_audit_vector_case_count":
