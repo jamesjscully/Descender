@@ -1,0 +1,151 @@
+{
+  "corpus": {
+    "audit_summary": {
+      "all_cases_have_named_break": true,
+      "all_cases_open": true,
+      "all_open_cases_block_deployment": true,
+      "deployment_ready": false,
+      "external_review_complete": false,
+      "fri_aok_extractor_theorem_instantiated": false,
+      "fri_qrom_residual_priced": false,
+      "frozen_kat_corpus_complete": false,
+      "production_gate_open": false,
+      "proof_obligation_audit_vector_case_count": 8,
+      "proof_obligation_count": 8,
+      "proof_obligation_named_break_classes": [
+        "creation_time_hidden_source_soundness_break",
+        "checked_core_message_binding_break",
+        "postchallenge_slot_creation_or_rewrite_break",
+        "account_stark_simulator_or_no_export_break",
+        "account_stark_fri_aok_extractor_break",
+        "fri_soundness_margin_break",
+        "account_stark_payload_binding_break",
+        "account_stark_production_gate_break"
+      ],
+      "simulator_theorem_instantiated": false
+    },
+    "case_count": 8,
+    "cases": [
+      {
+        "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+        "case_id": "creation_proof_obligation_honest_sampler",
+        "closure_target": "honest_create_sampler_sound_v1",
+        "current_evidence": "honest-create sampler support file, construction steps, and source hook labels are pinned",
+        "kind": "audit",
+        "named_break": "creation_time_hidden_source_soundness_break",
+        "open": true,
+        "required_closure": "prove the honest-create sampler samples the selected creation relation without bias or hidden postchallenge input",
+        "supporting_surface": "Path2AccountCreationSamplerTimingReportV1"
+      },
+      {
+        "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+        "case_id": "creation_proof_obligation_authorization_class_binding",
+        "closure_target": "selected_account_creation_authorization_class_binding_v1",
+        "current_evidence": "checked-core challenge binds message, state root, slot authorization digest, and proof commitment",
+        "kind": "audit",
+        "named_break": "checked_core_message_binding_break",
+        "open": true,
+        "required_closure": "prove private authorization-local material cannot change public spend semantics or bypass checked-core binding",
+        "supporting_surface": "Path2AccountCreationSamplerTimingReportV1 and checked-core frame binding"
+      },
+      {
+        "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+        "case_id": "creation_proof_obligation_no_postchallenge_timing",
+        "closure_target": "no_postchallenge_slot_creation_timing_v1",
+        "current_evidence": "creation statement excludes spend message/signature bytes and spend challenge is derived after the fixed creation statement",
+        "kind": "audit",
+        "named_break": "postchallenge_slot_creation_or_rewrite_break",
+        "open": true,
+        "required_closure": "prove no accepted slot can be created, rewritten, or selectively opened after observing the spend challenge",
+        "supporting_surface": "Path2AccountCreationSamplerTimingReportV1"
+      },
+      {
+        "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+        "case_id": "creation_proof_obligation_simulator_no_export",
+        "closure_target": "selected_account_stark_public_bundle_simulator_v1 + selected_account_stark_no_export_v1",
+        "current_evidence": "public-input allowlist and private-material denylist are pinned for the selected account-STARK payload",
+        "kind": "audit",
+        "named_break": "account_stark_simulator_or_no_export_break",
+        "open": true,
+        "required_closure": "prove accepted public bundles are simulatable from public anchors and allowed commitments without exporting private creation material",
+        "supporting_surface": "Path2AccountCreationNoExportBoundaryReportV1"
+      },
+      {
+        "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+        "case_id": "creation_proof_obligation_fri_aok_extractor",
+        "closure_target": "selected_plonky3_q12289_fri_iop_aok_extractor",
+        "current_evidence": "AIR coverage, FRI schedule, challenge field, and extractor theorem target are pinned",
+        "kind": "audit",
+        "named_break": "account_stark_fri_aok_extractor_break",
+        "open": true,
+        "required_closure": "prove every accepting proof for the selected Plonky3/q12289 configuration implies an extractable account-creation witness or a named FRI/AoK break",
+        "supporting_surface": "Path2AccountStarkFriAokBoundaryReportV1"
+      },
+      {
+        "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+        "case_id": "creation_proof_obligation_fri_qrom_residual_pricing",
+        "closure_target": "selected_account_stark_fri_poseidon2_qrom_residual_ledger_v1",
+        "current_evidence": "active FRI parameters, degree-8 challenge field, Poseidon2 sponge floor, and checked-core QROM artifacts are pinned",
+        "kind": "audit",
+        "named_break": "fri_soundness_margin_break",
+        "open": true,
+        "required_closure": "price the account-STARK FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile",
+        "supporting_surface": "Path2AccountStarkFriQromResidualReportV1"
+      },
+      {
+        "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+        "case_id": "creation_proof_obligation_frozen_payload_kats",
+        "closure_target": "selected_account_stark_payload_frozen_kat_corpus_v1",
+        "current_evidence": "current mutation rows, public rejection classes, and deterministic digest-pinned boundary vectors exist",
+        "kind": "audit",
+        "named_break": "account_stark_payload_binding_break",
+        "open": true,
+        "required_closure": "freeze the full byte corpus and public rejection-class mapping for every consensus-visible malformed payload",
+        "supporting_surface": "Path2AccountStarkPayloadKatBoundaryReportV1"
+      },
+      {
+        "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+        "case_id": "creation_proof_obligation_production_gate_and_review",
+        "closure_target": "selected_account_stark_production_admission_gate_v1",
+        "current_evidence": "production verification remains fail-closed and external proof-family review is incomplete",
+        "kind": "audit",
+        "named_break": "account_stark_production_gate_break",
+        "open": true,
+        "required_closure": "obtain external review, record tracker disposition, and make an explicit maintainer decision before production admission can open",
+        "supporting_surface": "production account-STARK payload boundary and external review lane"
+      }
+    ],
+    "corpus_id": "Descender.Path2.AccountCreationProofObligationAuditVectors.v1",
+    "corpus_version": 1,
+    "direct_theorem_report": {
+      "account_creation_proof_boundary_report_digest": "97ee09dcca27841ddf8dcb53f4558151edc09e3cfc573083987155de344428c8",
+      "account_creation_proof_boundary_verified": false,
+      "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+      "composition_theorem_instantiated": false,
+      "deployment_ready": false,
+      "digest": "02e0e3b8d7d37c52851fdbc7c1884df246e3ded776a35a7e894893f023fba281",
+      "domain": "Descender.Path2.DirectTheoremBoundaryReport.v1",
+      "recomputed_digest": "02e0e3b8d7d37c52851fdbc7c1884df246e3ded776a35a7e894893f023fba281"
+    },
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_proof_obligation_vectors",
+      "source": "tools/parameter-search/src/bin/path2_account_creation_proof_obligation_vectors.rs"
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "proof_boundary_report": {
+      "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+      "deployment_ready": false,
+      "digest": "97ee09dcca27841ddf8dcb53f4558151edc09e3cfc573083987155de344428c8",
+      "domain": "Descender.Path2.AccountCreationProofBoundaryReport.v1",
+      "every_open_proof_obligation_blocks_deployment": true,
+      "every_proof_obligation_has_named_break": true,
+      "proof_boundary_conclusion": "accepted_account_creation_payload_implies_bound_leaf_evidence_selected_account_stark_acceptance_no_export_or_named_break",
+      "proof_boundary_target": "selected_account_creation_proof_boundary_v1",
+      "proof_obligation_rows_pinned": true,
+      "recomputed_digest": "97ee09dcca27841ddf8dcb53f4558151edc09e3cfc573083987155de344428c8"
+    },
+    "schema": "Descender.Path2.AccountCreationProofObligationVectors.v1",
+    "status": "digest_pinned_proof_obligation_audit_vectors"
+  },
+  "corpus_digest": "bb2d07b392e5f78c06b9888595991c179511efdb9f99037cf7865ba48a855c15"
+}

@@ -307,6 +307,22 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ),
     ),
     (
+        "account-creation proof-obligation vector corpus check",
+        (
+            "path2_account_creation_proof_obligation_vectors",
+            "path2_account_creation_proof_obligation_vectors_v1.json",
+        ),
+        (
+            "path2_account_creation_proof_obligation_vectors",
+            "path2_account_creation_proof_obligation_vectors_v1.json",
+        ),
+    ),
+    (
+        "account-creation proof-obligation vector consistency check",
+        ("path2_account_creation_proof_obligation_vector_consistency",),
+        ("path2_account_creation_proof_obligation_vector_consistency",),
+    ),
+    (
         "direct QROM/action boundary manifest check",
         (
             "path2_direct_qrom_action_boundary_manifest",
@@ -572,6 +588,16 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-CREATE-001",
         "DIR-PROOF-001",
         "DIR-PROOF-002",
+    ),
+    "account-creation proof-obligation vector corpus check": (
+        "DIR-CREATE-001",
+        "DIR-PROOF-001",
+        "DIR-SEC-001",
+    ),
+    "account-creation proof-obligation vector consistency check": (
+        "DIR-CREATE-001",
+        "DIR-PROOF-001",
+        "DIR-SEC-001",
     ),
     "direct QROM/action boundary manifest check": (
         "DIR-SEC-001",

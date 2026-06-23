@@ -300,6 +300,15 @@ fn check_consistency() -> Result<(), String> {
         ],
         true,
     )?;
+    expect_u64(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "proof_obligation_audit_vector_case_count",
+        ],
+        8,
+    )?;
     expect_bool(
         proof_manifest,
         &[

@@ -78,6 +78,7 @@
         "payload_binding_field_count": 6,
         "production_gate_fail_closed": true,
         "production_gate_open": false,
+        "proof_obligation_audit_vector_case_count": 8,
         "proof_obligation_count": 8,
         "proof_obligation_named_break_class_count": 8,
         "proof_obligation_rows_pinned": true,
@@ -134,6 +135,16 @@
       ],
       "proof_boundary_conclusion": "accepted_account_creation_payload_implies_bound_leaf_evidence_selected_account_stark_acceptance_no_export_or_named_break",
       "proof_boundary_target": "selected_account_creation_proof_boundary_v1",
+      "proof_obligation_audit_vector_case_ids": [
+        "creation_proof_obligation_honest_sampler",
+        "creation_proof_obligation_authorization_class_binding",
+        "creation_proof_obligation_no_postchallenge_timing",
+        "creation_proof_obligation_simulator_no_export",
+        "creation_proof_obligation_fri_aok_extractor",
+        "creation_proof_obligation_fri_qrom_residual_pricing",
+        "creation_proof_obligation_frozen_payload_kats",
+        "creation_proof_obligation_production_gate_and_review"
+      ],
       "proof_obligation_named_break_classes": [
         "creation_time_hidden_source_soundness_break",
         "checked_core_message_binding_break",
@@ -443,16 +454,16 @@
     "corpus_id": "Descender.Path2.DirectTheoremBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "aa8e1d3d656aa5b2f9349f3d8f9bcdc6832530046768841fdd201c703bbcd117",
-      "account_creation_proof_boundary_report_recomputed_digest": "aa8e1d3d656aa5b2f9349f3d8f9bcdc6832530046768841fdd201c703bbcd117",
+      "account_creation_proof_boundary_report_digest": "97ee09dcca27841ddf8dcb53f4558151edc09e3cfc573083987155de344428c8",
+      "account_creation_proof_boundary_report_recomputed_digest": "97ee09dcca27841ddf8dcb53f4558151edc09e3cfc573083987155de344428c8",
       "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
-      "direct_theorem_boundary_report_digest": "d3ba26572514a6867ccf544ef27fd0ddc9cd149eddfaf637de4c24bea303ac02",
-      "direct_theorem_boundary_report_recomputed_digest": "d3ba26572514a6867ccf544ef27fd0ddc9cd149eddfaf637de4c24bea303ac02",
+      "direct_theorem_boundary_report_digest": "02e0e3b8d7d37c52851fdbc7c1884df246e3ded776a35a7e894893f023fba281",
+      "direct_theorem_boundary_report_recomputed_digest": "02e0e3b8d7d37c52851fdbc7c1884df246e3ded776a35a7e894893f023fba281",
       "direct_theorem_report_lifecycle_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_theorem_report_qrom_action_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
@@ -740,5 +751,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "d205ddb39859001f13632f29568a5247aac8c3918abc1c8fb1859f42ebe1bdfb"
+  "manifest_digest": "8dd1ed7d50c427123d9a3b452dba31078d6b2f5d506dbc7563b1330fbbbab8ab"
 }

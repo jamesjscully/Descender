@@ -328,6 +328,8 @@ fn manifest_body() -> Result<Value, String> {
                     proof_boundary_report.requirement_coverage_count,
                 "proof_obligation_count":
                     proof_boundary_report.proof_obligation_count,
+                "proof_obligation_audit_vector_case_count":
+                    proof_boundary_report.proof_obligation_audit_vector_case_count,
                 "current_vector_covered_requirement_count":
                     proof_boundary_report.current_vector_covered_requirement_count,
                 "current_vector_evidence_kinds": proof_boundary_report
@@ -393,6 +395,8 @@ fn manifest_body() -> Result<Value, String> {
                 proof_boundary_report.no_export_private_material_fields,
             "proof_obligation_named_break_classes":
                 proof_boundary_report.proof_obligation_named_break_classes,
+            "proof_obligation_audit_vector_case_ids":
+                proof_boundary_report.proof_obligation_audit_vector_case_ids,
             "proof_obligation_rows": proof_boundary_report.proof_obligation_rows
         }
     }))

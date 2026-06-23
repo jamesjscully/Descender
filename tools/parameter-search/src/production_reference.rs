@@ -9606,9 +9606,11 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub requirement_coverage_rows:
         &'static [Path2AccountCreationProofBoundaryRequirementCoverageRowV1],
     pub proof_obligation_named_break_classes: &'static [&'static str],
+    pub proof_obligation_audit_vector_case_ids: &'static [&'static str],
     pub proof_obligation_rows: &'static [Path2AccountCreationProofBoundaryObligationRowV1],
     pub requirement_coverage_count: usize,
     pub proof_obligation_count: usize,
+    pub proof_obligation_audit_vector_case_count: usize,
     pub current_vector_covered_requirement_count: usize,
     pub every_accepting_requirement_has_coverage_row: bool,
     pub every_vector_covered_requirement_has_public_rejection_class: bool,
@@ -11240,6 +11242,16 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NAMED_BREAK_CLASSES: [&str; 8] =
     "account_stark_payload_binding_break",
     "account_stark_production_gate_break",
 ];
+pub const PATH2_ACCOUNT_CREATION_PROOF_OBLIGATION_AUDIT_CASES: [&str; 8] = [
+    "creation_proof_obligation_honest_sampler",
+    "creation_proof_obligation_authorization_class_binding",
+    "creation_proof_obligation_no_postchallenge_timing",
+    "creation_proof_obligation_simulator_no_export",
+    "creation_proof_obligation_fri_aok_extractor",
+    "creation_proof_obligation_fri_qrom_residual_pricing",
+    "creation_proof_obligation_frozen_payload_kats",
+    "creation_proof_obligation_production_gate_and_review",
+];
 
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS:
     [Path2AccountCreationProofBoundaryObligationRowV1; 8] = [
@@ -12065,9 +12077,13 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         requirement_coverage_rows,
         proof_obligation_named_break_classes:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NAMED_BREAK_CLASSES,
+        proof_obligation_audit_vector_case_ids:
+            &PATH2_ACCOUNT_CREATION_PROOF_OBLIGATION_AUDIT_CASES,
         proof_obligation_rows,
         requirement_coverage_count: requirement_coverage_rows.len(),
         proof_obligation_count: proof_obligation_rows.len(),
+        proof_obligation_audit_vector_case_count:
+            PATH2_ACCOUNT_CREATION_PROOF_OBLIGATION_AUDIT_CASES.len(),
         current_vector_covered_requirement_count: requirement_coverage_rows
             .iter()
             .filter(|row| row.covered_by_current_vectors)
@@ -12213,6 +12229,15 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
     }
     if report.proof_obligation_rows != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS.as_ref()
         || report.proof_obligation_count != report.proof_obligation_rows.len()
+        || report.proof_obligation_audit_vector_case_ids
+            != PATH2_ACCOUNT_CREATION_PROOF_OBLIGATION_AUDIT_CASES.as_ref()
+        || report.proof_obligation_audit_vector_case_count
+            != report.proof_obligation_audit_vector_case_ids.len()
+        || report
+            .proof_obligation_rows
+            .iter()
+            .zip(report.proof_obligation_audit_vector_case_ids.iter())
+            .any(|(row, case_id)| row.obligation_id != *case_id)
         || !report.every_proof_obligation_has_named_break
         || !report.every_open_proof_obligation_blocks_deployment
         || !report.proof_obligation_rows_pinned
@@ -65921,6 +65946,22 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
             break_class.as_bytes(),
         );
     }
+    for (index, case_id) in report
+        .proof_obligation_audit_vector_case_ids
+        .iter()
+        .enumerate()
+    {
+        append_u64(
+            &mut frame,
+            b"proof_obligation_audit_vector_case_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"proof_obligation_audit_vector_case_id",
+            case_id.as_bytes(),
+        );
+    }
     for (index, row) in report.proof_obligation_rows.iter().enumerate() {
         append_u64(&mut frame, b"proof_obligation_row_index", index as u64);
         append_frame(
@@ -65973,6 +66014,11 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         &mut frame,
         b"proof_obligation_count",
         report.proof_obligation_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"proof_obligation_audit_vector_case_count",
+        report.proof_obligation_audit_vector_case_count as u64,
     );
     append_u64(
         &mut frame,
@@ -107878,6 +107924,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         );
         assert_eq!(report.proof_obligation_count, 8);
         assert_eq!(report.proof_obligation_count, report.proof_obligation_rows.len());
+        assert_eq!(
+            report.proof_obligation_audit_vector_case_ids,
+            PATH2_ACCOUNT_CREATION_PROOF_OBLIGATION_AUDIT_CASES.as_ref()
+        );
+        assert_eq!(
+            report.proof_obligation_audit_vector_case_count,
+            report.proof_obligation_rows.len()
+        );
         assert!(report.every_proof_obligation_has_named_break);
         assert!(report.every_open_proof_obligation_blocks_deployment);
         assert!(report.proof_obligation_rows_pinned);

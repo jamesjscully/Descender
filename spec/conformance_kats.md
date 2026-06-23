@@ -21,6 +21,8 @@ The active conformance corpus covers:
 - no-export audit vectors for public-payload and simulator-input surfaces;
 - FRI/QROM domain audit vectors for the active account-STARK transcript
   boundary inputs;
+- proof-obligation audit vectors for the open account-creation theorem-shape
+  row table;
 - signer/wallet/HSM public API vectors for the command/result model in
   `spec/signer_api.md`;
 - entropy and domain-separation vectors for the stream model in
@@ -190,5 +192,8 @@ imports those precursor surfaces through a requirement-coverage matrix, which
 records current rejection or audit vector case ids for all ten
 account-creation acceptance requirements, including
 `path2_account_stark_fri_qrom_domain_vectors_v1.json` for the selected
-FRI/QROM domain boundary. The full direct-mode vector corpus, full byte corpus,
+FRI/QROM domain boundary. It also binds
+`path2_account_creation_proof_obligation_vectors_v1.json` to the open
+proof-obligation row table for the direct-theorem shape. The full direct-mode
+vector corpus, full byte corpus,
 lifecycle/rejection coverage, and `DIR-KAT-001` closure remain open.

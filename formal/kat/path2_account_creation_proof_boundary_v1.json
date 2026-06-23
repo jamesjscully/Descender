@@ -78,6 +78,7 @@
         "payload_binding_field_count": 6,
         "production_gate_fail_closed": true,
         "production_gate_open": false,
+        "proof_obligation_audit_vector_case_count": 8,
         "proof_obligation_count": 8,
         "proof_obligation_named_break_class_count": 8,
         "proof_obligation_rows_pinned": true,
@@ -134,6 +135,16 @@
       ],
       "proof_boundary_conclusion": "accepted_account_creation_payload_implies_bound_leaf_evidence_selected_account_stark_acceptance_no_export_or_named_break",
       "proof_boundary_target": "selected_account_creation_proof_boundary_v1",
+      "proof_obligation_audit_vector_case_ids": [
+        "creation_proof_obligation_honest_sampler",
+        "creation_proof_obligation_authorization_class_binding",
+        "creation_proof_obligation_no_postchallenge_timing",
+        "creation_proof_obligation_simulator_no_export",
+        "creation_proof_obligation_fri_aok_extractor",
+        "creation_proof_obligation_fri_qrom_residual_pricing",
+        "creation_proof_obligation_frozen_payload_kats",
+        "creation_proof_obligation_production_gate_and_review"
+      ],
       "proof_obligation_named_break_classes": [
         "creation_time_hidden_source_soundness_break",
         "checked_core_message_binding_break",
@@ -450,8 +461,8 @@
       "account_creation_frame_kat_boundary_report_recomputed_digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
       "account_creation_no_export_boundary_report_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
       "account_creation_no_export_boundary_report_recomputed_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
-      "account_creation_proof_boundary_report_digest": "aa8e1d3d656aa5b2f9349f3d8f9bcdc6832530046768841fdd201c703bbcd117",
-      "account_creation_proof_boundary_report_recomputed_digest": "aa8e1d3d656aa5b2f9349f3d8f9bcdc6832530046768841fdd201c703bbcd117",
+      "account_creation_proof_boundary_report_digest": "97ee09dcca27841ddf8dcb53f4558151edc09e3cfc573083987155de344428c8",
+      "account_creation_proof_boundary_report_recomputed_digest": "97ee09dcca27841ddf8dcb53f4558151edc09e3cfc573083987155de344428c8",
       "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_stark_fri_aok_boundary_report_digest": "bcb747ec1676c7bec01592180f8da6ffef3da129dfa002a5bad51f1e910949bb",
@@ -743,5 +754,5 @@
       ]
     }
   },
-  "manifest_digest": "f612bf4e4935489aa8e5588ac8fdfa29e39b502afcf4f0fd034f6153ca22a4d3"
+  "manifest_digest": "f54236f3af0d9e14f1f3c26e80150ea09b9e21b6181377df07b802d759ffbab9"
 }

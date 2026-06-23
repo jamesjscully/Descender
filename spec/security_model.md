@@ -194,7 +194,10 @@ row list for honest sampler soundness, authorization-class binding,
 no-postchallenge timing, simulator/no-export closure, FRI/AoK extraction,
 FRI/QROM residual pricing, frozen payload KATs, and production-gate review;
 each open row carries a named break and the fail-closed account-creation
-proof-boundary blocker. A separate requirement-coverage matrix maps every
+proof-boundary blocker. `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
+turns that row table into a digest-pinned audit corpus bound to both the
+proof-boundary and direct-theorem reports; it keeps every obligation open and
+fail-closed. A separate requirement-coverage matrix maps every
 acceptance requirement to its current evidence surface, vector evidence kind,
 current vector case ids where they exist, public rejection classes for rejection
 vectors, closure target, and blocker; it records that all ten requirements have
@@ -233,6 +236,8 @@ public-payload allowlist, simulator-input allowlist, private-material denylist
 absence, and opaque proof-bundle manifest policy.
 `formal/kat/path2_account_stark_fri_qrom_domain_vectors_v1.json` pins the
 current FRI/QROM domain audit cases before the proof-boundary manifest is
+checked. `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
+pins the open proof-obligation cases before the direct theorem manifest is
 checked. The reports and manifests are
 the executable boundary map for this section; they are not an honest-sampler
 theorem, authorization-class binding theorem, no-postchallenge timing theorem,
