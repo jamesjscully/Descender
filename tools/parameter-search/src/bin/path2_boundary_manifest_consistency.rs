@@ -62,6 +62,17 @@ fn expect_u64(value: &Value, path: &[&str], expected: u64) -> Result<(), String>
     }
 }
 
+fn field_values(value: &Value, path: &[&str], field: &str) -> Result<Value, String> {
+    let rows = get(value, path)?
+        .as_array()
+        .ok_or_else(|| format!("{} is not an array", path.join(".")))?;
+    let mut values = Vec::with_capacity(rows.len());
+    for row in rows {
+        values.push(get(row, &[field])?.clone());
+    }
+    Ok(Value::Array(values))
+}
+
 fn check_consistency() -> Result<(), String> {
     let root = repo_root();
     let proof = read_json(
@@ -712,6 +723,24 @@ fn check_consistency() -> Result<(), String> {
         )?,
         "proof.manifest.account_creation_proof_boundary.proof_obligation_named_break_classes",
     )?;
+    let proof_obligation_row_ids = field_values(
+        proof_manifest,
+        &["account_creation_proof_boundary", "proof_obligation_rows"],
+        "obligation_id",
+    )?;
+    expect_eq(
+        get(
+            proof_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "proof_obligation_vector_corpus_evidence",
+                "proof_obligation_case_ids",
+            ],
+        )?,
+        "proof.manifest.account_creation_proof_boundary.proof_obligation_vector_corpus_evidence.proof_obligation_case_ids",
+        &proof_obligation_row_ids,
+        "proof.manifest.account_creation_proof_boundary.proof_obligation_rows obligation ids",
+    )?;
     expect_bool(
         proof_manifest,
         &[
@@ -1091,6 +1120,24 @@ fn check_consistency() -> Result<(), String> {
             &["direct_theorem_boundary", "named_break_classes"],
         )?,
         "direct.manifest.direct_theorem_boundary.named_break_classes",
+    )?;
+    let direct_obligation_row_ids = field_values(
+        direct_manifest,
+        &["direct_theorem_boundary", "obligation_rows"],
+        "obligation_id",
+    )?;
+    expect_eq(
+        get(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_obligation_vector_corpus_evidence",
+                "direct_obligation_case_ids",
+            ],
+        )?,
+        "direct.manifest.direct_theorem_boundary.direct_obligation_vector_corpus_evidence.direct_obligation_case_ids",
+        &direct_obligation_row_ids,
+        "direct.manifest.direct_theorem_boundary.obligation_rows obligation ids",
     )?;
     expect_u64(
         direct_manifest,

@@ -99,6 +99,15 @@ fn array_at<'a>(value: &'a Value, pointer: &str) -> Result<&'a Vec<Value>, Strin
         .ok_or_else(|| format!("JSON pointer {pointer} is not an array"))
 }
 
+fn array_field_values_at(value: &Value, pointer: &str, field: &str) -> Result<Value, String> {
+    let rows = array_at(value, pointer)?;
+    let mut values = Vec::with_capacity(rows.len());
+    for row in rows {
+        values.push(at(row, &format!("/{field}"))?.clone());
+    }
+    Ok(Value::Array(values))
+}
+
 fn body_digest(value: &Value, label: &str) -> Result<String, String> {
     let json =
         serde_json::to_string_pretty(value).map_err(|err| format!("serialize {label}: {err}"))?;
@@ -599,6 +608,17 @@ fn main() -> Result<(), String> {
             "production preflight proof-obligation summary lost named-break taxonomy".to_string(),
         );
     }
+    let proof_obligation_row_ids =
+        array_field_values_at(proof_boundary, "/proof_obligation_rows", "obligation_id")?;
+    if at(
+        proof_boundary,
+        "/proof_obligation_vector_corpus_evidence/proof_obligation_case_ids",
+    )? != &proof_obligation_row_ids
+    {
+        return Err(
+            "production preflight proof-obligation summary lost case-id row binding".to_string(),
+        );
+    }
 
     if direct_report.deployment_ready
         || direct_report.composition_theorem_instantiated
@@ -759,6 +779,17 @@ fn main() -> Result<(), String> {
     {
         return Err(
             "production preflight direct-obligation summary lost named-break taxonomy".to_string(),
+        );
+    }
+    let direct_obligation_row_ids =
+        array_field_values_at(direct_boundary, "/obligation_rows", "obligation_id")?;
+    if at(
+        direct_boundary,
+        "/direct_obligation_vector_corpus_evidence/direct_obligation_case_ids",
+    )? != &direct_obligation_row_ids
+    {
+        return Err(
+            "production preflight direct-obligation summary lost case-id row binding".to_string(),
         );
     }
 

@@ -674,6 +674,16 @@
         "direct_theorem_report_recomputed_digest": "1241f061d507039308e951985774565659ae46f8c1a0d1222e2982ccad8530b3",
         "proof_boundary_report_digest": "e7c2b9243d2a1ca88486c226b6f24e989711f85b4e56d011ebfd996b07ac899a",
         "proof_boundary_report_recomputed_digest": "e7c2b9243d2a1ca88486c226b6f24e989711f85b4e56d011ebfd996b07ac899a",
+        "proof_obligation_case_ids": [
+          "creation_proof_obligation_honest_sampler",
+          "creation_proof_obligation_authorization_class_binding",
+          "creation_proof_obligation_no_postchallenge_timing",
+          "creation_proof_obligation_simulator_no_export",
+          "creation_proof_obligation_fri_aok_extractor",
+          "creation_proof_obligation_fri_qrom_residual_pricing",
+          "creation_proof_obligation_frozen_payload_kats",
+          "creation_proof_obligation_production_gate_and_review"
+        ],
         "schema": "Descender.Path2.AccountCreationProofObligationVectorCorpusEvidence.v1",
         "status": "digest_pinned_open_proof_obligation_vector_corpus_evidence"
       },
@@ -1779,6 +1789,17 @@
         },
         "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
         "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
+        "direct_obligation_case_ids": [
+          "direct_obligation_leaf_canonical_live",
+          "direct_obligation_evidence_leaf_bindings",
+          "direct_obligation_slot_authorization_digest",
+          "direct_obligation_creation_before_challenge",
+          "direct_obligation_admission_namespace",
+          "direct_obligation_checked_core_frame_binding",
+          "direct_obligation_checked_core_acceptance",
+          "direct_obligation_consume_once",
+          "direct_obligation_public_rejection"
+        ],
         "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
         "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
         "direct_theorem_report_digest": "1241f061d507039308e951985774565659ae46f8c1a0d1222e2982ccad8530b3",
@@ -1914,5 +1935,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "5a92eaf65f28f34a09e2e0bdf42db61fd8347a61901ba9652c2311c20e6bb022"
+  "manifest_digest": "604e1aa48e522a6cc158c5717fa92de17314ce64c17e6b15f5855b065ad4c559"
 }

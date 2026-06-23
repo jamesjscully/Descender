@@ -387,9 +387,9 @@ raw open external-review, QROM theorem/import, lifecycle-finality, and
 proof-boundary readiness flags, plus the proof-obligation corpus flags showing
 that the no-export, FRI/QROM-domain, and payload-KAT vector corpora still cover
 the current boundary cases. They also retain the exact proof-boundary and
-direct-theorem named-break taxonomies, so those blockers cannot disappear or be
-renamed when a standalone corpus is imported by a boundary or preflight
-manifest.
+direct-theorem case-id lists plus named-break taxonomies, so those obligations
+cannot disappear, be reordered, or be renamed when a standalone corpus is
+imported by a boundary or preflight manifest.
 The reports and
 manifests are
 the executable boundary map for this section; they are not an honest-sampler

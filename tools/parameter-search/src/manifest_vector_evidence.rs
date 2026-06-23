@@ -78,6 +78,19 @@ fn u64_at(value: &Value, pointer: &str) -> Result<u64, String> {
         .ok_or_else(|| format!("JSON pointer {pointer} is not an unsigned integer"))
 }
 
+fn array_at<'a>(value: &'a Value, pointer: &str) -> Result<&'a Vec<Value>, String> {
+    at(value, pointer)?
+        .as_array()
+        .ok_or_else(|| format!("JSON pointer {pointer} is not an array"))
+}
+
+fn case_ids_at<'a>(value: &'a Value, pointer: &str) -> Result<Vec<&'a str>, String> {
+    array_at(value, pointer)?
+        .iter()
+        .map(|case| str_at(case, "/case_id"))
+        .collect()
+}
+
 fn body_digest(corpus: &Value, label: &str) -> Result<String, String> {
     let corpus_json =
         serde_json::to_string_pretty(corpus).map_err(|err| format!("serialize {label}: {err}"))?;
@@ -854,6 +867,18 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
     if str_at(&corpus_file, "/corpus_digest")? != corpus_digest {
         return Err("proof-obligation vector corpus digest mismatch".to_string());
     }
+    let proof_obligation_case_ids = case_ids_at(corpus, "/cases")?;
+    let proof_report_obligation_ids = proof_report
+        .proof_obligation_rows
+        .iter()
+        .map(|row| row.obligation_id)
+        .collect::<Vec<_>>();
+    if proof_obligation_case_ids != proof_report_obligation_ids {
+        return Err(
+            "proof-obligation vector corpus case ids drifted from proof-boundary rows"
+                .to_string(),
+        );
+    }
     if at(corpus, "/direct_accepted_composition_evidence_artifact")?
         != &accepted_composition_artifact
     {
@@ -963,6 +988,7 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
         "direct_accepted_composition_evidence_artifact":
             accepted_composition_artifact,
         "case_count": u64_at(corpus, "/case_count")?,
+        "proof_obligation_case_ids": proof_obligation_case_ids,
         "audit_summary": {
             "proof_obligation_count": u64_at(
                 corpus,
@@ -1069,6 +1095,18 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
     let corpus_digest = body_digest(corpus, "direct theorem obligation vector corpus")?;
     if str_at(&corpus_file, "/corpus_digest")? != corpus_digest {
         return Err("direct theorem obligation vector corpus digest mismatch".to_string());
+    }
+    let direct_obligation_case_ids = case_ids_at(corpus, "/cases")?;
+    let direct_report_obligation_ids = direct_report
+        .obligation_rows
+        .iter()
+        .map(|row| row.obligation_id)
+        .collect::<Vec<_>>();
+    if direct_obligation_case_ids != direct_report_obligation_ids {
+        return Err(
+            "direct theorem obligation vector corpus case ids drifted from theorem rows"
+                .to_string(),
+        );
     }
     if str_at(corpus, "/schema")? != "Descender.Path2.DirectTheoremObligationVectors.v1"
         || str_at(corpus, "/status")? != "digest_pinned_direct_theorem_obligation_audit_vectors"
@@ -1198,6 +1236,7 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
         "direct_accepted_composition_evidence_artifact":
             accepted_composition_artifact,
         "case_count": u64_at(corpus, "/case_count")?,
+        "direct_obligation_case_ids": direct_obligation_case_ids,
         "audit_summary": {
             "direct_obligation_count": u64_at(
                 corpus,
