@@ -123,6 +123,9 @@ digest-pins that accepted direct spend tuple as a standalone deterministic KAT
 artifact, including checked-core signature/challenge/proof-commitment digests,
 the exact admission namespace, consume-once before/after state digests, public
 `accept_spend_slot`, and replay rejection against the consume-once set.
+The direct accepted-spend tuple KAT validator now replays the canonical
+deterministic tuple wrapper before accepting serialized KAT evidence, so a
+digest-updated but noncanonical tuple field cannot satisfy the KAT boundary.
 `formal/kat/path2_direct_accepted_composition_evidence_v1.json` digest-pins
 that accepted composition evidence under deterministic KAT proof-byte mode:
 the generator and checker run inside a one-thread Rayon pool so the fixed

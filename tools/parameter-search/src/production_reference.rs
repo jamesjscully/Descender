@@ -66807,7 +66807,7 @@ fn path2_direct_accepted_spend_tuple_kat_context_v1(
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
-pub fn path2_direct_accepted_spend_tuple_kat_evidence_v1(
+fn path2_direct_accepted_spend_tuple_kat_evidence_unpooled_v1(
 ) -> Result<Path2DirectAcceptedSpendTupleKatEvidenceV1, String> {
     let context = path2_direct_accepted_spend_tuple_kat_context_v1()?;
     Ok(Path2DirectAcceptedSpendTupleKatEvidenceV1 {
@@ -66816,6 +66816,16 @@ pub fn path2_direct_accepted_spend_tuple_kat_evidence_v1(
         evidence: context.tuple_evidence,
         replay_rejected_by_consume_once: context.replay_rejected_by_consume_once,
     })
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn path2_direct_accepted_spend_tuple_kat_evidence_v1(
+) -> Result<Path2DirectAcceptedSpendTupleKatEvidenceV1, String> {
+    let pool = rayon::ThreadPoolBuilder::new()
+        .num_threads(1)
+        .build()
+        .map_err(|err| format!("failed to build deterministic single-thread KAT pool: {err}"))?;
+    pool.install(path2_direct_accepted_spend_tuple_kat_evidence_unpooled_v1)
 }
 
 fn path2_direct_obligation_still_open_for_hypothesis_v1(
@@ -67463,6 +67473,12 @@ pub fn validate_path2_direct_accepted_spend_tuple_kat_evidence_v1(
     {
         return Err(
             "Path 2 direct accepted spend tuple KAT evidence lost deterministic replay binding"
+                .to_string(),
+        );
+    }
+    if kat != &path2_direct_accepted_spend_tuple_kat_evidence_v1()? {
+        return Err(
+            "Path 2 direct accepted spend tuple KAT evidence fixture binding mismatch"
                 .to_string(),
         );
     }
@@ -102676,6 +102692,32 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             .unwrap_err()
             .reason(),
             "Path 2 slot authorization already consumed"
+        );
+    }
+
+    #[cfg(feature = "account-creation-stark-verifier")]
+    #[test]
+    fn path2_direct_accepted_spend_tuple_kat_evidence_replays_canonical_tuple() {
+        let kat = path2_direct_accepted_spend_tuple_kat_evidence_v1()
+            .expect("direct accepted spend tuple KAT evidence");
+        validate_path2_direct_accepted_spend_tuple_kat_evidence_v1(&kat).unwrap();
+
+        let mut malformed_replay = kat.clone();
+        malformed_replay.replay_rejected_by_consume_once = false;
+        assert_eq!(
+            validate_path2_direct_accepted_spend_tuple_kat_evidence_v1(&malformed_replay)
+                .unwrap_err(),
+            "Path 2 direct accepted spend tuple KAT evidence lost deterministic replay binding"
+        );
+
+        let mut malformed_message = kat.clone();
+        malformed_message.evidence.message_digest[0] ^= 1;
+        malformed_message.evidence.digest =
+            path2_direct_accepted_spend_tuple_evidence_v1_digest(&malformed_message.evidence);
+        assert_eq!(
+            validate_path2_direct_accepted_spend_tuple_kat_evidence_v1(&malformed_message)
+                .unwrap_err(),
+            "Path 2 direct accepted spend tuple KAT evidence fixture binding mismatch"
         );
     }
 

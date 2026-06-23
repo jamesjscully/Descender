@@ -351,6 +351,10 @@ to the accepted-path check that pins it and to the still-open direct theorem
 obligation that owns final closure. The deterministic generator and
 consistency checker use a one-thread Rayon pool for the account-STARK fixture
 and also check replay rejection against the consume-once set. The
+production-reference KAT validator replays the canonical deterministic tuple
+wrapper before accepting serialized KAT evidence, so digest-updated drift in a
+recorded tuple field is rejected even if the tuple evidence remains internally
+well formed. The
 `path2_direct_accepted_spend_tuple_evidence_consistency` gate additionally
 calls the production-reference spend tuple evidence validator, recomputes the
 generated direct-theorem and accepted-composition manifests, and checks that
