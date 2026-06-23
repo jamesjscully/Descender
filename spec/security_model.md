@@ -103,12 +103,18 @@ spend verifier together, binding the accepted creation proof-boundary evidence,
 accepted direct spend tuple, direct theorem boundary digest, QROM/action
 digest, lifecycle digest, proof-boundary digest, exact admission namespace, and
 consume-once before/after transition for one accepted slot.
-`formal/kat/path2_direct_accepted_composition_evidence_v1.json` pins the stable
-public composition surface and fail-closed closure flags, while explicitly
-leaving proof-bundle-dependent accepted-path digests as non-frozen current-run
-evidence until the account-STARK proof-byte corpus is frozen; it is
-regenerated/diffed under the account-STARK verifier feature by the full
-local/CI gate. The
+`formal/kat/path2_direct_accepted_composition_evidence_v1.json` digest-pins
+that accepted composition evidence under deterministic KAT proof-byte mode:
+the generator and checker run inside a one-thread Rayon pool so the fixed
+account-STARK proof seed also fixes Plonky3 proof-of-work witness selection.
+The artifact records the full accepted evidence digest chain, including the
+selected account-creation payload digest, proof-boundary evidence digest,
+direct spend tuple digest, leaf/evidence transcript digests, admission
+namespace, authorization digest, and consume-once before/after state digests.
+The consistency gate also checks the selected payload digest against the
+account-STARK payload KAT vector corpus. This is deterministic KAT evidence
+only; deployment producers still use fresh proof randomness, and the artifact
+does not close the composition theorem or account-creation proof family. The
 `path2_direct_single_slot_spend_tuple_evidence_pins_accepted_tuple` test is
 accepted-path evidence for the theorem shape, but it is not the composition
 theorem and does not verify the account-creation proof family. The

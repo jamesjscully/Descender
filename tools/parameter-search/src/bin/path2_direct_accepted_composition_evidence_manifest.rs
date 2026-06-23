@@ -43,26 +43,35 @@ mod enabled {
         }
 
         Ok(json!({
-            "schema": "Descender.Path2.DirectAcceptedCompositionStableSurfaceManifest.v1",
-            "corpus_id": "Descender.Path2.DirectAcceptedCompositionStableSurface.v1",
+            "schema": "Descender.Path2.DirectAcceptedCompositionDeterministicKatEvidenceManifest.v1",
+            "corpus_id": "Descender.Path2.DirectAcceptedCompositionDeterministicKatEvidence.v1",
             "corpus_version": 1,
             "profile_id": PROFILE,
-            "status": "stable_public_surface_pinned_accepted_direct_composition_evidence",
+            "status": "digest_pinned_deterministic_kat_accepted_direct_composition_evidence",
             "generator": {
                 "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --features account-creation-stark-verifier --bin path2_direct_accepted_composition_evidence_manifest",
                 "source": "tools/parameter-search/src/bin/path2_direct_accepted_composition_evidence_manifest.rs"
             },
-            "current_run_checks": {
+            "deterministic_proof_byte_mode": {
                 "accepted_composition_endpoint": "path2_direct_accepted_composition_evidence_v1",
-                "evidence_digest_recomputed_before_surface_projection": true,
-                "evidence_digest_policy": "current-run sanity check only; not frozen in this manifest while account-STARK proof-bundle bytes are not a stable checked-in KAT"
+                "proof_byte_policy": "deterministic KAT evidence only: the generator runs inside a one-thread Rayon pool so the fixed proof-randomness seed also fixes Plonky3 proof-of-work witness selection; deployment producers still use fresh proof randomness",
+                "rayon_threads": 1,
+                "evidence_digest_recomputed": true
             },
-            "stable_surface": {
-                "evidence_schema": evidence.schema,
+            "evidence": {
+                "schema": evidence.schema,
+                "digest": hex_encode(&evidence.digest),
+                "recomputed_digest": hex_encode(&recomputed_digest),
                 "theorem_target": evidence.theorem_target,
                 "theorem_conclusion": evidence.theorem_conclusion,
                 "direct_theorem_boundary_report_digest": hex_encode(
                     &evidence.direct_theorem_boundary_report_digest
+                ),
+                "direct_accepted_spend_tuple_evidence_digest": hex_encode(
+                    &evidence.direct_accepted_spend_tuple_evidence_digest
+                ),
+                "account_creation_accepted_proof_boundary_evidence_digest": hex_encode(
+                    &evidence.account_creation_accepted_proof_boundary_evidence_digest
                 ),
                 "direct_qrom_action_boundary_report_digest": hex_encode(
                     &evidence.direct_qrom_action_boundary_report_digest
@@ -82,6 +91,25 @@ mod enabled {
                     &evidence.account_state_root_before
                 ),
                 "slot_id": evidence.slot_id,
+                "prevalidated_slot_leaf_digest": hex_encode(
+                    &evidence.prevalidated_slot_leaf_digest
+                ),
+                "account_creation_evidence_transcript_digest": hex_encode(
+                    &evidence.account_creation_evidence_transcript_digest
+                ),
+                "selected_account_creation_payload_digest": hex_encode(
+                    &evidence.selected_account_creation_payload_digest
+                ),
+                "slot_authorization_digest": hex_encode(&evidence.slot_authorization_digest),
+                "direct_admission_namespace_record_digest": hex_encode(
+                    &evidence.direct_admission_namespace_record_digest
+                ),
+                "consume_once_state_before_digest": hex_encode(
+                    &evidence.consume_once_state_before_digest
+                ),
+                "consume_once_state_after_digest": hex_encode(
+                    &evidence.consume_once_state_after_digest
+                ),
                 "creation_evidence_matches_direct_tuple":
                     evidence.creation_evidence_matches_direct_tuple,
                 "proof_boundary_digest_matches_direct_theorem":
@@ -108,25 +136,18 @@ mod enabled {
                 "account_creation_proof_boundary_verified":
                     evidence.account_creation_proof_boundary_verified,
                 "deployment_ready": evidence.deployment_ready
-            },
-            "non_frozen_current_run_fields": [
-                "Path2DirectAcceptedCompositionEvidenceV1.digest",
-                "Path2DirectAcceptedCompositionEvidenceV1.direct_accepted_spend_tuple_evidence_digest",
-                "Path2DirectAcceptedCompositionEvidenceV1.account_creation_accepted_proof_boundary_evidence_digest",
-                "Path2DirectAcceptedCompositionEvidenceV1.prevalidated_slot_leaf_digest",
-                "Path2DirectAcceptedCompositionEvidenceV1.account_creation_evidence_transcript_digest",
-                "Path2DirectAcceptedCompositionEvidenceV1.selected_account_creation_payload_digest",
-                "Path2DirectAcceptedCompositionEvidenceV1.slot_authorization_digest",
-                "Path2DirectAcceptedCompositionEvidenceV1.direct_admission_namespace_record_digest",
-                "Path2DirectAcceptedCompositionEvidenceV1.consume_once_state_before_digest",
-                "Path2DirectAcceptedCompositionEvidenceV1.consume_once_state_after_digest"
-            ],
-            "non_frozen_policy": "These fields are accepted-path current-run evidence while the account-STARK proof bundle is not a frozen deterministic byte corpus; this manifest pins only the stable public composition surface and fail-closed closure flags."
+            }
         }))
     }
 
     pub fn run() -> Result<(), String> {
-        let body = manifest_body()?;
+        let pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(1)
+            .build()
+            .map_err(|err| {
+                format!("failed to build deterministic single-thread KAT pool: {err}")
+            })?;
+        let body = pool.install(manifest_body)?;
         let body_json = serde_json::to_string_pretty(&body)
             .map_err(|err| format!("failed to serialize manifest body: {err}"))?;
         let manifest = json!({
