@@ -205,6 +205,22 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ("path2_account_stark_fri_qrom_residual_consistency",),
     ),
     (
+        "account-creation sampler timing manifest check",
+        (
+            "path2_account_creation_sampler_timing_manifest",
+            "path2_account_creation_sampler_timing_v1.json",
+        ),
+        (
+            "path2_account_creation_sampler_timing_manifest",
+            "path2_account_creation_sampler_timing_v1.json",
+        ),
+    ),
+    (
+        "account-creation sampler timing consistency check",
+        ("path2_account_creation_sampler_timing_consistency",),
+        ("path2_account_creation_sampler_timing_consistency",),
+    ),
+    (
         "account-creation proof boundary manifest check",
         (
             "path2_account_creation_proof_boundary_manifest",
@@ -365,6 +381,18 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-PROOF-001",
         "DIR-PROOF-002",
         "DIR-QROM-001",
+    ),
+    "account-creation sampler timing manifest check": (
+        "DIR-SEC-001",
+        "DIR-CREATE-001",
+        "DIR-PROOF-001",
+        "DIR-AUTHCLASS-001",
+    ),
+    "account-creation sampler timing consistency check": (
+        "DIR-SEC-001",
+        "DIR-CREATE-001",
+        "DIR-PROOF-001",
+        "DIR-AUTHCLASS-001",
     ),
     "account-creation proof boundary manifest check": (
         "DIR-CREATE-001",

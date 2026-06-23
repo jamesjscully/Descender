@@ -1,6 +1,8 @@
 use descender_parameter_search::production_reference::{
     path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_proof_boundary_report_v1_digest,
+    path2_account_creation_sampler_timing_report_v1,
+    path2_account_creation_sampler_timing_report_v1_digest,
     path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
     PROFILE,
 };
@@ -20,6 +22,7 @@ fn hex_encode(bytes: &[u8]) -> String {
 fn manifest_body() -> Result<Value, String> {
     let direct_report = path2_direct_theorem_boundary_report_v1();
     let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
+    let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
     let recomputed_direct_digest = path2_direct_theorem_boundary_report_v1_digest(&direct_report);
     if recomputed_direct_digest != direct_report.digest {
         return Err("direct theorem boundary report digest mismatch".to_string());
@@ -29,9 +32,19 @@ fn manifest_body() -> Result<Value, String> {
     if recomputed_proof_boundary_digest != proof_boundary_report.digest {
         return Err("account-creation proof boundary report digest mismatch".to_string());
     }
+    let recomputed_sampler_timing_digest =
+        path2_account_creation_sampler_timing_report_v1_digest(&sampler_timing_report);
+    if recomputed_sampler_timing_digest != sampler_timing_report.digest {
+        return Err("account-creation sampler/timing report digest mismatch".to_string());
+    }
     if direct_report.account_creation_proof_boundary_report_digest != proof_boundary_report.digest {
         return Err(
             "direct theorem report is not bound to the current proof-boundary report".to_string(),
+        );
+    }
+    if proof_boundary_report.sampler_timing_report_digest != sampler_timing_report.digest {
+        return Err(
+            "proof boundary report is not bound to the current sampler/timing report".to_string(),
         );
     }
 
@@ -48,8 +61,10 @@ fn manifest_body() -> Result<Value, String> {
         "authority_snapshot": {
             "direct_report_domain": direct_report.domain,
             "account_creation_proof_boundary_report_domain": proof_boundary_report.domain,
+            "account_creation_sampler_timing_report_domain": sampler_timing_report.domain,
             "direct_theorem_blocker": direct_report.blocker,
             "account_creation_proof_boundary_blocker": proof_boundary_report.blocker,
+            "sampler_timing_blocker": sampler_timing_report.blocker,
             "selected_payload_type": proof_boundary_report.selected_payload_type,
             "verifier_boundary_endpoint": proof_boundary_report.verifier_boundary_endpoint,
             "production_boundary_endpoint": proof_boundary_report.production_boundary_endpoint,
@@ -65,6 +80,15 @@ fn manifest_body() -> Result<Value, String> {
             ),
             "account_creation_proof_boundary_report_recomputed_digest": hex_encode(
                 &recomputed_proof_boundary_digest
+            ),
+            "account_creation_sampler_timing_report_digest": hex_encode(
+                &sampler_timing_report.digest
+            ),
+            "account_creation_sampler_timing_report_recomputed_digest": hex_encode(
+                &recomputed_sampler_timing_digest
+            ),
+            "proof_boundary_report_sampler_timing_digest": hex_encode(
+                &proof_boundary_report.sampler_timing_report_digest
             )
         },
         "direct_theorem_boundary": {
@@ -102,6 +126,9 @@ fn manifest_body() -> Result<Value, String> {
         },
         "account_creation_proof_boundary": {
             "coverage": {
+                "sampler_timing_report_digest": hex_encode(
+                    &proof_boundary_report.sampler_timing_report_digest
+                ),
                 "accepting_requirement_count":
                     proof_boundary_report.accepting_requirements.len(),
                 "leaf_evidence_binding_field_count":

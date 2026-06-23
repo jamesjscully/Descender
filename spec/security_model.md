@@ -173,22 +173,31 @@ which pins the selected payload type, verifier endpoints, replay-payload digest
 function, acceptance requirements, exact leaf/evidence binding fields,
 certificate/evidence binding fields, binding/leaf context fields,
 payload-binding fields, deployed-anchor fields, no-export private-material
-field classes, and current proof-family closure blockers.
+field classes, the `Path2AccountCreationSamplerTimingReportV1` digest, and
+current proof-family closure blockers. The sampler/timing report pins the
+honest-create sampler support file, no-postchallenge timing game, construction
+order, prechallenge fixed-through step, spend-challenge derivation step, and
+executable hooks showing that the creation hidden-source statement excludes the
+spend message/signature while the checked-core challenge binds message, state
+root, slot authorization digest, and proof commitment.
 `formal/kat/path2_account_creation_proof_boundary_v1.json` is regenerated from
-that report, the selected `Path2AccountStarkResidualMatrixReportV1`, and the
-current `Path2AccountStarkPayloadKatBoundaryReportV1` by local and CI gates, so
-the proof-boundary digest chain, selected field groups, residual rows, and
-payload-KAT boundary blocker cannot drift silently. The report and manifest are
-the executable boundary map for this section; they are not a simulator,
-extractor, FRI/QROM, KAT, or external-review substitute.
+that report, the selected `Path2AccountStarkResidualMatrixReportV1`, the current
+`Path2AccountStarkPayloadKatBoundaryReportV1`, and the current sampler/timing
+report by local and CI gates, so the proof-boundary digest chain, selected field
+groups, sampler/timing hooks, residual rows, and payload-KAT boundary blocker
+cannot drift silently. The reports and manifests are the executable boundary map
+for this section; they are not an honest-sampler theorem, authorization-class
+binding theorem, no-postchallenge timing theorem, simulator, extractor,
+FRI/QROM, KAT, or external-review substitute.
 
 The boundary is implemented but not verified. The active Rust test suite now has
 an initial `Path2AccountStarkCreationPayloadV1` malformed-payload mutation
 matrix, including empty-bundle, digest-bound, rebound-anchor, corrupted-bundle,
 and production-gate checks. Open closure items are the final composition
-theorem, account STARK simulator theorem, extractor/soundness theorem,
-FRI/recursion residual-assumption ledger, complete frozen byte-format KATs,
-signer leakage evidence, external proof-family review, and the explicit
+theorem, honest-create sampler soundness, authorization-class binding,
+no-postchallenge timing, account STARK simulator theorem, extractor/soundness
+theorem, FRI/recursion residual-assumption ledger, complete frozen byte-format
+KATs, signer leakage evidence, external proof-family review, and the explicit
 production-gate decision.
 
 ## Selected Account-STARK Residual Matrix

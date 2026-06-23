@@ -1,6 +1,8 @@
 use descender_parameter_search::production_reference::{
     PROFILE, path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_proof_boundary_report_v1_digest,
+    path2_account_creation_sampler_timing_report_v1,
+    path2_account_creation_sampler_timing_report_v1_digest,
     path2_account_stark_fri_qrom_residual_report_v1,
     path2_account_stark_fri_qrom_residual_report_v1_digest,
     path2_account_stark_payload_kat_boundary_report_v1,
@@ -23,6 +25,7 @@ fn hex_encode(bytes: &[u8]) -> String {
 
 fn manifest_body() -> Result<Value, String> {
     let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
+    let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
     let residual_matrix_report = path2_account_stark_residual_matrix_report_v1();
     let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
     let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
@@ -31,6 +34,11 @@ fn manifest_body() -> Result<Value, String> {
         path2_account_creation_proof_boundary_report_v1_digest(&proof_boundary_report);
     if recomputed_proof_boundary_digest != proof_boundary_report.digest {
         return Err("account-creation proof boundary report digest mismatch".to_string());
+    }
+    let recomputed_sampler_timing_digest =
+        path2_account_creation_sampler_timing_report_v1_digest(&sampler_timing_report);
+    if recomputed_sampler_timing_digest != sampler_timing_report.digest {
+        return Err("account-creation sampler/timing report digest mismatch".to_string());
     }
     let recomputed_residual_matrix_digest =
         path2_account_stark_residual_matrix_report_v1_digest(&residual_matrix_report);
@@ -53,6 +61,11 @@ fn manifest_body() -> Result<Value, String> {
         return Err(
             "proof boundary report is not bound to the current account-STARK residual matrix"
                 .to_string(),
+        );
+    }
+    if proof_boundary_report.sampler_timing_report_digest != sampler_timing_report.digest {
+        return Err(
+            "proof boundary report is not bound to the current sampler/timing report".to_string(),
         );
     }
     if residual_matrix_report.fri_qrom_residual_report_digest != fri_qrom_residual_report.digest {
@@ -81,9 +94,14 @@ fn manifest_body() -> Result<Value, String> {
         },
         "authority_snapshot": {
             "proof_boundary_report_domain": proof_boundary_report.domain,
+            "sampler_timing_report_domain": sampler_timing_report.domain,
             "residual_matrix_report_domain": residual_matrix_report.domain,
             "fri_qrom_residual_report_domain": fri_qrom_residual_report.domain,
             "payload_kat_boundary_report_domain": payload_kat_boundary_report.domain,
+            "sampler_support_file": sampler_timing_report.sampler_support_file,
+            "timing_support_file": sampler_timing_report.timing_support_file,
+            "sampler_theorem_target": sampler_timing_report.sampler_theorem_target,
+            "timing_break_class": sampler_timing_report.timing_break_class,
             "selected_proof_family": residual_matrix_report.selected_proof_family,
             "selected_payload_type": proof_boundary_report.selected_payload_type,
             "verifier_boundary_endpoint": proof_boundary_report.verifier_boundary_endpoint,
@@ -98,6 +116,15 @@ fn manifest_body() -> Result<Value, String> {
             ),
             "account_creation_proof_boundary_report_recomputed_digest": hex_encode(
                 &recomputed_proof_boundary_digest
+            ),
+            "account_creation_sampler_timing_report_digest": hex_encode(
+                &sampler_timing_report.digest
+            ),
+            "account_creation_sampler_timing_report_recomputed_digest": hex_encode(
+                &recomputed_sampler_timing_digest
+            ),
+            "proof_boundary_report_sampler_timing_digest": hex_encode(
+                &proof_boundary_report.sampler_timing_report_digest
             ),
             "account_stark_residual_matrix_report_digest": hex_encode(
                 &residual_matrix_report.digest
@@ -120,6 +147,9 @@ fn manifest_body() -> Result<Value, String> {
         },
         "account_creation_proof_boundary": {
             "coverage": {
+                "sampler_timing_report_digest": hex_encode(
+                    &proof_boundary_report.sampler_timing_report_digest
+                ),
                 "accepting_requirement_count":
                     proof_boundary_report.accepting_requirements.len(),
                 "leaf_evidence_binding_field_count":
@@ -169,6 +199,50 @@ fn manifest_body() -> Result<Value, String> {
             "deployed_anchor_fields": proof_boundary_report.deployed_anchor_fields,
             "no_export_private_material_fields":
                 proof_boundary_report.no_export_private_material_fields
+        },
+        "sampler_timing_snapshot": {
+            "coverage": {
+                "sampler_boundary_pinned": sampler_timing_report.sampler_boundary_pinned,
+                "timing_boundary_pinned": sampler_timing_report.timing_boundary_pinned,
+                "creation_statement_excludes_spend_message":
+                    sampler_timing_report.creation_statement_excludes_spend_message,
+                "creation_statement_excludes_signature_bytes":
+                    sampler_timing_report.creation_statement_excludes_signature_bytes,
+                "checked_core_challenge_binds_message":
+                    sampler_timing_report.checked_core_challenge_binds_message,
+                "checked_core_challenge_binds_state_root":
+                    sampler_timing_report.checked_core_challenge_binds_state_root,
+                "checked_core_challenge_binds_slot_authorization_digest":
+                    sampler_timing_report.checked_core_challenge_binds_slot_authorization_digest,
+                "checked_core_challenge_binds_proof_commitment":
+                    sampler_timing_report.checked_core_challenge_binds_proof_commitment,
+                "state_namespace_membership_required":
+                    sampler_timing_report.state_namespace_membership_required,
+                "consume_once_required": sampler_timing_report.consume_once_required,
+                "direct_spend_composition_hook_present":
+                    sampler_timing_report.direct_spend_composition_hook_present,
+                "honest_sampler_theorem_instantiated":
+                    sampler_timing_report.honest_sampler_theorem_instantiated,
+                "authorization_class_binding_theorem_instantiated":
+                    sampler_timing_report.authorization_class_binding_theorem_instantiated,
+                "no_postchallenge_timing_theorem_instantiated":
+                    sampler_timing_report.no_postchallenge_timing_theorem_instantiated,
+                "deployment_ready": sampler_timing_report.deployment_ready,
+                "blocker": sampler_timing_report.blocker
+            },
+            "sampler_construction_steps": sampler_timing_report.sampler_construction_steps,
+            "timing_order_steps": sampler_timing_report.timing_order_steps,
+            "prechallenge_fixed_through_step":
+                sampler_timing_report.prechallenge_fixed_through_step,
+            "spend_challenge_derived_at_step":
+                sampler_timing_report.spend_challenge_derived_at_step,
+            "creation_statement_builder": sampler_timing_report.creation_statement_builder,
+            "checked_core_challenge_frame": sampler_timing_report.checked_core_challenge_frame,
+            "direct_state_namespace_validator":
+                sampler_timing_report.direct_state_namespace_validator,
+            "consume_once_validator": sampler_timing_report.consume_once_validator,
+            "direct_spend_composition_endpoint":
+                sampler_timing_report.direct_spend_composition_endpoint
         },
         "selected_account_stark_residual_matrix": {
             "coverage": {

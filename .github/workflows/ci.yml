@@ -86,6 +86,12 @@ jobs:
           diff -u ../../formal/kat/path2_account_stark_fri_qrom_residual_v1.json /tmp/path2_account_stark_fri_qrom_residual_v1.json
       - name: Account STARK FRI/QROM residual consistency check
         run: cargo run --quiet --bin path2_account_stark_fri_qrom_residual_consistency
+      - name: Account-creation sampler timing manifest check
+        run: |
+          cargo run --quiet --bin path2_account_creation_sampler_timing_manifest > /tmp/path2_account_creation_sampler_timing_v1.json
+          diff -u ../../formal/kat/path2_account_creation_sampler_timing_v1.json /tmp/path2_account_creation_sampler_timing_v1.json
+      - name: Account-creation sampler timing consistency check
+        run: cargo run --quiet --bin path2_account_creation_sampler_timing_consistency
       - name: Account-creation proof boundary manifest check
         run: |
           cargo run --quiet --bin path2_account_creation_proof_boundary_manifest > /tmp/path2_account_creation_proof_boundary_v1.json

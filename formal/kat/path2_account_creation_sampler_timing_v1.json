@@ -1,0 +1,96 @@
+{
+  "manifest": {
+    "authority_snapshot": {
+      "checked_core_challenge_frame": "path2_checked_core_authorization_challenge_frame",
+      "consume_once_validator": "verify_path2_prevalidated_slot_consume_once",
+      "creation_statement_builder": "path2_creation_hidden_source_statement_v1_from_reviewed",
+      "direct_spend_composition_endpoint": "verify_path2_direct_single_slot_spend_authorization",
+      "direct_state_namespace_validator": "validate_path2_direct_slot_authorization_state_namespace",
+      "proof_boundary_blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+      "proof_boundary_report_domain": "Descender.Path2.AccountCreationProofBoundaryReport.v1",
+      "sampler_support_file": "research/path2_honest_create_sampler_v1.md",
+      "sampler_theorem_target": "honest_create_sampler_sound_v1",
+      "sampler_timing_report_domain": "Descender.Path2.AccountCreationSamplerTimingReport.v1",
+      "timing_break_class": "postchallenge_slot_creation_or_rewrite_break",
+      "timing_support_file": "research/path2_no_postchallenge_creation_timing_game.md"
+    },
+    "corpus_id": "Descender.Path2.AccountCreationSamplerTiming.v1",
+    "corpus_version": 1,
+    "digests": {
+      "account_creation_proof_boundary_report_digest": "698b71f9c78e546a7a9bdcf1e7dafd948e591aba8b885a9701137ab3cf25ad60",
+      "account_creation_proof_boundary_report_recomputed_digest": "698b71f9c78e546a7a9bdcf1e7dafd948e591aba8b885a9701137ab3cf25ad60",
+      "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
+      "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
+      "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
+    },
+    "executable_hooks": {
+      "checked_core_challenge_binds_message": true,
+      "checked_core_challenge_binds_proof_commitment": true,
+      "checked_core_challenge_binds_slot_authorization_digest": true,
+      "checked_core_challenge_binds_state_root": true,
+      "checked_core_challenge_frame": "path2_checked_core_authorization_challenge_frame",
+      "consume_once_required": true,
+      "consume_once_validator": "verify_path2_prevalidated_slot_consume_once",
+      "creation_statement_builder": "path2_creation_hidden_source_statement_v1_from_reviewed",
+      "creation_statement_excludes_signature_bytes": true,
+      "creation_statement_excludes_spend_message": true,
+      "direct_spend_composition_endpoint": "verify_path2_direct_single_slot_spend_authorization",
+      "direct_spend_composition_hook_present": true,
+      "direct_state_namespace_validator": "validate_path2_direct_slot_authorization_state_namespace",
+      "state_namespace_membership_required": true
+    },
+    "frozen_status": "draft_sampler_timing_manifest",
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_sampler_timing_manifest",
+      "source": "tools/parameter-search/src/bin/path2_account_creation_sampler_timing_manifest.rs"
+    },
+    "open_obligations": {
+      "authorization_class_binding_theorem_instantiated": false,
+      "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+      "deployment_ready": false,
+      "honest_sampler_theorem_instantiated": false,
+      "no_postchallenge_timing_theorem_instantiated": false
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "sampler_boundary": {
+      "authorization_class_binding_theorem_instantiated": false,
+      "construction_steps": [
+        "seed",
+        "authorizationLocal",
+        "spend authorization class",
+        "lifecycle/account/state choices",
+        "public boundary q",
+        "canonical liftCore",
+        "gauge/randomizer",
+        "h"
+      ],
+      "honest_sampler_theorem_instantiated": false,
+      "sampler_boundary_pinned": true,
+      "support_file": "research/path2_honest_create_sampler_v1.md",
+      "theorem_target": "honest_create_sampler_sound_v1"
+    },
+    "schema": "Descender.Path2.AccountCreationSamplerTimingManifest.v1",
+    "timing_boundary": {
+      "no_postchallenge_timing_theorem_instantiated": false,
+      "prechallenge_fixed_through_step": 6,
+      "spend_challenge_derived_at_step": 9,
+      "support_file": "research/path2_no_postchallenge_creation_timing_game.md",
+      "timing_boundary_pinned": true,
+      "timing_break_class": "postchallenge_slot_creation_or_rewrite_break",
+      "timing_order_steps": [
+        "account/key/slot namespace is fixed",
+        "CreationHiddenSourceStatementV1 is computed",
+        "DirectReplayableRelationCertificateV1 is checked",
+        "PrevalidatedSlotLeafV1 is committed into account state",
+        "account_state_root_before / admission root is fixed",
+        "slot_authorization_digest is derived from the fixed leaf",
+        "spend message is chosen",
+        "checked-core proof commitment is fixed",
+        "Path 2 checked-core challenge is derived",
+        "checked-core responses/openings are encoded",
+        "exact slot authorization is consumed once"
+      ]
+    }
+  },
+  "manifest_digest": "1ba790847ca6b1fecbc223b167f488c56e1480a71ff50edab2dc58953df379b4"
+}

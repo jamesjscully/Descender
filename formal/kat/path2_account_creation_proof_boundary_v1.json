@@ -57,6 +57,7 @@
         "production_gate_fail_closed": true,
         "production_gate_open": false,
         "replay_payload_digest_bound": true,
+        "sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
         "selected_payload_pinned": true,
         "simulator_theorem_instantiated": false
       },
@@ -114,21 +115,29 @@
       "proof_boundary_report_domain": "Descender.Path2.AccountCreationProofBoundaryReport.v1",
       "replay_payload_digest_function": "path2_account_stark_creation_payload_v1_digest",
       "residual_matrix_report_domain": "Descender.Path2.AccountStarkResidualMatrixReport.v1",
+      "sampler_support_file": "research/path2_honest_create_sampler_v1.md",
+      "sampler_theorem_target": "honest_create_sampler_sound_v1",
+      "sampler_timing_report_domain": "Descender.Path2.AccountCreationSamplerTimingReport.v1",
       "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
       "selected_proof_family": "Plonky3/q12289 account-creation STARK",
+      "timing_break_class": "postchallenge_slot_creation_or_rewrite_break",
+      "timing_support_file": "research/path2_no_postchallenge_creation_timing_game.md",
       "verifier_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary"
     },
     "corpus_id": "Descender.Path2.AccountCreationProofBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "40311f071883d216b07e3c87c377b8aaa4267a554484ca9498cfed56b0b64df4",
-      "account_creation_proof_boundary_report_recomputed_digest": "40311f071883d216b07e3c87c377b8aaa4267a554484ca9498cfed56b0b64df4",
+      "account_creation_proof_boundary_report_digest": "698b71f9c78e546a7a9bdcf1e7dafd948e591aba8b885a9701137ab3cf25ad60",
+      "account_creation_proof_boundary_report_recomputed_digest": "698b71f9c78e546a7a9bdcf1e7dafd948e591aba8b885a9701137ab3cf25ad60",
+      "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
+      "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_stark_fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
       "account_stark_fri_qrom_residual_report_recomputed_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
       "account_stark_residual_matrix_report_digest": "50a9c5a487d98dbe91eb1b5accc7d64eb4902d7bfa2b570e81f7dcf97ec4bc70",
       "account_stark_residual_matrix_report_recomputed_digest": "50a9c5a487d98dbe91eb1b5accc7d64eb4902d7bfa2b570e81f7dcf97ec4bc70",
       "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
-      "payload_kat_boundary_report_recomputed_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d"
+      "payload_kat_boundary_report_recomputed_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
+      "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
     },
     "fri_qrom_residual_snapshot": {
       "checked_core_qrom_budget": {
@@ -194,6 +203,56 @@
       }
     },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "sampler_timing_snapshot": {
+      "checked_core_challenge_frame": "path2_checked_core_authorization_challenge_frame",
+      "consume_once_validator": "verify_path2_prevalidated_slot_consume_once",
+      "coverage": {
+        "authorization_class_binding_theorem_instantiated": false,
+        "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+        "checked_core_challenge_binds_message": true,
+        "checked_core_challenge_binds_proof_commitment": true,
+        "checked_core_challenge_binds_slot_authorization_digest": true,
+        "checked_core_challenge_binds_state_root": true,
+        "consume_once_required": true,
+        "creation_statement_excludes_signature_bytes": true,
+        "creation_statement_excludes_spend_message": true,
+        "deployment_ready": false,
+        "direct_spend_composition_hook_present": true,
+        "honest_sampler_theorem_instantiated": false,
+        "no_postchallenge_timing_theorem_instantiated": false,
+        "sampler_boundary_pinned": true,
+        "state_namespace_membership_required": true,
+        "timing_boundary_pinned": true
+      },
+      "creation_statement_builder": "path2_creation_hidden_source_statement_v1_from_reviewed",
+      "direct_spend_composition_endpoint": "verify_path2_direct_single_slot_spend_authorization",
+      "direct_state_namespace_validator": "validate_path2_direct_slot_authorization_state_namespace",
+      "prechallenge_fixed_through_step": 6,
+      "sampler_construction_steps": [
+        "seed",
+        "authorizationLocal",
+        "spend authorization class",
+        "lifecycle/account/state choices",
+        "public boundary q",
+        "canonical liftCore",
+        "gauge/randomizer",
+        "h"
+      ],
+      "spend_challenge_derived_at_step": 9,
+      "timing_order_steps": [
+        "account/key/slot namespace is fixed",
+        "CreationHiddenSourceStatementV1 is computed",
+        "DirectReplayableRelationCertificateV1 is checked",
+        "PrevalidatedSlotLeafV1 is committed into account state",
+        "account_state_root_before / admission root is fixed",
+        "slot_authorization_digest is derived from the fixed leaf",
+        "spend message is chosen",
+        "checked-core proof commitment is fixed",
+        "Path 2 checked-core challenge is derived",
+        "checked-core responses/openings are encoded",
+        "exact slot authorization is consumed once"
+      ]
+    },
     "schema": "Descender.Path2.AccountCreationProofBoundaryManifest.v1",
     "selected_account_stark_residual_matrix": {
       "coverage": {
@@ -265,5 +324,5 @@
       ]
     }
   },
-  "manifest_digest": "b04c7737819cade7c468bad413c593b9124b4ccc13f54d6882c5ceae15c9a6c4"
+  "manifest_digest": "5fa5ba1e5e9123dad6ecd3157f9ca6f320850dd4285ec376ec90c6a8c211f5ad"
 }

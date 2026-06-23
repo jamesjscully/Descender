@@ -57,6 +57,7 @@
         "production_gate_fail_closed": true,
         "production_gate_open": false,
         "replay_payload_digest_bound": true,
+        "sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
         "selected_payload_pinned": true,
         "simulator_theorem_instantiated": false
       },
@@ -108,20 +109,25 @@
     "authority_snapshot": {
       "account_creation_proof_boundary_blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
       "account_creation_proof_boundary_report_domain": "Descender.Path2.AccountCreationProofBoundaryReport.v1",
+      "account_creation_sampler_timing_report_domain": "Descender.Path2.AccountCreationSamplerTimingReport.v1",
       "direct_report_domain": "Descender.Path2.DirectTheoremBoundaryReport.v1",
       "direct_theorem_blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
       "replay_payload_digest_function": "path2_account_stark_creation_payload_v1_digest",
+      "sampler_timing_blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
       "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
       "verifier_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary"
     },
     "corpus_id": "Descender.Path2.DirectTheoremBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "40311f071883d216b07e3c87c377b8aaa4267a554484ca9498cfed56b0b64df4",
-      "account_creation_proof_boundary_report_recomputed_digest": "40311f071883d216b07e3c87c377b8aaa4267a554484ca9498cfed56b0b64df4",
-      "direct_theorem_boundary_report_digest": "5e9db1353d876d6f6a24f51c6e5a6c9d29972312a64a51e68ab317c6135c7a7a",
-      "direct_theorem_boundary_report_recomputed_digest": "5e9db1353d876d6f6a24f51c6e5a6c9d29972312a64a51e68ab317c6135c7a7a"
+      "account_creation_proof_boundary_report_digest": "698b71f9c78e546a7a9bdcf1e7dafd948e591aba8b885a9701137ab3cf25ad60",
+      "account_creation_proof_boundary_report_recomputed_digest": "698b71f9c78e546a7a9bdcf1e7dafd948e591aba8b885a9701137ab3cf25ad60",
+      "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
+      "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
+      "direct_theorem_boundary_report_digest": "d1daae13ed4167b2920cb450e2f299d158569e1207618d17ccb95a911a9c5a16",
+      "direct_theorem_boundary_report_recomputed_digest": "d1daae13ed4167b2920cb450e2f299d158569e1207618d17ccb95a911a9c5a16",
+      "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
     },
     "direct_theorem_boundary": {
       "acceptance_hypotheses": [
@@ -282,5 +288,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "edefdd68d81526079c5939cd27665d5dec118a0b0547569280c738157e0afd33"
+  "manifest_digest": "6574fee1c08dbaf128c9220ad9afe306ef3a6c03ff3ad58a93ca8a5be1a15fcd"
 }

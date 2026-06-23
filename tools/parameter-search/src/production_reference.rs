@@ -303,6 +303,8 @@ pub const PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.DirectTheoremBoundaryReport.v1";
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountCreationProofBoundaryReport.v1";
+pub const PATH2_ACCOUNT_CREATION_SAMPLER_TIMING_REPORT_DOMAIN: &str =
+    "Descender.Path2.AccountCreationSamplerTimingReport.v1";
 pub const PATH2_ACCOUNT_STARK_FRI_QROM_RESIDUAL_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountStarkFriQromResidualReport.v1";
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_REPORT_DOMAIN: &str =
@@ -9393,9 +9395,45 @@ pub struct Path2AccountStarkPayloadKatBoundaryReportV1 {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Path2AccountCreationSamplerTimingReportV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub domain: &'static str,
+    pub sampler_support_file: &'static str,
+    pub timing_support_file: &'static str,
+    pub sampler_theorem_target: &'static str,
+    pub timing_break_class: &'static str,
+    pub sampler_construction_steps: &'static [&'static str],
+    pub timing_order_steps: &'static [&'static str],
+    pub prechallenge_fixed_through_step: usize,
+    pub spend_challenge_derived_at_step: usize,
+    pub creation_statement_builder: &'static str,
+    pub checked_core_challenge_frame: &'static str,
+    pub direct_state_namespace_validator: &'static str,
+    pub consume_once_validator: &'static str,
+    pub direct_spend_composition_endpoint: &'static str,
+    pub creation_statement_excludes_spend_message: bool,
+    pub creation_statement_excludes_signature_bytes: bool,
+    pub checked_core_challenge_binds_message: bool,
+    pub checked_core_challenge_binds_state_root: bool,
+    pub checked_core_challenge_binds_slot_authorization_digest: bool,
+    pub checked_core_challenge_binds_proof_commitment: bool,
+    pub state_namespace_membership_required: bool,
+    pub consume_once_required: bool,
+    pub direct_spend_composition_hook_present: bool,
+    pub sampler_boundary_pinned: bool,
+    pub timing_boundary_pinned: bool,
+    pub honest_sampler_theorem_instantiated: bool,
+    pub authorization_class_binding_theorem_instantiated: bool,
+    pub no_postchallenge_timing_theorem_instantiated: bool,
+    pub deployment_ready: bool,
+    pub blocker: &'static str,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub domain: &'static str,
+    pub sampler_timing_report_digest: [u8; DIGEST_BYTES],
     pub account_stark_residual_matrix_report_digest: [u8; DIGEST_BYTES],
     pub selected_payload_type: &'static str,
     pub verifier_boundary_endpoint: &'static str,
@@ -10248,6 +10286,36 @@ pub const PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS: [&str; 11] = [
     "consume_once_state_before_and_after_spend",
 ];
 
+pub const PATH2_ACCOUNT_CREATION_SAMPLER_SUPPORT_FILE: &str =
+    "research/path2_honest_create_sampler_v1.md";
+pub const PATH2_ACCOUNT_CREATION_TIMING_SUPPORT_FILE: &str =
+    "research/path2_no_postchallenge_creation_timing_game.md";
+pub const PATH2_ACCOUNT_CREATION_SAMPLER_THEOREM_TARGET: &str =
+    "honest_create_sampler_sound_v1";
+pub const PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS: [&str; 8] = [
+    "seed",
+    "authorizationLocal",
+    "spend authorization class",
+    "lifecycle/account/state choices",
+    "public boundary q",
+    "canonical liftCore",
+    "gauge/randomizer",
+    "h",
+];
+pub const PATH2_ACCOUNT_CREATION_TIMING_ORDER_STEPS: [&str; 11] = [
+    "account/key/slot namespace is fixed",
+    "CreationHiddenSourceStatementV1 is computed",
+    "DirectReplayableRelationCertificateV1 is checked",
+    "PrevalidatedSlotLeafV1 is committed into account state",
+    "account_state_root_before / admission root is fixed",
+    "slot_authorization_digest is derived from the fixed leaf",
+    "spend message is chosen",
+    "checked-core proof commitment is fixed",
+    "Path 2 checked-core challenge is derived",
+    "checked-core responses/openings are encoded",
+    "exact slot authorization is consumed once",
+];
+
 pub const PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES: [&str; 9] = [
     "leaf_is_canonical_and_live",
     "evidence_envelope_matches_leaf_bindings",
@@ -10787,13 +10855,98 @@ pub fn validate_path2_account_stark_residual_matrix_report_v1(
     Ok(())
 }
 
-pub fn path2_account_creation_proof_boundary_report_v1()
--> Path2AccountCreationProofBoundaryReportV1 {
+pub fn path2_account_creation_sampler_timing_report_v1() -> Path2AccountCreationSamplerTimingReportV1 {
+    let mut report = Path2AccountCreationSamplerTimingReportV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        domain: PATH2_ACCOUNT_CREATION_SAMPLER_TIMING_REPORT_DOMAIN,
+        sampler_support_file: PATH2_ACCOUNT_CREATION_SAMPLER_SUPPORT_FILE,
+        timing_support_file: PATH2_ACCOUNT_CREATION_TIMING_SUPPORT_FILE,
+        sampler_theorem_target: PATH2_ACCOUNT_CREATION_SAMPLER_THEOREM_TARGET,
+        timing_break_class: "postchallenge_slot_creation_or_rewrite_break",
+        sampler_construction_steps: &PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS,
+        timing_order_steps: &PATH2_ACCOUNT_CREATION_TIMING_ORDER_STEPS,
+        prechallenge_fixed_through_step: 6,
+        spend_challenge_derived_at_step: 9,
+        creation_statement_builder: "path2_creation_hidden_source_statement_v1_from_reviewed",
+        checked_core_challenge_frame: "path2_checked_core_authorization_challenge_frame",
+        direct_state_namespace_validator:
+            "validate_path2_direct_slot_authorization_state_namespace",
+        consume_once_validator: "verify_path2_prevalidated_slot_consume_once",
+        direct_spend_composition_endpoint: "verify_path2_direct_single_slot_spend_authorization",
+        creation_statement_excludes_spend_message: true,
+        creation_statement_excludes_signature_bytes: true,
+        checked_core_challenge_binds_message: true,
+        checked_core_challenge_binds_state_root: true,
+        checked_core_challenge_binds_slot_authorization_digest: true,
+        checked_core_challenge_binds_proof_commitment: true,
+        state_namespace_membership_required: true,
+        consume_once_required: true,
+        direct_spend_composition_hook_present: true,
+        sampler_boundary_pinned: true,
+        timing_boundary_pinned: true,
+        honest_sampler_theorem_instantiated: false,
+        authorization_class_binding_theorem_instantiated: false,
+        no_postchallenge_timing_theorem_instantiated: false,
+        deployment_ready: false,
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+    };
+    report.digest = path2_account_creation_sampler_timing_report_v1_digest(&report);
+    report
+}
+
+pub fn path2_account_creation_sampler_timing_report_v1_digest(
+    report: &Path2AccountCreationSamplerTimingReportV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_account_creation_sampler_timing_report_v1_frame(report)).into()
+}
+
+pub fn validate_path2_account_creation_sampler_timing_report_v1(
+    report: &Path2AccountCreationSamplerTimingReportV1,
+) -> Result<(), String> {
+    let expected = path2_account_creation_sampler_timing_report_v1();
+    if expected != *report {
+        return Err("Path 2 account-creation sampler/timing report mismatch".to_string());
+    }
+    if path2_account_creation_sampler_timing_report_v1_digest(report) != report.digest {
+        return Err("Path 2 account-creation sampler/timing report digest mismatch".to_string());
+    }
+    if report.spend_challenge_derived_at_step <= report.prechallenge_fixed_through_step {
+        return Err(
+            "Path 2 account-creation timing boundary does not precede spend challenge".to_string(),
+        );
+    }
+    if !report.creation_statement_excludes_spend_message
+        || !report.creation_statement_excludes_signature_bytes
+        || !report.checked_core_challenge_binds_message
+        || !report.checked_core_challenge_binds_state_root
+        || !report.checked_core_challenge_binds_slot_authorization_digest
+        || !report.checked_core_challenge_binds_proof_commitment
+        || !report.state_namespace_membership_required
+        || !report.consume_once_required
+        || !report.direct_spend_composition_hook_present
+        || !report.sampler_boundary_pinned
+        || !report.timing_boundary_pinned
+        || report.honest_sampler_theorem_instantiated
+        || report.authorization_class_binding_theorem_instantiated
+        || report.no_postchallenge_timing_theorem_instantiated
+        || report.deployment_ready
+    {
+        return Err(
+            "Path 2 account-creation sampler/timing report unexpectedly changes closure status"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
+pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreationProofBoundaryReportV1 {
+    let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
     let account_stark_residual_matrix_report =
         path2_account_stark_residual_matrix_report_v1();
     let mut report = Path2AccountCreationProofBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN,
+        sampler_timing_report_digest: sampler_timing_report.digest,
         account_stark_residual_matrix_report_digest:
             account_stark_residual_matrix_report.digest,
         selected_payload_type: "Path2AccountStarkCreationPayloadV1",
@@ -10846,6 +10999,12 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
     }
     if path2_account_creation_proof_boundary_report_v1_digest(report) != report.digest {
         return Err("Path 2 account-creation proof boundary report digest mismatch".to_string());
+    }
+    let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
+    if report.sampler_timing_report_digest != sampler_timing_report.digest {
+        return Err(
+            "Path 2 account-creation proof boundary sampler/timing digest mismatch".to_string(),
+        );
     }
     Ok(())
 }
@@ -63789,6 +63948,11 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
     append_u64(&mut frame, b"repetitions", REPS as u64);
     append_frame(
         &mut frame,
+        b"sampler_timing_report_digest",
+        &report.sampler_timing_report_digest,
+    );
+    append_frame(
+        &mut frame,
         b"account_stark_residual_matrix_report_digest",
         &report.account_stark_residual_matrix_report_digest,
     );
@@ -63943,6 +64107,159 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         &mut frame,
         b"production_gate_open",
         u64::from(report.production_gate_open),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_ready",
+        u64::from(report.deployment_ready),
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    frame
+}
+
+fn path2_account_creation_sampler_timing_report_v1_frame(
+    report: &Path2AccountCreationSamplerTimingReportV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"domain", report.domain.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_u64(&mut frame, b"q", Q as u64);
+    append_u64(&mut frame, b"groups", GROUPS as u64);
+    append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
+    append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
+    append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(
+        &mut frame,
+        b"sampler_support_file",
+        report.sampler_support_file.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"timing_support_file",
+        report.timing_support_file.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"sampler_theorem_target",
+        report.sampler_theorem_target.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"timing_break_class",
+        report.timing_break_class.as_bytes(),
+    );
+    for (index, step) in report.sampler_construction_steps.iter().enumerate() {
+        append_u64(&mut frame, b"sampler_construction_step_index", index as u64);
+        append_frame(&mut frame, b"sampler_construction_step", step.as_bytes());
+    }
+    for (index, step) in report.timing_order_steps.iter().enumerate() {
+        append_u64(&mut frame, b"timing_order_step_index", index as u64);
+        append_frame(&mut frame, b"timing_order_step", step.as_bytes());
+    }
+    append_u64(
+        &mut frame,
+        b"prechallenge_fixed_through_step",
+        report.prechallenge_fixed_through_step as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"spend_challenge_derived_at_step",
+        report.spend_challenge_derived_at_step as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"creation_statement_builder",
+        report.creation_statement_builder.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"checked_core_challenge_frame",
+        report.checked_core_challenge_frame.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"direct_state_namespace_validator",
+        report.direct_state_namespace_validator.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"consume_once_validator",
+        report.consume_once_validator.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"direct_spend_composition_endpoint",
+        report.direct_spend_composition_endpoint.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"creation_statement_excludes_spend_message",
+        u64::from(report.creation_statement_excludes_spend_message),
+    );
+    append_u64(
+        &mut frame,
+        b"creation_statement_excludes_signature_bytes",
+        u64::from(report.creation_statement_excludes_signature_bytes),
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_challenge_binds_message",
+        u64::from(report.checked_core_challenge_binds_message),
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_challenge_binds_state_root",
+        u64::from(report.checked_core_challenge_binds_state_root),
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_challenge_binds_slot_authorization_digest",
+        u64::from(report.checked_core_challenge_binds_slot_authorization_digest),
+    );
+    append_u64(
+        &mut frame,
+        b"checked_core_challenge_binds_proof_commitment",
+        u64::from(report.checked_core_challenge_binds_proof_commitment),
+    );
+    append_u64(
+        &mut frame,
+        b"state_namespace_membership_required",
+        u64::from(report.state_namespace_membership_required),
+    );
+    append_u64(
+        &mut frame,
+        b"consume_once_required",
+        u64::from(report.consume_once_required),
+    );
+    append_u64(
+        &mut frame,
+        b"direct_spend_composition_hook_present",
+        u64::from(report.direct_spend_composition_hook_present),
+    );
+    append_u64(
+        &mut frame,
+        b"sampler_boundary_pinned",
+        u64::from(report.sampler_boundary_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"timing_boundary_pinned",
+        u64::from(report.timing_boundary_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"honest_sampler_theorem_instantiated",
+        u64::from(report.honest_sampler_theorem_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"authorization_class_binding_theorem_instantiated",
+        u64::from(report.authorization_class_binding_theorem_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"no_postchallenge_timing_theorem_instantiated",
+        u64::from(report.no_postchallenge_timing_theorem_instantiated),
     );
     append_u64(
         &mut frame,
@@ -104376,13 +104693,118 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     }
 
     #[test]
+    fn path2_account_creation_sampler_timing_report_pins_boundary_hooks() {
+        let report = path2_account_creation_sampler_timing_report_v1();
+        assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(
+            report.domain,
+            PATH2_ACCOUNT_CREATION_SAMPLER_TIMING_REPORT_DOMAIN
+        );
+        assert_eq!(
+            report.sampler_support_file,
+            PATH2_ACCOUNT_CREATION_SAMPLER_SUPPORT_FILE
+        );
+        assert_eq!(
+            report.timing_support_file,
+            PATH2_ACCOUNT_CREATION_TIMING_SUPPORT_FILE
+        );
+        assert_eq!(
+            report.sampler_theorem_target,
+            PATH2_ACCOUNT_CREATION_SAMPLER_THEOREM_TARGET
+        );
+        assert_eq!(
+            report.timing_break_class,
+            "postchallenge_slot_creation_or_rewrite_break"
+        );
+        assert_eq!(
+            report.sampler_construction_steps,
+            PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS.as_ref()
+        );
+        assert_eq!(
+            report.timing_order_steps,
+            PATH2_ACCOUNT_CREATION_TIMING_ORDER_STEPS.as_ref()
+        );
+        assert_eq!(report.sampler_construction_steps.len(), 8);
+        assert_eq!(report.timing_order_steps.len(), 11);
+        assert_eq!(report.prechallenge_fixed_through_step, 6);
+        assert_eq!(report.spend_challenge_derived_at_step, 9);
+        assert!(report.spend_challenge_derived_at_step > report.prechallenge_fixed_through_step);
+        assert_eq!(report.sampler_construction_steps[1], "authorizationLocal");
+        assert_eq!(
+            report.sampler_construction_steps[2],
+            "spend authorization class"
+        );
+        assert_eq!(
+            report.timing_order_steps[5],
+            "slot_authorization_digest is derived from the fixed leaf"
+        );
+        assert_eq!(
+            report.creation_statement_builder,
+            "path2_creation_hidden_source_statement_v1_from_reviewed"
+        );
+        assert_eq!(
+            report.checked_core_challenge_frame,
+            "path2_checked_core_authorization_challenge_frame"
+        );
+        assert_eq!(
+            report.direct_state_namespace_validator,
+            "validate_path2_direct_slot_authorization_state_namespace"
+        );
+        assert_eq!(
+            report.consume_once_validator,
+            "verify_path2_prevalidated_slot_consume_once"
+        );
+        assert_eq!(
+            report.direct_spend_composition_endpoint,
+            "verify_path2_direct_single_slot_spend_authorization"
+        );
+        assert!(report.creation_statement_excludes_spend_message);
+        assert!(report.creation_statement_excludes_signature_bytes);
+        assert!(report.checked_core_challenge_binds_message);
+        assert!(report.checked_core_challenge_binds_state_root);
+        assert!(report.checked_core_challenge_binds_slot_authorization_digest);
+        assert!(report.checked_core_challenge_binds_proof_commitment);
+        assert!(report.state_namespace_membership_required);
+        assert!(report.consume_once_required);
+        assert!(report.direct_spend_composition_hook_present);
+        assert!(report.sampler_boundary_pinned);
+        assert!(report.timing_boundary_pinned);
+        assert!(!report.honest_sampler_theorem_instantiated);
+        assert!(!report.authorization_class_binding_theorem_instantiated);
+        assert!(!report.no_postchallenge_timing_theorem_instantiated);
+        assert!(!report.deployment_ready);
+        assert_eq!(
+            report.blocker,
+            PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+        );
+        assert_eq!(
+            path2_account_creation_sampler_timing_report_v1_digest(&report),
+            report.digest
+        );
+        validate_path2_account_creation_sampler_timing_report_v1(&report).unwrap();
+
+        let mut malformed = report.clone();
+        malformed.no_postchallenge_timing_theorem_instantiated = true;
+        malformed.digest = path2_account_creation_sampler_timing_report_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_account_creation_sampler_timing_report_v1(&malformed).unwrap_err(),
+            "Path 2 account-creation sampler/timing report mismatch"
+        );
+    }
+
+    #[test]
     fn path2_account_creation_proof_boundary_report_pins_selected_boundary() {
+        let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
         let residual_matrix_report = path2_account_stark_residual_matrix_report_v1();
         let report = path2_account_creation_proof_boundary_report_v1();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
         assert_eq!(
             report.domain,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN
+        );
+        assert_eq!(
+            report.sampler_timing_report_digest,
+            sampler_timing_report.digest
         );
         assert_eq!(
             report.account_stark_residual_matrix_report_digest,

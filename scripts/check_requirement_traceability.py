@@ -65,8 +65,16 @@ DIRECT_THEOREM_PREFLIGHT_MARKERS = [
 ACCOUNT_CREATION_PROOF_BOUNDARY_PREFLIGHT_MARKERS = [
     "PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY",
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN",
+    "PATH2_ACCOUNT_CREATION_SAMPLER_TIMING_REPORT_DOMAIN",
     "Path2AccountCreationProofBoundaryReportV1",
+    "Path2AccountCreationSamplerTimingReportV1",
+    "sampler_timing_report_digest",
     "account_stark_residual_matrix_report_digest",
+    "PATH2_ACCOUNT_CREATION_SAMPLER_SUPPORT_FILE",
+    "PATH2_ACCOUNT_CREATION_TIMING_SUPPORT_FILE",
+    "PATH2_ACCOUNT_CREATION_SAMPLER_THEOREM_TARGET",
+    "PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS",
+    "PATH2_ACCOUNT_CREATION_TIMING_ORDER_STEPS",
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS",
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_EVIDENCE_BINDING_FIELDS",
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CERTIFICATE_EVIDENCE_BINDING_FIELDS",
@@ -74,6 +82,8 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_PREFLIGHT_MARKERS = [
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_BINDING_FIELDS",
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS",
     "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS",
+    "path2_account_creation_sampler_timing_report_v1",
+    "validate_path2_account_creation_sampler_timing_report_v1",
     "path2_account_creation_proof_boundary_report_v1",
     "validate_path2_account_creation_proof_boundary_report_v1",
     "production_deployment_account_creation_proof_boundary_blockers",
@@ -235,19 +245,82 @@ ACCOUNT_STARK_FRI_QROM_RESIDUAL_MARKERS = {
         "path2_account_stark_fri_qrom_residual_consistency",
     ],
 }
+ACCOUNT_CREATION_SAMPLER_TIMING_MARKERS = {
+    "tools/parameter-search/src/bin/path2_account_creation_sampler_timing_manifest.rs": [
+        "Descender.Path2.AccountCreationSamplerTimingManifest.v1",
+        "Descender.Path2.AccountCreationSamplerTiming.v1",
+        "path2_account_creation_sampler_timing_report_v1",
+        "validate_path2_account_creation_sampler_timing_report_v1",
+        "path2_account_creation_proof_boundary_report_v1",
+        "account_creation_sampler_timing_report_digest",
+        "proof_boundary_report_sampler_timing_digest",
+        "sampler_boundary",
+        "timing_boundary",
+        "executable_hooks",
+        "open_obligations",
+    ],
+    "tools/parameter-search/src/bin/path2_account_creation_sampler_timing_consistency.rs": [
+        "formal/kat/path2_account_creation_sampler_timing_v1.json",
+        "research/path2_honest_create_sampler_v1.md",
+        "research/path2_no_postchallenge_creation_timing_game.md",
+        "path2_account_creation_sampler_timing_report_v1",
+        "validate_path2_account_creation_sampler_timing_report_v1",
+        "path2_creation_hidden_source_statement_v1_frame",
+        "path2_checked_core_authorization_challenge_frame",
+        "validate_path2_direct_slot_authorization_state_namespace",
+        "verify_path2_prevalidated_slot_consume_once",
+        "verify_path2_direct_single_slot_spend_authorization",
+        "Path 2 account-creation sampler/timing consistency check passed.",
+    ],
+    "formal/kat/path2_account_creation_sampler_timing_v1.json": [
+        "Descender.Path2.AccountCreationSamplerTimingManifest.v1",
+        "Descender.Path2.AccountCreationSamplerTiming.v1",
+        "draft_sampler_timing_manifest",
+        "account_creation_sampler_timing_report_digest",
+        "proof_boundary_report_sampler_timing_digest",
+        "honest_create_sampler_sound_v1",
+        "postchallenge_slot_creation_or_rewrite_break",
+        '"creation_statement_excludes_spend_message": true',
+        '"checked_core_challenge_binds_state_root": true',
+        '"state_namespace_membership_required": true',
+        '"consume_once_required": true',
+        '"honest_sampler_theorem_instantiated": false',
+        '"authorization_class_binding_theorem_instantiated": false',
+        '"no_postchallenge_timing_theorem_instantiated": false',
+        '"deployment_ready": false',
+    ],
+    "scripts/check_build.sh": [
+        "account-creation sampler timing manifest check",
+        "path2_account_creation_sampler_timing_manifest",
+        "path2_account_creation_sampler_timing_v1.json",
+        "account-creation sampler timing consistency check",
+        "path2_account_creation_sampler_timing_consistency",
+    ],
+    ".github/workflows/ci.yml": [
+        "Account-creation sampler timing manifest check",
+        "path2_account_creation_sampler_timing_manifest",
+        "path2_account_creation_sampler_timing_v1.json",
+        "Account-creation sampler timing consistency check",
+        "path2_account_creation_sampler_timing_consistency",
+    ],
+}
 ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS = {
     "tools/parameter-search/src/bin/path2_account_creation_proof_boundary_manifest.rs": [
         "Descender.Path2.AccountCreationProofBoundaryManifest.v1",
         "Descender.Path2.AccountCreationProofBoundary.v1",
         "path2_account_creation_proof_boundary_report_v1",
+        "path2_account_creation_sampler_timing_report_v1",
         "path2_account_stark_fri_qrom_residual_report_v1",
         "path2_account_stark_residual_matrix_report_v1",
         "path2_account_stark_payload_kat_boundary_report_v1",
         "account_creation_proof_boundary_report_digest",
+        "account_creation_sampler_timing_report_digest",
+        "proof_boundary_report_sampler_timing_digest",
         "account_stark_fri_qrom_residual_report_digest",
         "account_stark_residual_matrix_report_digest",
         "payload_kat_boundary_report_digest",
         "leaf_evidence_binding_fields",
+        "sampler_timing_snapshot",
         "selected_account_stark_residual_matrix",
         "fri_qrom_residual_snapshot",
     ],
@@ -256,10 +329,14 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS = {
         "Descender.Path2.AccountCreationProofBoundary.v1",
         "draft_proof_boundary_manifest",
         "account_creation_proof_boundary_report_digest",
+        "account_creation_sampler_timing_report_digest",
+        "proof_boundary_report_sampler_timing_digest",
         "account_stark_fri_qrom_residual_report_digest",
         "account_stark_residual_matrix_report_digest",
         "payload_kat_boundary_report_digest",
         "leaf_evidence_binding_fields",
+        "sampler_timing_snapshot",
+        "postchallenge_slot_creation_or_rewrite_break",
         "selected_account_stark_residual_matrix",
         "fri_qrom_residual_snapshot",
         "account_stark_fri_aok_extractor_break",
@@ -285,8 +362,11 @@ DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS = {
         "Descender.Path2.DirectTheoremBoundary.v1",
         "path2_direct_theorem_boundary_report_v1",
         "path2_account_creation_proof_boundary_report_v1",
+        "path2_account_creation_sampler_timing_report_v1",
         "direct_theorem_boundary_report_digest",
         "account_creation_proof_boundary_report_digest",
+        "account_creation_sampler_timing_report_digest",
+        "proof_boundary_report_sampler_timing_digest",
         "obligation_rows",
         "every_hypothesis_has_obligation",
         "leaf_evidence_binding_fields",
@@ -297,6 +377,8 @@ DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS = {
         "draft_theorem_boundary_manifest",
         "direct_theorem_boundary_report_digest",
         "account_creation_proof_boundary_report_digest",
+        "account_creation_sampler_timing_report_digest",
+        "proof_boundary_report_sampler_timing_digest",
         "obligation_rows",
         "consensus_rejection_or_state_mutation_break",
         "leaf_evidence_binding_fields",
@@ -319,6 +401,7 @@ BOUNDARY_MANIFEST_CONSISTENCY_MARKERS = {
         "formal/kat/path2_account_creation_proof_boundary_v1.json",
         "formal/kat/path2_direct_theorem_boundary_v1.json",
         "account_creation_proof_boundary_report_digest",
+        "sampler_timing_report_digest",
         "account_creation_proof_boundary_verified",
         "selected_account_stark_residual_matrix",
         "payload_kat_boundary_snapshot",
@@ -2231,6 +2314,21 @@ def check_account_stark_fri_qrom_residual_markers(errors: list[str]) -> None:
                 )
 
 
+def check_account_creation_sampler_timing_markers(errors: list[str]) -> None:
+    for rel, markers in ACCOUNT_CREATION_SAMPLER_TIMING_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"{rel}: missing account-creation sampler/timing artifact")
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing account-creation sampler/timing marker {marker!r}"
+                )
+
+
 def check_account_creation_proof_boundary_manifest_markers(errors: list[str]) -> None:
     for rel, markers in ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS.items():
         path = ROOT / rel
@@ -2464,6 +2562,7 @@ def main() -> int:
     check_account_stark_payload_byte_model_markers(errors)
     check_account_stark_payload_kat_manifest_markers(errors)
     check_account_stark_fri_qrom_residual_markers(errors)
+    check_account_creation_sampler_timing_markers(errors)
     check_account_creation_proof_boundary_manifest_markers(errors)
     check_direct_theorem_boundary_manifest_markers(errors)
     check_boundary_manifest_consistency_markers(errors)
