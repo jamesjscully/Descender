@@ -590,6 +590,15 @@ fn main() -> Result<(), String> {
             ));
         }
     }
+    if at(
+        proof_boundary,
+        "/proof_obligation_vector_corpus_evidence/audit_summary/proof_obligation_named_break_classes",
+    )? != at(proof_boundary, "/proof_obligation_named_break_classes")?
+    {
+        return Err(
+            "production preflight proof-obligation summary lost named-break taxonomy".to_string(),
+        );
+    }
 
     if direct_report.deployment_ready
         || direct_report.composition_theorem_instantiated
@@ -742,6 +751,15 @@ fn main() -> Result<(), String> {
                 "production preflight manifest lost accepted direct evidence count {pointer}"
             ));
         }
+    }
+    if at(
+        direct_boundary,
+        "/direct_obligation_vector_corpus_evidence/audit_summary/direct_named_break_classes",
+    )? != at(direct_boundary, "/named_break_classes")?
+    {
+        return Err(
+            "production preflight direct-obligation summary lost named-break taxonomy".to_string(),
+        );
     }
 
     if !direct_report.composition_theorem_instantiated

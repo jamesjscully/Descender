@@ -70,9 +70,10 @@ direct/proof/residual closure-dependency graph, including the proof-boundary
 and direct-theorem closure-dependency row tables plus their derived evidence
 rows, imported accepted-evidence summary counts, obligation-corpus open review,
 QROM, lifecycle, proof-boundary readiness, and proof-obligation vector-coverage
-flags for no-export, FRI/QROM-domain, and payload-KAT support, and the
-production preflight blocker/verdict/ready-assertion/certificate chain against
-the standalone KATs and deployment blocker set. The direct theorem report
+flags for no-export, FRI/QROM-domain, and payload-KAT support, exact
+proof/direct named-break taxonomies, and the production preflight
+blocker/verdict/ready-assertion/certificate chain against the standalone KATs
+and deployment blocker set. The direct theorem report
 validator also explicitly rejects weakened obligation coverage, missing pinned
 evidence hooks, missing direct closure-dependency rows, unexpectedly closed
 theorem/deployment flags, or blocker drift at the production-reference

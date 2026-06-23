@@ -692,6 +692,26 @@ fn check_consistency() -> Result<(), String> {
         ],
         true,
     )?;
+    expect_eq(
+        get(
+            proof_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "proof_obligation_vector_corpus_evidence",
+                "audit_summary",
+                "proof_obligation_named_break_classes",
+            ],
+        )?,
+        "proof.manifest.account_creation_proof_boundary.proof_obligation_vector_corpus_evidence.audit_summary.proof_obligation_named_break_classes",
+        get(
+            proof_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "proof_obligation_named_break_classes",
+            ],
+        )?,
+        "proof.manifest.account_creation_proof_boundary.proof_obligation_named_break_classes",
+    )?;
     expect_bool(
         proof_manifest,
         &[
@@ -1054,6 +1074,23 @@ fn check_consistency() -> Result<(), String> {
             "all_open_cases_block_deployment",
         ],
         true,
+    )?;
+    expect_eq(
+        get(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_obligation_vector_corpus_evidence",
+                "audit_summary",
+                "direct_named_break_classes",
+            ],
+        )?,
+        "direct.manifest.direct_theorem_boundary.direct_obligation_vector_corpus_evidence.audit_summary.direct_named_break_classes",
+        get(
+            direct_manifest,
+            &["direct_theorem_boundary", "named_break_classes"],
+        )?,
+        "direct.manifest.direct_theorem_boundary.named_break_classes",
     )?;
     expect_u64(
         direct_manifest,

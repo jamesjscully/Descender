@@ -912,6 +912,8 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             corpus,
             "/audit_summary/proof_obligation_audit_vector_case_count",
         )? != proof_report.proof_obligation_audit_vector_case_count as u64
+        || at(corpus, "/audit_summary/proof_obligation_named_break_classes")?
+            != &json!(proof_report.proof_obligation_named_break_classes)
         || !bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
@@ -969,6 +971,10 @@ pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Re
             "proof_obligation_audit_vector_case_count": u64_at(
                 corpus,
                 "/audit_summary/proof_obligation_audit_vector_case_count"
+            )?,
+            "proof_obligation_named_break_classes": at(
+                corpus,
+                "/audit_summary/proof_obligation_named_break_classes"
             )?,
             "all_cases_open": bool_at(corpus, "/audit_summary/all_cases_open")?,
             "all_cases_have_named_break": bool_at(
@@ -1129,6 +1135,8 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             corpus,
             "/audit_summary/direct_obligation_audit_vector_case_count",
         )? != direct_report.obligation_audit_vector_case_count as u64
+        || at(corpus, "/audit_summary/direct_named_break_classes")?
+            != &json!(direct_report.named_break_classes)
         || !bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
@@ -1198,6 +1206,10 @@ pub fn path2_direct_theorem_obligation_vector_corpus_evidence_v1() -> Result<Val
             "direct_obligation_audit_vector_case_count": u64_at(
                 corpus,
                 "/audit_summary/direct_obligation_audit_vector_case_count"
+            )?,
+            "direct_named_break_classes": at(
+                corpus,
+                "/audit_summary/direct_named_break_classes"
             )?,
             "all_cases_open": bool_at(corpus, "/audit_summary/all_cases_open")?,
             "all_cases_have_named_break": bool_at(

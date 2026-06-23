@@ -444,9 +444,10 @@ preflight consistency gates check those summaries so a weakened accepted path
 cannot be imported silently. The compact proof-obligation and direct-obligation
 corpus evidence summaries also preserve their raw open review, QROM, lifecycle,
 and proof-boundary readiness flags. The proof-obligation summary also preserves
-the no-export, FRI/QROM-domain, and payload-KAT vector-coverage flags. Those
-flags are checked before the summaries are accepted into the boundary manifests
-or production preflight.
+the no-export, FRI/QROM-domain, and payload-KAT vector-coverage flags. Both
+summaries preserve the exact named-break taxonomy they import from the raw
+corpora. Those fields are checked before the summaries are accepted into the
+boundary manifests or production preflight.
 
 The `path2_preflight_boundary_consistency` gate checks the same active boundary
 reports against the production deployment preflight. It fails if the preflight

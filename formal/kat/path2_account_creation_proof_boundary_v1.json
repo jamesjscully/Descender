@@ -529,6 +529,16 @@
           "production_gate_open": false,
           "proof_obligation_audit_vector_case_count": 8,
           "proof_obligation_count": 8,
+          "proof_obligation_named_break_classes": [
+            "creation_time_hidden_source_soundness_break",
+            "checked_core_message_binding_break",
+            "postchallenge_slot_creation_or_rewrite_break",
+            "account_stark_simulator_or_no_export_break",
+            "account_stark_fri_aok_extractor_break",
+            "fri_soundness_margin_break",
+            "account_stark_payload_binding_break",
+            "account_stark_production_gate_break"
+          ],
           "simulator_theorem_instantiated": false
         },
         "case_count": 8,
@@ -1274,5 +1284,5 @@
       ]
     }
   },
-  "manifest_digest": "60bdad3c08d2e2a994e7edb1adaeed8b68b649671e3c58b7deeb53c08da4e721"
+  "manifest_digest": "7941a2ceb1a4fa81730de1a46337bdfc3161606e085d27bccfe6be20eef329e7"
 }
