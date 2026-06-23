@@ -203,6 +203,9 @@ active fast-gate precursors for direct spend public result-class naming and
 rejection state-no-mutation. The
 `path2_direct_single_slot_spend_malformed_signature_kats_are_panic_free` test
 adds selected panic-free malformed Fq12 signature byte cases for the direct
-spend verifier. These are not yet the full public rejection vector corpus. The
+spend verifier. The
+`path2_direct_single_slot_spend_public_object_rejection_kats_are_panic_free`
+test adds selected panic-free direct leaf/evidence/certificate public-object
+rejection cases. These are not yet the full public rejection vector corpus. The
 full direct-mode vector corpus, full byte corpus,
 lifecycle/rejection coverage, and `DIR-KAT-001` closure remain open.

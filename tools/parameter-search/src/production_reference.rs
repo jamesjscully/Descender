@@ -11002,7 +11002,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "rejection_is_deterministic_public_and_state_preserving",
         supporting_surface: "consensus-safe rejection and state-preserving failure mapping",
         current_evidence:
-            "Path2PublicResultClassV1 pins the consensus result-class names; account-STARK payload boundary maps current internal errors to public rejection classes; direct spend classifier, no-mutation test, and malformed signature panic-free KATs cover selected pre-consume failure classes; full consensus rejection KATs remain open",
+            "Path2PublicResultClassV1 pins the consensus result-class names; account-STARK payload boundary maps current internal errors to public rejection classes; direct spend classifier, no-mutation test, malformed signature panic-free KATs, and public leaf/evidence/certificate rejection KATs cover selected pre-consume failure classes; full consensus rejection KATs remain open",
         required_closure:
             "public rejection enum, panic-free malformed-input KATs, and state-no-mutation tests cover every direct-mode rejection",
         named_break: "consensus_rejection_or_state_mutation_break",
@@ -98183,6 +98183,230 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             assert!(
                 consumed.is_empty(),
                 "malformed signature case {label} mutated consume-once state"
+            );
+        }
+    }
+
+    #[test]
+    fn path2_direct_single_slot_spend_public_object_rejection_kats_are_panic_free() {
+        let (fixture, leaf, evidence, certificate) = path2_creation_relation_replay_fixture();
+        let authorization = path2_slot_authorization_digest(&leaf).unwrap();
+        let mut admitted_state_authorizations = BTreeSet::new();
+        admitted_state_authorizations.insert((
+            leaf.account_id,
+            leaf.account_state_root_before,
+            authorization,
+        ));
+        let responses = ProductionCompactResponses {
+            active_free: [[0_i16; LOCAL_FREE]; REPS],
+        };
+        let signature = sign_path2_reviewed_fq12_authorization_checked_core(
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &leaf.account_id,
+            &leaf.account_state_root_before,
+            &authorization,
+            leaf.slot_id as u32,
+            &fixture.pad_seed,
+            &responses,
+        )
+        .unwrap();
+
+        let rebind_payload_certificate = |
+            leaf: &mut Path2PrevalidatedSlotLeafV1,
+            evidence: &mut Path2AccountCreationEvidenceV1,
+            certificate: &Path2DirectReplayableRelationCertificateV1,
+        | {
+            evidence.evidence_payload_digest =
+                path2_direct_replayable_relation_certificate_digest(certificate);
+            leaf.prevalidation_transcript_digest =
+                path2_account_creation_evidence_transcript_digest(evidence).unwrap();
+            refresh_path2_leaf_digest_bindings(leaf, evidence);
+        };
+
+        let mut invalid_leaf_version = leaf;
+        invalid_leaf_version.frame_version += 1;
+
+        let mut nonlive_leaf = leaf;
+        nonlive_leaf.live_status_marker ^= 1;
+
+        let mut bad_evidence_domain = evidence;
+        bad_evidence_domain.evidence_domain = "DESCENDER_BAD_EVIDENCE_DOMAIN_V1";
+
+        let mut bad_evidence_version = evidence;
+        bad_evidence_version.evidence_version += 1;
+
+        let mut bad_evidence_kind = evidence;
+        bad_evidence_kind.evidence_kind += 1;
+
+        let mut bad_slot_leaf_digest = evidence;
+        bad_slot_leaf_digest.slot_leaf_digest[0] ^= 1;
+
+        let mut bad_slot_authorization_digest = evidence;
+        bad_slot_authorization_digest.slot_authorization_digest[0] ^= 1;
+
+        let mut bad_evidence_payload_digest = evidence;
+        bad_evidence_payload_digest.evidence_payload_digest[0] ^= 1;
+        let mut bad_evidence_payload_leaf = leaf;
+        bad_evidence_payload_leaf.prevalidation_transcript_digest =
+            path2_account_creation_evidence_transcript_digest(&bad_evidence_payload_digest)
+                .unwrap();
+        refresh_path2_leaf_digest_bindings(
+            &bad_evidence_payload_leaf,
+            &mut bad_evidence_payload_digest,
+        );
+
+        let mut rebound_certificate_account = certificate;
+        rebound_certificate_account.account_id[0] ^= 1;
+        let mut rebound_account_leaf = leaf;
+        let mut rebound_account_evidence = evidence;
+        rebind_payload_certificate(
+            &mut rebound_account_leaf,
+            &mut rebound_account_evidence,
+            &rebound_certificate_account,
+        );
+
+        let mut rebound_certificate_slot = certificate;
+        rebound_certificate_slot.slot_id += 1;
+        let mut rebound_slot_leaf = leaf;
+        let mut rebound_slot_evidence = evidence;
+        rebind_payload_certificate(
+            &mut rebound_slot_leaf,
+            &mut rebound_slot_evidence,
+            &rebound_certificate_slot,
+        );
+
+        let mut rebound_certificate_transcript = certificate;
+        rebound_certificate_transcript.relation_transcript_digest[0] ^= 1;
+        let mut rebound_transcript_leaf = leaf;
+        let mut rebound_transcript_evidence = evidence;
+        rebind_payload_certificate(
+            &mut rebound_transcript_leaf,
+            &mut rebound_transcript_evidence,
+            &rebound_certificate_transcript,
+        );
+
+        let cases = vec![
+            (
+                "invalid_leaf_frame_version",
+                invalid_leaf_version,
+                evidence,
+                certificate,
+                "Path 2 slot leaf frame version mismatch",
+                Path2PublicResultClassV1::RejectMalformedPublicInput,
+            ),
+            (
+                "nonlive_leaf",
+                nonlive_leaf,
+                evidence,
+                certificate,
+                "Path 2 slot leaf is not live",
+                Path2PublicResultClassV1::RejectLifecycleState,
+            ),
+            (
+                "bad_evidence_domain",
+                leaf,
+                bad_evidence_domain,
+                certificate,
+                "Path 2 evidence domain mismatch",
+                Path2PublicResultClassV1::RejectMalformedPublicInput,
+            ),
+            (
+                "bad_evidence_version",
+                leaf,
+                bad_evidence_version,
+                certificate,
+                "Path 2 evidence version mismatch",
+                Path2PublicResultClassV1::RejectMalformedPublicInput,
+            ),
+            (
+                "bad_evidence_kind",
+                leaf,
+                bad_evidence_kind,
+                certificate,
+                "Path 2 unsupported evidence kind",
+                Path2PublicResultClassV1::RejectMalformedPublicInput,
+            ),
+            (
+                "bad_slot_leaf_digest",
+                leaf,
+                bad_slot_leaf_digest,
+                certificate,
+                "Path 2 slot leaf digest mismatch",
+                Path2PublicResultClassV1::RejectBindingMismatch,
+            ),
+            (
+                "bad_slot_authorization_digest",
+                leaf,
+                bad_slot_authorization_digest,
+                certificate,
+                "Path 2 slot authorization digest mismatch",
+                Path2PublicResultClassV1::RejectBindingMismatch,
+            ),
+            (
+                "bad_evidence_payload_digest",
+                bad_evidence_payload_leaf,
+                bad_evidence_payload_digest,
+                certificate,
+                "Path 2 evidence payload digest mismatch",
+                Path2PublicResultClassV1::RejectBindingMismatch,
+            ),
+            (
+                "rebound_certificate_account",
+                rebound_account_leaf,
+                rebound_account_evidence,
+                rebound_certificate_account,
+                "Path 2 certificate account id mismatch",
+                Path2PublicResultClassV1::RejectBindingMismatch,
+            ),
+            (
+                "rebound_certificate_slot",
+                rebound_slot_leaf,
+                rebound_slot_evidence,
+                rebound_certificate_slot,
+                "Path 2 certificate slot id mismatch",
+                Path2PublicResultClassV1::RejectBindingMismatch,
+            ),
+            (
+                "rebound_certificate_transcript",
+                rebound_transcript_leaf,
+                rebound_transcript_evidence,
+                rebound_certificate_transcript,
+                "Path 2 certificate relation transcript mismatch",
+                Path2PublicResultClassV1::RejectBindingMismatch,
+            ),
+        ];
+
+        for (label, test_leaf, test_evidence, test_certificate, expected_reason, expected_class) in
+            cases
+        {
+            let mut consumed = BTreeSet::new();
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                verify_path2_direct_single_slot_spend_authorization(
+                    &test_leaf,
+                    &test_evidence,
+                    &test_certificate,
+                    &fixture.public_key,
+                    fixture.message,
+                    &fixture.account,
+                    &signature,
+                    &admitted_state_authorizations,
+                    &mut consumed,
+                )
+            }));
+            let err = result
+                .unwrap_or_else(|_| panic!("direct public object case {label} panicked"))
+                .unwrap_err();
+            assert_eq!(err.reason(), expected_reason, "{label}");
+            assert_eq!(
+                path2_direct_account_binding_public_result_class(&err),
+                expected_class,
+                "{label}"
+            );
+            assert!(
+                consumed.is_empty(),
+                "direct public object rejection {label} mutated consume-once state"
             );
         }
     }

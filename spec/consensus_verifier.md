@@ -160,9 +160,13 @@ before the accepted spend transition and map to the expected public classes.
 `path2_direct_single_slot_spend_malformed_signature_kats_are_panic_free` adds
 selected malformed Fq12 signature byte strings and checks they reject without
 panic, map to `reject_malformed_public_input`, and leave consume-once state
-unchanged. This is rejection-state evidence, not a complete malformed-input
-corpus for every public object, every-reject-class no-mutation suite, or
-client-mapping package.
+unchanged.
+`path2_direct_single_slot_spend_public_object_rejection_kats_are_panic_free`
+adds selected direct leaf/evidence/certificate public-object failures and checks
+they reject without panic, map to their public result classes, and leave
+consume-once state unchanged. This is rejection-state evidence, not a complete
+malformed-input corpus for every public object, every-reject-class no-mutation
+suite, or client-mapping package.
 
 Before the consensus verifier surface can be marked `verified`, the repo needs:
 

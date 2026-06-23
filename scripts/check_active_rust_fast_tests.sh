@@ -25,5 +25,8 @@ RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.
 echo "== active fast test: direct malformed signature rejection KATs =="
 RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_direct_single_slot_spend_malformed_signature_kats_are_panic_free
 
+echo "== active fast test: direct public object rejection KATs =="
+RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_direct_single_slot_spend_public_object_rejection_kats_are_panic_free
+
 echo "== active fast test: recursion config scaffold smoke =="
 RUSTFLAGS="-D warnings" cargo test --manifest-path tools/descender-recursion/Cargo.toml phase1_scaffold_wired_to_leaf_config
