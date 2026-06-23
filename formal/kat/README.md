@@ -352,7 +352,9 @@ manifest digest, recomputes the evidence in the same deterministic KAT mode,
 cross-checks the embedded accepted proof-boundary artifact against
 `path2_account_creation_accepted_proof_boundary_evidence_v1.json`, checks the
 embedded accepted spend tuple artifact against
-`path2_direct_accepted_spend_tuple_evidence_v1.json`, and ties the selected
+`path2_direct_accepted_spend_tuple_evidence_v1.json`, checks that every
+generated proof/direct boundary manifest copy of the accepted-composition
+artifact still matches the standalone compact artifact, and ties the selected
 payload digest back to the
 `path2_account_stark_payload_kat_vectors_v1.json` honest payload. This is
 accepted-path KAT evidence only; it does not instantiate the direct composition

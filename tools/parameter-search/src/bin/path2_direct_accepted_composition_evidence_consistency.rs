@@ -8,9 +8,12 @@ fn main() -> Result<(), String> {
 
 #[cfg(feature = "account-creation-stark-verifier")]
 mod enabled {
-    use descender_parameter_search::production_reference::{
-        path2_direct_accepted_composition_evidence_v1,
-        path2_direct_accepted_composition_evidence_v1_digest,
+    use descender_parameter_search::{
+        manifest_vector_evidence::path2_direct_accepted_composition_evidence_artifact_v1,
+        production_reference::{
+            path2_direct_accepted_composition_evidence_v1,
+            path2_direct_accepted_composition_evidence_v1_digest,
+        },
     };
     use serde_json::Value;
     use sha2::{Digest, Sha256};
@@ -77,6 +80,31 @@ mod enabled {
             ));
         }
         Ok(())
+    }
+
+    fn require_str(manifest: &Value, pointer: &str, expected: &str) -> Result<(), String> {
+        let observed = str_at(manifest, pointer)?;
+        if observed != expected {
+            return Err(format!(
+                "direct accepted composition manifest {pointer} mismatch: {observed:?} != {expected:?}"
+            ));
+        }
+        Ok(())
+    }
+
+    fn body_digest(value: &Value, label: &str) -> Result<String, String> {
+        let json = serde_json::to_string_pretty(value)
+            .map_err(|err| format!("serialize {label}: {err}"))?;
+        Ok(hex_encode(&Sha256::digest(json.as_bytes())))
+    }
+
+    fn require_manifest_body<'a>(file: &'a Value, label: &str) -> Result<&'a Value, String> {
+        let body = at(file, "/manifest")?;
+        let recomputed = body_digest(body, label)?;
+        if str_at(file, "/manifest_digest")? != recomputed {
+            return Err(format!("{label} manifest digest mismatch"));
+        }
+        Ok(body)
     }
 
     pub fn run() -> Result<(), String> {
@@ -517,6 +545,86 @@ mod enabled {
                     .to_string(),
             );
         }
+
+        let accepted_composition_artifact =
+            path2_direct_accepted_composition_evidence_artifact_v1()?;
+        let direct_manifest_file = load_json("formal/kat/path2_direct_theorem_boundary_v1.json")?;
+        let direct_manifest =
+            require_manifest_body(&direct_manifest_file, "direct theorem boundary manifest")?;
+        let proof_manifest_file =
+            load_json("formal/kat/path2_account_creation_proof_boundary_v1.json")?;
+        let proof_manifest = require_manifest_body(
+            &proof_manifest_file,
+            "account-creation proof-boundary manifest",
+        )?;
+        let direct_boundary = at(direct_manifest, "/direct_theorem_boundary")?;
+        let proof_boundary = at(proof_manifest, "/account_creation_proof_boundary")?;
+        if proof_boundary != at(direct_manifest, "/account_creation_proof_boundary")? {
+            return Err(
+                "direct accepted composition evidence lost shared proof-boundary manifest binding"
+                    .to_string(),
+            );
+        }
+        for (observed, label) in [
+            (
+                at(
+                    direct_boundary,
+                    "/direct_accepted_composition_evidence_artifact",
+                )?,
+                "direct theorem boundary composition artifact",
+            ),
+            (
+                at(
+                    direct_boundary,
+                    "/direct_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact",
+                )?,
+                "direct theorem obligation corpus composition artifact",
+            ),
+            (
+                at(
+                    direct_manifest,
+                    "/account_creation_proof_boundary/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact",
+                )?,
+                "direct manifest proof-obligation corpus composition artifact",
+            ),
+            (
+                at(
+                    proof_boundary,
+                    "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact",
+                )?,
+                "proof manifest proof-obligation corpus composition artifact",
+            ),
+        ] {
+            if observed != &accepted_composition_artifact {
+                return Err(format!(
+                    "{label} drifted from standalone direct accepted composition artifact"
+                ));
+            }
+        }
+        require_str(
+            direct_manifest,
+            "/digests/direct_theorem_boundary_report_digest",
+            str_at(
+                &accepted_composition_artifact,
+                "/direct_theorem_boundary_report_digest",
+            )?,
+        )?;
+        require_str(
+            direct_manifest,
+            "/digests/account_creation_proof_boundary_report_digest",
+            str_at(
+                &accepted_composition_artifact,
+                "/account_creation_proof_boundary_report_digest",
+            )?,
+        )?;
+        require_str(
+            proof_manifest,
+            "/digests/account_creation_proof_boundary_report_digest",
+            str_at(
+                &accepted_composition_artifact,
+                "/account_creation_proof_boundary_report_digest",
+            )?,
+        )?;
         let payload_vectors =
             load_json("formal/kat/path2_account_stark_payload_kat_vectors_v1.json")?;
         require_hex(

@@ -37,9 +37,11 @@ accepted-composition KAT and the direct-obligation corpus both carrying nested
 accepted proof-boundary and accepted direct-spend tuple artifacts, while
 keeping theorem and deployment flags false. The accepted proof-boundary,
 accepted spend tuple, accepted composition, and production preflight consistency
-gates now also recompute those generated manifests and check accepted-artifact
-equality, open-row blockers, and fail-closed flags against the standalone KATs
-and deployment blocker set.
+gates now also recompute those generated manifests, check accepted-artifact
+equality, bind every generated proof/direct boundary copy of the accepted
+composition artifact to the standalone compact artifact, and check open-row
+blockers and fail-closed flags against the standalone KATs and deployment
+blocker set.
 
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|
