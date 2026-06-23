@@ -7,11 +7,9 @@ use descender_parameter_search::production_reference::{
     path2_account_stark_fri_qrom_residual_report_v1_digest,
     path2_account_stark_residual_matrix_report_v1,
     path2_account_stark_residual_matrix_report_v1_digest,
-    path2_direct_lifecycle_boundary_report_v1,
-    path2_direct_lifecycle_boundary_report_v1_digest,
+    path2_direct_lifecycle_boundary_report_v1, path2_direct_lifecycle_boundary_report_v1_digest,
     path2_direct_qrom_action_boundary_report_v1,
-    path2_direct_qrom_action_boundary_report_v1_digest,
-    path2_direct_theorem_boundary_report_v1,
+    path2_direct_qrom_action_boundary_report_v1_digest, path2_direct_theorem_boundary_report_v1,
     path2_direct_theorem_boundary_report_v1_digest,
     production_deployment_account_creation_proof_boundary_blockers,
     production_deployment_account_stark_residual_blockers,
@@ -26,6 +24,82 @@ use descender_parameter_search::production_reference::{
     validate_path2_direct_theorem_boundary_report_v1,
     validate_production_deployment_preflight_report,
 };
+use serde_json::Value;
+use sha2::{Digest, Sha256};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
+
+fn hex_encode(bytes: &[u8]) -> String {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut out = String::with_capacity(bytes.len() * 2);
+    for byte in bytes {
+        out.push(HEX[(byte >> 4) as usize] as char);
+        out.push(HEX[(byte & 0x0f) as usize] as char);
+    }
+    out
+}
+
+fn repo_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .ancestors()
+        .nth(2)
+        .expect("parameter-search crate lives under tools/")
+        .to_path_buf()
+}
+
+fn load_json(root: &Path, relative_path: &str) -> Result<Value, String> {
+    let path = root.join(relative_path);
+    let text =
+        fs::read_to_string(&path).map_err(|err| format!("read {}: {err}", path.display()))?;
+    serde_json::from_str(&text).map_err(|err| format!("parse {}: {err}", path.display()))
+}
+
+fn at<'a>(value: &'a Value, pointer: &str) -> Result<&'a Value, String> {
+    value
+        .pointer(pointer)
+        .ok_or_else(|| format!("missing JSON pointer {pointer}"))
+}
+
+fn str_at<'a>(value: &'a Value, pointer: &str) -> Result<&'a str, String> {
+    at(value, pointer)?
+        .as_str()
+        .ok_or_else(|| format!("JSON pointer {pointer} is not a string"))
+}
+
+fn bool_at(value: &Value, pointer: &str) -> Result<bool, String> {
+    at(value, pointer)?
+        .as_bool()
+        .ok_or_else(|| format!("JSON pointer {pointer} is not a bool"))
+}
+
+fn u64_at(value: &Value, pointer: &str) -> Result<u64, String> {
+    at(value, pointer)?
+        .as_u64()
+        .ok_or_else(|| format!("JSON pointer {pointer} is not an unsigned integer"))
+}
+
+fn array_at<'a>(value: &'a Value, pointer: &str) -> Result<&'a Vec<Value>, String> {
+    at(value, pointer)?
+        .as_array()
+        .ok_or_else(|| format!("JSON pointer {pointer} is not an array"))
+}
+
+fn body_digest(value: &Value, label: &str) -> Result<String, String> {
+    let json =
+        serde_json::to_string_pretty(value).map_err(|err| format!("serialize {label}: {err}"))?;
+    Ok(hex_encode(&Sha256::digest(json.as_bytes())))
+}
+
+fn require_manifest_digest<'a>(file: &'a Value, label: &str) -> Result<&'a Value, String> {
+    let manifest = at(file, "/manifest")?;
+    let recomputed = body_digest(manifest, label)?;
+    if str_at(file, "/manifest_digest")? != recomputed {
+        return Err(format!("{label} manifest digest mismatch"));
+    }
+    Ok(manifest)
+}
 
 fn contains(haystack: &[&str], needle: &str) -> bool {
     haystack.iter().any(|value| *value == needle)
@@ -140,6 +214,153 @@ fn main() -> Result<(), String> {
         return Err("production preflight unexpectedly reports deployment_ready=true".to_string());
     }
 
+    let root = repo_root();
+    let proof_manifest_file = load_json(
+        &root,
+        "formal/kat/path2_account_creation_proof_boundary_v1.json",
+    )?;
+    let direct_manifest_file =
+        load_json(&root, "formal/kat/path2_direct_theorem_boundary_v1.json")?;
+    let proof_manifest =
+        require_manifest_digest(&proof_manifest_file, "account-creation proof boundary")?;
+    let direct_manifest =
+        require_manifest_digest(&direct_manifest_file, "direct theorem boundary")?;
+    let proof_boundary = at(proof_manifest, "/account_creation_proof_boundary")?;
+    let direct_boundary = at(direct_manifest, "/direct_theorem_boundary")?;
+    if proof_boundary != at(direct_manifest, "/account_creation_proof_boundary")? {
+        return Err(
+            "production preflight manifest bind lost shared proof-boundary object".to_string(),
+        );
+    }
+
+    let direct_report_digest = hex_encode(&direct_report.digest);
+    let qrom_action_report_digest = hex_encode(&qrom_action_report.digest);
+    let lifecycle_report_digest = hex_encode(&lifecycle_report.digest);
+    let proof_report_digest = hex_encode(&proof_report.digest);
+    let fri_qrom_report_digest = hex_encode(&fri_qrom_report.digest);
+    let fri_aok_report_digest = hex_encode(&fri_aok_report.digest);
+    let residual_report_digest = hex_encode(&residual_report.digest);
+    if str_at(
+        direct_manifest,
+        "/digests/direct_theorem_boundary_report_digest",
+    )? != direct_report_digest
+        || str_at(
+            direct_manifest,
+            "/digests/direct_qrom_action_boundary_report_digest",
+        )? != qrom_action_report_digest
+        || str_at(
+            direct_manifest,
+            "/digests/direct_lifecycle_boundary_report_digest",
+        )? != lifecycle_report_digest
+        || str_at(
+            direct_manifest,
+            "/digests/account_creation_proof_boundary_report_digest",
+        )? != proof_report_digest
+        || str_at(
+            proof_manifest,
+            "/digests/account_creation_proof_boundary_report_digest",
+        )? != proof_report_digest
+        || str_at(
+            proof_manifest,
+            "/digests/account_stark_fri_qrom_residual_report_digest",
+        )? != fri_qrom_report_digest
+        || str_at(
+            proof_manifest,
+            "/digests/account_stark_fri_aok_boundary_report_digest",
+        )? != fri_aok_report_digest
+        || str_at(
+            proof_manifest,
+            "/digests/account_stark_residual_matrix_report_digest",
+        )? != residual_report_digest
+    {
+        return Err("production preflight manifest digests drifted from reports".to_string());
+    }
+
+    if at(direct_boundary, "/direct_accepted_composition_evidence_artifact")?
+        != at(
+            direct_boundary,
+            "/direct_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact",
+        )?
+        || at(direct_boundary, "/direct_accepted_composition_evidence_artifact")?
+            != at(
+                proof_boundary,
+                "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact",
+            )?
+        || at(proof_boundary, "/accepted_proof_boundary_evidence_artifact")?
+            != at(
+                proof_boundary,
+                "/proof_obligation_vector_corpus_evidence/accepted_proof_boundary_evidence_artifact",
+            )?
+        || at(proof_boundary, "/accepted_proof_boundary_evidence_artifact")?
+            != at(
+                direct_boundary,
+                "/direct_accepted_composition_evidence_artifact/account_creation_accepted_proof_boundary_evidence_artifact",
+            )?
+    {
+        return Err(
+            "production preflight manifest bind lost accepted evidence artifact equality"
+                .to_string(),
+        );
+    }
+
+    for pointer in [
+        "/direct_accepted_composition_evidence_artifact/audit_summary/direct_theorem_obligations_still_open",
+        "/direct_accepted_composition_evidence_artifact/audit_summary/proof_family_obligations_still_open",
+        "/direct_accepted_composition_evidence_artifact/audit_summary/verifier_boundary_accepts_creation",
+        "/direct_accepted_composition_evidence_artifact/audit_summary/direct_spend_tuple_accepts",
+    ] {
+        if !bool_at(direct_boundary, pointer)? {
+            return Err(format!(
+                "production preflight manifest bind lost expected true flag {pointer}"
+            ));
+        }
+    }
+    for pointer in [
+        "/direct_accepted_composition_evidence_artifact/audit_summary/composition_theorem_instantiated",
+        "/direct_accepted_composition_evidence_artifact/audit_summary/account_creation_proof_boundary_verified",
+        "/direct_accepted_composition_evidence_artifact/audit_summary/deployment_ready",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/composition_theorem_instantiated",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/account_creation_proof_boundary_verified",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/lifecycle_transition_profile_verified",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/qrom_and_action_bounds_linked_to_theorem",
+        "/direct_obligation_vector_corpus_evidence/audit_summary/deployment_ready",
+    ] {
+        if bool_at(direct_boundary, pointer)? {
+            return Err(format!(
+                "production preflight manifest bind unexpectedly closed {pointer}"
+            ));
+        }
+    }
+    for pointer in [
+        "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/direct_theorem_obligations_still_open",
+        "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/proof_family_obligations_still_open",
+        "/accepted_proof_boundary_evidence_artifact/audit_summary/production_gate_fail_closed",
+        "/accepted_proof_boundary_evidence_artifact/audit_summary/proof_family_obligations_still_open",
+    ] {
+        if !bool_at(proof_boundary, pointer)? {
+            return Err(format!(
+                "production preflight proof-boundary manifest lost expected true flag {pointer}"
+            ));
+        }
+    }
+    for pointer in [
+        "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/composition_theorem_instantiated",
+        "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/account_creation_proof_boundary_verified",
+        "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/deployment_ready",
+        "/proof_obligation_vector_corpus_evidence/audit_summary/simulator_theorem_instantiated",
+        "/proof_obligation_vector_corpus_evidence/audit_summary/fri_aok_extractor_theorem_instantiated",
+        "/proof_obligation_vector_corpus_evidence/audit_summary/fri_qrom_residual_priced",
+        "/proof_obligation_vector_corpus_evidence/audit_summary/frozen_kat_corpus_complete",
+        "/proof_obligation_vector_corpus_evidence/audit_summary/production_gate_open",
+        "/proof_obligation_vector_corpus_evidence/audit_summary/deployment_ready",
+    ] {
+        if bool_at(proof_boundary, pointer)? {
+            return Err(format!(
+                "production preflight proof-boundary manifest unexpectedly closed {pointer}"
+            ));
+        }
+    }
+
     if direct_report.deployment_ready
         || direct_report.composition_theorem_instantiated
         || direct_report.account_creation_proof_boundary_verified
@@ -153,7 +374,9 @@ fn main() -> Result<(), String> {
         || qrom_action_report.external_qrom_review_complete
         || qrom_action_report.qrom_and_action_bounds_linked_to_theorem
     {
-        return Err("direct QROM/action boundary unexpectedly reports closed obligations".to_string());
+        return Err(
+            "direct QROM/action boundary unexpectedly reports closed obligations".to_string(),
+        );
     }
     if !qrom_action_report.checked_core_qrom_budget_pinned
         || !qrom_action_report.action_map_budget_pinned
@@ -169,7 +392,9 @@ fn main() -> Result<(), String> {
         || lifecycle_report.target_chain_finality_profile_instantiated
         || lifecycle_report.lifecycle_transition_profile_verified
     {
-        return Err("direct lifecycle boundary unexpectedly reports closed obligations".to_string());
+        return Err(
+            "direct lifecycle boundary unexpectedly reports closed obligations".to_string(),
+        );
     }
     if !lifecycle_report.local_successor_state_model_pinned
         || !lifecycle_report.consume_once_insert_after_public_checks
@@ -240,6 +465,21 @@ fn main() -> Result<(), String> {
     let direct_blockers = production_deployment_direct_theorem_blockers();
     let proof_blockers = production_deployment_account_creation_proof_boundary_blockers();
     let residual_blockers = production_deployment_account_stark_residual_blockers();
+    if u64_at(direct_boundary, "/coverage/obligation_count")?
+        != direct_report.obligation_count as u64
+        || u64_at(
+            direct_boundary,
+            "/direct_obligation_vector_corpus_evidence/case_count",
+        )? != direct_report.obligation_audit_vector_case_count as u64
+        || u64_at(proof_boundary, "/coverage/proof_obligation_count")?
+            != proof_report.proof_obligation_count as u64
+        || u64_at(
+            proof_boundary,
+            "/proof_obligation_vector_corpus_evidence/case_count",
+        )? != proof_report.proof_obligation_audit_vector_case_count as u64
+    {
+        return Err("production preflight manifest bind lost obligation case counts".to_string());
+    }
     let direct_start = find_subsequence(blockers, direct_blockers)
         .ok_or_else(|| "production preflight is missing direct theorem blockers".to_string())?;
     let proof_start = require_subsequence_after(
@@ -280,6 +520,38 @@ fn main() -> Result<(), String> {
                 "production preflight is missing blocker for residual item {}",
                 row.residual_item
             ));
+        }
+    }
+    let manifest_direct_rows = array_at(direct_boundary, "/obligation_rows")?;
+    if manifest_direct_rows.len() != direct_report.obligation_rows.len() {
+        return Err("direct manifest obligation row count drifted from preflight".to_string());
+    }
+    for row in manifest_direct_rows {
+        if bool_at(row, "/open")? {
+            let blocker = str_at(row, "/blocker")?;
+            if !contains(blockers, blocker) {
+                return Err(format!(
+                    "production preflight is missing manifest blocker for direct obligation {}",
+                    str_at(row, "/obligation_id")?
+                ));
+            }
+        }
+    }
+    let manifest_proof_rows = array_at(proof_boundary, "/proof_obligation_rows")?;
+    if manifest_proof_rows.len() != proof_report.proof_obligation_rows.len() {
+        return Err(
+            "proof-boundary manifest obligation row count drifted from preflight".to_string(),
+        );
+    }
+    for row in manifest_proof_rows {
+        if bool_at(row, "/open")? {
+            let blocker = str_at(row, "/blocker")?;
+            if !contains(blockers, blocker) {
+                return Err(format!(
+                    "production preflight is missing manifest blocker for proof obligation {}",
+                    str_at(row, "/obligation_id")?
+                ));
+            }
         }
     }
 
