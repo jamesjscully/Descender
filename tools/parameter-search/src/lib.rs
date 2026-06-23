@@ -5,6 +5,7 @@ pub mod fq12_ntt_q12289;
 pub mod fq12_q12289;
 pub mod fri_q12289;
 pub mod full_relation_air_q12289;
+pub mod manifest_vector_evidence;
 pub mod merkle_poseidon2_q12289;
 pub mod ntt_q12289;
 pub mod path2_creation_relation_air_q12289;

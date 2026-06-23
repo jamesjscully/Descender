@@ -1,16 +1,21 @@
 #![recursion_limit = "256"]
 
-use descender_parameter_search::production_reference::{
-    PROFILE, path2_account_creation_proof_boundary_report_v1,
-    path2_account_creation_proof_boundary_report_v1_digest,
-    path2_account_creation_sampler_timing_report_v1,
-    path2_account_creation_sampler_timing_report_v1_digest,
-    path2_direct_lifecycle_boundary_report_v1, path2_direct_lifecycle_boundary_report_v1_digest,
-    path2_direct_qrom_action_boundary_report_v1,
-    path2_direct_qrom_action_boundary_report_v1_digest, path2_direct_query_budget_v1,
-    path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
+use descender_parameter_search::{
+    manifest_vector_evidence::path2_account_creation_requirement_vector_corpus_evidence_v1,
+    production_reference::{
+        path2_account_creation_proof_boundary_report_v1,
+        path2_account_creation_proof_boundary_report_v1_digest,
+        path2_account_creation_sampler_timing_report_v1,
+        path2_account_creation_sampler_timing_report_v1_digest,
+        path2_direct_lifecycle_boundary_report_v1,
+        path2_direct_lifecycle_boundary_report_v1_digest,
+        path2_direct_qrom_action_boundary_report_v1,
+        path2_direct_qrom_action_boundary_report_v1_digest, path2_direct_query_budget_v1,
+        path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
+        PROFILE,
+    },
 };
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 
 fn hex_encode(bytes: &[u8]) -> String {
@@ -30,6 +35,8 @@ fn manifest_body() -> Result<Value, String> {
     let query_budget = path2_direct_query_budget_v1();
     let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
     let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
+    let requirement_vector_corpus_evidence =
+        path2_account_creation_requirement_vector_corpus_evidence_v1()?;
     let recomputed_direct_digest = path2_direct_theorem_boundary_report_v1_digest(&direct_report);
     if recomputed_direct_digest != direct_report.digest {
         return Err("direct theorem boundary report digest mismatch".to_string());
@@ -433,7 +440,8 @@ fn manifest_body() -> Result<Value, String> {
                 proof_boundary_report.proof_obligation_named_break_classes,
             "proof_obligation_audit_vector_case_ids":
                 proof_boundary_report.proof_obligation_audit_vector_case_ids,
-            "proof_obligation_rows": proof_boundary_report.proof_obligation_rows
+            "proof_obligation_rows": proof_boundary_report.proof_obligation_rows,
+            "requirement_vector_corpus_evidence": requirement_vector_corpus_evidence
         }
     }))
 }

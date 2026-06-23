@@ -1,24 +1,27 @@
 #![recursion_limit = "256"]
 
-use descender_parameter_search::production_reference::{
-    PROFILE, path2_account_creation_frame_kat_boundary_report_v1,
-    path2_account_creation_frame_kat_boundary_report_v1_digest,
-    path2_account_creation_no_export_boundary_report_v1,
-    path2_account_creation_no_export_boundary_report_v1_digest,
-    path2_account_creation_proof_boundary_report_v1,
-    path2_account_creation_proof_boundary_report_v1_digest,
-    path2_account_creation_sampler_timing_report_v1,
-    path2_account_creation_sampler_timing_report_v1_digest,
-    path2_account_stark_fri_aok_boundary_report_v1,
-    path2_account_stark_fri_aok_boundary_report_v1_digest,
-    path2_account_stark_fri_qrom_residual_report_v1,
-    path2_account_stark_fri_qrom_residual_report_v1_digest,
-    path2_account_stark_payload_kat_boundary_report_v1,
-    path2_account_stark_payload_kat_boundary_report_v1_digest,
-    path2_account_stark_residual_matrix_report_v1,
-    path2_account_stark_residual_matrix_report_v1_digest,
+use descender_parameter_search::{
+    manifest_vector_evidence::path2_account_creation_requirement_vector_corpus_evidence_v1,
+    production_reference::{
+        path2_account_creation_frame_kat_boundary_report_v1,
+        path2_account_creation_frame_kat_boundary_report_v1_digest,
+        path2_account_creation_no_export_boundary_report_v1,
+        path2_account_creation_no_export_boundary_report_v1_digest,
+        path2_account_creation_proof_boundary_report_v1,
+        path2_account_creation_proof_boundary_report_v1_digest,
+        path2_account_creation_sampler_timing_report_v1,
+        path2_account_creation_sampler_timing_report_v1_digest,
+        path2_account_stark_fri_aok_boundary_report_v1,
+        path2_account_stark_fri_aok_boundary_report_v1_digest,
+        path2_account_stark_fri_qrom_residual_report_v1,
+        path2_account_stark_fri_qrom_residual_report_v1_digest,
+        path2_account_stark_payload_kat_boundary_report_v1,
+        path2_account_stark_payload_kat_boundary_report_v1_digest,
+        path2_account_stark_residual_matrix_report_v1,
+        path2_account_stark_residual_matrix_report_v1_digest, PROFILE,
+    },
 };
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 
 fn hex_encode(bytes: &[u8]) -> String {
@@ -40,6 +43,8 @@ fn manifest_body() -> Result<Value, String> {
     let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
     let fri_aok_boundary_report = path2_account_stark_fri_aok_boundary_report_v1();
     let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
+    let requirement_vector_corpus_evidence =
+        path2_account_creation_requirement_vector_corpus_evidence_v1()?;
 
     let recomputed_proof_boundary_digest =
         path2_account_creation_proof_boundary_report_v1_digest(&proof_boundary_report);
@@ -354,7 +359,8 @@ fn manifest_body() -> Result<Value, String> {
                 proof_boundary_report.proof_obligation_named_break_classes,
             "proof_obligation_audit_vector_case_ids":
                 proof_boundary_report.proof_obligation_audit_vector_case_ids,
-            "proof_obligation_rows": proof_boundary_report.proof_obligation_rows
+            "proof_obligation_rows": proof_boundary_report.proof_obligation_rows,
+            "requirement_vector_corpus_evidence": requirement_vector_corpus_evidence
         },
         "no_export_boundary_snapshot": {
             "coverage": {

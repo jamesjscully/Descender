@@ -92,8 +92,12 @@ timing, simulator/no-export, FRI/AoK, FRI/QROM, frozen-KAT, and production-gate
 review closure, plus a proof-obligation audit-vector case list and a
 requirement-coverage matrix that maps each acceptance requirement to vector
 evidence kind, current vector case ids, public rejection classes for rejection
-vectors, closure target, and blocker. It is not a proof and not deployment
-evidence by itself: the
+vectors, closure target, and blocker. The shared proof-boundary object also
+embeds digest-pinned requirement-vector-corpus evidence for the frame KAT,
+no-export, FRI/QROM domain, and payload KAT corpora, including row/case counts,
+current-row coverage flags, and false theorem/deployment flags; the direct
+theorem manifest embeds the same object and `path2_boundary_manifest_consistency`
+checks the match. It is not a proof and not deployment evidence by itself: the
 manifest deliberately records the open simulator, extractor, FRI/QROM,
 frozen-KAT, external-review, sampler, timing, no-export, and production-gate
 blockers. The local and CI build

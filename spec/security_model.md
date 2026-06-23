@@ -321,7 +321,12 @@ proof-boundary evidence artifact plus the no-export, FRI/QROM domain, and
 payload KAT vector corpora before the direct theorem manifest is checked, and
 `formal/kat/path2_direct_theorem_obligation_vectors_v1.json` pins the direct
 theorem's open per-hypothesis obligations after that manifest is
-checked. The reports and manifests are
+checked. The shared proof-boundary object now also embeds digest-pinned
+requirement-vector-corpus evidence for the frame KAT, no-export, FRI/QROM
+domain, and payload KAT corpora; `path2_boundary_manifest_consistency` requires
+the standalone proof-boundary and direct theorem manifests to agree on that
+evidence while preserving false theorem and deployment flags. The reports and
+manifests are
 the executable boundary map for this section; they are not an honest-sampler
 theorem, authorization-class binding theorem, no-postchallenge timing theorem,
 simulator, no-export theorem, extractor, FRI/QROM, KAT, or external-review

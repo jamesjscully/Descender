@@ -25,6 +25,13 @@ Use only these status values:
 
 ## Direct Mode: First Deployable Target
 
+Current evidence note: the shared account-creation proof-boundary object in
+`formal/kat/path2_account_creation_proof_boundary_v1.json` and
+`formal/kat/path2_direct_theorem_boundary_v1.json` now embeds digest-pinned
+requirement-vector-corpus evidence for the frame KAT, no-export, FRI/QROM
+domain, and payload KAT corpora while keeping theorem and deployment flags
+false.
+
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|
 | SPEC-DIR-001 | verified | Normative spec spine exists | `ADR-0001`; current `spec/*.md` spine plus `decisions/` and `TRACKER.md`; `scripts/check_doc_authority.py` dynamically gates the spec spine index, active normative markers, selected-support anchors, and ADR affected-row reciprocity; `scripts/check_requirement_traceability.py` gates tracker ownership for selected normative open-evidence sections |
