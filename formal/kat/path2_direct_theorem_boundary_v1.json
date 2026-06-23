@@ -462,8 +462,8 @@
       "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
-      "direct_theorem_boundary_report_digest": "5cead01ff9009753944f6a3b92dca10188c4d440342f5fb9442af8dbc0acc0e5",
-      "direct_theorem_boundary_report_recomputed_digest": "5cead01ff9009753944f6a3b92dca10188c4d440342f5fb9442af8dbc0acc0e5",
+      "direct_theorem_boundary_report_digest": "9590d661701d52edfb8907e48625b25bbede9b9d9cf0fb08a9550037cf1847ed",
+      "direct_theorem_boundary_report_recomputed_digest": "9590d661701d52edfb8907e48625b25bbede9b9d9cf0fb08a9550037cf1847ed",
       "direct_theorem_report_lifecycle_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_theorem_report_qrom_action_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
@@ -744,7 +744,7 @@
         {
           "acceptance_hypothesis": "rejection_is_deterministic_public_and_state_preserving",
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
-          "current_evidence": "account-STARK payload boundary maps current internal errors to public rejection classes; full consensus rejection KATs remain open",
+          "current_evidence": "account-STARK payload boundary maps current internal errors to public rejection classes; direct spend rejection no-mutation test covers selected pre-consume failure classes; full consensus rejection KATs remain open",
           "named_break": "consensus_rejection_or_state_mutation_break",
           "obligation_id": "direct_obligation_public_rejection",
           "open": true,
@@ -763,5 +763,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "7530e1c611ed4bfab8e3f199acc4872db504cc7d071d25d0fa8acc7137bb0fae"
+  "manifest_digest": "8b7552dadae38b7d6b3806004b862c3f592fdf357a775abdbca300d0efc619ee"
 }

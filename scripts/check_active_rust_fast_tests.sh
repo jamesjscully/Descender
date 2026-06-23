@@ -16,5 +16,8 @@ RUSTFLAGS="-D warnings" cargo test --manifest-path tools/descender-account-stark
 echo "== active fast test: verifier export bridge smoke =="
 RUSTFLAGS="-D warnings" cargo test --manifest-path tools/descender-account-verifier/Cargo.toml role_root_export_digest_is_domain_separated_and_ordered
 
+echo "== active fast test: direct spend rejection state no-mutation =="
+RUSTFLAGS="-D warnings" cargo test --manifest-path tools/parameter-search/Cargo.toml --lib path2_direct_single_slot_spend_rejections_preserve_consume_once_state
+
 echo "== active fast test: recursion config scaffold smoke =="
 RUSTFLAGS="-D warnings" cargo test --manifest-path tools/descender-recursion/Cargo.toml phase1_scaffold_wired_to_leaf_config

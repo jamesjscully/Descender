@@ -150,6 +150,12 @@ Tracker ownership: `SPEC-VERIFY-001`, `DIR-REJECT-001`, `DIR-KAT-001`,
 `DIR-CC-001`, `DIR-LIFE-001`, `POL-REQ-001`, `ADOPT-ETH-AA-001`,
 `ADOPT-ETH-7932-001`, `ADOPT-ETH-8141-001`, and `ADOPT-HW-API-001`.
 
+Current executable precursor coverage includes
+`path2_direct_single_slot_spend_rejections_preserve_consume_once_state`, which
+checks that selected direct spend rejections leave consume-once state unchanged
+before the accepted spend transition. This is rejection-state evidence, not a
+complete public result enum, malformed-input corpus, or client-mapping package.
+
 Before the consensus verifier surface can be marked `verified`, the repo needs:
 
 - a public error/result enum in the active verifier API;

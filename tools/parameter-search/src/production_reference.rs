@@ -10926,7 +10926,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "rejection_is_deterministic_public_and_state_preserving",
         supporting_surface: "consensus-safe rejection and state-preserving failure mapping",
         current_evidence:
-            "account-STARK payload boundary maps current internal errors to public rejection classes; full consensus rejection KATs remain open",
+            "account-STARK payload boundary maps current internal errors to public rejection classes; direct spend rejection no-mutation test covers selected pre-consume failure classes; full consensus rejection KATs remain open",
         required_closure:
             "public rejection enum, panic-free malformed-input KATs, and state-no-mutation tests cover every direct-mode rejection",
         named_break: "consensus_rejection_or_state_mutation_break",
@@ -97735,6 +97735,174 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             "Path 2 checked-core slot id does not match prevalidated leaf"
         );
         assert!(consumed.is_empty());
+    }
+
+    #[test]
+    fn path2_direct_single_slot_spend_rejections_preserve_consume_once_state() {
+        let (fixture, leaf, evidence, certificate) = path2_creation_relation_replay_fixture();
+        let authorization = path2_slot_authorization_digest(&leaf).unwrap();
+        let mut admitted_state_authorizations = BTreeSet::new();
+        admitted_state_authorizations.insert((
+            leaf.account_id,
+            leaf.account_state_root_before,
+            authorization,
+        ));
+        let responses = ProductionCompactResponses {
+            active_free: [[0_i16; LOCAL_FREE]; REPS],
+        };
+        let signature = sign_path2_reviewed_fq12_authorization_checked_core(
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &leaf.account_id,
+            &leaf.account_state_root_before,
+            &authorization,
+            leaf.slot_id as u32,
+            &fixture.pad_seed,
+            &responses,
+        )
+        .unwrap();
+
+        let assert_rejects_without_consuming = |
+            label: &str,
+            leaf: &Path2PrevalidatedSlotLeafV1,
+            evidence: &Path2AccountCreationEvidenceV1,
+            certificate: &Path2DirectReplayableRelationCertificateV1,
+            message: &[u8],
+            signature: &ProductionSignature,
+            admitted_state_authorizations: &BTreeSet<(
+                [u8; DIGEST_BYTES],
+                [u8; DIGEST_BYTES],
+                [u8; DIGEST_BYTES],
+            )>,
+            expected: &str,
+        | {
+            let mut consumed = BTreeSet::new();
+            let err = verify_path2_direct_single_slot_spend_authorization(
+                leaf,
+                evidence,
+                certificate,
+                &fixture.public_key,
+                message,
+                &fixture.account,
+                signature,
+                admitted_state_authorizations,
+                &mut consumed,
+            )
+            .unwrap_err();
+            assert_eq!(err.reason(), expected, "{label}");
+            assert!(
+                consumed.is_empty(),
+                "direct rejection {label} mutated consume-once state"
+            );
+        };
+
+        let mut wrong_public_key_leaf = leaf;
+        wrong_public_key_leaf.public_key_identity[0] ^= 1;
+        assert_rejects_without_consuming(
+            "public_key_identity_mismatch",
+            &wrong_public_key_leaf,
+            &evidence,
+            &certificate,
+            fixture.message,
+            &signature,
+            &admitted_state_authorizations,
+            "Path 2 public-key identity mismatch",
+        );
+
+        assert_rejects_without_consuming(
+            "missing_state_namespace_admission",
+            &leaf,
+            &evidence,
+            &certificate,
+            fixture.message,
+            &signature,
+            &BTreeSet::new(),
+            "Path 2 slot authorization was not admitted in state namespace",
+        );
+
+        assert_rejects_without_consuming(
+            "malformed_checked_core_signature",
+            &leaf,
+            &evidence,
+            &certificate,
+            fixture.message,
+            &ProductionSignature::new(vec![0_u8; 7]),
+            &admitted_state_authorizations,
+            "reviewed Fq12 account-carried signature has 7 bytes, expected 262",
+        );
+
+        assert_rejects_without_consuming(
+            "checked_core_message_rebinding",
+            &leaf,
+            &evidence,
+            &certificate,
+            b"path2-wrong-message",
+            &signature,
+            &admitted_state_authorizations,
+            "Path 2 checked-core authorization challenge mismatch",
+        );
+
+        let (mut rebound_leaf, mut rebound_evidence, mut rebound_certificate) =
+            (leaf, evidence, certificate);
+        rebound_leaf.slot_id += 1;
+        rebound_evidence.slot_id = rebound_leaf.slot_id;
+        rebound_certificate.slot_id = rebound_leaf.slot_id;
+        rebound_evidence.evidence_payload_digest =
+            path2_direct_replayable_relation_certificate_digest(&rebound_certificate);
+        rebound_leaf.prevalidation_transcript_digest =
+            path2_account_creation_evidence_transcript_digest(&rebound_evidence).unwrap();
+        refresh_path2_leaf_digest_bindings(&rebound_leaf, &mut rebound_evidence);
+        let rebound_authorization = path2_slot_authorization_digest(&rebound_leaf).unwrap();
+        let mut rebound_admitted_state_authorizations = BTreeSet::new();
+        rebound_admitted_state_authorizations.insert((
+            rebound_leaf.account_id,
+            rebound_leaf.account_state_root_before,
+            rebound_authorization,
+        ));
+        let rebound_signature = sign_path2_reviewed_fq12_authorization_checked_core(
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &rebound_leaf.account_id,
+            &rebound_leaf.account_state_root_before,
+            &rebound_authorization,
+            0,
+            &fixture.pad_seed,
+            &responses,
+        )
+        .unwrap();
+        assert_rejects_without_consuming(
+            "checked_core_slot_leaf_rebinding",
+            &rebound_leaf,
+            &rebound_evidence,
+            &rebound_certificate,
+            fixture.message,
+            &rebound_signature,
+            &rebound_admitted_state_authorizations,
+            "Path 2 checked-core slot id does not match prevalidated leaf",
+        );
+
+        let mut consumed = BTreeSet::new();
+        consumed.insert(authorization);
+        let before = consumed.clone();
+        let err = verify_path2_direct_single_slot_spend_authorization(
+            &leaf,
+            &evidence,
+            &certificate,
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &signature,
+            &admitted_state_authorizations,
+            &mut consumed,
+        )
+        .unwrap_err();
+        assert_eq!(err.reason(), "Path 2 slot authorization already consumed");
+        assert_eq!(
+            consumed, before,
+            "already-consumed rejection changed consume-once state"
+        );
     }
 
     #[test]
