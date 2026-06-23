@@ -17,6 +17,7 @@ descender-mask-prf = { path = "../descender-mask-prf" }
 descender-account-verifier = { path = "../descender-account-verifier", optional = true }
 getrandom = "0.2"
 rusqlite = { version = "0.40.0", features = ["bundled"] }
+rayon = { version = "1", optional = true }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = { version = "0.10", features = ["force-soft"] }
@@ -26,4 +27,4 @@ sha2 = { version = "0.10", features = ["force-soft"] }
 # (the replacement for the transparent-descent full-hidden-relation backend, i.e.
 # the HIGH-2 in-clear-blind path). OFF by default so signer-side builds stay
 # Plonky3-free; validator builds opt in.
-account-creation-stark-verifier = ["dep:descender-account-verifier"]
+account-creation-stark-verifier = ["dep:descender-account-verifier", "dep:rayon"]

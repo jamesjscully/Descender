@@ -64,6 +64,8 @@ cargo run --manifest-path tools/parameter-search/Cargo.toml --features account-c
 
 It runs the real account-creation STARK fixture, verifies the honest payload,
 executes every current boundary rejection row, and pins stable public fields,
-payload/bundle lengths, mutation recipes, observed errors, and public rejection
-classes. It deliberately does not pin proof-byte digests because the current
-Plonky3 ZK proof bytes are randomized; deterministic proof-byte KATs remain open.
+deterministic payload-frame/account-STARK bundle digests, payload/bundle lengths,
+mutation recipes, observed errors, and public rejection classes. The generator
+uses the explicit seeded KAT producer inside a single-thread Rayon pool so
+Plonky3 proof-of-work witness selection is reproducible; the deployment producer
+still uses fresh proof randomness.

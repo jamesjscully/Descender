@@ -124,16 +124,21 @@ ACCOUNT_STARK_PAYLOAD_KAT_VECTOR_MARKERS = {
     "tools/parameter-search/src/bin/path2_account_stark_payload_kat_vectors.rs": [
         "Descender.Path2.AccountStarkPayloadKatVectors.v1",
         "path2_account_stark_payload_kat_fixture_v1",
+        "path2_account_stark_prove_creation_with_mask_seed_v1",
         "verify_path2_direct_creation_account_stark_payload_boundary",
         "every_current_row_has_generated_vector",
-        "randomized proof bytes",
+        "deterministic KAT proof seed",
+        "single-thread KAT",
+        "account_stark_bundle_sha256",
     ],
     "formal/kat/path2_account_stark_payload_kat_vectors_v1.json": [
         "Descender.Path2.AccountStarkPayloadKatVectors.v1",
         "digest_pinned_boundary_vectors",
         "honest_payload_accepts",
         "every_current_row_has_generated_vector",
-        "randomized proof bytes",
+        "deterministic_kat_mask_seed",
+        "single-thread KAT",
+        "account_stark_bundle_sha256",
     ],
     "scripts/check_build.sh": [
         "account STARK payload KAT vector corpus check",

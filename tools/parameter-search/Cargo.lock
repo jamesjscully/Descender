@@ -162,6 +162,7 @@ dependencies = [
  "descender-account-verifier",
  "descender-mask-prf",
  "getrandom 0.2.17",
+ "rayon",
  "rusqlite",
  "serde",
  "serde_json",

@@ -166,7 +166,12 @@ regression evidence for the active implementation.
 feature-gated, digest-pinned vector corpus for the current account-STARK
 boundary rows: it regenerates the real STARK fixture, accepts the honest
 payload, executes each current rejection row, and pins stable public fields,
-mutation recipes, observed errors, and public rejection classes. It deliberately
-does not pin randomized Plonky3 proof-byte digests, so deterministic proof-byte
-KAT mode and the full direct-mode vector corpus remain open and `DIR-KAT-001`
-does not close.
+deterministic payload-frame/account-STARK bundle digests, mutation recipes,
+observed errors, and public rejection classes. It uses the explicit seeded KAT
+producer `path2_account_stark_prove_creation_with_mask_seed_v1`; the deployment
+producer `path2_account_stark_prove_creation_v1` still uses fresh proof
+randomness. Because Plonky3 proof-of-work witness grinding can otherwise return
+different valid witnesses under parallel search, the generator also runs the KAT
+proof inside a single-thread Rayon pool. This closes the current boundary's
+deterministic proof-digest gap, but the full direct-mode vector corpus, full
+byte corpus, lifecycle/rejection coverage, and `DIR-KAT-001` closure remain open.

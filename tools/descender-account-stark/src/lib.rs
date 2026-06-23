@@ -374,9 +374,11 @@ fn public_values_vec(p: &AccountCreationPublic) -> Vec<Val> {
 /// Prove one account-creation instance under the pinned production config (ZK on).
 ///
 /// Returns the public statement and the STARK proof. `mask_seed` supplies the ZK
-/// randomness (any value hides the witness; two proofs under the same seed are
-/// byte-identical in their witness/statement-binding content). Use a fresh random
-/// `mask_seed` per proof in deployment.
+/// randomness (hiding-Merkle salts plus HidingFriPcs codewords/R(X)). Use a fresh
+/// random `mask_seed` per proof in deployment. Fixed-seed KATs that pin serialized
+/// proof bytes must also make proof-of-work witness selection deterministic; the
+/// active account-STARK KAT generator does this by running the proof inside a
+/// single-thread Rayon pool.
 pub fn prove_account_creation_with_seed(
     secrets: &AccountCreationSecrets,
     mask_seed: u64,
@@ -406,7 +408,8 @@ pub fn prove_account_creation_with_seed(
 /// [`fresh_mask_seed`] — a fresh 64-bit value from the OS-seeded ChaCha12 CSPRNG
 /// ([`rand::rng`]) on every call — so two proofs of the SAME witness+context are
 /// decorrelated (the fixed-seed `_with_seed` path is NOT). For deterministic
-/// tests, use [`prove_account_creation_with_seed`] directly.
+/// proof-byte KATs, use [`prove_account_creation_with_seed`] under an explicitly
+/// deterministic proof-of-work scheduler.
 pub fn prove_account_creation(
     secrets: &AccountCreationSecrets,
 ) -> Result<(AccountCreationPublic, Proof), Error> {

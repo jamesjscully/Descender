@@ -189,9 +189,13 @@ boundary manifest for those rows and must regenerate byte-for-byte with
 remains open.
 `formal/kat/path2_account_stark_payload_kat_vectors_v1.json` is the
 feature-gated digest-pinned corpus for the current account-STARK boundary rows.
-It pins stable public fields, payload/bundle lengths, mutation recipes, observed
-errors, and public rejection classes, while explicitly excluding randomized
-Plonky3 proof-byte digests until deterministic proof-byte KAT mode exists.
+It pins stable public fields, deterministic payload-frame/account-STARK bundle
+digests, payload/bundle lengths, mutation recipes, observed errors, and public
+rejection classes. The corpus uses the explicit deterministic KAT producer
+`path2_account_stark_prove_creation_with_mask_seed_v1` inside a single-thread
+Rayon pool so proof-of-work witness selection is reproducible; live deployment
+production remains on the fresh-randomness
+`path2_account_stark_prove_creation_v1` path.
 
 ## Path2NativeCheckedCoreFrameV1
 

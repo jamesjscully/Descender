@@ -43870,22 +43870,20 @@ pub fn path2_account_stark_creation_payload_v1_digest(
     Ok(Sha256::digest(path2_account_stark_creation_payload_v1_frame(payload)?).into())
 }
 
-/// FEATURE-GATED (`account-creation-stark-verifier`) PRODUCER — generates the
-/// sound account-creation ZK-STARK proof and packs the admission payload. This is
-/// the producer counterpart of
-/// [`verify_path2_direct_creation_account_stark_payload_boundary`]; together they
-/// replace the transparent-descent full-hidden-relation backend (the HIGH-2 leak
-/// path) for the live admission flow. The deployed projection masks and the STARK
-/// in-circuit masks are byte-identical (the mask-PRF swap), so the proven
-/// `masked_projection` equals the deployed opening's.
+/// Fixed proof-randomness seed for account-STARK payload KAT generation only.
+/// Deployment producers must use [`path2_account_stark_prove_creation_v1`].
 #[cfg(feature = "account-creation-stark-verifier")]
-pub fn path2_account_stark_prove_creation_v1(
+pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_MASK_SEED_V1: u64 = 0x4445_5343_5f4b_4154;
+
+#[cfg(feature = "account-creation-stark-verifier")]
+fn path2_account_stark_prove_creation_with_mask_seed_option_v1(
     leaf: &Path2PrevalidatedSlotLeafV1,
     evidence: &Path2AccountCreationEvidenceV1,
     certificate: &Path2DirectReplayableRelationCertificateV1,
     binding: &Path2CreationProofBindingV1,
     pad_seed: &[u8; REVIEWED_FQ12_PAD_SEED_BYTES],
     blinding_seed: &[u8; DIGEST_BYTES],
+    proof_mask_seed: Option<u64>,
 ) -> Result<Path2AccountStarkCreationPayloadV1, String> {
     // Recover the account witness (raw projection + checked-core syndrome) from the
     // deployed opening; its projection masks come from the SAME Poseidon2 PRF the
@@ -43925,8 +43923,11 @@ pub fn path2_account_stark_prove_creation_v1(
         syndrome: opening.witness_syndrome,
     };
 
-    let (public, proof) = descender_account_verifier::prove_account_creation(&secrets)
-        .map_err(|e| format!("account-creation STARK prove failed: {e}"))?;
+    let (public, proof) = match proof_mask_seed {
+        Some(seed) => descender_account_verifier::prove_account_creation_with_seed(&secrets, seed),
+        None => descender_account_verifier::prove_account_creation(&secrets),
+    }
+    .map_err(|e| format!("account-creation STARK prove failed: {e}"))?;
     let account_stark_bundle = descender_account_verifier::pack_bundle(&public, &proof)
         .map_err(|e| format!("account-creation STARK bundle pack failed: {e}"))?;
     let native_role_root_commitment =
@@ -43951,6 +43952,62 @@ pub fn path2_account_stark_prove_creation_v1(
         masked_projection,
         account_stark_bundle,
     })
+}
+
+/// FEATURE-GATED (`account-creation-stark-verifier`) PRODUCER — generates the
+/// sound account-creation ZK-STARK proof and packs the admission payload. This is
+/// the producer counterpart of
+/// [`verify_path2_direct_creation_account_stark_payload_boundary`]; together they
+/// replace the transparent-descent full-hidden-relation backend (the HIGH-2 leak
+/// path) for the live admission flow. The deployed projection masks and the STARK
+/// in-circuit masks are byte-identical (the mask-PRF swap), so the proven
+/// `masked_projection` equals the deployed opening's. This deployment producer
+/// uses fresh proof randomness through `descender-account-stark`.
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn path2_account_stark_prove_creation_v1(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    binding: &Path2CreationProofBindingV1,
+    pad_seed: &[u8; REVIEWED_FQ12_PAD_SEED_BYTES],
+    blinding_seed: &[u8; DIGEST_BYTES],
+) -> Result<Path2AccountStarkCreationPayloadV1, String> {
+    path2_account_stark_prove_creation_with_mask_seed_option_v1(
+        leaf,
+        evidence,
+        certificate,
+        binding,
+        pad_seed,
+        blinding_seed,
+        None,
+    )
+}
+
+/// FEATURE-GATED deterministic KAT producer. This exists only to give the active
+/// account-STARK payload boundary a fixed proof-randomness seed; serialized
+/// proof-byte KATs must also run under deterministic proof-of-work witness
+/// selection. The checked vector generator does that with a single-thread Rayon
+/// pool. This function must not be used as the deployment producer because a
+/// fixed mask seed removes proof-randomness freshness.
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn path2_account_stark_prove_creation_with_mask_seed_v1(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    binding: &Path2CreationProofBindingV1,
+    pad_seed: &[u8; REVIEWED_FQ12_PAD_SEED_BYTES],
+    blinding_seed: &[u8; DIGEST_BYTES],
+    proof_mask_seed: u64,
+) -> Result<Path2AccountStarkCreationPayloadV1, String> {
+    path2_account_stark_prove_creation_with_mask_seed_option_v1(
+        leaf,
+        evidence,
+        certificate,
+        binding,
+        pad_seed,
+        blinding_seed,
+        Some(proof_mask_seed),
+    )
 }
 
 /// FEATURE-GATED (`account-creation-stark-verifier`) — the SOUND replacement for
@@ -44071,6 +44128,7 @@ pub fn verify_path2_direct_creation_account_stark_payload_boundary_for_productio
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2AccountStarkPayloadKatFixtureV1 {
     pub fixture_id: &'static str,
+    pub proof_mask_seed: u64,
     pub leaf: Path2PrevalidatedSlotLeafV1,
     pub evidence: Path2AccountCreationEvidenceV1,
     pub certificate: Path2DirectReplayableRelationCertificateV1,
@@ -44338,13 +44396,14 @@ pub fn path2_account_stark_payload_kat_fixture_v1()
     let blinding_seed =
         path2_account_stark_payload_kat_digest("path2-account-stark-blinding-seed");
 
-    let payload = path2_account_stark_prove_creation_v1(
+    let payload = path2_account_stark_prove_creation_with_mask_seed_v1(
         &leaf,
         &evidence,
         &certificate,
         &binding,
         &pad_seed,
         &blinding_seed,
+        PATH2_ACCOUNT_STARK_PAYLOAD_KAT_MASK_SEED_V1,
     )?;
 
     let payload_digest = path2_account_stark_creation_payload_v1_digest(&payload)?;
@@ -44369,6 +44428,7 @@ pub fn path2_account_stark_payload_kat_fixture_v1()
     let payload_frame = path2_account_stark_creation_payload_v1_frame(&payload)?;
     Ok(Path2AccountStarkPayloadKatFixtureV1 {
         fixture_id: "Path2AccountStarkPayloadKatFixture.v1",
+        proof_mask_seed: PATH2_ACCOUNT_STARK_PAYLOAD_KAT_MASK_SEED_V1,
         leaf,
         evidence,
         certificate,
