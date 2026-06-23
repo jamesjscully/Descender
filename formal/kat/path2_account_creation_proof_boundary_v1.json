@@ -112,6 +112,8 @@
         "public_replay_payload_digest",
         "account_stark_bundle"
       ],
+      "proof_boundary_conclusion": "accepted_account_creation_payload_implies_bound_leaf_evidence_selected_account_stark_acceptance_no_export_or_named_break",
+      "proof_boundary_target": "selected_account_creation_proof_boundary_v1",
       "proof_obligation_named_break_classes": [
         "creation_time_hidden_source_soundness_break",
         "checked_core_message_binding_break",
@@ -218,7 +220,9 @@
       "payload_kat_boundary_report_domain": "Descender.Path2.AccountStarkPayloadKatBoundaryReport.v1",
       "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
       "proof_boundary_blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+      "proof_boundary_conclusion": "accepted_account_creation_payload_implies_bound_leaf_evidence_selected_account_stark_acceptance_no_export_or_named_break",
       "proof_boundary_report_domain": "Descender.Path2.AccountCreationProofBoundaryReport.v1",
+      "proof_boundary_target": "selected_account_creation_proof_boundary_v1",
       "replay_payload_digest_function": "path2_account_stark_creation_payload_v1_digest",
       "residual_matrix_report_domain": "Descender.Path2.AccountStarkResidualMatrixReport.v1",
       "sampler_support_file": "research/path2_honest_create_sampler_v1.md",
@@ -235,8 +239,8 @@
     "digests": {
       "account_creation_no_export_boundary_report_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338",
       "account_creation_no_export_boundary_report_recomputed_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338",
-      "account_creation_proof_boundary_report_digest": "9a2a1fb9ce2857d5cc14fd24c76742d0bb5195b0ebeb6012274643e247a98563",
-      "account_creation_proof_boundary_report_recomputed_digest": "9a2a1fb9ce2857d5cc14fd24c76742d0bb5195b0ebeb6012274643e247a98563",
+      "account_creation_proof_boundary_report_digest": "579b4010410cb0a7d688539888fd286fa65ba55f38d56e3f26ab5a2ce20186ad",
+      "account_creation_proof_boundary_report_recomputed_digest": "579b4010410cb0a7d688539888fd286fa65ba55f38d56e3f26ab5a2ce20186ad",
       "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_stark_fri_aok_boundary_report_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753",
@@ -519,5 +523,5 @@
       ]
     }
   },
-  "manifest_digest": "8649d5a71250c33862b5ae3527b9fef553e45dfe4a48b26728e6704a649977cb"
+  "manifest_digest": "f4c2421a02c9a1ab574fef19a15cc5fa441d14f63acd08177faab3a8d5b34411"
 }

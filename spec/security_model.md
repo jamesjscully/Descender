@@ -182,13 +182,14 @@ because `prevalidation_transcript_digest`, `evidence_payload_digest`, or a
 commitment root is well formed.
 
 The production reference emits `Path2AccountCreationProofBoundaryReportV1`,
-which pins the selected payload type, verifier endpoints, replay-payload digest
-function, acceptance requirements, exact leaf/evidence binding fields,
-certificate/evidence binding fields, binding/leaf context fields,
-payload-binding fields, deployed-anchor fields, no-export private-material
-field classes, the `Path2AccountCreationSamplerTimingReportV1` digest, and
-the `Path2AccountCreationNoExportBoundaryReportV1` digest, and current
-proof-family closure blockers. It also pins a structured open proof-obligation
+which pins the proof-boundary target, conclusion label, selected payload type,
+verifier endpoints, replay-payload digest function, acceptance requirements,
+exact leaf/evidence binding fields, certificate/evidence binding fields,
+binding/leaf context fields, payload-binding fields, deployed-anchor fields,
+no-export private-material field classes, the
+`Path2AccountCreationSamplerTimingReportV1` digest, and the
+`Path2AccountCreationNoExportBoundaryReportV1` digest, and current proof-family
+closure blockers. It also pins a structured open proof-obligation
 row list for honest sampler soundness, authorization-class binding,
 no-postchallenge timing, simulator/no-export closure, FRI/AoK extraction,
 FRI/QROM residual pricing, frozen payload KATs, and production-gate review;
@@ -210,9 +211,9 @@ review, and deployment readiness false.
 that report, the selected `Path2AccountStarkResidualMatrixReportV1`, the current
 `Path2AccountStarkPayloadKatBoundaryReportV1`, the current sampler/timing
 report, and the current no-export boundary report by local and CI gates, so the
-proof-boundary digest chain, selected field groups, sampler/timing hooks,
-no-export denylist, proof-obligation rows, residual rows, and payload-KAT
-boundary blocker cannot drift silently.
+proof-boundary target, conclusion, digest chain, selected field groups,
+sampler/timing hooks, no-export denylist, proof-obligation rows, residual rows,
+and payload-KAT boundary blocker cannot drift silently.
 `formal/kat/path2_account_creation_no_export_boundary_v1.json` is
 also regenerated and checked before the proof-boundary manifest so the
 no-export boundary cannot remain prose-only. The reports and manifests are the

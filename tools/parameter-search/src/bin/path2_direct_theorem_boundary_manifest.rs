@@ -106,7 +106,10 @@ fn manifest_body() -> Result<Value, String> {
             "selected_payload_type": proof_boundary_report.selected_payload_type,
             "verifier_boundary_endpoint": proof_boundary_report.verifier_boundary_endpoint,
             "production_boundary_endpoint": proof_boundary_report.production_boundary_endpoint,
-            "replay_payload_digest_function": proof_boundary_report.replay_payload_digest_function
+            "replay_payload_digest_function": proof_boundary_report.replay_payload_digest_function,
+            "proof_boundary_target": proof_boundary_report.proof_boundary_target,
+            "proof_boundary_conclusion":
+                proof_boundary_report.proof_boundary_conclusion
         },
         "digests": {
             "direct_theorem_boundary_report_digest": hex_encode(&direct_report.digest),
@@ -350,6 +353,9 @@ fn manifest_body() -> Result<Value, String> {
                 "deployment_ready": proof_boundary_report.deployment_ready,
                 "blocker": proof_boundary_report.blocker
             },
+            "proof_boundary_target": proof_boundary_report.proof_boundary_target,
+            "proof_boundary_conclusion":
+                proof_boundary_report.proof_boundary_conclusion,
             "accepting_requirements": proof_boundary_report.accepting_requirements,
             "leaf_evidence_binding_fields":
                 proof_boundary_report.leaf_evidence_binding_fields,

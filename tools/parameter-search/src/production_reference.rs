@@ -9520,6 +9520,8 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub sampler_timing_report_digest: [u8; DIGEST_BYTES],
     pub no_export_boundary_report_digest: [u8; DIGEST_BYTES],
     pub account_stark_residual_matrix_report_digest: [u8; DIGEST_BYTES],
+    pub proof_boundary_target: &'static str,
+    pub proof_boundary_conclusion: &'static str,
     pub selected_payload_type: &'static str,
     pub verifier_boundary_endpoint: &'static str,
     pub production_boundary_endpoint: &'static str,
@@ -10663,6 +10665,10 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS: [&str; 10] = [
     "account_stark_qrom_domain_separation",
     "deterministic_public_rejection",
 ];
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_TARGET: &str =
+    "selected_account_creation_proof_boundary_v1";
+pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CONCLUSION: &str =
+    "accepted_account_creation_payload_implies_bound_leaf_evidence_selected_account_stark_acceptance_no_export_or_named_break";
 
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_EVIDENCE_BINDING_FIELDS: [&str; 15] = [
     "evidence_domain",
@@ -11461,6 +11467,8 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         no_export_boundary_report_digest: no_export_boundary_report.digest,
         account_stark_residual_matrix_report_digest:
             account_stark_residual_matrix_report.digest,
+        proof_boundary_target: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_TARGET,
+        proof_boundary_conclusion: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CONCLUSION,
         selected_payload_type: "Path2AccountStarkCreationPayloadV1",
         verifier_boundary_endpoint: "verify_path2_direct_creation_account_stark_payload_boundary",
         production_boundary_endpoint:
@@ -11546,6 +11554,11 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
         return Err(
             "Path 2 account-creation proof boundary residual-matrix digest mismatch".to_string(),
         );
+    }
+    if report.proof_boundary_target != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_TARGET
+        || report.proof_boundary_conclusion != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CONCLUSION
+    {
+        return Err("Path 2 account-creation proof boundary target mismatch".to_string());
     }
     if report.proof_obligation_rows != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_OBLIGATION_ROWS.as_ref()
         || report.proof_obligation_count != report.proof_obligation_rows.len()
@@ -64843,6 +64856,16 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
     );
     append_frame(
         &mut frame,
+        b"proof_boundary_target",
+        report.proof_boundary_target.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"proof_boundary_conclusion",
+        report.proof_boundary_conclusion.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
         b"selected_payload_type",
         report.selected_payload_type.as_bytes(),
     );
@@ -106542,6 +106565,17 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.account_stark_residual_matrix_report_digest,
             residual_matrix_report.digest
         );
+        assert_eq!(
+            report.proof_boundary_target,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_TARGET
+        );
+        assert_eq!(
+            report.proof_boundary_conclusion,
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CONCLUSION
+        );
+        assert!(report.proof_boundary_conclusion.contains("account_stark"));
+        assert!(report.proof_boundary_conclusion.contains("no_export"));
+        assert!(report.proof_boundary_conclusion.contains("named_break"));
         assert_eq!(report.selected_payload_type, "Path2AccountStarkCreationPayloadV1");
         assert_eq!(
             report.verifier_boundary_endpoint,
@@ -106689,6 +106723,16 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         malformed.digest = path2_account_creation_proof_boundary_report_v1_digest(&malformed);
         assert_eq!(
             validate_path2_account_creation_proof_boundary_report_v1(&malformed).unwrap_err(),
+            "Path 2 account-creation proof boundary report mismatch"
+        );
+
+        let mut malformed_target = report.clone();
+        malformed_target.proof_boundary_target = "retargeted_account_creation_boundary_v1";
+        malformed_target.digest =
+            path2_account_creation_proof_boundary_report_v1_digest(&malformed_target);
+        assert_eq!(
+            validate_path2_account_creation_proof_boundary_report_v1(&malformed_target)
+                .unwrap_err(),
             "Path 2 account-creation proof boundary report mismatch"
         );
     }
