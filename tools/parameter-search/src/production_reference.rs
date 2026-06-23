@@ -9478,12 +9478,16 @@ pub struct Path2AccountCreationNoExportBoundaryReportV1 {
     pub payload_byte_model_report_digest: [u8; DIGEST_BYTES],
     pub payload_kat_boundary_report_digest: [u8; DIGEST_BYTES],
     pub no_export_requirement: &'static str,
+    pub simulator_theorem_target: &'static str,
+    pub no_export_theorem_target: &'static str,
     pub named_break: &'static str,
+    pub simulator_public_input_fields: &'static [&'static str],
     pub no_export_private_material_fields: &'static [&'static str],
     pub payload_public_field_count: usize,
     pub public_payload_field_mutation_count: usize,
     pub public_payload_exports_private_material: bool,
     pub no_export_field_denylist_pinned: bool,
+    pub simulator_input_allowlist_pinned: bool,
     pub byte_model_public_payload_only: bool,
     pub boundary_mapping_complete: bool,
     pub roundtrip_regression_present: bool,
@@ -10710,6 +10714,27 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELD
     "private_trace_material",
 ];
 
+pub const PATH2_ACCOUNT_CREATION_SIMULATOR_THEOREM_TARGET: &str =
+    "selected_account_stark_public_bundle_simulator_v1";
+pub const PATH2_ACCOUNT_CREATION_NO_EXPORT_THEOREM_TARGET: &str =
+    "selected_account_stark_no_export_v1";
+pub const PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS: [&str; 14] = [
+    "leaf_context_digest",
+    "creation_proof_binding_digest",
+    "native_role_root_commitment",
+    "aggregation_context_digest",
+    "slot_id",
+    "masked_projection",
+    "account_stark_bundle_bytes_or_digest",
+    "public_replay_payload_digest",
+    "deployed_account_id",
+    "deployed_account_state_root",
+    "deployed_lifecycle_anchor",
+    "deployed_verifier_version",
+    "deployed_packed_witness_commitment",
+    "public_rejection_code",
+];
+
 pub const PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKERS: [&str;
     PRODUCTION_DEPLOYMENT_DIRECT_THEOREM_BLOCKER_COUNT] = [
     PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
@@ -11202,7 +11227,11 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
         payload_byte_model_report_digest: payload_byte_model_report.digest,
         payload_kat_boundary_report_digest: payload_kat_boundary_report.digest,
         no_export_requirement: "zero_knowledge_no_export_semantics",
+        simulator_theorem_target: PATH2_ACCOUNT_CREATION_SIMULATOR_THEOREM_TARGET,
+        no_export_theorem_target: PATH2_ACCOUNT_CREATION_NO_EXPORT_THEOREM_TARGET,
         named_break: "account_stark_simulator_or_no_export_break",
+        simulator_public_input_fields:
+            &PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS,
         no_export_private_material_fields:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS,
         payload_public_field_count: payload_byte_model_report
@@ -11215,6 +11244,7 @@ pub fn path2_account_creation_no_export_boundary_report_v1(
         public_payload_exports_private_material:
             payload_byte_model_report.public_payload_exports_private_material,
         no_export_field_denylist_pinned: true,
+        simulator_input_allowlist_pinned: true,
         byte_model_public_payload_only: !payload_byte_model_report.public_payload_exports_private_material,
         boundary_mapping_complete: true,
         roundtrip_regression_present: true,
@@ -11262,6 +11292,7 @@ pub fn validate_path2_account_creation_no_export_boundary_report_v1(
         );
     }
     if !report.no_export_field_denylist_pinned
+        || !report.simulator_input_allowlist_pinned
         || !report.byte_model_public_payload_only
         || !report.boundary_mapping_complete
         || !report.roundtrip_regression_present
@@ -64818,7 +64849,29 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
         b"no_export_requirement",
         report.no_export_requirement.as_bytes(),
     );
+    append_frame(
+        &mut frame,
+        b"simulator_theorem_target",
+        report.simulator_theorem_target.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"no_export_theorem_target",
+        report.no_export_theorem_target.as_bytes(),
+    );
     append_frame(&mut frame, b"named_break", report.named_break.as_bytes());
+    for (index, field) in report.simulator_public_input_fields.iter().enumerate() {
+        append_u64(
+            &mut frame,
+            b"simulator_public_input_field_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"simulator_public_input_field",
+            field.as_bytes(),
+        );
+    }
     for (index, field) in report
         .no_export_private_material_fields
         .iter()
@@ -64854,6 +64907,11 @@ fn path2_account_creation_no_export_boundary_report_v1_frame(
         &mut frame,
         b"no_export_field_denylist_pinned",
         u64::from(report.no_export_field_denylist_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"simulator_input_allowlist_pinned",
+        u64::from(report.simulator_input_allowlist_pinned),
     );
     append_u64(
         &mut frame,
@@ -106116,9 +106174,25 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         );
         assert_eq!(report.no_export_requirement, "zero_knowledge_no_export_semantics");
         assert_eq!(
+            report.simulator_theorem_target,
+            PATH2_ACCOUNT_CREATION_SIMULATOR_THEOREM_TARGET
+        );
+        assert_eq!(
+            report.no_export_theorem_target,
+            PATH2_ACCOUNT_CREATION_NO_EXPORT_THEOREM_TARGET
+        );
+        assert_eq!(
             report.named_break,
             "account_stark_simulator_or_no_export_break"
         );
+        assert_eq!(
+            report.simulator_public_input_fields,
+            PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS.as_ref()
+        );
+        assert_eq!(report.simulator_public_input_fields.len(), 14);
+        assert!(report
+            .simulator_public_input_fields
+            .contains(&"account_stark_bundle_bytes_or_digest"));
         assert_eq!(
             report.no_export_private_material_fields,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS.as_ref()
@@ -106131,6 +106205,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert_eq!(report.public_payload_field_mutation_count, 11);
         assert!(!report.public_payload_exports_private_material);
         assert!(report.no_export_field_denylist_pinned);
+        assert!(report.simulator_input_allowlist_pinned);
         assert!(report.byte_model_public_payload_only);
         assert!(report.boundary_mapping_complete);
         assert!(report.roundtrip_regression_present);

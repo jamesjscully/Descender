@@ -251,6 +251,33 @@ mask
 private_trace_material
 ```
 
+The current selected-payload simulator theorem targets are:
+
+```text
+selected_account_stark_public_bundle_simulator_v1
+selected_account_stark_no_export_v1
+```
+
+The accepted public bundle simulator may consume only this
+`simulator_public_input_fields` public-input allowlist:
+
+```text
+leaf_context_digest
+creation_proof_binding_digest
+native_role_root_commitment
+aggregation_context_digest
+slot_id
+masked_projection
+account_stark_bundle_bytes_or_digest
+public_replay_payload_digest
+deployed_account_id
+deployed_account_state_root
+deployed_lifecycle_anchor
+deployed_verifier_version
+deployed_packed_witness_commitment
+public_rejection_code
+```
+
 This report is a boundary and fail-closed regression anchor, not simulator
 closure. It records that the public payload byte model exports no private
 material and that current public mutation coverage is wired. The open blocker is

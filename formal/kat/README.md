@@ -118,9 +118,11 @@ cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_
 It pins the current `Path2AccountCreationNoExportBoundaryReportV1` support file,
 selected `Path2AccountStarkCreationPayloadV1` verifier endpoints, public payload
 byte-model digest, payload KAT-boundary digest, forbidden private-material field
-denylist, and the named `account_stark_simulator_or_no_export_break`. It is not
-simulator closure: simulator theorem, no-export theorem, frozen no-export
-vectors, external review, and deployment readiness remain false. The
+denylist, selected simulator/no-export theorem target labels, accepted-bundle
+simulator public-input allowlist, and the named
+`account_stark_simulator_or_no_export_break`. It is not simulator closure:
+simulator theorem, no-export theorem, accepted-bundle simulability, frozen
+no-export vectors, external review, and deployment readiness remain false. The
 `path2_account_creation_no_export_boundary_consistency` gate checks the manifest
 against the support doc and production-reference hooks before the proof-boundary
 manifest is checked.

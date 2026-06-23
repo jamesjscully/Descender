@@ -141,6 +141,14 @@ fn main() -> Result<(), String> {
             report.no_export_requirement,
         ),
         (
+            "/manifest/authority_snapshot/simulator_theorem_target",
+            report.simulator_theorem_target,
+        ),
+        (
+            "/manifest/authority_snapshot/no_export_theorem_target",
+            report.no_export_theorem_target,
+        ),
+        (
             "/manifest/authority_snapshot/named_break",
             report.named_break,
         ),
@@ -169,6 +177,7 @@ fn main() -> Result<(), String> {
     }
     for pointer in [
         "/manifest/no_export_boundary/coverage/no_export_field_denylist_pinned",
+        "/manifest/no_export_boundary/coverage/simulator_input_allowlist_pinned",
         "/manifest/no_export_boundary/coverage/byte_model_public_payload_only",
         "/manifest/no_export_boundary/coverage/boundary_mapping_complete",
         "/manifest/no_export_boundary/coverage/roundtrip_regression_present",
@@ -200,6 +209,8 @@ fn main() -> Result<(), String> {
     for needle in [
         "Path2AccountCreationNoExportBoundaryReportV1",
         "zero_knowledge_no_export_semantics",
+        "selected_account_stark_public_bundle_simulator_v1",
+        "selected_account_stark_no_export_v1",
         "account_stark_simulator_or_no_export_break",
         "Forbidden Exports",
         "Error Path Rule",
@@ -212,10 +223,16 @@ fn main() -> Result<(), String> {
     for field in report.no_export_private_material_fields {
         require_contains(&support_doc, field, report.support_file)?;
     }
+    for field in report.simulator_public_input_fields {
+        require_contains(&support_doc, field, report.support_file)?;
+    }
 
     for needle in [
         "Path2AccountCreationNoExportBoundaryReportV1",
         "path2_account_creation_no_export_boundary_report_v1",
+        "PATH2_ACCOUNT_CREATION_SIMULATOR_THEOREM_TARGET",
+        "PATH2_ACCOUNT_CREATION_NO_EXPORT_THEOREM_TARGET",
+        "PATH2_ACCOUNT_CREATION_SIMULATOR_PUBLIC_INPUT_FIELDS",
         "PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_PRIVATE_MATERIAL_FIELDS",
         "verify_path2_direct_creation_account_stark_payload_boundary",
         "path2_account_stark_payload_byte_model_report_v1",

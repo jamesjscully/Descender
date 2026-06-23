@@ -5,21 +5,23 @@
       "named_break": "account_stark_simulator_or_no_export_break",
       "no_export_report_domain": "Descender.Path2.AccountCreationNoExportBoundaryReport.v1",
       "no_export_requirement": "zero_knowledge_no_export_semantics",
+      "no_export_theorem_target": "selected_account_stark_no_export_v1",
       "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
       "proof_boundary_report_domain": "Descender.Path2.AccountCreationProofBoundaryReport.v1",
       "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
+      "simulator_theorem_target": "selected_account_stark_public_bundle_simulator_v1",
       "support_file": "research/path2_fiber_privacy_no_export_v1.md",
       "verifier_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary"
     },
     "corpus_id": "Descender.Path2.AccountCreationNoExportBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_no_export_boundary_report_digest": "849fe25eb5799f9d929f38f2ffc37e423aee4f2bb64ef01dc220fd57bdec33ef",
-      "account_creation_no_export_boundary_report_recomputed_digest": "849fe25eb5799f9d929f38f2ffc37e423aee4f2bb64ef01dc220fd57bdec33ef",
-      "account_creation_proof_boundary_report_digest": "6ab987075cbad5b30233c58a066bb7632636f4df2e78485ff1eeeb53393c124b",
+      "account_creation_no_export_boundary_report_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338",
+      "account_creation_no_export_boundary_report_recomputed_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338",
+      "account_creation_proof_boundary_report_digest": "0364799bdcbddc71aa2f4c3623433c69938f1336b11c97b929504ff160a56192",
       "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
       "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
-      "proof_boundary_report_no_export_digest": "849fe25eb5799f9d929f38f2ffc37e423aee4f2bb64ef01dc220fd57bdec33ef"
+      "proof_boundary_report_no_export_digest": "6a5ebf8c39e834ba66c369afe1d5583b6e7e410021675b3a6ad2bef090c68338"
     },
     "frozen_status": "draft_no_export_boundary_manifest",
     "generator": {
@@ -42,6 +44,7 @@
         "public_payload_exports_private_material": false,
         "public_payload_field_mutation_count": 11,
         "roundtrip_regression_present": true,
+        "simulator_input_allowlist_pinned": true,
         "simulator_theorem_instantiated": false
       },
       "no_export_private_material_fields": [
@@ -52,10 +55,28 @@
         "witness",
         "mask",
         "private_trace_material"
-      ]
+      ],
+      "no_export_theorem_target": "selected_account_stark_no_export_v1",
+      "simulator_public_input_fields": [
+        "leaf_context_digest",
+        "creation_proof_binding_digest",
+        "native_role_root_commitment",
+        "aggregation_context_digest",
+        "slot_id",
+        "masked_projection",
+        "account_stark_bundle_bytes_or_digest",
+        "public_replay_payload_digest",
+        "deployed_account_id",
+        "deployed_account_state_root",
+        "deployed_lifecycle_anchor",
+        "deployed_verifier_version",
+        "deployed_packed_witness_commitment",
+        "public_rejection_code"
+      ],
+      "simulator_theorem_target": "selected_account_stark_public_bundle_simulator_v1"
     },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountCreationNoExportBoundaryManifest.v1"
   },
-  "manifest_digest": "5940e776bfc554f4841e612d307589a4c50f585b4bba88369da755bac9af3900"
+  "manifest_digest": "85355ccd7b8242962ee02df1f81d6318a164595ce5fb14b78e311abae6ea19f3"
 }

@@ -47,6 +47,8 @@ fn manifest_body() -> Result<Value, String> {
             "verifier_boundary_endpoint": report.verifier_boundary_endpoint,
             "production_boundary_endpoint": report.production_boundary_endpoint,
             "no_export_requirement": report.no_export_requirement,
+            "simulator_theorem_target": report.simulator_theorem_target,
+            "no_export_theorem_target": report.no_export_theorem_target,
             "named_break": report.named_break,
             "blocker": report.blocker
         },
@@ -70,6 +72,8 @@ fn manifest_body() -> Result<Value, String> {
                 "public_payload_exports_private_material":
                     report.public_payload_exports_private_material,
                 "no_export_field_denylist_pinned": report.no_export_field_denylist_pinned,
+                "simulator_input_allowlist_pinned":
+                    report.simulator_input_allowlist_pinned,
                 "byte_model_public_payload_only": report.byte_model_public_payload_only,
                 "boundary_mapping_complete": report.boundary_mapping_complete,
                 "roundtrip_regression_present": report.roundtrip_regression_present,
@@ -83,6 +87,9 @@ fn manifest_body() -> Result<Value, String> {
                 "deployment_ready": report.deployment_ready,
                 "blocker": report.blocker
             },
+            "simulator_theorem_target": report.simulator_theorem_target,
+            "no_export_theorem_target": report.no_export_theorem_target,
+            "simulator_public_input_fields": report.simulator_public_input_fields,
             "no_export_private_material_fields": report.no_export_private_material_fields
         }
     }))

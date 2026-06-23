@@ -283,6 +283,8 @@ fn manifest_body() -> Result<Value, String> {
                     no_export_report.public_payload_exports_private_material,
                 "no_export_field_denylist_pinned":
                     no_export_report.no_export_field_denylist_pinned,
+                "simulator_input_allowlist_pinned":
+                    no_export_report.simulator_input_allowlist_pinned,
                 "byte_model_public_payload_only":
                     no_export_report.byte_model_public_payload_only,
                 "boundary_mapping_complete": no_export_report.boundary_mapping_complete,
@@ -304,7 +306,11 @@ fn manifest_body() -> Result<Value, String> {
             "verifier_boundary_endpoint": no_export_report.verifier_boundary_endpoint,
             "production_boundary_endpoint": no_export_report.production_boundary_endpoint,
             "no_export_requirement": no_export_report.no_export_requirement,
+            "simulator_theorem_target": no_export_report.simulator_theorem_target,
+            "no_export_theorem_target": no_export_report.no_export_theorem_target,
             "named_break": no_export_report.named_break,
+            "simulator_public_input_fields":
+                no_export_report.simulator_public_input_fields,
             "no_export_private_material_fields":
                 no_export_report.no_export_private_material_fields
         },
