@@ -39,13 +39,13 @@
       ],
       "coverage": {
         "accepting_requirement_count": 10,
-        "account_stark_residual_matrix_report_digest": "9dceb234159b455b5f95e39b236d199bd0023fb4558bc60d70fe06d265b80623",
+        "account_stark_residual_matrix_report_digest": "a3b96b19b30bfd2433d50cb046ab5ac710ceb3faeae033463d2279a1a24d31c6",
         "active_payload_mutation_coverage_present": true,
         "binding_leaf_context_field_count": 9,
         "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
         "boundary_statement_pinned": true,
         "certificate_evidence_binding_field_count": 11,
-        "current_vector_covered_requirement_count": 9,
+        "current_vector_covered_requirement_count": 10,
         "current_vector_evidence_kinds": [
           "rejection_vectors",
           "rejection_vectors",
@@ -55,7 +55,7 @@
           "rejection_vectors",
           "rejection_vectors",
           "audit_vectors",
-          "no_current_vectors",
+          "audit_vectors",
           "rejection_vectors"
         ],
         "deployed_anchor_field_count": 8,
@@ -370,13 +370,19 @@
         },
         {
           "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
-          "closure_target": "account-STARK transcript QROM theorem and residual pricing",
-          "coverage_surface": "Path2AccountStarkFriQromResidualReportV1",
-          "covered_by_current_vectors": false,
-          "current_vector_case_ids": [],
+          "closure_target": "account-STARK transcript QROM theorem over the pinned FRI/QROM domain corpus",
+          "coverage_surface": "Path2AccountStarkFriQromResidualReportV1 and vector corpus",
+          "covered_by_current_vectors": true,
+          "current_vector_case_ids": [
+            "fri_qrom_selected_proof_family_domain",
+            "fri_qrom_poseidon2_width_and_sponge_floor",
+            "fri_qrom_challenge_field_and_schedule",
+            "fri_qrom_checked_core_budget_import",
+            "fri_qrom_open_theorem_flags_fail_closed"
+          ],
           "public_rejection_classes": [],
           "requirement": "account_stark_qrom_domain_separation",
-          "vector_evidence_kind": "no_current_vectors"
+          "vector_evidence_kind": "audit_vectors"
         },
         {
           "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
@@ -444,23 +450,23 @@
       "account_creation_frame_kat_boundary_report_recomputed_digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
       "account_creation_no_export_boundary_report_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
       "account_creation_no_export_boundary_report_recomputed_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
-      "account_creation_proof_boundary_report_digest": "7ba404fd9aed87cf162a4bbe0cd701b3c7da0f31d1e9264455e31a78f394c09d",
-      "account_creation_proof_boundary_report_recomputed_digest": "7ba404fd9aed87cf162a4bbe0cd701b3c7da0f31d1e9264455e31a78f394c09d",
+      "account_creation_proof_boundary_report_digest": "aa8e1d3d656aa5b2f9349f3d8f9bcdc6832530046768841fdd201c703bbcd117",
+      "account_creation_proof_boundary_report_recomputed_digest": "aa8e1d3d656aa5b2f9349f3d8f9bcdc6832530046768841fdd201c703bbcd117",
       "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
-      "account_stark_fri_aok_boundary_report_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753",
-      "account_stark_fri_aok_boundary_report_recomputed_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753",
-      "account_stark_fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
-      "account_stark_fri_qrom_residual_report_recomputed_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
-      "account_stark_residual_matrix_report_digest": "9dceb234159b455b5f95e39b236d199bd0023fb4558bc60d70fe06d265b80623",
-      "account_stark_residual_matrix_report_recomputed_digest": "9dceb234159b455b5f95e39b236d199bd0023fb4558bc60d70fe06d265b80623",
-      "fri_aok_boundary_report_fri_qrom_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
+      "account_stark_fri_aok_boundary_report_digest": "bcb747ec1676c7bec01592180f8da6ffef3da129dfa002a5bad51f1e910949bb",
+      "account_stark_fri_aok_boundary_report_recomputed_digest": "bcb747ec1676c7bec01592180f8da6ffef3da129dfa002a5bad51f1e910949bb",
+      "account_stark_fri_qrom_residual_report_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece",
+      "account_stark_fri_qrom_residual_report_recomputed_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece",
+      "account_stark_residual_matrix_report_digest": "a3b96b19b30bfd2433d50cb046ab5ac710ceb3faeae033463d2279a1a24d31c6",
+      "account_stark_residual_matrix_report_recomputed_digest": "a3b96b19b30bfd2433d50cb046ab5ac710ceb3faeae033463d2279a1a24d31c6",
+      "fri_aok_boundary_report_fri_qrom_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece",
       "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
       "payload_kat_boundary_report_recomputed_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
       "proof_boundary_report_frame_kat_digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
       "proof_boundary_report_no_export_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
       "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
-      "residual_matrix_report_fri_aok_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753"
+      "residual_matrix_report_fri_aok_digest": "bcb747ec1676c7bec01592180f8da6ffef3da129dfa002a5bad51f1e910949bb"
     },
     "fri_aok_boundary_snapshot": {
       "account_stark_config_source": "tools/descender-account-stark/src/config.rs",
@@ -475,7 +481,7 @@
         "deployment_ready": false,
         "external_extractor_review_complete": false,
         "fri_aok_extractor_theorem_instantiated": false,
-        "fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
+        "fri_qrom_residual_report_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece",
         "fri_schedule_pinned": true,
         "med_findings_remediated": 3,
         "med_findings_total": 3,
@@ -672,8 +678,8 @@
         "deployment_ready": false,
         "every_row_has_blocker": true,
         "every_row_has_named_break": true,
-        "fri_aok_boundary_report_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753",
-        "fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
+        "fri_aok_boundary_report_digest": "bcb747ec1676c7bec01592180f8da6ffef3da129dfa002a5bad51f1e910949bb",
+        "fri_qrom_residual_report_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece",
         "legacy_routes_non_authoritative": true,
         "production_gate_fail_closed": true
       },
@@ -737,5 +743,5 @@
       ]
     }
   },
-  "manifest_digest": "4c4072385482261a48c8adde72ffd26832e4283d5ac2c4eeb23e0e207caf5dbe"
+  "manifest_digest": "f612bf4e4935489aa8e5588ac8fdfa29e39b502afcf4f0fd034f6153ca22a4d3"
 }

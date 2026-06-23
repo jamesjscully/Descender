@@ -271,7 +271,7 @@ fn check_consistency() -> Result<(), String> {
             "coverage",
             "current_vector_covered_requirement_count",
         ],
-        9,
+        10,
     )?;
     expect_bool(
         proof_manifest,

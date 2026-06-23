@@ -11,6 +11,14 @@
       "classical_hash_query_bound_log2": 33,
       "hardening_bits": 64,
       "max_target_count_log2_at_128_bits": 54,
+      "qrom_domain_vector_case_count": 5,
+      "qrom_domain_vector_case_ids": [
+        "fri_qrom_selected_proof_family_domain",
+        "fri_qrom_poseidon2_width_and_sponge_floor",
+        "fri_qrom_challenge_field_and_schedule",
+        "fri_qrom_checked_core_budget_import",
+        "fri_qrom_open_theorem_flags_fail_closed"
+      ],
       "quantum_hash_query_bound_log2": 16,
       "scope_note": "checked-core spend transcript ledger; not a substitute for the open account-STARK FRI transcript QROM theorem",
       "selected_multi_target_horizon_log2": 32,
@@ -26,8 +34,8 @@
     "corpus_id": "Descender.Path2.AccountStarkFriQromResidual.v1",
     "corpus_version": 1,
     "digests": {
-      "account_stark_fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
-      "account_stark_fri_qrom_residual_report_recomputed_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32"
+      "account_stark_fri_qrom_residual_report_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece",
+      "account_stark_fri_qrom_residual_report_recomputed_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece"
     },
     "fri_schedule": {
       "challenge_extension_degree": 8,
@@ -63,5 +71,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.AccountStarkFriQromResidualManifest.v1"
   },
-  "manifest_digest": "006d36d2aa2b0d73b659861617197be17744776a94caf73bb60c4eaafa463a20"
+  "manifest_digest": "aae8b2179a211a33564a8be1c3b29cebd48e02f3b8b5c5e341718de6362bb3cb"
 }

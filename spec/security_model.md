@@ -197,9 +197,12 @@ each open row carries a named break and the fail-closed account-creation
 proof-boundary blocker. A separate requirement-coverage matrix maps every
 acceptance requirement to its current evidence surface, vector evidence kind,
 current vector case ids where they exist, public rejection classes for rejection
-vectors, closure target, and blocker; it records that nine requirements have
-current frame-KAT, account-STARK payload, or no-export audit vectors while
-account-STARK QROM/domain separation remains uncovered by vectors. The
+vectors, closure target, and blocker; it records that all ten requirements have
+current frame-KAT, account-STARK payload, no-export audit, or FRI/QROM domain
+audit vectors. The FRI/QROM domain audit corpus pins the selected proof-family
+domain, Poseidon2 width and sponge floor, FRI challenge schedule, checked-core
+QROM budget import, and fail-closed open theorem flags; it is not an
+account-STARK transcript QROM theorem or residual-pricing closure. The
 sampler/timing report pins the honest-create
 sampler support file, no-postchallenge timing game, construction order,
 prechallenge fixed-through step, spend-challenge derivation step, and executable
@@ -227,7 +230,10 @@ also regenerated and checked before the proof-boundary manifest so the
 no-export boundary cannot remain prose-only, and
 `formal/kat/path2_account_creation_no_export_vectors_v1.json` pins the current
 public-payload allowlist, simulator-input allowlist, private-material denylist
-absence, and opaque proof-bundle manifest policy. The reports and manifests are
+absence, and opaque proof-bundle manifest policy.
+`formal/kat/path2_account_stark_fri_qrom_domain_vectors_v1.json` pins the
+current FRI/QROM domain audit cases before the proof-boundary manifest is
+checked. The reports and manifests are
 the executable boundary map for this section; they are not an honest-sampler
 theorem, authorization-class binding theorem, no-postchallenge timing theorem,
 simulator, no-export theorem, extractor, FRI/QROM, KAT, or external-review
@@ -313,7 +319,7 @@ checked by `path2_account_stark_fri_aok_boundary_consistency`.
 | AIR relation soundness | `research/path2_account_stark_air_soundness_audit.md` reports all relation classes wired and MED findings remediated. | External proof-family review confirms the AIR constraints match the claimed creation relation and no false statement accepts except with a named proof break. | `account_stark_air_soundness_break` |
 | FRI argument-of-knowledge extractor | The AIR is fully constrained, and `Path2AccountStarkFriAokBoundaryReportV1` plus `formal/kat/path2_account_stark_fri_aok_boundary_v1.json` pin the support audit, selected proof family, FRI/QROM residual digest, residual-matrix digest, AIR coverage counts, MED remediation counts, and open extractor/review/deployment flags. | A concrete extractor theorem for the selected Plonky3/q12289 configuration shows accepting proof implies an extractable account-creation witness or exports a named FRI/AoK break. | `account_stark_fri_aok_extractor_break` |
 | Zero-knowledge simulator and no-export statement | Boundary text forbids export of pad source, projection, syndrome, opening tuple, witness, mask, and private trace material; `Path2AccountCreationNoExportBoundaryReportV1` plus `formal/kat/path2_account_creation_no_export_boundary_v1.json` pin the support file, selected payload endpoints, payload byte-model/KAT-boundary digests, denylist, simulator/no-export theorem targets, accepted-bundle simulator public-input allowlist, public-payload-only byte model, mutation coverage, and fail-closed production gate while leaving simulator, no-export, accepted-bundle simulability, review, and deployment flags false. | Simulator theorem for the selected payload proves the accepted public bundle can be simulated from public anchors and allowed commitments without revealing private creation material. | `account_stark_simulator_or_no_export_break` |
-| FRI soundness margin and recursion ledger | `Path2AccountStarkFriQromResidualReportV1` pins `log_blowup = 4`, `num_queries = 56`, query PoW 16, conservative-Johnson FRI label 128 bits, degree-8 challenge field, ~124-bit Poseidon2 sponge floor, and checked-core QROM `log2(T) <= 54`; the consistency gate compares these to active config and generated QROM artifacts. | Residual-assumption ledger prices FRI queries, field size, the account-STARK Poseidon2/FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile, then obtains external FRI/QROM review. | `fri_soundness_margin_break` |
+| FRI soundness margin and recursion ledger | `Path2AccountStarkFriQromResidualReportV1` pins `log_blowup = 4`, `num_queries = 56`, query PoW 16, conservative-Johnson FRI label 128 bits, degree-8 challenge field, ~124-bit Poseidon2 sponge floor, and checked-core QROM `log2(T) <= 54`; `formal/kat/path2_account_stark_fri_qrom_domain_vectors_v1.json` adds digest-pinned audit cases for the selected proof-family domain, FRI schedule, checked-core QROM import, and open theorem flags; the consistency gates compare these to active config, checked-in manifests, and generated QROM artifacts. | Residual-assumption ledger prices FRI queries, field size, the account-STARK Poseidon2/FRI transcript theorem, recursion if used, and multi-target/QROM terms against the selected deployment profile, then obtains external FRI/QROM review. | `fri_soundness_margin_break` |
 | Production admission gate and review disposition | `verify_path2_direct_creation_account_stark_payload_boundary_for_production` remains fail-closed and regression-tested. | External review, tracker disposition, and explicit maintainer decision flip the production gate; otherwise production admission must continue to reject. | `account_stark_production_gate_break` |
 | Legacy proof-route disposition | Transparent descent/native-boundary paths are fail-closed support and cannot be selected by implication. | Any route change requires an ADR that updates this matrix, wire formats, KAT scope, and tracker ownership before the route can become deployment authority. | `proof_route_authority_break` |
 

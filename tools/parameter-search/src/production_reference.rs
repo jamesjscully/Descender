@@ -9349,6 +9349,7 @@ pub struct Path2AccountStarkFriQromResidualReportV1 {
     pub challenge_field_bits_floor: usize,
     pub poseidon2_sponge_floor_bits: usize,
     pub checked_core_qrom_artifacts: &'static [&'static str],
+    pub qrom_domain_vector_case_ids: &'static [&'static str],
     pub checked_core_qrom_algebraic_challenge_bits: usize,
     pub checked_core_qrom_hardening_bits: usize,
     pub checked_core_qrom_total_transcript_bits: usize,
@@ -9357,6 +9358,7 @@ pub struct Path2AccountStarkFriQromResidualReportV1 {
     pub checked_core_qrom_selected_multi_target_horizon_log2: usize,
     pub checked_core_qrom_selected_transcript_term_bits: usize,
     pub checked_core_qrom_max_target_count_log2_at_128_bits: usize,
+    pub qrom_domain_vector_case_count: usize,
     pub fri_schedule_pinned: bool,
     pub challenge_field_pinned: bool,
     pub checked_core_qrom_budget_pinned: bool,
@@ -10345,6 +10347,13 @@ pub const PATH2_CHECKED_CORE_QROM_ARTIFACTS: [&str; 4] = [
     "research/cryptanalysis/signature_readiness_20260516/pre_third_party_qrom_frame_probe_n32_q12289.json",
     "research/cryptanalysis/signature_readiness_20260516/qrom_multitarget_margin_n32_q12289.json",
 ];
+pub const PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES: [&str; 5] = [
+    "fri_qrom_selected_proof_family_domain",
+    "fri_qrom_poseidon2_width_and_sponge_floor",
+    "fri_qrom_challenge_field_and_schedule",
+    "fri_qrom_checked_core_budget_import",
+    "fri_qrom_open_theorem_flags_fail_closed",
+];
 
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS:
     [Path2AccountStarkPayloadKatBoundaryRowV1; 13] = [
@@ -11104,13 +11113,14 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS:
     },
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
         requirement: "account_stark_qrom_domain_separation",
-        coverage_surface: "Path2AccountStarkFriQromResidualReportV1",
-        vector_evidence_kind: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_NONE,
-        current_vector_case_ids: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_VECTOR_CASES,
+        coverage_surface: "Path2AccountStarkFriQromResidualReportV1 and vector corpus",
+        vector_evidence_kind: PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_AUDIT,
+        current_vector_case_ids: &PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES,
         public_rejection_classes:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_CURRENT_REJECTION_CLASSES,
-        covered_by_current_vectors: false,
-        closure_target: "account-STARK transcript QROM theorem and residual pricing",
+        covered_by_current_vectors: true,
+        closure_target:
+            "account-STARK transcript QROM theorem over the pinned FRI/QROM domain corpus",
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
     },
     Path2AccountCreationProofBoundaryRequirementCoverageRowV1 {
@@ -11616,6 +11626,7 @@ pub fn path2_account_stark_fri_qrom_residual_report_v1()
         challenge_field_bits_floor: PATH2_ACCOUNT_STARK_CHALLENGE_FIELD_BITS_FLOOR,
         poseidon2_sponge_floor_bits: PATH2_ACCOUNT_STARK_POSEIDON2_SPONGE_FLOOR_BITS,
         checked_core_qrom_artifacts: &PATH2_CHECKED_CORE_QROM_ARTIFACTS,
+        qrom_domain_vector_case_ids: &PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES,
         checked_core_qrom_algebraic_challenge_bits:
             PATH2_CHECKED_CORE_QROM_ALGEBRAIC_CHALLENGE_BITS,
         checked_core_qrom_hardening_bits: PATH2_CHECKED_CORE_QROM_HARDENING_BITS,
@@ -11631,6 +11642,7 @@ pub fn path2_account_stark_fri_qrom_residual_report_v1()
             PATH2_CHECKED_CORE_QROM_SELECTED_TRANSCRIPT_TERM_BITS,
         checked_core_qrom_max_target_count_log2_at_128_bits:
             PATH2_CHECKED_CORE_QROM_MAX_TARGET_COUNT_LOG2_AT_128_BITS,
+        qrom_domain_vector_case_count: PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES.len(),
         fri_schedule_pinned: true,
         challenge_field_pinned: true,
         checked_core_qrom_budget_pinned: true,
@@ -11662,6 +11674,13 @@ pub fn validate_path2_account_stark_fri_qrom_residual_report_v1(
     }
     if path2_account_stark_fri_qrom_residual_report_v1_digest(report) != report.digest {
         return Err("Path 2 account-STARK FRI/QROM residual report digest mismatch".to_string());
+    }
+    if report.qrom_domain_vector_case_ids != PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES.as_ref()
+        || report.qrom_domain_vector_case_count != report.qrom_domain_vector_case_ids.len()
+    {
+        return Err(
+            "Path 2 account-STARK FRI/QROM residual vector case drift".to_string(),
+        );
     }
     if report.residual_pricing_complete
         || report.deployment_ready
@@ -12078,6 +12097,7 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
                         .any(|frame_row| frame_row.case_id == *case_id)
                     || PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_NO_EXPORT_CASES
                         .contains(case_id)
+                    || PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES.contains(case_id)
             })
         }),
         every_requirement_public_rejection_class_is_known: requirement_coverage_rows
@@ -65480,6 +65500,14 @@ fn path2_account_stark_fri_qrom_residual_report_v1_frame(
             artifact.as_bytes(),
         );
     }
+    for (index, case_id) in report.qrom_domain_vector_case_ids.iter().enumerate() {
+        append_u64(&mut frame, b"qrom_domain_vector_case_index", index as u64);
+        append_frame(
+            &mut frame,
+            b"qrom_domain_vector_case_id",
+            case_id.as_bytes(),
+        );
+    }
     append_u64(
         &mut frame,
         b"checked_core_qrom_algebraic_challenge_bits",
@@ -65519,6 +65547,11 @@ fn path2_account_stark_fri_qrom_residual_report_v1_frame(
         &mut frame,
         b"checked_core_qrom_max_target_count_log2_at_128_bits",
         report.checked_core_qrom_max_target_count_log2_at_128_bits as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"qrom_domain_vector_case_count",
+        report.qrom_domain_vector_case_count as u64,
     );
     append_u64(
         &mut frame,
@@ -107154,6 +107187,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert_eq!(report.challenge_field_bits_floor, 247);
         assert_eq!(report.poseidon2_sponge_floor_bits, 124);
         assert_eq!(report.checked_core_qrom_artifacts, PATH2_CHECKED_CORE_QROM_ARTIFACTS.as_ref());
+        assert_eq!(
+            report.qrom_domain_vector_case_ids,
+            PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES.as_ref()
+        );
+        assert_eq!(
+            report.qrom_domain_vector_case_count,
+            PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES.len()
+        );
         assert_eq!(report.checked_core_qrom_algebraic_challenge_bits, 182);
         assert_eq!(report.checked_core_qrom_hardening_bits, 64);
         assert_eq!(report.checked_core_qrom_total_transcript_bits, 246);
@@ -107738,7 +107779,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             report.requirement_coverage_count,
             report.accepting_requirements.len()
         );
-        assert_eq!(report.current_vector_covered_requirement_count, 9);
+        assert_eq!(report.current_vector_covered_requirement_count, 10);
         assert!(report.every_accepting_requirement_has_coverage_row);
         assert!(report.every_vector_covered_requirement_has_public_rejection_class);
         assert!(report.every_current_vector_case_is_known_kat_row);
@@ -107810,9 +107851,16 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             .is_empty());
         assert_eq!(
             report.requirement_coverage_rows[8].vector_evidence_kind,
-            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_NONE
+            PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_VECTOR_KIND_AUDIT
         );
-        assert!(!report.requirement_coverage_rows[8].covered_by_current_vectors);
+        assert!(report.requirement_coverage_rows[8].covered_by_current_vectors);
+        assert_eq!(
+            report.requirement_coverage_rows[8].current_vector_case_ids,
+            PATH2_ACCOUNT_STARK_FRI_QROM_DOMAIN_CASES.as_ref()
+        );
+        assert!(report.requirement_coverage_rows[8]
+            .public_rejection_classes
+            .is_empty());
         assert_eq!(
             report.requirement_coverage_rows[9].current_vector_case_ids,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_ALL_CURRENT_PAYLOAD_KAT_CASES.as_ref()

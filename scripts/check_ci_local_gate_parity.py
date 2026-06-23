@@ -216,6 +216,22 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ("path2_account_stark_fri_qrom_residual_consistency",),
     ),
     (
+        "account STARK FRI/QROM domain vector corpus check",
+        (
+            "path2_account_stark_fri_qrom_domain_vectors",
+            "path2_account_stark_fri_qrom_domain_vectors_v1.json",
+        ),
+        (
+            "path2_account_stark_fri_qrom_domain_vectors",
+            "path2_account_stark_fri_qrom_domain_vectors_v1.json",
+        ),
+    ),
+    (
+        "account STARK FRI/QROM domain vector consistency check",
+        ("path2_account_stark_fri_qrom_domain_vector_consistency",),
+        ("path2_account_stark_fri_qrom_domain_vector_consistency",),
+    ),
+    (
         "account STARK FRI/AoK boundary manifest check",
         (
             "path2_account_stark_fri_aok_boundary_manifest",
@@ -490,6 +506,16 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-QROM-001",
     ),
     "account STARK FRI/QROM residual consistency check": (
+        "DIR-PROOF-001",
+        "DIR-PROOF-002",
+        "DIR-QROM-001",
+    ),
+    "account STARK FRI/QROM domain vector corpus check": (
+        "DIR-PROOF-001",
+        "DIR-PROOF-002",
+        "DIR-QROM-001",
+    ),
+    "account STARK FRI/QROM domain vector consistency check": (
         "DIR-PROOF-001",
         "DIR-PROOF-002",
         "DIR-QROM-001",

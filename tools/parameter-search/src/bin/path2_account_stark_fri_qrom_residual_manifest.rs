@@ -59,6 +59,8 @@ fn manifest_body() -> Result<Value, String> {
         },
         "checked_core_qrom_budget": {
             "source_artifacts": report.checked_core_qrom_artifacts,
+            "qrom_domain_vector_case_ids": report.qrom_domain_vector_case_ids,
+            "qrom_domain_vector_case_count": report.qrom_domain_vector_case_count,
             "algebraic_challenge_bits": report.checked_core_qrom_algebraic_challenge_bits,
             "hardening_bits": report.checked_core_qrom_hardening_bits,
             "total_transcript_bits": report.checked_core_qrom_total_transcript_bits,

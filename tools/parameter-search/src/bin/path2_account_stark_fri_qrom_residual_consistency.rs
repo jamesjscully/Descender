@@ -71,6 +71,26 @@ fn json_str<'a>(value: &'a Value, path: &[&str]) -> Result<&'a str, String> {
         .ok_or_else(|| format!("JSON key {} is not a string", path.join(".")))
 }
 
+fn json_string_vec<'a>(value: &'a Value, path: &[&str]) -> Result<Vec<&'a str>, String> {
+    let mut cursor = value;
+    for key in path {
+        cursor = cursor
+            .get(*key)
+            .ok_or_else(|| format!("missing JSON key {}", path.join(".")))?;
+    }
+    let array = cursor
+        .as_array()
+        .ok_or_else(|| format!("JSON key {} is not an array", path.join(".")))?;
+    array
+        .iter()
+        .enumerate()
+        .map(|(index, item)| {
+            item.as_str()
+                .ok_or_else(|| format!("JSON key {}[{index}] is not a string", path.join(".")))
+        })
+        .collect()
+}
+
 fn check_equal<T: Eq + std::fmt::Debug>(label: &str, actual: T, expected: T) -> Result<(), String> {
     if actual == expected {
         Ok(())
@@ -149,6 +169,32 @@ fn main() -> Result<(), String> {
         "optimistic capacity FRI bits",
         report.fri_num_queries * report.fri_log_blowup + report.fri_query_pow_bits,
         report.fri_optimistic_capacity_bits,
+    )?;
+
+    let manifest = load_json(&root, "formal/kat/path2_account_stark_fri_qrom_residual_v1.json")?;
+    check_equal(
+        "FRI/QROM domain vector case count",
+        json_usize(
+            &manifest,
+            &[
+                "manifest",
+                "checked_core_qrom_budget",
+                "qrom_domain_vector_case_count",
+            ],
+        )?,
+        report.qrom_domain_vector_case_count,
+    )?;
+    check_equal(
+        "FRI/QROM domain vector case ids",
+        json_string_vec(
+            &manifest,
+            &[
+                "manifest",
+                "checked_core_qrom_budget",
+                "qrom_domain_vector_case_ids",
+            ],
+        )?,
+        report.qrom_domain_vector_case_ids.to_vec(),
     )?;
 
     let memo = load_json(&root, report.checked_core_qrom_artifacts[0])?;

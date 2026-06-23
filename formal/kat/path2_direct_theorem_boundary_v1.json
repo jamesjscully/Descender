@@ -39,13 +39,13 @@
       ],
       "coverage": {
         "accepting_requirement_count": 10,
-        "account_stark_residual_matrix_report_digest": "9dceb234159b455b5f95e39b236d199bd0023fb4558bc60d70fe06d265b80623",
+        "account_stark_residual_matrix_report_digest": "a3b96b19b30bfd2433d50cb046ab5ac710ceb3faeae033463d2279a1a24d31c6",
         "active_payload_mutation_coverage_present": true,
         "binding_leaf_context_field_count": 9,
         "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
         "boundary_statement_pinned": true,
         "certificate_evidence_binding_field_count": 11,
-        "current_vector_covered_requirement_count": 9,
+        "current_vector_covered_requirement_count": 10,
         "current_vector_evidence_kinds": [
           "rejection_vectors",
           "rejection_vectors",
@@ -55,7 +55,7 @@
           "rejection_vectors",
           "rejection_vectors",
           "audit_vectors",
-          "no_current_vectors",
+          "audit_vectors",
           "rejection_vectors"
         ],
         "deployed_anchor_field_count": 8,
@@ -370,13 +370,19 @@
         },
         {
           "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
-          "closure_target": "account-STARK transcript QROM theorem and residual pricing",
-          "coverage_surface": "Path2AccountStarkFriQromResidualReportV1",
-          "covered_by_current_vectors": false,
-          "current_vector_case_ids": [],
+          "closure_target": "account-STARK transcript QROM theorem over the pinned FRI/QROM domain corpus",
+          "coverage_surface": "Path2AccountStarkFriQromResidualReportV1 and vector corpus",
+          "covered_by_current_vectors": true,
+          "current_vector_case_ids": [
+            "fri_qrom_selected_proof_family_domain",
+            "fri_qrom_poseidon2_width_and_sponge_floor",
+            "fri_qrom_challenge_field_and_schedule",
+            "fri_qrom_checked_core_budget_import",
+            "fri_qrom_open_theorem_flags_fail_closed"
+          ],
           "public_rejection_classes": [],
           "requirement": "account_stark_qrom_domain_separation",
-          "vector_evidence_kind": "no_current_vectors"
+          "vector_evidence_kind": "audit_vectors"
         },
         {
           "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
@@ -437,16 +443,16 @@
     "corpus_id": "Descender.Path2.DirectTheoremBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "7ba404fd9aed87cf162a4bbe0cd701b3c7da0f31d1e9264455e31a78f394c09d",
-      "account_creation_proof_boundary_report_recomputed_digest": "7ba404fd9aed87cf162a4bbe0cd701b3c7da0f31d1e9264455e31a78f394c09d",
+      "account_creation_proof_boundary_report_digest": "aa8e1d3d656aa5b2f9349f3d8f9bcdc6832530046768841fdd201c703bbcd117",
+      "account_creation_proof_boundary_report_recomputed_digest": "aa8e1d3d656aa5b2f9349f3d8f9bcdc6832530046768841fdd201c703bbcd117",
       "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
-      "direct_theorem_boundary_report_digest": "0ff5ad3facbe737df5c7ded56cb3b5519f7a05b925202b22b6fc57d7c580fa9d",
-      "direct_theorem_boundary_report_recomputed_digest": "0ff5ad3facbe737df5c7ded56cb3b5519f7a05b925202b22b6fc57d7c580fa9d",
+      "direct_theorem_boundary_report_digest": "d3ba26572514a6867ccf544ef27fd0ddc9cd149eddfaf637de4c24bea303ac02",
+      "direct_theorem_boundary_report_recomputed_digest": "d3ba26572514a6867ccf544ef27fd0ddc9cd149eddfaf637de4c24bea303ac02",
       "direct_theorem_report_lifecycle_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_theorem_report_qrom_action_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
@@ -734,5 +740,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "ddc3e95b69c3867f3d548c2e6cc7a25fbed58d6e3f62f5da811c9d2dccf8c028"
+  "manifest_digest": "d205ddb39859001f13632f29568a5247aac8c3918abc1c8fb1859f42ebe1bdfb"
 }

@@ -19,6 +19,8 @@ The active conformance corpus covers:
 - lifecycle state-transition vectors;
 - deterministic public rejection classes;
 - no-export audit vectors for public-payload and simulator-input surfaces;
+- FRI/QROM domain audit vectors for the active account-STARK transcript
+  boundary inputs;
 - signer/wallet/HSM public API vectors for the command/result model in
   `spec/signer_api.md`;
 - entropy and domain-separation vectors for the stream model in
@@ -65,6 +67,7 @@ deployment readiness.
 | lifecycle | admit, spend, replay, burn, recovery, rollback, restore, and recoverable-state cases |
 | rejection | every public rejection class in `spec/consensus_verifier.md` |
 | no-export audit | public payload allowlist, simulator public-input allowlist, private-material denylist absence, and opaque proof-bundle manifest policy |
+| FRI/QROM domain audit | selected proof-family domain, Poseidon2 width and sponge floor, FRI challenge schedule, checked-core QROM budget import, and fail-closed open theorem flags |
 | signer public API | public slot records, fixed public errors, deterministic test-mode outputs, and diagnostic-build exclusion checks |
 | entropy streams | stream-domain KATs, deterministic test-mode vectors, wrong-profile/domain mutation vectors, and mask-PRF drift checks |
 | policy | M-of-N duplicate prevention, threshold/weight denial, recovery/rotation, timelock, burn, and adaptor-style condition vectors |
@@ -184,6 +187,8 @@ status. `path2_account_creation_frame_kat_vectors_v1.json` similarly pins the
 current leaf/evidence frame-binding rejection vectors for canonical framing and
 duplicated binding equalities. `Path2AccountCreationProofBoundaryReportV1`
 imports those precursor surfaces through a requirement-coverage matrix, which
-records which account-creation acceptance requirements currently have vector
-case ids and which remain proof-only or KAT-open. The full direct-mode vector corpus, full byte corpus,
+records current rejection or audit vector case ids for all ten
+account-creation acceptance requirements, including
+`path2_account_stark_fri_qrom_domain_vectors_v1.json` for the selected
+FRI/QROM domain boundary. The full direct-mode vector corpus, full byte corpus,
 lifecycle/rejection coverage, and `DIR-KAT-001` closure remain open.
