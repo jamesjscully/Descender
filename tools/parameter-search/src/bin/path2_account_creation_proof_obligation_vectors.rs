@@ -1,10 +1,16 @@
 use descender_parameter_search::production_reference::{
+    path2_account_creation_no_export_boundary_report_v1,
+    path2_account_creation_no_export_boundary_report_v1_digest,
     path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_proof_boundary_report_v1_digest,
+    path2_account_stark_fri_qrom_residual_report_v1,
+    path2_account_stark_fri_qrom_residual_report_v1_digest,
     path2_account_stark_payload_kat_boundary_report_v1,
     path2_account_stark_payload_kat_boundary_report_v1_digest,
     path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
+    validate_path2_account_creation_no_export_boundary_report_v1,
     validate_path2_account_creation_proof_boundary_report_v1,
+    validate_path2_account_stark_fri_qrom_residual_report_v1,
     validate_path2_account_stark_payload_kat_boundary_report_v1,
     validate_path2_direct_theorem_boundary_report_v1, PROFILE,
 };
@@ -80,6 +86,105 @@ fn manifest_body() -> Result<Value, String> {
     }
     if direct_report.account_creation_proof_boundary_report_digest != proof_report.digest {
         return Err("direct theorem report is not bound to proof-boundary report".to_string());
+    }
+
+    let no_export_report = path2_account_creation_no_export_boundary_report_v1();
+    validate_path2_account_creation_no_export_boundary_report_v1(&no_export_report)?;
+    let no_export_digest =
+        path2_account_creation_no_export_boundary_report_v1_digest(&no_export_report);
+    if no_export_digest != no_export_report.digest {
+        return Err("no-export boundary report digest mismatch".to_string());
+    }
+    if no_export_report.deployment_ready
+        || no_export_report.simulator_theorem_instantiated
+        || no_export_report.no_export_theorem_instantiated
+    {
+        return Err("no-export boundary unexpectedly claims theorem readiness".to_string());
+    }
+    let no_export_vectors_file =
+        load_json("formal/kat/path2_account_creation_no_export_vectors_v1.json")?;
+    let no_export_vectors = at(&no_export_vectors_file, "/corpus")?;
+    let no_export_vectors_json = serde_json::to_string_pretty(no_export_vectors)
+        .map_err(|err| format!("serialize no-export vector corpus body: {err}"))?;
+    let no_export_vectors_digest = hex_encode(&Sha256::digest(no_export_vectors_json.as_bytes()));
+    if str_at(&no_export_vectors_file, "/corpus_digest")? != no_export_vectors_digest {
+        return Err("no-export vector corpus digest mismatch".to_string());
+    }
+    if str_at(no_export_vectors, "/schema")? != "Descender.Path2.AccountCreationNoExportVectors.v1"
+        || str_at(no_export_vectors, "/status")? != "digest_pinned_no_export_audit_vectors"
+        || str_at(no_export_vectors, "/boundary_report/digest")?
+            != hex_encode(&no_export_report.digest)
+        || u64_at(no_export_vectors, "/case_count")?
+            != no_export_report.no_export_vector_case_ids.len() as u64
+        || !bool_at(
+            no_export_vectors,
+            "/audit_summary/all_private_material_absent",
+        )?
+        || !bool_at(no_export_vectors, "/audit_summary/payload_denylist_absent")?
+        || !bool_at(
+            no_export_vectors,
+            "/audit_summary/simulator_denylist_absent",
+        )?
+        || bool_at(
+            no_export_vectors,
+            "/audit_summary/public_payload_exports_private_material",
+        )?
+        || bool_at(
+            no_export_vectors,
+            "/audit_summary/simulator_theorem_instantiated",
+        )?
+        || bool_at(
+            no_export_vectors,
+            "/audit_summary/no_export_theorem_instantiated",
+        )?
+        || bool_at(no_export_vectors, "/audit_summary/deployment_ready")?
+    {
+        return Err(
+            "no-export vector corpus is not bound to the current no-export boundary".to_string(),
+        );
+    }
+
+    let fri_qrom_report = path2_account_stark_fri_qrom_residual_report_v1();
+    validate_path2_account_stark_fri_qrom_residual_report_v1(&fri_qrom_report)?;
+    let fri_qrom_digest = path2_account_stark_fri_qrom_residual_report_v1_digest(&fri_qrom_report);
+    if fri_qrom_digest != fri_qrom_report.digest {
+        return Err("FRI/QROM residual report digest mismatch".to_string());
+    }
+    let fri_qrom_vectors_file =
+        load_json("formal/kat/path2_account_stark_fri_qrom_domain_vectors_v1.json")?;
+    let fri_qrom_vectors = at(&fri_qrom_vectors_file, "/corpus")?;
+    let fri_qrom_vectors_json = serde_json::to_string_pretty(fri_qrom_vectors)
+        .map_err(|err| format!("serialize FRI/QROM domain vector corpus body: {err}"))?;
+    let fri_qrom_vectors_digest = hex_encode(&Sha256::digest(fri_qrom_vectors_json.as_bytes()));
+    if str_at(&fri_qrom_vectors_file, "/corpus_digest")? != fri_qrom_vectors_digest {
+        return Err("FRI/QROM domain vector corpus digest mismatch".to_string());
+    }
+    if str_at(fri_qrom_vectors, "/schema")? != "Descender.Path2.AccountStarkFriQromDomainVectors.v1"
+        || str_at(fri_qrom_vectors, "/status")? != "digest_pinned_fri_qrom_domain_audit_vectors"
+        || str_at(fri_qrom_vectors, "/boundary_report/digest")?
+            != hex_encode(&fri_qrom_report.digest)
+        || u64_at(fri_qrom_vectors, "/case_count")?
+            != fri_qrom_report.qrom_domain_vector_case_count as u64
+        || !bool_at(fri_qrom_vectors, "/audit_summary/fri_schedule_pinned")?
+        || !bool_at(fri_qrom_vectors, "/audit_summary/challenge_field_pinned")?
+        || !bool_at(
+            fri_qrom_vectors,
+            "/audit_summary/checked_core_qrom_budget_pinned",
+        )?
+        || bool_at(
+            fri_qrom_vectors,
+            "/audit_summary/account_stark_transcript_qrom_theorem_instantiated",
+        )?
+        || bool_at(
+            fri_qrom_vectors,
+            "/audit_summary/recursion_pricing_complete",
+        )?
+        || bool_at(fri_qrom_vectors, "/audit_summary/residual_pricing_complete")?
+        || bool_at(fri_qrom_vectors, "/audit_summary/deployment_ready")?
+    {
+        return Err(
+            "FRI/QROM domain vector corpus is not bound to the current residual report".to_string(),
+        );
     }
 
     let payload_kat_report = path2_account_stark_payload_kat_boundary_report_v1();
@@ -189,6 +294,69 @@ fn manifest_body() -> Result<Value, String> {
             "deployment_ready": proof_report.deployment_ready,
             "blocker": proof_report.blocker
         },
+        "no_export_vector_evidence": {
+            "corpus_path": "formal/kat/path2_account_creation_no_export_vectors_v1.json",
+            "corpus_schema": str_at(no_export_vectors, "/schema")?,
+            "corpus_status": str_at(no_export_vectors, "/status")?,
+            "corpus_digest": str_at(&no_export_vectors_file, "/corpus_digest")?,
+            "corpus_recomputed_digest": no_export_vectors_digest,
+            "boundary_report_digest": str_at(no_export_vectors, "/boundary_report/digest")?,
+            "boundary_report_recomputed_digest": hex_encode(&no_export_digest),
+            "case_count": u64_at(no_export_vectors, "/case_count")?,
+            "all_private_material_absent": bool_at(
+                no_export_vectors,
+                "/audit_summary/all_private_material_absent"
+            )?,
+            "payload_denylist_absent": bool_at(
+                no_export_vectors,
+                "/audit_summary/payload_denylist_absent"
+            )?,
+            "simulator_denylist_absent": bool_at(
+                no_export_vectors,
+                "/audit_summary/simulator_denylist_absent"
+            )?,
+            "public_payload_exports_private_material": bool_at(
+                no_export_vectors,
+                "/audit_summary/public_payload_exports_private_material"
+            )?,
+            "simulator_theorem_instantiated":
+                no_export_report.simulator_theorem_instantiated,
+            "no_export_theorem_instantiated":
+                no_export_report.no_export_theorem_instantiated,
+            "deployment_ready": no_export_report.deployment_ready,
+            "blocker": no_export_report.blocker
+        },
+        "fri_qrom_domain_vector_evidence": {
+            "corpus_path": "formal/kat/path2_account_stark_fri_qrom_domain_vectors_v1.json",
+            "corpus_schema": str_at(fri_qrom_vectors, "/schema")?,
+            "corpus_status": str_at(fri_qrom_vectors, "/status")?,
+            "corpus_digest": str_at(&fri_qrom_vectors_file, "/corpus_digest")?,
+            "corpus_recomputed_digest": fri_qrom_vectors_digest,
+            "boundary_report_digest": str_at(fri_qrom_vectors, "/boundary_report/digest")?,
+            "boundary_report_recomputed_digest": hex_encode(&fri_qrom_digest),
+            "case_count": u64_at(fri_qrom_vectors, "/case_count")?,
+            "poseidon2_sponge_floor_bits": fri_qrom_report.poseidon2_sponge_floor_bits,
+            "checked_core_qrom_selected_transcript_term_bits":
+                fri_qrom_report.checked_core_qrom_selected_transcript_term_bits,
+            "fri_schedule_pinned": bool_at(
+                fri_qrom_vectors,
+                "/audit_summary/fri_schedule_pinned"
+            )?,
+            "challenge_field_pinned": bool_at(
+                fri_qrom_vectors,
+                "/audit_summary/challenge_field_pinned"
+            )?,
+            "checked_core_qrom_budget_pinned": bool_at(
+                fri_qrom_vectors,
+                "/audit_summary/checked_core_qrom_budget_pinned"
+            )?,
+            "account_stark_transcript_qrom_theorem_instantiated":
+                fri_qrom_report.account_stark_transcript_qrom_theorem_instantiated,
+            "recursion_pricing_complete": fri_qrom_report.recursion_pricing_complete,
+            "residual_pricing_complete": fri_qrom_report.residual_pricing_complete,
+            "deployment_ready": fri_qrom_report.deployment_ready,
+            "blocker": fri_qrom_report.blocker
+        },
         "payload_kat_vector_evidence": {
             "corpus_path": "formal/kat/path2_account_stark_payload_kat_vectors_v1.json",
             "corpus_schema": str_at(payload_vectors, "/schema")?,
@@ -249,6 +417,8 @@ fn manifest_body() -> Result<Value, String> {
             "fri_aok_extractor_theorem_instantiated":
                 proof_report.fri_aok_extractor_theorem_instantiated,
             "fri_qrom_residual_priced": proof_report.fri_qrom_residual_priced,
+            "current_no_export_vectors_cover_boundary_cases": true,
+            "current_fri_qrom_domain_vectors_cover_boundary_cases": true,
             "frozen_kat_corpus_complete": proof_report.frozen_kat_corpus_complete,
             "current_payload_kat_vectors_cover_every_boundary_row": bool_at(
                 payload_vectors,

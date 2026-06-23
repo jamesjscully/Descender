@@ -4,6 +4,8 @@
       "all_cases_have_named_break": true,
       "all_cases_open": true,
       "all_open_cases_block_deployment": true,
+      "current_fri_qrom_domain_vectors_cover_boundary_cases": true,
+      "current_no_export_vectors_cover_boundary_cases": true,
       "current_payload_kat_vectors_cover_every_boundary_row": true,
       "deployment_ready": false,
       "external_review_complete": false,
@@ -134,9 +136,47 @@
       "domain": "Descender.Path2.DirectTheoremBoundaryReport.v1",
       "recomputed_digest": "fb5fc5d0eaa3e2afa3b39b0400aa112b09d97ae99b858026ecdc425efa07ba7a"
     },
+    "fri_qrom_domain_vector_evidence": {
+      "account_stark_transcript_qrom_theorem_instantiated": false,
+      "blocker": "account-STARK residual matrix: FRI soundness margin, recursion, Poseidon2 transcript, and multi-target/QROM pricing are not closed",
+      "boundary_report_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece",
+      "boundary_report_recomputed_digest": "f2278bb76f1c4db70f40bf6b780add418a9f7536a4ef810def0b37b8ea570ece",
+      "case_count": 5,
+      "challenge_field_pinned": true,
+      "checked_core_qrom_budget_pinned": true,
+      "checked_core_qrom_selected_transcript_term_bits": 182,
+      "corpus_digest": "aad6636ecccf468034434966d98062ddd9cebc1a730d7f0fbc22410cbe5d7bb1",
+      "corpus_path": "formal/kat/path2_account_stark_fri_qrom_domain_vectors_v1.json",
+      "corpus_recomputed_digest": "aad6636ecccf468034434966d98062ddd9cebc1a730d7f0fbc22410cbe5d7bb1",
+      "corpus_schema": "Descender.Path2.AccountStarkFriQromDomainVectors.v1",
+      "corpus_status": "digest_pinned_fri_qrom_domain_audit_vectors",
+      "deployment_ready": false,
+      "fri_schedule_pinned": true,
+      "poseidon2_sponge_floor_bits": 124,
+      "recursion_pricing_complete": false,
+      "residual_pricing_complete": false
+    },
     "generator": {
       "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_proof_obligation_vectors",
       "source": "tools/parameter-search/src/bin/path2_account_creation_proof_obligation_vectors.rs"
+    },
+    "no_export_vector_evidence": {
+      "all_private_material_absent": true,
+      "blocker": "account-STARK residual matrix: selected payload simulator and no-export theorem is not instantiated",
+      "boundary_report_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
+      "boundary_report_recomputed_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
+      "case_count": 4,
+      "corpus_digest": "96dc46d600adcd13b8890be4e30ad7cc772917ebf9de10776c968936d68ddd4e",
+      "corpus_path": "formal/kat/path2_account_creation_no_export_vectors_v1.json",
+      "corpus_recomputed_digest": "96dc46d600adcd13b8890be4e30ad7cc772917ebf9de10776c968936d68ddd4e",
+      "corpus_schema": "Descender.Path2.AccountCreationNoExportVectors.v1",
+      "corpus_status": "digest_pinned_no_export_audit_vectors",
+      "deployment_ready": false,
+      "no_export_theorem_instantiated": false,
+      "payload_denylist_absent": true,
+      "public_payload_exports_private_material": false,
+      "simulator_denylist_absent": true,
+      "simulator_theorem_instantiated": false
     },
     "payload_kat_vector_evidence": {
       "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
@@ -177,5 +217,5 @@
     "schema": "Descender.Path2.AccountCreationProofObligationVectors.v1",
     "status": "digest_pinned_proof_obligation_audit_vectors"
   },
-  "corpus_digest": "06080bd3f4a1b346410cbbe88ee35f5cdb87b092e7145622b0a4e79cd64adeca"
+  "corpus_digest": "f4cb40580d774279b9f25d90d178ef8c959582a58d0d8bb24186c76cf893ece4"
 }
