@@ -74,8 +74,9 @@ export one of the named breaks below or update this boundary by ADR/spec change.
 The production reference emits `Path2DirectTheoremBoundaryReportV1`, which pins
 the theorem target, conclusion label, accepted tuple, acceptance hypotheses,
 per-hypothesis obligation matrix, direct obligation audit-vector case list,
-named break classes, the direct closure-dependency row table, and current open
-blocker for this theorem boundary.
+named break classes, the direct closure-dependency row table, derived
+closure-dependency evidence rows, and current open blocker for this theorem
+boundary.
 `formal/kat/path2_direct_theorem_boundary_v1.json` is regenerated from that
 report, the current `Path2DirectQromActionBoundaryReportV1`, the current
 `Path2DirectLifecycleBoundaryReportV1`, and the current
@@ -85,14 +86,16 @@ proof-boundary digest, and selected field groups cannot drift silently. The
 production report validator separately rejects weakened
 acceptance-hypothesis/obligation-row coverage, missing pinned accepted-evidence
 hooks, missing direct closure-dependency rows, unexpectedly closed theorem
-flags, deployment-ready flags, or direct theorem blocker drift. The
+flags, missing per-row closure-dependency evidence, deployment-ready flags, or
+direct theorem blocker drift. The
 `formal/kat/path2_direct_theorem_obligation_vectors_v1.json` corpus records one
 digest-pinned audit case for each open direct-theorem obligation and binds that
 row list to the current QROM/action, lifecycle, and account-creation
 proof-boundary reports while also carrying the direct closure-dependency rows
-that tie the nine accepted-tuple hypotheses to their still-open source
-reports/support surfaces. It keeps composition, imported-boundary verification,
-and deployment flags false. `Path2DirectAcceptedSpendTupleEvidenceV1` records
+and derived evidence rows that tie the nine accepted-tuple hypotheses to their
+still-open source reports/support surfaces. It keeps composition,
+imported-boundary verification, and deployment flags false.
+`Path2DirectAcceptedSpendTupleEvidenceV1` records
 an accepted-path tuple digest for the current direct spend endpoint: public-key
 identity, message digest, account id, state root, slot id, checked-core
 signature/challenge/proof-commitment digests, leaf digest, evidence transcript
@@ -285,7 +288,9 @@ FRI/QROM residual pricing, frozen payload KATs, and production-gate review;
 each open row carries a named break and the fail-closed account-creation
 proof-boundary blocker. A separate closure-dependency row table maps those
 eight open proof obligations to their source report flag groups and, where
-applicable, the selected account-STARK residual matrix row; the production
+applicable, the selected account-STARK residual matrix row. Derived
+closure-dependency evidence rows pin each dependency to the open proof
+obligation, open source support surface, named break, and blocker; the production
 validator rejects the proof-boundary report if a false sampler, no-export,
 FRI/AoK, FRI/QROM, payload-KAT, or production-gate flag is not backed by the
 expected open obligation and support surface.
@@ -321,8 +326,8 @@ that report, the selected `Path2AccountStarkResidualMatrixReportV1`, the current
 report, and the current no-export boundary report by local and CI gates, so the
 proof-boundary target, conclusion, digest chain, selected field groups,
 sampler/timing hooks, no-export denylist, requirement-coverage rows,
-proof-obligation rows, closure-dependency rows, residual rows, and payload-KAT
-boundary blocker cannot drift silently.
+proof-obligation rows, closure-dependency rows, closure-dependency evidence
+rows, residual rows, and payload-KAT boundary blocker cannot drift silently.
 `Path2AccountCreationAcceptedProofBoundaryEvidenceV1` is the accepted-path
 creation analogue of the direct spend tuple evidence. Under the real
 account-STARK verifier feature it constructs the deterministic current KAT

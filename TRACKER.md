@@ -49,7 +49,10 @@ check accepted-artifact equality, bind every generated proof/direct boundary
 copy of the accepted composition artifact plus requirement- and
 obligation-corpus evidence back to standalone compact artifacts, and keep both
 proof-boundary and direct-theorem closure-dependency rows pinned to their open
-obligations/support surfaces. The accepted spend tuple artifact now carries an
+obligations/support surfaces, with both boundary reports now carrying derived
+closure-dependency evidence rows that separately pin each dependency to an open
+obligation, an open source support surface, and the deployment blocker. The
+accepted spend tuple artifact now carries an
 eleven-row accepted-tuple-field evidence checklist tying every direct theorem
 tuple field to its accepted-path check and still-open direct theorem obligation.
 The accepted-composition artifact now also
@@ -61,7 +64,8 @@ boundary-manifest gate also checks embedded requirement, proof-obligation, and
 direct-obligation corpus evidence against standalone corpus-evidence objects,
 while the preflight gate checks open-row blockers, fail-closed flags, the
 direct/proof/residual closure-dependency graph, including the proof-boundary
-and direct-theorem closure-dependency row tables, and the production preflight
+and direct-theorem closure-dependency row tables plus their derived evidence
+rows, and the production preflight
 blocker/verdict/ready-assertion/certificate chain against the standalone KATs
 and deployment blocker set. The direct theorem report
 validator also explicitly rejects weakened obligation coverage, missing pinned

@@ -288,6 +288,13 @@ fn manifest_body() -> Result<Value, String> {
                     proof_boundary_report.proof_obligation_count,
                 "closure_dependency_count":
                     proof_boundary_report.closure_dependency_count,
+                "closure_dependency_evidence_count":
+                    proof_boundary_report.closure_dependency_evidence_count,
+                "closure_dependency_open_obligation_evidence_count":
+                    proof_boundary_report
+                        .closure_dependency_open_obligation_evidence_count,
+                "closure_dependency_open_support_evidence_count":
+                    proof_boundary_report.closure_dependency_open_support_evidence_count,
                 "proof_obligation_audit_vector_case_count":
                     proof_boundary_report.proof_obligation_audit_vector_case_count,
                 "current_vector_covered_requirement_count":
@@ -316,6 +323,8 @@ fn manifest_body() -> Result<Value, String> {
                     proof_boundary_report.every_closure_dependency_has_open_support_surface,
                 "every_open_closure_dependency_blocks_deployment":
                     proof_boundary_report.every_open_closure_dependency_blocks_deployment,
+                "every_closure_dependency_has_evidence":
+                    proof_boundary_report.every_closure_dependency_has_evidence,
                 "boundary_statement_pinned":
                     proof_boundary_report.boundary_statement_pinned,
                 "selected_payload_pinned": proof_boundary_report.selected_payload_pinned,
@@ -377,6 +386,8 @@ fn manifest_body() -> Result<Value, String> {
                 proof_boundary_report.proof_obligation_audit_vector_case_ids,
             "proof_obligation_rows": proof_boundary_report.proof_obligation_rows,
             "closure_dependency_rows": proof_boundary_report.closure_dependency_rows,
+            "closure_dependency_evidence_rows":
+                proof_boundary_report.closure_dependency_evidence_rows,
             "proof_obligation_vector_corpus_evidence":
                 proof_obligation_vector_corpus_evidence,
             "accepted_proof_boundary_evidence_artifact":

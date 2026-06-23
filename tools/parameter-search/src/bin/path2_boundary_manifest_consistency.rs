@@ -226,6 +226,33 @@ fn check_consistency() -> Result<(), String> {
         ],
         9,
     )?;
+    expect_u64(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "coverage",
+            "closure_dependency_evidence_count",
+        ],
+        9,
+    )?;
+    expect_u64(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "coverage",
+            "closure_dependency_open_obligation_evidence_count",
+        ],
+        9,
+    )?;
+    expect_u64(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "coverage",
+            "closure_dependency_open_support_evidence_count",
+        ],
+        9,
+    )?;
     expect_bool(
         direct_manifest,
         &[
@@ -250,6 +277,15 @@ fn check_consistency() -> Result<(), String> {
             "direct_theorem_boundary",
             "coverage",
             "every_open_closure_dependency_blocks_deployment",
+        ],
+        true,
+    )?;
+    expect_bool(
+        direct_manifest,
+        &[
+            "direct_theorem_boundary",
+            "coverage",
+            "every_closure_dependency_has_evidence",
         ],
         true,
     )?;
@@ -415,12 +451,48 @@ fn check_consistency() -> Result<(), String> {
         ],
         true,
     )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "every_closure_dependency_has_evidence",
+        ],
+        true,
+    )?;
     expect_u64(
         proof_manifest,
         &[
             "account_creation_proof_boundary",
             "coverage",
             "closure_dependency_count",
+        ],
+        8,
+    )?;
+    expect_u64(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "closure_dependency_evidence_count",
+        ],
+        8,
+    )?;
+    expect_u64(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "closure_dependency_open_obligation_evidence_count",
+        ],
+        8,
+    )?;
+    expect_u64(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "closure_dependency_open_support_evidence_count",
         ],
         8,
     )?;

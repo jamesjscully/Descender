@@ -9619,6 +9619,21 @@ pub struct Path2AccountCreationProofBoundaryClosureDependencyRowV1 {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AccountCreationProofBoundaryClosureDependencyEvidenceRowV1 {
+    pub dependency_id: &'static str,
+    pub source_report: &'static str,
+    pub source_flag_group: &'static str,
+    pub proof_obligation_id: &'static str,
+    pub residual_item: &'static str,
+    pub proof_obligation_still_open: bool,
+    pub source_support_still_open: bool,
+    pub closure_dependency_open: bool,
+    pub blocks_deployment: bool,
+    pub named_break: &'static str,
+    pub blocker: &'static str,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2DirectTheoremClosureDependencyRowV1 {
     pub dependency_id: &'static str,
     pub source_report: &'static str,
@@ -9629,6 +9644,22 @@ pub struct Path2DirectTheoremClosureDependencyRowV1 {
     pub named_break: &'static str,
     pub blocker: &'static str,
     pub open: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2DirectTheoremClosureDependencyEvidenceRowV1 {
+    pub dependency_id: &'static str,
+    pub source_report: &'static str,
+    pub source_flag_group: &'static str,
+    pub direct_obligation_id: &'static str,
+    pub acceptance_hypothesis: &'static str,
+    pub support_surface: &'static str,
+    pub direct_obligation_still_open: bool,
+    pub source_support_still_open: bool,
+    pub closure_dependency_open: bool,
+    pub blocks_deployment: bool,
+    pub named_break: &'static str,
+    pub blocker: &'static str,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -9661,9 +9692,14 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub proof_obligation_rows: &'static [Path2AccountCreationProofBoundaryObligationRowV1],
     pub closure_dependency_rows:
         &'static [Path2AccountCreationProofBoundaryClosureDependencyRowV1],
+    pub closure_dependency_evidence_rows:
+        Vec<Path2AccountCreationProofBoundaryClosureDependencyEvidenceRowV1>,
     pub requirement_coverage_count: usize,
     pub proof_obligation_count: usize,
     pub closure_dependency_count: usize,
+    pub closure_dependency_evidence_count: usize,
+    pub closure_dependency_open_obligation_evidence_count: usize,
+    pub closure_dependency_open_support_evidence_count: usize,
     pub proof_obligation_audit_vector_case_count: usize,
     pub current_vector_covered_requirement_count: usize,
     pub every_accepting_requirement_has_coverage_row: bool,
@@ -9675,6 +9711,7 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub every_closure_dependency_has_open_obligation: bool,
     pub every_closure_dependency_has_open_support_surface: bool,
     pub every_open_closure_dependency_blocks_deployment: bool,
+    pub every_closure_dependency_has_evidence: bool,
     pub boundary_statement_pinned: bool,
     pub selected_payload_pinned: bool,
     pub accepted_boundary_evidence_present: bool,
@@ -10009,8 +10046,12 @@ pub struct Path2DirectTheoremBoundaryReportV1 {
     pub obligation_audit_vector_case_ids: &'static [&'static str],
     pub obligation_rows: &'static [Path2DirectTheoremObligationRowV1],
     pub closure_dependency_rows: &'static [Path2DirectTheoremClosureDependencyRowV1],
+    pub closure_dependency_evidence_rows: Vec<Path2DirectTheoremClosureDependencyEvidenceRowV1>,
     pub obligation_count: usize,
     pub closure_dependency_count: usize,
+    pub closure_dependency_evidence_count: usize,
+    pub closure_dependency_open_obligation_evidence_count: usize,
+    pub closure_dependency_open_support_evidence_count: usize,
     pub obligation_audit_vector_case_count: usize,
     pub every_hypothesis_has_obligation: bool,
     pub every_obligation_has_named_break: bool,
@@ -10018,6 +10059,7 @@ pub struct Path2DirectTheoremBoundaryReportV1 {
     pub every_closure_dependency_has_open_obligation: bool,
     pub every_closure_dependency_has_open_support_surface: bool,
     pub every_open_closure_dependency_blocks_deployment: bool,
+    pub every_closure_dependency_has_evidence: bool,
     pub theorem_statement_pinned: bool,
     pub accepted_tuple_pinned: bool,
     pub accepted_tuple_evidence_present: bool,
@@ -12811,6 +12853,51 @@ fn path2_account_creation_closure_dependency_has_open_obligation_v1(
     })
 }
 
+fn path2_account_creation_closure_dependency_evidence_rows_v1(
+    closure_dependency_rows: &[Path2AccountCreationProofBoundaryClosureDependencyRowV1],
+    proof_obligation_rows: &[Path2AccountCreationProofBoundaryObligationRowV1],
+    sampler_timing_report: &Path2AccountCreationSamplerTimingReportV1,
+    no_export_boundary_report: &Path2AccountCreationNoExportBoundaryReportV1,
+    residual_matrix_report: &Path2AccountStarkResidualMatrixReportV1,
+    fri_qrom_residual_report: &Path2AccountStarkFriQromResidualReportV1,
+    fri_aok_boundary_report: &Path2AccountStarkFriAokBoundaryReportV1,
+    payload_kat_boundary_report: &Path2AccountStarkPayloadKatBoundaryReportV1,
+) -> Vec<Path2AccountCreationProofBoundaryClosureDependencyEvidenceRowV1> {
+    closure_dependency_rows
+        .iter()
+        .map(|row| {
+            Path2AccountCreationProofBoundaryClosureDependencyEvidenceRowV1 {
+                dependency_id: row.dependency_id,
+                source_report: row.source_report,
+                source_flag_group: row.source_flag_group,
+                proof_obligation_id: row.proof_obligation_id,
+                residual_item: row.residual_item,
+                proof_obligation_still_open:
+                    path2_account_creation_closure_dependency_has_open_obligation_v1(
+                        row,
+                        proof_obligation_rows,
+                    ),
+                source_support_still_open:
+                    path2_account_creation_closure_dependency_support_open_v1(
+                        row,
+                        sampler_timing_report,
+                        no_export_boundary_report,
+                        residual_matrix_report,
+                        fri_qrom_residual_report,
+                        fri_aok_boundary_report,
+                        payload_kat_boundary_report,
+                    ),
+                closure_dependency_open: row.open,
+                blocks_deployment: row.open
+                    && row.blocker
+                        == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
+                named_break: row.named_break,
+                blocker: row.blocker,
+            }
+        })
+        .collect()
+}
+
 pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreationProofBoundaryReportV1 {
     let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
     let no_export_boundary_report = path2_account_creation_no_export_boundary_report_v1();
@@ -12862,9 +12949,13 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
             &PATH2_ACCOUNT_CREATION_PROOF_OBLIGATION_AUDIT_CASES,
         proof_obligation_rows,
         closure_dependency_rows,
+        closure_dependency_evidence_rows: Vec::new(),
         requirement_coverage_count: requirement_coverage_rows.len(),
         proof_obligation_count: proof_obligation_rows.len(),
         closure_dependency_count: closure_dependency_rows.len(),
+        closure_dependency_evidence_count: 0,
+        closure_dependency_open_obligation_evidence_count: 0,
+        closure_dependency_open_support_evidence_count: 0,
         proof_obligation_audit_vector_case_count:
             PATH2_ACCOUNT_CREATION_PROOF_OBLIGATION_AUDIT_CASES.len(),
         current_vector_covered_requirement_count: requirement_coverage_rows
@@ -12941,6 +13032,7 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
                         == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
             },
         ),
+        every_closure_dependency_has_evidence: false,
         boundary_statement_pinned: true,
         selected_payload_pinned: true,
         accepted_boundary_evidence_present: true,
@@ -12962,6 +13054,41 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         deployment_ready: false,
         blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY,
     };
+    report.closure_dependency_evidence_rows =
+        path2_account_creation_closure_dependency_evidence_rows_v1(
+            closure_dependency_rows,
+            proof_obligation_rows,
+            &sampler_timing_report,
+            &no_export_boundary_report,
+            &account_stark_residual_matrix_report,
+            &fri_qrom_residual_report,
+            &fri_aok_boundary_report,
+            &payload_kat_boundary_report,
+        );
+    report.closure_dependency_evidence_count =
+        report.closure_dependency_evidence_rows.len();
+    report.closure_dependency_open_obligation_evidence_count = report
+        .closure_dependency_evidence_rows
+        .iter()
+        .filter(|row| row.proof_obligation_still_open)
+        .count();
+    report.closure_dependency_open_support_evidence_count = report
+        .closure_dependency_evidence_rows
+        .iter()
+        .filter(|row| row.source_support_still_open)
+        .count();
+    report.every_closure_dependency_has_evidence =
+        report.closure_dependency_evidence_count == report.closure_dependency_count
+            && report.closure_dependency_open_obligation_evidence_count
+                == report.closure_dependency_count
+            && report.closure_dependency_open_support_evidence_count
+                == report.closure_dependency_count
+            && report.closure_dependency_evidence_rows.iter().all(|row| {
+                row.closure_dependency_open
+                    && row.blocks_deployment
+                    && row.blocker
+                        == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
+            });
     report.digest = path2_account_creation_proof_boundary_report_v1_digest(&report);
     report
 }
@@ -13071,10 +13198,29 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
             "Path 2 account-creation proof boundary lost obligation-row coverage".to_string(),
         );
     }
+    let expected_closure_dependency_evidence_rows =
+        path2_account_creation_closure_dependency_evidence_rows_v1(
+            report.closure_dependency_rows,
+            report.proof_obligation_rows,
+            &sampler_timing_report,
+            &no_export_boundary_report,
+            &account_stark_residual_matrix_report,
+            &fri_qrom_residual_report,
+            &fri_aok_boundary_report,
+            &payload_kat_boundary_report,
+        );
     if report.closure_dependency_rows
         != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_CLOSURE_DEPENDENCY_ROWS.as_ref()
         || report.closure_dependency_count != report.closure_dependency_rows.len()
         || report.closure_dependency_count != report.proof_obligation_rows.len()
+        || report.closure_dependency_evidence_rows != expected_closure_dependency_evidence_rows
+        || report.closure_dependency_evidence_count != report.closure_dependency_rows.len()
+        || report.closure_dependency_evidence_count
+            != report.closure_dependency_evidence_rows.len()
+        || report.closure_dependency_open_obligation_evidence_count
+            != report.closure_dependency_rows.len()
+        || report.closure_dependency_open_support_evidence_count
+            != report.closure_dependency_rows.len()
         || !report
             .closure_dependency_rows
             .iter()
@@ -13086,6 +13232,7 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
         || !report.every_closure_dependency_has_open_obligation
         || !report.every_closure_dependency_has_open_support_surface
         || !report.every_open_closure_dependency_blocks_deployment
+        || !report.every_closure_dependency_has_evidence
         || !report.closure_dependency_rows.iter().all(|row| {
             row.open
                 && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
@@ -13102,6 +13249,13 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
                     &fri_aok_boundary_report,
                     &payload_kat_boundary_report,
                 )
+        })
+        || !report.closure_dependency_evidence_rows.iter().all(|row| {
+            row.proof_obligation_still_open
+                && row.source_support_still_open
+                && row.closure_dependency_open
+                && row.blocks_deployment
+                && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_CREATION_PROOF_BOUNDARY
         })
     {
         return Err(
@@ -13363,6 +13517,45 @@ fn path2_direct_theorem_closure_dependency_support_open_v1(
     }
 }
 
+fn path2_direct_theorem_closure_dependency_evidence_rows_v1(
+    closure_dependency_rows: &[Path2DirectTheoremClosureDependencyRowV1],
+    obligations: &[Path2DirectTheoremObligationRowV1],
+    direct_report: &Path2DirectTheoremBoundaryReportV1,
+    qrom_action_report: &Path2DirectQromActionBoundaryReportV1,
+    lifecycle_report: &Path2DirectLifecycleBoundaryReportV1,
+    proof_boundary_report: &Path2AccountCreationProofBoundaryReportV1,
+) -> Vec<Path2DirectTheoremClosureDependencyEvidenceRowV1> {
+    closure_dependency_rows
+        .iter()
+        .map(|row| Path2DirectTheoremClosureDependencyEvidenceRowV1 {
+            dependency_id: row.dependency_id,
+            source_report: row.source_report,
+            source_flag_group: row.source_flag_group,
+            direct_obligation_id: row.direct_obligation_id,
+            acceptance_hypothesis: row.acceptance_hypothesis,
+            support_surface: row.support_surface,
+            direct_obligation_still_open:
+                path2_direct_theorem_closure_dependency_has_open_obligation_v1(
+                    row,
+                    obligations,
+                ),
+            source_support_still_open:
+                path2_direct_theorem_closure_dependency_support_open_v1(
+                    row,
+                    direct_report,
+                    qrom_action_report,
+                    lifecycle_report,
+                    proof_boundary_report,
+                ),
+            closure_dependency_open: row.open,
+            blocks_deployment: row.open
+                && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+            named_break: row.named_break,
+            blocker: row.blocker,
+        })
+        .collect()
+}
+
 pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryReportV1 {
     let direct_qrom_action_boundary_report = path2_direct_qrom_action_boundary_report_v1();
     let direct_lifecycle_boundary_report = path2_direct_lifecycle_boundary_report_v1();
@@ -13390,8 +13583,12 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         obligation_audit_vector_case_ids: &PATH2_DIRECT_THEOREM_OBLIGATION_AUDIT_CASES,
         obligation_rows,
         closure_dependency_rows,
+        closure_dependency_evidence_rows: Vec::new(),
         obligation_count: obligation_rows.len(),
         closure_dependency_count: closure_dependency_rows.len(),
+        closure_dependency_evidence_count: 0,
+        closure_dependency_open_obligation_evidence_count: 0,
+        closure_dependency_open_support_evidence_count: 0,
         obligation_audit_vector_case_count: PATH2_DIRECT_THEOREM_OBLIGATION_AUDIT_CASES.len(),
         every_hypothesis_has_obligation: PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.len()
             == obligation_rows.len()
@@ -13409,6 +13606,7 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         every_closure_dependency_has_open_obligation: false,
         every_closure_dependency_has_open_support_surface: false,
         every_open_closure_dependency_blocks_deployment: false,
+        every_closure_dependency_has_evidence: false,
         theorem_statement_pinned: true,
         accepted_tuple_pinned: true,
         accepted_tuple_evidence_present: true,
@@ -13440,6 +13638,38 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         closure_dependency_rows.iter().all(|row| {
             !row.open || row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
         });
+    report.closure_dependency_evidence_rows =
+        path2_direct_theorem_closure_dependency_evidence_rows_v1(
+            closure_dependency_rows,
+            obligation_rows,
+            &report,
+            &direct_qrom_action_boundary_report,
+            &direct_lifecycle_boundary_report,
+            &account_creation_proof_boundary_report,
+        );
+    report.closure_dependency_evidence_count =
+        report.closure_dependency_evidence_rows.len();
+    report.closure_dependency_open_obligation_evidence_count = report
+        .closure_dependency_evidence_rows
+        .iter()
+        .filter(|row| row.direct_obligation_still_open)
+        .count();
+    report.closure_dependency_open_support_evidence_count = report
+        .closure_dependency_evidence_rows
+        .iter()
+        .filter(|row| row.source_support_still_open)
+        .count();
+    report.every_closure_dependency_has_evidence =
+        report.closure_dependency_evidence_count == report.closure_dependency_count
+            && report.closure_dependency_open_obligation_evidence_count
+                == report.closure_dependency_count
+            && report.closure_dependency_open_support_evidence_count
+                == report.closure_dependency_count
+            && report.closure_dependency_evidence_rows.iter().all(|row| {
+                row.closure_dependency_open
+                    && row.blocks_deployment
+                    && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+            });
     report.digest = path2_direct_theorem_boundary_report_v1_digest(&report);
     report
 }
@@ -13494,6 +13724,15 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
     {
         return Err("Path 2 direct theorem boundary evidence endpoint mismatch".to_string());
     }
+    let expected_closure_dependency_evidence_rows =
+        path2_direct_theorem_closure_dependency_evidence_rows_v1(
+            report.closure_dependency_rows,
+            report.obligation_rows,
+            report,
+            &direct_qrom_action_boundary_report,
+            &direct_lifecycle_boundary_report,
+            &account_creation_proof_boundary_report,
+        );
     if report.obligation_audit_vector_case_ids
         != PATH2_DIRECT_THEOREM_OBLIGATION_AUDIT_CASES.as_ref()
         || report.obligation_audit_vector_case_count
@@ -13506,6 +13745,14 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         || report.obligation_count != report.obligation_rows.len()
         || report.closure_dependency_count != report.closure_dependency_rows.len()
         || report.closure_dependency_count != report.obligation_rows.len()
+        || report.closure_dependency_evidence_rows != expected_closure_dependency_evidence_rows
+        || report.closure_dependency_evidence_count != report.closure_dependency_rows.len()
+        || report.closure_dependency_evidence_count
+            != report.closure_dependency_evidence_rows.len()
+        || report.closure_dependency_open_obligation_evidence_count
+            != report.closure_dependency_rows.len()
+        || report.closure_dependency_open_support_evidence_count
+            != report.closure_dependency_rows.len()
         || report.obligation_rows.len() != report.obligation_audit_vector_case_ids.len()
         || !report
             .closure_dependency_rows
@@ -13526,6 +13773,7 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
         || !report.every_closure_dependency_has_open_obligation
         || !report.every_closure_dependency_has_open_support_surface
         || !report.every_open_closure_dependency_blocks_deployment
+        || !report.every_closure_dependency_has_evidence
         || !report
             .obligation_rows
             .iter()
@@ -13551,6 +13799,13 @@ pub fn validate_path2_direct_theorem_boundary_report_v1(
                     &direct_lifecycle_boundary_report,
                     &account_creation_proof_boundary_report,
                 )
+        })
+        || !report.closure_dependency_evidence_rows.iter().all(|row| {
+            row.direct_obligation_still_open
+                && row.source_support_still_open
+                && row.closure_dependency_open
+                && row.blocks_deployment
+                && row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
         })
     {
         return Err(
@@ -69047,6 +69302,72 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
             u64::from(row.open),
         );
     }
+    for (index, row) in report
+        .closure_dependency_evidence_rows
+        .iter()
+        .enumerate()
+    {
+        append_u64(
+            &mut frame,
+            b"closure_dependency_evidence_row_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"closure_dependency_evidence_id",
+            row.dependency_id.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"closure_dependency_evidence_source_report",
+            row.source_report.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"closure_dependency_evidence_source_flag_group",
+            row.source_flag_group.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"closure_dependency_evidence_proof_obligation_id",
+            row.proof_obligation_id.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"closure_dependency_evidence_residual_item",
+            row.residual_item.as_bytes(),
+        );
+        append_u64(
+            &mut frame,
+            b"closure_dependency_evidence_proof_obligation_still_open",
+            u64::from(row.proof_obligation_still_open),
+        );
+        append_u64(
+            &mut frame,
+            b"closure_dependency_evidence_source_support_still_open",
+            u64::from(row.source_support_still_open),
+        );
+        append_u64(
+            &mut frame,
+            b"closure_dependency_evidence_open",
+            u64::from(row.closure_dependency_open),
+        );
+        append_u64(
+            &mut frame,
+            b"closure_dependency_evidence_blocks_deployment",
+            u64::from(row.blocks_deployment),
+        );
+        append_frame(
+            &mut frame,
+            b"closure_dependency_evidence_named_break",
+            row.named_break.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"closure_dependency_evidence_blocker",
+            row.blocker.as_bytes(),
+        );
+    }
     append_u64(
         &mut frame,
         b"requirement_coverage_count",
@@ -69061,6 +69382,21 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         &mut frame,
         b"closure_dependency_count",
         report.closure_dependency_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"closure_dependency_evidence_count",
+        report.closure_dependency_evidence_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"closure_dependency_open_obligation_evidence_count",
+        report.closure_dependency_open_obligation_evidence_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"closure_dependency_open_support_evidence_count",
+        report.closure_dependency_open_support_evidence_count as u64,
     );
     append_u64(
         &mut frame,
@@ -69116,6 +69452,11 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         &mut frame,
         b"every_open_closure_dependency_blocks_deployment",
         u64::from(report.every_open_closure_dependency_blocks_deployment),
+    );
+    append_u64(
+        &mut frame,
+        b"every_closure_dependency_has_evidence",
+        u64::from(report.every_closure_dependency_has_evidence),
     );
     append_u64(
         &mut frame,
@@ -70984,11 +71325,97 @@ fn path2_direct_theorem_boundary_report_v1_frame(
             u64::from(row.open),
         );
     }
+    for (index, row) in report
+        .closure_dependency_evidence_rows
+        .iter()
+        .enumerate()
+    {
+        append_u64(
+            &mut frame,
+            b"direct_closure_dependency_evidence_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_evidence_id",
+            row.dependency_id.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_evidence_source_report",
+            row.source_report.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_evidence_source_flag_group",
+            row.source_flag_group.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_evidence_obligation_id",
+            row.direct_obligation_id.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_evidence_acceptance_hypothesis",
+            row.acceptance_hypothesis.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_evidence_support_surface",
+            row.support_surface.as_bytes(),
+        );
+        append_u64(
+            &mut frame,
+            b"direct_closure_dependency_evidence_obligation_still_open",
+            u64::from(row.direct_obligation_still_open),
+        );
+        append_u64(
+            &mut frame,
+            b"direct_closure_dependency_evidence_source_support_still_open",
+            u64::from(row.source_support_still_open),
+        );
+        append_u64(
+            &mut frame,
+            b"direct_closure_dependency_evidence_open",
+            u64::from(row.closure_dependency_open),
+        );
+        append_u64(
+            &mut frame,
+            b"direct_closure_dependency_evidence_blocks_deployment",
+            u64::from(row.blocks_deployment),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_evidence_named_break",
+            row.named_break.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_closure_dependency_evidence_blocker",
+            row.blocker.as_bytes(),
+        );
+    }
     append_u64(&mut frame, b"obligation_count", report.obligation_count as u64);
     append_u64(
         &mut frame,
         b"closure_dependency_count",
         report.closure_dependency_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"closure_dependency_evidence_count",
+        report.closure_dependency_evidence_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"closure_dependency_open_obligation_evidence_count",
+        report.closure_dependency_open_obligation_evidence_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"closure_dependency_open_support_evidence_count",
+        report.closure_dependency_open_support_evidence_count as u64,
     );
     append_u64(
         &mut frame,
@@ -71024,6 +71451,11 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         &mut frame,
         b"every_open_closure_dependency_blocks_deployment",
         u64::from(report.every_open_closure_dependency_blocks_deployment),
+    );
+    append_u64(
+        &mut frame,
+        b"every_closure_dependency_has_evidence",
+        u64::from(report.every_closure_dependency_has_evidence),
     );
     append_u64(
         &mut frame,

@@ -431,10 +431,12 @@ groups diverge between the artifacts; if the embedded requirement,
 proof-obligation, or direct-obligation corpus evidence drifts from the
 standalone corpus-evidence objects; or if proof-obligation rows stop remaining
 named, pinned, deployment-blocking, and backed by the expected open
-proof-boundary closure-dependency rows while the boundary is open. It also
-checks that the direct theorem boundary keeps its own nine closure-dependency
-rows pinned, open, and deployment-blocking while the accepted-tuple theorem is
-not instantiated.
+proof-boundary closure-dependency rows while the boundary is open. The
+manifests also carry derived closure-dependency evidence rows, and the gate
+checks that each row still points to an open obligation, an open source support
+surface, and the deployment blocker. It also checks that the direct theorem
+boundary keeps its own nine closure-dependency rows pinned, open, evidenced,
+and deployment-blocking while the accepted-tuple theorem is not instantiated.
 
 The `path2_preflight_boundary_consistency` gate checks the same active boundary
 reports against the production deployment preflight. It fails if the preflight

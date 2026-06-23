@@ -489,6 +489,10 @@ fn main() -> Result<(), String> {
         "/direct_accepted_composition_evidence_artifact/audit_summary/proof_family_obligations_still_open",
         "/direct_accepted_composition_evidence_artifact/audit_summary/verifier_boundary_accepts_creation",
         "/direct_accepted_composition_evidence_artifact/audit_summary/direct_spend_tuple_accepts",
+        "/coverage/every_closure_dependency_has_open_obligation",
+        "/coverage/every_closure_dependency_has_open_support_surface",
+        "/coverage/every_open_closure_dependency_blocks_deployment",
+        "/coverage/every_closure_dependency_has_evidence",
     ] {
         if !bool_at(direct_boundary, pointer)? {
             return Err(format!(
@@ -520,6 +524,7 @@ fn main() -> Result<(), String> {
         "/coverage/every_closure_dependency_has_open_obligation",
         "/coverage/every_closure_dependency_has_open_support_surface",
         "/coverage/every_open_closure_dependency_blocks_deployment",
+        "/coverage/every_closure_dependency_has_evidence",
     ] {
         if !bool_at(proof_boundary, pointer)? {
             return Err(format!(
@@ -610,8 +615,15 @@ fn main() -> Result<(), String> {
         || !proof_report.every_closure_dependency_has_open_obligation
         || !proof_report.every_closure_dependency_has_open_support_surface
         || !proof_report.every_open_closure_dependency_blocks_deployment
+        || !proof_report.every_closure_dependency_has_evidence
         || proof_report.proof_obligation_count != proof_report.proof_obligation_rows.len()
         || proof_report.closure_dependency_count != proof_report.closure_dependency_rows.len()
+        || proof_report.closure_dependency_evidence_count
+            != proof_report.closure_dependency_rows.len()
+        || proof_report.closure_dependency_open_obligation_evidence_count
+            != proof_report.closure_dependency_rows.len()
+        || proof_report.closure_dependency_open_support_evidence_count
+            != proof_report.closure_dependency_rows.len()
         || proof_report.closure_dependency_count != proof_report.proof_obligation_rows.len()
     {
         return Err(
@@ -663,7 +675,14 @@ fn main() -> Result<(), String> {
     if !direct_report.every_closure_dependency_has_open_obligation
         || !direct_report.every_closure_dependency_has_open_support_surface
         || !direct_report.every_open_closure_dependency_blocks_deployment
+        || !direct_report.every_closure_dependency_has_evidence
         || direct_report.closure_dependency_count != direct_report.closure_dependency_rows.len()
+        || direct_report.closure_dependency_evidence_count
+            != direct_report.closure_dependency_rows.len()
+        || direct_report.closure_dependency_open_obligation_evidence_count
+            != direct_report.closure_dependency_rows.len()
+        || direct_report.closure_dependency_open_support_evidence_count
+            != direct_report.closure_dependency_rows.len()
         || direct_report.closure_dependency_count != direct_report.obligation_rows.len()
     {
         return Err(
@@ -850,6 +869,16 @@ fn main() -> Result<(), String> {
         != direct_report.obligation_count as u64
         || u64_at(direct_boundary, "/coverage/closure_dependency_count")?
             != direct_report.closure_dependency_count as u64
+        || u64_at(direct_boundary, "/coverage/closure_dependency_evidence_count")?
+            != direct_report.closure_dependency_evidence_count as u64
+        || u64_at(
+            direct_boundary,
+            "/coverage/closure_dependency_open_obligation_evidence_count",
+        )? != direct_report.closure_dependency_open_obligation_evidence_count as u64
+        || u64_at(
+            direct_boundary,
+            "/coverage/closure_dependency_open_support_evidence_count",
+        )? != direct_report.closure_dependency_open_support_evidence_count as u64
         || u64_at(
             direct_boundary,
             "/direct_obligation_vector_corpus_evidence/case_count",
@@ -858,6 +887,16 @@ fn main() -> Result<(), String> {
             != proof_report.proof_obligation_count as u64
         || u64_at(proof_boundary, "/coverage/closure_dependency_count")?
             != proof_report.closure_dependency_count as u64
+        || u64_at(proof_boundary, "/coverage/closure_dependency_evidence_count")?
+            != proof_report.closure_dependency_evidence_count as u64
+        || u64_at(
+            proof_boundary,
+            "/coverage/closure_dependency_open_obligation_evidence_count",
+        )? != proof_report.closure_dependency_open_obligation_evidence_count as u64
+        || u64_at(
+            proof_boundary,
+            "/coverage/closure_dependency_open_support_evidence_count",
+        )? != proof_report.closure_dependency_open_support_evidence_count as u64
         || u64_at(
             proof_boundary,
             "/proof_obligation_vector_corpus_evidence/case_count",
