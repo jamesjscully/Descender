@@ -8,9 +8,12 @@ fn main() -> Result<(), String> {
 
 #[cfg(feature = "account-creation-stark-verifier")]
 mod enabled {
-    use descender_parameter_search::production_reference::{
-        path2_direct_accepted_spend_tuple_evidence_v1_digest,
-        path2_direct_accepted_spend_tuple_kat_evidence_v1,
+    use descender_parameter_search::{
+        manifest_vector_evidence::path2_direct_accepted_spend_tuple_evidence_artifact_v1,
+        production_reference::{
+            path2_direct_accepted_spend_tuple_evidence_v1_digest,
+            path2_direct_accepted_spend_tuple_kat_evidence_v1,
+        },
     };
     use serde_json::{json, Value};
     use sha2::{Digest, Sha256};
@@ -77,6 +80,31 @@ mod enabled {
             ));
         }
         Ok(())
+    }
+
+    fn require_str(manifest: &Value, pointer: &str, expected: &str) -> Result<(), String> {
+        let observed = str_at(manifest, pointer)?;
+        if observed != expected {
+            return Err(format!(
+                "direct accepted spend tuple manifest {pointer} mismatch: {observed:?} != {expected:?}"
+            ));
+        }
+        Ok(())
+    }
+
+    fn body_digest(value: &Value, label: &str) -> Result<String, String> {
+        let json = serde_json::to_string_pretty(value)
+            .map_err(|err| format!("serialize {label}: {err}"))?;
+        Ok(hex_encode(&Sha256::digest(json.as_bytes())))
+    }
+
+    fn require_manifest_body<'a>(file: &'a Value, label: &str) -> Result<&'a Value, String> {
+        let body = at(file, "/manifest")?;
+        let recomputed = body_digest(body, label)?;
+        if str_at(file, "/manifest_digest")? != recomputed {
+            return Err(format!("{label} manifest digest mismatch"));
+        }
+        Ok(body)
     }
 
     pub fn run() -> Result<(), String> {
@@ -260,6 +288,106 @@ mod enabled {
             "/corpus/honest_payload/payload_digest",
             &evidence.selected_account_creation_payload_digest,
         )?;
+
+        let accepted_artifact = path2_direct_accepted_spend_tuple_evidence_artifact_v1()?;
+        let direct_manifest_file = load_json("formal/kat/path2_direct_theorem_boundary_v1.json")?;
+        let direct_manifest =
+            require_manifest_body(&direct_manifest_file, "direct theorem boundary manifest")?;
+        let direct_boundary = at(direct_manifest, "/direct_theorem_boundary")?;
+        let composition_manifest_file =
+            load_json("formal/kat/path2_direct_accepted_composition_evidence_v1.json")?;
+        let composition_manifest = require_manifest_body(
+            &composition_manifest_file,
+            "direct accepted composition manifest",
+        )?;
+
+        if at(direct_boundary, "/direct_accepted_spend_tuple_evidence_artifact")?
+            != &accepted_artifact
+            || at(
+                direct_boundary,
+                "/direct_obligation_vector_corpus_evidence/direct_accepted_spend_tuple_evidence_artifact",
+            )? != &accepted_artifact
+            || at(
+                direct_boundary,
+                "/direct_accepted_composition_evidence_artifact/direct_accepted_spend_tuple_artifact",
+            )? != &accepted_artifact
+            || at(
+                direct_boundary,
+                "/direct_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/direct_accepted_spend_tuple_artifact",
+            )? != &accepted_artifact
+            || at(
+                composition_manifest,
+                "/accepted_input_artifacts/direct_accepted_spend_tuple_evidence_artifact",
+            )? != &accepted_artifact
+        {
+            return Err(
+                "direct accepted spend tuple artifact drifted across generated manifests"
+                    .to_string(),
+            );
+        }
+        require_str(
+            direct_manifest,
+            "/digests/direct_theorem_boundary_report_digest",
+            str_at(&accepted_artifact, "/direct_theorem_boundary_report_digest")?,
+        )?;
+        require_str(
+            direct_manifest,
+            "/digests/direct_qrom_action_boundary_report_digest",
+            str_at(
+                &accepted_artifact,
+                "/direct_qrom_action_boundary_report_digest",
+            )?,
+        )?;
+        require_str(
+            direct_manifest,
+            "/digests/direct_lifecycle_boundary_report_digest",
+            str_at(
+                &accepted_artifact,
+                "/direct_lifecycle_boundary_report_digest",
+            )?,
+        )?;
+        require_str(
+            direct_manifest,
+            "/digests/account_creation_proof_boundary_report_digest",
+            str_at(
+                &accepted_artifact,
+                "/account_creation_proof_boundary_report_digest",
+            )?,
+        )?;
+        require_str(
+            composition_manifest,
+            "/evidence/direct_accepted_spend_tuple_evidence_digest",
+            str_at(&accepted_artifact, "/evidence_digest")?,
+        )?;
+        for pointer in [
+            "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/state_namespace_record_present",
+            "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/consumed_authorization_absent_before",
+            "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/consumed_authorization_present_after",
+            "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/consume_once_inserted_exactly_one_authorization",
+            "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/public_result_accepts_same_slot",
+            "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/tuple_fields_match_theorem_boundary",
+            "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/replay_rejected_by_consume_once",
+            "/direct_accepted_composition_evidence_artifact/audit_summary/direct_spend_tuple_accepts",
+            "/direct_accepted_composition_evidence_artifact/audit_summary/consume_once_transition_matches_tuple",
+            "/direct_accepted_composition_evidence_artifact/audit_summary/public_result_accepts_same_slot",
+        ] {
+            if !bool_at(direct_boundary, pointer)? {
+                return Err(format!(
+                    "direct accepted spend tuple manifest bind lost expected true flag {pointer}"
+                ));
+            }
+        }
+        for pointer in [
+            "/direct_accepted_composition_evidence_artifact/audit_summary/composition_theorem_instantiated",
+            "/direct_accepted_composition_evidence_artifact/audit_summary/account_creation_proof_boundary_verified",
+            "/direct_accepted_composition_evidence_artifact/audit_summary/deployment_ready",
+        ] {
+            if bool_at(direct_boundary, pointer)? {
+                return Err(format!(
+                    "direct accepted spend tuple manifest bind unexpectedly closed {pointer}"
+                ));
+            }
+        }
 
         println!("Path 2 direct accepted spend tuple evidence consistency check passed.");
         Ok(())

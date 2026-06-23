@@ -35,10 +35,11 @@ the direct-theorem boundary also embeds the 9-case open direct-obligation audit
 corpus and accepted direct-composition KAT artifact, with that standalone
 accepted-composition KAT and the direct-obligation corpus both carrying nested
 accepted proof-boundary and accepted direct-spend tuple artifacts, while
-keeping theorem and deployment flags false. The accepted proof-boundary KAT and
-production preflight consistency gates now also recompute those generated
-manifests and check accepted-artifact equality, open-row blockers, and
-fail-closed flags against the standalone KAT and deployment blocker set.
+keeping theorem and deployment flags false. The accepted proof-boundary,
+accepted spend tuple, accepted composition, and production preflight consistency
+gates now also recompute those generated manifests and check accepted-artifact
+equality, open-row blockers, and fail-closed flags against the standalone KATs
+and deployment blocker set.
 
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|
