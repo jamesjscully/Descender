@@ -83,23 +83,19 @@ fn main() -> Result<(), String> {
     validate_path2_direct_theorem_boundary_report_v1(&direct_report)?;
     let direct_digest = path2_direct_theorem_boundary_report_v1_digest(&direct_report);
 
-    if str_at(corpus, "/schema")?
-        != "Descender.Path2.AccountCreationProofObligationVectors.v1"
-    {
+    if str_at(corpus, "/schema")? != "Descender.Path2.AccountCreationProofObligationVectors.v1" {
         return Err("proof-obligation vector corpus schema mismatch".to_string());
     }
     if str_at(corpus, "/status")? != "digest_pinned_proof_obligation_audit_vectors" {
         return Err("proof-obligation vector corpus status mismatch".to_string());
     }
     if str_at(corpus, "/proof_boundary_report/digest")? != hex_encode(&proof_report.digest)
-        || str_at(corpus, "/proof_boundary_report/recomputed_digest")?
-            != hex_encode(&proof_digest)
+        || str_at(corpus, "/proof_boundary_report/recomputed_digest")? != hex_encode(&proof_digest)
     {
         return Err("proof-obligation vector corpus is not bound to proof report".to_string());
     }
     if str_at(corpus, "/direct_theorem_report/digest")? != hex_encode(&direct_report.digest)
-        || str_at(corpus, "/direct_theorem_report/recomputed_digest")?
-            != hex_encode(&direct_digest)
+        || str_at(corpus, "/direct_theorem_report/recomputed_digest")? != hex_encode(&direct_digest)
         || str_at(
             corpus,
             "/direct_theorem_report/account_creation_proof_boundary_report_digest",
@@ -121,8 +117,7 @@ fn main() -> Result<(), String> {
         )? != direct_report.accepted_tuple_evidence_present
     {
         return Err(
-            "proof-obligation vector corpus lost direct accepted-tuple evidence hook"
-                .to_string(),
+            "proof-obligation vector corpus lost direct accepted-tuple evidence hook".to_string(),
         );
     }
     if str_at(
@@ -137,10 +132,21 @@ fn main() -> Result<(), String> {
             corpus,
             "/proof_boundary_report/accepted_boundary_evidence_present",
         )? != proof_report.accepted_boundary_evidence_present
+        || bool_at(
+            corpus,
+            "/proof_boundary_report/accepted_boundary_binding_evidence_present",
+        )? != proof_report.accepted_boundary_binding_evidence_present
+        || bool_at(
+            corpus,
+            "/proof_boundary_report/replay_payload_digest_binding_evidence_present",
+        )? != proof_report.replay_payload_digest_binding_evidence_present
+        || bool_at(
+            corpus,
+            "/proof_boundary_report/deployed_anchor_binding_evidence_present",
+        )? != proof_report.deployed_anchor_binding_evidence_present
     {
         return Err(
-            "proof-obligation vector corpus lost accepted proof-boundary evidence hook"
-                .to_string(),
+            "proof-obligation vector corpus lost accepted proof-boundary evidence hook".to_string(),
         );
     }
     if direct_report.account_creation_proof_boundary_report_digest != proof_report.digest {
@@ -157,16 +163,16 @@ fn main() -> Result<(), String> {
     {
         return Err("proof-obligation vector corpus case count drifted".to_string());
     }
-    if !bool_at(corpus, "/proof_boundary_report/proof_obligation_rows_pinned")?
-        || !bool_at(
-            corpus,
-            "/proof_boundary_report/every_proof_obligation_has_named_break",
-        )?
-        || !bool_at(
-            corpus,
-            "/proof_boundary_report/every_open_proof_obligation_blocks_deployment",
-        )?
-        || !bool_at(corpus, "/audit_summary/all_cases_open")?
+    if !bool_at(
+        corpus,
+        "/proof_boundary_report/proof_obligation_rows_pinned",
+    )? || !bool_at(
+        corpus,
+        "/proof_boundary_report/every_proof_obligation_has_named_break",
+    )? || !bool_at(
+        corpus,
+        "/proof_boundary_report/every_open_proof_obligation_blocks_deployment",
+    )? || !bool_at(corpus, "/audit_summary/all_cases_open")?
         || !bool_at(corpus, "/audit_summary/all_cases_have_named_break")?
         || !bool_at(corpus, "/audit_summary/all_open_cases_block_deployment")?
     {
@@ -214,7 +220,9 @@ fn main() -> Result<(), String> {
             ));
         }
         if case.get("kind").and_then(Value::as_str) != Some("audit") {
-            return Err(format!("proof-obligation case {case_id} is not an audit case"));
+            return Err(format!(
+                "proof-obligation case {case_id} is not an audit case"
+            ));
         }
         for (field, expected) in [
             ("closure_target", row.closure_target),

@@ -122,8 +122,7 @@ fn main() -> Result<(), String> {
         )? != direct_report.accepted_tuple_evidence_present
     {
         return Err(
-            "direct theorem obligation vector corpus lost accepted-tuple evidence hook"
-                .to_string(),
+            "direct theorem obligation vector corpus lost accepted-tuple evidence hook".to_string(),
         );
     }
     if str_at(corpus, "/qrom_action_boundary_report/digest")?
@@ -162,6 +161,18 @@ fn main() -> Result<(), String> {
             corpus,
             "/account_creation_proof_boundary_report/accepted_boundary_evidence_present",
         )? != proof_report.accepted_boundary_evidence_present
+        || bool_at(
+            corpus,
+            "/account_creation_proof_boundary_report/accepted_boundary_binding_evidence_present",
+        )? != proof_report.accepted_boundary_binding_evidence_present
+        || bool_at(
+            corpus,
+            "/account_creation_proof_boundary_report/replay_payload_digest_binding_evidence_present",
+        )? != proof_report.replay_payload_digest_binding_evidence_present
+        || bool_at(
+            corpus,
+            "/account_creation_proof_boundary_report/deployed_anchor_binding_evidence_present",
+        )? != proof_report.deployed_anchor_binding_evidence_present
     {
         return Err(
             "direct theorem obligation vector corpus lost accepted proof-boundary evidence hook"

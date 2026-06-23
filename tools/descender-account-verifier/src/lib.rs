@@ -28,6 +28,7 @@
 //! | `verifier_version`        | direct equality (raw u32, transcript-bound)        |
 //! | `masked_projection[6]`    | direct equality (q-residues as u16)                |
 //! | `native_role_root_commitment` | **export bridge** `sha256(DS ‖ role_root)`     |
+//! | `packed_witness_commitment` | direct equality (byte-encoded syndrome/projection commitment) |
 //!
 //! ### The one named seam: the role-root export bridge
 //!
@@ -94,6 +95,23 @@ pub struct DeployedCreationAnchors {
     /// commitment to this ties the creation proof's syndrome + masked_projection to
     /// the EXACT packed witness the spend's checked-core frame consumes — closing
     /// MED-2 (the syndrome was otherwise an unanchored prover-chosen public input).
+    pub packed_witness_commitment: [u8; PACKED_WITNESS_COMMITMENT_BYTES],
+}
+
+/// Plain decoded public anchors from the opaque account-creation bundle.
+///
+/// This keeps Plonky3 field types inside this verifier crate while giving
+/// consensus-boundary evidence code a stable public view to compare against
+/// deployed leaf/binding anchors.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct DecodedCreationPublicAnchors {
+    pub account_id: [u8; 32],
+    pub slot_id: u64,
+    pub account_state_root: [u8; 32],
+    pub lifecycle_anchor: [u8; 32],
+    pub verifier_version: u32,
+    pub masked_projection: [u16; 6],
+    pub native_role_root_commitment: [u8; 32],
     pub packed_witness_commitment: [u8; PACKED_WITNESS_COMMITMENT_BYTES],
 }
 
@@ -231,6 +249,54 @@ pub fn unpack_bundle(bytes: &[u8]) -> Result<(AccountCreationPublic, Proof), Ver
     Ok((public, proof))
 }
 
+fn decoded_creation_public_anchors(
+    public: &AccountCreationPublic,
+) -> Result<DecodedCreationPublicAnchors, VerifyError> {
+    let mut masked_projection = [0u16; 6];
+    for (index, value) in public.masked_projection.iter().enumerate() {
+        let residue = value.as_canonical_u32();
+        if residue >= Q12289 {
+            return Err(VerifyError::Decode(format!(
+                "masked_projection[{index}] = {residue} not a canonical q-residue"
+            )));
+        }
+        masked_projection[index] = residue as u16;
+    }
+
+    let mut packed_witness_commitment = [0u8; PACKED_WITNESS_COMMITMENT_BYTES];
+    for (index, value) in public.packed_witness_commitment.iter().enumerate() {
+        let byte = value.as_canonical_u32();
+        if byte >= 256 {
+            return Err(VerifyError::Decode(format!(
+                "packed_witness_commitment[{index}] = {byte} not a byte"
+            )));
+        }
+        packed_witness_commitment[index] = byte as u8;
+    }
+
+    Ok(DecodedCreationPublicAnchors {
+        account_id: public.account_id,
+        slot_id: public.slot_id,
+        account_state_root: public.account_state_root,
+        lifecycle_anchor: public.lifecycle_anchor,
+        verifier_version: public.verifier_version,
+        masked_projection,
+        native_role_root_commitment: role_root_export_digest(&public.role_root),
+        packed_witness_commitment,
+    })
+}
+
+/// Decode only the public anchors from an account-creation bundle.
+///
+/// This does not verify the STARK proof; callers that use the decoded anchors as
+/// acceptance evidence must also call [`verify_deployed_account_creation`].
+pub fn decode_deployed_account_creation_public_anchors(
+    bundle: &[u8],
+) -> Result<DecodedCreationPublicAnchors, VerifyError> {
+    let (public, _) = unpack_bundle(bundle)?;
+    decoded_creation_public_anchors(&public)
+}
+
 /// THE deployed entry point. Decodes the bundle, runs the STARK relation
 /// verifier, then binds the verified statement to the deployed leaf anchors
 /// (direct equalities + the role-root export bridge). Returns `Ok(())` only if
@@ -328,8 +394,8 @@ mod tests {
         assert_eq!(
             digest,
             [
-                117, 63, 7, 64, 6, 54, 9, 245, 118, 89, 164, 167, 41, 177, 117, 52, 216,
-                12, 230, 18, 58, 86, 144, 172, 42, 81, 203, 10, 213, 122, 128, 128,
+                117, 63, 7, 64, 6, 54, 9, 245, 118, 89, 164, 167, 41, 177, 117, 52, 216, 12, 230,
+                18, 58, 86, 144, 172, 42, 81, 203, 10, 213, 122, 128, 128,
             ],
             "role-root export digest drifted"
         );

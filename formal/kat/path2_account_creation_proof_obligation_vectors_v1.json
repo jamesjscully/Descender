@@ -121,14 +121,14 @@
       "accepted_tuple_evidence_endpoint": "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1",
       "accepted_tuple_evidence_present": true,
       "accepted_tuple_evidence_schema": "Descender.Path2.DirectAcceptedSpendTupleEvidence.v1",
-      "account_creation_proof_boundary_report_digest": "bda00e0d8fa2a117ca7b71fe44071a4deebe749d05d8f02bad4501d034678ad7",
+      "account_creation_proof_boundary_report_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
       "account_creation_proof_boundary_verified": false,
       "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "composition_theorem_instantiated": false,
       "deployment_ready": false,
-      "digest": "978f0e422fa9b6772a83d72d29c78d1f45f2041177ecacb780137652ce97b04a",
+      "digest": "25aa2e6023ef7e3f4d474dc6f556fe0512225b221d880e1f99e509dbdc84b53a",
       "domain": "Descender.Path2.DirectTheoremBoundaryReport.v1",
-      "recomputed_digest": "978f0e422fa9b6772a83d72d29c78d1f45f2041177ecacb780137652ce97b04a"
+      "recomputed_digest": "25aa2e6023ef7e3f4d474dc6f556fe0512225b221d880e1f99e509dbdc84b53a"
     },
     "generator": {
       "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_proof_obligation_vectors",
@@ -136,22 +136,25 @@
     },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "proof_boundary_report": {
+      "accepted_boundary_binding_evidence_present": true,
       "accepted_boundary_evidence_endpoint": "path2_account_creation_accepted_proof_boundary_evidence_v1",
       "accepted_boundary_evidence_present": true,
       "accepted_boundary_evidence_schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryEvidence.v1",
       "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+      "deployed_anchor_binding_evidence_present": true,
       "deployment_ready": false,
-      "digest": "bda00e0d8fa2a117ca7b71fe44071a4deebe749d05d8f02bad4501d034678ad7",
+      "digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
       "domain": "Descender.Path2.AccountCreationProofBoundaryReport.v1",
       "every_open_proof_obligation_blocks_deployment": true,
       "every_proof_obligation_has_named_break": true,
       "proof_boundary_conclusion": "accepted_account_creation_payload_implies_bound_leaf_evidence_selected_account_stark_acceptance_no_export_or_named_break",
       "proof_boundary_target": "selected_account_creation_proof_boundary_v1",
       "proof_obligation_rows_pinned": true,
-      "recomputed_digest": "bda00e0d8fa2a117ca7b71fe44071a4deebe749d05d8f02bad4501d034678ad7"
+      "recomputed_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
+      "replay_payload_digest_binding_evidence_present": true
     },
     "schema": "Descender.Path2.AccountCreationProofObligationVectors.v1",
     "status": "digest_pinned_proof_obligation_audit_vectors"
   },
-  "corpus_digest": "0bbc9ab9a19cc413ef529f037f1a5d591e846e9f11d5293c74fafe1b9cbd81d4"
+  "corpus_digest": "40af06e1121f2369691b2437106d339266d0a51c2ffecf1149f3e26b80faeb5f"
 }

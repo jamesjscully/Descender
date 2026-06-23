@@ -9627,9 +9627,12 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub boundary_statement_pinned: bool,
     pub selected_payload_pinned: bool,
     pub accepted_boundary_evidence_present: bool,
+    pub accepted_boundary_binding_evidence_present: bool,
     pub replay_payload_digest_bound: bool,
+    pub replay_payload_digest_binding_evidence_present: bool,
     pub active_payload_mutation_coverage_present: bool,
     pub deployed_anchor_rebind_tests_present: bool,
+    pub deployed_anchor_binding_evidence_present: bool,
     pub requirement_coverage_matrix_pinned: bool,
     pub proof_obligation_rows_pinned: bool,
     pub production_gate_fail_closed: bool,
@@ -9684,6 +9687,7 @@ pub struct Path2AccountCreationAcceptedProofBoundaryEvidenceV1 {
     pub payload_frame_bytes: usize,
     pub account_stark_bundle_digest: [u8; DIGEST_BYTES],
     pub account_stark_bundle_bytes: usize,
+    pub decoded_public_anchor_digest: [u8; DIGEST_BYTES],
     pub verifier_boundary_accepts: bool,
     pub production_gate_fail_closed: bool,
     pub proof_boundary_report_validated: bool,
@@ -9695,6 +9699,15 @@ pub struct Path2AccountCreationAcceptedProofBoundaryEvidenceV1 {
     pub leaf_context_bound: bool,
     pub binding_digest_bound: bool,
     pub payload_binding_fields_match_report: bool,
+    pub decoded_public_anchors_match_deployed_anchors: bool,
+    pub deployed_anchor_account_id_bound: bool,
+    pub deployed_anchor_slot_id_bound: bool,
+    pub deployed_anchor_state_root_bound: bool,
+    pub deployed_anchor_lifecycle_anchor_bound: bool,
+    pub deployed_anchor_verifier_version_bound: bool,
+    pub deployed_anchor_masked_projection_bound: bool,
+    pub deployed_anchor_role_root_export_bridge_bound: bool,
+    pub deployed_anchor_packed_witness_commitment_bound: bool,
     pub deployed_anchor_fields_match_report: bool,
     pub account_stark_bundle_nonempty: bool,
     pub proof_family_obligations_still_open: bool,
@@ -12433,9 +12446,12 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         boundary_statement_pinned: true,
         selected_payload_pinned: true,
         accepted_boundary_evidence_present: true,
+        accepted_boundary_binding_evidence_present: true,
         replay_payload_digest_bound: true,
+        replay_payload_digest_binding_evidence_present: true,
         active_payload_mutation_coverage_present: true,
         deployed_anchor_rebind_tests_present: true,
+        deployed_anchor_binding_evidence_present: true,
         requirement_coverage_matrix_pinned: true,
         proof_obligation_rows_pinned: true,
         production_gate_fail_closed: true,
@@ -12557,9 +12573,12 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
     if !report.boundary_statement_pinned
         || !report.selected_payload_pinned
         || !report.accepted_boundary_evidence_present
+        || !report.accepted_boundary_binding_evidence_present
         || !report.replay_payload_digest_bound
+        || !report.replay_payload_digest_binding_evidence_present
         || !report.active_payload_mutation_coverage_present
         || !report.deployed_anchor_rebind_tests_present
+        || !report.deployed_anchor_binding_evidence_present
         || !report.production_gate_fail_closed
         || report.simulator_theorem_instantiated
         || report.fri_aok_extractor_theorem_instantiated
@@ -47122,6 +47141,47 @@ pub fn path2_account_creation_deployed_anchor_digest(
 }
 
 #[cfg(feature = "account-creation-stark-verifier")]
+pub fn path2_account_creation_decoded_public_anchor_digest(
+    anchors: &descender_account_verifier::DecodedCreationPublicAnchors,
+) -> [u8; DIGEST_BYTES] {
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"domain",
+        b"Descender.Path2.AccountCreationDeployedAnchors.v1",
+    );
+    append_frame(&mut frame, b"account_id", &anchors.account_id);
+    append_u64(&mut frame, b"slot_id", anchors.slot_id);
+    append_frame(
+        &mut frame,
+        b"account_state_root",
+        &anchors.account_state_root,
+    );
+    append_frame(&mut frame, b"lifecycle_anchor", &anchors.lifecycle_anchor);
+    append_u64(
+        &mut frame,
+        b"raw_verifier_version",
+        u64::from(anchors.verifier_version),
+    );
+    append_frame(
+        &mut frame,
+        b"masked_projection_digest",
+        &path2_account_creation_masked_projection_digest(&anchors.masked_projection),
+    );
+    append_frame(
+        &mut frame,
+        b"packed_witness_commitment",
+        &anchors.packed_witness_commitment,
+    );
+    append_frame(
+        &mut frame,
+        b"role_root_export_bridge",
+        &anchors.native_role_root_commitment,
+    );
+    Sha256::digest(frame).into()
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
 pub fn path2_account_creation_accepted_proof_boundary_evidence_v1(
 ) -> Result<Path2AccountCreationAcceptedProofBoundaryEvidenceV1, String> {
     let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
@@ -47187,6 +47247,18 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_v1(
         &fixture.evidence,
         &fixture.certificate,
     )?;
+    let decoded_public_anchors =
+        descender_account_verifier::decode_deployed_account_creation_public_anchors(
+            &fixture.payload.account_stark_bundle,
+        )
+        .map_err(|error| format!("Path 2 account-STARK public anchor decode failed: {error}"))?;
+    let deployed_anchor_digest = path2_account_creation_deployed_anchor_digest(
+        &fixture.leaf,
+        &fixture.binding,
+        &fixture.payload,
+    );
+    let decoded_public_anchor_digest =
+        path2_account_creation_decoded_public_anchor_digest(&decoded_public_anchors);
     let account_stark_bundle_nonempty = !fixture.payload.account_stark_bundle.is_empty();
     let payload_digest_bound_to_certificate =
         fixture.certificate.public_replay_payload_digest == payload_digest;
@@ -47209,20 +47281,49 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_v1(
             && fixture.payload.slot_id == fixture.leaf.slot_id
             && payload_digest_bound_to_certificate
             && account_stark_bundle_nonempty;
+    let deployed_anchor_account_id_bound =
+        decoded_public_anchors.account_id == fixture.leaf.account_id;
+    let deployed_anchor_slot_id_bound =
+        decoded_public_anchors.slot_id == fixture.leaf.slot_id
+            && decoded_public_anchors.slot_id == fixture.payload.slot_id
+            && decoded_public_anchors.slot_id == fixture.binding.slot_id;
+    let deployed_anchor_state_root_bound =
+        decoded_public_anchors.account_state_root == fixture.leaf.account_state_root_before
+            && decoded_public_anchors.account_state_root
+                == fixture.binding.account_state_root_before;
+    let deployed_anchor_lifecycle_anchor_bound =
+        decoded_public_anchors.lifecycle_anchor == fixture.leaf.lifecycle_anchor
+            && decoded_public_anchors.lifecycle_anchor == fixture.binding.lifecycle_anchor;
+    let deployed_anchor_verifier_version_bound =
+        decoded_public_anchors.verifier_version == PATH2_ACCOUNT_STARK_VERIFIER_VERSION;
+    let deployed_anchor_masked_projection_bound =
+        decoded_public_anchors.masked_projection == fixture.payload.masked_projection;
+    let deployed_anchor_role_root_export_bridge_bound =
+        decoded_public_anchors.native_role_root_commitment
+            == fixture.payload.native_role_root_commitment;
+    let deployed_anchor_packed_witness_commitment_bound =
+        decoded_public_anchors.packed_witness_commitment
+            == fixture.binding.packed_witness_commitment;
+    let decoded_public_anchors_match_deployed_anchors =
+        deployed_anchor_account_id_bound
+            && deployed_anchor_slot_id_bound
+            && deployed_anchor_state_root_bound
+            && deployed_anchor_lifecycle_anchor_bound
+            && deployed_anchor_verifier_version_bound
+            && deployed_anchor_masked_projection_bound
+            && deployed_anchor_role_root_export_bridge_bound
+            && deployed_anchor_packed_witness_commitment_bound;
     let deployed_anchor_fields_match_report =
         proof_boundary_report.deployed_anchor_fields
             == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS.as_ref()
-            && fixture.binding.account_id == fixture.leaf.account_id
-            && fixture.binding.slot_id == fixture.leaf.slot_id
-            && fixture.binding.account_state_root_before == fixture.leaf.account_state_root_before
-            && fixture.binding.lifecycle_anchor == fixture.leaf.lifecycle_anchor
-            && fixture.payload.slot_id == fixture.leaf.slot_id;
+            && decoded_public_anchors_match_deployed_anchors;
     if !payload_binding_fields_match_report
         || !deployed_anchor_fields_match_report
         || !payload_digest_bound_to_certificate
         || !evidence_digest_bound_to_certificate
         || !leaf_transcript_bound_to_evidence
         || !leaf_digest_bound_to_evidence
+        || deployed_anchor_digest != decoded_public_anchor_digest
     {
         return Err("Path 2 accepted proof-boundary evidence binding mismatch".to_string());
     }
@@ -47264,15 +47365,12 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_v1(
         masked_projection_digest: path2_account_creation_masked_projection_digest(
             &fixture.payload.masked_projection,
         ),
-        deployed_anchor_digest: path2_account_creation_deployed_anchor_digest(
-            &fixture.leaf,
-            &fixture.binding,
-            &fixture.payload,
-        ),
+        deployed_anchor_digest,
         payload_frame_digest: Sha256::digest(&payload_frame).into(),
         payload_frame_bytes: payload_frame.len(),
         account_stark_bundle_digest: Sha256::digest(&fixture.payload.account_stark_bundle).into(),
         account_stark_bundle_bytes: fixture.payload.account_stark_bundle.len(),
+        decoded_public_anchor_digest,
         verifier_boundary_accepts: true,
         production_gate_fail_closed: true,
         proof_boundary_report_validated: true,
@@ -47285,6 +47383,15 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_v1(
         leaf_context_bound,
         binding_digest_bound,
         payload_binding_fields_match_report,
+        decoded_public_anchors_match_deployed_anchors,
+        deployed_anchor_account_id_bound,
+        deployed_anchor_slot_id_bound,
+        deployed_anchor_state_root_bound,
+        deployed_anchor_lifecycle_anchor_bound,
+        deployed_anchor_verifier_version_bound,
+        deployed_anchor_masked_projection_bound,
+        deployed_anchor_role_root_export_bridge_bound,
+        deployed_anchor_packed_witness_commitment_bound,
         deployed_anchor_fields_match_report,
         account_stark_bundle_nonempty,
         proof_family_obligations_still_open: proof_boundary_report
@@ -66964,8 +67071,18 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
     );
     append_u64(
         &mut frame,
+        b"accepted_boundary_binding_evidence_present",
+        u64::from(report.accepted_boundary_binding_evidence_present),
+    );
+    append_u64(
+        &mut frame,
         b"replay_payload_digest_bound",
         u64::from(report.replay_payload_digest_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"replay_payload_digest_binding_evidence_present",
+        u64::from(report.replay_payload_digest_binding_evidence_present),
     );
     append_u64(
         &mut frame,
@@ -66976,6 +67093,11 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         &mut frame,
         b"deployed_anchor_rebind_tests_present",
         u64::from(report.deployed_anchor_rebind_tests_present),
+    );
+    append_u64(
+        &mut frame,
+        b"deployed_anchor_binding_evidence_present",
+        u64::from(report.deployed_anchor_binding_evidence_present),
     );
     append_u64(
         &mut frame,
@@ -67872,6 +67994,11 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_v1_frame(
         b"account_stark_bundle_bytes",
         evidence.account_stark_bundle_bytes as u64,
     );
+    append_frame(
+        &mut frame,
+        b"decoded_public_anchor_digest",
+        &evidence.decoded_public_anchor_digest,
+    );
     append_u64(
         &mut frame,
         b"verifier_boundary_accepts",
@@ -67926,6 +68053,51 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_v1_frame(
         &mut frame,
         b"payload_binding_fields_match_report",
         u64::from(evidence.payload_binding_fields_match_report),
+    );
+    append_u64(
+        &mut frame,
+        b"decoded_public_anchors_match_deployed_anchors",
+        u64::from(evidence.decoded_public_anchors_match_deployed_anchors),
+    );
+    append_u64(
+        &mut frame,
+        b"deployed_anchor_account_id_bound",
+        u64::from(evidence.deployed_anchor_account_id_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"deployed_anchor_slot_id_bound",
+        u64::from(evidence.deployed_anchor_slot_id_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"deployed_anchor_state_root_bound",
+        u64::from(evidence.deployed_anchor_state_root_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"deployed_anchor_lifecycle_anchor_bound",
+        u64::from(evidence.deployed_anchor_lifecycle_anchor_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"deployed_anchor_verifier_version_bound",
+        u64::from(evidence.deployed_anchor_verifier_version_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"deployed_anchor_masked_projection_bound",
+        u64::from(evidence.deployed_anchor_masked_projection_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"deployed_anchor_role_root_export_bridge_bound",
+        u64::from(evidence.deployed_anchor_role_root_export_bridge_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"deployed_anchor_packed_witness_commitment_bound",
+        u64::from(evidence.deployed_anchor_packed_witness_commitment_bound),
     );
     append_u64(
         &mut frame,
@@ -79460,6 +79632,19 @@ mod tests {
         assert!(evidence.leaf_context_bound);
         assert!(evidence.binding_digest_bound);
         assert!(evidence.payload_binding_fields_match_report);
+        assert_eq!(
+            evidence.decoded_public_anchor_digest,
+            evidence.deployed_anchor_digest
+        );
+        assert!(evidence.decoded_public_anchors_match_deployed_anchors);
+        assert!(evidence.deployed_anchor_account_id_bound);
+        assert!(evidence.deployed_anchor_slot_id_bound);
+        assert!(evidence.deployed_anchor_state_root_bound);
+        assert!(evidence.deployed_anchor_lifecycle_anchor_bound);
+        assert!(evidence.deployed_anchor_verifier_version_bound);
+        assert!(evidence.deployed_anchor_masked_projection_bound);
+        assert!(evidence.deployed_anchor_role_root_export_bridge_bound);
+        assert!(evidence.deployed_anchor_packed_witness_commitment_bound);
         assert!(evidence.deployed_anchor_fields_match_report);
         assert!(evidence.account_stark_bundle_nonempty);
         assert!(evidence.proof_family_obligations_still_open);
@@ -110235,9 +110420,12 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report.boundary_statement_pinned);
         assert!(report.selected_payload_pinned);
         assert!(report.accepted_boundary_evidence_present);
+        assert!(report.accepted_boundary_binding_evidence_present);
         assert!(report.replay_payload_digest_bound);
+        assert!(report.replay_payload_digest_binding_evidence_present);
         assert!(report.active_payload_mutation_coverage_present);
         assert!(report.deployed_anchor_rebind_tests_present);
+        assert!(report.deployed_anchor_binding_evidence_present);
         assert!(report.production_gate_fail_closed);
         assert!(!report.simulator_theorem_instantiated);
         assert!(!report.fri_aok_extractor_theorem_instantiated);

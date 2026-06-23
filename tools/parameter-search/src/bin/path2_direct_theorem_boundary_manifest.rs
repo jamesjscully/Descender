@@ -369,12 +369,18 @@ fn manifest_body() -> Result<Value, String> {
                 "selected_payload_pinned": proof_boundary_report.selected_payload_pinned,
                 "accepted_boundary_evidence_present":
                     proof_boundary_report.accepted_boundary_evidence_present,
+                "accepted_boundary_binding_evidence_present":
+                    proof_boundary_report.accepted_boundary_binding_evidence_present,
                 "replay_payload_digest_bound":
                     proof_boundary_report.replay_payload_digest_bound,
+                "replay_payload_digest_binding_evidence_present":
+                    proof_boundary_report.replay_payload_digest_binding_evidence_present,
                 "active_payload_mutation_coverage_present":
                     proof_boundary_report.active_payload_mutation_coverage_present,
                 "deployed_anchor_rebind_tests_present":
                     proof_boundary_report.deployed_anchor_rebind_tests_present,
+                "deployed_anchor_binding_evidence_present":
+                    proof_boundary_report.deployed_anchor_binding_evidence_present,
                 "requirement_coverage_matrix_pinned":
                     proof_boundary_report.requirement_coverage_matrix_pinned,
                 "proof_obligation_rows_pinned":

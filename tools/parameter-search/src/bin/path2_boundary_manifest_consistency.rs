@@ -235,6 +235,33 @@ fn check_consistency() -> Result<(), String> {
         &[
             "account_creation_proof_boundary",
             "coverage",
+            "accepted_boundary_binding_evidence_present",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "replay_payload_digest_binding_evidence_present",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "deployed_anchor_binding_evidence_present",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
             "every_accepting_requirement_has_coverage_row",
         ],
         true,

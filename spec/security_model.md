@@ -227,7 +227,9 @@ payload-binding fields, deployed-anchor fields, no-export private-material field
 classes, the
 `Path2AccountCreationSamplerTimingReportV1` digest, and the
 `Path2AccountCreationNoExportBoundaryReportV1` digest, and current proof-family
-closure blockers. It also pins a structured open proof-obligation
+closure blockers. It also pins accepted-path binding evidence flags for the
+replay-payload digest chain and deployed-anchor public statement comparison
+without treating those flags as a theorem closure. It also pins a structured open proof-obligation
 row list for honest sampler soundness, authorization-class binding,
 no-postchallenge timing, simulator/no-export closure, FRI/AoK extraction,
 FRI/QROM residual pricing, frozen payload KATs, and production-gate review;
@@ -272,11 +274,14 @@ account-STARK verifier feature it constructs the deterministic current KAT
 payload, runs `verify_path2_direct_creation_account_stark_payload_boundary`,
 records only public digests and anchors for the leaf, evidence, replay
 certificate, creation binding, payload frame, STARK bundle, deployed anchor
-set, imported boundary reports, and accepted verifier result, and confirms the
-production entrypoint still fails closed. This evidence pins the accepted
-creation boundary shape; it is not the simulator theorem, extractor theorem,
-account-STARK transcript QROM theorem, production-gate decision, or external
-review.
+set, decoded public account-STARK anchor set, imported boundary reports, and
+accepted verifier result, and confirms the production entrypoint still fails
+closed. The decoded-anchor comparison separately pins account id, slot id,
+state root, lifecycle anchor, raw verifier version, masked projection,
+role-root export bridge, and packed-witness commitment against the deployed
+leaf/binding anchors. This evidence pins the accepted creation boundary shape;
+it is not the simulator theorem, extractor theorem, account-STARK transcript
+QROM theorem, production-gate decision, or external review.
 `formal/kat/path2_account_creation_no_export_boundary_v1.json` is
 also regenerated and checked before the proof-boundary manifest so the
 no-export boundary cannot remain prose-only, and
@@ -373,7 +378,7 @@ checked by `path2_account_stark_fri_aok_boundary_consistency`.
 
 | Residual item | Current evidence | Required closure before deployment | Named break |
 |---|---|---|---|
-| `Path2AccountStarkCreationPayloadV1` byte and replay binding | Wire-format digest frame, certificate/evidence binding, deployed anchor checks, active mutation tests, `Path2AccountStarkPayloadByteModelReportV1` frame/overhead/non-inlined-bundle manifest plus consistency gate, `Path2AccountStarkPayloadKatBoundaryReportV1` public rejection-class mapping, draft manifest regeneration, deterministic digest-pinned current-row boundary vectors, and manifest/vector consistency gates exist. | Full frozen byte corpus and public rejection-class mapping for every consensus-visible malformed payload. | `account_stark_payload_binding_break` |
+| `Path2AccountStarkCreationPayloadV1` byte and replay binding | Wire-format digest frame, certificate/evidence binding, deployed anchor checks, active mutation tests, `Path2AccountStarkPayloadByteModelReportV1` frame/overhead/non-inlined-bundle manifest plus consistency gate, `Path2AccountStarkPayloadKatBoundaryReportV1` public rejection-class mapping, draft manifest regeneration, deterministic digest-pinned current-row boundary vectors, manifest/vector consistency gates, and accepted-path decoded-anchor evidence for replay digest, raw verifier version, masked projection, role-root export bridge, and packed-witness commitment exist. | Full frozen byte corpus and public rejection-class mapping for every consensus-visible malformed payload. | `account_stark_payload_binding_break` |
 | AIR relation soundness | `research/path2_account_stark_air_soundness_audit.md` reports all relation classes wired and MED findings remediated. | External proof-family review confirms the AIR constraints match the claimed creation relation and no false statement accepts except with a named proof break. | `account_stark_air_soundness_break` |
 | FRI argument-of-knowledge extractor | The AIR is fully constrained, and `Path2AccountStarkFriAokBoundaryReportV1` plus `formal/kat/path2_account_stark_fri_aok_boundary_v1.json` pin the support audit, selected proof family, FRI/QROM residual digest, residual-matrix digest, AIR coverage counts, MED remediation counts, and open extractor/review/deployment flags. | A concrete extractor theorem for the selected Plonky3/q12289 configuration shows accepting proof implies an extractable account-creation witness or exports a named FRI/AoK break. | `account_stark_fri_aok_extractor_break` |
 | Zero-knowledge simulator and no-export statement | Boundary text forbids export of pad source, projection, syndrome, opening tuple, witness, mask, and private trace material; `Path2AccountCreationNoExportBoundaryReportV1` plus `formal/kat/path2_account_creation_no_export_boundary_v1.json` pin the support file, selected payload endpoints, payload byte-model/KAT-boundary digests, denylist, simulator/no-export theorem targets, accepted-bundle simulator public-input allowlist, public-payload-only byte model, mutation coverage, and fail-closed production gate while leaving simulator, no-export, accepted-bundle simulability, review, and deployment flags false. | Simulator theorem for the selected payload proves the accepted public bundle can be simulated from public anchors and allowed commitments without revealing private creation material. | `account_stark_simulator_or_no_export_break` |
@@ -439,7 +444,7 @@ used as deployment evidence while a higher-ranked blocker remains open.
 | Rank | Blocker | Must close | Owning rows |
 |---|---|---|---|
 | 1 | Direct theorem closure | `Path2DirectTheoremBoundaryReportV1`, `Path2DirectAcceptedSpendTupleEvidenceV1`, and `formal/kat/path2_direct_theorem_boundary_v1.json` pin the product theorem boundary and accepted-path tuple evidence, and the final product theorem covers admission, spend, consume-once lifecycle, exact public bindings, and every named break; supporting lemmas and executable accepted-path evidence cannot stand in for the deployment theorem. | `DIR-RISK-001`, `DIR-SEC-001`, `DIR-CREATE-001`, `DIR-PROOF-002`, `DIR-AUTHCLASS-001` |
-| 2 | Account-creation proof boundary | `Path2AccountCreationProofBoundaryReportV1` and `Path2AccountCreationAcceptedProofBoundaryEvidenceV1` pin the selected account-STARK payload boundary, accepted public digest chain, and fail-closed production gate; the payload still needs a concrete frozen byte model, canonical replay-payload digest closure, deployed anchor binding theorem, simulator theorem, extractor theorem, hidden-source payload statement, production-gate decision, and full rejection behavior. | `DIR-CREATE-001`, `DIR-PROOF-001`, `DIR-STARK-001`, `DIR-BIND-001`, `DIR-PAYLOAD-001`, `DIR-KAT-001`, `DIR-REJECT-001` |
+| 2 | Account-creation proof boundary | `Path2AccountCreationProofBoundaryReportV1` and `Path2AccountCreationAcceptedProofBoundaryEvidenceV1` pin the selected account-STARK payload boundary, accepted public digest chain, decoded public-anchor equality, and fail-closed production gate; the payload still needs a concrete frozen byte model, theorem-level replay-payload and deployed-anchor binding closure, simulator theorem, extractor theorem, hidden-source payload statement, production-gate decision, and full rejection behavior. | `DIR-CREATE-001`, `DIR-PROOF-001`, `DIR-STARK-001`, `DIR-BIND-001`, `DIR-PAYLOAD-001`, `DIR-KAT-001`, `DIR-REJECT-001` |
 | 3 | Authorization-class binding | Private authorization-local material cannot change public spend semantics, fork account state, or bypass the checked-core public binding. | `DIR-AUTHCLASS-001`, `DIR-SEC-001`, `DIR-CC-001` |
 | 4 | Consensus conformance | Canonical wire formats, public-field mutation vectors, end-to-end creation/spend/lifecycle vectors, and deterministic rejection behavior exist. | `DIR-KAT-001`, `SPEC-KAT-001`, `DIR-REJECT-001`, `DIR-CC-001`, `DIR-LEAF-001`, `DIR-EVID-001` |
 | 5 | Signer leakage and fault safety | Signer, keygen, sampler, rejection loops, fault handling, errors, zeroization, target/build profiles, and leakage evidence satisfy the signer profile without floating-point signing assumptions. | `DIR-CT-001`, `SPEC-SIGNER-001`, `SPEC-LEAKAGE-001`, `ADOPT-HW-001`, `ADOPT-HW-CT-001`, `ADOPT-HW-ENT-001`, `ADOPT-HW-STATE-001` |
