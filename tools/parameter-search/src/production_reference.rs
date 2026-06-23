@@ -11002,7 +11002,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "rejection_is_deterministic_public_and_state_preserving",
         supporting_surface: "consensus-safe rejection and state-preserving failure mapping",
         current_evidence:
-            "Path2PublicResultClassV1 pins the consensus result-class names; account-STARK payload boundary maps current internal errors to public rejection classes; direct spend classifier and no-mutation test cover selected pre-consume failure classes; full consensus rejection KATs remain open",
+            "Path2PublicResultClassV1 pins the consensus result-class names; account-STARK payload boundary maps current internal errors to public rejection classes; direct spend classifier, no-mutation test, and malformed signature panic-free KATs cover selected pre-consume failure classes; full consensus rejection KATs remain open",
         required_closure:
             "public rejection enum, panic-free malformed-input KATs, and state-no-mutation tests cover every direct-mode rejection",
         named_break: "consensus_rejection_or_state_mutation_break",
@@ -11515,6 +11515,7 @@ pub fn path2_direct_account_binding_public_result_class_for_reason(
     }
     if reason.contains("has ") && reason.contains("bytes, expected")
         || reason.contains("not canonical")
+        || reason.contains("non-canonical")
         || reason.contains("malformed")
         || reason.contains("frame version mismatch")
         || reason.contains("evidence domain mismatch")
@@ -98068,6 +98069,122 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             consumed, before,
             "already-consumed rejection changed consume-once state"
         );
+    }
+
+    #[test]
+    fn path2_direct_single_slot_spend_malformed_signature_kats_are_panic_free() {
+        let (fixture, leaf, evidence, certificate) = path2_creation_relation_replay_fixture();
+        let authorization = path2_slot_authorization_digest(&leaf).unwrap();
+        let mut admitted_state_authorizations = BTreeSet::new();
+        admitted_state_authorizations.insert((
+            leaf.account_id,
+            leaf.account_state_root_before,
+            authorization,
+        ));
+        let responses = ProductionCompactResponses {
+            active_free: [[0_i16; LOCAL_FREE]; REPS],
+        };
+        let signature = sign_path2_reviewed_fq12_authorization_checked_core(
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &leaf.account_id,
+            &leaf.account_state_root_before,
+            &authorization,
+            leaf.slot_id as u32,
+            &fixture.pad_seed,
+            &responses,
+        )
+        .unwrap();
+        let valid_bytes = signature.as_bytes();
+        let response_start = SLOT_ID_BYTES + CHALLENGE_BYTES;
+        let opening_start = response_start + ACTIVE_RESPONSE_BYTES;
+
+        let mut one_short = valid_bytes.to_vec();
+        one_short.pop();
+        let mut one_long = valid_bytes.to_vec();
+        one_long.push(0);
+        let mut bad_challenge = valid_bytes.to_vec();
+        bad_challenge[SLOT_ID_BYTES + ALGEBRAIC_CHALLENGE_BYTES - 1] |= 0x80;
+        let mut bad_response = valid_bytes.to_vec();
+        bad_response[response_start] = (2 * RESPONSE_BOUND) as u8 + 1;
+        let mut bad_opening = valid_bytes.to_vec();
+        bad_opening[opening_start..opening_start + 2].copy_from_slice(&Q.to_le_bytes());
+        let mut bad_masked_response = valid_bytes.to_vec();
+        *bad_masked_response.last_mut().unwrap() |= 0xf0;
+
+        let cases = [
+            (
+                "empty_signature",
+                ProductionSignature::new(Vec::new()),
+                "reviewed Fq12 account-carried signature has 0 bytes, expected 262".to_string(),
+            ),
+            (
+                "slot_id_only_signature",
+                ProductionSignature::new(vec![0_u8; SLOT_ID_BYTES]),
+                "reviewed Fq12 account-carried signature has 4 bytes, expected 262".to_string(),
+            ),
+            (
+                "one_byte_short_signature",
+                ProductionSignature::new(one_short),
+                "reviewed Fq12 account-carried signature has 261 bytes, expected 262".to_string(),
+            ),
+            (
+                "one_byte_long_signature",
+                ProductionSignature::new(one_long),
+                "reviewed Fq12 account-carried signature has 263 bytes, expected 262".to_string(),
+            ),
+            (
+                "noncanonical_challenge",
+                ProductionSignature::new(bad_challenge),
+                "challenge is not canonical: high bits are set".to_string(),
+            ),
+            (
+                "noncanonical_response",
+                ProductionSignature::new(bad_response),
+                "active response coordinate 0 in round 0 is non-canonical: 97".to_string(),
+            ),
+            (
+                "noncanonical_opening",
+                ProductionSignature::new(bad_opening),
+                format!("opening coordinate 0 in round 0 is non-canonical: {Q}"),
+            ),
+            (
+                "noncanonical_fq12_masked_response",
+                ProductionSignature::new(bad_masked_response),
+                "reviewed Fq12 masked response is not canonical: high bits are set".to_string(),
+            ),
+        ];
+
+        for (label, malformed_signature, expected_reason) in cases {
+            let mut consumed = BTreeSet::new();
+            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                verify_path2_direct_single_slot_spend_authorization(
+                    &leaf,
+                    &evidence,
+                    &certificate,
+                    &fixture.public_key,
+                    fixture.message,
+                    &fixture.account,
+                    &malformed_signature,
+                    &admitted_state_authorizations,
+                    &mut consumed,
+                )
+            }));
+            let err = result
+                .unwrap_or_else(|_| panic!("malformed signature case {label} panicked"))
+                .unwrap_err();
+            assert_eq!(err.reason(), expected_reason, "{label}");
+            assert_eq!(
+                path2_direct_account_binding_public_result_class(&err),
+                Path2PublicResultClassV1::RejectMalformedPublicInput,
+                "{label}"
+            );
+            assert!(
+                consumed.is_empty(),
+                "malformed signature case {label} mutated consume-once state"
+            );
+        }
     }
 
     #[test]

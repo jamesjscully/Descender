@@ -157,8 +157,12 @@ direct spend/account-binding failures. The
 `path2_direct_single_slot_spend_rejections_preserve_consume_once_state` test
 checks that selected direct spend rejections leave consume-once state unchanged
 before the accepted spend transition and map to the expected public classes.
-This is rejection-state evidence, not a complete malformed-input corpus,
-every-reject-class no-mutation suite, or client-mapping package.
+`path2_direct_single_slot_spend_malformed_signature_kats_are_panic_free` adds
+selected malformed Fq12 signature byte strings and checks they reject without
+panic, map to `reject_malformed_public_input`, and leave consume-once state
+unchanged. This is rejection-state evidence, not a complete malformed-input
+corpus for every public object, every-reject-class no-mutation suite, or
+client-mapping package.
 
 Before the consensus verifier surface can be marked `verified`, the repo needs:
 

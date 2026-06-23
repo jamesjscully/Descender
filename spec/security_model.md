@@ -89,7 +89,11 @@ and deployment flags false. The public-rejection obligation row now records
 `Path2PublicResultClassV1`, the direct spend public-classifier helper, and the
 `path2_direct_single_slot_spend_rejections_preserve_consume_once_state` test,
 which checks selected direct spend rejections preserve consume-once state before
-the mutation point. This does not replace panic-free malformed-input KATs,
+the mutation point. It also records
+`path2_direct_single_slot_spend_malformed_signature_kats_are_panic_free`, which
+checks selected malformed Fq12 signature byte strings reject without panic,
+map to the malformed public class, and preserve consume-once state. This does
+not replace panic-free malformed-input KATs for every public object,
 state-no-mutation coverage for every direct-mode rejection, or full
 consensus-client mapping still required for closure. The
 QROM/action report pins the checked-core direct query budget, 182-bit priced

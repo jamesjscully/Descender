@@ -200,6 +200,9 @@ direct-theorem obligation row table and imported-boundary digests.
 `Path2PublicResultClassV1` and
 `path2_direct_single_slot_spend_rejections_preserve_consume_once_state` are
 active fast-gate precursors for direct spend public result-class naming and
-rejection state-no-mutation; they are not yet the full public rejection vector
-corpus. The full direct-mode vector corpus, full byte corpus,
+rejection state-no-mutation. The
+`path2_direct_single_slot_spend_malformed_signature_kats_are_panic_free` test
+adds selected panic-free malformed Fq12 signature byte cases for the direct
+spend verifier. These are not yet the full public rejection vector corpus. The
+full direct-mode vector corpus, full byte corpus,
 lifecycle/rejection coverage, and `DIR-KAT-001` closure remain open.
