@@ -61,19 +61,20 @@ accepted-path hypotheses are checked by the deterministic composition KAT, and
 the public-rejection hypothesis remains explicitly deferred to the rejection
 KAT suite; compact accepted-evidence artifact summaries imported by the
 proof-boundary and direct-theorem manifests now expose and gate the accepted
-requirement, accepted tuple-field, and accepted hypothesis evidence counts plus
-the deferred rejection/QROM flags. The shared
+requirement, accepted tuple-field, and accepted hypothesis evidence counts,
+exact accepted row identity lists, accepted hypothesis-to-obligation bindings,
+and the deferred rejection/QROM flags. The shared
 boundary-manifest gate also checks embedded requirement, proof-obligation, and
 direct-obligation corpus evidence against standalone corpus-evidence objects,
 while the preflight gate checks open-row blockers, fail-closed flags, the
 direct/proof/residual closure-dependency graph, including the proof-boundary
 and direct-theorem closure-dependency row tables plus their derived evidence
-rows, imported accepted-evidence summary counts, obligation-corpus open review,
-QROM, lifecycle, proof-boundary readiness, and proof-obligation vector-coverage
-flags for no-export, FRI/QROM-domain, and payload-KAT support, exact
-proof/direct case-id lists and named-break taxonomies, and the production preflight
-blocker/verdict/ready-assertion/certificate chain against the standalone KATs
-and deployment blocker set. The direct theorem report
+rows, imported accepted-evidence summary counts and row identities,
+obligation-corpus open review, QROM, lifecycle, proof-boundary readiness, and
+proof-obligation vector-coverage flags for no-export, FRI/QROM-domain, and
+payload-KAT support, exact proof/direct case-id lists and named-break
+taxonomies, and the production preflight blocker/verdict/ready-assertion/certificate
+chain against the standalone KATs and deployment blocker set. The direct theorem report
 validator also explicitly rejects weakened obligation coverage, missing pinned
 evidence hooks, missing direct closure-dependency rows, unexpectedly closed
 theorem/deployment flags, or blocker drift at the production-reference

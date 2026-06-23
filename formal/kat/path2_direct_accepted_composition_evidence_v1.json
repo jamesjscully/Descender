@@ -13,6 +13,18 @@
           "accepted_path_applicable_requirement_count": 8,
           "accepted_path_requirement_evidence_count": 8,
           "accepted_requirement_evidence_count": 10,
+          "accepted_requirement_ids": [
+            "canonical_leaf_and_evidence_framing",
+            "evidence_leaf_binding_equalities",
+            "certificate_evidence_payload_digest_binding",
+            "payload_availability_nonempty_bundle_and_digest_equality",
+            "payload_context_binding_leaf_proof_aggregation_slot",
+            "packed_account_stark_bundle_verifies",
+            "deployed_creation_anchors_match_stark_public_statement",
+            "zero_knowledge_no_export_semantics",
+            "account_stark_qrom_domain_separation",
+            "deterministic_public_rejection"
+          ],
           "boundary_or_audit_requirement_evidence_count": 10,
           "deployment_ready": false,
           "deterministic_rejection_requirement_deferred_to_rejection_kats": true,
@@ -49,6 +61,19 @@
         "audit_summary": {
           "accepted_tuple_field_evidence_count": 11,
           "accepted_tuple_field_evidence_present_count": 11,
+          "accepted_tuple_field_ids": [
+            "public_key_or_public_key_identity",
+            "message_or_message_digest",
+            "account_id",
+            "account_state_root_before_spend",
+            "slot_id",
+            "checked_core_signature_body",
+            "prevalidated_slot_leaf_v1",
+            "account_creation_evidence_v1",
+            "selected_account_creation_proof_payload",
+            "direct_admission_namespace_record",
+            "consume_once_state_before_and_after_spend"
+          ],
           "accepted_tuple_field_open_obligation_count": 11,
           "consume_once_inserted_exactly_one_authorization": true,
           "consumed_authorization_absent_before": true,
@@ -224,5 +249,5 @@
     "schema": "Descender.Path2.DirectAcceptedCompositionDeterministicKatEvidenceManifest.v1",
     "status": "digest_pinned_deterministic_kat_accepted_direct_composition_evidence"
   },
-  "manifest_digest": "d9fe70e29e8aae53c9ad4a72f2477daca6f7e53224f99030d2325f63a807e6e0"
+  "manifest_digest": "735db6af4e508bb599c797ffe05f933bf5406f404447f53919469aa5cbdbd86a"
 }

@@ -1,3 +1,5 @@
+#![recursion_limit = "256"]
+
 pub mod air;
 pub mod base128_range_air_q12289;
 pub mod c2_prf_air_q12289;

@@ -581,6 +581,16 @@ fn main() -> Result<(), String> {
             ));
         }
     }
+    if at(
+        proof_boundary,
+        "/accepted_proof_boundary_evidence_artifact/audit_summary/accepted_requirement_ids",
+    )? != at(proof_boundary, "/accepting_requirements")?
+    {
+        return Err(
+            "production preflight proof-boundary accepted evidence lost requirement identity"
+                .to_string(),
+        );
+    }
     for pointer in [
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/composition_theorem_instantiated",
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/account_creation_proof_boundary_verified",
@@ -774,6 +784,37 @@ fn main() -> Result<(), String> {
     }
     if at(
         direct_boundary,
+        "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/accepted_tuple_field_ids",
+    )? != at(direct_boundary, "/accepted_tuple_fields")?
+    {
+        return Err(
+            "production preflight direct accepted tuple evidence lost field identity".to_string(),
+        );
+    }
+    if at(
+        direct_boundary,
+        "/direct_accepted_composition_evidence_artifact/audit_summary/accepted_hypothesis_ids",
+    )? != at(direct_boundary, "/acceptance_hypotheses")?
+    {
+        return Err(
+            "production preflight direct accepted composition evidence lost hypothesis identity"
+                .to_string(),
+        );
+    }
+    let direct_obligation_row_ids =
+        array_field_values_at(direct_boundary, "/obligation_rows", "obligation_id")?;
+    if at(
+        direct_boundary,
+        "/direct_accepted_composition_evidence_artifact/audit_summary/accepted_hypothesis_direct_obligation_ids",
+    )? != &direct_obligation_row_ids
+    {
+        return Err(
+            "production preflight direct accepted composition evidence lost hypothesis obligation identity"
+                .to_string(),
+        );
+    }
+    if at(
+        direct_boundary,
         "/direct_obligation_vector_corpus_evidence/audit_summary/direct_named_break_classes",
     )? != at(direct_boundary, "/named_break_classes")?
     {
@@ -781,8 +822,6 @@ fn main() -> Result<(), String> {
             "production preflight direct-obligation summary lost named-break taxonomy".to_string(),
         );
     }
-    let direct_obligation_row_ids =
-        array_field_values_at(direct_boundary, "/obligation_rows", "obligation_id")?;
     if at(
         direct_boundary,
         "/direct_obligation_vector_corpus_evidence/direct_obligation_case_ids",

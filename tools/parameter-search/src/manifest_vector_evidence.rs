@@ -91,6 +91,18 @@ fn case_ids_at<'a>(value: &'a Value, pointer: &str) -> Result<Vec<&'a str>, Stri
         .collect()
 }
 
+fn field_values_at<'a>(
+    value: &'a Value,
+    pointer: &str,
+    field: &str,
+) -> Result<Vec<&'a str>, String> {
+    let field_pointer = format!("/{field}");
+    array_at(value, pointer)?
+        .iter()
+        .map(|row| str_at(row, &field_pointer))
+        .collect()
+}
+
 fn body_digest(corpus: &Value, label: &str) -> Result<String, String> {
     let corpus_json =
         serde_json::to_string_pretty(corpus).map_err(|err| format!("serialize {label}: {err}"))?;
@@ -116,6 +128,17 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_artifact_v1() -> 
     if str_at(&artifact_file, "/manifest_digest")? != artifact_digest {
         return Err(
             "account-creation accepted proof-boundary evidence manifest digest mismatch"
+                .to_string(),
+        );
+    }
+    let accepted_requirement_ids = field_values_at(
+        artifact,
+        "/evidence/accepted_requirement_evidence_rows",
+        "requirement",
+    )?;
+    if accepted_requirement_ids.as_slice() != proof_report.accepting_requirements {
+        return Err(
+            "accepted proof-boundary evidence rows drifted from accepting requirements"
                 .to_string(),
         );
     }
@@ -229,6 +252,7 @@ pub fn path2_account_creation_accepted_proof_boundary_evidence_artifact_v1() -> 
             )?
         },
         "audit_summary": {
+            "accepted_requirement_ids": accepted_requirement_ids,
             "verifier_boundary_accepts": bool_at(
                 artifact,
                 "/evidence/verifier_boundary_accepts"
@@ -328,6 +352,14 @@ pub fn path2_direct_accepted_spend_tuple_evidence_artifact_v1() -> Result<Value,
     let artifact_digest = body_digest(artifact, "direct accepted spend tuple evidence artifact")?;
     if str_at(&artifact_file, "/manifest_digest")? != artifact_digest {
         return Err("direct accepted spend tuple evidence manifest digest mismatch".to_string());
+    }
+    let accepted_tuple_field_ids = field_values_at(
+        artifact,
+        "/evidence/accepted_tuple_field_evidence_rows",
+        "accepted_tuple_field",
+    )?;
+    if accepted_tuple_field_ids.as_slice() != direct_report.accepted_tuple_fields {
+        return Err("direct accepted tuple evidence rows drifted from tuple fields".to_string());
     }
     if str_at(artifact, "/schema")?
         != "Descender.Path2.DirectAcceptedSpendTupleDeterministicKatEvidenceManifest.v1"
@@ -454,6 +486,7 @@ pub fn path2_direct_accepted_spend_tuple_evidence_artifact_v1() -> Result<Value,
             )?
         },
         "audit_summary": {
+            "accepted_tuple_field_ids": accepted_tuple_field_ids,
             "state_namespace_record_present": bool_at(
                 artifact,
                 "/evidence/state_namespace_record_present"
@@ -566,6 +599,33 @@ pub fn path2_direct_accepted_composition_evidence_artifact_v1() -> Result<Value,
     let artifact_digest = body_digest(artifact, "direct accepted composition evidence artifact")?;
     if str_at(&artifact_file, "/manifest_digest")? != artifact_digest {
         return Err("direct accepted composition evidence manifest digest mismatch".to_string());
+    }
+    let accepted_hypothesis_ids = field_values_at(
+        artifact,
+        "/evidence/accepted_hypothesis_evidence_rows",
+        "acceptance_hypothesis",
+    )?;
+    if accepted_hypothesis_ids.as_slice() != direct_report.acceptance_hypotheses {
+        return Err(
+            "direct accepted composition evidence rows drifted from acceptance hypotheses"
+                .to_string(),
+        );
+    }
+    let accepted_hypothesis_direct_obligation_ids = field_values_at(
+        artifact,
+        "/evidence/accepted_hypothesis_evidence_rows",
+        "direct_obligation_id",
+    )?;
+    let direct_obligation_ids = direct_report
+        .obligation_rows
+        .iter()
+        .map(|row| row.obligation_id)
+        .collect::<Vec<_>>();
+    if accepted_hypothesis_direct_obligation_ids != direct_obligation_ids {
+        return Err(
+            "direct accepted composition evidence rows drifted from direct obligations"
+                .to_string(),
+        );
     }
     if str_at(artifact, "/schema")?
         != "Descender.Path2.DirectAcceptedCompositionDeterministicKatEvidenceManifest.v1"
@@ -765,6 +825,9 @@ pub fn path2_direct_accepted_composition_evidence_artifact_v1() -> Result<Value,
             )?
         },
         "audit_summary": {
+            "accepted_hypothesis_ids": accepted_hypothesis_ids,
+            "accepted_hypothesis_direct_obligation_ids":
+                accepted_hypothesis_direct_obligation_ids,
             "creation_evidence_matches_direct_tuple": bool_at(
                 artifact,
                 "/evidence/creation_evidence_matches_direct_tuple"

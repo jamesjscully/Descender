@@ -252,6 +252,18 @@
           "accepted_path_applicable_requirement_count": 8,
           "accepted_path_requirement_evidence_count": 8,
           "accepted_requirement_evidence_count": 10,
+          "accepted_requirement_ids": [
+            "canonical_leaf_and_evidence_framing",
+            "evidence_leaf_binding_equalities",
+            "certificate_evidence_payload_digest_binding",
+            "payload_availability_nonempty_bundle_and_digest_equality",
+            "payload_context_binding_leaf_proof_aggregation_slot",
+            "packed_account_stark_bundle_verifies",
+            "deployed_creation_anchors_match_stark_public_statement",
+            "zero_knowledge_no_export_semantics",
+            "account_stark_qrom_domain_separation",
+            "deterministic_public_rejection"
+          ],
           "boundary_or_audit_requirement_evidence_count": 10,
           "deployment_ready": false,
           "deterministic_rejection_requirement_deferred_to_rejection_kats": true,
@@ -280,13 +292,35 @@
       "account_creation_accepted_proof_boundary_evidence_digest": "d6dab0e157c77519306983d7b11ae9d8210bb5d2cdba9861ad2c9de9775bf62c",
       "account_creation_proof_boundary_report_digest": "e7c2b9243d2a1ca88486c226b6f24e989711f85b4e56d011ebfd996b07ac899a",
       "account_creation_proof_boundary_report_recomputed_digest": "e7c2b9243d2a1ca88486c226b6f24e989711f85b4e56d011ebfd996b07ac899a",
-      "artifact_manifest_digest": "d9fe70e29e8aae53c9ad4a72f2477daca6f7e53224f99030d2325f63a807e6e0",
-      "artifact_manifest_recomputed_digest": "d9fe70e29e8aae53c9ad4a72f2477daca6f7e53224f99030d2325f63a807e6e0",
+      "artifact_manifest_digest": "735db6af4e508bb599c797ffe05f933bf5406f404447f53919469aa5cbdbd86a",
+      "artifact_manifest_recomputed_digest": "735db6af4e508bb599c797ffe05f933bf5406f404447f53919469aa5cbdbd86a",
       "artifact_path": "formal/kat/path2_direct_accepted_composition_evidence_v1.json",
       "artifact_schema": "Descender.Path2.DirectAcceptedCompositionDeterministicKatEvidenceManifest.v1",
       "artifact_status": "digest_pinned_deterministic_kat_accepted_direct_composition_evidence",
       "audit_summary": {
+        "accepted_hypothesis_direct_obligation_ids": [
+          "direct_obligation_leaf_canonical_live",
+          "direct_obligation_evidence_leaf_bindings",
+          "direct_obligation_slot_authorization_digest",
+          "direct_obligation_creation_before_challenge",
+          "direct_obligation_admission_namespace",
+          "direct_obligation_checked_core_frame_binding",
+          "direct_obligation_checked_core_acceptance",
+          "direct_obligation_consume_once",
+          "direct_obligation_public_rejection"
+        ],
         "accepted_hypothesis_evidence_count": 9,
+        "accepted_hypothesis_ids": [
+          "leaf_is_canonical_and_live",
+          "evidence_envelope_matches_leaf_bindings",
+          "slot_authorization_digest_matches_canonical_leaf",
+          "selected_creation_verifier_accepted_before_spend_challenge",
+          "direct_admission_namespace_contains_exact_tuple",
+          "checked_core_challenge_binds_public_spend_context",
+          "checked_core_verification_accepts_poseidon2_and_fq12_action",
+          "lifecycle_transition_consumes_authorization_once",
+          "rejection_is_deterministic_public_and_state_preserving"
+        ],
         "account_creation_proof_boundary_verified": false,
         "composition_theorem_instantiated": false,
         "consume_once_transition_matches_tuple": true,
@@ -321,6 +355,19 @@
         "audit_summary": {
           "accepted_tuple_field_evidence_count": 11,
           "accepted_tuple_field_evidence_present_count": 11,
+          "accepted_tuple_field_ids": [
+            "public_key_or_public_key_identity",
+            "message_or_message_digest",
+            "account_id",
+            "account_state_root_before_spend",
+            "slot_id",
+            "checked_core_signature_body",
+            "prevalidated_slot_leaf_v1",
+            "account_creation_evidence_v1",
+            "selected_account_creation_proof_payload",
+            "direct_admission_namespace_record",
+            "consume_once_state_before_and_after_spend"
+          ],
           "accepted_tuple_field_open_obligation_count": 11,
           "consume_once_inserted_exactly_one_authorization": true,
           "consumed_authorization_absent_before": true,
@@ -372,6 +419,19 @@
       "audit_summary": {
         "accepted_tuple_field_evidence_count": 11,
         "accepted_tuple_field_evidence_present_count": 11,
+        "accepted_tuple_field_ids": [
+          "public_key_or_public_key_identity",
+          "message_or_message_digest",
+          "account_id",
+          "account_state_root_before_spend",
+          "slot_id",
+          "checked_core_signature_body",
+          "prevalidated_slot_leaf_v1",
+          "account_creation_evidence_v1",
+          "selected_account_creation_proof_payload",
+          "direct_admission_namespace_record",
+          "consume_once_state_before_and_after_spend"
+        ],
         "accepted_tuple_field_open_obligation_count": 11,
         "consume_once_inserted_exactly_one_authorization": true,
         "consumed_authorization_absent_before": true,
@@ -567,5 +627,5 @@
     "schema": "Descender.Path2.DirectTheoremObligationVectors.v1",
     "status": "digest_pinned_direct_theorem_obligation_audit_vectors"
   },
-  "corpus_digest": "fddb51d2c9ef2e8ba5db688a325f2ed22bd318c34b3a8af1459fdfe8c4023855"
+  "corpus_digest": "e6c5fd44627277659f58cd1af1234138ef8f2adf16c292e3d14b9f5ec2ba612e"
 }

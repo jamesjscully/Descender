@@ -134,9 +134,10 @@ positive accepted-path hypotheses must have concrete accepted-path evidence,
 while the public rejection/state-preservation hypothesis is explicitly marked
 as deferred to the direct rejection KAT suite. The compact accepted-composition
 artifact imported by the direct theorem and preflight manifests carries those
-accepted-hypothesis counts and deferred-rejection flags, and the consistency
-gates fail if the compact summary no longer matches the full accepted evidence
-shape.
+accepted-hypothesis counts, exact hypothesis identities,
+hypothesis-to-direct-obligation identities, and deferred-rejection flags, and
+the consistency gates fail if the compact summary no longer matches the full
+accepted evidence shape.
 The consistency gate also checks the direct spend tuple digest against the
 standalone tuple artifact and the selected payload digest against the
 account-STARK payload KAT vector corpus. The accepted proof-boundary, accepted
@@ -380,8 +381,9 @@ requires the standalone proof-boundary and direct theorem manifests to agree on
 the shared proof-boundary evidence while preserving false theorem and deployment
 flags. The compact accepted-proof, accepted-tuple, and accepted-composition
 artifact summaries expose the accepted requirement, tuple-field, and hypothesis
-evidence counts plus their deferred rejection/QROM flags; both boundary and
-preflight consistency gates check those summaries before importing them. The
+evidence counts, exact row identity lists, accepted hypothesis-to-obligation
+bindings, and their deferred rejection/QROM flags; both boundary and preflight
+consistency gates check those summaries before importing them. The
 compact proof-obligation and direct-obligation corpus summaries also retain the
 raw open external-review, QROM theorem/import, lifecycle-finality, and
 proof-boundary readiness flags, plus the proof-obligation corpus flags showing

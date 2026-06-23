@@ -439,9 +439,10 @@ boundary keeps its own nine closure-dependency rows pinned, open, evidenced,
 and deployment-blocking while the accepted-tuple theorem is not instantiated.
 The compact accepted-evidence artifacts embedded by these manifests expose
 their accepted requirement, accepted tuple-field, and accepted hypothesis
-evidence counts plus the deferred rejection/QROM flags; the boundary and
-preflight consistency gates check those summaries so a weakened accepted path
-cannot be imported silently. The compact proof-obligation and direct-obligation
+evidence counts, exact row identity lists, accepted hypothesis-to-obligation
+bindings, and deferred rejection/QROM flags; the boundary and preflight
+consistency gates check those summaries so a weakened accepted path cannot be
+imported silently. The compact proof-obligation and direct-obligation
 corpus evidence summaries also preserve their raw open review, QROM, lifecycle,
 and proof-boundary readiness flags. The proof-obligation summary also preserves
 the no-export, FRI/QROM-domain, and payload-KAT vector-coverage flags. Both

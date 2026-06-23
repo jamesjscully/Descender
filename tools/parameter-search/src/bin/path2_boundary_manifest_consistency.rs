@@ -967,6 +967,23 @@ fn check_consistency() -> Result<(), String> {
         ],
         10,
     )?;
+    expect_eq(
+        get(
+            proof_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "accepted_proof_boundary_evidence_artifact",
+                "audit_summary",
+                "accepted_requirement_ids",
+            ],
+        )?,
+        "proof.manifest.account_creation_proof_boundary.accepted_proof_boundary_evidence_artifact.audit_summary.accepted_requirement_ids",
+        get(
+            proof_manifest,
+            &["account_creation_proof_boundary", "accepting_requirements"],
+        )?,
+        "proof.manifest.account_creation_proof_boundary.accepting_requirements",
+    )?;
     for flag in [
         "every_applicable_accepting_requirement_has_accepted_path_evidence",
         "every_accepting_requirement_has_boundary_or_audit_evidence",
@@ -1375,6 +1392,23 @@ fn check_consistency() -> Result<(), String> {
             expected,
         )?;
     }
+    expect_eq(
+        get(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_accepted_spend_tuple_evidence_artifact",
+                "audit_summary",
+                "accepted_tuple_field_ids",
+            ],
+        )?,
+        "direct.manifest.direct_theorem_boundary.direct_accepted_spend_tuple_evidence_artifact.audit_summary.accepted_tuple_field_ids",
+        get(
+            direct_manifest,
+            &["direct_theorem_boundary", "accepted_tuple_fields"],
+        )?,
+        "direct.manifest.direct_theorem_boundary.accepted_tuple_fields",
+    )?;
     for flag in [
         "every_accepted_tuple_field_has_evidence",
         "every_accepted_tuple_field_has_open_direct_obligation",
@@ -1429,6 +1463,37 @@ fn check_consistency() -> Result<(), String> {
             expected,
         )?;
     }
+    expect_eq(
+        get(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_accepted_composition_evidence_artifact",
+                "audit_summary",
+                "accepted_hypothesis_ids",
+            ],
+        )?,
+        "direct.manifest.direct_theorem_boundary.direct_accepted_composition_evidence_artifact.audit_summary.accepted_hypothesis_ids",
+        get(
+            direct_manifest,
+            &["direct_theorem_boundary", "acceptance_hypotheses"],
+        )?,
+        "direct.manifest.direct_theorem_boundary.acceptance_hypotheses",
+    )?;
+    expect_eq(
+        get(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_accepted_composition_evidence_artifact",
+                "audit_summary",
+                "accepted_hypothesis_direct_obligation_ids",
+            ],
+        )?,
+        "direct.manifest.direct_theorem_boundary.direct_accepted_composition_evidence_artifact.audit_summary.accepted_hypothesis_direct_obligation_ids",
+        &direct_obligation_row_ids,
+        "direct.manifest.direct_theorem_boundary.obligation_rows obligation ids",
+    )?;
     for flag in [
         "every_positive_acceptance_hypothesis_has_accepted_path_evidence",
         "public_rejection_hypothesis_deferred_to_rejection_kats",
