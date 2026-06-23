@@ -220,6 +220,29 @@ BOUNDARY_MANIFEST_CONSISTENCY_MARKERS = {
         "path2_boundary_manifest_consistency",
     ],
 }
+PREFLIGHT_BOUNDARY_CONSISTENCY_MARKERS = {
+    "tools/parameter-search/src/bin/path2_preflight_boundary_consistency.rs": [
+        "production_deployment_preflight",
+        "production_deployment_preflight_report",
+        "production_deployment_preflight_report_digest",
+        "validate_production_deployment_preflight_report",
+        "path2_direct_theorem_boundary_report_v1",
+        "path2_account_creation_proof_boundary_report_v1",
+        "path2_account_stark_residual_matrix_report_v1",
+        "production_deployment_direct_theorem_blockers",
+        "production_deployment_account_creation_proof_boundary_blockers",
+        "production_deployment_account_stark_residual_blockers",
+        "Path 2 preflight boundary consistency check passed.",
+    ],
+    "scripts/check_build.sh": [
+        "preflight boundary consistency check",
+        "path2_preflight_boundary_consistency",
+    ],
+    ".github/workflows/ci.yml": [
+        "Preflight boundary consistency check",
+        "path2_preflight_boundary_consistency",
+    ],
+}
 ACCOUNT_STARK_PAYLOAD_KAT_VECTOR_MARKERS = {
     "tools/parameter-search/src/bin/path2_account_stark_payload_kat_vectors.rs": [
         "Descender.Path2.AccountStarkPayloadKatVectors.v1",
@@ -2108,6 +2131,21 @@ def check_boundary_manifest_consistency_markers(errors: list[str]) -> None:
                 )
 
 
+def check_preflight_boundary_consistency_markers(errors: list[str]) -> None:
+    for rel, markers in PREFLIGHT_BOUNDARY_CONSISTENCY_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"{rel}: missing preflight boundary consistency artifact")
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing preflight boundary consistency marker {marker!r}"
+                )
+
+
 def check_account_stark_payload_kat_vector_markers(errors: list[str]) -> None:
     for rel, markers in ACCOUNT_STARK_PAYLOAD_KAT_VECTOR_MARKERS.items():
         path = ROOT / rel
@@ -2280,6 +2318,7 @@ def main() -> int:
     check_account_creation_proof_boundary_manifest_markers(errors)
     check_direct_theorem_boundary_manifest_markers(errors)
     check_boundary_manifest_consistency_markers(errors)
+    check_preflight_boundary_consistency_markers(errors)
     check_account_stark_payload_kat_vector_markers(errors)
     check_account_stark_payload_kat_vector_consistency_markers(errors)
     check_ethereum_positioning_note(tracker_rows, errors)

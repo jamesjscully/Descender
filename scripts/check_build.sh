@@ -101,6 +101,9 @@ diff -u formal/kat/path2_direct_theorem_boundary_v1.json "$direct_theorem_manife
 echo "== boundary manifest consistency check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_boundary_manifest_consistency
 
+echo "== preflight boundary consistency check =="
+cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_preflight_boundary_consistency
+
 echo "== account STARK payload KAT vector corpus check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --features account-creation-stark-verifier --bin path2_account_stark_payload_kat_vectors > "$payload_kat_vectors_tmp"
 diff -u formal/kat/path2_account_stark_payload_kat_vectors_v1.json "$payload_kat_vectors_tmp"

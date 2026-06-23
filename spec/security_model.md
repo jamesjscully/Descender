@@ -82,7 +82,10 @@ manifest consistency gate checks that the direct theorem manifest embeds the
 same proof-boundary digest and field-group object as the standalone
 proof-boundary manifest. This report and manifest are not the proof; they are
 mechanical guards that prevent deployment preflight from drifting away from the
-theorem shape while the composition theorem remains open.
+theorem shape while the composition theorem remains open. The
+`path2_preflight_boundary_consistency` gate separately checks that production
+preflight stays fail-closed on the direct theorem blocker, account-creation
+proof-boundary blocker, and selected account-STARK residual blockers.
 
 ## Named Break Classes
 
@@ -209,7 +212,9 @@ regenerates and diffs the report chain, including the residual rows and
 payload-KAT boundary digest, before the direct theorem manifest is checked. The
 boundary manifest consistency gate then compares the standalone proof-boundary
 object against the proof-boundary object embedded by the direct theorem
-manifest.
+manifest. The `path2_preflight_boundary_consistency` gate ties those reports to
+the production deployment preflight, including blocker group ordering and
+per-open-row blocker coverage.
 `Path2AccountStarkPayloadKatBoundaryReportV1` pins the current
 `Path2AccountStarkCreationPayloadV1` mutation cases and maps their internal
 diagnostics to consensus-facing public rejection classes. It is still precursor
@@ -306,7 +311,10 @@ A direct-mode deployment claim can be made only after every ranked blocker above
 is either `verified` in `TRACKER.md` or explicitly retired by an ADR that updates
 this section and the requirement gates. Mode B aggregation, policy features,
 Ethereum positioning, commercial demos, and wallet integrations must not be used
-to compensate for an open blocker in ranks 1 through 7.
+to compensate for an open blocker in ranks 1 through 7. The local and CI
+`path2_preflight_boundary_consistency` gate enforces that the production
+preflight remains blocked by the current rank-1/rank-2 theorem and proof-family
+reports until those reports are explicitly closed.
 
 ## Required Evidence Before Deployment Claim
 

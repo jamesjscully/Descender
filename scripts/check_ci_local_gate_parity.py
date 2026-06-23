@@ -205,6 +205,11 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ("path2_boundary_manifest_consistency",),
     ),
     (
+        "preflight boundary consistency check",
+        ("path2_preflight_boundary_consistency",),
+        ("path2_preflight_boundary_consistency",),
+    ),
+    (
         "account STARK payload KAT vector corpus check",
         (
             "path2_account_stark_payload_kat_vectors",
@@ -328,6 +333,13 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-SEC-001",
         "DIR-CREATE-001",
         "DIR-PROOF-001",
+    ),
+    "preflight boundary consistency check": (
+        "DIR-RISK-001",
+        "DIR-SEC-001",
+        "DIR-CREATE-001",
+        "DIR-PROOF-001",
+        "DIR-PROOF-002",
     ),
     "account STARK payload KAT vector corpus check": (
         "DIR-KAT-001",
