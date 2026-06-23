@@ -167,6 +167,10 @@ fn manifest_body() -> Result<Value, String> {
             "verifier_boundary_endpoint": proof_boundary_report.verifier_boundary_endpoint,
             "production_boundary_endpoint": proof_boundary_report.production_boundary_endpoint,
             "replay_payload_digest_function": proof_boundary_report.replay_payload_digest_function,
+            "accepted_boundary_evidence_schema":
+                proof_boundary_report.accepted_boundary_evidence_schema,
+            "accepted_boundary_evidence_endpoint":
+                proof_boundary_report.accepted_boundary_evidence_endpoint,
             "proof_boundary_blocker": proof_boundary_report.blocker,
             "payload_kat_boundary_blocker": payload_kat_boundary_report.blocker
         },
@@ -294,6 +298,8 @@ fn manifest_body() -> Result<Value, String> {
                 "boundary_statement_pinned":
                     proof_boundary_report.boundary_statement_pinned,
                 "selected_payload_pinned": proof_boundary_report.selected_payload_pinned,
+                "accepted_boundary_evidence_present":
+                    proof_boundary_report.accepted_boundary_evidence_present,
                 "replay_payload_digest_bound":
                     proof_boundary_report.replay_payload_digest_bound,
                 "active_payload_mutation_coverage_present":
@@ -322,6 +328,10 @@ fn manifest_body() -> Result<Value, String> {
             "proof_boundary_target": proof_boundary_report.proof_boundary_target,
             "proof_boundary_conclusion":
                 proof_boundary_report.proof_boundary_conclusion,
+            "accepted_boundary_evidence_schema":
+                proof_boundary_report.accepted_boundary_evidence_schema,
+            "accepted_boundary_evidence_endpoint":
+                proof_boundary_report.accepted_boundary_evidence_endpoint,
             "accepting_requirements": proof_boundary_report.accepting_requirements,
             "requirement_coverage_rows": proof_boundary_report.requirement_coverage_rows,
             "leaf_evidence_binding_fields":

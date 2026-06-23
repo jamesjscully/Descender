@@ -125,6 +125,24 @@ fn main() -> Result<(), String> {
                 .to_string(),
         );
     }
+    if str_at(
+        corpus,
+        "/proof_boundary_report/accepted_boundary_evidence_schema",
+    )? != proof_report.accepted_boundary_evidence_schema
+        || str_at(
+            corpus,
+            "/proof_boundary_report/accepted_boundary_evidence_endpoint",
+        )? != proof_report.accepted_boundary_evidence_endpoint
+        || bool_at(
+            corpus,
+            "/proof_boundary_report/accepted_boundary_evidence_present",
+        )? != proof_report.accepted_boundary_evidence_present
+    {
+        return Err(
+            "proof-obligation vector corpus lost accepted proof-boundary evidence hook"
+                .to_string(),
+        );
+    }
     if direct_report.account_creation_proof_boundary_report_digest != proof_report.digest {
         return Err("direct theorem report lost proof-boundary binding".to_string());
     }

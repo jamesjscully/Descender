@@ -1,16 +1,19 @@
 {
   "corpus": {
     "account_creation_proof_boundary_report": {
+      "accepted_boundary_evidence_endpoint": "path2_account_creation_accepted_proof_boundary_evidence_v1",
+      "accepted_boundary_evidence_present": true,
+      "accepted_boundary_evidence_schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryEvidence.v1",
       "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
       "deployment_ready": false,
-      "digest": "97ee09dcca27841ddf8dcb53f4558151edc09e3cfc573083987155de344428c8",
+      "digest": "bda00e0d8fa2a117ca7b71fe44071a4deebe749d05d8f02bad4501d034678ad7",
       "domain": "Descender.Path2.AccountCreationProofBoundaryReport.v1",
       "every_open_proof_obligation_blocks_deployment": true,
       "every_proof_obligation_has_named_break": true,
       "proof_boundary_conclusion": "accepted_account_creation_payload_implies_bound_leaf_evidence_selected_account_stark_acceptance_no_export_or_named_break",
       "proof_boundary_target": "selected_account_creation_proof_boundary_v1",
       "proof_obligation_rows_pinned": true,
-      "recomputed_digest": "97ee09dcca27841ddf8dcb53f4558151edc09e3cfc573083987155de344428c8"
+      "recomputed_digest": "bda00e0d8fa2a117ca7b71fe44071a4deebe749d05d8f02bad4501d034678ad7"
     },
     "audit_summary": {
       "account_creation_proof_boundary_verified": false,
@@ -156,7 +159,7 @@
       "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "composition_theorem_instantiated": false,
       "deployment_ready": false,
-      "digest": "8147d78a2b098990ea4777617e433fd76c37f1a47d23d472397e0f98a8e17070",
+      "digest": "978f0e422fa9b6772a83d72d29c78d1f45f2041177ecacb780137652ce97b04a",
       "domain": "Descender.Path2.DirectTheoremBoundaryReport.v1",
       "every_hypothesis_has_obligation": true,
       "every_obligation_has_named_break": true,
@@ -166,7 +169,7 @@
       "obligation_audit_vector_case_count": 9,
       "obligation_count": 9,
       "qrom_and_action_bounds_linked_to_theorem": false,
-      "recomputed_digest": "8147d78a2b098990ea4777617e433fd76c37f1a47d23d472397e0f98a8e17070",
+      "recomputed_digest": "978f0e422fa9b6772a83d72d29c78d1f45f2041177ecacb780137652ce97b04a",
       "theorem_conclusion": "accepted_direct_mode_spend_implies_prior_admission_checked_core_acceptance_consume_once_or_named_break",
       "theorem_target": "direct_mode_selected_tuple_authorization_theorem_v1"
     },
@@ -203,5 +206,5 @@
     "schema": "Descender.Path2.DirectTheoremObligationVectors.v1",
     "status": "digest_pinned_direct_theorem_obligation_audit_vectors"
   },
-  "corpus_digest": "bda9b5d3a3d0486d28828cbbacd1e0077ca59ace4ce42b54c89e552a1536e62b"
+  "corpus_digest": "9427b5ab7072c558bdb2e0b8d9625543aed051f33087402807a762de09737206"
 }

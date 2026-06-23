@@ -220,10 +220,11 @@ commitment root is well formed.
 
 The production reference emits `Path2AccountCreationProofBoundaryReportV1`,
 which pins the proof-boundary target, conclusion label, selected payload type,
-verifier endpoints, replay-payload digest function, acceptance requirements,
-exact leaf/evidence binding fields, certificate/evidence binding fields,
-binding/leaf context fields, payload-binding fields, deployed-anchor fields,
-no-export private-material field classes, the
+verifier endpoints, replay-payload digest function, accepted-boundary evidence
+schema and endpoint, acceptance requirements, exact leaf/evidence binding
+fields, certificate/evidence binding fields, binding/leaf context fields,
+payload-binding fields, deployed-anchor fields, no-export private-material field
+classes, the
 `Path2AccountCreationSamplerTimingReportV1` digest, and the
 `Path2AccountCreationNoExportBoundaryReportV1` digest, and current proof-family
 closure blockers. It also pins a structured open proof-obligation
@@ -265,6 +266,17 @@ proof-boundary target, conclusion, digest chain, selected field groups,
 sampler/timing hooks, no-export denylist, requirement-coverage rows,
 proof-obligation rows, residual rows, and payload-KAT boundary blocker cannot
 drift silently.
+`Path2AccountCreationAcceptedProofBoundaryEvidenceV1` is the accepted-path
+creation analogue of the direct spend tuple evidence. Under the real
+account-STARK verifier feature it constructs the deterministic current KAT
+payload, runs `verify_path2_direct_creation_account_stark_payload_boundary`,
+records only public digests and anchors for the leaf, evidence, replay
+certificate, creation binding, payload frame, STARK bundle, deployed anchor
+set, imported boundary reports, and accepted verifier result, and confirms the
+production entrypoint still fails closed. This evidence pins the accepted
+creation boundary shape; it is not the simulator theorem, extractor theorem,
+account-STARK transcript QROM theorem, production-gate decision, or external
+review.
 `formal/kat/path2_account_creation_no_export_boundary_v1.json` is
 also regenerated and checked before the proof-boundary manifest so the
 no-export boundary cannot remain prose-only, and
@@ -286,12 +298,14 @@ substitute.
 The boundary is implemented but not verified. The active Rust test suite now has
 an initial `Path2AccountStarkCreationPayloadV1` malformed-payload mutation
 matrix, including empty-bundle, digest-bound, rebound-anchor, corrupted-bundle,
-and production-gate checks. Open closure items are the final composition
-theorem, honest-create sampler soundness, authorization-class binding,
-no-postchallenge timing, account STARK simulator theorem, extractor/soundness
-theorem, FRI/recursion residual-assumption ledger, complete frozen byte-format
-KATs, signer leakage evidence, external proof-family review, and the explicit
-production-gate decision.
+and production-gate checks, plus the feature-gated
+`path2_account_creation_accepted_proof_boundary_evidence_pins_selected_payload`
+test for the accepted-boundary evidence object. Open closure items are the
+final composition theorem, honest-create sampler soundness,
+authorization-class binding, no-postchallenge timing, account STARK simulator
+theorem, extractor/soundness theorem, FRI/recursion residual-assumption ledger,
+complete frozen byte-format KATs, signer leakage evidence, external
+proof-family review, and the explicit production-gate decision.
 
 ## Selected Account-STARK Residual Matrix
 
@@ -425,7 +439,7 @@ used as deployment evidence while a higher-ranked blocker remains open.
 | Rank | Blocker | Must close | Owning rows |
 |---|---|---|---|
 | 1 | Direct theorem closure | `Path2DirectTheoremBoundaryReportV1`, `Path2DirectAcceptedSpendTupleEvidenceV1`, and `formal/kat/path2_direct_theorem_boundary_v1.json` pin the product theorem boundary and accepted-path tuple evidence, and the final product theorem covers admission, spend, consume-once lifecycle, exact public bindings, and every named break; supporting lemmas and executable accepted-path evidence cannot stand in for the deployment theorem. | `DIR-RISK-001`, `DIR-SEC-001`, `DIR-CREATE-001`, `DIR-PROOF-002`, `DIR-AUTHCLASS-001` |
-| 2 | Account-creation proof boundary | `Path2AccountCreationProofBoundaryReportV1` pins the selected account-STARK payload boundary, imports the `Path2AccountStarkFriAokBoundaryReportV1` digest through the residual matrix, and the payload has a concrete byte model, canonical replay-payload digest, deployed anchor binding, simulator theorem, extractor theorem, hidden-source payload statement, production gate, and rejection behavior. | `DIR-CREATE-001`, `DIR-PROOF-001`, `DIR-STARK-001`, `DIR-BIND-001`, `DIR-PAYLOAD-001`, `DIR-KAT-001`, `DIR-REJECT-001` |
+| 2 | Account-creation proof boundary | `Path2AccountCreationProofBoundaryReportV1` and `Path2AccountCreationAcceptedProofBoundaryEvidenceV1` pin the selected account-STARK payload boundary, accepted public digest chain, and fail-closed production gate; the payload still needs a concrete frozen byte model, canonical replay-payload digest closure, deployed anchor binding theorem, simulator theorem, extractor theorem, hidden-source payload statement, production-gate decision, and full rejection behavior. | `DIR-CREATE-001`, `DIR-PROOF-001`, `DIR-STARK-001`, `DIR-BIND-001`, `DIR-PAYLOAD-001`, `DIR-KAT-001`, `DIR-REJECT-001` |
 | 3 | Authorization-class binding | Private authorization-local material cannot change public spend semantics, fork account state, or bypass the checked-core public binding. | `DIR-AUTHCLASS-001`, `DIR-SEC-001`, `DIR-CC-001` |
 | 4 | Consensus conformance | Canonical wire formats, public-field mutation vectors, end-to-end creation/spend/lifecycle vectors, and deterministic rejection behavior exist. | `DIR-KAT-001`, `SPEC-KAT-001`, `DIR-REJECT-001`, `DIR-CC-001`, `DIR-LEAF-001`, `DIR-EVID-001` |
 | 5 | Signer leakage and fault safety | Signer, keygen, sampler, rejection loops, fault handling, errors, zeroization, target/build profiles, and leakage evidence satisfy the signer profile without floating-point signing assumptions. | `DIR-CT-001`, `SPEC-SIGNER-001`, `SPEC-LEAKAGE-001`, `ADOPT-HW-001`, `ADOPT-HW-CT-001`, `ADOPT-HW-ENT-001`, `ADOPT-HW-STATE-001` |

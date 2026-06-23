@@ -174,6 +174,12 @@ fn manifest_body() -> Result<Value, String> {
             "recomputed_digest": hex_encode(&proof_digest),
             "proof_boundary_target": proof_report.proof_boundary_target,
             "proof_boundary_conclusion": proof_report.proof_boundary_conclusion,
+            "accepted_boundary_evidence_schema":
+                proof_report.accepted_boundary_evidence_schema,
+            "accepted_boundary_evidence_endpoint":
+                proof_report.accepted_boundary_evidence_endpoint,
+            "accepted_boundary_evidence_present":
+                proof_report.accepted_boundary_evidence_present,
             "proof_obligation_rows_pinned": proof_report.proof_obligation_rows_pinned,
             "every_proof_obligation_has_named_break":
                 proof_report.every_proof_obligation_has_named_break,

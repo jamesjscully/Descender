@@ -1,6 +1,8 @@
 {
   "manifest": {
     "account_creation_proof_boundary": {
+      "accepted_boundary_evidence_endpoint": "path2_account_creation_accepted_proof_boundary_evidence_v1",
+      "accepted_boundary_evidence_schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryEvidence.v1",
       "accepting_requirements": [
         "canonical_leaf_and_evidence_framing",
         "evidence_leaf_binding_equalities",
@@ -38,6 +40,7 @@
         "relation_transcript_digest"
       ],
       "coverage": {
+        "accepted_boundary_evidence_present": true,
         "accepting_requirement_count": 10,
         "account_stark_residual_matrix_report_digest": "a3b96b19b30bfd2433d50cb046ab5ac710ceb3faeae033463d2279a1a24d31c6",
         "active_payload_mutation_coverage_present": true,
@@ -427,6 +430,8 @@
       ]
     },
     "authority_snapshot": {
+      "accepted_boundary_evidence_endpoint": "path2_account_creation_accepted_proof_boundary_evidence_v1",
+      "accepted_boundary_evidence_schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryEvidence.v1",
       "frame_kat_boundary_report_domain": "Descender.Path2.AccountCreationFrameKatBoundaryReport.v1",
       "fri_aok_boundary_report_domain": "Descender.Path2.AccountStarkFriAokBoundaryReport.v1",
       "fri_aok_extractor_theorem_target": "selected_plonky3_q12289_fri_iop_aok_extractor",
@@ -461,8 +466,8 @@
       "account_creation_frame_kat_boundary_report_recomputed_digest": "afccc24cec71e6d1d29688df00e979fd78fa89c1b2c5c5f5cd8b78995e22d79b",
       "account_creation_no_export_boundary_report_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
       "account_creation_no_export_boundary_report_recomputed_digest": "7c33591b86134a7513632f0decd6197bdd6351e434700fd2c3777ba65b70e80b",
-      "account_creation_proof_boundary_report_digest": "97ee09dcca27841ddf8dcb53f4558151edc09e3cfc573083987155de344428c8",
-      "account_creation_proof_boundary_report_recomputed_digest": "97ee09dcca27841ddf8dcb53f4558151edc09e3cfc573083987155de344428c8",
+      "account_creation_proof_boundary_report_digest": "bda00e0d8fa2a117ca7b71fe44071a4deebe749d05d8f02bad4501d034678ad7",
+      "account_creation_proof_boundary_report_recomputed_digest": "bda00e0d8fa2a117ca7b71fe44071a4deebe749d05d8f02bad4501d034678ad7",
       "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_stark_fri_aok_boundary_report_digest": "bcb747ec1676c7bec01592180f8da6ffef3da129dfa002a5bad51f1e910949bb",
@@ -754,5 +759,5 @@
       ]
     }
   },
-  "manifest_digest": "f54236f3af0d9e14f1f3c26e80150ea09b9e21b6181377df07b802d759ffbab9"
+  "manifest_digest": "6903f169a554bca2e972bb5ff0148e12e37fddfc92bcb66a9317e67ebd2ca194"
 }

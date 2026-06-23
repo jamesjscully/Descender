@@ -301,6 +301,8 @@ pub const PRODUCTION_DEPLOYMENT_PREFLIGHT_CERTIFICATE_DOMAIN: &str =
     "Descender.Signature.q12289.local_delta.production_deployment_preflight_certificate.v1";
 pub const PATH2_DIRECT_ACCEPTED_SPEND_TUPLE_EVIDENCE_SCHEMA: &str =
     "Descender.Path2.DirectAcceptedSpendTupleEvidence.v1";
+pub const PATH2_ACCOUNT_CREATION_ACCEPTED_PROOF_BOUNDARY_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.AccountCreationAcceptedProofBoundaryEvidence.v1";
 pub const PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.DirectTheoremBoundaryReport.v1";
 pub const PATH2_DIRECT_QROM_ACTION_BOUNDARY_REPORT_DOMAIN: &str =
@@ -9598,6 +9600,8 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub verifier_boundary_endpoint: &'static str,
     pub production_boundary_endpoint: &'static str,
     pub replay_payload_digest_function: &'static str,
+    pub accepted_boundary_evidence_schema: &'static str,
+    pub accepted_boundary_evidence_endpoint: &'static str,
     pub accepting_requirements: &'static [&'static str],
     pub leaf_evidence_binding_fields: &'static [&'static str],
     pub certificate_evidence_binding_fields: &'static [&'static str],
@@ -9622,6 +9626,7 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub every_open_proof_obligation_blocks_deployment: bool,
     pub boundary_statement_pinned: bool,
     pub selected_payload_pinned: bool,
+    pub accepted_boundary_evidence_present: bool,
     pub replay_payload_digest_bound: bool,
     pub active_payload_mutation_coverage_present: bool,
     pub deployed_anchor_rebind_tests_present: bool,
@@ -9636,6 +9641,64 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub production_gate_open: bool,
     pub deployment_ready: bool,
     pub blocker: &'static str,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AccountCreationAcceptedProofBoundaryEvidenceV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub schema: &'static str,
+    pub proof_boundary_target: &'static str,
+    pub proof_boundary_conclusion: &'static str,
+    pub selected_payload_type: &'static str,
+    pub verifier_boundary_endpoint: &'static str,
+    pub production_boundary_endpoint: &'static str,
+    pub replay_payload_digest_function: &'static str,
+    pub accepting_requirements: &'static [&'static str],
+    pub account_creation_proof_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub sampler_timing_report_digest: [u8; DIGEST_BYTES],
+    pub no_export_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub account_stark_residual_matrix_report_digest: [u8; DIGEST_BYTES],
+    pub frame_kat_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub fri_qrom_residual_report_digest: [u8; DIGEST_BYTES],
+    pub fri_aok_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub payload_byte_model_report_digest: [u8; DIGEST_BYTES],
+    pub payload_kat_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub fixture_id: &'static str,
+    pub proof_mask_seed: u64,
+    pub account_id: [u8; DIGEST_BYTES],
+    pub public_key_identity: [u8; DIGEST_BYTES],
+    pub account_state_root_before: [u8; DIGEST_BYTES],
+    pub slot_id: u64,
+    pub prevalidated_slot_leaf_digest: [u8; DIGEST_BYTES],
+    pub slot_authorization_digest: [u8; DIGEST_BYTES],
+    pub account_creation_evidence_transcript_digest: [u8; DIGEST_BYTES],
+    pub direct_replayable_relation_certificate_digest: [u8; DIGEST_BYTES],
+    pub selected_account_creation_payload_digest: [u8; DIGEST_BYTES],
+    pub creation_proof_binding_digest: [u8; DIGEST_BYTES],
+    pub leaf_context_digest: [u8; DIGEST_BYTES],
+    pub aggregation_context_digest: [u8; DIGEST_BYTES],
+    pub native_role_root_commitment: [u8; DIGEST_BYTES],
+    pub masked_projection_digest: [u8; DIGEST_BYTES],
+    pub deployed_anchor_digest: [u8; DIGEST_BYTES],
+    pub payload_frame_digest: [u8; DIGEST_BYTES],
+    pub payload_frame_bytes: usize,
+    pub account_stark_bundle_digest: [u8; DIGEST_BYTES],
+    pub account_stark_bundle_bytes: usize,
+    pub verifier_boundary_accepts: bool,
+    pub production_gate_fail_closed: bool,
+    pub proof_boundary_report_validated: bool,
+    pub public_payload_exports_private_material: bool,
+    pub payload_digest_bound_to_certificate: bool,
+    pub evidence_digest_bound_to_certificate: bool,
+    pub leaf_transcript_bound_to_evidence: bool,
+    pub leaf_digest_bound_to_evidence: bool,
+    pub leaf_context_bound: bool,
+    pub binding_digest_bound: bool,
+    pub payload_binding_fields_match_report: bool,
+    pub deployed_anchor_fields_match_report: bool,
+    pub account_stark_bundle_nonempty: bool,
+    pub proof_family_obligations_still_open: bool,
+    pub deployment_ready: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -12294,6 +12357,10 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         production_boundary_endpoint:
             "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
         replay_payload_digest_function: "path2_account_stark_creation_payload_v1_digest",
+        accepted_boundary_evidence_schema:
+            PATH2_ACCOUNT_CREATION_ACCEPTED_PROOF_BOUNDARY_EVIDENCE_SCHEMA,
+        accepted_boundary_evidence_endpoint:
+            "path2_account_creation_accepted_proof_boundary_evidence_v1",
         accepting_requirements: &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS,
         leaf_evidence_binding_fields:
             &PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_LEAF_EVIDENCE_BINDING_FIELDS,
@@ -12365,6 +12432,7 @@ pub fn path2_account_creation_proof_boundary_report_v1() -> Path2AccountCreation
         }),
         boundary_statement_pinned: true,
         selected_payload_pinned: true,
+        accepted_boundary_evidence_present: true,
         replay_payload_digest_bound: true,
         active_payload_mutation_coverage_present: true,
         deployed_anchor_rebind_tests_present: true,
@@ -12432,6 +12500,15 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
     {
         return Err("Path 2 account-creation proof boundary target mismatch".to_string());
     }
+    if report.accepted_boundary_evidence_schema
+        != PATH2_ACCOUNT_CREATION_ACCEPTED_PROOF_BOUNDARY_EVIDENCE_SCHEMA
+        || report.accepted_boundary_evidence_endpoint
+            != "path2_account_creation_accepted_proof_boundary_evidence_v1"
+    {
+        return Err(
+            "Path 2 account-creation proof boundary accepted-evidence hook mismatch".to_string(),
+        );
+    }
     if report.requirement_coverage_rows
         != PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENT_COVERAGE_ROWS.as_ref()
         || report.requirement_coverage_count != report.requirement_coverage_rows.len()
@@ -12479,6 +12556,7 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
     }
     if !report.boundary_statement_pinned
         || !report.selected_payload_pinned
+        || !report.accepted_boundary_evidence_present
         || !report.replay_payload_digest_bound
         || !report.active_payload_mutation_coverage_present
         || !report.deployed_anchor_rebind_tests_present
@@ -46980,6 +47058,245 @@ pub fn path2_account_stark_payload_kat_fixture_v1()
     })
 }
 
+pub fn path2_account_creation_masked_projection_digest(
+    masked_projection: &[u16; HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES],
+) -> [u8; DIGEST_BYTES] {
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"domain",
+        b"Descender.Path2.AccountCreationMaskedProjectionDigest.v1",
+    );
+    append_u64(
+        &mut frame,
+        b"lane_count",
+        HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES as u64,
+    );
+    for (lane, value) in masked_projection.iter().enumerate() {
+        append_u64(&mut frame, b"masked_projection_lane", lane as u64);
+        append_u64(&mut frame, b"masked_projection_value", u64::from(*value));
+    }
+    Sha256::digest(frame).into()
+}
+
+pub fn path2_account_creation_deployed_anchor_digest(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    binding: &Path2CreationProofBindingV1,
+    payload: &Path2AccountStarkCreationPayloadV1,
+) -> [u8; DIGEST_BYTES] {
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"domain",
+        b"Descender.Path2.AccountCreationDeployedAnchors.v1",
+    );
+    append_frame(&mut frame, b"account_id", &leaf.account_id);
+    append_u64(&mut frame, b"slot_id", leaf.slot_id);
+    append_frame(
+        &mut frame,
+        b"account_state_root",
+        &leaf.account_state_root_before,
+    );
+    append_frame(&mut frame, b"lifecycle_anchor", &leaf.lifecycle_anchor);
+    append_u64(
+        &mut frame,
+        b"raw_verifier_version",
+        u64::from(PATH2_ACCOUNT_STARK_VERIFIER_VERSION),
+    );
+    append_frame(
+        &mut frame,
+        b"masked_projection_digest",
+        &path2_account_creation_masked_projection_digest(&payload.masked_projection),
+    );
+    append_frame(
+        &mut frame,
+        b"packed_witness_commitment",
+        &binding.packed_witness_commitment,
+    );
+    append_frame(
+        &mut frame,
+        b"role_root_export_bridge",
+        &payload.native_role_root_commitment,
+    );
+    Sha256::digest(frame).into()
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn path2_account_creation_accepted_proof_boundary_evidence_v1(
+) -> Result<Path2AccountCreationAcceptedProofBoundaryEvidenceV1, String> {
+    let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
+    validate_path2_account_creation_proof_boundary_report_v1(&proof_boundary_report)?;
+    let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
+    validate_path2_account_creation_sampler_timing_report_v1(&sampler_timing_report)?;
+    let no_export_boundary_report = path2_account_creation_no_export_boundary_report_v1();
+    validate_path2_account_creation_no_export_boundary_report_v1(&no_export_boundary_report)?;
+    let residual_matrix_report = path2_account_stark_residual_matrix_report_v1();
+    validate_path2_account_stark_residual_matrix_report_v1(&residual_matrix_report)?;
+    let frame_kat_boundary_report = path2_account_creation_frame_kat_boundary_report_v1();
+    validate_path2_account_creation_frame_kat_boundary_report_v1(&frame_kat_boundary_report)?;
+    let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
+    validate_path2_account_stark_fri_qrom_residual_report_v1(&fri_qrom_residual_report)?;
+    let fri_aok_boundary_report = path2_account_stark_fri_aok_boundary_report_v1();
+    validate_path2_account_stark_fri_aok_boundary_report_v1(&fri_aok_boundary_report)?;
+    let payload_byte_model_report = path2_account_stark_payload_byte_model_report_v1();
+    validate_path2_account_stark_payload_byte_model_report_v1(&payload_byte_model_report)?;
+    let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
+    validate_path2_account_stark_payload_kat_boundary_report_v1(&payload_kat_boundary_report)?;
+
+    let fixture = path2_account_stark_payload_kat_fixture_v1()?;
+    verify_path2_direct_creation_account_stark_payload_boundary(
+        &fixture.leaf,
+        &fixture.evidence,
+        &fixture.certificate,
+        &fixture.binding,
+        &fixture.payload,
+    )?;
+    let production_error =
+        match verify_path2_direct_creation_account_stark_payload_boundary_for_production(
+            &fixture.leaf,
+            &fixture.evidence,
+            &fixture.certificate,
+            &fixture.binding,
+            &fixture.payload,
+        ) {
+            Ok(()) => {
+                return Err(
+                    "Path 2 accepted proof-boundary evidence production gate unexpectedly opened"
+                        .to_string(),
+                );
+            }
+            Err(error) => error,
+        };
+    if production_error
+        != "account-creation STARK production verification is fail-closed (external-review-gated)"
+    {
+        return Err("Path 2 accepted proof-boundary evidence production gate drift".to_string());
+    }
+
+    let leaf_digest = path2_prevalidated_slot_leaf_digest(&fixture.leaf)?;
+    let slot_authorization_digest = path2_slot_authorization_digest(&fixture.leaf)?;
+    let evidence_transcript_digest =
+        path2_account_creation_evidence_transcript_digest(&fixture.evidence)?;
+    let certificate_digest =
+        path2_direct_replayable_relation_certificate_digest(&fixture.certificate);
+    let payload_digest = path2_account_stark_creation_payload_v1_digest(&fixture.payload)?;
+    let payload_frame = path2_account_stark_creation_payload_v1_frame(&fixture.payload)?;
+    let binding_digest = path2_creation_proof_binding_v1_digest(&fixture.binding);
+    let leaf_context_digest = path2_prevalidated_slot_leaf_context_digest(
+        &fixture.leaf,
+        &fixture.evidence,
+        &fixture.certificate,
+    )?;
+    let account_stark_bundle_nonempty = !fixture.payload.account_stark_bundle.is_empty();
+    let payload_digest_bound_to_certificate =
+        fixture.certificate.public_replay_payload_digest == payload_digest;
+    let evidence_digest_bound_to_certificate =
+        fixture.evidence.evidence_payload_digest == certificate_digest;
+    let leaf_transcript_bound_to_evidence =
+        fixture.leaf.prevalidation_transcript_digest == evidence_transcript_digest;
+    let leaf_digest_bound_to_evidence = fixture.evidence.slot_leaf_digest == leaf_digest;
+    let leaf_context_bound = fixture.payload.leaf_context_digest == leaf_context_digest;
+    let binding_digest_bound =
+        fixture.binding.digest == binding_digest
+            && fixture.payload.creation_proof_binding_digest == binding_digest;
+    let payload_binding_fields_match_report =
+        proof_boundary_report.payload_binding_fields
+            == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_PAYLOAD_BINDING_FIELDS.as_ref()
+            && leaf_context_bound
+            && binding_digest_bound
+            && fixture.payload.aggregation_context_digest
+                == fixture.binding.aggregation_context_digest
+            && fixture.payload.slot_id == fixture.leaf.slot_id
+            && payload_digest_bound_to_certificate
+            && account_stark_bundle_nonempty;
+    let deployed_anchor_fields_match_report =
+        proof_boundary_report.deployed_anchor_fields
+            == PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_DEPLOYED_ANCHORS.as_ref()
+            && fixture.binding.account_id == fixture.leaf.account_id
+            && fixture.binding.slot_id == fixture.leaf.slot_id
+            && fixture.binding.account_state_root_before == fixture.leaf.account_state_root_before
+            && fixture.binding.lifecycle_anchor == fixture.leaf.lifecycle_anchor
+            && fixture.payload.slot_id == fixture.leaf.slot_id;
+    if !payload_binding_fields_match_report
+        || !deployed_anchor_fields_match_report
+        || !payload_digest_bound_to_certificate
+        || !evidence_digest_bound_to_certificate
+        || !leaf_transcript_bound_to_evidence
+        || !leaf_digest_bound_to_evidence
+    {
+        return Err("Path 2 accepted proof-boundary evidence binding mismatch".to_string());
+    }
+
+    let mut evidence = Path2AccountCreationAcceptedProofBoundaryEvidenceV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        schema: PATH2_ACCOUNT_CREATION_ACCEPTED_PROOF_BOUNDARY_EVIDENCE_SCHEMA,
+        proof_boundary_target: proof_boundary_report.proof_boundary_target,
+        proof_boundary_conclusion: proof_boundary_report.proof_boundary_conclusion,
+        selected_payload_type: proof_boundary_report.selected_payload_type,
+        verifier_boundary_endpoint: proof_boundary_report.verifier_boundary_endpoint,
+        production_boundary_endpoint: proof_boundary_report.production_boundary_endpoint,
+        replay_payload_digest_function: proof_boundary_report.replay_payload_digest_function,
+        accepting_requirements: proof_boundary_report.accepting_requirements,
+        account_creation_proof_boundary_report_digest: proof_boundary_report.digest,
+        sampler_timing_report_digest: sampler_timing_report.digest,
+        no_export_boundary_report_digest: no_export_boundary_report.digest,
+        account_stark_residual_matrix_report_digest: residual_matrix_report.digest,
+        frame_kat_boundary_report_digest: frame_kat_boundary_report.digest,
+        fri_qrom_residual_report_digest: fri_qrom_residual_report.digest,
+        fri_aok_boundary_report_digest: fri_aok_boundary_report.digest,
+        payload_byte_model_report_digest: payload_byte_model_report.digest,
+        payload_kat_boundary_report_digest: payload_kat_boundary_report.digest,
+        fixture_id: fixture.fixture_id,
+        proof_mask_seed: fixture.proof_mask_seed,
+        account_id: fixture.leaf.account_id,
+        public_key_identity: fixture.leaf.public_key_identity,
+        account_state_root_before: fixture.leaf.account_state_root_before,
+        slot_id: fixture.leaf.slot_id,
+        prevalidated_slot_leaf_digest: leaf_digest,
+        slot_authorization_digest,
+        account_creation_evidence_transcript_digest: evidence_transcript_digest,
+        direct_replayable_relation_certificate_digest: certificate_digest,
+        selected_account_creation_payload_digest: payload_digest,
+        creation_proof_binding_digest: binding_digest,
+        leaf_context_digest,
+        aggregation_context_digest: fixture.payload.aggregation_context_digest,
+        native_role_root_commitment: fixture.payload.native_role_root_commitment,
+        masked_projection_digest: path2_account_creation_masked_projection_digest(
+            &fixture.payload.masked_projection,
+        ),
+        deployed_anchor_digest: path2_account_creation_deployed_anchor_digest(
+            &fixture.leaf,
+            &fixture.binding,
+            &fixture.payload,
+        ),
+        payload_frame_digest: Sha256::digest(&payload_frame).into(),
+        payload_frame_bytes: payload_frame.len(),
+        account_stark_bundle_digest: Sha256::digest(&fixture.payload.account_stark_bundle).into(),
+        account_stark_bundle_bytes: fixture.payload.account_stark_bundle.len(),
+        verifier_boundary_accepts: true,
+        production_gate_fail_closed: true,
+        proof_boundary_report_validated: true,
+        public_payload_exports_private_material:
+            payload_byte_model_report.public_payload_exports_private_material,
+        payload_digest_bound_to_certificate,
+        evidence_digest_bound_to_certificate,
+        leaf_transcript_bound_to_evidence,
+        leaf_digest_bound_to_evidence,
+        leaf_context_bound,
+        binding_digest_bound,
+        payload_binding_fields_match_report,
+        deployed_anchor_fields_match_report,
+        account_stark_bundle_nonempty,
+        proof_family_obligations_still_open: proof_boundary_report
+            .proof_obligation_rows
+            .iter()
+            .all(|row| row.open),
+        deployment_ready: false,
+    };
+    evidence.digest = path2_account_creation_accepted_proof_boundary_evidence_v1_digest(&evidence);
+    Ok(evidence)
+}
+
 pub fn path2_transparent_descent_production_soundness_obligations_discharged_v1() -> bool {
     path2_transparent_production_soundness_obligations_v1()
         .production_soundness_obligations_discharged
@@ -66362,6 +66679,16 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         b"replay_payload_digest_function",
         report.replay_payload_digest_function.as_bytes(),
     );
+    append_frame(
+        &mut frame,
+        b"accepted_boundary_evidence_schema",
+        report.accepted_boundary_evidence_schema.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"accepted_boundary_evidence_endpoint",
+        report.accepted_boundary_evidence_endpoint.as_bytes(),
+    );
     for (index, requirement) in report.accepting_requirements.iter().enumerate() {
         append_u64(&mut frame, b"accepting_requirement_index", index as u64);
         append_frame(&mut frame, b"accepting_requirement", requirement.as_bytes());
@@ -66629,6 +66956,11 @@ fn path2_account_creation_proof_boundary_report_v1_frame(
         &mut frame,
         b"selected_payload_pinned",
         u64::from(report.selected_payload_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_boundary_evidence_present",
+        u64::from(report.accepted_boundary_evidence_present),
     );
     append_u64(
         &mut frame,
@@ -67359,6 +67691,272 @@ fn path2_direct_lifecycle_boundary_report_v1_frame(
     );
     append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
     frame
+}
+
+pub fn path2_account_creation_accepted_proof_boundary_evidence_v1_frame(
+    evidence: &Path2AccountCreationAcceptedProofBoundaryEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_u64(&mut frame, b"q", Q as u64);
+    append_u64(&mut frame, b"groups", GROUPS as u64);
+    append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
+    append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
+    append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(
+        &mut frame,
+        b"proof_boundary_target",
+        evidence.proof_boundary_target.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"proof_boundary_conclusion",
+        evidence.proof_boundary_conclusion.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"selected_payload_type",
+        evidence.selected_payload_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"verifier_boundary_endpoint",
+        evidence.verifier_boundary_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"production_boundary_endpoint",
+        evidence.production_boundary_endpoint.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"replay_payload_digest_function",
+        evidence.replay_payload_digest_function.as_bytes(),
+    );
+    for (index, requirement) in evidence.accepting_requirements.iter().enumerate() {
+        append_u64(&mut frame, b"accepting_requirement_index", index as u64);
+        append_frame(&mut frame, b"accepting_requirement", requirement.as_bytes());
+    }
+    append_frame(
+        &mut frame,
+        b"account_creation_proof_boundary_report_digest",
+        &evidence.account_creation_proof_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"sampler_timing_report_digest",
+        &evidence.sampler_timing_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"no_export_boundary_report_digest",
+        &evidence.no_export_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"account_stark_residual_matrix_report_digest",
+        &evidence.account_stark_residual_matrix_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"frame_kat_boundary_report_digest",
+        &evidence.frame_kat_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"fri_qrom_residual_report_digest",
+        &evidence.fri_qrom_residual_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"fri_aok_boundary_report_digest",
+        &evidence.fri_aok_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"payload_byte_model_report_digest",
+        &evidence.payload_byte_model_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"payload_kat_boundary_report_digest",
+        &evidence.payload_kat_boundary_report_digest,
+    );
+    append_frame(&mut frame, b"fixture_id", evidence.fixture_id.as_bytes());
+    append_u64(&mut frame, b"proof_mask_seed", evidence.proof_mask_seed);
+    append_frame(&mut frame, b"account_id", &evidence.account_id);
+    append_frame(
+        &mut frame,
+        b"public_key_identity",
+        &evidence.public_key_identity,
+    );
+    append_frame(
+        &mut frame,
+        b"account_state_root_before",
+        &evidence.account_state_root_before,
+    );
+    append_u64(&mut frame, b"slot_id", evidence.slot_id);
+    append_frame(
+        &mut frame,
+        b"prevalidated_slot_leaf_digest",
+        &evidence.prevalidated_slot_leaf_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"slot_authorization_digest",
+        &evidence.slot_authorization_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"account_creation_evidence_transcript_digest",
+        &evidence.account_creation_evidence_transcript_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"direct_replayable_relation_certificate_digest",
+        &evidence.direct_replayable_relation_certificate_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"selected_account_creation_payload_digest",
+        &evidence.selected_account_creation_payload_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"creation_proof_binding_digest",
+        &evidence.creation_proof_binding_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"leaf_context_digest",
+        &evidence.leaf_context_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"aggregation_context_digest",
+        &evidence.aggregation_context_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"native_role_root_commitment",
+        &evidence.native_role_root_commitment,
+    );
+    append_frame(
+        &mut frame,
+        b"masked_projection_digest",
+        &evidence.masked_projection_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"deployed_anchor_digest",
+        &evidence.deployed_anchor_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"payload_frame_digest",
+        &evidence.payload_frame_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"payload_frame_bytes",
+        evidence.payload_frame_bytes as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"account_stark_bundle_digest",
+        &evidence.account_stark_bundle_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"account_stark_bundle_bytes",
+        evidence.account_stark_bundle_bytes as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"verifier_boundary_accepts",
+        u64::from(evidence.verifier_boundary_accepts),
+    );
+    append_u64(
+        &mut frame,
+        b"production_gate_fail_closed",
+        u64::from(evidence.production_gate_fail_closed),
+    );
+    append_u64(
+        &mut frame,
+        b"proof_boundary_report_validated",
+        u64::from(evidence.proof_boundary_report_validated),
+    );
+    append_u64(
+        &mut frame,
+        b"public_payload_exports_private_material",
+        u64::from(evidence.public_payload_exports_private_material),
+    );
+    append_u64(
+        &mut frame,
+        b"payload_digest_bound_to_certificate",
+        u64::from(evidence.payload_digest_bound_to_certificate),
+    );
+    append_u64(
+        &mut frame,
+        b"evidence_digest_bound_to_certificate",
+        u64::from(evidence.evidence_digest_bound_to_certificate),
+    );
+    append_u64(
+        &mut frame,
+        b"leaf_transcript_bound_to_evidence",
+        u64::from(evidence.leaf_transcript_bound_to_evidence),
+    );
+    append_u64(
+        &mut frame,
+        b"leaf_digest_bound_to_evidence",
+        u64::from(evidence.leaf_digest_bound_to_evidence),
+    );
+    append_u64(
+        &mut frame,
+        b"leaf_context_bound",
+        u64::from(evidence.leaf_context_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"binding_digest_bound",
+        u64::from(evidence.binding_digest_bound),
+    );
+    append_u64(
+        &mut frame,
+        b"payload_binding_fields_match_report",
+        u64::from(evidence.payload_binding_fields_match_report),
+    );
+    append_u64(
+        &mut frame,
+        b"deployed_anchor_fields_match_report",
+        u64::from(evidence.deployed_anchor_fields_match_report),
+    );
+    append_u64(
+        &mut frame,
+        b"account_stark_bundle_nonempty",
+        u64::from(evidence.account_stark_bundle_nonempty),
+    );
+    append_u64(
+        &mut frame,
+        b"proof_family_obligations_still_open",
+        u64::from(evidence.proof_family_obligations_still_open),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_ready",
+        u64::from(evidence.deployment_ready),
+    );
+    frame
+}
+
+pub fn path2_account_creation_accepted_proof_boundary_evidence_v1_digest(
+    evidence: &Path2AccountCreationAcceptedProofBoundaryEvidenceV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_account_creation_accepted_proof_boundary_evidence_v1_frame(
+        evidence,
+    ))
+    .into()
 }
 
 pub fn path2_direct_accepted_spend_tuple_evidence_v1_frame(
@@ -78801,6 +79399,74 @@ mod tests {
                 &payload
             )
             .is_err()
+        );
+    }
+
+    #[cfg(feature = "account-creation-stark-verifier")]
+    #[test]
+    fn path2_account_creation_accepted_proof_boundary_evidence_pins_selected_payload() {
+        let report = path2_account_creation_proof_boundary_report_v1();
+        let evidence = path2_account_creation_accepted_proof_boundary_evidence_v1()
+            .expect("accepted account-creation proof-boundary evidence");
+        assert_ne!(evidence.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(
+            evidence.schema,
+            PATH2_ACCOUNT_CREATION_ACCEPTED_PROOF_BOUNDARY_EVIDENCE_SCHEMA
+        );
+        assert_eq!(evidence.proof_boundary_target, report.proof_boundary_target);
+        assert_eq!(
+            evidence.proof_boundary_conclusion,
+            report.proof_boundary_conclusion
+        );
+        assert_eq!(
+            evidence.selected_payload_type,
+            "Path2AccountStarkCreationPayloadV1"
+        );
+        assert_eq!(
+            evidence.verifier_boundary_endpoint,
+            "verify_path2_direct_creation_account_stark_payload_boundary"
+        );
+        assert_eq!(
+            evidence.production_boundary_endpoint,
+            "verify_path2_direct_creation_account_stark_payload_boundary_for_production"
+        );
+        assert_eq!(
+            evidence.replay_payload_digest_function,
+            "path2_account_stark_creation_payload_v1_digest"
+        );
+        assert_eq!(
+            evidence.account_creation_proof_boundary_report_digest,
+            report.digest
+        );
+        assert_eq!(evidence.accepting_requirements, report.accepting_requirements);
+        assert_eq!(
+            evidence.fixture_id,
+            "Path2AccountStarkPayloadKatFixture.v1"
+        );
+        assert_eq!(
+            evidence.proof_mask_seed,
+            PATH2_ACCOUNT_STARK_PAYLOAD_KAT_MASK_SEED_V1
+        );
+        assert!(evidence.payload_frame_bytes > evidence.account_stark_bundle_bytes);
+        assert!(evidence.account_stark_bundle_bytes > 0);
+        assert!(evidence.verifier_boundary_accepts);
+        assert!(evidence.production_gate_fail_closed);
+        assert!(evidence.proof_boundary_report_validated);
+        assert!(!evidence.public_payload_exports_private_material);
+        assert!(evidence.payload_digest_bound_to_certificate);
+        assert!(evidence.evidence_digest_bound_to_certificate);
+        assert!(evidence.leaf_transcript_bound_to_evidence);
+        assert!(evidence.leaf_digest_bound_to_evidence);
+        assert!(evidence.leaf_context_bound);
+        assert!(evidence.binding_digest_bound);
+        assert!(evidence.payload_binding_fields_match_report);
+        assert!(evidence.deployed_anchor_fields_match_report);
+        assert!(evidence.account_stark_bundle_nonempty);
+        assert!(evidence.proof_family_obligations_still_open);
+        assert!(!evidence.deployment_ready);
+        assert_eq!(
+            path2_account_creation_accepted_proof_boundary_evidence_v1_digest(&evidence),
+            evidence.digest
         );
     }
 
@@ -109372,6 +110038,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             "path2_account_stark_creation_payload_v1_digest"
         );
         assert_eq!(
+            report.accepted_boundary_evidence_schema,
+            PATH2_ACCOUNT_CREATION_ACCEPTED_PROOF_BOUNDARY_EVIDENCE_SCHEMA
+        );
+        assert_eq!(
+            report.accepted_boundary_evidence_endpoint,
+            "path2_account_creation_accepted_proof_boundary_evidence_v1"
+        );
+        assert_eq!(
             report.accepting_requirements,
             PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS.as_ref()
         );
@@ -109560,6 +110234,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         }
         assert!(report.boundary_statement_pinned);
         assert!(report.selected_payload_pinned);
+        assert!(report.accepted_boundary_evidence_present);
         assert!(report.replay_payload_digest_bound);
         assert!(report.active_payload_mutation_coverage_present);
         assert!(report.deployed_anchor_rebind_tests_present);

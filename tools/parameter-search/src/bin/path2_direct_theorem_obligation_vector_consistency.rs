@@ -150,6 +150,24 @@ fn main() -> Result<(), String> {
             "direct theorem obligation vector corpus lost proof-boundary binding".to_string(),
         );
     }
+    if str_at(
+        corpus,
+        "/account_creation_proof_boundary_report/accepted_boundary_evidence_schema",
+    )? != proof_report.accepted_boundary_evidence_schema
+        || str_at(
+            corpus,
+            "/account_creation_proof_boundary_report/accepted_boundary_evidence_endpoint",
+        )? != proof_report.accepted_boundary_evidence_endpoint
+        || bool_at(
+            corpus,
+            "/account_creation_proof_boundary_report/accepted_boundary_evidence_present",
+        )? != proof_report.accepted_boundary_evidence_present
+    {
+        return Err(
+            "direct theorem obligation vector corpus lost accepted proof-boundary evidence hook"
+                .to_string(),
+        );
+    }
     if direct_report.direct_qrom_action_boundary_report_digest != qrom_action_report.digest
         || direct_report.direct_lifecycle_boundary_report_digest != lifecycle_report.digest
         || direct_report.account_creation_proof_boundary_report_digest != proof_report.digest

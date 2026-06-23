@@ -167,6 +167,8 @@ fn check_consistency() -> Result<(), String> {
         "verifier_boundary_endpoint",
         "production_boundary_endpoint",
         "replay_payload_digest_function",
+        "accepted_boundary_evidence_schema",
+        "accepted_boundary_evidence_endpoint",
     ] {
         expect_eq(
             get(proof_manifest, &["authority_snapshot", field])?,
@@ -218,6 +220,15 @@ fn check_consistency() -> Result<(), String> {
             "deployment_ready",
         ],
         false,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "accepted_boundary_evidence_present",
+        ],
+        true,
     )?;
     expect_bool(
         proof_manifest,
