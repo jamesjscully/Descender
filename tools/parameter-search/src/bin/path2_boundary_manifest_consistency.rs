@@ -45,6 +45,18 @@ fn expect_bool(value: &Value, path: &[&str], expected: bool) -> Result<(), Strin
     }
 }
 
+fn expect_u64(value: &Value, path: &[&str], expected: u64) -> Result<(), String> {
+    let actual = get(value, path)?;
+    match actual.as_u64() {
+        Some(actual_u64) if actual_u64 == expected => Ok(()),
+        Some(actual_u64) => Err(format!(
+            "{} was {actual_u64}, expected {expected}",
+            path.join(".")
+        )),
+        None => Err(format!("{} is not an unsigned integer", path.join("."))),
+    }
+}
+
 fn check_consistency() -> Result<(), String> {
     let root = repo_root();
     let proof = read_json(
@@ -177,6 +189,69 @@ fn check_consistency() -> Result<(), String> {
             "deployment_ready",
         ],
         false,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "every_accepting_requirement_has_coverage_row",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "every_vector_covered_requirement_has_public_rejection_class",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "every_current_vector_case_is_payload_kat_row",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "every_requirement_public_rejection_class_is_known",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "requirement_coverage_matrix_pinned",
+        ],
+        true,
+    )?;
+    expect_u64(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "requirement_coverage_count",
+        ],
+        10,
+    )?;
+    expect_u64(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "coverage",
+            "current_vector_covered_requirement_count",
+        ],
+        6,
     )?;
     expect_bool(
         proof_manifest,

@@ -321,8 +321,21 @@ fn manifest_body() -> Result<Value, String> {
                     proof_boundary_report.no_export_private_material_fields.len(),
                 "proof_obligation_named_break_class_count":
                     proof_boundary_report.proof_obligation_named_break_classes.len(),
+                "requirement_coverage_count":
+                    proof_boundary_report.requirement_coverage_count,
                 "proof_obligation_count":
                     proof_boundary_report.proof_obligation_count,
+                "current_vector_covered_requirement_count":
+                    proof_boundary_report.current_vector_covered_requirement_count,
+                "every_accepting_requirement_has_coverage_row":
+                    proof_boundary_report.every_accepting_requirement_has_coverage_row,
+                "every_vector_covered_requirement_has_public_rejection_class":
+                    proof_boundary_report
+                        .every_vector_covered_requirement_has_public_rejection_class,
+                "every_current_vector_case_is_payload_kat_row":
+                    proof_boundary_report.every_current_vector_case_is_payload_kat_row,
+                "every_requirement_public_rejection_class_is_known":
+                    proof_boundary_report.every_requirement_public_rejection_class_is_known,
                 "every_proof_obligation_has_named_break":
                     proof_boundary_report.every_proof_obligation_has_named_break,
                 "every_open_proof_obligation_blocks_deployment":
@@ -336,6 +349,8 @@ fn manifest_body() -> Result<Value, String> {
                     proof_boundary_report.active_payload_mutation_coverage_present,
                 "deployed_anchor_rebind_tests_present":
                     proof_boundary_report.deployed_anchor_rebind_tests_present,
+                "requirement_coverage_matrix_pinned":
+                    proof_boundary_report.requirement_coverage_matrix_pinned,
                 "proof_obligation_rows_pinned":
                     proof_boundary_report.proof_obligation_rows_pinned,
                 "production_gate_fail_closed":
@@ -357,6 +372,7 @@ fn manifest_body() -> Result<Value, String> {
             "proof_boundary_conclusion":
                 proof_boundary_report.proof_boundary_conclusion,
             "accepting_requirements": proof_boundary_report.accepting_requirements,
+            "requirement_coverage_rows": proof_boundary_report.requirement_coverage_rows,
             "leaf_evidence_binding_fields":
                 proof_boundary_report.leaf_evidence_binding_fields,
             "certificate_evidence_binding_fields":

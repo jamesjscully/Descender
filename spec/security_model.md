@@ -194,7 +194,13 @@ row list for honest sampler soundness, authorization-class binding,
 no-postchallenge timing, simulator/no-export closure, FRI/AoK extraction,
 FRI/QROM residual pricing, frozen payload KATs, and production-gate review;
 each open row carries a named break and the fail-closed account-creation
-proof-boundary blocker. The sampler/timing report pins the honest-create
+proof-boundary blocker. A separate requirement-coverage matrix maps every
+acceptance requirement to its current evidence surface, current vector case ids
+where they exist, public rejection classes, closure target, and blocker; it
+records that six requirements have current account-STARK payload vectors while
+leaf/evidence framing, leaf/evidence binding, no-export semantics, and
+account-STARK QROM/domain separation remain uncovered by vectors. The
+sampler/timing report pins the honest-create
 sampler support file, no-postchallenge timing game, construction order,
 prechallenge fixed-through step, spend-challenge derivation step, and executable
 hooks showing that the creation hidden-source statement excludes the spend
@@ -212,8 +218,9 @@ that report, the selected `Path2AccountStarkResidualMatrixReportV1`, the current
 `Path2AccountStarkPayloadKatBoundaryReportV1`, the current sampler/timing
 report, and the current no-export boundary report by local and CI gates, so the
 proof-boundary target, conclusion, digest chain, selected field groups,
-sampler/timing hooks, no-export denylist, proof-obligation rows, residual rows,
-and payload-KAT boundary blocker cannot drift silently.
+sampler/timing hooks, no-export denylist, requirement-coverage rows,
+proof-obligation rows, residual rows, and payload-KAT boundary blocker cannot
+drift silently.
 `formal/kat/path2_account_creation_no_export_boundary_v1.json` is
 also regenerated and checked before the proof-boundary manifest so the
 no-export boundary cannot remain prose-only. The reports and manifests are the

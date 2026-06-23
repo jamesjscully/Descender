@@ -88,7 +88,9 @@ classes, the bound `Path2AccountStarkResidualMatrixReportV1`, the downstream
 `Path2AccountStarkFriAokBoundaryReportV1` digests described below. It also
 pins the open proof-obligation row list for sampler, authorization-class,
 timing, simulator/no-export, FRI/AoK, FRI/QROM, frozen-KAT, and production-gate
-review closure. It is not a proof and not deployment evidence by itself: the
+review closure, plus a requirement-coverage matrix that maps each acceptance
+requirement to current vector case ids, public rejection classes, closure
+target, and blocker. It is not a proof and not deployment evidence by itself: the
 manifest deliberately records the open simulator, extractor, FRI/QROM,
 frozen-KAT, external-review, sampler, timing, no-export, and production-gate
 blockers. The local and CI build
