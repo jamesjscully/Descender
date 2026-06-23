@@ -317,9 +317,10 @@ absence, and opaque proof-bundle manifest policy.
 current FRI/QROM domain audit cases before the proof-boundary manifest is
 checked. `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 pins the open proof-obligation cases and checks the standalone accepted
-proof-boundary evidence artifact before the direct theorem manifest is checked,
-and `formal/kat/path2_direct_theorem_obligation_vectors_v1.json` pins the
-direct theorem's open per-hypothesis obligations after that manifest is
+proof-boundary evidence artifact plus the payload KAT vector corpus before the
+direct theorem manifest is checked, and
+`formal/kat/path2_direct_theorem_obligation_vectors_v1.json` pins the direct
+theorem's open per-hypothesis obligations after that manifest is
 checked. The reports and manifests are
 the executable boundary map for this section; they are not an honest-sampler
 theorem, authorization-class binding theorem, no-postchallenge timing theorem,

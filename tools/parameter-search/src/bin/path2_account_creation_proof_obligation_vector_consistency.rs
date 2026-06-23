@@ -1,8 +1,11 @@
 use descender_parameter_search::production_reference::{
     path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_proof_boundary_report_v1_digest,
+    path2_account_stark_payload_kat_boundary_report_v1,
+    path2_account_stark_payload_kat_boundary_report_v1_digest,
     path2_direct_theorem_boundary_report_v1, path2_direct_theorem_boundary_report_v1_digest,
     validate_path2_account_creation_proof_boundary_report_v1,
+    validate_path2_account_stark_payload_kat_boundary_report_v1,
     validate_path2_direct_theorem_boundary_report_v1,
 };
 use serde_json::Value;
@@ -192,6 +195,26 @@ fn main() -> Result<(), String> {
     let direct_report = path2_direct_theorem_boundary_report_v1();
     validate_path2_direct_theorem_boundary_report_v1(&direct_report)?;
     let direct_digest = path2_direct_theorem_boundary_report_v1_digest(&direct_report);
+    let payload_kat_report = path2_account_stark_payload_kat_boundary_report_v1();
+    validate_path2_account_stark_payload_kat_boundary_report_v1(&payload_kat_report)?;
+    let payload_kat_digest =
+        path2_account_stark_payload_kat_boundary_report_v1_digest(&payload_kat_report);
+    if payload_kat_digest != payload_kat_report.digest {
+        return Err("payload KAT boundary report digest mismatch".to_string());
+    }
+    let payload_vectors_file = load_json(
+        &root,
+        "formal/kat/path2_account_stark_payload_kat_vectors_v1.json",
+    )?;
+    let payload_vectors = at(&payload_vectors_file, "/corpus")?;
+    let payload_vectors_json = serde_json::to_string_pretty(payload_vectors)
+        .map_err(|err| format!("serialize payload KAT vector corpus body: {err}"))?;
+    let payload_vectors_recomputed_digest =
+        hex_encode(&Sha256::digest(payload_vectors_json.as_bytes()));
+    if str_at(&payload_vectors_file, "/vector_corpus_digest")? != payload_vectors_recomputed_digest
+    {
+        return Err("payload KAT vector corpus digest mismatch".to_string());
+    }
 
     if str_at(corpus, "/schema")? != "Descender.Path2.AccountCreationProofObligationVectors.v1" {
         return Err("proof-obligation vector corpus schema mismatch".to_string());
@@ -269,6 +292,101 @@ fn main() -> Result<(), String> {
     {
         return Err(
             "proof-obligation vector corpus lost accepted proof-boundary evidence hook".to_string(),
+        );
+    }
+    require_str(
+        corpus,
+        "/payload_kat_vector_evidence/corpus_schema",
+        "Descender.Path2.AccountStarkPayloadKatVectors.v1",
+    )?;
+    require_str(
+        corpus,
+        "/payload_kat_vector_evidence/corpus_status",
+        "digest_pinned_boundary_vectors",
+    )?;
+    require_str(
+        corpus,
+        "/payload_kat_vector_evidence/corpus_digest",
+        str_at(&payload_vectors_file, "/vector_corpus_digest")?,
+    )?;
+    require_str(
+        corpus,
+        "/payload_kat_vector_evidence/corpus_recomputed_digest",
+        &payload_vectors_recomputed_digest,
+    )?;
+    require_hex(
+        corpus,
+        "/payload_kat_vector_evidence/boundary_report_digest",
+        &payload_kat_report.digest,
+    )?;
+    require_hex(
+        corpus,
+        "/payload_kat_vector_evidence/boundary_report_recomputed_digest",
+        &payload_kat_digest,
+    )?;
+    require_bool(
+        corpus,
+        "/payload_kat_vector_evidence/every_current_row_has_generated_vector",
+        true,
+    )?;
+    require_bool(
+        corpus,
+        "/audit_summary/current_payload_kat_vectors_cover_every_boundary_row",
+        true,
+    )?;
+    require_bool(
+        corpus,
+        "/payload_kat_vector_evidence/frozen_corpus_complete",
+        false,
+    )?;
+    require_bool(
+        corpus,
+        "/payload_kat_vector_evidence/deployment_ready",
+        false,
+    )?;
+    require_str(
+        corpus,
+        "/payload_kat_vector_evidence/blocker",
+        payload_kat_report.blocker,
+    )?;
+    if u64_at(
+        corpus,
+        "/payload_kat_vector_evidence/boundary_report_row_count",
+    )? != payload_kat_report.rows.len() as u64
+        || u64_at(corpus, "/payload_kat_vector_evidence/rejection_case_count")?
+            != payload_kat_report.rows.len() as u64
+        || u64_at(corpus, "/payload_kat_vector_evidence/case_count")?
+            != payload_kat_report.rows.len() as u64 + 1
+    {
+        return Err("proof-obligation payload KAT vector evidence count mismatch".to_string());
+    }
+    require_str(
+        corpus,
+        "/payload_kat_vector_evidence/honest_payload_digest",
+        str_at(payload_vectors, "/honest_payload/payload_digest")?,
+    )?;
+    require_str(
+        payload_vectors,
+        "/schema",
+        "Descender.Path2.AccountStarkPayloadKatVectors.v1",
+    )?;
+    require_str(payload_vectors, "/status", "digest_pinned_boundary_vectors")?;
+    require_hex(
+        payload_vectors,
+        "/boundary_report/digest",
+        &payload_kat_report.digest,
+    )?;
+    if u64_at(payload_vectors, "/boundary_report/row_count")?
+        != payload_kat_report.rows.len() as u64
+        || u64_at(payload_vectors, "/rejection_case_count")? != payload_kat_report.rows.len() as u64
+        || u64_at(payload_vectors, "/case_count")? != payload_kat_report.rows.len() as u64 + 1
+        || !bool_at(
+            payload_vectors,
+            "/boundary_report/every_current_row_has_generated_vector",
+        )?
+    {
+        return Err(
+            "payload KAT vector corpus is not bound to every current boundary row".to_string(),
         );
     }
     if direct_report.account_creation_proof_boundary_report_digest != proof_report.digest {
@@ -402,19 +520,15 @@ fn main() -> Result<(), String> {
         false,
     )?;
     require_bool(accepted_composition, "/evidence/deployment_ready", false)?;
-    let payload_vectors = load_json(
-        &root,
-        "formal/kat/path2_account_stark_payload_kat_vectors_v1.json",
-    )?;
     require_str(
         accepted_composition,
         "/evidence/selected_account_creation_payload_digest",
-        str_at(&payload_vectors, "/corpus/honest_payload/payload_digest")?,
+        str_at(payload_vectors, "/honest_payload/payload_digest")?,
     )?;
     require_str(
         accepted_boundary,
         "/evidence/selected_account_creation_payload_digest",
-        str_at(&payload_vectors, "/corpus/honest_payload/payload_digest")?,
+        str_at(payload_vectors, "/honest_payload/payload_digest")?,
     )?;
 
     if u64_at(corpus, "/case_count")? != proof_report.proof_obligation_count as u64

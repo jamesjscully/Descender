@@ -4,6 +4,7 @@
       "all_cases_have_named_break": true,
       "all_cases_open": true,
       "all_open_cases_block_deployment": true,
+      "current_payload_kat_vectors_cover_every_boundary_row": true,
       "deployment_ready": false,
       "external_review_complete": false,
       "fri_aok_extractor_theorem_instantiated": false,
@@ -137,6 +138,23 @@
       "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_proof_obligation_vectors",
       "source": "tools/parameter-search/src/bin/path2_account_creation_proof_obligation_vectors.rs"
     },
+    "payload_kat_vector_evidence": {
+      "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
+      "boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
+      "boundary_report_recomputed_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
+      "boundary_report_row_count": 13,
+      "case_count": 14,
+      "corpus_digest": "24cbd405b35f50d4cc70601cc7acb0b0e9808eafaf5cf07fc4b8cebce04dfaf5",
+      "corpus_path": "formal/kat/path2_account_stark_payload_kat_vectors_v1.json",
+      "corpus_recomputed_digest": "24cbd405b35f50d4cc70601cc7acb0b0e9808eafaf5cf07fc4b8cebce04dfaf5",
+      "corpus_schema": "Descender.Path2.AccountStarkPayloadKatVectors.v1",
+      "corpus_status": "digest_pinned_boundary_vectors",
+      "deployment_ready": false,
+      "every_current_row_has_generated_vector": true,
+      "frozen_corpus_complete": false,
+      "honest_payload_digest": "991dd49c61805a04828c86ab0887def07ddb0e40dbc35f8721138fd37ee70f0b",
+      "rejection_case_count": 13
+    },
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "proof_boundary_report": {
       "accepted_boundary_binding_evidence_present": true,
@@ -159,5 +177,5 @@
     "schema": "Descender.Path2.AccountCreationProofObligationVectors.v1",
     "status": "digest_pinned_proof_obligation_audit_vectors"
   },
-  "corpus_digest": "157616c766ff2a8daec250f86c4282c90fadf6a21fadd03da1ba5282891cc2bf"
+  "corpus_digest": "06080bd3f4a1b346410cbbe88ee35f5cdb87b092e7145622b0a4e79cd64adeca"
 }

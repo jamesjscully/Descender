@@ -130,11 +130,14 @@ cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_
 It records one audit case per open proof obligation, including closure target,
 supporting surface, current evidence, required closure, named break, blocker,
 and open status, and binds the corpus to both the proof-boundary report and the
-direct theorem report. It does not close any theorem flag. The
+direct theorem report. It also records the payload KAT vector corpus digest,
+row count, honest payload digest, and current-row coverage flag for the frozen
+payload KAT obligation while keeping the frozen/deployable flags false. It does
+not close any theorem flag. The
 `path2_account_creation_proof_obligation_vector_consistency` gate checks the
 corpus digest, case order, direct-theorem binding, standalone accepted
-proof-boundary evidence artifact binding, named-break coverage, blocker
-coverage, and fail-closed deployment flags.
+proof-boundary evidence artifact binding, payload KAT vector corpus binding,
+named-break coverage, blocker coverage, and fail-closed deployment flags.
 
 `path2_account_creation_frame_kat_boundary_v1.json` and
 `path2_account_creation_frame_kat_vectors_v1.json` are draft active-path
