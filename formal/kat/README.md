@@ -129,7 +129,10 @@ ten-row accepted-requirement evidence checklist. That checklist records eight
 happy-path-applicable accepted checks, defers FRI/QROM domain separation to the
 residual theorem ledger, defers deterministic public rejection to rejection
 KATs, and keeps every separate closure requirement tied to an open proof
-obligation. The
+obligation. The production-reference validator replays the same selected
+account-STARK KAT fixture and recomputes the public leaf/evidence/certificate,
+payload, creation-binding, payload-frame, bundle, deployed-anchor, and
+decoded-anchor digests before accepting the serialized artifact. The
 `path2_account_creation_accepted_proof_boundary_evidence_consistency` gate
 recomputes that evidence in the same deterministic KAT mode and ties the
 selected payload digest back to

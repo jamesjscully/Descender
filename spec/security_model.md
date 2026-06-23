@@ -351,7 +351,11 @@ accepted verifier result, and confirms the production entrypoint still fails
 closed. The decoded-anchor comparison separately pins account id, slot id,
 state root, lifecycle anchor, raw verifier version, masked projection,
 role-root export bridge, and packed-witness commitment against the deployed
-leaf/binding anchors. The artifact also carries a ten-row
+leaf/binding anchors. The accepted-evidence validator also replays the selected
+account-STARK KAT fixture and recomputes the leaf, evidence, certificate,
+payload, creation-binding, payload-frame, bundle, deployed-anchor, and
+decoded-anchor digests before accepting a serialized artifact. The artifact
+also carries a ten-row
 accepted-requirement evidence checklist: eight requirements are
 happy-path-applicable accepted checks, `account_stark_qrom_domain_separation`
 is deferred to the residual theorem ledger, `deterministic_public_rejection`

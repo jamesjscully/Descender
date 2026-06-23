@@ -48047,6 +48047,16 @@ pub fn path2_account_stark_payload_kat_fixture_v1()
     Ok(path2_account_stark_payload_kat_fixture_with_reviewed_v1()?.1)
 }
 
+#[cfg(feature = "account-creation-stark-verifier")]
+fn path2_account_stark_payload_kat_fixture_deterministic_v1(
+) -> Result<Path2AccountStarkPayloadKatFixtureV1, String> {
+    let pool = rayon::ThreadPoolBuilder::new()
+        .num_threads(1)
+        .build()
+        .map_err(|err| format!("failed to build deterministic single-thread KAT pool: {err}"))?;
+    pool.install(path2_account_stark_payload_kat_fixture_v1)
+}
+
 pub fn path2_account_creation_masked_projection_digest(
     masked_projection: &[u16; HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES],
 ) -> [u8; DIGEST_BYTES] {
@@ -48614,7 +48624,7 @@ fn path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(
 #[cfg(feature = "account-creation-stark-verifier")]
 pub fn path2_account_creation_accepted_proof_boundary_evidence_v1(
 ) -> Result<Path2AccountCreationAcceptedProofBoundaryEvidenceV1, String> {
-    let fixture = path2_account_stark_payload_kat_fixture_v1()?;
+    let fixture = path2_account_stark_payload_kat_fixture_deterministic_v1()?;
     path2_account_creation_accepted_proof_boundary_evidence_for_fixture_v1(&fixture)
 }
 
@@ -67153,6 +67163,70 @@ pub fn validate_path2_account_creation_accepted_proof_boundary_evidence_v1(
         );
     }
 
+    #[cfg(feature = "account-creation-stark-verifier")]
+    {
+        let fixture = path2_account_stark_payload_kat_fixture_deterministic_v1()?;
+        let payload_frame = path2_account_stark_creation_payload_v1_frame(&fixture.payload)?;
+        let payload_digest = path2_account_stark_creation_payload_v1_digest(&fixture.payload)?;
+        let decoded_public_anchors =
+            descender_account_verifier::decode_deployed_account_creation_public_anchors(
+                &fixture.payload.account_stark_bundle,
+            )
+            .map_err(|error| {
+                format!("Path 2 account-STARK public anchor decode failed: {error}")
+            })?;
+        let deployed_anchor_digest = path2_account_creation_deployed_anchor_digest(
+            &fixture.leaf,
+            &fixture.binding,
+            &fixture.payload,
+        );
+        let decoded_public_anchor_digest =
+            path2_account_creation_decoded_public_anchor_digest(&decoded_public_anchors);
+        let payload_frame_digest: [u8; DIGEST_BYTES] = Sha256::digest(&payload_frame).into();
+        let account_stark_bundle_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(&fixture.payload.account_stark_bundle).into();
+        if evidence.fixture_id != fixture.fixture_id
+            || evidence.proof_mask_seed != fixture.proof_mask_seed
+            || evidence.account_id != fixture.leaf.account_id
+            || evidence.public_key_identity != fixture.leaf.public_key_identity
+            || evidence.account_state_root_before != fixture.leaf.account_state_root_before
+            || evidence.slot_id != fixture.leaf.slot_id
+            || evidence.prevalidated_slot_leaf_digest
+                != path2_prevalidated_slot_leaf_digest(&fixture.leaf)?
+            || evidence.slot_authorization_digest != path2_slot_authorization_digest(&fixture.leaf)?
+            || evidence.account_creation_evidence_transcript_digest
+                != path2_account_creation_evidence_transcript_digest(&fixture.evidence)?
+            || evidence.direct_replayable_relation_certificate_digest
+                != path2_direct_replayable_relation_certificate_digest(&fixture.certificate)
+            || evidence.selected_account_creation_payload_digest != payload_digest
+            || evidence.creation_proof_binding_digest
+                != path2_creation_proof_binding_v1_digest(&fixture.binding)
+            || evidence.leaf_context_digest
+                != path2_prevalidated_slot_leaf_context_digest(
+                    &fixture.leaf,
+                    &fixture.evidence,
+                    &fixture.certificate,
+                )?
+            || evidence.aggregation_context_digest != fixture.payload.aggregation_context_digest
+            || evidence.native_role_root_commitment != fixture.payload.native_role_root_commitment
+            || evidence.masked_projection_digest
+                != path2_account_creation_masked_projection_digest(
+                    &fixture.payload.masked_projection,
+                )
+            || evidence.deployed_anchor_digest != deployed_anchor_digest
+            || evidence.payload_frame_digest != payload_frame_digest
+            || evidence.payload_frame_bytes != payload_frame.len()
+            || evidence.account_stark_bundle_digest != account_stark_bundle_digest
+            || evidence.account_stark_bundle_bytes != fixture.payload.account_stark_bundle.len()
+            || evidence.decoded_public_anchor_digest != decoded_public_anchor_digest
+        {
+            return Err(
+                "Path 2 account-creation accepted proof-boundary evidence fixture binding mismatch"
+                    .to_string(),
+            );
+        }
+    }
+
     let expected_requirement_rows =
         path2_account_creation_accepted_requirement_evidence_rows_v1(
             evidence,
@@ -82730,6 +82804,43 @@ mod tests {
             validate_path2_account_creation_accepted_proof_boundary_evidence_v1(&malformed)
                 .unwrap_err(),
             "Path 2 account-creation accepted proof-boundary evidence unexpectedly changes closure status"
+        );
+        let mut malformed_account = evidence.clone();
+        malformed_account.account_id[0] ^= 1;
+        malformed_account.digest =
+            path2_account_creation_accepted_proof_boundary_evidence_v1_digest(&malformed_account);
+        assert_eq!(
+            validate_path2_account_creation_accepted_proof_boundary_evidence_v1(
+                &malformed_account
+            )
+            .unwrap_err(),
+            "Path 2 account-creation accepted proof-boundary evidence fixture binding mismatch"
+        );
+        let mut malformed_authorization = evidence.clone();
+        malformed_authorization.slot_authorization_digest[0] ^= 1;
+        malformed_authorization.digest =
+            path2_account_creation_accepted_proof_boundary_evidence_v1_digest(
+                &malformed_authorization,
+            );
+        assert_eq!(
+            validate_path2_account_creation_accepted_proof_boundary_evidence_v1(
+                &malformed_authorization
+            )
+            .unwrap_err(),
+            "Path 2 account-creation accepted proof-boundary evidence fixture binding mismatch"
+        );
+        let mut malformed_payload_frame = evidence.clone();
+        malformed_payload_frame.payload_frame_digest[0] ^= 1;
+        malformed_payload_frame.digest =
+            path2_account_creation_accepted_proof_boundary_evidence_v1_digest(
+                &malformed_payload_frame,
+            );
+        assert_eq!(
+            validate_path2_account_creation_accepted_proof_boundary_evidence_v1(
+                &malformed_payload_frame
+            )
+            .unwrap_err(),
+            "Path 2 account-creation accepted proof-boundary evidence fixture binding mismatch"
         );
     }
 
