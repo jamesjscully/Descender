@@ -102,7 +102,9 @@ artifact; the direct theorem manifest embeds the same object and additionally
 binds its 9-case open direct-obligation audit-vector corpus and accepted
 direct-composition KAT evidence artifact. `path2_boundary_manifest_consistency`
 checks these bindings, including the generated proof/direct manifest copies of
-the compact requirement-vector corpus evidence, and the fail-closed flags. It is
+the compact requirement-vector, proof-obligation, and direct-obligation corpus
+evidence against the standalone corpus-evidence objects, and the fail-closed
+flags. It is
 not a proof and not deployment evidence by itself: the
 manifest deliberately records the open simulator, extractor, FRI/QROM,
 frozen-KAT, external-review, sampler, timing, no-export, and production-gate
@@ -405,8 +407,10 @@ named tests.
 The `path2_boundary_manifest_consistency` gate compares the standalone
 proof-boundary manifest with the proof-boundary object embedded in the direct
 theorem manifest. It fails if the shared digest, endpoint, blocker, or field
-groups diverge between the artifacts, and it requires proof-obligation rows to
-remain named, pinned, and deployment-blocking while the boundary is open.
+groups diverge between the artifacts; if the embedded requirement,
+proof-obligation, or direct-obligation corpus evidence drifts from the
+standalone corpus-evidence objects; or if proof-obligation rows stop remaining
+named, pinned, and deployment-blocking while the boundary is open.
 
 The `path2_preflight_boundary_consistency` gate checks the same active boundary
 reports against the production deployment preflight. It fails if the preflight

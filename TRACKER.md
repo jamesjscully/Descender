@@ -40,10 +40,12 @@ accepted spend tuple, accepted composition, proof-obligation, direct-obligation,
 and production preflight consistency gates now also recompute those generated
 manifests, check accepted-artifact equality, bind every generated proof/direct
 boundary copy of the accepted composition artifact plus requirement- and
-obligation-corpus evidence back to standalone compact artifacts, and check
-open-row blockers, fail-closed flags, and the production preflight
-blocker/verdict/ready-assertion/certificate chain against the standalone KATs
-and deployment blocker set.
+obligation-corpus evidence back to standalone compact artifacts. The shared
+boundary-manifest gate also checks embedded requirement, proof-obligation, and
+direct-obligation corpus evidence against standalone corpus-evidence objects,
+while the preflight gate checks open-row blockers, fail-closed flags, and the
+production preflight blocker/verdict/ready-assertion/certificate chain against
+the standalone KATs and deployment blocker set.
 
 | ID | Status | Item | Evidence / next action |
 |---|---|---|---|

@@ -3,7 +3,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use descender_parameter_search::manifest_vector_evidence::path2_account_creation_requirement_vector_corpus_evidence_v1;
+use descender_parameter_search::manifest_vector_evidence::{
+    path2_account_creation_proof_obligation_vector_corpus_evidence_v1,
+    path2_account_creation_requirement_vector_corpus_evidence_v1,
+    path2_direct_theorem_obligation_vector_corpus_evidence_v1,
+};
 use serde_json::Value;
 
 fn repo_root() -> PathBuf {
@@ -644,6 +648,32 @@ fn check_consistency() -> Result<(), String> {
         ],
         false,
     )?;
+    let proof_obligation_vector_corpus_evidence =
+        path2_account_creation_proof_obligation_vector_corpus_evidence_v1()?;
+    expect_eq(
+        get(
+            proof_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "proof_obligation_vector_corpus_evidence",
+            ],
+        )?,
+        "proof.manifest.account_creation_proof_boundary.proof_obligation_vector_corpus_evidence",
+        &proof_obligation_vector_corpus_evidence,
+        "standalone account-creation proof-obligation vector corpus evidence",
+    )?;
+    expect_eq(
+        get(
+            direct_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "proof_obligation_vector_corpus_evidence",
+            ],
+        )?,
+        "direct.manifest.account_creation_proof_boundary.proof_obligation_vector_corpus_evidence",
+        &proof_obligation_vector_corpus_evidence,
+        "standalone account-creation proof-obligation vector corpus evidence",
+    )?;
     expect_bool(
         proof_manifest,
         &[
@@ -842,6 +872,20 @@ fn check_consistency() -> Result<(), String> {
             "deployment_ready",
         ],
         false,
+    )?;
+    let direct_obligation_vector_corpus_evidence =
+        path2_direct_theorem_obligation_vector_corpus_evidence_v1()?;
+    expect_eq(
+        get(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_obligation_vector_corpus_evidence",
+            ],
+        )?,
+        "direct.manifest.direct_theorem_boundary.direct_obligation_vector_corpus_evidence",
+        &direct_obligation_vector_corpus_evidence,
+        "standalone direct theorem obligation vector corpus evidence",
     )?;
     expect_eq(
         get(
