@@ -90,6 +90,8 @@ jobs:
         run: |
           cargo run --quiet --features account-creation-stark-verifier --bin path2_account_stark_payload_kat_vectors > /tmp/path2_account_stark_payload_kat_vectors_v1.json
           diff -u ../../formal/kat/path2_account_stark_payload_kat_vectors_v1.json /tmp/path2_account_stark_payload_kat_vectors_v1.json
+      - name: Account STARK payload KAT vector consistency check
+        run: cargo run --quiet --bin path2_account_stark_payload_kat_vector_consistency
       - name: Legacy q12289 negative-control bin tests
         run: cargo test --bin signature_q12289_local_delta_stateful
       - name: Legacy KAT v0 byte-conformance

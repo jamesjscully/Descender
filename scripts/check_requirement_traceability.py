@@ -253,6 +253,25 @@ ACCOUNT_STARK_PAYLOAD_KAT_VECTOR_MARKERS = {
         "account-creation-stark-verifier",
     ],
 }
+ACCOUNT_STARK_PAYLOAD_KAT_VECTOR_CONSISTENCY_MARKERS = {
+    "tools/parameter-search/src/bin/path2_account_stark_payload_kat_vector_consistency.rs": [
+        "formal/kat/path2_account_stark_payload_kat_boundary_v1.json",
+        "formal/kat/path2_account_stark_payload_kat_vectors_v1.json",
+        "payload_kat_boundary_report_digest",
+        "every_current_row_has_generated_vector",
+        "frozen_corpus_complete",
+        "deployment_ready",
+        "Path 2 account-STARK payload KAT vector consistency check passed.",
+    ],
+    "scripts/check_build.sh": [
+        "account STARK payload KAT vector consistency check",
+        "path2_account_stark_payload_kat_vector_consistency",
+    ],
+    ".github/workflows/ci.yml": [
+        "Account STARK payload KAT vector consistency check",
+        "path2_account_stark_payload_kat_vector_consistency",
+    ],
+}
 SPEC_OPEN_WORK_SECTIONS = {
     "spec/conformance_kats.md": {
         "Required Evidence": {
@@ -2104,6 +2123,23 @@ def check_account_stark_payload_kat_vector_markers(errors: list[str]) -> None:
                 )
 
 
+def check_account_stark_payload_kat_vector_consistency_markers(errors: list[str]) -> None:
+    for rel, markers in ACCOUNT_STARK_PAYLOAD_KAT_VECTOR_CONSISTENCY_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(
+                f"{rel}: missing account-STARK payload KAT vector consistency artifact"
+            )
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing account-STARK payload KAT vector consistency marker {marker!r}"
+                )
+
+
 def check_ethereum_positioning_note(
     tracker_rows: dict[str, str],
     errors: list[str],
@@ -2245,6 +2281,7 @@ def main() -> int:
     check_direct_theorem_boundary_manifest_markers(errors)
     check_boundary_manifest_consistency_markers(errors)
     check_account_stark_payload_kat_vector_markers(errors)
+    check_account_stark_payload_kat_vector_consistency_markers(errors)
     check_ethereum_positioning_note(tracker_rows, errors)
 
     if errors:

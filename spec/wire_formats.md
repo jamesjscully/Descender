@@ -195,7 +195,10 @@ rejection classes. The corpus uses the explicit deterministic KAT producer
 `path2_account_stark_prove_creation_with_mask_seed_v1` inside a single-thread
 Rayon pool so proof-of-work witness selection is reproducible; live deployment
 production remains on the fresh-randomness
-`path2_account_stark_prove_creation_v1` path.
+`path2_account_stark_prove_creation_v1` path. The
+`path2_account_stark_payload_kat_vector_consistency` gate cross-checks that this
+vector corpus is bound to the same draft boundary manifest and still reports
+non-frozen, non-deployable status.
 
 ## Path2NativeCheckedCoreFrameV1
 

@@ -173,5 +173,10 @@ producer `path2_account_stark_prove_creation_v1` still uses fresh proof
 randomness. Because Plonky3 proof-of-work witness grinding can otherwise return
 different valid witnesses under parallel search, the generator also runs the KAT
 proof inside a single-thread Rayon pool. This closes the current boundary's
-deterministic proof-digest gap, but the full direct-mode vector corpus, full
-byte corpus, lifecycle/rejection coverage, and `DIR-KAT-001` closure remain open.
+deterministic proof-digest gap. The
+`path2_account_stark_payload_kat_vector_consistency` gate then checks that the
+checked-in boundary manifest and vector corpus agree on the pinned
+boundary-report digest, row count, generated-vector coverage flag, rejection
+case ids, public rejection classes, observed-error markers, and non-deployable
+status. The full direct-mode vector corpus, full byte corpus,
+lifecycle/rejection coverage, and `DIR-KAT-001` closure remain open.

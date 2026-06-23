@@ -106,3 +106,10 @@ mutation recipes, observed errors, and public rejection classes. The generator
 uses the explicit seeded KAT producer inside a single-thread Rayon pool so
 Plonky3 proof-of-work witness selection is reproducible; the deployment producer
 still uses fresh proof randomness.
+
+The `path2_account_stark_payload_kat_vector_consistency` gate cross-checks the
+checked-in boundary manifest against this vector corpus. It fails if the pinned
+boundary-report digest, row count, generated-vector flag, rejection case ids,
+public rejection classes, observed-error markers, or non-deployable/frozen
+status claims drift between the artifacts. This is current-row regression
+evidence only; it does not close the full frozen active Path 2 corpus.

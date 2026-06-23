@@ -105,6 +105,9 @@ echo "== account STARK payload KAT vector corpus check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --features account-creation-stark-verifier --bin path2_account_stark_payload_kat_vectors > "$payload_kat_vectors_tmp"
 diff -u formal/kat/path2_account_stark_payload_kat_vectors_v1.json "$payload_kat_vectors_tmp"
 
+echo "== account STARK payload KAT vector consistency check =="
+cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_stark_payload_kat_vector_consistency
+
 echo "== legacy q12289 negative-control bin tests =="
 cargo test --manifest-path tools/parameter-search/Cargo.toml --bin signature_q12289_local_delta_stateful
 
