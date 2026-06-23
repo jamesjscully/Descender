@@ -1,6 +1,8 @@
 use descender_parameter_search::production_reference::{
     path2_account_creation_proof_boundary_report_v1,
     path2_account_creation_proof_boundary_report_v1_digest,
+    path2_account_stark_fri_aok_boundary_report_v1,
+    path2_account_stark_fri_aok_boundary_report_v1_digest,
     path2_account_stark_fri_qrom_residual_report_v1,
     path2_account_stark_fri_qrom_residual_report_v1_digest,
     path2_account_stark_residual_matrix_report_v1,
@@ -16,6 +18,7 @@ use descender_parameter_search::production_reference::{
     production_deployment_direct_theorem_blockers, production_deployment_preflight,
     production_deployment_preflight_report, production_deployment_preflight_report_digest,
     validate_path2_account_creation_proof_boundary_report_v1,
+    validate_path2_account_stark_fri_aok_boundary_report_v1,
     validate_path2_account_stark_fri_qrom_residual_report_v1,
     validate_path2_account_stark_residual_matrix_report_v1,
     validate_path2_direct_lifecycle_boundary_report_v1,
@@ -61,12 +64,14 @@ fn main() -> Result<(), String> {
     let lifecycle_report = path2_direct_lifecycle_boundary_report_v1();
     let proof_report = path2_account_creation_proof_boundary_report_v1();
     let fri_qrom_report = path2_account_stark_fri_qrom_residual_report_v1();
+    let fri_aok_report = path2_account_stark_fri_aok_boundary_report_v1();
     let residual_report = path2_account_stark_residual_matrix_report_v1();
     validate_path2_direct_theorem_boundary_report_v1(&direct_report)?;
     validate_path2_direct_qrom_action_boundary_report_v1(&qrom_action_report)?;
     validate_path2_direct_lifecycle_boundary_report_v1(&lifecycle_report)?;
     validate_path2_account_creation_proof_boundary_report_v1(&proof_report)?;
     validate_path2_account_stark_fri_qrom_residual_report_v1(&fri_qrom_report)?;
+    validate_path2_account_stark_fri_aok_boundary_report_v1(&fri_aok_report)?;
     validate_path2_account_stark_residual_matrix_report_v1(&residual_report)?;
     if path2_direct_theorem_boundary_report_v1_digest(&direct_report) != direct_report.digest {
         return Err("direct theorem boundary digest mismatch".to_string());
@@ -90,6 +95,11 @@ fn main() -> Result<(), String> {
     {
         return Err("account-STARK FRI/QROM residual digest mismatch".to_string());
     }
+    if path2_account_stark_fri_aok_boundary_report_v1_digest(&fri_aok_report)
+        != fri_aok_report.digest
+    {
+        return Err("account-STARK FRI/AoK boundary digest mismatch".to_string());
+    }
     if path2_account_stark_residual_matrix_report_v1_digest(&residual_report)
         != residual_report.digest
     {
@@ -109,6 +119,12 @@ fn main() -> Result<(), String> {
     }
     if residual_report.fri_qrom_residual_report_digest != fri_qrom_report.digest {
         return Err("residual matrix is not bound to the FRI/QROM residual report".to_string());
+    }
+    if fri_aok_report.fri_qrom_residual_report_digest != fri_qrom_report.digest {
+        return Err("FRI/AoK boundary is not bound to the FRI/QROM residual report".to_string());
+    }
+    if residual_report.fri_aok_boundary_report_digest != fri_aok_report.digest {
+        return Err("residual matrix is not bound to the FRI/AoK boundary report".to_string());
     }
 
     let preflight = production_deployment_preflight();
@@ -191,6 +207,15 @@ fn main() -> Result<(), String> {
             "account-STARK FRI/QROM residual unexpectedly reports closed obligations".to_string(),
         );
     }
+    if fri_aok_report.deployment_ready
+        || fri_aok_report.fri_aok_extractor_theorem_instantiated
+        || fri_aok_report.accepting_proof_implies_extractable_witness
+        || fri_aok_report.external_extractor_review_complete
+    {
+        return Err(
+            "account-STARK FRI/AoK boundary unexpectedly reports closed obligations".to_string(),
+        );
+    }
     if residual_report.deployment_ready {
         return Err(
             "account-STARK residual matrix unexpectedly reports deployment readiness".to_string(),
@@ -228,6 +253,9 @@ fn main() -> Result<(), String> {
     }
     if !contains(blockers, proof_report.blocker) {
         return Err("production preflight does not include proof-boundary blocker".to_string());
+    }
+    if !contains(blockers, fri_aok_report.blocker) {
+        return Err("production preflight does not include FRI/AoK boundary blocker".to_string());
     }
     for row in direct_report.obligation_rows {
         if row.open && !contains(blockers, row.blocker) {

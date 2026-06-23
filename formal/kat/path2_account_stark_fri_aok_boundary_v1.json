@@ -1,0 +1,58 @@
+{
+  "manifest": {
+    "air_audit_evidence": {
+      "air_false_accept_hole_found": false,
+      "air_relation_class_count": 8,
+      "c4_inverse_corner_regression_present": true,
+      "context_binding_hardened_in_air": true,
+      "med_findings_remediated": 3,
+      "med_findings_total": 3,
+      "packed_witness_binding_negative_tested": true,
+      "support_file": "research/path2_account_stark_air_soundness_audit.md"
+    },
+    "authority_snapshot": {
+      "account_stark_config_source": "tools/descender-account-stark/src/config.rs",
+      "blocker": "account-STARK residual matrix: selected Plonky3/q12289 FRI argument-of-knowledge extractor theorem is not instantiated",
+      "extractor_theorem_target": "selected_plonky3_q12289_fri_iop_aok_extractor",
+      "fri_aok_boundary_report_domain": "Descender.Path2.AccountStarkFriAokBoundaryReport.v1",
+      "named_break": "account_stark_fri_aok_extractor_break",
+      "proof_system": "Plonky3 HidingFriPcs over KoalaBear with Poseidon2-Merkle and DuplexChallenger",
+      "residual_item": "FRI argument-of-knowledge extractor",
+      "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
+      "selected_proof_family": "Plonky3/q12289 account-creation STARK",
+      "support_file": "research/path2_account_stark_air_soundness_audit.md"
+    },
+    "corpus_id": "Descender.Path2.AccountStarkFriAokBoundary.v1",
+    "corpus_version": 1,
+    "digests": {
+      "account_stark_fri_aok_boundary_report_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753",
+      "account_stark_fri_aok_boundary_report_recomputed_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753",
+      "account_stark_fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
+      "account_stark_residual_matrix_report_digest": "9dceb234159b455b5f95e39b236d199bd0023fb4558bc60d70fe06d265b80623",
+      "fri_aok_boundary_report_fri_qrom_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
+      "residual_matrix_report_fri_aok_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753"
+    },
+    "fri_and_challenge_inputs": {
+      "account_stark_config_source": "tools/descender-account-stark/src/config.rs",
+      "challenge_field_pinned": true,
+      "fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
+      "fri_schedule_pinned": true,
+      "proof_system": "Plonky3 HidingFriPcs over KoalaBear with Poseidon2-Merkle and DuplexChallenger"
+    },
+    "frozen_status": "draft_fri_aok_boundary_manifest",
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_stark_fri_aok_boundary_manifest",
+      "source": "tools/parameter-search/src/bin/path2_account_stark_fri_aok_boundary_manifest.rs"
+    },
+    "open_obligations": {
+      "accepting_proof_implies_extractable_witness": false,
+      "blocker": "account-STARK residual matrix: selected Plonky3/q12289 FRI argument-of-knowledge extractor theorem is not instantiated",
+      "deployment_ready": false,
+      "external_extractor_review_complete": false,
+      "fri_aok_extractor_theorem_instantiated": false
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "schema": "Descender.Path2.AccountStarkFriAokBoundaryManifest.v1"
+  },
+  "manifest_digest": "3c7870f33c10c4840ed807770a93e78866efd62ecbe43ca34294f06c90c3c1ce"
+}

@@ -120,6 +120,12 @@ ACCOUNT_STARK_RESIDUAL_PREFLIGHT_MARKERS = [
     "Path2AccountStarkFriQromResidualReportV1",
     "path2_account_stark_fri_qrom_residual_report_v1",
     "validate_path2_account_stark_fri_qrom_residual_report_v1",
+    "PATH2_ACCOUNT_STARK_FRI_AOK_BOUNDARY_REPORT_DOMAIN",
+    "PATH2_ACCOUNT_STARK_FRI_AOK_SUPPORT_FILE",
+    "Path2AccountStarkFriAokBoundaryReportV1",
+    "fri_aok_boundary_report_digest",
+    "path2_account_stark_fri_aok_boundary_report_v1",
+    "validate_path2_account_stark_fri_aok_boundary_report_v1",
     "PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN",
     "Path2AccountStarkResidualMatrixReportV1",
     "Path2AccountStarkResidualMatrixRowV1",
@@ -265,6 +271,70 @@ ACCOUNT_STARK_FRI_QROM_RESIDUAL_MARKERS = {
         "path2_account_stark_fri_qrom_residual_consistency",
     ],
 }
+ACCOUNT_STARK_FRI_AOK_BOUNDARY_MARKERS = {
+    "tools/parameter-search/src/bin/path2_account_stark_fri_aok_boundary_manifest.rs": [
+        "Descender.Path2.AccountStarkFriAokBoundaryManifest.v1",
+        "Descender.Path2.AccountStarkFriAokBoundary.v1",
+        "path2_account_stark_fri_aok_boundary_report_v1",
+        "validate_path2_account_stark_fri_aok_boundary_report_v1",
+        "path2_account_stark_fri_qrom_residual_report_v1",
+        "path2_account_stark_residual_matrix_report_v1",
+        "account_stark_fri_aok_boundary_report_digest",
+        "fri_aok_boundary_report_fri_qrom_digest",
+        "residual_matrix_report_fri_aok_digest",
+        "air_audit_evidence",
+        "fri_aok_extractor_theorem_instantiated",
+        "accepting_proof_implies_extractable_witness",
+    ],
+    "tools/parameter-search/src/bin/path2_account_stark_fri_aok_boundary_consistency.rs": [
+        "formal/kat/path2_account_stark_fri_aok_boundary_v1.json",
+        "path2_account_stark_fri_aok_boundary_report_v1",
+        "validate_path2_account_stark_fri_aok_boundary_report_v1",
+        "validate_path2_account_stark_residual_matrix_report_v1",
+        "FRI argument-of-knowledge",
+        "p2_sis_extractor",
+        "FRI-IOP extractor",
+        "PROD_LOG_BLOWUP",
+        "PROD_NUM_QUERIES",
+        "Path 2 account-STARK FRI/AoK boundary consistency check passed.",
+    ],
+    "formal/kat/path2_account_stark_fri_aok_boundary_v1.json": [
+        "Descender.Path2.AccountStarkFriAokBoundaryManifest.v1",
+        "Descender.Path2.AccountStarkFriAokBoundary.v1",
+        "draft_fri_aok_boundary_manifest",
+        "account_stark_fri_aok_boundary_report_digest",
+        "fri_aok_boundary_report_fri_qrom_digest",
+        "residual_matrix_report_fri_aok_digest",
+        "air_audit_evidence",
+        '"air_relation_class_count": 8',
+        '"med_findings_remediated": 3',
+        '"fri_aok_extractor_theorem_instantiated": false',
+        '"accepting_proof_implies_extractable_witness": false',
+        '"deployment_ready": false',
+    ],
+    "research/path2_account_stark_air_soundness_audit.md": [
+        "No CRITICAL \"false statement accepts\" hole in the AIR.",
+        "all 8 relation classes",
+        "ALL THREE MED findings remediated",
+        "FRI argument-of-knowledge",
+        "p2_sis_extractor",
+        "FRI-IOP extractor",
+    ],
+    "scripts/check_build.sh": [
+        "account STARK FRI/AoK boundary manifest check",
+        "path2_account_stark_fri_aok_boundary_manifest",
+        "path2_account_stark_fri_aok_boundary_v1.json",
+        "account STARK FRI/AoK boundary consistency check",
+        "path2_account_stark_fri_aok_boundary_consistency",
+    ],
+    ".github/workflows/ci.yml": [
+        "Account STARK FRI/AoK boundary manifest check",
+        "path2_account_stark_fri_aok_boundary_manifest",
+        "path2_account_stark_fri_aok_boundary_v1.json",
+        "Account STARK FRI/AoK boundary consistency check",
+        "path2_account_stark_fri_aok_boundary_consistency",
+    ],
+}
 ACCOUNT_CREATION_SAMPLER_TIMING_MARKERS = {
     "tools/parameter-search/src/bin/path2_account_creation_sampler_timing_manifest.rs": [
         "Descender.Path2.AccountCreationSamplerTimingManifest.v1",
@@ -395,6 +465,7 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS = {
         "path2_account_creation_sampler_timing_report_v1",
         "path2_account_creation_no_export_boundary_report_v1",
         "path2_account_stark_fri_qrom_residual_report_v1",
+        "path2_account_stark_fri_aok_boundary_report_v1",
         "path2_account_stark_residual_matrix_report_v1",
         "path2_account_stark_payload_kat_boundary_report_v1",
         "account_creation_proof_boundary_report_digest",
@@ -403,12 +474,16 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS = {
         "account_creation_no_export_boundary_report_digest",
         "proof_boundary_report_no_export_digest",
         "account_stark_fri_qrom_residual_report_digest",
+        "account_stark_fri_aok_boundary_report_digest",
+        "fri_aok_boundary_report_fri_qrom_digest",
+        "residual_matrix_report_fri_aok_digest",
         "account_stark_residual_matrix_report_digest",
         "payload_kat_boundary_report_digest",
         "leaf_evidence_binding_fields",
         "no_export_boundary_snapshot",
         "sampler_timing_snapshot",
         "selected_account_stark_residual_matrix",
+        "fri_aok_boundary_snapshot",
         "fri_qrom_residual_snapshot",
     ],
     "formal/kat/path2_account_creation_proof_boundary_v1.json": [
@@ -421,11 +496,15 @@ ACCOUNT_CREATION_PROOF_BOUNDARY_MANIFEST_MARKERS = {
         "account_creation_no_export_boundary_report_digest",
         "proof_boundary_report_no_export_digest",
         "account_stark_fri_qrom_residual_report_digest",
+        "account_stark_fri_aok_boundary_report_digest",
+        "fri_aok_boundary_report_fri_qrom_digest",
+        "residual_matrix_report_fri_aok_digest",
         "account_stark_residual_matrix_report_digest",
         "payload_kat_boundary_report_digest",
         "leaf_evidence_binding_fields",
         "no_export_boundary_snapshot",
         "sampler_timing_snapshot",
+        "fri_aok_boundary_snapshot",
         "postchallenge_slot_creation_or_rewrite_break",
         "account_stark_simulator_or_no_export_break",
         "selected_account_stark_residual_matrix",
@@ -623,8 +702,10 @@ BOUNDARY_MANIFEST_CONSISTENCY_MARKERS = {
         "formal/kat/path2_direct_theorem_boundary_v1.json",
         "account_creation_proof_boundary_report_digest",
         "sampler_timing_report_digest",
+        "account_stark_residual_matrix_report_digest",
         "account_creation_proof_boundary_verified",
         "selected_account_stark_residual_matrix",
+        "fri_aok_boundary_snapshot",
         "payload_kat_boundary_snapshot",
         "Path 2 boundary manifest consistency check passed.",
     ],
@@ -651,9 +732,13 @@ PREFLIGHT_BOUNDARY_CONSISTENCY_MARKERS = {
         "path2_direct_lifecycle_boundary_report_v1_digest",
         "validate_path2_direct_lifecycle_boundary_report_v1",
         "path2_account_creation_proof_boundary_report_v1",
+        "path2_account_stark_fri_aok_boundary_report_v1",
         "path2_account_stark_fri_qrom_residual_report_v1",
         "path2_account_stark_residual_matrix_report_v1",
+        "validate_path2_account_stark_fri_aok_boundary_report_v1",
         "validate_path2_account_stark_fri_qrom_residual_report_v1",
+        "fri_aok_boundary_report_digest",
+        "FRI/AoK boundary",
         "checked_core_qrom_budget_pinned",
         "qrom_and_action_bounds_linked_to_theorem",
         "local_successor_state_model_pinned",
@@ -2545,6 +2630,21 @@ def check_account_stark_fri_qrom_residual_markers(errors: list[str]) -> None:
                 )
 
 
+def check_account_stark_fri_aok_boundary_markers(errors: list[str]) -> None:
+    for rel, markers in ACCOUNT_STARK_FRI_AOK_BOUNDARY_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"{rel}: missing account-STARK FRI/AoK boundary artifact")
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing account-STARK FRI/AoK boundary marker {marker!r}"
+                )
+
+
 def check_account_creation_sampler_timing_markers(errors: list[str]) -> None:
     for rel, markers in ACCOUNT_CREATION_SAMPLER_TIMING_MARKERS.items():
         path = ROOT / rel
@@ -2840,6 +2940,7 @@ def main() -> int:
     check_account_stark_payload_byte_model_markers(errors)
     check_account_stark_payload_kat_manifest_markers(errors)
     check_account_stark_fri_qrom_residual_markers(errors)
+    check_account_stark_fri_aok_boundary_markers(errors)
     check_account_creation_sampler_timing_markers(errors)
     check_account_creation_no_export_boundary_markers(errors)
     check_account_creation_proof_boundary_manifest_markers(errors)

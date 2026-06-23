@@ -293,6 +293,9 @@ fn manifest_body() -> Result<Value, String> {
                 "no_export_boundary_report_digest": hex_encode(
                     &proof_boundary_report.no_export_boundary_report_digest
                 ),
+                "account_stark_residual_matrix_report_digest": hex_encode(
+                    &proof_boundary_report.account_stark_residual_matrix_report_digest
+                ),
                 "accepting_requirement_count":
                     proof_boundary_report.accepting_requirements.len(),
                 "leaf_evidence_binding_field_count":

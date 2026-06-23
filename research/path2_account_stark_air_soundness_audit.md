@@ -13,8 +13,8 @@ that would let a FALSE statement accept.
 ## Headline
 
 **No CRITICAL "false statement accepts" hole in the AIR.** Contrary to the project's
-"internal proofs over-reach the as-built constraints" history, all 8 relation
-classes are genuinely wired into the constraint polynomial (not declared-only):
+"internal proofs over-reach the as-built constraints" history, all 8 relation classes
+are genuinely wired into the constraint polynomial (not declared-only):
 
 - Ranges/canonicity (account_projection, syndrome, masked_projection) are REAL
   base-128 / 14-bit decomposition + slack constraints; a lane ≥ q cannot pass.
@@ -64,8 +64,8 @@ edit dropping the `(d_hi-96)·inv = 1-is96` line is caught.
   rule-of-thumb over a ~124-bit challenge field, not a proven AoK bound (named-
   standard posture, consistent with the dossier).
 - **Knowledge extractor:** a fully-constrained AIR is necessary but NOT sufficient
-  for argument-of-knowledge; the FRI-IOP extractor (`p2_sis_extractor`-style)
-  remains the named standard/external obligation.
+  for the FRI argument-of-knowledge claim; the FRI-IOP extractor
+  (`p2_sis_extractor`-style) remains the named standard/external obligation.
 
 ## Remediation applied (2026-06-18, same session)
 

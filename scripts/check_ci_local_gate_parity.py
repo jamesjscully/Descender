@@ -205,6 +205,22 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ("path2_account_stark_fri_qrom_residual_consistency",),
     ),
     (
+        "account STARK FRI/AoK boundary manifest check",
+        (
+            "path2_account_stark_fri_aok_boundary_manifest",
+            "path2_account_stark_fri_aok_boundary_v1.json",
+        ),
+        (
+            "path2_account_stark_fri_aok_boundary_manifest",
+            "path2_account_stark_fri_aok_boundary_v1.json",
+        ),
+    ),
+    (
+        "account STARK FRI/AoK boundary consistency check",
+        ("path2_account_stark_fri_aok_boundary_consistency",),
+        ("path2_account_stark_fri_aok_boundary_consistency",),
+    ),
+    (
         "account-creation sampler timing manifest check",
         (
             "path2_account_creation_sampler_timing_manifest",
@@ -429,6 +445,18 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-PROOF-001",
         "DIR-PROOF-002",
         "DIR-QROM-001",
+    ),
+    "account STARK FRI/AoK boundary manifest check": (
+        "DIR-PROOF-001",
+        "DIR-PROOF-002",
+        "DIR-STARK-001",
+        "DIR-REVIEW-001",
+    ),
+    "account STARK FRI/AoK boundary consistency check": (
+        "DIR-PROOF-001",
+        "DIR-PROOF-002",
+        "DIR-STARK-001",
+        "DIR-REVIEW-001",
     ),
     "account-creation sampler timing manifest check": (
         "DIR-SEC-001",

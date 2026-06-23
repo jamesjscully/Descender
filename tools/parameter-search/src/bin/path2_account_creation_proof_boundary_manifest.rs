@@ -5,6 +5,8 @@ use descender_parameter_search::production_reference::{
     path2_account_creation_proof_boundary_report_v1_digest,
     path2_account_creation_sampler_timing_report_v1,
     path2_account_creation_sampler_timing_report_v1_digest,
+    path2_account_stark_fri_aok_boundary_report_v1,
+    path2_account_stark_fri_aok_boundary_report_v1_digest,
     path2_account_stark_fri_qrom_residual_report_v1,
     path2_account_stark_fri_qrom_residual_report_v1_digest,
     path2_account_stark_payload_kat_boundary_report_v1,
@@ -31,6 +33,7 @@ fn manifest_body() -> Result<Value, String> {
     let no_export_report = path2_account_creation_no_export_boundary_report_v1();
     let residual_matrix_report = path2_account_stark_residual_matrix_report_v1();
     let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
+    let fri_aok_boundary_report = path2_account_stark_fri_aok_boundary_report_v1();
     let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
 
     let recomputed_proof_boundary_digest =
@@ -57,6 +60,11 @@ fn manifest_body() -> Result<Value, String> {
         path2_account_stark_fri_qrom_residual_report_v1_digest(&fri_qrom_residual_report);
     if recomputed_fri_qrom_residual_digest != fri_qrom_residual_report.digest {
         return Err("account-STARK FRI/QROM residual report digest mismatch".to_string());
+    }
+    let recomputed_fri_aok_boundary_digest =
+        path2_account_stark_fri_aok_boundary_report_v1_digest(&fri_aok_boundary_report);
+    if recomputed_fri_aok_boundary_digest != fri_aok_boundary_report.digest {
+        return Err("account-STARK FRI/AoK boundary report digest mismatch".to_string());
     }
     let recomputed_payload_kat_boundary_digest =
         path2_account_stark_payload_kat_boundary_report_v1_digest(&payload_kat_boundary_report);
@@ -87,6 +95,18 @@ fn manifest_body() -> Result<Value, String> {
                 .to_string(),
         );
     }
+    if fri_aok_boundary_report.fri_qrom_residual_report_digest != fri_qrom_residual_report.digest {
+        return Err(
+            "FRI/AoK boundary report is not bound to the current FRI/QROM residual report"
+                .to_string(),
+        );
+    }
+    if residual_matrix_report.fri_aok_boundary_report_digest != fri_aok_boundary_report.digest {
+        return Err(
+            "residual matrix report is not bound to the current FRI/AoK boundary report"
+                .to_string(),
+        );
+    }
     if residual_matrix_report.payload_kat_boundary_report_digest
         != payload_kat_boundary_report.digest
     {
@@ -111,11 +131,16 @@ fn manifest_body() -> Result<Value, String> {
             "no_export_boundary_report_domain": no_export_report.domain,
             "residual_matrix_report_domain": residual_matrix_report.domain,
             "fri_qrom_residual_report_domain": fri_qrom_residual_report.domain,
+            "fri_aok_boundary_report_domain": fri_aok_boundary_report.domain,
             "payload_kat_boundary_report_domain": payload_kat_boundary_report.domain,
             "sampler_support_file": sampler_timing_report.sampler_support_file,
             "timing_support_file": sampler_timing_report.timing_support_file,
             "no_export_support_file": no_export_report.support_file,
             "no_export_named_break": no_export_report.named_break,
+            "fri_aok_support_file": fri_aok_boundary_report.support_file,
+            "fri_aok_named_break": fri_aok_boundary_report.named_break,
+            "fri_aok_extractor_theorem_target":
+                fri_aok_boundary_report.extractor_theorem_target,
             "sampler_theorem_target": sampler_timing_report.sampler_theorem_target,
             "timing_break_class": sampler_timing_report.timing_break_class,
             "selected_proof_family": residual_matrix_report.selected_proof_family,
@@ -163,6 +188,18 @@ fn manifest_body() -> Result<Value, String> {
             "account_stark_fri_qrom_residual_report_recomputed_digest": hex_encode(
                 &recomputed_fri_qrom_residual_digest
             ),
+            "account_stark_fri_aok_boundary_report_digest": hex_encode(
+                &fri_aok_boundary_report.digest
+            ),
+            "account_stark_fri_aok_boundary_report_recomputed_digest": hex_encode(
+                &recomputed_fri_aok_boundary_digest
+            ),
+            "fri_aok_boundary_report_fri_qrom_digest": hex_encode(
+                &fri_aok_boundary_report.fri_qrom_residual_report_digest
+            ),
+            "residual_matrix_report_fri_aok_digest": hex_encode(
+                &residual_matrix_report.fri_aok_boundary_report_digest
+            ),
             "payload_kat_boundary_report_digest": hex_encode(
                 &payload_kat_boundary_report.digest
             ),
@@ -177,6 +214,9 @@ fn manifest_body() -> Result<Value, String> {
                 ),
                 "no_export_boundary_report_digest": hex_encode(
                     &proof_boundary_report.no_export_boundary_report_digest
+                ),
+                "account_stark_residual_matrix_report_digest": hex_encode(
+                    &proof_boundary_report.account_stark_residual_matrix_report_digest
                 ),
                 "accepting_requirement_count":
                     proof_boundary_report.accepting_requirements.len(),
@@ -318,6 +358,9 @@ fn manifest_body() -> Result<Value, String> {
                 "fri_qrom_residual_report_digest": hex_encode(
                     &residual_matrix_report.fri_qrom_residual_report_digest
                 ),
+                "fri_aok_boundary_report_digest": hex_encode(
+                    &residual_matrix_report.fri_aok_boundary_report_digest
+                ),
                 "every_row_has_named_break":
                     residual_matrix_report.every_row_has_named_break,
                 "every_row_has_blocker": residual_matrix_report.every_row_has_blocker,
@@ -328,6 +371,45 @@ fn manifest_body() -> Result<Value, String> {
                 "deployment_ready": residual_matrix_report.deployment_ready
             },
             "rows": residual_matrix_report.rows
+        },
+        "fri_aok_boundary_snapshot": {
+            "coverage": {
+                "fri_qrom_residual_report_digest": hex_encode(
+                    &fri_aok_boundary_report.fri_qrom_residual_report_digest
+                ),
+                "air_relation_class_count":
+                    fri_aok_boundary_report.air_relation_class_count,
+                "med_findings_total": fri_aok_boundary_report.med_findings_total,
+                "med_findings_remediated":
+                    fri_aok_boundary_report.med_findings_remediated,
+                "context_binding_hardened_in_air":
+                    fri_aok_boundary_report.context_binding_hardened_in_air,
+                "packed_witness_binding_negative_tested":
+                    fri_aok_boundary_report.packed_witness_binding_negative_tested,
+                "c4_inverse_corner_regression_present":
+                    fri_aok_boundary_report.c4_inverse_corner_regression_present,
+                "air_false_accept_hole_found":
+                    fri_aok_boundary_report.air_false_accept_hole_found,
+                "fri_schedule_pinned": fri_aok_boundary_report.fri_schedule_pinned,
+                "challenge_field_pinned": fri_aok_boundary_report.challenge_field_pinned,
+                "fri_aok_extractor_theorem_instantiated":
+                    fri_aok_boundary_report.fri_aok_extractor_theorem_instantiated,
+                "accepting_proof_implies_extractable_witness":
+                    fri_aok_boundary_report.accepting_proof_implies_extractable_witness,
+                "external_extractor_review_complete":
+                    fri_aok_boundary_report.external_extractor_review_complete,
+                "deployment_ready": fri_aok_boundary_report.deployment_ready,
+                "blocker": fri_aok_boundary_report.blocker
+            },
+            "support_file": fri_aok_boundary_report.support_file,
+            "selected_proof_family": fri_aok_boundary_report.selected_proof_family,
+            "selected_payload_type": fri_aok_boundary_report.selected_payload_type,
+            "account_stark_config_source":
+                fri_aok_boundary_report.account_stark_config_source,
+            "proof_system": fri_aok_boundary_report.proof_system,
+            "residual_item": fri_aok_boundary_report.residual_item,
+            "extractor_theorem_target": fri_aok_boundary_report.extractor_theorem_target,
+            "named_break": fri_aok_boundary_report.named_break
         },
         "fri_qrom_residual_snapshot": {
             "coverage": {

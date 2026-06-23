@@ -85,13 +85,14 @@ payload_byte_model_manifest_tmp="$(mktemp)"
 payload_kat_manifest_tmp="$(mktemp)"
 payload_kat_vectors_tmp="$(mktemp)"
 fri_qrom_residual_manifest_tmp="$(mktemp)"
+fri_aok_boundary_manifest_tmp="$(mktemp)"
 sampler_timing_manifest_tmp="$(mktemp)"
 no_export_boundary_manifest_tmp="$(mktemp)"
 proof_boundary_manifest_tmp="$(mktemp)"
 direct_qrom_action_manifest_tmp="$(mktemp)"
 direct_lifecycle_manifest_tmp="$(mktemp)"
 direct_theorem_manifest_tmp="$(mktemp)"
-trap 'rm -f "$payload_byte_model_manifest_tmp" "$payload_kat_manifest_tmp" "$payload_kat_vectors_tmp" "$fri_qrom_residual_manifest_tmp" "$sampler_timing_manifest_tmp" "$no_export_boundary_manifest_tmp" "$proof_boundary_manifest_tmp" "$direct_qrom_action_manifest_tmp" "$direct_lifecycle_manifest_tmp" "$direct_theorem_manifest_tmp"' EXIT
+trap 'rm -f "$payload_byte_model_manifest_tmp" "$payload_kat_manifest_tmp" "$payload_kat_vectors_tmp" "$fri_qrom_residual_manifest_tmp" "$fri_aok_boundary_manifest_tmp" "$sampler_timing_manifest_tmp" "$no_export_boundary_manifest_tmp" "$proof_boundary_manifest_tmp" "$direct_qrom_action_manifest_tmp" "$direct_lifecycle_manifest_tmp" "$direct_theorem_manifest_tmp"' EXIT
 
 echo "== account STARK payload byte model manifest check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_stark_payload_byte_model_manifest > "$payload_byte_model_manifest_tmp"
@@ -107,6 +108,13 @@ diff -u formal/kat/path2_account_stark_fri_qrom_residual_v1.json "$fri_qrom_resi
 
 echo "== account STARK FRI/QROM residual consistency check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_stark_fri_qrom_residual_consistency
+
+echo "== account STARK FRI/AoK boundary manifest check =="
+cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_stark_fri_aok_boundary_manifest > "$fri_aok_boundary_manifest_tmp"
+diff -u formal/kat/path2_account_stark_fri_aok_boundary_v1.json "$fri_aok_boundary_manifest_tmp"
+
+echo "== account STARK FRI/AoK boundary consistency check =="
+cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_stark_fri_aok_boundary_consistency
 
 echo "== account-creation sampler timing manifest check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_sampler_timing_manifest > "$sampler_timing_manifest_tmp"

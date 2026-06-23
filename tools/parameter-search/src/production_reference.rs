@@ -313,6 +313,8 @@ pub const PATH2_ACCOUNT_CREATION_SAMPLER_TIMING_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountCreationSamplerTimingReport.v1";
 pub const PATH2_ACCOUNT_STARK_FRI_QROM_RESIDUAL_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountStarkFriQromResidualReport.v1";
+pub const PATH2_ACCOUNT_STARK_FRI_AOK_BOUNDARY_REPORT_DOMAIN: &str =
+    "Descender.Path2.AccountStarkFriAokBoundaryReport.v1";
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountStarkPayloadByteModelReport.v1";
 pub const PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN: &str =
@@ -9285,6 +9287,7 @@ pub struct Path2AccountStarkResidualMatrixReportV1 {
     pub domain: &'static str,
     pub payload_kat_boundary_report_digest: [u8; DIGEST_BYTES],
     pub fri_qrom_residual_report_digest: [u8; DIGEST_BYTES],
+    pub fri_aok_boundary_report_digest: [u8; DIGEST_BYTES],
     pub selected_proof_family: &'static str,
     pub selected_payload_type: &'static str,
     pub rows: &'static [Path2AccountStarkResidualMatrixRowV1],
@@ -9294,6 +9297,35 @@ pub struct Path2AccountStarkResidualMatrixReportV1 {
     pub production_gate_fail_closed: bool,
     pub legacy_routes_non_authoritative: bool,
     pub deployment_ready: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AccountStarkFriAokBoundaryReportV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub domain: &'static str,
+    pub support_file: &'static str,
+    pub selected_proof_family: &'static str,
+    pub selected_payload_type: &'static str,
+    pub account_stark_config_source: &'static str,
+    pub proof_system: &'static str,
+    pub residual_item: &'static str,
+    pub extractor_theorem_target: &'static str,
+    pub named_break: &'static str,
+    pub fri_qrom_residual_report_digest: [u8; DIGEST_BYTES],
+    pub air_relation_class_count: usize,
+    pub med_findings_total: usize,
+    pub med_findings_remediated: usize,
+    pub context_binding_hardened_in_air: bool,
+    pub packed_witness_binding_negative_tested: bool,
+    pub c4_inverse_corner_regression_present: bool,
+    pub air_false_accept_hole_found: bool,
+    pub fri_schedule_pinned: bool,
+    pub challenge_field_pinned: bool,
+    pub fri_aok_extractor_theorem_instantiated: bool,
+    pub accepting_proof_implies_extractable_witness: bool,
+    pub external_extractor_review_complete: bool,
+    pub deployment_ready: bool,
+    pub blocker: &'static str,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -10408,6 +10440,8 @@ pub const PATH2_ACCOUNT_CREATION_TIMING_SUPPORT_FILE: &str =
     "research/path2_no_postchallenge_creation_timing_game.md";
 pub const PATH2_ACCOUNT_CREATION_NO_EXPORT_SUPPORT_FILE: &str =
     "research/path2_fiber_privacy_no_export_v1.md";
+pub const PATH2_ACCOUNT_STARK_FRI_AOK_SUPPORT_FILE: &str =
+    "research/path2_account_stark_air_soundness_audit.md";
 pub const PATH2_ACCOUNT_CREATION_SAMPLER_THEOREM_TARGET: &str =
     "honest_create_sampler_sound_v1";
 pub const PATH2_ACCOUNT_CREATION_SAMPLER_CONSTRUCTION_STEPS: [&str; 8] = [
@@ -10937,16 +10971,91 @@ pub fn validate_path2_account_stark_fri_qrom_residual_report_v1(
     Ok(())
 }
 
+pub fn path2_account_stark_fri_aok_boundary_report_v1()
+-> Path2AccountStarkFriAokBoundaryReportV1 {
+    let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
+    let mut report = Path2AccountStarkFriAokBoundaryReportV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        domain: PATH2_ACCOUNT_STARK_FRI_AOK_BOUNDARY_REPORT_DOMAIN,
+        support_file: PATH2_ACCOUNT_STARK_FRI_AOK_SUPPORT_FILE,
+        selected_proof_family: "Plonky3/q12289 account-creation STARK",
+        selected_payload_type: "Path2AccountStarkCreationPayloadV1",
+        account_stark_config_source: PATH2_ACCOUNT_STARK_CONFIG_SOURCE,
+        proof_system: PATH2_ACCOUNT_STARK_PROOF_SYSTEM,
+        residual_item: "FRI argument-of-knowledge extractor",
+        extractor_theorem_target: "selected_plonky3_q12289_fri_iop_aok_extractor",
+        named_break: "account_stark_fri_aok_extractor_break",
+        fri_qrom_residual_report_digest: fri_qrom_residual_report.digest,
+        air_relation_class_count: 8,
+        med_findings_total: 3,
+        med_findings_remediated: 3,
+        context_binding_hardened_in_air: true,
+        packed_witness_binding_negative_tested: true,
+        c4_inverse_corner_regression_present: true,
+        air_false_accept_hole_found: false,
+        fri_schedule_pinned: fri_qrom_residual_report.fri_schedule_pinned,
+        challenge_field_pinned: fri_qrom_residual_report.challenge_field_pinned,
+        fri_aok_extractor_theorem_instantiated: false,
+        accepting_proof_implies_extractable_witness: false,
+        external_extractor_review_complete: false,
+        deployment_ready: false,
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_AOK_EXTRACTOR,
+    };
+    report.digest = path2_account_stark_fri_aok_boundary_report_v1_digest(&report);
+    report
+}
+
+pub fn path2_account_stark_fri_aok_boundary_report_v1_digest(
+    report: &Path2AccountStarkFriAokBoundaryReportV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_account_stark_fri_aok_boundary_report_v1_frame(report)).into()
+}
+
+pub fn validate_path2_account_stark_fri_aok_boundary_report_v1(
+    report: &Path2AccountStarkFriAokBoundaryReportV1,
+) -> Result<(), String> {
+    let expected = path2_account_stark_fri_aok_boundary_report_v1();
+    if expected != *report {
+        return Err("Path 2 account-STARK FRI/AoK boundary report mismatch".to_string());
+    }
+    if path2_account_stark_fri_aok_boundary_report_v1_digest(report) != report.digest {
+        return Err("Path 2 account-STARK FRI/AoK boundary report digest mismatch".to_string());
+    }
+    let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
+    if report.fri_qrom_residual_report_digest != fri_qrom_residual_report.digest {
+        return Err("Path 2 account-STARK FRI/AoK boundary FRI/QROM digest mismatch".to_string());
+    }
+    if !report.context_binding_hardened_in_air
+        || !report.packed_witness_binding_negative_tested
+        || !report.c4_inverse_corner_regression_present
+        || report.air_false_accept_hole_found
+        || !report.fri_schedule_pinned
+        || !report.challenge_field_pinned
+        || report.fri_aok_extractor_theorem_instantiated
+        || report.accepting_proof_implies_extractable_witness
+        || report.external_extractor_review_complete
+        || report.deployment_ready
+    {
+        return Err(
+            "Path 2 account-STARK FRI/AoK boundary unexpectedly changes closure status"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
 pub fn path2_account_stark_residual_matrix_report_v1()
 -> Path2AccountStarkResidualMatrixReportV1 {
     let rows = &PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS;
     let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
     let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
+    let fri_aok_boundary_report = path2_account_stark_fri_aok_boundary_report_v1();
     let mut report = Path2AccountStarkResidualMatrixReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN,
         payload_kat_boundary_report_digest: payload_kat_boundary_report.digest,
         fri_qrom_residual_report_digest: fri_qrom_residual_report.digest,
+        fri_aok_boundary_report_digest: fri_aok_boundary_report.digest,
         selected_proof_family: "Plonky3/q12289 account-creation STARK",
         selected_payload_type: "Path2AccountStarkCreationPayloadV1",
         rows,
@@ -10986,6 +11095,10 @@ pub fn validate_path2_account_stark_residual_matrix_report_v1(
     }
     if path2_account_stark_residual_matrix_report_v1_digest(report) != report.digest {
         return Err("Path 2 account-STARK residual matrix report digest mismatch".to_string());
+    }
+    let fri_aok_boundary_report = path2_account_stark_fri_aok_boundary_report_v1();
+    if report.fri_aok_boundary_report_digest != fri_aok_boundary_report.digest {
+        return Err("Path 2 account-STARK residual matrix FRI/AoK digest mismatch".to_string());
     }
     Ok(())
 }
@@ -64151,6 +64264,11 @@ fn path2_account_stark_residual_matrix_report_v1_frame(
     );
     append_frame(
         &mut frame,
+        b"fri_aok_boundary_report_digest",
+        &report.fri_aok_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
         b"selected_proof_family",
         report.selected_proof_family.as_bytes(),
     );
@@ -64357,6 +64475,110 @@ fn path2_account_stark_fri_qrom_residual_report_v1_frame(
         &mut frame,
         b"residual_pricing_complete",
         u64::from(report.residual_pricing_complete),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_ready",
+        u64::from(report.deployment_ready),
+    );
+    append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    frame
+}
+
+fn path2_account_stark_fri_aok_boundary_report_v1_frame(
+    report: &Path2AccountStarkFriAokBoundaryReportV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"domain", report.domain.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_frame(&mut frame, b"support_file", report.support_file.as_bytes());
+    append_frame(
+        &mut frame,
+        b"selected_proof_family",
+        report.selected_proof_family.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"selected_payload_type",
+        report.selected_payload_type.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"account_stark_config_source",
+        report.account_stark_config_source.as_bytes(),
+    );
+    append_frame(&mut frame, b"proof_system", report.proof_system.as_bytes());
+    append_frame(&mut frame, b"residual_item", report.residual_item.as_bytes());
+    append_frame(
+        &mut frame,
+        b"extractor_theorem_target",
+        report.extractor_theorem_target.as_bytes(),
+    );
+    append_frame(&mut frame, b"named_break", report.named_break.as_bytes());
+    append_frame(
+        &mut frame,
+        b"fri_qrom_residual_report_digest",
+        &report.fri_qrom_residual_report_digest,
+    );
+    append_u64(
+        &mut frame,
+        b"air_relation_class_count",
+        report.air_relation_class_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"med_findings_total",
+        report.med_findings_total as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"med_findings_remediated",
+        report.med_findings_remediated as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"context_binding_hardened_in_air",
+        u64::from(report.context_binding_hardened_in_air),
+    );
+    append_u64(
+        &mut frame,
+        b"packed_witness_binding_negative_tested",
+        u64::from(report.packed_witness_binding_negative_tested),
+    );
+    append_u64(
+        &mut frame,
+        b"c4_inverse_corner_regression_present",
+        u64::from(report.c4_inverse_corner_regression_present),
+    );
+    append_u64(
+        &mut frame,
+        b"air_false_accept_hole_found",
+        u64::from(report.air_false_accept_hole_found),
+    );
+    append_u64(
+        &mut frame,
+        b"fri_schedule_pinned",
+        u64::from(report.fri_schedule_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"challenge_field_pinned",
+        u64::from(report.challenge_field_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"fri_aok_extractor_theorem_instantiated",
+        u64::from(report.fri_aok_extractor_theorem_instantiated),
+    );
+    append_u64(
+        &mut frame,
+        b"accepting_proof_implies_extractable_witness",
+        u64::from(report.accepting_proof_implies_extractable_witness),
+    );
+    append_u64(
+        &mut frame,
+        b"external_extractor_review_complete",
+        u64::from(report.external_extractor_review_complete),
     );
     append_u64(
         &mut frame,
@@ -105517,6 +105739,77 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     }
 
     #[test]
+    fn path2_account_stark_fri_aok_boundary_report_pins_open_extractor_boundary() {
+        let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
+        let report = path2_account_stark_fri_aok_boundary_report_v1();
+        assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(
+            report.domain,
+            PATH2_ACCOUNT_STARK_FRI_AOK_BOUNDARY_REPORT_DOMAIN
+        );
+        assert_eq!(
+            report.support_file,
+            PATH2_ACCOUNT_STARK_FRI_AOK_SUPPORT_FILE
+        );
+        assert_eq!(
+            report.selected_proof_family,
+            "Plonky3/q12289 account-creation STARK"
+        );
+        assert_eq!(
+            report.selected_payload_type,
+            "Path2AccountStarkCreationPayloadV1"
+        );
+        assert_eq!(
+            report.account_stark_config_source,
+            PATH2_ACCOUNT_STARK_CONFIG_SOURCE
+        );
+        assert_eq!(report.proof_system, PATH2_ACCOUNT_STARK_PROOF_SYSTEM);
+        assert_eq!(
+            report.residual_item,
+            "FRI argument-of-knowledge extractor"
+        );
+        assert_eq!(
+            report.extractor_theorem_target,
+            "selected_plonky3_q12289_fri_iop_aok_extractor"
+        );
+        assert_eq!(report.named_break, "account_stark_fri_aok_extractor_break");
+        assert_eq!(
+            report.fri_qrom_residual_report_digest,
+            fri_qrom_residual_report.digest
+        );
+        assert_eq!(report.air_relation_class_count, 8);
+        assert_eq!(report.med_findings_total, 3);
+        assert_eq!(report.med_findings_remediated, 3);
+        assert!(report.context_binding_hardened_in_air);
+        assert!(report.packed_witness_binding_negative_tested);
+        assert!(report.c4_inverse_corner_regression_present);
+        assert!(!report.air_false_accept_hole_found);
+        assert!(report.fri_schedule_pinned);
+        assert!(report.challenge_field_pinned);
+        assert!(!report.fri_aok_extractor_theorem_instantiated);
+        assert!(!report.accepting_proof_implies_extractable_witness);
+        assert!(!report.external_extractor_review_complete);
+        assert!(!report.deployment_ready);
+        assert_eq!(
+            report.blocker,
+            PRODUCTION_DEPLOYMENT_BLOCKER_ACCOUNT_STARK_FRI_AOK_EXTRACTOR
+        );
+        assert_eq!(
+            path2_account_stark_fri_aok_boundary_report_v1_digest(&report),
+            report.digest
+        );
+        validate_path2_account_stark_fri_aok_boundary_report_v1(&report).unwrap();
+
+        let mut malformed = report.clone();
+        malformed.fri_aok_extractor_theorem_instantiated = true;
+        malformed.digest = path2_account_stark_fri_aok_boundary_report_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_account_stark_fri_aok_boundary_report_v1(&malformed).unwrap_err(),
+            "Path 2 account-STARK FRI/AoK boundary report mismatch"
+        );
+    }
+
+    #[test]
     fn path2_direct_qrom_action_boundary_report_pins_checked_core_budget() {
         let report = path2_direct_qrom_action_boundary_report_v1();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
@@ -105602,6 +105895,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     fn path2_account_stark_residual_matrix_report_pins_open_rows() {
         let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
         let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
+        let fri_aok_boundary_report = path2_account_stark_fri_aok_boundary_report_v1();
         let report = path2_account_stark_residual_matrix_report_v1();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
         assert_eq!(report.domain, PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN);
@@ -105612,6 +105906,10 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert_eq!(
             report.fri_qrom_residual_report_digest,
             fri_qrom_residual_report.digest
+        );
+        assert_eq!(
+            report.fri_aok_boundary_report_digest,
+            fri_aok_boundary_report.digest
         );
         assert_eq!(
             report.selected_proof_family,

@@ -39,6 +39,7 @@
       ],
       "coverage": {
         "accepting_requirement_count": 10,
+        "account_stark_residual_matrix_report_digest": "9dceb234159b455b5f95e39b236d199bd0023fb4558bc60d70fe06d265b80623",
         "active_payload_mutation_coverage_present": true,
         "binding_leaf_context_field_count": 9,
         "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
@@ -108,6 +109,10 @@
       ]
     },
     "authority_snapshot": {
+      "fri_aok_boundary_report_domain": "Descender.Path2.AccountStarkFriAokBoundaryReport.v1",
+      "fri_aok_extractor_theorem_target": "selected_plonky3_q12289_fri_iop_aok_extractor",
+      "fri_aok_named_break": "account_stark_fri_aok_extractor_break",
+      "fri_aok_support_file": "research/path2_account_stark_air_soundness_audit.md",
       "fri_qrom_residual_report_domain": "Descender.Path2.AccountStarkFriQromResidualReport.v1",
       "no_export_boundary_report_domain": "Descender.Path2.AccountCreationNoExportBoundaryReport.v1",
       "no_export_named_break": "account_stark_simulator_or_no_export_break",
@@ -133,18 +138,49 @@
     "digests": {
       "account_creation_no_export_boundary_report_digest": "849fe25eb5799f9d929f38f2ffc37e423aee4f2bb64ef01dc220fd57bdec33ef",
       "account_creation_no_export_boundary_report_recomputed_digest": "849fe25eb5799f9d929f38f2ffc37e423aee4f2bb64ef01dc220fd57bdec33ef",
-      "account_creation_proof_boundary_report_digest": "c507c94b110f0e05ab544127750f10e12cdcc29e4d20d692c59ab68eff21de37",
-      "account_creation_proof_boundary_report_recomputed_digest": "c507c94b110f0e05ab544127750f10e12cdcc29e4d20d692c59ab68eff21de37",
+      "account_creation_proof_boundary_report_digest": "6ab987075cbad5b30233c58a066bb7632636f4df2e78485ff1eeeb53393c124b",
+      "account_creation_proof_boundary_report_recomputed_digest": "6ab987075cbad5b30233c58a066bb7632636f4df2e78485ff1eeeb53393c124b",
       "account_creation_sampler_timing_report_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
       "account_creation_sampler_timing_report_recomputed_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
+      "account_stark_fri_aok_boundary_report_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753",
+      "account_stark_fri_aok_boundary_report_recomputed_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753",
       "account_stark_fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
       "account_stark_fri_qrom_residual_report_recomputed_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
-      "account_stark_residual_matrix_report_digest": "50a9c5a487d98dbe91eb1b5accc7d64eb4902d7bfa2b570e81f7dcf97ec4bc70",
-      "account_stark_residual_matrix_report_recomputed_digest": "50a9c5a487d98dbe91eb1b5accc7d64eb4902d7bfa2b570e81f7dcf97ec4bc70",
+      "account_stark_residual_matrix_report_digest": "9dceb234159b455b5f95e39b236d199bd0023fb4558bc60d70fe06d265b80623",
+      "account_stark_residual_matrix_report_recomputed_digest": "9dceb234159b455b5f95e39b236d199bd0023fb4558bc60d70fe06d265b80623",
+      "fri_aok_boundary_report_fri_qrom_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
       "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
       "payload_kat_boundary_report_recomputed_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
       "proof_boundary_report_no_export_digest": "849fe25eb5799f9d929f38f2ffc37e423aee4f2bb64ef01dc220fd57bdec33ef",
-      "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
+      "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b",
+      "residual_matrix_report_fri_aok_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753"
+    },
+    "fri_aok_boundary_snapshot": {
+      "account_stark_config_source": "tools/descender-account-stark/src/config.rs",
+      "coverage": {
+        "accepting_proof_implies_extractable_witness": false,
+        "air_false_accept_hole_found": false,
+        "air_relation_class_count": 8,
+        "blocker": "account-STARK residual matrix: selected Plonky3/q12289 FRI argument-of-knowledge extractor theorem is not instantiated",
+        "c4_inverse_corner_regression_present": true,
+        "challenge_field_pinned": true,
+        "context_binding_hardened_in_air": true,
+        "deployment_ready": false,
+        "external_extractor_review_complete": false,
+        "fri_aok_extractor_theorem_instantiated": false,
+        "fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
+        "fri_schedule_pinned": true,
+        "med_findings_remediated": 3,
+        "med_findings_total": 3,
+        "packed_witness_binding_negative_tested": true
+      },
+      "extractor_theorem_target": "selected_plonky3_q12289_fri_iop_aok_extractor",
+      "named_break": "account_stark_fri_aok_extractor_break",
+      "proof_system": "Plonky3 HidingFriPcs over KoalaBear with Poseidon2-Merkle and DuplexChallenger",
+      "residual_item": "FRI argument-of-knowledge extractor",
+      "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
+      "selected_proof_family": "Plonky3/q12289 account-creation STARK",
+      "support_file": "research/path2_account_stark_air_soundness_audit.md"
     },
     "fri_qrom_residual_snapshot": {
       "checked_core_qrom_budget": {
@@ -302,6 +338,7 @@
         "deployment_ready": false,
         "every_row_has_blocker": true,
         "every_row_has_named_break": true,
+        "fri_aok_boundary_report_digest": "a517bf76810fe56f44b7d52bd7fd53312b89bc8417cf149ac23fef0e5eb23753",
         "fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
         "legacy_routes_non_authoritative": true,
         "production_gate_fail_closed": true
@@ -366,5 +403,5 @@
       ]
     }
   },
-  "manifest_digest": "ad6f304d7fc4e82728b1e30ba278c6fc5e60e5409d8a935d44857df993c9bf51"
+  "manifest_digest": "27252162fe9dd34d1fd74e82e96815acace876ca224a579630090d16d89f3488"
 }

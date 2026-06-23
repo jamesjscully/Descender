@@ -97,6 +97,26 @@ fn check_consistency() -> Result<(), String> {
     expect_eq(
         get(
             proof_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "coverage",
+                "account_stark_residual_matrix_report_digest",
+            ],
+        )?,
+        "proof.manifest.account_creation_proof_boundary.coverage.account_stark_residual_matrix_report_digest",
+        get(
+            direct_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "coverage",
+                "account_stark_residual_matrix_report_digest",
+            ],
+        )?,
+        "direct.manifest.account_creation_proof_boundary.coverage.account_stark_residual_matrix_report_digest",
+    )?;
+    expect_eq(
+        get(
+            proof_manifest,
             &["authority_snapshot", "proof_boundary_report_domain"],
         )?,
         "proof.manifest.authority_snapshot.proof_boundary_report_domain",
@@ -171,6 +191,24 @@ fn check_consistency() -> Result<(), String> {
         proof_manifest,
         &[
             "selected_account_stark_residual_matrix",
+            "coverage",
+            "deployment_ready",
+        ],
+        false,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "fri_aok_boundary_snapshot",
+            "coverage",
+            "fri_aok_extractor_theorem_instantiated",
+        ],
+        false,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "fri_aok_boundary_snapshot",
             "coverage",
             "deployment_ready",
         ],
