@@ -43,7 +43,11 @@ check accepted-artifact equality, bind every generated proof/direct boundary
 copy of the accepted composition artifact plus requirement- and
 obligation-corpus evidence back to standalone compact artifacts, and keep both
 proof-boundary and direct-theorem closure-dependency rows pinned to their open
-obligations/support surfaces. The shared
+obligations/support surfaces. The accepted-composition artifact now also
+carries a nine-row accepted-hypothesis evidence checklist: eight positive
+accepted-path hypotheses are checked by the deterministic composition KAT, and
+the public-rejection hypothesis remains explicitly deferred to the rejection
+KAT suite. The shared
 boundary-manifest gate also checks embedded requirement, proof-obligation, and
 direct-obligation corpus evidence against standalone corpus-evidence objects,
 while the preflight gate checks open-row blockers, fail-closed flags, the

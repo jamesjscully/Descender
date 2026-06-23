@@ -123,6 +123,10 @@ The artifact records the full accepted evidence digest chain, including the
 selected account-creation payload digest, proof-boundary evidence digest,
 direct spend tuple digest, leaf/evidence transcript digests, admission
 namespace, authorization digest, and consume-once before/after state digests.
+It also records a nine-row accepted-hypothesis evidence checklist: the eight
+positive accepted-path hypotheses must have concrete accepted-path evidence,
+while the public rejection/state-preservation hypothesis is explicitly marked
+as deferred to the direct rejection KAT suite.
 The consistency gate also checks the direct spend tuple digest against the
 standalone tuple artifact and the selected payload digest against the
 account-STARK payload KAT vector corpus. The accepted proof-boundary, accepted

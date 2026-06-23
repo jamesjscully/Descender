@@ -179,8 +179,8 @@
       "account_creation_accepted_proof_boundary_evidence_digest": "7614252bec3b83c2fc0208e413cee44c7eac6949d50e8a55ca7dce334558419a",
       "account_creation_proof_boundary_report_digest": "0b4bed2c5db83357a0216d7b619b2a85e811a34c72b94a01dc2925ad4aabbec1",
       "account_creation_proof_boundary_report_recomputed_digest": "0b4bed2c5db83357a0216d7b619b2a85e811a34c72b94a01dc2925ad4aabbec1",
-      "artifact_manifest_digest": "7035b2bb4d5c1f1aeea1773ffa100673eeabaff0c2a0c776b6fa6e303f58e31e",
-      "artifact_manifest_recomputed_digest": "7035b2bb4d5c1f1aeea1773ffa100673eeabaff0c2a0c776b6fa6e303f58e31e",
+      "artifact_manifest_digest": "581afe1e2e7f44ead9724809c03c3a446ce45cf4e1b2de20f5806892cb622e6d",
+      "artifact_manifest_recomputed_digest": "581afe1e2e7f44ead9724809c03c3a446ce45cf4e1b2de20f5806892cb622e6d",
       "artifact_path": "formal/kat/path2_direct_accepted_composition_evidence_v1.json",
       "artifact_schema": "Descender.Path2.DirectAcceptedCompositionDeterministicKatEvidenceManifest.v1",
       "artifact_status": "digest_pinned_deterministic_kat_accepted_direct_composition_evidence",
@@ -245,8 +245,8 @@
       "direct_accepted_spend_tuple_evidence_digest": "688703d1eb11cada10f3390f51f1cdb40beb711a4ffcc9f4a1f90a3aa606efeb",
       "direct_theorem_boundary_report_digest": "a7ae9f92bd9af0406f39e058614d594605f3704e5f3c9605ce6418ff9b736c15",
       "direct_theorem_boundary_report_recomputed_digest": "a7ae9f92bd9af0406f39e058614d594605f3704e5f3c9605ce6418ff9b736c15",
-      "evidence_digest": "b522b48b4259c0a1a19e39706f40177e19233a23f2a6682621a84da3a1536d26",
-      "evidence_recomputed_digest": "b522b48b4259c0a1a19e39706f40177e19233a23f2a6682621a84da3a1536d26",
+      "evidence_digest": "5c6cdfd0f743c7dbab208ea0bc515dbaf94749d9250305036c675e6235547d4c",
+      "evidence_recomputed_digest": "5c6cdfd0f743c7dbab208ea0bc515dbaf94749d9250305036c675e6235547d4c",
       "evidence_schema": "Descender.Path2.DirectAcceptedCompositionEvidence.v1",
       "schema": "Descender.Path2.DirectAcceptedCompositionEvidenceArtifact.v1",
       "status": "digest_pinned_accepted_direct_composition_evidence_artifact"
@@ -434,5 +434,5 @@
     "schema": "Descender.Path2.AccountCreationProofObligationVectors.v1",
     "status": "digest_pinned_proof_obligation_audit_vectors"
   },
-  "corpus_digest": "25bc23ba96c4984eca9a8c5e9dc34532d9f080f68629a750eff8ecd84150056d"
+  "corpus_digest": "41d438d89686321d03f4f6328ff571a28d162e7eecb1f5cfc5bb7de47ad10f5f"
 }

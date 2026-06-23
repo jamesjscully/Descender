@@ -355,8 +355,12 @@ spend tuple together, embeds the accepted proof-boundary and direct-spend tuple
 artifacts, then digest-pins the full accepted evidence chain: accepted
 proof-boundary evidence digest, accepted spend tuple digest, selected payload
 digest, leaf/evidence transcript digests, admission namespace, authorization
-digest, consume-once before/after state digests, and fail-closed deployment
-flags. The generator and consistency checker install a one-thread
+digest, consume-once before/after state digests, the accepted-hypothesis
+evidence checklist, and fail-closed deployment flags. The checklist has one row
+for each direct-theorem acceptance hypothesis: eight positive accepted-path
+rows must be covered by the composition KAT, and the public-rejection row must
+remain explicitly deferred to the rejection KAT suite. The generator and
+consistency checker install a one-thread
 Rayon pool so the fixed account-STARK proof seed also fixes Plonky3
 proof-of-work witness selection. The
 `path2_direct_accepted_composition_evidence_consistency` gate checks the
@@ -369,7 +373,9 @@ embedded accepted spend tuple artifact against
 generated proof/direct boundary manifest copy of the accepted-composition
 artifact still matches the standalone compact artifact, and ties the selected
 payload digest back to the
-`path2_account_stark_payload_kat_vectors_v1.json` honest payload. This is
+`path2_account_stark_payload_kat_vectors_v1.json` honest payload. It also
+checks the nine-row accepted-hypothesis evidence checklist, including the
+eight-positive/one-deferred split. This is
 accepted-path KAT evidence only; it does not instantiate the direct composition
 theorem, prove the account-creation proof family, or change the fresh-randomized
 deployment producer.

@@ -9805,6 +9805,17 @@ pub struct Path2DirectAcceptedSpendTupleKatEvidenceV1 {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2DirectAcceptedCompositionHypothesisEvidenceRowV1 {
+    pub acceptance_hypothesis: &'static str,
+    pub direct_obligation_id: &'static str,
+    pub accepted_path_evidence_source: &'static str,
+    pub accepted_path_check: &'static str,
+    pub accepted_path_evidence_present: bool,
+    pub separate_rejection_evidence_required: bool,
+    pub theorem_obligation_still_open: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2DirectAcceptedCompositionEvidenceV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub schema: &'static str,
@@ -9839,6 +9850,12 @@ pub struct Path2DirectAcceptedCompositionEvidenceV1 {
     pub verifier_boundary_accepts_creation: bool,
     pub direct_spend_tuple_accepts: bool,
     pub public_result_accepts_same_slot: bool,
+    pub accepted_hypothesis_evidence_rows:
+        Vec<Path2DirectAcceptedCompositionHypothesisEvidenceRowV1>,
+    pub accepted_hypothesis_evidence_count: usize,
+    pub positive_acceptance_hypothesis_evidence_count: usize,
+    pub every_positive_acceptance_hypothesis_has_accepted_path_evidence: bool,
+    pub public_rejection_hypothesis_deferred_to_rejection_kats: bool,
     pub direct_theorem_obligations_still_open: bool,
     pub proof_family_obligations_still_open: bool,
     pub composition_theorem_instantiated: bool,
@@ -66021,6 +66038,124 @@ pub fn path2_direct_accepted_spend_tuple_kat_evidence_v1(
     })
 }
 
+fn path2_direct_obligation_still_open_for_hypothesis_v1(
+    direct_report: &Path2DirectTheoremBoundaryReportV1,
+    direct_obligation_id: &str,
+    acceptance_hypothesis: &str,
+) -> bool {
+    direct_report.obligation_rows.iter().any(|row| {
+        row.obligation_id == direct_obligation_id
+            && row.acceptance_hypothesis == acceptance_hypothesis
+            && row.open
+    })
+}
+
+fn path2_direct_accepted_composition_hypothesis_evidence_rows_v1(
+    evidence: &Path2DirectAcceptedCompositionEvidenceV1,
+    direct_report: &Path2DirectTheoremBoundaryReportV1,
+) -> Vec<Path2DirectAcceptedCompositionHypothesisEvidenceRowV1> {
+    let row =
+        |acceptance_hypothesis: &'static str,
+         direct_obligation_id: &'static str,
+         accepted_path_evidence_source: &'static str,
+         accepted_path_check: &'static str,
+         accepted_path_evidence_present: bool,
+         separate_rejection_evidence_required: bool| {
+            Path2DirectAcceptedCompositionHypothesisEvidenceRowV1 {
+                acceptance_hypothesis,
+                direct_obligation_id,
+                accepted_path_evidence_source,
+                accepted_path_check,
+                accepted_path_evidence_present,
+                separate_rejection_evidence_required,
+                theorem_obligation_still_open:
+                    path2_direct_obligation_still_open_for_hypothesis_v1(
+                        direct_report,
+                        direct_obligation_id,
+                        acceptance_hypothesis,
+                    ),
+            }
+        };
+
+    vec![
+        row(
+            "leaf_is_canonical_and_live",
+            "direct_obligation_leaf_canonical_live",
+            "accepted composition leaf digest and direct verifier accepted tuple",
+            "creation_evidence_matches_direct_tuple && direct_spend_tuple_accepts",
+            evidence.creation_evidence_matches_direct_tuple && evidence.direct_spend_tuple_accepts,
+            false,
+        ),
+        row(
+            "evidence_envelope_matches_leaf_bindings",
+            "direct_obligation_evidence_leaf_bindings",
+            "accepted account-creation proof-boundary evidence and direct tuple digest",
+            "creation_evidence_matches_direct_tuple && proof_boundary_digest_matches_direct_theorem",
+            evidence.creation_evidence_matches_direct_tuple
+                && evidence.proof_boundary_digest_matches_direct_theorem,
+            false,
+        ),
+        row(
+            "slot_authorization_digest_matches_canonical_leaf",
+            "direct_obligation_slot_authorization_digest",
+            "accepted tuple slot_authorization_digest and admission namespace digest",
+            "direct_admission_namespace_matches_authorization && direct_spend_tuple_accepts",
+            evidence.direct_admission_namespace_matches_authorization
+                && evidence.direct_spend_tuple_accepts,
+            false,
+        ),
+        row(
+            "selected_creation_verifier_accepted_before_spend_challenge",
+            "direct_obligation_creation_before_challenge",
+            "accepted composition orders account-creation boundary acceptance before direct spend tuple verification",
+            "verifier_boundary_accepts_creation && direct_spend_tuple_accepts",
+            evidence.verifier_boundary_accepts_creation && evidence.direct_spend_tuple_accepts,
+            false,
+        ),
+        row(
+            "direct_admission_namespace_contains_exact_tuple",
+            "direct_obligation_admission_namespace",
+            "direct admission namespace record digest",
+            "direct_admission_namespace_matches_authorization",
+            evidence.direct_admission_namespace_matches_authorization,
+            false,
+        ),
+        row(
+            "checked_core_challenge_binds_public_spend_context",
+            "direct_obligation_checked_core_frame_binding",
+            "direct spend tuple digest and public result wrapper acceptance",
+            "direct_spend_tuple_accepts && public_result_accepts_same_slot",
+            evidence.direct_spend_tuple_accepts && evidence.public_result_accepts_same_slot,
+            false,
+        ),
+        row(
+            "checked_core_verification_accepts_poseidon2_and_fq12_action",
+            "direct_obligation_checked_core_acceptance",
+            "accepted direct spend tuple and QROM/action boundary digest",
+            "direct_spend_tuple_accepts && qrom_action_digest_matches_direct_theorem",
+            evidence.direct_spend_tuple_accepts && evidence.qrom_action_digest_matches_direct_theorem,
+            false,
+        ),
+        row(
+            "lifecycle_transition_consumes_authorization_once",
+            "direct_obligation_consume_once",
+            "consume-once before/after state digests",
+            "consume_once_transition_matches_tuple && lifecycle_digest_matches_direct_theorem",
+            evidence.consume_once_transition_matches_tuple
+                && evidence.lifecycle_digest_matches_direct_theorem,
+            false,
+        ),
+        row(
+            "rejection_is_deterministic_public_and_state_preserving",
+            "direct_obligation_public_rejection",
+            "direct public rejection KAT suite",
+            "not a happy-path composition property; covered by direct rejection KAT gates",
+            false,
+            true,
+        ),
+    ]
+}
+
 #[cfg(feature = "account-creation-stark-verifier")]
 pub fn path2_direct_accepted_composition_evidence_v1(
 ) -> Result<Path2DirectAcceptedCompositionEvidenceV1, String> {
@@ -66136,6 +66271,11 @@ pub fn path2_direct_accepted_composition_evidence_v1(
         verifier_boundary_accepts_creation: creation_evidence.verifier_boundary_accepts,
         direct_spend_tuple_accepts,
         public_result_accepts_same_slot,
+        accepted_hypothesis_evidence_rows: Vec::new(),
+        accepted_hypothesis_evidence_count: 0,
+        positive_acceptance_hypothesis_evidence_count: 0,
+        every_positive_acceptance_hypothesis_has_accepted_path_evidence: false,
+        public_rejection_hypothesis_deferred_to_rejection_kats: false,
         direct_theorem_obligations_still_open,
         proof_family_obligations_still_open: creation_evidence
             .proof_family_obligations_still_open,
@@ -66143,6 +66283,35 @@ pub fn path2_direct_accepted_composition_evidence_v1(
         account_creation_proof_boundary_verified: false,
         deployment_ready: false,
     };
+    evidence.accepted_hypothesis_evidence_rows =
+        path2_direct_accepted_composition_hypothesis_evidence_rows_v1(&evidence, &direct_report);
+    evidence.accepted_hypothesis_evidence_count =
+        evidence.accepted_hypothesis_evidence_rows.len();
+    evidence.positive_acceptance_hypothesis_evidence_count = evidence
+        .accepted_hypothesis_evidence_rows
+        .iter()
+        .filter(|row| {
+            row.accepted_path_evidence_present && !row.separate_rejection_evidence_required
+        })
+        .count();
+    evidence.every_positive_acceptance_hypothesis_has_accepted_path_evidence =
+        evidence.accepted_hypothesis_evidence_count == PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.len()
+            && evidence.positive_acceptance_hypothesis_evidence_count == 8
+            && evidence
+                .accepted_hypothesis_evidence_rows
+                .iter()
+                .filter(|row| !row.separate_rejection_evidence_required)
+                .all(|row| row.accepted_path_evidence_present && row.theorem_obligation_still_open);
+    evidence.public_rejection_hypothesis_deferred_to_rejection_kats = evidence
+        .accepted_hypothesis_evidence_rows
+        .iter()
+        .any(|row| {
+            row.acceptance_hypothesis == "rejection_is_deterministic_public_and_state_preserving"
+                && row.direct_obligation_id == "direct_obligation_public_rejection"
+                && !row.accepted_path_evidence_present
+                && row.separate_rejection_evidence_required
+                && row.theorem_obligation_still_open
+        });
     evidence.digest = path2_direct_accepted_composition_evidence_v1_digest(&evidence);
     Ok(evidence)
 }
@@ -66443,6 +66612,22 @@ pub fn validate_path2_direct_accepted_composition_evidence_v1(
                 .to_string(),
         );
     }
+    let expected_hypothesis_rows =
+        path2_direct_accepted_composition_hypothesis_evidence_rows_v1(evidence, &direct_report);
+    if evidence.accepted_hypothesis_evidence_rows != expected_hypothesis_rows
+        || evidence.accepted_hypothesis_evidence_count
+            != PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.len()
+        || evidence.accepted_hypothesis_evidence_count
+            != evidence.accepted_hypothesis_evidence_rows.len()
+        || evidence.positive_acceptance_hypothesis_evidence_count != 8
+        || !evidence.every_positive_acceptance_hypothesis_has_accepted_path_evidence
+        || !evidence.public_rejection_hypothesis_deferred_to_rejection_kats
+    {
+        return Err(
+            "Path 2 direct accepted composition evidence lost hypothesis evidence rows"
+                .to_string(),
+        );
+    }
 
     let required_true = [
         (
@@ -66480,6 +66665,14 @@ pub fn validate_path2_direct_accepted_composition_evidence_v1(
         (
             "public_result_accepts_same_slot",
             evidence.public_result_accepts_same_slot,
+        ),
+        (
+            "every_positive_acceptance_hypothesis_has_accepted_path_evidence",
+            evidence.every_positive_acceptance_hypothesis_has_accepted_path_evidence,
+        ),
+        (
+            "public_rejection_hypothesis_deferred_to_rejection_kats",
+            evidence.public_rejection_hypothesis_deferred_to_rejection_kats,
         ),
         (
             "direct_theorem_obligations_still_open",
@@ -69737,6 +69930,72 @@ pub fn path2_direct_accepted_composition_evidence_v1_frame(
         &mut frame,
         b"public_result_accepts_same_slot",
         u64::from(evidence.public_result_accepts_same_slot),
+    );
+    for (index, row) in evidence
+        .accepted_hypothesis_evidence_rows
+        .iter()
+        .enumerate()
+    {
+        append_u64(
+            &mut frame,
+            b"accepted_hypothesis_evidence_row_index",
+            index as u64,
+        );
+        append_frame(
+            &mut frame,
+            b"accepted_hypothesis",
+            row.acceptance_hypothesis.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"direct_obligation_id",
+            row.direct_obligation_id.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"accepted_path_evidence_source",
+            row.accepted_path_evidence_source.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"accepted_path_check",
+            row.accepted_path_check.as_bytes(),
+        );
+        append_u64(
+            &mut frame,
+            b"accepted_path_evidence_present",
+            u64::from(row.accepted_path_evidence_present),
+        );
+        append_u64(
+            &mut frame,
+            b"separate_rejection_evidence_required",
+            u64::from(row.separate_rejection_evidence_required),
+        );
+        append_u64(
+            &mut frame,
+            b"theorem_obligation_still_open",
+            u64::from(row.theorem_obligation_still_open),
+        );
+    }
+    append_u64(
+        &mut frame,
+        b"accepted_hypothesis_evidence_count",
+        evidence.accepted_hypothesis_evidence_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"positive_acceptance_hypothesis_evidence_count",
+        evidence.positive_acceptance_hypothesis_evidence_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"every_positive_acceptance_hypothesis_has_accepted_path_evidence",
+        u64::from(evidence.every_positive_acceptance_hypothesis_has_accepted_path_evidence),
+    );
+    append_u64(
+        &mut frame,
+        b"public_rejection_hypothesis_deferred_to_rejection_kats",
+        u64::from(evidence.public_rejection_hypothesis_deferred_to_rejection_kats),
     );
     append_u64(
         &mut frame,

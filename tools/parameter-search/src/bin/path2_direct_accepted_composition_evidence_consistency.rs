@@ -16,7 +16,7 @@ mod enabled {
             validate_path2_direct_accepted_composition_evidence_v1,
         },
     };
-    use serde_json::Value;
+    use serde_json::{to_value, Value};
     use sha2::{Digest, Sha256};
     use std::{
         fs,
@@ -424,6 +424,8 @@ mod enabled {
             "/evidence/verifier_boundary_accepts_creation",
             "/evidence/direct_spend_tuple_accepts",
             "/evidence/public_result_accepts_same_slot",
+            "/evidence/every_positive_acceptance_hypothesis_has_accepted_path_evidence",
+            "/evidence/public_rejection_hypothesis_deferred_to_rejection_kats",
             "/evidence/direct_theorem_obligations_still_open",
             "/evidence/proof_family_obligations_still_open",
         ] {
@@ -432,6 +434,24 @@ mod enabled {
                     "direct accepted composition manifest unexpectedly lost true flag {pointer}"
                 ));
             }
+        }
+        let expected_hypothesis_rows = to_value(&evidence.accepted_hypothesis_evidence_rows)
+            .map_err(|err| format!("serialize accepted hypothesis evidence rows: {err}"))?;
+        if u64_at(body, "/evidence/accepted_hypothesis_evidence_count")?
+            != evidence.accepted_hypothesis_evidence_count as u64
+            || u64_at(
+                body,
+                "/evidence/positive_acceptance_hypothesis_evidence_count",
+            )? != evidence.positive_acceptance_hypothesis_evidence_count as u64
+            || evidence.accepted_hypothesis_evidence_count != 9
+            || evidence.positive_acceptance_hypothesis_evidence_count != 8
+            || at(body, "/evidence/accepted_hypothesis_evidence_rows")?
+                != &expected_hypothesis_rows
+        {
+            return Err(
+                "direct accepted composition manifest lost accepted-hypothesis evidence rows"
+                    .to_string(),
+            );
         }
         for pointer in [
             "/evidence/composition_theorem_instantiated",

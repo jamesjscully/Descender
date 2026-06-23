@@ -161,6 +161,16 @@ mod enabled {
                 "direct_spend_tuple_accepts": evidence.direct_spend_tuple_accepts,
                 "public_result_accepts_same_slot":
                     evidence.public_result_accepts_same_slot,
+                "accepted_hypothesis_evidence_rows":
+                    evidence.accepted_hypothesis_evidence_rows,
+                "accepted_hypothesis_evidence_count":
+                    evidence.accepted_hypothesis_evidence_count,
+                "positive_acceptance_hypothesis_evidence_count":
+                    evidence.positive_acceptance_hypothesis_evidence_count,
+                "every_positive_acceptance_hypothesis_has_accepted_path_evidence":
+                    evidence.every_positive_acceptance_hypothesis_has_accepted_path_evidence,
+                "public_rejection_hypothesis_deferred_to_rejection_kats":
+                    evidence.public_rejection_hypothesis_deferred_to_rejection_kats,
                 "direct_theorem_obligations_still_open":
                     evidence.direct_theorem_obligations_still_open,
                 "proof_family_obligations_still_open":

@@ -74,6 +74,90 @@
       "rayon_threads": 1
     },
     "evidence": {
+      "accepted_hypothesis_evidence_count": 9,
+      "accepted_hypothesis_evidence_rows": [
+        {
+          "acceptance_hypothesis": "leaf_is_canonical_and_live",
+          "accepted_path_check": "creation_evidence_matches_direct_tuple && direct_spend_tuple_accepts",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "accepted composition leaf digest and direct verifier accepted tuple",
+          "direct_obligation_id": "direct_obligation_leaf_canonical_live",
+          "separate_rejection_evidence_required": false,
+          "theorem_obligation_still_open": true
+        },
+        {
+          "acceptance_hypothesis": "evidence_envelope_matches_leaf_bindings",
+          "accepted_path_check": "creation_evidence_matches_direct_tuple && proof_boundary_digest_matches_direct_theorem",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "accepted account-creation proof-boundary evidence and direct tuple digest",
+          "direct_obligation_id": "direct_obligation_evidence_leaf_bindings",
+          "separate_rejection_evidence_required": false,
+          "theorem_obligation_still_open": true
+        },
+        {
+          "acceptance_hypothesis": "slot_authorization_digest_matches_canonical_leaf",
+          "accepted_path_check": "direct_admission_namespace_matches_authorization && direct_spend_tuple_accepts",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "accepted tuple slot_authorization_digest and admission namespace digest",
+          "direct_obligation_id": "direct_obligation_slot_authorization_digest",
+          "separate_rejection_evidence_required": false,
+          "theorem_obligation_still_open": true
+        },
+        {
+          "acceptance_hypothesis": "selected_creation_verifier_accepted_before_spend_challenge",
+          "accepted_path_check": "verifier_boundary_accepts_creation && direct_spend_tuple_accepts",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "accepted composition orders account-creation boundary acceptance before direct spend tuple verification",
+          "direct_obligation_id": "direct_obligation_creation_before_challenge",
+          "separate_rejection_evidence_required": false,
+          "theorem_obligation_still_open": true
+        },
+        {
+          "acceptance_hypothesis": "direct_admission_namespace_contains_exact_tuple",
+          "accepted_path_check": "direct_admission_namespace_matches_authorization",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "direct admission namespace record digest",
+          "direct_obligation_id": "direct_obligation_admission_namespace",
+          "separate_rejection_evidence_required": false,
+          "theorem_obligation_still_open": true
+        },
+        {
+          "acceptance_hypothesis": "checked_core_challenge_binds_public_spend_context",
+          "accepted_path_check": "direct_spend_tuple_accepts && public_result_accepts_same_slot",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "direct spend tuple digest and public result wrapper acceptance",
+          "direct_obligation_id": "direct_obligation_checked_core_frame_binding",
+          "separate_rejection_evidence_required": false,
+          "theorem_obligation_still_open": true
+        },
+        {
+          "acceptance_hypothesis": "checked_core_verification_accepts_poseidon2_and_fq12_action",
+          "accepted_path_check": "direct_spend_tuple_accepts && qrom_action_digest_matches_direct_theorem",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "accepted direct spend tuple and QROM/action boundary digest",
+          "direct_obligation_id": "direct_obligation_checked_core_acceptance",
+          "separate_rejection_evidence_required": false,
+          "theorem_obligation_still_open": true
+        },
+        {
+          "acceptance_hypothesis": "lifecycle_transition_consumes_authorization_once",
+          "accepted_path_check": "consume_once_transition_matches_tuple && lifecycle_digest_matches_direct_theorem",
+          "accepted_path_evidence_present": true,
+          "accepted_path_evidence_source": "consume-once before/after state digests",
+          "direct_obligation_id": "direct_obligation_consume_once",
+          "separate_rejection_evidence_required": false,
+          "theorem_obligation_still_open": true
+        },
+        {
+          "acceptance_hypothesis": "rejection_is_deterministic_public_and_state_preserving",
+          "accepted_path_check": "not a happy-path composition property; covered by direct rejection KAT gates",
+          "accepted_path_evidence_present": false,
+          "accepted_path_evidence_source": "direct public rejection KAT suite",
+          "direct_obligation_id": "direct_obligation_public_rejection",
+          "separate_rejection_evidence_required": true,
+          "theorem_obligation_still_open": true
+        }
+      ],
       "account_creation_accepted_proof_boundary_evidence_digest": "7614252bec3b83c2fc0208e413cee44c7eac6949d50e8a55ca7dce334558419a",
       "account_creation_evidence_transcript_digest": "e5e241f722067a666024b1d66f39d191a6bb4e7a51cad41a96685c60f3c729e6",
       "account_creation_fixture_id": "Path2AccountStarkPayloadKatFixture.v1",
@@ -87,7 +171,7 @@
       "consume_once_transition_matches_tuple": true,
       "creation_evidence_matches_direct_tuple": true,
       "deployment_ready": false,
-      "digest": "b522b48b4259c0a1a19e39706f40177e19233a23f2a6682621a84da3a1536d26",
+      "digest": "5c6cdfd0f743c7dbab208ea0bc515dbaf94749d9250305036c675e6235547d4c",
       "direct_accepted_spend_tuple_evidence_digest": "688703d1eb11cada10f3390f51f1cdb40beb711a4ffcc9f4a1f90a3aa606efeb",
       "direct_admission_namespace_matches_authorization": true,
       "direct_admission_namespace_record_digest": "bd706b0ceb55b27bb1bea13fa7d2549faa4428a90aae5f0b690af44404908af1",
@@ -96,16 +180,19 @@
       "direct_spend_tuple_accepts": true,
       "direct_theorem_boundary_report_digest": "a7ae9f92bd9af0406f39e058614d594605f3704e5f3c9605ce6418ff9b736c15",
       "direct_theorem_obligations_still_open": true,
+      "every_positive_acceptance_hypothesis_has_accepted_path_evidence": true,
       "lifecycle_digest_matches_direct_theorem": true,
       "message_digest": "ddbdd953151ae02b16ecb7eb2bc50c6b34555e20e52c158b50b01402bb5c3481",
+      "positive_acceptance_hypothesis_evidence_count": 8,
       "prevalidated_slot_leaf_digest": "2a186051611b6d4a720d6b7a140fe06b7051941d458c03055e7e6f5b803ab9a6",
       "proof_boundary_digest_matches_direct_theorem": true,
       "proof_family_obligations_still_open": true,
       "proof_mask_seed": 4919429716798816596,
       "public_key_identity": "58f218aeb259309eeb545345a8f5c715987967b0ec724806d448394da578d0b0",
+      "public_rejection_hypothesis_deferred_to_rejection_kats": true,
       "public_result_accepts_same_slot": true,
       "qrom_action_digest_matches_direct_theorem": true,
-      "recomputed_digest": "b522b48b4259c0a1a19e39706f40177e19233a23f2a6682621a84da3a1536d26",
+      "recomputed_digest": "5c6cdfd0f743c7dbab208ea0bc515dbaf94749d9250305036c675e6235547d4c",
       "schema": "Descender.Path2.DirectAcceptedCompositionEvidence.v1",
       "selected_account_creation_payload_digest": "991dd49c61805a04828c86ab0887def07ddb0e40dbc35f8721138fd37ee70f0b",
       "slot_authorization_digest": "9137988bcba231070b5d429a0ddfe2564c9ceacd73c20e4695dd9ca6e19ab901",
@@ -122,5 +209,5 @@
     "schema": "Descender.Path2.DirectAcceptedCompositionDeterministicKatEvidenceManifest.v1",
     "status": "digest_pinned_deterministic_kat_accepted_direct_composition_evidence"
   },
-  "manifest_digest": "7035b2bb4d5c1f1aeea1773ffa100673eeabaff0c2a0c776b6fa6e303f58e31e"
+  "manifest_digest": "581afe1e2e7f44ead9724809c03c3a446ce45cf4e1b2de20f5806892cb622e6d"
 }
