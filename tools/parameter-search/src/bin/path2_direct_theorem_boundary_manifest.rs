@@ -1,7 +1,11 @@
 #![recursion_limit = "256"]
 
 use descender_parameter_search::{
-    manifest_vector_evidence::path2_account_creation_requirement_vector_corpus_evidence_v1,
+    manifest_vector_evidence::{
+        path2_account_creation_proof_obligation_vector_corpus_evidence_v1,
+        path2_account_creation_requirement_vector_corpus_evidence_v1,
+        path2_direct_theorem_obligation_vector_corpus_evidence_v1,
+    },
     production_reference::{
         path2_account_creation_proof_boundary_report_v1,
         path2_account_creation_proof_boundary_report_v1_digest,
@@ -37,6 +41,10 @@ fn manifest_body() -> Result<Value, String> {
     let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
     let requirement_vector_corpus_evidence =
         path2_account_creation_requirement_vector_corpus_evidence_v1()?;
+    let proof_obligation_vector_corpus_evidence =
+        path2_account_creation_proof_obligation_vector_corpus_evidence_v1()?;
+    let direct_obligation_vector_corpus_evidence =
+        path2_direct_theorem_obligation_vector_corpus_evidence_v1()?;
     let recomputed_direct_digest = path2_direct_theorem_boundary_report_v1_digest(&direct_report);
     if recomputed_direct_digest != direct_report.digest {
         return Err("direct theorem boundary report digest mismatch".to_string());
@@ -220,7 +228,9 @@ fn manifest_body() -> Result<Value, String> {
             "named_break_classes": direct_report.named_break_classes,
             "obligation_audit_vector_case_ids":
                 direct_report.obligation_audit_vector_case_ids,
-            "obligation_rows": direct_report.obligation_rows
+            "obligation_rows": direct_report.obligation_rows,
+            "direct_obligation_vector_corpus_evidence":
+                direct_obligation_vector_corpus_evidence
         },
         "direct_qrom_action_boundary": {
             "coverage": {
@@ -441,6 +451,8 @@ fn manifest_body() -> Result<Value, String> {
             "proof_obligation_audit_vector_case_ids":
                 proof_boundary_report.proof_obligation_audit_vector_case_ids,
             "proof_obligation_rows": proof_boundary_report.proof_obligation_rows,
+            "proof_obligation_vector_corpus_evidence":
+                proof_obligation_vector_corpus_evidence,
             "requirement_vector_corpus_evidence": requirement_vector_corpus_evidence
         }
     }))

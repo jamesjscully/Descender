@@ -243,6 +243,33 @@
           "supporting_surface": "production account-STARK payload boundary and external review lane"
         }
       ],
+      "proof_obligation_vector_corpus_evidence": {
+        "audit_summary": {
+          "all_cases_have_named_break": true,
+          "all_cases_open": true,
+          "all_open_cases_block_deployment": true,
+          "deployment_ready": false,
+          "fri_aok_extractor_theorem_instantiated": false,
+          "fri_qrom_residual_priced": false,
+          "frozen_kat_corpus_complete": false,
+          "production_gate_open": false,
+          "proof_obligation_audit_vector_case_count": 8,
+          "proof_obligation_count": 8,
+          "simulator_theorem_instantiated": false
+        },
+        "case_count": 8,
+        "corpus_digest": "f4cb40580d774279b9f25d90d178ef8c959582a58d0d8bb24186c76cf893ece4",
+        "corpus_path": "formal/kat/path2_account_creation_proof_obligation_vectors_v1.json",
+        "corpus_recomputed_digest": "f4cb40580d774279b9f25d90d178ef8c959582a58d0d8bb24186c76cf893ece4",
+        "corpus_schema": "Descender.Path2.AccountCreationProofObligationVectors.v1",
+        "corpus_status": "digest_pinned_proof_obligation_audit_vectors",
+        "direct_theorem_report_digest": "fb5fc5d0eaa3e2afa3b39b0400aa112b09d97ae99b858026ecdc425efa07ba7a",
+        "direct_theorem_report_recomputed_digest": "fb5fc5d0eaa3e2afa3b39b0400aa112b09d97ae99b858026ecdc425efa07ba7a",
+        "proof_boundary_report_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
+        "proof_boundary_report_recomputed_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
+        "schema": "Descender.Path2.AccountCreationProofObligationVectorCorpusEvidence.v1",
+        "status": "digest_pinned_open_proof_obligation_vector_corpus_evidence"
+      },
       "requirement_coverage_rows": [
         {
           "blocker": "account-STARK residual matrix: frozen Path2AccountStarkCreationPayloadV1 KAT corpus and public rejection-class mapping are not complete",
@@ -739,6 +766,36 @@
         "qrom_and_action_bounds_linked_to_theorem": false,
         "theorem_statement_pinned": true
       },
+      "direct_obligation_vector_corpus_evidence": {
+        "account_creation_proof_boundary_report_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
+        "account_creation_proof_boundary_report_recomputed_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
+        "audit_summary": {
+          "account_creation_proof_boundary_verified": false,
+          "all_cases_have_named_break": true,
+          "all_cases_open": true,
+          "all_open_cases_block_deployment": true,
+          "composition_theorem_instantiated": false,
+          "deployment_ready": false,
+          "direct_obligation_audit_vector_case_count": 9,
+          "direct_obligation_count": 9,
+          "lifecycle_transition_profile_verified": false,
+          "qrom_and_action_bounds_linked_to_theorem": false
+        },
+        "case_count": 9,
+        "corpus_digest": "37a1e05b3e4e4ef3b745b6dff07287c53fbafbee5078158476c004c37ef20c4c",
+        "corpus_path": "formal/kat/path2_direct_theorem_obligation_vectors_v1.json",
+        "corpus_recomputed_digest": "37a1e05b3e4e4ef3b745b6dff07287c53fbafbee5078158476c004c37ef20c4c",
+        "corpus_schema": "Descender.Path2.DirectTheoremObligationVectors.v1",
+        "corpus_status": "digest_pinned_direct_theorem_obligation_audit_vectors",
+        "direct_lifecycle_boundary_report_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
+        "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
+        "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
+        "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
+        "direct_theorem_report_digest": "fb5fc5d0eaa3e2afa3b39b0400aa112b09d97ae99b858026ecdc425efa07ba7a",
+        "direct_theorem_report_recomputed_digest": "fb5fc5d0eaa3e2afa3b39b0400aa112b09d97ae99b858026ecdc425efa07ba7a",
+        "schema": "Descender.Path2.DirectTheoremObligationVectorCorpusEvidence.v1",
+        "status": "digest_pinned_open_direct_theorem_obligation_vector_corpus_evidence"
+      },
       "named_break_classes": [
         "creation_time_hidden_source_soundness_break",
         "prevalidation_leaf_binding_break",
@@ -867,5 +924,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "fc44bc7641b8fd846d1b4d4d1453aad72565313ac59e8f69257dae33fb0718d8"
+  "manifest_digest": "d41789d30980e7845b7a714663cf06419e86d8a5b0868eebcd0593d1235ecc39"
 }

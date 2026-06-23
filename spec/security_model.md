@@ -323,9 +323,13 @@ payload KAT vector corpora before the direct theorem manifest is checked, and
 theorem's open per-hypothesis obligations after that manifest is
 checked. The shared proof-boundary object now also embeds digest-pinned
 requirement-vector-corpus evidence for the frame KAT, no-export, FRI/QROM
-domain, and payload KAT corpora; `path2_boundary_manifest_consistency` requires
-the standalone proof-boundary and direct theorem manifests to agree on that
-evidence while preserving false theorem and deployment flags. The reports and
+domain, and payload KAT corpora plus the digest-pinned 8-case open
+proof-obligation audit-vector corpus. The direct theorem manifest embeds the
+same proof-boundary object and binds its own 9-case open direct-obligation
+audit-vector corpus; `path2_boundary_manifest_consistency` requires the
+standalone proof-boundary and direct theorem manifests to agree on the shared
+proof-boundary evidence while preserving false theorem and deployment flags.
+The reports and
 manifests are
 the executable boundary map for this section; they are not an honest-sampler
 theorem, authorization-class binding theorem, no-postchallenge timing theorem,
