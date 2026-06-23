@@ -182,6 +182,19 @@ fn main() -> Result<(), String> {
             "direct accepted composition manifest is not in one-thread KAT mode".to_string(),
         );
     }
+    let accepted_boundary_path =
+        "formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json";
+    let accepted_boundary_file = load_json(&root, accepted_boundary_path)?;
+    let accepted_boundary = at(&accepted_boundary_file, "/manifest")?;
+    let accepted_boundary_json = serde_json::to_string_pretty(accepted_boundary)
+        .map_err(|err| format!("serialize accepted proof-boundary manifest body: {err}"))?;
+    let accepted_boundary_recomputed_digest =
+        hex_encode(&Sha256::digest(accepted_boundary_json.as_bytes()));
+    if str_at(&accepted_boundary_file, "/manifest_digest")? != accepted_boundary_recomputed_digest {
+        return Err(
+            "account-creation accepted proof-boundary manifest digest mismatch".to_string(),
+        );
+    }
 
     let direct_report = path2_direct_theorem_boundary_report_v1();
     validate_path2_direct_theorem_boundary_report_v1(&direct_report)?;
@@ -430,6 +443,10 @@ fn main() -> Result<(), String> {
         )?
         || str_at(
             composition_artifact,
+            "/account_creation_accepted_proof_boundary_artifact_manifest_digest",
+        )? != str_at(&accepted_boundary_file, "/manifest_digest")?
+        || str_at(
+            composition_artifact,
             "/direct_accepted_spend_tuple_evidence_digest",
         )? != str_at(accepted_tuple, "/evidence/digest")?
         || str_at(
@@ -439,6 +456,28 @@ fn main() -> Result<(), String> {
     {
         return Err(
             "direct theorem obligation vector corpus lost accepted composition artifact binding"
+                .to_string(),
+        );
+    }
+    let proof_boundary_artifact = at(
+        composition_artifact,
+        "/account_creation_accepted_proof_boundary_evidence_artifact",
+    )?;
+    if str_at(proof_boundary_artifact, "/artifact_manifest_digest")?
+        != str_at(&accepted_boundary_file, "/manifest_digest")?
+        || str_at(
+            proof_boundary_artifact,
+            "/artifact_manifest_recomputed_digest",
+        )? != accepted_boundary_recomputed_digest
+        || str_at(proof_boundary_artifact, "/evidence_digest")?
+            != str_at(accepted_boundary, "/evidence/digest")?
+        || str_at(
+            proof_boundary_artifact,
+            "/account_creation_proof_boundary_report_digest",
+        )? != hex_encode(&proof_report.digest)
+    {
+        return Err(
+            "direct theorem obligation accepted composition artifact lost proof-boundary binding"
                 .to_string(),
         );
     }

@@ -415,6 +415,20 @@ pub fn path2_direct_accepted_composition_evidence_artifact_v1() -> Result<Value,
                 .to_string(),
         );
     }
+    let accepted_boundary_artifact =
+        path2_account_creation_accepted_proof_boundary_evidence_artifact_v1()?;
+    if str_at(&accepted_boundary_artifact, "/evidence_digest")?
+        != str_at(accepted_boundary, "/evidence/digest")?
+        || str_at(
+            &accepted_boundary_artifact,
+            "/account_creation_proof_boundary_report_digest",
+        )? != hex_encode(&proof_report.digest)
+    {
+        return Err(
+            "accepted proof-boundary artifact is not bound to the current composition input"
+                .to_string(),
+        );
+    }
 
     let accepted_tuple_artifact = path2_direct_accepted_spend_tuple_evidence_artifact_v1()?;
     let accepted_tuple_file =
@@ -573,6 +587,12 @@ pub fn path2_direct_accepted_composition_evidence_artifact_v1() -> Result<Value,
             artifact,
             "/evidence/account_creation_accepted_proof_boundary_evidence_digest"
         )?,
+        "account_creation_accepted_proof_boundary_artifact_manifest_digest": str_at(
+            &accepted_boundary_file,
+            "/manifest_digest"
+        )?,
+        "account_creation_accepted_proof_boundary_evidence_artifact":
+            accepted_boundary_artifact,
         "direct_accepted_spend_tuple_evidence_digest": str_at(
             artifact,
             "/evidence/direct_accepted_spend_tuple_evidence_digest"

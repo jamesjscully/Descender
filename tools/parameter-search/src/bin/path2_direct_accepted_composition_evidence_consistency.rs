@@ -215,6 +215,112 @@ mod enabled {
         {
             return Err("direct accepted composition manifest scalar field mismatch".to_string());
         }
+        let accepted_boundary = load_json(
+            "formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json",
+        )?;
+        let accepted_boundary_body = at(&accepted_boundary, "/manifest")?;
+        let accepted_boundary_json = serde_json::to_string_pretty(accepted_boundary_body)
+            .map_err(|err| format!("serialize accepted proof-boundary manifest body: {err}"))?;
+        let accepted_boundary_recomputed_digest =
+            hex_encode(&Sha256::digest(accepted_boundary_json.as_bytes()));
+        if str_at(&accepted_boundary, "/manifest_digest")? != accepted_boundary_recomputed_digest {
+            return Err(
+                "account-creation accepted proof-boundary manifest digest mismatch".to_string(),
+            );
+        }
+        if str_at(accepted_boundary_body, "/schema")?
+            != "Descender.Path2.AccountCreationAcceptedProofBoundaryDeterministicKatEvidenceManifest.v1"
+            || str_at(accepted_boundary_body, "/status")?
+                != "digest_pinned_deterministic_kat_accepted_account_creation_proof_boundary_evidence"
+            || !bool_at(
+                accepted_boundary_body,
+                "/deterministic_proof_byte_mode/evidence_digest_recomputed",
+            )?
+            || u64_at(
+                accepted_boundary_body,
+                "/deterministic_proof_byte_mode/rayon_threads",
+            )? != 1
+        {
+            return Err(
+                "account-creation accepted proof-boundary manifest mode drifted".to_string(),
+            );
+        }
+        if str_at(
+            body,
+            "/evidence/account_creation_accepted_proof_boundary_evidence_digest",
+        )? != str_at(accepted_boundary_body, "/evidence/digest")?
+            || str_at(body, "/evidence/account_creation_fixture_id")?
+                != str_at(accepted_boundary_body, "/evidence/fixture_id")?
+            || u64_at(body, "/evidence/proof_mask_seed")?
+                != u64_at(accepted_boundary_body, "/evidence/proof_mask_seed")?
+            || str_at(body, "/evidence/public_key_identity")?
+                != str_at(accepted_boundary_body, "/evidence/public_key_identity")?
+            || str_at(body, "/evidence/account_id")?
+                != str_at(accepted_boundary_body, "/evidence/account_id")?
+            || str_at(body, "/evidence/account_state_root_before")?
+                != str_at(
+                    accepted_boundary_body,
+                    "/evidence/account_state_root_before",
+                )?
+            || u64_at(body, "/evidence/slot_id")?
+                != u64_at(accepted_boundary_body, "/evidence/slot_id")?
+            || str_at(body, "/evidence/prevalidated_slot_leaf_digest")?
+                != str_at(
+                    accepted_boundary_body,
+                    "/evidence/prevalidated_slot_leaf_digest",
+                )?
+            || str_at(
+                body,
+                "/evidence/account_creation_evidence_transcript_digest",
+            )? != str_at(
+                accepted_boundary_body,
+                "/evidence/account_creation_evidence_transcript_digest",
+            )?
+            || str_at(body, "/evidence/selected_account_creation_payload_digest")?
+                != str_at(
+                    accepted_boundary_body,
+                    "/evidence/selected_account_creation_payload_digest",
+                )?
+            || str_at(body, "/evidence/slot_authorization_digest")?
+                != str_at(
+                    accepted_boundary_body,
+                    "/evidence/slot_authorization_digest",
+                )?
+            || str_at(
+                body,
+                "/evidence/account_creation_proof_boundary_report_digest",
+            )? != str_at(
+                accepted_boundary_body,
+                "/evidence/account_creation_proof_boundary_report_digest",
+            )?
+            || bool_at(body, "/evidence/verifier_boundary_accepts_creation")?
+                != bool_at(
+                    accepted_boundary_body,
+                    "/evidence/verifier_boundary_accepts",
+                )?
+            || bool_at(body, "/evidence/proof_family_obligations_still_open")?
+                != bool_at(
+                    accepted_boundary_body,
+                    "/evidence/proof_family_obligations_still_open",
+                )?
+        {
+            return Err(
+                "direct accepted composition manifest drifted from standalone accepted proof-boundary artifact"
+                    .to_string(),
+            );
+        }
+        if bool_at(
+            accepted_boundary_body,
+            "/evidence/public_payload_exports_private_material",
+        )? || !bool_at(
+            accepted_boundary_body,
+            "/evidence/production_gate_fail_closed",
+        )? || bool_at(accepted_boundary_body, "/evidence/deployment_ready")?
+        {
+            return Err(
+                "accepted proof-boundary manifest lost fail-closed/no-export evidence".to_string(),
+            );
+        }
 
         for pointer in [
             "/evidence/creation_evidence_matches_direct_tuple",
