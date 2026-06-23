@@ -2,8 +2,10 @@
 
 use descender_parameter_search::{
     manifest_vector_evidence::{
+        path2_account_creation_accepted_proof_boundary_evidence_artifact_v1,
         path2_account_creation_proof_obligation_vector_corpus_evidence_v1,
         path2_account_creation_requirement_vector_corpus_evidence_v1,
+        path2_direct_accepted_composition_evidence_artifact_v1,
         path2_direct_theorem_obligation_vector_corpus_evidence_v1,
     },
     production_reference::{
@@ -43,8 +45,12 @@ fn manifest_body() -> Result<Value, String> {
         path2_account_creation_requirement_vector_corpus_evidence_v1()?;
     let proof_obligation_vector_corpus_evidence =
         path2_account_creation_proof_obligation_vector_corpus_evidence_v1()?;
+    let accepted_proof_boundary_evidence_artifact =
+        path2_account_creation_accepted_proof_boundary_evidence_artifact_v1()?;
     let direct_obligation_vector_corpus_evidence =
         path2_direct_theorem_obligation_vector_corpus_evidence_v1()?;
+    let direct_accepted_composition_evidence_artifact =
+        path2_direct_accepted_composition_evidence_artifact_v1()?;
     let recomputed_direct_digest = path2_direct_theorem_boundary_report_v1_digest(&direct_report);
     if recomputed_direct_digest != direct_report.digest {
         return Err("direct theorem boundary report digest mismatch".to_string());
@@ -230,7 +236,9 @@ fn manifest_body() -> Result<Value, String> {
                 direct_report.obligation_audit_vector_case_ids,
             "obligation_rows": direct_report.obligation_rows,
             "direct_obligation_vector_corpus_evidence":
-                direct_obligation_vector_corpus_evidence
+                direct_obligation_vector_corpus_evidence,
+            "direct_accepted_composition_evidence_artifact":
+                direct_accepted_composition_evidence_artifact
         },
         "direct_qrom_action_boundary": {
             "coverage": {
@@ -453,6 +461,8 @@ fn manifest_body() -> Result<Value, String> {
             "proof_obligation_rows": proof_boundary_report.proof_obligation_rows,
             "proof_obligation_vector_corpus_evidence":
                 proof_obligation_vector_corpus_evidence,
+            "accepted_proof_boundary_evidence_artifact":
+                accepted_proof_boundary_evidence_artifact,
             "requirement_vector_corpus_evidence": requirement_vector_corpus_evidence
         }
     }))

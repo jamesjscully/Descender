@@ -618,6 +618,66 @@ fn check_consistency() -> Result<(), String> {
         false,
     )?;
     expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "accepted_proof_boundary_evidence_artifact",
+            "audit_summary",
+            "verifier_boundary_accepts",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "accepted_proof_boundary_evidence_artifact",
+            "audit_summary",
+            "production_gate_fail_closed",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "accepted_proof_boundary_evidence_artifact",
+            "audit_summary",
+            "proof_boundary_report_validated",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "accepted_proof_boundary_evidence_artifact",
+            "audit_summary",
+            "proof_family_obligations_still_open",
+        ],
+        true,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "accepted_proof_boundary_evidence_artifact",
+            "audit_summary",
+            "public_payload_exports_private_material",
+        ],
+        false,
+    )?;
+    expect_bool(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "accepted_proof_boundary_evidence_artifact",
+            "audit_summary",
+            "deployment_ready",
+        ],
+        false,
+    )?;
+    expect_bool(
         direct_manifest,
         &[
             "direct_theorem_boundary",
@@ -717,6 +777,46 @@ fn check_consistency() -> Result<(), String> {
         ],
         false,
     )?;
+    for flag in [
+        "creation_evidence_matches_direct_tuple",
+        "proof_boundary_digest_matches_direct_theorem",
+        "qrom_action_digest_matches_direct_theorem",
+        "lifecycle_digest_matches_direct_theorem",
+        "direct_admission_namespace_matches_authorization",
+        "consume_once_transition_matches_tuple",
+        "verifier_boundary_accepts_creation",
+        "direct_spend_tuple_accepts",
+        "public_result_accepts_same_slot",
+        "direct_theorem_obligations_still_open",
+        "proof_family_obligations_still_open",
+    ] {
+        expect_bool(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_accepted_composition_evidence_artifact",
+                "audit_summary",
+                flag,
+            ],
+            true,
+        )?;
+    }
+    for flag in [
+        "composition_theorem_instantiated",
+        "account_creation_proof_boundary_verified",
+        "deployment_ready",
+    ] {
+        expect_bool(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_accepted_composition_evidence_artifact",
+                "audit_summary",
+                flag,
+            ],
+            false,
+        )?;
+    }
 
     Ok(())
 }

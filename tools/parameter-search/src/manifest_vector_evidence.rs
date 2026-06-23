@@ -84,6 +84,336 @@ fn body_digest(corpus: &Value, label: &str) -> Result<String, String> {
     Ok(hex_encode(&Sha256::digest(corpus_json.as_bytes())))
 }
 
+pub fn path2_account_creation_accepted_proof_boundary_evidence_artifact_v1() -> Result<Value, String>
+{
+    let proof_report = path2_account_creation_proof_boundary_report_v1();
+    validate_path2_account_creation_proof_boundary_report_v1(&proof_report)?;
+    let proof_digest = path2_account_creation_proof_boundary_report_v1_digest(&proof_report);
+    if proof_digest != proof_report.digest {
+        return Err("account-creation proof-boundary report digest mismatch".to_string());
+    }
+
+    let artifact_file =
+        load_json("formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json")?;
+    let artifact = at(&artifact_file, "/manifest")?;
+    let artifact_digest = body_digest(
+        artifact,
+        "account-creation accepted proof-boundary evidence artifact",
+    )?;
+    if str_at(&artifact_file, "/manifest_digest")? != artifact_digest {
+        return Err(
+            "account-creation accepted proof-boundary evidence manifest digest mismatch"
+                .to_string(),
+        );
+    }
+    if str_at(artifact, "/schema")?
+        != "Descender.Path2.AccountCreationAcceptedProofBoundaryDeterministicKatEvidenceManifest.v1"
+        || str_at(artifact, "/status")?
+            != "digest_pinned_deterministic_kat_accepted_account_creation_proof_boundary_evidence"
+        || str_at(
+            artifact,
+            "/deterministic_proof_byte_mode/accepted_boundary_endpoint",
+        )? != proof_report.accepted_boundary_evidence_endpoint
+        || !bool_at(
+            artifact,
+            "/deterministic_proof_byte_mode/evidence_digest_recomputed",
+        )?
+        || u64_at(artifact, "/deterministic_proof_byte_mode/rayon_threads")? != 1
+        || str_at(artifact, "/evidence/schema")? != proof_report.accepted_boundary_evidence_schema
+        || str_at(artifact, "/evidence/proof_boundary_target")?
+            != proof_report.proof_boundary_target
+        || str_at(artifact, "/evidence/proof_boundary_conclusion")?
+            != proof_report.proof_boundary_conclusion
+        || str_at(artifact, "/evidence/selected_payload_type")?
+            != proof_report.selected_payload_type
+        || str_at(artifact, "/evidence/verifier_boundary_endpoint")?
+            != proof_report.verifier_boundary_endpoint
+        || str_at(artifact, "/evidence/production_boundary_endpoint")?
+            != proof_report.production_boundary_endpoint
+        || str_at(artifact, "/evidence/replay_payload_digest_function")?
+            != proof_report.replay_payload_digest_function
+        || str_at(
+            artifact,
+            "/evidence/account_creation_proof_boundary_report_digest",
+        )? != hex_encode(&proof_report.digest)
+        || str_at(artifact, "/evidence/recomputed_digest")? != str_at(artifact, "/evidence/digest")?
+        || !bool_at(artifact, "/evidence/verifier_boundary_accepts")?
+        || !bool_at(artifact, "/evidence/production_gate_fail_closed")?
+        || !bool_at(artifact, "/evidence/proof_boundary_report_validated")?
+        || !bool_at(artifact, "/evidence/proof_family_obligations_still_open")?
+        || bool_at(
+            artifact,
+            "/evidence/public_payload_exports_private_material",
+        )?
+        || bool_at(artifact, "/evidence/deployment_ready")?
+    {
+        return Err(
+            "accepted proof-boundary evidence artifact is not bound to the current proof boundary"
+                .to_string(),
+        );
+    }
+
+    Ok(json!({
+        "schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryEvidenceArtifact.v1",
+        "status": "digest_pinned_accepted_proof_boundary_evidence_artifact",
+        "artifact_path":
+            "formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json",
+        "artifact_manifest_digest": str_at(&artifact_file, "/manifest_digest")?,
+        "artifact_manifest_recomputed_digest": artifact_digest,
+        "artifact_schema": str_at(artifact, "/schema")?,
+        "artifact_status": str_at(artifact, "/status")?,
+        "evidence_schema": str_at(artifact, "/evidence/schema")?,
+        "evidence_digest": str_at(artifact, "/evidence/digest")?,
+        "evidence_recomputed_digest": str_at(artifact, "/evidence/recomputed_digest")?,
+        "account_creation_proof_boundary_report_digest": str_at(
+            artifact,
+            "/evidence/account_creation_proof_boundary_report_digest"
+        )?,
+        "account_creation_proof_boundary_report_recomputed_digest": hex_encode(&proof_digest),
+        "deterministic_proof_byte_mode": {
+            "accepted_boundary_endpoint": str_at(
+                artifact,
+                "/deterministic_proof_byte_mode/accepted_boundary_endpoint"
+            )?,
+            "rayon_threads": u64_at(
+                artifact,
+                "/deterministic_proof_byte_mode/rayon_threads"
+            )?,
+            "evidence_digest_recomputed": bool_at(
+                artifact,
+                "/deterministic_proof_byte_mode/evidence_digest_recomputed"
+            )?
+        },
+        "audit_summary": {
+            "verifier_boundary_accepts": bool_at(
+                artifact,
+                "/evidence/verifier_boundary_accepts"
+            )?,
+            "production_gate_fail_closed": bool_at(
+                artifact,
+                "/evidence/production_gate_fail_closed"
+            )?,
+            "proof_boundary_report_validated": bool_at(
+                artifact,
+                "/evidence/proof_boundary_report_validated"
+            )?,
+            "proof_family_obligations_still_open": bool_at(
+                artifact,
+                "/evidence/proof_family_obligations_still_open"
+            )?,
+            "public_payload_exports_private_material": bool_at(
+                artifact,
+                "/evidence/public_payload_exports_private_material"
+            )?,
+            "deployment_ready": bool_at(artifact, "/evidence/deployment_ready")?
+        }
+    }))
+}
+
+pub fn path2_direct_accepted_composition_evidence_artifact_v1() -> Result<Value, String> {
+    let direct_report = path2_direct_theorem_boundary_report_v1();
+    validate_path2_direct_theorem_boundary_report_v1(&direct_report)?;
+    let direct_digest = path2_direct_theorem_boundary_report_v1_digest(&direct_report);
+    if direct_digest != direct_report.digest {
+        return Err("direct theorem boundary report digest mismatch".to_string());
+    }
+
+    let proof_report = path2_account_creation_proof_boundary_report_v1();
+    validate_path2_account_creation_proof_boundary_report_v1(&proof_report)?;
+    let proof_digest = path2_account_creation_proof_boundary_report_v1_digest(&proof_report);
+    if proof_digest != proof_report.digest {
+        return Err("account-creation proof-boundary report digest mismatch".to_string());
+    }
+
+    let accepted_boundary_file =
+        load_json("formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json")?;
+    let accepted_boundary = at(&accepted_boundary_file, "/manifest")?;
+    let accepted_boundary_digest = body_digest(
+        accepted_boundary,
+        "accepted proof-boundary evidence artifact",
+    )?;
+    if str_at(&accepted_boundary_file, "/manifest_digest")? != accepted_boundary_digest {
+        return Err(
+            "account-creation accepted proof-boundary evidence manifest digest mismatch"
+                .to_string(),
+        );
+    }
+
+    let artifact_file = load_json("formal/kat/path2_direct_accepted_composition_evidence_v1.json")?;
+    let artifact = at(&artifact_file, "/manifest")?;
+    let artifact_digest = body_digest(artifact, "direct accepted composition evidence artifact")?;
+    if str_at(&artifact_file, "/manifest_digest")? != artifact_digest {
+        return Err("direct accepted composition evidence manifest digest mismatch".to_string());
+    }
+    if str_at(artifact, "/schema")?
+        != "Descender.Path2.DirectAcceptedCompositionDeterministicKatEvidenceManifest.v1"
+        || str_at(artifact, "/status")?
+            != "digest_pinned_deterministic_kat_accepted_direct_composition_evidence"
+        || str_at(
+            artifact,
+            "/deterministic_proof_byte_mode/accepted_composition_endpoint",
+        )? != direct_report.accepted_composition_evidence_endpoint
+        || !bool_at(
+            artifact,
+            "/deterministic_proof_byte_mode/evidence_digest_recomputed",
+        )?
+        || u64_at(artifact, "/deterministic_proof_byte_mode/rayon_threads")? != 1
+        || str_at(artifact, "/evidence/schema")?
+            != direct_report.accepted_composition_evidence_schema
+        || str_at(artifact, "/evidence/theorem_target")? != direct_report.theorem_target
+        || str_at(artifact, "/evidence/theorem_conclusion")? != direct_report.theorem_conclusion
+        || str_at(artifact, "/evidence/direct_theorem_boundary_report_digest")?
+            != hex_encode(&direct_report.digest)
+        || str_at(
+            artifact,
+            "/evidence/account_creation_proof_boundary_report_digest",
+        )? != hex_encode(&proof_report.digest)
+        || str_at(
+            artifact,
+            "/evidence/direct_qrom_action_boundary_report_digest",
+        )? != hex_encode(&direct_report.direct_qrom_action_boundary_report_digest)
+        || str_at(
+            artifact,
+            "/evidence/direct_lifecycle_boundary_report_digest",
+        )? != hex_encode(&direct_report.direct_lifecycle_boundary_report_digest)
+        || str_at(
+            artifact,
+            "/evidence/account_creation_accepted_proof_boundary_evidence_digest",
+        )? != str_at(accepted_boundary, "/evidence/digest")?
+        || str_at(artifact, "/evidence/recomputed_digest")? != str_at(artifact, "/evidence/digest")?
+        || !bool_at(artifact, "/evidence/creation_evidence_matches_direct_tuple")?
+        || !bool_at(
+            artifact,
+            "/evidence/proof_boundary_digest_matches_direct_theorem",
+        )?
+        || !bool_at(
+            artifact,
+            "/evidence/qrom_action_digest_matches_direct_theorem",
+        )?
+        || !bool_at(
+            artifact,
+            "/evidence/lifecycle_digest_matches_direct_theorem",
+        )?
+        || !bool_at(
+            artifact,
+            "/evidence/direct_admission_namespace_matches_authorization",
+        )?
+        || !bool_at(artifact, "/evidence/consume_once_transition_matches_tuple")?
+        || !bool_at(artifact, "/evidence/verifier_boundary_accepts_creation")?
+        || !bool_at(artifact, "/evidence/direct_spend_tuple_accepts")?
+        || !bool_at(artifact, "/evidence/public_result_accepts_same_slot")?
+        || !bool_at(artifact, "/evidence/direct_theorem_obligations_still_open")?
+        || !bool_at(artifact, "/evidence/proof_family_obligations_still_open")?
+        || bool_at(artifact, "/evidence/composition_theorem_instantiated")?
+        || bool_at(
+            artifact,
+            "/evidence/account_creation_proof_boundary_verified",
+        )?
+        || bool_at(artifact, "/evidence/deployment_ready")?
+    {
+        return Err(
+            "direct accepted composition evidence artifact is not bound to the current theorem"
+                .to_string(),
+        );
+    }
+
+    Ok(json!({
+        "schema": "Descender.Path2.DirectAcceptedCompositionEvidenceArtifact.v1",
+        "status": "digest_pinned_accepted_direct_composition_evidence_artifact",
+        "artifact_path": "formal/kat/path2_direct_accepted_composition_evidence_v1.json",
+        "artifact_manifest_digest": str_at(&artifact_file, "/manifest_digest")?,
+        "artifact_manifest_recomputed_digest": artifact_digest,
+        "artifact_schema": str_at(artifact, "/schema")?,
+        "artifact_status": str_at(artifact, "/status")?,
+        "evidence_schema": str_at(artifact, "/evidence/schema")?,
+        "evidence_digest": str_at(artifact, "/evidence/digest")?,
+        "evidence_recomputed_digest": str_at(artifact, "/evidence/recomputed_digest")?,
+        "direct_theorem_boundary_report_digest": str_at(
+            artifact,
+            "/evidence/direct_theorem_boundary_report_digest"
+        )?,
+        "direct_theorem_boundary_report_recomputed_digest": hex_encode(&direct_digest),
+        "account_creation_proof_boundary_report_digest": str_at(
+            artifact,
+            "/evidence/account_creation_proof_boundary_report_digest"
+        )?,
+        "account_creation_proof_boundary_report_recomputed_digest": hex_encode(&proof_digest),
+        "account_creation_accepted_proof_boundary_evidence_digest": str_at(
+            artifact,
+            "/evidence/account_creation_accepted_proof_boundary_evidence_digest"
+        )?,
+        "deterministic_proof_byte_mode": {
+            "accepted_composition_endpoint": str_at(
+                artifact,
+                "/deterministic_proof_byte_mode/accepted_composition_endpoint"
+            )?,
+            "rayon_threads": u64_at(
+                artifact,
+                "/deterministic_proof_byte_mode/rayon_threads"
+            )?,
+            "evidence_digest_recomputed": bool_at(
+                artifact,
+                "/deterministic_proof_byte_mode/evidence_digest_recomputed"
+            )?
+        },
+        "audit_summary": {
+            "creation_evidence_matches_direct_tuple": bool_at(
+                artifact,
+                "/evidence/creation_evidence_matches_direct_tuple"
+            )?,
+            "proof_boundary_digest_matches_direct_theorem": bool_at(
+                artifact,
+                "/evidence/proof_boundary_digest_matches_direct_theorem"
+            )?,
+            "qrom_action_digest_matches_direct_theorem": bool_at(
+                artifact,
+                "/evidence/qrom_action_digest_matches_direct_theorem"
+            )?,
+            "lifecycle_digest_matches_direct_theorem": bool_at(
+                artifact,
+                "/evidence/lifecycle_digest_matches_direct_theorem"
+            )?,
+            "direct_admission_namespace_matches_authorization": bool_at(
+                artifact,
+                "/evidence/direct_admission_namespace_matches_authorization"
+            )?,
+            "consume_once_transition_matches_tuple": bool_at(
+                artifact,
+                "/evidence/consume_once_transition_matches_tuple"
+            )?,
+            "verifier_boundary_accepts_creation": bool_at(
+                artifact,
+                "/evidence/verifier_boundary_accepts_creation"
+            )?,
+            "direct_spend_tuple_accepts": bool_at(
+                artifact,
+                "/evidence/direct_spend_tuple_accepts"
+            )?,
+            "public_result_accepts_same_slot": bool_at(
+                artifact,
+                "/evidence/public_result_accepts_same_slot"
+            )?,
+            "direct_theorem_obligations_still_open": bool_at(
+                artifact,
+                "/evidence/direct_theorem_obligations_still_open"
+            )?,
+            "proof_family_obligations_still_open": bool_at(
+                artifact,
+                "/evidence/proof_family_obligations_still_open"
+            )?,
+            "composition_theorem_instantiated": bool_at(
+                artifact,
+                "/evidence/composition_theorem_instantiated"
+            )?,
+            "account_creation_proof_boundary_verified": bool_at(
+                artifact,
+                "/evidence/account_creation_proof_boundary_verified"
+            )?,
+            "deployment_ready": bool_at(artifact, "/evidence/deployment_ready")?
+        }
+    }))
+}
+
 pub fn path2_account_creation_proof_obligation_vector_corpus_evidence_v1() -> Result<Value, String>
 {
     let proof_report = path2_account_creation_proof_boundary_report_v1();

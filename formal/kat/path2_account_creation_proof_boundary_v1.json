@@ -3,6 +3,33 @@
     "account_creation_proof_boundary": {
       "accepted_boundary_evidence_endpoint": "path2_account_creation_accepted_proof_boundary_evidence_v1",
       "accepted_boundary_evidence_schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryEvidence.v1",
+      "accepted_proof_boundary_evidence_artifact": {
+        "account_creation_proof_boundary_report_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
+        "account_creation_proof_boundary_report_recomputed_digest": "586d58d10acb801cb82c4c8c3cf13da5e935b0cc9d832abfccab91f7745991c3",
+        "artifact_manifest_digest": "11aaa92a1f8506ff5f807efe78e85ec9b1ebb0ea6ce58dc60ed6f0f61b5d03ab",
+        "artifact_manifest_recomputed_digest": "11aaa92a1f8506ff5f807efe78e85ec9b1ebb0ea6ce58dc60ed6f0f61b5d03ab",
+        "artifact_path": "formal/kat/path2_account_creation_accepted_proof_boundary_evidence_v1.json",
+        "artifact_schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryDeterministicKatEvidenceManifest.v1",
+        "artifact_status": "digest_pinned_deterministic_kat_accepted_account_creation_proof_boundary_evidence",
+        "audit_summary": {
+          "deployment_ready": false,
+          "production_gate_fail_closed": true,
+          "proof_boundary_report_validated": true,
+          "proof_family_obligations_still_open": true,
+          "public_payload_exports_private_material": false,
+          "verifier_boundary_accepts": true
+        },
+        "deterministic_proof_byte_mode": {
+          "accepted_boundary_endpoint": "path2_account_creation_accepted_proof_boundary_evidence_v1",
+          "evidence_digest_recomputed": true,
+          "rayon_threads": 1
+        },
+        "evidence_digest": "44345434f7f0b3ecd0efdfab2edbbba27ce82e48c013b2e1b874673cff54d7ef",
+        "evidence_recomputed_digest": "44345434f7f0b3ecd0efdfab2edbbba27ce82e48c013b2e1b874673cff54d7ef",
+        "evidence_schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryEvidence.v1",
+        "schema": "Descender.Path2.AccountCreationAcceptedProofBoundaryEvidenceArtifact.v1",
+        "status": "digest_pinned_accepted_proof_boundary_evidence_artifact"
+      },
       "accepting_requirements": [
         "canonical_leaf_and_evidence_framing",
         "evidence_leaf_binding_equalities",
@@ -877,5 +904,5 @@
       ]
     }
   },
-  "manifest_digest": "acc2a7c5d6d128bda46553577ed52468f5acd4db6d75137c7a83bf55d91da25e"
+  "manifest_digest": "0e16af22fc6822e003b62401ba012c10aac7fb3c2ba7aec9eab3b776e4073954"
 }

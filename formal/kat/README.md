@@ -97,10 +97,12 @@ embeds digest-pinned requirement-vector-corpus evidence for the frame KAT,
 no-export, FRI/QROM domain, and payload KAT corpora, including row/case counts,
 current-row coverage flags, and false theorem/deployment flags. It also embeds
 the digest-pinned open proof-obligation audit-vector corpus for the same 8
-proof-boundary obligations; the direct theorem manifest embeds the same object
-and additionally binds its 9-case open direct-obligation audit-vector corpus.
-`path2_boundary_manifest_consistency` checks these bindings and the fail-closed
-flags. It is not a proof and not deployment evidence by itself: the
+proof-boundary obligations and the accepted proof-boundary KAT evidence
+artifact; the direct theorem manifest embeds the same object and additionally
+binds its 9-case open direct-obligation audit-vector corpus and accepted
+direct-composition KAT evidence artifact. `path2_boundary_manifest_consistency`
+checks these bindings and the fail-closed flags. It is not a proof and not
+deployment evidence by itself: the
 manifest deliberately records the open simulator, extractor, FRI/QROM,
 frozen-KAT, external-review, sampler, timing, no-export, and production-gate
 blockers. The local and CI build

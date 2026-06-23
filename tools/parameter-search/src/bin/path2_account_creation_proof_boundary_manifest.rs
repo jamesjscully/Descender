@@ -2,6 +2,7 @@
 
 use descender_parameter_search::{
     manifest_vector_evidence::{
+        path2_account_creation_accepted_proof_boundary_evidence_artifact_v1,
         path2_account_creation_proof_obligation_vector_corpus_evidence_v1,
         path2_account_creation_requirement_vector_corpus_evidence_v1,
     },
@@ -50,6 +51,8 @@ fn manifest_body() -> Result<Value, String> {
         path2_account_creation_requirement_vector_corpus_evidence_v1()?;
     let proof_obligation_vector_corpus_evidence =
         path2_account_creation_proof_obligation_vector_corpus_evidence_v1()?;
+    let accepted_proof_boundary_evidence_artifact =
+        path2_account_creation_accepted_proof_boundary_evidence_artifact_v1()?;
 
     let recomputed_proof_boundary_digest =
         path2_account_creation_proof_boundary_report_v1_digest(&proof_boundary_report);
@@ -367,6 +370,8 @@ fn manifest_body() -> Result<Value, String> {
             "proof_obligation_rows": proof_boundary_report.proof_obligation_rows,
             "proof_obligation_vector_corpus_evidence":
                 proof_obligation_vector_corpus_evidence,
+            "accepted_proof_boundary_evidence_artifact":
+                accepted_proof_boundary_evidence_artifact,
             "requirement_vector_corpus_evidence": requirement_vector_corpus_evidence
         },
         "no_export_boundary_snapshot": {
