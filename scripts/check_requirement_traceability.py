@@ -128,6 +128,41 @@ ACCOUNT_STARK_PAYLOAD_KAT_MANIFEST_MARKERS = {
         "path2_account_stark_payload_kat_boundary_v1.json",
     ],
 }
+DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS = {
+    "tools/parameter-search/src/bin/path2_direct_theorem_boundary_manifest.rs": [
+        "Descender.Path2.DirectTheoremBoundaryManifest.v1",
+        "Descender.Path2.DirectTheoremBoundary.v1",
+        "path2_direct_theorem_boundary_report_v1",
+        "path2_account_creation_proof_boundary_report_v1",
+        "direct_theorem_boundary_report_digest",
+        "account_creation_proof_boundary_report_digest",
+        "obligation_rows",
+        "every_hypothesis_has_obligation",
+        "leaf_evidence_binding_fields",
+    ],
+    "formal/kat/path2_direct_theorem_boundary_v1.json": [
+        "Descender.Path2.DirectTheoremBoundaryManifest.v1",
+        "Descender.Path2.DirectTheoremBoundary.v1",
+        "draft_theorem_boundary_manifest",
+        "direct_theorem_boundary_report_digest",
+        "account_creation_proof_boundary_report_digest",
+        "obligation_rows",
+        "consensus_rejection_or_state_mutation_break",
+        "leaf_evidence_binding_fields",
+        '"composition_theorem_instantiated": false',
+        '"deployment_ready": false',
+    ],
+    "scripts/check_build.sh": [
+        "direct theorem boundary manifest check",
+        "path2_direct_theorem_boundary_manifest",
+        "path2_direct_theorem_boundary_v1.json",
+    ],
+    ".github/workflows/ci.yml": [
+        "Direct theorem boundary manifest check",
+        "path2_direct_theorem_boundary_manifest",
+        "path2_direct_theorem_boundary_v1.json",
+    ],
+}
 ACCOUNT_STARK_PAYLOAD_KAT_VECTOR_MARKERS = {
     "tools/parameter-search/src/bin/path2_account_stark_payload_kat_vectors.rs": [
         "Descender.Path2.AccountStarkPayloadKatVectors.v1",
@@ -1950,6 +1985,21 @@ def check_account_stark_payload_kat_manifest_markers(errors: list[str]) -> None:
                 )
 
 
+def check_direct_theorem_boundary_manifest_markers(errors: list[str]) -> None:
+    for rel, markers in DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"{rel}: missing direct theorem boundary manifest artifact")
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing direct theorem boundary manifest marker {marker!r}"
+                )
+
+
 def check_account_stark_payload_kat_vector_markers(errors: list[str]) -> None:
     for rel, markers in ACCOUNT_STARK_PAYLOAD_KAT_VECTOR_MARKERS.items():
         path = ROOT / rel
@@ -2102,6 +2152,7 @@ def main() -> int:
     check_account_creation_proof_boundary_preflight_markers(errors)
     check_account_stark_residual_preflight_markers(errors)
     check_account_stark_payload_kat_manifest_markers(errors)
+    check_direct_theorem_boundary_manifest_markers(errors)
     check_account_stark_payload_kat_vector_markers(errors)
     check_ethereum_positioning_note(tracker_rows, errors)
 

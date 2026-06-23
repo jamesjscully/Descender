@@ -73,8 +73,12 @@ export one of the named breaks below or update this boundary by ADR/spec change.
 
 The production reference emits `Path2DirectTheoremBoundaryReportV1`, which pins
 the accepted tuple, acceptance hypotheses, per-hypothesis obligation matrix,
-named break classes, and current open blocker for this theorem boundary. This
-report is not the proof; it is the mechanical guard that prevents deployment
+named break classes, and current open blocker for this theorem boundary.
+`formal/kat/path2_direct_theorem_boundary_v1.json` is regenerated from that
+report and the current `Path2AccountCreationProofBoundaryReportV1` by a local
+and CI gate, so the direct theorem shape, the proof-boundary digest, and the
+selected proof-boundary field groups cannot drift silently. This report and
+manifest are not the proof; they are mechanical guards that prevent deployment
 preflight from drifting away from the theorem shape while the composition
 theorem remains open.
 
@@ -274,7 +278,7 @@ used as deployment evidence while a higher-ranked blocker remains open.
 
 | Rank | Blocker | Must close | Owning rows |
 |---|---|---|---|
-| 1 | Direct theorem closure | `Path2DirectTheoremBoundaryReportV1` pins the product theorem boundary, and the final product theorem covers admission, spend, consume-once lifecycle, exact public bindings, and every named break; supporting lemmas cannot stand in for the deployment theorem. | `DIR-RISK-001`, `DIR-SEC-001`, `DIR-CREATE-001`, `DIR-PROOF-002`, `DIR-AUTHCLASS-001` |
+| 1 | Direct theorem closure | `Path2DirectTheoremBoundaryReportV1` and `formal/kat/path2_direct_theorem_boundary_v1.json` pin the product theorem boundary, and the final product theorem covers admission, spend, consume-once lifecycle, exact public bindings, and every named break; supporting lemmas cannot stand in for the deployment theorem. | `DIR-RISK-001`, `DIR-SEC-001`, `DIR-CREATE-001`, `DIR-PROOF-002`, `DIR-AUTHCLASS-001` |
 | 2 | Account-creation proof boundary | `Path2AccountCreationProofBoundaryReportV1` pins the selected account-STARK payload boundary, and the payload has a concrete byte model, canonical replay-payload digest, deployed anchor binding, simulator theorem, extractor theorem, hidden-source payload statement, production gate, and rejection behavior. | `DIR-CREATE-001`, `DIR-PROOF-001`, `DIR-STARK-001`, `DIR-BIND-001`, `DIR-PAYLOAD-001`, `DIR-KAT-001`, `DIR-REJECT-001` |
 | 3 | Authorization-class binding | Private authorization-local material cannot change public spend semantics, fork account state, or bypass the checked-core public binding. | `DIR-AUTHCLASS-001`, `DIR-SEC-001`, `DIR-CC-001` |
 | 4 | Consensus conformance | Canonical wire formats, public-field mutation vectors, end-to-end creation/spend/lifecycle vectors, and deterministic rejection behavior exist. | `DIR-KAT-001`, `SPEC-KAT-001`, `DIR-REJECT-001`, `DIR-CC-001`, `DIR-LEAF-001`, `DIR-EVID-001` |

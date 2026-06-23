@@ -178,6 +178,17 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ),
     ),
     (
+        "direct theorem boundary manifest check",
+        (
+            "path2_direct_theorem_boundary_manifest",
+            "path2_direct_theorem_boundary_v1.json",
+        ),
+        (
+            "path2_direct_theorem_boundary_manifest",
+            "path2_direct_theorem_boundary_v1.json",
+        ),
+    ),
+    (
         "account STARK payload KAT vector corpus check",
         (
             "path2_account_stark_payload_kat_vectors",
@@ -281,6 +292,11 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-KAT-001",
         "DIR-STARK-001",
         "DIR-REJECT-001",
+    ),
+    "direct theorem boundary manifest check": (
+        "DIR-SEC-001",
+        "DIR-CREATE-001",
+        "DIR-PROOF-001",
     ),
     "account STARK payload KAT vector corpus check": (
         "DIR-KAT-001",

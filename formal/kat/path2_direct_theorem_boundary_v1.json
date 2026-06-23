@@ -1,0 +1,286 @@
+{
+  "manifest": {
+    "account_creation_proof_boundary": {
+      "accepting_requirements": [
+        "canonical_leaf_and_evidence_framing",
+        "evidence_leaf_binding_equalities",
+        "certificate_evidence_payload_digest_binding",
+        "payload_availability_nonempty_bundle_and_digest_equality",
+        "payload_context_binding_leaf_proof_aggregation_slot",
+        "packed_account_stark_bundle_verifies",
+        "deployed_creation_anchors_match_stark_public_statement",
+        "zero_knowledge_no_export_semantics",
+        "account_stark_qrom_domain_separation",
+        "deterministic_public_rejection"
+      ],
+      "binding_leaf_context_fields": [
+        "binding_digest",
+        "account_id",
+        "public_key_identity",
+        "slot_id",
+        "verifier_version_digest",
+        "account_state_root_before",
+        "lifecycle_anchor",
+        "opening_tuple_commitment",
+        "creation_statement_digest"
+      ],
+      "certificate_evidence_binding_fields": [
+        "certificate_digest_to_evidence_payload_digest",
+        "account_id",
+        "public_key_identity",
+        "slot_id",
+        "verifier_version_digest",
+        "account_state_root_before",
+        "opening_commitment",
+        "pad_seed_digest",
+        "hidden_source_statement_digest",
+        "lifecycle_anchor",
+        "relation_transcript_digest"
+      ],
+      "coverage": {
+        "accepting_requirement_count": 10,
+        "active_payload_mutation_coverage_present": true,
+        "binding_leaf_context_field_count": 9,
+        "blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+        "boundary_statement_pinned": true,
+        "certificate_evidence_binding_field_count": 11,
+        "deployed_anchor_field_count": 8,
+        "deployed_anchor_rebind_tests_present": true,
+        "deployment_ready": false,
+        "external_review_complete": false,
+        "fri_aok_extractor_theorem_instantiated": false,
+        "fri_qrom_residual_priced": false,
+        "frozen_kat_corpus_complete": false,
+        "leaf_evidence_binding_field_count": 15,
+        "no_export_private_material_field_count": 7,
+        "payload_binding_field_count": 6,
+        "production_gate_fail_closed": true,
+        "production_gate_open": false,
+        "replay_payload_digest_bound": true,
+        "selected_payload_pinned": true,
+        "simulator_theorem_instantiated": false
+      },
+      "deployed_anchor_fields": [
+        "account_id",
+        "slot_id",
+        "account_state_root",
+        "lifecycle_anchor",
+        "raw_verifier_version",
+        "masked_projection",
+        "packed_witness_commitment",
+        "role_root_export_bridge"
+      ],
+      "leaf_evidence_binding_fields": [
+        "evidence_domain",
+        "evidence_version",
+        "evidence_kind",
+        "slot_leaf_digest",
+        "slot_authorization_digest",
+        "creation_verifier_version_digest",
+        "hidden_source_statement_digest",
+        "opening_commitment",
+        "pad_seed_digest",
+        "account_identity_digest",
+        "public_key_identity",
+        "slot_id",
+        "state_root_before",
+        "lifecycle_anchor",
+        "prevalidation_transcript_digest"
+      ],
+      "no_export_private_material_fields": [
+        "pad_source",
+        "projection",
+        "syndrome",
+        "opening_tuple",
+        "witness",
+        "mask",
+        "private_trace_material"
+      ],
+      "payload_binding_fields": [
+        "leaf_context_digest",
+        "creation_proof_binding_digest",
+        "aggregation_context_digest",
+        "slot_id",
+        "public_replay_payload_digest",
+        "account_stark_bundle"
+      ]
+    },
+    "authority_snapshot": {
+      "account_creation_proof_boundary_blocker": "account-creation proof boundary: selected account-STARK boundary is implemented but not verified for production",
+      "account_creation_proof_boundary_report_domain": "Descender.Path2.AccountCreationProofBoundaryReport.v1",
+      "direct_report_domain": "Descender.Path2.DirectTheoremBoundaryReport.v1",
+      "direct_theorem_blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+      "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
+      "replay_payload_digest_function": "path2_account_stark_creation_payload_v1_digest",
+      "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
+      "verifier_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary"
+    },
+    "corpus_id": "Descender.Path2.DirectTheoremBoundary.v1",
+    "corpus_version": 1,
+    "digests": {
+      "account_creation_proof_boundary_report_digest": "ea5e125e2154295e2fef614b06583887e1cc9294101594828585ace5ad3ef45e",
+      "account_creation_proof_boundary_report_recomputed_digest": "ea5e125e2154295e2fef614b06583887e1cc9294101594828585ace5ad3ef45e",
+      "direct_theorem_boundary_report_digest": "1dab0b291a04ab531591adea220036f1addf012b03f888a520c17f8375216e93",
+      "direct_theorem_boundary_report_recomputed_digest": "1dab0b291a04ab531591adea220036f1addf012b03f888a520c17f8375216e93"
+    },
+    "direct_theorem_boundary": {
+      "acceptance_hypotheses": [
+        "leaf_is_canonical_and_live",
+        "evidence_envelope_matches_leaf_bindings",
+        "slot_authorization_digest_matches_canonical_leaf",
+        "selected_creation_verifier_accepted_before_spend_challenge",
+        "direct_admission_namespace_contains_exact_tuple",
+        "checked_core_challenge_binds_public_spend_context",
+        "checked_core_verification_accepts_poseidon2_and_fq12_action",
+        "lifecycle_transition_consumes_authorization_once",
+        "rejection_is_deterministic_public_and_state_preserving"
+      ],
+      "accepted_tuple_fields": [
+        "public_key_or_public_key_identity",
+        "message_or_message_digest",
+        "account_id",
+        "account_state_root_before_spend",
+        "slot_id",
+        "checked_core_signature_body",
+        "prevalidated_slot_leaf_v1",
+        "account_creation_evidence_v1",
+        "selected_account_creation_proof_payload",
+        "direct_admission_namespace_record",
+        "consume_once_state_before_and_after_spend"
+      ],
+      "coverage": {
+        "acceptance_hypotheses_pinned": true,
+        "acceptance_hypothesis_count": 9,
+        "accepted_tuple_field_count": 11,
+        "accepted_tuple_pinned": true,
+        "account_creation_proof_boundary_verified": false,
+        "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+        "composition_theorem_instantiated": false,
+        "deployment_ready": false,
+        "every_hypothesis_has_obligation": true,
+        "every_obligation_has_named_break": true,
+        "every_open_obligation_blocks_deployment": true,
+        "lifecycle_transition_profile_verified": false,
+        "named_break_class_count": 12,
+        "named_break_classes_pinned": true,
+        "obligation_count": 9,
+        "qrom_and_action_bounds_linked_to_theorem": false,
+        "theorem_statement_pinned": true
+      },
+      "named_break_classes": [
+        "creation_time_hidden_source_soundness_break",
+        "prevalidation_leaf_binding_break",
+        "prevalidation_registry_binding_break",
+        "prevalidation_data_availability_break",
+        "postchallenge_slot_creation_or_rewrite_break",
+        "checked_core_message_binding_break",
+        "slot_replay_or_rollback_break",
+        "qrom_or_domain_separation_break",
+        "live_slot_leakage_or_keygen_break",
+        "selected_account_creation_payload_proof_family_break",
+        "consensus_rejection_or_state_mutation_break",
+        "external_coded_sis_or_lattice_core_assumption_break"
+      ],
+      "obligation_rows": [
+        {
+          "acceptance_hypothesis": "leaf_is_canonical_and_live",
+          "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+          "current_evidence": "wire-format authority and leaf digest helpers exist; lifecycle target profile and frozen leaf KATs remain open",
+          "named_break": "prevalidation_leaf_binding_break",
+          "obligation_id": "direct_obligation_leaf_canonical_live",
+          "open": true,
+          "required_closure": "composition theorem imports canonical leaf parsing plus live-slot lifecycle evidence for the accepted tuple",
+          "supporting_surface": "PrevalidatedSlotLeafV1 bytes and lifecycle live marker"
+        },
+        {
+          "acceptance_hypothesis": "evidence_envelope_matches_leaf_bindings",
+          "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+          "current_evidence": "shared creation-frame verifier checks evidence/leaf field equality and the proof-boundary report pins exact binding fields",
+          "named_break": "prevalidation_leaf_binding_break",
+          "obligation_id": "direct_obligation_evidence_leaf_bindings",
+          "open": true,
+          "required_closure": "composition theorem imports the evidence/leaf binding verifier and frozen malformed-field KATs",
+          "supporting_surface": "AccountCreationEvidenceV1 duplicated binding fields"
+        },
+        {
+          "acceptance_hypothesis": "slot_authorization_digest_matches_canonical_leaf",
+          "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+          "current_evidence": "wire-format authority gates the slot authorization domain and digest helper",
+          "named_break": "prevalidation_leaf_binding_break",
+          "obligation_id": "direct_obligation_slot_authorization_digest",
+          "open": true,
+          "required_closure": "composition theorem imports canonical slot_authorization_digest equality and byte KAT coverage",
+          "supporting_surface": "slot_authorization_digest domain and leaf-byte frame"
+        },
+        {
+          "acceptance_hypothesis": "selected_creation_verifier_accepted_before_spend_challenge",
+          "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+          "current_evidence": "selected account-STARK boundary is implemented, field-pinned, and fail-closed for production",
+          "named_break": "selected_account_creation_payload_proof_family_break",
+          "obligation_id": "direct_obligation_creation_before_challenge",
+          "open": true,
+          "required_closure": "account-creation proof boundary is verified and the final theorem proves admission precedes spend challenge derivation",
+          "supporting_surface": "Path2AccountCreationProofBoundaryReportV1 and admission ordering"
+        },
+        {
+          "acceptance_hypothesis": "direct_admission_namespace_contains_exact_tuple",
+          "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+          "current_evidence": "namespace requirement is in the direct theorem boundary; target-chain data-availability profile remains open",
+          "named_break": "prevalidation_registry_binding_break",
+          "obligation_id": "direct_obligation_admission_namespace",
+          "open": true,
+          "required_closure": "composition theorem imports exact account/state-root/slot-authorization tuple membership and DA semantics",
+          "supporting_surface": "direct admission namespace record"
+        },
+        {
+          "acceptance_hypothesis": "checked_core_challenge_binds_public_spend_context",
+          "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+          "current_evidence": "DIR-CC-001 is verified for checked-core frame field order, mutation tests, and authorization digest binding",
+          "named_break": "checked_core_message_binding_break",
+          "obligation_id": "direct_obligation_checked_core_frame_binding",
+          "open": true,
+          "required_closure": "composition theorem imports checked-core frame binding for the accepted spend tuple",
+          "supporting_surface": "Path2NativeCheckedCoreFrameV1"
+        },
+        {
+          "acceptance_hypothesis": "checked_core_verification_accepts_poseidon2_and_fq12_action",
+          "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+          "current_evidence": "wire-format authority and concrete-security smoke separate Poseidon2 challenge bytes from the Fq12 action-map term",
+          "named_break": "qrom_or_domain_separation_break",
+          "obligation_id": "direct_obligation_checked_core_acceptance",
+          "open": true,
+          "required_closure": "composition theorem links QROM/action-map numeric bounds to the accepted spend event",
+          "supporting_surface": "checked-core verifier, Poseidon2 Fiat-Shamir, and Fq12 action map"
+        },
+        {
+          "acceptance_hypothesis": "lifecycle_transition_consumes_authorization_once",
+          "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+          "current_evidence": "lifecycle model and consume-once verifier helper exist; target-chain finality/reorg profile remains open",
+          "named_break": "slot_replay_or_rollback_break",
+          "obligation_id": "direct_obligation_consume_once",
+          "open": true,
+          "required_closure": "composition theorem imports consume-once successor-state proof and target-chain lifecycle profile",
+          "supporting_surface": "consume-once lifecycle state transition"
+        },
+        {
+          "acceptance_hypothesis": "rejection_is_deterministic_public_and_state_preserving",
+          "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
+          "current_evidence": "account-STARK payload boundary maps current internal errors to public rejection classes; full consensus rejection KATs remain open",
+          "named_break": "consensus_rejection_or_state_mutation_break",
+          "obligation_id": "direct_obligation_public_rejection",
+          "open": true,
+          "required_closure": "public rejection enum, panic-free malformed-input KATs, and state-no-mutation tests cover every direct-mode rejection",
+          "supporting_surface": "consensus-safe rejection and state-preserving failure mapping"
+        }
+      ]
+    },
+    "frozen_status": "draft_theorem_boundary_manifest",
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_theorem_boundary_manifest",
+      "source": "tools/parameter-search/src/bin/path2_direct_theorem_boundary_manifest.rs"
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
+  },
+  "manifest_digest": "370b9379a71b8f5fb01c27d6021c73bd416881e551ac3c21a941bbcf44ee710b"
+}
