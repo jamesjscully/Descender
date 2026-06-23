@@ -462,8 +462,8 @@
       "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
-      "direct_theorem_boundary_report_digest": "2f6226e399a4efc1d04005f67ef5c3c7a52d0ccd61797d422decdca0678fb053",
-      "direct_theorem_boundary_report_recomputed_digest": "2f6226e399a4efc1d04005f67ef5c3c7a52d0ccd61797d422decdca0678fb053",
+      "direct_theorem_boundary_report_digest": "8147d78a2b098990ea4777617e433fd76c37f1a47d23d472397e0f98a8e17070",
+      "direct_theorem_boundary_report_recomputed_digest": "8147d78a2b098990ea4777617e433fd76c37f1a47d23d472397e0f98a8e17070",
       "direct_theorem_report_lifecycle_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_theorem_report_qrom_action_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
@@ -600,6 +600,8 @@
         "lifecycle_transition_consumes_authorization_once",
         "rejection_is_deterministic_public_and_state_preserving"
       ],
+      "accepted_tuple_evidence_endpoint": "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1",
+      "accepted_tuple_evidence_schema": "Descender.Path2.DirectAcceptedSpendTupleEvidence.v1",
       "accepted_tuple_fields": [
         "public_key_or_public_key_identity",
         "message_or_message_digest",
@@ -616,6 +618,7 @@
       "coverage": {
         "acceptance_hypotheses_pinned": true,
         "acceptance_hypothesis_count": 9,
+        "accepted_tuple_evidence_present": true,
         "accepted_tuple_field_count": 11,
         "accepted_tuple_pinned": true,
         "account_creation_proof_boundary_verified": false,
@@ -664,7 +667,7 @@
         {
           "acceptance_hypothesis": "leaf_is_canonical_and_live",
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
-          "current_evidence": "wire-format authority and leaf digest helpers exist; lifecycle target profile and frozen leaf KATs remain open",
+          "current_evidence": "wire-format authority, leaf digest helpers, and accepted-tuple evidence for the leaf digest exist; lifecycle target profile and frozen leaf KATs remain open",
           "named_break": "prevalidation_leaf_binding_break",
           "obligation_id": "direct_obligation_leaf_canonical_live",
           "open": true,
@@ -674,7 +677,7 @@
         {
           "acceptance_hypothesis": "evidence_envelope_matches_leaf_bindings",
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
-          "current_evidence": "shared creation-frame verifier checks evidence/leaf field equality and the proof-boundary report pins exact binding fields",
+          "current_evidence": "shared creation-frame verifier checks evidence/leaf field equality; the proof-boundary report pins exact binding fields; accepted-tuple evidence records the evidence transcript and selected payload digest",
           "named_break": "prevalidation_leaf_binding_break",
           "obligation_id": "direct_obligation_evidence_leaf_bindings",
           "open": true,
@@ -684,7 +687,7 @@
         {
           "acceptance_hypothesis": "slot_authorization_digest_matches_canonical_leaf",
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
-          "current_evidence": "wire-format authority gates the slot authorization domain and digest helper",
+          "current_evidence": "wire-format authority gates the slot authorization domain and digest helper; accepted-tuple evidence records the canonical slot authorization digest",
           "named_break": "prevalidation_leaf_binding_break",
           "obligation_id": "direct_obligation_slot_authorization_digest",
           "open": true,
@@ -704,7 +707,7 @@
         {
           "acceptance_hypothesis": "direct_admission_namespace_contains_exact_tuple",
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
-          "current_evidence": "namespace requirement is in the direct theorem boundary; target-chain data-availability profile remains open",
+          "current_evidence": "namespace requirement is in the direct theorem boundary; accepted-tuple evidence records the exact account/state-root/authorization namespace digest and membership check; target-chain data-availability profile remains open",
           "named_break": "prevalidation_registry_binding_break",
           "obligation_id": "direct_obligation_admission_namespace",
           "open": true,
@@ -724,7 +727,7 @@
         {
           "acceptance_hypothesis": "checked_core_verification_accepts_poseidon2_and_fq12_action",
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
-          "current_evidence": "wire-format authority and concrete-security smoke separate Poseidon2 challenge bytes from the Fq12 action-map term",
+          "current_evidence": "wire-format authority, accepted-tuple evidence, and concrete-security smoke separate Poseidon2 challenge bytes from the Fq12 action-map term",
           "named_break": "qrom_or_domain_separation_break",
           "obligation_id": "direct_obligation_checked_core_acceptance",
           "open": true,
@@ -734,7 +737,7 @@
         {
           "acceptance_hypothesis": "lifecycle_transition_consumes_authorization_once",
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
-          "current_evidence": "lifecycle model and consume-once verifier helper exist; target-chain finality/reorg profile remains open",
+          "current_evidence": "lifecycle model, consume-once verifier helper, and accepted-tuple before/after state evidence exist; target-chain finality/reorg profile remains open",
           "named_break": "slot_replay_or_rollback_break",
           "obligation_id": "direct_obligation_consume_once",
           "open": true,
@@ -763,5 +766,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "9863f31181c74d0fddb6442e80cd5e4b0607bf37cb43208ecbdb88be55382d94"
+  "manifest_digest": "5107abd8cd079986ae6bd08c6351a95cd7751146d60bc24fe6ed8b2e2eb1df54"
 }

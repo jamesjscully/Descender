@@ -98,6 +98,12 @@ fn manifest_body() -> Result<Value, String> {
             "recomputed_digest": hex_encode(&direct_digest),
             "account_creation_proof_boundary_report_digest":
                 hex_encode(&direct_report.account_creation_proof_boundary_report_digest),
+            "accepted_tuple_evidence_schema":
+                direct_report.accepted_tuple_evidence_schema,
+            "accepted_tuple_evidence_endpoint":
+                direct_report.accepted_tuple_evidence_endpoint,
+            "accepted_tuple_evidence_present":
+                direct_report.accepted_tuple_evidence_present,
             "composition_theorem_instantiated":
                 direct_report.composition_theorem_instantiated,
             "account_creation_proof_boundary_verified":

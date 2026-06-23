@@ -107,6 +107,24 @@ fn main() -> Result<(), String> {
     {
         return Err("proof-obligation vector corpus is not bound to direct report".to_string());
     }
+    if str_at(
+        corpus,
+        "/direct_theorem_report/accepted_tuple_evidence_schema",
+    )? != direct_report.accepted_tuple_evidence_schema
+        || str_at(
+            corpus,
+            "/direct_theorem_report/accepted_tuple_evidence_endpoint",
+        )? != direct_report.accepted_tuple_evidence_endpoint
+        || bool_at(
+            corpus,
+            "/direct_theorem_report/accepted_tuple_evidence_present",
+        )? != direct_report.accepted_tuple_evidence_present
+    {
+        return Err(
+            "proof-obligation vector corpus lost direct accepted-tuple evidence hook"
+                .to_string(),
+        );
+    }
     if direct_report.account_creation_proof_boundary_report_digest != proof_report.digest {
         return Err("direct theorem report lost proof-boundary binding".to_string());
     }

@@ -108,6 +108,24 @@ fn main() -> Result<(), String> {
             "direct theorem obligation vector corpus is not bound to direct report".to_string(),
         );
     }
+    if str_at(
+        corpus,
+        "/direct_theorem_report/accepted_tuple_evidence_schema",
+    )? != direct_report.accepted_tuple_evidence_schema
+        || str_at(
+            corpus,
+            "/direct_theorem_report/accepted_tuple_evidence_endpoint",
+        )? != direct_report.accepted_tuple_evidence_endpoint
+        || bool_at(
+            corpus,
+            "/direct_theorem_report/accepted_tuple_evidence_present",
+        )? != direct_report.accepted_tuple_evidence_present
+    {
+        return Err(
+            "direct theorem obligation vector corpus lost accepted-tuple evidence hook"
+                .to_string(),
+        );
+    }
     if str_at(corpus, "/qrom_action_boundary_report/digest")?
         != hex_encode(&qrom_action_report.digest)
         || str_at(corpus, "/qrom_action_boundary_report/recomputed_digest")?

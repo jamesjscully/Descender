@@ -172,6 +172,8 @@ fn manifest_body() -> Result<Value, String> {
                     direct_report.every_open_obligation_blocks_deployment,
                 "theorem_statement_pinned": direct_report.theorem_statement_pinned,
                 "accepted_tuple_pinned": direct_report.accepted_tuple_pinned,
+                "accepted_tuple_evidence_present":
+                    direct_report.accepted_tuple_evidence_present,
                 "acceptance_hypotheses_pinned":
                     direct_report.acceptance_hypotheses_pinned,
                 "named_break_classes_pinned": direct_report.named_break_classes_pinned,
@@ -189,6 +191,10 @@ fn manifest_body() -> Result<Value, String> {
             "theorem_target": direct_report.theorem_target,
             "theorem_conclusion": direct_report.theorem_conclusion,
             "accepted_tuple_fields": direct_report.accepted_tuple_fields,
+            "accepted_tuple_evidence_schema":
+                direct_report.accepted_tuple_evidence_schema,
+            "accepted_tuple_evidence_endpoint":
+                direct_report.accepted_tuple_evidence_endpoint,
             "acceptance_hypotheses": direct_report.acceptance_hypotheses,
             "named_break_classes": direct_report.named_break_classes,
             "obligation_audit_vector_case_ids":

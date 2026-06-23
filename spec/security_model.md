@@ -85,7 +85,22 @@ proof-boundary digest, and selected field groups cannot drift silently. The
 digest-pinned audit case for each open direct-theorem obligation and binds that
 row list to the current QROM/action, lifecycle, and account-creation
 proof-boundary reports while keeping composition, imported-boundary verification,
-and deployment flags false. The public-rejection obligation row now records
+and deployment flags false. `Path2DirectAcceptedSpendTupleEvidenceV1` records
+an accepted-path tuple digest for the current direct spend endpoint: public-key
+identity, message digest, account id, state root, slot id, checked-core
+signature/challenge/proof-commitment digests, leaf digest, evidence transcript
+digest, selected creation-payload digest, exact admission namespace digest,
+slot authorization digest, consume-once before/after state digests, imported
+QROM/action, lifecycle, and proof-boundary report digests, and the public
+`accept_spend_slot` result. The
+`verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1`
+hook runs the real direct verifier, snapshots the consume-once transition, and
+checks the public result wrapper independently accepts the same slot from the
+same before-state. The
+`path2_direct_single_slot_spend_tuple_evidence_pins_accepted_tuple` test is
+accepted-path evidence for the theorem shape, but it is not the composition
+theorem and does not verify the account-creation proof family. The
+public-rejection obligation row now records
 `Path2PublicResultClassV1`, `Path2DirectSpendPublicResultV1`, the direct spend
 public-classifier helper, and the
 `path2_direct_single_slot_spend_rejections_preserve_consume_once_state` test,
@@ -409,7 +424,7 @@ used as deployment evidence while a higher-ranked blocker remains open.
 
 | Rank | Blocker | Must close | Owning rows |
 |---|---|---|---|
-| 1 | Direct theorem closure | `Path2DirectTheoremBoundaryReportV1` and `formal/kat/path2_direct_theorem_boundary_v1.json` pin the product theorem boundary, and the final product theorem covers admission, spend, consume-once lifecycle, exact public bindings, and every named break; supporting lemmas cannot stand in for the deployment theorem. | `DIR-RISK-001`, `DIR-SEC-001`, `DIR-CREATE-001`, `DIR-PROOF-002`, `DIR-AUTHCLASS-001` |
+| 1 | Direct theorem closure | `Path2DirectTheoremBoundaryReportV1`, `Path2DirectAcceptedSpendTupleEvidenceV1`, and `formal/kat/path2_direct_theorem_boundary_v1.json` pin the product theorem boundary and accepted-path tuple evidence, and the final product theorem covers admission, spend, consume-once lifecycle, exact public bindings, and every named break; supporting lemmas and executable accepted-path evidence cannot stand in for the deployment theorem. | `DIR-RISK-001`, `DIR-SEC-001`, `DIR-CREATE-001`, `DIR-PROOF-002`, `DIR-AUTHCLASS-001` |
 | 2 | Account-creation proof boundary | `Path2AccountCreationProofBoundaryReportV1` pins the selected account-STARK payload boundary, imports the `Path2AccountStarkFriAokBoundaryReportV1` digest through the residual matrix, and the payload has a concrete byte model, canonical replay-payload digest, deployed anchor binding, simulator theorem, extractor theorem, hidden-source payload statement, production gate, and rejection behavior. | `DIR-CREATE-001`, `DIR-PROOF-001`, `DIR-STARK-001`, `DIR-BIND-001`, `DIR-PAYLOAD-001`, `DIR-KAT-001`, `DIR-REJECT-001` |
 | 3 | Authorization-class binding | Private authorization-local material cannot change public spend semantics, fork account state, or bypass the checked-core public binding. | `DIR-AUTHCLASS-001`, `DIR-SEC-001`, `DIR-CC-001` |
 | 4 | Consensus conformance | Canonical wire formats, public-field mutation vectors, end-to-end creation/spend/lifecycle vectors, and deterministic rejection behavior exist. | `DIR-KAT-001`, `SPEC-KAT-001`, `DIR-REJECT-001`, `DIR-CC-001`, `DIR-LEAF-001`, `DIR-EVID-001` |

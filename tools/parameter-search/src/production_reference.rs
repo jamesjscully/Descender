@@ -299,6 +299,8 @@ pub const PRODUCTION_DEPLOYMENT_PREFLIGHT_READY_ASSERTION_DOMAIN: &str =
     "Descender.Signature.q12289.local_delta.production_deployment_preflight_ready_assertion.v1";
 pub const PRODUCTION_DEPLOYMENT_PREFLIGHT_CERTIFICATE_DOMAIN: &str =
     "Descender.Signature.q12289.local_delta.production_deployment_preflight_certificate.v1";
+pub const PATH2_DIRECT_ACCEPTED_SPEND_TUPLE_EVIDENCE_SCHEMA: &str =
+    "Descender.Path2.DirectAcceptedSpendTupleEvidence.v1";
 pub const PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.DirectTheoremBoundaryReport.v1";
 pub const PATH2_DIRECT_QROM_ACTION_BOUNDARY_REPORT_DOMAIN: &str =
@@ -9648,6 +9650,42 @@ pub struct Path2DirectTheoremObligationRowV1 {
     pub open: bool,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2DirectAcceptedSpendTupleEvidenceV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub schema: &'static str,
+    pub theorem_target: &'static str,
+    pub theorem_conclusion: &'static str,
+    pub accepted_tuple_fields: &'static [&'static str],
+    pub acceptance_hypotheses: &'static [&'static str],
+    pub direct_qrom_action_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub direct_lifecycle_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub account_creation_proof_boundary_report_digest: [u8; DIGEST_BYTES],
+    pub public_key_identity: [u8; DIGEST_BYTES],
+    pub message_digest: [u8; DIGEST_BYTES],
+    pub account_id: [u8; DIGEST_BYTES],
+    pub account_state_root_before: [u8; DIGEST_BYTES],
+    pub slot_id: u64,
+    pub accepted_slot_id: u32,
+    pub checked_core_signature_digest: [u8; DIGEST_BYTES],
+    pub checked_core_challenge_digest: [u8; DIGEST_BYTES],
+    pub checked_core_proof_commitment_digest: [u8; DIGEST_BYTES],
+    pub prevalidated_slot_leaf_digest: [u8; DIGEST_BYTES],
+    pub account_creation_evidence_transcript_digest: [u8; DIGEST_BYTES],
+    pub selected_account_creation_payload_digest: [u8; DIGEST_BYTES],
+    pub direct_admission_namespace_record_digest: [u8; DIGEST_BYTES],
+    pub slot_authorization_digest: [u8; DIGEST_BYTES],
+    pub consume_once_state_before_digest: [u8; DIGEST_BYTES],
+    pub consume_once_state_after_digest: [u8; DIGEST_BYTES],
+    pub public_result_class_name: &'static str,
+    pub state_namespace_record_present: bool,
+    pub consumed_authorization_absent_before: bool,
+    pub consumed_authorization_present_after: bool,
+    pub consume_once_inserted_exactly_one_authorization: bool,
+    pub public_result_accepts_same_slot: bool,
+    pub tuple_fields_match_theorem_boundary: bool,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2DirectQromActionBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
@@ -9735,6 +9773,8 @@ pub struct Path2DirectTheoremBoundaryReportV1 {
     pub theorem_target: &'static str,
     pub theorem_conclusion: &'static str,
     pub accepted_tuple_fields: &'static [&'static str],
+    pub accepted_tuple_evidence_schema: &'static str,
+    pub accepted_tuple_evidence_endpoint: &'static str,
     pub acceptance_hypotheses: &'static [&'static str],
     pub named_break_classes: &'static [&'static str],
     pub obligation_audit_vector_case_ids: &'static [&'static str],
@@ -9746,6 +9786,7 @@ pub struct Path2DirectTheoremBoundaryReportV1 {
     pub every_open_obligation_blocks_deployment: bool,
     pub theorem_statement_pinned: bool,
     pub accepted_tuple_pinned: bool,
+    pub accepted_tuple_evidence_present: bool,
     pub acceptance_hypotheses_pinned: bool,
     pub named_break_classes_pinned: bool,
     pub composition_theorem_instantiated: bool,
@@ -10931,7 +10972,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "leaf_is_canonical_and_live",
         supporting_surface: "PrevalidatedSlotLeafV1 bytes and lifecycle live marker",
         current_evidence:
-            "wire-format authority and leaf digest helpers exist; lifecycle target profile and frozen leaf KATs remain open",
+            "wire-format authority, leaf digest helpers, and accepted-tuple evidence for the leaf digest exist; lifecycle target profile and frozen leaf KATs remain open",
         required_closure:
             "composition theorem imports canonical leaf parsing plus live-slot lifecycle evidence for the accepted tuple",
         named_break: "prevalidation_leaf_binding_break",
@@ -10943,7 +10984,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "evidence_envelope_matches_leaf_bindings",
         supporting_surface: "AccountCreationEvidenceV1 duplicated binding fields",
         current_evidence:
-            "shared creation-frame verifier checks evidence/leaf field equality and the proof-boundary report pins exact binding fields",
+            "shared creation-frame verifier checks evidence/leaf field equality; the proof-boundary report pins exact binding fields; accepted-tuple evidence records the evidence transcript and selected payload digest",
         required_closure:
             "composition theorem imports the evidence/leaf binding verifier and frozen malformed-field KATs",
         named_break: "prevalidation_leaf_binding_break",
@@ -10955,7 +10996,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "slot_authorization_digest_matches_canonical_leaf",
         supporting_surface: "slot_authorization_digest domain and leaf-byte frame",
         current_evidence:
-            "wire-format authority gates the slot authorization domain and digest helper",
+            "wire-format authority gates the slot authorization domain and digest helper; accepted-tuple evidence records the canonical slot authorization digest",
         required_closure:
             "composition theorem imports canonical slot_authorization_digest equality and byte KAT coverage",
         named_break: "prevalidation_leaf_binding_break",
@@ -10979,7 +11020,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "direct_admission_namespace_contains_exact_tuple",
         supporting_surface: "direct admission namespace record",
         current_evidence:
-            "namespace requirement is in the direct theorem boundary; target-chain data-availability profile remains open",
+            "namespace requirement is in the direct theorem boundary; accepted-tuple evidence records the exact account/state-root/authorization namespace digest and membership check; target-chain data-availability profile remains open",
         required_closure:
             "composition theorem imports exact account/state-root/slot-authorization tuple membership and DA semantics",
         named_break: "prevalidation_registry_binding_break",
@@ -11003,7 +11044,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "checked_core_verification_accepts_poseidon2_and_fq12_action",
         supporting_surface: "checked-core verifier, Poseidon2 Fiat-Shamir, and Fq12 action map",
         current_evidence:
-            "wire-format authority and concrete-security smoke separate Poseidon2 challenge bytes from the Fq12 action-map term",
+            "wire-format authority, accepted-tuple evidence, and concrete-security smoke separate Poseidon2 challenge bytes from the Fq12 action-map term",
         required_closure:
             "composition theorem links QROM/action-map numeric bounds to the accepted spend event",
         named_break: "qrom_or_domain_separation_break",
@@ -11015,7 +11056,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "lifecycle_transition_consumes_authorization_once",
         supporting_surface: "consume-once lifecycle state transition",
         current_evidence:
-            "lifecycle model and consume-once verifier helper exist; target-chain finality/reorg profile remains open",
+            "lifecycle model, consume-once verifier helper, and accepted-tuple before/after state evidence exist; target-chain finality/reorg profile remains open",
         required_closure:
             "composition theorem imports consume-once successor-state proof and target-chain lifecycle profile",
         named_break: "slot_replay_or_rollback_break",
@@ -12646,6 +12687,9 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         theorem_target: PATH2_DIRECT_THEOREM_TARGET,
         theorem_conclusion: PATH2_DIRECT_THEOREM_CONCLUSION,
         accepted_tuple_fields: &PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS,
+        accepted_tuple_evidence_schema: PATH2_DIRECT_ACCEPTED_SPEND_TUPLE_EVIDENCE_SCHEMA,
+        accepted_tuple_evidence_endpoint:
+            "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1",
         acceptance_hypotheses: &PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES,
         named_break_classes: &PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES,
         obligation_audit_vector_case_ids: &PATH2_DIRECT_THEOREM_OBLIGATION_AUDIT_CASES,
@@ -12667,6 +12711,7 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         }),
         theorem_statement_pinned: true,
         accepted_tuple_pinned: true,
+        accepted_tuple_evidence_present: true,
         acceptance_hypotheses_pinned: true,
         named_break_classes_pinned: true,
         composition_theorem_instantiated: false,
@@ -64537,6 +64582,273 @@ pub fn verify_path2_direct_single_slot_spend_authorization_public_result_v1(
     }
 }
 
+pub fn path2_direct_admission_namespace_record_digest(
+    account_id: &[u8; DIGEST_BYTES],
+    account_state_root_before: &[u8; DIGEST_BYTES],
+    slot_authorization_digest: &[u8; DIGEST_BYTES],
+) -> [u8; DIGEST_BYTES] {
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"domain",
+        b"Descender.Path2.DirectAdmissionNamespaceRecord.v1",
+    );
+    append_frame(&mut frame, b"account_id", account_id);
+    append_frame(
+        &mut frame,
+        b"account_state_root_before",
+        account_state_root_before,
+    );
+    append_frame(
+        &mut frame,
+        b"slot_authorization_digest",
+        slot_authorization_digest,
+    );
+    Sha256::digest(frame).into()
+}
+
+pub fn path2_direct_consume_once_authorization_set_digest(
+    consumed_authorizations: &BTreeSet<[u8; DIGEST_BYTES]>,
+) -> [u8; DIGEST_BYTES] {
+    let mut frame = Vec::new();
+    append_frame(
+        &mut frame,
+        b"domain",
+        b"Descender.Path2.DirectConsumeOnceAuthorizationSet.v1",
+    );
+    append_u64(
+        &mut frame,
+        b"authorization_count",
+        consumed_authorizations.len() as u64,
+    );
+    for authorization in consumed_authorizations {
+        append_frame(&mut frame, b"slot_authorization_digest", authorization);
+    }
+    Sha256::digest(frame).into()
+}
+
+pub fn path2_direct_accepted_spend_tuple_evidence_v1(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    public_key: &ProductionPublicKey,
+    message: &[u8],
+    account: &ProductionReviewedFq12StateAssistedAccountState,
+    signature: &ProductionSignature,
+    admitted_state_authorizations: &BTreeSet<(
+        [u8; DIGEST_BYTES],
+        [u8; DIGEST_BYTES],
+        [u8; DIGEST_BYTES],
+    )>,
+    consumed_before: &BTreeSet<[u8; DIGEST_BYTES]>,
+    consumed_after: &BTreeSet<[u8; DIGEST_BYTES]>,
+    accepted_parts: &ProductionReviewedFq12AccountCarriedSignatureParts,
+) -> Result<Path2DirectAcceptedSpendTupleEvidenceV1, ProductionAccountBindingError> {
+    let public_key_identity: [u8; DIGEST_BYTES] = Sha256::digest(public_key.as_bytes()).into();
+    if leaf.public_key_identity != public_key_identity {
+        return Err(ProductionAccountBindingError::new(
+            None,
+            "Path 2 accepted tuple public-key identity mismatch",
+        ));
+    }
+    verify_path2_prevalidated_slot_creation_payload_bindings(leaf, evidence, Some(certificate))
+        .map_err(|err| ProductionAccountBindingError::new(None, err))?;
+    let slot_authorization_digest = path2_slot_authorization_digest(leaf)
+        .map_err(|err| ProductionAccountBindingError::new(None, err))?;
+    let namespace_record = (
+        leaf.account_id,
+        leaf.account_state_root_before,
+        slot_authorization_digest,
+    );
+    let state_namespace_record_present =
+        admitted_state_authorizations.contains(&namespace_record);
+    if !state_namespace_record_present {
+        return Err(ProductionAccountBindingError::new(
+            None,
+            "Path 2 accepted tuple state namespace record missing",
+        ));
+    }
+    let checked_core_parts = verify_path2_checked_core_authorization(
+        public_key,
+        message,
+        account,
+        &leaf.account_id,
+        &leaf.account_state_root_before,
+        &slot_authorization_digest,
+        signature,
+    )?;
+    if checked_core_parts != *accepted_parts {
+        return Err(ProductionAccountBindingError::new(
+            Some(accepted_parts.slot_id),
+            "Path 2 accepted tuple checked-core parts mismatch",
+        ));
+    }
+    if u64::from(accepted_parts.slot_id) != leaf.slot_id {
+        return Err(ProductionAccountBindingError::new(
+            Some(accepted_parts.slot_id),
+            "Path 2 accepted tuple slot id mismatch",
+        ));
+    }
+
+    let consumed_authorization_absent_before =
+        !consumed_before.contains(&slot_authorization_digest);
+    let consumed_authorization_present_after =
+        consumed_after.contains(&slot_authorization_digest);
+    let mut expected_after = consumed_before.clone();
+    expected_after.insert(slot_authorization_digest);
+    let consume_once_inserted_exactly_one_authorization =
+        consumed_authorization_absent_before && expected_after == *consumed_after;
+    if !consume_once_inserted_exactly_one_authorization {
+        return Err(ProductionAccountBindingError::new(
+            Some(accepted_parts.slot_id),
+            "Path 2 accepted tuple consume-once transition mismatch",
+        ));
+    }
+
+    let mut public_result_consumed = consumed_before.clone();
+    let public_result = verify_path2_direct_single_slot_spend_authorization_public_result_v1(
+        leaf,
+        evidence,
+        certificate,
+        public_key,
+        message,
+        account,
+        signature,
+        admitted_state_authorizations,
+        &mut public_result_consumed,
+    );
+    let public_result_accepts_same_slot = public_result.result_class
+        == Path2PublicResultClassV1::AcceptSpendSlot
+        && public_result.accepted_slot_id == Some(accepted_parts.slot_id)
+        && public_result_consumed == *consumed_after;
+    if !public_result_accepts_same_slot {
+        return Err(ProductionAccountBindingError::new(
+            Some(accepted_parts.slot_id),
+            "Path 2 accepted tuple public result mismatch",
+        ));
+    }
+
+    let leaf_digest = path2_prevalidated_slot_leaf_digest(leaf)
+        .map_err(|err| ProductionAccountBindingError::new(None, err))?;
+    let evidence_transcript_digest = path2_account_creation_evidence_transcript_digest(evidence)
+        .map_err(|err| ProductionAccountBindingError::new(None, err))?;
+    let direct_qrom_action_boundary_report = path2_direct_qrom_action_boundary_report_v1();
+    let direct_lifecycle_boundary_report = path2_direct_lifecycle_boundary_report_v1();
+    let account_creation_proof_boundary_report =
+        path2_account_creation_proof_boundary_report_v1();
+    let signature_bytes = signature.as_bytes();
+    let challenge_bytes = &signature_bytes[SLOT_ID_BYTES..SLOT_ID_BYTES + CHALLENGE_BYTES];
+    let tuple_fields_match_theorem_boundary =
+        PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.len() == 11
+            && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS
+                .contains(&"public_key_or_public_key_identity")
+            && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS
+                .contains(&"message_or_message_digest")
+            && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS
+                .contains(&"direct_admission_namespace_record")
+            && PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS
+                .contains(&"consume_once_state_before_and_after_spend");
+    if !tuple_fields_match_theorem_boundary {
+        return Err(ProductionAccountBindingError::new(
+            Some(accepted_parts.slot_id),
+            "Path 2 accepted tuple theorem-field boundary mismatch",
+        ));
+    }
+
+    let mut tuple_evidence = Path2DirectAcceptedSpendTupleEvidenceV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        schema: PATH2_DIRECT_ACCEPTED_SPEND_TUPLE_EVIDENCE_SCHEMA,
+        theorem_target: PATH2_DIRECT_THEOREM_TARGET,
+        theorem_conclusion: PATH2_DIRECT_THEOREM_CONCLUSION,
+        accepted_tuple_fields: &PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS,
+        acceptance_hypotheses: &PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES,
+        direct_qrom_action_boundary_report_digest: direct_qrom_action_boundary_report.digest,
+        direct_lifecycle_boundary_report_digest: direct_lifecycle_boundary_report.digest,
+        account_creation_proof_boundary_report_digest:
+            account_creation_proof_boundary_report.digest,
+        public_key_identity,
+        message_digest: Sha256::digest(message).into(),
+        account_id: leaf.account_id,
+        account_state_root_before: leaf.account_state_root_before,
+        slot_id: leaf.slot_id,
+        accepted_slot_id: accepted_parts.slot_id,
+        checked_core_signature_digest: Sha256::digest(signature.as_bytes()).into(),
+        checked_core_challenge_digest: Sha256::digest(challenge_bytes).into(),
+        checked_core_proof_commitment_digest: Sha256::digest(
+            accepted_parts.proof.proof_commitment,
+        )
+        .into(),
+        prevalidated_slot_leaf_digest: leaf_digest,
+        account_creation_evidence_transcript_digest: evidence_transcript_digest,
+        selected_account_creation_payload_digest: certificate.public_replay_payload_digest,
+        direct_admission_namespace_record_digest: path2_direct_admission_namespace_record_digest(
+            &leaf.account_id,
+            &leaf.account_state_root_before,
+            &slot_authorization_digest,
+        ),
+        slot_authorization_digest,
+        consume_once_state_before_digest: path2_direct_consume_once_authorization_set_digest(
+            consumed_before,
+        ),
+        consume_once_state_after_digest: path2_direct_consume_once_authorization_set_digest(
+            consumed_after,
+        ),
+        public_result_class_name: public_result.result_class_name,
+        state_namespace_record_present,
+        consumed_authorization_absent_before,
+        consumed_authorization_present_after,
+        consume_once_inserted_exactly_one_authorization,
+        public_result_accepts_same_slot,
+        tuple_fields_match_theorem_boundary,
+    };
+    tuple_evidence.digest =
+        path2_direct_accepted_spend_tuple_evidence_v1_digest(&tuple_evidence);
+    Ok(tuple_evidence)
+}
+
+pub fn verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    public_key: &ProductionPublicKey,
+    message: &[u8],
+    account: &ProductionReviewedFq12StateAssistedAccountState,
+    signature: &ProductionSignature,
+    admitted_state_authorizations: &BTreeSet<(
+        [u8; DIGEST_BYTES],
+        [u8; DIGEST_BYTES],
+        [u8; DIGEST_BYTES],
+    )>,
+    consumed_authorizations: &mut BTreeSet<[u8; DIGEST_BYTES]>,
+) -> Result<Path2DirectAcceptedSpendTupleEvidenceV1, ProductionAccountBindingError> {
+    let consumed_before = consumed_authorizations.clone();
+    let parts = verify_path2_direct_single_slot_spend_authorization(
+        leaf,
+        evidence,
+        certificate,
+        public_key,
+        message,
+        account,
+        signature,
+        admitted_state_authorizations,
+        consumed_authorizations,
+    )?;
+    let consumed_after = consumed_authorizations.clone();
+    path2_direct_accepted_spend_tuple_evidence_v1(
+        leaf,
+        evidence,
+        certificate,
+        public_key,
+        message,
+        account,
+        signature,
+        admitted_state_authorizations,
+        &consumed_before,
+        &consumed_after,
+        &parts,
+    )
+}
+
 pub fn sign_path2_reviewed_fq12_authorization_checked_core(
     public_key: &ProductionPublicKey,
     message: &[u8],
@@ -67049,6 +67361,162 @@ fn path2_direct_lifecycle_boundary_report_v1_frame(
     frame
 }
 
+pub fn path2_direct_accepted_spend_tuple_evidence_v1_frame(
+    evidence: &Path2DirectAcceptedSpendTupleEvidenceV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"schema", evidence.schema.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_u64(&mut frame, b"q", Q as u64);
+    append_u64(&mut frame, b"groups", GROUPS as u64);
+    append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
+    append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
+    append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(
+        &mut frame,
+        b"theorem_target",
+        evidence.theorem_target.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"theorem_conclusion",
+        evidence.theorem_conclusion.as_bytes(),
+    );
+    for (index, field) in evidence.accepted_tuple_fields.iter().enumerate() {
+        append_u64(&mut frame, b"accepted_tuple_field_index", index as u64);
+        append_frame(&mut frame, b"accepted_tuple_field", field.as_bytes());
+    }
+    for (index, hypothesis) in evidence.acceptance_hypotheses.iter().enumerate() {
+        append_u64(&mut frame, b"acceptance_hypothesis_index", index as u64);
+        append_frame(&mut frame, b"acceptance_hypothesis", hypothesis.as_bytes());
+    }
+    append_frame(
+        &mut frame,
+        b"direct_qrom_action_boundary_report_digest",
+        &evidence.direct_qrom_action_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"direct_lifecycle_boundary_report_digest",
+        &evidence.direct_lifecycle_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"account_creation_proof_boundary_report_digest",
+        &evidence.account_creation_proof_boundary_report_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"public_key_identity",
+        &evidence.public_key_identity,
+    );
+    append_frame(&mut frame, b"message_digest", &evidence.message_digest);
+    append_frame(&mut frame, b"account_id", &evidence.account_id);
+    append_frame(
+        &mut frame,
+        b"account_state_root_before",
+        &evidence.account_state_root_before,
+    );
+    append_u64(&mut frame, b"slot_id", evidence.slot_id);
+    append_u64(
+        &mut frame,
+        b"accepted_slot_id",
+        evidence.accepted_slot_id as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"checked_core_signature_digest",
+        &evidence.checked_core_signature_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"checked_core_challenge_digest",
+        &evidence.checked_core_challenge_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"checked_core_proof_commitment_digest",
+        &evidence.checked_core_proof_commitment_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"prevalidated_slot_leaf_digest",
+        &evidence.prevalidated_slot_leaf_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"account_creation_evidence_transcript_digest",
+        &evidence.account_creation_evidence_transcript_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"selected_account_creation_payload_digest",
+        &evidence.selected_account_creation_payload_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"direct_admission_namespace_record_digest",
+        &evidence.direct_admission_namespace_record_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"slot_authorization_digest",
+        &evidence.slot_authorization_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"consume_once_state_before_digest",
+        &evidence.consume_once_state_before_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"consume_once_state_after_digest",
+        &evidence.consume_once_state_after_digest,
+    );
+    append_frame(
+        &mut frame,
+        b"public_result_class_name",
+        evidence.public_result_class_name.as_bytes(),
+    );
+    append_u64(
+        &mut frame,
+        b"state_namespace_record_present",
+        u64::from(evidence.state_namespace_record_present),
+    );
+    append_u64(
+        &mut frame,
+        b"consumed_authorization_absent_before",
+        u64::from(evidence.consumed_authorization_absent_before),
+    );
+    append_u64(
+        &mut frame,
+        b"consumed_authorization_present_after",
+        u64::from(evidence.consumed_authorization_present_after),
+    );
+    append_u64(
+        &mut frame,
+        b"consume_once_inserted_exactly_one_authorization",
+        u64::from(evidence.consume_once_inserted_exactly_one_authorization),
+    );
+    append_u64(
+        &mut frame,
+        b"public_result_accepts_same_slot",
+        u64::from(evidence.public_result_accepts_same_slot),
+    );
+    append_u64(
+        &mut frame,
+        b"tuple_fields_match_theorem_boundary",
+        u64::from(evidence.tuple_fields_match_theorem_boundary),
+    );
+    frame
+}
+
+pub fn path2_direct_accepted_spend_tuple_evidence_v1_digest(
+    evidence: &Path2DirectAcceptedSpendTupleEvidenceV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_direct_accepted_spend_tuple_evidence_v1_frame(evidence)).into()
+}
+
 fn path2_direct_theorem_boundary_report_v1_frame(
     report: &Path2DirectTheoremBoundaryReportV1,
 ) -> Vec<u8> {
@@ -67089,6 +67557,16 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         append_u64(&mut frame, b"accepted_tuple_field_index", index as u64);
         append_frame(&mut frame, b"accepted_tuple_field", field.as_bytes());
     }
+    append_frame(
+        &mut frame,
+        b"accepted_tuple_evidence_schema",
+        report.accepted_tuple_evidence_schema.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"accepted_tuple_evidence_endpoint",
+        report.accepted_tuple_evidence_endpoint.as_bytes(),
+    );
     for (index, hypothesis) in report.acceptance_hypotheses.iter().enumerate() {
         append_u64(&mut frame, b"acceptance_hypothesis_index", index as u64);
         append_frame(&mut frame, b"acceptance_hypothesis", hypothesis.as_bytes());
@@ -67166,6 +67644,11 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         &mut frame,
         b"accepted_tuple_pinned",
         u64::from(report.accepted_tuple_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"accepted_tuple_evidence_present",
+        u64::from(report.accepted_tuple_evidence_present),
     );
     append_u64(
         &mut frame,
@@ -97906,6 +98389,148 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
     }
 
     #[test]
+    fn path2_direct_single_slot_spend_tuple_evidence_pins_accepted_tuple() {
+        let (fixture, leaf, evidence, certificate) = path2_creation_relation_replay_fixture();
+        let authorization = path2_slot_authorization_digest(&leaf).unwrap();
+        let mut admitted_state_authorizations = BTreeSet::new();
+        admitted_state_authorizations.insert((
+            leaf.account_id,
+            leaf.account_state_root_before,
+            authorization,
+        ));
+        let responses = ProductionCompactResponses {
+            active_free: [[0_i16; LOCAL_FREE]; REPS],
+        };
+        let signature = sign_path2_reviewed_fq12_authorization_checked_core(
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &leaf.account_id,
+            &leaf.account_state_root_before,
+            &authorization,
+            leaf.slot_id as u32,
+            &fixture.pad_seed,
+            &responses,
+        )
+        .unwrap();
+        let mut consumed = BTreeSet::new();
+        let before_digest = path2_direct_consume_once_authorization_set_digest(&consumed);
+        let tuple_evidence =
+            verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1(
+                &leaf,
+                &evidence,
+                &certificate,
+                &fixture.public_key,
+                fixture.message,
+                &fixture.account,
+                &signature,
+                &admitted_state_authorizations,
+                &mut consumed,
+            )
+            .unwrap();
+
+        assert!(consumed.contains(&authorization));
+        assert_ne!(tuple_evidence.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(
+            tuple_evidence.schema,
+            PATH2_DIRECT_ACCEPTED_SPEND_TUPLE_EVIDENCE_SCHEMA
+        );
+        assert_eq!(tuple_evidence.theorem_target, PATH2_DIRECT_THEOREM_TARGET);
+        assert_eq!(
+            tuple_evidence.theorem_conclusion,
+            PATH2_DIRECT_THEOREM_CONCLUSION
+        );
+        assert_eq!(
+            tuple_evidence.accepted_tuple_fields,
+            PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.as_ref()
+        );
+        assert_eq!(
+            tuple_evidence.acceptance_hypotheses,
+            PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.as_ref()
+        );
+        assert_eq!(
+            tuple_evidence.direct_qrom_action_boundary_report_digest,
+            path2_direct_qrom_action_boundary_report_v1().digest
+        );
+        assert_eq!(
+            tuple_evidence.direct_lifecycle_boundary_report_digest,
+            path2_direct_lifecycle_boundary_report_v1().digest
+        );
+        assert_eq!(
+            tuple_evidence.account_creation_proof_boundary_report_digest,
+            path2_account_creation_proof_boundary_report_v1().digest
+        );
+        assert_eq!(tuple_evidence.public_key_identity, leaf.public_key_identity);
+        let expected_message_digest: [u8; DIGEST_BYTES] =
+            Sha256::digest(fixture.message).into();
+        assert_eq!(tuple_evidence.message_digest, expected_message_digest);
+        assert_eq!(tuple_evidence.account_id, leaf.account_id);
+        assert_eq!(
+            tuple_evidence.account_state_root_before,
+            leaf.account_state_root_before
+        );
+        assert_eq!(tuple_evidence.slot_id, leaf.slot_id);
+        assert_eq!(tuple_evidence.accepted_slot_id, leaf.slot_id as u32);
+        assert_eq!(
+            tuple_evidence.prevalidated_slot_leaf_digest,
+            path2_prevalidated_slot_leaf_digest(&leaf).unwrap()
+        );
+        assert_eq!(
+            tuple_evidence.account_creation_evidence_transcript_digest,
+            leaf.prevalidation_transcript_digest
+        );
+        assert_eq!(
+            tuple_evidence.selected_account_creation_payload_digest,
+            certificate.public_replay_payload_digest
+        );
+        assert_eq!(tuple_evidence.slot_authorization_digest, authorization);
+        assert_eq!(
+            tuple_evidence.direct_admission_namespace_record_digest,
+            path2_direct_admission_namespace_record_digest(
+                &leaf.account_id,
+                &leaf.account_state_root_before,
+                &authorization,
+            )
+        );
+        assert_eq!(tuple_evidence.consume_once_state_before_digest, before_digest);
+        assert_eq!(
+            tuple_evidence.consume_once_state_after_digest,
+            path2_direct_consume_once_authorization_set_digest(&consumed)
+        );
+        assert_eq!(
+            tuple_evidence.public_result_class_name,
+            PATH2_PUBLIC_RESULT_ACCEPT_SPEND_SLOT
+        );
+        assert!(tuple_evidence.state_namespace_record_present);
+        assert!(tuple_evidence.consumed_authorization_absent_before);
+        assert!(tuple_evidence.consumed_authorization_present_after);
+        assert!(tuple_evidence.consume_once_inserted_exactly_one_authorization);
+        assert!(tuple_evidence.public_result_accepts_same_slot);
+        assert!(tuple_evidence.tuple_fields_match_theorem_boundary);
+        assert_eq!(
+            path2_direct_accepted_spend_tuple_evidence_v1_digest(&tuple_evidence),
+            tuple_evidence.digest
+        );
+
+        assert_eq!(
+            verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1(
+                &leaf,
+                &evidence,
+                &certificate,
+                &fixture.public_key,
+                fixture.message,
+                &fixture.account,
+                &signature,
+                &admitted_state_authorizations,
+                &mut consumed,
+            )
+            .unwrap_err()
+            .reason(),
+            "Path 2 slot authorization already consumed"
+        );
+    }
+
+    #[test]
     fn path2_direct_single_slot_spend_rejects_leaf_slot_rebinding() {
         let (fixture, mut leaf, mut evidence, mut certificate) =
             path2_creation_relation_replay_fixture();
@@ -109095,6 +109720,14 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
             PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.as_ref()
         );
         assert_eq!(
+            report.accepted_tuple_evidence_schema,
+            PATH2_DIRECT_ACCEPTED_SPEND_TUPLE_EVIDENCE_SCHEMA
+        );
+        assert_eq!(
+            report.accepted_tuple_evidence_endpoint,
+            "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1"
+        );
+        assert_eq!(
             report.acceptance_hypotheses,
             PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.as_ref()
         );
@@ -109165,6 +109798,7 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         }
         assert!(report.theorem_statement_pinned);
         assert!(report.accepted_tuple_pinned);
+        assert!(report.accepted_tuple_evidence_present);
         assert!(report.acceptance_hypotheses_pinned);
         assert!(report.named_break_classes_pinned);
         assert!(!report.composition_theorem_instantiated);

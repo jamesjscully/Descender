@@ -111,6 +111,12 @@ fn manifest_body() -> Result<Value, String> {
             "theorem_target": direct_report.theorem_target,
             "theorem_conclusion": direct_report.theorem_conclusion,
             "accepted_tuple_pinned": direct_report.accepted_tuple_pinned,
+            "accepted_tuple_evidence_schema":
+                direct_report.accepted_tuple_evidence_schema,
+            "accepted_tuple_evidence_endpoint":
+                direct_report.accepted_tuple_evidence_endpoint,
+            "accepted_tuple_evidence_present":
+                direct_report.accepted_tuple_evidence_present,
             "acceptance_hypotheses_pinned": direct_report.acceptance_hypotheses_pinned,
             "named_break_classes_pinned": direct_report.named_break_classes_pinned,
             "obligation_count": direct_report.obligation_count,

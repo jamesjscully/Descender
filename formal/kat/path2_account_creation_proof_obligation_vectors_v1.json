@@ -118,14 +118,17 @@
     "corpus_id": "Descender.Path2.AccountCreationProofObligationAuditVectors.v1",
     "corpus_version": 1,
     "direct_theorem_report": {
+      "accepted_tuple_evidence_endpoint": "verify_path2_direct_single_slot_spend_authorization_with_tuple_evidence_v1",
+      "accepted_tuple_evidence_present": true,
+      "accepted_tuple_evidence_schema": "Descender.Path2.DirectAcceptedSpendTupleEvidence.v1",
       "account_creation_proof_boundary_report_digest": "97ee09dcca27841ddf8dcb53f4558151edc09e3cfc573083987155de344428c8",
       "account_creation_proof_boundary_verified": false,
       "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
       "composition_theorem_instantiated": false,
       "deployment_ready": false,
-      "digest": "2f6226e399a4efc1d04005f67ef5c3c7a52d0ccd61797d422decdca0678fb053",
+      "digest": "8147d78a2b098990ea4777617e433fd76c37f1a47d23d472397e0f98a8e17070",
       "domain": "Descender.Path2.DirectTheoremBoundaryReport.v1",
-      "recomputed_digest": "2f6226e399a4efc1d04005f67ef5c3c7a52d0ccd61797d422decdca0678fb053"
+      "recomputed_digest": "8147d78a2b098990ea4777617e433fd76c37f1a47d23d472397e0f98a8e17070"
     },
     "generator": {
       "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_creation_proof_obligation_vectors",
@@ -147,5 +150,5 @@
     "schema": "Descender.Path2.AccountCreationProofObligationVectors.v1",
     "status": "digest_pinned_proof_obligation_audit_vectors"
   },
-  "corpus_digest": "d801d18029ab63f76e2f813adb64683aab745a07aa7c1f73441788eebe62df63"
+  "corpus_digest": "fe0b5a5eea1d50ef4998fc1ee262d2b0e3f1e7a4517bd46b3250f66110af2693"
 }
