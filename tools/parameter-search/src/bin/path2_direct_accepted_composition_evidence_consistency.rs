@@ -13,6 +13,7 @@ mod enabled {
         production_reference::{
             path2_direct_accepted_composition_evidence_v1,
             path2_direct_accepted_composition_evidence_v1_digest,
+            validate_path2_direct_accepted_composition_evidence_v1,
         },
     };
     use serde_json::Value;
@@ -149,6 +150,7 @@ mod enabled {
                 format!("failed to build deterministic single-thread KAT pool: {err}")
             })?;
         let evidence = pool.install(path2_direct_accepted_composition_evidence_v1)?;
+        validate_path2_direct_accepted_composition_evidence_v1(&evidence)?;
         let evidence_digest = path2_direct_accepted_composition_evidence_v1_digest(&evidence);
         if evidence_digest != evidence.digest {
             return Err("direct accepted composition evidence recompute mismatch".to_string());

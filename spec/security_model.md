@@ -122,9 +122,13 @@ direct spend tuple digest, leaf/evidence transcript digests, admission
 namespace, authorization digest, and consume-once before/after state digests.
 The consistency gate also checks the direct spend tuple digest against the
 standalone tuple artifact and the selected payload digest against the
-account-STARK payload KAT vector corpus. This is deterministic KAT evidence
-only; deployment producers still use fresh proof randomness, and the artifacts
-do not close the composition theorem or account-creation proof family. The
+account-STARK payload KAT vector corpus. The accepted proof-boundary, accepted
+spend tuple, and accepted-composition consistency gates also call
+production-reference validators that enforce digest/report binding, required
+accepted-path flags, namespace binding, replay/consume-once evidence, and
+fail-closed theorem/deployment flags. This is deterministic KAT evidence only;
+deployment producers still use fresh proof randomness, and the artifacts do not
+close the composition theorem or account-creation proof family. The
 `path2_direct_single_slot_spend_tuple_evidence_pins_accepted_tuple` test is
 accepted-path evidence for the theorem shape, but it is not the composition
 theorem and does not verify the account-creation proof family. The

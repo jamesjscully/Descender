@@ -38,8 +38,9 @@ accepted proof-boundary and accepted direct-spend tuple artifacts, while
 keeping theorem and deployment flags false. The accepted proof-boundary,
 accepted spend tuple, accepted composition, proof-obligation, direct-obligation,
 and production preflight consistency gates now also recompute those generated
-manifests, check accepted-artifact equality, bind every generated proof/direct
-boundary copy of the accepted composition artifact plus requirement- and
+manifests, call reusable accepted-evidence production-reference validators,
+check accepted-artifact equality, bind every generated proof/direct boundary
+copy of the accepted composition artifact plus requirement- and
 obligation-corpus evidence back to standalone compact artifacts. The shared
 boundary-manifest gate also checks embedded requirement, proof-obligation, and
 direct-obligation corpus evidence against standalone corpus-evidence objects,

@@ -65663,6 +65663,366 @@ pub fn path2_direct_accepted_composition_evidence_v1(
     Ok(evidence)
 }
 
+pub fn validate_path2_account_creation_accepted_proof_boundary_evidence_v1(
+    evidence: &Path2AccountCreationAcceptedProofBoundaryEvidenceV1,
+) -> Result<(), String> {
+    if path2_account_creation_accepted_proof_boundary_evidence_v1_digest(evidence)
+        != evidence.digest
+    {
+        return Err(
+            "Path 2 account-creation accepted proof-boundary evidence digest mismatch"
+                .to_string(),
+        );
+    }
+
+    let proof_boundary_report = path2_account_creation_proof_boundary_report_v1();
+    validate_path2_account_creation_proof_boundary_report_v1(&proof_boundary_report)?;
+    let sampler_timing_report = path2_account_creation_sampler_timing_report_v1();
+    validate_path2_account_creation_sampler_timing_report_v1(&sampler_timing_report)?;
+    let no_export_boundary_report = path2_account_creation_no_export_boundary_report_v1();
+    validate_path2_account_creation_no_export_boundary_report_v1(&no_export_boundary_report)?;
+    let residual_matrix_report = path2_account_stark_residual_matrix_report_v1();
+    validate_path2_account_stark_residual_matrix_report_v1(&residual_matrix_report)?;
+    let frame_kat_boundary_report = path2_account_creation_frame_kat_boundary_report_v1();
+    validate_path2_account_creation_frame_kat_boundary_report_v1(&frame_kat_boundary_report)?;
+    let fri_qrom_residual_report = path2_account_stark_fri_qrom_residual_report_v1();
+    validate_path2_account_stark_fri_qrom_residual_report_v1(&fri_qrom_residual_report)?;
+    let fri_aok_boundary_report = path2_account_stark_fri_aok_boundary_report_v1();
+    validate_path2_account_stark_fri_aok_boundary_report_v1(&fri_aok_boundary_report)?;
+    let payload_byte_model_report = path2_account_stark_payload_byte_model_report_v1();
+    validate_path2_account_stark_payload_byte_model_report_v1(&payload_byte_model_report)?;
+    let payload_kat_boundary_report = path2_account_stark_payload_kat_boundary_report_v1();
+    validate_path2_account_stark_payload_kat_boundary_report_v1(&payload_kat_boundary_report)?;
+
+    if evidence.schema != PATH2_ACCOUNT_CREATION_ACCEPTED_PROOF_BOUNDARY_EVIDENCE_SCHEMA
+        || evidence.proof_boundary_target != proof_boundary_report.proof_boundary_target
+        || evidence.proof_boundary_conclusion != proof_boundary_report.proof_boundary_conclusion
+        || evidence.selected_payload_type != proof_boundary_report.selected_payload_type
+        || evidence.verifier_boundary_endpoint != proof_boundary_report.verifier_boundary_endpoint
+        || evidence.production_boundary_endpoint != proof_boundary_report.production_boundary_endpoint
+        || evidence.replay_payload_digest_function
+            != proof_boundary_report.replay_payload_digest_function
+        || evidence.accepting_requirements != proof_boundary_report.accepting_requirements
+        || evidence.account_creation_proof_boundary_report_digest != proof_boundary_report.digest
+        || evidence.sampler_timing_report_digest != sampler_timing_report.digest
+        || evidence.no_export_boundary_report_digest != no_export_boundary_report.digest
+        || evidence.account_stark_residual_matrix_report_digest != residual_matrix_report.digest
+        || evidence.frame_kat_boundary_report_digest != frame_kat_boundary_report.digest
+        || evidence.fri_qrom_residual_report_digest != fri_qrom_residual_report.digest
+        || evidence.fri_aok_boundary_report_digest != fri_aok_boundary_report.digest
+        || evidence.payload_byte_model_report_digest != payload_byte_model_report.digest
+        || evidence.payload_kat_boundary_report_digest != payload_kat_boundary_report.digest
+    {
+        return Err(
+            "Path 2 account-creation accepted proof-boundary evidence authority mismatch"
+                .to_string(),
+        );
+    }
+
+    if evidence.fixture_id != "Path2AccountStarkPayloadKatFixture.v1"
+        || evidence.payload_frame_bytes <= evidence.account_stark_bundle_bytes
+        || evidence.account_stark_bundle_bytes == 0
+        || evidence.decoded_public_anchor_digest != evidence.deployed_anchor_digest
+    {
+        return Err(
+            "Path 2 account-creation accepted proof-boundary evidence fixture binding mismatch"
+                .to_string(),
+        );
+    }
+
+    let required_true = [
+        (
+            "verifier_boundary_accepts",
+            evidence.verifier_boundary_accepts,
+        ),
+        (
+            "production_gate_fail_closed",
+            evidence.production_gate_fail_closed,
+        ),
+        (
+            "proof_boundary_report_validated",
+            evidence.proof_boundary_report_validated,
+        ),
+        (
+            "payload_digest_bound_to_certificate",
+            evidence.payload_digest_bound_to_certificate,
+        ),
+        (
+            "evidence_digest_bound_to_certificate",
+            evidence.evidence_digest_bound_to_certificate,
+        ),
+        (
+            "leaf_transcript_bound_to_evidence",
+            evidence.leaf_transcript_bound_to_evidence,
+        ),
+        (
+            "leaf_digest_bound_to_evidence",
+            evidence.leaf_digest_bound_to_evidence,
+        ),
+        ("leaf_context_bound", evidence.leaf_context_bound),
+        ("binding_digest_bound", evidence.binding_digest_bound),
+        (
+            "payload_binding_fields_match_report",
+            evidence.payload_binding_fields_match_report,
+        ),
+        (
+            "decoded_public_anchors_match_deployed_anchors",
+            evidence.decoded_public_anchors_match_deployed_anchors,
+        ),
+        (
+            "deployed_anchor_account_id_bound",
+            evidence.deployed_anchor_account_id_bound,
+        ),
+        (
+            "deployed_anchor_slot_id_bound",
+            evidence.deployed_anchor_slot_id_bound,
+        ),
+        (
+            "deployed_anchor_state_root_bound",
+            evidence.deployed_anchor_state_root_bound,
+        ),
+        (
+            "deployed_anchor_lifecycle_anchor_bound",
+            evidence.deployed_anchor_lifecycle_anchor_bound,
+        ),
+        (
+            "deployed_anchor_verifier_version_bound",
+            evidence.deployed_anchor_verifier_version_bound,
+        ),
+        (
+            "deployed_anchor_masked_projection_bound",
+            evidence.deployed_anchor_masked_projection_bound,
+        ),
+        (
+            "deployed_anchor_role_root_export_bridge_bound",
+            evidence.deployed_anchor_role_root_export_bridge_bound,
+        ),
+        (
+            "deployed_anchor_packed_witness_commitment_bound",
+            evidence.deployed_anchor_packed_witness_commitment_bound,
+        ),
+        (
+            "deployed_anchor_fields_match_report",
+            evidence.deployed_anchor_fields_match_report,
+        ),
+        (
+            "account_stark_bundle_nonempty",
+            evidence.account_stark_bundle_nonempty,
+        ),
+        (
+            "proof_family_obligations_still_open",
+            evidence.proof_family_obligations_still_open,
+        ),
+    ];
+    if let Some((name, _)) = required_true.iter().find(|(_, value)| !*value) {
+        return Err(format!(
+            "Path 2 account-creation accepted proof-boundary evidence lost required flag {name}"
+        ));
+    }
+    if evidence.public_payload_exports_private_material || evidence.deployment_ready {
+        return Err(
+            "Path 2 account-creation accepted proof-boundary evidence unexpectedly changes closure status"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
+pub fn validate_path2_direct_accepted_spend_tuple_evidence_v1(
+    evidence: &Path2DirectAcceptedSpendTupleEvidenceV1,
+) -> Result<(), String> {
+    if path2_direct_accepted_spend_tuple_evidence_v1_digest(evidence) != evidence.digest {
+        return Err("Path 2 direct accepted spend tuple evidence digest mismatch".to_string());
+    }
+
+    let qrom_report = path2_direct_qrom_action_boundary_report_v1();
+    validate_path2_direct_qrom_action_boundary_report_v1(&qrom_report)?;
+    let lifecycle_report = path2_direct_lifecycle_boundary_report_v1();
+    validate_path2_direct_lifecycle_boundary_report_v1(&lifecycle_report)?;
+    let proof_report = path2_account_creation_proof_boundary_report_v1();
+    validate_path2_account_creation_proof_boundary_report_v1(&proof_report)?;
+
+    if evidence.schema != PATH2_DIRECT_ACCEPTED_SPEND_TUPLE_EVIDENCE_SCHEMA
+        || evidence.theorem_target != PATH2_DIRECT_THEOREM_TARGET
+        || evidence.theorem_conclusion != PATH2_DIRECT_THEOREM_CONCLUSION
+        || evidence.accepted_tuple_fields != PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS.as_ref()
+        || evidence.acceptance_hypotheses != PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.as_ref()
+        || evidence.direct_qrom_action_boundary_report_digest != qrom_report.digest
+        || evidence.direct_lifecycle_boundary_report_digest != lifecycle_report.digest
+        || evidence.account_creation_proof_boundary_report_digest != proof_report.digest
+    {
+        return Err("Path 2 direct accepted spend tuple evidence authority mismatch".to_string());
+    }
+
+    if evidence.accepted_slot_id as u64 != evidence.slot_id
+        || evidence.public_result_class_name != PATH2_PUBLIC_RESULT_ACCEPT_SPEND_SLOT
+        || evidence.direct_admission_namespace_record_digest
+            != path2_direct_admission_namespace_record_digest(
+                &evidence.account_id,
+                &evidence.account_state_root_before,
+                &evidence.slot_authorization_digest,
+            )
+        || evidence.consume_once_state_before_digest == evidence.consume_once_state_after_digest
+    {
+        return Err("Path 2 direct accepted spend tuple evidence binding mismatch".to_string());
+    }
+
+    let required_true = [
+        (
+            "state_namespace_record_present",
+            evidence.state_namespace_record_present,
+        ),
+        (
+            "consumed_authorization_absent_before",
+            evidence.consumed_authorization_absent_before,
+        ),
+        (
+            "consumed_authorization_present_after",
+            evidence.consumed_authorization_present_after,
+        ),
+        (
+            "consume_once_inserted_exactly_one_authorization",
+            evidence.consume_once_inserted_exactly_one_authorization,
+        ),
+        (
+            "public_result_accepts_same_slot",
+            evidence.public_result_accepts_same_slot,
+        ),
+        (
+            "tuple_fields_match_theorem_boundary",
+            evidence.tuple_fields_match_theorem_boundary,
+        ),
+    ];
+    if let Some((name, _)) = required_true.iter().find(|(_, value)| !*value) {
+        return Err(format!(
+            "Path 2 direct accepted spend tuple evidence lost required flag {name}"
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(feature = "account-creation-stark-verifier")]
+pub fn validate_path2_direct_accepted_spend_tuple_kat_evidence_v1(
+    kat: &Path2DirectAcceptedSpendTupleKatEvidenceV1,
+) -> Result<(), String> {
+    validate_path2_direct_accepted_spend_tuple_evidence_v1(&kat.evidence)?;
+    if kat.account_creation_fixture_id != "Path2AccountStarkPayloadKatFixture.v1"
+        || kat.proof_mask_seed != PATH2_ACCOUNT_STARK_PAYLOAD_KAT_MASK_SEED_V1
+        || !kat.replay_rejected_by_consume_once
+    {
+        return Err(
+            "Path 2 direct accepted spend tuple KAT evidence lost deterministic replay binding"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
+pub fn validate_path2_direct_accepted_composition_evidence_v1(
+    evidence: &Path2DirectAcceptedCompositionEvidenceV1,
+) -> Result<(), String> {
+    if path2_direct_accepted_composition_evidence_v1_digest(evidence) != evidence.digest {
+        return Err("Path 2 direct accepted composition evidence digest mismatch".to_string());
+    }
+
+    let direct_report = path2_direct_theorem_boundary_report_v1();
+    validate_path2_direct_theorem_boundary_report_v1(&direct_report)?;
+    let qrom_report = path2_direct_qrom_action_boundary_report_v1();
+    validate_path2_direct_qrom_action_boundary_report_v1(&qrom_report)?;
+    let lifecycle_report = path2_direct_lifecycle_boundary_report_v1();
+    validate_path2_direct_lifecycle_boundary_report_v1(&lifecycle_report)?;
+    let proof_report = path2_account_creation_proof_boundary_report_v1();
+    validate_path2_account_creation_proof_boundary_report_v1(&proof_report)?;
+
+    if evidence.schema != PATH2_DIRECT_ACCEPTED_COMPOSITION_EVIDENCE_SCHEMA
+        || evidence.theorem_target != PATH2_DIRECT_THEOREM_TARGET
+        || evidence.theorem_conclusion != PATH2_DIRECT_THEOREM_CONCLUSION
+        || evidence.direct_theorem_boundary_report_digest != direct_report.digest
+        || evidence.direct_qrom_action_boundary_report_digest != qrom_report.digest
+        || evidence.direct_lifecycle_boundary_report_digest != lifecycle_report.digest
+        || evidence.account_creation_proof_boundary_report_digest != proof_report.digest
+        || evidence.direct_accepted_spend_tuple_evidence_digest == [0_u8; DIGEST_BYTES]
+        || evidence.account_creation_accepted_proof_boundary_evidence_digest
+            == [0_u8; DIGEST_BYTES]
+    {
+        return Err("Path 2 direct accepted composition evidence authority mismatch".to_string());
+    }
+
+    let direct_obligations_still_open = direct_report.obligation_rows.iter().all(|row| row.open);
+    let proof_family_obligations_still_open =
+        proof_report.proof_obligation_rows.iter().all(|row| row.open);
+    if evidence.direct_theorem_obligations_still_open != direct_obligations_still_open
+        || evidence.proof_family_obligations_still_open != proof_family_obligations_still_open
+    {
+        return Err(
+            "Path 2 direct accepted composition evidence open-obligation binding mismatch"
+                .to_string(),
+        );
+    }
+
+    let required_true = [
+        (
+            "creation_evidence_matches_direct_tuple",
+            evidence.creation_evidence_matches_direct_tuple,
+        ),
+        (
+            "proof_boundary_digest_matches_direct_theorem",
+            evidence.proof_boundary_digest_matches_direct_theorem,
+        ),
+        (
+            "qrom_action_digest_matches_direct_theorem",
+            evidence.qrom_action_digest_matches_direct_theorem,
+        ),
+        (
+            "lifecycle_digest_matches_direct_theorem",
+            evidence.lifecycle_digest_matches_direct_theorem,
+        ),
+        (
+            "direct_admission_namespace_matches_authorization",
+            evidence.direct_admission_namespace_matches_authorization,
+        ),
+        (
+            "consume_once_transition_matches_tuple",
+            evidence.consume_once_transition_matches_tuple,
+        ),
+        (
+            "verifier_boundary_accepts_creation",
+            evidence.verifier_boundary_accepts_creation,
+        ),
+        (
+            "direct_spend_tuple_accepts",
+            evidence.direct_spend_tuple_accepts,
+        ),
+        (
+            "public_result_accepts_same_slot",
+            evidence.public_result_accepts_same_slot,
+        ),
+        (
+            "direct_theorem_obligations_still_open",
+            evidence.direct_theorem_obligations_still_open,
+        ),
+        (
+            "proof_family_obligations_still_open",
+            evidence.proof_family_obligations_still_open,
+        ),
+    ];
+    if let Some((name, _)) = required_true.iter().find(|(_, value)| !*value) {
+        return Err(format!(
+            "Path 2 direct accepted composition evidence lost required flag {name}"
+        ));
+    }
+    if evidence.composition_theorem_instantiated
+        || evidence.account_creation_proof_boundary_verified
+        || evidence.deployment_ready
+    {
+        return Err(
+            "Path 2 direct accepted composition evidence unexpectedly changes closure status"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
 pub fn sign_path2_reviewed_fq12_authorization_checked_core(
     public_key: &ProductionPublicKey,
     message: &[u8],
@@ -80242,6 +80602,17 @@ mod tests {
             path2_account_creation_accepted_proof_boundary_evidence_v1_digest(&evidence),
             evidence.digest
         );
+        validate_path2_account_creation_accepted_proof_boundary_evidence_v1(&evidence)
+            .unwrap();
+        let mut malformed = evidence.clone();
+        malformed.deployment_ready = true;
+        malformed.digest =
+            path2_account_creation_accepted_proof_boundary_evidence_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_account_creation_accepted_proof_boundary_evidence_v1(&malformed)
+                .unwrap_err(),
+            "Path 2 account-creation accepted proof-boundary evidence unexpectedly changes closure status"
+        );
     }
 
     #[cfg(feature = "account-creation-stark-verifier")]
@@ -80313,6 +80684,14 @@ mod tests {
         assert_eq!(
             path2_direct_accepted_composition_evidence_v1_digest(&evidence),
             evidence.digest
+        );
+        validate_path2_direct_accepted_composition_evidence_v1(&evidence).unwrap();
+        let mut malformed = evidence.clone();
+        malformed.deployment_ready = true;
+        malformed.digest = path2_direct_accepted_composition_evidence_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_direct_accepted_composition_evidence_v1(&malformed).unwrap_err(),
+            "Path 2 direct accepted composition evidence unexpectedly changes closure status"
         );
     }
 
@@ -100022,6 +100401,16 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
         assert_eq!(
             path2_direct_accepted_spend_tuple_evidence_v1_digest(&tuple_evidence),
             tuple_evidence.digest
+        );
+        validate_path2_direct_accepted_spend_tuple_evidence_v1(&tuple_evidence).unwrap();
+        let mut malformed_tuple = tuple_evidence.clone();
+        malformed_tuple.public_result_accepts_same_slot = false;
+        malformed_tuple.digest =
+            path2_direct_accepted_spend_tuple_evidence_v1_digest(&malformed_tuple);
+        assert_eq!(
+            validate_path2_direct_accepted_spend_tuple_evidence_v1(&malformed_tuple)
+                .unwrap_err(),
+            "Path 2 direct accepted spend tuple evidence lost required flag public_result_accepts_same_slot"
         );
 
         assert_eq!(

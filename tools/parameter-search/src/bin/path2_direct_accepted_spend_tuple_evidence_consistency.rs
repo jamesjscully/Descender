@@ -13,6 +13,7 @@ mod enabled {
         production_reference::{
             path2_direct_accepted_spend_tuple_evidence_v1_digest,
             path2_direct_accepted_spend_tuple_kat_evidence_v1,
+            validate_path2_direct_accepted_spend_tuple_kat_evidence_v1,
         },
     };
     use serde_json::{json, Value};
@@ -151,6 +152,7 @@ mod enabled {
                 format!("failed to build deterministic single-thread KAT pool: {err}")
             })?;
         let kat = pool.install(path2_direct_accepted_spend_tuple_kat_evidence_v1)?;
+        validate_path2_direct_accepted_spend_tuple_kat_evidence_v1(&kat)?;
         let evidence = kat.evidence;
         let evidence_digest = path2_direct_accepted_spend_tuple_evidence_v1_digest(&evidence);
         if evidence_digest != evidence.digest {
