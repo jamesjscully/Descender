@@ -98,6 +98,9 @@ echo "== direct theorem boundary manifest check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_direct_theorem_boundary_manifest > "$direct_theorem_manifest_tmp"
 diff -u formal/kat/path2_direct_theorem_boundary_v1.json "$direct_theorem_manifest_tmp"
 
+echo "== boundary manifest consistency check =="
+cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --bin path2_boundary_manifest_consistency
+
 echo "== account STARK payload KAT vector corpus check =="
 cargo run --quiet --manifest-path tools/parameter-search/Cargo.toml --features account-creation-stark-verifier --bin path2_account_stark_payload_kat_vectors > "$payload_kat_vectors_tmp"
 diff -u formal/kat/path2_account_stark_payload_kat_vectors_v1.json "$payload_kat_vectors_tmp"

@@ -200,6 +200,11 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ),
     ),
     (
+        "boundary manifest consistency check",
+        ("path2_boundary_manifest_consistency",),
+        ("path2_boundary_manifest_consistency",),
+    ),
+    (
         "account STARK payload KAT vector corpus check",
         (
             "path2_account_stark_payload_kat_vectors",
@@ -310,6 +315,11 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-PROOF-002",
     ),
     "direct theorem boundary manifest check": (
+        "DIR-SEC-001",
+        "DIR-CREATE-001",
+        "DIR-PROOF-001",
+    ),
+    "boundary manifest consistency check": (
         "DIR-SEC-001",
         "DIR-CREATE-001",
         "DIR-PROOF-001",

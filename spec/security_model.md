@@ -77,10 +77,12 @@ named break classes, and current open blocker for this theorem boundary.
 `formal/kat/path2_direct_theorem_boundary_v1.json` is regenerated from that
 report and the current `Path2AccountCreationProofBoundaryReportV1` by a local
 and CI gate, so the direct theorem shape, the proof-boundary digest, and the
-selected proof-boundary field groups cannot drift silently. This report and
-manifest are not the proof; they are mechanical guards that prevent deployment
-preflight from drifting away from the theorem shape while the composition
-theorem remains open.
+selected proof-boundary field groups cannot drift silently. A separate boundary
+manifest consistency gate checks that the direct theorem manifest embeds the
+same proof-boundary digest and field-group object as the standalone
+proof-boundary manifest. This report and manifest are not the proof; they are
+mechanical guards that prevent deployment preflight from drifting away from the
+theorem shape while the composition theorem remains open.
 
 ## Named Break Classes
 
@@ -204,7 +206,10 @@ matrix; `Path2AccountCreationProofBoundaryReportV1` binds to its digest so the
 account-creation boundary cannot be treated as complete while these rows drift
 or remain open. `formal/kat/path2_account_creation_proof_boundary_v1.json`
 regenerates and diffs the report chain, including the residual rows and
-payload-KAT boundary digest, before the direct theorem manifest is checked.
+payload-KAT boundary digest, before the direct theorem manifest is checked. The
+boundary manifest consistency gate then compares the standalone proof-boundary
+object against the proof-boundary object embedded by the direct theorem
+manifest.
 `Path2AccountStarkPayloadKatBoundaryReportV1` pins the current
 `Path2AccountStarkCreationPayloadV1` mutation cases and maps their internal
 diagnostics to consensus-facing public rejection classes. It is still precursor

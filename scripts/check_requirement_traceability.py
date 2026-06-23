@@ -201,6 +201,25 @@ DIRECT_THEOREM_BOUNDARY_MANIFEST_MARKERS = {
         "path2_direct_theorem_boundary_v1.json",
     ],
 }
+BOUNDARY_MANIFEST_CONSISTENCY_MARKERS = {
+    "tools/parameter-search/src/bin/path2_boundary_manifest_consistency.rs": [
+        "formal/kat/path2_account_creation_proof_boundary_v1.json",
+        "formal/kat/path2_direct_theorem_boundary_v1.json",
+        "account_creation_proof_boundary_report_digest",
+        "account_creation_proof_boundary_verified",
+        "selected_account_stark_residual_matrix",
+        "payload_kat_boundary_snapshot",
+        "Path 2 boundary manifest consistency check passed.",
+    ],
+    "scripts/check_build.sh": [
+        "boundary manifest consistency check",
+        "path2_boundary_manifest_consistency",
+    ],
+    ".github/workflows/ci.yml": [
+        "Boundary manifest consistency check",
+        "path2_boundary_manifest_consistency",
+    ],
+}
 ACCOUNT_STARK_PAYLOAD_KAT_VECTOR_MARKERS = {
     "tools/parameter-search/src/bin/path2_account_stark_payload_kat_vectors.rs": [
         "Descender.Path2.AccountStarkPayloadKatVectors.v1",
@@ -2055,6 +2074,21 @@ def check_direct_theorem_boundary_manifest_markers(errors: list[str]) -> None:
                 )
 
 
+def check_boundary_manifest_consistency_markers(errors: list[str]) -> None:
+    for rel, markers in BOUNDARY_MANIFEST_CONSISTENCY_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"{rel}: missing boundary manifest consistency artifact")
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing boundary manifest consistency marker {marker!r}"
+                )
+
+
 def check_account_stark_payload_kat_vector_markers(errors: list[str]) -> None:
     for rel, markers in ACCOUNT_STARK_PAYLOAD_KAT_VECTOR_MARKERS.items():
         path = ROOT / rel
@@ -2209,6 +2243,7 @@ def main() -> int:
     check_account_stark_payload_kat_manifest_markers(errors)
     check_account_creation_proof_boundary_manifest_markers(errors)
     check_direct_theorem_boundary_manifest_markers(errors)
+    check_boundary_manifest_consistency_markers(errors)
     check_account_stark_payload_kat_vector_markers(errors)
     check_ethereum_positioning_note(tracker_rows, errors)
 

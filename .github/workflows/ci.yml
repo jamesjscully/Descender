@@ -84,6 +84,8 @@ jobs:
         run: |
           cargo run --quiet --bin path2_direct_theorem_boundary_manifest > /tmp/path2_direct_theorem_boundary_v1.json
           diff -u ../../formal/kat/path2_direct_theorem_boundary_v1.json /tmp/path2_direct_theorem_boundary_v1.json
+      - name: Boundary manifest consistency check
+        run: cargo run --quiet --bin path2_boundary_manifest_consistency
       - name: Account STARK payload KAT vector corpus check
         run: |
           cargo run --quiet --features account-creation-stark-verifier --bin path2_account_stark_payload_kat_vectors > /tmp/path2_account_stark_payload_kat_vectors_v1.json
