@@ -437,6 +437,11 @@ checks that each row still points to an open obligation, an open source support
 surface, and the deployment blocker. It also checks that the direct theorem
 boundary keeps its own nine closure-dependency rows pinned, open, evidenced,
 and deployment-blocking while the accepted-tuple theorem is not instantiated.
+The compact accepted-evidence artifacts embedded by these manifests expose
+their accepted requirement, accepted tuple-field, and accepted hypothesis
+evidence counts plus the deferred rejection/QROM flags; the boundary and
+preflight consistency gates check those summaries so a weakened accepted path
+cannot be imported silently.
 
 The `path2_preflight_boundary_consistency` gate checks the same active boundary
 reports against the production deployment preflight. It fails if the preflight

@@ -653,6 +653,20 @@ pub fn path2_direct_accepted_composition_evidence_artifact_v1() -> Result<Value,
         || !bool_at(artifact, "/evidence/verifier_boundary_accepts_creation")?
         || !bool_at(artifact, "/evidence/direct_spend_tuple_accepts")?
         || !bool_at(artifact, "/evidence/public_result_accepts_same_slot")?
+        || u64_at(artifact, "/evidence/accepted_hypothesis_evidence_count")?
+            != direct_report.acceptance_hypotheses.len() as u64
+        || u64_at(
+            artifact,
+            "/evidence/positive_acceptance_hypothesis_evidence_count",
+        )? != 8
+        || !bool_at(
+            artifact,
+            "/evidence/every_positive_acceptance_hypothesis_has_accepted_path_evidence",
+        )?
+        || !bool_at(
+            artifact,
+            "/evidence/public_rejection_hypothesis_deferred_to_rejection_kats",
+        )?
         || !bool_at(artifact, "/evidence/direct_theorem_obligations_still_open")?
         || !bool_at(artifact, "/evidence/proof_family_obligations_still_open")?
         || bool_at(artifact, "/evidence/composition_theorem_instantiated")?
@@ -773,6 +787,22 @@ pub fn path2_direct_accepted_composition_evidence_artifact_v1() -> Result<Value,
             "public_result_accepts_same_slot": bool_at(
                 artifact,
                 "/evidence/public_result_accepts_same_slot"
+            )?,
+            "accepted_hypothesis_evidence_count": u64_at(
+                artifact,
+                "/evidence/accepted_hypothesis_evidence_count"
+            )?,
+            "positive_acceptance_hypothesis_evidence_count": u64_at(
+                artifact,
+                "/evidence/positive_acceptance_hypothesis_evidence_count"
+            )?,
+            "every_positive_acceptance_hypothesis_has_accepted_path_evidence": bool_at(
+                artifact,
+                "/evidence/every_positive_acceptance_hypothesis_has_accepted_path_evidence"
+            )?,
+            "public_rejection_hypothesis_deferred_to_rejection_kats": bool_at(
+                artifact,
+                "/evidence/public_rejection_hypothesis_deferred_to_rejection_kats"
             )?,
             "direct_theorem_obligations_still_open": bool_at(
                 artifact,

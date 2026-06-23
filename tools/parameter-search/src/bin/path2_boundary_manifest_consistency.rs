@@ -828,6 +828,74 @@ fn check_consistency() -> Result<(), String> {
         ],
         true,
     )?;
+    expect_u64(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "accepted_proof_boundary_evidence_artifact",
+            "audit_summary",
+            "accepted_requirement_evidence_count",
+        ],
+        10,
+    )?;
+    expect_u64(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "accepted_proof_boundary_evidence_artifact",
+            "audit_summary",
+            "accepted_path_applicable_requirement_count",
+        ],
+        8,
+    )?;
+    expect_u64(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "accepted_proof_boundary_evidence_artifact",
+            "audit_summary",
+            "accepted_path_requirement_evidence_count",
+        ],
+        8,
+    )?;
+    expect_u64(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "accepted_proof_boundary_evidence_artifact",
+            "audit_summary",
+            "boundary_or_audit_requirement_evidence_count",
+        ],
+        10,
+    )?;
+    expect_u64(
+        proof_manifest,
+        &[
+            "account_creation_proof_boundary",
+            "accepted_proof_boundary_evidence_artifact",
+            "audit_summary",
+            "separate_closure_required_count",
+        ],
+        10,
+    )?;
+    for flag in [
+        "every_applicable_accepting_requirement_has_accepted_path_evidence",
+        "every_accepting_requirement_has_boundary_or_audit_evidence",
+        "every_separate_closure_requirement_has_open_obligation",
+        "deterministic_rejection_requirement_deferred_to_rejection_kats",
+        "qrom_requirement_deferred_to_residual_theorem",
+    ] {
+        expect_bool(
+            proof_manifest,
+            &[
+                "account_creation_proof_boundary",
+                "accepted_proof_boundary_evidence_artifact",
+                "audit_summary",
+                flag,
+            ],
+            true,
+        )?;
+    }
     expect_bool(
         proof_manifest,
         &[
@@ -1127,6 +1195,37 @@ fn check_consistency() -> Result<(), String> {
             true,
         )?;
     }
+    for (field, expected) in [
+        ("accepted_tuple_field_evidence_count", 11),
+        ("accepted_tuple_field_evidence_present_count", 11),
+        ("accepted_tuple_field_open_obligation_count", 11),
+    ] {
+        expect_u64(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_accepted_spend_tuple_evidence_artifact",
+                "audit_summary",
+                field,
+            ],
+            expected,
+        )?;
+    }
+    for flag in [
+        "every_accepted_tuple_field_has_evidence",
+        "every_accepted_tuple_field_has_open_direct_obligation",
+    ] {
+        expect_bool(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_accepted_spend_tuple_evidence_artifact",
+                "audit_summary",
+                flag,
+            ],
+            true,
+        )?;
+    }
     for flag in [
         "creation_evidence_matches_direct_tuple",
         "proof_boundary_digest_matches_direct_theorem",
@@ -1139,6 +1238,36 @@ fn check_consistency() -> Result<(), String> {
         "public_result_accepts_same_slot",
         "direct_theorem_obligations_still_open",
         "proof_family_obligations_still_open",
+    ] {
+        expect_bool(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_accepted_composition_evidence_artifact",
+                "audit_summary",
+                flag,
+            ],
+            true,
+        )?;
+    }
+    for (field, expected) in [
+        ("accepted_hypothesis_evidence_count", 9),
+        ("positive_acceptance_hypothesis_evidence_count", 8),
+    ] {
+        expect_u64(
+            direct_manifest,
+            &[
+                "direct_theorem_boundary",
+                "direct_accepted_composition_evidence_artifact",
+                "audit_summary",
+                field,
+            ],
+            expected,
+        )?;
+    }
+    for flag in [
+        "every_positive_acceptance_hypothesis_has_accepted_path_evidence",
+        "public_rejection_hypothesis_deferred_to_rejection_kats",
     ] {
         expect_bool(
             direct_manifest,

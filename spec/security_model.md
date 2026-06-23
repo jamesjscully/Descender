@@ -132,7 +132,11 @@ namespace, authorization digest, and consume-once before/after state digests.
 It also records a nine-row accepted-hypothesis evidence checklist: the eight
 positive accepted-path hypotheses must have concrete accepted-path evidence,
 while the public rejection/state-preservation hypothesis is explicitly marked
-as deferred to the direct rejection KAT suite.
+as deferred to the direct rejection KAT suite. The compact accepted-composition
+artifact imported by the direct theorem and preflight manifests carries those
+accepted-hypothesis counts and deferred-rejection flags, and the consistency
+gates fail if the compact summary no longer matches the full accepted evidence
+shape.
 The consistency gate also checks the direct spend tuple digest against the
 standalone tuple artifact and the selected payload digest against the
 account-STARK payload KAT vector corpus. The accepted proof-boundary, accepted
@@ -374,7 +378,10 @@ binds its own 9-case open direct-obligation audit-vector corpus plus accepted
 direct-composition KAT evidence artifact; `path2_boundary_manifest_consistency`
 requires the standalone proof-boundary and direct theorem manifests to agree on
 the shared proof-boundary evidence while preserving false theorem and deployment
-flags.
+flags. The compact accepted-proof, accepted-tuple, and accepted-composition
+artifact summaries expose the accepted requirement, tuple-field, and hypothesis
+evidence counts plus their deferred rejection/QROM flags; both boundary and
+preflight consistency gates check those summaries before importing them.
 The reports and
 manifests are
 the executable boundary map for this section; they are not an honest-sampler

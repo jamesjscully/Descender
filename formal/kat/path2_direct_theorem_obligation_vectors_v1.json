@@ -286,6 +286,7 @@
       "artifact_schema": "Descender.Path2.DirectAcceptedCompositionDeterministicKatEvidenceManifest.v1",
       "artifact_status": "digest_pinned_deterministic_kat_accepted_direct_composition_evidence",
       "audit_summary": {
+        "accepted_hypothesis_evidence_count": 9,
         "account_creation_proof_boundary_verified": false,
         "composition_theorem_instantiated": false,
         "consume_once_transition_matches_tuple": true,
@@ -294,9 +295,12 @@
         "direct_admission_namespace_matches_authorization": true,
         "direct_spend_tuple_accepts": true,
         "direct_theorem_obligations_still_open": true,
+        "every_positive_acceptance_hypothesis_has_accepted_path_evidence": true,
         "lifecycle_digest_matches_direct_theorem": true,
+        "positive_acceptance_hypothesis_evidence_count": 8,
         "proof_boundary_digest_matches_direct_theorem": true,
         "proof_family_obligations_still_open": true,
+        "public_rejection_hypothesis_deferred_to_rejection_kats": true,
         "public_result_accepts_same_slot": true,
         "qrom_action_digest_matches_direct_theorem": true,
         "verifier_boundary_accepts_creation": true
@@ -563,5 +567,5 @@
     "schema": "Descender.Path2.DirectTheoremObligationVectors.v1",
     "status": "digest_pinned_direct_theorem_obligation_audit_vectors"
   },
-  "corpus_digest": "25c9afbbcdde8d4d9e93e98039ddfeb208bc520c3c0f016cd60a2ebcccf9eb21"
+  "corpus_digest": "fddb51d2c9ef2e8ba5db688a325f2ed22bd318c34b3a8af1459fdfe8c4023855"
 }

@@ -521,6 +521,11 @@ fn main() -> Result<(), String> {
         "/proof_obligation_vector_corpus_evidence/direct_accepted_composition_evidence_artifact/audit_summary/proof_family_obligations_still_open",
         "/accepted_proof_boundary_evidence_artifact/audit_summary/production_gate_fail_closed",
         "/accepted_proof_boundary_evidence_artifact/audit_summary/proof_family_obligations_still_open",
+        "/accepted_proof_boundary_evidence_artifact/audit_summary/every_applicable_accepting_requirement_has_accepted_path_evidence",
+        "/accepted_proof_boundary_evidence_artifact/audit_summary/every_accepting_requirement_has_boundary_or_audit_evidence",
+        "/accepted_proof_boundary_evidence_artifact/audit_summary/every_separate_closure_requirement_has_open_obligation",
+        "/accepted_proof_boundary_evidence_artifact/audit_summary/deterministic_rejection_requirement_deferred_to_rejection_kats",
+        "/accepted_proof_boundary_evidence_artifact/audit_summary/qrom_requirement_deferred_to_residual_theorem",
         "/coverage/every_closure_dependency_has_open_obligation",
         "/coverage/every_closure_dependency_has_open_support_surface",
         "/coverage/every_open_closure_dependency_blocks_deployment",
@@ -529,6 +534,34 @@ fn main() -> Result<(), String> {
         if !bool_at(proof_boundary, pointer)? {
             return Err(format!(
                 "production preflight proof-boundary manifest lost expected true flag {pointer}"
+            ));
+        }
+    }
+    for (pointer, expected) in [
+        (
+            "/accepted_proof_boundary_evidence_artifact/audit_summary/accepted_requirement_evidence_count",
+            10,
+        ),
+        (
+            "/accepted_proof_boundary_evidence_artifact/audit_summary/accepted_path_applicable_requirement_count",
+            8,
+        ),
+        (
+            "/accepted_proof_boundary_evidence_artifact/audit_summary/accepted_path_requirement_evidence_count",
+            8,
+        ),
+        (
+            "/accepted_proof_boundary_evidence_artifact/audit_summary/boundary_or_audit_requirement_evidence_count",
+            10,
+        ),
+        (
+            "/accepted_proof_boundary_evidence_artifact/audit_summary/separate_closure_required_count",
+            10,
+        ),
+    ] {
+        if u64_at(proof_boundary, pointer)? != expected {
+            return Err(format!(
+                "production preflight proof-boundary manifest lost accepted requirement evidence count {pointer}"
             ));
         }
     }
@@ -660,6 +693,47 @@ fn main() -> Result<(), String> {
         return Err(
             "account-STARK residual matrix rows are missing blockers or named breaks".to_string(),
         );
+    }
+
+    for pointer in [
+        "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/every_accepted_tuple_field_has_evidence",
+        "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/every_accepted_tuple_field_has_open_direct_obligation",
+        "/direct_accepted_composition_evidence_artifact/audit_summary/every_positive_acceptance_hypothesis_has_accepted_path_evidence",
+        "/direct_accepted_composition_evidence_artifact/audit_summary/public_rejection_hypothesis_deferred_to_rejection_kats",
+    ] {
+        if !bool_at(direct_boundary, pointer)? {
+            return Err(format!(
+                "production preflight manifest lost accepted direct evidence flag {pointer}"
+            ));
+        }
+    }
+    for (pointer, expected) in [
+        (
+            "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/accepted_tuple_field_evidence_count",
+            11,
+        ),
+        (
+            "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/accepted_tuple_field_evidence_present_count",
+            11,
+        ),
+        (
+            "/direct_accepted_spend_tuple_evidence_artifact/audit_summary/accepted_tuple_field_open_obligation_count",
+            11,
+        ),
+        (
+            "/direct_accepted_composition_evidence_artifact/audit_summary/accepted_hypothesis_evidence_count",
+            9,
+        ),
+        (
+            "/direct_accepted_composition_evidence_artifact/audit_summary/positive_acceptance_hypothesis_evidence_count",
+            8,
+        ),
+    ] {
+        if u64_at(direct_boundary, pointer)? != expected {
+            return Err(format!(
+                "production preflight manifest lost accepted direct evidence count {pointer}"
+            ));
+        }
     }
 
     if !direct_report.composition_theorem_instantiated
