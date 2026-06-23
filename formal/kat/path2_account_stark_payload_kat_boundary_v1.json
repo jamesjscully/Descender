@@ -1,12 +1,107 @@
 {
   "manifest": {
     "authority_snapshot": {
+      "payload_byte_model_report_domain": "Descender.Path2.AccountStarkPayloadByteModelReport.v1",
       "payload_digest_function": "path2_account_stark_creation_payload_v1_digest",
+      "payload_frame_function": "path2_account_stark_creation_payload_v1_frame",
       "payload_report_domain": "Descender.Path2.AccountStarkPayloadKatBoundaryReport.v1",
       "production_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary_for_production",
       "residual_matrix_report_domain": "Descender.Path2.AccountStarkResidualMatrixReport.v1",
       "selected_payload_type": "Path2AccountStarkCreationPayloadV1",
       "verifier_boundary_endpoint": "verify_path2_direct_creation_account_stark_payload_boundary"
+    },
+    "byte_model_snapshot": {
+      "bundle_nonempty_required": true,
+      "bundle_variable_length": true,
+      "byte_model_pinned": true,
+      "deployment_ready": false,
+      "deterministic_kat_digest_pins_bundle_bytes": true,
+      "field_count": 11,
+      "field_order": [
+        {
+          "data_bytes": 49,
+          "encoding": "append_frame bytes",
+          "field_name": "schema",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 8,
+          "encoding": "append_u64 little-endian",
+          "field_name": "payload_version",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 8,
+          "encoding": "append_u64 little-endian",
+          "field_name": "account_stark_verifier_version",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 32,
+          "encoding": "append_frame bytes",
+          "field_name": "leaf_context_digest",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 32,
+          "encoding": "append_frame bytes",
+          "field_name": "creation_proof_binding_digest",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 32,
+          "encoding": "append_frame bytes",
+          "field_name": "native_role_root_commitment",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 32,
+          "encoding": "append_frame bytes",
+          "field_name": "aggregation_context_digest",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 8,
+          "encoding": "append_u64 little-endian",
+          "field_name": "slot_id",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 8,
+          "encoding": "append_u64 little-endian",
+          "field_name": "masked_projection_lane_count",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 12,
+          "encoding": "append_frame u16 little-endian lanes",
+          "field_name": "masked_projection_le",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 0,
+          "encoding": "append_frame opaque descender-account-verifier bundle",
+          "field_name": "account_stark_bundle",
+          "public_payload_field": true,
+          "variable_length": true
+        }
+      ],
+      "fixed_data_bytes_excluding_bundle": 221,
+      "fixed_frame_overhead_excluding_bundle": 558,
+      "full_proof_bytes_inlined_in_manifest": false,
+      "masked_projection_bytes": 12,
+      "masked_projection_lane_count": 6,
+      "public_payload_exports_private_material": false
     },
     "corpus_id": "Descender.Path2.AccountStarkPayloadKatBoundary.v1",
     "corpus_version": 1,
@@ -21,9 +116,12 @@
       "row_count": 13
     },
     "digests": {
-      "payload_kat_boundary_report_digest": "5e16ce49d7eb8f23007c24531167928e24fb012bbe71eac1eeec4de5fe982236",
-      "payload_kat_boundary_report_recomputed_digest": "5e16ce49d7eb8f23007c24531167928e24fb012bbe71eac1eeec4de5fe982236",
-      "residual_matrix_report_digest": "3363164f0ffcf7b106800b4392c1ea6ab76789895bd59b4ca91791e6d960cb30"
+      "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
+      "payload_byte_model_report_recomputed_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
+      "payload_kat_boundary_report_byte_model_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
+      "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
+      "payload_kat_boundary_report_recomputed_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
+      "residual_matrix_report_digest": "50a9c5a487d98dbe91eb1b5accc7d64eb4902d7bfa2b570e81f7dcf97ec4bc70"
     },
     "frozen_status": "draft_boundary_manifest",
     "generator": {
@@ -139,5 +237,5 @@
     ],
     "schema": "Descender.Path2.AccountStarkPayloadKatBoundaryManifest.v1"
   },
-  "manifest_digest": "6b55663833478985af04b2ffe8a1a60acc386d240bae3f8c43385ece8cada911"
+  "manifest_digest": "aa19b20641c7e1809708183e57534dc4bef4c9d3df1cd1daec5d24dbf6d03d68"
 }

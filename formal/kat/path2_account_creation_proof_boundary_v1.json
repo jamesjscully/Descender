@@ -121,14 +121,14 @@
     "corpus_id": "Descender.Path2.AccountCreationProofBoundary.v1",
     "corpus_version": 1,
     "digests": {
-      "account_creation_proof_boundary_report_digest": "56327dabed58d2ffc4cec94e0d38285c5d0c19246a92d226e110398902444452",
-      "account_creation_proof_boundary_report_recomputed_digest": "56327dabed58d2ffc4cec94e0d38285c5d0c19246a92d226e110398902444452",
+      "account_creation_proof_boundary_report_digest": "40311f071883d216b07e3c87c377b8aaa4267a554484ca9498cfed56b0b64df4",
+      "account_creation_proof_boundary_report_recomputed_digest": "40311f071883d216b07e3c87c377b8aaa4267a554484ca9498cfed56b0b64df4",
       "account_stark_fri_qrom_residual_report_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
       "account_stark_fri_qrom_residual_report_recomputed_digest": "ccc9407d26e0f11648d6817c62385464ef5cb3806aafb8fe6d753b05517b4f32",
-      "account_stark_residual_matrix_report_digest": "3363164f0ffcf7b106800b4392c1ea6ab76789895bd59b4ca91791e6d960cb30",
-      "account_stark_residual_matrix_report_recomputed_digest": "3363164f0ffcf7b106800b4392c1ea6ab76789895bd59b4ca91791e6d960cb30",
-      "payload_kat_boundary_report_digest": "5e16ce49d7eb8f23007c24531167928e24fb012bbe71eac1eeec4de5fe982236",
-      "payload_kat_boundary_report_recomputed_digest": "5e16ce49d7eb8f23007c24531167928e24fb012bbe71eac1eeec4de5fe982236"
+      "account_stark_residual_matrix_report_digest": "50a9c5a487d98dbe91eb1b5accc7d64eb4902d7bfa2b570e81f7dcf97ec4bc70",
+      "account_stark_residual_matrix_report_recomputed_digest": "50a9c5a487d98dbe91eb1b5accc7d64eb4902d7bfa2b570e81f7dcf97ec4bc70",
+      "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d",
+      "payload_kat_boundary_report_recomputed_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d"
     },
     "fri_qrom_residual_snapshot": {
       "checked_core_qrom_budget": {
@@ -265,5 +265,5 @@
       ]
     }
   },
-  "manifest_digest": "d3a3bd46cc24c008b86a3b263f5dc80d312d007bd2d31a43ffdc4f2ef335f6c4"
+  "manifest_digest": "b04c7737819cade7c468bad413c593b9124b4ccc13f54d6882c5ceae15c9a6c4"
 }

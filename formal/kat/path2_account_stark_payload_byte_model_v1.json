@@ -1,0 +1,131 @@
+{
+  "manifest": {
+    "authority_snapshot": {
+      "account_stark_verifier_version": 1,
+      "digest_algorithm": "SHA-256",
+      "payload_byte_model_report_domain": "Descender.Path2.AccountStarkPayloadByteModelReport.v1",
+      "payload_digest_function": "path2_account_stark_creation_payload_v1_digest",
+      "payload_frame_function": "path2_account_stark_creation_payload_v1_frame",
+      "payload_kat_boundary_report_domain": "Descender.Path2.AccountStarkPayloadKatBoundaryReport.v1",
+      "payload_schema": "DESCENDER_PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_V1",
+      "payload_version": 1,
+      "selected_payload_type": "Path2AccountStarkCreationPayloadV1"
+    },
+    "byte_model": {
+      "bundle_nonempty_required": true,
+      "bundle_variable_length": true,
+      "byte_model_pinned": true,
+      "deployment_ready": false,
+      "deterministic_kat_digest_pins_bundle_bytes": true,
+      "field_count": 11,
+      "field_order": [
+        {
+          "data_bytes": 49,
+          "encoding": "append_frame bytes",
+          "field_name": "schema",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 8,
+          "encoding": "append_u64 little-endian",
+          "field_name": "payload_version",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 8,
+          "encoding": "append_u64 little-endian",
+          "field_name": "account_stark_verifier_version",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 32,
+          "encoding": "append_frame bytes",
+          "field_name": "leaf_context_digest",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 32,
+          "encoding": "append_frame bytes",
+          "field_name": "creation_proof_binding_digest",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 32,
+          "encoding": "append_frame bytes",
+          "field_name": "native_role_root_commitment",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 32,
+          "encoding": "append_frame bytes",
+          "field_name": "aggregation_context_digest",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 8,
+          "encoding": "append_u64 little-endian",
+          "field_name": "slot_id",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 8,
+          "encoding": "append_u64 little-endian",
+          "field_name": "masked_projection_lane_count",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 12,
+          "encoding": "append_frame u16 little-endian lanes",
+          "field_name": "masked_projection_le",
+          "public_payload_field": true,
+          "variable_length": false
+        },
+        {
+          "data_bytes": 0,
+          "encoding": "append_frame opaque descender-account-verifier bundle",
+          "field_name": "account_stark_bundle",
+          "public_payload_field": true,
+          "variable_length": true
+        }
+      ],
+      "fixed_data_bytes_excluding_bundle": 221,
+      "fixed_frame_overhead_excluding_bundle": 558,
+      "full_proof_bytes_inlined_in_manifest": false,
+      "masked_projection_bytes": 12,
+      "masked_projection_lane_count": 6,
+      "public_payload_exports_private_material": false
+    },
+    "corpus_id": "Descender.Path2.AccountStarkPayloadByteModel.v1",
+    "corpus_version": 1,
+    "coverage": {
+      "deployment_ready": false,
+      "deterministic_kat_digest_pins_bundle_bytes": true,
+      "full_proof_bytes_inlined_in_manifest": false,
+      "payload_kat_boundary_bound_to_byte_model": true,
+      "public_payload_exports_private_material": false
+    },
+    "digests": {
+      "payload_byte_model_report_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
+      "payload_byte_model_report_recomputed_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
+      "payload_kat_boundary_report_byte_model_digest": "593009c0dd3365ea77b621a75ac1d3bfd63a2c19d22383f059fce237bb0bad5d",
+      "payload_kat_boundary_report_digest": "71525ad53ff34fef283fb91c65690ca30794d01a32d10e5d0b439d2fe825786d"
+    },
+    "frozen_status": "draft_byte_model_manifest",
+    "generator": {
+      "command": "cargo run --manifest-path tools/parameter-search/Cargo.toml --bin path2_account_stark_payload_byte_model_manifest",
+      "source": "tools/parameter-search/src/bin/path2_account_stark_payload_byte_model_manifest.rs"
+    },
+    "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
+    "schema": "Descender.Path2.AccountStarkPayloadByteModelManifest.v1"
+  },
+  "manifest_digest": "5d6dcabdbf254599a47c5f6899b28aae21f493fcb7852b6fcf599b636b261139"
+}

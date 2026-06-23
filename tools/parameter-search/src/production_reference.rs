@@ -305,6 +305,8 @@ pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountCreationProofBoundaryReport.v1";
 pub const PATH2_ACCOUNT_STARK_FRI_QROM_RESIDUAL_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountStarkFriQromResidualReport.v1";
+pub const PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_REPORT_DOMAIN: &str =
+    "Descender.Path2.AccountStarkPayloadByteModelReport.v1";
 pub const PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_REPORT_DOMAIN: &str =
     "Descender.Path2.AccountStarkResidualMatrixReport.v1";
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_REPORT_DOMAIN: &str =
@@ -9336,10 +9338,46 @@ pub struct Path2AccountStarkPayloadKatBoundaryRowV1 {
     pub frozen_vector_present: bool,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AccountStarkPayloadByteModelFieldV1 {
+    pub field_name: &'static str,
+    pub encoding: &'static str,
+    pub data_bytes: usize,
+    pub variable_length: bool,
+    pub public_payload_field: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2AccountStarkPayloadByteModelReportV1 {
+    pub digest: [u8; DIGEST_BYTES],
+    pub domain: &'static str,
+    pub selected_payload_type: &'static str,
+    pub payload_schema: &'static str,
+    pub payload_version: u64,
+    pub account_stark_verifier_version: u32,
+    pub payload_frame_function: &'static str,
+    pub payload_digest_function: &'static str,
+    pub digest_algorithm: &'static str,
+    pub field_order: &'static [Path2AccountStarkPayloadByteModelFieldV1],
+    pub field_count: usize,
+    pub masked_projection_lane_count: usize,
+    pub masked_projection_bytes: usize,
+    pub fixed_data_bytes_excluding_bundle: usize,
+    pub fixed_frame_overhead_excluding_bundle: usize,
+    pub bundle_nonempty_required: bool,
+    pub bundle_variable_length: bool,
+    pub full_proof_bytes_inlined_in_manifest: bool,
+    pub deterministic_kat_digest_pins_bundle_bytes: bool,
+    pub public_payload_exports_private_material: bool,
+    pub byte_model_pinned: bool,
+    pub deployment_ready: bool,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct Path2AccountStarkPayloadKatBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
     pub domain: &'static str,
+    pub payload_byte_model_report_digest: [u8; DIGEST_BYTES],
     pub selected_payload_type: &'static str,
     pub payload_digest_function: &'static str,
     pub verifier_boundary_endpoint: &'static str,
@@ -9890,6 +9928,97 @@ pub const PATH2_PUBLIC_RESULT_REJECT_BINDING_MISMATCH: &str = "reject_binding_mi
 pub const PATH2_PUBLIC_RESULT_REJECT_CREATION_EVIDENCE: &str = "reject_creation_evidence";
 pub const PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED: &str = "internal_error_fail_closed";
 
+pub const PATH2_ACCOUNT_STARK_PAYLOAD_FRAME_FIXED_OVERHEAD_EXCLUDING_BUNDLE: usize = 558;
+pub const PATH2_ACCOUNT_STARK_PAYLOAD_FIXED_DATA_BYTES_EXCLUDING_BUNDLE: usize =
+    PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_SCHEMA.len()
+        + 8
+        + 8
+        + (4 * DIGEST_BYTES)
+        + 8
+        + 8
+        + (HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES * core::mem::size_of::<u16>());
+pub const PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_FIELDS:
+    [Path2AccountStarkPayloadByteModelFieldV1; 11] = [
+    Path2AccountStarkPayloadByteModelFieldV1 {
+        field_name: "schema",
+        encoding: "append_frame bytes",
+        data_bytes: PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_SCHEMA.len(),
+        variable_length: false,
+        public_payload_field: true,
+    },
+    Path2AccountStarkPayloadByteModelFieldV1 {
+        field_name: "payload_version",
+        encoding: "append_u64 little-endian",
+        data_bytes: 8,
+        variable_length: false,
+        public_payload_field: true,
+    },
+    Path2AccountStarkPayloadByteModelFieldV1 {
+        field_name: "account_stark_verifier_version",
+        encoding: "append_u64 little-endian",
+        data_bytes: 8,
+        variable_length: false,
+        public_payload_field: true,
+    },
+    Path2AccountStarkPayloadByteModelFieldV1 {
+        field_name: "leaf_context_digest",
+        encoding: "append_frame bytes",
+        data_bytes: DIGEST_BYTES,
+        variable_length: false,
+        public_payload_field: true,
+    },
+    Path2AccountStarkPayloadByteModelFieldV1 {
+        field_name: "creation_proof_binding_digest",
+        encoding: "append_frame bytes",
+        data_bytes: DIGEST_BYTES,
+        variable_length: false,
+        public_payload_field: true,
+    },
+    Path2AccountStarkPayloadByteModelFieldV1 {
+        field_name: "native_role_root_commitment",
+        encoding: "append_frame bytes",
+        data_bytes: DIGEST_BYTES,
+        variable_length: false,
+        public_payload_field: true,
+    },
+    Path2AccountStarkPayloadByteModelFieldV1 {
+        field_name: "aggregation_context_digest",
+        encoding: "append_frame bytes",
+        data_bytes: DIGEST_BYTES,
+        variable_length: false,
+        public_payload_field: true,
+    },
+    Path2AccountStarkPayloadByteModelFieldV1 {
+        field_name: "slot_id",
+        encoding: "append_u64 little-endian",
+        data_bytes: 8,
+        variable_length: false,
+        public_payload_field: true,
+    },
+    Path2AccountStarkPayloadByteModelFieldV1 {
+        field_name: "masked_projection_lane_count",
+        encoding: "append_u64 little-endian",
+        data_bytes: 8,
+        variable_length: false,
+        public_payload_field: true,
+    },
+    Path2AccountStarkPayloadByteModelFieldV1 {
+        field_name: "masked_projection_le",
+        encoding: "append_frame u16 little-endian lanes",
+        data_bytes: HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES
+            * core::mem::size_of::<u16>(),
+        variable_length: false,
+        public_payload_field: true,
+    },
+    Path2AccountStarkPayloadByteModelFieldV1 {
+        field_name: "account_stark_bundle",
+        encoding: "append_frame opaque descender-account-verifier bundle",
+        data_bytes: 0,
+        variable_length: true,
+        public_payload_field: true,
+    },
+];
+
 pub const PATH2_ACCOUNT_STARK_CONFIG_SOURCE: &str = "tools/descender-account-stark/src/config.rs";
 pub const PATH2_ACCOUNT_STARK_PROOF_SYSTEM: &str =
     "Plonky3 HidingFriPcs over KoalaBear with Poseidon2-Merkle and DuplexChallenger";
@@ -10384,12 +10513,80 @@ pub fn path2_account_stark_payload_public_rejection_class(error: &str) -> &'stat
     PATH2_PUBLIC_RESULT_INTERNAL_ERROR_FAIL_CLOSED
 }
 
+pub fn path2_account_stark_payload_byte_model_report_v1()
+-> Path2AccountStarkPayloadByteModelReportV1 {
+    let field_order = &PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_FIELDS;
+    let mut report = Path2AccountStarkPayloadByteModelReportV1 {
+        digest: [0_u8; DIGEST_BYTES],
+        domain: PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_REPORT_DOMAIN,
+        selected_payload_type: "Path2AccountStarkCreationPayloadV1",
+        payload_schema: PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_SCHEMA,
+        payload_version: 1,
+        account_stark_verifier_version: PATH2_ACCOUNT_STARK_VERIFIER_VERSION,
+        payload_frame_function: "path2_account_stark_creation_payload_v1_frame",
+        payload_digest_function: "path2_account_stark_creation_payload_v1_digest",
+        digest_algorithm: "SHA-256",
+        field_order,
+        field_count: field_order.len(),
+        masked_projection_lane_count: HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES,
+        masked_projection_bytes: HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES
+            * core::mem::size_of::<u16>(),
+        fixed_data_bytes_excluding_bundle:
+            PATH2_ACCOUNT_STARK_PAYLOAD_FIXED_DATA_BYTES_EXCLUDING_BUNDLE,
+        fixed_frame_overhead_excluding_bundle:
+            PATH2_ACCOUNT_STARK_PAYLOAD_FRAME_FIXED_OVERHEAD_EXCLUDING_BUNDLE,
+        bundle_nonempty_required: true,
+        bundle_variable_length: true,
+        full_proof_bytes_inlined_in_manifest: false,
+        deterministic_kat_digest_pins_bundle_bytes: true,
+        public_payload_exports_private_material: false,
+        byte_model_pinned: true,
+        deployment_ready: false,
+    };
+    report.digest = path2_account_stark_payload_byte_model_report_v1_digest(&report);
+    report
+}
+
+pub fn path2_account_stark_payload_byte_model_report_v1_digest(
+    report: &Path2AccountStarkPayloadByteModelReportV1,
+) -> [u8; DIGEST_BYTES] {
+    Sha256::digest(path2_account_stark_payload_byte_model_report_v1_frame(report)).into()
+}
+
+pub fn validate_path2_account_stark_payload_byte_model_report_v1(
+    report: &Path2AccountStarkPayloadByteModelReportV1,
+) -> Result<(), String> {
+    let expected = path2_account_stark_payload_byte_model_report_v1();
+    if expected != *report {
+        return Err("Path 2 account-STARK payload byte model report mismatch".to_string());
+    }
+    if path2_account_stark_payload_byte_model_report_v1_digest(report) != report.digest {
+        return Err("Path 2 account-STARK payload byte model report digest mismatch".to_string());
+    }
+    if !report.bundle_nonempty_required
+        || !report.bundle_variable_length
+        || !report.deterministic_kat_digest_pins_bundle_bytes
+        || report.full_proof_bytes_inlined_in_manifest
+        || report.public_payload_exports_private_material
+        || !report.byte_model_pinned
+        || report.deployment_ready
+    {
+        return Err(
+            "Path 2 account-STARK payload byte model unexpectedly changes deployment policy"
+                .to_string(),
+        );
+    }
+    Ok(())
+}
+
 pub fn path2_account_stark_payload_kat_boundary_report_v1()
 -> Path2AccountStarkPayloadKatBoundaryReportV1 {
     let rows = &PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS;
+    let byte_model_report = path2_account_stark_payload_byte_model_report_v1();
     let mut report = Path2AccountStarkPayloadKatBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_REPORT_DOMAIN,
+        payload_byte_model_report_digest: byte_model_report.digest,
         selected_payload_type: "Path2AccountStarkCreationPayloadV1",
         payload_digest_function: "path2_account_stark_creation_payload_v1_digest",
         verifier_boundary_endpoint: "verify_path2_direct_creation_account_stark_payload_boundary",
@@ -10444,6 +10641,12 @@ pub fn validate_path2_account_stark_payload_kat_boundary_report_v1(
     }
     if path2_account_stark_payload_kat_boundary_report_v1_digest(report) != report.digest {
         return Err("Path 2 account-STARK payload KAT boundary report digest mismatch".to_string());
+    }
+    let byte_model_report = path2_account_stark_payload_byte_model_report_v1();
+    if report.payload_byte_model_report_digest != byte_model_report.digest {
+        return Err(
+            "Path 2 account-STARK payload KAT boundary byte model digest mismatch".to_string(),
+        );
     }
     Ok(())
 }
@@ -63135,6 +63338,11 @@ fn path2_account_stark_payload_kat_boundary_report_v1_frame(
     append_u64(&mut frame, b"repetitions", REPS as u64);
     append_frame(
         &mut frame,
+        b"payload_byte_model_report_digest",
+        &report.payload_byte_model_report_digest,
+    );
+    append_frame(
+        &mut frame,
         b"selected_payload_type",
         report.selected_payload_type.as_bytes(),
     );
@@ -63213,6 +63421,119 @@ fn path2_account_stark_payload_kat_boundary_report_v1_frame(
         u64::from(report.deployment_ready),
     );
     append_frame(&mut frame, b"blocker", report.blocker.as_bytes());
+    frame
+}
+
+fn path2_account_stark_payload_byte_model_report_v1_frame(
+    report: &Path2AccountStarkPayloadByteModelReportV1,
+) -> Vec<u8> {
+    let mut frame = Vec::new();
+    append_frame(&mut frame, b"domain", report.domain.as_bytes());
+    append_frame(&mut frame, b"profile", PROFILE.as_bytes());
+    append_u64(&mut frame, b"q", Q as u64);
+    append_u64(&mut frame, b"groups", GROUPS as u64);
+    append_u64(&mut frame, b"local_pivot", LOCAL_PIVOT as u64);
+    append_u64(&mut frame, b"local_free", LOCAL_FREE as u64);
+    append_u64(&mut frame, b"repetitions", REPS as u64);
+    append_frame(
+        &mut frame,
+        b"selected_payload_type",
+        report.selected_payload_type.as_bytes(),
+    );
+    append_frame(&mut frame, b"payload_schema", report.payload_schema.as_bytes());
+    append_u64(&mut frame, b"payload_version", report.payload_version);
+    append_u64(
+        &mut frame,
+        b"account_stark_verifier_version",
+        report.account_stark_verifier_version as u64,
+    );
+    append_frame(
+        &mut frame,
+        b"payload_frame_function",
+        report.payload_frame_function.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"payload_digest_function",
+        report.payload_digest_function.as_bytes(),
+    );
+    append_frame(
+        &mut frame,
+        b"digest_algorithm",
+        report.digest_algorithm.as_bytes(),
+    );
+    for (index, field) in report.field_order.iter().enumerate() {
+        append_u64(&mut frame, b"byte_model_field_index", index as u64);
+        append_frame(&mut frame, b"field_name", field.field_name.as_bytes());
+        append_frame(&mut frame, b"encoding", field.encoding.as_bytes());
+        append_u64(&mut frame, b"data_bytes", field.data_bytes as u64);
+        append_u64(
+            &mut frame,
+            b"variable_length",
+            u64::from(field.variable_length),
+        );
+        append_u64(
+            &mut frame,
+            b"public_payload_field",
+            u64::from(field.public_payload_field),
+        );
+    }
+    append_u64(&mut frame, b"field_count", report.field_count as u64);
+    append_u64(
+        &mut frame,
+        b"masked_projection_lane_count",
+        report.masked_projection_lane_count as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"masked_projection_bytes",
+        report.masked_projection_bytes as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"fixed_data_bytes_excluding_bundle",
+        report.fixed_data_bytes_excluding_bundle as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"fixed_frame_overhead_excluding_bundle",
+        report.fixed_frame_overhead_excluding_bundle as u64,
+    );
+    append_u64(
+        &mut frame,
+        b"bundle_nonempty_required",
+        u64::from(report.bundle_nonempty_required),
+    );
+    append_u64(
+        &mut frame,
+        b"bundle_variable_length",
+        u64::from(report.bundle_variable_length),
+    );
+    append_u64(
+        &mut frame,
+        b"full_proof_bytes_inlined_in_manifest",
+        u64::from(report.full_proof_bytes_inlined_in_manifest),
+    );
+    append_u64(
+        &mut frame,
+        b"deterministic_kat_digest_pins_bundle_bytes",
+        u64::from(report.deterministic_kat_digest_pins_bundle_bytes),
+    );
+    append_u64(
+        &mut frame,
+        b"public_payload_exports_private_material",
+        u64::from(report.public_payload_exports_private_material),
+    );
+    append_u64(
+        &mut frame,
+        b"byte_model_pinned",
+        u64::from(report.byte_model_pinned),
+    );
+    append_u64(
+        &mut frame,
+        b"deployment_ready",
+        u64::from(report.deployment_ready),
+    );
     frame
 }
 
@@ -103736,12 +104057,81 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
     }
 
     #[test]
+    fn path2_account_stark_payload_byte_model_report_pins_frame_shape() {
+        let report = path2_account_stark_payload_byte_model_report_v1();
+        assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
+        assert_eq!(
+            report.domain,
+            PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_REPORT_DOMAIN
+        );
+        assert_eq!(report.selected_payload_type, "Path2AccountStarkCreationPayloadV1");
+        assert_eq!(report.payload_schema, PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_SCHEMA);
+        assert_eq!(report.payload_version, 1);
+        assert_eq!(
+            report.account_stark_verifier_version,
+            PATH2_ACCOUNT_STARK_VERIFIER_VERSION
+        );
+        assert_eq!(
+            report.payload_frame_function,
+            "path2_account_stark_creation_payload_v1_frame"
+        );
+        assert_eq!(
+            report.payload_digest_function,
+            "path2_account_stark_creation_payload_v1_digest"
+        );
+        assert_eq!(report.digest_algorithm, "SHA-256");
+        assert_eq!(
+            report.field_order,
+            PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_FIELDS.as_ref()
+        );
+        assert_eq!(report.field_count, 11);
+        assert_eq!(
+            report.masked_projection_lane_count,
+            HIDDEN_SOURCE_FALLBACK_ACCOUNT_PROJECTION_LANES
+        );
+        assert_eq!(report.masked_projection_lane_count, 6);
+        assert_eq!(report.masked_projection_bytes, 12);
+        assert_eq!(report.fixed_data_bytes_excluding_bundle, 221);
+        assert_eq!(report.fixed_frame_overhead_excluding_bundle, 558);
+        assert!(report.bundle_nonempty_required);
+        assert!(report.bundle_variable_length);
+        assert!(!report.full_proof_bytes_inlined_in_manifest);
+        assert!(report.deterministic_kat_digest_pins_bundle_bytes);
+        assert!(!report.public_payload_exports_private_material);
+        assert!(report.byte_model_pinned);
+        assert!(!report.deployment_ready);
+        assert_eq!(
+            report.field_order.last().unwrap().field_name,
+            "account_stark_bundle"
+        );
+        assert!(report.field_order.last().unwrap().variable_length);
+        assert_eq!(
+            path2_account_stark_payload_byte_model_report_v1_digest(&report),
+            report.digest
+        );
+        validate_path2_account_stark_payload_byte_model_report_v1(&report).unwrap();
+
+        let mut malformed = report.clone();
+        malformed.public_payload_exports_private_material = true;
+        malformed.digest = path2_account_stark_payload_byte_model_report_v1_digest(&malformed);
+        assert_eq!(
+            validate_path2_account_stark_payload_byte_model_report_v1(&malformed).unwrap_err(),
+            "Path 2 account-STARK payload byte model report mismatch"
+        );
+    }
+
+    #[test]
     fn path2_account_stark_payload_kat_boundary_report_pins_public_rejections() {
+        let byte_model_report = path2_account_stark_payload_byte_model_report_v1();
         let report = path2_account_stark_payload_kat_boundary_report_v1();
         assert_ne!(report.digest, [0_u8; DIGEST_BYTES]);
         assert_eq!(
             report.domain,
             PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_REPORT_DOMAIN
+        );
+        assert_eq!(
+            report.payload_byte_model_report_digest,
+            byte_model_report.digest
         );
         assert_eq!(report.selected_payload_type, "Path2AccountStarkCreationPayloadV1");
         assert_eq!(

@@ -215,10 +215,16 @@ object against the proof-boundary object embedded by the direct theorem
 manifest. The `path2_preflight_boundary_consistency` gate ties those reports to
 the production deployment preflight, including blocker group ordering and
 per-open-row blocker coverage.
-`Path2AccountStarkPayloadKatBoundaryReportV1` pins the current
-`Path2AccountStarkCreationPayloadV1` mutation cases and maps their internal
-diagnostics to consensus-facing public rejection classes. It is still precursor
-coverage: `formal/kat/path2_account_stark_payload_kat_boundary_v1.json`
+`Path2AccountStarkPayloadByteModelReportV1` pins the current
+`Path2AccountStarkCreationPayloadV1` canonical frame order, fixed overhead,
+bundle non-empty rule, digest function, verifier version, and non-inlined
+proof-byte policy. `formal/kat/path2_account_stark_payload_byte_model_v1.json`
+regenerates and diffs that draft byte-model manifest, and
+`path2_account_stark_payload_byte_model_consistency` checks it against the
+digest-pinned vector corpus. `Path2AccountStarkPayloadKatBoundaryReportV1` then
+binds that byte-model report digest while pinning current mutation cases and
+mapping internal diagnostics to consensus-facing public rejection classes. This
+is still precursor coverage: `formal/kat/path2_account_stark_payload_kat_boundary_v1.json`
 regenerates and diffs the draft boundary manifest, but full frozen vector files
 remain open. `formal/kat/path2_account_stark_payload_kat_vectors_v1.json`
 regenerates the current-row digest-pinned boundary vectors under the real
@@ -244,7 +250,7 @@ status are all false.
 
 | Residual item | Current evidence | Required closure before deployment | Named break |
 |---|---|---|---|
-| `Path2AccountStarkCreationPayloadV1` byte and replay binding | Wire-format digest frame, certificate/evidence binding, deployed anchor checks, active mutation tests, `Path2AccountStarkPayloadKatBoundaryReportV1` public rejection-class mapping, draft manifest regeneration, deterministic digest-pinned current-row boundary vectors, and manifest/vector consistency gate exist. | Full frozen byte corpus and public rejection-class mapping for every consensus-visible malformed payload. | `account_stark_payload_binding_break` |
+| `Path2AccountStarkCreationPayloadV1` byte and replay binding | Wire-format digest frame, certificate/evidence binding, deployed anchor checks, active mutation tests, `Path2AccountStarkPayloadByteModelReportV1` frame/overhead/non-inlined-bundle manifest plus consistency gate, `Path2AccountStarkPayloadKatBoundaryReportV1` public rejection-class mapping, draft manifest regeneration, deterministic digest-pinned current-row boundary vectors, and manifest/vector consistency gates exist. | Full frozen byte corpus and public rejection-class mapping for every consensus-visible malformed payload. | `account_stark_payload_binding_break` |
 | AIR relation soundness | `research/path2_account_stark_air_soundness_audit.md` reports all relation classes wired and MED findings remediated. | External proof-family review confirms the AIR constraints match the claimed creation relation and no false statement accepts except with a named proof break. | `account_stark_air_soundness_break` |
 | FRI argument-of-knowledge extractor | The AIR is fully constrained, but the audit still names the `p2_sis_extractor`-style FRI-IOP extractor as open. | A concrete extractor theorem for the selected Plonky3/q12289 configuration shows accepting proof implies an extractable account-creation witness or exports a named FRI/AoK break. | `account_stark_fri_aok_extractor_break` |
 | Zero-knowledge simulator and no-export statement | Boundary text forbids export of pad source, projection, syndrome, opening tuple, witness, mask, and private trace material; current tests cover public payload mutations, not simulator semantics. | Simulator theorem for the selected payload proves the accepted public bundle can be simulated from public anchors and allowed commitments without revealing private creation material. | `account_stark_simulator_or_no_export_break` |

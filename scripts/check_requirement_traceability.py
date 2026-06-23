@@ -95,6 +95,12 @@ ACCOUNT_STARK_RESIDUAL_PREFLIGHT_MARKERS = [
     "Path2AccountStarkResidualMatrixRowV1",
     "PATH2_ACCOUNT_STARK_RESIDUAL_MATRIX_ROWS",
     "PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_REPORT_DOMAIN",
+    "PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_REPORT_DOMAIN",
+    "Path2AccountStarkPayloadByteModelReportV1",
+    "Path2AccountStarkPayloadByteModelFieldV1",
+    "PATH2_ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_FIELDS",
+    "path2_account_stark_payload_byte_model_report_v1",
+    "validate_path2_account_stark_payload_byte_model_report_v1",
     "Path2AccountStarkPayloadKatBoundaryReportV1",
     "Path2AccountStarkPayloadKatBoundaryRowV1",
     "PATH2_ACCOUNT_STARK_PAYLOAD_KAT_BOUNDARY_ROWS",
@@ -105,13 +111,63 @@ ACCOUNT_STARK_RESIDUAL_PREFLIGHT_MARKERS = [
     "validate_path2_account_stark_residual_matrix_report_v1",
     "production_deployment_account_stark_residual_blockers",
 ]
+ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_MARKERS = {
+    "tools/parameter-search/src/bin/path2_account_stark_payload_byte_model_manifest.rs": [
+        "Descender.Path2.AccountStarkPayloadByteModelManifest.v1",
+        "Descender.Path2.AccountStarkPayloadByteModel.v1",
+        "path2_account_stark_payload_byte_model_report_v1",
+        "validate_path2_account_stark_payload_byte_model_report_v1",
+        "payload_byte_model_report_digest",
+        "fixed_frame_overhead_excluding_bundle",
+        "deterministic_kat_digest_pins_bundle_bytes",
+        "full_proof_bytes_inlined_in_manifest",
+    ],
+    "tools/parameter-search/src/bin/path2_account_stark_payload_byte_model_consistency.rs": [
+        "formal/kat/path2_account_stark_payload_byte_model_v1.json",
+        "formal/kat/path2_account_stark_payload_kat_vectors_v1.json",
+        "path2_account_stark_payload_byte_model_report_v1",
+        "payload_frame_function",
+        "fixed_frame_overhead_excluding_bundle",
+        "payload_digest_error",
+        "Path 2 account-STARK payload byte model consistency check passed.",
+    ],
+    "formal/kat/path2_account_stark_payload_byte_model_v1.json": [
+        "Descender.Path2.AccountStarkPayloadByteModelManifest.v1",
+        "Descender.Path2.AccountStarkPayloadByteModel.v1",
+        "draft_byte_model_manifest",
+        "payload_byte_model_report_digest",
+        "fixed_frame_overhead_excluding_bundle",
+        '"deterministic_kat_digest_pins_bundle_bytes": true',
+        '"full_proof_bytes_inlined_in_manifest": false',
+        '"public_payload_exports_private_material": false',
+        '"deployment_ready": false',
+    ],
+    "scripts/check_build.sh": [
+        "account STARK payload byte model manifest check",
+        "path2_account_stark_payload_byte_model_manifest",
+        "path2_account_stark_payload_byte_model_v1.json",
+        "account STARK payload byte model consistency check",
+        "path2_account_stark_payload_byte_model_consistency",
+    ],
+    ".github/workflows/ci.yml": [
+        "Account STARK payload byte model manifest check",
+        "path2_account_stark_payload_byte_model_manifest",
+        "path2_account_stark_payload_byte_model_v1.json",
+        "Account STARK payload byte model consistency check",
+        "path2_account_stark_payload_byte_model_consistency",
+    ],
+}
 ACCOUNT_STARK_PAYLOAD_KAT_MANIFEST_MARKERS = {
     "tools/parameter-search/src/bin/path2_account_stark_payload_kat_manifest.rs": [
         "Descender.Path2.AccountStarkPayloadKatBoundaryManifest.v1",
         "Descender.Path2.AccountStarkPayloadKatBoundary.v1",
+        "path2_account_stark_payload_byte_model_report_v1",
         "path2_account_stark_payload_kat_boundary_report_v1",
         "path2_account_stark_residual_matrix_report_v1",
+        "payload_byte_model_report_digest",
         "payload_kat_boundary_report_digest",
+        "payload_kat_boundary_report_byte_model_digest",
+        "byte_model_snapshot",
         "frozen_corpus_complete",
         "public_rejection_class",
     ],
@@ -119,7 +175,10 @@ ACCOUNT_STARK_PAYLOAD_KAT_MANIFEST_MARKERS = {
         "Descender.Path2.AccountStarkPayloadKatBoundaryManifest.v1",
         "Descender.Path2.AccountStarkPayloadKatBoundary.v1",
         "draft_boundary_manifest",
+        "payload_byte_model_report_digest",
         "payload_kat_boundary_report_digest",
+        "payload_kat_boundary_report_byte_model_digest",
+        "byte_model_snapshot",
         '"frozen_corpus_complete": false',
         "public_rejection_class",
     ],
@@ -2142,6 +2201,21 @@ def check_account_stark_payload_kat_manifest_markers(errors: list[str]) -> None:
                 )
 
 
+def check_account_stark_payload_byte_model_markers(errors: list[str]) -> None:
+    for rel, markers in ACCOUNT_STARK_PAYLOAD_BYTE_MODEL_MARKERS.items():
+        path = ROOT / rel
+        if not path.exists():
+            errors.append(f"{rel}: missing account-STARK payload byte model artifact")
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        for marker in markers:
+            if marker not in text:
+                errors.append(
+                    f"{rel}: missing account-STARK payload byte model marker {marker!r}"
+                )
+
+
 def check_account_stark_fri_qrom_residual_markers(errors: list[str]) -> None:
     for rel, markers in ACCOUNT_STARK_FRI_QROM_RESIDUAL_MARKERS.items():
         path = ROOT / rel
@@ -2387,6 +2461,7 @@ def main() -> int:
     check_direct_theorem_preflight_markers(errors)
     check_account_creation_proof_boundary_preflight_markers(errors)
     check_account_stark_residual_preflight_markers(errors)
+    check_account_stark_payload_byte_model_markers(errors)
     check_account_stark_payload_kat_manifest_markers(errors)
     check_account_stark_fri_qrom_residual_markers(errors)
     check_account_creation_proof_boundary_manifest_markers(errors)

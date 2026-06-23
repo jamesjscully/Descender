@@ -167,6 +167,17 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         ("cargo check --all-targets",),
     ),
     (
+        "account STARK payload byte model manifest check",
+        (
+            "path2_account_stark_payload_byte_model_manifest",
+            "path2_account_stark_payload_byte_model_v1.json",
+        ),
+        (
+            "path2_account_stark_payload_byte_model_manifest",
+            "path2_account_stark_payload_byte_model_v1.json",
+        ),
+    ),
+    (
         "account STARK payload KAT boundary manifest check",
         (
             "path2_account_stark_payload_kat_manifest",
@@ -242,6 +253,11 @@ GATES: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
         "account STARK payload KAT vector consistency check",
         ("path2_account_stark_payload_kat_vector_consistency",),
         ("path2_account_stark_payload_kat_vector_consistency",),
+    ),
+    (
+        "account STARK payload byte model consistency check",
+        ("path2_account_stark_payload_byte_model_consistency",),
+        ("path2_account_stark_payload_byte_model_consistency",),
     ),
     (
         "legacy q12289 negative-control bin tests",
@@ -335,6 +351,11 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-STARK-001",
         "DIR-REJECT-001",
     ),
+    "account STARK payload byte model manifest check": (
+        "DIR-KAT-001",
+        "DIR-STARK-001",
+        "DIR-REJECT-001",
+    ),
     "account STARK FRI/QROM residual manifest check": (
         "DIR-PROOF-001",
         "DIR-PROOF-002",
@@ -373,6 +394,11 @@ GATE_TRACKER_ROWS: dict[str, tuple[str, ...]] = {
         "DIR-REJECT-001",
     ),
     "account STARK payload KAT vector consistency check": (
+        "DIR-KAT-001",
+        "DIR-STARK-001",
+        "DIR-REJECT-001",
+    ),
+    "account STARK payload byte model consistency check": (
         "DIR-KAT-001",
         "DIR-STARK-001",
         "DIR-REJECT-001",
