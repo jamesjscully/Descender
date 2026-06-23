@@ -72,10 +72,11 @@ theorem statement is not yet closed for deployment. The proof must instead
 export one of the named breaks below or update this boundary by ADR/spec change.
 
 The production reference emits `Path2DirectTheoremBoundaryReportV1`, which pins
-the accepted tuple, acceptance hypotheses, named break classes, and current
-open blocker for this theorem boundary. This report is not the proof; it is the
-mechanical guard that prevents deployment preflight from drifting away from the
-theorem shape while the composition theorem remains open.
+the accepted tuple, acceptance hypotheses, per-hypothesis obligation matrix,
+named break classes, and current open blocker for this theorem boundary. This
+report is not the proof; it is the mechanical guard that prevents deployment
+preflight from drifting away from the theorem shape while the composition
+theorem remains open.
 
 ## Named Break Classes
 
@@ -91,6 +92,7 @@ Direct mode may name, but must not hide, these break classes:
 - `qrom_or_domain_separation_break`;
 - `live_slot_leakage_or_keygen_break`;
 - proof-family soundness breaks for the selected account-creation payload proof;
+- `consensus_rejection_or_state_mutation_break`;
 - external coded-SIS / lattice-core assumption breaks.
 
 ## Account-Creation Proof Boundary Contract

@@ -9343,6 +9343,18 @@ pub struct Path2AccountCreationProofBoundaryReportV1 {
     pub blocker: &'static str,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct Path2DirectTheoremObligationRowV1 {
+    pub obligation_id: &'static str,
+    pub acceptance_hypothesis: &'static str,
+    pub supporting_surface: &'static str,
+    pub current_evidence: &'static str,
+    pub required_closure: &'static str,
+    pub named_break: &'static str,
+    pub blocker: &'static str,
+    pub open: bool,
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Path2DirectTheoremBoundaryReportV1 {
     pub digest: [u8; DIGEST_BYTES],
@@ -9351,6 +9363,11 @@ pub struct Path2DirectTheoremBoundaryReportV1 {
     pub accepted_tuple_fields: &'static [&'static str],
     pub acceptance_hypotheses: &'static [&'static str],
     pub named_break_classes: &'static [&'static str],
+    pub obligation_rows: &'static [Path2DirectTheoremObligationRowV1],
+    pub obligation_count: usize,
+    pub every_hypothesis_has_obligation: bool,
+    pub every_obligation_has_named_break: bool,
+    pub every_open_obligation_blocks_deployment: bool,
     pub theorem_statement_pinned: bool,
     pub accepted_tuple_pinned: bool,
     pub acceptance_hypotheses_pinned: bool,
@@ -10039,7 +10056,7 @@ pub const PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES: [&str; 9] = [
     "rejection_is_deterministic_public_and_state_preserving",
 ];
 
-pub const PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES: [&str; 11] = [
+pub const PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES: [&str; 12] = [
     "creation_time_hidden_source_soundness_break",
     "prevalidation_leaf_binding_break",
     "prevalidation_registry_binding_break",
@@ -10050,7 +10067,119 @@ pub const PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES: [&str; 11] = [
     "qrom_or_domain_separation_break",
     "live_slot_leakage_or_keygen_break",
     "selected_account_creation_payload_proof_family_break",
+    "consensus_rejection_or_state_mutation_break",
     "external_coded_sis_or_lattice_core_assumption_break",
+];
+
+pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRowV1; 9] = [
+    Path2DirectTheoremObligationRowV1 {
+        obligation_id: "direct_obligation_leaf_canonical_live",
+        acceptance_hypothesis: "leaf_is_canonical_and_live",
+        supporting_surface: "PrevalidatedSlotLeafV1 bytes and lifecycle live marker",
+        current_evidence:
+            "wire-format authority and leaf digest helpers exist; lifecycle target profile and frozen leaf KATs remain open",
+        required_closure:
+            "composition theorem imports canonical leaf parsing plus live-slot lifecycle evidence for the accepted tuple",
+        named_break: "prevalidation_leaf_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremObligationRowV1 {
+        obligation_id: "direct_obligation_evidence_leaf_bindings",
+        acceptance_hypothesis: "evidence_envelope_matches_leaf_bindings",
+        supporting_surface: "AccountCreationEvidenceV1 duplicated binding fields",
+        current_evidence:
+            "shared creation-frame verifier checks evidence/leaf field equality and the proof-boundary report pins exact binding fields",
+        required_closure:
+            "composition theorem imports the evidence/leaf binding verifier and frozen malformed-field KATs",
+        named_break: "prevalidation_leaf_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremObligationRowV1 {
+        obligation_id: "direct_obligation_slot_authorization_digest",
+        acceptance_hypothesis: "slot_authorization_digest_matches_canonical_leaf",
+        supporting_surface: "slot_authorization_digest domain and leaf-byte frame",
+        current_evidence:
+            "wire-format authority gates the slot authorization domain and digest helper",
+        required_closure:
+            "composition theorem imports canonical slot_authorization_digest equality and byte KAT coverage",
+        named_break: "prevalidation_leaf_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremObligationRowV1 {
+        obligation_id: "direct_obligation_creation_before_challenge",
+        acceptance_hypothesis: "selected_creation_verifier_accepted_before_spend_challenge",
+        supporting_surface: "Path2AccountCreationProofBoundaryReportV1 and admission ordering",
+        current_evidence:
+            "selected account-STARK boundary is implemented, field-pinned, and fail-closed for production",
+        required_closure:
+            "account-creation proof boundary is verified and the final theorem proves admission precedes spend challenge derivation",
+        named_break: "selected_account_creation_payload_proof_family_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremObligationRowV1 {
+        obligation_id: "direct_obligation_admission_namespace",
+        acceptance_hypothesis: "direct_admission_namespace_contains_exact_tuple",
+        supporting_surface: "direct admission namespace record",
+        current_evidence:
+            "namespace requirement is in the direct theorem boundary; target-chain data-availability profile remains open",
+        required_closure:
+            "composition theorem imports exact account/state-root/slot-authorization tuple membership and DA semantics",
+        named_break: "prevalidation_registry_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremObligationRowV1 {
+        obligation_id: "direct_obligation_checked_core_frame_binding",
+        acceptance_hypothesis: "checked_core_challenge_binds_public_spend_context",
+        supporting_surface: "Path2NativeCheckedCoreFrameV1",
+        current_evidence:
+            "DIR-CC-001 is verified for checked-core frame field order, mutation tests, and authorization digest binding",
+        required_closure:
+            "composition theorem imports checked-core frame binding for the accepted spend tuple",
+        named_break: "checked_core_message_binding_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremObligationRowV1 {
+        obligation_id: "direct_obligation_checked_core_acceptance",
+        acceptance_hypothesis: "checked_core_verification_accepts_poseidon2_and_fq12_action",
+        supporting_surface: "checked-core verifier, Poseidon2 Fiat-Shamir, and Fq12 action map",
+        current_evidence:
+            "wire-format authority and concrete-security smoke separate Poseidon2 challenge bytes from the Fq12 action-map term",
+        required_closure:
+            "composition theorem links QROM/action-map numeric bounds to the accepted spend event",
+        named_break: "qrom_or_domain_separation_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremObligationRowV1 {
+        obligation_id: "direct_obligation_consume_once",
+        acceptance_hypothesis: "lifecycle_transition_consumes_authorization_once",
+        supporting_surface: "consume-once lifecycle state transition",
+        current_evidence:
+            "lifecycle model and consume-once verifier helper exist; target-chain finality/reorg profile remains open",
+        required_closure:
+            "composition theorem imports consume-once successor-state proof and target-chain lifecycle profile",
+        named_break: "slot_replay_or_rollback_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
+    Path2DirectTheoremObligationRowV1 {
+        obligation_id: "direct_obligation_public_rejection",
+        acceptance_hypothesis: "rejection_is_deterministic_public_and_state_preserving",
+        supporting_surface: "consensus-safe rejection and state-preserving failure mapping",
+        current_evidence:
+            "account-STARK payload boundary maps current internal errors to public rejection classes; full consensus rejection KATs remain open",
+        required_closure:
+            "public rejection enum, panic-free malformed-input KATs, and state-no-mutation tests cover every direct-mode rejection",
+        named_break: "consensus_rejection_or_state_mutation_break",
+        blocker: PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION,
+        open: true,
+    },
 ];
 
 pub const PATH2_ACCOUNT_CREATION_PROOF_BOUNDARY_REQUIREMENTS: [&str; 10] = [
@@ -10361,6 +10490,7 @@ pub fn validate_path2_account_creation_proof_boundary_report_v1(
 pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryReportV1 {
     let account_creation_proof_boundary_report =
         path2_account_creation_proof_boundary_report_v1();
+    let obligation_rows = &PATH2_DIRECT_THEOREM_OBLIGATION_ROWS;
     let mut report = Path2DirectTheoremBoundaryReportV1 {
         digest: [0_u8; DIGEST_BYTES],
         domain: PATH2_DIRECT_THEOREM_BOUNDARY_REPORT_DOMAIN,
@@ -10369,6 +10499,21 @@ pub fn path2_direct_theorem_boundary_report_v1() -> Path2DirectTheoremBoundaryRe
         accepted_tuple_fields: &PATH2_DIRECT_THEOREM_ACCEPTED_TUPLE_FIELDS,
         acceptance_hypotheses: &PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES,
         named_break_classes: &PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES,
+        obligation_rows,
+        obligation_count: obligation_rows.len(),
+        every_hypothesis_has_obligation: PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES.len()
+            == obligation_rows.len()
+            && PATH2_DIRECT_THEOREM_ACCEPTANCE_HYPOTHESES
+                .iter()
+                .zip(obligation_rows.iter())
+                .all(|(hypothesis, row)| row.acceptance_hypothesis == *hypothesis),
+        every_obligation_has_named_break: obligation_rows.iter().all(|row| {
+            !row.named_break.is_empty()
+                && PATH2_DIRECT_THEOREM_NAMED_BREAK_CLASSES.contains(&row.named_break)
+        }),
+        every_open_obligation_blocks_deployment: obligation_rows.iter().all(|row| {
+            !row.open || row.blocker == PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+        }),
         theorem_statement_pinned: true,
         accepted_tuple_pinned: true,
         acceptance_hypotheses_pinned: true,
@@ -63188,6 +63333,49 @@ fn path2_direct_theorem_boundary_report_v1_frame(
         append_u64(&mut frame, b"named_break_class_index", index as u64);
         append_frame(&mut frame, b"named_break_class", break_class.as_bytes());
     }
+    for (index, row) in report.obligation_rows.iter().enumerate() {
+        append_u64(&mut frame, b"direct_theorem_obligation_index", index as u64);
+        append_frame(&mut frame, b"obligation_id", row.obligation_id.as_bytes());
+        append_frame(
+            &mut frame,
+            b"acceptance_hypothesis",
+            row.acceptance_hypothesis.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"supporting_surface",
+            row.supporting_surface.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"current_evidence",
+            row.current_evidence.as_bytes(),
+        );
+        append_frame(
+            &mut frame,
+            b"required_closure",
+            row.required_closure.as_bytes(),
+        );
+        append_frame(&mut frame, b"named_break", row.named_break.as_bytes());
+        append_frame(&mut frame, b"blocker", row.blocker.as_bytes());
+        append_u64(&mut frame, b"open", u64::from(row.open));
+    }
+    append_u64(&mut frame, b"obligation_count", report.obligation_count as u64);
+    append_u64(
+        &mut frame,
+        b"every_hypothesis_has_obligation",
+        u64::from(report.every_hypothesis_has_obligation),
+    );
+    append_u64(
+        &mut frame,
+        b"every_obligation_has_named_break",
+        u64::from(report.every_obligation_has_named_break),
+    );
+    append_u64(
+        &mut frame,
+        b"every_open_obligation_blocks_deployment",
+        u64::from(report.every_open_obligation_blocks_deployment),
+    );
     append_u64(
         &mut frame,
         b"theorem_statement_pinned",
@@ -103538,7 +103726,15 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         );
         assert_eq!(report.accepted_tuple_fields.len(), 11);
         assert_eq!(report.acceptance_hypotheses.len(), 9);
-        assert_eq!(report.named_break_classes.len(), 11);
+        assert_eq!(report.named_break_classes.len(), 12);
+        assert_eq!(
+            report.obligation_rows,
+            PATH2_DIRECT_THEOREM_OBLIGATION_ROWS.as_ref()
+        );
+        assert_eq!(report.obligation_count, 9);
+        assert!(report.every_hypothesis_has_obligation);
+        assert!(report.every_obligation_has_named_break);
+        assert!(report.every_open_obligation_blocks_deployment);
         assert!(report
             .accepted_tuple_fields
             .contains(&"direct_admission_namespace_record"));
@@ -103548,6 +103744,40 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         assert!(report
             .named_break_classes
             .contains(&"selected_account_creation_payload_proof_family_break"));
+        assert!(report
+            .named_break_classes
+            .contains(&"consensus_rejection_or_state_mutation_break"));
+        assert_eq!(
+            report.obligation_rows[0].acceptance_hypothesis,
+            "leaf_is_canonical_and_live"
+        );
+        assert_eq!(
+            report.obligation_rows[3].named_break,
+            "selected_account_creation_payload_proof_family_break"
+        );
+        assert_eq!(
+            report.obligation_rows[5].supporting_surface,
+            "Path2NativeCheckedCoreFrameV1"
+        );
+        assert_eq!(
+            report.obligation_rows[8].named_break,
+            "consensus_rejection_or_state_mutation_break"
+        );
+        for (hypothesis, row) in report
+            .acceptance_hypotheses
+            .iter()
+            .zip(report.obligation_rows.iter())
+        {
+            assert_eq!(row.acceptance_hypothesis, *hypothesis);
+            assert!(row.open);
+            assert_eq!(
+                row.blocker,
+                PRODUCTION_DEPLOYMENT_BLOCKER_DIRECT_THEOREM_COMPOSITION
+            );
+            assert!(report.named_break_classes.contains(&row.named_break));
+            assert!(!row.current_evidence.is_empty());
+            assert!(!row.required_closure.is_empty());
+        }
         assert!(report.theorem_statement_pinned);
         assert!(report.accepted_tuple_pinned);
         assert!(report.acceptance_hypotheses_pinned);
@@ -103572,6 +103802,15 @@ theorem selectedRustFiveSourceSubEvidenceDigestsMatchProof :
         malformed.digest = path2_direct_theorem_boundary_report_v1_digest(&malformed);
         assert_eq!(
             validate_path2_direct_theorem_boundary_report_v1(&malformed).unwrap_err(),
+            "Path 2 direct theorem boundary report mismatch"
+        );
+
+        let mut malformed_obligation = report.clone();
+        malformed_obligation.every_hypothesis_has_obligation = false;
+        malformed_obligation.digest =
+            path2_direct_theorem_boundary_report_v1_digest(&malformed_obligation);
+        assert_eq!(
+            validate_path2_direct_theorem_boundary_report_v1(&malformed_obligation).unwrap_err(),
             "Path 2 direct theorem boundary report mismatch"
         );
 
