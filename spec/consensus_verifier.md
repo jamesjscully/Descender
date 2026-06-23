@@ -151,9 +151,10 @@ Tracker ownership: `SPEC-VERIFY-001`, `DIR-REJECT-001`, `DIR-KAT-001`,
 `ADOPT-ETH-7932-001`, `ADOPT-ETH-8141-001`, and `ADOPT-HW-API-001`.
 
 Current executable precursor coverage includes `Path2PublicResultClassV1`,
-which pins the consensus-visible result-class names from this table, plus
-`path2_direct_account_binding_public_result_class`, which classifies selected
-direct spend/account-binding failures. The
+which pins the consensus-visible result-class names from this table,
+`Path2DirectSpendPublicResultV1`, which wraps direct spend outcomes without
+internal diagnostics, plus `path2_direct_account_binding_public_result_class`,
+which classifies selected direct spend/account-binding failures. The
 `path2_direct_single_slot_spend_rejections_preserve_consume_once_state` test
 checks that selected direct spend rejections leave consume-once state unchanged
 before the accepted spend transition and map to the expected public classes.
@@ -164,9 +165,14 @@ unchanged.
 `path2_direct_single_slot_spend_public_object_rejection_kats_are_panic_free`
 adds selected direct leaf/evidence/certificate public-object failures and checks
 they reject without panic, map to their public result classes, and leave
-consume-once state unchanged. This is rejection-state evidence, not a complete
-malformed-input corpus for every public object, every-reject-class no-mutation
-suite, or client-mapping package.
+consume-once state unchanged.
+`path2_direct_single_slot_spend_public_result_wrapper_hides_internal_diagnostics`
+checks accept, malformed, checked-core, and lifecycle outcomes through the
+public wrapper, returning fixed public result class names without exposing
+internal diagnostics and restoring consume-once state on rejection. This is
+rejection-state evidence, not a complete malformed-input corpus for every public
+object, every-reject-class no-mutation suite, or target-chain client-mapping
+package.
 
 Before the consensus verifier surface can be marked `verified`, the repo needs:
 

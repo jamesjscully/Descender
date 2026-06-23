@@ -10305,6 +10305,31 @@ impl Path2PublicResultClassV1 {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct Path2DirectSpendPublicResultV1 {
+    pub result_class: Path2PublicResultClassV1,
+    pub result_class_name: &'static str,
+    pub accepted_slot_id: Option<u32>,
+}
+
+impl Path2DirectSpendPublicResultV1 {
+    pub fn new(result_class: Path2PublicResultClassV1, accepted_slot_id: Option<u32>) -> Self {
+        Self {
+            result_class,
+            result_class_name: result_class.as_str(),
+            accepted_slot_id,
+        }
+    }
+
+    pub fn accepted_spend(slot_id: u32) -> Self {
+        Self::new(Path2PublicResultClassV1::AcceptSpendSlot, Some(slot_id))
+    }
+
+    pub fn rejected(result_class: Path2PublicResultClassV1) -> Self {
+        Self::new(result_class, None)
+    }
+}
+
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_FRAME_FIXED_OVERHEAD_EXCLUDING_BUNDLE: usize = 558;
 pub const PATH2_ACCOUNT_STARK_PAYLOAD_FIXED_DATA_BYTES_EXCLUDING_BUNDLE: usize =
     PATH2_ACCOUNT_STARK_CREATION_PAYLOAD_SCHEMA.len()
@@ -11002,7 +11027,7 @@ pub const PATH2_DIRECT_THEOREM_OBLIGATION_ROWS: [Path2DirectTheoremObligationRow
         acceptance_hypothesis: "rejection_is_deterministic_public_and_state_preserving",
         supporting_surface: "consensus-safe rejection and state-preserving failure mapping",
         current_evidence:
-            "Path2PublicResultClassV1 pins the consensus result-class names; account-STARK payload boundary maps current internal errors to public rejection classes; direct spend classifier, no-mutation test, malformed signature panic-free KATs, and public leaf/evidence/certificate rejection KATs cover selected pre-consume failure classes; full consensus rejection KATs remain open",
+            "Path2PublicResultClassV1 pins the consensus result-class names; Path2DirectSpendPublicResultV1 wraps direct spend results without internal diagnostics; account-STARK payload boundary maps current internal errors to public rejection classes; direct spend classifier, no-mutation test, malformed signature panic-free KATs, public leaf/evidence/certificate rejection KATs, and public-result wrapper test cover selected pre-consume failure classes; full consensus rejection KATs remain open",
         required_closure:
             "public rejection enum, panic-free malformed-input KATs, and state-no-mutation tests cover every direct-mode rejection",
         named_break: "consensus_rejection_or_state_mutation_break",
@@ -64466,6 +64491,52 @@ pub fn verify_path2_direct_single_slot_spend_authorization(
     Ok(parts)
 }
 
+pub fn verify_path2_direct_single_slot_spend_authorization_public_result_v1(
+    leaf: &Path2PrevalidatedSlotLeafV1,
+    evidence: &Path2AccountCreationEvidenceV1,
+    certificate: &Path2DirectReplayableRelationCertificateV1,
+    public_key: &ProductionPublicKey,
+    message: &[u8],
+    account: &ProductionReviewedFq12StateAssistedAccountState,
+    signature: &ProductionSignature,
+    admitted_state_authorizations: &BTreeSet<(
+        [u8; DIGEST_BYTES],
+        [u8; DIGEST_BYTES],
+        [u8; DIGEST_BYTES],
+    )>,
+    consumed_authorizations: &mut BTreeSet<[u8; DIGEST_BYTES]>,
+) -> Path2DirectSpendPublicResultV1 {
+    let consumed_before = consumed_authorizations.clone();
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        verify_path2_direct_single_slot_spend_authorization(
+            leaf,
+            evidence,
+            certificate,
+            public_key,
+            message,
+            account,
+            signature,
+            admitted_state_authorizations,
+            consumed_authorizations,
+        )
+    }));
+    match result {
+        Ok(Ok(parts)) => Path2DirectSpendPublicResultV1::accepted_spend(parts.slot_id),
+        Ok(Err(err)) => {
+            *consumed_authorizations = consumed_before;
+            Path2DirectSpendPublicResultV1::rejected(
+                path2_direct_account_binding_public_result_class(&err),
+            )
+        }
+        Err(_) => {
+            *consumed_authorizations = consumed_before;
+            Path2DirectSpendPublicResultV1::rejected(
+                Path2PublicResultClassV1::InternalErrorFailClosed,
+            )
+        }
+    }
+}
+
 pub fn sign_path2_reviewed_fq12_authorization_checked_core(
     public_key: &ProductionPublicKey,
     message: &[u8],
@@ -98409,6 +98480,125 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
                 "direct public object rejection {label} mutated consume-once state"
             );
         }
+    }
+
+    #[test]
+    fn path2_direct_single_slot_spend_public_result_wrapper_hides_internal_diagnostics() {
+        let (fixture, leaf, evidence, certificate) = path2_creation_relation_replay_fixture();
+        let authorization = path2_slot_authorization_digest(&leaf).unwrap();
+        let mut admitted_state_authorizations = BTreeSet::new();
+        admitted_state_authorizations.insert((
+            leaf.account_id,
+            leaf.account_state_root_before,
+            authorization,
+        ));
+        let responses = ProductionCompactResponses {
+            active_free: [[0_i16; LOCAL_FREE]; REPS],
+        };
+        let signature = sign_path2_reviewed_fq12_authorization_checked_core(
+            &fixture.public_key,
+            fixture.message,
+            &fixture.account,
+            &leaf.account_id,
+            &leaf.account_state_root_before,
+            &authorization,
+            leaf.slot_id as u32,
+            &fixture.pad_seed,
+            &responses,
+        )
+        .unwrap();
+
+        let mut accepted_consumed = BTreeSet::new();
+        let accepted =
+            verify_path2_direct_single_slot_spend_authorization_public_result_v1(
+                &leaf,
+                &evidence,
+                &certificate,
+                &fixture.public_key,
+                fixture.message,
+                &fixture.account,
+                &signature,
+                &admitted_state_authorizations,
+                &mut accepted_consumed,
+            );
+        assert_eq!(
+            accepted,
+            Path2DirectSpendPublicResultV1::accepted_spend(leaf.slot_id as u32)
+        );
+        assert_eq!(accepted.result_class_name, "accept_spend_slot");
+        assert!(accepted_consumed.contains(&authorization));
+
+        let before_replay = accepted_consumed.clone();
+        let replay_rejection =
+            verify_path2_direct_single_slot_spend_authorization_public_result_v1(
+                &leaf,
+                &evidence,
+                &certificate,
+                &fixture.public_key,
+                fixture.message,
+                &fixture.account,
+                &signature,
+                &admitted_state_authorizations,
+                &mut accepted_consumed,
+            );
+        assert_eq!(
+            replay_rejection,
+            Path2DirectSpendPublicResultV1::rejected(
+                Path2PublicResultClassV1::RejectLifecycleState
+            )
+        );
+        assert_eq!(replay_rejection.result_class_name, "reject_lifecycle_state");
+        assert_eq!(
+            accepted_consumed, before_replay,
+            "public result wrapper changed state on lifecycle rejection"
+        );
+
+        let mut malformed_consumed = BTreeSet::new();
+        let malformed =
+            verify_path2_direct_single_slot_spend_authorization_public_result_v1(
+                &leaf,
+                &evidence,
+                &certificate,
+                &fixture.public_key,
+                fixture.message,
+                &fixture.account,
+                &ProductionSignature::new(vec![0_u8; 7]),
+                &admitted_state_authorizations,
+                &mut malformed_consumed,
+            );
+        assert_eq!(
+            malformed,
+            Path2DirectSpendPublicResultV1::rejected(
+                Path2PublicResultClassV1::RejectMalformedPublicInput
+            )
+        );
+        assert_eq!(
+            malformed.result_class_name,
+            "reject_malformed_public_input"
+        );
+        assert!(malformed_consumed.is_empty());
+
+        let mut checked_core_consumed = BTreeSet::new();
+        let checked_core =
+            verify_path2_direct_single_slot_spend_authorization_public_result_v1(
+                &leaf,
+                &evidence,
+                &certificate,
+                &fixture.public_key,
+                b"path2-wrong-message",
+                &fixture.account,
+                &signature,
+                &admitted_state_authorizations,
+                &mut checked_core_consumed,
+            );
+        assert_eq!(
+            checked_core,
+            Path2DirectSpendPublicResultV1::rejected(
+                Path2PublicResultClassV1::RejectCheckedCore
+            )
+        );
+        assert_eq!(checked_core.result_class_name, "reject_checked_core");
+        assert!(checked_core_consumed.is_empty());
     }
 
     #[test]

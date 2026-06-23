@@ -86,7 +86,8 @@ digest-pinned audit case for each open direct-theorem obligation and binds that
 row list to the current QROM/action, lifecycle, and account-creation
 proof-boundary reports while keeping composition, imported-boundary verification,
 and deployment flags false. The public-rejection obligation row now records
-`Path2PublicResultClassV1`, the direct spend public-classifier helper, and the
+`Path2PublicResultClassV1`, `Path2DirectSpendPublicResultV1`, the direct spend
+public-classifier helper, and the
 `path2_direct_single_slot_spend_rejections_preserve_consume_once_state` test,
 which checks selected direct spend rejections preserve consume-once state before
 the mutation point. It also records
@@ -96,9 +97,12 @@ map to the malformed public class, and preserve consume-once state.
 `path2_direct_single_slot_spend_public_object_rejection_kats_are_panic_free`
 adds selected direct leaf/evidence/certificate malformed, lifecycle, and binding
 failures with panic-free rejection, public class mapping, and no consume-once
-mutation. This does not replace panic-free malformed-input KATs for every public
-object, state-no-mutation coverage for every direct-mode rejection, or full
-consensus-client mapping still required for closure. The
+mutation. `path2_direct_single_slot_spend_public_result_wrapper_hides_internal_diagnostics`
+checks accept, malformed, checked-core, and lifecycle outcomes through the public
+wrapper without internal diagnostic exposure and with rejection-state rollback.
+This does not replace panic-free malformed-input KATs for every public object,
+state-no-mutation coverage for every direct-mode rejection, or full
+target-chain consensus-client mapping still required for closure. The
 QROM/action report pins the checked-core direct query budget, 182-bit priced
 transcript term,
 246-bit full challenge term, 163-bit Fq12 action floor, direct-mode `q_chal`

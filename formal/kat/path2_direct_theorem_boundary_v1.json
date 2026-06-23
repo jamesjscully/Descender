@@ -462,8 +462,8 @@
       "direct_lifecycle_boundary_report_recomputed_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_qrom_action_boundary_report_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "direct_qrom_action_boundary_report_recomputed_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
-      "direct_theorem_boundary_report_digest": "f4fc807cdfd4921c931cf4f80fa92bbd82e3a783deedbbff73330257871fe8c4",
-      "direct_theorem_boundary_report_recomputed_digest": "f4fc807cdfd4921c931cf4f80fa92bbd82e3a783deedbbff73330257871fe8c4",
+      "direct_theorem_boundary_report_digest": "2f6226e399a4efc1d04005f67ef5c3c7a52d0ccd61797d422decdca0678fb053",
+      "direct_theorem_boundary_report_recomputed_digest": "2f6226e399a4efc1d04005f67ef5c3c7a52d0ccd61797d422decdca0678fb053",
       "direct_theorem_report_lifecycle_digest": "c0bac4ed20877cd19a7eb2a9282704c533fadbcba68e3d270e496843a9e16eeb",
       "direct_theorem_report_qrom_action_digest": "e0a797dd434840d6768e40acc8307bb5d6f03b27f7070d64d806ea9c0054824b",
       "proof_boundary_report_sampler_timing_digest": "dc3b56629c8e52496b5d848d5bfa01cdb8097c450f264daa540bc6d379f9995b"
@@ -744,7 +744,7 @@
         {
           "acceptance_hypothesis": "rejection_is_deterministic_public_and_state_preserving",
           "blocker": "direct theorem boundary: final admission/spend/lifecycle composition theorem is not instantiated",
-          "current_evidence": "Path2PublicResultClassV1 pins the consensus result-class names; account-STARK payload boundary maps current internal errors to public rejection classes; direct spend classifier, no-mutation test, malformed signature panic-free KATs, and public leaf/evidence/certificate rejection KATs cover selected pre-consume failure classes; full consensus rejection KATs remain open",
+          "current_evidence": "Path2PublicResultClassV1 pins the consensus result-class names; Path2DirectSpendPublicResultV1 wraps direct spend results without internal diagnostics; account-STARK payload boundary maps current internal errors to public rejection classes; direct spend classifier, no-mutation test, malformed signature panic-free KATs, public leaf/evidence/certificate rejection KATs, and public-result wrapper test cover selected pre-consume failure classes; full consensus rejection KATs remain open",
           "named_break": "consensus_rejection_or_state_mutation_break",
           "obligation_id": "direct_obligation_public_rejection",
           "open": true,
@@ -763,5 +763,5 @@
     "profile_id": "Descender.Signature.q12289.local_delta.stateful.v1",
     "schema": "Descender.Path2.DirectTheoremBoundaryManifest.v1"
   },
-  "manifest_digest": "9113fdd06314163b942168efbc4bf4fdb3015ce4a3ac0113d46e79517da687a5"
+  "manifest_digest": "9863f31181c74d0fddb6442e80cd5e4b0607bf37cb43208ecbdb88be55382d94"
 }
