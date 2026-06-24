@@ -74,6 +74,14 @@ finite-trace, outcome-carrier, accepted-event, break-family, named-break,
 union-pricing, and priced-bound digest slot as a nonzero proof object before
 future accepted-spend pricing can consume it; pricing and per-event
 cryptographic bounds remain open. The
+Lean concrete full-spend carrier now makes account creation acceptance consume
+an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding
+the proof-boundary report digest, accepted proof-boundary evidence digest,
+replay-payload digest, deployed-anchor digest, verifier acceptance, and
+fail-closed production-gate facts before the final direct theorem can treat a
+slot as admitted; the production-reference source-shape gate rejects the
+full-signature execution boundary if that account-creation proof-boundary route
+disappears. The
 accepted spend tuple artifact now carries an
 eleven-row accepted-tuple-field evidence checklist tying every direct theorem
 tuple field to its accepted-path check and still-open direct theorem obligation.

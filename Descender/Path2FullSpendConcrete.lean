@@ -41,6 +41,14 @@ structure ConcreteAccountCreationEvidence where
   acceptedAt : Nat
   creationEvidenceDigest : Nat
   creationFrame : Nat
+  proofBoundaryReportDigest : Nat
+  acceptedProofBoundaryEvidenceDigest : Nat
+  replayPayloadDigest : Nat
+  deployedAnchorDigest : Nat
+  proofBoundaryReportValidated : Prop
+  acceptedProofBoundaryEvidenceValidated : Prop
+  verifierBoundaryAccepts : Prop
+  productionGateFailClosed : Prop
 
 /-- Replayable direct-relation certificate carried by the prevalidated slot. -/
 structure ConcreteDirectCertificate where
@@ -107,6 +115,10 @@ structure ConcreteGameConfig where
   checkedCoreFields : Path2NativeAccountDesign.NativeCheckedCoreFrameFields
   checkedCore :
     Path2NativeAccountDesign.NativeCheckedCoreFrameBinding checkedCoreFields
+  accountCreationProofBoundaryReportDigest : Nat
+  acceptedProofBoundaryEvidenceDigest : Nat
+  selectedCreationReplayPayloadDigest : Nat
+  selectedDeployedAnchorDigest : Nat
   leafFrameEncoder : Path2NativeAccountDesign.OrderedFrameEncoder
   leafFrame : ConcretePrevalidatedSlotLeaf -> Nat
   leafFrame_binds :
@@ -275,6 +287,10 @@ def selectedRustConcreteGameConfig : ConcreteGameConfig where
   nativeVerifier := selectedRustVerifierPredicates
   checkedCoreFields := selectedRustCheckedCoreFrameFields
   checkedCore := selectedRustCheckedCoreFrameBinding
+  accountCreationProofBoundaryReportDigest := 1
+  acceptedProofBoundaryEvidenceDigest := 2
+  selectedCreationReplayPayloadDigest := 3
+  selectedDeployedAnchorDigest := 4
   leafFrameEncoder := selectedRustFrameEncoder
   leafFrame := fun leaf =>
     selectedRustFrameEncoder.encode [
@@ -296,6 +312,27 @@ def selectedRustConcreteGameConfig : ConcreteGameConfig where
     intro leaf
     rfl
 
+/-- The accepted account-creation proof boundary is pinned to the selected public evidence. -/
+def AccountCreationProofBoundaryEvidenceAccepted
+    (C : ConcreteGameConfig)
+    (spend : ConcreteSpendTuple) : Prop :=
+  spend.creationEvidence.proofBoundaryReportDigest =
+      C.accountCreationProofBoundaryReportDigest ∧
+    spend.creationEvidence.acceptedProofBoundaryEvidenceDigest =
+        C.acceptedProofBoundaryEvidenceDigest ∧
+      spend.creationEvidence.replayPayloadDigest =
+          C.selectedCreationReplayPayloadDigest ∧
+        spend.creationEvidence.deployedAnchorDigest =
+            C.selectedDeployedAnchorDigest ∧
+          spend.creationEvidence.proofBoundaryReportDigest ≠ 0 ∧
+            spend.creationEvidence.acceptedProofBoundaryEvidenceDigest ≠ 0 ∧
+              spend.creationEvidence.replayPayloadDigest ≠ 0 ∧
+                spend.creationEvidence.deployedAnchorDigest ≠ 0 ∧
+                  spend.creationEvidence.proofBoundaryReportValidated ∧
+                    spend.creationEvidence.acceptedProofBoundaryEvidenceValidated ∧
+                      spend.creationEvidence.verifierBoundaryAccepts ∧
+                        spend.creationEvidence.productionGateFailClosed
+
 /-- The leaf fields agree with the native public projections of its boundary. -/
 def NativeProjectionCarrierBinding
     (C : ConcreteGameConfig)
@@ -315,8 +352,9 @@ def AccountCreationAccepted
         spend.leaf.creationEvidenceDigest ∧
       Path2NativeAccountDesign.CheckedObstructionZero
         C.nativeObstruction C.nativeChecks spend.leaf.boundary ∧
-        C.nativeVerifier.acceptCreate spend.leaf.boundary ∧
-          spend.creationEvidence.acceptedAt ≤ (spend.spendChallengeTime : Nat)
+        AccountCreationProofBoundaryEvidenceAccepted C spend ∧
+          C.nativeVerifier.acceptCreate spend.leaf.boundary ∧
+            spend.creationEvidence.acceptedAt ≤ (spend.spendChallengeTime : Nat)
 
 /-- Local canonicality and liveness of the concrete prevalidated slot leaf. -/
 def PrevalidatedSlotLeafCanonicalAndLive

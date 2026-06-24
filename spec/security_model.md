@@ -97,6 +97,16 @@ proof-boundary reports while also carrying the direct closure-dependency rows
 and derived evidence rows that tie the nine accepted-tuple hypotheses to their
 still-open source reports/support surfaces. It keeps composition,
 imported-boundary verification, and deployment flags false.
+The Lean concrete full-spend carrier mirrors this: `AccountCreationAccepted`
+now requires `AccountCreationProofBoundaryEvidenceAccepted`, so an accepted
+creation must carry the selected proof-boundary report digest, accepted
+proof-boundary evidence digest, replay-payload digest, deployed-anchor digest,
+validated proof-boundary evidence flags, verifier acceptance, and fail-closed
+production-gate fact before the direct theorem may treat the slot as admitted.
+The production-reference source-shape gate checks this account-creation
+proof-boundary route alongside the full-signature execution source, so the
+direct theorem cannot silently collapse back to a generic `acceptCreate`
+predicate.
 `Path2DirectAcceptedSpendTupleEvidenceV1` records
 an accepted-path tuple digest for the current direct spend endpoint: public-key
 identity, message digest, account id, state root, slot id, checked-core
@@ -374,6 +384,11 @@ leaf/binding anchors. The accepted-evidence validator also replays the selected
 account-STARK KAT fixture and recomputes the leaf, evidence, certificate,
 payload, creation-binding, payload-frame, bundle, deployed-anchor, and
 decoded-anchor digests before accepting a serialized artifact. The artifact
+is also consumed by the Lean concrete full-spend carrier through
+`AccountCreationProofBoundaryEvidenceAccepted`, which forces the final theorem
+shape to name the proof-boundary report/evidence digests and fail-closed
+production-gate fact instead of relying only on generic creation acceptance.
+The artifact
 also carries a ten-row
 accepted-requirement evidence checklist: eight requirements are
 happy-path-applicable accepted checks, `account_stark_qrom_domain_separation`

@@ -50134,6 +50134,19 @@ fn path2_full_signature_execution_source_boundary_present_v1() -> bool {
 fn path2_full_signature_execution_source_boundary_present_in_source_v1(
     full_spend_source: &str,
 ) -> bool {
+    let Some(account_creation_start) =
+        full_spend_source.find("\nstructure ConcreteAccountCreationEvidence")
+    else {
+        return false;
+    };
+    let Some(account_creation_end) =
+        full_spend_source[account_creation_start..].find("\ndef ConcreteSpendVerificationAccepts")
+    else {
+        return false;
+    };
+    let account_creation_end = account_creation_start + account_creation_end;
+    let account_creation_window = &full_spend_source[account_creation_start..account_creation_end];
+
     let source_start = full_spend_source
         .find("\nstructure ConcreteFullSignatureExecutionSource")
         .expect("Lean Path 2 full-signature execution source start marker missing");
@@ -50231,8 +50244,39 @@ fn path2_full_signature_execution_source_boundary_present_in_source_v1(
         "fullForgeryImpliesAcceptedSpendForgery :=",
         "full_signature_with_concrete_full_execution_source_lift",
     ];
+    let account_creation_checks = [
+        "proofBoundaryReportDigest : Nat",
+        "acceptedProofBoundaryEvidenceDigest : Nat",
+        "replayPayloadDigest : Nat",
+        "deployedAnchorDigest : Nat",
+        "proofBoundaryReportValidated : Prop",
+        "acceptedProofBoundaryEvidenceValidated : Prop",
+        "verifierBoundaryAccepts : Prop",
+        "productionGateFailClosed : Prop",
+        "accountCreationProofBoundaryReportDigest : Nat",
+        "acceptedProofBoundaryEvidenceDigest : Nat",
+        "selectedCreationReplayPayloadDigest : Nat",
+        "selectedDeployedAnchorDigest : Nat",
+        "AccountCreationProofBoundaryEvidenceAccepted",
+        "spend.creationEvidence.proofBoundaryReportDigest =",
+        "C.accountCreationProofBoundaryReportDigest",
+        "spend.creationEvidence.acceptedProofBoundaryEvidenceDigest =",
+        "C.acceptedProofBoundaryEvidenceDigest",
+        "spend.creationEvidence.replayPayloadDigest =",
+        "C.selectedCreationReplayPayloadDigest",
+        "spend.creationEvidence.deployedAnchorDigest =",
+        "C.selectedDeployedAnchorDigest",
+        "spend.creationEvidence.proofBoundaryReportValidated",
+        "spend.creationEvidence.acceptedProofBoundaryEvidenceValidated",
+        "spend.creationEvidence.verifierBoundaryAccepts",
+        "spend.creationEvidence.productionGateFailClosed",
+        "AccountCreationProofBoundaryEvidenceAccepted C spend",
+    ];
 
-    source_checks
+    account_creation_checks
+        .iter()
+        .all(|marker| account_creation_window.contains(marker))
+        && source_checks
         .iter()
         .all(|marker| source_window.contains(marker))
         && predicate_checks
@@ -88805,6 +88849,12 @@ theorem selectedRustAcceptedSpendSoundnessBoundary_instantiation_v1 :
     SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_reportDigestVerified
   let _acceptedSpendReportNumericDigestsProof :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_numericEvidenceDigestsVerified
+  let _acceptedSpendNumericDigestSlotsCertificate :=
+    SelectedRustAcceptedSpendNumericDigestSlotsCertificate
+  let _acceptedSpendNumericDigestSlots :=
+    selectedRustAcceptedSpendNumericDigestSlotsCertificate
+  let _acceptedSpendNumericDigestSlotsReportVerified :=
+    SelectedRustAcceptedSpendNumericDigestSlotsCertificate.toReportVerified
   let _acceptedSpendReportFiniteTraceDigestNonempty :=
     SelectedRustAcceptedSpendSoundnessEvidenceReport.reportVerified_finiteTraceSupportDigest_nonzero
   let _acceptedSpendReportOutcomeDigestNonempty :=
