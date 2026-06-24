@@ -86,6 +86,12 @@ slot_authorization_digest =
 
 Every direct record, inclusion proof, or future aggregate handle must normalize
 to the same `slot_authorization_digest` before checked-core spend verification.
+The current direct-record implementation provides the digest helper,
+state-namespace admission validator, checked-core challenge binding, and
+consume-once replay checks in `tools/parameter-search/src/production_reference.rs`.
+That is partial handle evidence, not a full deployment corpus: target-chain
+storage rules, full KAT coverage, inclusion-proof handles, and aggregated proof
+handles remain separate deployment/profile work.
 
 ## AccountCreationEvidenceV1
 

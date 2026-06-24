@@ -102275,6 +102275,25 @@ def selectedRustActiveSerializerEvidenceFactsAllTrueProof := True.intro
             .unwrap_err(),
             "Path 2 slot authorization was not admitted in state namespace"
         );
+
+        let mut wrong_authorization_admitted = BTreeSet::new();
+        let mut wrong_authorization = authorization;
+        wrong_authorization[0] ^= 1;
+        wrong_authorization_admitted.insert((
+            leaf.account_id,
+            leaf.account_state_root_before,
+            wrong_authorization,
+        ));
+        assert_eq!(
+            validate_path2_direct_slot_authorization_state_namespace(
+                &leaf,
+                &evidence,
+                &certificate,
+                &wrong_authorization_admitted,
+            )
+            .unwrap_err(),
+            "Path 2 slot authorization was not admitted in state namespace"
+        );
     }
 
     fn path2_signature_with_authorization_challenge(

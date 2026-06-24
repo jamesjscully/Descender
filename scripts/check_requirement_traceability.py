@@ -1897,8 +1897,8 @@ DIRECT_IMPLEMENTATION_SURFACE_CONTRACTS = [
     (
         "Slot authorization handle",
         "`direct`",
-        "`not_ready`",
-        "normative wire/state text",
+        "`partial`",
+        "normative wire/state text plus executable direct-record digest",
         {"DIR-HANDLE-001", "DIR-CC-001", "DIR-KAT-001"},
     ),
     (
