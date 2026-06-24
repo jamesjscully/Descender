@@ -43,10 +43,12 @@ structure ConcreteAccountCreationEvidence where
   creationFrame : Nat
   proofBoundaryReportDigest : Nat
   acceptedProofBoundaryEvidenceDigest : Nat
+  authorizationClassObligationDigest : Nat
   replayPayloadDigest : Nat
   deployedAnchorDigest : Nat
   proofBoundaryReportValidated : Prop
   acceptedProofBoundaryEvidenceValidated : Prop
+  authorizationClassObligationTracked : Prop
   verifierBoundaryAccepts : Prop
   productionGateFailClosed : Prop
 
@@ -117,6 +119,7 @@ structure ConcreteGameConfig where
     Path2NativeAccountDesign.NativeCheckedCoreFrameBinding checkedCoreFields
   accountCreationProofBoundaryReportDigest : Nat
   acceptedProofBoundaryEvidenceDigest : Nat
+  accountCreationAuthorizationClassObligationDigest : Nat
   selectedCreationReplayPayloadDigest : Nat
   selectedDeployedAnchorDigest : Nat
   leafFrameEncoder : Path2NativeAccountDesign.OrderedFrameEncoder
@@ -289,8 +292,9 @@ def selectedRustConcreteGameConfig : ConcreteGameConfig where
   checkedCore := selectedRustCheckedCoreFrameBinding
   accountCreationProofBoundaryReportDigest := 1
   acceptedProofBoundaryEvidenceDigest := 2
-  selectedCreationReplayPayloadDigest := 3
-  selectedDeployedAnchorDigest := 4
+  accountCreationAuthorizationClassObligationDigest := 3
+  selectedCreationReplayPayloadDigest := 4
+  selectedDeployedAnchorDigest := 5
   leafFrameEncoder := selectedRustFrameEncoder
   leafFrame := fun leaf =>
     selectedRustFrameEncoder.encode [
@@ -312,6 +316,24 @@ def selectedRustConcreteGameConfig : ConcreteGameConfig where
     intro leaf
     rfl
 
+/--
+The accepted account-creation proof boundary explicitly tracks the still-open
+authorization-class obligation and binds the admitted leaf to the public spend
+projection of the creation boundary.  This does not close the theorem that
+private authorization-local material cannot change public spend semantics; it
+prevents the deployable carrier from omitting that obligation.
+-/
+def AccountCreationAuthorizationClassObligationTracked
+    (C : ConcreteGameConfig)
+    (spend : ConcreteSpendTuple) : Prop :=
+  spend.creationEvidence.authorizationClassObligationDigest =
+      C.accountCreationAuthorizationClassObligationDigest ∧
+    spend.creationEvidence.authorizationClassObligationDigest ≠ 0 ∧
+      spend.creationEvidence.authorizationClassObligationTracked ∧
+        spend.creationEvidence.boundary = spend.leaf.boundary ∧
+          spend.leaf.authorizationClass =
+            C.nativeProjections.pSpend spend.creationEvidence.boundary
+
 /-- The accepted account-creation proof boundary is pinned to the selected public evidence. -/
 def AccountCreationProofBoundaryEvidenceAccepted
     (C : ConcreteGameConfig)
@@ -320,18 +342,19 @@ def AccountCreationProofBoundaryEvidenceAccepted
       C.accountCreationProofBoundaryReportDigest ∧
     spend.creationEvidence.acceptedProofBoundaryEvidenceDigest =
         C.acceptedProofBoundaryEvidenceDigest ∧
-      spend.creationEvidence.replayPayloadDigest =
-          C.selectedCreationReplayPayloadDigest ∧
-        spend.creationEvidence.deployedAnchorDigest =
-            C.selectedDeployedAnchorDigest ∧
-          spend.creationEvidence.proofBoundaryReportDigest ≠ 0 ∧
-            spend.creationEvidence.acceptedProofBoundaryEvidenceDigest ≠ 0 ∧
-              spend.creationEvidence.replayPayloadDigest ≠ 0 ∧
-                spend.creationEvidence.deployedAnchorDigest ≠ 0 ∧
-                  spend.creationEvidence.proofBoundaryReportValidated ∧
-                    spend.creationEvidence.acceptedProofBoundaryEvidenceValidated ∧
-                      spend.creationEvidence.verifierBoundaryAccepts ∧
-                        spend.creationEvidence.productionGateFailClosed
+      AccountCreationAuthorizationClassObligationTracked C spend ∧
+        spend.creationEvidence.replayPayloadDigest =
+            C.selectedCreationReplayPayloadDigest ∧
+          spend.creationEvidence.deployedAnchorDigest =
+              C.selectedDeployedAnchorDigest ∧
+            spend.creationEvidence.proofBoundaryReportDigest ≠ 0 ∧
+              spend.creationEvidence.acceptedProofBoundaryEvidenceDigest ≠ 0 ∧
+                spend.creationEvidence.replayPayloadDigest ≠ 0 ∧
+                  spend.creationEvidence.deployedAnchorDigest ≠ 0 ∧
+                    spend.creationEvidence.proofBoundaryReportValidated ∧
+                      spend.creationEvidence.acceptedProofBoundaryEvidenceValidated ∧
+                        spend.creationEvidence.verifierBoundaryAccepts ∧
+                          spend.creationEvidence.productionGateFailClosed
 
 /-- The leaf fields agree with the native public projections of its boundary. -/
 def NativeProjectionCarrierBinding

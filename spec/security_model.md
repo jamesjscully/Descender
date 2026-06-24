@@ -335,6 +335,11 @@ FRI/AoK, FRI/QROM, payload-KAT, or production-gate flag is not backed by the
 expected open obligation and support surface. The boundary and preflight gates
 also compare each proof-boundary closure-dependency evidence row field-for-field
 against its source closure-dependency row.
+`Descender/Path2FullSpendConcrete.lean` mirrors that routing at the accepted
+full-spend carrier by requiring accepted account-creation proof-boundary
+evidence to carry a nonzero authorization-class obligation digest, a tracked
+obligation flag, and the public leaf authorization class equal to
+`pSpend(boundary)`. That is deployment-boundary evidence, not a theorem closure.
 `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 turns that row table into a digest-pinned audit corpus bound to both the
 proof-boundary and direct-theorem reports; it keeps every obligation open and
