@@ -78,11 +78,15 @@ Lean concrete full-spend carrier now makes account creation acceptance consume
 an explicit `AccountCreationProofBoundaryEvidenceAccepted` predicate, binding
 the proof-boundary report digest, accepted proof-boundary evidence digest,
 sampler/timing report digest, no-postchallenge timing obligation digest,
+no-export boundary digest, account-STARK residual matrix digest, FRI/QROM
+residual digest, FRI/AoK boundary digest, payload-KAT boundary digest,
 replay-payload digest, deployed-anchor digest, verifier acceptance, and
 fail-closed production-gate facts before the final direct theorem can treat a
 slot as admitted. It also requires the accepted creation statement to be
 prechallenge-fixed, to exclude spend message/signature bytes, and to have
-creation/frozen leaf timing before the spend challenge; the
+creation/frozen leaf timing before the spend challenge, while carrying tracked
+open residual flags for simulator/no-export, FRI/QROM, FRI/AoK, and payload-KAT
+proof-family blockers; the
 production-reference source-shape gate rejects the full-signature execution
 boundary if that account-creation proof-boundary route disappears. The
 accepted spend tuple artifact now carries an
@@ -169,6 +173,8 @@ boundary.
 ### Direct Mode Evidence Notes
 
 - `DIR-BIND-001`, `DIR-CREATE-001`, `DIR-SEC-001`, and `DIR-PROOF-001` now include accepted-path account-creation binding evidence that decodes the account-STARK public anchor set through `decode_deployed_account_creation_public_anchors` and compares it against deployed leaf/binding anchors. This pins replay-payload digest equality, raw verifier version, masked projection, role-root export bridge, and packed-witness commitment for the deterministic accepted fixture, while leaving theorem-level replay/anchor closure, simulator, extractor, frozen corpus, production gate, and external review open.
+
+- `Descender/Path2FullSpendConcrete.lean` now makes `AccountCreationProofBoundaryEvidenceAccepted` import the selected no-export boundary digest, account-STARK residual matrix digest, FRI/QROM residual digest, FRI/AoK boundary digest, payload-KAT boundary digest, and tracked-open residual flags for simulator/no-export, FRI/QROM, FRI/AoK, and payload-KAT blockers. This prevents the final direct theorem carrier from consuming an unqualified proof-family acceptance fact; it does not close those proof-family obligations.
 
 ## Aggregation / Rollup Mode
 

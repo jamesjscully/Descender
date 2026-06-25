@@ -46,6 +46,11 @@ structure ConcreteAccountCreationEvidence where
   authorizationClassObligationDigest : Nat
   samplerTimingReportDigest : Nat
   noPostchallengeTimingObligationDigest : Nat
+  noExportBoundaryReportDigest : Nat
+  accountStarkResidualMatrixReportDigest : Nat
+  friQromResidualReportDigest : Nat
+  friAokBoundaryReportDigest : Nat
+  payloadKatBoundaryReportDigest : Nat
   replayPayloadDigest : Nat
   deployedAnchorDigest : Nat
   proofBoundaryReportValidated : Prop
@@ -55,6 +60,12 @@ structure ConcreteAccountCreationEvidence where
   creationStatementExcludesSignatureBytes : Prop
   prechallengeStatementFixed : Prop
   noPostchallengeTimingObligationTracked : Prop
+  noExportBoundaryTracked : Prop
+  simulatorNoExportObligationTracked : Prop
+  friQromResidualObligationTracked : Prop
+  friAokExtractorObligationTracked : Prop
+  payloadKatBoundaryTracked : Prop
+  proofFamilyObligationsStillOpen : Prop
   verifierBoundaryAccepts : Prop
   productionGateFailClosed : Prop
 
@@ -128,6 +139,11 @@ structure ConcreteGameConfig where
   accountCreationAuthorizationClassObligationDigest : Nat
   accountCreationSamplerTimingReportDigest : Nat
   accountCreationNoPostchallengeTimingObligationDigest : Nat
+  accountCreationNoExportBoundaryReportDigest : Nat
+  accountCreationResidualMatrixReportDigest : Nat
+  accountCreationFriQromResidualReportDigest : Nat
+  accountCreationFriAokBoundaryReportDigest : Nat
+  accountCreationPayloadKatBoundaryReportDigest : Nat
   selectedCreationReplayPayloadDigest : Nat
   selectedDeployedAnchorDigest : Nat
   leafFrameEncoder : Path2NativeAccountDesign.OrderedFrameEncoder
@@ -303,8 +319,13 @@ def selectedRustConcreteGameConfig : ConcreteGameConfig where
   accountCreationAuthorizationClassObligationDigest := 3
   accountCreationSamplerTimingReportDigest := 4
   accountCreationNoPostchallengeTimingObligationDigest := 5
-  selectedCreationReplayPayloadDigest := 6
-  selectedDeployedAnchorDigest := 7
+  accountCreationNoExportBoundaryReportDigest := 6
+  accountCreationResidualMatrixReportDigest := 7
+  accountCreationFriQromResidualReportDigest := 8
+  accountCreationFriAokBoundaryReportDigest := 9
+  accountCreationPayloadKatBoundaryReportDigest := 10
+  selectedCreationReplayPayloadDigest := 11
+  selectedDeployedAnchorDigest := 12
   leafFrameEncoder := selectedRustFrameEncoder
   leafFrame := fun leaf =>
     selectedRustFrameEncoder.encode [
@@ -370,6 +391,38 @@ def AccountCreationNoPostchallengeTimingObligationTracked
                       spend.leaf.frozenAt ≤
                         (spend.spendChallengeTime : Nat)
 
+/--
+Accepted account-creation evidence names every selected proof-family residual
+surface that still blocks deployment.  The proposition prevents the final
+direct carrier from relying on a generic proof-family acceptance bit; it does
+not close the simulator, no-export, FRI/AoK, FRI/QROM, or frozen-KAT
+obligations.
+-/
+def AccountCreationProofFamilyResidualsTracked
+    (C : ConcreteGameConfig)
+    (spend : ConcreteSpendTuple) : Prop :=
+  spend.creationEvidence.noExportBoundaryReportDigest =
+      C.accountCreationNoExportBoundaryReportDigest ∧
+    spend.creationEvidence.accountStarkResidualMatrixReportDigest =
+        C.accountCreationResidualMatrixReportDigest ∧
+      spend.creationEvidence.friQromResidualReportDigest =
+          C.accountCreationFriQromResidualReportDigest ∧
+        spend.creationEvidence.friAokBoundaryReportDigest =
+            C.accountCreationFriAokBoundaryReportDigest ∧
+          spend.creationEvidence.payloadKatBoundaryReportDigest =
+              C.accountCreationPayloadKatBoundaryReportDigest ∧
+            spend.creationEvidence.noExportBoundaryReportDigest ≠ 0 ∧
+              spend.creationEvidence.accountStarkResidualMatrixReportDigest ≠ 0 ∧
+                spend.creationEvidence.friQromResidualReportDigest ≠ 0 ∧
+                  spend.creationEvidence.friAokBoundaryReportDigest ≠ 0 ∧
+                    spend.creationEvidence.payloadKatBoundaryReportDigest ≠ 0 ∧
+                      spend.creationEvidence.noExportBoundaryTracked ∧
+                        spend.creationEvidence.simulatorNoExportObligationTracked ∧
+                          spend.creationEvidence.friQromResidualObligationTracked ∧
+                            spend.creationEvidence.friAokExtractorObligationTracked ∧
+                              spend.creationEvidence.payloadKatBoundaryTracked ∧
+                                spend.creationEvidence.proofFamilyObligationsStillOpen
+
 /-- The accepted account-creation proof boundary is pinned to the selected public evidence. -/
 def AccountCreationProofBoundaryEvidenceAccepted
     (C : ConcreteGameConfig)
@@ -380,18 +433,19 @@ def AccountCreationProofBoundaryEvidenceAccepted
         C.acceptedProofBoundaryEvidenceDigest ∧
       AccountCreationAuthorizationClassObligationTracked C spend ∧
         AccountCreationNoPostchallengeTimingObligationTracked C spend ∧
-          spend.creationEvidence.replayPayloadDigest =
-              C.selectedCreationReplayPayloadDigest ∧
-            spend.creationEvidence.deployedAnchorDigest =
-                C.selectedDeployedAnchorDigest ∧
-              spend.creationEvidence.proofBoundaryReportDigest ≠ 0 ∧
-                spend.creationEvidence.acceptedProofBoundaryEvidenceDigest ≠ 0 ∧
-                  spend.creationEvidence.replayPayloadDigest ≠ 0 ∧
-                    spend.creationEvidence.deployedAnchorDigest ≠ 0 ∧
-                      spend.creationEvidence.proofBoundaryReportValidated ∧
-                        spend.creationEvidence.acceptedProofBoundaryEvidenceValidated ∧
-                          spend.creationEvidence.verifierBoundaryAccepts ∧
-                            spend.creationEvidence.productionGateFailClosed
+          AccountCreationProofFamilyResidualsTracked C spend ∧
+            spend.creationEvidence.replayPayloadDigest =
+                C.selectedCreationReplayPayloadDigest ∧
+              spend.creationEvidence.deployedAnchorDigest =
+                  C.selectedDeployedAnchorDigest ∧
+                spend.creationEvidence.proofBoundaryReportDigest ≠ 0 ∧
+                  spend.creationEvidence.acceptedProofBoundaryEvidenceDigest ≠ 0 ∧
+                    spend.creationEvidence.replayPayloadDigest ≠ 0 ∧
+                      spend.creationEvidence.deployedAnchorDigest ≠ 0 ∧
+                        spend.creationEvidence.proofBoundaryReportValidated ∧
+                          spend.creationEvidence.acceptedProofBoundaryEvidenceValidated ∧
+                            spend.creationEvidence.verifierBoundaryAccepts ∧
+                              spend.creationEvidence.productionGateFailClosed
 
 /-- The leaf fields agree with the native public projections of its boundary. -/
 def NativeProjectionCarrierBinding
