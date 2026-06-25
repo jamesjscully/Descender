@@ -101,8 +101,13 @@ The Lean concrete full-spend carrier mirrors this: `AccountCreationAccepted`
 now requires `AccountCreationProofBoundaryEvidenceAccepted`, so an accepted
 creation must carry the selected proof-boundary report digest, accepted
 proof-boundary evidence digest, replay-payload digest, deployed-anchor digest,
+sampler/timing report digest, no-postchallenge timing obligation digest,
 validated proof-boundary evidence flags, verifier acceptance, and fail-closed
 production-gate fact before the direct theorem may treat the slot as admitted.
+The same carrier requires public evidence that the creation statement excludes
+the spend message and signature bytes, is fixed before the spend challenge, and
+that the accepted creation and frozen leaf precede the challenge; those are
+boundary facts, not the no-postchallenge timing theorem itself.
 The production-reference source-shape gate checks this account-creation
 proof-boundary route alongside the full-signature execution source, so the
 direct theorem cannot silently collapse back to a generic `acceptCreate`
@@ -339,7 +344,11 @@ against its source closure-dependency row.
 full-spend carrier by requiring accepted account-creation proof-boundary
 evidence to carry a nonzero authorization-class obligation digest, a tracked
 obligation flag, and the public leaf authorization class equal to
-`pSpend(boundary)`. That is deployment-boundary evidence, not a theorem closure.
+`pSpend(boundary)`. It also requires the nonzero sampler/timing report digest,
+the nonzero no-postchallenge timing obligation digest, prechallenge-fixed
+statement evidence, spend-message/signature exclusion evidence, and accepted
+creation/frozen-leaf timing inequalities. These are deployment-boundary
+evidence, not theorem closures.
 `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 turns that row table into a digest-pinned audit corpus bound to both the
 proof-boundary and direct-theorem reports; it keeps every obligation open and
@@ -392,7 +401,8 @@ decoded-anchor digests before accepting a serialized artifact. The artifact
 is also consumed by the Lean concrete full-spend carrier through
 `AccountCreationProofBoundaryEvidenceAccepted`, which forces the final theorem
 shape to name the proof-boundary report/evidence digests and fail-closed
-production-gate fact instead of relying only on generic creation acceptance.
+production-gate fact, plus the sampler/timing and no-postchallenge timing
+obligation evidence, instead of relying only on generic creation acceptance.
 The artifact
 also carries a ten-row
 accepted-requirement evidence checklist: eight requirements are

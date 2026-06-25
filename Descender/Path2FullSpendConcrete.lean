@@ -44,11 +44,17 @@ structure ConcreteAccountCreationEvidence where
   proofBoundaryReportDigest : Nat
   acceptedProofBoundaryEvidenceDigest : Nat
   authorizationClassObligationDigest : Nat
+  samplerTimingReportDigest : Nat
+  noPostchallengeTimingObligationDigest : Nat
   replayPayloadDigest : Nat
   deployedAnchorDigest : Nat
   proofBoundaryReportValidated : Prop
   acceptedProofBoundaryEvidenceValidated : Prop
   authorizationClassObligationTracked : Prop
+  creationStatementExcludesSpendMessage : Prop
+  creationStatementExcludesSignatureBytes : Prop
+  prechallengeStatementFixed : Prop
+  noPostchallengeTimingObligationTracked : Prop
   verifierBoundaryAccepts : Prop
   productionGateFailClosed : Prop
 
@@ -120,6 +126,8 @@ structure ConcreteGameConfig where
   accountCreationProofBoundaryReportDigest : Nat
   acceptedProofBoundaryEvidenceDigest : Nat
   accountCreationAuthorizationClassObligationDigest : Nat
+  accountCreationSamplerTimingReportDigest : Nat
+  accountCreationNoPostchallengeTimingObligationDigest : Nat
   selectedCreationReplayPayloadDigest : Nat
   selectedDeployedAnchorDigest : Nat
   leafFrameEncoder : Path2NativeAccountDesign.OrderedFrameEncoder
@@ -293,8 +301,10 @@ def selectedRustConcreteGameConfig : ConcreteGameConfig where
   accountCreationProofBoundaryReportDigest := 1
   acceptedProofBoundaryEvidenceDigest := 2
   accountCreationAuthorizationClassObligationDigest := 3
-  selectedCreationReplayPayloadDigest := 4
-  selectedDeployedAnchorDigest := 5
+  accountCreationSamplerTimingReportDigest := 4
+  accountCreationNoPostchallengeTimingObligationDigest := 5
+  selectedCreationReplayPayloadDigest := 6
+  selectedDeployedAnchorDigest := 7
   leafFrameEncoder := selectedRustFrameEncoder
   leafFrame := fun leaf =>
     selectedRustFrameEncoder.encode [
@@ -334,6 +344,32 @@ def AccountCreationAuthorizationClassObligationTracked
           spend.leaf.authorizationClass =
             C.nativeProjections.pSpend spend.creationEvidence.boundary
 
+/--
+Accepted account-creation evidence tracks the sampler/timing report and the
+still-open no-postchallenge timing obligation.  The proposition records that
+the creation statement is prechallenge-fixed and excludes spend-time message
+and signature bytes; it does not prove the no-postchallenge timing theorem.
+-/
+def AccountCreationNoPostchallengeTimingObligationTracked
+    (C : ConcreteGameConfig)
+    (spend : ConcreteSpendTuple) : Prop :=
+  spend.creationEvidence.samplerTimingReportDigest =
+      C.accountCreationSamplerTimingReportDigest ∧
+    spend.creationEvidence.noPostchallengeTimingObligationDigest =
+        C.accountCreationNoPostchallengeTimingObligationDigest ∧
+      spend.creationEvidence.samplerTimingReportDigest ≠ 0 ∧
+        spend.creationEvidence.noPostchallengeTimingObligationDigest ≠ 0 ∧
+          spend.creationEvidence.creationStatementExcludesSpendMessage ∧
+            spend.creationEvidence.creationStatementExcludesSignatureBytes ∧
+              spend.creationEvidence.prechallengeStatementFixed ∧
+                spend.creationEvidence.noPostchallengeTimingObligationTracked ∧
+                  spend.creationEvidence.acceptedAt ≤
+                    (spend.spendChallengeTime : Nat) ∧
+                    spend.leaf.creationTime ≤
+                      (spend.spendChallengeTime : Nat) ∧
+                      spend.leaf.frozenAt ≤
+                        (spend.spendChallengeTime : Nat)
+
 /-- The accepted account-creation proof boundary is pinned to the selected public evidence. -/
 def AccountCreationProofBoundaryEvidenceAccepted
     (C : ConcreteGameConfig)
@@ -343,18 +379,19 @@ def AccountCreationProofBoundaryEvidenceAccepted
     spend.creationEvidence.acceptedProofBoundaryEvidenceDigest =
         C.acceptedProofBoundaryEvidenceDigest ∧
       AccountCreationAuthorizationClassObligationTracked C spend ∧
-        spend.creationEvidence.replayPayloadDigest =
-            C.selectedCreationReplayPayloadDigest ∧
-          spend.creationEvidence.deployedAnchorDigest =
-              C.selectedDeployedAnchorDigest ∧
-            spend.creationEvidence.proofBoundaryReportDigest ≠ 0 ∧
-              spend.creationEvidence.acceptedProofBoundaryEvidenceDigest ≠ 0 ∧
-                spend.creationEvidence.replayPayloadDigest ≠ 0 ∧
-                  spend.creationEvidence.deployedAnchorDigest ≠ 0 ∧
-                    spend.creationEvidence.proofBoundaryReportValidated ∧
-                      spend.creationEvidence.acceptedProofBoundaryEvidenceValidated ∧
-                        spend.creationEvidence.verifierBoundaryAccepts ∧
-                          spend.creationEvidence.productionGateFailClosed
+        AccountCreationNoPostchallengeTimingObligationTracked C spend ∧
+          spend.creationEvidence.replayPayloadDigest =
+              C.selectedCreationReplayPayloadDigest ∧
+            spend.creationEvidence.deployedAnchorDigest =
+                C.selectedDeployedAnchorDigest ∧
+              spend.creationEvidence.proofBoundaryReportDigest ≠ 0 ∧
+                spend.creationEvidence.acceptedProofBoundaryEvidenceDigest ≠ 0 ∧
+                  spend.creationEvidence.replayPayloadDigest ≠ 0 ∧
+                    spend.creationEvidence.deployedAnchorDigest ≠ 0 ∧
+                      spend.creationEvidence.proofBoundaryReportValidated ∧
+                        spend.creationEvidence.acceptedProofBoundaryEvidenceValidated ∧
+                          spend.creationEvidence.verifierBoundaryAccepts ∧
+                            spend.creationEvidence.productionGateFailClosed
 
 /-- The leaf fields agree with the native public projections of its boundary. -/
 def NativeProjectionCarrierBinding
