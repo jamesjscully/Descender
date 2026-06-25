@@ -119,6 +119,9 @@ FRI/AoK, FRI/QROM, frozen payload KATs, and production gate/review must map to
 the direct theorem's `selected_account_creation_payload_proof_family_break`
 umbrella class. This closes only the taxonomy bridge; the underlying residual
 theorems and reviews remain open.
+The bridge is fail-closed: accepted proof-boundary evidence exposes the
+residual package and taxonomy coverage, and missing residual coverage exports
+`creation_time_hidden_source_soundness_break` rather than admitting the slot.
 The production-reference source-shape gate checks this account-creation
 proof-boundary route alongside the full-signature execution source, so the
 direct theorem cannot silently collapse back to a generic `acceptCreate`
@@ -363,7 +366,8 @@ residual-matrix, FRI/QROM, FRI/AoK, and payload-KAT report digests plus
 tracked-open residual flags, and it proves that every detailed proof-family
 residual row collapses only to the direct theorem's selected account-creation
 proof-family break class. These are deployment-boundary and taxonomy evidence,
-not theorem closures.
+not theorem closures. Missing residual or taxonomy coverage is routed to the
+creation-time hidden-source break in the concrete carrier.
 `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 turns that row table into a digest-pinned audit corpus bound to both the
 proof-boundary and direct-theorem reports; it keeps every obligation open and

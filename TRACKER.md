@@ -88,7 +88,9 @@ creation/frozen leaf timing before the spend challenge, while carrying tracked
 open residual flags for simulator/no-export, FRI/QROM, FRI/AoK, and payload-KAT
 proof-family blockers; it also mirrors the two-tier break taxonomy by proving
 that detailed account-creation proof-family residual rows map to the direct
-theorem's selected account-creation proof-family break class; the
+theorem's selected account-creation proof-family break class, and missing
+residual/taxonomy coverage exports the concrete creation-time hidden-source
+break instead of admitting the slot; the
 production-reference source-shape gate rejects the full-signature execution
 boundary if that account-creation proof-boundary route disappears. The
 accepted spend tuple artifact now carries an
@@ -179,6 +181,8 @@ boundary.
 - `Descender/Path2FullSpendConcrete.lean` now makes `AccountCreationProofBoundaryEvidenceAccepted` import the selected no-export boundary digest, account-STARK residual matrix digest, FRI/QROM residual digest, FRI/AoK boundary digest, payload-KAT boundary digest, and tracked-open residual flags for simulator/no-export, FRI/QROM, FRI/AoK, and payload-KAT blockers. This prevents the final direct theorem carrier from consuming an unqualified proof-family acceptance fact; it does not close those proof-family obligations.
 
 - `Descender/Path2FullSpendConcrete.lean` now defines the direct theorem named-break taxonomy and the account-creation proof-boundary break taxonomy, with a Lean proof that simulator/no-export, FRI/AoK, FRI/QROM, frozen-payload-KAT, and production-gate/review residual rows collapse only to the direct theorem's `selected_account_creation_payload_proof_family_break` umbrella class. The production-reference source-shape gate watches this bridge; it is taxonomy evidence, not residual theorem closure.
+
+- `Descender/Path2FullSpendConcrete.lean` now proves accepted proof-boundary evidence exposes the residual package and taxonomy coverage, and that missing residual/taxonomy coverage exports `creationTimeHiddenSourceSoundnessBreak` through `ConcreteBreakFor`. This is a fail-closed routing proof; it does not discharge simulator, extractor, FRI/QROM, payload-KAT, production-gate, or external-review obligations.
 
 ## Aggregation / Rollup Mode
 

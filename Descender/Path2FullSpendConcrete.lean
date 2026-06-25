@@ -594,6 +594,33 @@ def AccountCreationProofBoundaryEvidenceAccepted
                             spend.creationEvidence.verifierBoundaryAccepts ∧
                               spend.creationEvidence.productionGateFailClosed
 
+/-- Accepted proof-boundary evidence exposes the proof-family residual package. -/
+theorem accountCreationProofFamilyResidualsTracked_of_boundaryAccepted
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hAccepted : AccountCreationProofBoundaryEvidenceAccepted C spend) :
+    AccountCreationProofFamilyResidualsTracked C spend :=
+  hAccepted.2.2.2.2.1
+
+/-- A residual package exposes the detailed-to-direct break taxonomy coverage. -/
+theorem accountCreationProofFamilyResidualBreakClassesCovered_of_residualsTracked
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hResiduals : AccountCreationProofFamilyResidualsTracked C spend) :
+    AccountCreationProofFamilyResidualBreakClassesCovered spend := by
+  rcases hResiduals with
+    ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, hCovered⟩
+  exact hCovered
+
+/-- Accepted proof-boundary evidence exposes the detailed-to-direct break taxonomy coverage. -/
+theorem accountCreationProofFamilyResidualBreakClassesCovered_of_boundaryAccepted
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hAccepted : AccountCreationProofBoundaryEvidenceAccepted C spend) :
+    AccountCreationProofFamilyResidualBreakClassesCovered spend :=
+  accountCreationProofFamilyResidualBreakClassesCovered_of_residualsTracked
+    (accountCreationProofFamilyResidualsTracked_of_boundaryAccepted hAccepted)
+
 /-- The leaf fields agree with the native public projections of its boundary. -/
 def NativeProjectionCarrierBinding
     (C : ConcreteGameConfig)
@@ -754,6 +781,40 @@ def ConcreteBreakFor
       False
   | Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak =>
       False
+
+/--
+If the selected account-creation residual package is absent, the concrete
+carrier exports the creation-time hidden-source break rather than treating the
+slot as admitted.
+-/
+theorem accountCreationProofFamilyResiduals_missing_exports_creationBreak
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hMissing : ¬ AccountCreationProofFamilyResidualsTracked C spend) :
+    ConcreteBreakFor C spend
+      Path2FullSpendGame.BreakEvent.creationTimeHiddenSourceSoundnessBreak := by
+  dsimp [ConcreteBreakFor]
+  intro hAccepted
+  exact hMissing
+    (accountCreationProofFamilyResidualsTracked_of_boundaryAccepted
+      hAccepted.2.2.2.1)
+
+/--
+If the detailed proof-family residual rows are not covered by the selected
+direct break taxonomy, the concrete carrier exports the same creation-time
+break instead of accepting a partially classified account-creation proof.
+-/
+theorem accountCreationProofFamilyResidualBreakClasses_missing_exports_creationBreak
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hMissing : ¬ AccountCreationProofFamilyResidualBreakClassesCovered spend) :
+    ConcreteBreakFor C spend
+      Path2FullSpendGame.BreakEvent.creationTimeHiddenSourceSoundnessBreak := by
+  dsimp [ConcreteBreakFor]
+  intro hAccepted
+  exact hMissing
+    (accountCreationProofFamilyResidualBreakClassesCovered_of_boundaryAccepted
+      hAccepted.2.2.2.1)
 
 /-- Bound concrete prevalidated slot package. -/
 def BoundConcretePrevalidatedSlot
