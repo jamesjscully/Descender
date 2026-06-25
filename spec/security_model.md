@@ -119,6 +119,10 @@ FRI/AoK, FRI/QROM, frozen payload KATs, and production gate/review must map to
 the direct theorem's `selected_account_creation_payload_proof_family_break`
 umbrella class. This closes only the taxonomy bridge; the underlying residual
 theorems and reviews remain open.
+It also bridges every finite `Path2FullSpendGame.BreakEvent` into the
+report-facing `DirectNamedBreakClass` taxonomy and proves those finite events
+round-trip, while proof-family, consensus-rejection/state-mutation, and
+external core-assumption classes remain report-only.
 The bridge is fail-closed: accepted proof-boundary evidence exposes the
 residual package and taxonomy coverage, and missing residual coverage exports
 `creation_time_hidden_source_soundness_break` rather than admitting the slot.

@@ -182,6 +182,8 @@ boundary.
 
 - `Descender/Path2FullSpendConcrete.lean` now defines the direct theorem named-break taxonomy and the account-creation proof-boundary break taxonomy, with a Lean proof that simulator/no-export, FRI/AoK, FRI/QROM, frozen-payload-KAT, and production-gate/review residual rows collapse only to the direct theorem's `selected_account_creation_payload_proof_family_break` umbrella class. The production-reference source-shape gate watches this bridge; it is taxonomy evidence, not residual theorem closure.
 
+- `Descender/Path2FullSpendConcrete.lean` now also bridges every finite `Path2FullSpendGame.BreakEvent` into the report-facing `DirectNamedBreakClass` taxonomy and proves those finite events round-trip, while marking proof-family, consensus-rejection/state-mutation, and external core-assumption classes as report-only. This prevents numeric/game break pricing from silently absorbing report-only residual classes.
+
 - `Descender/Path2FullSpendConcrete.lean` now proves accepted proof-boundary evidence exposes the residual package and taxonomy coverage, and that missing residual/taxonomy coverage exports `creationTimeHiddenSourceSoundnessBreak` through `ConcreteBreakFor`. This is a fail-closed routing proof; it does not discharge simulator, extractor, FRI/QROM, payload-KAT, production-gate, or external-review obligations.
 
 - `Descender/Path2FullSpendConcrete.lean` now splits the proof-family package into digest-chain pinning, open-obligation tracking, and a positive `AccountCreationProofFamilyClosureWitness` target. The current accepted-boundary package proves that closure witness impossible while `proofFamilyObligationsStillOpen` is present; this is a theorem-shape target, not proof-family closure.

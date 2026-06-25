@@ -370,6 +370,78 @@ inductive DirectNamedBreakClass where
   | externalCodedSisOrLatticeCoreAssumptionBreak
   deriving DecidableEq, Repr
 
+/-- Finite game break event, when a report-facing direct break class has one. -/
+def DirectNamedBreakClass.toBreakEvent? :
+    DirectNamedBreakClass -> Option Path2FullSpendGame.BreakEvent
+  | DirectNamedBreakClass.creationTimeHiddenSourceSoundnessBreak =>
+      some Path2FullSpendGame.BreakEvent.creationTimeHiddenSourceSoundnessBreak
+  | DirectNamedBreakClass.prevalidationLeafBindingBreak =>
+      some Path2FullSpendGame.BreakEvent.prevalidationLeafBindingBreak
+  | DirectNamedBreakClass.prevalidationRegistryBindingBreak =>
+      some Path2FullSpendGame.BreakEvent.prevalidationRegistryBindingBreak
+  | DirectNamedBreakClass.prevalidationDataAvailabilityBreak =>
+      some Path2FullSpendGame.BreakEvent.prevalidationDataAvailabilityBreak
+  | DirectNamedBreakClass.postchallengeSlotCreationOrRewriteBreak =>
+      some Path2FullSpendGame.BreakEvent.postchallengeSlotCreationOrRewriteBreak
+  | DirectNamedBreakClass.checkedCoreMessageBindingBreak =>
+      some Path2FullSpendGame.BreakEvent.checkedCoreMessageBindingBreak
+  | DirectNamedBreakClass.slotReplayOrRollbackBreak =>
+      some Path2FullSpendGame.BreakEvent.slotReplayOrRollbackBreak
+  | DirectNamedBreakClass.qromOrDomainSeparationBreak =>
+      some Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak
+  | DirectNamedBreakClass.liveSlotLeakageOrKeygenBreak =>
+      some Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak
+  | DirectNamedBreakClass.selectedAccountCreationPayloadProofFamilyBreak =>
+      none
+  | DirectNamedBreakClass.consensusRejectionOrStateMutationBreak =>
+      none
+  | DirectNamedBreakClass.externalCodedSisOrLatticeCoreAssumptionBreak =>
+      none
+
+/-- Report-facing class for each finite full-spend game break event. -/
+def Path2FullSpendGame.BreakEvent.toDirectNamedBreakClass :
+    Path2FullSpendGame.BreakEvent -> DirectNamedBreakClass
+  | Path2FullSpendGame.BreakEvent.creationTimeHiddenSourceSoundnessBreak =>
+      DirectNamedBreakClass.creationTimeHiddenSourceSoundnessBreak
+  | Path2FullSpendGame.BreakEvent.prevalidationLeafBindingBreak =>
+      DirectNamedBreakClass.prevalidationLeafBindingBreak
+  | Path2FullSpendGame.BreakEvent.prevalidationRegistryBindingBreak =>
+      DirectNamedBreakClass.prevalidationRegistryBindingBreak
+  | Path2FullSpendGame.BreakEvent.prevalidationDataAvailabilityBreak =>
+      DirectNamedBreakClass.prevalidationDataAvailabilityBreak
+  | Path2FullSpendGame.BreakEvent.postchallengeSlotCreationOrRewriteBreak =>
+      DirectNamedBreakClass.postchallengeSlotCreationOrRewriteBreak
+  | Path2FullSpendGame.BreakEvent.checkedCoreMessageBindingBreak =>
+      DirectNamedBreakClass.checkedCoreMessageBindingBreak
+  | Path2FullSpendGame.BreakEvent.slotReplayOrRollbackBreak =>
+      DirectNamedBreakClass.slotReplayOrRollbackBreak
+  | Path2FullSpendGame.BreakEvent.qromOrDomainSeparationBreak =>
+      DirectNamedBreakClass.qromOrDomainSeparationBreak
+  | Path2FullSpendGame.BreakEvent.liveSlotLeakageOrKeygenBreak =>
+      DirectNamedBreakClass.liveSlotLeakageOrKeygenBreak
+
+/-- Every finite game break event round-trips through the direct named taxonomy. -/
+theorem breakEvent_toDirectNamedBreakClass_roundTrips
+    (breakEvent : Path2FullSpendGame.BreakEvent) :
+    (Path2FullSpendGame.BreakEvent.toDirectNamedBreakClass breakEvent).toBreakEvent? =
+      some breakEvent := by
+  cases breakEvent <;> rfl
+
+/-- The selected proof-family umbrella class is report-facing, not a finite game event. -/
+theorem selectedProofFamilyBreak_has_no_finiteBreakEvent :
+    DirectNamedBreakClass.selectedAccountCreationPayloadProofFamilyBreak.toBreakEvent? =
+      none := rfl
+
+/-- The consensus rejection/state-mutation class is report-facing, not a finite game event. -/
+theorem consensusRejectionBreak_has_no_finiteBreakEvent :
+    DirectNamedBreakClass.consensusRejectionOrStateMutationBreak.toBreakEvent? =
+      none := rfl
+
+/-- The external core-assumption class is report-facing, not a finite game event. -/
+theorem externalCoreAssumptionBreak_has_no_finiteBreakEvent :
+    DirectNamedBreakClass.externalCodedSisOrLatticeCoreAssumptionBreak.toBreakEvent? =
+      none := rfl
+
 /--
 Account-creation proof-boundary obligation break classes.
 
