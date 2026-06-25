@@ -113,6 +113,12 @@ boundary facts, not the no-postchallenge timing theorem itself.
 It also requires explicit tracked-open proof-family residual flags for the
 simulator/no-export, FRI/QROM, FRI/AoK, and payload-KAT obligations, so the
 final theorem carrier cannot consume a generic proof-family acceptance bit.
+The same Lean carrier now mirrors the two-tier break taxonomy: detailed
+account-creation proof-boundary residual rows such as simulator/no-export,
+FRI/AoK, FRI/QROM, frozen payload KATs, and production gate/review must map to
+the direct theorem's `selected_account_creation_payload_proof_family_break`
+umbrella class. This closes only the taxonomy bridge; the underlying residual
+theorems and reviews remain open.
 The production-reference source-shape gate checks this account-creation
 proof-boundary route alongside the full-signature execution source, so the
 direct theorem cannot silently collapse back to a generic `acceptCreate`
@@ -354,8 +360,10 @@ the nonzero no-postchallenge timing obligation digest, prechallenge-fixed
 statement evidence, spend-message/signature exclusion evidence, and accepted
 creation/frozen-leaf timing inequalities. The carrier also pins the no-export,
 residual-matrix, FRI/QROM, FRI/AoK, and payload-KAT report digests plus
-tracked-open residual flags. These are deployment-boundary evidence, not
-theorem closures.
+tracked-open residual flags, and it proves that every detailed proof-family
+residual row collapses only to the direct theorem's selected account-creation
+proof-family break class. These are deployment-boundary and taxonomy evidence,
+not theorem closures.
 `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 turns that row table into a digest-pinned audit corpus bound to both the
 proof-boundary and direct-theorem reports; it keeps every obligation open and
@@ -410,7 +418,9 @@ is also consumed by the Lean concrete full-spend carrier through
 shape to name the proof-boundary report/evidence digests and fail-closed
 production-gate fact, plus the sampler/timing and no-postchallenge timing
 obligation evidence and the selected proof-family residual report digests,
-instead of relying only on generic creation acceptance.
+instead of relying only on generic creation acceptance; the detailed
+proof-family residual rows are also bridged to the direct theorem's selected
+account-creation proof-family break class.
 The artifact
 also carries a ten-row
 accepted-requirement evidence checklist: eight requirements are

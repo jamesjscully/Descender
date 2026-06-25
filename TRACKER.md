@@ -86,7 +86,9 @@ slot as admitted. It also requires the accepted creation statement to be
 prechallenge-fixed, to exclude spend message/signature bytes, and to have
 creation/frozen leaf timing before the spend challenge, while carrying tracked
 open residual flags for simulator/no-export, FRI/QROM, FRI/AoK, and payload-KAT
-proof-family blockers; the
+proof-family blockers; it also mirrors the two-tier break taxonomy by proving
+that detailed account-creation proof-family residual rows map to the direct
+theorem's selected account-creation proof-family break class; the
 production-reference source-shape gate rejects the full-signature execution
 boundary if that account-creation proof-boundary route disappears. The
 accepted spend tuple artifact now carries an
@@ -175,6 +177,8 @@ boundary.
 - `DIR-BIND-001`, `DIR-CREATE-001`, `DIR-SEC-001`, and `DIR-PROOF-001` now include accepted-path account-creation binding evidence that decodes the account-STARK public anchor set through `decode_deployed_account_creation_public_anchors` and compares it against deployed leaf/binding anchors. This pins replay-payload digest equality, raw verifier version, masked projection, role-root export bridge, and packed-witness commitment for the deterministic accepted fixture, while leaving theorem-level replay/anchor closure, simulator, extractor, frozen corpus, production gate, and external review open.
 
 - `Descender/Path2FullSpendConcrete.lean` now makes `AccountCreationProofBoundaryEvidenceAccepted` import the selected no-export boundary digest, account-STARK residual matrix digest, FRI/QROM residual digest, FRI/AoK boundary digest, payload-KAT boundary digest, and tracked-open residual flags for simulator/no-export, FRI/QROM, FRI/AoK, and payload-KAT blockers. This prevents the final direct theorem carrier from consuming an unqualified proof-family acceptance fact; it does not close those proof-family obligations.
+
+- `Descender/Path2FullSpendConcrete.lean` now defines the direct theorem named-break taxonomy and the account-creation proof-boundary break taxonomy, with a Lean proof that simulator/no-export, FRI/AoK, FRI/QROM, frozen-payload-KAT, and production-gate/review residual rows collapse only to the direct theorem's `selected_account_creation_payload_proof_family_break` umbrella class. The production-reference source-shape gate watches this bridge; it is taxonomy evidence, not residual theorem closure.
 
 ## Aggregation / Rollup Mode
 

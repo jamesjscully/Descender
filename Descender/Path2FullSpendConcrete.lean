@@ -348,6 +348,152 @@ def selectedRustConcreteGameConfig : ConcreteGameConfig where
     rfl
 
 /--
+Direct theorem named-break classes from the selected Rust boundary report.
+
+The probability layer still prices the finite `Path2FullSpendGame.BreakEvent`
+family.  These names are the report-facing taxonomy that adoption evidence and
+boundary manifests use, including direct theorem blockers outside that finite
+core.
+-/
+inductive DirectNamedBreakClass where
+  | creationTimeHiddenSourceSoundnessBreak
+  | prevalidationLeafBindingBreak
+  | prevalidationRegistryBindingBreak
+  | prevalidationDataAvailabilityBreak
+  | postchallengeSlotCreationOrRewriteBreak
+  | checkedCoreMessageBindingBreak
+  | slotReplayOrRollbackBreak
+  | qromOrDomainSeparationBreak
+  | liveSlotLeakageOrKeygenBreak
+  | selectedAccountCreationPayloadProofFamilyBreak
+  | consensusRejectionOrStateMutationBreak
+  | externalCodedSisOrLatticeCoreAssumptionBreak
+  deriving DecidableEq, Repr
+
+/--
+Account-creation proof-boundary obligation break classes.
+
+These are the detailed rows pinned by the account-creation proof-boundary report.
+The proof-family residual rows are intentionally more specific than the direct
+theorem's umbrella account-creation payload break class.
+-/
+inductive AccountCreationProofBoundaryBreakClass where
+  | honestSampler
+  | authorizationClassBinding
+  | noPostchallengeTiming
+  | simulatorNoExport
+  | friAokExtractor
+  | friQromResidualPricing
+  | frozenPayloadKats
+  | productionGateAndReview
+  deriving DecidableEq, Repr
+
+/-- Map account-creation proof-boundary break rows to the direct theorem taxonomy. -/
+def AccountCreationProofBoundaryBreakClass.toDirectNamedBreakClass :
+    AccountCreationProofBoundaryBreakClass -> DirectNamedBreakClass
+  | honestSampler =>
+      DirectNamedBreakClass.creationTimeHiddenSourceSoundnessBreak
+  | authorizationClassBinding =>
+      DirectNamedBreakClass.checkedCoreMessageBindingBreak
+  | noPostchallengeTiming =>
+      DirectNamedBreakClass.postchallengeSlotCreationOrRewriteBreak
+  | simulatorNoExport =>
+      DirectNamedBreakClass.selectedAccountCreationPayloadProofFamilyBreak
+  | friAokExtractor =>
+      DirectNamedBreakClass.selectedAccountCreationPayloadProofFamilyBreak
+  | friQromResidualPricing =>
+      DirectNamedBreakClass.selectedAccountCreationPayloadProofFamilyBreak
+  | frozenPayloadKats =>
+      DirectNamedBreakClass.selectedAccountCreationPayloadProofFamilyBreak
+  | productionGateAndReview =>
+      DirectNamedBreakClass.selectedAccountCreationPayloadProofFamilyBreak
+
+/-- True exactly for the proof-family residual rows under the account-creation boundary. -/
+def AccountCreationProofBoundaryBreakClass.isProofFamilyResidual :
+    AccountCreationProofBoundaryBreakClass -> Bool
+  | honestSampler => false
+  | authorizationClassBinding => false
+  | noPostchallengeTiming => false
+  | simulatorNoExport => true
+  | friAokExtractor => true
+  | friQromResidualPricing => true
+  | frozenPayloadKats => true
+  | productionGateAndReview => true
+
+/-- The concrete evidence flag that tracks one account-creation proof-boundary break row. -/
+def AccountCreationProofBoundaryBreakClass.trackedBy
+    (breakClass : AccountCreationProofBoundaryBreakClass)
+    (spend : ConcreteSpendTuple) : Prop :=
+  match breakClass with
+  | honestSampler =>
+      spend.creationEvidence.samplerTimingReportDigest ≠ 0
+  | authorizationClassBinding =>
+      spend.creationEvidence.authorizationClassObligationTracked
+  | noPostchallengeTiming =>
+      spend.creationEvidence.noPostchallengeTimingObligationTracked
+  | simulatorNoExport =>
+      spend.creationEvidence.noExportBoundaryTracked ∧
+        spend.creationEvidence.simulatorNoExportObligationTracked
+  | friAokExtractor =>
+      spend.creationEvidence.friAokExtractorObligationTracked
+  | friQromResidualPricing =>
+      spend.creationEvidence.friQromResidualObligationTracked
+  | frozenPayloadKats =>
+      spend.creationEvidence.payloadKatBoundaryTracked
+  | productionGateAndReview =>
+      spend.creationEvidence.productionGateFailClosed
+
+/--
+Every detailed proof-family residual row is tracked and maps to the direct
+theorem's account-creation proof-family umbrella break class.
+-/
+def AccountCreationProofFamilyResidualBreakClassesCovered
+    (spend : ConcreteSpendTuple) : Prop :=
+  forall breakClass : AccountCreationProofBoundaryBreakClass,
+    breakClass.isProofFamilyResidual = true ->
+      breakClass.trackedBy spend ∧
+        breakClass.toDirectNamedBreakClass =
+          DirectNamedBreakClass.selectedAccountCreationPayloadProofFamilyBreak
+
+/-- Proof-family residual rows all collapse to the selected direct theorem umbrella break. -/
+theorem accountCreationProofFamilyResidual_maps_to_directProofFamilyBreak
+    {breakClass : AccountCreationProofBoundaryBreakClass}
+    (hResidual : breakClass.isProofFamilyResidual = true) :
+    breakClass.toDirectNamedBreakClass =
+      DirectNamedBreakClass.selectedAccountCreationPayloadProofFamilyBreak := by
+  cases breakClass <;>
+    simp [AccountCreationProofBoundaryBreakClass.isProofFamilyResidual,
+      AccountCreationProofBoundaryBreakClass.toDirectNamedBreakClass] at hResidual ⊢
+
+/-- The selected residual tracking flags cover every proof-family residual break row. -/
+theorem accountCreationProofFamilyResidualBreakClassesCovered_of_flags
+    (spend : ConcreteSpendTuple)
+    (hNoExportBoundaryTracked :
+      spend.creationEvidence.noExportBoundaryTracked)
+    (hSimulatorNoExportTracked :
+      spend.creationEvidence.simulatorNoExportObligationTracked)
+    (hFriQromTracked :
+      spend.creationEvidence.friQromResidualObligationTracked)
+    (hFriAokTracked :
+      spend.creationEvidence.friAokExtractorObligationTracked)
+    (hPayloadKatTracked :
+      spend.creationEvidence.payloadKatBoundaryTracked)
+    (hProductionGateFailClosed :
+      spend.creationEvidence.productionGateFailClosed) :
+    AccountCreationProofFamilyResidualBreakClassesCovered spend := by
+  intro breakClass hResidual
+  constructor
+  · cases breakClass <;>
+      simp [AccountCreationProofBoundaryBreakClass.isProofFamilyResidual,
+        AccountCreationProofBoundaryBreakClass.trackedBy] at hResidual ⊢
+    · exact ⟨hNoExportBoundaryTracked, hSimulatorNoExportTracked⟩
+    · exact hFriAokTracked
+    · exact hFriQromTracked
+    · exact hPayloadKatTracked
+    · exact hProductionGateFailClosed
+  · exact accountCreationProofFamilyResidual_maps_to_directProofFamilyBreak hResidual
+
+/--
 The accepted account-creation proof boundary explicitly tracks the still-open
 authorization-class obligation and binds the admitted leaf to the public spend
 projection of the creation boundary.  This does not close the theorem that
@@ -417,11 +563,12 @@ def AccountCreationProofFamilyResidualsTracked
                   spend.creationEvidence.friAokBoundaryReportDigest ≠ 0 ∧
                     spend.creationEvidence.payloadKatBoundaryReportDigest ≠ 0 ∧
                       spend.creationEvidence.noExportBoundaryTracked ∧
-                        spend.creationEvidence.simulatorNoExportObligationTracked ∧
+                      spend.creationEvidence.simulatorNoExportObligationTracked ∧
                           spend.creationEvidence.friQromResidualObligationTracked ∧
                             spend.creationEvidence.friAokExtractorObligationTracked ∧
                               spend.creationEvidence.payloadKatBoundaryTracked ∧
-                                spend.creationEvidence.proofFamilyObligationsStillOpen
+                                spend.creationEvidence.proofFamilyObligationsStillOpen ∧
+                                  AccountCreationProofFamilyResidualBreakClassesCovered spend
 
 /-- The accepted account-creation proof boundary is pinned to the selected public evidence. -/
 def AccountCreationProofBoundaryEvidenceAccepted
