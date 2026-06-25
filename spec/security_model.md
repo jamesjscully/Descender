@@ -122,6 +122,10 @@ theorems and reviews remain open.
 The bridge is fail-closed: accepted proof-boundary evidence exposes the
 residual package and taxonomy coverage, and missing residual coverage exports
 `creation_time_hidden_source_soundness_break` rather than admitting the slot.
+The concrete carrier also names the positive
+`AccountCreationProofFamilyClosureWitness` target and proves that the current
+accepted-boundary route cannot provide it while
+`proofFamilyObligationsStillOpen` is part of the selected residual package.
 The production-reference source-shape gate checks this account-creation
 proof-boundary route alongside the full-signature execution source, so the
 direct theorem cannot silently collapse back to a generic `acceptCreate`
@@ -368,6 +372,11 @@ residual row collapses only to the direct theorem's selected account-creation
 proof-family break class. These are deployment-boundary and taxonomy evidence,
 not theorem closures. Missing residual or taxonomy coverage is routed to the
 creation-time hidden-source break in the concrete carrier.
+The carrier separates digest-chain pinning from open-obligation tracking and
+defines a proof-family closure witness that is impossible for the current
+selected accepted boundary; deployable closure must replace the open residual
+flag with real simulator/no-export, FRI/QROM, FRI/AoK, frozen-KAT, and
+production-review evidence.
 `formal/kat/path2_account_creation_proof_obligation_vectors_v1.json`
 turns that row table into a digest-pinned audit corpus bound to both the
 proof-boundary and direct-theorem reports; it keeps every obligation open and
@@ -425,6 +434,9 @@ obligation evidence and the selected proof-family residual report digests,
 instead of relying only on generic creation acceptance; the detailed
 proof-family residual rows are also bridged to the direct theorem's selected
 account-creation proof-family break class.
+The accepted-boundary route now also proves the current positive proof-family
+closure witness impossible until the open residual package is replaced by
+closed proof-family evidence.
 The artifact
 also carries a ten-row
 accepted-requirement evidence checklist: eight requirements are

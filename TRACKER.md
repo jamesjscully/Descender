@@ -184,6 +184,8 @@ boundary.
 
 - `Descender/Path2FullSpendConcrete.lean` now proves accepted proof-boundary evidence exposes the residual package and taxonomy coverage, and that missing residual/taxonomy coverage exports `creationTimeHiddenSourceSoundnessBreak` through `ConcreteBreakFor`. This is a fail-closed routing proof; it does not discharge simulator, extractor, FRI/QROM, payload-KAT, production-gate, or external-review obligations.
 
+- `Descender/Path2FullSpendConcrete.lean` now splits the proof-family package into digest-chain pinning, open-obligation tracking, and a positive `AccountCreationProofFamilyClosureWitness` target. The current accepted-boundary package proves that closure witness impossible while `proofFamilyObligationsStillOpen` is present; this is a theorem-shape target, not proof-family closure.
+
 ## Aggregation / Rollup Mode
 
 | ID | Status | Item | Evidence / next action |

@@ -537,14 +537,8 @@ def AccountCreationNoPostchallengeTimingObligationTracked
                       spend.leaf.frozenAt ≤
                         (spend.spendChallengeTime : Nat)
 
-/--
-Accepted account-creation evidence names every selected proof-family residual
-surface that still blocks deployment.  The proposition prevents the final
-direct carrier from relying on a generic proof-family acceptance bit; it does
-not close the simulator, no-export, FRI/AoK, FRI/QROM, or frozen-KAT
-obligations.
--/
-def AccountCreationProofFamilyResidualsTracked
+/-- Accepted account-creation evidence pins the selected proof-family digest chain. -/
+def AccountCreationProofFamilyDigestChainPinned
     (C : ConcreteGameConfig)
     (spend : ConcreteSpendTuple) : Prop :=
   spend.creationEvidence.noExportBoundaryReportDigest =
@@ -557,18 +551,63 @@ def AccountCreationProofFamilyResidualsTracked
             C.accountCreationFriAokBoundaryReportDigest ∧
           spend.creationEvidence.payloadKatBoundaryReportDigest =
               C.accountCreationPayloadKatBoundaryReportDigest ∧
-            spend.creationEvidence.noExportBoundaryReportDigest ≠ 0 ∧
-              spend.creationEvidence.accountStarkResidualMatrixReportDigest ≠ 0 ∧
-                spend.creationEvidence.friQromResidualReportDigest ≠ 0 ∧
-                  spend.creationEvidence.friAokBoundaryReportDigest ≠ 0 ∧
-                    spend.creationEvidence.payloadKatBoundaryReportDigest ≠ 0 ∧
-                      spend.creationEvidence.noExportBoundaryTracked ∧
-                      spend.creationEvidence.simulatorNoExportObligationTracked ∧
-                          spend.creationEvidence.friQromResidualObligationTracked ∧
-                            spend.creationEvidence.friAokExtractorObligationTracked ∧
-                              spend.creationEvidence.payloadKatBoundaryTracked ∧
-                                spend.creationEvidence.proofFamilyObligationsStillOpen ∧
-                                  AccountCreationProofFamilyResidualBreakClassesCovered spend
+              spend.creationEvidence.noExportBoundaryReportDigest ≠ 0 ∧
+                spend.creationEvidence.accountStarkResidualMatrixReportDigest ≠ 0 ∧
+                  spend.creationEvidence.friQromResidualReportDigest ≠ 0 ∧
+                    spend.creationEvidence.friAokBoundaryReportDigest ≠ 0 ∧
+                      spend.creationEvidence.payloadKatBoundaryReportDigest ≠ 0
+
+/-- Accepted account-creation evidence tracks every still-open proof-family blocker. -/
+def AccountCreationProofFamilyOpenObligationsTracked
+    (spend : ConcreteSpendTuple) : Prop :=
+  spend.creationEvidence.noExportBoundaryTracked ∧
+    spend.creationEvidence.simulatorNoExportObligationTracked ∧
+      spend.creationEvidence.friQromResidualObligationTracked ∧
+        spend.creationEvidence.friAokExtractorObligationTracked ∧
+          spend.creationEvidence.payloadKatBoundaryTracked ∧
+            spend.creationEvidence.proofFamilyObligationsStillOpen
+
+/--
+Accepted account-creation evidence names every selected proof-family residual
+surface that still blocks deployment.  The proposition prevents the final
+direct carrier from relying on a generic proof-family acceptance bit; it does
+not close the simulator, no-export, FRI/AoK, FRI/QROM, or frozen-KAT
+obligations.
+-/
+def AccountCreationProofFamilyResidualsTracked
+    (C : ConcreteGameConfig)
+    (spend : ConcreteSpendTuple) : Prop :=
+  AccountCreationProofFamilyDigestChainPinned C spend ∧
+    AccountCreationProofFamilyOpenObligationsTracked spend ∧
+      AccountCreationProofFamilyResidualBreakClassesCovered spend
+
+/--
+Positive closure target for the selected account-creation proof family.
+
+Future deployment evidence must provide this kind of witness, replacing the
+current open-residual package with closed simulator/no-export, FRI/QROM,
+FRI/AoK, frozen-KAT, and production-review facts.  The current selected report
+cannot provide it while `proofFamilyObligationsStillOpen` is carried by the
+accepted boundary.
+-/
+structure AccountCreationProofFamilyClosureWitness
+    (C : ConcreteGameConfig)
+    (spend : ConcreteSpendTuple) where
+  digestChainPinned : AccountCreationProofFamilyDigestChainPinned C spend
+  residualBreakClassesCovered :
+    AccountCreationProofFamilyResidualBreakClassesCovered spend
+  simulatorNoExportTheoremClosed : Prop
+  friQromResidualTheoremClosed : Prop
+  friAokExtractorTheoremClosed : Prop
+  frozenPayloadKatsClosed : Prop
+  productionGateReviewClosed : Prop
+  simulatorNoExportTheoremClosedProof : simulatorNoExportTheoremClosed
+  friQromResidualTheoremClosedProof : friQromResidualTheoremClosed
+  friAokExtractorTheoremClosedProof : friAokExtractorTheoremClosed
+  frozenPayloadKatsClosedProof : frozenPayloadKatsClosed
+  productionGateReviewClosedProof : productionGateReviewClosed
+  proofFamilyObligationsClosed :
+    ¬ spend.creationEvidence.proofFamilyObligationsStillOpen
 
 /-- The accepted account-creation proof boundary is pinned to the selected public evidence. -/
 def AccountCreationProofBoundaryEvidenceAccepted
@@ -602,15 +641,37 @@ theorem accountCreationProofFamilyResidualsTracked_of_boundaryAccepted
     AccountCreationProofFamilyResidualsTracked C spend :=
   hAccepted.2.2.2.2.1
 
+/-- A residual package exposes the selected proof-family digest chain. -/
+theorem accountCreationProofFamilyDigestChainPinned_of_residualsTracked
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hResiduals : AccountCreationProofFamilyResidualsTracked C spend) :
+    AccountCreationProofFamilyDigestChainPinned C spend :=
+  hResiduals.1
+
+/-- A residual package exposes the tracked-open proof-family obligations. -/
+theorem accountCreationProofFamilyOpenObligationsTracked_of_residualsTracked
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hResiduals : AccountCreationProofFamilyResidualsTracked C spend) :
+    AccountCreationProofFamilyOpenObligationsTracked spend :=
+  hResiduals.2.1
+
 /-- A residual package exposes the detailed-to-direct break taxonomy coverage. -/
 theorem accountCreationProofFamilyResidualBreakClassesCovered_of_residualsTracked
     {C : ConcreteGameConfig}
     {spend : ConcreteSpendTuple}
     (hResiduals : AccountCreationProofFamilyResidualsTracked C spend) :
-    AccountCreationProofFamilyResidualBreakClassesCovered spend := by
-  rcases hResiduals with
-    ⟨_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, hCovered⟩
-  exact hCovered
+    AccountCreationProofFamilyResidualBreakClassesCovered spend :=
+  hResiduals.2.2
+
+/-- A residual package exposes that proof-family obligations are still open. -/
+theorem proofFamilyObligationsStillOpen_of_residualsTracked
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hResiduals : AccountCreationProofFamilyResidualsTracked C spend) :
+    spend.creationEvidence.proofFamilyObligationsStillOpen :=
+  hResiduals.2.1.2.2.2.2.2
 
 /-- Accepted proof-boundary evidence exposes the detailed-to-direct break taxonomy coverage. -/
 theorem accountCreationProofFamilyResidualBreakClassesCovered_of_boundaryAccepted
@@ -620,6 +681,30 @@ theorem accountCreationProofFamilyResidualBreakClassesCovered_of_boundaryAccepte
     AccountCreationProofFamilyResidualBreakClassesCovered spend :=
   accountCreationProofFamilyResidualBreakClassesCovered_of_residualsTracked
     (accountCreationProofFamilyResidualsTracked_of_boundaryAccepted hAccepted)
+
+/-- The current open-residual package is incompatible with a proof-family closure witness. -/
+theorem accountCreationProofFamilyClosureWitness_incompatible_with_residualsTracked
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hResiduals : AccountCreationProofFamilyResidualsTracked C spend)
+    (hClosed : AccountCreationProofFamilyClosureWitness C spend) :
+    False :=
+  hClosed.proofFamilyObligationsClosed
+    (proofFamilyObligationsStillOpen_of_residualsTracked hResiduals)
+
+/--
+Accepted proof-boundary evidence for the current selected package cannot also
+provide the deployable proof-family closure witness.
+-/
+theorem accountCreationProofFamilyClosureWitness_currentBoundaryAccepted_impossible
+    {C : ConcreteGameConfig}
+    {spend : ConcreteSpendTuple}
+    (hAccepted : AccountCreationProofBoundaryEvidenceAccepted C spend)
+    (hClosed : AccountCreationProofFamilyClosureWitness C spend) :
+    False :=
+  accountCreationProofFamilyClosureWitness_incompatible_with_residualsTracked
+    (accountCreationProofFamilyResidualsTracked_of_boundaryAccepted hAccepted)
+    hClosed
 
 /-- The leaf fields agree with the native public projections of its boundary. -/
 def NativeProjectionCarrierBinding
