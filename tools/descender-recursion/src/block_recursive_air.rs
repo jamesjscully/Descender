@@ -287,6 +287,140 @@ mod tests {
         pack_window(cfg, &inp)
     }
 
+    // ---- FULL inner-proof consumer per member: DEEP + quotient + leaf-hash + Merkle ----
+    fn cfg_full(levels: usize, width: usize, combine: usize, k: usize, q: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            merkle_levels: levels,
+            leaf_row_len: width,
+            deep_log_degree: Some(k),
+            deep_e0_combine: combine,
+            deep_e0_next: false,
+            quot_chunks: q,
+            quot_merkle_levels: levels,
+            quot_alpha_offset: combine,
+            ..RecursiveConfig::single_window(levels)
+        }
+    }
+
+    /// Pack a member window verifying the FULL inner-proof consumer in-circuit: the DEEP reduced-e0
+    /// combination (trace + quotient), the quotient OOD recombination, the quotient Merkle opening,
+    /// the leaf-hash, and the trace Merkle path — i.e. each member is a complete recursive
+    /// verification. Per-member trees give distinct roots.
+    fn member_window_full(
+        cfg: &RecursiveConfig,
+        levels: usize,
+        width: usize,
+        combine: usize,
+        q: usize,
+        member: u32,
+    ) -> Vec<Val> {
+        use crate::fri_fold_air::limbs;
+        let n = 1usize << levels;
+        let idx = 0usize;
+        let alpha = ext(member.wrapping_add(0x9999));
+        let zeta = ext(member.wrapping_add(0x5151));
+        let x = Val::from_u32(0x1234 + member);
+        // shared OOD data for this member.
+        let vz: Vec<Challenge> = (0..combine as u32).map(|i| ext(member * 10 + i + 1)).collect();
+        let at_zeta: Vec<Challenge> = (0..q as u32).map(|c| ext(member * 20 + c + 1)).collect();
+        let zps: Vec<Challenge> = (0..q as u32).map(|c| ext(member * 30 + c + 1)).collect();
+        let deep_q = crate::recursive_air::quotient_recombine(&zps, &at_zeta);
+        // trace tree: leaf idx = MyHash(trow ‖ tsalt).
+        let tsalt: [Val; SALT_ELEMS] = core::array::from_fn(|i| Val::from_u32(member.wrapping_mul(101).wrapping_add(i as u32 + 1)));
+        let trow: Vec<Val> = (0..width as u32).map(|i| Val::from_u32(member.wrapping_mul(7919).wrapping_add(i + 1))).collect();
+        let mut tinput = trow.clone();
+        tinput.extend_from_slice(&tsalt);
+        let trace_leaf = crate::leaf_hash::leaf_hash_digest(&tinput);
+        let tleaves: Vec<Digest> = (0..n).map(|r| if r == idx { trace_leaf } else { d((r as u32 + 1) * 13 + member) }).collect();
+        let ttree = RefTree::new(tleaves);
+        let tsibs = ttree.auth_path(idx);
+        // quot tree: leaf idx = MyHash(flat(qopened) ‖ qsalt).
+        let qsalt: [Val; SALT_ELEMS] = core::array::from_fn(|i| Val::from_u32(member.wrapping_mul(211).wrapping_add(i as u32 + 1)));
+        let qopened: Vec<Challenge> = (0..q as u32).map(|c| ext(member * 40 + c + 1)).collect();
+        let mut qflat: Vec<Val> = Vec::with_capacity(q * crate::fri_fold_air::D);
+        for ch in &qopened {
+            qflat.extend_from_slice(&limbs(*ch));
+        }
+        qflat.extend_from_slice(&qsalt);
+        let quot_leaf = crate::leaf_hash::leaf_hash_digest(&qflat);
+        let qleaves: Vec<Digest> = (0..n).map(|r| if r == idx { quot_leaf } else { d((r as u32 + 1) * 17 + member) }).collect();
+        let qtree = RefTree::new(qleaves);
+        let qsibs = qtree.auth_path(idx);
+        // consistent e0 = DEEP(trace) + DEEP(quotient).
+        let trace_e0 = crate::recursive_air::deep_reduced_e0(alpha, zeta, x, &trow[..combine], &vz);
+        let quot_e0 = crate::recursive_air::quotient_reduced_e0(alpha, zeta, x, combine, &qopened, &at_zeta);
+        let inp = WindowInputs {
+            draw_out: Val::from_u32(idx as u32),
+            e0: trace_e0 + quot_e0, e1: ext(2), beta: ext(3), descent: &[],
+            merkle_leaf: trace_leaf, merkle_siblings: &tsibs,
+            deep_zeta: zeta, deep_q, deep_alpha: alpha,
+            fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
+            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS], layer_opens: &[],
+            final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+            leaf_row: &trow, leaf_salt: tsalt,
+            dr_value_at_zeta: &vz, dr_value_at_zeta_next: &[], dr_x: x,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: qtree.root(), quot_opened_at_x: &qopened, quot_at_zeta: &at_zeta,
+            quot_zps: &zps, quot_salt: qsalt, quot_x: x, quot_siblings: &qsibs,
+        };
+        pack_window(cfg, &inp)
+    }
+
+    /// DEPTH (top rung): a block whose per-member verification is the FULL inner-proof consumer
+    /// (DEEP + quotient + leaf-hash + Merkle), proven in ONE O(1) proof at production q128 knobs.
+    /// Each member is a complete recursive verification; the block proof attests them all + the chain.
+    #[test]
+    fn proves_block_with_full_consumer_members_q128() {
+        use descender_account_stark::{MyCompress, MyHash, Perm, PROD_LOG_BLOWUP, PROD_NUM_QUERIES, PROD_QUERY_POW_BITS};
+        use p3_challenger::DuplexChallenger;
+        use p3_commit::ExtensionMmcs;
+        use p3_dft::Radix2DitParallel;
+        use p3_field::Field;
+        use p3_fri::{FriParameters, TwoAdicFriPcs};
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+        use p3_merkle_tree::MerkleTreeMmcs;
+        use p3_uni_stark::{prove, verify, StarkConfig};
+
+        type ValMmcs = MerkleTreeMmcs<<Val as Field>::Packing, <Val as Field>::Packing, MyHash, MyCompress, 2, DIGEST_ELEMS>;
+        type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
+        type DftT = Radix2DitParallel<Val>;
+        type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
+
+        let levels = 3usize;
+        let width = 12usize;
+        let combine = 12usize;
+        let k = 10usize;
+        let q = 8usize;
+        let cfg = cfg_full(levels, width, combine, k, q);
+        let n = 4usize;
+        let ws: Vec<Vec<Val>> = (0..n as u32).map(|m| member_window_full(&cfg, levels, width, combine, q, m)).collect();
+        let flat = build_trace(&cfg, &ws);
+        let root = trace_root(&cfg, n, &flat);
+        let m = RowMajorMatrix::new(flat.clone(), n_cols(&cfg));
+        assert!(check_all_constraints(&BlockRecursiveAir { cfg: cfg.clone() }, &m, &root.to_vec(), None).is_ok(),
+            "honest full-consumer-verified block rejected");
+
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let val_mmcs = ValMmcs::new(MyHash::new(perm.clone()), MyCompress::new(MyHash::new(perm.clone())), 0);
+        let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
+        let fri_params = FriParameters {
+            log_blowup: PROD_LOG_BLOWUP, log_final_poly_len: 0, max_log_arity: 1,
+            num_queries: PROD_NUM_QUERIES, commit_proof_of_work_bits: 0,
+            query_proof_of_work_bits: PROD_QUERY_POW_BITS, mmcs: challenge_mmcs,
+        };
+        let pcs = Pcs::new(DftT::default(), val_mmcs, fri_params);
+        let config = OuterConfig::new(pcs, MyChallenger::new(perm.clone()));
+        let trace = RowMajorMatrix::new(flat, n_cols(&cfg));
+        let proof = prove(&config, &BlockRecursiveAir { cfg: cfg.clone() }, trace, &root.to_vec());
+        verify(&config, &BlockRecursiveAir { cfg }, &proof, &root.to_vec())
+            .expect("full-consumer-verified-member block proof must verify at production q128 knobs");
+    }
+
     // ---- DEEPER still: FRI-fold descent + leaf-hash + Merkle per member ----
     fn cfg_deep(levels: usize, row_len: usize, rounds: usize) -> RecursiveConfig {
         RecursiveConfig {
