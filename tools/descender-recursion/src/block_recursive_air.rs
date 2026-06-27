@@ -287,6 +287,116 @@ mod tests {
         pack_window(cfg, &inp)
     }
 
+    // ---- DEEPER still: FRI-fold descent + leaf-hash + Merkle per member ----
+    fn cfg_deep(levels: usize, row_len: usize, rounds: usize) -> RecursiveConfig {
+        RecursiveConfig {
+            merkle_levels: levels,
+            leaf_row_len: row_len,
+            num_rounds: rounds,
+            ..RecursiveConfig::single_window(levels)
+        }
+    }
+
+    /// Pack a member window verifying the FRI commit-phase FOLD descent (`rounds` rounds, the fold
+    /// relation checked in-circuit) AND leaf-hash AND the Merkle path — the deepest member
+    /// verification short of the full DEEP/quotient consumer.
+    fn member_window_deep(
+        cfg: &RecursiveConfig,
+        levels: usize,
+        row_len: usize,
+        rounds: usize,
+        member: u32,
+        descent: &[(Challenge, Challenge)],
+    ) -> Vec<Val> {
+        let _ = rounds;
+        let n = 1usize << levels;
+        let row: Vec<Val> = (0..row_len as u32).map(|i| Val::from_u32(member.wrapping_mul(7919).wrapping_add(i + 1))).collect();
+        let salt: [Val; SALT_ELEMS] = core::array::from_fn(|i| Val::from_u32(member.wrapping_mul(40503).wrapping_add(i as u32 + 1)));
+        let mut input = row.clone();
+        input.extend_from_slice(&salt);
+        let leaf = crate::leaf_hash::leaf_hash_digest(&input);
+        let idx = (member as usize) % n;
+        let leaves: Vec<Digest> = (0..n)
+            .map(|r| if r == idx { leaf } else { d((r as u32 + 1) * 1000 + member + 7) })
+            .collect();
+        let tree = RefTree::new(leaves);
+        let sibs = tree.auth_path(idx);
+        let e0 = Challenge::from_basis_coefficients_slice(&leaf[..crate::fri_fold_air::D]).unwrap();
+        let inp = WindowInputs {
+            draw_out: Val::from_u32(idx as u32),
+            e0, e1: ext(member + 11), beta: ext(member + 23), descent,
+            merkle_leaf: leaf, merkle_siblings: &sibs,
+            deep_zeta: Challenge::ZERO, deep_q: Challenge::ZERO, deep_alpha: Challenge::ZERO,
+            fs_blocks: &[], sponge_in: [Val::ZERO; WIDTH], prior_state: [Val::ZERO; WIDTH],
+            absorbed: [Val::ZERO; RATE], prefix_blocks: &[], public_io: &[],
+            fs_beta_blocks: &[], fs_ood_blocks: &[], fs_ood_partial_block: [Val::ZERO; RATE],
+            fs_final_blocks: &[], fs_final_partial_block: [Val::ZERO; RATE],
+            inner_main_commit: [Val::ZERO; DIGEST_ELEMS], layer_opens: &[],
+            final_poly_x: Val::ZERO, final_poly_coeffs: &[],
+            leaf_row: &row, leaf_salt: salt,
+            dr_value_at_zeta: &[], dr_value_at_zeta_next: &[], dr_x: Val::ZERO,
+            lc_value_at_zeta: &[], lc_c_committed: Challenge::ZERO,
+            quot_commit: [Val::ZERO; DIGEST_ELEMS], quot_opened_at_x: &[], quot_at_zeta: &[],
+            quot_zps: &[], quot_salt: [Val::ZERO; SALT_ELEMS], quot_x: Val::ZERO, quot_siblings: &[],
+        };
+        pack_window(cfg, &inp)
+    }
+
+    /// DEPTH (FRI fold): a block whose per-member verification is FRI-descent + leaf-hash + Merkle,
+    /// proven in ONE O(1) proof at production q128 knobs. Top rung short of the DEEP/quotient consumer.
+    #[test]
+    fn proves_block_with_fri_descent_verified_members_q128() {
+        use descender_account_stark::{MyCompress, MyHash, Perm, PROD_LOG_BLOWUP, PROD_NUM_QUERIES, PROD_QUERY_POW_BITS};
+        use p3_challenger::DuplexChallenger;
+        use p3_commit::ExtensionMmcs;
+        use p3_dft::Radix2DitParallel;
+        use p3_field::Field;
+        use p3_fri::{FriParameters, TwoAdicFriPcs};
+        use p3_koala_bear::default_koalabear_poseidon2_16;
+        use p3_merkle_tree::MerkleTreeMmcs;
+        use p3_uni_stark::{prove, verify, StarkConfig};
+
+        type ValMmcs = MerkleTreeMmcs<<Val as Field>::Packing, <Val as Field>::Packing, MyHash, MyCompress, 2, DIGEST_ELEMS>;
+        type ChallengeMmcs = ExtensionMmcs<Val, Challenge, ValMmcs>;
+        type DftT = Radix2DitParallel<Val>;
+        type Pcs = TwoAdicFriPcs<Val, DftT, ValMmcs, ChallengeMmcs>;
+        type MyChallenger = DuplexChallenger<Val, Perm, 16, 8>;
+        type OuterConfig = StarkConfig<Pcs, Challenge, MyChallenger>;
+
+        let levels = 3usize;
+        let row_len = 12usize;
+        let rounds = 4usize;
+        let cfg = cfg_deep(levels, row_len, rounds);
+        let n = 4usize;
+        let ws: Vec<Vec<Val>> = (0..n as u32)
+            .map(|m| {
+                let descent: Vec<(Challenge, Challenge)> =
+                    (1..rounds).map(|r| (ext(m * 100 + r as u32), ext(m * 100 + r as u32 + 50))).collect();
+                member_window_deep(&cfg, levels, row_len, rounds, m, &descent)
+            })
+            .collect();
+        let flat = build_trace(&cfg, &ws);
+        let root = trace_root(&cfg, n, &flat);
+        let m = RowMajorMatrix::new(flat.clone(), n_cols(&cfg));
+        assert!(check_all_constraints(&BlockRecursiveAir { cfg: cfg.clone() }, &m, &root.to_vec(), None).is_ok(),
+            "honest FRI-descent-verified block rejected");
+
+        let perm: Perm = default_koalabear_poseidon2_16();
+        let val_mmcs = ValMmcs::new(MyHash::new(perm.clone()), MyCompress::new(MyHash::new(perm.clone())), 0);
+        let challenge_mmcs = ChallengeMmcs::new(val_mmcs.clone());
+        let fri_params = FriParameters {
+            log_blowup: PROD_LOG_BLOWUP, log_final_poly_len: 0, max_log_arity: 1,
+            num_queries: PROD_NUM_QUERIES, commit_proof_of_work_bits: 0,
+            query_proof_of_work_bits: PROD_QUERY_POW_BITS, mmcs: challenge_mmcs,
+        };
+        let pcs = Pcs::new(DftT::default(), val_mmcs, fri_params);
+        let config = OuterConfig::new(pcs, MyChallenger::new(perm.clone()));
+        let trace = RowMajorMatrix::new(flat, n_cols(&cfg));
+        let proof = prove(&config, &BlockRecursiveAir { cfg: cfg.clone() }, trace, &root.to_vec());
+        verify(&config, &BlockRecursiveAir { cfg }, &proof, &root.to_vec())
+            .expect("FRI-descent-verified-member block proof must verify at production q128 knobs");
+    }
+
     /// DEPTH: a block whose per-member verification is leaf-hash + Merkle (each member's leaf is
     /// CONSTRAINED == MyHash(row ‖ salt) in-circuit, then the path folds to the root) folds to one
     /// chain_state_root and PROVES + VERIFIES at production q128 FRI knobs — strictly deeper than the
